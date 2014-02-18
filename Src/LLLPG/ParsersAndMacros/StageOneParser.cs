@@ -142,9 +142,9 @@ namespace Loyc.LLParserGenerator
 		protected override int LA0Int { get { return _lt0.TypeInt; } }
 		protected override Token LT(int i) { return _tokens.TryGet(InputPosition + i, default(Token)); }
 		protected override string ToString(int tokenType) { return ((TT)tokenType).ToString(); }
-		protected override void Error(int inputPosition, string message)
+		protected override void Error(int li, string message)
 		{
-			int iPos = GetTextPosition(inputPosition);
+			int iPos = GetTextPosition(InputPosition + li);
 			ErrorSink.Write(MessageSink.Error, _sourceFile.IndexToLine(iPos), message);
 		}
 		protected int GetTextPosition(int tokenPosition)

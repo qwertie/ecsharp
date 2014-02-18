@@ -1,6 +1,7 @@
-// Generated from LesParserGrammar.les by LLLPG custom tool. LLLPG version: 1.0.0.0
+// Generated from LesParserGrammar.les by LLLPG custom tool. LLLPG version: 1.0.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
+// --verbose             Allow verbose messages (shown as 'warnings')
 // --no-out-header       Suppress this message
 using System;
 using System.Collections.Generic;
@@ -23,10 +24,12 @@ namespace Loyc.Syntax.Les
 			TT la0, la1;
 			LNode e = MissingExpr;
 			LNode _;
-			switch (LA0) {
+			// Line 37: (TT.Id (&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Number|TT.String|TT.SQString|TT.OtherLit|TT.Symbol) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{contextA != P_SuperExpr} (TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment|TT.Colon) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace)
+			 switch (LA0) {
 			case TT.Id:
 				{
 					var t = MatchAny();
+					// Line 38: (&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)} TT.LParen TT.RParen / )
 					la0 = LA0;
 					if (la0 == TT.LParen) {
 						if (t.EndIndex == LT(0).StartIndex && contextA.CanParse(P.Primary)) {
@@ -107,7 +110,7 @@ namespace Loyc.Syntax.Les
 			default:
 				{
 					e = F.Id(S.Missing, LT0.StartIndex, LT0.StartIndex);
-					Error(InputPosition, "Expected an expression here");
+					Error(0, "Expected an expression here");
 				}
 				break;
 			}
@@ -123,7 +126,8 @@ namespace Loyc.Syntax.Les
 			e = Atom(context, ref attrs);
 			primary = e;
 			var contextA = context;
-			for (;;) {
+			// Line 90: greedy((TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment|TT.Colon) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen | &{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P_SuperExpr)} Expr greedy(Expr)*)*
+			 for (;;) {
 				switch (LA0) {
 				case TT.Assignment:
 				case TT.BQString:
@@ -438,7 +442,8 @@ namespace Loyc.Syntax.Les
 					var rhs = RVList<LNode>.Empty;
 					contextA = P_SuperExpr;
 					rhs.Add(Expr(P_SuperExpr, out _));
-					for (;;) {
+					// Line 139: greedy(Expr)*
+					 for (;;) {
 						switch (LA0) {
 						case TT.Id:
 						case TT.Number:
@@ -588,7 +593,8 @@ namespace Loyc.Syntax.Les
 		}
 		protected LNode SuperExprOpt()
 		{
-			switch (LA0) {
+			// Line 157: (SuperExpr | )
+			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
 			case TT.BQString:
@@ -621,7 +627,8 @@ namespace Loyc.Syntax.Les
 		{
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();
-			switch (LA0) {
+			// Line 162: (SuperExpr (TT.Comma SuperExprOpt)* | TT.Comma SuperExprOpt (TT.Comma SuperExprOpt)*)?
+			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
 			case TT.BQString:
@@ -642,7 +649,8 @@ namespace Loyc.Syntax.Les
 			case TT.Symbol:
 				{
 					exprs.Add(SuperExpr());
-					for (;;) {
+					// Line 163: (TT.Comma SuperExprOpt)*
+					 for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
 							Skip();
@@ -657,7 +665,8 @@ namespace Loyc.Syntax.Les
 					exprs.Add(MissingExpr);
 					Skip();
 					exprs.Add(SuperExprOpt());
-					for (;;) {
+					// Line 165: (TT.Comma SuperExprOpt)*
+					 for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
 							Skip();
@@ -673,7 +682,8 @@ namespace Loyc.Syntax.Les
 		{
 			TT la0;
 			LNode e = MissingExpr;
-			switch (LA0) {
+			// Line 171: (SuperExpr)?
+			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
 			case TT.BQString:
@@ -696,14 +706,15 @@ namespace Loyc.Syntax.Les
 				break;
 			}
 			bool error = false;
-			for (;;) {
+			// Line 175: greedy(&{$LA != terminator} ~(EOF))*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 != EOF) {
 					la0 = LA0;
 					if (la0 != terminator) {
 						if ((!error)) {
 							error = true;
-							Error(InputPosition, "Expected " + terminator.ToString());
+							Error(0, "Expected " + terminator.ToString());
 						}
 						Skip();
 					} else
@@ -718,7 +729,8 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();
 			var next = SuperExprOptUntil(TT.Semicolon);
-			for (;;) {
+			// Line 189: (TT.Semicolon SuperExprOptUntil)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Semicolon) {
 					exprs.Add(next);

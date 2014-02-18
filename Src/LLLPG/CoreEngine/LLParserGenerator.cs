@@ -117,7 +117,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
 	/// In that case, there is no need to use this class directly. The source code of
-	/// <see cref="LLLPG.Main()"/> shows how to invoke LLLPG as a macro via the 
+	/// <see cref="LLLPG.Main"/> shows how to invoke LLLPG as a macro via the 
 	/// <see cref="LeMP.Compiler"/>.
 	/// <para/>
 	/// For more information about how to use LLLPG, read these articles:
@@ -128,7 +128,8 @@ namespace Loyc.LLParserGenerator
 	/// </remarks>
 	public partial class LLParserGenerator
 	{
-		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null) { 
+		public LLParserGenerator(IPGCodeGenHelper csg, IMessageSink sink = null)
+		{ 
 		 	_helper = csg; Sink = sink;
 		}
 
@@ -203,6 +204,10 @@ namespace Loyc.LLParserGenerator
 		/// Level 3 verbosity prints level 1 and 2 information.
 		/// </remarks>
 		public int Verbosity = 0;
+
+		/// <summary>Whether to insert Specifies the default maximum lookahead for rules that do
+		/// not specify a lookahead value.</summary>
+		public bool AddComments = true;
 
 		/// <summary>Called when an error or warning occurs while parsing a grammar
 		/// or while generating code for a parser. Also called to print "verbose" 
@@ -743,7 +748,7 @@ namespace Loyc.LLParserGenerator
 		/// make prediction extremely complicated. Consider this example:
 		/// <code>
 		/// (.&amp;{a} (&amp;{b} {B();} | &amp;{c})
-		///   &amp;{d} (&amp;{e} ('e'|'E'))?
+		///   &amp;{d} [&amp;{e} ('e'|'E')]?
 		///   (&amp;{f} ('f'|'t') | 'F')
 		/// | &amp;{c} (&amp;{f} ('e'|'t') | 'f') 'g'
 		/// | '!' )
@@ -755,12 +760,7 @@ namespace Loyc.LLParserGenerator
 		/// condition is required for 'F'. The second branch also allows 'e' or
 		/// 'f', provided that 'c' is true, but requires 'f' if LA(0) is 'e'. 
 		/// <para/>
-		/// I'm pretty sure LLLPG does <i>not</i> handle this case correctly!
-		/// I implemented this feature with some simplifications that do not 
-		/// handle complicated cases involving nested alternatives; in particular
-		/// it is not designed to handle zero-width assertions in nested Alts.
-		/// I think the assertions "b" and "c" will be lumped together somehow.
-		/// TODO: figure out the details.
+		/// LLLPG appears to handle this case correctly.
 		/// </remarks>
 		public LNode Run(ISourceFile sourceFile)
 		{
@@ -789,8 +789,31 @@ namespace Loyc.LLParserGenerator
 						privates++;
 					if (rule.IsToken)
 						tokens++;
-					else
-						Output(Verbose, rule.Basis, rule.Pred, Localize.From("Follow set of '{0}': {1}", rule.Name, rule.EndOfRule.FollowSet.Join(", ")));
+					else {
+						Output(Verbose, rule.Basis, rule.Pred, Localize.From("Follow set of '{0}': {1}", 
+							rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
+						if (Verbosity >= 2) {
+							var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
+							var followSet = ComputeNextSet(end, false);
+							
+							string casesStr;
+							IList<Transition> cases = followSet.Cases;
+							string message = "Follow set of '{0}': {1} from {2} cases: {4}";
+							if (Verbosity <= 2) {
+								message = "Follow set of '{0}': {1} from {2} cases ({3} abridged): {4}";
+								var coverage = CodeGenHelper.EmptySet;
+								cases = cases.Where(c => {
+									bool subset = c.Set.IsSubsetOf(coverage);
+									if (!subset) coverage = coverage.Union(c.Set);
+									return !subset;
+								}).ToList();
+							}
+							casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
+							
+							Output(Verbose, rule.Basis, rule.Pred, Localize.From(message, 
+								rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr)); 
+						}
+					}
 				}
 				Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
 				Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
@@ -861,10 +884,10 @@ namespace Loyc.LLParserGenerator
 			var exit = i;
 			if (hasExit)
 				firstSets[exit] = ComputeNextSet(new KthSet(alts.Next, ExitAlt, _helper.EmptySet, alts.Greedy == false), true);
-			if (alts.NonExitDefaultArmRequested()) {
-				InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
-				exit--;
-			}
+			//if (alts.NonExitDefaultArmRequested()) {
+			//	InternalList.Move(firstSets, alts.DefaultArm.Value, firstSets.Length - 1);
+			//	exit--;
+			//}
 			if (!(alts.Greedy ?? true))
 				InternalList.Move(firstSets, exit, 0);
 			return firstSets;
@@ -1186,13 +1209,13 @@ namespace Loyc.LLParserGenerator
 				IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
 				currentAlts.AmbiguityReported(arms);
 
-				string format = "Alternatives ({0}) are ambiguous for input such as {1}";
+				string format = "Alternatives {{{0}}} are ambiguous for input such as {1}";
 				if (currentAlts.Mode == LoopMode.Opt && currentAlts.Arms.Count == 1)
 					format = "Optional branch is ambiguous for input such as {1}";
 				Output(Warning, currentAlts,
 					string.Format(format,
 						StringExt.Join(", ", prevSets.Select(
-							ks => ks.Alt == ExitAlt ? "exit" : (ks.Alt + 1).ToString())),
+							ks => currentAlts.AltName(ks.Alt))),
 						GetAmbiguousCase(prevSets)));
 			}
 			// Return the KthSet representing the branch to use by default.

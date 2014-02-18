@@ -160,7 +160,7 @@ namespace Loyc.LLParserGenerator
 				int separateCount = 0;
 				for (int i = 0; i < alts.Arms.Count; i++) {
 					if (!timesUsed.ContainsKey(i)) {
-						unreachable.Add(i + 1);
+						unreachable.Add(i);
 						continue;
 					}
 
@@ -187,9 +187,9 @@ namespace Loyc.LLParserGenerator
 				}
 
 				if (unreachable.Count == 1)
-					LLPG.Output(Warning, alts, string.Format("Branch {0} is unreachable.", unreachable.First()));
+					LLPG.Output(Warning, alts, string.Format("Branch {{{0}}} is unreachable.", alts.AltName(unreachable.First())));
 				else if (unreachable.Count > 1)
-					LLPG.Output(Warning, alts, string.Format("Branches {0} are unreachable.", unreachable.Join(", ")));
+					LLPG.Output(Warning, alts, string.Format("Branches {{{0}}} are unreachable.", unreachable.Select(i => alts.AltName(i)).Join(", ")));
 				if (!timesUsed.ContainsKey(ExitAlt) && alts.Mode != LoopMode.None)
 					LLPG.Output(Warning, alts, "Infinite loop. The exit branch is unreachable.");
 
@@ -241,7 +241,16 @@ namespace Loyc.LLParserGenerator
 					code = LNode.MergeLists(code, stopLabel, S.Braces);
 				}
 
+				int oldCount = _target.Count;
 				_target.SpliceAdd(code, S.Braces);
+				
+				// Add comment before code
+				if (LLPG.AddComments) {
+					var pos = alts.Basis.Range.Begin;
+					var comment = F.Trivia(S.TriviaSLCommentBefore, string.Format(" Line {0}: {1}", pos.Line, alts.ToString()));
+					if (_target.Count > oldCount)
+						_target[oldCount] = _target[oldCount].WithAttr(comment);
+				}
 			}
 
 			private bool SimpleEnoughToRepeat(LNode code)

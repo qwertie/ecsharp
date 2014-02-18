@@ -50,7 +50,7 @@ namespace LeMP
 
 			string _;
 			if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
-				ShowHelp(KnownOptions);
+				ShowHelp(KnownOptions.OrderBy(p => p.Key));
 				return;
 			}
 
@@ -186,15 +186,15 @@ namespace LeMP
 		public static MMap<string, Pair<string, string>> KnownOptions = new MMap<string, Pair<string, string>>()
 		{
  			{ "help",      Pair.Create("", "show this screen") },
- 			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly\n(by default, just LEL 'prelude' macros are available)") },
+ 			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly") },
  			{ "max-expand",Pair.Create("N", "stop expanding macros after N expansions.") },
  			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },
 			{ "inlang",    Pair.Create("name", "Set input language: --inlang=ecs for Enhanced C#, --inlang=les for LES") },
-			{ "outext",    Pair.Create("name", "Set output extension and optional suffix: .ecs (Enhanced C#), .cs (C#), .les (LES)\n"+
+			{ "outext",    Pair.Create("name", "Set output extension and optional suffix:\n  .ecs (Enhanced C#), .cs (C#), .les (LES)\n"+
 			               "This can include a suffix before the extension, e.g. --outext=.output.cs\n"+
-			               "If --outlang is not used, output language is chosen by file extension.\n") },
+			               "If --outlang is not used, output language is chosen by file extension.") },
 			{ "outlang",   Pair.Create("name", "Set output language independently of file extension") },
 			{ "forcelang", Pair.Create("", "Specifies that --inlang overrides the input file extension.\n"+
 			               "Without this option, known file extensions override --inlang.") },
@@ -202,7 +202,7 @@ namespace LeMP
 		};
 		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 
-		public static void ShowHelp(IDictionary<string, Pair<string, string>> knownOptions)
+		public static void ShowHelp(IEnumerable<KeyValuePair<string, Pair<string, string>>> knownOptions)
 		{
 			var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
  			Console.WriteLine("Usage: {0} <--options> <source-files>", asm.GetName().Name);

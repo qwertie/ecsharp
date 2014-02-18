@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 
 				string _;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
-					LeMP.Compiler.ShowHelp(KnownOptions);
+					LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
 					return;
 				}
 
@@ -57,7 +57,11 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Run macro processor for LLLPG on the specified input, with the
 		/// specified command-line option map, returning the result as a string.</summary>
-		public static string QuickRun(string input, int maxExpand = 0xFFFF, params Assembly[] macroAssemblies)
+		public static string QuickRun(string input, params Assembly[] macroAssemblies)
+		{
+			return QuickRun(null, 0xFFFF, input, macroAssemblies);
+		}
+		public static string QuickRun(IParsingService inputLang, int maxExpand, string input, params Assembly[] macroAssemblies)
 		{
 			var c = new LeMP.TestCompiler(MessageSink.Trace, new StringSlice(input));
 			c.Parallel = false;
@@ -68,6 +72,7 @@ namespace Loyc.LLParserGenerator
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
+			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Current))
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
 				c.Run();
 			return c.Output.ToString();

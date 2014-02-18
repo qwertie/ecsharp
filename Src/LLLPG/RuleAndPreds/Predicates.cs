@@ -42,8 +42,8 @@ namespace Loyc.LLParserGenerator
 		public LNode Basis { get; protected set; }
 		public LNode PreAction;
 		public LNode PostAction;
-		
-		protected internal Pred Prev; // For debugging
+
+		protected internal Pred Prev; // For debugging only
 		protected internal Pred Next; // The predicate that follows this one or EndOfRule
 
 		/// <summary>A function that saves the result produced by the matching code 
@@ -165,6 +165,13 @@ namespace Loyc.LLParserGenerator
 		}
 
 		internal virtual void DiscardAnalysisResult() {}
+		
+		public string ToStringWithPosition()
+		{
+			var pos = Basis.Range.Begin;
+			if (pos.Line < 1) return ToString();
+			return string.Format("({0},{1}) {2}", pos.Line, pos.PosInLine, ToString());
+		}
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -440,6 +447,13 @@ namespace Loyc.LLParserGenerator
 		/// no exit branch, the last branch is the default instead?)</remarks>
 		public int? DefaultArm = null;
 
+		//public int DefaultArmInt()
+		//{
+		//	if (DefaultArm.HasValue) return DefaultArm.Value;
+		//	if (Mode != LoopMode.None) return -1;
+		//	return Arms.Count - 1;
+		//}
+
 		/// <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
 		public ulong NoAmbigWarningFlags = 0;
 		public bool HasExit { get { return Mode != LoopMode.None; } }
@@ -546,6 +560,17 @@ namespace Loyc.LLParserGenerator
 			else
 				sb.Append(")");
 			return sb.ToString();
+		}
+		
+		// Returns a short name for an arm, for use in error/warning messages
+		public string AltName(int altNum)
+		{
+			if (altNum == ExitAlt) return "exit";
+			string descr;
+			if ((uint)altNum < (uint)Arms.Count)
+				if ((descr = Arms[altNum].ToString()).Length <= 9 + altNum)
+					return (altNum + 1).ToString() + ":" + descr;
+			return (altNum + 1).ToString();
 		}
 	}
 	/// <summary>Types of <see cref="Alts"/> objects.</summary>

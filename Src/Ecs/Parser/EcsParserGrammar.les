@@ -33,7 +33,7 @@ namespace Ecs.Parser
 	#rawText("#pragma warning disable 162, 642");
 
 	partial class EcsParser {
-	[LL(2)]
+	[LL(2)] [Verbosity(2)]
 	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
 	{
 		alias("(" = TT.LParen);

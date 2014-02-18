@@ -369,10 +369,13 @@ namespace Loyc.LLParserGenerator
 						ReadOption<int>(sink, attr, v => lllpg.Verbosity = v, null);
 						break;
 					case "NoDefaultArm":
-						ReadOption<bool>(sink, attr, v => lllpg.NoDefaultArm = v, null);
+						ReadOption<bool>(sink, attr, v => lllpg.NoDefaultArm = v, true);
 						break;
 					case "DefaultK": case "k": case "K": case "LL":
 						ReadOption<int>(sink, attr, v => lllpg.DefaultK = v, null);
+						break;
+					case "AddComments":
+						ReadOption<bool>(sink, attr, v => lllpg.AddComments = v, true);
 						break;
 					default:
 						sink.Write(MessageSink.Error, attr,

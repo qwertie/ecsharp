@@ -140,9 +140,10 @@ namespace Loyc.LLParserGenerator
 			var set = (PGIntSet)set_;
 
 			LNode call;
-			if (set.Complexity(2, 3, !set.IsInverted) <= 6) {
+			var type = set.ChooseMatchType(2, 4);
+			if (type != PGIntSet.Match.Set) {
 				var args = new RWList<LNode>();
-				if (set.Complexity(1, 2, true) > set.Count) {
+				if (type == PGIntSet.Match.Ranges) {
 					// Use MatchRange or MatchExceptRange
 					foreach (var r in set) {
 						if (!set.IsInverted || r.Lo != EOF_int || r.Hi != EOF_int) {
@@ -186,7 +187,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var intset = (PGIntSet)set;
 			int switchCost = (int)System.Math.Min(1 + intset.Size, 1000000);
-			int ifCost = System.Math.Min(intset.Complexity(4, 8, true), 32);
+			int ifCost = System.Math.Min(intset.ExprComplexity() * 4, 32);
 			return ifCost - switchCost;
 		}
 

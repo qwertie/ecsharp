@@ -167,6 +167,8 @@ namespace Ecs.Parser
 		[Test]
 		public void TestPreprocessor()
 		{
+			// Note: the standard C# parser accepts input like "# if" (with spaces) 
+			// for preprocessor directives; the EC# lexer currently does not.
 			Case("#if",       A(TT.PPif), _("##if"));
 			Case("/**/#if  ", A(TT.MLComment, TT.Id, TT.Spaces), WS, _("#if"), WS);
 			Case("\t\t#if  ", A(TT.Spaces, TT.PPif, TT.Spaces), WS, _("##if"), WS);

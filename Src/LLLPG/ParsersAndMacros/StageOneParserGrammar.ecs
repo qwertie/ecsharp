@@ -136,7 +136,7 @@ namespace Loyc.LLParserGenerator
 					&("?"|"*")          {e = ParseParens(lb, rb.EndIndex);}
 				|	error {
 						e = F.Id(S.Missing, LT0.StartIndex, LT0.StartIndex);
-						Error(InputPosition, "LLLPG: Expected an identifier, literal, or expression in parenthesis");
+						Error(0, "LLLPG: Expected an identifier, literal, or expression in parenthesis");
 					}
 				)
 				{return e;}

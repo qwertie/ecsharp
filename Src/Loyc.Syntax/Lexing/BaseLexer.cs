@@ -36,8 +36,10 @@ namespace Loyc.Syntax.Lexing
 	///	<para/>
 	///	There's just one abstract method for a lexer:
 	///	<code>
-	///   protected abstract void Error(int inputPosition, string message);
+	///   protected abstract void Error(int li, string message);
 	///	</code>
+	///	Where li is an offset from InputPosition (usually 0).
+	///	<para/>
 	///	The recommended way to report error messages is to use <see cref="IMessageSink"/>,
 	///	e.g.
 	///	<code>
@@ -149,7 +151,7 @@ namespace Loyc.Syntax.Lexing
 			get { return _sourceFile; }
 		}
 
-		protected abstract void Error(int inputPosition, string message);
+		protected abstract void Error(int lookaheadIndex, string message);
 
 		protected int LA(int i)
 		{
@@ -258,6 +260,15 @@ namespace Loyc.Syntax.Lexing
 			int la = LA0;
 			if (la != a && la != b && la != c)
 				Error(false, a, a, b, b, c, c);
+			else
+				InputPosition++;
+			return la;
+		}
+		protected int Match(int a, int b, int c, int d)
+		{
+			int la = LA0;
+			if (la != a && la != b && la != c && la != d)
+				Error(false, a, a, b, b, c, c, d, d);
 			else
 				InputPosition++;
 			return la;
@@ -479,11 +490,11 @@ namespace Loyc.Syntax.Lexing
 			var input = new StringBuilder();
 			PrintChar(LA0, input);
 			if (inverted)
-				Error(InputPosition, Localize.From("{0}: expected a character other than {1}", input, rangesDescr));
+				Error(0, Localize.From("{0}: expected a character other than {1}", input, rangesDescr));
 			else if (ranges.Count > 2)
-				Error(InputPosition, Localize.From("{0}: expected one of {1}", input, rangesDescr));
+				Error(0, Localize.From("{0}: expected one of {1}", input, rangesDescr));
 			else
-				Error(InputPosition, Localize.From("{0}: expected {1}", input, rangesDescr));
+				Error(0, Localize.From("{0}: expected {1}", input, rangesDescr));
 		}
 		protected virtual void Error(bool inverted, HashSet<int> set)
 		{
@@ -532,7 +543,7 @@ namespace Loyc.Syntax.Lexing
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(InputPosition, Localize.From("An expected condition was false: {0}", expectedDescr));
+				Error(0, Localize.From("An expected condition was false: {0}", expectedDescr));
 		}
 	}
 

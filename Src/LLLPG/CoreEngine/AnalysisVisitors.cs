@@ -409,8 +409,8 @@ namespace Loyc.LLParserGenerator
 			/// total coverage. For example, a typicaly prediction tree might have 
 			/// branches for 'a'..'z' and '0..'9'; this method will add coverage for 
 			/// all other possible inputs. It does this either by adding an error 
-			/// branch, or by extending the set handled by the final branch of each 
-			/// level.</summary>
+			/// branch, or by extending the set handled by the default branch of 
+			/// each level.</summary>
 			private void AddElseCases(Alts alts, PredictionTree tree)
 			{
 				foreach (var branch in tree.Children)
@@ -424,8 +424,31 @@ namespace Loyc.LLParserGenerator
 					var rest = tree.TotalCoverage.Inverted();
 					if (alts.HasErrorBranch(LLPG))
 						tree.Children.Add(new PredictionBranch(rest, new PredictionTreeOrAlt { Alt = ErrorAlt }, tree.TotalCoverage));
-					else
-						tree.Children.Last.Set = tree.Children.Last.Set.Union(rest);
+					else {
+						// No error branch, so use default arm
+					#if false
+						// First try: this tends to produce less intuitive code. Neither 
+						// version is objectively better; sometimes this version gives 
+						// faster code and sometimes the other version gives faster code.
+						int defaultArm = alts.DefaultArmInt();
+						foreach (PredictionBranch branch in tree.Children)
+							if (branch.Sub.Tree == null && branch.Sub.Alt == defaultArm) {
+								branch.Set = branch.Set.Union(rest);
+								goto done;
+							}
+						if (alts.DefaultArm != null)
+							tree.Children.Add(new PredictionBranch(rest, defaultArm, tree.TotalCoverage));
+						else
+							tree.Children.Last.Set = tree.Children.Last.Set.Union(rest);
+					done:;
+					#else
+						PredictionBranch last = tree.Children.Last;
+						if (alts.DefaultArm != null && (last.Sub.Tree != null || last.Sub.Alt != alts.DefaultArm.Value))
+							tree.Children.Add(new PredictionBranch(rest, alts.DefaultArm.Value, tree.TotalCoverage));
+						else
+							last.Set = last.Set.Union(rest);
+					#endif
+					}
 				}
 			}
 		}

@@ -68,9 +68,9 @@ namespace Loyc.Syntax.Les
 			bool fail;
 			return _tokens.TryGet(InputPosition + i, out fail);
 		}
-		protected override void Error(int inputPosition, string message)
+		protected override void Error(int li, string message)
 		{
-			int iPos = GetTextPosition(inputPosition);
+			int iPos = GetTextPosition(InputPosition + li);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
 			_messages.Write(_Error, pos, message);
 		}

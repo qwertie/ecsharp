@@ -16,7 +16,7 @@ namespace Loyc.LLParserGenerator
 	using System.Diagnostics;
 	using Loyc.Syntax.Les;
 
-	/// <summary>Tests LLLPG with the whole <see cref="MacroProcessor"/> pipeline.</summary>
+	/// <summary>Tests LLLPG with the whole <see cref="LeMP.MacroProcessor"/> pipeline.</summary>
 	/// <remarks>All input examples are written in LES.</remarks>
 	[TestFixture]
 	class LlpgGeneralTests
@@ -306,6 +306,66 @@ namespace Loyc.LLParserGenerator
 						Id();
 				}
 			");
+		}
+
+		[Test]
+		public void DifferentDefault3()
+		{
+			string input = @"LLLPG(lexer)
+				{
+					rule VowelOrNot() @[ 
+						('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
+					];
+					rule ConsonantOrNot @[ 
+						default ('A'|'E'|'I'|'O'|'U') {Other();} / 'A'..'Z' {Consonant();}
+					];
+				}";
+			DualLanguageTest(input, input, @"
+				void VowelOrNot()
+				{
+					switch (LA0) {
+					case 'A': case 'E': case 'I': case 'O': case 'U':
+						{
+							Skip();
+							Vowel();
+						}
+						break;
+					default:
+						{
+							MatchRange('A', 'Z');
+							Consonant();
+						}
+						break;
+					}
+				}
+				static readonly HashSet<int> ConsonantOrNot_set0 = NewSet('A', 'E', 'I', 'O', 'U');
+				void ConsonantOrNot()
+				{
+					do {
+						switch (LA0) {
+						case 'A': case 'E': case 'I': case 'O': case 'U':
+							goto match1;
+						case 'B': case 'C': case 'D': case 'F': case 'G':
+						case 'H': case 'J': case 'K': case 'L': case 'M':
+						case 'N': case 'P': case 'Q': case 'R': case 'S':
+						case 'T': case 'V': case 'W': case 'X': case 'Y':
+						case 'Z':
+							{
+								Skip();
+								Consonant();
+							}
+							break;
+						default:
+							goto match1;
+						}
+						break;
+					match1:
+						{
+							Match(ConsonantOrNot_set0);
+							Other();
+						}
+					} while (false);
+				}");
 		}
 
 		[Test]
@@ -1159,22 +1219,62 @@ namespace Loyc.LLParserGenerator
 			// contrast, doesn't prohibit EOF unless the set contains EOF.
 			Test(@"LLLPG parser {
 				// Note: ~Id alone means 'not Id and not EOF'; we add '|EOF' to allow EOF
-				rule NoId @[ (~Id|EOF) ];
+				rule NoId @[ ~Id|EOF ];
+				rule NonId @[ ~Id ];
 			}", @"
 				static readonly HashSet<int> NoId_set0 = NewSet(Id);
 				void NoId()
 				{
 					MatchExcept(NoId_set0);
+				}
+				void NonId()
+				{
+					MatchExcept(Id);
+				}");
+			
+			Test(@"LLLPG lexer {
+				// Note: ~Id alone means 'not Id and not EOF'; we add '|EOF' to allow EOF
+				rule NoId @[ ~'X'|EOF ];
+				rule NonId @[ ~'X' ];
+			}", @"
+				static readonly HashSet<int> NoId_set0 = NewSet('X');
+				void NoId()
+				{
+					MatchExcept(NoId_set0);
+				}
+				void NonId()
+				{
+					MatchExcept('X');
 				}");
 
 			// NonDigit_set0 must include EOF
 			Test(@"LLLPG parser {
 				rule NonDigit @[ ~('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9') ];
+				rule NoDigit  @[ ~('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')|EOF ];
 			}", @"
 				static readonly HashSet<int> NonDigit_set0 = NewSet('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', EOF);
 				void NonDigit()
 				{
 					MatchExcept(NonDigit_set0);
+				}
+				static readonly HashSet<int> NoDigit_set0 = NewSet('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+				void NoDigit()
+				{
+					MatchExcept(NoDigit_set0);
+				}");
+			Test(@"LLLPG lexer {
+				rule NonDigit @[ ~('A'|'E'|'I'|'O'|'U'|'a'|'e'|'i'|'o'|'u') ];
+				rule NoDigit  @[ ~('A'|'E'|'I'|'O'|'U'|'a'|'e'|'i'|'o'|'u')|EOF ];
+			}", @"
+				static readonly HashSet<int> NonDigit_set0 = NewSet(-1, 'A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u');
+				void NonDigit()
+				{
+					MatchExcept(NonDigit_set0);
+				}
+				static readonly HashSet<int> NoDigit_set0 = NewSet('A', 'E', 'I', 'O', 'U', 'a', 'e', 'i', 'o', 'u');
+				void NoDigit()
+				{
+					MatchExcept(NoDigit_set0);
 				}");
 		}
 
@@ -1532,7 +1632,7 @@ namespace Loyc.LLParserGenerator
 					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
 					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
 					Check($LI, ""$LI"");
-					MatchExcept(EOF);
+					MatchExcept();
 				}");
 
 			// 2013-12-22: I really thought by now that I had found most of the
@@ -1719,9 +1819,9 @@ namespace Loyc.LLParserGenerator
 					{
 						base(source);
 					};
-					protected override def Error(inputPosition::int, message::string)
+					protected override def Error(li::int, message::string)
 					{
-						Console.WriteLine(""At index {0}: {1}"", inputPosition, message);
+						Console.WriteLine(""At index {0}: {1}"", InputPosition+li, message);
 					};
 
 					_type::int;
@@ -1780,9 +1880,9 @@ namespace Loyc.LLParserGenerator
 					public Lexer(UString source) : base(source)
 					{
 					}
-					protected override void Error(int inputPosition, string message)
+					protected override void Error(int li, string message)
 					{
-						Console.WriteLine(""At index {0}: {1}"", inputPosition, message);
+						Console.WriteLine(""At index {0}: {1}"", InputPosition + li, message);
 					}
 					int _type;
 					double _value;
@@ -1978,11 +2078,11 @@ namespace Loyc.LLParserGenerator
 						return (new Token { Type = EOF });
 					};
 				};
-				protected override def Error(inputPosition::int, message::string)
+				protected override def Error(li::int, message::string)
 				{
 					index::int = _input.Length;
-					if inputPosition < _tokens.Count
-						index = _tokens[inputPosition].StartIndex;
+					if InputPosition + li < _tokens.Count
+						index = _tokens[InputPosition + li].StartIndex;
 					Console.WriteLine(""Error at index {0}: {1}"", index, message);
 				};
 				protected override def ToString(int `#var` tokenType)::string
@@ -2070,11 +2170,11 @@ namespace Loyc.LLParserGenerator
 						};
 					}
 				}
-				protected override void Error(int inputPosition, string message)
+				protected override void Error(int li, string message)
 				{
 					int index = _input.Length;
-					if (inputPosition < _tokens.Count)
-						index = _tokens[inputPosition].StartIndex;
+					if (InputPosition + li < _tokens.Count)
+						index = _tokens[InputPosition + li].StartIndex;
 					Console.WriteLine(""Error at index {0}: {1}"", index, message);
 				}
 				protected override string ToString(int tokenType)

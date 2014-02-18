@@ -66,7 +66,7 @@ namespace Loyc.Syntax.Les
 					t:=TT.LBrace rb:=TT.RBrace {e = ParseBraces(t, rb.EndIndex);}
 				|	error {
 						e = F.Id(S.Missing, LT0.StartIndex, LT0.StartIndex);
-						Error(InputPosition, "Expected an expression here");
+						Error(0, "Expected an expression here");
 					}
 				)
 				{return e;}
@@ -175,7 +175,7 @@ namespace Loyc.Syntax.Les
 						&{$LA!=terminator} 
 						{	if (!error) {
 								error = @true;
-								Error(InputPosition, "Expected " + terminator.ToString());
+								Error(0, "Expected " + terminator.ToString());
 							}
 						}
 						_ 

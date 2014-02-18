@@ -495,6 +495,23 @@ namespace Loyc.LLParserGenerator
 			return IsInverted ? EquivalentInverted()._ranges : _ranges;
 		}
 
+		public IEnumerable<int> Integers(bool obeyInversion)
+		{
+			if (obeyInversion && IsInverted)
+				return EquivalentInverted().Integers(false);
+			else
+				return Integers();
+		}
+		private IEnumerable<int> Integers()
+		{
+			foreach (var r in _ranges)
+				for (int n = r.Lo; ; n++)
+				{
+					yield return n;
+					if (n == r.Hi) break;
+				}
+		}
+
 		public IntSet Optimize(IntSet dontcare, bool mergeRuns = true)
 		{
 			if (dontcare == null)

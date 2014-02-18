@@ -228,7 +228,7 @@ namespace Loyc.LLParserGenerator
 			string coveredS = covered.ToString();
 			if (coveredS.Length > 45)
 				coveredS = coveredS.Substring(0, 40) + "...";
-			return F.Call("Error", F.Call(S.Add, F.Id("InputPosition"), F.Literal(laIndex)),
+			return F.Call("Error", F.Literal(laIndex),
 				F.Literal(string.Format("In rule '{0}', expected one of: {1}", _currentRule.Name.Name, coveredS)));
 		}
 

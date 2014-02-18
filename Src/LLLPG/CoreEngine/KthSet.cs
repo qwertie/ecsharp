@@ -54,8 +54,8 @@ namespace Loyc.LLParserGenerator
 			public KthSet Prev;           // Previous lookahead level
 			public bool HasAnyAndPreds { get { return Cases.Any(t => !t.AndPreds.IsEmpty); } }
 			public int Alt;               // -1 (ExitAlt) for exit, 0 for first alternative
-			public bool IsNongreedyExit;    // indicates a nongreedy exit branch (which takes priority in case of ambiguity)
-				
+			public bool IsNongreedyExit;  // indicates a nongreedy exit branch (which takes priority in case of ambiguity)
+			
 			public void UpdateSet(bool addEOF)
 			{
 				if (Cases.Count == 0) {
@@ -156,9 +156,9 @@ namespace Loyc.LLParserGenerator
 			public override string ToString() // for debugging
 			{
 				if (InFollowSet)
-					return string.Format("{0} (in follow set)", Pred);
+					return string.Format("{0} (in follow set)", Pred.ToStringWithPosition());
 				if (Return != null)
-					return string.Format("{0} (return to {1})", Pred, Return);
+					return string.Format("{0} (return to {1})", Pred.ToStringWithPosition(), Return);
 				return Pred.ToString();
 			}
 			public bool Equals(GrammarPos other) { return Equals(this, other); }

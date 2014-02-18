@@ -140,7 +140,7 @@ namespace Loyc.LLParserGenerator
 		{
 			IEnumerable<object> args;
 			Symbol method;
-			if (Complexity(1, 2, true) > Count) { // use ranges
+			if (_ranges.Count * 2 < SizeIgnoringInversion) { // use ranges
 				method = _NewSetOfRanges;
 				args = _ranges.SelectMany(r => {
 					if (r.Lo >= 32 && r.Hi < 0xFFFC)
@@ -150,10 +150,8 @@ namespace Loyc.LLParserGenerator
 				});
 			} else {
 				method = _NewSet;
-				args = _ranges.Select(r => { 
-					Debug.Assert(r.Lo == r.Hi);
-					return r.Lo >= 32 && r.Hi < 0xFFFC ? (object)(char)r.Lo : (object)(int)r.Lo;
-				});
+				args = Integers(false).Select(n => 
+					IsCharSet && n >= 32 && n < 0xFFFC ? (object)(char)n : (object)(int)n);
 			}
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
@@ -166,17 +164,37 @@ namespace Loyc.LLParserGenerator
 		/// la0 == '\t'" inline using an expression, but large sets are stored in 
 		/// variables and tested by calling a method. Complexity() is used to 
 		/// decide which approach is more appropriate.</remarks>
-		public int Complexity(int singleCountsAs, int rangeCountsAs, bool countEOF)
+		public int ExprComplexity()
 		{
-			int result = 0;
-			for (int i = 0; i < _ranges.Count; i++) {
-				var r = _ranges[i];
-				int dif = r.Hi - r.Lo;
-				if (!countEOF && r.Contains(EOF_int) && --dif < 0)
-					continue;
-				result += (dif == 0 ? singleCountsAs : rangeCountsAs);
+			return _ranges.Select(r => r.Hi != r.Lo ? 2 : 1).Sum();
+		}
+
+		int GetSize(out int ranges, bool countEOF)
+		{
+			int singles = 0;
+			ranges = _ranges.Count;
+			foreach (IntRange r in _ranges)
+			{
+				int size = r.Hi - r.Lo + 1;
+				if (r.Contains(EOF_int) && !countEOF && --size == 0)
+					ranges--;
+				singles += size;
 			}
-			return result;
+			return singles;
+		}
+
+		public enum Match { Singles, Ranges, Set }
+		public Match ChooseMatchType(int maxRanges, int maxSingles)
+		{
+			if (this.ContainsEOF && this.IsInverted)
+				return Match.Set;
+			int ranges, singles = GetSize(out ranges, !IsInverted);
+			if (singles <= maxSingles)
+				return ranges * 2 < singles && ranges < maxRanges ? Match.Ranges : Match.Singles;
+			if (ranges <= maxRanges)
+				return Match.Ranges;
+			else
+				return Match.Set;
 		}
 
 		public LNode GenerateTest(LNode subject, Symbol setName)
@@ -186,7 +204,7 @@ namespace Loyc.LLParserGenerator
 				LNode test = F.Call(F.Dot(setName, _Contains), subject);
 				return IsInverted ? F.Call(S.Not, test) : test;
 			} else {
-				if (_ranges.Count >= 3 && Complexity(1, 2, true) > 5)
+				if (_ranges.Count >= 3 && ExprComplexity() > 5)
 					return null; // complex
 
 				LNode test, result = null;

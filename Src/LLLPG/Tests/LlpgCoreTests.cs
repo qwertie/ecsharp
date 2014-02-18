@@ -178,7 +178,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule a = Rule("a", C('a') | 'A');
 			Rule b = Rule("b", C('b') | 'B');
-			// public rule Foo ==> @[ (a | b? 'c')* ];
+			// public rule Foo @[ (a | b? 'c')* ];
 			Rule Foo = Rule("Foo", Star(a | Opt(b) + 'c'));
 			_pg.AddRules(a, b, Foo);
 			LNode result = _pg.Run(_file);
@@ -224,7 +224,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example1()
 		{
-			// public rule Foo ==> @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+			// public rule Foo @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
 			Rule Foo = Rule("Foo", Plus(R('a','z')) | 'x' + R('0','9') + R('0','9'));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(_file);
@@ -267,7 +267,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example2()
 		{
-			// rule Foo ==> @[ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* ];
+			// rule Foo @[ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* ];
 			Rule Foo = Rule("Foo", Star((C('a')|'A') + 'A' | R('a','z') + R('a','z')));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -309,7 +309,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example3()
 		{
-			// rule Foo ==> @[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
+			// rule Foo @[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
 			Rule Foo = Rule("Foo", Star(Set("[aA]") + 'A') + R('a','z') + R('a','z'));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -346,8 +346,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void MatchInvertedSet()
 		{
-			// public rule Except ==> @[ ~'a' ~('a'..'z') ];
-			// public rule String ==> @[ '"' ~('"'|'\n')* '"' ];
+			// public rule Except @[ ~'a' ~('a'..'z') ];
+			// public rule String @[ '"' ~('"'|'\n')* '"' ];
 			
 			Rule Except = Rule("Except", Set("[^a]") + Set("[^a-z]"));
 			Rule String = Rule("String", '"' + Star(Set("[^\"\n]")) + '"');
@@ -455,7 +455,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void FullLL2()
 		{
-			// FullLL2 ==> @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
+			// FullLL2 @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
 			Rule Nope = Rule("FullLL2", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
 			
@@ -541,7 +541,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ActionsTest()
 		{
-			// public rule Foo ==> @[
+			// public rule Foo @[
 			//     { StartRule; }
 			//     ( { BeforeA; } 'A' { AfterA; }
 			//     / { BeforeSeq; } ('1' { After1; } { Before2; } '2' '3') { AfterSeq; }
@@ -602,7 +602,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ActionsTest2()
 		{
-			// public rule Foo ==> @[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
+			// public rule Foo @[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
 			Rule Foo = Rule("Foo", Act("a1", C('a'), "a2") | Act("b1", C('b'), "b2"));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -701,7 +701,7 @@ namespace Loyc.LLParserGenerator
 									break;
 							}
 						} else
-							Error(InputPosition+0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^_a-z|]"");
+							Error(0, ""In rule 'Token', expected one of: [\\t $-&*-\\-/-9A-Z^_a-z|]"");
 						break;
 					}
 				}
@@ -717,10 +717,10 @@ namespace Loyc.LLParserGenerator
 			//   rule int Number()
 			//   {
 			//      int n = 0;
-			//      ==> @[ (c:='0'..'9' { n = checked((n * 10) + (c - '0')); })+ ];
+			//      @[ (c:='0'..'9' { n = checked((n * 10) + (c - '0')); })+ ];
 			//      return n;
 			//   }
-			//   rule int AddNumbers() ==> @[
+			//   rule int AddNumbers() @[
 			//      total := Number ('+' total+=Number | '-' total-=Number)*
 			//      { return total; }
 			//   ];
@@ -833,7 +833,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void MLComment()
 		{
-			// public rule MLComment() ==> @[ '/' '*' nongreedy(_)* '*' '/' ];
+			// public rule MLComment() @[ '/' '*' nongreedy(_)* '*' '/' ];
 			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(AnyCh,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
 			LNode result = _pg.Run(F.File);
@@ -871,7 +871,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPredMatching()
 		{
-			// public rule MLComment() ==> @[ '/' '*' nongreedy(_)* '*' '/' ];
+			// public rule MLComment() @[ '/' '*' nongreedy(_)* '*' '/' ];
 			Rule Foo = Rule("Foo", And(F.Id("a")) + 'a' | And(F.Id("b")) + 'b');
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -895,9 +895,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPred1()
 		{
-			// public rule Foo ==> @[ (&a (Letter|Digit) | &b Digit | '_' ];
-			// public set Letter ==> @[ 'a'..'z' | 'A'..'Z' ];
-			// public set Digit ==> @[ '0'..'9' ];
+			// public rule Foo @[ (&a (Letter|Digit) | &b Digit | '_' ];
+			// public set Letter @[ 'a'..'z' | 'A'..'Z' ];
+			// public set Digit @[ '0'..'9' ];
 			Rule Foo = Rule("Foo", And(F.Id("a")) + Set("[a-zA-Z0-9]") | And(F.Id("b")) + Set("[0-9]") | '_');
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -964,7 +964,7 @@ namespace Loyc.LLParserGenerator
 					match2:
 						{
 							Check(c, ""c"");
-							MatchRange('x', 'y');
+							Match('x', 'y');
 						}
 					} while (false);
 				}
@@ -1092,7 +1092,7 @@ namespace Loyc.LLParserGenerator
 			// Note: "++" and "+=" must come before "+" so that they have higher 
 			// priority. LLPG doesn't implement a "longer match automatically wins" 
 			// rule; the user must prioritize manually.
-			// token MoreOrLess() ==> @[ "+=" | "++" | "--" | '+' | '-' ];
+			// token MoreOrLess() @[ "+=" | "++" | "--" | '+' | '-' ];
 			_pg.AddRule(Rule("MoreOrLess", Seq("+=") / Seq("++") / Seq("--") / C('+') / C('-'), Token));
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"
@@ -1127,7 +1127,7 @@ namespace Loyc.LLParserGenerator
 		public void NullableStarError1()
 		{
 			Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
-			// rule Bad ==> @[ ('0'..'9'? '0'..'9'?)* ];
+			// rule Bad @[ ('0'..'9'? '0'..'9'?)* ];
 			// ERROR IS EXPECTED.
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
@@ -1138,9 +1138,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void NullableStarError2()
 		{
-			// rule Number ==> @[ ('0'..'9')* ('.' ('0'..'9')+)? ];
-			// rule WS     ==> @[ (' '|'\t')+ ];
-			// rule Tokens ==> @[ (Number / WS)* ];
+			// rule Number @[ ('0'..'9')* ('.' ('0'..'9')+)? ];
+			// rule WS     @[ (' '|'\t')+ ];
+			// rule Tokens @[ (Number / WS)* ];
 			// ERROR IS EXPECTED in Tokens: Arm #1 of this loop is nullable.
 			Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
 			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
@@ -1164,7 +1164,7 @@ namespace Loyc.LLParserGenerator
 			// defective. TODO: think of a way to detect a left-recursive grammar
 			// (whether directly or indirectly recursive) and print an error.
 
-			// rule A ==> @[ A? ('a'|'A') ];
+			// rule A @[ A? ('a'|'A') ];
 			RuleRef ARef = new RuleRef(null, null);
 			Rule A = Rule("A", Opt(ARef) + Set("[aA]"), Token);
 			A.K = 3;
@@ -1225,9 +1225,9 @@ namespace Loyc.LLParserGenerator
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			
-			// rule Id() ==> @[ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* ];
-			// rule Twin() ==> @[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
-			// token Token() ==> @[ Twin / Id ];
+			// rule Id() @[ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* ];
+			// rule Twin() @[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
+			// token Token() @[ Twin / Id ];
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
 			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
@@ -1299,107 +1299,141 @@ namespace Loyc.LLParserGenerator
 			// generated parser /when the input is valid/. However, when the input
 			// is ungrammatical, the default branch is invoked; therefore, changing 
 			// the default branch implies changing how unexpected input is handled.
+			
+			//	rule Default2 @[ [
+			//		('a'|'A') 'x' | default ("BAT" | "bat") '!' | 'b'..'z' 'b'..'z' 
+			//	]* '.'];
+			//	rule Default3 @[ [
+			//		('a'|'A') 'x' | ("BAT" | "bat") '!' | default 'b'..'z' 'b'..'z' 
+			//	]* '.'];
 			Alts star1 = Star(Set("[aA]") + 'x' 
 			                | (Seq("BAT") | Seq("bat")) + '!'
 			                | Set("[b-z]") + Set("[b-z]"));
 			Alts star2 = (Alts)star1.Clone();
-			star1.DefaultArm = 1;
-			star2.DefaultArm = 2;
-			_pg.AddRule(Rule("Default1", star1 + '.', Token));
-			_pg.AddRule(Rule("Default2", star2 + '.', Token));
+			star1.DefaultArm = 1; // second arm
+			star2.DefaultArm = 2; // third arm
+			_pg.AddRule(Rule("Default2", star1 + '.', Token));
+			_pg.AddRule(Rule("Default3", star2 + '.', Token));
 			LNode result = _pg.Run(_file);
-			CheckResult(result, @"
+			
+			// Code gen for 'default' changed between 1.0.0 and 1.0.1. The new code
+			// behaves identically, but the old code was actually better. I needed 
+			// to do something differently so that the new DifferentDefaul3() test 
+			// would work correctly, but an unfortunate side effect was this silly
+			// code in the output, in Default3():
+			//	default:
+			//		if (la0 >= 'c' && la0 <= 'z')
+			//			goto match3;
+			//		else
+			//			goto match3;
+			// The reason for this is obscure. Adjacent cases like this in the 
+			// prediction tree should be merged, but in this prediction tree the two 
+			// match3 cases are not adjacent, as the '.'|EOF case is between them.
+			// Later, during code generation, the '.'|EOF case moves up into the 
+			// switch so that they become adjacent. Fixing this is probably more 
+			// trouble than it's worth.
+			CheckResult(result, @"{
+				public void Default2()
 				{
-					public void Default1()
-					{
-						int la0, la1;
-						for (;;) {
-							la0 = LA0;
-							switch (la0) {
-							case 'A':
-							case 'a': {
-									Skip(); Match('x');
-								}
-								break;
-							case 'b': {
-									la1 = LA(1);
-									if (la1 >= 'b' && la1 <= 'z')
-										goto match3;
-									else
-										goto match2;
-								}
-							case -1:
-							case '.':
-								goto stop;
-							default:
-								if (la0 >= 'c' && la0 <= 'z')
+					int la0, la1;
+					for (;;) {
+						la0 = LA0;
+						switch (la0) {
+						case 'A':
+						case 'a': {
+								Skip();
+								Match('x');
+							}
+							break;
+						case 'b': {
+								la1 = LA(1);
+								if (la1 == 'a')
+									goto match2;
+								else if (la1 >= 'b' && la1 <= 'z')
 									goto match3;
 								else
 									goto match2;
 							}
-							continue;
-						match2: {
-								la0 = LA0;
-								if (la0 == 'B') {
-									Skip(); Match('A'); Match('T');
-								} else {
-									Match('b'); Match('a'); Match('t');
-								}
-								Match('!');
-							}
-							continue;
-						match3: {
-								Skip(); MatchRange('b', 'z');
-							}
-						}
-					stop:;
-						Match('.');
-					}
-					public void Default2()
-					{
-						int la0, la1;
-						for (;;) {
-							switch (LA0) {
-							case 'A':
-							case 'a': {
-									Skip();
-									Match('x');
-								}
-								break;
-							case 'b': {
-									la1 = LA(1);
-									if (la1 == 'a')
-										goto match2;
-									else
-										goto match3;
-								}
-							case 'B':
-								goto match2;
-							case -1:
-							case '.':
-								goto stop;
-							default:
+						case 'B':
+							goto match2;
+						case -1:
+						case '.':
+							goto stop;
+						default:
+							if (la0 >= 'c' && la0 <= 'z')
 								goto match3;
-							}
-							continue;
-						match2: {
-								la0 = LA0;
-								if (la0 == 'B') {
-									Skip(); Match('A'); Match('T');
-								} else {
-									Match('b'); Match('a'); Match('t');
-								}
-								Match('!');
-							}
-							continue;
-						match3: {
-								MatchRange('b', 'z'); MatchRange('b', 'z');
-							}
+							else
+								goto match2;
 						}
-					stop:;
-						Match('.');
+						continue;
+					match2: {
+							la0 = LA0;
+							if (la0 == 'B') {
+								Skip(); Match('A'); Match('T');
+							} else {
+								Match('b'); Match('a'); Match('t');
+							}
+							Match('!');
+						}
+						continue;
+					match3: {
+							Skip();
+							MatchRange('b', 'z');
+						}
 					}
-				}");
+					stop:;
+					Match('.');
+				}
+				public void Default3()
+				{
+					int la0, la1;
+					for (;;) {
+						la0 = LA0;
+						switch (la0) {
+						case 'A':
+						case 'a': {
+								Skip();
+								Match('x');
+							}
+							break;
+						case 'b': {
+								la1 = LA(1);
+								if (la1 == 'a')
+									goto match2;
+								else
+									goto match3;
+							}
+						case 'B':
+							goto match2;
+						case -1:
+						case '.':
+							goto stop;
+						default:
+							if (la0 >= 'c' && la0 <= 'z')
+								goto match3;
+							else
+								goto match3;
+						}
+						continue;
+					match2: {
+							la0 = LA0;
+							if (la0 == 'B') {
+								Skip(); Match('A'); Match('T');
+							} else {
+								Match('b'); Match('a'); Match('t');
+							}
+							Match('!');
+						}
+						continue;
+					match3: {
+							MatchRange('b', 'z');
+							MatchRange('b', 'z');
+						}
+					}
+					stop:;
+					Match('.');
+				}
+			}");
 		}
 
 		[Test]
@@ -1458,9 +1492,13 @@ namespace Loyc.LLParserGenerator
 							la1 = LA(1);
 							if (la1 >= 'A' && la1 <= 'Z' || la1 == '_' || la1 >= 'a' && la1 <= 'z')
 								Id();
-							else
+							else if (la1 == -1 || la1 >= '0' && la1 <= '9' || la1 == '@')
 								At();
-						} else if (la0 >= '0' && la0 <= '9')
+							else
+								Id();
+						} else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
+							Id();
+						else if (la0 >= '0' && la0 <= '9')
 							Int();
 						else if (la0 == -1)
 							break;
@@ -1679,9 +1717,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void CrossRuleGateTest()
 		{
-			// token Number ==> @[ ('0'..'9' | '.' '0'..'9') =>
+			// token Number @[ ('0'..'9' | '.' '0'..'9') =>
 			//                     '0'..'9'* ('.' '0'..'9'+)? ];
-			// token Tokens ==> @[ (Number / _)* ];
+			// token Tokens @[ (Number / _)* ];
 			var number = Rule("Number", Gate(Set("[0-9]") | '.' + Set("[0-9]"), 
 			                            Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]")))), Token);
 			var tokens = Rule("Tokens", Star(number / AnyCh), Token);
@@ -1764,8 +1802,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred1()
 		{
-			// token Number ==> @[ &('0'..'9'|'.')
-			//                     '0'..'9'* ('.' '0'..'9'+)? ];
+			// token Number @[ &('0'..'9'|'.')
+			//                 '0'..'9'* ('.' '0'..'9'+)? ];
 			Rule number = Rule("Number", And(Set("[0-9.]")) + Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]"))), Token);
 			_pg.AddRule(number);
 			LNode result = _pg.Run(_file);
@@ -1814,10 +1852,10 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred2()
 		{
-			// public rule Tokens   ==> @[ (&Int => Int / Float / Id)* ];
-			// private token Float  ==> @[ '0'..'9'* '.' '0'..'9'+ ];
-			// private token Int    ==> @[ '0'..'9'+ ];
-			// private token Id     ==> @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
+			// public rule Tokens   @[ (&Int => Int / Float / Id)* ];
+			// private token Float  @[ '0'..'9'* '.' '0'..'9'+ ];
+			// private token Int    @[ '0'..'9'+ ];
+			// private token Id     @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
 			Rule Float, Int, Id;
 			_pg.AddRule(Float = Rule("Float", Star(Set("[0-9]")) + '.' + Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Int = Rule("Int", Plus(Set("[0-9]"), true), Private));

@@ -44,8 +44,8 @@ namespace Loyc.Syntax
 		/// if the tokens come from a list called Source) </summary>
 		protected abstract Token LT(int i);
 		/// <summary>Records an error or throws an exception. When called by 
-		/// BaseParser, inputPosition is always equal to <see cref="InputPosition"/>.</summary>
-		protected abstract void Error(int inputPosition, string message);
+		/// BaseParser, li is always equal to 0.</summary>
+		protected abstract void Error(int li, string message);
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>
 		protected abstract string ToString(Int32 tokenType);
@@ -96,6 +96,15 @@ namespace Loyc.Syntax
 			Token lt = _lt0; Int32 la = LA0Int;
 			if (!(la == a) && !(la == b) && !(la == c))
 				Error(false, a, b, c);
+			else
+				InputPosition++;
+			return lt;
+		}
+		protected Token Match(Int32 a, Int32 b, Int32 c, Int32 d)
+		{
+			Token lt = _lt0; Int32 la = LA0Int;
+			if (!(la == a) && !(la == b) && !(la == c) && !(la == d))
+				Error(false, a, b, c, d);
 			else
 				InputPosition++;
 			return lt;
@@ -227,6 +236,15 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
+		protected bool TryMatchExcept(Int32 a, Int32 b, Int32 c, Int32 d)
+		{
+			Int32 la = LA0Int;
+			if ((la == EOF) || (la == a) || (la == b) || (la == c) || (la == d))
+				return false;
+			else
+				InputPosition++;
+			return true;
+		}
 		protected bool TryMatchExcept(HashSet<Int32> set)
 		{
 			return TryMatch(set, true);
@@ -237,7 +255,7 @@ namespace Loyc.Syntax
 		protected void Error(bool inverted, params Int32[] expected) { Error(inverted, (IEnumerable<Int32>)expected); }
 		protected virtual void Error(bool inverted, IEnumerable<Int32> expected)
 		{
-			Error(InputPosition, Localize.From("Error: '{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
+			Error(0, Localize.From("Error: '{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
 		}
 		protected virtual string ToString(bool inverted, IEnumerable<Int32> expected)
 		{
@@ -254,7 +272,7 @@ namespace Loyc.Syntax
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(InputPosition, Localize.From("An expected condition was false: {0}", expectedDescr));
+				Error(0, Localize.From("An expected condition was false: {0}", expectedDescr));
 		}
 	}
 }

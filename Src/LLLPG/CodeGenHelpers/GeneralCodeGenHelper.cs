@@ -174,8 +174,19 @@ namespace Loyc.LLParserGenerator
 			var set = (PGNodeSet)set_;
 
 			LNode call;
-			if (set.BaseSet.Count <= 4 && !(set.ContainsEOF && set.IsInverted)) {
-				IEnumerable<LNode> symbols = set.BaseSet;
+
+			int baseCount = set.BaseSet.Count;
+			IEnumerable<LNode> symbols = set.BaseSet;
+			if (set.IsInverted) {
+				if (set.ContainsEOF) // Unusual set: ((~something)|EOF)
+					baseCount = int.MaxValue;
+				else { // Normal inverted set ~X has output "MatchExcept(X)"
+					// which is a synonym for "MatchExcept(X, EOF)"
+					symbols = symbols.Where(s => !s.IsIdNamed(EOF.Name));
+					baseCount--;
+				}
+			}
+			if (baseCount <= 4) {
 				call = F.Call(recognizerMode 
 					? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 					: (set.IsInverted ? _MatchExcept : _Match),
