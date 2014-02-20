@@ -41,7 +41,8 @@ namespace Loyc.LLParserGenerator
 			alias("?"   = TT.QMark);
 			alias(","   = TT.Separator);
 			alias("=>,<=>" = TT.Arrow);
-			alias("|,/" = TT.Alt);
+			alias("|"   = TT.Alt);
+			alias("/"   = TT.Slash);
 			
 			void Infix(ref LNode a, Symbol op, LNode b) {
 				a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
@@ -50,8 +51,13 @@ namespace Loyc.LLParserGenerator
 			public rule LNode Parse @[ e:=Expr EOF {return e;} ];
 			
 			private rule LNode Expr() @[
+				a:=SlashExpr
+				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*
+				{return a;}
+			];
+			private rule LNode SlashExpr() @[
 				a:=GateExpr 
-				( op:=("|,/") b:=GateExpr {Infix(ref a, (Symbol) op.Value, b);} )*
+				( op:="/" b:=GateExpr {Infix(ref a, (Symbol) op.Value, b);} )*
 				{return a;}
 			];
 			private rule LNode GateExpr() @[

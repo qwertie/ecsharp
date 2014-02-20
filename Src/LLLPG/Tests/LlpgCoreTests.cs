@@ -2096,5 +2096,55 @@ namespace Loyc.LLParserGenerator
 				}
 			}");
 		}
+		
+		[Test]
+		public void SlashWarningTests()
+		{
+			// Create a complex Alts structure:
+			// (a0 / a1 / a2) / (a3 | (a4 | a5) / a6) | a7 / ((a8 | a9) / (a10 | a11 / a12))
+			Pred sub1 = Seq("abcd") / Seq("abc") / Seq("ab");
+			Pred sub2 = Seq("AB") | ((Seq("HH") | Seq("hh")) / (Set("[hH]") + Set("[hH]")));
+			Pred sub3 = ( (Set("[a-z]") + 'a' | Set("[A-Z]") + 'a')
+						/ (Set("[123]") | Seq("BAM") / Seq("B"))
+						);
+			Alts all = (Alts)(sub1 / sub2 | Seq("HA") / sub3);
+			Rule slashes = Rule("Slashes", all, Token, 4);
+
+			// Check that ShouldSuppressWarning() behaves as expected: ambiguity 
+			// should be suppressed between some alts, but not between others.
+			Assert.IsTrue(all.ShouldSuppressWarning(0, 1));
+			Assert.IsTrue(all.ShouldSuppressWarning(0, 2));
+			Assert.IsTrue(all.ShouldSuppressWarning(2, 0));
+
+			Assert.IsFalse(all.ShouldSuppressWarning(4, 5));
+			Assert.IsFalse(all.ShouldSuppressWarning(3, 4));
+			Assert.IsFalse(all.ShouldSuppressWarning(3, 5));
+			Assert.IsFalse(all.ShouldSuppressWarning(3, 6));
+			Assert.IsTrue(all.ShouldSuppressWarning(4, 6));
+			Assert.IsTrue(all.ShouldSuppressWarning(5, 6));
+
+			Assert.IsTrue(all.ShouldSuppressWarning(11, 12));
+			Assert.IsFalse(all.ShouldSuppressWarning(10, 12));
+			Assert.IsFalse(all.ShouldSuppressWarning(10, 11));
+			Assert.IsFalse(all.ShouldSuppressWarning(8, 9));
+			Assert.IsTrue(all.ShouldSuppressWarning(8, 10));
+			Assert.IsTrue(all.ShouldSuppressWarning(8, 12));
+
+			Assert.IsTrue(all.ShouldSuppressWarning(0, 3));
+			Assert.IsTrue(all.ShouldSuppressWarning(1, 4));
+			Assert.IsTrue(all.ShouldSuppressWarning(2, 5));
+			Assert.IsTrue(all.ShouldSuppressWarning(0, 6));
+
+			for (int i = 0; i < 7; i++)
+				for (int j = 7; j <= 12; j++)
+					Assert.IsFalse(all.ShouldSuppressWarning(i, j));
+			for (int i = 8; i < 12; i++)
+				Assert.IsTrue(all.ShouldSuppressWarning(7, i));
+
+			// Then verify that the rule produces no warnings
+			_pg.AddRule(slashes);
+			LNode result = _pg.Run(_file);
+
+		}
 	}
 }

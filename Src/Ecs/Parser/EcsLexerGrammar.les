@@ -174,13 +174,12 @@ namespace Ecs.Parser
 
 		[k(3)]
 		private token Operator  @[
-		( "->"  { _type = TT.PtrArrow; _value = _PtrArrow; } 
-		/ ".."  { _type = TT.DotDot; _value = _DotDot; }
+		( ".."  { _type = TT.DotDot; _value = _DotDot; }
 		/ "."   { _type = TT.Dot; _value = _Dot; }
 		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
 		/ ">="  { _type = TT.LEGE; _value = _GE; }
 		/ ">"   { _type = TT.GT; _value = _GT; }
-		| "<<=" { _type = TT.CompoundSet; _value = _ShlSet; }
+		/ "<<=" { _type = TT.CompoundSet; _value = _ShlSet; }
 		/ "<="  { _type = TT.LEGE; _value = _LE; }
 		/ "<"   { _type = TT.LT; _value = _LT; }
 		| "&&"  { _type = TT.And; _value = _And; }
@@ -195,13 +194,14 @@ namespace Ecs.Parser
 		| ":="  { _type = TT.CompoundSet; _value = _QuickBindSet; }
 		/ "=:"  { _type = TT.QuickBind; _value = _QuickBind; }
 		/ "::"  { _type = TT.ColonColon; _value = _ColonColon; }
-		| "==>" { _type = TT.Forward; _value = _Forward; }
+		/ ":"   { _type = TT.Colon; _value = _Colon; }
+		/ "==>" { _type = TT.Forward; _value = _Forward; }
 		/ "=="  { _type = TT.EqNeq; _value = _Eq; }
-		| "=>"  { _type = TT.LambdaArrow; _value = _LambdaArrow; }
+		/ "=>"  { _type = TT.LambdaArrow; _value = _LambdaArrow; }
 		/ "="   { _type = TT.Set; _value = _Set; }
 		| "!="  { _type = TT.EqNeq; _value = _Neq; }
 		/ "!"   { _type = TT.Not; _value = _Not; }
-		/ "~"   { _type = TT.NotBits; _value = _NotBits; }
+		| "~"   { _type = TT.NotBits; _value = _NotBits; }
 		| "**=" { _type = TT.CompoundSet; _value = _ExpSet; }
 		/ "**"  { _type = TT.Power; _value = _Exp; }
 		/ "*="  { _type = TT.CompoundSet; _value = _MulSet; }
@@ -213,7 +213,8 @@ namespace Ecs.Parser
 		| "+="  { _type = TT.CompoundSet; _value = _AddSet; }
 		/ "++"  { _type = TT.IncDec; _value = _Inc; }
 		/ "+"   { _type = TT.Add; _value = _Add; }
-		| "-="  { _type = TT.CompoundSet; _value = _SubSet; }
+		| "->"  { _type = TT.PtrArrow; _value = _PtrArrow; } 
+		/ "-="  { _type = TT.CompoundSet; _value = _SubSet; }
 		/ "--"  { _type = TT.IncDec; _value = _Dec; }
 		/ "-"   { _type = TT.Sub; _value = _Sub; }
 		| "??=" { _type = TT.CompoundSet; _value = _NullCoalesceSet; }
@@ -221,8 +222,7 @@ namespace Ecs.Parser
 		/ "?."  { _type = TT.NullDot; _value = _NullDot; }
 		/ "?"   { _type = TT.QuestionMark; _value = _QuestionMark; }
 		| "$"   { _type = TT.Substitute; _value = _Substitute; }
-		/ "\\"  { _type = TT.Backslash; _value = _Backslash; }
-		/ ":"   { _type = TT.Colon; _value = _Colon; }
+		| "\\"  { _type = TT.Backslash; _value = _Backslash; }
 		)];
 
 		static readonly _Comma::Symbol = GSymbol.Get("#,");
@@ -414,30 +414,31 @@ namespace Ecs.Parser
 
 		[k(3)]
 		private token Token @[
-			( &{InputPosition == 0} 
-			  {_type = TT.Shebang;}    Shebang
-			| {_type = TT.Newline;}    Newline
-			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
+			( {_type = TT.Newline;}    Newline
 			| {_type = TT.Spaces;}     Spaces
+			| {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
 			/ {_type = TT.Number;}     Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /
+			/ &{InputPosition == 0} 
+			  {_type = TT.Shebang;}    Shebang   // ambiguous with Id at start of file
+			/ {_type = TT.Id;}  (Id => IdOrKeyword)
 			/ {_type = TT.String;}     TQString  // length-ambiguous with DQString "", SQString ''
 			/ {_type = TT.SQString;}   SQString
 			/ {_type = TT.String;}     DQString
-			| {_type = TT.BQString;}   BQString
-			/ default({_type = TT.Id;} (Id => IdOrKeyword))
+			/ {_type = TT.BQString;}   BQString
 			/ {_type = TT.Symbol;}     Symbol    // length-ambiguous with At @
+			/ {_type = TT.At;}         At
+			/                          Operator
 			| {_type = TT.Comma;}      Comma
 			| {_type = TT.Semicolon;}  Semicolon
-			/                          Operator
-			/ {_type = TT.At;}         At
 			| {_type = TT.LParen;}     '('
 			| {_type = TT.RParen;}     ')'
 			| {_type = TT.LBrack;}     '['
 			| {_type = TT.RBrack;}     ']'
 			| {_type = TT.LBrace;}     '{'
 			| {_type = TT.RBrace;}     '}'
+			| error { _type = TT.Unknown; Error(0, "Unrecognized token"); } _
 			)
 		];
 	}}

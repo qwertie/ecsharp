@@ -70,7 +70,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a (b+ c)", F.Tuple(a, F.Tuple(F.Call(Plus, b), c)));
 			TestStage1("a | (a b c)", F.Call(S.OrBits, a, F.Tuple(a, b, c)));
 			TestStage1("a(b+ c)", F.Call(a, F.Call(S.Add, b, c)));
-			TestStage1("a | b / c", F.Call(S.Div, F.Call(S.OrBits, a, b), c));
+			TestStage1("a | b / c", F.Call(S.OrBits, a, F.Call(S.Div, b, c)));
 			TestStage1("a / b | c", F.Call(S.OrBits, F.Call(S.Div, a, b), c));
 			TestStage1("a* b | c", F.Call(S.OrBits, F.Tuple(F.Call(Star, a), b), c));
 			TestStage1("a b? / c", F.Call(S.Div, F.Tuple(a, F.Call(Opt, b)), c));
@@ -128,8 +128,8 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "Opt", @"@`#suf?`(('a','b'))", "([a] [b])?");
 			TestStage2(true, "Greedy", @"@`#suf*`(greedy(('a','b')))", "greedy([a] [b])*");
 			TestStage2(true, "Nongreedy", @"@`#suf*`(nongreedy(('a','b')))", "nongreedy([a] [b])*");
-			TestStage2(true, "Default1", @"('a'|""bee""|default('b'))", "([a] | [b] [e] [e] | default [b])");
-			TestStage2(true, "Default2", @"@`#suf*`('a'|default('b')|'c')", "([a] | default [b] | [c])*");
+			TestStage2(true, "Default1", @"('a'|""bee""|default('b'))", "( [a] | [b] [e] [e] | default [b] )");
+			TestStage2(true, "Default2", @"@`#suf*`('a'|default('b')|'c')", "( [a] | default [b] | [c] )*");
 			TestStage2(true, Tuple.Create("RuleRef", @"'.' | Digit", "([.] | Digit)"),
 			                 Tuple.Create("Digit", "'0'..'9'", "[0-9]"));
 			TestStage2(true, "aeiou", @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
@@ -137,6 +137,11 @@ namespace Loyc.LLParserGenerator
 			TestStage2(false, "AB+orCD", @"@`#suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
 			TestStage2(true,  "EOF1",  "('a', 'b', 'c', -1)", @"[a] [b] [c] (-1)");
 			TestStage2(false, "EOF2", "('a', 'b', 'c', EOF)", @"'a' 'b' 'c' EOF");
+			TestStage2(false, "Slashes1", "(a3,{}) | ((a4,{}) | a5) / a6", "( a3 | ((a4 | a5) / a6) )");
+			TestStage2(false, "Slashes2", "((a8,{}) | a9) / ((a10,{}) | (a11,{}) / a12)", "( (a8 | a9) / (a10 | (a11 / a12)) )");
+			TestStage2(false, "Slashes3", "@`#suf*`( ((a0,{}) / a1 / a2) / " +
+				"((a3,{}) | ((a4,{}) | a5) / a6) | a7 / (((a8,{}) | a9) / ((a10,{}) | (a11,{}) / a12)) )",
+				"( ((a0 / a1 / a2) / (a3 | ((a4 | a5) / a6))) | (a7 / ((a8 | a9) / (a10 | (a11 / a12)))) )*");
 		}
 
 		[Test]

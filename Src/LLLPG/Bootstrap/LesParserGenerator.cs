@@ -259,7 +259,7 @@ namespace Loyc.Syntax.Les
 			
 			// The Juxtaposition operator is ambiguous with several other branches.
 			// I'd use the "/" operator but its precedence is annoyingly higher than +. Instead:
-			alts.NoAmbigWarningFlags = 0x20;
+			//alts.NoAmbigWarningFlags = 0x20;
 #if false
 			// A superexpression is a sequence of expressions with no separator 
 			// between them. The first expression is treated specially; e.g.

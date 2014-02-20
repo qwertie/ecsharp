@@ -97,7 +97,6 @@
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
     <Compile Include="Parser\EcsLexerGrammar.cs">
-      <SubType>Code</SubType>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsLexerGrammar.les</DependentUpon>
@@ -125,10 +124,11 @@
     <None Include="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
+      <CustomToolNamespace>--timeout=0</CustomToolNamespace>
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
-      <CustomToolNamespace>--verbose --timeout=0</CustomToolNamespace>
+      <CustomToolNamespace>--timeout=0</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>

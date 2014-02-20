@@ -5,13 +5,14 @@ using System.Text;
 using System.Diagnostics;
 using Loyc;
 using Loyc.Utilities;
+using Loyc.Syntax;
+using Loyc.Collections;
+using Loyc.Math;
+using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
 {
 	using S = Loyc.Syntax.CodeSymbols;
-	using Loyc.Syntax;
-	using Loyc.Collections;
-	using Loyc.Math;
 
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
 	/// <remarks>
@@ -257,6 +258,10 @@ namespace Loyc.LLParserGenerator
 	/// - An optional error branch (ErrorBranch), which may be set to the 
 	///   DefaultErrorBranch.Value, and a ExitOnError flag
 	/// - NoAmbigWarningFlags represents use of / rather than |
+	/// <para/>
+	/// I have an uneasy feeling that the code in here is overly complicated,
+	/// particularly the way I handled slashes and merging Alts. I'm just not sure 
+	/// what simpler techniques I should have used instead.
 	/// </remarks>
 	public class Alts : Pred
 	{
@@ -277,7 +282,7 @@ namespace Loyc.LLParserGenerator
 					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;
 				Greedy = greedy ?? contents2.Greedy;
-				NoAmbigWarningFlags = contents2.NoAmbigWarningFlags;
+				_divisions = contents2._divisions.Clone();
 				DefaultArm = contents2.DefaultArm;
 				ErrorBranch = contents2.ErrorBranch;
 			} else {
@@ -337,17 +342,17 @@ namespace Loyc.LLParserGenerator
 					if (bAlts.ErrorBranch != null)
 						this.InsertSingle(ref insertAt, bAlts.ErrorBranch, bAlts.ExitOnError ? BranchMode.ErrorExit : BranchMode.ErrorContinue, warnings);
 					Debug.Assert(bAlts.DefaultArm != -1); // bAlts has no exit branch
-					this.NoAmbigWarningFlags |= bAlts.NoAmbigWarningFlags << boundary;
 				} else {
+					bAlts = null;
 					this.InsertSingle(ref insertAt, b, bMode, warnings);
 				}
 				if (!append)
 					boundary = insertAt;
+				UpdateSlashDivs(slashJoined, boundary, append, bAlts);
 				if (slashJoined) {
 					ulong three = 3ul;
 					if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue)
 						three = append ? 1u : 2u;
-					this.NoAmbigWarningFlags |= MathEx.ShiftLeft(three, boundary - 1);
 				}
 				return this;
 			} else {
@@ -454,8 +459,6 @@ namespace Loyc.LLParserGenerator
 		//	return Arms.Count - 1;
 		//}
 
-		/// <summary>Indicates the arms for which to suppress ambig warnings (b0=first arm).</summary>
-		public ulong NoAmbigWarningFlags = 0;
 		public bool HasExit { get { return Mode != LoopMode.None; } }
 		public int ArmCountPlusExit
 		{
@@ -499,67 +502,201 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
-		internal bool ShouldReportAmbiguity(IEnumerable<int> alts, ulong suppressWarnings = 0, bool suppressExitWarning = false)
+		internal bool ShouldReportAmbiguity(List<int> alts, ulong extraSuppression = 0, bool suppressExitWarning = false)
 		{
-			if (_ambiguitiesReported != null && _ambiguitiesReported.IsSupersetOf(alts))
-				return false;
-
 			// The rules:
 			// 1. Ambiguity with exit should be reported iff Greedy==null
-			// 2. Ambiguity involving branches should be reported if it 
-			//    involves any branch without a NoAmbigWarningFlags bit set.
-			int should = 0;
-			foreach (int alt in alts) {
-				Debug.Assert(alt < Arms.Count);
-				if (alt == ExitAlt) {
-					if (Greedy == null && !suppressExitWarning)
-						return true;
-					should--;
-				} else {
-					if (((NoAmbigWarningFlags | suppressWarnings) & (1ul << alt)) == 0)
-						should++;
-				}
-			}
-			return should > 0;
+			// 2. Ambiguity reporting between two branches is controlled by _slashDivs.
+			// 3. Don't report ambiguities that are just subsets of previous warnings
+			bool suppressExit = Greedy != null || suppressExitWarning;
+			alts.RemoveAll(alt => {
+				if (alt == ExitAlt)
+					return suppressExit;
+				else
+					return alts.All(a => a == alt ||
+						(a == ExitAlt ? suppressExit : ShouldSuppressWarning(alt, a, extraSuppression)));
+			});
+			return alts.Count > 0 && !AvoidRepeatedWarnings(alts);
 		}
 
 		// The same ambiguity may be detected in different parts of a prediction 
 		// tree. This set is used to prevent the same ambiguity from being reported
 		// repeatedly.
-		HashSet<int> _ambiguitiesReported;
-		internal void AmbiguityReported(IEnumerable<int> arms)
+		MSet<int> _ambiguitiesReported;
+		private bool AvoidRepeatedWarnings(IEnumerable<int> arms)
 		{
-			if (_ambiguitiesReported == null)
-				_ambiguitiesReported = new HashSet<int>(arms);
-			else
-				_ambiguitiesReported.UnionWith(arms);
+			if (_ambiguitiesReported == null) {
+				_ambiguitiesReported = new MSet<int>(arms);
+				return false;
+			} else {
+				return _ambiguitiesReported.UnionWith(arms) == 0;
+			}
+		}
+
+		#endregion
+
+		#region Slash region tracking
+
+		// _slashDivs keeps track of how '/' operators were used to construct the 
+		// list of alternatives, which determines how ambiguity messages can be
+		// suppressed. a|b expressions are of only transient importance: they 
+		// do not suppress ambiguity messages but the left boundary of the next 
+		// operator that comes along, if any, depends on the previous operator,
+		// and ToString() pays attention to them too.
+		//
+		// This is a graphical representation of how the _slashDivs list is built
+		// and what it will contain when derived from a complex tree of alts:
+		//
+		//     (a0 / a1 / a2) / (a3 | (a4 | a5) / a6) | a7 / ((a8 | a9) / (a10 | a11 / a12))
+		// [0] 0   /1   2      ........................     ................................
+		// [1] 0        /2    3:    :0    |1    2     :     .0    |1   2:      :0    /1   2.
+		//                     :    :0          /2   3:     .           :      :..Merge+1..:
+		//                     :    :.....Merge+1.....:     :           :      1     /2   3:
+		//                     :    1     |2    3     :     :           :0     |1         3:
+		//                     :    1           /3   4:     :           :.....Merge+2......:
+		//                     :    .......Done.......:     :                  3     /4   5:
+		//                     :0   |1               4:     :           2      |3         5:
+		//                     :                      :     :           ........Done.......:
+		//                     :........Merge+3.......:     :0          /2                5:
+		// *                         4    |5    6           :                              :
+		// [3]                       4          /6    7     :                              :
+		// *                   3    |4                7     :                              :
+		//                    ...........Done..........     :                              :
+		// [4] 0              3/                      7     :............Merge+1...........:
+		//                                                  1     |2    3                  :
+		//                                            :                        4     /5   6:
+		//                                            :                 3      |4         6:
+		//                                            :     1           /3                6:
+		//                                            :0   /1                             6: 
+		//                                            :..............Merge+7...............: 
+		// *                                                8     |9    10           
+		// [5]                                                                 11    /12  13
+		// *                                                            10     |11        13
+		// [6]                                              8           /10               13
+		// [7]                                        7    /8                             13
+		//                                            ................Done..................
+		// *   0                                      |7                                  13
+		//                                           
+		// Legend:
+		// L  /M   R      Represents a Division with Left=L, Slash=true, Mid=M, Right=R
+		// L  |M   R      Represents a transient value of _lastDivision for non|slash
+		// *              This line never actually exists
+		//
+		// .............. Specifies the original set of Divisions that were created for
+		// : Dotted box : a list of alternatives in parenthesis. Below the "Merge" line
+		// :..Merge+N...: is the same list of Divisions with an offset added.
+		//
+		// N<==           Left bound moved left due to slash operator on line above
+		// N<=()          Left bound moved left when left side is in (parens) on line above
+		//
+		// [N]            ignoring dotted boxes, this represents the index in the final
+		//                _slashDivs list of the Division on this line.
+		InternalList<Division> _divisions = InternalList<Division>.Empty;
+		[DebuggerDisplay(@"{Left},{Mid}{Slash?""/"":""|""},{Right}")]
+		struct Division
+		{
+			public short Left, Mid, Right;
+			public bool Slash;
+		}
+
+		internal bool ShouldSuppressWarning(int armA, int armB, ulong extraSuppression = 0)
+		{
+			foreach (var div in _divisions)
+			{
+				if (div.Slash &&
+					MathEx.IsInRange(armA, div.Left, div.Right - 1) &&
+ 					MathEx.IsInRange(armB, div.Left, div.Right - 1) &&
+					(armA < div.Mid) != (armB < div.Mid))
+					return true;
+			}
+			return (extraSuppression & (1uL << armA)) != 0
+				&& (extraSuppression & (1uL << armB)) != 0;
+		}
+
+		private void UpdateSlashDivs(bool slashJoined, int boundary, bool append, Alts bAlts)
+		{
+			Debug.Assert(boundary > 0 && boundary < Arms.Count);
+			Division prev = _divisions.LastOrDefault();
+			var bDivs = bAlts != null ? bAlts._divisions : InternalList<Division>.Empty;
+			if (append) {
+				bDivs = Adjust(bDivs, boundary, true);
+				_divisions.AddRange(bDivs);
+			} else {
+				prev = bAlts != null ? bAlts._divisions.LastOrDefault() : default(Division);
+				Adjust(_divisions, boundary, false);
+				_divisions.InsertRange(0, bDivs);
+			}
+			
+			var newDiv = new Division {
+				Left = 0, Mid = (short)boundary, Right = (short)Arms.Count, Slash = slashJoined
+			};
+			_divisions.Add(newDiv);
+		}
+		private static InternalList<Division> Adjust(InternalList<Division> bDivs, int offset, bool clone)
+		{
+			if (clone && bDivs.Count != 0)
+				bDivs = bDivs.Clone();
+			for (int i = 0; i < bDivs.Count; i++) {
+				var div = bDivs[i];
+				div.Left += (short)offset; div.Mid += (short)offset; div.Right += (short)offset;
+				bDivs[i] = div;
+			}
+			return bDivs;
 		}
 
 		#endregion
 
 		public override string ToString()
 		{
-			string prefix = "(";
-			if (Mode != LoopMode.None && Greedy.HasValue)
-				prefix = Greedy.Value ? "greedy(" : "nongreedy(";
-			
+			Pair<byte,byte>[] parens = new Pair<byte,byte>[Arms.Count + 1];
+			ulong slashes = 0;
+			Division prev = default(Division);
+			for (int i = 0; i < _divisions.Count; i++)
+			{
+				var d = _divisions[i];
+				if (!(prev.Right == d.Mid && prev.Left <= d.Left && (prev.Slash || !d.Slash)))
+					MaybeAddParens(parens, d.Left, d.Mid);
+				MaybeAddParens(parens, d.Mid, d.Right);
+				if (d.Slash)
+					slashes |= (1uL << (d.Mid - 1));
+				prev = d;
+			}
+
+			string prefix = "", suffix = "";
+			if (Arms.Count >= 3) {
+				prefix = "( "; suffix = " )"; // make output easier to read
+			} else {
+				prefix = "("; suffix = ")";
+			}
 			var sb = new StringBuilder(prefix);
+			if (Mode != LoopMode.None && Greedy.HasValue)
+				sb.Insert(0, Greedy.Value ? "greedy" : "nongreedy");
+
 			for (int i = 0; i < Arms.Count; i++)
 			{
+				sb.Append(')', parens[i].A);
 				if (i > 0)
-					sb.Append(((NoAmbigWarningFlags >> (i - 1)) & 3) == 3 ? " / " : " | ");
+					sb.Append(((slashes >> (i - 1)) & 1) != 0 ? " / " : " | ");
+				sb.Append('(', parens[i].B);
 				if (DefaultArm == i)
 					sb.Append("default ");
 				sb.Append(((object)Arms[i] ?? "").ToString());
 			}
+			sb.Append(')', parens[Arms.Count].A);
 
+			sb.Append(suffix);
 			if (Mode == LoopMode.Opt)
-				sb.Append(")?");
+				sb.Append('?');
 			else if (Mode == LoopMode.Star)
-				sb.Append(")*");
-			else
-				sb.Append(")");
+				sb.Append('*');
 			return sb.ToString();
+		}
+		private void MaybeAddParens(Pair<byte, byte>[] parens, int L, int R)
+		{
+			if (L + 1 < R) {
+				parens[L].B++;
+				parens[R].A++;
+			}
 		}
 		
 		// Returns a short name for an arm, for use in error/warning messages

@@ -79,6 +79,7 @@ namespace Ecs.Parser
 				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
 			Case(@"'''Triple-quoted!'''", A(TT.String), "Triple-quoted!");
 			Case(@"""""""Triple\n/-quoted!""""""", A(TT.String), "Triple\n-quoted!");
+			Case("@\"\n\"", A(TT.String), "\n");
 		}
 
 		[Test]
@@ -195,8 +196,8 @@ namespace Ecs.Parser
 		[Test]
 		public void EofInToken()
 		{
-			Case(@"""", A(TT.String), ERROR);
-			Case(@"'", A(TT.SQString), ERROR);
+			Case(@"""", A(TT.Unknown), ERROR);
+			Case(@"'", A(TT.Unknown), ERROR);
 			Case(@"`", A(TT.BQString), ERROR);
 			Case(@"\", A(TT.Backslash), _(@"#\"));
 			Case(@"@", A(TT.At), _(@"#@"));
@@ -211,7 +212,7 @@ namespace Ecs.Parser
 			//Case("\0",              A(TT.Error), ERROR);
 			//Case("\x07",            A(TT.Error), ERROR);
 			Case("x=\"Hello\n",     A(TT.Id, TT.Set, TT.String, TT.Newline), _("x"), _("#="), ERROR, WS);
-			Case("'\n'o''pq\n?''",  A(TT.SQString, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.QuestionMark, TT.SQString),
+			Case("'\n'o''pq\n?''",  A(TT.Unknown, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.QuestionMark, TT.SQString),
 			                        ERROR, WS, 'o', ERROR, WS, _("#?"), ERROR);
 			Case("'abc'",           A(TT.SQString), ERROR);
 			Case("0x!0b",           A(TT.Number, TT.Not, TT.Number), ERROR, _("#!"), ERROR);

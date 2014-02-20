@@ -33,17 +33,18 @@ namespace Loyc.LLParserGenerator
 		Assignment  = TokenKind.Assignment, // = += :=
 		
 		HostOperator= TokenKind.Operator,
-		Alt         = TokenKind.Operator + 1, // | /
-		DotDot      = TokenKind.Operator + 2, // .. or :
-		InvertSet   = TokenKind.Operator + 3, // ~
-		Plus        = TokenKind.Operator + 4, // +
-		Star        = TokenKind.Operator + 5, // *
-		QMark       = TokenKind.Operator + 6, // ?
-		Arrow       = TokenKind.Operator + 7, // => <=>
-		And         = TokenKind.Operator + 8, // &
-		Not         = TokenKind.Operator + 9, // !
-		AndNot      = TokenKind.Operator + 10, // &!
-		Minus       = TokenKind.Operator + 11, // -
+		Alt         = TokenKind.Operator + 1, // |
+		Slash       = TokenKind.Operator + 2, // /
+		DotDot      = TokenKind.Operator + 3, // .. or :
+		InvertSet   = TokenKind.Operator + 4, // ~
+		Plus        = TokenKind.Operator + 5, // +
+		Star        = TokenKind.Operator + 6, // *
+		QMark       = TokenKind.Operator + 7, // ?
+		Arrow       = TokenKind.Operator + 8, // => <=>
+		And         = TokenKind.Operator + 9, // &
+		Not         = TokenKind.Operator + 10, // !
+		AndNot      = TokenKind.Operator + 11, // &!
+		Minus       = TokenKind.Operator + 12, // -
 
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
@@ -178,7 +179,7 @@ namespace Loyc.LLParserGenerator
 		
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
-			{S.Div,      TT.Alt},
+			{S.Div,      TT.Slash},
 			{S.DotDot,   TT.DotDot},
 			{S.Colon,    TT.DotDot},
 			{S.NotBits,  TT.InvertSet},

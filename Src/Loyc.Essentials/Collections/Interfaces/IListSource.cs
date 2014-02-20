@@ -202,5 +202,21 @@ namespace Loyc.Collections
 				array[i] = c[i];
 			return array;
 		}
+
+		public static T LastOrDefault<T>(this IReadOnlyList<T> list)
+		{
+			int c = list.Count;
+			return c <= 0 ? default(T) : list[c - 1];
+		}
+		public static T FirstOrDefault<T>(this IReadOnlyList<T> list)
+		{
+			int c = list.Count;
+			return c <= 0 ? default(T) : list[0];
+		}
+		public static T FirstOrDefault<T>(this IListSource<T> list)
+		{
+			bool _;
+			return list.TryGet(0, out _);
+		}
 	}
 }

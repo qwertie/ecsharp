@@ -1204,10 +1204,10 @@ namespace Loyc.LLParserGenerator
 
 		private KthSet AmbiguityDetected(IList<KthSet> prevSets, Alts currentAlts)
 		{
-			if (ShouldReportAmbiguity(prevSets, currentAlts))
+			List<int> list = ShouldReportAmbiguity(prevSets, currentAlts);
+			if (list != null)
 			{
 				IEnumerable<int> arms = prevSets.Select(ks => ks.Alt);
-				currentAlts.AmbiguityReported(arms);
 
 				string format = "Alternatives {{{0}}} are ambiguous for input such as {1}";
 				if (currentAlts.Mode == LoopMode.Opt && currentAlts.Arms.Count == 1)
@@ -1229,7 +1229,7 @@ namespace Loyc.LLParserGenerator
 			return prevSets[prevSets.IndexOfMin(s => (uint)s.Alt)];
 		}
 
-		private bool ShouldReportAmbiguity(IList<KthSet> prevSets, Alts currentAlts)
+		private List<int> ShouldReportAmbiguity(IList<KthSet> prevSets, Alts currentAlts)
 		{
 			// Look for any and-predicates that are unique to particular 
 			// branches. Such predicates can suppress warnings.
@@ -1248,8 +1248,8 @@ namespace Loyc.LLParserGenerator
 			ulong suppressWarnings = 0;
 			for (int i = 0; i < andPreds.Count; i++)
 			{
-				if (!(andPreds[i] - common).IsEmpty)
-					suppressWarnings |= 1ul << i;
+				if (!(andPreds[i] - common).IsEmpty && prevSets[i].Alt != ExitAlt)
+					suppressWarnings |= 1ul << prevSets[i].Alt;
 			}
 
 			// Suppress ambiguity with exit if the ambiguity is caused by 
@@ -1262,7 +1262,11 @@ namespace Loyc.LLParserGenerator
 					suppressExitWarning = true;
 			}
 
-			return currentAlts.ShouldReportAmbiguity(prevSets.Select(ks => ks.Alt), suppressWarnings, suppressExitWarning);
+			var list = prevSets.Select(ks => ks.Alt).ToList();
+			if (currentAlts.ShouldReportAmbiguity(list, suppressWarnings, suppressExitWarning))
+				return list;
+			else
+				return null;
 		}
 
 		/// <summary>Gets an example of an ambiguous input, based on a list of 

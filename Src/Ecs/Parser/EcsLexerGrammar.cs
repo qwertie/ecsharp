@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.0.0.0
+// Generated from EcsLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')
@@ -95,21 +95,24 @@ namespace Ecs.Parser
 			int la0, la1;
 			Skip();
 			Skip();
-			for (;;) {
+			// Line 29: ([\t ])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\t' || la0 == ' ')
 					Skip();
 				else
 					break;
 			}
-			for (;;) {
+			// Line 29: ([.] [\t ] ([\t ])*)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
 					if (la1 == '\t' || la1 == ' ') {
 						Skip();
 						Skip();
-						for (;;) {
+						// Line 29: ([\t ])*
+						 for (;;) {
 							la0 = LA0;
 							if (la0 == '\t' || la0 == ' ')
 								Skip();
@@ -128,7 +131,8 @@ namespace Ecs.Parser
 		{
 			int la0;
 			Skip();
-			for (;;) {
+			// Line 35: ([\t ])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\t' || la0 == ' ')
 					Skip();
@@ -146,7 +150,8 @@ namespace Ecs.Parser
 			int la0;
 			Skip();
 			Skip();
-			for (;;) {
+			// Line 44: ([^\$\n\r])*
+			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
 					Skip();
@@ -160,7 +165,8 @@ namespace Ecs.Parser
 			int la1;
 			Skip();
 			Skip();
-			for (;;) {
+			// Line 49: nongreedy( &{AllowNestedComments} MLComment / Newline / [^\$] )*
+			 for (;;) {
 				switch (LA0) {
 				case '*':
 					{
@@ -203,21 +209,24 @@ namespace Ecs.Parser
 		{
 			int la0, la1;
 			MatchRange('0', '9');
-			for (;;) {
+			// Line 55: ([0-9])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
 					Skip();
 				else
 					break;
 			}
-			for (;;) {
+			// Line 55: ([_] [0-9] ([0-9])*)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
 						Skip();
 						Skip();
-						for (;;) {
+						// Line 55: ([0-9])*
+						 for (;;) {
 							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9')
 								Skip();
@@ -245,21 +254,24 @@ namespace Ecs.Parser
 		{
 			int la0, la1;
 			HexDigit();
-			for (;;) {
+			// Line 57: greedy(HexDigit)*
+			 for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
 					HexDigit();
 				else
 					break;
 			}
-			for (;;) {
+			// Line 57: greedy([_] HexDigit (HexDigit)*)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
 					if (HexDigit_set0.Contains(la1)) {
 						Skip();
 						HexDigit();
-						for (;;) {
+						// Line 57: (HexDigit)*
+						 for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
 								HexDigit();
@@ -277,7 +289,8 @@ namespace Ecs.Parser
 			int la0, la1;
 			if (!Scan_HexDigit())
 				return false;
-			for (;;) {
+			// Line 57: greedy(HexDigit)*
+			 for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
 					{if (!Scan_HexDigit())
@@ -285,7 +298,8 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			for (;;) {
+			// Line 57: greedy([_] HexDigit (HexDigit)*)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
@@ -294,7 +308,8 @@ namespace Ecs.Parser
 							return false;
 						if (!Scan_HexDigit())
 							return false;
-						for (;;) {
+						// Line 57: (HexDigit)*
+						 for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
 								{if (!Scan_HexDigit())
@@ -312,20 +327,23 @@ namespace Ecs.Parser
 		void BinDigits()
 		{
 			int la0;
-			MatchRange('0', '1');
-			for (;;) {
+			Match('0', '1');
+			// Line 58: ([01])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '1')
 					Skip();
 				else
 					break;
 			}
-			for (;;) {
+			// Line 58: ([_] [01] ([01])*)*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					Skip();
-					MatchRange('0', '1');
-					for (;;) {
+					Match('0', '1');
+					// Line 58: ([01])*
+					 for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '1')
 							Skip();
@@ -340,6 +358,7 @@ namespace Ecs.Parser
 		{
 			int la0, la1;
 			_numberBase = 10;
+			// Line 61: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
@@ -347,6 +366,7 @@ namespace Ecs.Parser
 				_isFloat = true;
 			} else {
 				DecDigits();
+				// Line 62: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
@@ -357,12 +377,14 @@ namespace Ecs.Parser
 					}
 				}
 			}
+			// Line 64: ([Ee] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'E' || la0 == 'e') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
+					// Line 64: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -376,9 +398,11 @@ namespace Ecs.Parser
 			Skip();
 			Skip();
 			_numberBase = 16;
+			// Line 68: (HexDigits)?
 			la0 = LA0;
 			if (HexDigit_set0.Contains(la0))
 				HexDigits();
+			// Line 70: ([.] &(([0-9] / HexDigits [Pp] [+\-0-9])) HexDigits)?
 			la0 = LA0;
 			if (la0 == '.') {
 				la1 = LA(1);
@@ -390,12 +414,14 @@ namespace Ecs.Parser
 					}
 				}
 			}
+			// Line 72: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
+					// Line 72: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -409,6 +435,7 @@ namespace Ecs.Parser
 			Skip();
 			Skip();
 			_numberBase = 2;
+			// Line 76: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
@@ -416,6 +443,7 @@ namespace Ecs.Parser
 				_isFloat = true;
 			} else {
 				DecDigits();
+				// Line 77: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
@@ -426,12 +454,14 @@ namespace Ecs.Parser
 					}
 				}
 			}
+			// Line 79: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
+					// Line 79: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -444,11 +474,13 @@ namespace Ecs.Parser
 			int la0;
 			_isFloat = _isNegative = false;
 			_typeSuffix = null;
+			// Line 83: ([\-])?
 			la0 = LA0;
 			if (la0 == '-') {
 				Skip();
 				_isNegative = true;
 			}
+			// Line 84: ( HexNumber / BinNumber / DecNumber )
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -466,7 +498,8 @@ namespace Ecs.Parser
 				}
 			} else
 				DecNumber();
-			switch (LA0) {
+			// Line 85: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
+			 switch (LA0) {
 			case 'F':
 			case 'f':
 				{
@@ -496,6 +529,7 @@ namespace Ecs.Parser
 				{
 					Skip();
 					_typeSuffix = _L;
+					// Line 89: ([Uu])?
 					la0 = LA0;
 					if (la0 == 'U' || la0 == 'u') {
 						Skip();
@@ -508,6 +542,7 @@ namespace Ecs.Parser
 				{
 					Skip();
 					_typeSuffix = _U;
+					// Line 90: ([Ll])?
 					la0 = LA0;
 					if (la0 == 'L' || la0 == 'l') {
 						Skip();
@@ -524,7 +559,8 @@ namespace Ecs.Parser
 			_parseNeeded = false;
 			_verbatim = false;
 			Skip();
-			for (;;) {
+			// Line 100: ([\\] [^\$] | [^\$\n\r'\\])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					Skip();
@@ -542,11 +578,13 @@ namespace Ecs.Parser
 		{
 			int la0, la1;
 			_parseNeeded = false;
+			// Line 105: (["] ([\\] [^\$] | [^\$\n\r"\\])* ["] | [@] ["] (["] ["] / [^\$"])* ["])
 			la0 = LA0;
 			if (la0 == '"') {
 				_verbatim = false;
 				Skip();
-				for (;;) {
+				// Line 106: ([\\] [^\$] | [^\$\n\r"\\])*
+				 for (;;) {
 					la0 = LA0;
 					if (la0 == '\\') {
 						Skip();
@@ -563,7 +601,8 @@ namespace Ecs.Parser
 				_style = NodeStyle.Alternate;
 				Match('@');
 				Match('"');
-				for (;;) {
+				// Line 108: (["] ["] / [^\$"])*
+				 for (;;) {
 					la0 = LA0;
 					if (la0 == '"') {
 						la1 = LA(1);
@@ -587,12 +626,14 @@ namespace Ecs.Parser
 			int la0, la1, la2;
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate2;
+			// Line 115: (["] ["] ["] nongreedy([^\$])* ["] ["] ["] | ['] ['] ['] nongreedy([^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
 				Skip();
 				Match('"');
 				Match('"');
-				for (;;) {
+				// Line 115: nongreedy([^\$])*
+				 for (;;) {
 					la0 = LA0;
 					if (la0 == '"') {
 						la1 = LA(1);
@@ -618,7 +659,8 @@ namespace Ecs.Parser
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				for (;;) {
+				// Line 116: nongreedy([^\$])*
+				 for (;;) {
 					la0 = LA0;
 					if (la0 == '\'') {
 						la1 = LA(1);
@@ -649,7 +691,8 @@ namespace Ecs.Parser
 			int la0;
 			_verbatim = false;
 			Skip();
-			for (;;) {
+			// Line 124: ([\\] [^\$] | [^\$\n\r\\`])*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					Skip();
@@ -675,6 +718,7 @@ namespace Ecs.Parser
 		void IdUniLetter()
 		{
 			int la0;
+			// Line 136: (&{@char.IsLetter(LA0->@char)} (128..65532) | [\\] [u] HexDigit HexDigit HexDigit HexDigit)
 			la0 = LA0;
 			if (la0 >= 128 && la0 <= 65532) {
 				Check(char.IsLetter((char) LA0), "@char.IsLetter(LA0->@char)");
@@ -692,7 +736,8 @@ namespace Ecs.Parser
 		void IdContChars()
 		{
 			int la0, la1, la2, la3, la4, la5;
-			for (;;) {
+			// Line 140: ( [#'0-9] | IdStartChar | IdUniLetter )*
+			 for (;;) {
 				la0 = LA0;
 				if (la0 == '#' || la0 == '\'' || la0 >= '0' && la0 <= '9')
 					Skip();
@@ -732,6 +777,7 @@ namespace Ecs.Parser
 		void NormalId()
 		{
 			int la0;
+			// Line 141: (IdStartChar | IdUniLetter)
 			la0 = LA0;
 			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
 				IdStartChar();
@@ -753,11 +799,13 @@ namespace Ecs.Parser
 		bool FancyId()
 		{
 			int la0, la1, la2, la3, la4, la5;
+			// Line 147: (BQStringN | (IdUniLetter / LettersOrPunc) (IdUniLetter / LettersOrPunc)*)
 			la0 = LA0;
 			if (la0 == '`') {
 				BQStringN();
 				return true;
 			} else {
+				// Line 148: (IdUniLetter / LettersOrPunc)
 				la0 = LA0;
 				if (la0 >= 128 && la0 <= 65532)
 					IdUniLetter();
@@ -785,7 +833,8 @@ namespace Ecs.Parser
 						LettersOrPunc();
 				} else
 					LettersOrPunc();
-				for (;;) {
+				// Line 148: (IdUniLetter / LettersOrPunc)*
+				 for (;;) {
 					la0 = LA0;
 					if (la0 >= 128 && la0 <= 65532) {
 						if (char.IsLetter((char) LA0))
@@ -830,6 +879,7 @@ namespace Ecs.Parser
 			bool isBQ = false;
 			Skip();
 			Skip();
+			// Line 154: (NormalId / FancyId)
 			la0 = LA0;
 			if (Symbol_set0.Contains(la0))
 				NormalId();
@@ -843,17 +893,22 @@ namespace Ecs.Parser
 				isBQ = FancyId();
 			ParseSymbolValue(isBQ);
 		}
+		static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', '\\', '\\', '_', '_', 'a', 'z', 128, 65532);
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5;
 			_parseNeeded = _verbatim = false;
 			bool isBQ = false;
 			int skipAt = 0;
+			// Line 162: ( default NormalId | HashId | [@] (NormalId / FancyId) )
 			la0 = LA0;
-			if (la0 == '#')
+			if (Id_set0.Contains(la0))
+				NormalId();
+			else if (la0 == '#')
 				HashId();
 			else if (la0 == '@') {
 				Skip();
+				// Line 163: (NormalId / FancyId)
 				la0 = LA0;
 				if (Symbol_set0.Contains(la0))
 					NormalId();
@@ -912,33 +967,9 @@ namespace Ecs.Parser
 		void Operator()
 		{
 			int la1, la2;
-			do {
+			// Line 177: ( (((((((((((([.] [.] / [.]) | ([>] [>] [=] / [>] [=] / [>] / [<] [<] [=] / [<] [=] / [<])) | ([&] [&] / [&] [=] / [&])) | ([|] [|] / [|] [=] / [|])) | ([\^] [\^] / [\^] [=] / [\^])) | ([:] [=] / [=] [:] / [:] [:] / [:] / [=] [=] [>] / [=] [=] / [=] [>] / [=])) | ([!] [=] / [!]) | [~]) | ([*] [*] [=] / [*] [*] / [*] [=] / [*])) | ([/] [=] / [/])) | ([%] [=] / [%])) | ([+] [=] / [+] [+] / [+])) | ([\-] [>] / [\-] [=] / [\-] [\-] / [\-])) | ([?] [?] [=] / [?] [?] / [?] [.] / [?]) | [$] | [\\] )
+			 do {
 				switch (LA0) {
-				case '-':
-					{
-						la1 = LA(1);
-						if (la1 == '>') {
-							Skip();
-							Skip();
-							_type = TT.PtrArrow;
-							_value = _PtrArrow;
-						} else if (la1 == '=') {
-							Skip();
-							Skip();
-							_type = TT.CompoundSet;
-							_value = _SubSet;
-						} else if (la1 == '-') {
-							Skip();
-							Skip();
-							_type = TT.IncDec;
-							_value = _Dec;
-						} else {
-							Skip();
-							_type = TT.Sub;
-							_value = _Sub;
-						}
-					}
-					break;
 				case '.':
 					{
 						la1 = LA(1);
@@ -966,14 +997,14 @@ namespace Ecs.Parser
 								_type = TT.CompoundSet;
 								_value = _ShrSet;
 							} else
-								goto match6;
+								goto match5;
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
 							_type = TT.LEGE;
 							_value = _GE;
 						} else
-							goto match6;
+							goto match5;
 					}
 					break;
 				case '<':
@@ -988,14 +1019,14 @@ namespace Ecs.Parser
 								_type = TT.CompoundSet;
 								_value = _ShlSet;
 							} else
-								goto match9;
+								goto match8;
 						} else if (la1 == '=') {
 							Skip();
 							Skip();
 							_type = TT.LEGE;
 							_value = _LE;
 						} else
-							goto match9;
+							goto match8;
 					}
 					break;
 				case '&':
@@ -1213,6 +1244,31 @@ namespace Ecs.Parser
 						}
 					}
 					break;
+				case '-':
+					{
+						la1 = LA(1);
+						if (la1 == '>') {
+							Skip();
+							Skip();
+							_type = TT.PtrArrow;
+							_value = _PtrArrow;
+						} else if (la1 == '=') {
+							Skip();
+							Skip();
+							_type = TT.CompoundSet;
+							_value = _SubSet;
+						} else if (la1 == '-') {
+							Skip();
+							Skip();
+							_type = TT.IncDec;
+							_value = _Dec;
+						} else {
+							Skip();
+							_type = TT.Sub;
+							_value = _Sub;
+						}
+					}
+					break;
 				case '?':
 					{
 						la1 = LA(1);
@@ -1258,14 +1314,14 @@ namespace Ecs.Parser
 					break;
 				}
 				break;
-			match6:
+			match5:
 				{
 					Skip();
 					_type = TT.GT;
 					_value = _GT;
 				}
 				break;
-			match9:
+			match8:
 				{
 					Skip();
 					_type = TT.LT;
@@ -1278,13 +1334,15 @@ namespace Ecs.Parser
 			int la0;
 			Skip();
 			Skip();
-			for (;;) {
+			// Line 283: ([^\$\n\r])*
+			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
 					Skip();
 				else
 					break;
 			}
+			// Line 283: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
@@ -1293,7 +1351,8 @@ namespace Ecs.Parser
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
-			switch (LA0) {
+			// Line 291: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId =>  / [a] [s] EndId =>  / [b] [a] [s] [e] EndId =>  / [b] [o] [o] [l] EndId =>  / [b] [r] [e] [a] [k] EndId =>  / [b] [y] [t] [e] EndId =>  / [c] [a] [s] [e] EndId =>  / [c] [a] [t] [c] [h] EndId =>  / [c] [h] [a] [r] EndId =>  / [c] [h] [e] [c] [k] [e] [d] EndId =>  / [c] [l] [a] [s] [s] EndId =>  / [c] [o] [n] [s] [t] EndId =>  / [c] [o] [n] [t] [i] [n] [u] [e] EndId =>  / [d] [e] [c] [i] [m] [a] [l] EndId =>  / [d] [e] [f] [a] [u] [l] [t] EndId =>  / [d] [e] [l] [e] [g] [a] [t] [e] EndId =>  / [d] [o] [u] [b] [l] [e] EndId =>  / [d] [o] EndId =>  / [e] [l] [s] [e] EndId =>  / [e] [n] [u] [m] EndId =>  / [e] [v] [e] [n] [t] EndId =>  / [e] [x] [p] [l] [i] [c] [i] [t] EndId =>  / [e] [x] [t] [e] [r] [n] EndId =>  / [f] [a] [l] [s] [e] EndId =>  / [f] [i] [n] [a] [l] [l] [y] EndId =>  / [f] [i] [x] [e] [d] EndId =>  / [f] [l] [o] [a] [t] EndId =>  / [f] [o] [r] [e] [a] [c] [h] EndId =>  / [f] [o] [r] EndId =>  / [g] [o] [t] [o] EndId =>  / [i] [f] EndId =>  / [i] [m] [p] [l] [i] [c] [i] [t] EndId =>  / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId =>  / [i] [n] [t] [e] [r] [n] [a] [l] EndId =>  / [i] [n] [t] EndId =>  / [i] [n] EndId =>  / [i] [s] EndId =>  / [l] [o] [c] [k] EndId =>  / [l] [o] [n] [g] EndId =>  / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId =>  / [n] [e] [w] EndId =>  / [n] [u] [l] [l] EndId =>  / [o] [b] [j] [e] [c] [t] EndId =>  / [o] [p] [e] [r] [a] [t] [o] [r] EndId =>  / [o] [u] [t] EndId =>  / [o] [v] [e] [r] [r] [i] [d] [e] EndId =>  / [p] [a] [r] [a] [m] [s] EndId =>  / [p] [r] [i] [v] [a] [t] [e] EndId =>  / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId =>  / [p] [u] [b] [l] [i] [c] EndId =>  / [r] [e] [a] [d] [o] [n] [l] [y] EndId =>  / [r] [e] [f] EndId =>  / [r] [e] [t] [u] [r] [n] EndId =>  / [s] [b] [y] [t] [e] EndId =>  / [s] [e] [a] [l] [e] [d] EndId =>  / [s] [h] [o] [r] [t] EndId =>  / [s] [i] [z] [e] [o] [f] EndId =>  / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId =>  / [s] [t] [a] [t] [i] [c] EndId =>  / [s] [t] [r] [i] [n] [g] EndId =>  / [s] [t] [r] [u] [c] [t] EndId =>  / [s] [w] [i] [t] [c] [h] EndId =>  / [t] [h] [i] [s] EndId =>  / [t] [h] [r] [o] [w] EndId =>  / [t] [r] [u] [e] EndId =>  / [t] [r] [y] EndId =>  / [t] [y] [p] [e] [o] [f] EndId =>  / [u] [i] [n] [t] EndId =>  / [u] [l] [o] [n] [g] EndId =>  / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId =>  / [u] [n] [s] [a] [f] [e] EndId =>  / [u] [s] [h] [o] [r] [t] EndId =>  / [u] [s] [i] [n] [g] EndId =>  / [v] [i] [r] [t] [u] [a] [l] EndId =>  / [v] [o] [l] [a] [t] [i] [l] [e] EndId =>  / [v] [o] [i] [d] EndId =>  / [w] [h] [i] [l] [e] EndId =>  / &{AllowPP} [#] [i] [f] EndId =>  / &{AllowPP} [#] [e] [l] [s] [e] EndId =>  / &{AllowPP} [#] [e] [l] [i] [f] EndId =>  / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId =>  / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId =>  / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId =>  / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId =>  / &{AllowPP} [#] [l] [i] [n] [e] EndId =>  / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId =>  / [v] [a] [r] EndId =>  / [d] [y] [n] [a] [m] [i] [c] EndId =>  / [t] [r] [a] [i] [t] EndId =>  / [a] [l] [i] [a] [s] EndId =>  / [w] [h] [e] [r] [e] EndId =>  / [a] [s] [s] [e] [m] [b] [l] [y] EndId =>  / [m] [o] [d] [u] [l] [e] EndId =>  / [f] [r] [o] [m] EndId =>  / [a] [w] [a] [i] [t] EndId =>  / Id )
+			 switch (LA0) {
 			case 'a':
 				{
 					la1 = LA(1);
@@ -4000,7 +4059,8 @@ namespace Ecs.Parser
 		{
 			int la0;
 			int start = InputPosition;
-			for (;;) {
+			// Line 404: ([^\$\n\r])*
+			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
 					Skip();
@@ -4012,27 +4072,23 @@ namespace Ecs.Parser
 		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '\\', '\\', '^', '^', '`', '`', '|', '|', '~', '~');
 		void Token()
 		{
-			int la1, la2;
-			do {
-				switch (LA0) {
-				case '#':
-					{
-						if (InputPosition == 0) {
-							la1 = LA(1);
-							if (la1 == '!') {
-								_type = TT.Shebang;
-								Shebang();
-							} else
-								goto match12;
-						} else
-							goto match12;
-					}
-					break;
+			int la0, la1, la2;
+			// Line 417: ( (Newline | Spaces) | (DotIndent / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator) | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
+			 do {
+				la0 = LA0;
+				switch (la0) {
 				case '\n':
 				case '\r':
 					{
 						_type = TT.Newline;
 						Newline();
+					}
+					break;
+				case '\t':
+				case ' ':
+					{
+						_type = TT.Spaces;
+						Spaces();
 					}
 					break;
 				case '.':
@@ -4043,38 +4099,31 @@ namespace Ecs.Parser
 								_type = TT.Spaces;
 								DotIndent();
 							} else if (la1 >= '0' && la1 <= '9')
-								goto match5;
+								goto match4;
 							else
 								Operator();
 						} else {
 							la1 = LA(1);
 							if (la1 >= '0' && la1 <= '9')
-								goto match5;
+								goto match4;
 							else
 								Operator();
 						}
-					}
-					break;
-				case '\t':
-				case ' ':
-					{
-						_type = TT.Spaces;
-						Spaces();
 					}
 					break;
 				case '-':
 					{
 						la1 = LA(1);
 						if (la1 == '0')
-							goto match5;
+							goto match4;
 						else if (la1 == '.') {
 							la2 = LA(2);
 							if (la2 >= '0' && la2 <= '9')
-								goto match5;
+								goto match4;
 							else
 								Operator();
 						} else if (la1 >= '1' && la1 <= '9')
-							goto match5;
+							goto match4;
 						else
 							Operator();
 					}
@@ -4089,7 +4138,7 @@ namespace Ecs.Parser
 				case '7':
 				case '8':
 				case '9':
-					goto match5;
+					goto match4;
 				case '/':
 					{
 						la1 = LA(1);
@@ -4107,66 +4156,45 @@ namespace Ecs.Parser
 							Operator();
 					}
 					break;
-				case '"':
+				case '#':
+					{
+						if (InputPosition == 0) {
+							la1 = LA(1);
+							if (la1 == '!') {
+								_type = TT.Shebang;
+								Shebang();
+							} else
+								goto match8;
+						} else
+							goto match8;
+					}
+					break;
+				case '\\':
 					{
 						la1 = LA(1);
-						if (la1 == '"') {
+						if (la1 == 'u') {
 							la2 = LA(2);
-							if (la2 == '"')
+							if (HexDigit_set0.Contains(la2))
 								goto match8;
 							else
-								goto match10;
+								Operator();
 						} else
-							goto match10;
+							Operator();
 					}
-				case '\'':
-					{
-						la1 = LA(1);
-						if (la1 == '\'') {
-							la2 = LA(2);
-							if (la2 == '\'')
-								goto match8;
-							else
-								goto match9;
-						} else
-							goto match9;
-					}
+					break;
 				case '@':
 					{
 						la1 = LA(1);
 						switch (la1) {
-						case '"':
-							{
-								la2 = LA(2);
-								if (la2 != -1)
-									goto match10;
-								else
-									goto match17;
-							}
-						case '@':
-							{
-								la2 = LA(2);
-								if (la2 >= 'A' && la2 <= 'Z' || la2 == '_' || la2 >= 'a' && la2 <= 'z')
-									goto match13;
-								else if (la2 >= 128 && la2 <= 65532) {
-									if (char.IsLetter((char) LA0))
-										goto match13;
-									else
-										goto match17;
-								} else if (Token_set0.Contains(la2))
-									goto match13;
-								else
-									goto match17;
-							}
 						case '\\':
-							goto match12;
+							goto match8;
 						case '`':
 							{
 								la2 = LA(2);
 								if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
-									goto match12;
+									goto match8;
 								else
-									goto match17;
+									goto match14;
 							}
 						case '!':
 						case '#':
@@ -4197,24 +4225,91 @@ namespace Ecs.Parser
 						case '^':
 						case '|':
 						case '~':
-							goto match12;
+							goto match8;
+						case '"':
+							{
+								la2 = LA(2);
+								if (la2 != -1)
+									goto match11;
+								else
+									goto match14;
+							}
+						case '@':
+							{
+								la2 = LA(2);
+								if (la2 >= 'A' && la2 <= 'Z' || la2 == '_' || la2 >= 'a' && la2 <= 'z')
+									goto match13;
+								else if (la2 >= 128 && la2 <= 65532) {
+									if (char.IsLetter((char) LA0))
+										goto match13;
+									else
+										goto match14;
+								} else if (Token_set0.Contains(la2))
+									goto match13;
+								else
+									goto match14;
+							}
 						default:
 							if (la1 >= 'A' && la1 <= 'Z' || la1 == '_' || la1 >= 'a' && la1 <= 'z')
-								goto match12;
+								goto match8;
 							else if (la1 >= 128 && la1 <= 65532) {
 								if (char.IsLetter((char) LA0))
-									goto match12;
+									goto match8;
 								else
-									goto match17;
+									goto match14;
 							} else
-								goto match17;
+								goto match14;
 						}
+					}
+				case '"':
+					{
+						la1 = LA(1);
+						if (la1 == '"') {
+							la2 = LA(2);
+							if (la2 == '"')
+								goto match9;
+							else
+								goto match11;
+						} else if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+							goto match11;
+						else
+							goto match24;
+					}
+				case '\'':
+					{
+						la1 = LA(1);
+						if (la1 == '\'') {
+							la2 = LA(2);
+							if (la2 == '\'')
+								goto match9;
+							else
+								goto match10;
+						} else if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+							goto match10;
+						else
+							goto match24;
 					}
 				case '`':
 					{
 						_type = TT.BQString;
 						BQString();
 					}
+					break;
+				case '!':
+				case '$':
+				case '%':
+				case '&':
+				case '*':
+				case '+':
+				case ':':
+				case '<':
+				case '=':
+				case '>':
+				case '?':
+				case '^':
+				case '|':
+				case '~':
+					Operator();
 					break;
 				case ',':
 					{
@@ -4227,37 +4322,6 @@ namespace Ecs.Parser
 						_type = TT.Semicolon;
 						Semicolon();
 					}
-					break;
-				case '!':
-				case '%':
-				case '&':
-				case '*':
-				case '+':
-				case ':':
-				case '<':
-				case '=':
-				case '>':
-				case '?':
-				case '^':
-				case '|':
-					Operator();
-					break;
-				case '\\':
-					{
-						la1 = LA(1);
-						if (la1 == 'u') {
-							la2 = LA(2);
-							if (HexDigit_set0.Contains(la2))
-								goto match12;
-							else
-								Operator();
-						} else
-							Operator();
-					}
-					break;
-				case '$':
-				case '~':
-					Operator();
 					break;
 				case '(':
 					{
@@ -4296,10 +4360,13 @@ namespace Ecs.Parser
 					}
 					break;
 				default:
-					goto match12;
+					if (Symbol_set0.Contains(la0))
+						goto match8;
+					else
+						goto match24;
 				}
 				break;
-			match5:
+			match4:
 				{
 					_type = TT.Number;
 					Number();
@@ -4307,26 +4374,26 @@ namespace Ecs.Parser
 				break;
 			match8:
 				{
+					_type = TT.Id;
+					IdOrKeyword();
+				}
+				break;
+			match9:
+				{
 					_type = TT.String;
 					TQString();
 				}
 				break;
-			match9:
+			match10:
 				{
 					_type = TT.SQString;
 					SQString();
 				}
 				break;
-			match10:
+			match11:
 				{
 					_type = TT.String;
 					DQString();
-				}
-				break;
-			match12:
-				{
-					_type = TT.Id;
-					IdOrKeyword();
 				}
 				break;
 			match13:
@@ -4335,10 +4402,17 @@ namespace Ecs.Parser
 					Symbol();
 				}
 				break;
-			match17:
+			match14:
 				{
 					_type = TT.At;
 					At();
+				}
+				break;
+			match24:
+				{
+					_type = TT.Unknown;
+					Error(0, "Unrecognized token");
+					MatchExcept();
 				}
 			} while (false);
 		}
@@ -4351,6 +4425,7 @@ namespace Ecs.Parser
 		private bool HexNumber_Test0()
 		{
 			int la0;
+			// Line 70: ([0-9] / HexDigits [Pp] [+\-0-9])
 			la0 = LA0;
 			if (la0 >= '0' && la0 <= '9')
 				{if (!TryMatchRange('0', '9'))

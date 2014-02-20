@@ -237,6 +237,7 @@ namespace Ecs.Parser
 		Substitute   = TokenKind.Operator + 28, // $
 		LambdaArrow  = TokenKind.Operator + 29, // =>
 		
+		Unknown = TokenKind.Other, // invalid input
 		//Indent = TokenKind.LBrace + 1,
 		//Dedent = TokenKind.RBrace + 1,
 	}

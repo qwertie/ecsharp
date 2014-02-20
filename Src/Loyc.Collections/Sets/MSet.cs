@@ -207,41 +207,44 @@ namespace Loyc.Collections
 
 		/// <summary>Adds all items in the other set to this set.</summary>
 		/// <remarks>Any items that are already present are left unmodified.</remarks>
-		public void UnionWith(IEnumerable<T> other) { UnionWith(other, false); }
-		public void UnionWith(IEnumerable<T> other, bool replaceIfPresent) { _count += _set.UnionWith(other, _comparer, replaceIfPresent); }
-		public void UnionWith(Set<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
-		public void UnionWith(MSet<T> other, bool replaceIfPresent = false) { _count += _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); }
+		void ISet<T>.UnionWith(IEnumerable<T> other) { UnionWith(other, false); }
+		public int UnionWith(IEnumerable<T> other, bool replaceIfPresent = false) { int a = _set.UnionWith(other, _comparer, replaceIfPresent); _count += a; return a; }
+		public int UnionWith(Set<T> other, bool replaceIfPresent = false) { int a = _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); _count += a; return a; }
+		public int UnionWith(MSet<T> other, bool replaceIfPresent = false) { int a = _set.UnionWith(other.InternalSet, _comparer, replaceIfPresent); _count += a; return a; }
 
 		/// <summary>Removes all items from this set that are present in 'other'.</summary>
 		/// <param name="other">The set whose members should be removed from this set.</param>
-		public void ExceptWith(IEnumerable<T> other) { _count -= _set.ExceptWith(other, _comparer); }
-		public void ExceptWith(Set<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
-		public void ExceptWith(MSet<T> other) { _count -= _set.ExceptWith(other.InternalSet, _comparer); }
+		void ISet<T>.ExceptWith(IEnumerable<T> other) { ExceptWith(other); }
+		public int ExceptWith(IEnumerable<T> other) { int r = _set.ExceptWith(other, _comparer); _count -= r; return r; }
+		public int ExceptWith(Set<T> other) { int r = _set.ExceptWith(other.InternalSet, _comparer); _count -= r; return r; }
+		public int ExceptWith(MSet<T> other) { int r = _set.ExceptWith(other.InternalSet, _comparer); _count -= r; return r; }
 
+		void ISet<T>.IntersectWith(IEnumerable<T> other) { IntersectWith(other); }
 		/// <inheritdoc cref="InternalSet{T}.IntersectWith(IEnumerable{T}, IEqualityComparer{T})"/>
-		public void IntersectWith(IEnumerable<T> other)
+		public int IntersectWith(IEnumerable<T> other)
 		{
 			var otherOSet = other as MSet<T>;
 			if (otherOSet != null)
-				IntersectWith(otherOSet);
+				return IntersectWith(otherOSet);
 			else
-				_set.IntersectWith(other, _comparer); // relatively costly unless other is ISet<T>
+				return _set.IntersectWith(other, _comparer); // relatively costly unless other is ISet<T>
 		}
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
-		public void IntersectWith(Set<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
+		public int IntersectWith(Set<T> other) { int r = _set.IntersectWith(other.InternalSet, other.Comparer); _count -= r; return r; }
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
-		public void IntersectWith(MSet<T> other) { _count -= _set.IntersectWith(other.InternalSet, other.Comparer); }
+		public int IntersectWith(MSet<T> other) { int r = _set.IntersectWith(other.InternalSet, other.Comparer); _count -= r; return r; }
 		/// <summary>Removes all items from this set that are not present in 'other'.</summary>
-		public void IntersectWith(ISet<T> other) { _count -= _set.IntersectWith(other); }
+		public int IntersectWith(ISet<T> other) { int r = _set.IntersectWith(other); _count -= r; return r; }
 
+		void ISet<T>.SymmetricExceptWith(IEnumerable<T> other) { SymmetricExceptWith(other, false); }
 		/// <summary>Modifies the current set to contain only elements that were
 		/// present either in this set or in the other collection, but not both.</summary>
-		public void SymmetricExceptWith(IEnumerable<T> other) { SymmetricExceptWith(other, false); }
+		public int SymmetricExceptWith(IEnumerable<T> other) { return SymmetricExceptWith(other, false); }
 		/// <inheritdoc cref="InternalSet{T}.SymmetricExceptWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
-		public void SymmetricExceptWith(IEnumerable<T> other, bool xorDuplicates)
-		                                                      { _count += _set.SymmetricExceptWith(other, _comparer, xorDuplicates); }
-		public void SymmetricExceptWith(Set<T> other)  { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
-		public void SymmetricExceptWith(MSet<T> other)   { _count += _set.SymmetricExceptWith(other.InternalSet, _comparer); }
+		public int SymmetricExceptWith(IEnumerable<T> other, bool xorDuplicates)
+		                                              { int d = _set.SymmetricExceptWith(other, _comparer, xorDuplicates); _count += d; return d; }
+		public int SymmetricExceptWith(Set<T> other)  { int d = _set.SymmetricExceptWith(other.InternalSet, _comparer); _count += d; return d; }
+		public int SymmetricExceptWith(MSet<T> other) { int d = _set.SymmetricExceptWith(other.InternalSet, _comparer); _count += d; return d; }
 
 		#endregion
 
