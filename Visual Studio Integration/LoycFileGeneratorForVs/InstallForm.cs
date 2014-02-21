@@ -74,10 +74,10 @@ namespace SingleFileGenerator
 			}
 		}
 
-		void MessageBoxWriter(Symbol type, object context, string msg, object[] args)
+		void MessageBoxWriter(Severity type, object context, string msg, object[] args)
 		{
 			MessageBox.Show(string.Format(msg, args), MessageSink.LocationString(context),
-				MessageBoxButtons.OK, type == MessageSink.Error ? MessageBoxIcon.Error : MessageBoxIcon.None);
+				MessageBoxButtons.OK, type == Severity.Error ? MessageBoxIcon.Error : MessageBoxIcon.None);
 		}
 
 		private void btnRegister_Click(object sender, EventArgs e)
@@ -109,13 +109,13 @@ namespace SingleFileGenerator
 			try {
 				if (!unregister) { 
 					if (!registrar.RegisterAssembly(_sfgAssembly, AssemblyRegistrationFlags.SetCodeBase))
-						sink.Write(MessageSink.Error, "COM registration", "Failed (No eligible types?!)");
+						sink.Write(Severity.Error, "COM registration", "Failed (No eligible types?!)");
 				} else {
 					if (!registrar.UnregisterAssembly(_sfgAssembly))
-						sink.Write(MessageSink.Error, "COM unregistration", "Failed (No eligible types?!)");
+						sink.Write(Severity.Error, "COM unregistration", "Failed (No eligible types?!)");
 				}
 			} catch (Exception e) {
-				sink.Write(MessageSink.Error, unregister ? "COM unregistration" : "COM registration", e.Message);
+				sink.Write(Severity.Error, unregister ? "COM unregistration" : "COM registration", e.Message);
 			}
 
 			return count;
@@ -139,7 +139,7 @@ namespace SingleFileGenerator
 						try { 
 							using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
 								if (key == null)
-									sink.Write(MessageSink.Error, path, "Failed to create registry key");
+									sink.Write(Severity.Error, path, "Failed to create registry key");
 								else {
 									key.SetValue("", attr.GeneratorName);
 									key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
@@ -148,7 +148,7 @@ namespace SingleFileGenerator
 								}
 							}
 						} catch (Exception ex) {
-							sink.Write(MessageSink.Error, path, "{0}: {1}", ex.GetType().Name, ex.Message);
+							sink.Write(Severity.Error, path, "{0}: {1}", ex.GetType().Name, ex.Message);
 							return false;
 						}
 					}

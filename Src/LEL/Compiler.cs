@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Loyc.MiniTest;
+using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
-using LeMP.Prelude;
-using Loyc;
-using System.Threading.Tasks;
 using Loyc.Threading;
-using NUnit.Framework;
-using System.Diagnostics;
-using System.Collections.Concurrent;
+using LeMP.Prelude;
 
 namespace LeMP
 {
@@ -54,7 +54,7 @@ namespace LeMP
 				return;
 			}
 
-			Symbol minSeverity = MessageSink.Note;
+			Severity minSeverity = Severity.Note;
 			#if DEBUG
 			minSeverity = MessageSink.Debug;
 			#endif
@@ -76,18 +76,18 @@ namespace LeMP
 		{
 			if (inputFiles.Count == 0)
 			{
-				sink.Write(MessageSink.Error, null, "No input provided, stopping.");
+				sink.Write(Severity.Error, null, "No input provided, stopping.");
 				return null;
 			}
 
 			string value;
 			if (options.TryGetValue("verbose", out value) && value != "false")
 			{
-				int sev;
-				if ((sev = MessageSink.GetSeverity(GSymbol.GetIfExists(value))) > -1)
+				Severity sev;
+				if (Enum.TryParse(value, out sev))
 					sink.MinSeverity = sev;
 				else
-					sink.MinSeveritySymbol = MessageSink.Verbose;
+					sink.MinSeverity = Severity.Verbose;
 			}
 
 			var c = new Compiler(sink, prelude, inputFiles);
@@ -141,11 +141,11 @@ namespace LeMP
 			if (options.TryGetValue("forcelang", out value) && (value == null || value == "true"))
 				c.ForceInLang = true;
 			if (!options.ContainsKey("outlang") && c.OutExt != null && FileNameToLanguage(c.OutExt) == null)
-				sink.Write(MessageSink.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
+				sink.Write(Severity.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
 			double num;
 			if (options.TryGetValue("timeout", out value)) {
 				if (!double.TryParse(value, out num) || !(num >= 0))
-					sink.Write(MessageSink.Error, "--timeout", "Invalid or missing timeout value", c.OutExt);
+					sink.Write(Severity.Error, "--timeout", "Invalid or missing timeout value", c.OutExt);
 				else
 					c.AbortTimeout = TimeSpan.FromSeconds(num);
 			}
@@ -155,12 +155,12 @@ namespace LeMP
 		static void ApplyLanguageOption(IMessageSink sink, string option, string value, ref IParsingService lang)
 		{
 			if (string.IsNullOrEmpty(value))
-				sink.Write(MessageSink.Error, option, "Missing value");
+				sink.Write(Severity.Error, option, "Missing value");
 			else {
 				if (!value.StartsWith("."))
 					value = "." + value;
 				if ((lang = FileNameToLanguage(value)) == null)
-					sink.Write(MessageSink.Error, option, "No language was found for extension «{0}»", value);
+					sink.Write(Severity.Error, option, "No language was found for extension «{0}»", value);
 			}
 		}
 		
@@ -170,7 +170,7 @@ namespace LeMP
 				action();
 				return true;
 			} catch (Exception ex) {
-				sink.Write(MessageSink.Error, context, "{0} ({1})", ex.Message, ex.GetType().Name);
+				sink.Write(Severity.Error, context, "{0} ({1})", ex.Message, ex.GetType().Name);
 				return false;
 			}
 		}
@@ -179,7 +179,7 @@ namespace LeMP
 		{
 			foreach (var opt in options.Keys) {
 				if (!knownOptions.ContainsKey(opt))
-					sink.Write(MessageSink.Warning, "Command line", "Unrecognized option '--{0}'", opt);
+					sink.Write(Severity.Warning, "Command line", "Unrecognized option '--{0}'", opt);
 			}
 		}
 
@@ -240,7 +240,7 @@ namespace LeMP
 		public List<InputOutput> Files;
 		public int MaxExpansions { get { return MacroProcessor.MaxExpansions; } set { MacroProcessor.MaxExpansions = value; } }
 		public TimeSpan AbortTimeout { get { return MacroProcessor.AbortTimeout; } set { MacroProcessor.AbortTimeout = value; } }
-		public bool Verbose { get { return Sink.IsEnabled(MessageSink.Verbose); } }
+		public bool Verbose { get { return Sink.IsEnabled(Severity.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";
 		public string NewlineString = "\r\n";
@@ -318,7 +318,7 @@ namespace LeMP
 					var text = File.ReadAllText(filename, Encoding.UTF8);
 					openFiles.Add(new InputOutput(new StringSlice(text), filename));
 				} catch (Exception ex) {
-					sink.Write(MessageSink.Error, filename, ex.GetType().Name + ": " + ex.Message);
+					sink.Write(Severity.Error, filename, ex.GetType().Name + ": " + ex.Message);
 				}
 			}
 			return openFiles;
@@ -332,12 +332,12 @@ namespace LeMP
 					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
 				{
 					if (Verbose)
-						Sink.Write(MessageSink.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
+						Sink.Write(Severity.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
 					any = MacroProcessor.AddMacros(type) || any;
 				}
 			}
 			if (!any)
-				Sink.Write(MessageSink.Warning, assembly, "No macros found");
+				Sink.Write(Severity.Warning, assembly, "No macros found");
 			return any;
 		}
 
@@ -363,7 +363,7 @@ namespace LeMP
 		{
 			Debug.Assert(io.FileName != io.OutFileName);
 
-			Sink.Write(MessageSink.Verbose, io, "Writing output file: {0}", io.OutFileName);
+			Sink.Write(Severity.Verbose, io, "Writing output file: {0}", io.OutFileName);
 
 			using (var stream = File.Open(io.OutFileName, FileMode.Create, FileAccess.Write, FileShare.Read))
 			using (var writer = new StreamWriter(stream, Encoding.UTF8)) {

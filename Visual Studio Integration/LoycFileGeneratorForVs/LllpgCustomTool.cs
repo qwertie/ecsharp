@@ -117,12 +117,11 @@ namespace Loyc.VisualStudio
 					LeMP.Compiler.ShowHelp(KnownOptions);
 			
 				IMessageSink innerSink = ToMessageSink(progressCallback);
-				var sev = MessageSink.Note;
+				Severity sev = Severity.Note;
 				string value;
 				if (options.TryGetValue("verbose", out value) && (value != "false")) {
-					sev = GSymbol.GetIfExists(value);
-					if (MessageSink.GetSeverity(sev) <= -1)
-						sev = MessageSink.Verbose;
+					if (!Enum.TryParse(value, out sev))
+						sev = Severity.Verbose;
 				}
 				
 				var sink = new SeverityMessageFilter(innerSink, sev);
@@ -158,7 +157,7 @@ namespace Loyc.VisualStudio
 		private static MessageSinkFromDelegate ToMessageSink(IVsGeneratorProgress generatorProgress)
 		{
 			var sink = new MessageSinkFromDelegate(
-				(Symbol severity, object context, string message, object[] args) =>
+				(Severity severity, object context, string message, object[] args) =>
 				{
 					int line = 0, col = 1;
 					string message2 = Localize.From(message, args);
@@ -176,8 +175,8 @@ namespace Loyc.VisualStudio
 						message2 = MessageSink.LocationString(context) + ": " + message2;
 
 					try {
-						bool subwarning = MessageSink.GetSeverity(severity) < MessageSink.GetSeverity(MessageSink.Warning);
-						int n = subwarning ? 2 : severity == MessageSink.Warning ? 1 : 0;
+						bool subwarning = severity < Severity.Warning;
+						int n = subwarning ? 2 : severity == Severity.Warning ? 1 : 0;
 						generatorProgress.GeneratorError(n, 0u, message2, (uint)line - 1u, (uint)col - 1u);
 					} catch(Exception ex) {
 						// I don't know how this happens, but I got an InvalidCastException:

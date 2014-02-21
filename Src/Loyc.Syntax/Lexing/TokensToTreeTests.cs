@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Syntax.Les;
 using Loyc.Collections.Impl;
 using Loyc.Utilities;

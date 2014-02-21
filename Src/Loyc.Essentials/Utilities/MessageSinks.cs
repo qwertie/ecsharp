@@ -15,7 +15,7 @@ using System.Diagnostics;
 using Loyc.Collections.Impl;
 using Loyc.Collections;
 
-namespace Loyc.Utilities
+namespace Loyc
 {
 	/// <summary>Sends all messages to the <see cref="System.Console.WriteLine"/>, 
 	/// with hard-coded colors for Error, Warning, Note, Verbose, and Detail.</summary>
@@ -23,24 +23,25 @@ namespace Loyc.Utilities
 	{
 		protected static ConsoleColor _lastColor;
 
-		protected virtual ConsoleColor PickColor(Symbol msgType, out string msgTypeText)
+		protected virtual ConsoleColor PickColor(Severity msgType, out string msgTypeText)
 		{
 			bool implicitText = false;
 			ConsoleColor color;
 
-			if (msgType == MessageSink.Critical || msgType == MessageSink._Alert || msgType == MessageSink.Fatal || msgType == MessageSink._Emergency)
+			if (msgType >= Severity.Critical)
 				color = ConsoleColor.Magenta;
-			if (msgType == MessageSink.Error || msgType == MessageSink._Severe)
+			else if (msgType >= Severity.Error)
 				color = ConsoleColor.Red;
-			else if (msgType == MessageSink.Warning)
+			else if (msgType >= Severity.Warning)
 				color = ConsoleColor.Yellow;
-			else if (msgType == MessageSink.Note)
+			else if (msgType >= Severity.Note)
 				color = ConsoleColor.White;
-			else if (msgType == MessageSink.Debug)
+			else if (msgType >= Severity.Debug)
 				color = ConsoleColor.Cyan;
-			else if (msgType == MessageSink.Verbose || msgType == MessageSink._Finer)
+			else if (msgType >= Severity.Verbose || msgType == Severity._Finer)
 				color = ConsoleColor.DarkCyan;
-			else if (msgType == MessageSink.Detail) {
+			else if (msgType == Severity.Detail)
+			{
 				switch (_lastColor)
 				{
 					case ConsoleColor.Red: color = ConsoleColor.DarkRed; break;
@@ -57,24 +58,24 @@ namespace Loyc.Utilities
 			} else
 				color = Console.ForegroundColor;
 
-			msgTypeText = implicitText ? null : Localize.From(msgType.Name);
+			msgTypeText = implicitText ? null : Localize.From(msgType.ToString());
 			_lastColor = color;
 			return color;
 		}
 
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			WriteCore(type, context, Localize.From(format));
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			WriteCore(type, context, Localize.From(format, arg0, arg1));
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			WriteCore(type, context, Localize.From(format, args));
 		}
-		void WriteCore(Symbol type, object context, string text)
+		void WriteCore(Severity type, object context, string text)
 		{
 			string loc = MessageSink.LocationString(context);
 			if (!string.IsNullOrEmpty(loc))
@@ -89,7 +90,7 @@ namespace Loyc.Utilities
 			Console.ForegroundColor = oldColor;
 		}
 		/// <summary>Always returns true.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return true;
 		}
@@ -103,20 +104,20 @@ namespace Loyc.Utilities
 		public int Count { get { return _count; } set { _count = value; } }
 		public bool IsEmpty { get { return _count == 0; } }
 
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			_count++;
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			_count++;
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			_count++;
 		}
 		/// <summary>Always returns false.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return false;
 		}
@@ -125,27 +126,27 @@ namespace Loyc.Utilities
 	/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 	public class TraceMessageSink : IMessageSink
 	{
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			WriteCore(type, context, Localize.From(format));
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			WriteCore(type, context, Localize.From(format, arg0, arg1));
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			WriteCore(type, context, Localize.From(format, args));
 		}
-		public void WriteCore(Symbol type, object context, string text)
+		public void WriteCore(Severity type, object context, string text)
 		{
 			string loc = MessageSink.LocationString(context);
 			if (!string.IsNullOrEmpty(loc))
 				text = loc + ": " + text;
-			Trace.WriteLine(text, type.Name);
+			Trace.WriteLine(text, type.ToString());
 		}
 		/// <summary>Always returns true.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return true;
 		}
@@ -156,18 +157,18 @@ namespace Loyc.Utilities
 	{
 		public struct Message : ILocationString
 		{
-			public Message(Symbol type, object context, string format, object arg0, object arg1 = null)
+			public Message(Severity type, object context, string format, object arg0, object arg1 = null)
 				: this (type, context, format, new object[2] { arg0, arg1 }) {}
-			public Message(Symbol type, object context, string format)
+			public Message(Severity type, object context, string format)
 				: this (type, context, format, InternalList<object>.EmptyArray) {}
-			public Message(Symbol type, object context, string format, params object[] args)
+			public Message(Severity type, object context, string format, params object[] args)
 			{
-				Type = type ?? GSymbol.Empty;
+				Type = type;
 				Context = context;
 				Format = format;
 				_args = args;
 			}
-			public readonly Symbol Type;
+			public readonly Severity Type;
 			public readonly object Context;
 			public readonly string Format;
 			readonly object[] _args;
@@ -179,7 +180,7 @@ namespace Loyc.Utilities
 			public override string ToString()
 			{
 				string loc = LocationString;
-				string text = Type.Name == "" ? Formatted : Type.Name + ": " + Formatted;
+				string text = Type.ToString() + ": " + Formatted;
 				return string.IsNullOrEmpty(loc) ? text : loc + ": " + text;
 			}
 			public string LocationString
@@ -206,20 +207,20 @@ namespace Loyc.Utilities
 				msg.WriteTo(sink);
 		}
 
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			List.Add(new Message(type, context, format));
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			List.Add(new Message(type, context, format, arg0, arg1));
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			List.Add(new Message(type, context, format, args));
 		}
 		/// <summary>Always returns true.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return true;
 		}
@@ -236,47 +237,47 @@ namespace Loyc.Utilities
 	/// <summary>A decorator that uses a delegate to accept or ignore messages.</summary>
 	/// <remarks>The filter can accept or reject messages based on both the message 
 	/// type and the actual message (format string). When someone calls 
-	/// <see cref="IsEnabled(Symbol)"/>, the filter is invoked with only the type;
+	/// <see cref="IsEnabled(Severity)"/>, the filter is invoked with only the type;
 	/// the message is set to null. Accepted messages are sent to the 
 	/// <see cref="Target"/> message sink.</remarks>
 	public class MessageFilter : IMessageSink
 	{
-		public Func<Symbol, object, string, bool> Filter { get; set; }
-		public Func<Symbol, bool> TypeFilter { get; set; }
+		public Func<Severity, object, string, bool> Filter { get; set; }
+		public Func<Severity, bool> TypeFilter { get; set; }
 		public IMessageSink Target { get; set; }
-		
-		public MessageFilter(Func<Symbol, object, string, bool> filter, IMessageSink target) 
+
+		public MessageFilter(Func<Severity, object, string, bool> filter, IMessageSink target) 
 		{
 			Filter = filter;
 			Target = target;
 		}
-		public MessageFilter(Func<Symbol, bool> filter, IMessageSink target) 
+		public MessageFilter(Func<Severity, bool> filter, IMessageSink target) 
 		{
 			TypeFilter = filter;
 			Target = target;
 		}
-		bool Passes(Symbol type, object context, string format)
+		bool Passes(Severity type, object context, string format)
 		{
 			return Filter != null && Filter(type, context, format)
 				|| TypeFilter != null && TypeFilter(type);
 		}
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			if (Passes(type, context, format))
 				Target.Write(type, context, format);
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			if (Passes(type, context, format))
 				Target.Write(type, context, format, arg0, arg1);
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			if (Passes(type, context, format))
 				Target.Write(type, context, format, args);
 		}
 		/// <summary>Returns true if <c>Filter(type, null)</c> and <c>target.IsEnabled(type)</c> are both true.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return Passes(type, null, null) && Target.IsEnabled(type);
 		}
@@ -284,43 +285,36 @@ namespace Loyc.Utilities
 
 	public class SeverityMessageFilter : IMessageSink
 	{
-		public SeverityMessageFilter(IMessageSink target, Symbol minSeverity) 
-			{ Target = target; MinSeveritySymbol = minSeverity; }
-		public SeverityMessageFilter(IMessageSink target, int minSeverity) 
-			{ Target = target; MinSeverity = minSeverity; }
-		int _minSeverity;
+		public SeverityMessageFilter(IMessageSink target, Severity minSeverity) 
+			{ Target = target; _minSeverity = minSeverity; }
+		Severity _minSeverity;
 		bool _printedPrev; // whether the last-written message passed
 
 		public IMessageSink Target { get; set; }
-		public int MinSeverity { 
+		public Severity MinSeverity { 
 			get { return _minSeverity; }
 			set { _minSeverity = value; }
 		}
-		public Symbol MinSeveritySymbol
-		{
-			get { return MessageSink.GetSymbol(_minSeverity); }
-			set { _minSeverity = MessageSink.GetSeverity(value); }
-		}
 
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format);
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format, arg0, arg1);
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
  			if (_printedPrev = Passes(type)) Target.Write(type, context, format, args);
 		}
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return Passes(type) && Target.IsEnabled(type);
 		}
-		bool Passes(Symbol type)
+		bool Passes(Severity type)
 		{
-			return MessageSink.GetSeverity(type) >= _minSeverity || (type == MessageSink.Detail && _printedPrev);
+			return type >= _minSeverity || (type == Severity.Detail && _printedPrev);
 		}
 	}
 	
@@ -334,23 +328,23 @@ namespace Loyc.Utilities
 		public MessageSplitter(params IMessageSink[] targets) { _list = new List<IMessageSink>(targets); }
 		public MessageSplitter() { _list = new List<IMessageSink>(); }
 	
-		public void  Write(Symbol type, object context, string format)
+		public void  Write(Severity type, object context, string format)
 		{
  			foreach(var sink in _list)
 				sink.Write(type, context, format);
 		}
-		public void  Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void  Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
  			foreach(var sink in _list)
 				sink.Write(type, context, format, arg0, arg1);
 		}
-		public void  Write(Symbol type, object context, string format, params object[] args)
+		public void  Write(Severity type, object context, string format, params object[] args)
 		{
 			foreach (var sink in _list)
 				sink.Write(type, context, format, args);
 		}
 		/// <summary>Returns true if <tt>s.IsEnabled(type)</tt> is true for at least one target message sink 's'.</summary>
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			foreach (var sink in _list)
 				if (sink.IsEnabled(type))
@@ -363,8 +357,8 @@ namespace Loyc.Utilities
 	/// with one or two delegates (a writer method, and an optional severity filter).</summary>
 	public class MessageSinkFromDelegate : IMessageSink
 	{
-		Action<Symbol, object, string, object[]> _writer;
-		Func<Symbol, bool> _isEnabled;
+		Action<Severity, object, string, object[]> _writer;
+		Func<Severity, bool> _isEnabled;
 
 		/// <summary>Initializes this object.</summary>
 		/// <param name="writer">Required. A method that accepts output.</param>
@@ -372,30 +366,30 @@ namespace Loyc.Utilities
 		/// output based on the message type. If this parameter is provided,
 		/// then <see cref="Write"/>() will not invoke the writer when isEnabled
 		/// returns false. This delegate is also called by <see cref="IsEnabled"/>().</param>
-		public MessageSinkFromDelegate(Action<Symbol, object, string, object[]> writer, Func<Symbol, bool> isEnabled = null)
+		public MessageSinkFromDelegate(Action<Severity, object, string, object[]> writer, Func<Severity, bool> isEnabled = null)
 		{
 			CheckParam.IsNotNull("writer", writer);
 			_writer = writer;
 			_isEnabled = isEnabled;
 		}
 
-		public void Write(Symbol type, object context, string format)
+		public void Write(Severity type, object context, string format)
 		{
 			if (IsEnabled(type))
 				_writer(type, context, format, InternalList<object>.EmptyArray);
 		}
-		public void Write(Symbol type, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
 			if (IsEnabled(type))
 				_writer(type, context, format, new[] { arg0, arg1 });
 		}
-		public void Write(Symbol type, object context, string format, params object[] args)
+		public void Write(Severity type, object context, string format, params object[] args)
 		{
 			if (IsEnabled(type))
 				_writer(type, context, format, args);
 		}
 
-		public bool IsEnabled(Symbol type)
+		public bool IsEnabled(Severity type)
 		{
 			return _isEnabled != null ? _isEnabled(type) : true;
 		}

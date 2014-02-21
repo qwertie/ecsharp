@@ -7,7 +7,7 @@ namespace Loyc.Collections
 	using System.Text;
 	using System.Collections.Specialized;
 	using System.Diagnostics;
-	using NUnit.Framework;
+	using Loyc.MiniTest;
 	using Loyc.Math;
 	using System.ComponentModel;
 	using Loyc.Collections.Impl;

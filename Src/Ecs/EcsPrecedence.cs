@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Loyc;
 using Loyc.Math;
-using Loyc.Utilities;
 using Loyc.Syntax;
 
 namespace Ecs

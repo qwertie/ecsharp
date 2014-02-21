@@ -47,9 +47,9 @@ namespace LeMP.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		static readonly Symbol Error = MessageSink.Error;
-		static readonly Symbol Warning = MessageSink.Warning;
-		static readonly Symbol Note = MessageSink.Note;
+		static readonly Severity Error = Severity.Error;
+		static readonly Severity Warning = Severity.Warning;
+		static readonly Severity Note = Severity.Note;
 		static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
 			error.Write(Note, at, msg);
@@ -102,7 +102,7 @@ namespace LeMP.Prelude
 		{
 			if (node.ArgCount == 1 && IsComplexId(node.Args[0])) {
 				// Looks like an import statement
-				sink.Write(S.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP.");
+				sink.Write(Severity.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP.");
 				return node.WithTarget(S.Import);
 			}
 			var result = TranslateSpaceDefinition(node, sink, S.Alias);
@@ -559,7 +559,7 @@ namespace LeMP.Prelude
 				var p = parts[i];
 				if (p.IsIdNamed(_finally)) {
 					if (clauses.Count != 0 || finallyCode != null)
-						sink.Write(MessageSink.Error, p, "The «finally» clause must come last, there can only be one of them.");
+						sink.Write(Severity.Error, p, "The «finally» clause must come last, there can only be one of them.");
 					finallyCode = parts[i+1];
 				} else if (p.Name == _catch) {
 					if (p.ArgCount > 0) {
@@ -568,7 +568,7 @@ namespace LeMP.Prelude
 					} else {
 						// This is a catch-all clause (the type argument is missing)
 						if (clauses.Count != 0)
-							sink.Write(MessageSink.Error, p, "The catch-all clause must be the last «catch» clause.");
+							sink.Write(Severity.Error, p, "The catch-all clause must be the last «catch» clause.");
 						clauses.Add(F.Call(S.Catch, F._Missing, parts[i + 1]));
 					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {

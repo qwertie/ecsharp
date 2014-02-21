@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Loyc.MiniTest;
 using Loyc.Collections;
 using System.ComponentModel;
 using uchar = System.Int32;
-using NUnit.Framework;
 
 namespace Loyc
 {

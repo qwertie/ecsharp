@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc;
@@ -237,7 +237,7 @@ namespace LeMP
 				"int x { get ({ return 0; }) set; }");
 		}
 
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
+		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{

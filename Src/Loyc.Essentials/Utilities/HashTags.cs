@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Collections;
 
 namespace Loyc
@@ -95,7 +95,7 @@ namespace Loyc
 				return _cachedAttrKey == key ||
 					(_attrs != null && _attrs.ContainsKey(key));
 		}
-		public IEnumerator<KeyValuePair<Symbol, ValueT>> TagEnumerator()
+		protected internal IEnumerator<KeyValuePair<Symbol, ValueT>> TagEnumerator()
 		{
 			if (_attrs == null)
 				return OneTagEnumerator();

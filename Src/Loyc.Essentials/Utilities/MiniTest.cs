@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Loyc.Math;
 using System.Collections;
 using Loyc.Threading;
+using System.Text;
 
 namespace Loyc.MiniTest
 {
@@ -148,6 +149,12 @@ namespace Loyc.MiniTest
 		public int? MinTrials { get; set; }
 	}
 
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+	public class ExpectedExceptionAttribute : Attribute
+	{
+		public Type ExceptionType { get; private set; }
+		public ExpectedExceptionAttribute(Type type) { ExceptionType = type; }
+	}
 
 	#endregion
 
@@ -194,7 +201,7 @@ namespace Loyc.MiniTest
 	/// the most common assertions used in NUnit.
 	/// </summary>
 	/// <remarks>
-	/// WORK IN PROGRESS. TEST RUNNER IS NOT WRITTEN YET.
+	/// WORK IN PROGRESS. TEST RUNNER IS NOT FINISHED YET.
 	/// <para/>
 	/// This class is mostly a drop-in replacement for "old-style" NUnit tests, 
 	/// i.e. those that do not use constraint classes or the "Is" class.
@@ -342,6 +349,100 @@ namespace Loyc.MiniTest
 				}
 			} else
 				Fail(stdMsg, stdArgs);
+		}
+
+		// I like the way NUnit presents string differences so I'm preserving this in MiniTest.
+		// Actual NUnit samples:
+		//  Expected string length 80 but was 1. Strings differ at index 0.
+		//  Expected: "01234567890123456789_1234567890123456789_1234567890123456789_..."
+		//  But was:  "a"
+		//  -----------^
+		//  String lengths are both 80. Strings differ at index 10.
+		//  Expected: "01234567890123456789_1234567890123456789_1234567890123456789_..."
+		//  But was:  "0123456789_123456789_1234567890123456789_1234567890123456789_..."
+		//  ---------------------^
+		// Objects that are different:
+		//  Expected: "01234567890123456789_1234567890123456789_1234567890123456789_1234567890123456789"
+		//  But was:  5.5d
+		//  Expected: not "01234567890123456789_1234567890123456789_1234567890123456789_1234567890123456789"
+		//  But was:  "01234567890123456789_1234567890123456789_1234567890123456789_1234567890123456789"
+		private static int TruncateStringsLongerThan = 64;
+		private static string GetStringsNotEqualMessage(string a, string b)
+		{
+			// TODO: test this code
+			if (a == null || b == null)
+				return GetObjectMismatchMessage(a, b);
+			else {
+				int i, c = System.Math.Min((a ?? "").Length, (b ?? "").Length);
+				for (i = 0; i < c; i++)
+					if (a[i] != b[i])
+						break;
+				StringBuilder msg = new StringBuilder();
+				if (a.Length == b.Length)
+					msg.AppendFormat("  String lengths are both {0}. Strings differ at index {1}.\n", c, i);
+				else
+					msg.AppendFormat("  Expected string length {0} but was {1}. Strings differ at index {2}.\n", a.Length, b.Length, i);
+				int a_i = i, b_i = i;
+				msg.AppendFormat("  Expected: {0}\n", GetQuotedString(ref a, ref a_i));
+				msg.AppendFormat("  But was:  {0}\n", GetQuotedString(ref b, ref b_i));
+				
+				int TailLength = "-----------".Length;
+				var prefix = b.Left(b_i);
+				int i_adjusted = G.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
+				msg.Append(' ', 2);
+				msg.Append('-', TailLength + i_adjusted);
+				msg.Append("^\n");
+				return msg.ToString();
+			}
+		}
+		static string GetQuotedString(ref string s, ref int dif_i)
+		{
+			int len = s.Length, max = TruncateStringsLongerThan;
+			if (len <= max) {
+			} else {
+				if (dif_i < max/2) {
+					s = s.Left(max - 3) + "..."; // "beginning..."
+				} else if (len - dif_i < max/2) {
+					s = "..." + s.Right(max - 3); // "...ending"
+					dif_i -= len - s.Length;
+				} else {
+					s = "..." + s.Substring(dif_i - max / 2 + 3, max - 6) + "...";
+					dif_i = max / 2; // "...middle..."
+				}
+			}
+			return "\"" + G.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
+		}
+		static string StringifyObject(object obj)
+		{
+			if (obj == null)
+				return "null";
+			if (obj is IConvertible)
+			{
+				if (obj is string)
+					return "\"" + (string)obj + "\"";
+				if (obj is double) return obj.ToString() + "d";
+				if (obj is float) return obj.ToString() + "f";
+				if (obj is long) return obj.ToString() + "L";
+				if (obj is ulong) return obj.ToString() + "uL";
+				if (obj is uint) return obj.ToString() + "u";
+				if (obj is decimal) return obj.ToString() + "m";
+			}
+			return obj.ToString();
+		}
+
+		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual = false)
+		{
+			if (a is string && b is string)
+				return GetStringsNotEqualMessage((string)a, (string)b);
+			else {
+				StringBuilder msg = new StringBuilder();
+				if (expectedNotEqual)
+					msg.AppendFormat("  Expected: not {0}\n", StringifyObject(a));
+				else
+					msg.AppendFormat("  Expected: {0}\n", StringifyObject(a));
+				msg.AppendFormat("  But was:  {0}\n", StringifyObject(b));
+				return msg.ToString();
+			}
 		}
 
 		#endregion
@@ -620,14 +721,66 @@ namespace Loyc.MiniTest
 		{
 			AreEqual(expected, actual, delta, null, null);
 		}
+		public static void AreEqual(double expected, double actual)
+		{
+			AreEqual(expected, actual, 0, null, null);
+		}
 		public static void AreEqual(object expected, object actual, string message, params object[] args)
 		{
 			if (!object.Equals(expected, actual))
-				Fail(message, args, "AreEqual: objects are not equal: {0} != {1}", expected, actual);
+				Fail(GetObjectMismatchMessage(expected, actual));
 		}
 		public static void AreEqual(object expected, object actual)
 		{
 			AreEqual(expected, actual, null, null);
+		}
+
+
+		public static void AreNotEqual(long expected, long actual, string message, params object[] args)
+		{
+			if (expected == actual)
+				Fail(message, args, "AreNotEqual: {0} == {1}", expected, actual);
+		}
+		public static void AreNotEqual(ulong expected, ulong actual, string message, params object[] args)
+		{
+			if (expected == actual)
+				Fail(message, args, "AreNotEqual: {0} == {1}", expected, actual);
+		}
+		public static void AreNotEqual(int expected, int actual)
+		{
+			AreNotEqual(expected, actual, null, null);
+		}
+		public static void AreNotEqual(long expected, long actual)
+		{
+			AreNotEqual(expected, actual, null, null);
+		}
+		[CLSCompliant(false)]
+		public static void AreNotEqual(ulong expected, ulong actual)
+		{
+			AreNotEqual(expected, actual, null, null);
+		}
+		public static void AreNotEqual(decimal expected, decimal actual)
+		{
+			if (expected == actual)
+				Fail("AreNotEqual: {0} == {1}", expected, actual);
+		}
+		public static void AreNotEqual(double expected, double actual, double delta, string message, params object[] args)
+		{
+			if (DoublesAreEqual(expected, actual, delta))
+				Fail(message, args, "AreNotEqual: {0} == {1} (delta: {2})", expected, actual, delta);
+		}
+		public static void AreNotEqual(double expected, double actual, double delta)
+		{
+			AreNotEqual(expected, actual, delta, null, null);
+		}
+		public static void AreNotEqual(object expected, object actual, string message, params object[] args)
+		{
+			if (object.Equals(expected, actual))
+				Fail(GetObjectMismatchMessage(expected, actual, true));
+		}
+		public static void AreNotEqual(object expected, object actual)
+		{
+			AreNotEqual(expected, actual, null, null);
 		}
 
 

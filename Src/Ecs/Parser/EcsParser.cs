@@ -37,13 +37,13 @@ namespace Ecs.Parser
 		public IMessageSink ErrorSink
 		{
 			get { return _messages; } 
-			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
+			set { _messages = value ?? Loyc.MessageSink.Current; }
 		}
 		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
-		static readonly Symbol _Error = Loyc.Utilities.MessageSink.Error;
-		static readonly Symbol _Warning = Loyc.Utilities.MessageSink.Warning;
+		static readonly Severity _Error = Severity.Error;
+		static readonly Severity _Warning = Severity.Warning;
 
 		protected LNode _triviaWordAttribute;
 		protected LNode _triviaUseOperatorKeyword;
@@ -103,7 +103,7 @@ namespace Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(MessageSink.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionTypeAndMessage());
+			_messages.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionTypeAndMessage());
 		}
 
 		#region Methods required by base class and by LLLPG

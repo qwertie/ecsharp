@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Loyc.Utilities;
@@ -603,11 +603,11 @@ namespace Loyc
 			Assert.Throws<MissingMethodException>(delegate() { wrapped.AmbigLarger(1); });
 		}
 
-		private void AssertThrows<Type>(TestDelegate @delegate) where Type:Exception
+		private void AssertThrows<Type>(Action @delegate) where Type:Exception
 		{
 			try {
 				@delegate();
-				Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
+				Assert.Fail("AssertThrows<{0}>: no exception was thrown.", typeof(Type).Name);
 			} catch (Type) { }
 		}
 

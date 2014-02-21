@@ -6,7 +6,7 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Collections.Impl;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Math;
 using System.ComponentModel;
 

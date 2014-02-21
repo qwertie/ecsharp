@@ -2,17 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
-using NUnit.Framework;
 using Loyc;
 
-namespace NUnit.Framework
+namespace Loyc.MiniTest
 {
+	/// <summary>
+	/// Searches for test methods and runs them, printing the name of each test to 
+	/// the console followed by errors (if any) produced by the test.
+	/// </summary>
+	/// <remarks>
+	/// This class finds tests by looking for custom attributes by their string 
+	/// name (e.g. "TestAttribute"), so it is compatible with both NUnit.Framework
+	/// and Loyc.MiniTest.
+	/// <para/>
+	/// RunTests is a stripped-down subset of the functionality supported by 
+	/// MiniTestRunner.
+	/// </remarks>
 	public static class RunTests
-	{	// #Test
+	{
 		public static void Run(object o)
 		{
 			// run all the tests methods in the given object
 			MethodInfo[] methods = o.GetType().GetMethods();
+			bool any = false;
 
 			MethodInfo setup = GetSetup(methods);
 			MethodInfo teardown = GetTeardown(methods);
@@ -21,6 +33,7 @@ namespace NUnit.Framework
 			{
 				if (IsTest(method))
 				{
+					any = true;
 					try {
 						Console.WriteLine("{0}.{1}", o.GetType().NameWithGenericArgs(), method.Name);
 						if (setup != null)
@@ -32,6 +45,7 @@ namespace NUnit.Framework
 						Exception exc = tie.InnerException;
 						
 						// Find out if it matches an expected exception
+						// TODO: look for attribute by string instead
 						object[] attrs = method.GetCustomAttributes(
 							typeof(ExpectedExceptionAttribute), true);
 						bool match = false;
@@ -53,6 +67,8 @@ namespace NUnit.Framework
 					}
 				}
 			}
+			if (!any)
+				Console.WriteLine("{0} contains no tests.", o.GetType().NameWithGenericArgs());
 		}
 		private static bool IsTest(MethodInfo info)
 		{

@@ -343,7 +343,7 @@ namespace Loyc.Syntax.Les
 
 		private void PrintShortInteger(object value, NodeStyle style, string type)
 		{
-			Errors.Write(MessageSink.Warning, "Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
+			Errors.Write(Severity.Warning, "Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
 			PrintIntegerToString(value, style, "");
 		}
 		void PrintValueToString(object value, string suffix)
@@ -381,7 +381,7 @@ namespace Loyc.Syntax.Les
 			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
 				p(this, value, style);
 			else {
-				Errors.Write(MessageSink.Error, "Encountered unprintable literal of type {0}", value.GetType().Name);
+				Errors.Write(Severity.Error, "Encountered unprintable literal of type {0}", value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

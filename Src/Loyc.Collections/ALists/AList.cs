@@ -74,7 +74,7 @@ namespace Loyc.Collections
 	/// I like to think of AList as the ultimate novice data structure. Novices
 	/// like indexed lists, although for many tasks they are not the most efficient
 	/// choice. AList isn't optimized for any particular task, but it isn't 
-	/// downright slow for any task except <see cref="IndexOf"/>, so it's very 
+	/// downright slow for any task except <c>IndexOf</c>, so it's very 
 	/// friendly to novices that don't know about all the different types of data
 	/// structures and how to choose one. Don't worry about it! Just pick AList.
 	/// It's also a good choice when you're just too busy to think about 

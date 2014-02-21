@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using NUnit.Framework;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
+using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections;

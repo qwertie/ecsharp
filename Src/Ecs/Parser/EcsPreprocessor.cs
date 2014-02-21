@@ -103,7 +103,7 @@ namespace Ecs.Parser
 							else
 								DefinedSymbols.Add((Symbol)_rest[0].Value);
 						} else
-							ErrorSink.Write(MessageSink.Error, t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
+							ErrorSink.Write(Severity.Error, t.ToSourceRange(SourceFile), "'{0}' should be followed by a single, simple identifier", undef ? "#undef" : "#define");
 						continue;
 					case TokenType.PPif:
 						var tree = ReadRestAsTokenTree();
@@ -118,7 +118,7 @@ namespace Ecs.Parser
 						var tree_ = ReadRestAsTokenTree();
 
 						if (_ifRegions.Count == 0) {
-							ErrorSink.Write(MessageSink.Error, t.ToSourceRange(SourceFile), 
+							ErrorSink.Write(Severity.Error, t.ToSourceRange(SourceFile), 
 								"Missing #if clause before '{0}'", t);
 							_ifRegions.Push(Pair.Create(t, false));
 						}
@@ -153,7 +153,7 @@ namespace Ecs.Parser
 						continue;
 					case TokenType.PPwarning:
 						_commentList.Add(t);
-						ErrorSink.Write(MessageSink.Warning, t.ToSourceRange(SourceFile), t.Value.ToString());
+						ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), t.Value.ToString());
 						continue;
 					case TokenType.PPregion:
 						_commentList.Add(t);
@@ -162,7 +162,7 @@ namespace Ecs.Parser
 					case TokenType.PPendregion:
 						_commentList.Add(t);
 						if (_regions.Count == 0)
-							ErrorSink.Write(MessageSink.Warning, t.ToSourceRange(SourceFile), "#endregion without matching #region");
+							ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), "#endregion without matching #region");
 						else
 							_regions.Pop();
 						continue;
@@ -170,13 +170,13 @@ namespace Ecs.Parser
 						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
 						var rest = ReadRestAsTokenTree();
 						// TODO
-						ErrorSink.Write(MessageSink.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
+						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
 						continue;
 					case TokenType.PPpragma:
 						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
 						var rest_ = ReadRestAsTokenTree();
 						// TODO
-						ErrorSink.Write(MessageSink.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
+						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
 						continue;
 					}
 			    }
@@ -184,9 +184,9 @@ namespace Ecs.Parser
 			} while (true);
 			// end of stream
 			if (_ifRegions.Count > 0)
-				ErrorSink.Write(MessageSink.Error, _regions.Peek().ToSourceRange(SourceFile), "#if without matching #endif");
+				ErrorSink.Write(Severity.Error, _regions.Peek().ToSourceRange(SourceFile), "#if without matching #endif");
 			if (_regions.Count > 0)
-				ErrorSink.Write(MessageSink.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
+				ErrorSink.Write(Severity.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
 			return null;
 		}
 
@@ -200,7 +200,7 @@ namespace Ecs.Parser
 
 		private void Error(Token pptoken, string message)
 		{
-			ErrorSink.Write(MessageSink.Error, pptoken.ToSourceRange(SourceFile), message);
+			ErrorSink.Write(Severity.Error, pptoken.ToSourceRange(SourceFile), message);
 		}
 
 		private Token? SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
@@ -259,7 +259,7 @@ namespace Ecs.Parser
 			else if (expr.Calls(S.Neq, 2))
 				return Evaluate(expr.Args[0]) != Evaluate(expr.Args[1]);
 			else {
-				ErrorSink.Write(MessageSink.Error, expr.Range, "Only simple boolean expressions with &&, ||, !, ==, !=, are supported in #if and #elif");
+				ErrorSink.Write(Severity.Error, expr.Range, "Only simple boolean expressions with &&, ||, !, ==, !=, are supported in #if and #elif");
 				return null;
 			}
 		}
@@ -322,7 +322,7 @@ namespace Ecs.Parser
 				return null;
 		}
 
-		public Loyc.Utilities.IMessageSink ErrorSink { get; set; }
+		public Loyc.IMessageSink ErrorSink { get; set; }
 		public int IndentLevel { get { return 0; } } // TODO
 		public int LineNumber { get { return 0; } } // TODO
 		public int InputPosition { get { return _current.EndIndex; } }

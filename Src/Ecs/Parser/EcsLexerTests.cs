@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc;
 using System.Diagnostics;
 using S = Loyc.Syntax.CodeSymbols;
@@ -146,7 +146,7 @@ namespace Ecs.Parser
 			Case("0x0.8p", A(TT.Number, TT.Id), 0.5, _("p"));
 			Case("0x0.0p0", A(TT.Number), 0.0);
 			Case("0xF.8p0", A(TT.Number), 15.5);
-			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31, _("#;"), 31);
+			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31.0, _("#;"), 31.0);
 			Case("0xA.8p-1", A(TT.Number), 5.25);
 			Case("0b101.01", A(TT.Number), 5.25);
 			Case("0b101.01p0f", A(TT.Number), 5.25f);

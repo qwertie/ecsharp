@@ -14,8 +14,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using NUnit.Framework;
 using System.Threading;
+using Loyc.MiniTest;
 
 namespace Loyc.Collections
 {
@@ -325,7 +325,7 @@ namespace Loyc.Collections
 			ExpectList(snap, 3, 2, 1);
 		}
 
-		private void AssertThrows<Type>(TestDelegate @delegate)
+		private void AssertThrows<Type>(Action @delegate)
 		{
 			try {
 				@delegate();

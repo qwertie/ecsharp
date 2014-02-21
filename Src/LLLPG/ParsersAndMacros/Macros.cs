@@ -96,7 +96,7 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 				if (!ok)
-					sink.Write(MessageSink.Error, option, "Unrecognized option. There is one supported option: setType(type)");
+					sink.Write(Severity.Error, option, "Unrecognized option. There is one supported option: setType(type)");
 			}
 
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
@@ -134,7 +134,7 @@ namespace Loyc.LLParserGenerator
 							if (value.Value is bool)
 								helper.AllowSwitch = (bool)value.Value;
 							else
-								sink.Write(MessageSink.Error, parser, "allowSwitch: expected literal boolean argument.");
+								sink.Write(Severity.Error, parser, "allowSwitch: expected literal boolean argument.");
 							break;
 						default:
 							ok = false;
@@ -142,7 +142,7 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 				if (!ok)
-					sink.Write(MessageSink.Error, option, "Unrecognized option. Available options: laType(type), matchType(type), setType(type), allowSwitch(bool)");
+					sink.Write(Severity.Error, option, "Unrecognized option. Available options: laType(type), matchType(type), setType(type), allowSwitch(bool)");
 			}
 
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
@@ -259,7 +259,7 @@ namespace Loyc.LLParserGenerator
 			if (node.ArgCount == 1 && (result = ParseRuleBody(node.Args[0], sink)) != null)
 				return result;
 			else {
-				sink.Write(MessageSink.Error, node, "Expected one argument of the form @[...] or {... @[...]; ...}");
+				sink.Write(Severity.Error, node, "Expected one argument of the form @[...] or {... @[...]; ...}");
 				return null;
 			}
 		}
@@ -277,7 +277,7 @@ namespace Loyc.LLParserGenerator
 			{
 				string msg = Localize.From("Expected run_LLLPG(helper_object, {...}).");
 				if (hasBraces) msg = " " + Localize.From("An auxiliary macro is required to supply the helper object.");
-				sink.Write(MessageSink.Note, node, msg);
+				sink.Write(Severity.Note, node, msg);
 				return null;
 			}
 			helper = helper ?? new GeneralCodeGenHelper();
@@ -308,7 +308,7 @@ namespace Loyc.LLParserGenerator
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
-							sink.Write(MessageSink.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
+							sink.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
 						else {
 							rules.Add(Pair.Create(rule, methodBody));
 							stmts[i] = null; // remove processed rules from the list
@@ -316,12 +316,12 @@ namespace Loyc.LLParserGenerator
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))
-						sink.Write(MessageSink.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+						sink.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 				}
 			}
 
 			if (rules.Count == 0)
-				sink.Write(MessageSink.Warning, node, "No grammar rules were found in LLLPG block");
+				sink.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
 
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
@@ -346,7 +346,7 @@ namespace Loyc.LLParserGenerator
 			if (name.CallsMin(S.Of, 1))
 				name = name.Args[0];
 			if (!name.IsId) {
-				sink.Write(MessageSink.Error, name, "Unacceptable rule name");
+				sink.Write(Severity.Error, name, "Unacceptable rule name");
 				return null;
 			} else {
 				var rule = new Rule(basis, name.Name, null, true);
@@ -378,7 +378,7 @@ namespace Loyc.LLParserGenerator
 						ReadOption<bool>(sink, attr, v => lllpg.AddComments = v, true);
 						break;
 					default:
-						sink.Write(MessageSink.Error, attr,
+						sink.Write(Severity.Error, attr,
 							"Unrecognized attribute. LLLPG supports the following options: " +
 							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), and DefaultK(1..9)");
 						break;
@@ -421,7 +421,7 @@ namespace Loyc.LLParserGenerator
 						if (sig != null && sig.CallsMin(S.Def, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
 						else
-							sink.Write(MessageSink.Error, sig, "'recognizer' expects one parameter, a method signature.");
+							sink.Write(Severity.Error, sig, "'recognizer' expects one parameter, a method signature.");
 						break;
 					default:
 						return attr;
@@ -433,12 +433,12 @@ namespace Loyc.LLParserGenerator
 		private static void ReadOption<T>(IMessageSink sink, LNode attr, Action<T> setter, T? defaultValue) where T:struct
 		{
 			if (attr.ArgCount > 1 || (attr.ArgCount == 0 && defaultValue == null))
-				sink.Write(MessageSink.Error, attr, Localize.From("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
+				sink.Write(Severity.Error, attr, Localize.From("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
 			else if (attr.ArgCount == 1) {
 				if (attr.Args[0].Value is T)
 					setter((T)attr.Args[0].Value);
 				else
-					sink.Write(MessageSink.Error, attr, Localize.From("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
+					sink.Write(Severity.Error, attr, Localize.From("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
 			} else
 				setter(defaultValue.Value);
 		}

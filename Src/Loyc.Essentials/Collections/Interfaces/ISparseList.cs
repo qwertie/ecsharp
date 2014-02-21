@@ -28,7 +28,7 @@ namespace Loyc.Collections
 	/// <li><see cref="NextHigher"/> and <see cref="NextLower"/> do a linear scan 
 	/// to find the next higher or lower key that exists.</li>
 	/// <li><see cref="IsSet(int)"/> returns the result of <see cref="SortedDictionary{K,V}.ContainsKey"/>, and</li>
-	/// <li><see cref="IListSource{T}.TryGet(int, ref bool)"/> returns the value 
+	/// <li><see cref="IListSource{T}.TryGet(int, out bool)"/> returns the value 
 	/// retrieved by <see cref="SortedDictionary{K,V}.TryGetValue"/>, setting 'fail'
 	/// only if the index is negative.</li>
 	/// </ul>
@@ -37,7 +37,7 @@ namespace Loyc.Collections
 	/// <see cref="NextLower"/> to work efficiently, and it cannot efficiently 
 	/// support the <see cref="ISparseList{T}"/> interface.
 	/// </remarks>
-	/// <seealso cref="LCExtensions.AsSparse"/>
+	/// <seealso cref="LCExt.AsSparse"/>
 	public interface ISparseListSource<T> : IListSource<T>
 	{
 		/// <summary>Gets the next higher index of a non-empty (cleared) element 
@@ -118,7 +118,7 @@ namespace Loyc.Collections
 	/// items as "set" and allocate memory for them.
 	/// <para/>
 	/// This interface has no method to insert another sparse list into the current 
-	/// one, but <see cref="SparseListEx{T}"/> does.
+	/// one, but <see cref="ISparseListEx{T}"/> does.
 	/// <para/>
 	/// A sparse list is allowed to behave like <see cref="IAutoSizeArray{T}"/> when 
 	/// setting an invalid non-negative index. When you set <c>this[i]</c> where 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 
 namespace Loyc.Collections.Impl
 {
@@ -40,7 +40,7 @@ namespace Loyc.Collections.Impl
 			Assert.IsFalse(listE.MoveNext());
 		}
 
-		protected static void AssertThrows<Type>(TestDelegate @delegate)
+		protected static void AssertThrows<Type>(Action @delegate)
 		{
 			try {
 				@delegate();

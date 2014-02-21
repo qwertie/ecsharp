@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
@@ -1769,7 +1769,7 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, MessageSink.Debug);
+		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
 
 		// This method can be used when the LES and EC# versions of a grammar 
 		// produce identical output: two inputs, one output.

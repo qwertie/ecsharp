@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary>A read-only list of characters plus a <see cref="Slice()"/> method.</summary>
+	/// <summary>A read-only list of characters plus a <see cref="Slice(int,int)"/> method.</summary>
 	/// <remarks>
 	/// To get an instance of this interface from a string, write
 	/// <c>new StringSlice("string")</c>.

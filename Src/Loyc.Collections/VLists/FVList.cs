@@ -16,8 +16,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.Linq;
-using NUnit.Framework;
 using System.Threading;
+using Loyc.MiniTest;
 
 namespace Loyc.Collections
 {
@@ -785,7 +785,7 @@ namespace Loyc.Collections
 			Assert.That(list3 == list2);
 		}
 
-		private void AssertThrows<Type>(TestDelegate @delegate)
+		private void AssertThrows<Type>(Action @delegate)
 		{
 			try {
 				@delegate();

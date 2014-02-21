@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Tests.Resources;
 using Loyc.Collections;
 using Loyc.Utilities;

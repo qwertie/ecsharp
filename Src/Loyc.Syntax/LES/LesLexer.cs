@@ -63,7 +63,7 @@ namespace Loyc.Syntax.Les
 		protected override void Error(int index, string message)
 		{
 			_parseNeeded = true; // don't use the "fast" code path
-			ErrorSink.Write(MessageSink.Error, SourceFile.IndexToLine(index), message);
+			ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), message);
 		}
 
 		protected sealed override void AfterNewline()

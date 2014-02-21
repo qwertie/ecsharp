@@ -36,7 +36,7 @@ namespace Loyc.Syntax.Les
 		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
 		public ISourceFile SourceFile { get { return _sourceFile; } }
 
-		static readonly Symbol _Error = Utilities.MessageSink.Error;
+		static readonly Severity _Error = Severity.Error;
 
 		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
 		{
@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Les
 		public IMessageSink MessageSink
 		{
 			get { return _messages; } 
-			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
+			set { _messages = value ?? Loyc.MessageSink.Current; }
 		}
 
 		#region Methods required by base class and by LLLPG

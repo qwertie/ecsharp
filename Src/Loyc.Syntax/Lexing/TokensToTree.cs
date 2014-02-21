@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Collections;
 using Loyc;
 using Loyc.Syntax;

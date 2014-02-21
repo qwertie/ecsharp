@@ -6,7 +6,7 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>An adapter from <see cref="IListSource{T}"/> to <see cref="ISparseListSource{T}"/>.</summary>
-	/// <seealso cref="LCExtensions.AsSparse"/>
+	/// <seealso cref="LCExt.AsSparse{T}"/>
 	public class ListSourceAsSparse<T> : ListSourceBase<T>, ISparseListSource<T>
 	{
 		private IListSource<T> list;

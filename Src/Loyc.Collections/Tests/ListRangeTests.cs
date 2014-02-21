@@ -5,7 +5,7 @@
 	using System.Linq;
 	using System.Text;
 	using Loyc.Collections;
-	using NUnit.Framework;
+	using Loyc.MiniTest;
 	
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]

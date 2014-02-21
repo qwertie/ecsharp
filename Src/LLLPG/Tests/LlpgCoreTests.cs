@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
@@ -100,7 +100,7 @@ namespace Loyc.LLParserGenerator
 
 		int _messageCounter;
 		bool _expectingOutput;
-		void OutputMessage(Symbol type, object context, string msg, params object[] args)
+		void OutputMessage(Severity type, object context, string msg, params object[] args)
 		{
 			_messageCounter++;
 			var tmp = Console.ForegroundColor;

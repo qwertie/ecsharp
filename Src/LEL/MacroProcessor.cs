@@ -153,7 +153,7 @@ namespace LeMP
 			try {
 				return (SimpleMacro)Delegate.CreateDelegate(typeof(SimpleMacro), method);
 			} catch (Exception e) {
-				_sink.Write(MessageSink.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
+				_sink.Write(Severity.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
 				return null;
 			}
 		}
@@ -342,7 +342,7 @@ namespace LeMP
 				foreach (var arg in node.Args) {
 					var sym = NamespaceToSymbol(arg);
 					if (!_curScope.OpenNamespaces.Remove(sym))
-						sink.Write(MessageSink.Debug, arg, "Namespace not found to remove: {0}", sym);
+						sink.Write(Severity.Debug, arg, "Namespace not found to remove: {0}", sym);
 				}
 				return null;
 			}
@@ -442,20 +442,20 @@ namespace LeMP
 						output = macro.Macro(macroInput, messageHolder);
 						if (output != null) { accepted++; acceptedIndex = i; }
 					} catch (ThreadAbortException e) {
-						_sink.Write(MessageSink.Error, input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
-						_sink.Write(MessageSink.Detail, input, e.StackTrace);
+						_sink.Write(Severity.Error, input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
+						_sink.Write(Severity.Detail, input, e.StackTrace);
 						results.Add(new Result(macro, output, messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)));
-						PrintMessages(results, input, accepted, MessageSink.Error);
+						PrintMessages(results, input, accepted, Severity.Error);
 						throw;
 					} catch (Exception e) {
-						messageHolder.Write(MessageSink.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
-						messageHolder.Write(MessageSink.Detail, input, e.StackTrace);
+						messageHolder.Write(Severity.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
+						messageHolder.Write(Severity.Detail, input, e.StackTrace);
 					}
 					results.Add(new Result(macro, output, messageHolder.List.Slice(mhi, messageHolder.List.Count - mhi)));
 				}
 
 				PrintMessages(results, input, accepted,
-					messageHolder.List.MaxOrDefault(msg => MessageSink.GetSeverity(msg.Type)).Type ?? MessageSink.Verbose);
+					messageHolder.List.MaxOrDefault(msg => (int)msg.Type).Type);
 
 				if (accepted >= 1) {
 					var result = results[acceptedIndex];
@@ -546,18 +546,18 @@ namespace LeMP
 				return changed ? node : null;
 			}
 
-			void PrintMessages(List<Result> results, LNode input, int accepted, Symbol maxSeverity)
+			void PrintMessages(List<Result> results, LNode input, int accepted, Severity maxSeverity)
 			{
 				if (accepted > 1)
-					_sink.Write(MessageSink.Error, input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted,
+					_sink.Write(Severity.Error, input, "Ambiguous macro call. {0} macros accepted the input: {1}", accepted,
 						results.Where(r => r.Node != null).Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
 
 				bool macroStyleCall = input.BaseStyle == NodeStyle.Special;
 
-				if (accepted > 0 || macroStyleCall || MessageSink.GetSeverity(maxSeverity) >= MessageSink.GetSeverity(MessageSink.Warning))
+				if (accepted > 0 || macroStyleCall || maxSeverity >= Severity.Warning)
 				{
-					if (macroStyleCall && MessageSink.GetSeverity(maxSeverity) < MessageSink.GetSeverity(MessageSink.Warning))
-						maxSeverity = MessageSink.Warning;
+					if (macroStyleCall && maxSeverity < Severity.Warning)
+						maxSeverity = Severity.Warning;
 					var rejected = results.Where(r => r.Node == null && (r.Macro.Mode & MacroMode.Passive) == 0);
 					if (accepted == 0 && macroStyleCall && _sink.IsEnabled(maxSeverity) && rejected.Any())
 					{
@@ -572,9 +572,9 @@ namespace LeMP
 							// Print all messages from macros that accepted the input. 
 							// For rejecting macros, print warning/error messages, and 
 							// other messages when macroStyleCall.
-							if (_sink.IsEnabled(msg.Type) && (result.Node != null 
-								|| (msg.Type == MessageSink.Detail && printedLast)
-								|| MessageSink.GetSeverity(msg.Type) >= MessageSink.GetSeverity(MessageSink.Warning)
+							if (_sink.IsEnabled(msg.Type) && (result.Node != null
+								|| (msg.Type == Severity.Detail && printedLast)
+								|| msg.Type >= Severity.Warning
 								|| macroStyleCall))
 							{
 								var msg2 = new MessageHolder.Message(msg.Type, msg.Context,

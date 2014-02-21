@@ -1,9 +1,13 @@
+// Threading-related stuff.
+//
+// Note: this was originally designed to support Compact Framework, but that has
+// since been dropped as a design goal.
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using NUnit.Framework;
+using Loyc.MiniTest;
 #if !CompactFramework
 using System.Runtime.Serialization;
 #else
@@ -23,13 +27,34 @@ namespace Loyc.Threading
 	/// drop-in replacement, except that only the most common methods and
 	/// properties (both static and non-static) are provided.
 	/// <para/>
-	/// A child thread inherits a thread-local value from a parent thread
-	/// only if ForkThread.AllocateDataSlot, ForkThread.AllocateNamedDataSlot
-	/// or ForkThread.GetNamedDataSlot was called to create the variable.
-	/// Sadly, there is no way to provide inheritance for variables marked by
-	/// [ThreadStatic].
+	/// .NET itself has no support whatsoever from inheriting thread-local 
+	/// variables. Not only are thread locals not inherited from the parent
+	/// thread, .NET fires no event when a thread starts and a child thread
+	/// cannot get the thread ID of the thread that created it.
 	/// <para/>
-	/// TODO: rewrite ThreadState property for .NET compact framework.
+	/// ThreadEx helps work around this problem by automatically propagating
+	/// <see cref="ThreadLocalVariable{T}"/> values, and providing the 
+	/// <see cref="ThreadStarting"/> event, which blocks the parent thread but
+	/// is called in the child thread. This only works if you use <see cref="ThreadEx"/>
+	/// to start the child thread; when using other mechanisms such as
+	/// <see cref="System.Threading.Tasks.Task"/>, it is possible to copy thread-
+	/// local variables from the parent thread using code like this:
+	/// <code>
+	/// int parentThreadId = Thread.CurrentThread.ManagedThreadId;
+	/// var task = System.Threading.Tasks.Task.Factory.StartNew(() => {
+	///		using (ThreadEx.PropagateVariables(parentThreadId))
+	///			DoSomethingOnChildThread();
+	///	});
+	///	task.Wait();
+	/// </code>
+	/// Be careful, however: you should guarantee that, while you copy the 
+	/// variables, the parent thread is blocked, or that the parent thread will not 
+	/// modify any of them (which may be difficult since variables might exist that
+	/// you are unaware of, that you do not control).
+	/// <para/>
+	/// TLV (thread-local variable) inheritance is needed to use the 
+	/// <a href="http://www.codeproject.com/Articles/101411/DI-and-Pervasive-services">
+	/// Ambient Service Pattern</a>
 	/// </remarks>
 	public class ThreadEx
 	{
@@ -173,7 +198,14 @@ namespace Loyc.Threading
 		/// </returns>
 		/// <remarks>It is safe to call this method if the thread has already been
 		/// initialized. In that case, the thread will not be initialized a second 
-		/// time, and the returned value will do nothing when it is disposed.</remarks>
+		/// time, and the returned value will do nothing when it is disposed.
+		/// <para/>
+		/// Be careful with this method: you should guarantee that, while you copy the 
+		/// variables, the parent thread is blocked, or that the parent thread will not 
+		/// modify any of them during the copying process (which may be difficult 
+		/// since variables might exist that you are unaware of, that you do not 
+		/// control).
+		/// </remarks>
 		public static ThreadDestructor PropagateVariables(int parentThreadId)
 		{
 			return new ThreadDestructor(InheritThreadLocalVars(parentThreadId));
@@ -393,6 +425,10 @@ namespace Loyc.Threading
 	/// that maps thread IDs to values.</summary>
 	/// <typeparam name="T">Type of variable to wrap</typeparam>
 	/// <remarks>
+	/// Note: this was written before .NET 4 (which has ThreadLocal{T}). Unlike
+	/// <see cref="ThreadLocal{T}"/>, this class supports propagation from parent
+	/// to child threads when used with <see cref="ThreadEx"/>.
+	/// <para/>
 	/// This class exists to solve two problems. First, the [ThreadStatic] 
 	/// attribute is not supported in the .NET Compact Framework. Second, and
 	/// more importantly, .NET does not propagate thread-local variables when 

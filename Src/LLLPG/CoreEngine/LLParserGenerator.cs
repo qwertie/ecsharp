@@ -231,14 +231,14 @@ namespace Loyc.LLParserGenerator
 		
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
 
-		protected static Symbol Warning = GSymbol.Get("Warning");
-		protected static Symbol Error = GSymbol.Get("Error");
-		protected static Symbol Verbose = GSymbol.Get("Verbose");
-		private void Output(Symbol type, Pred pred, string msg)
+		protected static Severity Warning = Severity.Warning;
+		protected static Severity Error = Severity.Error;
+		protected static Severity Verbose = Severity.Verbose;
+		private void Output(Severity type, Pred pred, string msg)
 		{
 			Output(type, pred != null ? pred.Basis : null, pred, msg);
 		}
-		private void Output(Symbol type, LNode node, Pred pred, string msg)
+		private void Output(Severity type, LNode node, Pred pred, string msg)
 		{
 			Sink.Write(type, node == null || node.IsIdNamed(S.Missing) ? (object)pred : node, msg);
 		}

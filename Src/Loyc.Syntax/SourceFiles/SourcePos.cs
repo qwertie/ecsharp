@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Utilities;
 
 namespace Loyc.Syntax
@@ -47,8 +47,9 @@ namespace Loyc.Syntax
 
 	/// <summary>Holds a filename (FileName), a line number (Line) and a position in 
 	/// the line (PosInLine), representing a position in a source code file.</summary>
-	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-	/// nowhere in particular. Instances are immutable.
+	/// <remarks>
+	/// Line and column numbering both start at one (1). Line=0 signifies nowhere 
+	/// in particular. Instances are immutable.
 	/// </remarks>
 	public class SourcePos : LineAndPos, ILocationString
 	{

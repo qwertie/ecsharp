@@ -6,7 +6,7 @@ namespace Loyc.CompilerCore
 	using System.IO;
 	using Loyc.Utilities;
 	using Loyc.Math;
-	using NUnit.Framework;
+	using Loyc.MiniTest;
 	using System.Diagnostics;
 	using Loyc.Syntax;
 	using Loyc.Collections;

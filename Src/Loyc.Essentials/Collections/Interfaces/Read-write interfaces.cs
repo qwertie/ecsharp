@@ -42,11 +42,7 @@ namespace Loyc.Collections
 	
 	/// <summary>An interface typically implemented alongside <see cref="IList{T}"/> 
 	/// for collection types that can add or remove multiple items in one method 
-	/// call, and sort all or part of the list.</summary>
-	/// <remarks>
-	/// This interface comes with extension methods <see cref="LCInterfaces.Resize{T}"/> 
-	/// and <see cref="LCInterfaces.Sort{T}(IListRangeMethods{T})"/>.
-	/// </remarks>
+	/// call.</summary>
 	public interface IListRangeMethods<T> : IAddRange<T>
 	{
 		void InsertRange(int index, IEnumerable<T> e);

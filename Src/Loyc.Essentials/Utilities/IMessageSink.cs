@@ -8,7 +8,7 @@ using Loyc.Collections.Impl;
 using Loyc.Collections;
 using Loyc.Math;
 
-namespace Loyc.Utilities
+namespace Loyc
 {
 	/// <summary>A general-purpose interface for a class that accepts formatted 
 	/// messages with context information.</summary>
@@ -34,7 +34,7 @@ namespace Loyc.Utilities
 	/// The message sink itself should perform localization, which can be done
 	/// with <see cref="Localize.From"/>.
 	/// <para/>
-	/// Only a single Write() method is truly needed (<see cref="Write(Symbol, object, string, object[])"/>),
+	/// Only a single Write() method is truly needed (<see cref="Write(Severity, object, string, object[])"/>),
 	/// but efficiency reasons the interface contains two other writers. It 
 	/// is expected to be fairly common that a message sink will drop some or
 	/// all messages without printing them, e.g. if a message sink is used for 
@@ -48,7 +48,7 @@ namespace Loyc.Utilities
 	/// an overload that takes no formatting arguments (this indicates that 
 	/// parameter substitution is not required and should not be attempted.)
 	/// <para/>
-	/// In addition, the caller can call <see cref="IsEnabled(Symbol)"/> to avoid 
+	/// In addition, the caller can call <see cref="IsEnabled(Severity)"/> to avoid 
 	/// doing any work required to prepare a message for printing when a certain
 	/// category of output is disabled.
 	/// </remarks>
@@ -72,13 +72,45 @@ namespace Loyc.Utilities
 		/// See also <see cref="MessageSink.LocationString"/>().</param>
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
-		void Write(Symbol type, object context, string format);
-		void Write(Symbol type, object context, string format, object arg0, object arg1 = null);
-		void Write(Symbol type, object context, string format, params object[] args);
+		void Write(Severity type, object context, string format);
+		void Write(Severity type, object context, string format, object arg0, object arg1 = null);
+		void Write(Severity type, object context, string format, params object[] args);
 		
 		/// <summary>Returns true if messages of type 'type' will actually be 
 		/// printed, or false if Write(type, ...) is a no-op.</summary>
-		bool IsEnabled(Symbol type);
+		bool IsEnabled(Severity type);
+	}
+
+	/// <summary>A linear scale to categorize the importance and seriousness of 
+	/// messages sent to <see cref="IMessageSink"/>.</summary>
+	/// <remarks>
+	/// The numbers are Fatal=11, Critical=9, Error=7, Warning=6, Note=5, 
+	/// Debug=3, Verbose=1 and Detail=0. The severity numbers are based on 
+	/// those defined in log4net, divided by 1000, e.g. Warning=60000 in log4net
+	/// but 60 in this enum.
+	/// <para/>
+	/// Some of the enumeration values begin with an underscore. These are
+	/// values defined by Log4net that are deprecated in Loyc.
+	/// <para/>
+	/// Messages of type Detail are meant to contain extra information associated 
+	/// with the most recent non-Detail message, e.g. stack traces or extra 
+	/// diagnostic information for Errors.
+	/// </remarks>
+	public enum Severity
+	{
+		Detail = 0,       // no log4net equivalent
+		Verbose = 10,     // log4net: Verbose = Finest = 10000
+		_Finer = 20,      // log4net: Finer = 20000
+		Debug = 30,       // log4net: Debug = Fine = 30000
+		_Info = 40,       // log4net: Info = 40000
+		Note = 50,        // log4net: Notice = 50000
+		Warning = 60,     // log4net: Warning = 60000
+		Error = 70,       // log4net: Error = 70000
+		_Severe = 80,     // log4net: Severe = 80000
+		Critical = 90,    // log4net: Critical = 90000
+		_Alert = 100,     // log4net: Alert = 100000
+		Fatal = 110,      // log4net: Fatal = 110000
+		_Emergency = 120, // log4net: Emergency = 120000
 	}
 
 	/// <summary>Holds the default message sink for this thread (<see cref="Current"/>),
@@ -88,6 +120,7 @@ namespace Loyc.Utilities
 	/// <seealso cref="IMessageSink"/>
 	public static class MessageSink
 	{
+		/*
 		public static readonly Symbol Fatal = GSymbol.Get("Fatal");
 		public static readonly Symbol Critical = GSymbol.Get("Critical"); // major error
 		public static readonly Symbol Error = GSymbol.Get("Error");
@@ -151,6 +184,7 @@ namespace Loyc.Utilities
 		public static Symbol GetSymbol(int severity) { return _severityList[severity.InRange(0, 12)]; }
 
 		#endregion
+		*/
 
 		[ThreadStatic]
 		static IMessageSink CurrentTLV = null;
@@ -183,6 +217,11 @@ namespace Loyc.Utilities
 		public static readonly ConsoleMessageSink Console = new ConsoleMessageSink();
 		/// <summary>Discards all messages.</summary>
 		public static readonly NullMessageSink Null = new NullMessageSink();
+		/// <summary>Sends all messages to a user-defined method.</summary>
+		public static MessageSinkFromDelegate FromDelegate(Action<Severity, object, string, object[]> writer, Func<Severity, bool> isEnabled = null)
+		{
+			return new MessageSinkFromDelegate(writer, isEnabled);
+		}
 	}
 
 	/// <summary>This interface allows an object to declare its "location". It is

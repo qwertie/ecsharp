@@ -64,7 +64,7 @@ namespace Loyc.LLParserGenerator
 			try {
 				return NodeToPredCore(expr, ctx);
 			} catch (Exception ex) {
-				_sink.Write(MessageSink.Error, expr, ex.ExceptionTypeAndMessage());
+				_sink.Write(Severity.Error, expr, ex.ExceptionTypeAndMessage());
 				return new TerminalPred(expr, _helper.EmptySet);
 			}
 		}
@@ -112,7 +112,7 @@ namespace Loyc.LLParserGenerator
 					Pred subpred = BranchToPred(expr, out branchMode, ctx);
 
 					if (branchMode != BranchMode.None)
-						_sink.Write(MessageSink.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
+						_sink.Write(Severity.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
 					
 					if (type == _Star)
 						return new Alts(expr, LoopMode.Star, subpred, greedy);
@@ -131,7 +131,7 @@ namespace Loyc.LLParserGenerator
 				else if (expr.Calls(_Gate, 2) || expr.Calls(_EqGate, 2))
 				{
 					if (ctx == Context.GateLeft)
-						_sink.Write(MessageSink.Error, expr, "Cannot use a gate in the left-hand side of another gate");
+						_sink.Write(Severity.Error, expr, "Cannot use a gate in the left-hand side of another gate");
 
 					return new Gate(expr, NodeToPred(expr.Args[0], Context.GateLeft),
 					                      NodeToPred(expr.Args[1], Context.GateRight)) 
@@ -155,7 +155,7 @@ namespace Loyc.LLParserGenerator
 						term.Set = term.Set.Inverted().WithoutEOF();
 						return term;
 					} else {
-						_sink.Write(MessageSink.Error, expr, 
+						_sink.Write(Severity.Error, expr, 
 							"The set-inversion operator ~ can only be applied to a single terminal, not a '{0}'", subpred.GetType().Name);
 						return subpred;
 					}
@@ -189,9 +189,9 @@ namespace Loyc.LLParserGenerator
 			if (terminal == null) {
 				errorMsg = errorMsg ?? "LLLPG: unrecognized expression";
 				terminal = new TerminalPred(expr, _helper.EmptySet);
-				_sink.Write(MessageSink.Error, expr, errorMsg);
+				_sink.Write(Severity.Error, expr, errorMsg);
 			} else if (errorMsg != null)
-				_sink.Write(MessageSink.Warning, expr, errorMsg);
+				_sink.Write(Severity.Warning, expr, errorMsg);
 			return terminal;
 		}
 
@@ -226,7 +226,7 @@ namespace Loyc.LLParserGenerator
 					var code = (LNode)objs[i];
 					if ((ctx == Context.And || ctx == Context.GateLeft) && !error) {
 						error = true;
-						_sink.Write(MessageSink.Error, objs[i], ctx == Context.And ?
+						_sink.Write(Severity.Error, objs[i], ctx == Context.And ?
 							"Cannot use an action block inside an '&' or '!' predicate; these predicates are for prediction only." :
 							"Cannot use an action block on the left side of a '=>' gate; the left side is for prediction only.");
 					}

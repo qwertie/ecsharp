@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.IO;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.CompilerCore;
 using Loyc;
 using Loyc.Utilities;
@@ -25,7 +25,6 @@ namespace Ecs
 			RunTests.Run(new EcsLexerTests());
 			RunTests.Run(new EcsParserTests());
 			RunTests.Run(new GTests());
-			RunTests.Run(new NodeTests());
 			RunTests.Run(new EcsNodePrinterTests());
 		}
 

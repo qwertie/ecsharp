@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using System.Reflection;
+using System.Diagnostics;
 using System.IO;
-using Ecs.Parser;
+using Loyc.MiniTest;
 using Loyc.Syntax.Les;
 using Loyc.Collections;
 using Loyc.Utilities;
-using System.Reflection;
 using Loyc.Syntax;
-using System.Diagnostics;
+using Ecs.Parser;
 
 namespace Loyc.LLParserGenerator
 {
@@ -33,7 +33,7 @@ namespace Loyc.LLParserGenerator
 					return;
 				}
 
-				Symbol minSeverity = MessageSink.Note;
+				Severity minSeverity = Severity.Note;
 				#if DEBUG
 				minSeverity = MessageSink.Debug;
 				#endif

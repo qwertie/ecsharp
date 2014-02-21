@@ -70,7 +70,7 @@ namespace Ecs.Parser
 
 			var pos = SourceFile.IndexToLine(index);
 			if (ErrorSink != null)
-				ErrorSink.Write(MessageSink.Error, pos, message);
+				ErrorSink.Write(Severity.Error, pos, message);
 			else
 				throw new FormatException(pos + ": " + message);
 		}

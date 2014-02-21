@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Syntax.Lexing;
 using Loyc.Utilities;
 using Loyc;
@@ -200,7 +200,7 @@ namespace Loyc.Syntax.Les
 			Case("0x0.0p1234", A(TT.Number), 0.0);
 			Case("0x0.0", A(TT.Number), 0.0);
 			Case("0xF.8", A(TT.Number), 15.5);
-			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31, _("#;"), 31);
+			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31.0, _("#;"), 31.0);
 			Case("0xA.8p-1", A(TT.Number), 5.25);
 			Case("0b101.01", A(TT.Number), 5.25);
 			Case("0b101.01p0f", A(TT.Number), 5.25f);

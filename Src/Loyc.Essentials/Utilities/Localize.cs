@@ -4,7 +4,7 @@
 
 using System;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Threading;
 
 namespace Loyc

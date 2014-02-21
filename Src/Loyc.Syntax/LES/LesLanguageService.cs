@@ -29,7 +29,7 @@ namespace Loyc.Syntax.Les
 		{
 			get { return LesNodePrinter.Printer; }
 		}
-		public string Print(LNode node, Utilities.IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var sb = new StringBuilder();
 			Printer(node, sb, msgs, mode, indentString, lineSeparator);

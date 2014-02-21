@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc.Collections;
 
 namespace Loyc.Utilities

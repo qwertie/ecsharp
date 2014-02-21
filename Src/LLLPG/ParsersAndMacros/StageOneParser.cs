@@ -134,7 +134,7 @@ namespace Loyc.LLParserGenerator
 		public IMessageSink ErrorSink
 		{
 			get { return _messages; } 
-			set { _messages = value ?? Loyc.Utilities.MessageSink.Current; }
+			set { _messages = value ?? Loyc.MessageSink.Current; }
 		}
 		
 		#region Methods required by BaseLexer & LLLPG
@@ -146,7 +146,7 @@ namespace Loyc.LLParserGenerator
 		protected override void Error(int li, string message)
 		{
 			int iPos = GetTextPosition(InputPosition + li);
-			ErrorSink.Write(MessageSink.Error, _sourceFile.IndexToLine(iPos), message);
+			ErrorSink.Write(Severity.Error, _sourceFile.IndexToLine(iPos), message);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

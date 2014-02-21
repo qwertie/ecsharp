@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.CompilerCore;
-using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using Ecs.Parser;
 using Loyc.Syntax.Lexing;
@@ -133,7 +132,7 @@ namespace Ecs
 		[Test]
 		public void SimpleCallsAndTypeParams()
 		{
-			Expr("a",        a);
+			Expr("a", a);
 			Expr("(a)",      F.InParens(a));
 			Expr("((a))",    F.InParens(F.InParens(a)));
 			Expr("#public",  @public);
