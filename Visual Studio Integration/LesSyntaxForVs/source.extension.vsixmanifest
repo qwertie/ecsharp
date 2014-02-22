@@ -13,9 +13,9 @@
         <Edition>Ultimate</Edition>
         <Edition>Premium</Edition>
         <Edition>Pro</Edition>
-        <Edition>Express_All</Edition>
         <Edition>IntegratedShell</Edition>
         <!--Doesn't work in Express
+        <Edition>Express_All</Edition>
         <Edition>VSWinExpress</Edition>
         <Edition>VSWinDesktopExpress</Edition>
         <Edition>VPDExpress</Edition>-->
@@ -25,9 +25,9 @@
         <Edition>Ultimate</Edition>
         <Edition>Premium</Edition>
         <Edition>Pro</Edition>
-        <Edition>Express_All</Edition>
         <Edition>IntegratedShell</Edition>
         <!--Doesn't work in Express
+        <Edition>Express_All</Edition>
         <Edition>VSWinExpress</Edition>
         <Edition>VSWinDesktopExpress</Edition>
         <Edition>VPDExpress</Edition>-->
@@ -37,9 +37,9 @@
         <Edition>Ultimate</Edition>
         <Edition>Premium</Edition>
         <Edition>Pro</Edition>
-        <Edition>Express_All</Edition>
         <Edition>IntegratedShell</Edition>
         <!--Doesn't work in Express
+        <Edition>Express_All</Edition>
         <Edition>VSWinExpress</Edition>
         <Edition>VSWinDesktopExpress</Edition>
         <Edition>VPDExpress</Edition>-->
