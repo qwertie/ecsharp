@@ -17,24 +17,24 @@ It is in very early stages right now because I am working on it alone. I am focu
 
 Loyc currently contains the following projects, listed in order from the lowest level to the highest level. A rough dependency tree is
 
-      Loyc.Essentials
-             |
-      Loyc.Collections
-             |   |      
-             |   +---------------+
-             |                   |
-             |               Loyc.Syntax
-             |                  | |
-       Loyc.Utilities-----------+ |
-             ^                    |
-             |                    |
-   +---------+-------------+----+ |
-   |         |             |    | |
- Baadia* MiniTestRunner  Tests  Ecs*
-                                 |
-                                LEL
-                                 |
-                               LLLPG*
+         Loyc.Essentials
+                |
+         Loyc.Collections
+                |   |      
+                |   +---------------+
+                |                   |
+                |               Loyc.Syntax
+                |                  | |
+          Loyc.Utilities-----------+ |
+                ^                    |
+                |                    |
+      +---------+-------------+----+ |
+      |         |             |    | |
+    Baadia* MiniTestRunner  Tests  Ecs*
+                                    |
+                                   LEL
+                                    |
+                                  LLLPG*
 
 \* I will eventually split out LLLPG, Baadia, Ecs (Enhanced C#), and the low-level libraries (Essentials, Collections) into separate projects on SourceForge or GitHub.
 
