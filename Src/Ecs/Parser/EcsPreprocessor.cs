@@ -184,7 +184,7 @@ namespace Ecs.Parser
 			} while (true);
 			// end of stream
 			if (_ifRegions.Count > 0)
-				ErrorSink.Write(Severity.Error, _regions.Peek().ToSourceRange(SourceFile), "#if without matching #endif");
+				ErrorSink.Write(Severity.Error, _ifRegions.Peek().A.ToSourceRange(SourceFile), "#if without matching #endif");
 			if (_regions.Count > 0)
 				ErrorSink.Write(Severity.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
 			return null;

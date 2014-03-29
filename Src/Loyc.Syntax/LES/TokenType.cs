@@ -2,13 +2,51 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
-	using System.Diagnostics;
 
+	public enum TokenType
+	{
+		EOF        = 0,
+		Spaces     = TokenKind.Spaces + 1,
+		Newline    = TokenKind.Spaces + 2,
+		SLComment  = TokenKind.Comment,
+		MLComment  = TokenKind.Comment + 1,
+		Shebang    = TokenKind.Comment + 2,
+		Id         = TokenKind.Id,
+		Number     = TokenKind.Number,
+		String     = TokenKind.String,
+		SQString   = TokenKind.String + 1,
+		Symbol     = TokenKind.OtherLit,
+		OtherLit   = TokenKind.OtherLit + 1, // true, false, null
+		Dot        = TokenKind.Dot,
+		Assignment = TokenKind.Assignment,
+		NormalOp   = TokenKind.Operator,
+		PreSufOp   = TokenKind.Operator + 1,  // ++, --
+		SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
+		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
+		Colon      = TokenKind.Operator + 4,
+		At         = TokenKind.Operator + 5,
+		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
+		BQString   = TokenKind.Operator + 7,
+		Comma      = TokenKind.Separator,
+		Semicolon  = TokenKind.Separator + 1,
+		LParen     = TokenKind.LParen,
+		RParen     = TokenKind.RParen,
+		LBrack     = TokenKind.LBrack,
+		RBrack     = TokenKind.RBrack,
+		LBrace     = TokenKind.LBrace,
+		RBrace     = TokenKind.RBrace,
+		//OpenOf     = TokenKind.OtherGroup + 1,
+		Indent     = TokenKind.LBrace + 1,
+		Dedent     = TokenKind.RBrace + 1,
+		Unknown    = TokenKind.Other,
+	}
+	
 	public static class TokenExt
 	{
 		[DebuggerStepThrough]
@@ -61,43 +99,5 @@ namespace Loyc.Syntax.Les
 					return "@unknown_token";
 			}
 		}
-	}
-
-	public enum TokenType
-	{
-		EOF        = 0,
-		Spaces     = TokenKind.Spaces + 1,
-		Newline    = TokenKind.Spaces + 2,
-		SLComment  = TokenKind.Comment,
-		MLComment  = TokenKind.Comment + 1,
-		Shebang    = TokenKind.Comment + 2,
-		Id         = TokenKind.Id,
-		Number     = TokenKind.Number,
-		String     = TokenKind.String,
-		SQString   = TokenKind.String + 1,
-		Symbol     = TokenKind.OtherLit,
-		OtherLit   = TokenKind.OtherLit + 1, // true, false, null
-		Dot        = TokenKind.Dot,
-		Assignment = TokenKind.Assignment,
-		NormalOp   = TokenKind.Operator,
-		PreSufOp   = TokenKind.Operator + 1,  // ++, --
-		SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
-		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
-		Colon      = TokenKind.Operator + 4,
-		At         = TokenKind.Operator + 5,
-		Not        = TokenKind.Operator + 6, // !, special because it is used for #of: A!(B,C) => #of(A, B, C)
-		BQString   = TokenKind.Operator + 7,
-		Comma      = TokenKind.Separator,
-		Semicolon  = TokenKind.Separator + 1,
-		LParen     = TokenKind.LParen,
-		RParen     = TokenKind.RParen,
-		LBrack     = TokenKind.LBrack,
-		RBrack     = TokenKind.RBrack,
-		LBrace     = TokenKind.LBrace,
-		RBrace     = TokenKind.RBrace,
-		//OpenOf     = TokenKind.OtherGroup + 1,
-		Indent     = TokenKind.LBrace + 1,
-		Dedent     = TokenKind.RBrace + 1,
-		Unknown    = TokenKind.Other,
 	}
 }

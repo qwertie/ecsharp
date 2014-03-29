@@ -55,7 +55,8 @@ namespace Loyc.Collections
 	/// of just <see cref="IEnumerator{T}"/>. A normal enumerator can only do one
 	/// of two actions on each call to MoveNext(): it can return a T value, or stop.
 	/// But an <c>IEnumeratorFrame</c> can do one of three things: it can return a T
-	/// value, it can stop, or it can return a new (child) stack frame.
+	/// value, it can stop, or it can return a new (child) stack frame. These actions
+	/// are represented by <c>MoveNext</c> return values of 1, 0, and -1 respectively.
 	/// <para/>
 	/// You cannot use <c>yield return</c> with <c>NestedEnumerator</c> because it 
 	/// is not supported by the C# compiler, so using <c>NestedEnumerator</c> 

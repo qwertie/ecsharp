@@ -9,15 +9,14 @@ using Loyc.Collections;
 using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Utilities;
-using Loyc.CompilerCore;
+using Loyc.Syntax;
+using Loyc.LLParserGenerator;
+using Loyc.Syntax.Lexing;
+using Loyc.Syntax.Les;
 
 namespace Ecs.Parser
 {
 	using TT = TokenType;
-	using Loyc.Syntax;
-	using Loyc.LLParserGenerator;
-	using Loyc.Syntax.Lexing;
-	using Loyc.Syntax.Les;
 
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="WhitespaceFilter"/>

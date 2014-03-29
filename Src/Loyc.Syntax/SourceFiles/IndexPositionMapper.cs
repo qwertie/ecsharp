@@ -62,7 +62,7 @@ namespace Loyc.Syntax
 			if (_startingPos == null)
 				return new SourcePos(string.Empty, Line, PosInLine);
 			else if (Line <= 1)
-				return new SourcePos(_startingPos.FileName, _startingPos.Line, _startingPos.PosInLine + PosInLine);
+				return new SourcePos(_startingPos.FileName, _startingPos.Line, _startingPos.PosInLine-1 + PosInLine);
 			else
 				return new SourcePos(_startingPos.FileName, _startingPos.Line + Line-1, PosInLine);
 		}

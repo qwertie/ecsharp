@@ -55,6 +55,10 @@ namespace Loyc
 	/// commonly used for extensible enums, I decided it was better that ToString()
 	/// return just the Name alone, which makes Symbol more suitable as a drop-in 
 	/// replacement for enums.
+	/// <para/>
+	/// Symbols are also useful in compilers and Loyc trees, where there may be a 
+	/// performance advantage in comparing identifiers by reference rather than
+	/// character-by-character.
 	/// </remarks>
 	public class Symbol : IReferenceComparable, IComparable<Symbol>
 	{

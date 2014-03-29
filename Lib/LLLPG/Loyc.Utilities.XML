@@ -4,285 +4,23 @@
         <name>Loyc.Utilities</name>
     </assembly>
     <members>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
+        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)">
+            <summary>Simplifies a polyline using the Douglas-Peucker line 
+            simplification algorithm. This algorithm removes points that are 
+            deemed unimportant; the output is a subset of the input.</summary>
+            <typeparam name="List">Original unsimplified polyline</typeparam>
+            <param name="output">The output polyline is added in order to this collection</param>
+            <param name="tolerance">The distance between the input polyline and the 
+            output polyline will never exceed this distance. Increase this value to 
+            simplify more aggressively.</param>
+            <returns>The number of output points.</returns>
             <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
+            The average time complexity of this algorithm is O(N log N). 
+            The worst-case time complexity is O(N^2).
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Int32},Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Int32})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Int32})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Single},Loyc.Geometry.Vector3{System.Single})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Single})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Single})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Single})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Single})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Single})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Single})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
-            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
-            is the angle between two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
-            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Double},Loyc.Geometry.Vector3{System.Double})">
-            <summary>Computes the cross product of a pair of 3D vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Double})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Double})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Double})">
-            <summary>Reverses a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle 90.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Double})">
-            <summary>Returns seg.B - seg.A.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Double})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Double})">
-            <summary>Gets the absolute value of the vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
-            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
-            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Cross``1(Loyc.Geometry.Vector{``0},Loyc.Geometry.Vector{``0})">
-            <summary>Computes the "cross product" of a pair of vectors.</summary>
-            <remarks>
-            This is not a general cross product, as cross product is only a 3D concept,
-            but this operator acts as though the two points were in the Z=0 plane and
-            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
-            This value is zero if the vectors are parallel; it is a.Length * b.Length 
-            or -a.Length * b.Length if the vectors are perpendicular. One use of 
-            cross product is to determine whether the angle between two lines is greater 
-            or less than 180 degrees, corresponding to return values less or greater than 
-            zero.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Rot90``1(Loyc.Geometry.Vector{``0})">
-            <summary>Rotates a vector 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward. If the vector represents the 
-            direction of a line, the result also represents the coefficients 
-            (a,b) of the implicit line equation aX + bY + c = 0.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Quadrance``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the square of the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Length``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the length of the vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Angle``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Vector``1(Loyc.Geometry.LineSegment{``0})">
-            <summary>Returns the vector from A to B (seg.B - seg.A)</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.HalfwayTo``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
-            <summary>Returns the midpoint between A and B ((a + b) / 2)</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Int32})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Int32})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Single})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Single})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Double})">
-            <summary>Converts a Loyc point to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Double})">
-            <summary>Converts a Loyc vector to BCL type.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.Point)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.PointF)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Point)">
-            <summary>Converts a BCL point to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Vector)">
-            <summary>Converts a BCL Vector to a Loyc point.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.Point)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.PointF)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Windows.Point)">
-            <summary>Converts a BCL point to a Loyc vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.To``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
-            <summary>Constructs a <see cref="T:Loyc.Geometry.LineSegment`1"/> from two points.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector{``0})">
-            <summary>Gets the absolute value of vector's individual components.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector3{``0})">
-            <summary>Gets the absolute value of vector's individual components.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.LineType">
-            <summary>Indicates how a <see cref="T:Loyc.Geometry.LineSegment`1"/> should be treated in
-            a math algorithm: as a segment (the default), as a ray originating at A 
-            (extending B infinitely), or as an line that is infinite in both directions.</summary>
+        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Double}},System.Double)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
         </member>
         <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
             <inheritdoc cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Nullable{System.Int32}@)"/>
@@ -542,110 +280,285 @@
             <returns>A clipped line, or null if the line was outside the bounding box.</returns>
             <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)">
-            <summary>Simplifies a polyline using the Douglas-Peucker line 
-            simplification algorithm. This algorithm removes points that are 
-            deemed unimportant; the output is a subset of the input.</summary>
-            <typeparam name="List">Original unsimplified polyline</typeparam>
-            <param name="output">The output polyline is added in order to this collection</param>
-            <param name="tolerance">The distance between the input polyline and the 
-            output polyline will never exceed this distance. Increase this value to 
-            simplify more aggressively.</param>
-            <returns>The number of output points.</returns>
+        <member name="T:Loyc.Geometry.LineType">
+            <summary>Indicates how a <see cref="T:Loyc.Geometry.LineSegment`1"/> should be treated in
+            a math algorithm: as a segment (the default), as a ray originating at A 
+            (extending B infinitely), or as an line that is infinite in both directions.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross``1(Loyc.Geometry.Vector{``0},Loyc.Geometry.Vector{``0})">
+            <summary>Computes the "cross product" of a pair of vectors.</summary>
             <remarks>
-            The average time complexity of this algorithm is O(N log N). 
-            The worst-case time complexity is O(N^2).
+            This is not a general cross product, as cross product is only a 3D concept,
+            but this operator acts as though the two points were in the Z=0 plane and
+            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
+            This value is zero if the vectors are parallel; it is a.Length * b.Length 
+            or -a.Length * b.Length if the vectors are perpendicular. One use of 
+            cross product is to determine whether the angle between two lines is greater 
+            or less than 180 degrees, corresponding to return values less or greater than 
+            zero.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Double}},System.Double)">
-            <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
-        </member>
-        <member name="T:Loyc.Utilities.Statistic">
-            <summary>
-            A lightweight class to help you compute the minimum, maximum, average
-            and standard deviation of a set of values. Call Clear(), then Add(each
-            value); you can compute the average and standard deviation at any time by 
-            calling Avg() and StdDeviation().
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.CompilerCore.StreamCharSource" -->
-        <member name="F:Loyc.CompilerCore.StreamCharSource._blkOffsets">
-            <summary>A sorted list of mappings between byte positions and character 
-            indexes. In each Pair(of A,B), A is the character index and B is the byte 
-            index. This list is built on-demand.
-            </summary>
-        </member>
-        <member name="F:Loyc.CompilerCore.StreamCharSource._reachedEnd">
-            <summary>Set true when the last block has been scanned. If true, then
-            _eofIndex and _eofPosition indicate the Count and the size of the 
-            stream, respectively.</summary>
-        </member>
-        <member name="F:Loyc.CompilerCore.StreamCharSource._eofIndex">
-            <summary>_eofIndex is the character index of EOF if it has been reached 
-            or, if not, the index of the first unscanned character. _eofIndex 
-            equals _blkOffsets[_blkOffsets.Count-1].A.</summary>
-        </member>
-        <member name="F:Loyc.CompilerCore.StreamCharSource._eofPosition">
-            <summary>_eofPosition is the byte position of EOF if it has been reached 
-            or, if not, the position of the first unscanned character. _eofPosition 
-            equals _blkOffsets[_blkOffsets.Count-1].B.</summary>
-        </member>
-        <member name="T:Loyc.Geometry.PointExt">
-            <summary>Contains methods for manipulating points in generic code.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Add``3(``2,``0,``0)">
-            <summary>Returns the sum of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Subtract``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Returns the difference between two points or vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Multiply``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector multiplied by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Divide``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector divided by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftLeft``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled up by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftRight``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled down by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.MulDiv``2(``1,Loyc.Geometry.IPoint{``0},``0,``0)">
-            <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Dot``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the dot product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Cross``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the cross product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Rot90``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector rotated 90 degrees.</summary>
+        <member name="M:Loyc.Geometry.PointMath.Rot90``1(Loyc.Geometry.Vector{``0})">
+            <summary>Rotates a vector 90 degrees.</summary>
             <remarks>
             Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward.
+            clockwise if increasing Y goes upward. If the vector represents the 
+            direction of a line, the result also represents the coefficients 
+            (a,b) of the implicit line equation aX + bY + c = 0.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.PointExt.Negate``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector with its direction reversed.</summary>
+        <member name="M:Loyc.Geometry.PointMath.Quadrance``1(Loyc.Geometry.Vector{``0})">
+            <summary>Gets the square of the length of the vector.</summary>
         </member>
-        <member name="M:Loyc.Geometry.PointExt.Quadrance``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the square of the length of a vector.</summary>
+        <member name="M:Loyc.Geometry.PointMath.Length``1(Loyc.Geometry.Vector{``0})">
+            <summary>Gets the length of the vector.</summary>
         </member>
-        <member name="M:Loyc.Geometry.PointExt.Length``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the length of a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Angle``2(``1,Loyc.Geometry.IPoint{``0})">
+        <member name="M:Loyc.Geometry.PointMath.Angle``1(Loyc.Geometry.Vector{``0})">
             <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
             angle 0 and (0,1) has angle PI/2.</summary>
         </member>
-        <member name="T:Loyc.Utilities.Latin1DecoderFallback">
-            <summary>
-            The decoder fallback mechanism seems too ridiculous for me to
-            understand right now. TODO: implement this class and use as
-            the fallback in StreamCharSource.LoycEncoding
-            </summary>
+        <member name="M:Loyc.Geometry.PointMath.Vector``1(Loyc.Geometry.LineSegment{``0})">
+            <summary>Returns the vector from A to B (seg.B - seg.A)</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.HalfwayTo``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
+            <summary>Returns the midpoint between A and B ((a + b) / 2)</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Int32})">
+            <summary>Converts a Loyc point to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Converts a Loyc vector to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Single})">
+            <summary>Converts a Loyc point to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Single})">
+            <summary>Converts a Loyc vector to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Point{System.Double})">
+            <summary>Converts a Loyc point to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsBCL(Loyc.Geometry.Vector{System.Double})">
+            <summary>Converts a Loyc vector to BCL type.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.Point)">
+            <summary>Converts a BCL point to a Loyc point.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Drawing.PointF)">
+            <summary>Converts a BCL point to a Loyc point.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Point)">
+            <summary>Converts a BCL point to a Loyc point.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoyc(System.Windows.Vector)">
+            <summary>Converts a BCL Vector to a Loyc point.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.Point)">
+            <summary>Converts a BCL point to a Loyc vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Drawing.PointF)">
+            <summary>Converts a BCL point to a Loyc vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AsLoycVector(System.Windows.Point)">
+            <summary>Converts a BCL point to a Loyc vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.To``1(Loyc.Geometry.Point{``0},Loyc.Geometry.Point{``0})">
+            <summary>Constructs a <see cref="T:Loyc.Geometry.LineSegment`1"/> from two points.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector{``0})">
+            <summary>Gets the absolute value of vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs``1(Loyc.Geometry.Vector3{``0})">
+            <summary>Gets the absolute value of vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
+            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
+            is the angle between two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Int32},Loyc.Geometry.Vector{System.Int32})">
+            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
+            <remarks>
+            This is not a general cross product, as cross product is only a 3D concept,
+            but this operator acts as though the two points were in the Z=0 plane and
+            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
+            This value is zero if the vectors are parallel; it is a.Length * b.Length 
+            or -a.Length * b.Length if the vectors are perpendicular. One use of 
+            cross product is to determine whether the angle between two lines is greater 
+            or less than 180 degrees, corresponding to return values less or greater than 
+            zero.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Int32},Loyc.Geometry.Vector3{System.Int32})">
+            <summary>Computes the cross product of a pair of 3D vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Rotates a vector 90 degrees.</summary>
+            <remarks>
+            Rotatation is clockwise if increasing Y goes downward, counter-
+            clockwise if increasing Y goes upward. If the vector represents the 
+            direction of a line, the result also represents the coefficients 
+            (a,b) of the implicit line equation aX + bY + c = 0.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Int32})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Gets the square of the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Gets the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle PI/2.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle 90.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Int32})">
+            <summary>Returns seg.B - seg.A.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Int32})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Int32})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
+            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
+            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
+            is the angle between two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Single},Loyc.Geometry.Vector{System.Single})">
+            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
+            <remarks>
+            This is not a general cross product, as cross product is only a 3D concept,
+            but this operator acts as though the two points were in the Z=0 plane and
+            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
+            This value is zero if the vectors are parallel; it is a.Length * b.Length 
+            or -a.Length * b.Length if the vectors are perpendicular. One use of 
+            cross product is to determine whether the angle between two lines is greater 
+            or less than 180 degrees, corresponding to return values less or greater than 
+            zero.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Single},Loyc.Geometry.Vector3{System.Single})">
+            <summary>Computes the cross product of a pair of 3D vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Single})">
+            <summary>Rotates a vector 90 degrees.</summary>
+            <remarks>
+            Rotatation is clockwise if increasing Y goes downward, counter-
+            clockwise if increasing Y goes upward. If the vector represents the 
+            direction of a line, the result also represents the coefficients 
+            (a,b) of the implicit line equation aX + bY + c = 0.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Single})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Single})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Single})">
+            <summary>Gets the square of the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Single})">
+            <summary>Gets the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Single})">
+            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle PI/2.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Single})">
+            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle 90.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Single})">
+            <summary>Returns seg.B - seg.A.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Single})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Single})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
+            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Dot(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
+            <summary>Dot product. a*b equals lhs.Length*rhs.Length*Cos(theta) if theta 
+            is the angle between two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector{System.Double},Loyc.Geometry.Vector{System.Double})">
+            <summary>Computes the "cross product" of a pair of 2D vectors.</summary>
+            <remarks>
+            This is not a general cross product, as cross product is only a 3D concept,
+            but this operator acts as though the two points were in the Z=0 plane and
+            returns the Z coordinate of the cross product: b.X * a.Y - b.Y * a.X.
+            This value is zero if the vectors are parallel; it is a.Length * b.Length 
+            or -a.Length * b.Length if the vectors are perpendicular. One use of 
+            cross product is to determine whether the angle between two lines is greater 
+            or less than 180 degrees, corresponding to return values less or greater than 
+            zero.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Cross(Loyc.Geometry.Vector3{System.Double},Loyc.Geometry.Vector3{System.Double})">
+            <summary>Computes the cross product of a pair of 3D vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Rot90(Loyc.Geometry.Vector{System.Double})">
+            <summary>Rotates a vector 90 degrees.</summary>
+            <remarks>
+            Rotatation is clockwise if increasing Y goes downward, counter-
+            clockwise if increasing Y goes upward. If the vector represents the 
+            direction of a line, the result also represents the coefficients 
+            (a,b) of the implicit line equation aX + bY + c = 0.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector{System.Double})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Neg(Loyc.Geometry.Vector3{System.Double})">
+            <summary>Reverses a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Quadrance(Loyc.Geometry.Vector{System.Double})">
+            <summary>Gets the square of the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Length(Loyc.Geometry.Vector{System.Double})">
+            <summary>Gets the length of the vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Angle(Loyc.Geometry.Vector{System.Double})">
+            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle PI/2.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.AngleDeg(Loyc.Geometry.Vector{System.Double})">
+            <summary>Gets the angle from 0 to 360 of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle 90.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Vector(Loyc.Geometry.LineSegment{System.Double})">
+            <summary>Returns seg.B - seg.A.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector{System.Double})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.Abs(Loyc.Geometry.Vector3{System.Double})">
+            <summary>Gets the absolute value of the vector's individual components.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointMath.ComputeConvexHull(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
+            <summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+            coordinate system (counterclockwise in a Y-down coordinate system).</summary>
+            <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
         </member>
         <member name="T:Loyc.Geometry.PolygonMath">
             <summary>
@@ -854,6 +767,104 @@
             never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
+        <member name="T:Loyc.Utilities.Latin1DecoderFallback">
+            <summary>
+            The decoder fallback mechanism seems too ridiculous for me to
+            understand right now. TODO: implement this class and use as
+            the fallback in StreamCharSource.LoycEncoding
+            </summary>
+        </member>
+        <member name="T:Loyc.Geometry.PointExt">
+            <summary>Contains methods for manipulating points in generic code.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Add``3(``2,``0,``0)">
+            <summary>Returns the sum of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Subtract``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Returns the difference between two points or vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Multiply``2(``1,Loyc.Geometry.IPoint{``0},``0)">
+            <summary>Returns a point or vector multiplied by a scaling factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Divide``2(``1,Loyc.Geometry.IPoint{``0},``0)">
+            <summary>Returns a point or vector divided by a scaling factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.ShiftLeft``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
+            <summary>Returns a point or vector scaled up by a power of two.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.ShiftRight``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
+            <summary>Returns a point or vector scaled down by a power of two.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.MulDiv``2(``1,Loyc.Geometry.IPoint{``0},``0,``0)">
+            <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Dot``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the dot product of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Cross``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the cross product of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Rot90``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Returns a vector rotated 90 degrees.</summary>
+            <remarks>
+            Rotatation is clockwise if increasing Y goes downward, counter-
+            clockwise if increasing Y goes upward.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Negate``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Returns a vector with its direction reversed.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Quadrance``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the square of the length of a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Length``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the length of a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Angle``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle PI/2.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.Statistic">
+            <summary>
+            A lightweight class to help you compute the minimum, maximum, average
+            and standard deviation of a set of values. Call Clear(), then Add(each
+            value); you can compute the average and standard deviation at any time by 
+            calling Avg() and StdDeviation().
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.CompilerCore.StreamCharSource" -->
+        <member name="F:Loyc.CompilerCore.StreamCharSource._blkOffsets">
+            <summary>A sorted list of mappings between byte positions and character 
+            indexes. In each Pair(of A,B), A is the character index and B is the byte 
+            index. This list is built on-demand.
+            </summary>
+        </member>
+        <member name="F:Loyc.CompilerCore.StreamCharSource._reachedEnd">
+            <summary>Set true when the last block has been scanned. If true, then
+            _eofIndex and _eofPosition indicate the Count and the size of the 
+            stream, respectively.</summary>
+        </member>
+        <member name="F:Loyc.CompilerCore.StreamCharSource._eofIndex">
+            <summary>_eofIndex is the character index of EOF if it has been reached 
+            or, if not, the index of the first unscanned character. _eofIndex 
+            equals _blkOffsets[_blkOffsets.Count-1].A.</summary>
+        </member>
+        <member name="F:Loyc.CompilerCore.StreamCharSource._eofPosition">
+            <summary>_eofPosition is the byte position of EOF if it has been reached 
+            or, if not, the position of the first unscanned character. _eofPosition 
+            equals _blkOffsets[_blkOffsets.Count-1].B.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.TagsInWList`1">
+            <summary>An implementation of ITags designed for AstNode.</summary>
+            <remarks>
+            It is supposed to be possible to clone AstNode quickly; to support extra 
+            tags, we need to be able to clone the tags quickly too, so it makes sense
+            to store them in a WList. To make cloning as quick as possible, we derive
+            from WListProtected. To optimize access to tags, we use the UserByte of
+            WListProtected to hold the index of the last tag that was used. This 
+            ensures tags can be accessed quickly by code that only uses a single tag.
+            </remarks>
+        </member>
         <member name="M:Loyc.Utilities.UG.ProcessCommandLineArguments(System.Collections.Generic.IList{System.String},System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.String,System.Collections.Generic.IDictionary{System.Char,System.String},Loyc.Collections.InvertibleSet{System.String},System.Int32,System.Boolean,System.Boolean)">
             <summary>
             Expands environment variables (e.g. %TEMP%) and @files in a list of
@@ -867,10 +878,11 @@
               By default, long options are not case sensitive. In that case, the 
             user's option name is converted to lower case.
             <para/>
-              Long options are expected to have the form --ID=value, where ID 
+            Long options are expected to have the form --ID or --ID=value, where ID 
             matches the regex "[a-zA-Z_0-9-]+". If there is no "=" or ":", that's 
             okay too. For example, --Id{foo} is equivalent to --Id={foo}; both yield
-            in the name-value pair ("id", "{foo}").</param>
+            in the name-value pair ("id", "{foo}"). If there is no value (no equals
+            or colon), the value associated with the option is null.</param>
             <param name="atFolder">If a parameter has the form @filename, the folder
             specified by atFolder will be searched for an options text file with the
             user-specified filename, and the contents of the file will be expanded 
@@ -932,7 +944,7 @@
             a standard <see cref="T:System.Collections.Generic.Dictionary`2"/> to hold the options, an 
             exception will occur when this method calls Add() to add the duplicate. 
             The exception is caught, the first ocurrance is kept, and a warning 
-            message is printed to <see cref="P:Loyc.Utilities.MessageSink.Current"/>.
+            message is printed to <see cref="P:Loyc.MessageSink.Current"/>.
             <para/>
             To allow duplicates, store options in a different data structure such as 
             <c>List(KeyValuePair(string, string))</c> or <c>BMultiMap(string,string)</c>.
@@ -955,17 +967,6 @@
             marks, is not recognized as an option (these quote marks should be 
             removed before calling this method, e.g. 
             <see cref="M:Loyc.G.SplitCommandLineArguments(System.String)"/> handles this.)
-            </remarks>
-        </member>
-        <member name="T:Loyc.Utilities.TagsInWList`1">
-            <summary>An implementation of ITags designed for AstNode.</summary>
-            <remarks>
-            It is supposed to be possible to clone AstNode quickly; to support extra 
-            tags, we need to be able to clone the tags quickly too, so it makes sense
-            to store them in a WList. To make cloning as quick as possible, we derive
-            from WListProtected. To optimize access to tags, we use the UserByte of
-            WListProtected to hold the index of the last tag that was used. This 
-            ensures tags can be accessed quickly by code that only uses a single tag.
             </remarks>
         </member>
     </members>

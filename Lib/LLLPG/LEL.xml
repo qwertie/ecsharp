@@ -4,65 +4,6 @@
         <name>LEL</name>
     </assembly>
     <members>
-        <member name="T:LeMP.SimpleMacro">
-            <summary>Method signature of an LEL simple macro.</summary>
-            <param name="node">The node that caused the macro to be invoked (includes 
-            the name of the macro itself, and any attributes applied to the macro)</param>
-            <param name="rejectReason">If the input does not have a valid form, the
-            macro rejects it by returning null. When returning null, the macro should
-            explain the reason for the rejection (including a pattern that the macro 
-            accepts) via this object.</param>
-            <returns>A node to replace the original <c>node</c>, or null if this 
-            macro rejects the input node. Returning null can allow a different macro 
-            to accept the node instead.</returns>
-            <remarks>If there are multiple macros in scope with the same name, they 
-            are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
-            the input. If no macros accept the input, the error message given by each
-            macro is printed; if multiple macros accept the input, an ambiguity error
-            is printed.
-            <para/>
-            When the macro processor scans an assembly looking for macros, it requires
-            <see cref="!:ContainsMacroAttribute"/> on the containing class, and 
-            <see cref="T:LeMP.SimpleMacroAttribute"/> on each macro in the class. The macros 
-            must be public static methods.
-            </remarks>
-        </member>
-        <member name="T:LeMP.ContainsMacrosAttribute">
-            <summary>Marks a class to be searched for macros.</summary>
-            <remarks>The method signature of a macro must be <see cref="T:LeMP.SimpleMacro"/> and
-            it must be marked with <see cref="T:LeMP.SimpleMacroAttribute"/>.</remarks>
-        </member>
-        <member name="T:LeMP.SimpleMacroAttribute">
-            <summary>Marks a method as an LEL simple macro.</summary>
-            <remarks>
-            To be recognized as a macro, the method must be public and static and its 
-            signature must be <see cref="T:LeMP.SimpleMacro"/>. A class will not be automatically
-            searched for macros unless the class is marked with <see cref="T:LeMP.ContainsMacrosAttribute"/>.</remarks>
-        </member>
-        <member name="T:LeMP.MacroMode">
-            <summary>Flags that affect the way that <see cref="T:LeMP.MacroProcessor"/>
-            uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
-            the macro accepts the input by returning a non-null result.</summary>
-        </member>
-        <member name="F:LeMP.MacroMode.NoReprocessing">
-            <summary>The macro's result (including children) is not processed further.</summary>
-        </member>
-        <member name="F:LeMP.MacroMode.Normal">
-            <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
-        </member>
-        <member name="F:LeMP.MacroMode.ProcessChildrenAfter">
-            <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
-        </member>
-        <member name="F:LeMP.MacroMode.ProcessChildrenBefore">
-            <summary>The result is pre-processed before calling the macro.</summary>
-        </member>
-        <member name="F:LeMP.MacroMode.Passive">
-            <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input.</summary>
-        </member>
-        <member name="T:LeMP.TestCompiler">
-            <summary>A simple version of Compiler that takes a single input and produces 
-            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
-        </member>
         <member name="T:LeMP.Compiler">
             <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
             set of source files.</summary>
@@ -82,9 +23,6 @@
         <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
             <summary>Finds a language service in ExtensionToLanguage() for the 
             specified file extension, or null if there is no match.</summary>
-        </member>
-        <member name="T:LeMP.Prelude.Les.Macros">
-            <summary>Defines the core, predefined constructs of LeMP.</summary>
         </member>
         <member name="T:LeMP.InputOutput">
             <summary>
@@ -142,6 +80,68 @@
         </member>
         <member name="M:LeMP.MacroProcessor.ProcessAsync(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
+        </member>
+        <member name="T:LeMP.TestCompiler">
+            <summary>A simple version of Compiler that takes a single input and produces 
+            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
+        </member>
+        <member name="T:LeMP.Prelude.Les.Macros">
+            <summary>Defines the core, predefined constructs of LeMP.</summary>
+        </member>
+        <member name="T:LeMP.SimpleMacro">
+            <summary>Method signature of an LEL simple macro.</summary>
+            <param name="node">The node that caused the macro to be invoked (includes 
+            the name of the macro itself, and any attributes applied to the macro)</param>
+            <param name="rejectReason">If the input does not have a valid form, the
+            macro rejects it by returning null. When returning null, the macro should
+            explain the reason for the rejection (including a pattern that the macro 
+            accepts) via this object.</param>
+            <returns>A node to replace the original <c>node</c>, or null if this 
+            macro rejects the input node. Returning null can allow a different macro 
+            to accept the node instead.</returns>
+            <remarks>If there are multiple macros in scope with the same name, they 
+            are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
+            the input. If no macros accept the input, the error message given by each
+            macro is printed; if multiple macros accept the input, an ambiguity error
+            is printed.
+            <para/>
+            When the macro processor scans an assembly looking for macros, it requires
+            <see cref="!:ContainsMacroAttribute"/> on the containing class, and 
+            <see cref="T:LeMP.SimpleMacroAttribute"/> on each macro in the class. The macros 
+            must be public static methods.
+            </remarks>
+        </member>
+        <member name="T:LeMP.ContainsMacrosAttribute">
+            <summary>Marks a class to be searched for macros.</summary>
+            <remarks>The method signature of a macro must be <see cref="T:LeMP.SimpleMacro"/> and
+            it must be marked with <see cref="T:LeMP.SimpleMacroAttribute"/>.</remarks>
+        </member>
+        <member name="T:LeMP.SimpleMacroAttribute">
+            <summary>Marks a method as an LEL simple macro.</summary>
+            <remarks>
+            To be recognized as a macro, the method must be public and static and its 
+            signature must be <see cref="T:LeMP.SimpleMacro"/>. A class will not be automatically
+            searched for macros unless the class is marked with <see cref="T:LeMP.ContainsMacrosAttribute"/>.</remarks>
+        </member>
+        <member name="T:LeMP.MacroMode">
+            <summary>Flags that affect the way that <see cref="T:LeMP.MacroProcessor"/>
+            uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
+            the macro accepts the input by returning a non-null result.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.NoReprocessing">
+            <summary>The macro's result (including children) is not processed further.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Normal">
+            <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.ProcessChildrenAfter">
+            <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.ProcessChildrenBefore">
+            <summary>The result is pre-processed before calling the macro.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Passive">
+            <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input.</summary>
         </member>
     </members>
 </doc>

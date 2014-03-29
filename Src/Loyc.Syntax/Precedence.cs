@@ -188,6 +188,12 @@ namespace Loyc.Syntax
 	/// indicate that a specific precedence has not been chosen for an operator. 
 	/// If a precedence is chosen in the future, it will be somewhere within the 
 	/// range.
+	/// 
+	/// <h3>Overall Range</h3>
+	/// 
+	/// By convention, precedence scales range from 0 to 100 (or slightly higher).
+	/// The precedence numbers are stored in this structure as <c>sbyte</c>s, so the 
+	/// standard range cannot be exceeded by much.
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{

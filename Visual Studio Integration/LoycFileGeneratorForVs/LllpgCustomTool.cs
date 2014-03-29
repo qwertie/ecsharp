@@ -15,6 +15,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using LeMP;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Loyc.VisualStudio
 {
@@ -115,16 +117,32 @@ namespace Loyc.VisualStudio
 				var KnownOptions = LeMP.Compiler.KnownOptions;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _))
 					LeMP.Compiler.ShowHelp(KnownOptions);
-			
-				IMessageSink innerSink = ToMessageSink(progressCallback);
+				
+				// Originally I wrote a conversion from IVsGeneratorProgress to
+ 				// IMessageSink so that errors could be reported immediately and
+				// directly to Visual Studio. This broke in a bizarre way when I
+				// added processing on a separate thread (in order to be able to
+				// abort the thread if it runs too long); I got the following
+				// InvalidCastException: "Unable to cast COM object of type 'System.__ComObject' 
+				// to interface type 'Microsoft.VisualStudio.Shell.Interop.IVsGeneratorProgress'.
+				// This operation failed because the QueryInterface call on the COM component for 
+				// the interface with IID '{BED89B98-6EC9-43CB-B0A8-41D6E2D6669D}' failed due to 
+				// the following error: No such interface supported (Exception from HRESULT: 
+				// 0x80004002 (E_NOINTERFACE))."
+				// 
+				// A simple solution is to store the messages rather than reporting
+				// them immediately. I'll report the errors at the very end.
+				MessageHolder innerSink = new MessageHolder();
+				
+				// Block verbose messages when --verbose is not specified
 				Severity sev = Severity.Note;
 				string value;
 				if (options.TryGetValue("verbose", out value) && (value != "false")) {
 					if (!Enum.TryParse(value, out sev))
 						sev = Severity.Verbose;
 				}
-				
 				var sink = new SeverityMessageFilter(innerSink, sev);
+
 				var sourceFile = new InputOutput((StringSlice)inputFileContents, inputFilePath);
 
 				var c = new Compiler(sink, sourceFile);
@@ -144,7 +162,13 @@ namespace Loyc.VisualStudio
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 						if (inputFilePath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
 							c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+
 						c.Run();
+
+						// Report errors
+						foreach (var msg in innerSink.List)
+							ReportErrorToVS(progressCallback, msg.Type, msg.Context, msg.Format, msg.Args);
+
 						return Encoding.UTF8.GetBytes(c.Output.ToString());
 					}
 				}
@@ -154,46 +178,26 @@ namespace Loyc.VisualStudio
 			}
 		}
 
-		private static MessageSinkFromDelegate ToMessageSink(IVsGeneratorProgress generatorProgress)
+		void ReportErrorToVS(IVsGeneratorProgress generatorProgress, Severity severity, object context, string message, object[] args)
 		{
-			var sink = new MessageSinkFromDelegate(
-				(Severity severity, object context, string message, object[] args) =>
-				{
-					int line = 0, col = 1;
-					string message2 = Localize.From(message, args);
-					if (context is LNode) {
-						var range = ((LNode)context).Range;
-						line = range.Begin.Line;
-						col = range.Begin.PosInLine;
-					} else if (context is SourcePos) {
-						line = ((SourcePos)context).Line;
-						col = ((SourcePos)context).PosInLine;
-					} else if (context is SourceRange) {
-						line = ((SourceRange)context).Begin.Line;
-						col = ((SourceRange)context).Begin.PosInLine;
-					} else
-						message2 = MessageSink.LocationString(context) + ": " + message2;
+			int line = 0, col = 1;
+			string message2 = Localize.From(message, args);
+			if (context is LNode) {
+				var range = ((LNode)context).Range;
+				line = range.Begin.Line;
+				col = range.Begin.PosInLine;
+			} else if (context is SourcePos) {
+				line = ((SourcePos)context).Line;
+				col = ((SourcePos)context).PosInLine;
+			} else if (context is SourceRange) {
+				line = ((SourceRange)context).Begin.Line;
+				col = ((SourceRange)context).Begin.PosInLine;
+			} else
+				message2 = MessageSink.LocationString(context) + ": " + message2;
 
-					try {
-						bool subwarning = severity < Severity.Warning;
-						int n = subwarning ? 2 : severity == Severity.Warning ? 1 : 0;
-						generatorProgress.GeneratorError(n, 0u, message2, (uint)line - 1u, (uint)col - 1u);
-					} catch(Exception ex) {
-						// I don't know how this happens, but I got an InvalidCastException:
-						// "Unable to cast COM object of type 'System.__ComObject' to interface type 'Microsoft.VisualStudio.Shell.Interop.IVsGeneratorProgress'.
-						// This operation failed because the QueryInterface call on the COM component for the interface with IID '{BED89B98-6EC9-43CB-B0A8-41D6E2D6669D}' failed due to the following error:
-						// No such interface supported (Exception from HRESULT: 0x80004002 (E_NOINTERFACE))."
-						// It's clear that something VERY fishy is going on because 
-						// the exception only occurs for some messages and not others.
-						// If you enable --verbose you'll notice that some verbose
-						// messages are printed correctly in the VS error window (no 
-						// exception thrown.)
-						string msg = string.Format("({0},{1}): {2}: {3}\n\n\nLLLPG is showing this message box because normal error reporting is broken - {4}",
-							line, col, severity, message2, ex.ExceptionTypeAndMessage());
-						System.Windows.Forms.MessageBox.Show(msg, "LLLPG Custom Tool");
-					}
-				});
-			return sink;
+			bool subwarning = severity < Severity.Warning;
+			int n = subwarning ? 2 : severity == Severity.Warning ? 1 : 0;
+			generatorProgress.GeneratorError(n, 0u, message2, (uint)line - 1u, (uint)col - 1u);
 		}
 	}
 }
