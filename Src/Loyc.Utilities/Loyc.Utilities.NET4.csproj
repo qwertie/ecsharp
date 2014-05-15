@@ -97,6 +97,7 @@
       <DependentUpon>LineMathTT.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry\PointMath.cs" />
+    <Compile Include="Geometry\PointMathTests.cs" />
     <Compile Include="Geometry\PointMathTT.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
