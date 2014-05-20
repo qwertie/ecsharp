@@ -5,6 +5,7 @@ using System.Text;
 using UpdateControls.Collections;
 using UpdateControls.Fields;
 using MiniTestRunner.Model;
+using Loyc.Collections;
 
 namespace MiniTestRunner.ViewModel
 {
@@ -13,7 +14,7 @@ namespace MiniTestRunner.ViewModel
 		public ProjectVM(ProjectModel model, FilterVM filter) : base(model)
 		{
 			_filter = filter ?? new FilterVM();
-			_roots = new DependentList<RowVM>(() => Filter.ApplyTo(_model.Roots).Select(m => new RowVM(m, this, null)));
+			_roots = new DependentList<RowVM>(() => Filter.ApplyTo(_model.Roots.Upcast<RowModel, TaskRowModel>()).Select(m => new RowVM(m, this, null)));
 			_roots.DependentSentry.Invalidated += () => FireChildrenInvalidated(null);
 		}
 

@@ -143,7 +143,11 @@ namespace Loyc.Collections
 	///     }
 	/// </code>
 	/// </remarks>
+	#if DotNet2 || DotNet3
+	public interface IFRange<T> : IEnumerable<T>, ICloneable<IFRange<T>>, IIsEmpty
+	#else
 	public interface IFRange<out T> : IEnumerable<T>, ICloneable<IFRange<T>>, IIsEmpty
+	#endif
 	{
 		/// <summary>Returns the first value in the range, without popping it.</summary>
 		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
@@ -210,7 +214,11 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
+	#if DotNet2 || DotNet3
+	public interface IBRange<T> : IFRange<T>, ICloneable<IBRange<T>>
+	#else
 	public interface IBRange<out T> : IFRange<T>, ICloneable<IBRange<T>>
+	#endif
 	{
 		/// <summary>Returns the value of the last item in the range.</summary>
 		/// <exception cref="EmptySequenceException">The sequence is empty.</exception>
@@ -246,7 +254,11 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// Please see <see cref="IFRange{T}"/> for general documentation about ranges.
 	/// </remarks>
+	#if DotNet2 || DotNet3
+	public interface IRange<T> : IBRange<T>, IListSource<T>, ICloneable<IRange<T>>
+	#else
 	public interface IRange<out T> : IBRange<T>, IListSource<T>, ICloneable<IRange<T>>
+	#endif
 	{
 		// Since C# does not support covariant return types, implementing all the 
 		// ICloneables can be quite a chore. Just copy and paste these, inserting

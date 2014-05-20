@@ -38,6 +38,8 @@ namespace Loyc.Utilities
 		}
 		public bool Contains(ToT item)
 		{
+			if (!(item is FromT))
+				return false;
 			return _source.Contains((FromT)item);
 		}
 		public void CopyTo(ToT[] array, int arrayIndex)

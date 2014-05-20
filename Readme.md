@@ -54,6 +54,8 @@ Terminology:
 
 I am currently keeping the unit tests in the same assemblies as the code being tested. I suspect this is why my libraries tend to be larger than many other "small" .NET libraries. Eventually I'll move the unit tests out into their own assemblies.
 
+These projects use couple of tricks to support both .NET 3.5 and .NET 4 using a single solution file. The tricks are documented here: http://stackoverflow.com/questions/5006397/targetting-multiple-net-framework-versions-by-using-different-project-configura/23705790#23705790
+
 ## For more information
 
 More overviews, architectural documentation, and specifications can be found in the project Wiki:

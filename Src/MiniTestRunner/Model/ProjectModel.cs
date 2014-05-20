@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UpdateControls.Collections;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security;
 using System.Security.Permissions;
-using MiniTestRunner.TestDomain;
-using UpdateControls.Forms;
-using UpdateControls;
-using System.Diagnostics;
-using UpdateControls.Fields;
 using Loyc.MiniTest;
+using Loyc.Collections;
+using MiniTestRunner.TestDomain;
+using UpdateControls;
+using UpdateControls.Collections;
+using UpdateControls.Fields;
+using UpdateControls.Forms;
 
 namespace MiniTestRunner.Model
 {
@@ -175,7 +175,7 @@ namespace MiniTestRunner.Model
 		{
 			var taskEx = task as ITaskEx;
 			if (_options.RunTestsOnLoad && task is AssemblyScanTask)
-				StartTesting(_assemblies.Where(a => a.Row.Task == task).Select(a => a.Row));
+				StartTesting(_assemblies.Where(a => a.Row.Task == task).Select(a => a.Row).Upcast<RowModel, TaskRowModel>());
 			// Could be a bottleneck because QueuedAndRunningTasks() copies the whole
 			// list (although Any() often terminates after an iteration or two).
 			if (_options.AutoUnload && taskEx != null &&
@@ -216,11 +216,11 @@ namespace MiniTestRunner.Model
 				var task = (AssemblyScanTask)Activator.CreateInstanceFrom(ass.Domain.Domain,
 					typeof(AssemblyScanTask).Assembly.ManifestModule.FullyQualifiedName,
 					typeof(AssemblyScanTask).FullName, false,
-					0, null, new object[] { ass.Path, ass.Domain.BaseFolder }, null, null).Unwrap();
+					0, null, new object[] { ass.Path, ass.Domain.BaseFolder }, null, null, null).Unwrap();
 				ass.Row = new TaskRowModel(Path.GetFileName(ass.Path), TestNodeType.Assembly, task, false);
 				newTasks.Add(task);
 			}
-			_runner.AddTasks(newTasks);
+			_runner.AddTasks(newTasks.Upcast<ITask, AssemblyScanTask>());
 			_runner.AutoStartTasks();
 		}
 
@@ -228,7 +228,7 @@ namespace MiniTestRunner.Model
 		{
 			var queue = new List<RowModel>();
 			FindTasksToRun(roots, queue);
-			_runner.AddTasks(queue.Select(row => row.Task));
+			_runner.AddTasks(queue.Select(row => row.Task).Upcast<ITask, ITestTask>());
 			_runner.AutoStartTasks();
 		}
 		private void FindTasksToRun(IEnumerable<RowModel> list, List<RowModel> queue)

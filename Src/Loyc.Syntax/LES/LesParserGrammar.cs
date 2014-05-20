@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Les
 			TT la0, la1;
 			LNode e = MissingExpr;
 			LNode _;
-			// Line 37: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Number|TT.Symbol|TT.OtherLit|TT.String|TT.SQString) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{contextA != P_SuperExpr} (TT.Not|TT.Dot|TT.Assignment|TT.Colon|TT.BQString|TT.NormalOp) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
+			// Line 37: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.OtherLit|TT.Symbol|TT.Number|TT.String|TT.SQString) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{contextA != P_SuperExpr} (TT.BQString|TT.Dot|TT.Assignment|TT.Colon|TT.NormalOp|TT.Not) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
 			 switch (LA0) {
 			case TT.Id:
 				{
@@ -126,7 +126,7 @@ namespace Loyc.Syntax.Les
 			e = Atom(context, ref attrs);
 			primary = e;
 			var contextA = context;
-			// Line 90: greedy( ((TT.Dot|TT.Assignment|TT.Colon|TT.BQString|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P_SuperExpr)} Expr greedy(Expr)*) )*
+			// Line 90: greedy( ((TT.BQString|TT.Dot|TT.Assignment|TT.Colon|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P_SuperExpr)} Expr greedy(Expr)*) )*
 			 for (;;) {
 				switch (LA0) {
 				case TT.Assignment:

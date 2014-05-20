@@ -126,7 +126,7 @@ namespace MiniTestRunner.ViewModel
 				if (sec <= 99.995)
 					return string.Format("{0:00.00}s", sec);
 				if (sec <= 5999.95)
-					return task.RunTime.ToString(@"m\:ss\.f");
+					return string.Format(@"{0:m\:ss\.f}", task.RunTime);
 				else
 					return string.Format("{0}:{1}:{2}", (int)time.TotalHours, time.Minutes, time.Seconds);
 			}

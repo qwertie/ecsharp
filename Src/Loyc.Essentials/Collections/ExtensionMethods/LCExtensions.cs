@@ -60,13 +60,6 @@ namespace Loyc.Collections
 		}
 		#endif
 
-		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
-		{
-			int i = 0;
-			foreach (T item in c)
-				yield return new KeyValuePair<int, T>(i, item);
-		}
-
 		/// <summary>Converts any ICollection{T} object to ISource{T}.</summary>
 		/// <remarks>This method is named "AsSource" and not "ToSource" because,
 		/// in contrast to methods like ToArray(), and ToList() it does not make a 
@@ -162,12 +155,6 @@ namespace Loyc.Collections
 		public static NegList<T> NegView<T>(this IListAndListSource<T> list, int zeroOffset)
 		{
 			return new NegList<T>(list, zeroOffset);
-		}
-
-		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
-		{
-			foreach (T item in list)
-				action(item);
 		}
 
 		public static string Join(this System.Collections.IEnumerable list, string separator)

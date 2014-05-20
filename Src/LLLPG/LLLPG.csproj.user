@@ -18,4 +18,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <StartArguments>D:\Dev\Loyc\LLLPG-0.91\CalcExample\Grammars.cs --verbose --outext=cs</StartArguments>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|x86'">
+    <StartArguments>D:\Dev\Loyc\LLLPG-0.91\CalcExample\Grammars.cs --verbose --outext=cs</StartArguments>
+  </PropertyGroup>
 </Project>
