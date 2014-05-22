@@ -6,51 +6,39 @@ using System.Runtime.Serialization;
 
 namespace Loyc
 {
-	/// <summary>
-	/// Adds strong typing to WeakReference.Target using generics.
-	/// </summary>
+	public static class WeakReferenceExt
+	{
+		public static T Target<T>(this WeakReference<T> r) where T:class
+		{
+			T t;
+			r.TryGetTarget(out t);
+			return t;
+		}
+		public static bool IsAlive<T>(this WeakReference<T> r) where T : class
+		{
+			T _;
+			return r.TryGetTarget(out _);
+		}
+	}
+
+	#if DotNet4 && !DotNet45
+	// WeakReference<T> is not derived from WeakReference in .NET 4.5, but this class
+	// does to avoid allocating two separate heap objects. Note that the serialized 
+	// form will break when upgrading to .NET 4.5.
 	[Serializable]
-	public class WeakReference<T> : WeakReference where T : class
+	public sealed class WeakReference<T> : WeakReference where T : class
 	{
-		/// <summary>Returns a new WeakReference except that if target is null,
-		/// the WeakNullReference Singleton is returned instead.</summary>
-		public static WeakReference<T> NewOrNullSingleton(T target)
-		{
-			if (target == null)
-				return WeakNullReference<T>.Singleton;
-			return new WeakReference<T>(target);
-		}
+		public WeakReference(T target) : base(target) {}
+		public WeakReference(T target, bool trackResurrection) : base(target, trackResurrection) {}
 
-		public WeakReference(T target) : base(target) { }
-		public WeakReference(T target, bool trackResurrection) : base(target, trackResurrection) { }
-		#if !CompactFramework && !WindowsCE
-		protected WeakReference(SerializationInfo info, StreamingContext context) : base(info, context) {}
-		#endif
+		// Shockingly, when .NET 4.5 introduced WeakReference<T> it did not include
+		// the Target and IsAlive properties. Therefore I've deleted the Target 
+		// property to avoid future compatibility problems. Use the Target() 
+		// and IsAlive() extension methods instead.
+		//public new T Target { get; set; }
 
-		public new T Target
-		{
-			get { return (T)base.Target; }
-			set {
-				if (this != WeakNullReference<T>.Singleton)
-					base.Target = value;
-				else if (value != null)
-					throw new InvalidOperationException("Cannot change target of WeakNullReference<T>.Singleton");
-			}
-		}
+		public void SetTarget(T value) { base.Target = value; }
+		public bool TryGetTarget(out T target) { target = (T)base.Target; return target != null; }
 	}
-
-	/// <summary>Provides a weak reference to a null target object, which, unlike
-	/// other weak references, is always considered to be alive. This facilitates,
-	/// for instance, handling null dictionary values in WeakValueDictionary.</summary>
-	public class WeakNullReference<T> : WeakReference<T> where T : class
-	{
-		public static readonly WeakNullReference<T> Singleton = new WeakNullReference<T>();
-
-		private WeakNullReference() : base(null) { }
-
-		public override bool IsAlive
-		{
-			get { return true; }
-		}
-	}
+	#endif
 }

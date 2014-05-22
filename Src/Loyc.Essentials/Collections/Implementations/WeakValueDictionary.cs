@@ -21,6 +21,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	public class WeakValueDictionary<K,V> : BaseDictionary<K,V> where V : class
 	{
+		static readonly WeakReference<V> WeakNull = new WeakReference<V>(null);
 		Dictionary<K, WeakReference<V>> _dict = new Dictionary<K, WeakReference<V>>();
 		int _accessCounter;
 
@@ -38,7 +39,7 @@ namespace Loyc.Collections
 		{
 			List<K> _removeQueue = new List<K>();
 			foreach (var kvp in _dict)
-				if (!kvp.Value.IsAlive)
+				if (!kvp.Value.IsAlive() && kvp.Value != WeakNull)
 					_removeQueue.Add(kvp.Key);
 			for (int i = 0; i < _removeQueue.Count; i++)
 				_dict.Remove(_removeQueue[i]);
@@ -63,14 +64,14 @@ namespace Loyc.Collections
 			_accessCounter += 4;
 			WeakReference<V> wv = _dict.TryGetValue(key, null);
 			if (wv != null) {
-				if (wv.IsAlive)
+				if (wv.IsAlive() || wv == WeakNull)
 					throw new KeyAlreadyExistsException();
 				else if (value != null) {
 					wv.Target = value;
 					return;
 				}
 			}
-			_dict[key] = WeakReference<V>.NewOrNullSingleton(value);
+			_dict[key] = value == null ? WeakNull : new WeakReference<V>(value);
 		}
 
 		public override bool ContainsKey(K key)
@@ -78,7 +79,7 @@ namespace Loyc.Collections
 			_accessCounter++;
 			WeakReference<V> wv = _dict.TryGetValue(key, null);
 			if (wv != null)
-				if (wv.IsAlive)
+				if (wv.IsAlive())
 					return true;
 				else
 					_dict.Remove(key);
@@ -97,8 +98,8 @@ namespace Loyc.Collections
 			WeakReference<V> wv = _dict.TryGetValue(key, null);
 			if (wv != null)
 			{
-				value = wv.Target;
-				if (value != null || wv.IsAlive)
+				value = wv.Target();
+				if (value != null || wv == WeakNull)
 					return true;
 				else
 					_dict.Remove(key);
@@ -111,8 +112,8 @@ namespace Loyc.Collections
 		{
 			foreach (var kvp in _dict)
 			{
-				var target = kvp.Value.Target; // get target before calling IsAlive. We
-				if (target != null || kvp.Value.IsAlive)
+				var target = kvp.Value.Target();
+				if (target != null || kvp.Value == WeakNull)
 					yield return new KeyValuePair<K, V>(kvp.Key, target);
 			}
 			_accessCounter += Count;
@@ -122,10 +123,10 @@ namespace Loyc.Collections
 		{
 			_accessCounter += 3;
 			WeakReference<V> wv = _dict.TryGetValue(key, null);
-			if (wv != null && (value == null) == (wv == WeakNullReference<V>.Singleton))
+			if (wv != null && (value == null) == (wv == WeakNull))
 				wv.Target = value;
 			else
-				_dict[key] = WeakReference<V>.NewOrNullSingleton(value);
+				_dict[key] = value == null ? WeakNull : new WeakReference<V>(value);
 		}
 	}
 }

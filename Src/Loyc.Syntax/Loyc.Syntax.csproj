@@ -112,8 +112,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-    <Reference Include="Theraot.Core.NET35">
-      <HintPath>..\..\Lib\Theraot.Core.NET35.dll</HintPath>
+    <Reference Include="Theraot.Core">
+      <HintPath>..\..\Lib\DotNet35\Theraot.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

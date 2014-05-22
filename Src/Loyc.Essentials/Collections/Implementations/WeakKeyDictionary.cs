@@ -6,11 +6,16 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>A dictionary with weak keys.</summary>
-	/// <remarks>Source: datavault project. License: Apache License 2.0</remarks>
+	/// <remarks>
+	/// Source: datavault project. License: Apache License 2.0
+	/// </remarks>
     public sealed class WeakKeyDictionary<TKey, TValue> : BaseDictionary<TKey, TValue>
         where TKey : class
     {
-        private Dictionary<object, TValue> dictionary;
+        // All keys actually have type WeakKeyReference<TKey>; the key type is 
+		// object in order to allow comparing weak references to strong references
+		// (e.g. dictionary.Contains(strongRef))
+		private Dictionary<object, TValue> dictionary;
         private WeakKeyComparer<TKey> comparer;
 
         public WeakKeyDictionary()
@@ -40,7 +45,7 @@ namespace Loyc.Collections
         public override void Add(TKey key, TValue value)
         {
             if (key == null) throw new ArgumentNullException("key");
-            WeakReference<TKey> weakKey = new WeakKeyReference<TKey>(key, this.comparer);
+            WeakKeyReference<TKey> weakKey = new WeakKeyReference<TKey>(key, this.comparer);
             this.dictionary.Add(weakKey, value);
         }
 
@@ -61,7 +66,7 @@ namespace Loyc.Collections
 
         protected override void SetValue(TKey key, TValue value)
         {
-            WeakReference<TKey> weakKey = new WeakKeyReference<TKey>(key, this.comparer);
+            WeakKeyReference<TKey> weakKey = new WeakKeyReference<TKey>(key, this.comparer);
             this.dictionary[weakKey] = value;
         }
 
@@ -74,7 +79,7 @@ namespace Loyc.Collections
         {
             foreach (KeyValuePair<object, TValue> kvp in this.dictionary)
             {
-                WeakReference<TKey> weakKey = (WeakReference<TKey>)(kvp.Key);
+                WeakKeyReference<TKey> weakKey = (WeakKeyReference<TKey>)(kvp.Key);
                 TKey key = weakKey.Target;
                 TValue value = kvp.Value;
                 if (weakKey.IsAlive)
@@ -93,7 +98,7 @@ namespace Loyc.Collections
             List<object> toRemove = null;
             foreach (KeyValuePair<object, TValue> pair in this.dictionary)
             {
-                WeakReference<TKey> weakKey = (WeakReference<TKey>)(pair.Key);
+                WeakKeyReference<TKey> weakKey = (WeakKeyReference<TKey>)(pair.Key);
                 if (!weakKey.IsAlive)
                 {
                     if (toRemove == null)

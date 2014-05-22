@@ -430,7 +430,8 @@ namespace Loyc.MiniTest
 			return obj.ToString();
 		}
 
-		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual = false)
+		static string GetObjectMismatchMessage(object a, object b) { return GetObjectMismatchMessage(a, b, false); }
+		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual)
 		{
 			if (a is string && b is string)
 				return GetStringsNotEqualMessage((string)a, (string)b);

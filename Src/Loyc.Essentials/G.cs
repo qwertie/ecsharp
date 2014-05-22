@@ -155,14 +155,19 @@ namespace Loyc
 				return (char)('A' - 10 + value);
 		}
 
-		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default, char quoteType = '\0')
+		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default)
+		{
+			return EscapeCStyle(s, flags, '\0');
+		}
+		public static string EscapeCStyle(string s, EscapeC flags, char quoteType)
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
+			bool any = false;
 			for (int i = 0; i < s.Length; i++) {
 				char c = s[i];
-				EscapeCStyle(c, s2, flags, quoteType);
+				any |= EscapeCStyle(c, s2, flags, quoteType);
 			}
-			return s2.ToString();
+			return any ? s2.ToString() : s;
 		}
 
 		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
@@ -172,7 +177,7 @@ namespace Loyc
 			} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
 				@out.Append("\\\"");
 			} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
-				@out.Append("\\\'");
+				@out.Append("\\'");
 			} else if (c == quoteType) {
 				@out.Append('\\');
 				@out.Append(c);

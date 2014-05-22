@@ -158,7 +158,7 @@ namespace Loyc.Threading
 			if (!_areThreadVarsInitialized && (threadId = Thread.CurrentThread.ManagedThreadId) != parentThreadId) {
 				_areThreadVarsInitialized = true;
 				for (int i = 0; i < _TLVs.Count; i++) {
-					ThreadLocalVariableBase v = _TLVs[i].Target;
+					ThreadLocalVariableBase v = _TLVs[i].Target();
 					if (v != null)
 						v.Propagate(parentThreadId, threadId);
 				}
@@ -170,7 +170,7 @@ namespace Loyc.Threading
 		{
 			// Notify thread-local variables of termination
 			for (int i = 0; i < _TLVs.Count; i++) {
-				ThreadLocalVariableBase v = _TLVs[i].Target;
+				ThreadLocalVariableBase v = _TLVs[i].Target();
 				if (v != null)
 					v.Terminate(Thread.CurrentThread.ManagedThreadId);
 			}
@@ -290,7 +290,7 @@ namespace Loyc.Threading
 		{
 			lock(_TLVs) {
 				for (int i = 0; i < _TLVs.Count; i++)
-					if (!_TLVs[i].IsAlive) {
+					if (!_TLVs[i].IsAlive()) {
 						_TLVs[i].Target = tlv;
 						return;
 					}
