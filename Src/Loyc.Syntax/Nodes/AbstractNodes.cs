@@ -22,7 +22,7 @@ namespace Loyc.Syntax
 		public abstract override LNode WithName(Symbol name);
 		
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return null; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value)           { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
 		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
@@ -56,6 +56,13 @@ namespace Loyc.Syntax
 		public override bool IsIdWithoutPAttrs()            { return !HasPAttrs(); }
 		public override bool IsIdWithoutPAttrs(Symbol name) { return Name == name && !HasPAttrs(); }
 		public override bool IsIdNamed(Symbol name)             { return Name == name; }
+		
+		public sealed override int Max { get { return -2; } }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(selector); }
+		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
+		{
+			return replaceRoot ? selector(this) ?? this : this;
+		}
 	}
 	
 	/// <summary>Base class of all nodes that represent literal values such as 123 and "foo".</summary>
@@ -97,6 +104,13 @@ namespace Loyc.Syntax
 			int hash = (Value ?? "").GetHashCode() + 1;
 			hash += AttrCount;
 			return hash += (int)Style & styleMask;
+		}
+		
+		public sealed override int Max { get { return -2; } }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(selector); }
+		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
+		{
+			return replaceRoot ? selector(this) ?? this : this;
 		}
 	}
 	
@@ -168,5 +182,21 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 		public override LNode WithArgs(Func<LNode, LNode> selector) { return WithArgs(Args.SmartSelect(selector)); }
+		public sealed override LNode Select(Func<LNode, LNode> selector)
+		{
+			LNode result = WithAttrs(selector);
+			LNode target = selector(Target);
+			var args = Args.SmartSelect(selector);
+			return result.With(target, args);
+		}
+		public override LNode ReplaceRecursive(Func<LNode, LNode> matcher, bool replaceRoot = true)
+		{
+			Func<LNode, LNode> selector = null; selector = node =>
+			{
+				LNode @new = matcher(node);
+				return @new ?? node.Select(selector);
+			};
+			return replaceRoot ? matcher(this) ?? Select(selector) : Select(selector);
+		}
 	}
 }

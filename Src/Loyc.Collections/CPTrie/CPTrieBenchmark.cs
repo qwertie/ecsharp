@@ -289,14 +289,14 @@ namespace Loyc.Collections
 
 		public static int Fill<T>(T[] keys, IDictionary<T, object> dict, object value)
 		{
-			SimpleTimer t = new SimpleTimer();
+			EzStopwatch t = new EzStopwatch(true);
 			for (int i = 0; i < keys.Length; i++)
 				dict[keys[i]] = value;
 			return t.Millisec;
 		}
 		private static int Scan<T>(T[] keys, IDictionary<T, object> dict)
 		{
-			SimpleTimer t = new SimpleTimer();
+			EzStopwatch t = new EzStopwatch(true);
 
 			int irrelevant = 0;
 			for (int i = 0; i < keys.Length; i++)
@@ -440,7 +440,7 @@ namespace Loyc.Collections
 
 				if (optimizeTrie)
 				{
-					SimpleTimer t = new SimpleTimer();
+					EzStopwatch t = new EzStopwatch(true);
 
 					for (int i = 0; i < tries.Length; i++)
 						tries[i] = ((CPStringTrie<string>)tries[i]).Clone();
@@ -569,7 +569,7 @@ namespace Loyc.Collections
 			for (int sec = 0; sec < dicts.Length; sec++)
 				dicts[sec] = factory();
 
-			SimpleTimer t = new SimpleTimer();
+			EzStopwatch t = new EzStopwatch(true);
 
 			for (int j = 0; j < sectionSize; j++) {
 				for (int i = j, sec = 0; i < wordCount; i += sectionSize, sec++)
@@ -580,7 +580,7 @@ namespace Loyc.Collections
 		}
 		public static int Scan(string[] words, int wordCount, int sectionSize, IDictionary<string, string>[] dicts)
 		{
-			SimpleTimer t = new SimpleTimer();
+			EzStopwatch t = new EzStopwatch(true);
 			int total = 0;
 
 			for (int j = 0; j < sectionSize; j++) {

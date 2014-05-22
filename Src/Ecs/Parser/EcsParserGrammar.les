@@ -92,6 +92,18 @@ namespace Ecs.Parser
 		// current space, or #def (S.Def) when inside a method or constructor.
 		_spaceName::Symbol;
 		
+		// Inside a LINQ expression, certain ContextualKeywords are to be treated
+		// as actual keywords. This flag enables that behavior.
+		_insideLinqExpr::bool;
+
+		// A potential contextual keyword that can be treated as an identifier
+		private rule UnusualId()::Token @[
+			&!{_insideLinqExpr && LinqKeywords.Contains(LT($LI).Value)} t:=TT.ContextualKeyword
+			{return t;}
+		];
+
+		internal static readonly LinqKeywords::HashSet!object = EcsLexer.LinqKeywords;
+		
 		// ---------------------------------------------------------------------
 		// -- Complex identifiers and type names -------------------------------
 		// ---------------------------------------------------------------------
@@ -155,7 +167,9 @@ namespace Ecs.Parser
 				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
 			|	op:=TT.@operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
-			|	t:=(TT.Id|TT.ContextualKeyword|TT.TypeKeyword)
+			|	t:=(TT.Id|TT.TypeKeyword)
+				{r = IdNode(t);}
+			|	t:=UnusualId
 				{r = IdNode(t);}
 			) {return r;}
 		];
@@ -222,9 +236,10 @@ namespace Ecs.Parser
 				//       x as Foo?[y]        // Parsed OK
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				t:="?" (&!{afterAsOrIs} | &!(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.Number 
+				t:="?" (&!{afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Number
 				                            | TT.String | TT.SQString | TT.OtherLit | TT.Symbol | "(" | "{" 
-				                            | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" | "$" | "@"))
+				                            | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
+				                            | "$" | "@" | UnusualId))
 				       {e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
 				// unconditionally accept "*" as a pointer marker.
@@ -361,7 +376,9 @@ namespace Ecs.Parser
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 			|	op:=TT.@operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
-			|	t:=(TT.Id | TT.ContextualKeyword | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
+			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
+				{r = IdNode(t);}
+			|	t:=UnusualId
 				{r = IdNode(t);}
 			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
@@ -533,8 +550,8 @@ namespace Ecs.Parser
 		private rule NullDotExpr::LNode @[
 			e:=PrimaryExpr
 			(
-				"?." rhs:=PrimaryExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-			)*
+				"?." rhs:=NullDotExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+			)?
 			{return e;}
 		];
 
@@ -639,7 +656,7 @@ namespace Ecs.Parser
 			e::LNode;
 			argName::Token = default(Token);
 			attrs::RWList!LNode = null;
-			@[	(argName=(TT.Id|TT.ContextualKeyword) ":")?
+			@[	((argName=TT.Id|argName=UnusualId) ":")?
 				NormalAttributes(ref attrs)
 				AttributeKeywords(ref attrs)
 				wc:=WordAttributes(ref attrs)
@@ -702,8 +719,9 @@ namespace Ecs.Parser
 		];
 
 		private rule VarDeclStart::Pair!(LNode, LNode) @[
+			{name::Token;}
 			e:=DataType
-			name:=(TT.Id | TT.ContextualKeyword)
+			(name=TT.Id | name=UnusualId)
 			{MaybeRecognizeVarAsKeyword(ref e);}
 			{return Pair.Create(e, IdNode(name));}
 		];
@@ -876,12 +894,13 @@ namespace Ecs.Parser
 				nonKeywords::int = 0;
 				if LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot) 
 					(return 0);
+				t::Token;
 			}
-			(	t:=TT.AttrKeyword {attrs.Add(IdNode(t));}
-			|	t:=(TT.Id|TT.ContextualKeyword|TT.@new)
+			(	t=TT.AttrKeyword {attrs.Add(IdNode(t));}
+			|	(t=(TT.Id|TT.@new) | t=UnusualId)
 				&(	// This branch matches var decls, alias decls, trait decls and 
 					// non-keyword attributes located prior to any of those.
-					DataType (TT.Id|TT.ContextualKeyword|TT.TypeKeyword|TT.AttrKeyword)
+					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
 				|	(TT.AttrKeyword | TT.@new)
 				|	&{_spaceName!=S.Def} TT.(noMacro(this))
 				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
@@ -903,14 +922,18 @@ namespace Ecs.Parser
 			)*
 			{return nonKeywords;}
 		];
-
+		
 		// ---------------------------------------------------------------------
 		// LINQ ----------------------------------------------------------------
 		// ---------------------------------------------------------------------
-
-		/*
+/*
 		public rule QueryExpression::LNode @[
 			LinqFrom QueryBody {return null;}
+		];
+		
+		private rule LinqFrom::LNode @[
+			&{Is($LI, _from)} t:=TT.ContextualKeyword var:=VarIn e:=ExprStart(false)
+			{return null;}
 		];
 		
 		private rule QueryBody::LNode @[
@@ -928,10 +951,6 @@ namespace Ecs.Parser
 			) {return null;}
 		];
 
-		private rule LinqFrom::LNode @[
-			&{Is($LI, _from)} t:=TT.ContextualKeyword var:=VarIn e:=ExprStart(false)
-			{return null;}
-		];
 		private rule LinqLet @[ _ ];
 		private rule LinqWhere @[ _ ];
 		private rule LinqJoin @[ _ ];
@@ -939,8 +958,7 @@ namespace Ecs.Parser
 
 		private rule SelectOrGroupClause @[ _ ];
 		private rule QueryContinuation @[ _ ];
-		*/
-
+*/
 		// ---------------------------------------------------------------------
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------

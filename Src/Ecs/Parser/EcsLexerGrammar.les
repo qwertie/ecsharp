@@ -163,6 +163,12 @@ namespace Ecs.Parser
 			 | '@' (NormalId / isBQ=FancyId) {skipAt=1;} ];
 			ParseIdValue(skipAt, isBQ);
 		};
+		def OtherContextualKeyword()
+		{
+			_parseNeeded = _verbatim = false;
+			_type = TT.ContextualKeyword;
+			ParseIdValue(0, false);
+		};
 		private rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
 			
@@ -382,10 +388,21 @@ namespace Ecs.Parser
 			/ "dynamic"               (EndId=>{_type=TT.ContextualKeyword; _value = _dynamic;})
 			/ "trait"                 (EndId=>{_type=TT.ContextualKeyword; _value = _trait;})
 			/ "alias"                 (EndId=>{_type=TT.ContextualKeyword; _value = _alias;})
-			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
 			/ "assembly"              (EndId=>{_type=TT.ContextualKeyword; _value = _assembly;})
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
 			/ "from"                  (EndId=>{_type=TT.ContextualKeyword; _value = _from;})
+			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
+			/ "select"                (EndId=>{_type=TT.ContextualKeyword; _value = _select;})
+			/ "join"                  (EndId=>{OtherContextualKeyword();})
+			/ "on"                    (EndId=>{OtherContextualKeyword();})
+			/ "equals"                (EndId=>{OtherContextualKeyword();})
+			/ "into"                  (EndId=>{OtherContextualKeyword();})
+			/ "let"                   (EndId=>{OtherContextualKeyword();})
+			/ "orderby"               (EndId=>{OtherContextualKeyword();})
+			/ "ascending"             (EndId=>{OtherContextualKeyword();})
+			/ "descending"            (EndId=>{OtherContextualKeyword();})
+			/ "group"                 (EndId=>{OtherContextualKeyword();})
+			/ "by"                    (EndId=>{OtherContextualKeyword();})
 			/ "await"                 (EndId=>{_type=TT.ContextualKeyword; _value = _await;})
 			/ Id ];
 
@@ -393,11 +410,27 @@ namespace Ecs.Parser
 		static readonly _dynamic::Symbol = GSymbol.Get("dynamic");
 		static readonly _trait::Symbol = GSymbol.Get("trait");
 		static readonly _alias::Symbol = GSymbol.Get("alias");
-		static readonly _where::Symbol = GSymbol.Get("where");
 		static readonly _assembly::Symbol = GSymbol.Get("assembly");
 		static readonly _module::Symbol = GSymbol.Get("module");
-		static readonly _from::Symbol = GSymbol.Get("from");
 		static readonly _await::Symbol = GSymbol.Get("await");
+		
+		static readonly _where::Symbol = GSymbol.Get("where");
+		static readonly _select::Symbol = GSymbol.Get("select");
+		static readonly _from::Symbol = GSymbol.Get("from");
+		static readonly _join::Symbol = GSymbol.Get("join");
+		static readonly _on::Symbol = GSymbol.Get("on");
+		static readonly _equals::Symbol = GSymbol.Get("equals");
+		static readonly _into::Symbol = GSymbol.Get("into");
+		static readonly _let::Symbol = GSymbol.Get("let");
+		static readonly _orderby::Symbol = GSymbol.Get("orderby");
+		static readonly _ascending::Symbol = GSymbol.Get("ascending");
+		static readonly _descending::Symbol = GSymbol.Get("descending");
+		static readonly _group::Symbol = GSymbol.Get("group");
+		static readonly _by::Symbol = GSymbol.Get("by");
+		// This is used by EcsParser
+		internal static readonly LinqKeywords::HashSet!object = (new HashSet!object { 
+			_where; _select; _from; _join; _on; _equals; _into; _let; _orderby; _ascending; _descending; _group; _by
+		});
 
 		rule RestOfPPLine::string @[
 			{start::int = InputPosition;}

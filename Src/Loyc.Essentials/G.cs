@@ -155,11 +155,11 @@ namespace Loyc
 				return (char)('A' - 10 + value);
 		}
 
-		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default)
+		public static string EscapeCStyle(UString s, EscapeC flags = EscapeC.Default)
 		{
 			return EscapeCStyle(s, flags, '\0');
 		}
-		public static string EscapeCStyle(string s, EscapeC flags, char quoteType)
+		public static string EscapeCStyle(UString s, EscapeC flags, char quoteType)
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			bool any = false;
@@ -167,7 +167,9 @@ namespace Loyc
 				char c = s[i];
 				any |= EscapeCStyle(c, s2, flags, quoteType);
 			}
-			return any ? s2.ToString() : s;
+			if (!any && s.InternalString.Length == s.Length)
+				return s.InternalString;
+			return s2.ToString();
 		}
 
 		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')

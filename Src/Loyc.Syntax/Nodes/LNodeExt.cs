@@ -10,6 +10,10 @@ namespace Loyc.Syntax
 {
 	public static class LNodeExt
 	{
+		public static RVList<LNode> AsList(this LNode block, Symbol braces)
+		{
+			return block.Calls(braces) ? block.Args : new RVList<LNode>(block);
+		}
 		public static RVList<LNode> WithSpliced(this RVList<LNode> list, int index, LNode node, Symbol listName)
 		{
 			if (node.Calls(listName))

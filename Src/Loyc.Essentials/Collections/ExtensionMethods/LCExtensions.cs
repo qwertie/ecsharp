@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
+	/// <summary>Extension methods for Loyc Collection interfaces (such as <see cref="IListSource{T}"/>) and for Loyc Collection adapters (such as 
+	/// 
+	/// </summary>
 	public static class LCExt
 	{
 		#region Conversion between Loyc and BCL collection interfaces
@@ -60,11 +63,11 @@ namespace Loyc.Collections
 		}
 		#endif
 
-		/// <summary>Converts any ICollection{T} object to ISource{T}.</summary>
-		/// <remarks>This method is named "AsSource" and not "ToSource" because,
+		/// <summary>Converts any ICollection{T} object to IReadOnlyCollection{T}.</summary>
+		/// <remarks>This method is named "AsReadOnly" and not "ToReadOnly" because,
 		/// in contrast to methods like ToArray(), and ToList() it does not make a 
-		/// copy of the sequence.</remarks>
-		public static IReadOnlyCollection<T> AsSource<T>(this ICollection<T> c)
+		/// copy of the sequence, although it does create a new wrapper object.</remarks>
+		public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> c)
 		{
 			var list = c as IReadOnlyCollection<T>;
 			if (list != null)
@@ -72,10 +75,10 @@ namespace Loyc.Collections
 			return new CollectionAsSource<T>(c);
 		}
 		
-		/// <summary>Converts any ISource{T} object to a read-only ICollection{T}.</summary>
+		/// <summary>Converts any IReadOnlyCollection{T} object to a read-only ICollection{T}.</summary>
 		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
 		/// because, in contrast to methods like ToArray() and ToList(), it does not 
-		/// make a copy of the sequence.</remarks>
+		/// make a copy of the sequence, although it does create a new wrapper object.</remarks>
 		public static ICollection<T> AsCollection<T>(this IReadOnlyCollection<T> c)
 		{
 			var list = c as ICollection<T>;
@@ -101,7 +104,7 @@ namespace Loyc.Collections
 		/// <summary>Converts any IListSource{T} object to a read-only IList{T}.</summary>
 		/// <remarks>This method is named "AsList" and not "ToList" because
 		/// because, in contrast to methods like ToArray(), it does not make a copy
-		/// of the sequence.</remarks>
+		/// of the sequence, although it does create a new wrapper object.</remarks>
 		public static IList<T> AsList<T>(this IListSource<T> c)
 		{
 			if (c == null)

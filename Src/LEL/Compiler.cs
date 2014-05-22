@@ -69,6 +69,7 @@ namespace LeMP
 			} else if (args.Length == 0) {
 				Console.WriteLine("Running unit tests...");
 				RunTests.Run(new MacroProcessorTests());
+				RunTests.Run(new StandardMacroTests());
 			}
 		}
 

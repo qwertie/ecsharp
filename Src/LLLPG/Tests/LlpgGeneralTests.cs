@@ -1787,7 +1787,7 @@ namespace Loyc.LLParserGenerator
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}
 		}
-		static string StripExtraWhitespace(string a) { return LeMP.MacroProcessorTests.StripExtraWhitespace(a); }
+		static string StripExtraWhitespace(string a) { return LeMP.TestCompiler.StripExtraWhitespace(a); }
 
 		#region Calculator example (LES)
 		// This is the oldest version of the calculator example, and uses

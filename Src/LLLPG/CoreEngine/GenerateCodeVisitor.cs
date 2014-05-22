@@ -563,21 +563,10 @@ namespace Loyc.LLParserGenerator
 				Func<LNode, LNode> replacer = null; replacer = node =>
 				{
 					LNode @new = func(node);
-					if (@new != null)
-						return @new;
-
-					node = node.WithAttrs(replacer);
-					if (node.IsCall) {
-						var target = node.Target;
-						if (target != null) {
-							if ((@new = replacer(target)) != null)
-								node = node.WithTarget(@new);
-						}
-						node = node.WithArgs(replacer);
-					}
-					return node;
+					return @new ?? node.Select(replacer);
 				};
-				return replacer(root);
+				LNode newRoot = func(root);
+				return newRoot ?? root.Select(replacer);
 			}
 
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)
