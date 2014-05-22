@@ -52,7 +52,8 @@ namespace Ecs.Parser
 		public EcsPreprocessor(ILexer source, Action<Token> onComment = null)
 			: base(source) { _onComment = onComment; }
 
-		public ISet<Symbol> DefinedSymbols = new HashSet<Symbol>();
+		// Can't use ISet<T>: it is new in .NET 4, but HashSet is new in .NET 3.5
+		public HashSet<Symbol> DefinedSymbols = new HashSet<Symbol>();
 
 		Action<Token> _onComment;
 		List<Token> _commentList = new List<Token>();

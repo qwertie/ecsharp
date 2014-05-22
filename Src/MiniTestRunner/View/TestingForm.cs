@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Loyc.Math;
+using Loyc.Collections;
 using MiniTestRunner.ViewModel;
 using UpdateControls.Forms;
 
@@ -234,7 +235,7 @@ namespace MiniTestRunner.WinForms
 		}
 		private void btnRunTests_Click(object sender, EventArgs e)
 		{
-			_tree.Model.StartTesting(_tree.Model.Roots);
+			_tree.Model.StartTesting(_tree.Model.Roots.Upcast<RowModel, TaskRowModel>());
 		}
 		private void btnStopTests_Click(object sender, EventArgs e)
 		{

@@ -39,7 +39,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Bin\Utilities\Debug\</OutputPath>
+    <OutputPath>..\..\Bin\Utilities\Debug.NET4\</OutputPath>
     <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -51,11 +51,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Bin\Utilities\Release\</OutputPath>
+    <OutputPath>..\..\Bin\Utilities\Release.NET4\</OutputPath>
     <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Bin\Utilities\Release\Loyc.Utilities.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Utilities\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -64,6 +64,42 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\Bin\Utilities\Debug.NET3\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;Loyc,DotNet3,CSharp4</DefineConstants>
+    <NoWarn>1591, 1573</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\Bin\Utilities\Debug\Loyc.Utilities.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <OutputPath>..\..\Bin\Utilities\Release.NET3\</OutputPath>
+    <DefineConstants>TRACE;Loyc,DotNet3,CSharp4</DefineConstants>
+    <DocumentationFile>..\..\Bin\Utilities\Release.NET3\Loyc.Utilities.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>1591, 1573</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\Bin\Utilities\Release\Loyc.Utilities.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -82,6 +118,11 @@
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+    <Reference Include="Theraot.Core.NET35">
+      <HintPath>..\..\Lib\Theraot.Core.NET35.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Downcasters.cs" />
     <Compile Include="Geometry\BoundingBoxMathTT.cs">
@@ -97,6 +138,7 @@
       <DependentUpon>LineMathTT.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry\PointMath.cs" />
+    <Compile Include="Geometry\PointMathTests.cs" />
     <Compile Include="Geometry\PointMathTT.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -177,15 +219,15 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.NET4.csproj">
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
       <Name>Loyc.Collections.NET4</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.NET4.csproj">
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
       <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
       <Name>Loyc.Essentials.NET4</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.NET4.csproj">
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj">
       <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
       <Name>Loyc.Syntax.NET4</Name>
     </ProjectReference>

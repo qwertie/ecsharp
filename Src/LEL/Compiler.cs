@@ -84,11 +84,11 @@ namespace LeMP
 			string value;
 			if (options.TryGetValue("verbose", out value) && value != "false")
 			{
-				Severity sev;
-				if (Enum.TryParse(value, out sev))
-					sink.MinSeverity = sev;
-				else
+				try { // Enum.TryParse() does not exist before .NET 4 so use Enum.Parse
+					sink.MinSeverity = (Severity)Enum.Parse(typeof(Severity), value);
+				} catch (Exception) { // Docs say OverflowException, but that just sounds wrong
 					sink.MinSeverity = Severity.Verbose;
+				}
 			}
 
 			var c = new Compiler(sink, prelude, inputFiles);
@@ -353,11 +353,14 @@ namespace LeMP
 
 		protected virtual void WriteOutput(InputOutput io)
 		{
-			if (Parallel)
-				// attach to parent so that ProcessParallel does not exit before file is written
+			#if !DotNet2 && !DotNet3
+			if (Parallel) {
+				// attach to parent so that ProcessParallel does not exit before the file is written
 				Task.Factory.StartNew(() => WriteOutput2(io), TaskCreationOptions.AttachedToParent);
-			else
-				WriteOutput2(io);
+				return;
+			}
+			#endif
+			WriteOutput2(io);
 		}
 
 		private void WriteOutput2(InputOutput io)
@@ -373,7 +376,7 @@ namespace LeMP
 					io.OutPrinter(node, sb, Sink, null, IndentString, NewlineString);
 					writer.Write(sb.ToString());
 					writer.Write(NewlineString);
-					sb.Clear();
+					sb.Length = 0; // Clear() is new in .NET 4
 				}
 			}
 		}

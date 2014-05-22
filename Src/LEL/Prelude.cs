@@ -47,12 +47,9 @@ namespace LeMP.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		static readonly Severity Error = Severity.Error;
-		static readonly Severity Warning = Severity.Warning;
-		static readonly Severity Note = Severity.Note;
 		static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
-			error.Write(Note, at, msg);
+			error.Write(Severity.Note, at, msg);
 			return null;
 		}
 

@@ -240,21 +240,21 @@ namespace Loyc.Syntax.Les
 		public static string PrintId(Symbol name)
 		{
 			_staticWriter.Reset();
-			_staticStringBuilder.Clear();
+			_staticStringBuilder.Length = 0; // Clear() only exists in .NET 4
 			_staticPrinter.PrintIdOrSymbol(name, false);
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintLiteral(object value, NodeStyle style = 0)
 		{
 			_staticWriter.Reset();
-			_staticStringBuilder.Clear();
+			_staticStringBuilder.Length = 0;
 			_staticPrinter.PrintLiteralCore(value, style);
 			return _staticStringBuilder.ToString();
 		}
 		public static string PrintString(string text, char quoteType, bool tripleQuoted)
 		{
 			_staticWriter.Reset();
-			_staticStringBuilder.Clear();
+			_staticStringBuilder.Length = 0;
 			_staticPrinter.PrintStringCore(quoteType, tripleQuoted, text);
 			return _staticStringBuilder.ToString();
 		}

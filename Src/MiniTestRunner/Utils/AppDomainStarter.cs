@@ -51,7 +51,7 @@ namespace MiniTestRunner
 			return (T)Activator.CreateInstanceFrom(newDomain, 
 				typeof(T).Assembly.ManifestModule.FullyQualifiedName, 
 				typeof(T).FullName, false,
-				0, null, constructorArgs, null, null).Unwrap();
+				0, null, constructorArgs, null, null, null).Unwrap();
 		}
 	}
 }

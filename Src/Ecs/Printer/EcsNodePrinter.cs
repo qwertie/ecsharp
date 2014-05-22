@@ -1213,7 +1213,7 @@ namespace Ecs
 				_staticPrinter = new EcsNodePrinter(null, wr);
 			} else {
 				_staticWriter.Reset();
-				_staticStringBuilder.Clear();
+				_staticStringBuilder.Length = 0; // Clear() is new in .NET 4
 			}
 		}
 		public static string PrintId(Symbol name, bool useOperatorKeyword = false)

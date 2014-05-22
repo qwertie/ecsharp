@@ -26,17 +26,11 @@ namespace Loyc.Geometry
 
 	public static partial class LineMath
 	{
-		/// <inheritdoc cref="ProjectOnto(Point, LineSegment, LineType, out int?)"/>
-		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
-		{
-			int? _;
-			return ProjectOnto(p, seg, type, out _);
-		}
 		/// <summary>Performs projection, which finds the point on a line segment 
 		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
-		/// <param name="type">Line type: Segment, Infinite, or Ray.</param>
+		/// <param name="infiniteLine">Whether to extend the line infinitely.</param>
 		/// <param name="end">Set to 0 if the point is on the line segment (including
 		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
 		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
@@ -50,6 +44,11 @@ namespace Loyc.Geometry
 		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
 		/// See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
+		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
+		{
+			int? _;
+			return ProjectOnto(p, seg, type, out _);
+		}
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;
@@ -92,22 +91,21 @@ namespace Loyc.Geometry
 			return ProjectOnto(p, seg, LineType.Segment);
 		}
 
-		/// <inheritdoc cref="GetFractionAlong(Point, LineSegment, LineType, out int?)"/>
+		/// <summary>Gets the projection of a point onto a line, expressed as a 
+		/// fraction where 0 represents the start of the line and 1 represents the 
+		/// end of the line.</summary>
+		/// <param name="infiniteLine">Whether to return numbers outside the range
+		/// (0, 1) if the projection is outside the line segment. If this is false,
+		/// the result is clamped to (0, 1)</param>
+		/// <param name="end">Same as for <see cref="ProjectOnto"/>.</param>
+		/// <returns>The fraction of p along seg, as explained already. If seg is
+		/// zero-length, the result is always 0.</returns>
+		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
 			int? _;
 			return GetFractionAlong(p, seg, type, out _);
 		}
-		/// <summary>Gets the projection of a point onto a line, expressed as a 
-		/// fraction where 0 represents the start of the line and 1 represents the 
-		/// end of the line.</summary>
-		/// <param name="type">Indicates whether to return numbers outside the range
-		/// (0, 1) if the projection is outside the line segment. If this is Segment,
-		/// the result is clamped to (0, 1). If this is Ray, the result is nonnegative.</param>
-		/// <param name="end">Same as for <see cref="ProjectOnto"/>.</param>
-		/// <returns>The fraction of p along seg, as explained already. If seg is
-		/// zero-length, the result is always 0.</returns>
-		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
 			end = 0;
@@ -358,7 +356,7 @@ namespace Loyc.Geometry
 		/// <summary>Computes the intersection point between two lines, rays or 
 		/// line segments.</summary>
 		/// <remarks>This method is implemented based on the other overload,
-		/// <see cref="ComputeIntersection(LineSegment, LineType, out T, LineSegment, LineType, out T)"/>.
+		/// <see cref="ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
 		/// </remarks>
 		public static Point? ComputeIntersection(this LineSegment P, LineType pType, LineSegment Q, LineType qType)
 		{
@@ -379,7 +377,7 @@ namespace Loyc.Geometry
 			if (p.X < bbox.X1) sides |= 1;
 			if (p.X > bbox.X2) sides |= 2;
 			if (p.Y < bbox.Y1) sides |= 4;
-			if (p.Y > bbox.Y2) sides |= 8;
+			if (p.Y < bbox.Y2) sides |= 8;
 			return sides;
 		}
 
@@ -773,7 +771,7 @@ namespace Loyc.Geometry
 		/// <summary>Computes the intersection point between two lines, rays or 
 		/// line segments.</summary>
 		/// <remarks>This method is implemented based on the other overload,
-		/// <see cref="ComputeIntersection(LineSegment, LineType, out T, LineSegment, LineType, out T)"/>.
+		/// <see cref="ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
 		/// </remarks>
 		public static Point? ComputeIntersection(this LineSegment P, LineType pType, LineSegment Q, LineType qType)
 		{
