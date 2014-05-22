@@ -35,7 +35,7 @@ namespace Loyc.LLParserGenerator
 
 				Severity minSeverity = Severity.Note;
 				#if DEBUG
-				minSeverity = MessageSink.Debug;
+				minSeverity = Severity.Debug;
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
@@ -91,6 +91,7 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new LeMP.MacroProcessorTests());
+			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgGeneralTests());

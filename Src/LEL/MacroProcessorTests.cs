@@ -5,14 +5,25 @@ using System.Text;
 using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
+using Loyc.Collections;
 using Loyc;
 using LeMP.Prelude;
+using S = Loyc.Syntax.CodeSymbols;
 
+namespace LeMP.Test
+{
+	[ContainsMacros]
+	public class Macros
+	{
+		[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
+		public static LNode Identity(LNode node, IMessageSink sink)
+		{
+			return node.WithName(S.Splice);
+		}
+	}
+}
 namespace LeMP
 {
-	using S = CodeSymbols;
-	using Loyc.Collections;
-
 	/// <summary>A simple version of Compiler that takes a single input and produces 
 	/// a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
 	public class TestCompiler : Compiler
@@ -22,7 +33,9 @@ namespace LeMP
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			MacroProcessor.AddMacros(typeof(TestCompiler));
+			MacroProcessor.AddMacros(typeof(LeMP.StandardMacros));
+			MacroProcessor.AddMacros(typeof(LeMP.Test.Macros));
+			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 		}
@@ -40,11 +53,41 @@ namespace LeMP
 			}
 		}
 
-		[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
-		public static LNode Identity(LNode node, IMessageSink sink)
+		#region static Test(), StripExtraWhitespace() methods
+
+		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF)
 		{
-			return node.WithName(S.Splice);
+			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
+				var c = new TestCompiler(sink, new StringSlice(input), "");
+				c.MaxExpansions = maxExpand;
+				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
+				c.Run();
+				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
+			}
 		}
+		public static string StripExtraWhitespace(string a)
+		{
+			StringBuilder sb = new StringBuilder();
+			char prev_c = '\0';
+			for (int i = 0; i < a.Length; i++) {
+				char c = a[i];
+				if (c == '\n' || c == '\r' || c == '\t')
+					c = ' ';
+				if (c == ' ' && (!MaybeId(prev_c) || !MaybeId(a.TryGet(i + 1, '\0'))))
+					continue;
+				if (c == '/' && a.TryGet(i + 1, '\0') == '/') {
+					// Skip comment
+					do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
+					continue;
+				}
+				sb.Append(c);
+				prev_c = c;
+			}
+			return sb.ToString();
+		}
+		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
+
+		#endregion
 	}
 
 	[TestFixture]
@@ -93,14 +136,14 @@ namespace LeMP
 		[Test]
 		public void ImportsTest()
 		{
-			Test("import macros LeMP; x();",
+			Test("import macros LeMP.Test; x();",
 				"x();");
 			Test("import x.y;",
 				"using x.y;");
-			Test("Identity(x); { import LeMP; Identity(x); }; Identity(x);",
-				"Identity(x); { using LeMP; x; } Identity(x);");
-			Test("{{ import LeMP; Identity(x); }}; Identity(x);",
-				"{{ using LeMP; x; }} Identity(x);");
+			Test("Identity(x); { import LeMP.Test; Identity(x); }; Identity(x);",
+				"Identity(x); { using LeMP.Test; x; } Identity(x);");
+			Test("{{ import LeMP.Test; Identity(x); }}; Identity(x);",
+				"{{ using LeMP.Test; x; }} Identity(x);");
 		}
 
 		[Test]
@@ -195,15 +238,17 @@ namespace LeMP
 				 "partial class Foo : System.Object {}");
 			Test("struct Foo(IEnumerable, ICloneable) {};",
 				 "struct Foo : IEnumerable, ICloneable {}");
-			Test("pub Foo::int = 0;",
+			Test("[pub] Foo::int = 0;",
+				 "public int Foo = 0;");
+			Test("public Foo::int = 0;",
 				 "public int Foo = 0;");
 			Test("public struct Point!T { public X::T; public Y::T; };",
 				 "public struct Point<T> { public T X; public T Y; }");
-			Test("priv enum Letters(byte) { A='a'; B='b'; };",
+			Test("private enum Letters(byte) { A='a'; B='b'; };",
 				 "private enum Letters : byte { A='a', B='b' }");
 			Test("private trait Foo { };",
 				 "private trait Foo { }");
-			Test("prot alias A = B.C;",
+			Test("protected alias A = B.C;",
 				 "protected alias A = B.C;");
 			Test("protected alias A(IA) = B.C { };",
 				 "protected alias A = B.C : IA { }");
@@ -241,33 +286,7 @@ namespace LeMP
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
-				var c = new TestCompiler(_sink, new StringSlice(input), "");
-				c.MaxExpansions = maxExpand;
-				c.Run();
-				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
-			}
+			TestCompiler.Test(input, output, _sink, maxExpand);
 		}
-		public static string StripExtraWhitespace(string a)
-		{
-			StringBuilder sb = new StringBuilder();
-			char prev_c = '\0';
-			for (int i = 0; i < a.Length; i++) {
-				char c = a[i];
-				if (c == '\n' || c == '\r' || c == '\t')
-					c = ' ';
-				if (c == ' ' && (!MaybeId(prev_c) || !MaybeId(a.TryGet(i + 1, '\0'))))
-					continue;
-				if (c == '/' && a.TryGet(i + 1, '\0') == '/') {
-					// Skip comment
-					do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
-					continue;
-				}
-				sb.Append(c);
-				prev_c = c;
-			}
-			return sb.ToString();
-		}
-		static bool MaybeId(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }
 	}
 }

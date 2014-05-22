@@ -114,6 +114,7 @@
     <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Math\PointExt.cs" />
     <Compile Include="Output.cs" />
+    <Compile Include="SimpleTimer.cs" />
     <Compile Include="Statistic.cs" />
     <Compile Include="StreamCharSource.cs" />
     <Compile Include="TagsInWList.cs" />

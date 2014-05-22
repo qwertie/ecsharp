@@ -73,7 +73,15 @@ namespace LeMP
 	}
 
 	// TODO
-	public class StockOverloadAttribute : Attribute { }
-	// TODO
-	public class LowPriorityOverloadAttribute : Attribute { }
+	[AttributeUsage(AttributeTargets.Method)]
+	public class OverloadPriorityAttribute : Attribute {
+		/// <summary>Used to resolve ambiguities by giving one version of a macro or
+		/// method priority over another. The default priority (when this attribute 
+		/// is not present) is zero. A positive priority (usually +1) indicates that 
+		/// a macro/method should take priority over another macro/method that has  
+		/// no attribute; a negative priority (usually -1) indicates that the 
+		/// unattributed macro/method should be used preferentially.</summary>
+		public OverloadPriorityAttribute(int priority) { Priority = priority; }
+		public readonly int Priority;
+	}
 }

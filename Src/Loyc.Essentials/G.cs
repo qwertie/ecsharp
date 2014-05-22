@@ -155,7 +155,7 @@ namespace Loyc
 				return (char)('A' - 10 + value);
 		}
 
-		public static string EscapeCStyle(string s, EscapeC flags = EscapeC.Default, char quoteType = '\0')
+		public static string EscapeCStyle(UString s, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			for (int i = 0; i < s.Length; i++) {

@@ -23,6 +23,12 @@ namespace Ecs.Parser
 			_allowPPAt = InputPosition;
 			_value = WhitespaceTag.Value;
 		}
+		void OtherContextualKeyword()
+		{
+			_parseNeeded = _verbatim = false;
+			_type = TT.ContextualKeyword;
+			ParseIdValue(0, false);
+		}
 		static readonly Symbol _Comma = GSymbol.Get("#,");
 		static readonly Symbol _Semicolon = GSymbol.Get("#;");
 		static readonly Symbol _At = GSymbol.Get("#@");
@@ -85,11 +91,25 @@ namespace Ecs.Parser
 		static readonly Symbol _dynamic = GSymbol.Get("dynamic");
 		static readonly Symbol _trait = GSymbol.Get("trait");
 		static readonly Symbol _alias = GSymbol.Get("alias");
-		static readonly Symbol _where = GSymbol.Get("where");
 		static readonly Symbol _assembly = GSymbol.Get("assembly");
 		static readonly Symbol _module = GSymbol.Get("module");
-		static readonly Symbol _from = GSymbol.Get("from");
 		static readonly Symbol _await = GSymbol.Get("await");
+		static readonly Symbol _where = GSymbol.Get("where");
+		static readonly Symbol _select = GSymbol.Get("select");
+		static readonly Symbol _from = GSymbol.Get("from");
+		static readonly Symbol _join = GSymbol.Get("join");
+		static readonly Symbol _on = GSymbol.Get("on");
+		static readonly Symbol _equals = GSymbol.Get("equals");
+		static readonly Symbol _into = GSymbol.Get("into");
+		static readonly Symbol _let = GSymbol.Get("let");
+		static readonly Symbol _orderby = GSymbol.Get("orderby");
+		static readonly Symbol _ascending = GSymbol.Get("ascending");
+		static readonly Symbol _descending = GSymbol.Get("descending");
+		static readonly Symbol _group = GSymbol.Get("group");
+		static readonly Symbol _by = GSymbol.Get("by");
+		internal static readonly HashSet<object> LinqKeywords = new HashSet<object> { 
+			_where, _select, _from, _join, _on, _equals, _into, _let, _orderby, _ascending, _descending, _group, _by
+		};
 		void DotIndent()
 		{
 			int la0, la1;
@@ -967,7 +987,7 @@ namespace Ecs.Parser
 		void Operator()
 		{
 			int la1, la2;
-			// Line 177: ( (((((((((((([.] [.] / [.]) | ([>] [>] [=] / [>] [=] / [>] / [<] [<] [=] / [<] [=] / [<])) | ([&] [&] / [&] [=] / [&])) | ([|] [|] / [|] [=] / [|])) | ([\^] [\^] / [\^] [=] / [\^])) | ([:] [=] / [=] [:] / [:] [:] / [:] / [=] [=] [>] / [=] [=] / [=] [>] / [=])) | ([!] [=] / [!]) | [~]) | ([*] [*] [=] / [*] [*] / [*] [=] / [*])) | ([/] [=] / [/])) | ([%] [=] / [%])) | ([+] [=] / [+] [+] / [+])) | ([\-] [>] / [\-] [=] / [\-] [\-] / [\-])) | ([?] [?] [=] / [?] [?] / [?] [.] / [?]) | [$] | [\\] )
+			// Line 183: ( (((((((((((([.] [.] / [.]) | ([>] [>] [=] / [>] [=] / [>] / [<] [<] [=] / [<] [=] / [<])) | ([&] [&] / [&] [=] / [&])) | ([|] [|] / [|] [=] / [|])) | ([\^] [\^] / [\^] [=] / [\^])) | ([:] [=] / [=] [:] / [:] [:] / [:] / [=] [=] [>] / [=] [=] / [=] [>] / [=])) | ([!] [=] / [!]) | [~]) | ([*] [*] [=] / [*] [*] / [*] [=] / [*])) | ([/] [=] / [/])) | ([%] [=] / [%])) | ([+] [=] / [+] [+] / [+])) | ([\-] [>] / [\-] [=] / [\-] [\-] / [\-])) | ([?] [?] [=] / [?] [?] / [?] [.] / [?]) | [$] | [\\] )
 			 do {
 				switch (LA0) {
 				case '.':
@@ -1334,7 +1354,7 @@ namespace Ecs.Parser
 			int la0;
 			Skip();
 			Skip();
-			// Line 283: ([^\$\n\r])*
+			// Line 289: ([^\$\n\r])*
 			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -1342,7 +1362,7 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			// Line 283: (Newline)?
+			// Line 289: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
@@ -1351,7 +1371,7 @@ namespace Ecs.Parser
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
-			// Line 291: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId =>  / [a] [s] EndId =>  / [b] [a] [s] [e] EndId =>  / [b] [o] [o] [l] EndId =>  / [b] [r] [e] [a] [k] EndId =>  / [b] [y] [t] [e] EndId =>  / [c] [a] [s] [e] EndId =>  / [c] [a] [t] [c] [h] EndId =>  / [c] [h] [a] [r] EndId =>  / [c] [h] [e] [c] [k] [e] [d] EndId =>  / [c] [l] [a] [s] [s] EndId =>  / [c] [o] [n] [s] [t] EndId =>  / [c] [o] [n] [t] [i] [n] [u] [e] EndId =>  / [d] [e] [c] [i] [m] [a] [l] EndId =>  / [d] [e] [f] [a] [u] [l] [t] EndId =>  / [d] [e] [l] [e] [g] [a] [t] [e] EndId =>  / [d] [o] [u] [b] [l] [e] EndId =>  / [d] [o] EndId =>  / [e] [l] [s] [e] EndId =>  / [e] [n] [u] [m] EndId =>  / [e] [v] [e] [n] [t] EndId =>  / [e] [x] [p] [l] [i] [c] [i] [t] EndId =>  / [e] [x] [t] [e] [r] [n] EndId =>  / [f] [a] [l] [s] [e] EndId =>  / [f] [i] [n] [a] [l] [l] [y] EndId =>  / [f] [i] [x] [e] [d] EndId =>  / [f] [l] [o] [a] [t] EndId =>  / [f] [o] [r] [e] [a] [c] [h] EndId =>  / [f] [o] [r] EndId =>  / [g] [o] [t] [o] EndId =>  / [i] [f] EndId =>  / [i] [m] [p] [l] [i] [c] [i] [t] EndId =>  / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId =>  / [i] [n] [t] [e] [r] [n] [a] [l] EndId =>  / [i] [n] [t] EndId =>  / [i] [n] EndId =>  / [i] [s] EndId =>  / [l] [o] [c] [k] EndId =>  / [l] [o] [n] [g] EndId =>  / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId =>  / [n] [e] [w] EndId =>  / [n] [u] [l] [l] EndId =>  / [o] [b] [j] [e] [c] [t] EndId =>  / [o] [p] [e] [r] [a] [t] [o] [r] EndId =>  / [o] [u] [t] EndId =>  / [o] [v] [e] [r] [r] [i] [d] [e] EndId =>  / [p] [a] [r] [a] [m] [s] EndId =>  / [p] [r] [i] [v] [a] [t] [e] EndId =>  / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId =>  / [p] [u] [b] [l] [i] [c] EndId =>  / [r] [e] [a] [d] [o] [n] [l] [y] EndId =>  / [r] [e] [f] EndId =>  / [r] [e] [t] [u] [r] [n] EndId =>  / [s] [b] [y] [t] [e] EndId =>  / [s] [e] [a] [l] [e] [d] EndId =>  / [s] [h] [o] [r] [t] EndId =>  / [s] [i] [z] [e] [o] [f] EndId =>  / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId =>  / [s] [t] [a] [t] [i] [c] EndId =>  / [s] [t] [r] [i] [n] [g] EndId =>  / [s] [t] [r] [u] [c] [t] EndId =>  / [s] [w] [i] [t] [c] [h] EndId =>  / [t] [h] [i] [s] EndId =>  / [t] [h] [r] [o] [w] EndId =>  / [t] [r] [u] [e] EndId =>  / [t] [r] [y] EndId =>  / [t] [y] [p] [e] [o] [f] EndId =>  / [u] [i] [n] [t] EndId =>  / [u] [l] [o] [n] [g] EndId =>  / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId =>  / [u] [n] [s] [a] [f] [e] EndId =>  / [u] [s] [h] [o] [r] [t] EndId =>  / [u] [s] [i] [n] [g] EndId =>  / [v] [i] [r] [t] [u] [a] [l] EndId =>  / [v] [o] [l] [a] [t] [i] [l] [e] EndId =>  / [v] [o] [i] [d] EndId =>  / [w] [h] [i] [l] [e] EndId =>  / &{AllowPP} [#] [i] [f] EndId =>  / &{AllowPP} [#] [e] [l] [s] [e] EndId =>  / &{AllowPP} [#] [e] [l] [i] [f] EndId =>  / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId =>  / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId =>  / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId =>  / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId =>  / &{AllowPP} [#] [l] [i] [n] [e] EndId =>  / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId =>  / [v] [a] [r] EndId =>  / [d] [y] [n] [a] [m] [i] [c] EndId =>  / [t] [r] [a] [i] [t] EndId =>  / [a] [l] [i] [a] [s] EndId =>  / [w] [h] [e] [r] [e] EndId =>  / [a] [s] [s] [e] [m] [b] [l] [y] EndId =>  / [m] [o] [d] [u] [l] [e] EndId =>  / [f] [r] [o] [m] EndId =>  / [a] [w] [a] [i] [t] EndId =>  / Id )
+			// Line 297: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId =>  / [a] [s] EndId =>  / [b] [a] [s] [e] EndId =>  / [b] [o] [o] [l] EndId =>  / [b] [r] [e] [a] [k] EndId =>  / [b] [y] [t] [e] EndId =>  / [c] [a] [s] [e] EndId =>  / [c] [a] [t] [c] [h] EndId =>  / [c] [h] [a] [r] EndId =>  / [c] [h] [e] [c] [k] [e] [d] EndId =>  / [c] [l] [a] [s] [s] EndId =>  / [c] [o] [n] [s] [t] EndId =>  / [c] [o] [n] [t] [i] [n] [u] [e] EndId =>  / [d] [e] [c] [i] [m] [a] [l] EndId =>  / [d] [e] [f] [a] [u] [l] [t] EndId =>  / [d] [e] [l] [e] [g] [a] [t] [e] EndId =>  / [d] [o] [u] [b] [l] [e] EndId =>  / [d] [o] EndId =>  / [e] [l] [s] [e] EndId =>  / [e] [n] [u] [m] EndId =>  / [e] [v] [e] [n] [t] EndId =>  / [e] [x] [p] [l] [i] [c] [i] [t] EndId =>  / [e] [x] [t] [e] [r] [n] EndId =>  / [f] [a] [l] [s] [e] EndId =>  / [f] [i] [n] [a] [l] [l] [y] EndId =>  / [f] [i] [x] [e] [d] EndId =>  / [f] [l] [o] [a] [t] EndId =>  / [f] [o] [r] [e] [a] [c] [h] EndId =>  / [f] [o] [r] EndId =>  / [g] [o] [t] [o] EndId =>  / [i] [f] EndId =>  / [i] [m] [p] [l] [i] [c] [i] [t] EndId =>  / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId =>  / [i] [n] [t] [e] [r] [n] [a] [l] EndId =>  / [i] [n] [t] EndId =>  / [i] [n] EndId =>  / [i] [s] EndId =>  / [l] [o] [c] [k] EndId =>  / [l] [o] [n] [g] EndId =>  / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId =>  / [n] [e] [w] EndId =>  / [n] [u] [l] [l] EndId =>  / [o] [b] [j] [e] [c] [t] EndId =>  / [o] [p] [e] [r] [a] [t] [o] [r] EndId =>  / [o] [u] [t] EndId =>  / [o] [v] [e] [r] [r] [i] [d] [e] EndId =>  / [p] [a] [r] [a] [m] [s] EndId =>  / [p] [r] [i] [v] [a] [t] [e] EndId =>  / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId =>  / [p] [u] [b] [l] [i] [c] EndId =>  / [r] [e] [a] [d] [o] [n] [l] [y] EndId =>  / [r] [e] [f] EndId =>  / [r] [e] [t] [u] [r] [n] EndId =>  / [s] [b] [y] [t] [e] EndId =>  / [s] [e] [a] [l] [e] [d] EndId =>  / [s] [h] [o] [r] [t] EndId =>  / [s] [i] [z] [e] [o] [f] EndId =>  / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId =>  / [s] [t] [a] [t] [i] [c] EndId =>  / [s] [t] [r] [i] [n] [g] EndId =>  / [s] [t] [r] [u] [c] [t] EndId =>  / [s] [w] [i] [t] [c] [h] EndId =>  / [t] [h] [i] [s] EndId =>  / [t] [h] [r] [o] [w] EndId =>  / [t] [r] [u] [e] EndId =>  / [t] [r] [y] EndId =>  / [t] [y] [p] [e] [o] [f] EndId =>  / [u] [i] [n] [t] EndId =>  / [u] [l] [o] [n] [g] EndId =>  / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId =>  / [u] [n] [s] [a] [f] [e] EndId =>  / [u] [s] [h] [o] [r] [t] EndId =>  / [u] [s] [i] [n] [g] EndId =>  / [v] [i] [r] [t] [u] [a] [l] EndId =>  / [v] [o] [l] [a] [t] [i] [l] [e] EndId =>  / [v] [o] [i] [d] EndId =>  / [w] [h] [i] [l] [e] EndId =>  / &{AllowPP} [#] [i] [f] EndId =>  / &{AllowPP} [#] [e] [l] [s] [e] EndId =>  / &{AllowPP} [#] [e] [l] [i] [f] EndId =>  / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId =>  / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId =>  / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId =>  / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId =>  / &{AllowPP} [#] [l] [i] [n] [e] EndId =>  / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId =>  / [v] [a] [r] EndId =>  / [d] [y] [n] [a] [m] [i] [c] EndId =>  / [t] [r] [a] [i] [t] EndId =>  / [a] [l] [i] [a] [s] EndId =>  / [a] [s] [s] [e] [m] [b] [l] [y] EndId =>  / [m] [o] [d] [u] [l] [e] EndId =>  / [f] [r] [o] [m] EndId =>  / [w] [h] [e] [r] [e] EndId =>  / [s] [e] [l] [e] [c] [t] EndId =>  / [j] [o] [i] [n] EndId =>  / [o] [n] EndId =>  / [e] [q] [u] [a] [l] [s] EndId =>  / [i] [n] [t] [o] EndId =>  / [l] [e] [t] EndId =>  / [o] [r] [d] [e] [r] [b] [y] EndId =>  / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [g] [r] [o] [u] [p] EndId =>  / [b] [y] EndId =>  / [a] [w] [a] [i] [t] EndId =>  / Id )
 			 switch (LA0) {
 			case 'a':
 				{
@@ -1425,6 +1445,45 @@ namespace Ecs.Parser
 													Skip();
 													_type = TT.ContextualKeyword;
 													_value = _assembly;
+												} else
+													Id();
+											} else
+												Id();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						} else if (la2 == 'c') {
+							la3 = LA(3);
+							if (la3 == 'e') {
+								la4 = LA(4);
+								if (la4 == 'n') {
+									la5 = LA(5);
+									if (la5 == 'd') {
+										la6 = LA(6);
+										if (la6 == 'i') {
+											la7 = LA(7);
+											if (la7 == 'n') {
+												la8 = LA(8);
+												if (la8 == 'g') {
+													la9 = LA(9);
+													if (!IdOrKeyword_set0.Contains(la9)) {
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														OtherContextualKeyword();
+													} else
+														Id();
 												} else
 													Id();
 											} else
@@ -1573,6 +1632,10 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
+						} else if (!IdOrKeyword_set0.Contains(la2)) {
+							Skip();
+							Skip();
+							OtherContextualKeyword();
 						} else
 							Id();
 					} else
@@ -1853,6 +1916,50 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
+						} else if (la2 == 's') {
+							la3 = LA(3);
+							if (la3 == 'c') {
+								la4 = LA(4);
+								if (la4 == 'e') {
+									la5 = LA(5);
+									if (la5 == 'n') {
+										la6 = LA(6);
+										if (la6 == 'd') {
+											la7 = LA(7);
+											if (la7 == 'i') {
+												la8 = LA(8);
+												if (la8 == 'n') {
+													la9 = LA(9);
+													if (la9 == 'g') {
+														la10 = LA(10);
+														if (!IdOrKeyword_set0.Contains(la10)) {
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															Skip();
+															OtherContextualKeyword();
+														} else
+															Id();
+													} else
+														Id();
+												} else
+													Id();
+											} else
+												Id();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
 						} else
 							Id();
 					} else if (la1 == 'o') {
@@ -1929,94 +2036,106 @@ namespace Ecs.Parser
 				break;
 			case 'e':
 				{
-					la1 = LA(1);
-					if (la1 == 'l') {
-						la2 = LA(2);
-						if (la2 == 's') {
-							la3 = LA(3);
-							if (la3 == 'e') {
-								la4 = LA(4);
-								if (!IdOrKeyword_set0.Contains(la4)) {
-									Skip();
-									Skip();
-									Skip();
-									Skip();
-									_type = TT.@else;
-									_value = S.Else;
-								} else
-									Id();
-							} else
-								Id();
-						} else
-							Id();
-					} else if (la1 == 'n') {
-						la2 = LA(2);
-						if (la2 == 'u') {
-							la3 = LA(3);
-							if (la3 == 'm') {
-								la4 = LA(4);
-								if (!IdOrKeyword_set0.Contains(la4)) {
-									Skip();
-									Skip();
-									Skip();
-									Skip();
-									_type = TT.@enum;
-									_value = S.Enum;
-								} else
-									Id();
-							} else
-								Id();
-						} else
-							Id();
-					} else if (la1 == 'v') {
-						la2 = LA(2);
-						if (la2 == 'e') {
-							la3 = LA(3);
-							if (la3 == 'n') {
-								la4 = LA(4);
-								if (la4 == 't') {
-									la5 = LA(5);
-									if (!IdOrKeyword_set0.Contains(la5)) {
+					switch (LA(1)) {
+					case 'l':
+						{
+							la2 = LA(2);
+							if (la2 == 's') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									la4 = LA(4);
+									if (!IdOrKeyword_set0.Contains(la4)) {
 										Skip();
 										Skip();
 										Skip();
 										Skip();
-										Skip();
-										_type = TT.@event;
-										_value = S.Event;
+										_type = TT.@else;
+										_value = S.Else;
 									} else
 										Id();
 								} else
 									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else if (la1 == 'x') {
-						la2 = LA(2);
-						if (la2 == 'p') {
-							la3 = LA(3);
-							if (la3 == 'l') {
-								la4 = LA(4);
-								if (la4 == 'i') {
-									la5 = LA(5);
-									if (la5 == 'c') {
-										la6 = LA(6);
-										if (la6 == 'i') {
-											la7 = LA(7);
-											if (la7 == 't') {
-												la8 = LA(8);
-												if (!IdOrKeyword_set0.Contains(la8)) {
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													_type = TT.AttrKeyword;
-													_value = S.Explicit;
+						}
+						break;
+					case 'n':
+						{
+							la2 = LA(2);
+							if (la2 == 'u') {
+								la3 = LA(3);
+								if (la3 == 'm') {
+									la4 = LA(4);
+									if (!IdOrKeyword_set0.Contains(la4)) {
+										Skip();
+										Skip();
+										Skip();
+										Skip();
+										_type = TT.@enum;
+										_value = S.Enum;
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						}
+						break;
+					case 'v':
+						{
+							la2 = LA(2);
+							if (la2 == 'e') {
+								la3 = LA(3);
+								if (la3 == 'n') {
+									la4 = LA(4);
+									if (la4 == 't') {
+										la5 = LA(5);
+										if (!IdOrKeyword_set0.Contains(la5)) {
+											Skip();
+											Skip();
+											Skip();
+											Skip();
+											Skip();
+											_type = TT.@event;
+											_value = S.Event;
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						}
+						break;
+					case 'x':
+						{
+							la2 = LA(2);
+							if (la2 == 'p') {
+								la3 = LA(3);
+								if (la3 == 'l') {
+									la4 = LA(4);
+									if (la4 == 'i') {
+										la5 = LA(5);
+										if (la5 == 'c') {
+											la6 = LA(6);
+											if (la6 == 'i') {
+												la7 = LA(7);
+												if (la7 == 't') {
+													la8 = LA(8);
+													if (!IdOrKeyword_set0.Contains(la8)) {
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														_type = TT.AttrKeyword;
+														_value = S.Explicit;
+													} else
+														Id();
 												} else
 													Id();
 											} else
@@ -2027,25 +2146,25 @@ namespace Ecs.Parser
 										Id();
 								} else
 									Id();
-							} else
-								Id();
-						} else if (la2 == 't') {
-							la3 = LA(3);
-							if (la3 == 'e') {
-								la4 = LA(4);
-								if (la4 == 'r') {
-									la5 = LA(5);
-									if (la5 == 'n') {
-										la6 = LA(6);
-										if (!IdOrKeyword_set0.Contains(la6)) {
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											_type = TT.AttrKeyword;
-											_value = S.Extern;
+							} else if (la2 == 't') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									la4 = LA(4);
+									if (la4 == 'r') {
+										la5 = LA(5);
+										if (la5 == 'n') {
+											la6 = LA(6);
+											if (!IdOrKeyword_set0.Contains(la6)) {
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												_type = TT.AttrKeyword;
+												_value = S.Extern;
+											} else
+												Id();
 										} else
 											Id();
 									} else
@@ -2054,10 +2173,43 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else
+						}
+						break;
+					case 'q':
+						{
+							la2 = LA(2);
+							if (la2 == 'u') {
+								la3 = LA(3);
+								if (la3 == 'a') {
+									la4 = LA(4);
+									if (la4 == 'l') {
+										la5 = LA(5);
+										if (la5 == 's') {
+											la6 = LA(6);
+											if (!IdOrKeyword_set0.Contains(la6)) {
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												OtherContextualKeyword();
+											} else
+												Id();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						}
+						break;
+					default:
 						Id();
+						break;
+					}
 				}
 				break;
 			case 'f':
@@ -2267,6 +2419,29 @@ namespace Ecs.Parser
 								Id();
 						} else
 							Id();
+					} else if (la1 == 'r') {
+						la2 = LA(2);
+						if (la2 == 'o') {
+							la3 = LA(3);
+							if (la3 == 'u') {
+								la4 = LA(4);
+								if (la4 == 'p') {
+									la5 = LA(5);
+									if (!IdOrKeyword_set0.Contains(la5)) {
+										Skip();
+										Skip();
+										Skip();
+										Skip();
+										Skip();
+										OtherContextualKeyword();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						} else
+							Id();
 					} else
 						Id();
 				}
@@ -2391,6 +2566,16 @@ namespace Ecs.Parser
 								Skip();
 								_type = TT.TypeKeyword;
 								_value = S.Int32;
+							} else if (la3 == 'o') {
+								la4 = LA(4);
+								if (!IdOrKeyword_set0.Contains(la4)) {
+									Skip();
+									Skip();
+									Skip();
+									Skip();
+									OtherContextualKeyword();
+								} else
+									Id();
 							} else
 								Id();
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
@@ -2446,6 +2631,19 @@ namespace Ecs.Parser
 									_value = S.Int64;
 								} else
 									Id();
+							} else
+								Id();
+						} else
+							Id();
+					} else if (la1 == 'e') {
+						la2 = LA(2);
+						if (la2 == 't') {
+							la3 = LA(3);
+							if (!IdOrKeyword_set0.Contains(la3)) {
+								Skip();
+								Skip();
+								Skip();
+								OtherContextualKeyword();
 							} else
 								Id();
 						} else
@@ -2540,26 +2738,29 @@ namespace Ecs.Parser
 				break;
 			case 'o':
 				{
-					la1 = LA(1);
-					if (la1 == 'b') {
-						la2 = LA(2);
-						if (la2 == 'j') {
-							la3 = LA(3);
-							if (la3 == 'e') {
-								la4 = LA(4);
-								if (la4 == 'c') {
-									la5 = LA(5);
-									if (la5 == 't') {
-										la6 = LA(6);
-										if (!IdOrKeyword_set0.Contains(la6)) {
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											Skip();
-											_type = TT.TypeKeyword;
-											_value = S.Object;
+					switch (LA(1)) {
+					case 'b':
+						{
+							la2 = LA(2);
+							if (la2 == 'j') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									la4 = LA(4);
+									if (la4 == 'c') {
+										la5 = LA(5);
+										if (la5 == 't') {
+											la6 = LA(6);
+											if (!IdOrKeyword_set0.Contains(la6)) {
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												_type = TT.TypeKeyword;
+												_value = S.Object;
+											} else
+												Id();
 										} else
 											Id();
 									} else
@@ -2568,33 +2769,36 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else if (la1 == 'p') {
-						la2 = LA(2);
-						if (la2 == 'e') {
-							la3 = LA(3);
-							if (la3 == 'r') {
-								la4 = LA(4);
-								if (la4 == 'a') {
-									la5 = LA(5);
-									if (la5 == 't') {
-										la6 = LA(6);
-										if (la6 == 'o') {
-											la7 = LA(7);
-											if (la7 == 'r') {
-												la8 = LA(8);
-												if (!IdOrKeyword_set0.Contains(la8)) {
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													_type = TT.@operator;
-													_value = S.Operator;
+						}
+						break;
+					case 'p':
+						{
+							la2 = LA(2);
+							if (la2 == 'e') {
+								la3 = LA(3);
+								if (la3 == 'r') {
+									la4 = LA(4);
+									if (la4 == 'a') {
+										la5 = LA(5);
+										if (la5 == 't') {
+											la6 = LA(6);
+											if (la6 == 'o') {
+												la7 = LA(7);
+												if (la7 == 'r') {
+													la8 = LA(8);
+													if (!IdOrKeyword_set0.Contains(la8)) {
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														_type = TT.@operator;
+														_value = S.Operator;
+													} else
+														Id();
 												} else
 													Id();
 											} else
@@ -2607,47 +2811,53 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else if (la1 == 'u') {
-						la2 = LA(2);
-						if (la2 == 't') {
-							la3 = LA(3);
-							if (!IdOrKeyword_set0.Contains(la3)) {
-								Skip();
-								Skip();
-								Skip();
-								_type = TT.AttrKeyword;
-								_value = S.Out;
+						}
+						break;
+					case 'u':
+						{
+							la2 = LA(2);
+							if (la2 == 't') {
+								la3 = LA(3);
+								if (!IdOrKeyword_set0.Contains(la3)) {
+									Skip();
+									Skip();
+									Skip();
+									_type = TT.AttrKeyword;
+									_value = S.Out;
+								} else
+									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else if (la1 == 'v') {
-						la2 = LA(2);
-						if (la2 == 'e') {
-							la3 = LA(3);
-							if (la3 == 'r') {
-								la4 = LA(4);
-								if (la4 == 'r') {
-									la5 = LA(5);
-									if (la5 == 'i') {
-										la6 = LA(6);
-										if (la6 == 'd') {
-											la7 = LA(7);
-											if (la7 == 'e') {
-												la8 = LA(8);
-												if (!IdOrKeyword_set0.Contains(la8)) {
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													Skip();
-													_type = TT.AttrKeyword;
-													_value = S.Override;
+						}
+						break;
+					case 'v':
+						{
+							la2 = LA(2);
+							if (la2 == 'e') {
+								la3 = LA(3);
+								if (la3 == 'r') {
+									la4 = LA(4);
+									if (la4 == 'r') {
+										la5 = LA(5);
+										if (la5 == 'i') {
+											la6 = LA(6);
+											if (la6 == 'd') {
+												la7 = LA(7);
+												if (la7 == 'e') {
+													la8 = LA(8);
+													if (!IdOrKeyword_set0.Contains(la8)) {
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														Skip();
+														_type = TT.AttrKeyword;
+														_value = S.Override;
+													} else
+														Id();
 												} else
 													Id();
 											} else
@@ -2660,10 +2870,59 @@ namespace Ecs.Parser
 									Id();
 							} else
 								Id();
-						} else
-							Id();
-					} else
+						}
+						break;
+					case 'n':
+						{
+							la2 = LA(2);
+							if (!IdOrKeyword_set0.Contains(la2)) {
+								Skip();
+								Skip();
+								OtherContextualKeyword();
+							} else
+								Id();
+						}
+						break;
+					case 'r':
+						{
+							la2 = LA(2);
+							if (la2 == 'd') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									la4 = LA(4);
+									if (la4 == 'r') {
+										la5 = LA(5);
+										if (la5 == 'b') {
+											la6 = LA(6);
+											if (la6 == 'y') {
+												la7 = LA(7);
+												if (!IdOrKeyword_set0.Contains(la7)) {
+													Skip();
+													Skip();
+													Skip();
+													Skip();
+													Skip();
+													Skip();
+													Skip();
+													OtherContextualKeyword();
+												} else
+													Id();
+											} else
+												Id();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else
+								Id();
+						}
+						break;
+					default:
 						Id();
+						break;
+					}
 				}
 				break;
 			case 'p':
@@ -2936,6 +3195,31 @@ namespace Ecs.Parser
 												Skip();
 												_type = TT.AttrKeyword;
 												_value = S.Sealed;
+											} else
+												Id();
+										} else
+											Id();
+									} else
+										Id();
+								} else
+									Id();
+							} else if (la2 == 'l') {
+								la3 = LA(3);
+								if (la3 == 'e') {
+									la4 = LA(4);
+									if (la4 == 'c') {
+										la5 = LA(5);
+										if (la5 == 't') {
+											la6 = LA(6);
+											if (!IdOrKeyword_set0.Contains(la6)) {
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												Skip();
+												_type = TT.ContextualKeyword;
+												_value = _select;
 											} else
 												Id();
 										} else
@@ -4050,6 +4334,31 @@ namespace Ecs.Parser
 						Id();
 				}
 				break;
+			case 'j':
+				{
+					la1 = LA(1);
+					if (la1 == 'o') {
+						la2 = LA(2);
+						if (la2 == 'i') {
+							la3 = LA(3);
+							if (la3 == 'n') {
+								la4 = LA(4);
+								if (!IdOrKeyword_set0.Contains(la4)) {
+									Skip();
+									Skip();
+									Skip();
+									Skip();
+									OtherContextualKeyword();
+								} else
+									Id();
+							} else
+								Id();
+						} else
+							Id();
+					} else
+						Id();
+				}
+				break;
 			default:
 				Id();
 				break;
@@ -4059,7 +4368,7 @@ namespace Ecs.Parser
 		{
 			int la0;
 			int start = InputPosition;
-			// Line 404: ([^\$\n\r])*
+			// Line 437: ([^\$\n\r])*
 			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -4073,7 +4382,7 @@ namespace Ecs.Parser
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 417: ( (Newline | Spaces) | (DotIndent / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator) | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
+			// Line 450: ( (Newline | Spaces) | (DotIndent / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator) | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
 			 do {
 				la0 = LA0;
 				switch (la0) {

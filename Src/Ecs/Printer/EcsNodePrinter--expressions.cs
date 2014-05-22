@@ -545,7 +545,7 @@ namespace Ecs
 
 			bool needParens, needSpecialOfNotation = false;
 			if (!CanAppearIn(precedence, context, out needParens) || needParens)
-				return false; // this only happens inside \ operator, e.g. \(a.b)
+				return false; // this only happens inside $ operator, e.g. $(a.b)
 
 			if (name == S.Dot) {
 				// The trouble with the dot is its high precedence; because of 

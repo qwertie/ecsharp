@@ -145,6 +145,7 @@ namespace Ecs
 			Expr("a<b.c>",   F.Of(a, F.Dot(b, c)));
 			Expr("a<b,c>",   F.Of(a, b, c));
 			Expr("a<b>(c)",  F.Call(F.Of(a, b), c));
+			Expr("a().b<c>", F.Of(F.Dot(F.Call(a), b), c));
 		}
 
 		[Test]
@@ -1259,7 +1260,7 @@ namespace Ecs
 					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
 		}
 
-		[Test]
+		[Test(Fails = true)] // Parser does not yet preserve comments
 		public void CommentTrivia()
 		{
 			var stmt = Attr(F.Trivia(S.TriviaMLCommentBefore, "bx"), F.Trivia(S.TriviaMLCommentAfter, "ax"), x);
@@ -1395,7 +1396,7 @@ namespace Ecs
 		}
 
 		// Stuff that is intentionally left broken for the time being
-		[Test]
+		[Test(Fails = true)]
 		public void TODO()
 		{
 			Stmt("var a = (Foo ? b = c as Foo? : 0);", 

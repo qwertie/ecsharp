@@ -56,7 +56,7 @@ namespace LeMP
 
 			Severity minSeverity = Severity.Note;
 			#if DEBUG
-			minSeverity = MessageSink.Debug;
+			minSeverity = Severity.Debug;
 			#endif
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
@@ -69,6 +69,7 @@ namespace LeMP
 			} else if (args.Length == 0) {
 				Console.WriteLine("Running unit tests...");
 				RunTests.Run(new MacroProcessorTests());
+				RunTests.Run(new StandardMacroTests());
 			}
 		}
 

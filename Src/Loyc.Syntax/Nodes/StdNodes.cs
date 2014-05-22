@@ -98,7 +98,6 @@ namespace Loyc.Syntax
 				hash ^= _value.GetHashCode();
 			return hash;
 		}
-
 	}
 
 	public class StdLiteralNode : LiteralNode
@@ -152,6 +151,8 @@ namespace Loyc.Syntax
 
 		protected RVList<LNode> _args;
 		public override RVList<LNode> Args { get { return _args; } }
+		
+		public sealed override int Max { get { return _args.Count - 1; } }
 	}
 
 	public class StdSimpleCallNode : StdCallNode
