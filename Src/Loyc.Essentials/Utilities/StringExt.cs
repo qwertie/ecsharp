@@ -91,6 +91,7 @@ namespace Loyc
 		/// <summary>Converts a series of values to strings, and concatenates them 
 		/// with a given separator between them.</summary>
 		/// <example>Join(" + ", new[] { 1,2,3 }) returns "1 + 2 + 3".</example>
+		/// <remarks>This method (but taking IEnumerable{T}) exists in the BCL starting in .NET 4</remarks>
 		public static string Join(string separator, IEnumerable value) { return Join(separator, value.GetEnumerator()); }
 		/// <inheritdoc cref="Join(string, IEnumerable)"/>
 		public static string Join(string separator, IEnumerator value) 

@@ -73,6 +73,7 @@ namespace Ecs.Parser
 		alias("?" = TT.QuestionMark);
 		alias("??" = TT.NullCoalesce);
 		alias("=:" = TT.QuickBind);
+		alias(":=" = TT.QuickBindSet);
 		alias("==>" = TT.Forward);
 		alias("$" = TT.Substitute);
 		alias("=>" = TT.LambdaArrow);
@@ -387,8 +388,8 @@ namespace Ecs.Parser
 			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"     
 			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--" 
 			|	"&&" | "||,^^" | "!"     | "&"   | "^"  | "|"   | "~"  | "==,!=" 
-			|	"<"  | ">"     | "<=,>=" | ".."  | "?"  | "??"  | "=:" | "==>"   
-			|	"$"  | "=>"    )
+			|	"<"  | ">"     | "<=,>=" | ".."  | "?"  | "??"  | "=:" | ":="
+			|	"$"  | "=>"    | "==>" )
 			{return op;}
 		];
 
@@ -665,7 +666,7 @@ namespace Ecs.Parser
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
 		private rule DetectVarDecl(allowUnassigned::bool) @[
-			VarDeclStart ("=" NoUnmatchedColon / &{allowUnassigned} (","|EOF))
+			VarDeclStart (("="|":=") NoUnmatchedColon / &{allowUnassigned} (","|EOF))
 		];
 		private rule NoUnmatchedColon @[
 			// There's currently no way to run actions inside a recognizer, which 
@@ -693,7 +694,7 @@ namespace Ecs.Parser
 		private rule VarDeclExpr::LNode @[
 			pair:=VarDeclStart
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
-			(	"=" init:=Expr(ContinueExpr)
+			(	("="|":=") init:=Expr(ContinueExpr)
 				{return F.Call(S.Var, type, 
 					F.Call(S.Set, name, init, name.Range.StartIndex, init.Range.EndIndex),
 					type.Range.StartIndex, init.Range.EndIndex);}
@@ -966,7 +967,7 @@ namespace Ecs.Parser
 			|	r=EnumDecl(startIndex, attrs)
 			|	r=TraitDecl(startIndex, attrs)
 			/	r=AliasDecl(startIndex, attrs)
-			/	&(DataType ComplexNameDecl ("("|"{"|"="|","|";"|"==>"|"=>"|"@"))
+			/	&(DataType ComplexNameDecl ("("|"{"|"="|":="|","|";"|"==>"|"=>"|"@"))
 				r=MethodOrPropertyOrVar(startIndex, attrs)
 			/	r=OperatorCast(startIndex, attrs)
 			/	r=Constructor(startIndex, attrs) 
@@ -1068,7 +1069,7 @@ namespace Ecs.Parser
 		];
 
 		rule RestOfAlias(startIndex::int, newName::LNode)::LNode @[
-			"=" oldName:=ComplexNameDecl
+			("="|":=") oldName:=ComplexNameDecl
 			bases:=BaseListOpt
 			WhereClausesOpt(ref newName)
 			{var name = F.Call(S.Set, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);}
@@ -1296,7 +1297,7 @@ namespace Ecs.Parser
 		private rule NameAndMaybeInit(isArray::bool)::LNode @[
 			name:=(TT.Id|TT.ContextualKeyword)
 			{r::LNode = F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex);}
-			(	"=" 
+			(	("="|":=")
 				// The initializer for an array in C# can be a braced list of expressions.
 				// EC# also allows braced blocks as expressions, so I'll distinguish the
 				// cases by checking for semicolons. If there's a ";", it's an EC# block.

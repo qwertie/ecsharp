@@ -1,15 +1,14 @@
 FAIR WARNING: THIS ARTICLE IS UNPUBLISHED. AN EC# COMPILER DOES NOT EXIST YET.
 
-Enhanced C# for PL Nerds, Part 1 of 4: Introduction
-====================================================
+# Enhanced C# for PL Nerds, Part 1 of 4: Introduction ##########################
 
 Enhanced C# (EC#) is a new statically-typed programming language that combines C# with features of LISP, D, and other languages.
 
 This article is a quick introduction to Enhanced C# for programming language wonks, the kind of people who fantasize about using continuations to model higher-order polymorphic multimethod monads to conjure the spirit of Robin Milner, or something.
 
-I'm not that kind of guy, though. Computer science is wonderful, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I took Computer Engineering, so I guess that's the difference between Computer Engineering and Computer Science!), and monads give me a headache (arrows seem much easier, but I digress.)
+I'm not that kind of guy, though. Computer science is wonderful, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I took Computer Engineering, so I guess that's the difference between Computer Engineering and Computer Science!), and I read about monads at least 10 times before I "got" it.
 
-I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But as you'll see later, EC# syntax really puts the "#" in "C#", and EC# is more Google-friendly.
+I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But Enhanced C# and its abbreviation are Google-friendly, an important feature.
 
 EC# is the first language of the Language of Your Choice (Loyc) project. If it becomes popular, Loyc will be a platform for building programming languages, analyzing code and transforming syntax trees. I want Loyc to be the foundation of all kinds of programming language tools: compilers, IDEs, language conversion tools, analysis tools, graphical code editors, domain-specific languages, things that Bret Victor might invent*, anything you can think of. Thus, EC# is merely an instance of a "Loyc language", much like C# is an instance of a ".NET language". The fact that EC# and Loyc are built on .NET is just an implementation detail--a very important detail today, but perhaps not that important in the grand scheme of things.
 
@@ -36,6 +35,8 @@ EC# is mainly a compile-time metaprogramming system built on top of C#, but it a
 
 Here are some quick highlights. First, EC# offers some syntactic shortcuts compared to C#. Many shortcuts are offered by macros; others are built-in syntactic sugar.
 
+NOTE: THIS DOCUMENT, AND THE CODE, ARE OUT OF DATE.
+
 	public struct MyPoint
 	{
 		// Simultaneously declares two fields "X" and "Y" and a constructor for them.
@@ -44,7 +45,7 @@ Here are some quick highlights. First, EC# offers some syntactic shortcuts compa
 		// macro on the statement that follows"; thus, set() is simply a method in 
 		// the EC# standard library that creates and initializes X and Y for you.
 		[[set]]
-		public new(public int X, public int Y);
+		public this(public int X, public int Y);
 
 		// You could make a test() macro for writing unit tests easily, and use it 
 		// with syntax like this:
@@ -70,7 +71,7 @@ Here are some quick highlights. First, EC# offers some syntactic shortcuts compa
 	int two = Min(12, 2);
 
 	// Quick variable binding (creates a variable called "r" to hold the result)
-	if (Database.TryRunQuery()::r != null)
+	if (Database.TryRunQuery()=:r != null)
 		Console.WriteLine("Found {0} results", r.Count);
 	
 You can think of EC# syntax as "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, and macros are required to convert code that EC# would not understand into code that has a well-defined meaning. In addition, the parser accepts some things like [[foo]] and `foo` that don't even look like C#.
@@ -92,8 +93,7 @@ The template system will complement the existing C# generics system. In C#, a ge
 .NET Generics are well-designed and bless their hearts I love 'em, but they can't do anything like this because "+" and "0" don't exist for all types, and any attempt to write a "generic" sum function is very clunky in one way or another. What you see here is a C++-style template, and it solves the problem neatly.
 
 
-Background
-----------
+## Background ##################################################################
 
 First of all, I'm a performance guy; I've had to optimize most of the programs I've ever written (from the old Super Nintendo emulator SNEqr to the FastNav GPS system, which is optimized for a 400MHz ARMV4I machine), so I'm in the habit of constantly thinking about performance. However, the go-to language for performance is C++... and I hate C++ the more I use it. C++ is horrible. It's ugly, it compiles really slowly, it's bureaucratic, it requires copious code duplication, and GCC's error messages are a cruel joke. I could go on.
 
@@ -110,8 +110,8 @@ Soon afterward I had the idea for Loyc: Language of your choice. It would be a s
 I reduced my full-time job reduced to a part-time job as of August 2012. Inspired by D2 and a brief study of LISP, the ideas for EC# finally started crystalizing.
 
 
-Don't We Have Enough Languages Already?
----------------------------------------
+### Don't We Have Enough Languages Already?
+
 
 The world is already awash with hundreds (thousands?) of programming languages, so when a new language comes out, it's always fair to question if it's needed.
 
@@ -171,8 +171,7 @@ In summary, I am trying to create not just a programming language, but the most 
 
 Please don't get the impression that I don't like Haskell, by the way, or LISP for that matter. No, Haskell are really neat, but there's a gap that needs to be bridged. In fact, I hope that Loyc will evolve into a system in which most code is functional code. However, I think that the functional language should be built on top of an imperative language. I imagine a set of macro libraries that transform functional code back into imperative code, e.g. replacing tail-recursion with looping, and copying with in-place modification where possible, with intermediate code that the programmer can readily see and understand. If he is unhappy with the performance of the functional code, he can change the functional code until the imperative equivalent works as desired; he could even replace the functional code with imperative equivalent and hand-optimize it.
 
-Ahem!
------
+### Ahem!
 
 And now, let us pause for a moment of code examples.
 
@@ -271,8 +270,7 @@ When EC# is complete it will allow global operators, too, so EC# can serve as a 
 Note that since "operator+" appears outside any class, it is implicitly static; you don't have to tell the compiler the obvious.
 
 
-Why .NET?
----------
+### Why .NET?
 
 You may wonder, if I care so much about performance, why do I want a .NET language?
 
@@ -291,8 +289,7 @@ Java has the same appeal, but it was always designed for a single language, Java
 And C# is likeable. It's not an incredibly powerful language, but it's carefully designed and it's more powerful and more efficient than Java. Similarly for the .NET CLR: yeah, it has some significant limitations. For example, it has no concept of slices or Go-style interfaces. And the BCL is impoverished in places--its networking libraries are badly designed, its newest libraries are horribly bloated, and lots of important stuff is still missing from the BCL. Even so, in my opinion .NET is the best platform available.
 
 
-Welcome to EC# 2.0
-------------------
+## Welcome to EC# 2.0
 
 When I began to design EC#, I couldn't figure out how to accomplish my end goal--a fully extensible language--so instead I decided, as a starting point, that I would simply improve the existing C# language with a series of specific and modest features such as the "null dot" or safe navigation operator (now denoted ??.), the quick-binding operator (::), multiple-source name lookup (which, among other things, basically allows static extension methods), the "if" clause and method forwarding clauses, return value covariance, CTCE, aliases, and most notably, compile-time templates. My plan was to start with NRefactory in order to get the new language working as quickly as possible.
 
@@ -386,11 +383,9 @@ I'll talk more about Loyc trees later. With my new idea ready, I decided to ditc
 
 Footnote: the Loyc tree was originally two ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works. The implementation originally involved two parallel trees, "red" and "green", inspired by a similar idea in Microsoft Roslyn, but I had difficulties with this approach and reverted to a simpler "just green" design in which the tree is entirely immutable and parents of nodes are unknown.
 
-Enhanced EC# for PL Nerds, Part 2 of 4: Macros and Loyc trees
-=============================================================
+# Enhanced EC# for PL Nerds, Part 2 of 4: Macros and Loyc trees ################
 
-Features of the macro system
-----------------------------
+## Features of the macro system ################################################
 
 As I mentioned, a macro is a method that is called at compile time, that takes syntax trees as arguments and returns another syntax tree, which is expanded in-place. A macro can also take values as arguments, which are evaluated as compile-time constants.
 
@@ -431,8 +426,7 @@ A macro cannot be overloaded with ordinary methods, and a warning is issued if t
 
 However, if this is not enough to disambiguate between two macros with the same name, you can use the resolution mechanism that is already built into C#: the namespace system. As long as different people define their macros in different namespaces, it's easy to disambiguate them, either using a fully-qualified name, or by not importing two namespaces that have conflicting macros in the first place. Even if two macros in two different DLLs are defined in the same namespace and have the same name, you can still disambiguate them with C#'s "extern alias" feature. You can disambiguate a method call from a macro call with the same mechanisms.
 
-Macro hygiene
--------------
+### Macro hygiene
 
 Macros are hygienic by default. Symbols in quoted code (s_quote(...) or s_quote {...}) are resolved in the context where they appear; for instance, when you use this macro:
 
@@ -556,8 +550,7 @@ Luckily, most macros just read variables and do not change them. Such macros can
 
 Here we create a temporary variable "tmp" to avoid evaluating "x" twice; the second statement implicitly returns the value of tmp*tmp to the macro's caller.
 
-Macros versus templates
------------------------
+### Macros versus templates
 
 Of course, "square" is a bad example of a macro because you should really just write an ordinary method:
 
@@ -588,8 +581,7 @@ TODO: write a macro:
 	[[expand_for(int, long, float, double)]]
 	public T Square<$T>(T x) { return x * x; }
 
-Statement/expression equivalence
---------------------------------
+## Statement/expression equivalence
 
 From the caller's perspective, it doesn't matter which of the four forms (@@(...), @@{...}, @(...), or @{...}) the macro actually uses; in fact, the macro may use none of them: it could construct syntax trees using Loyc and EC# compiler APIs.
 
@@ -618,8 +610,7 @@ An important feature of EC# is that the difference between "statements" and "exp
 
 Of course, plain C# doesn't work that way. Therefore, the conversion to plain C# can sometimes be messy and difficult, as you can imagine from the above code (which is a very simple example).
 
-List nodes and splicing
------------------------
+## List nodes and splicing
 
 A macro can return multiple statements at the outer level (it can also return multiple expressions, which is no different.) For example, suppose you define the following useless macro:
 
@@ -763,8 +754,7 @@ In my opinion, it would be best to report an error when code like this is used. 
 This problem doesn't really exist yet, since you can only call macros in pre-built assemblies. But it will.
 
 
-The Loyc syntax tree
----------------------
+## The Loyc syntax tree
 
 In most compilers, the syntax tree is very strongly typed, with separate classes or data structures for, say, variable declarations, binary operators, method calls, method declarations, unary operators, and so forth. Loyc, however, only has a single data type, Node, for all nodes*. There are several reasons for this:
 
@@ -836,8 +826,7 @@ Unlike C# attributes, EC# attributes can be any list of expressions, and do not 
 
 When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for instructions to macros or to the compiler. Macros can use attributes to receive information from users, to store information in a syntax tree temporarily, or to communicate with other macros.
 
-Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax
-==================================================
+# Enhanced EC# for PL Nerds, Part 3 of 4: EC# Syntax ###########################
 
 Although I'd like EC# to be an extensible language, C# is far from an ideal starting point for an extensible syntax; when you try to add stuff to C#, it tends to become ambiguous and you may lose backward compatibility. Therefore, the EC# parser is not extensible; instead, I selected a set of syntax changes that are useful for many purposes, while preserving almost total backward compatibility. For example, the new backquoted strings (`foo`) are considered to be operators, and users can define custom operators through this mechanism as long as they surround them with backquotes.
 
@@ -845,8 +834,8 @@ Grammatically, EC# is a very different language from C# except that it "just so 
 
 As I mentioned before, EC# syntax is "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, as well as some other stuff that doesn't look like C# at all.
 
-Overview: new operators and other junk
---------------------------------------
+
+## Overview: new operators and other junk ######################################
 
 There are some new operators in EC#, which will be discussed in another article.
 
@@ -897,8 +886,7 @@ There is no "comma" operator in EC#. Rather, the comma ',' separates expressions
 	if (x)
 		x = 0, y = z;
 
-Generalized expression syntax
------------------------------
+### Generalized expression syntax
 
 Most of the time, EC# expression syntax is the same as C#, with operators like + and += that work just as before. There are some new operators (mentioned above) but the syntax of this new stuff is nothing special, e.g. the new "x in y" operator is no different syntactically than "x + y" or "x && y".
 
@@ -1034,8 +1022,7 @@ The compiler rejects but the parser accepts, since a macro could give it meaning
 
 Note: C# 5's "await" is handled specially because it is not a real keyword and doesn't quite fit into this parsing framework.
 
-Prefix notation
----------------
+### Prefix notation
 
 As you've seen, EC# supports a prefix notation that allows you to represent arbitrary Loyc trees:
 
@@ -1100,8 +1087,7 @@ you must use parenthesis to start a new subexpression*:
 
 Using '#' unnecessarily, whether it's a preprocessor statement or prefix notation, should be considered poor style because it is an advanced syntax that newbies don't need to know about.
    
-Generalized statement syntax
-----------------------------
+### Generalized statement syntax
 
 EC# smooshes "executable statements" and "declarations" into a single grammar. For example, the parser will allow input such as
 
@@ -1228,8 +1214,7 @@ The EC# compiler does not understand code like this, but a macro could.
 
 The parser isn't explicitly programmed to understand that "get" and "set" are special inside the property definition; instead it simply parses "get {...}" and "set {...}" the same way that it would parse "hello {...}" or anything else of that form: as a macro call. Similarly, event definitions can have arbitrary statements; "add" and "remove" are not treated specially. "get" and "set" are treated specially only after parsing, while building the program tree.
 
-Ambiguities of EC#
-------------------
+### Ambiguities of EC#
 
 The biggest ambiguities of generalized expression syntax have been discussed already, but we warned, the syntactic woes are just beginning.
 
@@ -1425,8 +1410,7 @@ It's an advanced topic, but you can still express these three ideas with prefix 
 
 The substitution operator is not limited to @@(code) blocks, but the dollar sign must be followed immediately (without whitespace) by an identifier or by an open parenthesis, which denotes a subexpression that computes the value to be substituted.
 
-Returning without return
-------------------------
+### Returning without return
 
 EC# allows you to embed statements inside expressions; as discussed in Part 2, the final statement in the list becomes the value of the block. Methods also have the same convention, so you can write simply
 
@@ -1443,25 +1427,22 @@ without "return". The compiler will complain if your "expression-statement" is n
 			x // OK
 	}
 
-Enhanced EC# for PL Nerds, Part 4 of 4: Future Features, Help Wanted
-====================================================================
+# Enhanced EC# for PL Nerds, Part 4 of 4: Future Features, Help Wanted
 
 
-Aliases
--------
+## Aliases
+
 Aliases are the minor tweak to the type system that I mentioned before.
 
 
-The future
-----------
+## The future
 
 - Resource imports & diagrammatic programming
 - Slices & ranges
 - Extensible syntax
 
 
-Help wanted
------------
+## Help wanted
 
 Editor features:
 
@@ -1495,17 +1476,14 @@ Editor wishlist:
 	- Elastic tab stops
 	- Rectangular selections exactly as in VS2010
 
-The end
--------
+## The end
 
 - "protected override void Finalize()" finalizer syntax
 
 I would like to thank John McCarthy, the D folks and bearophile's random links on the D forums for many of the interesting ideas that are planned for EC#.
 
 
-
-Overview of the EC# compilation process
----------------------------------------
+## Overview of the EC# compilation process
 
 The phases of compilation are
 

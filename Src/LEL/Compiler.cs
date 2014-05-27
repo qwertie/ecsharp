@@ -56,7 +56,7 @@ namespace LeMP
 
 			Severity minSeverity = Severity.Note;
 			#if DEBUG
-			minSeverity = MessageSink.Debug;
+			minSeverity = Severity.Debug;
 			#endif
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
