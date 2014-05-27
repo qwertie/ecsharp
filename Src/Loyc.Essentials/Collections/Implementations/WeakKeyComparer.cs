@@ -86,8 +86,13 @@ namespace Loyc.Collections
 
 	/// <summary>Provides a weak reference to an object of the given type to be used 
     /// in a WeakDictionary along with the given comparer.</summary>
-	/// <remarks>Source: datavault project. License: Apache License 2.0</remarks>
-    public sealed class WeakKeyReference<T> : WeakReference<T> where T : class
+	/// <remarks>Source: datavault project. License: Apache License 2.0
+	/// <para/>
+	/// DLP Updated 2014-May-21: WeakReference{T} in .NET 4.5 is sealed, but this
+	/// code relied on the ability to derive WeakKeyReference{T} from WeakReference{T}.
+	/// Workaround: derive WeakKeyReference{T} from WeakReference instead.
+	/// </remarks>
+    public sealed class WeakKeyReference<T> : WeakReference where T : class
     {
         public readonly int HashCode;
 
@@ -99,5 +104,10 @@ namespace Loyc.Collections
             // remove the dead weak reference.
             this.HashCode = comparer.GetHashCode(key);
         }
+
+		public new T Target {
+			get { return (T)base.Target; }
+			set { base.Target = value; }
+		}
     }
 }

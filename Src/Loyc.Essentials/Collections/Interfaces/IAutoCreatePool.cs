@@ -12,10 +12,10 @@ namespace Loyc.Collections
 	/// <remarks>This design assumes that the values in the pool know their own 
 	/// key, so it implements IEnumerable{TValue} rather than 
 	/// IEnumerable{KeyValuePair{TKey,TValue}}.</remarks>
-	#if DotNet4 || DotNet4_5
-	public interface IAutoCreatePool<in TKey, out TValue> : IReadOnlyCollection<TValue>
+	#if DotNet2 || DotNet3
+	public interface IAutoCreatePool<TKey, TValue> : IReadOnlyCollection<TValue>
 	#else
-	public interface IAutoCreatePool<TKey, TValue> : ISource<TValue>
+	public interface IAutoCreatePool<in TKey, out TValue> : IReadOnlyCollection<TValue>
 	#endif
 	{
 		/// <summary>Gets or creates the value associated with the specified key.</summary>

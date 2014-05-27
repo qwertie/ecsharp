@@ -1,6 +1,6 @@
 ﻿<#@ template language="C#" #>
 <#@ output extension="cs" #>
-<#@ include file="../../Essentials/Math/NumTraits.ttinclude" #>
+<#@ include file="../../Loyc.Essentials/Math/NumTraits.ttinclude" #>
 <#@ import namespace="System.Collections.Generic" #>
 // This is a generated file
 using Loyc.Math;

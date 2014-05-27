@@ -31,7 +31,8 @@ namespace Loyc.MiniTest
 
 			foreach (MethodInfo method in methods)
 			{
-				if (IsTest(method))
+				object testAttr = IsTest(method);
+				if (testAttr != null)
 				{
 					any = true;
 					try {
@@ -55,9 +56,15 @@ namespace Loyc.MiniTest
 						}
 
 						if (!match) {
+							var old = Console.ForegroundColor;
+							if (testAttr is TestAttribute && ((TestAttribute)testAttr).Fails != null)
+								Console.ForegroundColor = ConsoleColor.DarkGray;
+							else
+								Console.ForegroundColor = ConsoleColor.Red;
 							Console.WriteLine("{0} while running {1}.{2}:",
 								exc.GetType().Name, o.GetType().Name, method.Name);
 							Console.WriteLine(exc.Message);
+							Console.ForegroundColor = old;
 						}
 					}
 					finally
@@ -70,15 +77,14 @@ namespace Loyc.MiniTest
 			if (!any)
 				Console.WriteLine("{0} contains no tests.", o.GetType().NameWithGenericArgs());
 		}
-		private static bool IsTest(MethodInfo info)
+		private static object IsTest(MethodInfo info)
 		{
 			if (!info.IsStatic && info.IsPublic) {
 				// this lets us know if a method is a valid [Test] method
 				object[] attrs = info.GetCustomAttributes(true);
-				if (attrs.Any(attr => attr.GetType().Name == "TestAttribute"))
-					return true;
+				return attrs.FirstOrDefault(attr => attr.GetType().Name == "TestAttribute");
 			}
-			return false;
+			return null;
 		}
 
 		private static MethodInfo GetMethodWithAttribute(MethodInfo[] methods, string attrName)

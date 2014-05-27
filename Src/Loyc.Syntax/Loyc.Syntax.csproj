@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.Syntax</RootNamespace>
+    <AssemblyName>Loyc.Syntax</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Bin\Syntax\Debug.NET4\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Bin\Syntax\Release.NET4\</OutputPath>
+    <DefineConstants>TRACE;LOYC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Bin\Syntax\Release.NET4\Loyc.Syntax.xml</DocumentationFile>
+    <NoWarn>1591, 1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\Bin\Syntax\Debug.NET3\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
+    <NoWarn>1591, 1573</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\Bin\Syntax\Debug\Loyc.Syntax.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <OutputPath>..\..\Bin\Syntax\Release.NET3\</OutputPath>
+    <DefineConstants>TRACE;DotNet3</DefineConstants>
+    <DocumentationFile>..\..\Bin\Syntax\Release.NET3\Loyc.Syntax.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>1591, 1573</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>..\..\Bin\Syntax\Release\Loyc.Syntax.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+    <Reference Include="Theraot.Core">
+      <HintPath>..\..\Lib\DotNet35\Theraot.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseParser.cs" />
+    <Compile Include="CodeSymbols.cs" />
+    <Compile Include="IntSet.cs" />
+    <Compile Include="IParsingService.cs" />
+    <Compile Include="Les\LesLanguageService.cs" />
+    <Compile Include="Les\LesLexer.cs" />
+    <Compile Include="Les\LesLexerGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LesLexerGrammar.les</DependentUpon>
+    </Compile>
+    <Compile Include="Les\LesLexerTests.cs" />
+    <Compile Include="Les\LesNodePrinter.cs" />
+    <Compile Include="Les\INodePrinterWriter.cs" />
+    <Compile Include="Les\LesNodePrinterWriter.cs" />
+    <Compile Include="Les\LesParser.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Les\LesParserGrammar.cs">
+      <DependentUpon>LesParserGrammar.les</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Les\LesParserTests.cs" />
+    <Compile Include="Les\LesPrecedence.cs" />
+    <Compile Include="Les\TokenType.cs" />
+    <Compile Include="Lexing\BaseLexer.cs" />
+    <Compile Include="Lexing\ILexer.cs" />
+    <Compile Include="Lexing\Token.cs" />
+    <Compile Include="Lexing\TokenKind.cs" />
+    <Compile Include="Lexing\TokensToTree.cs" />
+    <Compile Include="Lexing\TokensToTreeTests.cs" />
+    <Compile Include="Nodes\AbstractNodes.cs" />
+    <Compile Include="Nodes\DescendantsFrame.cs" />
+    <Compile Include="Nodes\LNode.cs" />
+    <Compile Include="Nodes\LNodeExt.cs" />
+    <Compile Include="Nodes\LNodeFactory.cs" />
+    <Compile Include="Nodes\LNodeVisitor.cs" />
+    <Compile Include="Nodes\NodeStyle.cs" />
+    <Compile Include="Nodes\StdNodes.cs" />
+    <Compile Include="Precedence.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SourceFiles\EmptySourceFile.cs" />
+    <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
+    <Compile Include="SourceFiles\IndexPositionMapper.cs" />
+    <Compile Include="SourceFiles\ISourceFile.cs" />
+    <Compile Include="SourceFiles\LineRemapper.cs" />
+    <Compile Include="SourceFiles\SourcePos.cs" />
+    <Compile Include="SourceFiles\SourceRange.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
+      <Name>Loyc.Collections.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
+      <Name>Loyc.Essentials.NET4</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Les\LesLexerGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>LesLexerGrammar.cs</LastGenOutput>
+    </None>
+    <None Include="Les\LesParserGrammar.les">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>LesParserGrammar.cs</LastGenOutput>
+      <CustomToolNamespace>--timeout=0</CustomToolNamespace>
+    </None>
+    <None Include="OpenSourceKey.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
+rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
+  </PropertyGroup>
+</Project>

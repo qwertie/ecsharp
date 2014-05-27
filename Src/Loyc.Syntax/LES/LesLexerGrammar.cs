@@ -1,4 +1,4 @@
-// Generated from LesLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.0.1.0
+// Generated from LesLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')

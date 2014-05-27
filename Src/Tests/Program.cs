@@ -48,6 +48,7 @@ namespace Loyc.Tests
 			RunTests.Run(new UStringTests());
 			RunTests.Run(new UGTests());
 			RunTests.Run(new SymbolTests());
+			RunTests.Run(new PointMathTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;

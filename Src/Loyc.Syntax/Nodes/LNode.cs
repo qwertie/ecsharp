@@ -480,6 +480,26 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// The argument and attribute lists cannot be null, since they have type 
 	/// <see cref="RVList{Node}"/> which is a struct.
+	/// <para/>
+	/// <c>LNode</c> implements <see cref="INegListSource{T}"/>, so you can loop 
+	/// through all children of the node like this:
+	/// <code>
+	/// for (int i = node.Min; i &lt;= node.Max; i++) {
+	///     LNode child = node[i];
+	/// }
+	/// </code>
+	/// You can also use <c>foreach</c>. The children are numbered like this:
+	/// <ul>
+	/// <li>if i is less than -1, node[i] refers to an attribute. Specifically, node[i] 
+	/// means node.Attrs[i + node.Attrs.Count + 1] in that case.</li>
+	/// <li>node[-1] refers to <c>Target</c> (but throws if there is no target)</li>
+	/// <li>Non-negative values are indexes of Args, e.g. node[i] means node.Args[i].</li>
+	/// </ul>
+	/// LNode also provides <c>Select(child => result)</c> and <c>ReplaceRecursive(child => result)</c>
+	/// methods which allows you to transform all children (Atrrs, Target and Args).
+	/// Currently there is no <c>Where(child => bool)</c> method because it is not
+	/// possible to remove the <see cref="Target"/> of an LNode (you can still use
+	/// standard LINQ Where(), of course, but the result is not an LNode).
 	/// 
 	/// <h3>Note</h3>
 	/// 
@@ -491,7 +511,7 @@ namespace Loyc.Syntax
 	/// but only in debug builds, since null-checking is fairly expensive.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()}")]
-	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, ILocationString
+	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, ILocationString, INegListSource<LNode>
 	{
 		#region Constructors and static node creator methods
 
@@ -509,6 +529,20 @@ namespace Loyc.Syntax
 		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<SyntheticCode>");
 
 		public static readonly IdNode Missing = Id(CodeSymbols.Missing);
+
+		public static IdNode Id(Symbol name, LNode prototype) { return new StdIdNode(name, prototype); }
+		public static IdNode Id(string name, LNode prototype) { return new StdIdNode(GSymbol.Get(name), prototype); }
+		public static IdNode Id(RVList<LNode> attrs, Symbol name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, name, prototype); }
+		public static IdNode Id(RVList<LNode> attrs, string name, LNode prototype) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), prototype); }
+		public static StdLiteralNode Literal(object value, LNode prototype) { return new StdLiteralNode(value, prototype); }
+		public static StdLiteralNode Literal(RVList<LNode> attrs, object value, LNode prototype) { return new StdLiteralNode(value, prototype); }
+		public static StdCallNode Call(Symbol name, LNode prototype) { return new StdSimpleCallNode(name, RVList<LNode>.Empty, prototype); }
+		public static StdCallNode Call(LNode target, LNode prototype) { return new StdComplexCallNode(target, RVList<LNode>.Empty, prototype); }
+		public static StdCallNode Call(Symbol name, RVList<LNode> args, LNode prototype) { return new StdSimpleCallNode(name, args, prototype); }
+		public static StdCallNode Call(LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNode(target, args, prototype); }
+		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode prototype) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
+		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
+		public static LNode InParens(LNode node) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, node.Range)); }
 
 		public static IdNode Id(Symbol name, SourceRange range) { return new StdIdNode(name, range); }
 		public static IdNode Id(string name, SourceRange range) { return new StdIdNode(GSymbol.Get(name), range); }
@@ -700,8 +734,10 @@ namespace Loyc.Syntax
 		/// not a literal (<see cref="IsLiteral"/> is false).</summary>
 		public abstract object Value { get; }
 
+		/// <summary>Creates a new literal node with a different Value than the current literal node.</summary>
+		/// <exception cref="InvalidOperationException">The node was not a literal already.</exception>
 		public abstract LiteralNode WithValue(object value);
-
+		
 		#endregion
 
 		#region Properties and methods for Call nodes
@@ -972,10 +1008,10 @@ namespace Loyc.Syntax
 		/// method merges two nodes, forming or appending a list (see remarks).</summary>
 		/// <param name="node1">First node, list, or null.</param>
 		/// <param name="node2">Second node, list, or null.</param>
-		/// <param name="listName">The Name used to detect whether a node is a list
-		/// (typically "#"). Any other name is considered a normal call, not a list.
-		/// If this method creates a list from two non-lists, this parameter 
-		/// specifies the Name that the list will have.</param>
+		/// <param name="listName">The <see cref="Name"/> used to detect whether a 
+		/// node is a list (typically "#splice"). Any other name is considered a 
+		/// normal call, not a list. If this method creates a list from two non-
+		/// lists, this parameter specifies the Name that the list will have.</param>
 		/// <returns>The merged list.</returns>
 		/// <remarks>
 		/// The order of the data is retained (i.e. the data in node1 is inserted
@@ -1031,5 +1067,81 @@ namespace Loyc.Syntax
 		}
 
 		#endregion
+
+		#region INegListSource<LNode>
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public int Min
+		{
+			get { return -AttrCount - 1; }
+		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public virtual int Max
+		{
+			get { return IsCall ? ArgCount - 1 : -2; }
+		}
+
+		public LNode this[int index]
+		{
+			get {
+				bool fail;
+				var r = TryGet(index, out fail);
+				if (fail) throw new ArgumentOutOfRangeException("index");
+				return r;
+			}
+		}
+
+		public LNode TryGet(int index, out bool fail)
+		{
+			if (index >= 0) {
+				return Args.TryGet(index, out fail);
+			} else if (index < -1) {
+				var a = Attrs;
+				return a.TryGet(index + 1 + a.Count, out fail);
+			} else {
+				var t = Target;
+				fail = t == null;
+				return t;
+			}
+		}
+
+		public IRange<LNode> Slice(int start, int count = int.MaxValue)
+		{
+			return new NegListSlice<LNode>(this, start, count);
+		}
+
+		public int Count
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public IEnumerator<LNode> GetEnumerator()
+		{
+			for (int i = Min; i <= Max; i++)
+				yield return this[i];
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
+
+		/// <summary>Transforms the attributes, <see cref="Target"/>, and parameters 
+		/// of an LNode, returning another LNode of the same Kind. If the selector
+		/// makes no changes, Select() returns <c>this</c>.</summary>
+		/// <remarks>The selector is not allowed to return null.</remarks>
+		public abstract LNode Select(Func<LNode, LNode> selector);
+		
+		/// <summary>Performs a recursive find-and-replace operation, by attempting
+		/// to replace each child (among <see cref="Attrs"/>, <see cref="Target"/>, 
+		/// <see cref="Args"/>) using the specified selector.</summary>
+		/// <param name="selector">The selector is called for each descendant, and
+		/// optionally the root node. If the selector returns a node, the new node 
+		/// replaces the node that was passed to <c>selector</c> and the children of 
+		/// the new node are ignored. If the selector returns null, children of the 
+		/// child are scanned recursively.</param>
+		/// <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
+		public abstract LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true);
 	}
 }

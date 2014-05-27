@@ -15,7 +15,7 @@ namespace Loyc.Collections
 	#if CSharp4
 	public interface ISinkCollection<in T> : IAdd<T>
 	#else
-	public interface ISinkCollection<T>
+	public interface ISinkCollection<T> : IAdd<T>
 	#endif
 	{
 		//inherited void Add(T item);
@@ -27,7 +27,7 @@ namespace Loyc.Collections
 	#if CSharp4
 	public interface ISinkArray<in T>
 	#else
-	public interface ISinkArray<T> : ICount
+	public interface ISinkArray<T>
 	#endif
 	{
 		T this[int index] { set; }

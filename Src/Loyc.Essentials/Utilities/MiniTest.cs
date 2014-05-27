@@ -83,6 +83,7 @@ namespace Loyc.MiniTest
 	{
 		private string _description;
 		private int _maxParallelThreads;
+		private object _failInfo;
 
 		/// <summary>
 		/// Descriptive text for this test
@@ -109,6 +110,21 @@ namespace Loyc.MiniTest
 		{
 			get { return _maxParallelThreads; }
 			set { _maxParallelThreads = value; }
+		}
+
+		/// <summary>Setting this property is used to indicate that the test is 
+		/// known to fail. It is used to mark tests that should be fixed eventually, 
+		/// but will not be fixed immediately.</summary>
+		/// <remarks>If you are new to a codebase, it helps to be able to tell the
+		/// difference between new problems that need to be investigated and 
+		/// addressed immediately, and old problems that have been placed on the 
+		/// backburner to be fixed "someday", or feature requests that have not
+		/// yet been addressed. KnownFail suggests that a failure is low-priority 
+		/// and may be an old issue.</remarks>
+		public object Fails
+		{
+			get { return _failInfo; }
+			set { _failInfo = value; }
 		}
 	}
 
@@ -430,7 +446,8 @@ namespace Loyc.MiniTest
 			return obj.ToString();
 		}
 
-		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual = false)
+		static string GetObjectMismatchMessage(object a, object b) { return GetObjectMismatchMessage(a, b, false); }
+		static string GetObjectMismatchMessage(object a, object b, bool expectedNotEqual)
 		{
 			if (a is string && b is string)
 				return GetStringsNotEqualMessage((string)a, (string)b);

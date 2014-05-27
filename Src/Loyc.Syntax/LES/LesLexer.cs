@@ -678,7 +678,7 @@ namespace Loyc.Syntax.Les
 			var sb = _tempsb;
 			if (sb == null)
 				_tempsb = sb = new StringBuilder();
-			sb.Clear();
+			sb.Length = 0; // sb.Clear() only exists in .NET 4
 			return sb;
 		}
 

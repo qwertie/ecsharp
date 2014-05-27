@@ -19,7 +19,7 @@ namespace Loyc.Collections
 		int Min { get; }
 
 		/// <summary>Returns the maximum valid index in the collection.</summary>
-		/// <remarks>Count must equal Max-Min+1.</remarks>
+		/// <remarks>Count must equal Max-Min+1. If Count is 0, Max = Min-1</remarks>
 		int Max { get; }
 
 		/// <summary>Gets the item at the specified index.</summary>
