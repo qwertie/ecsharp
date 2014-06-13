@@ -115,6 +115,7 @@
     <Compile Include="CPTrie\CPTrieBenchmark.cs" />
     <Compile Include="CPTrie\CPTrieMisc.cs" />
     <Compile Include="CPTrie\CPTrieTests.cs" />
+    <Compile Include="Other\ArrayOf4.cs" />
     <Compile Include="Other\Bijection.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -12,14 +12,29 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <summary>Converts any IReadOnlyCollection{T} object to a read-only ICollection{T}.</summary>
+		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
+		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// make a copy of the sequence, although it does create a new wrapper object.</remarks>
+		public static ICollection<T> AsCollection<T>(this IReadOnlyCollection<T> c)
+		{
+			var list = c as ICollection<T>;
+			if (list != null)
+				return list;
+			return new ReadOnlyAsCollection<T>(c);
+		}
+	}
+
 	/// <summary>
 	/// A read-only wrapper that implements ICollection(T) and ISource(T),
 	/// returned from <see cref="LCExt.AsCollection{T}"/>
 	/// </summary>
 	[Serializable]
-	public sealed class SourceAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollectionAndReadOnly<T>
+	public sealed class ReadOnlyAsCollection<T> : WrapperBase<IReadOnlyCollection<T>>, ICollectionAndReadOnly<T>
 	{
-		public SourceAsCollection(IReadOnlyCollection<T> obj) : base(obj) { }
+		public ReadOnlyAsCollection(IReadOnlyCollection<T> obj) : base(obj) { }
 
 		#region ICollection<T> Members
 

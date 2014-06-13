@@ -5,6 +5,22 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	public static partial class ListExt
+	{
+		public static IRange<T> AsRange<T>(this IListSource<T> list)
+		{
+			var range = (list as IRange<T>);
+			if (range != null)
+				return range;
+			return new Slice_<T>(list, 0, int.MaxValue); // boxed
+		}
+		[Obsolete("The object is already a range; the AsRange() method is a no-op.")]
+		public static IRange<T> AsRange<T>(this IRange<T> list)
+		{
+			return list;
+		}
+	}
+
 	/// <summary>A random-access range for a slice of an <see cref="IListSource{T}"/>.</summary>
 	/// <typeparam name="T">Item type in the list</typeparam>
 	/// <remarks>

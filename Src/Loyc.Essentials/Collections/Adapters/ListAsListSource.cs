@@ -11,6 +11,22 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <summary>Converts any IList{T} object to IListSource{T}.</summary>
+		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
+		/// because, in contrast to methods like ToArray() and ToList(), it does not 
+		/// make a copy of the sequence.</remarks>
+		public static IListSource<T> AsListSource<T>(this IList<T> c)
+		{
+			if (c == null)
+				return null;
+			var listS = c as IListSource<T>;
+			if (listS != null)
+				return listS;
+			return new ListAsListSource<T>(c);
+		}
+	}
 	/// <summary>
 	/// Helper type returned from <see cref="LCExt.AsListSource{T}"/>.
 	/// </summary>

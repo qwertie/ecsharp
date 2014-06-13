@@ -5,6 +5,15 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <inheritdoc cref="NegList{T}.NegList"/>
+		public static NegListSlice<T> Slice<T>(this INegListSource<T> list, int start, int count)
+		{
+			return new NegListSlice<T>(list, start, count);
+		}
+	}
+
 	/// <summary>A random-access range for a slice of an <see cref="INegListSource{T}"/>.</summary>
 	/// <typeparam name="T">Item type in the list</typeparam>
 	/// <remarks>Although this slices a neg-list, the slice itself is an ordinary zero-indexed 

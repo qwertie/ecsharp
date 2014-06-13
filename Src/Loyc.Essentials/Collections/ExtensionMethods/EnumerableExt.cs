@@ -5,20 +5,33 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	/// <summary>
+	/// Additional extension methods for <see cref="IEnumerable{T}"/>, beyond what LINQ provides.
+	/// </summary>
+	/// <remarks>
+	/// The methods include <see cref="WithIndexes{T}"/>, which pairs each item of 
+	/// a sequence with a 0-based index of that item; <see cref="ForEach{T}"/>, which 
+	/// runs a lambda for each member of a sequence; <see cref="IndexWhere{T}"/>, which
+	/// finds the index where a predicate is true; <see cref="AdjacentPairs{T}"/>, 
+	/// which pairs each list item with the next one, and <see cref="MinOrDefault"/>,
+	/// which finds the item such that some associated value is minimized (in contrast 
+	/// to LINQ's Min(), which just returns the minimum value itself.) And there's more.
+	/// </remarks>
 	public static class EnumerableExt
 	{
-		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
-		{
-			int i = 0;
-			foreach (T item in c)
-				yield return new KeyValuePair<int, T>(i, item);
-		}
 		public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
 		{
 			foreach (T item in list)
 				action(item);
 		}
 		
+		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
+		{
+			int i = 0;
+			foreach (T item in c)
+				yield return new KeyValuePair<int, T>(i, item);
+		}
+
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>
 		public static int IndexWhere<T>(this IEnumerable<T> list, Func<T, bool> pred)
 		{
@@ -340,6 +353,9 @@ namespace Loyc.Collections
 			return hc;
 		}
 
+		/// <summary>Upcasts a sequence.</summary>
+		/// <remarks>In .NET 4+ this is a no-op that just returns <c>list</c>,
+		/// but in .NET 3.5 that's illegal so this method creates an adapter.</remarks>
 		public static IEnumerable<Base> Upcast<Base, Derived>(this IEnumerable<Derived> list) where Derived : class, Base
 		{
 			#if DotNet2 || DotNet3
@@ -347,6 +363,37 @@ namespace Loyc.Collections
 			#else
 			return list;
 			#endif
+		}
+
+		/// <summary>Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})</summary>
+		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
+		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerator<T> e)
+		{
+			if (e.MoveNext()) {
+				T prev = e.Current;
+				while (e.MoveNext()) {
+					T cur = e.Current;
+					yield return new Pair<T,T>(prev, cur);
+					prev = cur;
+				}
+			}
+		}
+
+		/// <summary>Returns all adjacent pairs, treating the first and last 
+		/// pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs
+		/// {(1,2),(2,3),(3,4),(4,1)}.)</summary>
+		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
+		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerator<T> e)
+		{
+			if (e.MoveNext()) {
+				T first = e.Current, prev = first;
+				while (e.MoveNext()) {
+					T cur = e.Current;
+					yield return new Pair<T,T>(prev, cur);
+					prev = cur;
+				}
+				yield return new Pair<T,T>(prev, first);
+			}
 		}
 	}
 }

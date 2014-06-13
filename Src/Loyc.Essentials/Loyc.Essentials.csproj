@@ -166,7 +166,6 @@
     <Compile Include="Strings\StringSlice.cs" />
     <Compile Include="Strings\UString.cs" />
     <Compile Include="Collections\Adapters\ValueCollection.cs" />
-    <Compile Include="Collections\Implementations\ArrayOf4.cs" />
     <Compile Include="Collections\Implementations\DList.cs" />
     <Compile Include="Collections\Implementations\InternalDList.cs" />
     <Compile Include="Collections\Implementations\InternalList.cs" />
@@ -287,10 +286,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MiniLog\" />
-    <Folder Include="Threading\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>

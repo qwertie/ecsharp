@@ -118,7 +118,9 @@ namespace Loyc.Collections.Impl
 		/// <param name="newSize">New value of <see cref="Count"/>. If the Count
 		/// increases, copies of default(T) are added to the end of the the list; 
 		/// otherwise items are removed from the end of the list.</param>
-		public void Resize(int newSize, bool allowReduceCapacity = true)
+		public void Resize(int newSize) { Resize(newSize, true); }
+		/// <inheritdoc cref="Resize(int)"/>
+		public void Resize(int newSize, bool allowReduceCapacity)
 		{
 			if (newSize > _count)
 			{

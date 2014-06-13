@@ -23,21 +23,23 @@ namespace Loyc.Collections.Impl
 	/// There is a single array plus a "start index" and a count. The array may or 
 	/// may not be divided into two "halves", depending on the circumstances.
 	/// The first element of the DList (returned from this[0] and from the
-	/// First property) is located at the start index of the array; and if the 
-	/// index + count is greater than the array size, then the end of the DList
-	/// wraps around to the beginning of the array.
+	/// First property) is located at the "start index" of the array; and if the 
+	/// start index + count is greater than the array size, then the end of the 
+	/// DList wraps around to the beginning of the array.
 	/// <para/>
 	/// InternalDeque is a struct, not a class, in order to save memory; and for 
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used (the one exception is the iterator,
 	/// which throws in case the collection is modified during enumeration; this 
-	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons, one
-	/// should not expose it in a public API, and it should only be used when 
-	/// performance trumps all other concerns.
+	/// is for the sake of <see cref="DList{T}"/>.) For these and other reasons, 
+	/// one should not expose it in a public API, and it should only be used when 
+	/// performance is very important.
 	/// <para/>
-	/// Also, do not use the default contructor. Always specify an initial 
-	/// capacity or copy InternalDeque.Empty so that the internal array gets a 
-	/// value. All methods in this structure assume _array is not null.
+	/// Also, do not use the <c>default(InternalDList{T})</c> or the equivalent
+	/// "default constructor", which only exists because C# requires it. Always 
+	/// specify an initial capacity or copy InternalDeque.Empty so that the 
+	/// internal array gets a value. All methods in this structure assume _array 
+	/// is not null.
 	/// <para/>
 	/// This class does not implement <see cref="IDeque{T}"/> and <see 
 	/// cref="IList{T}"/> in order to help you not to shoot yourself in the foot.
@@ -45,9 +47,9 @@ namespace Loyc.Collections.Impl
 	/// change the list, such as PopLast(), malfunction because the structure is
 	/// implicitly boxed, producing a shallow copy. By not implementing those 
 	/// interfaces, the extension methods are not available, ensuring you don't
-	/// accidently box the structure. You can always call <see cref="AsDList"/> 
-	/// to construct a <see cref="DList{T}"/> in O(1) time, if you need those 
-	/// interfaces.
+	/// accidently box the structure. If you need those interfaces, You can always 
+	/// call <see cref="AsDList"/> to construct a <see cref="DList{T}"/> in O(1) 
+	/// time.
 	/// <para/>
 	/// You may be curious why <see cref="InternalList{T}"/>, in contrast, DOES
 	/// implement <see cref="IList{T}"/>. It's because there is no way to make
@@ -912,7 +914,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>WARNING: in order to run in O(1) time, the two lists 
 		/// (InternalDList and DList) share the same array, but not the same 
 		/// internal state. You must stop using one list after modifying the 
-		/// other, because changes to one list will have strange effects in
+		/// other, because changes to one list may have strange effects in
 		/// the other list.</remarks>
 		public DList<T> AsDList()
 		{

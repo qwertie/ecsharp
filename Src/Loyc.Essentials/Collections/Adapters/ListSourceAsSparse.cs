@@ -5,28 +5,44 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <summary>Treats a non-sparse list as a read-only sparse list with no empty
+		/// spaces.</summary>
+		public static ListSourceAsSparse<T> AsSparse<T>(this IListSource<T> list)
+		{
+			return new ListSourceAsSparse<T>(list);
+		}
+		/// <summary>Returns <c>list</c> itself. This overload exists to prevent you from 
+		/// accidentally wrapping a sparse list in <see cref="ListSourceAsSparse{T}"/>,
+		/// which would block access to knowledge of any empty spaces in the list.</summary>
+		public static ISparseListSource<T> AsSparse<T>(this ISparseListSource<T> list)
+		{
+			return list;
+		}
+	}
+
 	/// <summary>An adapter from <see cref="IListSource{T}"/> to <see cref="ISparseListSource{T}"/>.</summary>
 	/// <seealso cref="LCExt.AsSparse{T}"/>
 	public class ListSourceAsSparse<T> : ListSourceBase<T>, ISparseListSource<T>
 	{
-		private IListSource<T> list;
+		private IListSource<T> _list;
 
 		public ListSourceAsSparse(Loyc.Collections.IListSource<T> list)
 		{
-			// TODO: Complete member initialization
-			this.list = list;
+			_list = list;
 		}
 		public sealed override T TryGet(int index, out bool fail)
 		{
-			return list.TryGet(index, out fail);
+			return _list.TryGet(index, out fail);
 		}
 		public sealed override int Count
 		{
-			get { return list.Count; }
+			get { return _list.Count; }
 		}
 		public IEnumerable<KeyValuePair<int, T>> Items
 		{
-			get { return list.WithIndexes(); }
+			get { return _list.WithIndexes(); }
 		}
 		public bool IsSet(int index)
 		{

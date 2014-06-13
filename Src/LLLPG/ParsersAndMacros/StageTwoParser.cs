@@ -64,7 +64,7 @@ namespace Loyc.LLParserGenerator
 			try {
 				return NodeToPredCore(expr, ctx);
 			} catch (Exception ex) {
-				_sink.Write(Severity.Error, expr, ex.ExceptionTypeAndMessage());
+				_sink.Write(Severity.Error, expr, ex.ExceptionMessageAndType());
 				return new TerminalPred(expr, _helper.EmptySet);
 			}
 		}

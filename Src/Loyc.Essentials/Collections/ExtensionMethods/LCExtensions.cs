@@ -4,10 +4,17 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
-	/// <summary>Extension methods for Loyc Collection interfaces (such as <see cref="IListSource{T}"/>) and for Loyc Collection adapters (such as 
-	/// 
-	/// </summary>
-	public static class LCExt
+	/// <summary>Extension methods for Loyc Collection interfaces 
+	/// (such as <see cref="IListSource{T}"/>) and for Loyc Collection 
+	/// adapters (such as <see cref="AsReadOnly{T}()"/>, which returns
+	/// a <see cref="CollectionAsReadOnly{T}"/> adapter.)</summary>
+	/// <remarks>
+	/// The source code for adapter extension methods such as AsReadOnly() is now 
+	/// placed in the source file for each adapter class (e.g. CollectionAsReadOnly.cs)
+	/// to make it easier to use parts of Loyc.Essentials rather than the entire 
+	/// library (other "decoupling" suggestions are welcome.)
+	/// </remarks>
+	public static partial class LCExt
 	{
 		#region Conversion between Loyc and BCL collection interfaces
 		
@@ -63,58 +70,6 @@ namespace Loyc.Collections
 		}
 		#endif
 
-		/// <summary>Converts any ICollection{T} object to IReadOnlyCollection{T}.</summary>
-		/// <remarks>This method is named "AsReadOnly" and not "ToReadOnly" because,
-		/// in contrast to methods like ToArray(), and ToList() it does not make a 
-		/// copy of the sequence, although it does create a new wrapper object.</remarks>
-		public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> c)
-		{
-			var list = c as IReadOnlyCollection<T>;
-			if (list != null)
-				return list;
-			return new CollectionAsSource<T>(c);
-		}
-		
-		/// <summary>Converts any IReadOnlyCollection{T} object to a read-only ICollection{T}.</summary>
-		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
-		/// because, in contrast to methods like ToArray() and ToList(), it does not 
-		/// make a copy of the sequence, although it does create a new wrapper object.</remarks>
-		public static ICollection<T> AsCollection<T>(this IReadOnlyCollection<T> c)
-		{
-			var list = c as ICollection<T>;
-			if (list != null)
-				return list;
-			return new SourceAsCollection<T>(c);
-		}
-		
-		/// <summary>Converts any IList{T} object to IListSource{T}.</summary>
-		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
-		/// because, in contrast to methods like ToArray() and ToList(), it does not 
-		/// make a copy of the sequence.</remarks>
-		public static IListSource<T> AsListSource<T>(this IList<T> c)
-		{
-			if (c == null)
-				return null;
-			var listS = c as IListSource<T>;
-			if (listS != null)
-				return listS;
-			return new ListAsListSource<T>(c);
-		}
-		
-		/// <summary>Converts any IListSource{T} object to a read-only IList{T}.</summary>
-		/// <remarks>This method is named "AsList" and not "ToList" because
-		/// because, in contrast to methods like ToArray(), it does not make a copy
-		/// of the sequence, although it does create a new wrapper object.</remarks>
-		public static IList<T> AsList<T>(this IListSource<T> c)
-		{
-			if (c == null)
-				return null;
-			var list = c as IList<T>;
-			if (list != null)
-				return list;
-			return new ListSourceAsList<T>(c);
-		}
-
 		public static IReadOnlyCollection<TResult> UpCast<T, TResult>(this IReadOnlyCollection<T> source) where T : class, TResult
 		{
 			#if DotNet4 || DotNet4_5
@@ -139,102 +94,14 @@ namespace Loyc.Collections
 
 		#endregion
 
-		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
-		{
-			return new ReversedListSource<T>(c);
-		}
-
-		/// <inheritdoc cref="NegListSource{T}.NegListSource"/>
-		public static NegListSource<T> NegView<T>(this IListSource<T> list, int zeroOffset)
-		{
-			return new NegListSource<T>(list, zeroOffset);
-		}
-		/// <inheritdoc cref="NegList{T}.NegList"/>
-		public static NegList<T> NegView<T>(this IList<T> list, int zeroOffset)
-		{
-			return new NegList<T>(list, zeroOffset);
-		}
-		/// <inheritdoc cref="NegList{T}.NegList"/>
-		public static NegList<T> NegView<T>(this IListAndListSource<T> list, int zeroOffset)
-		{
-			return new NegList<T>(list, zeroOffset);
-		}
-
 		public static string Join(this System.Collections.IEnumerable list, string separator)
 		{
 			return StringExt.Join(separator, list.GetEnumerator());
 		}
 
-		/// <summary>Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})</summary>
-		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
-		public static IEnumerable<Pair<T, T>> AdjacentPairs<T>(this IEnumerator<T> e)
-		{
-			if (e.MoveNext()) {
-				T prev = e.Current;
-				while (e.MoveNext()) {
-					T cur = e.Current;
-					yield return new Pair<T,T>(prev, cur);
-					prev = cur;
-				}
-			}
-		}
-
-		/// <summary>Returns all adjacent pairs, treating the first and last 
-		/// pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs
-		/// {(1,2),(2,3),(3,4),(4,1)}.)</summary>
-		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
-		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerator<T> e)
-		{
-			if (e.MoveNext()) {
-				T first = e.Current, prev = first;
-				while (e.MoveNext()) {
-					T cur = e.Current;
-					yield return new Pair<T,T>(prev, cur);
-					prev = cur;
-				}
-				yield return new Pair<T,T>(prev, first);
-			}
-		}
-
 		public static IListSource<TResult> Select<T, TResult>(this IListSource<T> source, Func<T, TResult> selector)
 		{
 			return new SelectListSource<T, TResult>(source, selector);
-		}
-
-		public static SelectNegLists<T> NegLists<T>(this IList<T> source)
-		{
-			return new SelectNegLists<T>(source);
-		}
-		public static SelectNegLists<T> NegLists<T>(this IListAndListSource<T> source)
-		{
-			return new SelectNegLists<T>(source);
-		}
-		public static SelectNegListSources<T> NegLists<T>(this IListSource<T> source)
-		{
-			return new SelectNegListSources<T>(source);
-		}
-
-		public static BufferedSequence<T> Buffered<T>(this IEnumerator<T> source)
-		{
-			return new BufferedSequence<T>(source);
-		}
-		public static BufferedSequence<T> Buffered<T>(this IEnumerable<T> source)
-		{
-			return new BufferedSequence<T>(source);
-		}
-
-		/// <summary>Treats a non-sparse list as a read-only sparse list with no empty
-		/// spaces.</summary>
-		public static ListSourceAsSparse<T> AsSparse<T>(this IListSource<T> list)
-		{
-			return new ListSourceAsSparse<T>(list);
-		}
-		/// <summary>Returns the list itself. This overload exists to prevent you from 
-		/// accidentally wrapping a sparse list in <see cref="ListSourceAsSparse{T}"/>,
-		/// which would block access to knowledge of any empty spaces in the list.</summary>
-		public static ISparseListSource<T> AsSparse<T>(this ISparseListSource<T> list)
-		{
-			return list;
 		}
 	}
 

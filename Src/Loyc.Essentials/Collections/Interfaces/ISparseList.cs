@@ -35,7 +35,9 @@ namespace Loyc.Collections
 	/// <c>SortedDictionary</c> is not a very useful example in practise, though,
 	/// because it does not provide a way for <see cref="NextHigher"/> and
 	/// <see cref="NextLower"/> to work efficiently, and it cannot efficiently 
-	/// support the <see cref="ISparseList{T}"/> interface.
+	/// support the <see cref="ISparseList{T}"/> interface. A more useful example
+	/// is SparseAList{T} in Loyc.Collections.dll, which efficiently implements 
+	/// this interface and <see cref="ISparseList{T}"/>.
 	/// </remarks>
 	/// <seealso cref="LCExt.AsSparse"/>
 	public interface ISparseListSource<T> : IListSource<T>
