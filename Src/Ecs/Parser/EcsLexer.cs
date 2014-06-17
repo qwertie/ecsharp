@@ -109,89 +109,6 @@ namespace Ecs.Parser
 			return d;
 		}
 
-		#region Lookup tables: Keyword trie and operator lists
-
-		/*private class Trie
-		{
-			public char CharOffs;
-			public Trie[] Child;
-			public Symbol Value;
-			public TokenType TokenType; // "AttrKeyword", "TypeKeyword" or same as Keyword
-		}
-		private static Trie BuildTrie(IEnumerable<Symbol> words, char minChar, char maxChar, Func<Symbol, TokenType> getTokenType, Func<Symbol, Symbol> getValue)
-		{
-			var trie = new Trie { CharOffs = minChar };
-			foreach (Symbol word in words) {
-				var t = trie;
-				foreach (char c in word.Name) {
-					t.Child = t.Child ?? new Trie[maxChar - minChar + 1];
-					t = t.Child[c - t.CharOffs] = t.Child[c - t.CharOffs] ?? new Trie { CharOffs = minChar };
-				}
-				t.Value = getValue(word);
-				t.TokenType = getTokenType(word);
-			}
-			return trie;
-		}
-		// Variable-length find method
-		private static bool FindInTrie(Trie t, string source, int start, out int stop, ref Symbol value, ref TokenType type)
-		{
-			bool success = false;
-			stop = start;
-			for (int i = start; ; i++) {
-				if (t.Value != null) {
-					value = t.Value;
-					type = t.TokenType;
-					success = true;
-					stop = i;
-				}
-				char input = source.TryGet(i, (char)0xFFFF);
-				int input_i = input - t.CharOffs;
-				if (t.Child == null || (uint)input_i >= t.Child.Length)
-					return success;
-				if ((t = t.Child[input - t.CharOffs]) == null)
-					return success;
-			}
-		}
-
-		private static readonly Trie PunctuationTrie = BuildTrie(PunctuationIdentifiers, (char)32, (char)127, 
-			word => TT.Id, word => word);
-		private static readonly Trie PreprocessorTrie = BuildTrie(PreprocessorIdentifiers, (char)32, (char)127, 
-			word => (TT)Enum.Parse(typeof(TT), "PP" + word),
-			word => GSymbol.Get("##" + word));
-		private static readonly Trie KeywordTrie = BuildTrie(CsKeywords, 'a', 'z', word => {
-			if (AttrKeywords.Contains(word))
-				return TT.AttrKeyword;
-			if (TypeKeywords.Contains(word))
-				return TT.TypeKeyword;
-			return (TT)Enum.Parse(typeof(TT), word.Name);
-		},	word => TokenNameMap.TryGetValue(word.Name, GSymbol.Get("#" + word.Name)));
-		 */
-		/*static readonly Symbol[] OperatorSymbols, OperatorEqualsSymbols;
-		static EcsLexer()
-		{
-			OperatorSymbols = new Symbol[128];
-			OperatorEqualsSymbols = new Symbol[128];
-			foreach (Symbol op in PunctuationIdentifiers) {
-				if (op.Name.Length == 2)
-					OperatorSymbols[(int)op.Name[1]] = op;
-				else if (op.Name.Length == 3 && op.Name[2] == '=')
-					OperatorEqualsSymbols[(int)op.Name[1]] = op;
-			}
-		}
-		void OnOneCharOperator(int ch)
-		{
-			_value = OperatorSymbols[ch];
-			Debug.Assert(_value != null);
-		}
-		void OnOperatorEquals(int ch)
-		{
-			_value = OperatorEqualsSymbols[ch];
-			Debug.Assert(_value != null);
-		}*/
-
-		#endregion
-
-
 		#region Value parsers
 		// After the generated lexer code determines the boundaries of the token, 
 		// one of these methods extracts the value of the token (e.g. "17L" => (long)17)
@@ -389,7 +306,7 @@ namespace Ecs.Parser
 
 		#region Number parsing
 
-		static Symbol _sub = GSymbol.Get("#-");
+		static Symbol _sub = GSymbol.Get("-");
 		static Symbol _F = GSymbol.Get("F");
 		static Symbol _D = GSymbol.Get("D");
 		static Symbol _M = GSymbol.Get("M");

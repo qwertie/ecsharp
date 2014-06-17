@@ -36,16 +36,16 @@ namespace Loyc.LLParserGenerator
 	/// <see cref="IntStreamCodeGenHelper"/>, and another macro for 
 	/// <c>LLLPG(parser(Symbol, false), {...})"</c> that creates a 
 	/// <see cref="GeneralCodeGenHelper"/> (this is the default helper).</li>
-	/// <li>The stage-one LLLPG() macro uses <see cref="StageOneParser"/> to
+	/// <li>The stage-one rule() macro uses <see cref="StageOneParser"/> to
 	/// translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
-	/// is currently translated to <c>#tuple(@`#suf*`("Foo" | bar), ~';')</c>.
-	/// LLLPG() replaces itself with LLLPG_stage2() so users need not be aware
-	/// that two stages exist. <c>LLLPG()</c> expects an entire grammar, but
-	/// <c>LLLPG_stage1(@[...])</c> might be used in advanced scenarios to invoke 
-	/// the stage-one parser directly.</li>
-	/// <li>The stage-two LLLPG_stage2() macro calls <see cref="StageTwoParser"/>
-	/// to translate expressions into <see cref="Pred"/> objects, and then
-	/// invokes <see cref="LLParserGenerator"/> to generate code.</li>
+	/// is currently translated to <c>#tuple(@`suf*`("Foo" | bar), ~';')</c>.
+	/// <li>The stage-two macro is named run_LLLPG(). It accepts the code-gen 
+	/// helper created by the LLLPG(lexer) or LLLPG(parser) macro, and it
+	/// has the ProcessChildrenBefore flag so that the stage-1 rule() macros 
+	/// run first. run_LLLPG calls <see cref="StageTwoParser"/> to translate 
+	/// expressions into <see cref="Pred"/> objects, and then invokes 
+	/// <see cref="LLParserGenerator"/> to analyze the grammar and generate 
+	/// code.</li>
 	/// </ol>
 	/// </remarks>
 	[ContainsMacros]

@@ -26,7 +26,7 @@ namespace Ecs.Macros
 				return node.WithTarget(F.Dot("Tuple", "Create"));
 		}
 
-		[LexicalMacro("#??=")]
+		[LexicalMacro("??=")]
 		public static LNode NullCoalesceSet(LNode node)
 		{
 			var a = node.Args;
@@ -38,7 +38,7 @@ namespace Ecs.Macros
 			return F.Set(x, F.Call(S.NullCoalesce, x, y));
 		}
 
-		[LexicalMacro("#:::")]
+		[LexicalMacro(":::")]
 		public static LNode QuickBind(LNode node)
 		{
 			var a = node.Args;

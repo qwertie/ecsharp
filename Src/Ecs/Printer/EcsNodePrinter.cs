@@ -73,7 +73,7 @@ namespace Ecs
 	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
-	/// <see cref="AllowChangeParenthesis"/> will print a tree such as <c>#*(a + b, c)</c> 
+	/// <see cref="AllowChangeParenthesis"/> will print a tree such as <c>@*(a + b, c)</c> 
 	/// as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
 	/// even though parenthesis make the Loyc tree slightly different.
 	/// <para/>
@@ -167,7 +167,7 @@ namespace Ecs
 		#region Configuration properties
 
 		/// <summary>Allows operators to be mixed that will cause the parser to 
-		/// produce a warning. An example is <c>x & #==(y, z)</c>: if you enable 
+		/// produce a warning. An example is <c>x & @==(y, z)</c>: if you enable 
 		/// this option, it will be printed as <c>x & y == z</c>, which the parser
 		/// will complain about because mixing those operators is deprecated.
 		/// </summary>
@@ -176,7 +176,7 @@ namespace Ecs
 		/// <summary>Permits extra parenthesis to express precedence, instead of
 		/// resorting to prefix notation (defaults to true). Also permits removal
 		/// of parenthesis if necessary to print special constructs.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
+		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
 		/// <c>x * (a + b)</c>. Originally, the second tree had a significantly 
 		/// different structure from the first, as parenthesis were represented
 		/// by a call to the empty symbol @``. This was annoyingly restrictive, so 
@@ -204,7 +204,7 @@ namespace Ecs
 		/// <summary>Suppresses printing of all attributes that are not on 
 		/// declaration or definition statements (such as classes, methods and 
 		/// variable declarations at statement level). Also, avoids prefix notation 
-		/// when the attributes would have required it, e.g. <c>#+([Foo] a, b)</c> 
+		/// when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
 		/// can be printed "a+b" instead.</summary>
 		/// <remarks>This also affects the validation methods such as <see 
 		/// cref="IsVariableDecl"/>. With this flag, validation methods will ignore
@@ -475,11 +475,11 @@ namespace Ecs
 
 		internal static readonly HashSet<Symbol> OperatorIdentifiers = SymbolSet(
 			// >>, << and ** are special: the lexer provides them as two separate tokens
-			"#~", "#!", "#%", "#^", "#&", "#&&", "#*", "#**", "#+", "#++", 
-			"#-", "#--", "#=", "#==", "#!=", /*"#{}", "#[]",*/ "#|", "#||", @"#\", 
-			"#;", "#:", "#,", "#.", "#..", "#<", "#<<", "#>", "#>>", "#/", 
-			"#?", "#??", "#?.", "#??=", "#%=", "#^=", "#&=", "#*=", "#-=", 
-			"#+=", "#|=", "#<=", "#>=", "#=>", "#==>", "#->", "#$", "#>>=", "#<<="
+			"~", "!", "%", "^", "&", "&&", "*", "**", "+", "++", 
+			"-", "--", "=", "==", "!=", /*"{}", "[]",*/ "|", "||", @"\", 
+			";", ":", ",", ".", "..", "<", "<<", ">", ">>", "/", 
+			"?", "??", "?.", "??=", "%=", "^=", "&=", "*=", "-=", 
+			"+=", "|=", "<=", ">=", "=>", "==>", "->", "$", ">>=", "<<="
 		);
 
 		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(
@@ -661,7 +661,7 @@ namespace Ecs
 				// Check for a destructor
 				return retType.IsIdNamed(S.Missing)
 					&& CallsWPAIH(name, S._Destruct, 1) 
-					&& IsComplexIdentifier(name.Args[0], ICI.Simple);
+					&& IsSimpleIdentifier(name.Args[0]);
 			}
 		}
 
@@ -676,31 +676,32 @@ namespace Ecs
 			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition);
 		}
 
-		public bool IsEventDefinition() { return EventDefinitionType() != null; }
+		public bool IsEventDefinition() { return EventDefinitionType() != EventDef.Invalid; }
 
-		static readonly Symbol EventWithBody = GSymbol.Get("EventWithBody");
-		static readonly Symbol EventList     = GSymbol.Get("EventList");
-		Symbol EventDefinitionType()
+		enum EventDef { Invalid, WithBody, List };
+		EventDef EventDefinitionType()
 		{
+			// EventDef.WithBody: #event(EventHandler, Click, { ... })
+			// EventDef.List:     #event(EventHandler, Click, DoubleClick, RightClick)
 			if (!CallsMinWPAIH(_n, S.Event, 2))
-				return null;
+				return EventDef.Invalid;
 
 			LNode type = _n.Args[0], name = _n.Args[1];
 			if (!IsComplexIdentifier(type, ICI.Default) ||
-				!IsComplexIdentifier(name, ICI.Simple))
-				return null;
+				!IsSimpleIdentifier(name))
+				return EventDef.Invalid;
 
 			int argCount = _n.ArgCount;
 			if (argCount == 3) {
 				var body = _n.Args[2];
 				if (CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward))
-					return EventWithBody;
+					return EventDef.WithBody;
 			}
 
 			for (int i = 2; i < argCount; i++)
-				if (!IsComplexIdentifier(_n.Args[i], ICI.Simple))
-					return null;
-			return EventList;
+				if (!IsSimpleIdentifier(_n.Args[i]))
+					return EventDef.Invalid;
+			return EventDef.List;
 		}
 
 		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
@@ -745,6 +746,16 @@ namespace Ecs
 			return false;
 		}
 
+		public bool IsSimpleIdentifier(LNode n)
+		{
+			if (HasPAttrsOrParens(n)) // Callers of this method don't want attributes
+				return false;
+			if (n.IsId)
+				return true;
+			if (CallsWPAIH(n, S.Substitute, 1))
+				return true;
+			return false;
+		}
 		public bool IsComplexIdentifierOrNull(LNode n)
 		{
 			if (n == null)
@@ -772,10 +783,10 @@ namespace Ecs
 			// Type names have the same structure, with the following patterns for
 			// arrays, pointers, nullables and typeof<>:
 			// 
-			// Foo*      <=> #of(#*, Foo)
-			// Foo[]     <=> #of(#[], Foo)
+			// Foo*      <=> #of(@*, Foo)
+			// Foo[]     <=> #of(@`[]`, Foo)
 			// Foo[,]    <=> #of(#`[,]`, Foo)
-			// Foo?      <=> #of(#?, Foo)
+			// Foo?      <=> #of(@?, Foo)
 			// typeof<X> <=> #of(#typeof, X)
 			//
 			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
@@ -784,7 +795,7 @@ namespace Ecs
 			// symbols for types like #int32 anyway.
 			// 
 			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParens) != 0 ? HasPAttrs(n) : HasPAttrsOrParens(n)))
+			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n) : HasPAttrsOrParens(n)))
 			{
 				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
 				// TypeParamDefinition inside <...>
@@ -796,41 +807,43 @@ namespace Ecs
 			if (CallsWPAIH(n, S.Substitute, 1))
 				return true;
 
-			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.AllowOf) != 0) {
-				bool accept = true;
-				ICI childFlags = ICI.AllowDotted | (f & ICI.AllowParens);
-				bool allowSubexpr = n.Args[0].IsIdNamed(S.Typeof);
-				for (int i = 0; i < n.ArgCount; i++) {
-					if (!IsComplexIdentifier(n.Args[i], childFlags)) {
-						accept = false;
-						break;
-					}
-					childFlags |= ICI.InOf | ICI.AllowOf | (f & ICI.NameDefinition);
-					if (allowSubexpr || (f & ICI.AllowAnyExprInOf) != 0)
-						break; // accept anything
-				}
-				return accept;
+			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.DisallowOf) == 0) {
+				var baseName = n.Args[0];
+				if (!IsComplexIdentifier(baseName, (f & (ICI.DisallowDotted)) | ICI.DisallowOf))
+					return false;
+				if ((f & ICI.AllowAnyExprInOf) != 0)
+					return true;
+				return OfHasNormalArgs(n, (f & ICI.NameDefinition) != 0);
 			}
-			if (CallsWPAIH(n, S.Dot) && (f & ICI.AllowDotted) != 0 && MathEx.IsInRange(n.ArgCount, 1, 2)) {
-				bool accept = true;
+			if (CallsWPAIH(n, S.Dot) && (f & ICI.DisallowDotted) == 0 && MathEx.IsInRange(n.ArgCount, 1, 2)) {
 				var args = n.Args;
-				if (args.Count == 1) {
-					// Left-hand argument was omitted; right-hand argument must be simple
-					return IsComplexIdentifier(args[0], f & ICI.AllowParens);
-				} else if (IsComplexIdentifier(args[0], ICI.AllowOf | ICI.AllowDotted | (f & ICI.AllowParens))) {
-					for (int i = 1; i < args.Count; i++) {
-						// Allow only simple symbols or substitution
-						if (!IsComplexIdentifier(args[i], f & ICI.AllowParens)) {
-							accept = false;
-							break;
-						}
-					}
-				} else
-					accept = false;
-				return accept;
+				LNode lhs = args[0], rhs = args.Last;
+				// right-hand argument must be simple
+				var rhsFlags = (f & ICI.ExprMode) | ICI.DisallowOf | ICI.DisallowDotted;
+				if ((f & ICI.ExprMode) != 0)
+					rhsFlags |= ICI.AllowParensAround;
+				if (!IsComplexIdentifier(args.Last, rhsFlags))
+					return false;
+				if ((f & ICI.ExprMode) != 0 && lhs.IsParenthesizedExpr() || (lhs.IsCall && !lhs.Calls(S.Dot) && !lhs.Calls(S.Of)))
+					return true;
+				return IsComplexIdentifier(args[0], (f & ICI.ExprMode));
 			}
 			return false;
 		}
+		public bool OfHasNormalArgs(LNode n, bool nameDefinition)
+		{
+			if (!CallsMinWPAIH(n, S.Of, 1))
+				return false;
+			
+			ICI childFlags = ICI.InOf;
+			if (nameDefinition)
+				childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted | ICI.DisallowOf);
+			for (int i = 1; i < n.ArgCount; i++)
+				if (!IsComplexIdentifier(n.Args[i], childFlags))
+					return false;
+			return true;
+		}
+
 
 		/// <summary>Checks if 'n' is a legal type parameter definition.</summary>
 		/// <remarks>A type parameter definition must be a simple symbol with at 
@@ -868,7 +881,7 @@ namespace Ecs
 		Symbol TwoArgBlockStmtType()
 		{
 			// S.Do:                     #doWhile(stmt, expr)
-			// S.Switch:                 #switch(expr, #{}(...))
+			// S.Switch:                 #switch(expr, @`{}`(...))
 			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
 			var argCount = _n.ArgCount;
 			if (argCount != 2)
@@ -888,7 +901,7 @@ namespace Ecs
 			// S.For:                    #for(expr1, expr2, expr3, stmt)
 			// S.ForEach:                #foreach(decl, list, stmt)
 			// S.Try:                    #try(stmt, #catch(expr | #missing, stmt) | #finally(stmt), ...)
-			// S.Checked (S.Unchecked):  #checked(#{}(...))       // if no braces, it's a checked(expr)
+			// S.Checked (S.Unchecked):  #checked(@`{}`(...))       // if no braces, it's a checked(expr)
 			var argCount = _n.ArgCount;
 			if (!HasSimpleHeadWPA(_n) || argCount < 1)
 				return null;
@@ -957,7 +970,7 @@ namespace Ecs
 		public bool IsForwardedProperty()
 		{
 			// A forwarded property with the syntax  name ==> expr;
-			//                  has the syntax tree  name(#==>(expr));
+			//                  has the syntax tree  name(@==>(expr));
 			//      in contrast to the block syntax  name({ code });
 			return _n.ArgCount == 1 && HasSimpleHeadWPA(_n) && CallsWPAIH(_n.Args[0], S.Forward, 1);
 		}
@@ -970,7 +983,7 @@ namespace Ecs
 			NoKeywordAttrs,    // Put all attributes in square brackets
 			AllowKeywordAttrs, // e.g. [#public, #const] written as "public const", allowed on any expression
 			IsConstructor,     // same as AllowKeywordAttrs, except that attrs are not blocked by DropNonDeclarationAttributes
-			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.)
+			AllowWordAttrs,    // e.g. [#partial, #phat] written as "partial phat", allowed on keyword-stmts (for, if, etc.); also allows [#this]
 			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
 		// Returns the number of opening "("s printed that require a corresponding ")".
@@ -1023,7 +1036,7 @@ namespace Ecs
 				// may try to avoid through the use of prefix notation), we need 
 				// to write "(" in order to group the attribute(s) with the
 				// expression to which they apply, e.g. while "[A] x + y" has an
-				// attribute attached to #+, the attribute in "([A] x) + y" is
+				// attribute attached to "+", the attribute in "([A] x) + y" is
 				// attached to x.
 				if (needParens && haveParens == 0) {
 					haveParens++;
@@ -1081,7 +1094,10 @@ namespace Ecs
 						} else {
 							if (dropAttrs)
 								continue;
-							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+							if (a.Name == S.This) // special case: avoid printing "@this"
+								_out.Write("this", true);
+							else
+								PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
 						}
 					}
 					//any = true;
@@ -1097,7 +1113,7 @@ namespace Ecs
 				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
 				// instead.
 				if (haveParens == 1 && (flags & Ambiguity.IsCallTarget) != 0
-					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParens)) {
+					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
 					if (AllowChangeParenthesis) {
 						haveParens++;
 						_out.Write('(', true);
@@ -1195,7 +1211,8 @@ namespace Ecs
 				if (AttributeKeywords.ContainsKey(node.Name))
 					return node.Name != S.New || style >= AttrStyle.IsDefinition;
 				else
-					return style >= AttrStyle.AllowWordAttrs && !CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1)));
+					return style >= AttrStyle.AllowWordAttrs && (node.Name == S.This || 
+						!CsKeywords.Contains(GSymbol.Get(node.Name.Name.Substring(1))));
 			}
 		}
 
@@ -1253,8 +1270,7 @@ namespace Ecs
 				_out.Write("operator", true);
 				Space(SpaceOpt.AfterOperatorKeyword);
 				if (OperatorIdentifiers.Contains(name)) {
-					Debug.Assert(name.Name[0] == '#');
-					_out.Write(name.Name.Substring(1), true);
+					_out.Write(name.Name, true);
 				} else
 					PrintString(name.Name, '`', null, true);
 				return;
@@ -1288,10 +1304,8 @@ namespace Ecs
 			for (int i = 0; i < name.Name.Length; i++)
 			{
 				char c = name.Name[i];
-				// NOTE: I tried printing things like @#* without backquotes, but
-				// then @#* <Foo> printed like @#*<Foo>, which lexes wrong. 
-				// Besides, I may decide to change the lexer so that "@#*" means 
-				// "# *" instead of "@`#*`".
+				// NOTE: I tried printing things like @* without backquotes, but
+				// then @* <Foo> printed like @*<Foo>, which lexes wrong. 
 				if (!IsIdentContChar(c)) {
 					// Backquote required for this identifier.
 					if (!inSymbol)
@@ -1441,15 +1455,24 @@ namespace Ecs
 	/// <summary>Flags for <see cref="EcsNodePrinter.IsComplexIdentifier"/>.</summary>
 	[Flags] public enum ICI
 	{
-		Simple = 0,
-		Default = AllowOf | AllowDotted,
-		AllowAttrs = 2, // outer level only
-		AllowOf = 8,
-		AllowDotted = 16,
-		AllowAnyExprInOf = 32,
-		InOf = 64,
-		NameDefinition = 128, // allows in out *: e.g. Foo<in A, out B, *c>
-		AllowParens = 256,
+		Default = 0,
+		AllowAttrs = 2, // outer level only. e.g. this flag is used on return types, where
+			// #def([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
+		// For internal use
+		DisallowOf = 8,
+		DisallowDotted = 16,
+		InOf = 32,
+		// hmm
+		AllowAnyExprInOf = 64,
+		// Allows in out $, e.g. Foo<in A, out B, $c>, but requires type params 
+		// to be simple (e.g. Foo<A.B, C<D>> is illegal)
+		NameDefinition = 128,
+		// allows parentheses around the outside of the complex identifier.
+		AllowParensAround = 256,
+		// allows expressions like x().y and (x + y).Foo<z>, in which the left side 
+		// is an expression but the right side uses the #of or . operator. This 
+		// flag also permits any expr in parens (as if AllowParensAround specified)
+		ExprMode = 512,
 	}
 
 	/// <summary>Controls the locations where spaces appear as <see cref="EcsNodePrinter"/> 

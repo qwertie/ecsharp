@@ -21,9 +21,9 @@ namespace Loyc.Syntax.Les
 			base.Newline();
 			_value = WhitespaceTag.Value;
 		}
-		static readonly Symbol _Comma = GSymbol.Get("#,");
-		static readonly Symbol _Semicolon = GSymbol.Get("#;");
-		static readonly Symbol _Colon = GSymbol.Get("#:");
+		static readonly Symbol _Comma = GSymbol.Get(",");
+		static readonly Symbol _Semicolon = GSymbol.Get(";");
+		static readonly Symbol _Colon = GSymbol.Get(":");
 		void DotIndent()
 		{
 			int la0, la1;
@@ -78,12 +78,19 @@ namespace Loyc.Syntax.Les
 				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		}
+		void UTF_BOM()
+		{
+			Skip();
+			if ((_lineStartAt == _startPosition))
+				_lineStartAt = InputPosition;
+			_value = WhitespaceTag.Value;
+		}
 		void SLComment()
 		{
 			int la0;
 			Skip();
 			Skip();
-			// Line 39: ([^\$\n\r])*
+			// Line 45: ([^\$\n\r])*
 			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -98,7 +105,7 @@ namespace Loyc.Syntax.Les
 			int la1;
 			Skip();
 			Skip();
-			// Line 44: nongreedy( MLComment / Newline / [^\$] )*
+			// Line 50: nongreedy( MLComment / Newline / [^\$] )*
 			 for (;;) {
 				switch (LA0) {
 				case '*':
@@ -139,7 +146,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			MatchRange('0', '9');
-			// Line 50: ([0-9])*
+			// Line 56: ([0-9])*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
@@ -147,7 +154,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 50: ([_] [0-9] ([0-9])*)*
+			// Line 56: ([_] [0-9] ([0-9])*)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
@@ -155,7 +162,7 @@ namespace Loyc.Syntax.Les
 					if (la1 >= '0' && la1 <= '9') {
 						Skip();
 						Skip();
-						// Line 50: ([0-9])*
+						// Line 56: ([0-9])*
 						 for (;;) {
 							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9')
@@ -184,7 +191,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			HexDigit();
-			// Line 52: greedy(HexDigit)*
+			// Line 58: greedy(HexDigit)*
 			 for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
@@ -192,7 +199,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 52: greedy([_] HexDigit (HexDigit)*)*
+			// Line 58: greedy([_] HexDigit (HexDigit)*)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
@@ -200,7 +207,7 @@ namespace Loyc.Syntax.Les
 					if (HexDigit_set0.Contains(la1)) {
 						Skip();
 						HexDigit();
-						// Line 52: (HexDigit)*
+						// Line 58: (HexDigit)*
 						 for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
@@ -219,7 +226,7 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			if (!Scan_HexDigit())
 				return false;
-			// Line 52: greedy(HexDigit)*
+			// Line 58: greedy(HexDigit)*
 			 for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
@@ -228,7 +235,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 52: greedy([_] HexDigit (HexDigit)*)*
+			// Line 58: greedy([_] HexDigit (HexDigit)*)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
@@ -238,7 +245,7 @@ namespace Loyc.Syntax.Les
 							return false;
 						if (!Scan_HexDigit())
 							return false;
-						// Line 52: (HexDigit)*
+						// Line 58: (HexDigit)*
 						 for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
@@ -258,7 +265,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0;
 			Match('0', '1');
-			// Line 53: ([01])*
+			// Line 59: ([01])*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '1')
@@ -266,13 +273,13 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 53: ([_] [01] ([01])*)*
+			// Line 59: ([_] [01] ([01])*)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					Skip();
 					Match('0', '1');
-					// Line 53: ([01])*
+					// Line 59: ([01])*
 					 for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '1')
@@ -288,7 +295,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			_numberBase = 10;
-			// Line 56: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			// Line 62: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
@@ -296,7 +303,7 @@ namespace Loyc.Syntax.Les
 				_isFloat = true;
 			} else {
 				DecDigits();
-				// Line 57: ([.] DecDigits)?
+				// Line 63: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
@@ -307,14 +314,14 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			}
-			// Line 59: ([Ee] ([+\-])? DecDigits)?
+			// Line 65: ([Ee] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'E' || la0 == 'e') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
-					// Line 59: ([+\-])?
+					// Line 65: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -328,11 +335,11 @@ namespace Loyc.Syntax.Les
 			Skip();
 			Skip();
 			_numberBase = 16;
-			// Line 63: (HexDigits)?
+			// Line 69: (HexDigits)?
 			la0 = LA0;
 			if (HexDigit_set0.Contains(la0))
 				HexDigits();
-			// Line 65: ([.] &(([0-9] / HexDigits [Pp] [+\-0-9])) HexDigits)?
+			// Line 71: ([.] &(([0-9] / HexDigits [Pp] [+\-0-9])) HexDigits)?
 			la0 = LA0;
 			if (la0 == '.') {
 				la1 = LA(1);
@@ -344,14 +351,14 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			}
-			// Line 67: ([Pp] ([+\-])? DecDigits)?
+			// Line 73: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
-					// Line 67: ([+\-])?
+					// Line 73: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -365,7 +372,7 @@ namespace Loyc.Syntax.Les
 			Skip();
 			Skip();
 			_numberBase = 2;
-			// Line 71: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			// Line 77: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
@@ -373,7 +380,7 @@ namespace Loyc.Syntax.Les
 				_isFloat = true;
 			} else {
 				DecDigits();
-				// Line 72: ([.] DecDigits)?
+				// Line 78: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
@@ -384,14 +391,14 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			}
-			// Line 74: ([Pp] ([+\-])? DecDigits)?
+			// Line 80: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
 					_isFloat = true;
 					Skip();
-					// Line 74: ([+\-])?
+					// Line 80: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -404,13 +411,13 @@ namespace Loyc.Syntax.Les
 			int la0;
 			_isFloat = _isNegative = false;
 			_typeSuffix = null;
-			// Line 78: ([\-])?
+			// Line 84: ([\-])?
 			la0 = LA0;
 			if (la0 == '-') {
 				Skip();
 				_isNegative = true;
 			}
-			// Line 79: ( HexNumber / BinNumber / DecNumber )
+			// Line 85: ( HexNumber / BinNumber / DecNumber )
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -428,7 +435,7 @@ namespace Loyc.Syntax.Les
 				}
 			} else
 				DecNumber();
-			// Line 80: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
+			// Line 86: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
 			 switch (LA0) {
 			case 'F':
 			case 'f':
@@ -459,7 +466,7 @@ namespace Loyc.Syntax.Les
 				{
 					Skip();
 					_typeSuffix = _L;
-					// Line 84: ([Uu])?
+					// Line 90: ([Uu])?
 					la0 = LA0;
 					if (la0 == 'U' || la0 == 'u') {
 						Skip();
@@ -472,7 +479,7 @@ namespace Loyc.Syntax.Les
 				{
 					Skip();
 					_typeSuffix = _U;
-					// Line 85: ([Ll])?
+					// Line 91: ([Ll])?
 					la0 = LA0;
 					if (la0 == 'L' || la0 == 'l') {
 						Skip();
@@ -488,7 +495,7 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			_parseNeeded = false;
 			Skip();
-			// Line 94: ([\\] [^\$] | [^\$\n\r'\\])*
+			// Line 100: ([\\] [^\$] | [^\$\n\r'\\])*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
@@ -504,7 +511,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 95: (['] / )
+			// Line 101: (['] / )
 			la0 = LA0;
 			if (la0 == '\'')
 				Skip();
@@ -517,7 +524,7 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			_parseNeeded = false;
 			Skip();
-			// Line 100: ([\\] [^\$] | [^\$\n\r"\\])*
+			// Line 106: ([\\] [^\$] | [^\$\n\r"\\])*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
@@ -533,7 +540,7 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 101: (["] / )
+			// Line 107: (["] / )
 			la0 = LA0;
 			if (la0 == '"')
 				Skip();
@@ -546,13 +553,13 @@ namespace Loyc.Syntax.Les
 			int la0, la1, la2;
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate;
-			// Line 108: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
+			// Line 114: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
 				Skip();
 				Match('"');
 				Match('"');
-				// Line 108: nongreedy(Newline / [^\$])*
+				// Line 114: nongreedy(Newline / [^\$])*
 				 for (;;) {
 					switch (LA0) {
 					case '"':
@@ -590,7 +597,7 @@ namespace Loyc.Syntax.Les
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// Line 110: nongreedy(Newline / [^\$])*
+				// Line 116: nongreedy(Newline / [^\$])*
 				 for (;;) {
 					switch (LA0) {
 					case '\'':
@@ -631,7 +638,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			_parseNeeded = false;
 			Skip();
-			// Line 116: ([\\] [^\$] | [^\$\n\r\\`])*
+			// Line 122: ([\\] [^\$] | [^\$\n\r\\`])*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
@@ -663,13 +670,13 @@ namespace Loyc.Syntax.Les
 		void NormalId()
 		{
 			int la0;
-			// Line 125: (IdStartChar | IdExtLetter)
+			// Line 131: (IdStartChar | IdExtLetter)
 			la0 = LA0;
 			if (NormalId_set0.Contains(la0))
 				IdStartChar();
 			else
 				IdExtLetter();
-			// Line 125: ( IdStartChar | [0-9] | ['] | IdExtLetter )*
+			// Line 131: ( IdStartChar | [0-9] | ['] | IdExtLetter )*
 			 for (;;) {
 				la0 = LA0;
 				if (NormalId_set0.Contains(la0))
@@ -692,19 +699,19 @@ namespace Loyc.Syntax.Les
 		void FancyId()
 		{
 			int la0;
-			// Line 127: (BQString2 | (&!(CommentStart) LettersOrPunc | IdExtLetter) (&!(CommentStart) LettersOrPunc | IdExtLetter)*)
+			// Line 133: (BQString2 | (&!(CommentStart) LettersOrPunc | IdExtLetter) (&!(CommentStart) LettersOrPunc | IdExtLetter)*)
 			la0 = LA0;
 			if (la0 == '`')
 				BQString2();
 			else {
-				// Line 127: (&!(CommentStart) LettersOrPunc | IdExtLetter)
+				// Line 133: (&!(CommentStart) LettersOrPunc | IdExtLetter)
 				la0 = LA0;
 				if (FancyId_set0.Contains(la0)) {
 					Check(!Try_Scan_CommentStart(0), "!(CommentStart)");
 					LettersOrPunc();
 				} else
 					IdExtLetter();
-				// Line 127: (&!(CommentStart) LettersOrPunc | IdExtLetter)*
+				// Line 133: (&!(CommentStart) LettersOrPunc | IdExtLetter)*
 				 for (;;) {
 					la0 = LA0;
 					if (FancyId_set0.Contains(la0)) {
@@ -736,7 +743,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0;
 			_parseNeeded = false;
-			// Line 135: (NormalId | [@] FancyId)
+			// Line 141: (NormalId | [@] FancyId)
 			la0 = LA0;
 			if (Id_set0.Contains(la0))
 				NormalId();
@@ -797,7 +804,7 @@ namespace Loyc.Syntax.Les
 		{
 			Check(!Try_Scan_CommentStart(0), "!(CommentStart)");
 			OpChars();
-			// Line 150: (&!(CommentStart) OpChars)*
+			// Line 156: (&!(CommentStart) OpChars)*
 			 for (;;) {
 				switch (LA0) {
 				case '!':
@@ -836,7 +843,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			Skip();
-			// Line 151: (FancyId)?
+			// Line 157: (FancyId)?
 			la0 = LA0;
 			if (la0 == '`') {
 				la1 = LA(1);
@@ -857,7 +864,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			Skip();
-			// Line 155: ([^\$\n\r])*
+			// Line 161: ([^\$\n\r])*
 			 for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -865,16 +872,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 155: (Newline)?
+			// Line 161: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
-		static readonly HashSet<int> Token_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 161: ( &{InputPosition == 0} Shebang / Symbol / Id / Spaces / Newline / DotIndent / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / default Colon )
+			// Line 167: ( &{InputPosition == 0} Shebang / Symbol / Id / Spaces / UTF_BOM / Newline / DotIndent / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / default Colon )
 			 do {
 				la0 = LA0;
 				switch (la0) {
@@ -902,35 +908,100 @@ namespace Loyc.Syntax.Les
 								if (!Try_Scan_CommentStart(2))
 									goto match2;
 								else
-									goto match22;
+									goto match23;
 							} else if (la2 >= 128 && la2 <= 65532) {
 								la2 = LA(2);
 								if (char.IsLetter((char) la2))
 									goto match2;
 								else
-									goto match22;
+									goto match23;
 							} else
-								goto match22;
+								goto match23;
 						} else if (la1 == '`') {
 							la2 = LA(2);
 							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
 								goto match3;
 							else
-								goto match22;
+								goto match23;
 						} else if (FancyId_set0.Contains(la1)) {
 							if (!Try_Scan_CommentStart(1))
 								goto match3;
 							else
-								goto match22;
+								goto match23;
 						} else if (la1 >= 128 && la1 <= 65532) {
 							la1 = LA(1);
 							if (char.IsLetter((char) la1))
 								goto match3;
 							else
-								goto match22;
+								goto match23;
 						} else
-							goto match22;
+							goto match23;
 					}
+				case 'A':
+				case 'B':
+				case 'C':
+				case 'D':
+				case 'E':
+				case 'F':
+				case 'G':
+				case 'H':
+				case 'I':
+				case 'J':
+				case 'K':
+				case 'L':
+				case 'M':
+				case 'N':
+				case 'O':
+				case 'P':
+				case 'Q':
+				case 'R':
+				case 'S':
+				case 'T':
+				case 'U':
+				case 'V':
+				case 'W':
+				case 'X':
+				case 'Y':
+				case 'Z':
+				case '_':
+				case 'a':
+				case 'b':
+				case 'c':
+				case 'd':
+				case 'e':
+				case 'f':
+				case 'g':
+				case 'h':
+				case 'i':
+				case 'j':
+				case 'k':
+				case 'l':
+				case 'm':
+				case 'n':
+				case 'o':
+				case 'p':
+				case 'q':
+				case 'r':
+				case 's':
+				case 't':
+				case 'u':
+				case 'v':
+				case 'w':
+				case 'x':
+				case 'y':
+				case 'z':
+					goto match3;
+				case 65279:
+					{
+						la0 = LA0;
+						if (char.IsLetter((char) la0))
+							goto match3;
+						else {
+							_type = TT.Spaces;
+							UTF_BOM();
+						}
+					}
+					break;
 				case '\t':
 				case ' ':
 					{
@@ -953,7 +1024,7 @@ namespace Loyc.Syntax.Les
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
 								else if (la1 >= '0' && la1 <= '9')
-									goto match9;
+									goto match10;
 								else
 									Operator();
 							} else {
@@ -961,18 +1032,18 @@ namespace Loyc.Syntax.Les
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
 								else if (la1 >= '0' && la1 <= '9')
-									goto match9;
+									goto match10;
 								else
-									goto match26;
+									goto match27;
 							}
 						} else if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 >= '0' && la1 <= '9')
-								goto match9;
+								goto match10;
 							else
 								Operator();
 						} else
-							goto match9;
+							goto match10;
 					}
 					break;
 				case '/':
@@ -980,11 +1051,11 @@ namespace Loyc.Syntax.Les
 						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match7;
+								goto match8;
 							else if (la1 == '*') {
 								la2 = LA(2);
 								if (la2 != -1)
-									goto match8;
+									goto match9;
 								else
 									Operator();
 							} else
@@ -992,11 +1063,11 @@ namespace Loyc.Syntax.Les
 						} else {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match7;
-							else if (la1 == '*')
 								goto match8;
+							else if (la1 == '*')
+								goto match9;
 							else
-								goto match26;
+								goto match27;
 						}
 					}
 					break;
@@ -1005,19 +1076,19 @@ namespace Loyc.Syntax.Les
 						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '0')
-								goto match9;
+								goto match10;
 							else if (la1 == '.') {
 								la2 = LA(2);
 								if (la2 >= '0' && la2 <= '9')
-									goto match9;
+									goto match10;
 								else
 									Operator();
 							} else if (la1 >= '1' && la1 <= '9')
-								goto match9;
+								goto match10;
 							else
 								Operator();
 						} else
-							goto match9;
+							goto match10;
 					}
 					break;
 				case '0':
@@ -1030,18 +1101,18 @@ namespace Loyc.Syntax.Les
 				case '7':
 				case '8':
 				case '9':
-					goto match9;
+					goto match10;
 				case '"':
 					{
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
 							if (la2 == '"')
-								goto match10;
-							else
 								goto match11;
+							else
+								goto match12;
 						} else
-							goto match11;
+							goto match12;
 					}
 				case '\'':
 					{
@@ -1049,11 +1120,11 @@ namespace Loyc.Syntax.Les
 						if (la1 == '\'') {
 							la2 = LA(2);
 							if (la2 == '\'')
-								goto match10;
+								goto match11;
 							else
-								goto match12;
+								goto match13;
 						} else
-							goto match12;
+							goto match13;
 					}
 				case '`':
 					{
@@ -1138,10 +1209,10 @@ namespace Loyc.Syntax.Les
 					Operator();
 					break;
 				default:
-					if (Token_set0.Contains(la0))
+					if (la0 >= 128 && la0 <= 65278 || la0 >= 65280 && la0 <= 65532)
 						goto match3;
 					else
-						goto match26;
+						goto match27;
 				}
 				break;
 			match2:
@@ -1156,52 +1227,52 @@ namespace Loyc.Syntax.Les
 					Id();
 				}
 				break;
-			match7:
+			match8:
 				{
 					_type = TT.SLComment;
 					SLComment();
 				}
 				break;
-			match8:
+			match9:
 				{
 					_type = TT.MLComment;
 					MLComment();
 				}
 				break;
-			match9:
+			match10:
 				{
 					_type = TT.Number;
 					Number();
 				}
 				break;
-			match10:
+			match11:
 				{
 					_type = TT.String;
 					TQString();
 				}
 				break;
-			match11:
+			match12:
 				{
 					_type = TT.String;
 					DQString();
 				}
 				break;
-			match12:
+			match13:
 				{
 					_type = TT.SQString;
 					SQString();
 				}
 				break;
-			match22:
+			match23:
 				{
 					_type = TT.At;
 					At();
 				}
 				break;
-			match26:
+			match27:
 				{
 					_value = null;
-					// Line 188: ([\$] | [^\$])
+					// Line 195: ([\$] | [^\$])
 					la0 = LA0;
 					if (la0 == -1) {
 						Skip();
@@ -1216,7 +1287,7 @@ namespace Loyc.Syntax.Les
 		public bool TDQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 201: nongreedy([^\$])*
+			// Line 208: nongreedy([^\$])*
 			 for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -1245,7 +1316,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		 stop:;
-			// Line 201: (Newline | ["] ["] ["])
+			// Line 208: (Newline | ["] ["] ["])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline();
@@ -1260,7 +1331,7 @@ namespace Loyc.Syntax.Les
 		public bool TSQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 203: nongreedy([^\$])*
+			// Line 210: nongreedy([^\$])*
 			 for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -1289,7 +1360,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		 stop:;
-			// Line 203: (Newline | ['] ['] ['])
+			// Line 210: (Newline | ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline();
@@ -1304,7 +1375,7 @@ namespace Loyc.Syntax.Les
 		public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
-			// Line 206: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
+			// Line 213: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == '*') {
@@ -1351,7 +1422,7 @@ namespace Loyc.Syntax.Les
 					Check(!Try_MLCommentLine_Test0(0), "!([/])");
 				}
 			}
-			// Line 211: (Newline | [*] [/])
+			// Line 218: (Newline | [*] [/])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline();
@@ -1371,7 +1442,7 @@ namespace Loyc.Syntax.Les
 		private bool HexNumber_Test0()
 		{
 			int la0;
-			// Line 65: ([0-9] / HexDigits [Pp] [+\-0-9])
+			// Line 71: ([0-9] / HexDigits [Pp] [+\-0-9])
 			la0 = LA0;
 			if (la0 >= '0' && la0 <= '9')
 				{if (!TryMatchRange('0', '9'))

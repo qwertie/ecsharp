@@ -650,7 +650,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "#->")]
+		[SimpleMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "->")]
 		public static LNode cast(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -667,7 +667,7 @@ namespace LeMP.Prelude
 		}
 
 		// only works as long as : is allowed
-		[SimpleMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "#?")]
+		[SimpleMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "?")]
 		public static LNode QuestionMark(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[1].Calls(S.Colon, 2))
@@ -676,7 +676,7 @@ namespace LeMP.Prelude
 		}
 
 		// only works as long as : is allowed
-		[SimpleMacro(@"arg: value", "Represents a named argument.", "#:")]
+		[SimpleMacro(@"arg: value", "Represents a named argument.", ":")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.Calls(S.Colon, 2) && node.Args[0].IsId)
@@ -772,7 +772,7 @@ namespace LeMP.Prelude
 		[SimpleMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
 		public static LNode @const(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Const); }
 
-		[SimpleMacro("Name::Type", "Defines a variable or field in the current scope.", "#::")]
+		[SimpleMacro("Name::Type", "Defines a variable or field in the current scope.", "::")]
 		public static LNode ColonColon(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -783,7 +783,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "#=", "#:=")]
+		[SimpleMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=")]
 		public static LNode ColonColonInit(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -794,7 +794,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Name := Value", "Defines a variable or field in the current scope.", "#:=")]
+		[SimpleMacro("Name := Value", "Defines a variable or field in the current scope.", ":=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -804,7 +804,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Value=:Name", "Defines a variable or field in the current scope.", "#=:")]
+		[SimpleMacro("Value=:Name", "Defines a variable or field in the current scope.", "=:")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

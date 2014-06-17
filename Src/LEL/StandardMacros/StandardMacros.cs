@@ -71,7 +71,7 @@ namespace LeMP
 
 		#endregion
 
-		[SimpleMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "#??=", "??=")]
+		[SimpleMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]
 		public static LNode NullCoalesceSet(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -84,7 +84,7 @@ namespace LeMP
 		}
 
 		[SimpleMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
-			"e.g. if (int.Parse(text):::num > 0) positives += num;", "#=:", "=:", "#:::", ":::")]
+			"e.g. if (int.Parse(text):::num > 0) positives += num;", "=:", ":::")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

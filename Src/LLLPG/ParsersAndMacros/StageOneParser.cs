@@ -74,7 +74,7 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
 	/// an <see cref="LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-	/// <c>(a, b) | @#suf*(c)</c>. This class handles the first stage. The second 
+	/// <c>(a, b) | @`suf*`(c)</c>. This class handles the first stage. The second 
 	/// stage (<see cref="StageTwoParser"/>) is that the <see cref="LNode"/> is 
 	/// parsed into a tree of <see cref="Pred"/> objects.
 	/// <para/>
@@ -167,15 +167,15 @@ namespace Loyc.LLParserGenerator
 		
 		#region Token reclassification
 
-		static readonly Symbol _EqGate = GSymbol.Get("#<=>");
-		static readonly Symbol _AndNot = GSymbol.Get("#&!");
+		static readonly Symbol _EqGate = GSymbol.Get("<=>");
+		static readonly Symbol _AndNot = GSymbol.Get("&!");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Error = GSymbol.Get("error");
-		static readonly Symbol _SufStar = GSymbol.Get("#suf*");
-		static readonly Symbol _SufPlus = GSymbol.Get("#suf+");
-		static readonly Symbol _SufOpt = GSymbol.Get("#suf?");
+		static readonly Symbol _SufStar = GSymbol.Get("suf*");
+		static readonly Symbol _SufPlus = GSymbol.Get("suf+");
+		static readonly Symbol _SufOpt = GSymbol.Get("suf?");
 		
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},

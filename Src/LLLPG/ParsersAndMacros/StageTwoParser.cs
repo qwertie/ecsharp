@@ -42,14 +42,14 @@ namespace Loyc.LLParserGenerator
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG parser"));
 		static readonly Symbol _Gate = S.Lambda;
-		static readonly Symbol _EqGate = GSymbol.Get("#<=>");
-		static readonly Symbol _Star = GSymbol.Get("#suf*");
-		static readonly Symbol _Plus = GSymbol.Get("#suf+");
-		static readonly Symbol _Opt = GSymbol.Get("#suf?");
+		static readonly Symbol _EqGate = GSymbol.Get("<=>");
+		static readonly Symbol _Star = GSymbol.Get("suf*");
+		static readonly Symbol _Plus = GSymbol.Get("suf+");
+		static readonly Symbol _Opt = GSymbol.Get("suf?");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _And = S.AndBits;
-		static readonly Symbol _AndNot = GSymbol.Get("#&!");
+		static readonly Symbol _AndNot = GSymbol.Get("&!");
 		static readonly Symbol _Add = GSymbol.Get("Add");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Default2 = GSymbol.Get("#default");

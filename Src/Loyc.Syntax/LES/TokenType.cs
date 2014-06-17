@@ -89,8 +89,7 @@ namespace Loyc.Syntax.Les
 				case TT.Semicolon:
 				case TT.Not:
 					var name = t.Value.ToString();
-					Debug.Assert(name.StartsWith("#"));
-					return name.Substring(1);
+					return name;
 				case TT.Indent:
 					return "'indent";
 				case TT.Dedent:

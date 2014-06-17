@@ -403,7 +403,7 @@ namespace Loyc.Syntax.Les
 
 		#region Number parsing
 
-		static Symbol _sub = GSymbol.Get("#-");
+		static Symbol _sub = GSymbol.Get("-");
 		static Symbol _F = GSymbol.Get("F");
 		static Symbol _D = GSymbol.Get("D");
 		static Symbol _M = GSymbol.Get("M");
@@ -454,7 +454,7 @@ namespace Loyc.Syntax.Les
 		/// <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
 		/// <param name="error">Set to an error message in case of error.</param>
 		/// <returns>Boxed value of the literal, null if total failure (result 
-		/// is not null in case of overflow), or <see cref="CodeSymbols.Sub"/> (#-)
+		/// is not null in case of overflow), or <see cref="CodeSymbols.Sub"/> (-)
 		/// if isNegative is true but the type suffix is unsigned or the number 
 		/// is larger than long.MaxValue.</returns>
 		public static object ParseNumberCore(UString source, bool isNegative, int numberBase, bool isFloat, Symbol typeSuffix, out string error)
@@ -595,7 +595,7 @@ namespace Loyc.Syntax.Les
 			ParseOp(false);
 		}
 
-		static Symbol _Backslash = GSymbol.Get(@"#\");
+		static Symbol _Backslash = GSymbol.Get(@"\");
 
 		void ParseBackslashOp()
 		{
@@ -620,7 +620,7 @@ namespace Loyc.Syntax.Les
 				{
 					if (original.Length == 1)
 					{	
-						// Just a single backslash is the "#\" operator
+						// Just a single backslash is the "\" operator
 						_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
 						_value = sym.A;
 						_type = sym.B;
@@ -641,8 +641,6 @@ namespace Loyc.Syntax.Les
 
 				string opStr = op.ToString();
 				_type = GetOpType(opStr);
-				if (!backslashOp)
-					opStr = "#" + opStr;
 				_opCache[opStr] = sym = Pair.Create(GSymbol.Get(opStr), _type);
 				_value = sym.A;
 			}

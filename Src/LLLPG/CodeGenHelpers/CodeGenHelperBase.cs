@@ -326,6 +326,8 @@ namespace Loyc.LLParserGenerator
 			// "Unreachable code detected". We're conservative, to avoid a compiler 
 			// error about a missing "break". This is just a heuristic since we 
 			// don't have access to proper reachability analysis.
+			if (stmt.CallsMin(S.Braces, 1))
+				return EndMayBeReachable(stmt.Args.Last);
 			if (!stmt.HasSpecialName)
 				return true;
 
@@ -339,9 +341,7 @@ namespace Loyc.LLParserGenerator
 				return false;
 
 			LNode body;
-			if (stmt.CallsMin(S.Braces, 1))
-				return EndMayBeReachable(stmt.Args.Last);
-			else if (stmt.Calls(S.If, 2))
+			if (stmt.Calls(S.If, 2))
 				return true;
 			else if (stmt.Calls(S.If, 3))
 			{

@@ -78,7 +78,7 @@ namespace Ecs
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
-			// #. #of #[] #suf++, #suf--, #, #'@', #'@@'. #tuple #?
+			// ?  []  suf++  suf--  #of  .  #isLegal  #new
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
 			P(S.Bracks,      EP.Primary), // a[]
 			P(S.PostInc,     EP.Primary), // x++
@@ -155,18 +155,15 @@ namespace Ecs
 			if (!EP.Primary.CanAppearIn(context) && !_n.IsParenthesizedExpr())
 			{
 				Debug.Assert((flags & Ambiguity.AllowUnassignedVarDecl) == 0);
-				// Above EP.Primary (inside '\' or unary '.'), we can't use prefix 
+				// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
 				// notation or most other operators so we're very limited in what
-				// we can print. If we have no attributes we can try to print as
-				// an operator (this will work for prefix operators such as '++') 
-				// and if that doesn't work, write the expr in parenthesis.
+				// we can print.
 				if (!HasPAttrs(_n))
 				{
 					if (!_n.IsCall) {
 						PrintSimpleSymbolOrLiteral(flags);
 						return;
-					} else if (AutoPrintOperator(context, flags))
-						return;
+					}
 				}
 				PrintWithinParens(ParenFor.Grouping, _n);
 				return;
@@ -297,7 +294,7 @@ namespace Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				_out.Write(_n.Name.Name.Substring(1), true);
+				_out.Write(_n.Name.Name, true);
 				PrefixSpace(precedence);
 				PrintExpr(arg, precedence.RightContext(context), name == S.Forward ? Ambiguity.TypeContext : 0);
 				//if (backtick) {
@@ -326,7 +323,7 @@ namespace Ecs
 			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0;
 			if (CanAppearIn(ref prec, context, out needParens, ref backtick))
 			{
-				// Check for the ambiguous case of "A * b;" and consider using `#*` instead
+				// Check for the ambiguous case of "A * b;" and consider using `*` instead
 				if (name == S.Mul && context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
 					backtick = true;
 					prec = EP.Backtick;
@@ -356,13 +353,13 @@ namespace Ecs
 		}
 		private void WriteOperatorName(Symbol name, Ambiguity flags = 0)
 		{
+			string opName = name.Name;
 			if ((flags & Ambiguity.UseBacktick) != 0)
-				PrintString(name.Name, '`', null);
-			else {
-				Debug.Assert(name.Name[0] == '#');
-				string opName = name.Name.Substring(1);
+				PrintString(opName, '`', null);
+			else if (opName.StartsWith("#"))
+				_out.Write(opName.Substring(1), true);
+			else
 				_out.Write(opName, true);
-			}
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -550,21 +547,25 @@ namespace Ecs
 			if (name == S.Dot) {
 				// The trouble with the dot is its high precedence; because of 
 				// this, arguments after a dot cannot use prefix notation as a 
-				// fallback. For example "#.(a, b(c))" cannot be printed "a.b(c)"
-				// since that means #.(a, b)(c)". The first argument to non-
-				// unary "#." can use prefix notation safely though, e.g. 
-				// "#.(b(c), a)" can (and must) be printed "b(c).a".
-				// So, just the argument after the dot must not be any kind of 
-				// call (except substitution) and must not have attributes.
+				// fallback. For example "@.(a, b(c))" cannot be printed "a.b(c)"
+				// since that means @.(a, b)(c)". The first argument to non-
+				// unary "." can use prefix notation safely though, e.g. 
+				// "@.(b(c), a)" can (and must) be printed "b(c).a".
 				if (argCount > 2)
 					return false;
 				if (HasPAttrs(first))
 					return false;
-				LNode afterDot = argCount == 1 ? first : _n.Args[1];
-				if (HasPAttrs(afterDot))
-					return false;
-				if (afterDot.IsCall) {
-					if (afterDot.Name != S.Substitute || !IsPrefixOperator(afterDot, false))
+				LNode afterDot = _n.Args.Last;
+				// Unary dot is no problem: .(a) is parsed the same as .a, i.e. 
+				// the parenthesis are ignored, so we can print an expr like 
+				// @`.`(a+b) as .(a+b), but the parser counts parens on binary 
+				// dot, so in that case the argument after the dot must not be any 
+				// kind of call (except substitution) and must not have attributes,
+				// unless it is in parens.
+				if (argCount == 2 && !afterDot.IsParenthesizedExpr()) {
+					if (HasPAttrs(afterDot))
+						return false;
+					if (afterDot.IsCall && afterDot.Name != S.Substitute)
 						return false;
 				}
 			} else if (name == S.Of) {
@@ -612,7 +613,7 @@ namespace Ecs
 						PrintType(innerType, EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 
 						for (int i = 0; i < stack.Count; i++)
-							_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
+							_out.Write(stack[i].Name, true); // e.g. [] or [,]
 					} else {
 						PrintType(_n.Args[1], EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 						_out.Write(stk == S._Pointer ? '*' : '?', true);
@@ -659,10 +660,10 @@ namespace Ecs
 			// (exception: new {...}).
 			// 1. Init an object: 1a. new Foo<Bar>() { ... }  <=> #new(Foo<bar>(...), ...)
 			//                    1b. new { ... }             <=> #new(@``, ...)
-			// 2. Init an array:  2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(#[], int)(), ...)
-			//                    2b. new[,] { ... }.         <=> #new(@`#[,]`(), ...)
-			//                    2c. new int[10,10] { ... }, <=> #new(#of(#`[,]`, int)(10,10), ...)
-			//                    2d. new int[10][] { ... },  <=> #new(#of(#[], #of(#[], int))(10), ...)
+			// 2. Init an array:  2a. new int[] { ... },      <=> #new(int[](), ...) <=> #new(#of(@`[]`, int)(), ...)
+			//                    2b. new[,] { ... }.         <=> #new(@`[,]`(), ...)
+			//                    2c. new int[10,10] { ... }, <=> #new(#of(@`[,]`, int)(10,10), ...)
+			//                    2d. new int[10][] { ... },  <=> #new(#of(@`[]`, #of(@`[]`, int))(10), ...)
 			if (HasPAttrs(cons))
 				return false;
 			if (type == null ? !cons.IsIdNamed(S.Missing) : HasPAttrs(type) || !IsComplexIdentifier(type))
@@ -675,7 +676,7 @@ namespace Ecs
 				PrintBracedBlockInNewExpr();
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
 				_out.Write("new", true);
-				_out.Write(type.Name.Name.Substring(1), true);
+				_out.Write(type.Name.Name, true);
 				Space(SpaceOpt.Default);
 				PrintBracedBlockInNewExpr();
 			} else {
@@ -755,14 +756,14 @@ namespace Ecs
 
 			// Write the brackets for the inner array types
 			for (int i = dimStack.Count - 1; i >= 0; i--)
-				_out.Write(S.GetArrayKeyword(dimStack[i]).Name.Substring(1), true);
+				_out.Write(S.GetArrayKeyword(dimStack[i]).Name, true);
 		}
 
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles one of: #? #[] #suf++ #suf--
+			// Handles one of:  ?  []  suf++  suf--
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			if (argCount < 1)
@@ -775,7 +776,7 @@ namespace Ecs
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.Args[0];
 			if (name == S.Bracks) {
-				// Careful: a[] means #of(#[], a) in a type context, #[](a) otherwise
+				// Careful: a[] means #of(@`[]`, a) in a type context, @`[]`(a) otherwise
 				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;
@@ -878,13 +879,12 @@ namespace Ecs
 
 			if (!_n.IsCall)
 				PrintSimpleSymbolOrLiteral(flags);
-			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs | ICI.AllowParens))
+			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround))
 				PrintExpr(context);
 			else {
 				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt && inParens == 0)
 				{
 					inParens++;
-					//_out.Write(AllowExtraParenthesis ? "(" : "##(", true);
 					WriteOpenParen(ParenFor.Grouping);
 				}
 
@@ -893,7 +893,7 @@ namespace Ecs
 				var f = Ambiguity.IsCallTarget;
 				if (_spaceName == S.Def || context != StartStmt)
 					f |= Ambiguity.AllowThisAsCallTarget;
-				if (!purePrefixNotation && IsComplexIdentifier(target, ICI.Default | ICI.AllowAttrs | ICI.AllowParens)) {
+				if (!purePrefixNotation && IsComplexIdentifier(target, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround)) {
 					PrintExpr(target, EP.Primary.LeftContext(context), f);
 				} else {
 					PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));

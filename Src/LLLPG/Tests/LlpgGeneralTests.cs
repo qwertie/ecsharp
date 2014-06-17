@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 			LLLPG lexer {
 				[pub] rule Foo @[ 'x' '0'..'9' '0'..'9' ];
 			}", @"
-				('x', @`#suf*`('0'..'9'));
+				('x', @`suf*`('0'..'9'));
 				public void Foo()
 				{
 					Match('x');

@@ -417,7 +417,7 @@ namespace Ecs.Parser
 				var list = (new RWList!LNode());
 			}
 			op:=TT.@new
-			(	// new [] { ... }  <=>  #new(@`#[]`(), ...)
+			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
 				lb:="[" rb:="]" 
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
@@ -437,8 +437,8 @@ namespace Ecs.Parser
 			|	// new Type(...)             <=> #new(Type(...))
 				// new Type(...) { ... }     <=> #new(Type(...), ...)
 				// new Type { ... }          <=> #new(Type(), ...)
-				// new Type[10] { ... }      <=> #new(#of(@`#[]`, Type)(10), ...)
-				// new Type[10][]            <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+				// new Type[10] { ... }      <=> #new(#of(@`[]`, Type)(10), ...)
+				// new Type[10][]            <=> #new(#of(@`[]`, #of(@`#[]`, Type))(10))
 				type:=DataType(false, out majorDimension)
 				(	// new Type(...)         <=> #new(Type(...))
 					// new Type(...) { ... } <=> #new(Type(...), ...)
@@ -456,8 +456,8 @@ namespace Ecs.Parser
 						}
 					)?
 				/	// new Type { ... }      <=> #new(Type(), ...)
-					// new Type[10] { ... }  <=> #new(#of(@`#[]`, Type)(10), ...)
-					// new Type[10][]        <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+					// new Type[10] { ... }  <=> #new(#of(@`[]`, Type)(10), ...)
+					// new Type[10][]        <=> #new(#of(@`[]`, #of(@`[]`, Type))(10))
 					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
 					( lb="{" rb="}" {haveBraces = true;} )?
 					{
@@ -504,7 +504,8 @@ namespace Ecs.Parser
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-			/	e=PrimaryExpr_NewStyleCast(e)
+			/	// x(-> Foo), x(as Foo), x(using Foo)
+				e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
 			|	"@" lb:="{" rb:="}"
 				{	var stmts = StmtListInside(lb).ToRVList();
@@ -898,7 +899,7 @@ namespace Ecs.Parser
 				t::Token;
 			}
 			(	t=TT.AttrKeyword {attrs.Add(IdNode(t));}
-			|	(t=(TT.Id|TT.@new) | t=UnusualId)
+			|	(t=(TT.Id|TT.(noMacro(@this))|TT.@new) | t=UnusualId)
 				&(	// This branch matches var decls, alias decls, trait decls and 
 					// non-keyword attributes located prior to any of those.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
@@ -912,7 +913,7 @@ namespace Ecs.Parser
 				)
 				{
 					node::LNode;
-					if (t.Type() == TT.@new)
+					if (t.Type() == TT.@new || t.Type() == TT.(noMacro(@this)))
 						node = IdNode(t)
 					else
 						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
@@ -1650,17 +1651,10 @@ namespace Ecs.Parser
 			EOF
 		];
 		rule ArgList(list::RWList!LNode) @[
-			{thisTok::opt!Token = @null;}
-			greedy( thisTok=TT.(noMacro(@this)) &DataType )?
 			nongreedy(
-				e:=ExprOpt(true)
-				{
-					if (thisTok != null)
-						e = F.Attr(F.Id(thisTok.Value), e);
-					list.Add(e);
-				}
+				list+=ExprOpt(true)
 				( "," list+=ExprOpt(true)
-				| error {Error("Syntax error in expression list");} ~","*
+				| error {Error("Syntax error in argument list");} ~","*
 				)*
 			)?
 			EOF
