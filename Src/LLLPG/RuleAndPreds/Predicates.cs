@@ -349,11 +349,6 @@ namespace Loyc.LLParserGenerator
 				if (!append)
 					boundary = insertAt;
 				UpdateSlashDivs(slashJoined, boundary, append, bAlts);
-				if (slashJoined) {
-					ulong three = 3ul;
-					if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue)
-						three = append ? 1u : 2u;
-				}
 				return this;
 			} else {
 				var copy = OneArm(this, BranchMode.None);

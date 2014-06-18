@@ -880,7 +880,7 @@ namespace Loyc.Syntax.Les
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 167: ( &{InputPosition == 0} Shebang / Symbol / Id / Spaces / UTF_BOM / Newline / DotIndent / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / default Colon )
+			// Line 167: ( &{InputPosition == 0} Shebang / Symbol / Id / Spaces / Newline / DotIndent / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / UTF_BOM / Colon )
 			 do {
 				la0 = LA0;
 				switch (la0) {
@@ -908,34 +908,34 @@ namespace Loyc.Syntax.Les
 								if (!Try_Scan_CommentStart(2))
 									goto match2;
 								else
-									goto match23;
+									goto match22;
 							} else if (la2 >= 128 && la2 <= 65532) {
 								la2 = LA(2);
 								if (char.IsLetter((char) la2))
 									goto match2;
 								else
-									goto match23;
+									goto match22;
 							} else
-								goto match23;
+								goto match22;
 						} else if (la1 == '`') {
 							la2 = LA(2);
 							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
 								goto match3;
 							else
-								goto match23;
+								goto match22;
 						} else if (FancyId_set0.Contains(la1)) {
 							if (!Try_Scan_CommentStart(1))
 								goto match3;
 							else
-								goto match23;
+								goto match22;
 						} else if (la1 >= 128 && la1 <= 65532) {
 							la1 = LA(1);
 							if (char.IsLetter((char) la1))
 								goto match3;
 							else
-								goto match23;
+								goto match22;
 						} else
-							goto match23;
+							goto match22;
 					}
 				case 'A':
 				case 'B':
@@ -1024,7 +1024,7 @@ namespace Loyc.Syntax.Les
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
 								else if (la1 >= '0' && la1 <= '9')
-									goto match10;
+									goto match9;
 								else
 									Operator();
 							} else {
@@ -1032,18 +1032,18 @@ namespace Loyc.Syntax.Les
 								if (la1 == '\t' || la1 == ' ')
 									DotIndent();
 								else if (la1 >= '0' && la1 <= '9')
-									goto match10;
+									goto match9;
 								else
 									goto match27;
 							}
 						} else if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 >= '0' && la1 <= '9')
-								goto match10;
+								goto match9;
 							else
 								Operator();
 						} else
-							goto match10;
+							goto match9;
 					}
 					break;
 				case '/':
@@ -1051,11 +1051,11 @@ namespace Loyc.Syntax.Les
 						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match8;
+								goto match7;
 							else if (la1 == '*') {
 								la2 = LA(2);
 								if (la2 != -1)
-									goto match9;
+									goto match8;
 								else
 									Operator();
 							} else
@@ -1063,9 +1063,9 @@ namespace Loyc.Syntax.Les
 						} else {
 							la1 = LA(1);
 							if (la1 == '/')
-								goto match8;
+								goto match7;
 							else if (la1 == '*')
-								goto match9;
+								goto match8;
 							else
 								goto match27;
 						}
@@ -1076,19 +1076,19 @@ namespace Loyc.Syntax.Les
 						if (!Try_Scan_CommentStart(0)) {
 							la1 = LA(1);
 							if (la1 == '0')
-								goto match10;
+								goto match9;
 							else if (la1 == '.') {
 								la2 = LA(2);
 								if (la2 >= '0' && la2 <= '9')
-									goto match10;
+									goto match9;
 								else
 									Operator();
 							} else if (la1 >= '1' && la1 <= '9')
-								goto match10;
+								goto match9;
 							else
 								Operator();
 						} else
-							goto match10;
+							goto match9;
 					}
 					break;
 				case '0':
@@ -1101,18 +1101,18 @@ namespace Loyc.Syntax.Les
 				case '7':
 				case '8':
 				case '9':
-					goto match10;
+					goto match9;
 				case '"':
 					{
 						la1 = LA(1);
 						if (la1 == '"') {
 							la2 = LA(2);
 							if (la2 == '"')
-								goto match11;
+								goto match10;
 							else
-								goto match12;
+								goto match11;
 						} else
-							goto match12;
+							goto match11;
 					}
 				case '\'':
 					{
@@ -1120,11 +1120,11 @@ namespace Loyc.Syntax.Les
 						if (la1 == '\'') {
 							la2 = LA(2);
 							if (la2 == '\'')
-								goto match11;
+								goto match10;
 							else
-								goto match13;
+								goto match12;
 						} else
-							goto match13;
+							goto match12;
 					}
 				case '`':
 					{
@@ -1227,43 +1227,43 @@ namespace Loyc.Syntax.Les
 					Id();
 				}
 				break;
-			match8:
+			match7:
 				{
 					_type = TT.SLComment;
 					SLComment();
 				}
 				break;
-			match9:
+			match8:
 				{
 					_type = TT.MLComment;
 					MLComment();
 				}
 				break;
-			match10:
+			match9:
 				{
 					_type = TT.Number;
 					Number();
 				}
 				break;
-			match11:
+			match10:
 				{
 					_type = TT.String;
 					TQString();
 				}
 				break;
-			match12:
+			match11:
 				{
 					_type = TT.String;
 					DQString();
 				}
 				break;
-			match13:
+			match12:
 				{
 					_type = TT.SQString;
 					SQString();
 				}
 				break;
-			match23:
+			match22:
 				{
 					_type = TT.At;
 					At();

@@ -135,10 +135,10 @@ namespace LeMP.Prelude
 			LNode name, bases;
 			if (IsComplexId(nameEtc, true)) {
 				name = nameEtc;
-				bases = F.Tuple();
+				bases = F.List();
 			} else {
 				name = nameEtc.Target ?? nameEtc;
-				bases = nameEtc.WithTarget(S.Tuple);
+				bases = nameEtc.WithTarget(S.List);
 			}
 
 			if (isNamespace) {
@@ -257,7 +257,7 @@ namespace LeMP.Prelude
 			var name = sig.Target ?? sig;
 			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.Tuple) : F.Tuple();
+			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.List) : F.List();
 
 			if (retVal == null)
 				retVal = isCons ? F._Missing : F.Void;
@@ -778,7 +778,7 @@ namespace LeMP.Prelude
 			var a = node.Args;
 			if (a.Count == 2) {
 				var r = node.With(S.Var, a[1], a[0]);
-				r.BaseStyle = NodeStyle.Statement;
+				r.BaseStyle = NodeStyle.Operator;
 				return r;
 			}
 			return null;

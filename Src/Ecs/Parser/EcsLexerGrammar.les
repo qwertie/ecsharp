@@ -138,17 +138,19 @@ namespace Ecs.Parser
 		// Identifiers and Symbols -----------------------------------------------
 
 		private rule IdStartChar @[ '_'|'a'..'z'|'A'..'Z' ];
-		private rule IdUniLetter @[
-			&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC |
-			"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		[k(9)]
+		private rule IdUniLetter @
+		[	&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC
+		|	"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		];
-		[k(7)]
+		[k(9)]
 		private rule IdContChars @[ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* ];
 		private rule NormalId @[ (IdStartChar|IdUniLetter) IdContChars ];
 		private rule HashId   @[ '#'                       IdContChars ];
 		
 		private rule CommentStart @[ '/' ('/'|'*') ];
-		[k(7)]
+		[k(9)]
 		private rule FancyId::bool @[ 
 			(	BQStringN                      {return true;} 
 			|	(IdUniLetter / LettersOrPunc)+ {return false;})
@@ -455,8 +457,7 @@ namespace Ecs.Parser
 		private token Token @[
 			( {_type = TT.Newline;}    Newline
 			| {_type = TT.Spaces;}     Spaces
-			| {_type = TT.Spaces;}     UTF_BOM
-			| {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
+			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
 			/ {_type = TT.Number;}     Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /
@@ -470,6 +471,7 @@ namespace Ecs.Parser
 			/ {_type = TT.Symbol;}     Symbol    // length-ambiguous with At @
 			/ {_type = TT.At;}         At
 			/                          Operator
+			/ {_type = TT.Spaces;}     UTF_BOM
 			| {_type = TT.Comma;}      Comma
 			| {_type = TT.Semicolon;}  Semicolon
 			| {_type = TT.LParen;}     '('

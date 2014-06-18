@@ -169,7 +169,6 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.Symbol;}    Symbol
 			/ {_type = TT.Id;}        Id
 			/ {_type = TT.Spaces;}    Spaces
-			/ {_type = TT.Spaces;}    UTF_BOM
 			/ {_type = TT.Newline;}   Newline
 			/                         DotIndent
 			/ {_type = TT.SLComment;} SLComment
@@ -190,7 +189,8 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.At;}        At
 			/                         BackslashOp
 			/                         Operator
-			/ default {_type = TT.Colon;}     Colon
+			/ {_type = TT.Spaces;}    UTF_BOM
+			/ {_type = TT.Colon;}     Colon
 			/ error { _value = @null; }
 			  ( EOF {_type = TT.EOF;}
 			  | _   {_type = TT.Unknown;} )

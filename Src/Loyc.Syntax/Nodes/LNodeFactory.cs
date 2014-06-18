@@ -331,7 +331,7 @@ namespace Loyc.Syntax
 		public LNode List()
 		{
 			if (_emptyList == null) 
-				_emptyList = Call(S.StmtList);
+				_emptyList = Call(S.List);
 			return _emptyList;
 		}
 		public LNode List(params LNode[] contents)
@@ -341,17 +341,17 @@ namespace Loyc.Syntax
 		public LNode List(LNode[] contents, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return new StdSimpleCallNode(S.StmtList, new RVList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.List, new RVList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode List(RVList<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return new StdSimpleCallNode(S.StmtList, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.List, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode List(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return Call(S.StmtList, contents, startIndex, endIndex);
+			return Call(S.List, contents, startIndex, endIndex);
 		}
 
 		public LNode Tuple()
@@ -388,7 +388,7 @@ namespace Loyc.Syntax
 		public LNode Def(LNode retType, LNode name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			CheckParam.Arg("argList", argList.Name == S.Tuple || argList.Name == S.Missing);
+			CheckParam.Arg("argList", argList.Name == S.List || argList.Name == S.Missing);
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };

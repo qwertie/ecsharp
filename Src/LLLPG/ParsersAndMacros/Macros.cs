@@ -175,7 +175,7 @@ namespace Loyc.LLParserGenerator
 				LNode newBody = ParseRuleBody(node.Args[1], sink);
 				if (newBody != null)
 					return node.With(isToken ? _hash_token : _hash_rule, 
-						returnType, name, F.Tuple(args), newBody);
+						returnType, name, F.List(args), newBody);
 			}
 			return null;
 		}
@@ -218,7 +218,7 @@ namespace Loyc.LLParserGenerator
 			} else
 				returnType = F.Void;
 			LNode name = node.Args[1];
-			LNode args = isProp ? F.Tuple() : node.Args[2];
+			LNode args = isProp ? F.List() : node.Args[2];
 			LNode newBody = ParseRuleBody(node.Args.Last, sink);
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 

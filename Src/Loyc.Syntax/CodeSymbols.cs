@@ -47,12 +47,21 @@ namespace Loyc.Syntax
 		public static readonly Symbol _Concat = GSymbol.Get("~"); // infix, tentative
 		public static readonly Symbol _Destruct = GSymbol.Get("~"); 
 		public static readonly Symbol XorBits = GSymbol.Get("^");
-		public static readonly Symbol StmtList = GSymbol.Get("#"); // Produces the last value, e.g. #(1, 2, 3) == 3.
+		
 		public static readonly Symbol Braces = GSymbol.Get("{}"); // Creates a scope.
 		public static readonly Symbol Bracks = GSymbol.Get("[]"); // indexing operator and array type (use _Attr for attributes)
 		                                                          // foo[1] <=> @`[]`(foo, 1) and int[] <=> #of(@`[]`, int)
 		public static readonly Symbol _Array = GSymbol.Get("[]");
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("[,]"); // int[,] <=> #of(@`[,]`, int)
+
+		// # is used for lists of things in definition constructs, e.g. 
+		//     #class(Derived, #(Base, IEnumerable), {...})
+		// For a time, #tuple was used for this purpose; the problem is that a
+		// find-and-replace operation intended to find run-time tuples could 
+		// accidentally match one of these lists. So I decided to dedicate # 
+		// for use inside special constructs; its meaning depends on context.
+		public static readonly Symbol List = GSymbol.Get("#");
+
 		public static readonly Symbol QuestionMark = GSymbol.Get("?"); // (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
 		public static readonly Symbol Of = GSymbol.Get("#of");
 		public static readonly Symbol Dot = GSymbol.Get(".");
@@ -270,9 +279,11 @@ namespace Loyc.Syntax
 
 		// Tokens
 		public static readonly Symbol Colon = GSymbol.Get(":");
-		public static readonly Symbol Comma = GSymbol.Get(",");
 		public static readonly Symbol Semicolon = GSymbol.Get(";");
 		public static readonly Symbol Do = GSymbol.Get("#do");
+		// Represents the C comma operator. All arguments are evaluated and
+		// the result of the expression is the value of the last argument.
+		public static readonly Symbol Comma = GSymbol.Get(",");
 
 		// Trivia
 		//public static readonly Symbol TriviaCommaSeparatedStmts = GSymbol.Get("#trivia_commaSeparated");

@@ -628,7 +628,7 @@ namespace Ecs
 				}
 				if (bases == null) return true;
 				if (HasPAttrs(bases)) return false;
-				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.Tuple))
+				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.List))
 				{
 					if (body == null) return true;
 					if (HasPAttrs(body)) return false;
@@ -651,7 +651,7 @@ namespace Ecs
 				return false;
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
-			if (!CallsWPAIH(args, S.Tuple))
+			if (!CallsWPAIH(args, S.List))
 				return false;
 			if (def == S.Cons && (body != null && !CallsWPAIH(body, S.Braces) && !CallsWPAIH(body, S.Forward, 1)))
 				return false;
@@ -938,7 +938,7 @@ namespace Ecs
 
 		public static bool IsBlockOfStmts(LNode n)
 		{
-			return n.Name == S.Braces || n.Name == S.StmtList;
+			return n.Name == S.Braces;
 		}
 
 		public bool IsSimpleKeywordStmt()

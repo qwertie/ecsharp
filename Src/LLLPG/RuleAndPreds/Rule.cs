@@ -86,7 +86,7 @@ namespace Loyc.LLParserGenerator
 			RVList<LNode> forwardedArgs = ForwardedArgList(args);
 			
 			LNode lookahead = F.Id("lookaheadAmt");
-			Debug.Assert(args.Calls(S.Tuple));
+			Debug.Assert(args.Calls(S.List));
 			args = args.WithArgs(args.Args.Insert(0, F.Var(F.Int32, lookahead)));
 
 			LNode body = F.Braces(
@@ -145,12 +145,7 @@ namespace Loyc.LLParserGenerator
 				parts[1] = F.Id(Name);
 				return Basis.WithArgs(parts);
 			} else {
-				var parts = new RVList<LNode> {
-					IsRecognizer ? F.Bool : F.Void,
-					F.Id(Name),
-					F.Tuple()
-				};
-				var method = F.Call(S.Def, parts);
+				var method = F.Def(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
 				if (IsPrivate)
 					method = F.Attr(F.Id(S.Private), method);
 				else if (IsStartingRule | IsToken)

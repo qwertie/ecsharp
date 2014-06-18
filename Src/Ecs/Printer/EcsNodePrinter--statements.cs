@@ -58,9 +58,6 @@ namespace Ecs
 		static readonly HashSet<Symbol> LabelStmts = new HashSet<Symbol>(new[] {
 			S.Label, S.Case
 		});
-		static readonly HashSet<Symbol> BlocksOfStmts = new HashSet<Symbol>(new[] {
-			S.StmtList, S.Braces
-		});
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
@@ -80,7 +77,7 @@ namespace Ecs
 			AddAll(d, TwoArgBlockStmts, "AutoPrintTwoArgBlockStmt");
 			AddAll(d, OtherBlockStmts, "AutoPrintOtherBlockStmt");
 			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
-			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
+			d[S.Braces] = OpenDelegate<StatementPrinter>("AutoPrintBlockOfStmts");
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
@@ -271,7 +268,7 @@ namespace Ecs
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 
-			if (bases.CallsMin(S.Tuple, 1))
+			if (bases.CallsMin(S.List, 1))
 			{
 				Space(SpaceOpt.BeforeBaseListColon);
 				WriteThenSpace(':', SpaceOpt.AfterColon);
@@ -407,7 +404,7 @@ namespace Ecs
 		private bool PrintBracedBlockOrStmt(LNode stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
-			if ((name == S.Braces || name == S.StmtList) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
+			if (name == S.Braces && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
 			{
 				PrintBracedBlock(stmt, beforeBrace);
 				return true;
@@ -435,8 +432,6 @@ namespace Ecs
 			if (beforeBrace != 0)
 				if (!Newline(beforeBrace))
 					Space(SpaceOpt.Default);
-			if (body.Name == S.StmtList)
-				_out.Write('#', false);
 			_out.Write('{', true);
 			using (WithSpace(spaceName))
 				using (Indented)

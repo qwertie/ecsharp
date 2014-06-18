@@ -946,6 +946,38 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void AndPredOrError()
+		{
+			Test(@"
+			LLLPG parser {
+				public rule ConditionalDot @[ 
+					(	&{cond} 
+					| error {Error(""Unexpected Dot.""); return;} )
+					'.'
+				];
+			}", @"
+				public void ConditionalDot()
+				{
+					int la0;
+					do {
+						la0 = LA0;
+						if (la0 == '.')
+							if (cond)
+								break;
+							else
+								goto match2;
+						else
+							goto match2;
+					match2: {
+							Error(""Unexpected Dot."");
+							return;
+						}
+					} while (false);
+					Match('.');
+				}");
+		}
+
+		[Test]
 		public void KeywordTrieTest()
 		{
 			// By the way, it's more efficient to use a gate for this: 
