@@ -168,10 +168,10 @@ namespace Ecs
 			Stmt("a?.b(c);",   F.Call(S.NullDot, a, F.Call(b, c)));
 			Stmt("a + b + c;",           F.Call(S.Add, F.Call(S.Add, a, b), c));
 			// To be safe, the printer treats 'a * b' like a pointer decl so it won't print it
-			Stmt("@`#*`(a, b) / c % 2;", F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
+			Stmt("@`*`(a, b) / c % 2;",  F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
 			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParseOnly);
 			Stmt("a / b * c % 2;",       F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
-			Stmt("a `#*` b ? c : 0;",    F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
+			Stmt("a `*` b ? c : 0;",     F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
 			Stmt("a * b ? c : 0;",       F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParseOnly);
 			Stmt("a << 1 | b >> 1;",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
 			Stmt("a++ + a--;",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
@@ -180,6 +180,7 @@ namespace Ecs
 			Stmt("1 + a => 2 + b => c;", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
 			Stmt("a is Foo ? a as Foo : b;", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
 			Stmt("a ??= b using Foo;",   F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
+			Stmt("(a + b).b<c>;", F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c));
 		}
 
 		[Test]
@@ -215,11 +216,11 @@ namespace Ecs
 			Stmt("[Foo] a;",              Attr(Foo, a));
 			Stmt("[Foo] a.b.c;",          Attr(Foo, F.Dot(a, b, c)));
 			Stmt("[Foo] a<b,c>;",         Attr(Foo, F.Of(a, b, c)));
-			Stmt("@`#.`([Foo] a, b).c;",  F.Dot(Attr(Foo, a), b, c));
-			Stmt("@`#.`(a, [Foo] b).c;",  F.Dot(a, Attr(Foo, b), c));
-			Stmt("@`#.`(a.b, [Foo] c);",  F.Dot(a, b, Attr(Foo, c)));
-			Stmt("@`#.`([Foo] a, b, c);", F.Call(S.Dot, Attr(Foo, a), b, c));
-			Stmt("@`#.`(a, b, [Foo] c);", F.Call(S.Dot, a, b, Attr(Foo, c)));
+			Stmt("@`.`([Foo] a, b).c;",   F.Dot(Attr(Foo, a), b, c));
+			Stmt("@`.`(a, [Foo] b).c;",   F.Dot(a, Attr(Foo, b), c));
+			Stmt("@`.`(a.b, [Foo] c);",   F.Dot(a, b, Attr(Foo, c)));
+			Stmt("@`.`([Foo] a, b, c);",  F.Call(S.Dot, Attr(Foo, a), b, c));
+			Stmt("@`.`(a, b, [Foo] c);",  F.Call(S.Dot, a, b, Attr(Foo, c)));
 			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
 			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
@@ -258,7 +259,7 @@ namespace Ecs
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes
 			Stmt("class Foo\n{\n  public Foo()\n  {\n  }\n}",
 				F.Call(S.Class, Foo, F._Missing, F.Braces(
-					Attr(@public, F.Call(S.Cons, F._Missing, Foo, F.Tuple(), F.Braces())))), 
+					Attr(@public, F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces())))), 
 				p => p.DropNonDeclarationAttributes = true);
 			// bug: 'ref' and 'out' attributes were suppressed by DropNonDeclarationAttributes
 			Option(Mode.PrintBothParseFirst, 
@@ -325,7 +326,7 @@ namespace Ecs
 			Expr("a + b",        F.Call(S.Add, a, b));
 			Expr("a + b + c",    F.Call(S.Add, F.Call(S.Add, a, b), c));
 			Expr("+a",           F.Call(S.Add, a));
-			Expr("@`#+`(a, b, c)", F.Call(S.Add, a, b, c));
+			Expr("@`+`(a, b, c)", F.Call(S.Add, a, b, c));
 			Expr("a >> b",       F.Call(S.Shr, a, b));
 			Expr("a = b + c",    F.Set(a, F.Call(S.Add, b, c)));
 			Expr("a(b)(c)",      F.Call(F.Call(a, b), c));
@@ -344,16 +345,16 @@ namespace Ecs
 			Stmt("(Foo a) = x;",          F.Set(F.InParens(F.Vars(Foo, a)), x));
 			Stmt("(Foo a) => a;",         F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
 			Stmt("(#var(Foo, a)) + x;",   F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
-			var x_1 = F.Call(S.Tuple, x, one);
-			Stmt("(a, b) = (x, 1);",      F.Set(F.Call(S.Tuple, a, b), x_1));
-			Stmt("(a,) = (x,);",          F.Set(F.Call(S.Tuple, a), F.Call(S.Tuple, x)));
-			Stmt("(a, Foo b) = (x, 1);",  F.Set(F.Call(S.Tuple, a, F.Vars(Foo, b)), x_1));
+			var x_1 = F.Tuple(x, one);
+			Stmt("(a, b) = (x, 1);",      F.Set(F.Tuple(a, b), x_1));
+			Stmt("(a,) = (x,);",          F.Set(F.Tuple(a), F.Tuple(x)));
+			Stmt("(a, Foo b) = (x, 1);",  F.Set(F.Tuple(a, F.Vars(Foo, b)), x_1));
 			// TODO: drop support for this syntax in the printer.
 			// The parser doesn't get it, and that's okay.
-			//Stmt("(a, (Foo b)) = (x, 1);",F.Set(F.Call(S.Tuple, a, F.InParens(F.Vars(Foo, b))), x_1));
-			Stmt("(Foo a, b) = (x, 1);",  F.Set(F.Call(S.Tuple, F.Vars(Foo, a), b), x_1));
-			Stmt("(#var(Foo, a) + 1, b) = (x, 1);", F.Set(F.Call(S.Tuple, F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
-			Stmt("(Foo a,) = (x,);",      F.Set(F.Call(S.Tuple, F.Vars(Foo, a)), F.Call(S.Tuple, x)));
+			//Stmt("(a, (Foo b)) = (x, 1);",F.Set(F.Tuple(a, F.InParens(F.Vars(Foo, b))), x_1));
+			Stmt("(Foo a, b) = (x, 1);",  F.Set(F.Tuple(F.Vars(Foo, a), b), x_1));
+			Stmt("(#var(Foo, a) + 1, b) = (x, 1);", F.Set(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
+			Stmt("(Foo a,) = (x,);",      F.Set(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
 		}
 
 		[Test]
@@ -362,8 +363,8 @@ namespace Ecs
 			Expr("c ? Foo(x) : a + b", F.Call(S.QuestionMark, c, F.Call(Foo, x), F.Call(S.Add, a, b)));
 			Expr("Foo[x]",           F.Call(S.Bracks, Foo, x));
 			Expr("Foo[a, b]",        F.Call(S.Bracks, Foo, a, b));
-			Expr("Foo[]",            F.Call(S.Bracks, Foo)); // "Foo[]" means #of(#[], Foo) only in a type context
-			Expr("@`#[]`()",         F.Call(S.Bracks));
+			Expr("Foo[]",            F.Call(S.Bracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
+			Expr("@`[]`()",          F.Call(S.Bracks));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)",         Alternate(F.Call(S.Cast, x, Foo)));
 			// TODO
@@ -374,8 +375,8 @@ namespace Ecs
 			Expr("x(using Foo)",     Alternate(F.Call(S.UsingCast, x, Foo)));
 			Expr("x++",              F.Call(S.PostInc, x));
 			Expr("x--",              F.Call(S.PostDec, x));
-			Expr("@`#suf++`(a, b)",  F.Call(S.PostInc, a, b));
-			Expr("@`#suf--`()",      F.Call(S.PostDec));
+			Expr("@`suf++`(a, b)",  F.Call(S.PostInc, a, b));
+			Expr("@`suf--`()",      F.Call(S.PostDec));
 
 			// TODO: reevaluate how we're going to do code quotes
 			//Expr("@(a = b)",         F.Call(S.CodeQuote, F.Set(a, b)));
@@ -389,19 +390,20 @@ namespace Ecs
 		{
 			// The printer must use prefix notation if the arguments passed to an 
 			// operator have attributes.
-			Expr("@`#+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
-			Expr("@`#+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
-			Expr("@`#[]`([Foo] a, b)", F.Call(S.Bracks, Attr(Foo, a), b));
+			Expr("@`+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
+			Expr("@`+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
+			Expr("@`[]`([Foo] a, b)", F.Call(S.Bracks, Attr(Foo, a), b));
 			Expr("a[[Foo] b]",         F.Call(S.Bracks, a, Attr(Foo, b)));
-			Expr("@`#?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
-			Expr("@`#?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
-			Expr("@`#?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
+			Expr("@`?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
+			Expr("@`?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
+			Expr("@`?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
 		}
 
 		[Test]
 		public void BugFixes()
 		{
-			Stmt("@`#+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
+			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
+			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("([#partial] #var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
 		}
@@ -411,31 +413,31 @@ namespace Ecs
 		{
 			var stmt1 = F.Call(S.QuickBind, F.Dot(Foo, x), a);
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
-			Expr("b + #(Foo.x=:a, a * a + a)",              F.Call(S.Add, b, F.List(stmt1, stmt2)));
-			Expr("b + #{\n  Foo.x=:a;\n @`#*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(F.Braces(stmt1, stmt2))));
-			Expr("b + {\n  Foo.x=:a;\n  @`#*`(a, a) + a;\n}", F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
-			Expr("b + @`#{}`(Foo.x=:a, a * a + a)",         F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
+			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
+			Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
+			Expr("b + {\n  Foo.x=:a;\n  @`*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
+			Expr("b + @`{}`(Foo.x=:a, a * a + a)",            F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
 		}
 
 		[Test]
 		public void PrecedenceChallenges()
 		{
-			Expr(@"@`#.`(a, -b)",      F.Dot(a, F.Call(S._Negate, b)));     // a.-b would be ideal, but this will do
-			Expr(@"@`#.`(a, -b).c",    F.Dot(a, F.Call(S._Negate, b), c));  // a.-b.c might be parsable, we'll see
-			Expr(@"@`#.`(a, -b.c)",    F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
-			Expr(@"a.(b)(c)",        F.Call(F.Dot(a, F.InParens(b)), c));
+			Expr(@"@`.`(a, -b)",     F.Dot(a, F.Call(S._Negate, b)));
+			Expr(@"@`.`(a, -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
+			Expr(@"@`.`(a, -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
+			Expr(@"a.(-b)(c)",       F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
 			// The printer should revert to prefix notation in certain cases in 
 			// order to faithfully represent the original tree.
 			Expr(@"a * b + c",       F.Call(S.Add, F.Call(S.Mul, a, b), c));
 			Expr(@"(a + b) * c",     F.Call(S.Mul, F.InParens(F.Call(S.Add, a, b)), c));
-			Expr(@"@`#+`(a, b) * c",   F.Call(S.Mul, F.Call(S.Add, a, b), c));
+			Expr(@"@`+`(a, b) * c",  F.Call(S.Mul, F.Call(S.Add, a, b), c));
 			Expr(@"--a++",           F.Call(S.PreDec, F.Call(S.PostInc, a)));
 			Expr(@"(--a)++",         F.Call(S.PostInc, F.InParens(F.Call(S.PreDec, a))));
-			Expr(@"@`#--`(a)++",       F.Call(S.PostInc, F.Call(S.PreDec, a)));
+			Expr(@"@`--`(a)++",      F.Call(S.PostInc, F.Call(S.PreDec, a)));
 			LNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
 			Expr(@"a.b?.c.x",        F.Call(S.NullDot, a_b, F.Dot(c, x)));
 			Expr(@"(a.b?.c).x",      F.Dot(F.InParens(a_b__c), x));
-			Expr(@"@`#?.`(a.b, c).x",  F.Dot(a_b__c, x));
+			Expr(@"@`?.`(a.b, c).x", F.Dot(a_b__c, x));
 			Expr(@"++$x",            F.Call(S.PreInc, F.Call(S.Substitute, x)));
 			Expr(@"++$([Foo] x)",    F.Call(S.PreInc, F.Call(S.Substitute, Attr(Foo, x))));
 			Expr(@"a ? b : c",       F.Call(S.QuestionMark, a, b, c));
@@ -446,7 +448,7 @@ namespace Ecs
 			Expr(@"++$x",            F.Call(S.PreInc, F.Call(S.Substitute, x))); // easy
 			Expr(@"++--x",           F.Call(S.PreInc, F.Call(S.PreDec, x)));     // easy
 			Expr(@"$(++x)",          F.Call(S.Substitute, F.Call(S.PreInc, x)));
-			Expr(@"@`#.`(~x)",         F.Call(S.Dot, F.Call(S.NotBits, x))); // a.~x would be ideal, but this will do
+			Expr(@".(~x)",           F.Call(S.Dot, F.Call(S.NotBits, x)));
 			// Note: an analagous rule does NOT exist for suffix operators because 
 			// (1) x++ and x-- do not need this rule to work in expressions 
 			//     like "x++--.Foo" because ++, --, and . have the same precedence
@@ -489,15 +491,15 @@ namespace Ecs
 			// - multiplication at stmt level => prefix notation, except in #result or when lhs is not a complex identifier
 			// - pointer declaration inside expr => generic, not pointer, notation
 			Expr("a * b",                F.Call(S.Mul, a, b));
-			Stmt("a `#*` b;",            F.Call(S.Mul, a, b));
+			Stmt("a `*` b;",             F.Call(S.Mul, a, b));
 			Stmt("a() * b;",             F.Call(S.Mul, F.Call(a), b));
 			Expr("#result(a * b)",       F.Result(F.Call(S.Mul, a, b)));
 			Stmt("{\n  a * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
 			Stmt("Foo* a = x;",          F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
-			Expr("@`#*`<Foo> a = x",        F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
+			Expr("@`*`<Foo> a = x",      F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
 			// Ambiguity between bitwise not and destructor declarations
 			Expr("~Foo()",               F.Call(S.NotBits, F.Call(Foo)));
-			Stmt("@`#~`(Foo());",        F.Call(S.NotBits, F.Call(Foo)));
+			Stmt("@`~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("~Foo;",                F.Call(S.NotBits, Foo));
 		}
 
@@ -510,9 +512,9 @@ namespace Ecs
 			var FooNullable = F.Of(_(S.QuestionMark), Foo);
 			var FooPointer = F.Of(_(S._Pointer), Foo);
 			Expr("Foo[]",             FooBracks);
-			Expr("@`#[]`<Foo>",       FooArray);
-			Expr("@`#?`<Foo>",         FooNullable);
-			Expr("@`#*`<Foo>",         FooPointer);
+			Expr("@`[]`<Foo>",        FooArray);
+			Expr("@`?`<Foo>",         FooNullable);
+			Expr("@`*`<Foo>",         FooPointer);
 			Stmt("#var(Foo[], a);",   F.Vars(FooBracks, a));
 			Stmt("Foo[] a;",          F.Vars(FooArray, a));
 			Stmt("typeof(Foo?);",     F.Call(S.Typeof, FooNullable));
@@ -521,7 +523,7 @@ namespace Ecs
 			Stmt("a(->Foo?);",        Alternate(F.Call(S.Cast, a, FooNullable)));
 			Stmt("a(as Foo*);",       Alternate(F.Call(S.As, a, FooPointer)));
 			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.List(FooBracks)));
-			Stmt("Foo!(#(@`#*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
+			Stmt("Foo!(#(@`*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
 			Expr("checked(Foo[])",    F.Call(S.Checked, FooBracks));
 			Stmt("Foo<a*> x;",        F.Vars(F.Of(Foo, F.Of(_(S._Pointer), a)), x));
 		}
@@ -534,8 +536,8 @@ namespace Ecs
 			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferOldStyleCasts = true);
 			
 			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
-			Option(Mode.PrintBothParseFirst, @"@`#+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
-			Option(Mode.PrintBothParseFirst, @"@`#-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
+			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
+			Option(Mode.PrintBothParseFirst, @"@`-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
 			
 			// Put attributes in various locations and watch them all disappear
 			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
@@ -543,13 +545,13 @@ namespace Ecs
 			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.Bracks, x, Attr(Foo, a)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#[]`(static x, a);",   @"x[a];",      F.Call(S.Bracks, Attr(@static, x), a), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#++`([Foo] x);",         @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`#suf++`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`[]`(static x, a);",   @"x[a];",      F.Call(S.Bracks, Attr(@static, x), a), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`++`([Foo] x);",         @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`suf++`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",       @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",   @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
@@ -585,8 +587,8 @@ namespace Ecs
 			var neg_a = F.Call(S._Negate, a);
 			Expr("(Foo) - a",         F.Call(S.Sub, F.InParens(Foo), a));
 			Expr("(Foo) (-a)",        F.Call(S.Cast, F.InParens(neg_a), Foo));
-			Expr("(Foo) @`#-`(a)",    F.Call(S.Cast, neg_a, Foo));
-			Expr("(Foo) @`#+`(a)",    F.Call(S.Cast, F.Call(S._UnaryPlus, a), Foo));
+			Expr("(Foo) @`-`(a)",    F.Call(S.Cast, neg_a, Foo));
+			Expr("(Foo) @`+`(a)",    F.Call(S.Cast, F.Call(S._UnaryPlus, a), Foo));
 			var Foo_a = F.Of(Foo, a); 
 			Expr("(Foo<a>) (-a)",     F.Call(S.Cast, F.InParens(neg_a), Foo_a));
 			Expr("([ ] Foo)(-a)",     F.Call(F.InParens(Foo), neg_a));
@@ -600,7 +602,7 @@ namespace Ecs
 			// TODO
 			//Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
 			Stmt("Foo* a;",           F.Vars(F.Of(_(S._Pointer), Foo), a));
-			Stmt("Foo `#*` a = b;",   F.Set(F.Call(S.Mul, Foo, a), b)); // #*(Foo, a) = b; would also be acceptable
+			Stmt("Foo `*` a = b;",   F.Set(F.Call(S.Mul, Foo, a), b)); // @*(Foo, a) = b; would also be acceptable
 		}
 
 		[Test]
@@ -625,7 +627,7 @@ namespace Ecs
 		public void AttrInHead()
 		{
 			// Normally we can use prefix notation when children have attributes...
-			Stmt("@`#+=`([a] b, c);",      F.Call(S.AddSet, Attr(a, b), c));
+			Stmt("@`+=`([a] b, c);",    F.Call(S.AddSet, Attr(a, b), c));
 			if (this is EcsNodePrinterTests)
 			{
 				// But this is no solution if the head of a node has attributes. The only
@@ -656,16 +658,16 @@ namespace Ecs
 			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c), parens);
 			Stmt("a = b = c;", F.Set(a, F.Set(b, c)), parens);
 			// But some cannot be mixed with each other, unless requested (with mixImm).
-			Option(Mode.PrintBothParseFirst, "@`#<<`(a, b) + 1;",    "(a << b) + 1;",   F.Call(S.Add, F.Call(S.Shl, a, b), one), parens);
-			Option(Mode.PrintBothParseFirst, "@`#+`(a, b) << 1;",    "(a + b) << 1;",   F.Call(S.Shl, F.Call(S.Add, a, b), one), parens);
-			Option(Mode.Both,                "@`#+`(a, b) << 1;",    "a + b << 1;",     F.Call(S.Shl, F.Call(S.Add, a, b), one), mixImm);
-			// "#&(a, b) == 1;" would also be acceptable output on the left:
-			Option(Mode.PrintBothParseFirst, "a `#&` b == 1;",    "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
-			Option(Mode.PrintBothParseFirst, "@`#==`(a, b) & 1;",    "(a == b) & 1;",   F.Call(S.AndBits, F.Call(S.Eq, a, b), one), parens);
-			Option(Mode.Both,                "@`#==`(a, b) & 1;",    "a == b & 1;",     F.Call(S.AndBits, F.Call(S.Eq, a, b), one), mixImm);
+			Option(Mode.PrintBothParseFirst, "@`<<`(a, b) + 1;",    "(a << b) + 1;",   F.Call(S.Add, F.Call(S.Shl, a, b), one), parens);
+			Option(Mode.PrintBothParseFirst, "@`+`(a, b) << 1;",    "(a + b) << 1;",   F.Call(S.Shl, F.Call(S.Add, a, b), one), parens);
+			Option(Mode.Both,                "@`+`(a, b) << 1;",    "a + b << 1;",     F.Call(S.Shl, F.Call(S.Add, a, b), one), mixImm);
+			// "@&(a, b) == 1;" would also be acceptable output on the left:
+			Option(Mode.PrintBothParseFirst, "a `&` b == 1;",    "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
+			Option(Mode.PrintBothParseFirst, "@`==`(a, b) & 1;",    "(a == b) & 1;",   F.Call(S.AndBits, F.Call(S.Eq, a, b), one), parens);
+			Option(Mode.Both,                "@`==`(a, b) & 1;",    "a == b & 1;",     F.Call(S.AndBits, F.Call(S.Eq, a, b), one), mixImm);
 			Option(Mode.PrintBothParseFirst, "Foo(a, b) + 1;",    "(a `Foo` b) + 1;", F.Call(S.Add, Operator(F.Call(Foo, a, b)), one), parens);
-			// #+(a, b) `foo` 1; would also be acceptable output on the left:
-			Option(Mode.PrintBothParseFirst, "a `#+` b `Foo` 1;", "(a + b) `Foo` 1;", Operator(F.Call(Foo, F.Call(S.Add, a, b), one)), parens);
+			// @+(a, b) `foo` 1; would also be acceptable output on the left:
+			Option(Mode.PrintBothParseFirst, "a `+` b `Foo` 1;", "(a + b) `Foo` 1;", Operator(F.Call(Foo, F.Call(S.Add, a, b), one)), parens);
 		}
 
 		[Test]
@@ -683,8 +685,8 @@ namespace Ecs
 			Expr("default(int[])",        F.Call(S.Default,   F.Call(S.Of, _(S.Bracks), F.Int32)));
 			Expr("typeof(int[])",         F.Call(S.Typeof,    F.Call(S.Of, _(S.Bracks), F.Int32)));
 			Expr("sizeof(int[])",         F.Call(S.Sizeof,    F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("checked(@`#[]`<int>)",  F.Call(S.Checked,   F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("unchecked(@`#[]`<int>)",F.Call(S.Unchecked, F.Call(S.Of, _(S.Bracks), F.Int32)));
+			Expr("checked(@`[]`<int>)",  F.Call(S.Checked,   F.Call(S.Of, _(S.Bracks), F.Int32)));
+			Expr("unchecked(@`[]`<int>)",F.Call(S.Unchecked, F.Call(S.Of, _(S.Bracks), F.Int32)));
 		}
 
 		[Test]
@@ -704,7 +706,7 @@ namespace Ecs
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));
 			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
 			Expr("#new(Foo)",             F.Call(S.New, Foo));
-			Expr("new @`#+`(a, b)",          F.Call(S.New, F.Call(S.Add, a, b))); // #new(#+(a, b)) would also be ok
+			Expr("new @`+`(a, b)",          F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
 			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Bracks, S.Int32)), a, b));
 			Expr("new[] { a, b }",        F.Call(S.New, F.Call(S.Bracks), a, b));
 			Expr("new[] { }",             F.Call(S.New, F.Call(S.Bracks)));
@@ -716,7 +718,7 @@ namespace Ecs
 			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), x, x)));
 			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), Attr(Foo, x), x)));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
-			Option(Mode.PrintBothParseFirst, "#new(@`#[,]`!([Foo] int)());", "new int[,];", 
+			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];", 
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new",                  F.Id(S.New));
 			Expr("#new()",                F.Call(S.New));
@@ -741,7 +743,7 @@ namespace Ecs
 			Stmt("Foo<a?,b.c[,]>[] x;",  F.Vars(F.Of(_(S._Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
 			// Sure, why not
 			Stmt("int<decimal[]> x;",    F.Vars(F.Of(_(S.Int32), F.Of(S._Array, S.Decimal)), x));
-			// Very weird case. Consider printing as "#`[,]`<float>?[] x;" instead
+			// Very weird case. Consider printing as "`[,]`<float>?[] x;" instead
 			Stmt("float[,]?[] x;",       F.Vars(F.Of(_(S._Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
 		}
 
@@ -770,8 +772,8 @@ namespace Ecs
 		[Test]
 		public void BlocksOfStmts()
 		{
-			Stmt("{\n  a();\n  b = c;\n}",      F.Braces(F.Call(a), F.Set(b, c)));
-			Stmt("#{\n  Foo(x);\n  b **= 2\n}", F.List(F.Braces(F.Call(Foo, x), F.Result(F.Call(S.ExpSet, b, two)))));
+			Stmt("{\n  a();\n  b = c;\n}",        F.Braces(F.Call(a), F.Set(b, c)));
+			Stmt("#@{\n  Foo(x);\n  b **= 2\n};", F.List(F.Call(Foo, x), F.Result(F.Call(S.ExpSet, b, two))), Mode.ParseOnly);
 		}
 
 		[Test]
@@ -780,24 +782,24 @@ namespace Ecs
 			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
 			var public_x = Attr(@public, F.Vars(F.Int32, x));
 			Stmt("struct Foo;",        F.Call(S.Struct, Foo, F._Missing));
-			Stmt("struct Foo : IFoo;", F.Call(S.Struct, Foo, F.Tuple(IFoo)));
+			Stmt("struct Foo : IFoo;", F.Call(S.Struct, Foo, F.List(IFoo)));
 			Stmt("struct Foo\n{\n}",   F.Call(S.Struct, Foo, F._Missing, F.Braces()));
 			Stmt("struct Foo\n{\n" +
 				"  public int x;\n}",  F.Call(S.Struct, Foo, F._Missing, F.Braces(public_x)));
-			Stmt("class Foo : IFoo\n{\n}", F.Call(S.Class, Foo, F.Tuple(IFoo), F.Braces()));
+			Stmt("class Foo : IFoo\n{\n}", F.Call(S.Class, Foo, F.List(IFoo), F.Braces()));
 			var a_where = Attr(F.Call(S.Where, @class), a);
 			var b_where = Attr(F.Call(S.Where, a), b);
 			var c_where = Attr(F.Call(S.Where, F.Call(S.New)), c);
-			var stmt = F.Call(S.Class, F.Of(Foo, a_where, b_where), F.Tuple(IFoo), F.Braces());
+			var stmt = F.Call(S.Class, F.Of(Foo, a_where, b_where), F.List(IFoo), F.Braces());
 			Stmt("class Foo<a,b> : IFoo where a: class where b: a\n{\n}", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), a_where)), F._Missing, F.Braces());
 			Stmt("class Foo<out a> where a: class\n{\n}", stmt);
-			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), c_where)), F.Tuple(IFoo), F.Braces());
+			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.Out), c_where)), F.List(IFoo), F.Braces());
 			Stmt("class Foo<out c> : IFoo where c: new()\n{\n}", stmt);
 			stmt = F.Call(S.Class, F.Of(Foo, Attr(_(S.In), T)), F._Missing, F.Braces());
 			Stmt("class Foo<in T>\n{\n}", stmt);
 			stmt = Attr(F.Call(S.If, F.Call(S.Eq, F.Call(S.Add, a, b), c)),
-			            F.Call(S.Trait, Foo, F.Tuple(IFoo), F.Braces(public_x)));
+			            F.Call(S.Trait, Foo, F.List(IFoo), F.Braces(public_x)));
 			
 			// TODO: reconsider "if" clause
 			//Stmt("trait Foo : IFoo if a + b == c\n{\n"+
@@ -809,13 +811,13 @@ namespace Ecs
 			//Stmt(@"struct Foo<$T> if default(T) + 1 is legal;", stmt);
 			//Expr(@"[@#if(default(T) + 1 is legal)] #struct(Foo<$T>, @``)", stmt);
 
-			stmt = F.Call(S.Enum, Foo, F.Tuple(F.UInt8), F.Braces(F.Set(a, one), b, c, F.Set(x, F.Literal(24))));
+			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(F.Set(a, one), b, c, F.Set(x, F.Literal(24))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
-			Expr("#enum(Foo, (byte,), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
+			Expr("#enum(Foo, #(byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
 
-			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.Tuple(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
+			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
-			Expr("#interface(Foo!(out T), (IEnumerable<T>,), {\n  public int x;\n})", stmt);
+			Expr("#interface(Foo!(out T), #(IEnumerable<T>), {\n  public int x;\n})", stmt);
 
 			stmt = F.Call(S.Namespace, F.Of(Foo, T), F._Missing, F.Braces(public_x));
 			Stmt("namespace Foo<T>\n{\n  public int x;\n}", stmt);
@@ -824,14 +826,14 @@ namespace Ecs
 			stmt = F.Call(S.Alias, F.Set(F.Of(_("Map"), a, b), F.Of(_("Dictionary"), a, b)), F._Missing);
 			Stmt("alias Map<a,b> = Dictionary<a,b>;", stmt);
 			Expr("#alias(Map<a,b> = Dictionary<a,b>, @``)", stmt);
-			stmt = F.Call(S.Alias, F.Set(Foo, fooKW), F.Tuple(IFoo), F.Braces(public_x));
+			stmt = F.Call(S.Alias, F.Set(Foo, fooKW), F.List(IFoo), F.Braces(public_x));
 			Stmt("alias Foo = #foo : IFoo\n{\n  public int x;\n}", stmt);
-			Expr("#alias(Foo = #foo, (IFoo,), {\n  public int x;\n})", stmt);
+			Expr("#alias(Foo = #foo, #(IFoo), {\n  public int x;\n})", stmt);
 			
-			// An alias must have an #= node as its first argument; other spaces
+			// An alias must have an "=" node as its first argument; other spaces
 			// must have type names as their first argument.
-			stmt = F.Call(S.Alias, Foo, F.Tuple(IFoo), F.Braces(public_x));
-			Stmt("#alias(Foo, (IFoo,), {\n  public int x;\n});", stmt);
+			stmt = F.Call(S.Alias, Foo, F.List(IFoo), F.Braces(public_x));
+			Stmt("#alias(Foo, #(IFoo), {\n  public int x;\n});", stmt);
 			stmt = F.Call(S.Class, F.Set(F.Of(_("L"), T), F.Of(_("List"), T)), F._Missing);
 			Stmt("#class(L<T> = List<T>, @``);", stmt);
 		}
@@ -840,67 +842,67 @@ namespace Ecs
 		public void MethodDefinitionStmts()
 		{
 			// #def and #delegate
-			LNode int_x = F.Vars(F.Int32, x), tuple_int_x = F.Tuple(int_x), x_mul_x = F.Call(S.Mul, x, x);
+			LNode int_x = F.Vars(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x);
 			LNode stmt;
-			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.Tuple(F.Vars(T, a), F.Vars(T, b)));
+			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.List(F.Vars(T, a), F.Vars(T, b)));
 			Stmt("delegate void Foo<T>(T a, T b);", stmt);
-			Expr("#delegate(void, Foo<T>, (#var(T, a), #var(T, b)))", stmt);
-			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.Tuple(F.Vars(T, x)));
+			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
+			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Vars(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
-			Expr("#delegate(void, Foo!([#where(#class, x)] T), (#var(T, x),))", stmt);
-			stmt = Attr(@public, @new, partialWA, F.Def(F.String, Foo, tuple_int_x));
+			Expr("#delegate(void, Foo!([#where(#class, x)] T), #(#var(T, x)))", stmt);
+			stmt = Attr(@public, @new, partialWA, F.Def(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
 			// The printer does not print trivia attributes, but the parsing test will fail if the trivia is missing
-			Expr("[#public, #new, "         +            "#partial] #def(string, Foo, (#var(int, x),))", stmt, Mode.PrintOnly);
-			Expr("[#public, #new, [#trivia_WordAttribute] #partial] #def(string, Foo, (#var(int, x),))", stmt, Mode.ParseOnly);
-			stmt = F.Def(F.Int32, Foo, tuple_int_x, F.Braces(F.Result(x_mul_x)));
+			Expr("[#public, #new, "         +            "#partial] #def(string, Foo, #(#var(int, x)))", stmt, Mode.PrintOnly);
+			Expr("[#public, #new, [#trivia_WordAttribute] #partial] #def(string, Foo, #(#var(int, x)))", stmt, Mode.ParseOnly);
+			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
-			Expr("#def(int, Foo, (#var(int, x),), {\n  x * x\n})", stmt);
-			stmt = F.Def(F.Int32, Foo, tuple_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
+			Expr("#def(int, Foo, #(#var(int, x)), {\n  x * x\n})", stmt);
+			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  return x * x;\n}", stmt);
-			Expr("#def(int, Foo, (#var(int, x),), {\n  return x * x;\n})", stmt);
-			stmt = F.Def(F.Decimal, Foo, tuple_int_x, F.Call(S.Forward, F.Dot(a, b)));
+			Expr("#def(int, Foo, #(#var(int, x)), {\n  return x * x;\n})", stmt);
+			stmt = F.Def(F.Decimal, Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
 			Stmt("decimal Foo(int x) ==> a.b;", stmt);
-			Expr("#def(decimal, Foo, (#var(int, x),), ==> a.b)", stmt);
-			stmt = F.Def(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.Tuple(), F.Braces());
+			Expr("#def(decimal, Foo, #(#var(int, x)), ==> a.b)", stmt);
+			stmt = F.Def(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
-			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, (), {\n})", stmt);
-			stmt = F.Call(S.Cons, F._Missing, _(S.This), tuple_int_x, F.Braces(F.Call(_(S.This), x, one), F.Set(a, x)));
+			Expr("#def(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
+			stmt = F.Call(S.Cons, F._Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Set(a, x)));
 			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
-			Expr("#cons(@``, this, (#var(int, x),), {\n  #this(x, 1);\n  a = x;\n})", stmt);
-			stmt = F.Call(S.Cons, F._Missing, Foo, tuple_int_x, F.Braces(F.Call(_(S.Base), x), F.Set(b, x)));
+			Expr("#cons(@``, this, #(#var(int, x)), {\n  #this(x, 1);\n  a = x;\n})", stmt);
+			stmt = F.Call(S.Cons, F._Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Set(b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
-			Expr("#cons(@``, Foo, (#var(int, x),), {\n  base(x);\n  b = x;\n})", stmt);
-			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.Tuple(), F.Braces());
+			Expr("#cons(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
+			stmt = F.Def(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
-			Expr("#def(@``, ~Foo, (), {\n})", stmt);
-			stmt = F.Def(F._Missing, F.Call(S._Negate, Foo), F.Tuple(), F.Braces());
-			Stmt("#def(@``, -Foo, (), {\n});", stmt);
-			stmt = F.Call(S.Class, Foo, F._Missing, F.Braces(F.Def(F._Missing, F.Call(S._Negate, Foo), F.Tuple(), F.Braces())));
-			Stmt("class Foo\n{\n  #def(@``, -Foo, (), {\n  });\n}", stmt);
+			Expr("#def(@``, ~Foo, #(), {\n})", stmt);
+			stmt = F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
+			Stmt("#def(@``, -Foo, #(), {\n});", stmt);
+			stmt = F.Call(S.Class, Foo, F._Missing, F.Braces(F.Def(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
+			Stmt("class Foo\n{\n  #def(@``, -Foo, #(), {\n  });\n}", stmt);
 			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b); 
-			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.Tuple(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
+			stmt = Attr(@static, F.Def(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
-			Expr("static #def(bool, operator==, (#var(T, a), #var(T, b)), {\n})", stmt);
-			stmt = Attr(@static, _(S.Implicit), F.Def(T, operator_cast, F.Tuple(Foo_a), F.Braces()));
+			Expr("static #def(bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
+			stmt = Attr(@static, _(S.Implicit), F.Def(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a)\n{\n}", stmt);
-			Expr("static implicit #def(T, operator`#cast`, (#var(Foo, a),), {\n})", stmt);
-			stmt = Attr(@static, F.Def(Foo, F.Of(Foo, F.Call(S.Substitute, T)), F.Tuple()));
+			Expr("static implicit #def(T, operator`#cast`, #(#var(Foo, a)), {\n})", stmt);
+			stmt = Attr(@static, F.Def(Foo, F.Of(Foo, F.Call(S.Substitute, T)), F.List()));
 			Stmt(@"static Foo Foo<$T>();", stmt);
 			stmt = Attr(@static, _(S.Explicit), 
 			            F.Def(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)), 
-			                  F.Tuple(F.Vars(F.Of(_("Bar"), T), b))));
+			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
 			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
-			Expr(@"static explicit #def(Foo<T>, operator`#cast`<$T>, (#var(Bar<T>, b),))", stmt);
-			stmt = F.Def(F.Bool, Attr(@operator, _("when")), F.Tuple(Foo_a, Foo_b), F.Braces());
+			Expr(@"static explicit #def(Foo<T>, operator`#cast`<$T>, #(#var(Bar<T>, b)))", stmt);
+			stmt = F.Def(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
 			Stmt("bool operator`when`(Foo a, Foo b)\n{\n}", stmt);
-			Expr("#def(bool, operator`when`, (#var(Foo, a), #var(Foo, b)), {\n})", stmt);
+			Expr("#def(bool, operator`when`, #(#var(Foo, a), #var(Foo, b)), {\n})", stmt);
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Def(Attr(Foo, F.Bool), 
 			             Attr(@operator, _(S.Neq)),
-			             F.Tuple(F.Vars(T, a), F.Vars(T, b)),
+			             F.List(F.Vars(T, a), F.Vars(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
 			Stmt("[return: Foo] [Foo()] static bool operator!=(T a, T b)\n{\n  a.x != b.x\n}", stmt);
 		}
@@ -952,47 +954,47 @@ namespace Ecs
 		[Test]
 		public void ConstructorAmbiguities()
 		{
-			var emptyConstructor = F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces());
-			var thisColonBase    = F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(F.Call(S.Base)));
-			var thisConsNoBody   = F.Call(S.Cons, F._Missing, _(S.This), F.Tuple());
-			var fooConstructor   = F.Call(S.Cons, F._Missing, Foo, F.Tuple(), F.Braces(F.Call(x)));
-			var fooConsNoBody    = F.Call(S.Cons, F._Missing, Foo, F.Tuple());
+			var emptyConstructor = F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces());
+			var thisColonBase    = F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
+			var thisConsNoBody   = F.Call(S.Cons, F._Missing, _(S.This), F.List());
+			var fooConstructor   = F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces(F.Call(x)));
+			var fooConsNoBody    = F.Call(S.Cons, F._Missing, Foo, F.List());
 			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
-			Stmt("this()\n{\n}",                       emptyConstructor);
-			Stmt("#cons(@``, Foo, ());",               fooConsNoBody);
-			Stmt("#cons(@``, Foo, (), {\n  x();\n});", fooConstructor);
-			Stmt("#this(x);",                          F.Call(S.This, x));
-			Stmt("base(x);",                           F.Call(S.Base, x));
-			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, (), {\n});", "Foo()\n{\n}",
-				F.Call(S.Cons, F._Missing, Foo, F.Tuple(), F.Braces()), allowAmbig);
+			Stmt("this()\n{\n}",                        emptyConstructor);
+			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
+			Stmt("#cons(@``, Foo, #(), {\n  x();\n});", fooConstructor);
+			Stmt("#this(x);",                           F.Call(S.This, x));
+			Stmt("base(x);",                            F.Call(S.Base, x));
+			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), {\n});", "Foo()\n{\n}",
+				F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces()), allowAmbig);
 			Stmt("this() : base()\n{\n}",       thisColonBase, allowAmbig);
 			Stmt("this() : this(x)\n{\n  x;\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
 			Stmt("this()\n{\n  x;\n  this(x);\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(thisColonBase)));
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
 			Stmt("this()\n{\n  this();\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
 			Stmt("this()\n{\n  x;\n  this();\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(x, F.Call(S.This))), allowAmbig);
-			Stmt("this()\n{\n  #cons(@``, this, ());\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(thisConsNoBody)));
-			//Stmt("this()\n{\n  #cons(@``, this, (), {\n  base();\n});\n}", 
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
+			Stmt("this()\n{\n  #cons(@``, this, #());\n}",
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
+			//Stmt("this()\n{\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}", 
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(thisColonBase)), allowAmbig);
-			Stmt("this()\n{\n  #cons(@``, this, (), {\n  });\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(emptyConstructor)));
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
+			Stmt("this()\n{\n  #cons(@``, this, #(), {\n  });\n}",
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
 			Stmt("class Foo\n{\n  Foo().x;\n}",   F.Call(S.Class, Foo, F._Missing, F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
 			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F._Missing, F.Braces(F.InParens(F.Call(Foo)))));
 			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F._Missing, F.Braces(F.Call(Foo))), Mode.PrintOnly);
 			Stmt("class Foo\n{\n  Foo();\n}",                    F.Call(S.Class, Foo, F._Missing, F.Braces(fooConsNoBody)));
 			Stmt("class Foo\n{\n  Foo()\n  {\n    x();\n  }\n}", F.Call(S.Class, Foo, F._Missing, F.Braces(fooConstructor)));
-			Stmt("class Foo\n{\n  #cons(@``, IFoo, ());\n}",F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                          F.Call(S.Cons, F._Missing, IFoo, F.Tuple()))));
+			Stmt("class Foo\n{\n  #cons(@``, IFoo, #());\n}",F.Call(S.Class, Foo, F._Missing, F.Braces(
+			                                          F.Call(S.Cons, F._Missing, IFoo, F.List()))));
 			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                          F.Call(S.Cons, F._Missing, IFoo, F.Tuple(), F.Braces(F.Call(S.Base))))));
+			                                          F.Call(S.Cons, F._Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
 			if (this is EcsNodePrinterTests)
 			{
 				Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F._Missing, F.Braces(F.Call(Foo))), allowAmbig);
@@ -1002,12 +1004,12 @@ namespace Ecs
 			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F._Missing, F.Braces(F.Call(x, F.Call(Foo)))));
 			
 			// Non-keyword attributes allowed on this() but not Foo() constructor
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces())));
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                      Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces())))));
+			                                      Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())))));
 			Stmt("class Foo\n{\n  [#partial] Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                      Attr(@partial,  F.Call(S.Cons, F._Missing, Foo, F.Tuple(), F.Braces())))));
-			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F._Missing, _(S.This), F.Tuple(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			                                      Attr(@partial,  F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces())))));
+			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
 		}
 
 		LNode AddWords(LNode stmt, bool partialIsWA = true) { return stmt.PlusAttrs(@public, @new, partialIsWA ? partialWA : partial, @static); }
@@ -1060,11 +1062,11 @@ namespace Ecs
 			          Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
 			Stmt("int Foo\n{\n  get ==> x;\n}", stmt);
 			stmt = F.Property(F.Int32, Foo, F.Braces(F.Call(get, F.Call(S.Forward, a, b))));
-			Stmt("int Foo\n{\n  get(@`#==>`(a, b));\n}", stmt);
+			Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt);
 			if (this is EcsNodePrinterTests) {
 				stmt = F.Property(F.Int32, Foo, F.Braces(
 								  Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
-				Stmt("int Foo\n{\n  get(@`#==>`(a, b));\n}", stmt);
+				Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt);
 			}
 		}
 
@@ -1116,9 +1118,9 @@ namespace Ecs
 			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
 			
 			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, F.Call(a), c));
-			Stmt("do #{\n  a();\n} while (c);",         F.Call(S.DoWhile, F.List(F.Braces(F.Call(a))), c));
 			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));
 			Stmt("do {\n  a\n} while (c);",             F.Call(S.DoWhile, F.Braces(F.Result(a)), c));
+			Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
 			
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
@@ -1164,7 +1166,7 @@ namespace Ecs
 			//stmt = F.Call(S.ForEach, F.Call(S.Add, a, b), c, F.Braces());
 			//Stmt("foreach (a + b in c) {\n}", stmt);
 			//stmt = F.Call(S.ForEach, F.Set(a, x), F.Set(b, x), F.List());
-			//Stmt("foreach (a `#=` x in b = x) #{\n}", stmt);
+			//Stmt("foreach (a `=` x in b = x) #{\n}", stmt);
 		}
 
 		[Test]
@@ -1204,7 +1206,7 @@ namespace Ecs
 			LNode[] args = new LNode[4] { Foo, fooWA, @public, null };
 			args[3] = F.Call(S.Struct, Foo, F._Missing, F.Braces(F.Vars(F.String, x)));
 			Stmt("[Foo] foo public struct Foo\n{\n  string x;\n}", Attr(args));
-			args[3] = F.Def(F.String, Foo, F.Tuple(), F.Braces(F.Result(x)));
+			args[3] = F.Def(F.String, Foo, F.List(), F.Braces(F.Result(x)));
 			Stmt("[Foo] foo public string Foo()\n{\n  x\n}", Attr(args));
 			args[3] = F.Call(S.Break);
 			Stmt("[Foo] foo public break;", Attr(args));
@@ -1229,19 +1231,19 @@ namespace Ecs
 			args[1] = fooKW;
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));
-			args[3] = AsStyle(F.List(F.Call(a)), NodeStyle.Statement);
-			Stmt("[Foo, #foo] public #@{\n  a();\n};", Attr(args));
+			args[3] = F.Call(a);
+			Stmt("[Foo, #foo] public a();", Attr(args));
 		}
 
 		[Test]
 		public void MacroStmts()
 		{
-			Stmt("set(1, Foo());",  AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
 			Stmt("set(1, -Foo());", AsStyle(F.Call(set, one, F.Call(S._Negate, F.Call(Foo))), NodeStyle.Special));
+			Stmt("set(1, Foo());", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
-			Stmt("set (1) {\n  Foo();\n}", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
-			Stmt("set (1)\n  Foo();", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
+			Stmt("set (1) {\n  Foo();\n}",  AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
+			Stmt("set(1, {\n  Foo();\n});", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
 		}
 
 		[Test]
@@ -1295,7 +1297,7 @@ namespace Ecs
 			// don't have a good way to prevent it.
 			var stmt = Attr(F.Call(S.If, F.Call(S.Eq, a, F.Braces(b))),
 			                F.Call(S.Namespace, Foo, F._Missing));
-			Stmt("namespace Foo if a == #{}(b);", stmt);
+			Stmt("namespace Foo if a == @`{}`(b);", stmt);
 			stmt = Attr(F.Call(S.If, F.Call(S.Eq, a, StmtStyle(F.List(b)))),
 			            F.Call(S.Class, Foo));
 			Stmt("class Foo if a == #(b);", stmt);
@@ -1347,22 +1349,22 @@ namespace Ecs
 		public void WordAttributes()
 		{
 			Stmt("Foo(out a, ref b);",                            F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
-			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Def(F.Void, F.Id("Main"), F.Tuple(), F.Braces())));
-			Stmt("public new partial static void Main();",        AddWords(F.Def(F.Void, F.Id("Main"), F.Tuple())));
+			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Def(F.Void, F.Id("Main"), F.List(), F.Braces())));
+			Stmt("public new partial static void Main();",        AddWords(F.Def(F.Void, F.Id("Main"), F.List())));
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
 			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
 			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F._Missing, F.Braces())));
-			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.Tuple())));
+			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
 			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Set(a, Foo), F._Missing)));
 			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
 			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
 			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
 			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x, false)));
 			Stmt("class Foo\n{\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                                          Attr(partial, F.Call(S.Cons, F._Missing, Foo, F.Tuple())))));
+			                                                          Attr(partial, F.Call(S.Cons, F._Missing, Foo, F.List())))));
 			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F._Missing, F.Braces(
-			                                                          Attr(partialWA, F.Call(S.Cons, F._Missing, F.Id(S.This), F.Tuple())))));
-			Stmt("public new partial static this();",             AddWords(F.Call(S.Cons, F._Missing, F.Id(S.This), F.Tuple())));
+			                                                          Attr(partialWA, F.Call(S.Cons, F._Missing, F.Id(S.This), F.List())))));
+			Stmt("public new partial static this();",             AddWords(F.Call(S.Cons, F._Missing, F.Id(S.This), F.List())));
 			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
 			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
 			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
@@ -1376,20 +1378,22 @@ namespace Ecs
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Set(x, zero)), false));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing, false));
+			Stmt("this int x;",                                   F.Vars(F.Int32, x).PlusAttr(F.@this));
+			Stmt("[this] a(b);",                                  F.Call(a, b).PlusAttr(F.@this));
 		}
 
 		[Test]
 		public void ExpressionAsMethodBody()
 		{
 			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
-			LNode def = F.Call(S.Def, F.Void, Foo, F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>) xToken)));
+			LNode def = F.Def(F.Void, Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>) xToken)));
 			LNode prop = F.Call(S.Property, F.Void, Foo, F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
 			Stmt("void Foo() => @[ x ];", def);
 			Stmt("void Foo => @[ x ];", prop);
 			Stmt("partial void Foo() => @[ x ];", Attr(partialWA, def));
 			Stmt("partial void Foo => @[ x ];", Attr(partialWA, prop));
-			Stmt("Foo.a Foo() => @[ x ];", F.Call(S.Def, F.Dot(Foo, a), Foo, F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
-			Stmt("Foo Foo.a() => @[ x ];", F.Call(S.Def, Foo, F.Dot(Foo, a), F.Tuple(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
+			Stmt("Foo.a Foo() => @[ x ];", F.Def(F.Dot(Foo, a), Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
+			Stmt("Foo Foo.a() => @[ x ];", F.Def(Foo, F.Dot(Foo, a), F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			// Currently supported. Not sure if it'll stay that way.
 			Stmt("void Foo() @[ x ];", def, Mode.ParseOnly);
 			Stmt("void Foo @[ x ];", prop, Mode.ParseOnly);
@@ -1474,11 +1478,11 @@ namespace Ecs
 			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == #.(#.(a, b), c)   ==> true
 			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // #.(a, b.c)
 			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
-			CheckIsComplexIdentifier(true, F.Of(_(S.Bracks), b));          // a[]         == #of(#[],a)        ==> true
-			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(#.(a,b),#.(c,x)) ==> true
+			CheckIsComplexIdentifier(true, F.Of(_(S.Bracks), b));          // a[]         == #of(@`[]`,a)      ==> true
+			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(@.(a,b),@.(c,x)) ==> true
 			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == #.(a,b)(x)        ==> true for target
-			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(#.(a,b),c)(x) ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == @.(a,b)(x)        ==> true for target
+			CheckIsComplexIdentifier(null, F.Call(F.Of(F.Dot(a,b),c), c)); // a.b<c>(x)   == #of(@.(a,b),c)(x) ==> true for target
 			CheckIsComplexIdentifier(false, F.Call(F.InParens(a), x));     // (a)(x)                           ==> false
 			CheckIsComplexIdentifier(false, F.Call(F.InParens(F.Dot(a,b)),x));// (a.b)(x) == (#.(a,b))(x)      ==> false
 			CheckIsComplexIdentifier(null, F.Of(F.Of(a,b),c));             // #of(a<b>,c) == #of(#of(a,b),c)   ==> false
@@ -1489,7 +1493,7 @@ namespace Ecs
 		{
 			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));
 			AreEqual("normal_id",        EcsNodePrinter.PrintId(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+",        EcsNodePrinter.PrintId(GSymbol.Get("#+"), true));
+			AreEqual("operator+",        EcsNodePrinter.PrintId(GSymbol.Get("+"), true));
 			AreEqual("operator`frack!`", EcsNodePrinter.PrintId(GSymbol.Get("frack!"), true));
 			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));

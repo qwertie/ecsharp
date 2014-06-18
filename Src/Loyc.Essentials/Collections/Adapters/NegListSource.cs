@@ -11,6 +11,15 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <inheritdoc cref="NegListSource{T}.NegListSource"/>
+		public static NegListSource<T> NegView<T>(this IListSource<T> list, int zeroOffset)
+		{
+			return new NegListSource<T>(list, zeroOffset);
+		}
+	}
+
 	/// <summary>
 	/// Provides a view of an <see cref="IListSource{T}"/> in which the Count is the same, but the 
 	/// minimum index is not necessarily zero. Returned from <see cref="LCExt.NegView{T}(IListSource{T},int)"/>.

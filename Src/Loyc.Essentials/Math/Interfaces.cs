@@ -139,7 +139,7 @@ namespace Loyc.Math
 	/// value operations.</summary>
 	/// <typeparam name="T">A numeric type.</typeparam>
 	/// <remarks>Implementations may or may not detect overflow.</remarks>
-	public interface IInrementer<T>
+	public interface IIncrementer<T>
 	{
 		/// <summary>Returns a + 1.</summary>
 		T AddOne(T a);
@@ -320,7 +320,7 @@ namespace Loyc.Math
 		INumTraits<T>,          // MinValue MaxValue Epsilon PositiveInfinity NegativeInfinity IsSigned...
 		INumConverter<T>,       // From
 		IOrdered<T>,            // CompareTo, Equals, IsLess, IsLessOrEqual, Abs, Min, Max
-		IInrementer<T>,         // ++ -- NextHigher NextLower
+		IIncrementer<T>,         // ++ -- NextHigher NextLower
 		IField<T>,              // + - * / << >> Zero One
 		IHasRoot<T>             // Sqrt Square
 	{

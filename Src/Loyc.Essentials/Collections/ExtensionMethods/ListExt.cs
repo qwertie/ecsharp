@@ -9,12 +9,21 @@ using System.Diagnostics;
 namespace Loyc.Collections
 {
 	/// <summary>Extension methods and helper methods for <see cref="List{T}"/>,
-	/// <see cref="IList{T}"/>, <see cref="IListSource{T}"/>, arrays, and for 
-	/// related mutable interfaces such as <see cref="IArray{T}"/>. 
+	/// <see cref="IList{T}"/>, <see cref="IReadOnlyList{T}"/>, arrays, 
+	/// <see cref="IListSource{T}"/>, and for related mutable interfaces such as 
+	/// <see cref="IArray{T}"/>. 
 	/// </summary>
-	/// <remarks>Extension methods that only apply to Loyc's new interfaces will 
-	/// go in <see cref="LCExt"/>.</remarks>
-	public static class ListExt
+	/// <remarks>
+	/// Extension methods that only apply to Loyc's new interfaces, or adapt a 
+	/// list to those interfaces, will go in <see cref="LCExt"/> instead.
+	/// <para/>
+	/// The source code for adapter extension methods such as the Slice() method for 
+	/// arrays, which returns an <see cref="ArraySlice{T}"/> adapter, is now 
+	/// placed in the source file for each adapter class (e.g. ArraySlice.cs)
+	/// to make it easier to create custom versions of Loyc.Essentials with parts 
+	/// removed.
+	/// </remarks>
+	public static partial class ListExt
 	{
 		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)
 		{
@@ -400,22 +409,6 @@ namespace Loyc.Collections
 		{
 			return LCInterfaces.LastIndexWhere(list, pred);
 		}
-		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length = int.MaxValue)
-		{
-			return new ListSlice<T>(list, start, length);
-		}
-		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, int start, int length = int.MaxValue)
-		{
-			return new ListSlice<T>(list, start, length);
-		}
-		public static ArraySlice<T> Slice<T>(this T[] list, int start, int length = int.MaxValue)
-		{
-			return new ArraySlice<T>(list, start, length);
-		}
-		public static Slice_<T> Slice<T>(this IListSource<T> array, int start, int count = int.MaxValue)
-		{
-			return new Slice_<T>(array, start, count);
-		}
 
 		static Random _r = new Random();
 		public static void Randomize<T>(this IList<T> list)
@@ -565,15 +558,6 @@ namespace Loyc.Collections
 			list.Resize(c + spaceNeeded);
  			for (int i = c - 1; i >= index; i--)
 				list[i + spaceNeeded] = list[i];
-		}
-
-		public static ReversedList<T> ReverseView<T>(this IList<T> list)
-		{
-			return new ReversedList<T>(list);
-		}
-		public static ReversedList<T> ReverseView<T>(this IListAndListSource<T> list) // exists to avoid an ambiguity error for collections that offer both IList<T> and IListSource<T>
-		{
-			return new ReversedList<T>(list);
 		}
 
 		public static bool SequenceEqual<TSource>(this IList<TSource> first, IList<TSource> second)

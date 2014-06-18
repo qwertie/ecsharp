@@ -33,8 +33,7 @@ namespace Loyc.Syntax
 		/// than using a special or statement notation.</summary>
 		Expression = 1,
 		/// <summary>The node(s) should be printed as a statement, if possible 
-		/// given the context in which it is located (for example, EC# can only 
-		/// switch to statement mode at certain node types such as # and #quote.)</summary>
+		/// given the context in which it is located.</summary>
 		Statement = 2,
 		/// <summary>The node should be printed with infix or suffix notation
 		/// instead of prefix notation if applicable (requests `backquote notation` 
@@ -75,7 +74,28 @@ namespace Loyc.Syntax
 		/// nodes (not currently supported).</summary>
 		Recursive = 64,
 		
-		/// <summary>User-defined meaning.</summary>
-		UserFlag = 128,
+		/// <summary>Indicates that some part of a compiler has seen the node and 
+		/// done something with it.</summary>
+		/// <remarks>The idea behind this flag relates to compilers that allow 
+		/// user-defined attributes for plug-ins that add functionality. For 
+		/// example, internationalization plug-in might notice a language marker:
+		/// <code>
+		///    MessageBox.Show([en] "Hello, World!");
+		/// </code>
+		/// If an attribute is not used by any plug-in, the compiler should print 
+		/// a warning that the attribute is unused. This leads to the question, how
+		/// can a compiler tell if an attribute was used or not? The Handled flag
+		/// is one possible mechanism; when any part of the compiler or its plug-
+		/// ins use an attribute, the Handled flag should be set to disable the
+		/// compiler warning.
+		/// <para/>
+		/// Remember that the same node can theoretically appear in multiple
+		/// places in a syntax tree, which typically happens when a statement or
+		/// expression is duplicated by a macro, without being changed. Remember 
+		/// that when a style is changed on such a node, the change is visible at 
+		/// all locations where the same node is used. However, style flags are
+		/// not synchronized between copies of a node.
+		/// </remarks>
+		Handled = 128,
 	}
 }

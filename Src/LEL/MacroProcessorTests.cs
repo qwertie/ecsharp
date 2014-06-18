@@ -106,9 +106,9 @@ namespace LeMP
 		public void ExpandLimit()
 		{
 			Test("{ x::Foo; y::int; }",
-				"{ Foo x; @int y; }", 1);
-			Test("{ x::Foo; y::int; }",
 				"{ Foo x; int y; }", 2);
+			Test("{ x::Foo; y::int; }",
+				"{ Foo x; @int y; }", 1);
 			Test("public static def Main()::void {}",
 				"public @static (@def, Main()::@void) {}", 1);
 			Test("public static def Main()::void {}",
@@ -123,7 +123,7 @@ namespace LeMP
 		public void JustSpliceTest()
 		{
 			Test("the #splice(macro, inserts, stuff, in-place) here;",
-				"the (macro, inserts, stuff, @in-place) here;");
+				"the (macro, inserts, stuff, @in-place, here);");
 		}
 
 		[Test]
@@ -279,7 +279,7 @@ namespace LeMP
 		public void Regressions()
 		{
 			Test("prop x::int { get { return 0; } set; };",
-				"int x { get ({ return 0; }) set; }");
+				"int x { get ({ return 0; }, set); }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);

@@ -99,6 +99,8 @@ namespace Loyc.Tests
 
 		private static void Benchmarks()
 		{
+			Benchmark.ConvexHull();
+
 			// Obtain the word list
 			string wordList = Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 

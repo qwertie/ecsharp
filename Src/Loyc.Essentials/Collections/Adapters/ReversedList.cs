@@ -6,6 +6,18 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	public static partial class ListExt
+	{
+		public static ReversedList<T> ReverseView<T>(this IList<T> list)
+		{
+			return new ReversedList<T>(list);
+		}
+		public static ReversedList<T> ReverseView<T>(this IListAndListSource<T> list) // exists to avoid an ambiguity error for collections that offer both IList<T> and IListSource<T>
+		{
+			return new ReversedList<T>(list);
+		}
+	}
+
 	/// <summary>A reversed of an <see cref="IList{T}"/>. TODO: unit tests.</summary>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]

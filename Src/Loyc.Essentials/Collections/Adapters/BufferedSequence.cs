@@ -7,6 +7,30 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
+	// Not in EnumerableExt because LCExt is for adapters and BufferedSequence<T> implements IListSource<T>
+	public static partial class LCExt
+	{
+		public static BufferedSequence<T> Buffered<T>(this IEnumerator<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
+		public static BufferedSequence<T> Buffered<T>(this IEnumerable<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
+		
+		[Obsolete("An IListSource<T> does not need to be Buffered(). This is treated as a no-op.")]
+		public static IListSource<T> Buffered<T>(this IListSource<T> source)
+		{
+			return source;
+		}
+		[Obsolete("An IList<T> does not need to be Buffered(). If you would like to convert the IList to IListSource, it is recommended to use AsListSource() instead.")]
+		public static BufferedSequence<T> Buffered<T>(this IList<T> source)
+		{
+			return new BufferedSequence<T>(source);
+		}
+	}
+
 	/// <summary>This class wraps an <see cref="IEnumerator{T}"/> or 
 	/// <see cref="IEnumerable{T}"/> into an <see cref="IListSource{T}"/>, lazily 
 	/// reading the sequence as <see cref="TryGet"/> is called.</summary>

@@ -87,7 +87,7 @@ namespace LeMP
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
-		[SimpleMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=", "#=")]
+		[SimpleMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=")]
 		public static LNode UnpackTuple(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

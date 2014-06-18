@@ -139,10 +139,10 @@ namespace Loyc.Syntax
 	/// Also, virtually any tree of nodes can be represented in EC# source code 
 	/// using a prefix notation, which helps you understand Loyc ASTs because
 	/// the prefix notation closely corresponds to the AST. For example, 
-	/// #=(x, #*(y, 2)) is equivalent to the expression x = y * 2. This notation 
+	/// @=(x, @*(y, 2)) is equivalent to the expression x = y * 2. This notation 
 	/// tells you that 
 	/// - there are two nodes with two arguments each, 
-	/// - the outer one is named #= and the inner is named #*
+	/// - the outer one is named "=" and the inner is named "*"
 	/// The syntax tree built from these two representations is identical.
 	/// <para/>
 	/// Prefix notation can be freely mixed with normal EC# code, although usually 
@@ -155,50 +155,56 @@ namespace Loyc.Syntax
 	///	});
 	/// <para/>
 	/// The prefix notation often involves special identifiers of the form #X, 
-	/// where X is
-	/// <ol>
-	/// <li>1. A C# or EC# identifier</li>
-	/// <li>2. A C# keyword</li>
-	/// <li>3. A C# or EC# operator</li>
-	/// <li>4. A single-quoted string containing one or more characters</li>
-	/// <li>5. A backquoted string</li>
-	/// <li>6. One of the following pairs of tokens: {}, [], or &lt;> (angle brackets)</li>
-	/// <li>7. Nothing. If # is not followed by one of the above, "#" by itself is 
-	///        counted as identifier.</li>
-	/// </ol>
+	/// where X is an identifier (or keyword). In the LES and EC# parsers, the # 
+	/// character is considered a normal part of an identifier, no different than
+	/// a letter (A-Z) or an underscore (_). However, the # is "special" in the
+	/// sense that when a special construct (like a method, or a field declaration)
+	/// is converted to a Loyc tree, the Loyc tree represents that special 
+	/// construct using an identifier that starts with "#".
 	/// <para/>
-	/// As it builds the AST, the parser translates all of these forms into a 
-	/// Symbol that also starts with '#'. The following examples show how source 
-	/// code text is translated into symbol names:
+	/// Code in prefix notation also often has identifiers of the form @X, where X is
+	/// <ol>
+	/// <li>An operator such as + or ==</li>
+	/// <li>A C# keyword</li>
+	/// <li>A backquoted string</li>
+	/// </ol>
+	/// The @ character is <i>not</i> part of the identifier; it merely indicates
+	/// that the characters after the @ symbol represent an identifier, rather than
+	/// an operator or keyword. For example, "==" is normally an operator, and 
+	/// "class" is normally a keyword, but @== and @class are both identifiers,
+	/// not operators or keywords.
+	/// <para/>
+	/// The following examples show how source code text is translated into symbol names:
 	/// <pre>
-	/// #foo     ==> "#foo"         #>>          ==> "#>>"
-	/// #?       ==> "#?"           #{}          ==> "#{}"          
-	/// #while   ==> "#while"       #'Newline\n' ==> "#Newline\n"
-	/// #@while  ==> "#while"       #`hi there!` ==> "#`hi there!`"
-	/// #'while' ==> "#while"       #(whatever)  ==> "#"
+	/// #foo     ==> "#foo"        @>>           ==> ">>"
+	/// #?       ==> "?"           @`{}`         ==> "{}"
+	/// #while   ==> "#while"      @`#Newline\n` ==> "#Newline\n"
+	/// @#while  ==> "#while"      @`hi there!`  ==> "hi there!"
+	/// @while   ==> "while"
 	/// </pre>
-	/// The parser treats all of these forms as "special identifiers". Special
-	/// identifiers are parsed like normal identifiers, but are reserved for
-	/// things that have special semantic meaning. For example, "#class" has 
+	/// Identifiers that start with # are parsed like normal identifiers, but 
+	/// are reserved for things that have special semantic meaning. For example, 
+	/// "#class" is treated by the parser like any other identifier, but it has
 	/// the same semantic meaning as "class", although a structure defined with 
 	/// "#class" looks quite different from the same structure defined using 
 	/// "class". For example, the following forms are equivalent:
 	/// <pre>
-	/// #class(X, #(), #(int x));
+	/// #class(X, #(), @`{}`(int x));
 	/// class X { int x; }
 	/// </pre>
-	/// The #class(...) form is the prefix notation, and it demonstrates the
+	/// The #class(...) form uses prefix notation, and it demonstrates the
 	/// structure of the Loyc tree for a class declaration.
 	/// <para/>
-	/// As another example, "#return(7);" is (syntactically) a function call to a 
+	/// As another example, "#return(7);" is syntactically a function call to a 
 	/// function called "#return". Although the parser treats it like a function 
 	/// call, it produces the same syntax tree as "return 7;" does.
 	/// <para/>
 	/// Ordinary method calls like <c>Foo(x, y)</c> count as prefix notation, and 
 	/// in EC# there is actually a non-prefix notation for this call: <c>x `Foo` y</c>.
 	/// Both forms are equivalent, but the infix notation can only be used when you
-	/// are calling a method that takes two arguments (also, the string `Foo` must 
-	/// be a simple identifier; it cannot contain dots or have generic arguments.)
+	/// are calling a method that takes two arguments (also, the string `Foo` should
+	/// be a simple identifier; if it contains a dot, it is treated as part of the
+	/// identifier name, not as a normal dot operator.)
 	/// <para/>
 	/// So #class is a keyword that is parsed like an identifier, but this is 
 	/// different from the notation @class which already exists in plain C#.
@@ -235,7 +241,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// The special #X tokens don't require an argument list, although the compiler
 	/// expects most of them to have one (and often it must have a specific length).
-	/// This doesn't matter for parsing, however, only for later stages of analysis.
+	/// Again, this doesn't matter for parsing, only for later stages of analysis.
 	/// <para/>
 	/// Any statement or expression can have attributes attached to it; when 
 	/// attributes are seen beside a statement, they are attached to the root node 

@@ -11,7 +11,19 @@ namespace Loyc.Collections
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
-	
+
+	public static partial class LCExt
+	{
+		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length = int.MaxValue)
+		{
+			return new ListSlice<T>(list, start, length);
+		}
+		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, int start, int length = int.MaxValue)
+		{
+			return new ListSlice<T>(list, start, length);
+		}
+	}
+
 	/// <summary>
 	/// A wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="ListExt.Slice{T}"/>

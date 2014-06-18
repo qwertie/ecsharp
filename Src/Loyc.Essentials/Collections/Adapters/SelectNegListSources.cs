@@ -5,6 +5,14 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		public static SelectNegListSources<T> NegLists<T>(this IListSource<T> source)
+		{
+			return new SelectNegListSources<T>(source);
+		}
+	}
+
 	/// <summary>
 	/// Provides view of an <see cref="IListSource{T}"/> in which element [i] is a
 	/// <see cref="NegListSource{T}"/> N such that N[0] refers to element [i] in the 

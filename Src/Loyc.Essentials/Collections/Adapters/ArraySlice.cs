@@ -5,6 +5,14 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	public static partial class ListExt
+	{
+		public static ArraySlice<T> Slice<T>(this T[] list, int start, int length = int.MaxValue)
+		{
+			return new ArraySlice<T>(list, start, length);
+		}
+	}
+
 	/// <summary>Provides access to a section of an array.</summary>
 	public struct ArraySlice<T> : IMRange<T>, ICloneable<ArraySlice<T>>, IIsEmpty
 	{

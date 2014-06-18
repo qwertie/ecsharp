@@ -103,7 +103,7 @@ namespace Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionTypeAndMessage());
+			_messages.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
 		#region Methods required by base class and by LLLPG

@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	// Used by WeakKeyDictionary<K,V>
 	/// <summary>
     /// Compares objects of the given type or WeakKeyReferences to them
     /// for equality based on the given comparer. Note that we can only

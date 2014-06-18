@@ -40,6 +40,12 @@ namespace Ecs.Parser
 				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		};
+		private token UTF_BOM {
+			@[ '\uFEFF' ]; // Byte order mark, in case the Encoding didn't strip it out.
+			if (_lineStartAt == _startPosition) 
+				_lineStartAt = InputPosition;
+			_value = WhitespaceTag.Value;
+		};
 		private token SLComment {
 			@[ "//" (~('\r'|'\n'))* ];
 			_value = WhitespaceTag.Value;
@@ -132,17 +138,19 @@ namespace Ecs.Parser
 		// Identifiers and Symbols -----------------------------------------------
 
 		private rule IdStartChar @[ '_'|'a'..'z'|'A'..'Z' ];
-		private rule IdUniLetter @[
-			&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC |
-			"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		[k(9)]
+		private rule IdUniLetter @
+		[	&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC
+		|	"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
+		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		];
-		[k(7)]
+		[k(9)]
 		private rule IdContChars @[ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* ];
 		private rule NormalId @[ (IdStartChar|IdUniLetter) IdContChars ];
 		private rule HashId   @[ '#'                       IdContChars ];
 		
 		private rule CommentStart @[ '/' ('/'|'*') ];
-		[k(7)]
+		[k(9)]
 		private rule FancyId::bool @[ 
 			(	BQStringN                      {return true;} 
 			|	(IdUniLetter / LettersOrPunc)+ {return false;})
@@ -231,58 +239,58 @@ namespace Ecs.Parser
 		| "\\"  { _type = TT.Backslash; _value = _Backslash; }
 		)];
 
-		static readonly _Comma::Symbol = GSymbol.Get("#,");
-		static readonly _Semicolon::Symbol = GSymbol.Get("#;");
-		static readonly _At::Symbol = GSymbol.Get("#@");
-		static readonly _DotDot::Symbol = GSymbol.Get("#..");
-		static readonly _Dot::Symbol = GSymbol.Get("#.");
-		static readonly _ShrSet::Symbol = GSymbol.Get("#>>=");
-		static readonly _GE::Symbol = GSymbol.Get("#>=");
-		static readonly _GT::Symbol = GSymbol.Get("#>");
-		static readonly _ShlSet::Symbol = GSymbol.Get("#<<=");
-		static readonly _LE::Symbol = GSymbol.Get("#<=");
-		static readonly _LT::Symbol = GSymbol.Get("#<");
-		static readonly _And::Symbol = GSymbol.Get("#&&");
-		static readonly _AndBitsSet::Symbol = GSymbol.Get("#&=");
-		static readonly _AndBits::Symbol = GSymbol.Get("#&");
-		static readonly _Or::Symbol = GSymbol.Get("#||");
-		static readonly _OrBitsSet::Symbol = GSymbol.Get("#|=");
-		static readonly _OrBits::Symbol = GSymbol.Get("#|");
-		static readonly _Xor::Symbol = GSymbol.Get("#^^");
-		static readonly _XorBitsSet::Symbol = GSymbol.Get("#^=");
-		static readonly _XorBits::Symbol = GSymbol.Get("#^");
-		static readonly _QuickBindSet::Symbol = GSymbol.Get("#:=");
-		static readonly _QuickBind::Symbol = GSymbol.Get("#=:");
-		static readonly _ColonColon::Symbol = GSymbol.Get("#::");
-		static readonly _Forward::Symbol = GSymbol.Get("#==>");
-		static readonly _Eq::Symbol = GSymbol.Get("#==");
-		static readonly _LambdaArrow::Symbol = GSymbol.Get("#=>");
-		static readonly _Set::Symbol = GSymbol.Get("#=");
-		static readonly _Neq::Symbol = GSymbol.Get("#!=");
-		static readonly _Not::Symbol = GSymbol.Get("#!");
-		static readonly _NotBits::Symbol = GSymbol.Get("#~");
-		static readonly _ExpSet::Symbol = GSymbol.Get("#**=");
-		static readonly _Exp::Symbol = GSymbol.Get("#**");
-		static readonly _MulSet::Symbol = GSymbol.Get("#*=");
-		static readonly _Mul::Symbol = GSymbol.Get("#*");
-		static readonly _DivSet::Symbol = GSymbol.Get("#/=");
-		static readonly _Div::Symbol = GSymbol.Get("#/");
-		static readonly _ModSet::Symbol = GSymbol.Get("#%=");
-		static readonly _Mod::Symbol = GSymbol.Get("#%");
-		static readonly _AddSet::Symbol = GSymbol.Get("#+=");
-		static readonly _Inc::Symbol = GSymbol.Get("#++");
-		static readonly _Add::Symbol = GSymbol.Get("#+");
-		static readonly _SubSet::Symbol = GSymbol.Get("#-=");
-		static readonly _Dec::Symbol = GSymbol.Get("#--");
-		static readonly _Sub::Symbol = GSymbol.Get("#-");
-		static readonly _NullCoalesceSet::Symbol = GSymbol.Get("#??=");
-		static readonly _NullCoalesce::Symbol = GSymbol.Get("#??");
-		static readonly _NullDot::Symbol = GSymbol.Get("#?.");
-		static readonly _QuestionMark::Symbol = GSymbol.Get("#?");
-		static readonly _Substitute::Symbol = GSymbol.Get("#$");
-		static readonly _Backslash::Symbol = GSymbol.Get("#\\");
-		static readonly _Colon::Symbol = GSymbol.Get("#:");
-		static readonly _PtrArrow::Symbol = GSymbol.Get("#->");
+		static readonly _Comma::Symbol = GSymbol.Get(",");
+		static readonly _Semicolon::Symbol = GSymbol.Get(";");
+		static readonly _At::Symbol = GSymbol.Get("@");
+		static readonly _DotDot::Symbol = GSymbol.Get("..");
+		static readonly _Dot::Symbol = GSymbol.Get(".");
+		static readonly _ShrSet::Symbol = GSymbol.Get(">>=");
+		static readonly _GE::Symbol = GSymbol.Get(">=");
+		static readonly _GT::Symbol = GSymbol.Get(">");
+		static readonly _ShlSet::Symbol = GSymbol.Get("<<=");
+		static readonly _LE::Symbol = GSymbol.Get("<=");
+		static readonly _LT::Symbol = GSymbol.Get("<");
+		static readonly _And::Symbol = GSymbol.Get("&&");
+		static readonly _AndBitsSet::Symbol = GSymbol.Get("&=");
+		static readonly _AndBits::Symbol = GSymbol.Get("&");
+		static readonly _Or::Symbol = GSymbol.Get("||");
+		static readonly _OrBitsSet::Symbol = GSymbol.Get("|=");
+		static readonly _OrBits::Symbol = GSymbol.Get("|");
+		static readonly _Xor::Symbol = GSymbol.Get("^^");
+		static readonly _XorBitsSet::Symbol = GSymbol.Get("^=");
+		static readonly _XorBits::Symbol = GSymbol.Get("^");
+		static readonly _QuickBindSet::Symbol = GSymbol.Get(":=");
+		static readonly _QuickBind::Symbol = GSymbol.Get("=:");
+		static readonly _ColonColon::Symbol = GSymbol.Get("::");
+		static readonly _Forward::Symbol = GSymbol.Get("==>");
+		static readonly _Eq::Symbol = GSymbol.Get("==");
+		static readonly _LambdaArrow::Symbol = GSymbol.Get("=>");
+		static readonly _Set::Symbol = GSymbol.Get("=");
+		static readonly _Neq::Symbol = GSymbol.Get("!=");
+		static readonly _Not::Symbol = GSymbol.Get("!");
+		static readonly _NotBits::Symbol = GSymbol.Get("~");
+		static readonly _ExpSet::Symbol = GSymbol.Get("**=");
+		static readonly _Exp::Symbol = GSymbol.Get("**");
+		static readonly _MulSet::Symbol = GSymbol.Get("*=");
+		static readonly _Mul::Symbol = GSymbol.Get("*");
+		static readonly _DivSet::Symbol = GSymbol.Get("/=");
+		static readonly _Div::Symbol = GSymbol.Get("/");
+		static readonly _ModSet::Symbol = GSymbol.Get("%=");
+		static readonly _Mod::Symbol = GSymbol.Get("%");
+		static readonly _AddSet::Symbol = GSymbol.Get("+=");
+		static readonly _Inc::Symbol = GSymbol.Get("++");
+		static readonly _Add::Symbol = GSymbol.Get("+");
+		static readonly _SubSet::Symbol = GSymbol.Get("-=");
+		static readonly _Dec::Symbol = GSymbol.Get("--");
+		static readonly _Sub::Symbol = GSymbol.Get("-");
+		static readonly _NullCoalesceSet::Symbol = GSymbol.Get("??=");
+		static readonly _NullCoalesce::Symbol = GSymbol.Get("??");
+		static readonly _NullDot::Symbol = GSymbol.Get("?.");
+		static readonly _QuestionMark::Symbol = GSymbol.Get("?");
+		static readonly _Substitute::Symbol = GSymbol.Get("$");
+		static readonly _Backslash::Symbol = GSymbol.Get("\\");
+		static readonly _Colon::Symbol = GSymbol.Get(":");
+		static readonly _PtrArrow::Symbol = GSymbol.Get("->");
 
 		// Shebang ---------------------------------------------------------------
 
@@ -449,7 +457,7 @@ namespace Ecs.Parser
 		private token Token @[
 			( {_type = TT.Newline;}    Newline
 			| {_type = TT.Spaces;}     Spaces
-			| {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
+			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
 			/ {_type = TT.Number;}     Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /
@@ -463,6 +471,7 @@ namespace Ecs.Parser
 			/ {_type = TT.Symbol;}     Symbol    // length-ambiguous with At @
 			/ {_type = TT.At;}         At
 			/                          Operator
+			/ {_type = TT.Spaces;}     UTF_BOM
 			| {_type = TT.Comma;}      Comma
 			| {_type = TT.Semicolon;}  Semicolon
 			| {_type = TT.LParen;}     '('

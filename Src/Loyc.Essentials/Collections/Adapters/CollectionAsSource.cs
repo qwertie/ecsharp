@@ -11,12 +11,27 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <summary>Converts any ICollection{T} object to IReadOnlyCollection{T}.</summary>
+		/// <remarks>This method is named "AsReadOnly" and not "ToReadOnly" because,
+		/// in contrast to methods like ToArray(), and ToList() it does not make a 
+		/// copy of the sequence, although it does create a new wrapper object.</remarks>
+		public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> c)
+		{
+			var list = c as IReadOnlyCollection<T>;
+			if (list != null)
+				return list;
+			return new CollectionAsReadOnly<T>(c);
+		}
+	}
+
 	/// <summary>A read-only wrapper that implements ICollection(T) and ISource(T), 
 	/// returned from <see cref="LCExt.AsReadOnly{T}"/>.</summary>
 	[Serializable]
-	public sealed class CollectionAsSource<T> : WrapperBase<ICollection<T>>, ICollectionAndReadOnly<T>
+	public sealed class CollectionAsReadOnly<T> : WrapperBase<ICollection<T>>, ICollectionAndReadOnly<T>
 	{
-		public CollectionAsSource(ICollection<T> obj) : base(obj) { }
+		public CollectionAsReadOnly(ICollection<T> obj) : base(obj) { }
 
 		public int Count
 		{

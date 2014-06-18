@@ -35,6 +35,12 @@ namespace Loyc.Syntax.Les
 				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		};
+		private token UTF_BOM {
+			@[ '\uFEFF' ]; // Byte order mark, in case the Encoding didn't strip it out.
+			if (_lineStartAt == _startPosition) 
+				_lineStartAt = InputPosition;
+			_value = WhitespaceTag.Value;
+		};
 		private token SLComment {
 			@[ "//" (~('\r'|'\n'))* ];
 			_value = WhitespaceTag.Value;
@@ -183,15 +189,16 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.At;}        At
 			/                         BackslashOp
 			/                         Operator
-			/ default {_type = TT.Colon;}     Colon
+			/ {_type = TT.Spaces;}    UTF_BOM
+			/ {_type = TT.Colon;}     Colon
 			/ error { _value = @null; }
 			  ( EOF {_type = TT.EOF;}
 			  | _   {_type = TT.Unknown;} )
 			)
 		];
-		static readonly _Comma::Symbol = GSymbol.Get("#,");
-		static readonly _Semicolon::Symbol = GSymbol.Get("#;");
-		static readonly _Colon::Symbol = GSymbol.Get("#:");
+		static readonly _Comma::Symbol = GSymbol.Get(",");
+		static readonly _Semicolon::Symbol = GSymbol.Get(";");
+		static readonly _Colon::Symbol = GSymbol.Get(":");
 
 		// Partial tokens used for syntax highlighting. A LES syntax highlighter
 		// can record the token continued in each line (''', """ or /*) call one

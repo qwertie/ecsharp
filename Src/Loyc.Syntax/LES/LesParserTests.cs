@@ -63,9 +63,9 @@ namespace Loyc.Syntax.Les
 			Expr("a.b?.c(x)",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			
 			// Custom ops
-			Expr("a |-| b+c",     F.Call("#|-|", a, F.Call(S.Add, b, c)));
-			Expr("a.b!!!c .?. 1", F.Call("#.?.", F.Call("#!!!", F.Dot(a, b), c), one));
-			Expr("a /+ b+*c",     F.Call("#/+", a, F.Call("#+*", b, c)));
+			Expr("a |-| b+c",     F.Call("|-|", a, F.Call(S.Add, b, c)));
+			Expr("a.b!!!c .?. 1", F.Call(".?.", F.Call("!!!", F.Dot(a, b), c), one));
+			Expr("a /+ b+*c",     F.Call("/+", a, F.Call("+*", b, c)));
 			Expr(@"a \Foo b",     F.Call("Foo", a, b));
 		}
 

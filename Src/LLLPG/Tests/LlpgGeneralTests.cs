@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 			LLLPG lexer {
 				[pub] rule Foo @[ 'x' '0'..'9' '0'..'9' ];
 			}", @"
-				('x', @`#suf*`('0'..'9'));
+				('x', @`suf*`('0'..'9'));
 				public void Foo()
 				{
 					Match('x');
@@ -942,6 +942,38 @@ namespace Loyc.LLParserGenerator
 						Error();
 						Skip();
 					}
+				}");
+		}
+
+		[Test]
+		public void AndPredOrError()
+		{
+			Test(@"
+			LLLPG parser {
+				public rule ConditionalDot @[ 
+					(	&{cond} 
+					| error {Error(""Unexpected Dot.""); return;} )
+					'.'
+				];
+			}", @"
+				public void ConditionalDot()
+				{
+					int la0;
+					do {
+						la0 = LA0;
+						if (la0 == '.')
+							if (cond)
+								break;
+							else
+								goto match2;
+						else
+							goto match2;
+					match2: {
+							Error(""Unexpected Dot."");
+							return;
+						}
+					} while (false);
+					Match('.');
 				}");
 		}
 

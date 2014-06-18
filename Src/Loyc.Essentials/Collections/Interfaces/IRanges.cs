@@ -129,11 +129,39 @@ namespace Loyc.Collections
 	/// The exact behavior of the range at this point is implementation-dependent.
 	/// The <c>Count</c> property may remain at 8, or it may drop to 7; perhaps the
 	/// range will return default(T) when you read index [7], or perhaps it will
-	/// throw <see cref="IndexOutOfRangeException"/>.
+	/// throw <see cref="IndexOutOfRangeException"/>. Because of this lack of
+	/// predictability, you should avoid keeping a range that points to a list whose
+	/// size is decreasing. If individual elements are modified but not the list 
+	/// size, the range is safe to use and will see the changes. If new elements 
+	/// are added to the end of the list, the range may or may not continue working 
+	/// as expected, depending on how the collection works and how the range works.
+	/// In most cases the range will be unaffected, in contrast to common C++ 
+	/// containers such as <c>std::vector</c>, in which iterators are "invalidated" 
+	/// by any size change, and when an invalid iterator is accessed, it may return 
+	/// bad data or crash the program.
+	/// <para/>
+	/// Currently there are no interfaces in Loyc.Essentials that return forward or 
+	/// bidirectional ranges; the only notable method that returns a range is
+	/// <see cref="IListSource{T}.Slice"/>, which returns a random-access range.
+	/// Since a random-access range is also a bidirectional range, you can begin
+	/// writing algorithms that accept forward and bidirectional ranges (for read 
+	/// access). Any collection that implements <see cref="IListSource{T}"/> can 
+	/// be treated as a range using the <see cref="LCExt.AsRange()"/> extension 
+	/// method, which is like calling <c>Slice(0)</c>.
+	/// <para/>
+	/// The design philosophy of Loyc.Essentials is that potentially useful 
+	/// interfaces should be included even if there are no implementations of the 
+	/// interface. That's why there are interfaces like <see cref="IMFRange{T}"/>
+	/// that are not implemented by any classes. Why offer unused interfaces?
+	/// Because this library is designed to be extended by third parties, who 
+	/// might want to implement the interface, e.g. if someone else creates 
+	/// mutable data structures such as the B+ tree, the doubly-linked list or 
+	/// the trie, they should offer implementations of <see cref="IMBRange{T}"/> 
+	/// and/or <see cref="IMBinumerator{T}"/>.
 	/// <para/>
 	/// Implementors note: <see cref="IFRange{T}"/> includes <see cref="IEnumerable{T}"/>, 
-	/// and you can use the following implementation provided that your range 
-	/// type R implements <see cref="ICloneable{R}"/>:
+	/// and you can use the following implementation of IEnumerable provided 
+	/// that your range type <c>R</c> implements <see cref="ICloneable{R}"/>:
 	/// <code>
 	///     IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 	///     IEnumerator&lt;T> IEnumerable&lt;T>.GetEnumerator() { return GetEnumerator(); }
@@ -142,6 +170,9 @@ namespace Loyc.Collections
 	///         return new RangeEnumerator&lt;R,T>(this);
 	///     }
 	/// </code>
+	/// TODO: write RangeBinumerator for IBRange{T},
+	///             RangeMBinumerator for IMBRange{T},
+	///         and RangeMEnumerator for IMEnumerator{T}.
 	/// </remarks>
 	#if DotNet2 || DotNet3
 	public interface IFRange<T> : IEnumerable<T>, ICloneable<IFRange<T>>, IIsEmpty
@@ -159,7 +190,7 @@ namespace Loyc.Collections
 		/// </remarks>
 		T Front { get; }
 		/// <summary>Removes the first item from the range and returns it.</summary>
-		/// <param name="fail">Receives the current value of IsEmpty.</param>
+		/// <param name="fail">Receives the current value of <see cref="IsEmpty"/>.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
 		/// <remarks>This method is a little unweildy in plain C#, but in EC# it 
 		/// will be a bit more convenient to use via extension methods like 
@@ -283,8 +314,8 @@ namespace Loyc.Collections
 	{
 		/// <summary>Gets the list upon which this range is based.</summary>
 		/// <remarks>The return type is <see cref="IEnumerable{T}"/> since the 
-		/// actual list type could vary, e.g. it might be <see cref="ICollection{T}"/>
-		/// or <see cref="IListSource{T}"/>.</remarks>
+		/// available list interfaces may vary, e.g. it might be 
+		/// <see cref="ICollection{T}"/> or <see cref="IListSource{T}"/>.</remarks>
 		IEnumerable<T> InnerList { get; }
 		/// <summary>Index where this range starts within the <see cref="InnerList"/>.</summary>
 		int SliceStart { get; }

@@ -394,7 +394,7 @@ namespace Ecs.Parser
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
-				{r = F.Call(S.Lambda, F.Tuple(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
+				{r = F.Call(S.Lambda, F.List(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
 			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
 				/*hack, avoid long analysis time*/ (_ =>{})
 			) {return r;}
@@ -417,7 +417,7 @@ namespace Ecs.Parser
 				var list = (new RWList!LNode());
 			}
 			op:=TT.@new
-			(	// new [] { ... }  <=>  #new(@`#[]`(), ...)
+			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
 				lb:="[" rb:="]" 
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
@@ -437,8 +437,8 @@ namespace Ecs.Parser
 			|	// new Type(...)             <=> #new(Type(...))
 				// new Type(...) { ... }     <=> #new(Type(...), ...)
 				// new Type { ... }          <=> #new(Type(), ...)
-				// new Type[10] { ... }      <=> #new(#of(@`#[]`, Type)(10), ...)
-				// new Type[10][]            <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+				// new Type[10] { ... }      <=> #new(#of(@`[]`, Type)(10), ...)
+				// new Type[10][]            <=> #new(#of(@`[]`, #of(@`#[]`, Type))(10))
 				type:=DataType(false, out majorDimension)
 				(	// new Type(...)         <=> #new(Type(...))
 					// new Type(...) { ... } <=> #new(Type(...), ...)
@@ -456,8 +456,8 @@ namespace Ecs.Parser
 						}
 					)?
 				/	// new Type { ... }      <=> #new(Type(), ...)
-					// new Type[10] { ... }  <=> #new(#of(@`#[]`, Type)(10), ...)
-					// new Type[10][]        <=> #new(#of(@`#[]`, #of(@`#[]`, Type))(10))
+					// new Type[10] { ... }  <=> #new(#of(@`[]`, Type)(10), ...)
+					// new Type[10][]        <=> #new(#of(@`[]`, #of(@`[]`, Type))(10))
 					{var(lb::Token = op, rb::Token = op); haveBraces::bool = false;}
 					( lb="{" rb="}" {haveBraces = true;} )?
 					{
@@ -504,7 +504,8 @@ namespace Ecs.Parser
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-			/	e=PrimaryExpr_NewStyleCast(e)
+			/	// x(-> Foo), x(as Foo), x(using Foo)
+				e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
 			|	"@" lb:="{" rb:="}"
 				{	var stmts = StmtListInside(lb).ToRVList();
@@ -898,7 +899,7 @@ namespace Ecs.Parser
 				t::Token;
 			}
 			(	t=TT.AttrKeyword {attrs.Add(IdNode(t));}
-			|	(t=(TT.Id|TT.@new) | t=UnusualId)
+			|	(t=(TT.Id|TT.(noMacro(@this))|TT.@new) | t=UnusualId)
 				&(	// This branch matches var decls, alias decls, trait decls and 
 					// non-keyword attributes located prior to any of those.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
@@ -912,7 +913,7 @@ namespace Ecs.Parser
 				)
 				{
 					node::LNode;
-					if (t.Type() == TT.@new)
+					if (t.Type() == TT.@new || t.Type() == TT.(noMacro(@this)))
 						node = IdNode(t)
 					else
 						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
@@ -1117,7 +1118,7 @@ namespace Ecs.Parser
 			(	{var bases = (new RVList!LNode());}
 				":" bases+=DataType
 				("," bases+=DataType)*
-				{return F.Tuple(bases);}
+				{return F.List(bases);}
 			|	{return F._Missing;}
 			)
 		];
@@ -1272,17 +1273,17 @@ namespace Ecs.Parser
 					if kind == S.Cons && baseCall != null {
 						Error(baseCall, "A method body is required.");
 						// Behave as though the method body were present.
-						var parts = (new RVList!LNode() { type; name; ArgTuple(lp, rp); LNode.Call(S.Braces, new RVList!LNode(baseCall), baseCall.Range) });
+						var parts = (new RVList!LNode() { type; name; ArgList(lp, rp); LNode.Call(S.Braces, new RVList!LNode(baseCall), baseCall.Range) });
 						return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
 					};
-					r = F.Call(kind, type, name, ArgTuple(lp, rp), startIndex, end.EndIndex);
+					r = F.Call(kind, type, name, ArgList(lp, rp), startIndex, end.EndIndex);
 				}
 			|	body:=MethodBodyOrForward
 				{
 					if kind == S.Delegate Error("A 'delegate' is not expected to have a method body.");
 					if baseCall != null
 						body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
-					var parts = (new RVList!LNode() { type; name; ArgTuple(lp, rp); body });
+					var parts = (new RVList!LNode() { type; name; ArgList(lp, rp); body });
 					r = F.Call(kind, parts, startIndex, body.Range.EndIndex);
 				}
 			)
@@ -1302,14 +1303,14 @@ namespace Ecs.Parser
 			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
 		};
 
-		def ArgTuple(lp::Token, rp::Token)::LNode
+		def ArgList(lp::Token, rp::Token)::LNode
 		{
 			var list = (new RWList!LNode());
 			if (Down(lp.Children)) {
 				ArgList(list);
 				Up();
 			};
-			return F.Tuple(list.ToRVList(), lp.StartIndex, rp.EndIndex);
+			return F.List(list.ToRVList(), lp.StartIndex, rp.EndIndex);
 		};
 
 		private rule NameAndMaybeInit(isArray::bool)::LNode @[
@@ -1361,7 +1362,9 @@ namespace Ecs.Parser
 		private rule Destructor(startIndex::int, attrs::RVList!LNode)::LNode @[
 			{var r::LNode n::Token;}
 			tilde:="~"
-			(	&{LT($LI).Value == _spaceName} n=(TT.Id|TT.ContextualKeyword)
+			(	( &{LT($LI).Value == _spaceName} 
+				/ error {Error("Unexpected destructor '{0}'", LT(0).Value);} )
+				n=(TT.Id|TT.ContextualKeyword)
 			|	n=TT.(noMacro(@this))
 			)
 			{name::LNode = F.Call(S.NotBits, F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex), tilde.StartIndex, n.EndIndex);}
@@ -1650,17 +1653,10 @@ namespace Ecs.Parser
 			EOF
 		];
 		rule ArgList(list::RWList!LNode) @[
-			{thisTok::opt!Token = @null;}
-			greedy( thisTok=TT.(noMacro(@this)) &DataType )?
 			nongreedy(
-				e:=ExprOpt(true)
-				{
-					if (thisTok != null)
-						e = F.Attr(F.Id(thisTok.Value), e);
-					list.Add(e);
-				}
+				list+=ExprOpt(true)
 				( "," list+=ExprOpt(true)
-				| error {Error("Syntax error in expression list");} ~","*
+				| error {Error("Syntax error in argument list");} ~","*
 				)*
 			)?
 			EOF

@@ -1,19 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc.Math;
+using Loyc.Threading;
+using Loyc.Collections.Impl;
+using Loyc.Geometry;
 using Tests.Resources;
+using PointD = Loyc.Geometry.Point<double>;
 
 namespace Loyc.Tests
 {
 	using System;
-	using Loyc.Threading;
-	using System.Linq;
-	using Loyc.Collections.Impl;
-	using System.Reflection;
 
 	static class Benchmark
 	{
@@ -825,6 +827,34 @@ namespace Loyc.Tests
 				}
 			}
 			Console.WriteLine("foreach: {0}ms ({1} results)", t.Restart(), numbers2.Count);
+		}
+
+		public static void ConvexHull()
+		{
+			int[] testSizes = new int[] { 12345, 100, 316, 1000, 3160, 10000, 31600, 100000, 316000, 1000000, 3160000, 10000000 };
+			for (int iter = 0; iter < testSizes.Length; iter++) {
+				Random r = new Random();
+				
+				List<PointD> points = new List<PointD>(testSizes[iter]);
+				for (int i = 0; i < points.Capacity; i++) {
+					double size = r.NextDouble();
+					double ang = r.NextDouble() * (Math.PI * 2);
+					points.Add(new PointD(size * Math.Cos(ang), size * Math.Sin(ang)));
+				}
+				// Plus: test sorting time to learn how much of the time is spent sorting
+				var points2 = new List<PointD>(points);
+				EzStopwatch timer = new EzStopwatch(true);
+				points2.Sort((a, b) => a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X < b.X ? -1 : 1));
+				Stopwatch timer2 = new Stopwatch(); timer2.Start();
+				int sortTime = timer.Restart();
+				var output = PointMath.ComputeConvexHull(points, true);
+				int hullTime = timer.Millisec;
+				Console.WriteLine("{0:c}   (ticks:{1,10} freq:{2})", timer2.Elapsed, timer2.ElapsedTicks, Stopwatch.Frequency);
+
+				if (iter == 0) continue; // first iteration primes the JIT/caches
+				Console.WriteLine("Convex hull of {0,8} points took {1} ms ({2} ms for sorting step). Output has {3} points.", 
+					testSizes[iter], hullTime, sortTime, output.Count);
+			}
 		}
 	}
 

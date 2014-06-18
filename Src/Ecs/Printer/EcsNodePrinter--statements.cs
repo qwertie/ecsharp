@@ -58,9 +58,6 @@ namespace Ecs
 		static readonly HashSet<Symbol> LabelStmts = new HashSet<Symbol>(new[] {
 			S.Label, S.Case
 		});
-		static readonly HashSet<Symbol> BlocksOfStmts = new HashSet<Symbol>(new[] {
-			S.StmtList, S.Braces
-		});
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
@@ -80,7 +77,7 @@ namespace Ecs
 			AddAll(d, TwoArgBlockStmts, "AutoPrintTwoArgBlockStmt");
 			AddAll(d, OtherBlockStmts, "AutoPrintOtherBlockStmt");
 			AddAll(d, LabelStmts, "AutoPrintLabelStmt");
-			AddAll(d, BlocksOfStmts, "AutoPrintBlockOfStmts");
+			d[S.Braces] = OpenDelegate<StatementPrinter>("AutoPrintBlockOfStmts");
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
@@ -112,7 +109,7 @@ namespace Ecs
 			{
 				StatementPrinter printer;
 				var name = _n.Name;
-				if ((name == GSymbol.Empty || name.Name[0] == '#') && HasSimpleHeadWPA(_n) && StatementPrinters.TryGetValue(name, out printer))
+				if (StatementPrinters.TryGetValue(name, out printer) && HasSimpleHeadWPA(_n))
 				{
 					var result = printer(this, flags | Ambiguity.NoParenthesis);
 					if (result != SPResult.Fail) {
@@ -179,36 +176,9 @@ namespace Ecs
 					return false;
 
 				var body = _n.Args[argCount - 1];
-				// If the body calls anything other than S.Braces, we will use 
-				// macro-call notation only if we can guarantee that the first 
-				// thing printed will be an identifier. So the body must not be
-				// in parens (nor body.Head) and must not have any attributes
-				// (not even style attributes, because #trivia_macroAttribute is
-				// unacceptable), and the head should not be a keyword unless it
-				// is a complex identifier, a '=' operator whose left-hand side 
-				// meets the same conditions, or a keyword statement. This logic 
-				// may miss some legal cases, but the important thing is to avoid 
-				// printing something unparsable.
-				if (!CallsWPAIH(body, S.Braces)) {
-					LNode tmp = body;
-					for(;;) {
-						if (tmp.AttrCount != 0 || (tmp.Target != null && tmp.Target.IsParenthesizedExpr()))
-							return false;
-						Debug.Assert(!tmp.IsParenthesizedExpr()); // parens are an attribute
-						if (tmp.HasSpecialName) {
-							if (tmp.Name == S.Set) { // x=y
-								if ((tmp = tmp.Args[0, null]) != null)
-									continue;
-								else
-									break;
-							}
-							return false;
-						}
-						if (tmp.IsCall && !IsComplexIdentifier(tmp.Target))
-							return false;
-						break;
-					}
-				}
+				// If the body calls anything other than S.Braces, don't use macro-call notation.
+				if (!CallsWPAIH(body, S.Braces))
+					return false;
 
 				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 
@@ -298,7 +268,7 @@ namespace Ecs
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 
-			if (bases.CallsMin(S.Tuple, 1))
+			if (bases.CallsMin(S.List, 1))
 			{
 				Space(SpaceOpt.BeforeBaseListColon);
 				WriteThenSpace(':', SpaceOpt.AfterColon);
@@ -434,7 +404,7 @@ namespace Ecs
 		private bool PrintBracedBlockOrStmt(LNode stmt, Ambiguity flags, NewlineOpt beforeBrace = NewlineOpt.BeforeExecutableBrace)
 		{
 			var name = stmt.Name;
-			if ((name == S.Braces || name == S.StmtList) && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
+			if (name == S.Braces && !HasPAttrs(stmt) && HasSimpleHeadWPA(stmt))
 			{
 				PrintBracedBlock(stmt, beforeBrace);
 				return true;
@@ -462,8 +432,6 @@ namespace Ecs
 			if (beforeBrace != 0)
 				if (!Newline(beforeBrace))
 					Space(SpaceOpt.Default);
-			if (body.Name == S.StmtList)
-				_out.Write('#', false);
 			_out.Write('{', true);
 			using (WithSpace(spaceName))
 				using (Indented)
@@ -659,11 +627,11 @@ namespace Ecs
 		public SPResult AutoPrintEvent(Ambiguity flags)
 		{
 			var eventType = EventDefinitionType();
-			if (eventType == null)
+			if (eventType == EventDef.Invalid)
 				return SPResult.Fail;
 
 			var ifClause = PrintTypeAndName(false, false, AttrStyle.IsDefinition, "event ");
-			if (eventType == EventWithBody)
+			if (eventType == EventDef.WithBody)
 				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
 			else {
 				for (int i = 2, c = _n.ArgCount; i < c; i++)

@@ -34,7 +34,7 @@ namespace Loyc.Geometry
 		where T : IConvertible, IComparable<T>, IEquatable<T>
 	{
 		static IAdditionGroup<T> ag = Maths<T>.AdditionGroup;
-		static IInrementer<T> inc = Maths<T>.Inrementer;
+		static IIncrementer<T> inc = Maths<T>.Inrementer;
 		static INumTraits<T> traits = Maths<T>.Traits;
 		static IMath<T> m = Maths<T>.Math;
 

@@ -11,6 +11,14 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
+		{
+			return new ReversedListSource<T>(c);
+		}
+	}
+
 	/// <summary>
 	/// Reversed view of IListSource returned from <see cref="LCExt.ReverseView{T}"/>
 	/// </summary>

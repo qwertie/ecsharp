@@ -206,11 +206,10 @@
     <None Include="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
-      <CustomToolNamespace>--timeout=0</CustomToolNamespace>
+      <CustomToolNamespace>--timeout=10</CustomToolNamespace>
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
-      <CustomToolNamespace>--timeout=0</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>

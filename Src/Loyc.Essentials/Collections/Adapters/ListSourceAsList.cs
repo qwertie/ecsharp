@@ -12,6 +12,24 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
+	public static partial class LCExt
+	{
+		/// <summary>Converts any IListSource{T} object to a read-only IList{T}.</summary>
+		/// <remarks>This method is named "AsList" and not "ToList" because
+		/// because, in contrast to methods like ToArray(), it does not make a copy
+		/// of the sequence, although it does create a new wrapper object if <c>c</c>
+		/// does not implement <see cref="IList{T}"/>.</remarks>
+		public static IList<T> AsList<T>(this IListSource<T> c)
+		{
+			if (c == null)
+				return null;
+			var list = c as IList<T>;
+			if (list != null)
+				return list;
+			return new ListSourceAsList<T>(c);
+		}
+	}
+
 	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T),
 	/// returned from <see cref="LCExt.AsList{T}"/>.</summary>
 	[Serializable]

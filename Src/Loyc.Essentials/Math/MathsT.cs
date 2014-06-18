@@ -57,7 +57,7 @@ namespace Loyc.Math
 		public static readonly IComplexMath<T> ComplexMath = Get() as IComplexMath<T>;
 		public static readonly INumConverter<T> NumConverter = Get() as INumConverter<T>;
 		public static readonly IOrdered<T> Ordered = Get() as IOrdered<T>;
-		public static readonly IInrementer<T> Inrementer = Get() as IInrementer<T>;
+		public static readonly IIncrementer<T> Inrementer = Get() as IIncrementer<T>;
 		public static readonly IBitwise<T> Bitwise = Get() as IBitwise<T>;
 		public static readonly IBinaryMath<T> BinaryMath = Get() as IBinaryMath<T>;
 		public static readonly IAdditionGroup<T> AdditionGroup = Get() as IAdditionGroup<T>;
@@ -68,7 +68,7 @@ namespace Loyc.Math
 		public static readonly IMultiplicationGroup<T> MultiplicationGroup = Get() as IMultiplicationGroup<T>;
 		public static readonly IRing<T> Ring = Get() as IRing<T>;
 		public static readonly IField<T> Field = Get() as IField<T>;
-		
+
 		private static object _math;
 		private static object Get()
 		{

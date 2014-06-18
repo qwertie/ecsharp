@@ -150,12 +150,12 @@ namespace Loyc.Geometry
 			var list = new List<Point>(points);
 			return ComputeConvexHull(list, true);
 		}
-		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace)
 		{
 			if (!sortInPlace)
 				points = new List<Point>(points);
 			points.Sort((a, b) => 
-				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
+				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X > b.X ? 1 : -1);
 
 			// Importantly, DList provides O(1) insertion at beginning and end
 			DList<Point> hull = new DList<Point>();
@@ -176,12 +176,11 @@ namespace Loyc.Geometry
 				L++;
 
 				// build upper hull (at beginning of output list)
-				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0)
-				{
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0) {
 					hull.RemoveAt(0);
 					U--;
 				}
-				if (U != 0) // when U=0, share the point added above
+				if (U != 0) // when U == 0, share the point added above
 					hull.PushFirst(p);
 				U++;
 				Debug.Assert(U + L == hull.Count + 1);
@@ -361,12 +360,12 @@ namespace Loyc.Geometry
 			var list = new List<Point>(points);
 			return ComputeConvexHull(list, true);
 		}
-		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace)
 		{
 			if (!sortInPlace)
 				points = new List<Point>(points);
 			points.Sort((a, b) => 
-				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
+				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X > b.X ? 1 : -1);
 
 			// Importantly, DList provides O(1) insertion at beginning and end
 			DList<Point> hull = new DList<Point>();
@@ -387,12 +386,11 @@ namespace Loyc.Geometry
 				L++;
 
 				// build upper hull (at beginning of output list)
-				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0)
-				{
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0) {
 					hull.RemoveAt(0);
 					U--;
 				}
-				if (U != 0) // when U=0, share the point added above
+				if (U != 0) // when U == 0, share the point added above
 					hull.PushFirst(p);
 				U++;
 				Debug.Assert(U + L == hull.Count + 1);
@@ -572,12 +570,12 @@ namespace Loyc.Geometry
 			var list = new List<Point>(points);
 			return ComputeConvexHull(list, true);
 		}
-		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace = false)
+		public static IListSource<Point> ComputeConvexHull(List<Point> points, bool sortInPlace)
 		{
 			if (!sortInPlace)
 				points = new List<Point>(points);
 			points.Sort((a, b) => 
-				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
+				a.X == b.X ? a.Y.CompareTo(b.Y) : a.X > b.X ? 1 : -1);
 
 			// Importantly, DList provides O(1) insertion at beginning and end
 			DList<Point> hull = new DList<Point>();
@@ -598,12 +596,11 @@ namespace Loyc.Geometry
 				L++;
 
 				// build upper hull (at beginning of output list)
-				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0)
-				{
+				while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) <= 0) {
 					hull.RemoveAt(0);
 					U--;
 				}
-				if (U != 0) // when U=0, share the point added above
+				if (U != 0) // when U == 0, share the point added above
 					hull.PushFirst(p);
 				U++;
 				Debug.Assert(U + L == hull.Count + 1);
