@@ -91,7 +91,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Ecs\Debug.NET3\</OutputPath>
     <DefineConstants>DEBUG;TRACE;DotNet3</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -122,9 +122,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <OutputPath>bin\Release.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Ecs\Release.NET3\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
-    <DocumentationFile>..\..\Bin\Ecs\Release.NET4\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Ecs\Release.NET3\Ecs.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573</NoWarn>
     <DebugType>pdbonly</DebugType>

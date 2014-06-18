@@ -199,8 +199,8 @@ namespace Loyc.Collections
 			StableSort(list, Comparer<T>.Default.Compare);
 		}
 
-		/// <summary>Uses a partial quicksort, known as "quickselect", to find the
-		/// lowest k elements in a list.</summary>
+		/// <summary>Uses a partial quicksort, known as "quickselect", to find and
+		/// sort the lowest k elements in a list.</summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="list">A list that will be partially sorted.</param>
 		/// <param name="k">Number of elements that will be sorted at the beginning 
@@ -212,21 +212,21 @@ namespace Loyc.Collections
 		/// <remarks>Whereas quicksort typically runs in O(N log N) time,
 		/// quickselect typically requires O(N) time for small values of k, 
 		/// although the worst-case performance remains O(N^2).</remarks>
-		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int k)
+		public static ListSlice<T> SortLowestK<T>(this IList<T> list, int k)
 		{
-			return FindLowestK(list, k, Comparer<T>.Default.Compare);
+			return SortLowestK(list, k, Comparer<T>.Default.Compare);
 		}
-		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int k, Comparison<T> comp)
+		public static ListSlice<T> SortLowestK<T>(this IList<T> list, int k, Comparison<T> comp)
 		{
-			return FindLowestK(list, 0, list.Count, k, comp);
+			return SortLowestK(list, 0, list.Count, k, comp);
 		}
-		public static ListSlice<T> FindLowestK<T>(this IList<T> list, int index, int count, int k, Comparison<T> comp)
+		public static ListSlice<T> SortLowestK<T>(this IList<T> list, int index, int count, int k, Comparison<T> comp)
 		{
 			Sort(list, index, count, comp, null, k);
 			return new ListSlice<T>(list, index, System.Math.Min(count, k));
 		}
 
-		/// <summary>A stable version of <see cref="FindLowestK{T}(IList{T},int)"/>. This means 
+		/// <summary>A stable version of <see cref="SortLowestK{T}(IList{T},int)"/>. This means 
 		/// that when k>1 and adjacent results at the beginning of <c>list</c> 
 		/// compare equal, they keep the same order that they had originally.</summary>
 		/// <typeparam name="T"></typeparam>
@@ -236,27 +236,33 @@ namespace Loyc.Collections
 		/// entire list is sorted.</param>
 		/// <returns>This method uses the quickselect algorithm and stability is
 		/// achieved using a temporary array of <c>list.Count</c> integers.</returns>
-		public static ListSlice<T> FindLowestKStable<T>(this IList<T> list, int k)
+		public static ListSlice<T> SortLowestKStable<T>(this IList<T> list, int k)
 		{
-			return FindLowestKStable(list, k, Comparer<T>.Default.Compare);
+			return SortLowestKStable(list, k, Comparer<T>.Default.Compare);
 		}
-		public static ListSlice<T> FindLowestKStable<T>(this IList<T> list, int k, Comparison<T> comp)
+		public static ListSlice<T> SortLowestKStable<T>(this IList<T> list, int k, Comparison<T> comp)
 		{
 			Sort(list, 0, list.Count, comp, RangeArray(list.Count), k);
 			return new ListSlice<T>(list, 0, k);
 		}
 
-		// Used by Sort, StableSort, FindLowestK, FindLowestKStable.
 		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
 		                            int[] indexes, int quickSelectElems = int.MaxValue)
+		{
+			CheckParam.Range("index", index, 0, list.Count);
+			CheckParam.Range("count", count, 0, list.Count - index);
+			SortCore(list, index, count, comp, indexes, quickSelectElems);
+		}
+
+		// Used by Sort, StableSort, SortLowestK, SortLowestKStable.
+		private static void SortCore<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
+		                                int[] indexes, int quickSelectElems)
 		{
 			// This code duplicates the code in InternalList.Sort(), except
 			// that it also supports stable sorting (indexes parameter) and
 			// quickselect (sorting the first 'quickSelectElems' elements). This 
 			// version is slower; two versions exist so that array sorting can 
 			// be done faster.
-			CheckParam.Range("index", index, 0, list.Count);
-			CheckParam.Range("count", count, 0, list.Count - index);
 			if (quickSelectElems <= 0)
 				return;
 
@@ -327,7 +333,7 @@ namespace Loyc.Collections
 				if (leftSize < rightSize)
 				{
 					// Recursively sort the left partition; iteratively sort the right
-					Sort(list, index, leftSize, comp, indexes);
+					SortCore(list, index, leftSize, comp, indexes, quickSelectElems);
 					index += leftSize + 1;
 					count = rightSize;
 					if ((quickSelectElems -= leftSize + 1) <= 0)
@@ -336,7 +342,7 @@ namespace Loyc.Collections
 				else
 				{	// Iteratively sort the left partition; recursively sort the right
 					count = leftSize;
-					Sort(list, index + leftSize + 1, rightSize, comp, indexes, quickSelectElems - (leftSize + 1));
+					SortCore(list, index + leftSize + 1, rightSize, comp, indexes, quickSelectElems - (leftSize + 1));
 				}
 			}
 		}

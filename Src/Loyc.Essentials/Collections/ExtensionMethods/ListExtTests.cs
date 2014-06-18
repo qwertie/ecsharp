@@ -58,9 +58,9 @@ namespace Loyc.Collections
 
 				int k = _r.Next(1, list.Count);
 				if ((t & 1) == 1)
-					list.FindLowestKStable(k);
+					list.SortLowestKStable(k);
 				else
-					list.FindLowestK(k);
+					list.SortLowestK(k);
 				int i;
 				for (i = 1; i <= k; i++) {
 					IntPair a = list[i-1], b = list[i];
