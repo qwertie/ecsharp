@@ -256,7 +256,7 @@ namespace BoxDiagrams
 			return (int)Math.Round(v.Angle() * (4 / Math.PI)) & 7;
 		}
 
-		new class HitTestResult : Shape.HitTestResult
+		class HitTestResult : Util.WinForms.HitTestResult
 		{
 			public HitTestResult(Shape shape, Cursor cursor, int pointOrSeg) 
 				: base(shape, cursor) { PointOrSegment = pointOrSeg; }
@@ -264,7 +264,7 @@ namespace BoxDiagrams
 			public bool IsPointHit { get { return MouseCursor == Cursors.SizeAll; } }
 		}
 
-		public override Shape.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
+		public override Util.WinForms.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
 		{
 			if (!BBox.Inflated(hitTestRadius.X, hitTestRadius.Y).Contains(pos))
 				return null;
@@ -302,12 +302,12 @@ namespace BoxDiagrams
 			return null;
 		}
 
-		public override void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack)
+		public override void OnKeyPress(KeyPressEventArgs e)
 		{
 			e.Handled = true;
 			char ch = e.KeyChar;
 			if (ch >= ' ') {
-				undoStack.Do(@do => {
+				UndoStack.Do(@do => {
 					if (@do) 
 						TextTopLeft.Text += ch;
 					else
@@ -315,12 +315,12 @@ namespace BoxDiagrams
 				}, true);
 			}
 		}
-		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
+		public override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && TextTopLeft.Text.Length > 0)
 			{
 				char last = TextTopLeft.Text[TextTopLeft.Text.Length - 1];
-				undoStack.Do(@do => {
+				UndoStack.Do(@do => {
 					if (@do)
 						TextTopLeft.Text = TextTopLeft.Text.Left(TextTopLeft.Text.Length - 1);
 					else
@@ -329,7 +329,7 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo DragMoveAction(Shape.HitTestResult htr, VectorT amount)
+		public override DoOrUndo DragMoveAction(Util.WinForms.HitTestResult htr, VectorT amount)
 		{
 			if (htr == null || htr.MouseCursor == Cursors.SizeAll) {
 				return @do => {
@@ -342,7 +342,7 @@ namespace BoxDiagrams
 			return null;
 		}
 
-		public override DoOrUndo DoubleClickAction(Shape.HitTestResult htr_)
+		public override DoOrUndo DoubleClickAction(Util.WinForms.HitTestResult htr_)
 		{
 			var htr = (HitTestResult)htr_;
 			Arrowhead old = null;

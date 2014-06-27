@@ -10,9 +10,78 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Diagnostics;
+
+using PointT = Loyc.Geometry.Point<float>;
+using VectorT = Loyc.Geometry.Vector<float>;
 
 namespace Util.WinForms
 {
+	public enum SelType
+	{
+		No, Yes, Partial
+	}
+
+	/*public class WidgetLayer : LLShapeLayer, IListChanging<ShapeWidget>, IChildOf<WidgetControl>
+	{
+		public WidgetLayer(LLShapeControl control, bool? useAlpha = null) : base(control, useAlpha)
+		{
+			Widgets = new ShapeWidgetList(this);
+		}
+	
+		public readonly ShapeWidgetList Widgets;
+
+		void IListChanging<ShapeWidget>.OnListChanging(IListSource<ShapeWidget> sender, ListChangeInfo<ShapeWidget> e)
+		{
+		}
+
+		public void OnBeingAdded(WidgetControl parent)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void OnBeingRemoved(WidgetControl parent)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public interface IShapeWidget : IChildOf<WidgetLayer>
+	{
+		HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel);
+		void OnKeyDown(KeyEventArgs e) { }
+		void OnKeyUp(KeyEventArgs e) { }
+		void OnKeyPress(KeyPressEventArgs e) { }
+	}
+	public abstract class ShapeWidget : IShapeWidget
+	{
+		public virtual void OnBeingAdded(WidgetLayer parent) { }
+		public virtual void OnBeingRemoved(WidgetLayer parent) { }
+	}
+
+	public class ShapeWidgetList : OwnedChildList<WidgetLayer, ShapeWidget>
+	{
+		public ShapeWidgetList(WidgetLayer parent) : base(parent) { }
+	}
+
+	public class ScrollThumb : ShapeWidget
+	{
+	}*/
+
+	/// <summary>Base class for results returned from <see cref="Shape.HitTest()"/>.</summary>
+	public class HitTestResult
+	{
+		public HitTestResult(Shape shape, Cursor cursor)
+			{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null); }
+		public Shape Shape;
+		public Cursor MouseCursor;
+		public virtual bool AllowsDrag
+		{
+			get { return MouseCursor != null && MouseCursor != Cursors.Arrow; }
+		}
+	}
+
+
 	/// <summary>Base class for a control that supports drawing and zooming/scrolling</summary>
 	public abstract class DrawingControlBase : LLShapeControl
 	{
@@ -21,6 +90,7 @@ namespace Util.WinForms
 			if (!IsDesignTime) // Rx crashes the designer
 				SetUpMouseEventHandling();
 		}
+
 
 		private void SetUpMouseEventHandling()
 		{
@@ -61,23 +131,26 @@ namespace Util.WinForms
 			.Subscribe();
 		}
 
-		protected abstract void AnalyzeGesture(DragState state, bool mouseUp);
+		protected virtual void AnalyzeGesture(DragState state, bool mouseUp)
+		{
+		}
 
 		protected DragState _dragState; // beware of multitouch
 
 		protected virtual DragState MouseClickStarted(MouseEventArgs e)
 		{
-			return new DragState(this) { Clicks = e.Clicks };
+			return new DragState(this, e);
 		}
 
 		/// <summary>Temporary state variables during click or drag operation</summary>
 		public class DragState
 		{
-			public DragState(DrawingControlBase c) { Control = c; }
+			public DragState(DrawingControlBase c, MouseEventArgs down) { Control = c; Down = down; }
 			public DrawingControlBase Control;
 			public DList<DragPoint> Points = new DList<DragPoint>();
 			public DList<DragPoint> UnfilteredPoints = new DList<DragPoint>();
-			public int Clicks; // 1 for single click, 2 for double-click
+			public MouseEventArgs Down; // Initial mouse down event
+			public int Clicks { get { return Down.Clicks; } } // 1 for single click, 2 for double-click
 			
 			/// <summary>Gets the total distance that the mouse moved since the button press.</summary>
 			public Vector<float> TotalDelta { 

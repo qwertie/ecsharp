@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace Loyc.Collections
 {
 	[Serializable]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public abstract class ListExBase<T> : ListSourceBase<T>, IListEx<T>
 	{
 		//public abstract int Count { get; }
@@ -50,21 +52,21 @@ namespace Loyc.Collections
 		}
 		public void AddRange(IEnumerable<T> e)
 		{
-			ListExt.AddRange(this, e);
+			InsertRange(Count, e);
 		}
 		public void AddRange(IReadOnlyCollection<T> s)
 		{
-			ListExt.AddRange(this, s);
+			InsertRange(Count, s);
 		}
-		public void RemoveRange(int start, int count)
+		public virtual void RemoveRange(int start, int count)
 		{
 			ListExt.RemoveRange(this, start, count);
 		}
-		public void InsertRange(int index, IReadOnlyCollection<T> items)
+		public virtual void InsertRange(int index, IReadOnlyCollection<T> items)
 		{
 			ListExt.InsertRange(this, index, items);
 		}
-		public void InsertRange(int index, IEnumerable<T> items)
+		public virtual void InsertRange(int index, IEnumerable<T> items)
 		{
 			var items2 = items as IReadOnlyCollection<T>;
 			if (items2 != null)

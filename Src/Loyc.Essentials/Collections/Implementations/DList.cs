@@ -122,6 +122,10 @@
 				InsertRange(index, new List<T>(e));
 		}
 
+		public void AddRange(ICollectionAndReadOnly<T> c)
+		{
+			InsertRange(_dlist.Count, (IReadOnlyCollection<T>)c);
+		}
 		public void AddRange(ICollection<T> c)
 		{
 			InsertRange(_dlist.Count, c);

@@ -148,13 +148,13 @@ namespace BoxDiagrams
 		}
 
 		[Flags] enum RF { Left = 1, Top = 2, Right = 4, Bottom = 8, Move = Left|Top|Right|Bottom }
-		new class HitTestResult : Shape.HitTestResult
+		class HitTestResult : Util.WinForms.HitTestResult
 		{
 			public HitTestResult(Shape shape, Cursor cursor, RF resizeFlags) : base(shape, cursor) { ResizeFlags = resizeFlags; }
 			public RF ResizeFlags;
 		}
 
-		public override Shape.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
+		public override Util.WinForms.HitTestResult HitTest(PointT pos, VectorT hitTestRadius, SelType sel)
 		{
 			if (sel != SelType.No) {
 				var bbox2 = BBox.Inflated(hitTestRadius.X, hitTestRadius.Y);
@@ -194,13 +194,13 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack)
+		public override void OnKeyPress(KeyPressEventArgs e)
 		{
 			e.Handled = true;
 			char ch = e.KeyChar;
 			if (ch >= 32 || ch == '\r') {
 				if (ch == '\r') ch = '\n';
-				undoStack.Do(@do => {
+				UndoStack.Do(@do => {
 					if (@do)
 						this.Text += ch;
 					else
@@ -221,12 +221,12 @@ namespace BoxDiagrams
 			};
 		}
 
-		public override void OnKeyDown(KeyEventArgs e, UndoStack undoStack)
+		public override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Modifiers == 0 && e.KeyCode == Keys.Back && Text.Length > 0)
 			{
 				char last = Text[Text.Length-1];
-				undoStack.Do(@do => {
+				UndoStack.Do(@do => {
 					if (@do)
 						this.Text = this.Text.Left(this.Text.Length - 1);
 					else
@@ -235,7 +235,7 @@ namespace BoxDiagrams
 			}
 		}
 
-		public override DoOrUndo DragMoveAction(Shape.HitTestResult htr_, VectorT amount) 
+		public override DoOrUndo DragMoveAction(Util.WinForms.HitTestResult htr_, VectorT amount) 
 		{
 			var htr = htr_ as HitTestResult;
 			var rf = htr == null ? RF.Move : htr.ResizeFlags;
@@ -255,7 +255,7 @@ namespace BoxDiagrams
 			};
 		}
 
-		public override DoOrUndo DoubleClickAction(Shape.HitTestResult htr)
+		public override DoOrUndo DoubleClickAction(Util.WinForms.HitTestResult htr)
 		{
 			return @do => {
 				var t = BoxType;

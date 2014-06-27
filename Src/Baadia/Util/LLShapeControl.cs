@@ -11,6 +11,7 @@ using System.ComponentModel;
 using Loyc.Geometry;
 using System.Drawing.Drawing2D;
 using System.Diagnostics;
+using Util.Collections;
 
 namespace Util.WinForms
 {
@@ -18,53 +19,46 @@ namespace Util.WinForms
 	/// <remarks>
 	/// This class provides a convenient way to draw custom controls. It consists
 	/// of one or more layers (<see cref="LLShapeLayer"/>), and each layer contains 
-	/// a list of shapes of type <see cref="LLShape"/>.
-	/// <para/>
-	/// It is recommended to use only a couple of layers in most cases,
-	/// because compositing the layers can be a major cost by itself.
+	/// a list of shapes of type <see cref="LLShape"/>. "LL" stands for "low-level".
 	/// </remarks>
-	public class LLShapeControl : Control
+	public class LLShapeControl : Control, IListChanging<LLShapeLayer>
 	{
 		public LLShapeControl()
 		{
 			BackColor = Color.White;
-			_layers.ListChanging += (sender, e) => { Invalidate(); };
+			_layers = new OwnedChildList<LLShapeControl, LLShapeLayer>(this);
 			AddLayer(false);
 		}
+		void IListChanging<LLShapeLayer>.OnListChanging(IListSource<LLShapeLayer> sender, ListChangeInfo<LLShapeLayer> e)
+		{
+			Invalidate();
+		}
 
-		AList<LLShapeLayer> _layers = new AList<LLShapeLayer>();
-		public IListSource<LLShapeLayer> Layers { get { return _layers; } }
+		protected readonly OwnedChildList<LLShapeControl, LLShapeLayer> _layers;
+		public ListExBase<LLShapeLayer> Layers { get { return _layers; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha 
 		/// channel, see <see cref="LLShapeLayer"/> for more information.</param>
 		public virtual LLShapeLayer AddLayer(bool? useAlpha = null)
 		{
-			if (_layers.Count == 0 && useAlpha == null)
-				useAlpha = false;
-			var layer = new LLShapeLayer(this, useAlpha);
-			layer.Resize(Width, Height);
+			var layer = new LLShapeLayer(useAlpha);
 			_layers.Add(layer);
 			return layer;
 		}
-		public virtual LLShapeLayer InsertLayer(int index, bool? useAlpha = null)
+
+		public virtual void DisposeLayerAt(int index)
 		{
-			if (index == 0 && useAlpha == null)
-				useAlpha = false;
-			var layer = new LLShapeLayer(this, useAlpha);
-			layer.Resize(Width, Height);
-			_layers.Insert(index, layer);
-			return layer;
-		}
-		public virtual void RemoveLayerAt(int index)
-		{
-			_layers[index].Dispose();
+			var layer = _layers[index];
 			_layers.RemoveAt(index);
+			layer.Dispose();
 		}
 
 		Bitmap _completeFrame;
-		bool _suspendDraw, _needRedraw, _drawPending;
-				
+		bool _suspendDraw; // True when drawing is blocked by SuspendDrawing()
+		bool _needRedraw;  // True when Invalidate() has been called but not DrawLayers()
+		bool _drawPending; // True when DrawLayers() is in the message queue
+
 		/// <summary>Temporarily blocks automatic redrawing.</summary>
 		/// <remarks>It's useful to call this method when the control is hidden
 		/// or shown in an off-screen tab or window, so that unnecessary drawing
@@ -76,11 +70,11 @@ namespace Util.WinForms
 		/// <seealso cref="SuspendDrawing"/>
 		public void ResumeDrawing() { _suspendDraw = false; AutoDrawLayers(); }
 
-		public new void Invalidate(bool invalidateLayers = false)
+		public new void Invalidate(bool invalidateAllLayers = false)
 		{
 			_needRedraw = true;
 			AutoDrawLayers();
-			if (invalidateLayers)
+			if (invalidateAllLayers)
 				foreach (var layer in _layers)
 					layer.Invalidate();
 			base.Invalidate();
@@ -108,34 +102,36 @@ namespace Util.WinForms
 					_layers[0].Shapes.Add(new LLTextShape(_designStyle, GetType().Name, null, new Point<float>(3, 3)));
 			}
 
-			Bitmap combined = null;
-			for (int i = 0; i < _layers.Count; i++)
-			{
-				LLShapeLayer layer = _layers[i];
-				var bmp = layer.AutoDraw(combined);
-				if (layer.UseAlpha && bmp != combined) {
-					// Blit this layer onto the previous one
-					if (combined == null) {
-						// oops, bottom layer has an alpha channel
-						combined = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format24bppRgb);
-						var g_ = Graphics.FromImage(combined);
-						g_.Clear(BackColor);
-						g_.Dispose();
-					}
-					var g = Graphics.FromImage(combined);
-					g.DrawImage(bmp, new Point());
-					g.Dispose();
-				} else
-					combined = bmp;
+			try {
+				Bitmap combined = null;
+				for (int i = 0; i < _layers.Count; i++) {
+					LLShapeLayer layer = _layers[i];
+					var bmp = layer.AutoDraw(combined, Width, Height);
+					if (layer.UseAlpha && bmp != combined) {
+						// Blit this layer onto the previous one
+						if (combined == null) {
+							// oops, bottom layer has an alpha channel
+							combined = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format24bppRgb);
+							var g_ = Graphics.FromImage(combined);
+							g_.Clear(BackColor);
+							g_.Dispose();
+						}
+						var g = Graphics.FromImage(combined);
+						g.DrawImage(bmp, new Point());
+						g.Dispose();
+					} else
+						combined = bmp;
+				}
+				_completeFrame = combined;
+				base.Invalidate();
+			} finally {
+				_needRedraw = _drawPending = false;
 			}
-			_completeFrame = combined;
-			_needRedraw = _drawPending = false;
-			base.Invalidate();
 		}
 		protected override void OnResize(EventArgs e)
 		{
 			foreach (var layer in _layers)
-				layer.Resize(Width, Height);
+				layer.OnResize(Width, Height);
 		}
 		protected override void OnPaint(PaintEventArgs pe)
 		{
@@ -179,50 +175,51 @@ namespace Util.WinForms
 	/// Performance tip: drawing and compositing are both skipped when a layer is 
 	/// empty, except when drawing the lowest layer. So it's fairly harmless to 
 	/// define an extra layer that is usually empty.
+	/// <para/>
+	/// LLShapeLayer's <see cref="Shapes"/> property is a list of <see cref="LLShape"/> 
+	/// and <see cref="LLShapeGroup"/> objects. LLShapeLayer specifically recognizes
+	/// <see cref="LLShapeGroup"/>s and "expands" them into their individual shapes
+	/// before sorting all the individual shapes by ZOrder and drawing them. This 
+	/// class itself does not have a transformation matrix, so shapes that need to 
+	/// be transformed (e.g. scrolling, zooming) should be placed in a shape group.
 	/// </remarks>
-	public class LLShapeLayer : IDisposable
+	public class LLShapeLayer : ChildOfOneParent<LLShapeControl>, IDisposable
 	{
 		Bitmap _bmp;
 		bool? _useAlpha;
-		int _width, _height;
 		bool _invalid;
-		LLShapeControl _container;
 
 		MSet<LLShape> _shapes = new MSet<LLShape>();
 		public MSet<LLShape> Shapes { get { return _shapes; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha channel.</param>
-		internal LLShapeLayer(LLShapeControl container, bool? useAlpha = null)
+		internal LLShapeLayer(bool? useAlpha = null)
 		{
-			_container = container;
 			_useAlpha = useAlpha;
-			//_shapes.ListChanging += (sender, e) => { _invalid = true; };
 		}
-		/// <summary>Resizes the layer's viewport.</summary>
-		public void Resize(int width, int height)
+		public virtual void OnResize(int width, int height)
 		{
-			if (_width != width || _height != height) {
-				_width = width;
-				_height = height;
+			if (_bmp == null || _bmp.Width != width || _bmp.Height != height)
 				Invalidate();
-			}
 		}
 		public void Invalidate()
 		{
 			_invalid = true;
-			_container.Invalidate();
+			if (_parent != null)
+				_parent.Invalidate();
 		}
 		public bool IsInvalidated
 		{
-			get { return _invalid || _bmp == null || _bmp.Width != _width || _bmp.Height != _height; }
+			get { return _invalid || _bmp == null; }
 		}
 		public bool UseAlpha
 		{
 			get { return _useAlpha == true || (_useAlpha == null && Shapes.Count >= 12); }
 		}
-		public Bitmap AutoDraw(Bitmap lowerLevel)
+		public Bitmap AutoDraw(Bitmap lowerLevel, int width, int height)
 		{
+			Debug.Assert(_parent != null);
 			bool useAlpha = UseAlpha;
 			if (!useAlpha || IsInvalidated)
 			{
@@ -232,18 +229,18 @@ namespace Util.WinForms
 					return lowerLevel;
 				
 				var pixFmt = useAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
-				if (IsInvalidated || _bmp.PixelFormat != pixFmt) {
+				if (IsInvalidated || _bmp.PixelFormat != pixFmt || _bmp.Width != width || _bmp.Height != height) {
 					if (_bmp != null)
 						_bmp.Dispose();
-					_bmp = new Bitmap(_width, _height, pixFmt);
+					_bmp = new Bitmap(width, height, pixFmt);
 				}
 
 				var g = Graphics.FromImage(_bmp);
 				g.SmoothingMode = SmoothingMode.AntiAlias;
 				if (useAlpha)
-					g.Clear(Color.FromArgb(0, _container.BackColor));
+					g.Clear(Color.FromArgb(0, _parent.BackColor));
 				else if (lowerLevel == null)
-					g.Clear(_container.BackColor);
+					g.Clear(_parent.BackColor);
 				else
 					g.DrawImage(lowerLevel, new Point(0, 0));
 

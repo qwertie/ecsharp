@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Loyc.Collections;
-using Util.WinForms;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Linq;
+using Loyc.Collections;
+using Loyc.Geometry;
 using ProtoBuf;
 using ProtoBuf.Meta;
-using Loyc.Geometry;
+using Util.WinForms;
 
 namespace BoxDiagrams
 {
@@ -20,11 +17,11 @@ namespace BoxDiagrams
 		public DiagramDocumentCore()
 		{
 			Shapes = new MSet<Shape>();
-			Styles = new List<DiagramDrawStyle>();
+			Styles = new DList<DiagramDrawStyle>();
 		}
 
 		[ProtoMember(1)]
-		public List<DiagramDrawStyle> Styles { get; set; }
+		public DList<DiagramDrawStyle> Styles { get; set; }
 
 		[ProtoMember(2, IsRequired=true)]
 		public MSet<Shape> Shapes { get; set; }

@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	/// <seealso cref="INotifyListChanging{T}"/>
 	[Serializable]
-	public class ListChangeInfo<T> : EventArgs
+	public struct ListChangeInfo<T>
 	{
 		/// <summary>Initializes the members of <see cref="ListChangeInfo{T}"/>.</summary>
 		public ListChangeInfo(NotifyCollectionChangedAction action, int index, int sizeChange, IListSource<T> newItems)
@@ -27,7 +27,7 @@ namespace Loyc.Collections
 			NewItems = newItems;
 			Debug.Assert(
 				(action == NotifyCollectionChangedAction.Add && newItems != null && NewItems.Count == sizeChange) ||
-				(action == NotifyCollectionChangedAction.Remove && newItems == null && sizeChange < 0) ||
+				(action == NotifyCollectionChangedAction.Remove && (newItems == null || newItems.Count == 0) && sizeChange < 0) ||
 				(action == NotifyCollectionChangedAction.Replace && newItems != null && sizeChange == 0) ||
 				(action == NotifyCollectionChangedAction.Move && sizeChange == 0) ||
 				(action == NotifyCollectionChangedAction.Reset));

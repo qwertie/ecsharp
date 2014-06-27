@@ -101,10 +101,11 @@ namespace BoxDiagrams
 	{
 		public DiagramControl()
 		{
-			_undoStack = new UndoStack(this);
 			_mainLayer = Layers[0]; // predefined
 			_selAdorners = AddLayer(false);
 			_dragAdorners = AddLayer(false);
+			
+			Document = new DiagramDocument();
 			
 			LineStyle = new DiagramDrawStyle { LineColor = Color.Black, LineWidth = 2, TextColor = Color.Blue, FillColor = Color.FromArgb(64, Color.Gray) };
 			LineStyle.Name = "Default";
@@ -145,22 +146,6 @@ namespace BoxDiagrams
 			_selAdorners.Invalidate();
 		}
 
-		#region Unlimited undo support code
-
-		class UndoStack : Util.UI.UndoStack
-		{
-			DiagramControl _self;
-			public UndoStack(DiagramControl self) { _self = self; }
-			public override void AfterAction(bool @do)
-			{
-				_self.ShapesChanged();
-				_self.RecreateSelectionAdorners();
-			}
-		}
-		UndoStack _undoStack;
-
-		#endregion
-
 		#region Commands and keyboard input handling
 
 		static Symbol S(string s) { return GSymbol.Get(s); }
@@ -187,7 +172,7 @@ namespace BoxDiagrams
 			get { 
 				return _commands = _commands ?? 
 				    (((Map<Symbol, ICommand>)CommandAttribute.GetCommandMap(this))
-				                      .Union(CommandAttribute.GetCommandMap(_undoStack)));
+				                      .Union(CommandAttribute.GetCommandMap(_doc.UndoStack)));
 			}
 		}
 
@@ -209,13 +194,13 @@ namespace BoxDiagrams
 			base.OnKeyDown(e);
 			if (!(e.Handled = e.Handled || ProcessShortcutKey(e)))
 				if (_focusShape != null)
-					_focusShape.OnKeyDown(e, _undoStack);
+					_focusShape.OnKeyDown(e);
 		}
 		protected override void OnKeyUp(KeyEventArgs e)
 		{
 			base.OnKeyUp(e);
 			if (!e.Handled && _focusShape != null)
-				_focusShape.OnKeyUp(e, _undoStack);
+				_focusShape.OnKeyUp(e);
 		}
 		protected override void OnKeyPress(KeyPressEventArgs e)
 		{
@@ -226,7 +211,7 @@ namespace BoxDiagrams
 				if (_focusShape != null && _focusShape.IsPanel && string.IsNullOrEmpty(_focusShape.PlainText()))
 					ignorePanel = true;
 				if (_focusShape != null && !ignorePanel) {
-					_focusShape.OnKeyPress(e, _undoStack);
+					_focusShape.OnKeyPress(e);
 				} else if (e.KeyChar >= 32 && _lastClickLocation != null) {
 					var pt = _lastClickLocation.Value;
 					int w = MathEx.InRange(Width / 4, 100, 400);
@@ -250,7 +235,7 @@ namespace BoxDiagrams
 			if (run) {
 				if (_partialSelShape != null)
 					_selectedShapes.Add(_partialSelShape);
-				DeleteShapes(_selectedShapes);
+				DeleteShapes((Set<Shape>)_selectedShapes);
 			}
 			return true;
 		}
@@ -262,12 +247,12 @@ namespace BoxDiagrams
 
 		new public class DragState : DrawingControlBase.DragState
 		{
-			public DragState(DiagramControl c) : base(c) { Control = c; }
+			public DragState(DiagramControl c, MouseEventArgs down) : base(c, down) { Control = c; }
 			public new DiagramControl Control;
-			public Util.UI.UndoStack UndoStack { get { return Control._undoStack; } }
+			public Util.UI.UndoStack UndoStack { get { return Control._doc.UndoStack; } }
 			public VectorT HitTestRadius { get { return Control.HitTestRadius; } }
 			public Shape StartShape;
-			public IEnumerable<Shape> NearbyShapes { get { return Control.NearbyShapes(Points.Last.Point); } }
+			public IEnumerable<Shape> NearbyShapes { get { return Control.ShapesOnScreen(Points.Last.Point); } }
 
 			bool _gotAnchor;
 			Anchor _startAnchor;
@@ -283,7 +268,7 @@ namespace BoxDiagrams
 				}
 			}
 
-			public Shape.HitTestResult ClickedShape;
+			public HitTestResult ClickedShape;
 		}
 
 		protected override bool AddFiltered(DrawingControlBase.DragState state_, DragPoint dp)
@@ -301,8 +286,7 @@ namespace BoxDiagrams
 				&& !_selectedShapes.Contains(htresult.Shape) 
 				&& (Control.ModifierKeys & Keys.Control) == 0)
 				ClickSelect(htresult.Shape);
-			return new DragState(this) { 
-				Clicks = e.Clicks,
+			return new DragState(this, e) {
 				ClickedShape = htresult, 
 			};
 		}
@@ -404,13 +388,13 @@ namespace BoxDiagrams
 
 					DoOrUndo act = null;
 					if (_focusShape != null && (act = _focusShape.AppendTextAction(text)) != null)
-						_undoStack.Do(act, true);
+						_doc.UndoStack.Do(act, true);
 					else {
 						var textBox = new TextBox(new BoundingBox<Coord>(0, 0, 300, 200)) { 
 							Text = text, TextJustify = LLTextShape.JustifyMiddleCenter, 
 							BoxType = BoxType.Borderless, Style = BoxStyle
 						};
-						AddShape(textBox);
+						_doc.AddShape(textBox);
 					}
 				}
 				return true;
@@ -427,10 +411,10 @@ namespace BoxDiagrams
 				if (act != null) {
 					success = true;
 					if (run)
-						_undoStack.Do(act, false);
+						_doc.UndoStack.Do(act, false);
 				}
 			}
-			_undoStack.FinishGroup();
+			_doc.UndoStack.FinishGroup();
 			return success;
 		}
 
@@ -449,20 +433,7 @@ namespace BoxDiagrams
 			var doc = DeserializeAndEliminateDuplicateStyles(buf);
 			foreach(var shape in doc.Shapes)
 				shape.MoveBy(offset);
-			var oldShapes = _doc.Shapes;
-			_undoStack.Do(@do => {
-				if (@do) {
-					oldShapes = _doc.Shapes.Clone();
-					int added = _doc.Shapes.AddRange(doc.Shapes);
-					Debug.Assert(added == doc.Shapes.Count);
-					_doc.Styles.AddRange(doc.Styles);
-					_selectedShapes.Clear();
-					_selectedShapes.AddRange(doc.Shapes);
-				} else {
-					_doc.Shapes = oldShapes;
-					_doc.Styles.Resize(_doc.Styles.Count - doc.Styles.Count);
-				}
-			}, true);
+			_doc.MergeShapes(doc);
 			return doc;
 		}
 
@@ -471,7 +442,7 @@ namespace BoxDiagrams
 			var doc = DiagramDocumentCore.Load(buf);
 			doc.Styles.Clear();
 			foreach (var shape in doc.Shapes) {
-				var style = _doc.Styles.Find(s => s.Equals(shape.Style));
+				var style = _doc.Styles.Where(s => s.Equals(shape.Style)).FirstOrDefault();
 				if (style != null)
 					shape.Style = style;
 				else
@@ -480,11 +451,11 @@ namespace BoxDiagrams
 			return doc;
 		}
 
-		private Shape.HitTestResult HitTest(PointT mouseLoc)
+		private Util.WinForms.HitTestResult HitTest(PointT mouseLoc)
 		{
-			Shape.HitTestResult best = null;
+			Util.WinForms.HitTestResult best = null;
 			bool bestSel = false;
-			foreach (Shape shape in NearbyShapes(mouseLoc))
+			foreach (Shape shape in ShapesOnScreen(mouseLoc))
 			{
 				var result = shape.HitTest(mouseLoc, HitTestRadius, GetSelType(shape));
 				if (result != null) {
@@ -503,7 +474,7 @@ namespace BoxDiagrams
 		}
 
 		// TODO optimization: return a cached subset rather than all shapes
-		public IEnumerable<Shape> NearbyShapes(PointT mousePos) { return _doc.Shapes; }
+		public IEnumerable<Shape> ShapesOnScreen(PointT mousePos) { return _doc.Shapes; }
 
 		const int MinDistBetweenDragPoints = 2;
 
@@ -555,7 +526,7 @@ namespace BoxDiagrams
 
 		private void HandleShapeDrag(DragState state)
 		{
-			_undoStack.UndoTentativeAction();
+			_doc.UndoStack.UndoTentativeAction();
 
 			var movingShapes = _selectedShapes;
 			var panels = _selectedShapes.Where(s => s.IsPanel);
@@ -573,7 +544,7 @@ namespace BoxDiagrams
 				var shape = state.ClickedShape.Shape;
 				DoOrUndo action = shape.DragMoveAction(state.ClickedShape, state.TotalDelta);
 				if (action != null) {
-					_undoStack.DoTentatively(action);
+					_doc.UndoStack.DoTentatively(action);
 					AutoHandleAnchorsChanged();
 				}
 			}
@@ -582,7 +553,7 @@ namespace BoxDiagrams
 				foreach (var shape in movingShapes) {
 					DoOrUndo action = shape.DragMoveAction(state.ClickedShape, state.TotalDelta);
 					if (action != null)
-						_undoStack.DoTentatively(action);
+						_doc.UndoStack.DoTentatively(action);
 				}
 				AutoHandleAnchorsChanged();
 			}
@@ -603,7 +574,7 @@ namespace BoxDiagrams
 				var changes = shape.AutoHandleAnchorsChanged();
 				if (changes != null)
 					foreach (var change in changes)
-						_undoStack.DoTentatively(change);
+						_doc.UndoStack.DoTentatively(change);
 			}
 		}
 
@@ -616,9 +587,9 @@ namespace BoxDiagrams
 						foreach (var shape in _selectedShapes) {
 							DoOrUndo action = shape.DoubleClickAction(htr.Shape == shape ? htr : null);
 							if (action != null)
-								_undoStack.Do(action, false);
+								_doc.UndoStack.Do(action, false);
 						}
-						_undoStack.FinishGroup();
+						_doc.UndoStack.FinishGroup();
 					} else {
 						// Create marker shape
 						newShape = new Marker(BoxStyle, state.UnfilteredPoints.First().Point, MarkerRadius, MarkerType);
@@ -629,7 +600,7 @@ namespace BoxDiagrams
 				}
 			}
 
-			_undoStack.AcceptTentativeAction(); // if any
+			_doc.UndoStack.AcceptTentativeAction(); // if any
 			_partialSelShape = null;
 			if (newShape != null) {
 				if (newShape.Style == SelectorBoxStyle)
@@ -638,7 +609,7 @@ namespace BoxDiagrams
 					AddShape(newShape);
 			}
 			if (eraseSet != null)
-				DeleteShapes(eraseSet);
+				DeleteShapes(new Set<Shape>(eraseSet));
 			_doc.MarkPanels();
 		}
 
@@ -659,47 +630,23 @@ namespace BoxDiagrams
 
 		private void AddShape(Shape newShape)
 		{
-			_undoStack.Do(@do => {
-				if (@do) {
-					_doc.Shapes.Add(newShape);
-					_partialSelShape = newShape;
-					_focusShape = newShape;
-					_selectedShapes.Clear();
-					_selectedShapes.Add(_partialSelShape);
-				} else
-					_doc.Shapes.Remove(newShape);
-			}, true);
+			_doc.AddShape(newShape);
 		}
 
-		void DeleteShapes(IEnumerable<Shape> eraseSet)
+		void DeleteShapes(Set<Shape> eraseSet)
 		{
-			Set<Shape> eraseSet2 = new Set<Shape>(eraseSet);
-			if (!eraseSet2.IsEmpty) {
-				_undoStack.Do(@do => {
-					if (@do)
-						LLDeleteShapes(eraseSet2);
-					else
-						foreach (Shape shape in eraseSet2)
-							_doc.Shapes.Add(shape);
-				}, false);
-				foreach (var shape in _doc.Shapes)
-					_undoStack.Do(shape.OnShapesDeletedAction(eraseSet2), false);
-				_undoStack.FinishGroup();
-			}
+			_doc.RemoveShapes(eraseSet);
 		}
-		private void LLDeleteShapes(Set<Shape> eraseSet)
-		{
-			if (!eraseSet.Any())
-				return;
 
+		void AfterShapesRemoved(IReadOnlyCollection<Shape> eraseSet)
+		{
 			MSet<LLShape> eraseSetLL = new MSet<LLShape>();
 			foreach (var s in eraseSet)
 				s.AddLLShapesTo(eraseSetLL);
 			BeginRemoveAnimation(eraseSetLL);
-
-			foreach (var s in eraseSet)
-				G.Verify(_doc.Shapes.Remove(s));
 		}
+
+
 		private void ShowEraseDuringDrag(DragState state, MSet<LLShape> adorners, IEnumerable<Shape> eraseSet, List<PointT> simplified, bool cancel)
 		{
 			EraseLineStyle.LineColor = Color.FromArgb(128, BackColor);
@@ -766,7 +713,7 @@ namespace BoxDiagrams
 						pair.A.Opacity = (byte)(pair.B * opacity >> 8);
 					cancellingLayer.Invalidate();
 				} else {
-					RemoveLayerAt(Layers.IndexOf(cancellingLayer));
+					DisposeLayerAt(Layers.IndexOf(cancellingLayer));
 					cancellingTimer.Dispose();
 					cancellingLayer.Dispose();
 				}
@@ -1097,7 +1044,7 @@ namespace BoxDiagrams
 		{
 			cancel = false;
 			var simplified = simplified_ = LineMath.SimplifyPolyline(
-				state.UnfilteredPoints.Select(p => p.Point).Buffered(), 10);
+				state.UnfilteredPoints.Select(p => p.Point), 10);
 			List<int> reversals = FindReversals(simplified, 3);
 			if (reversals.Count >= 3)
 			{
@@ -1201,15 +1148,22 @@ namespace BoxDiagrams
 
 		#endregion
 
-		DiagramDocumentCore _doc = new DiagramDocumentCore();
+		DiagramDocument _doc;
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public DiagramDocumentCore Document
+		public DiagramDocument Document
 		{
 			get { return _doc; }
 			set {
 				if (_doc != value) {
+					if (_doc != null) {
+						_doc.AfterAction -= AfterAction;
+						_doc.AfterShapesAdded -= AfterShapesAdded;
+						_doc.AfterShapesRemoved -= AfterShapesRemoved;
+					}
 					_doc = value;
-					_undoStack = new UndoStack(this);
+					_doc.AfterAction += AfterAction;
+					_doc.AfterShapesAdded += AfterShapesAdded;
+					_doc.AfterShapesRemoved += AfterShapesRemoved;
 				}
 			}
 		}
@@ -1224,9 +1178,26 @@ namespace BoxDiagrams
 		public void Load(string filename)
 		{
 			using (var stream = File.OpenRead(filename)) {
-				Document = DiagramDocumentCore.Load(stream);
-				ShapesChanged();
+				Document = DiagramDocument.Load(stream);
+				AfterAction(true);
 			}
+		}
+
+		void AfterShapesAdded(IReadOnlyCollection<Shape> newShapes)
+		{
+			_selectedShapes.Clear();
+			_selectedShapes.Add(_partialSelShape);
+			if (newShapes.Count == 1) {
+				var s = newShapes.First();
+				_partialSelShape = s;
+				_focusShape = s;
+			}
+		}
+
+		void AfterAction(bool @do)
+		{
+			ShapesChanged();
+			RecreateSelectionAdorners();
 		}
 
 		protected void ShapesChanged()

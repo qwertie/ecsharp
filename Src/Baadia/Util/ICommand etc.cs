@@ -122,6 +122,7 @@ namespace Util.UI
 			}
 			return results;
 		}
+
 		/// <summary>Get a dictionary of commands from the methods in the specified 
 		/// object that have a [Command] attribute.</summary>
 		public static MMap<Symbol, ICommand> GetCommandMap(object obj, Type type = null)

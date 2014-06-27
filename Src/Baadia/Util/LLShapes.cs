@@ -26,7 +26,7 @@ namespace Util.WinForms
 	/// they could be drawn on other controls too.
 	/// <para/>
 	/// Ideally, the geometry of the shape would be somehow separated from code 
-	/// that is specific to the GUI library (WinForms). But I'm in a hurry to get 
+	/// that is specific to the GUI library (WinForms). But I was in a hurry to get 
 	/// this done.
 	/// </remarks>
 	public abstract class LLShape : IComparable<LLShape>, ICloneable<LLShape>

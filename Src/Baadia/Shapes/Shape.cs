@@ -15,6 +15,7 @@ using LineSegmentT = Loyc.Geometry.LineSegment<float>;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
 using ProtoBuf;
+using Util.Collections;
 
 namespace BoxDiagrams
 {
@@ -38,7 +39,7 @@ namespace BoxDiagrams
 	[ProtoInclude(100, typeof(TextBox))]
 	[ProtoInclude(101, typeof(LineOrArrow))]
 	[ProtoInclude(102, typeof(Marker))]
-	public abstract class Shape : ICloneable<Shape>, IDisposable
+	public abstract class Shape : ChildOfOneParent<DiagramDocument>, ICloneable<Shape>, IDisposable
 	{
 		public static readonly DiagramDrawStyle DefaultStyle = new DiagramDrawStyle { LineWidth = 2 };
 
@@ -54,18 +55,7 @@ namespace BoxDiagrams
 		}
 		public abstract BoundingBox<float> BBox { get; }
 
-		/// <summary>Base class for results returned from <see cref="Shape.HitTest()"/>.</summary>
-		public class HitTestResult
-		{
-			public HitTestResult(Shape shape, Cursor cursor)
-				{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null); }
-			public Shape Shape;
-			public Cursor MouseCursor;
-			public virtual bool AllowsDrag
-			{
-				get { return MouseCursor != null && MouseCursor != Cursors.Arrow; }
-			}
-		}
+		public UndoStack UndoStack { get { return _parent.UndoStack; } }
 
 		/// <summary>Hit-tests the shape and returns information that includes the 
 		/// mouse cursor to use for it.</summary>
@@ -96,9 +86,9 @@ namespace BoxDiagrams
 
 		#endregion
 
-		public virtual void OnKeyDown(KeyEventArgs e, UndoStack undoStack) { }
-		public virtual void OnKeyUp(KeyEventArgs e, UndoStack undoStack) { }
-		public virtual void OnKeyPress(KeyPressEventArgs e, UndoStack undoStack) { }
+		public virtual void OnKeyDown(KeyEventArgs e) { }
+		public virtual void OnKeyUp(KeyEventArgs e) { }
+		public virtual void OnKeyPress(KeyPressEventArgs e) { }
 
 		public virtual IEnumerable<DoOrUndo> AutoHandleAnchorsChanged() { return null; }
 		public virtual DoOrUndo DragMoveAction(HitTestResult htr, VectorT amount) { return null; }
