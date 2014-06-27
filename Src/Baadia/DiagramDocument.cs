@@ -33,6 +33,8 @@ namespace BoxDiagrams
 		{
 			_undoStack = new DDUndoStack(this);
 			_core = core ?? new DiagramDocumentCore();
+			foreach (var shape in _core.Shapes)
+				shape.OnBeingAdded(this);
 		}
 
 		/// <summary>Gets the shapes in this document.</summary>

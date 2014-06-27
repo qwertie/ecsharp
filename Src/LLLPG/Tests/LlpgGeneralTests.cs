@@ -1566,6 +1566,12 @@ namespace Loyc.LLParserGenerator
 			//
 			// This takes over 15 seconds to analyze 'Start' with k=2, and
 			// 8 minutes and 20 seconds (and almost 2 GB memory) for k=3!).
+			//
+			// Each branch of WeirdDigit that overlaps PositiveDigit and has an
+			// &and-predicate increases CPU time and memory by a factor of four.
+			// FullLLk(false) is required to cause the slug; with FullLLk(true),
+			// processing time drops dramatically but the output is nearly seven
+			// times larger.
 			Test(@"[DefaultK(2)] [FullLLk(false)] //[Verbosity(3)]
 			LLLPG lexer {
 				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
