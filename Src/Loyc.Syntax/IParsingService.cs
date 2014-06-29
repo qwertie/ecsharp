@@ -135,9 +135,9 @@ namespace Loyc.Syntax
 		{
 			return parser.Tokenize(new StringSlice(input), "", msgs ?? MessageSink.Current);
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, string input, IMessageSink msgs = null, Symbol inputType = null)
 		{
-			return parser.Parse(new StringSlice(expr), "", msgs ?? MessageSink.Current, inputType).Buffered();
+			return parser.Parse(new StringSlice(input), "", msgs ?? MessageSink.Current, inputType);
 		}
 		public static LNode ParseSingle(this IParsingService parser, string expr, IMessageSink msgs = null, Symbol inputType = null)
 		{

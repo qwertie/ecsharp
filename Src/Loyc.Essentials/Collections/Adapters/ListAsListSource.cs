@@ -26,6 +26,10 @@ namespace Loyc.Collections
 				return listS;
 			return new ListAsListSource<T>(c);
 		}
+		public static IListSource<T> AsListSource<T>(this IListAndListSource<T> c)
+		{
+			return c;
+		}
 	}
 	/// <summary>
 	/// Helper type returned from <see cref="LCExt.AsListSource{T}"/>.

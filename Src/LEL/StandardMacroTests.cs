@@ -1,6 +1,7 @@
 ﻿using Ecs.Parser;
 using LeMP;
 using Loyc;
+using Loyc.Collections;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;
@@ -14,6 +15,8 @@ namespace LeMP
 	[TestFixture]
 	public class StandardMacroTests
 	{
+		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+
 		[Test]
 		public void TestNullDot()
 		{
@@ -51,6 +54,72 @@ namespace LeMP
 			        "int X = 41; X++; Console.WriteLine(X);");
 		}
 
+		[Test]
+		public void TestReplace_basics()
+		{
+			// Simple cases
+			TestLes(@"replace(nothing => nobody) {nowhere;}", "nowhere;");
+			TestLes(@"replace(a => b) {a;}", "b;");
+			TestLes(@"replace(7 => seven) {x = 7;}", "x = seven;");
+			TestLes(@"replace(7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
+			TestLes(@"replace(a => b) {[Hello] a; a(a);}", "[Hello] b; b(b);");
+			TestLes("replace(MS => MessageSink, C => Current, W => Write, S => Severity, B => \"Bam!\")\n"+
+			        "    { MS.C.W(S.Error, @null, B); }",
+			        @"MessageSink.Current.Write(Severity.Error, @null, ""Bam!"");");
+			TestLes(@"replace(Write => Store, Console.Write => Console.Write)"+
+			        @"{ Write(x); Console.Write(x); }", "Store(x); Console.Write(x);");
+			
+			// Swap
+			TestLes("replace(foo => bar, bar => foo) {foo() = bar;}", "bar() = foo;");
+			TestLes("replace(a => 'a', 'a' => A, A => a) {'a' = A - a;}", "A = a - 'a';");
+
+			// replace(Foo => Bar, System.Foo => System.Foo)
+
+			// Captures
+			TestBoth("replace(input($capture) => output($capture)) { var i = 21; input(i * 2); };",
+			         "replace(input($capture) => output($capture)) { var i = 21; input(i * 2); }",
+			         "var i = 21; output(i * 2);");
+		}
+
+		[Test]
+		public void TestReplace_params()
+		{
+			TestEcs("replace({ $(params before); on_exit { $(params command); } $(params after); } =>\n"+
+			        "        { $before;          try  { $after; } finally { $command; }         }) \n"+
+			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
+			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
+			
+			TestLes("replace($($format, $([#params] args)) => String.Format($format, $args) )\n"+
+			        @"   { MessageBox.Show($(""I hate {0}"", noun)); }",
+			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
+			TestLes("replace($($format, $([#params] args)) => String.Format($format, $args) )\n"+
+			        @"   { MessageBox.Show($(""I hate {0}ing {1}s"", verb, noun), $(""FYI"",)); }",
+			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
+		}
+
+		[Test]
+		public void TestReplace_match_attributes()
+		{
+			// [foo] a([attr] Foo) `MatchesPattern` 
+			// [#trivia_, bar] a([$attr] $foo)
+			
+			// ([foo] F([x] X, [y] Y, [a1(...), a2(...)] Z) `MatchesPattern`
+			//        F(X, $Y, $(params P), [$A, a1($(params args))] $Z)) == false cuz [x] is unmatched
+			TestEcs(@"replace(TO=>DO) {}", @"");
+		}
+
+		[Test]
+		public void TestReplace_advanced()
+		{
+			// Nested replacements
+			TestEcs(@"replace(X => Y, X($(params p)) => X($p)) { X = X(X, Y); }",
+			        @"Y = X(Y, Y);");
+			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a * $b) => Mul($a, $b)) { var y = 2*x*2 + 3*x + 4; }", 
+			        @"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
+
+			TestEcs(@"replace(TO=>DO) {}", @"");
+		}
+
 		[Test(Fails="Tuple macro is disabled because it interferes with constructs like #def(void, Foo, (arg, arg))")]
 		public void TestTuples()
 		{
@@ -68,35 +137,54 @@ namespace LeMP
 			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
 			int n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b.c.d) = Foo;",
-			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2");
+			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2;");
 			n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b, c, d) = X.Y();",
-			        "var tmp_"+n+" = X.Y(); a = tmp_"+n+".Item1; b = tmp_"+n+".Item2; c = tmp_"+n+".Item3; d = tmp_"+n+".Item4");
+			        "var tmp_"+n+" = X.Y(); a = tmp_"+n+".Item1; b = tmp_"+n+".Item2; c = tmp_"+n+".Item3; d = tmp_"+n+".Item4;");
 		}
 
 		[Test]
 		public void TestStringInterpolation()
 		{
+			Assert.Fail("TODO");
 		}
 
-		
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
-
-		// Output is still EC#
-		private void TestLes(string input, string outputEcs, int maxExpand = 0xFFFF)
+		private void TestLes(string input, string outputLes, int maxExpand = 0xFFFF)
 		{
-			using (ParsingService.PushCurrent(LesLanguageService.Value))
-				TestCompiler.Test(input, outputEcs, _sink, maxExpand);
+			Test(input, LesLanguageService.Value, outputLes, LesLanguageService.Value, maxExpand);
 		}
 		private void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF)
 		{
-			using (ParsingService.PushCurrent(EcsLanguageService.Value))
-				TestCompiler.Test(input, outputEcs, _sink, maxExpand);
+			Test(input, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
 		}
 		private void TestBoth(string inputLes, string inputEcs, string outputEcs, int maxExpand = 0xFFFF)
 		{
-			TestLes(inputLes, outputEcs, maxExpand);
-			TestEcs(inputEcs, outputEcs, maxExpand);
+			Test(inputLes, LesLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+			Test(inputEcs, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+		}
+		private void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
+		{
+			var lemp = NewLemp(maxExpand);
+			var inputCode = new RVList<LNode>(inLang.Parse(input, _sink));
+			var results = lemp.ProcessSynchronously(inputCode);
+			var expectCode = outLang.Parse(expected, _sink);
+			if (!results.SequenceEqual(expectCode))
+			{	// TEST FAILED, print error
+				string resultStr = results.Select(n => outLang.Print(n, _sink)).Join("\n");
+				Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected), 
+				                TestCompiler.StripExtraWhitespace(resultStr));
+			}
+		}
+		MacroProcessor NewLemp(int maxExpand)
+		{
+			var lemp = new MacroProcessor(typeof(LeMP.Prelude.Macros), _sink);
+			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
+			lemp.AddMacros(typeof(LeMP.StandardMacros));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+			lemp.MaxExpansions = maxExpand;
+			return lemp;
 		}
 	}
 }

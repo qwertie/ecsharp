@@ -68,9 +68,15 @@ namespace LeMP
 					c.Run();
 			} else if (args.Length == 0) {
 				Console.WriteLine("Running unit tests...");
-				RunTests.Run(new MacroProcessorTests());
-				RunTests.Run(new StandardMacroTests());
+				RunLeMPTests();
+				Ecs.Program.RunEcsTests();
 			}
+		}
+
+		public static void RunLeMPTests()
+		{
+			RunTests.Run(new MacroProcessorTests());
+			RunTests.Run(new StandardMacroTests());
 		}
 
 		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string, string> options, SeverityMessageFilter sink, Type prelude)
@@ -327,19 +333,7 @@ namespace LeMP
 
 		public bool AddMacros(Assembly assembly)
 		{
-			bool any = false;
-			foreach (Type type in assembly.GetExportedTypes()) {
-				if (!type.IsGenericTypeDefinition &&
-					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
-				{
-					if (Verbose)
-						Sink.Write(Severity.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
-					any = MacroProcessor.AddMacros(type) || any;
-				}
-			}
-			if (!any)
-				Sink.Write(Severity.Warning, assembly, "No macros found");
-			return any;
+			return MacroProcessor.AddMacros(assembly);
 		}
 
 		public void Run()

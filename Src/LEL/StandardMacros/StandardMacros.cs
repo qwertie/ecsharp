@@ -14,7 +14,7 @@ namespace LeMP
 	{
 		[ThreadStatic]
 		internal static int NextTempCounter = 0; // next tmp variable
-		static Symbol NextTempName() { return GSymbol.Get("tmp_" + NextTempCounter++); }
+		internal static Symbol NextTempName() { return GSymbol.Get("tmp_" + NextTempCounter++); }
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
 

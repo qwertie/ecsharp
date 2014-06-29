@@ -249,7 +249,7 @@ namespace Loyc.LLParserGenerator
 					var pos = alts.Basis.Range.Begin;
 					var comment = F.Trivia(S.TriviaSLCommentBefore, string.Format(" Line {0}: {1}", pos.Line, alts.ToString()));
 					if (_target.Count > oldCount)
-						_target[oldCount] = _target[oldCount].WithAttr(comment);
+						_target[oldCount] = _target[oldCount].PlusAttr(comment);
 				}
 			}
 

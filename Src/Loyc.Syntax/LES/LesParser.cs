@@ -174,7 +174,7 @@ namespace Loyc.Syntax.Les
 			if (list.Count == 1)
 				return F.InParens(list[0], t.StartIndex, endIndex);
 			if (list.Count == 2 && (object)list[1] == MissingExpr)
-				return F.Call(S.Tuple, list[0]);
+				return F.Call(S.Tuple, list[0], t.StartIndex, endIndex);
 			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex);
 		}
 		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)

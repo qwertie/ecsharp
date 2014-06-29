@@ -109,7 +109,7 @@ namespace LeMP
 
 		public MSet<Symbol> PreOpenedNamespaces = new MSet<Symbol>();
 
-		#region Adding macros from types
+		#region Adding macros from types (AddMacros())
 
 		public bool AddMacros(Type type)
 		{
@@ -121,6 +121,24 @@ namespace LeMP
 			}
 			return any;
 		}
+
+		public bool AddMacros(Assembly assembly, bool writeToSink = true)
+		{
+			bool any = false;
+			foreach (Type type in assembly.GetExportedTypes()) {
+				if (!type.IsGenericTypeDefinition &&
+					type.GetCustomAttributes(typeof(ContainsMacrosAttribute), true).Any())
+				{
+					if (writeToSink && Sink.IsEnabled(Severity.Verbose))
+						Sink.Write(Severity.Verbose, assembly.GetName().Name, "Adding macros in type '{0}'", type);
+					any = AddMacros(type) || any;
+				}
+			}
+			if (!any && writeToSink)
+				Sink.Write(Severity.Warning, assembly, "No macros found");
+			return any;
+		}
+
 		static void AddMacro(MMap<Symbol, List<MacroInfo>> macros, MacroInfo info)
 		{
 			List<MacroInfo> cases;
@@ -160,6 +178,11 @@ namespace LeMP
 
 		#endregion
 
+		public RVList<LNode> ProcessSynchronously(RVList<LNode> stmts)
+		{
+			return new Task(this).ProcessCompilationUnit(stmts);
+		}
+
 		#region Batch processing: ProcessSynchronously, ProcessParallel, ProcessAsync
 
 		// TimeSpan.Zero or TimeSpan.MaxValue mean 'infinite' and prevent spawning a new thread
@@ -172,7 +195,7 @@ namespace LeMP
 				new Task(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 		}
 		
-		#if DotNet3 || DotNet2
+		#if DotNet3 || DotNet2 // Parallel mode requires .NET 4 Tasks
 		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			ProcessSynchronously(sourceFiles, onProcessed);
@@ -208,6 +231,10 @@ namespace LeMP
 
 		#endregion
 
+		/// <summary>Holds the transient state of the macro processor. Since one
+		/// <see cref="MacroProcessor"/> object can process multiple files in 
+		/// parallel, we need an inner class to hold the state of each individual 
+		/// transformation task.</summary>
 		class Task
 		{
 			static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
@@ -281,11 +308,7 @@ namespace LeMP
 					var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink);
 					var inputRV = new RVList<LNode>(input);
 
-					Debug.Assert(_scopes.Count == 0);
-					_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
-					_scopes.Add(_curScope);
-
-					io.Output = ApplyMacrosToList(inputRV, MaxExpansions);
+					io.Output = ProcessCompilationUnit(inputRV);
 					if (onProcessed != null)
 						onProcessed(io);
 					return io.Output;
@@ -398,7 +421,17 @@ namespace LeMP
 			List<MacroInfo> _foundMacros = new List<MacroInfo>();
 			List<Result> _results = new List<Result>();
 
-			public LNode ApplyMacros(LNode input, int maxExpansions)
+			/// <summary>Top-level macro applicator.</summary>
+			public RVList<LNode> ProcessCompilationUnit(RVList<LNode> stmts)
+			{
+				Debug.Assert(_scopes.Count == 0);
+				_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
+				_scopes.Add(_curScope);
+
+				return ApplyMacrosToList(stmts, MaxExpansions);
+			}
+
+			LNode ApplyMacros(LNode input, int maxExpansions)
 			{
 				if (maxExpansions <= 0)
 					return null;

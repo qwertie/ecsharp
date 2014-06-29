@@ -277,7 +277,7 @@ namespace Loyc.LLParserGenerator
 			else {
 				var mode = singleExpr ? ParsingService.Exprs : ParsingService.Stmts;
 				return F.Braces(
-					_hostLanguage.Parse(ch, ch.File, _messages, mode).Buffered(), 
+					_hostLanguage.Parse(ch, ch.File, _messages, mode), 
 					p.StartIndex, endIndex);
 			}
 		}

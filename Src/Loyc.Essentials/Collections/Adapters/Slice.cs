@@ -45,7 +45,7 @@ namespace Loyc.Collections
 		/// slice is reduced to <c>list.Count - start</c>.</li>
 		/// </ul>
 		/// </remarks>
-		public Slice_(IListSource<T> list, int start, int count)
+		public Slice_(IListSource<T> list, int start, int count = int.MaxValue)
 		{
 			_list = list;
 			_start = start;

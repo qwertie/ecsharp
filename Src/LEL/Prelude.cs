@@ -104,7 +104,7 @@ namespace LeMP.Prelude
 			}
 			var result = TranslateSpaceDefinition(node, sink, S.Alias);
 			if (result != null)
-				return result.WithAttr(F.Id(S.FilePrivate));
+				return result.PlusAttr(F.Id(S.FilePrivate));
 			return null;
 		}
 		[SimpleMacro("namespace Name { Members... }",
@@ -719,9 +719,9 @@ namespace LeMP.Prelude
 				return null;
 			else {
 				if (node.ArgCount > 1)
-					return node.WithAttr(F.Id(attr)).With(node.Args[0], node.Args.RemoveAt(0));
+					return node.PlusAttr(F.Id(attr)).With(node.Args[0], node.Args.RemoveAt(0));
 				else
-					return node.Args[0].WithAttr(F.Id(attr));
+					return node.Args[0].PlusAttr(F.Id(attr));
 			}
 		}
 
@@ -731,7 +731,7 @@ namespace LeMP.Prelude
 			// or "static x = 5" as variable declarations (e.g. [#static] var x = 5)
 			var x = @var(node, MessageSink.Null);
 			if (x != null)
-				return x.WithAttr(F.Id(kind));
+				return x.PlusAttr(F.Id(kind));
 			
 			x = TranslateWordAttr(node, sink, kind);
 			return x;

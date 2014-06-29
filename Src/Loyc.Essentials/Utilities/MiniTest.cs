@@ -119,8 +119,8 @@ namespace Loyc.MiniTest
 		/// difference between new problems that need to be investigated and 
 		/// addressed immediately, and old problems that have been placed on the 
 		/// backburner to be fixed "someday", or feature requests that have not
-		/// yet been addressed. KnownFail suggests that a failure is low-priority 
-		/// and may be an old issue.</remarks>
+		/// yet been addressed. Setting this property suggests that a failure may 
+		/// be low-priority and may be an old issue.</remarks>
 		public object Fails
 		{
 			get { return _failInfo; }

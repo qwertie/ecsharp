@@ -564,7 +564,7 @@ namespace Ecs
 			var attrs = node.Attrs;
 			for (int i = 0, c = attrs.Count; i < c; i++) {
 				var a = attrs[i];
-				if (a.IsIdNamed(S.TriviaInParens) || !DropNonDeclarationAttributes && a.IsPrintableAttr())
+				if (a.IsIdNamed(S.TriviaInParens) || !DropNonDeclarationAttributes && !a.IsTrivia)
 					return true;
 			}
 			return false;
@@ -1049,7 +1049,7 @@ namespace Ecs
 				if (!dropAttrs && div > 0) {
 					for (int i = 0; i < div; i++) {
 						var a = _n.Attrs[i];
-						if (!a.IsPrintableAttr() || a == skipClause)
+						if (a.IsTrivia || a == skipClause)
 							continue;
 						if (any)
 							WriteThenSpace(',', SpaceOpt.AfterComma);
@@ -1082,7 +1082,7 @@ namespace Ecs
 						_out.Write(text, true);
 					} else if (!dropAttrs) {
 						Debug.Assert(a.HasSpecialName);
-						if (!a.IsPrintableAttr())
+						if (a.IsTrivia)
 							continue;
 						if (isTypeParamDefinition) {
 							if (a.Name == S.In)

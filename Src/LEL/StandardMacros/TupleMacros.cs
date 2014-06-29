@@ -65,13 +65,7 @@ namespace LeMP
 				return Reject(sink, node, "Expected one or two arguments");
 		}
 
-		// BLOCK this macro, as it interferes with constructs like #def(void, Foo, (arg, arg))
-		// We need to think of a different approach to this conversion problem... 
-		// simple macros are not good enough. Ideally we'd apply this macro only
-		// in the context of "executable" code, but without a full compiler 
-		// pipeline, we have no idea what code is executable and what code is not.
-		// In fact, SimpleMacro provides no context information at all.
-		//[SimpleMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple")]
+		[SimpleMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple")]
 		public static LNode Tuple(LNode node, IMessageSink sink)
 		{
 			// TODO: consider supporting .[a, b] (and !(a, b)) as syntax for @``<a, b> 
@@ -96,7 +90,6 @@ namespace LeMP
 				var tuple = a[0].Args;
 				var rhs = a[1];
 				bool needTemp = rhs.IsCall || !char.IsLower(rhs.Name.Name.TryGet(0, '\0'));
-				Symbol tempName = NextTempName();
 				if (needTemp) {
 					LNode tmp = F.Id(NextTempName());
 					stmts.Add(F.Var(F._Missing, tmp.Name, rhs));

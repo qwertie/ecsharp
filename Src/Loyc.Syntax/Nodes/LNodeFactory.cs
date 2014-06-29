@@ -436,7 +436,7 @@ namespace Loyc.Syntax
 		{
 			Debug.Assert(endIndex >= startIndex);
 			_inParens = _inParens ?? Id(S.TriviaInParens);
-			inner = inner.WithAttr(_inParens);
+			inner = inner.PlusAttr(_inParens);
 			if (startIndex != -1 && endIndex != -1)
 				return inner.WithRange(startIndex, endIndex);
 			else

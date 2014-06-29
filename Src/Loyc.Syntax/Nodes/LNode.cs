@@ -548,7 +548,7 @@ namespace Loyc.Syntax
 		public static StdCallNode Call(LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNode(target, args, prototype); }
 		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode prototype) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
 		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
-		public static LNode InParens(LNode node) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, node.Range)); }
+		public static LNode InParens(LNode node) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, node.Range)); }
 
 		public static IdNode Id(Symbol name, SourceRange range) { return new StdIdNode(name, range); }
 		public static IdNode Id(string name, SourceRange range) { return new StdIdNode(GSymbol.Get(name), range); }
@@ -562,7 +562,7 @@ namespace Loyc.Syntax
 		public static StdCallNode Call(LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, range, style); }
 		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
 		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
-		public static LNode InParens(LNode node, SourceRange range) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, range)); }
+		public static LNode InParens(LNode node, SourceRange range) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, range)); }
 
 		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(name, new SourceRange(file, position, width)); }
 		public static IdNode Id(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
@@ -576,7 +576,7 @@ namespace Loyc.Syntax
 		public static StdCallNode Call(LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
 		public static StdCallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
 		public static StdCallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
-		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.WithAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
+		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
 
 		// It's difficult to enforce "nulls not allowed" with high performance.
 		// Compromise: only check in debug builds. This is called by node types
@@ -831,16 +831,15 @@ namespace Loyc.Syntax
 
 		public virtual LNode WithoutAttrs() { return WithAttrs(RVList<LNode>.Empty); }
 		public abstract LNode WithAttrs(RVList<LNode> attrs);
-		public LNode WithAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
 		
 		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new RVList<LNode>(attrs)); }
 		public CallNode WithArgs(params LNode[] args) { return WithArgs(new RVList<LNode>(args)); }
 		public LNode PlusAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
-		public LNode PlusAttrs(RVList<LNode> attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrs(RVList<LNode> attrs) { return attrs.IsEmpty ? this : WithAttrs(Attrs.AddRange(attrs)); }
 		public LNode PlusAttrs(IEnumerable<LNode> attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
 		public LNode PlusAttrs(params LNode[] attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
 		public LNode PlusArg(LNode arg) { return WithArgs(Args.Add(arg)); }
-		public LNode PlusArgs(RVList<LNode> args) { return WithArgs(Args.AddRange(args)); }
+		public LNode PlusArgs(RVList<LNode> args) { return args.IsEmpty ? this : WithArgs(Args.AddRange(args)); }
 		public LNode PlusArgs(IEnumerable<LNode> args) { return WithArgs(Args.AddRange(args)); }
 		public LNode PlusArgs(params LNode[] args) { return WithArgs(Args.AddRange(args)); }
 		public LNode WithArgChanged(int index, LNode newValue)
@@ -986,13 +985,14 @@ namespace Loyc.Syntax
 		{
 			var a = Attrs;
 			for (int i = 0, c = a.Count; i < c; i++)
-				if (a[i].IsPrintableAttr())
+				if (!a[i].IsTrivia)
 					return true;
 			return false;
 		}
-		public bool IsPrintableAttr()
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public bool IsTrivia
 		{
-			return !Name.Name.StartsWith("#trivia_");
+			get { return Name.Name.StartsWith("#trivia_"); }
 		}
 
 		public virtual bool Calls(Symbol name, int argCount)       { Debug.Assert(!IsCall); return false; }
@@ -1033,6 +1033,7 @@ namespace Loyc.Syntax
 		/// its two Args.</li>
 		/// </ul>
 		/// </remarks>
+		/// <seealso cref="LNodeExt.WithSpliced"/>
 		public static LNode MergeLists(LNode node1, LNode node2, Symbol listName)
 		{
 			if (node1 == null)

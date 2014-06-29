@@ -199,7 +199,7 @@ namespace Loyc.Syntax.Les
 			if (errorsExpected != 0)
 				return;
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages).Buffered();
+			var results = LesLanguageService.Value.Parse(str, messages);
 			if (messages.List.Count != 0)
 				return;
 
@@ -215,7 +215,7 @@ namespace Loyc.Syntax.Les
 			messages.List.Clear();
 			LesNodePrinter.Printer(node, sb, messages, null, "  ");
 			Assert.AreEqual(0, messages.List.Count);
-			var reparsed = LesLanguageService.Value.Parse(sb.ToString(), messages).Buffered();
+			var reparsed = LesLanguageService.Value.Parse(sb.ToString(), messages);
 			Assert.AreEqual(0, messages.List.Count);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(node, reparsed[0]);

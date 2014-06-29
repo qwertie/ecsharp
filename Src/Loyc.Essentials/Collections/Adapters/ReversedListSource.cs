@@ -13,14 +13,14 @@ namespace Loyc.Collections
 {
 	public static partial class LCExt
 	{
-		public static ReversedListSource<T> ReverseView<T>(this IListSource<T> c)
+		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);
 		}
 	}
 
 	/// <summary>
-	/// Reversed view of IListSource returned from <see cref="LCExt.ReverseView{T}"/>
+	/// Reversed view of IListSource returned from <see cref="LCExt.Reverse{T}"/>
 	/// </summary>
 	[Serializable]
 	public class ReversedListSource<T> : ListSourceBase<T>
