@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Loyc by qwertie</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Loyc</h1>
+          <h2>The Language-of-your-choice project</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/qwertie/Loyc/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/qwertie/Loyc/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/qwertie/Loyc" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="readme" class="anchor" href="#readme"><span class="octicon octicon-link"></span></a>README</h1>
+
+<p>The Language of Your Choice (Loyc) project is intended to become a rich set of tools for:</p>
+
+<ul>
+<li>Transforming source code between different languages</li>
+<li>Writing libraries (or entire programs) in multiple programming languages</li>
+<li>IDEs (code completion lists, various kinds of code visualization, intellisense)</li>
+<li>Code analysis and transformation</li>
+</ul><p>Enhanced C#, LES (Loyc Expression Syntax) and LEL (Loyc expression langauge) are also under the Loyc umbrella.</p>
+
+<p>It is in very early stages right now because I have not found anyone else with whom to work on it. I am focusing on the first point right now (transforming code between languages). Also, LES is working and I'm busy developing early stages of LeMP and Enhanced C#. The project also currently includes a set of general-purpose libraries that will eventually be spun off into a separate project for a multi-language standard library.</p>
+
+<h2>
+<a name="source-code-overview" class="anchor" href="#source-code-overview"><span class="octicon octicon-link"></span></a>Source code overview</h2>
+
+<p>Loyc currently contains the following projects, listed in order from the lowest level to the highest level. A rough dependency tree is</p>
+
+<pre><code>     Loyc.Essentials
+            |
+     Loyc.Collections
+            |   |      
+            |   +---------------+
+            |                   |
+            |               Loyc.Syntax
+            |                  | |
+      Loyc.Utilities-----------+ |
+            ^                    |
+            |                    |
+  +---------+-------------+----+ |
+  |         |             |    | |
+Baadia* MiniTestRunner  Tests  Ecs*
+                                |
+                               LEL
+                                |
+                              LLLPG*
+</code></pre>
+
+<p>* I will eventually split out LLLPG, Baadia, Ecs (Enhanced C#), and the low-level libraries (Essentials, Collections) into separate projects on SourceForge or GitHub.</p>
+
+<p>In this graph, a dependency line from C to A is hidden when there is already a line 
+from C to B and B to A. For example, Ecs depends on Loyc.Syntax; Ecs also depends 
+directly on Loyc.Collections and Loyc.Essentials, but the direct dependency lines are 
+hidden so that the graph does not turn into spaghetti. Also, the graph does not show 
+that Loyc.Syntax and Ecs depend on LLLPG at compile-time to generate their lexers and 
+parsers.</p>
+
+<p>Terminology:</p>
+
+<ul>
+<li>LLLPG is a parser generator (Loyc LL(k) Parser Generator) to help make fast recursive-descent parsers</li>
+<li>LEL is a name for a programming language that doesn't really exist yet. Right now it really implements something that I'm calling LeMP (Lexical Macro Processor), which was earlier named micro-LEL. LeMP is a source-code preprocessor that LLLPG is based on.</li>
+<li>EC# is an enhanced version of C# that does not exist yet but which will have tons of new features</li>
+<li>Baadia is a gesture-based program for drawing "Boxes and arrows" diagrams (yes, it totally doesn't belong here.)</li>
+<li>MiniTestRunner is a unit test runner that I never completed, for a small unit test framework that resembles earlier versions of NUnit (Loyc.MiniTest).</li>
+</ul><p>I am currently keeping the unit tests in the same assemblies as the code being tested. I suspect this is why my libraries tend to be larger than many other "small" .NET libraries. Eventually I'll move the unit tests out into their own assemblies.</p>
+
+<p>These projects use couple of tricks to support both .NET 3.5 and .NET 4 using a single solution file. The tricks are documented here: <a href="http://stackoverflow.com/questions/5006397/targetting-multiple-net-framework-versions-by-using-different-project-configura/23705790#23705790">http://stackoverflow.com/questions/5006397/targetting-multiple-net-framework-versions-by-using-different-project-configura/23705790#23705790</a></p>
+
+<h2>
+<a name="for-more-information" class="anchor" href="#for-more-information"><span class="octicon octicon-link"></span></a>For more information</h2>
+
+<p>More overviews, architectural documentation, and specifications can be found in the project Wiki:
+<a href="http://sourceforge.net/apps/mediawiki/loyc">http://sourceforge.net/apps/mediawiki/loyc</a></p>
+
+<p>You might also find interesting information on my development blog:
+<a href="http://loyc-etc.blogspot.com">http://loyc-etc.blogspot.com</a></p>
+
+<p>Home page:
+<a href="http://loyc.net">http://loyc.net</a></p>
+        </section>
+
+        <footer>
+          Loyc is maintained by <a href="https://github.com/qwertie">qwertie</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
