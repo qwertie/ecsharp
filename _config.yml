@@ -1,0 +1,18 @@
+# This is the configuration file for Jekyll, which is a program "built in" 
+# to GitHub that transforms files for web output (e.g. Markdown to HTML).
+# The Jekyll documentation is useless for noobs; try this tutorial instead:
+# https://www.andrewmunsell.com/tutorials/jekyll-by-example/tutorial
+exclude: [Src, Lib, Visual Studio Integration]
+
+paginate: 10
+
+# Site settings
+title: Loyc
+email: qwertie256@gmail.com
+description: "Language of your choice."
+baseurl: ""
+url: "http://loyc.net"
+github_username:  qwertie
+
+# Build settings
+markdown: kramdown
