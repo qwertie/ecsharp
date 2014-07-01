@@ -9,7 +9,24 @@ GitHub has a "built-in" simple content management system called Jekyll. It's uno
 
 The way GitHub decided to organize its [web space](https://pages.github.com/) is bizarre; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two complete copies of the history of your repo. Weird. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
 
-They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a slight pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows) but those instructions are more complicated than necessary (e.g. installing `wdm` isn't strictly necessary and it's certainly better to set the `encoding: UTF-8` option in `_config.yml` rather than running `chcp 65001`.)
+They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a slight pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows).
+
+<div class="sidebox">If something goes wrong with the installation of something called "yajl", you might have to uninstall it and reinstall it with
+<pre>
+ rem If github still uses jekyll 1.5.1, the yajl version is v1.1.0
+ gem uninstall yajl-ruby
+ gem install yajl-ruby -v 1.1.0 --platform=ruby
+</pre>
+And in this situation it seems like bundler might cause a problem with Ruby-2.0.0 so if in doubt, don't use bundler to start jekyll. Finally, if jekyll won't start and says "cannot load such file -- wdm", run <tt>gem install wdm</tt>.
+<br/><br/>
+After I finally got Jekyll all working and rendering this site, I pushed it to github. GitHub sent an email that my site "contains markdown errors". What errors? Who knows, they don't tell you! But of course it worked fine for me, so what the hell was wrong? So I got to work installing Jekyll on a new machine, and this time I took care to install github's version of Jekyll (1.5.1) instead of the latest version, by installing the github-pages gem instead of the normal jekyll gem.
+<br/><br/>
+On the new machine I had to work out several errors starting github's version of Jekyll--errors with yajl, the error with wdm--and then finally I'm told "There was an error converting '_posts/2014-06-29-blogging-on-github.md'." (i.e. this post). Which brings us to the worst thing about Jekyll: <b>absolutely terrible error handling</b>. An error with one page usually brings down the whole site (although not in this case), and you're lucky if you even get a filename from the damn thing. So what was causing this new error message? Code blocks. Every code block causes a "conversion error" on my machine. What kind of error? Ha ha, as if Jekyll would tell <i>you</i>.
+<br/><br/>
+So in desperation I installed github-pages on another machine and, when invoking jekyll, forced version 1.5.1 by running <tt>jekyll _1.5.1_</tt> on the command line instead of <tt>jekyll</tt>. After getting errors about `yajl` and `wdm` yet again, and fixing those, the error stack trace changed to involve <tt>pygments/mentos.rb, line 303, in start</tt>.
+<br/><br/>
+By deleting text from my post, section-by-section, I finally found the problem: I had written <tt>~~~none</tt> to disable syntax highlighting, when I should have used <tt>~~~text</tt>.
+</div>
 
 The [documentation of Jekyll](http://jekyllrb.com/docs/home/) is backwards. The introductory pages give you all the minor details first; the key information comes later. For example, it isn't until the [eighth section](http://jekyllrb.com/docs/posts/) that they finally tell you how to add a blog post. But that's not enough of course, you also need to know how to create a "main page" for your blog and a "history page", and all they provide at first is an incomplete template for part of a history page. Plus, any good web site should have category links on every page (e.g. Main Page, Blog, Documentation, Code) but they don't give you any clues about setting that up until way down deep in the docs. What about styling & theming? In the docs, I haven't seen anything about that yet.
 
@@ -50,7 +67,7 @@ No, Jekyll isn't good at error messages. To solve this quickly,
 
 To create code blocks, Jekyll recommends the use of `{%...%}` blocks like this:
 
-~~~none
+~~~text
 {% highlight cpp %}
 // Code
 {% endhighlight %}
@@ -206,4 +223,5 @@ Note that all the text inside the `<div>` tag is treated as HTML, not Markdown. 
 By the way, no matter whether you're using GitHub or not or Jekyll or not, there's no need to write web sites in HTML anymore. No matter how crappy your web hosting provider might be, no matter whether you're allowed to run scripts or not, you can still author pages in Markdown, thanks to a nifty library called [mdwiki](http://dynalon.github.io/mdwiki/#!index.md). This thing uses Javascript to convert markdown to HTML, 100% client-side, so you don't have to worry about what your web host may or may not support. On GitHub, you may as well use Jekyll, but I must admit, it looks like mdwiki has a fantastic feature set, probably better than I'll get with Jekyll. But the important thing is, I don't have to write HTML anymore. Good riddance!
 
 You can even use MDWiki without a web server, if you view mdwiki.html in Firefox (it doesn't work in Google Chrome), which means you can use it for offline Markdown previews (which is great because, at least on the Windows, tools for editing Markdown are generally quite limited.)
+
 {% endraw %}
