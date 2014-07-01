@@ -4,15 +4,19 @@
 # https://www.andrewmunsell.com/tutorials/jekyll-by-example/tutorial
 exclude: [Src, Lib, Visual Studio Integration]
 
+# Jekyll settings
+markdown: redcarpet
+encoding: UTF-8
+highlighter: rouge
 paginate: 10
+paginate_path: "blog/page:num"
 
-# Site settings
-title: Loyc
-email: qwertie256@gmail.com
-description: "Language of your choice."
-baseurl: ""
-url: "http://loyc.net"
-github_username:  qwertie
+# Poole/Hyde settings
+title:       "Loyc"                      # shown in large text
+description: "Language of your choice"   # shown under the title
+version: (I changed Hyde not to display this)
+url:     "http://loyc.net"               # Used by the Atom feed
+baseurl: ""                              # grep "site.baseurl" to see how it is used
+github:
+  repo:  https://github.com/qwertie/Loyc # "GitHub project" link on sidebar
 
-# Build settings
-markdown: kramdown
