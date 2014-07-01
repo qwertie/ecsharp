@@ -1,40 +1,56 @@
 ---
+# Jekyll front matter
 layout: post
 title:  "Blogging on GitHub"
 tagline: "At least it's better than Blogspot"
 tags: [jekyll, tutorial]
 ---
 {% raw %}
+<style>
+.sidebox {
+  border: 1px dotted rgb(127, 127, 127);
+  padding: 4px 3px 4px 6px; // top right bottom left
+  min-width: 100px ! important;
+  float: right ! important;
+  font-size: 90%;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  margin-left: 6px;
+  visibility: visible;
+  max-width: 50%;
+  width: 35%;
+}
+</style>
+
 GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if they expect you to already know what it means). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
 
-The way GitHub decided to organize its [web space](https://pages.github.com/) is bizarre; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two complete copies of the history of your repo. Weird. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
+The way GitHub decided to organize its [web space](https://pages.github.com/) is bizarre; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two copies of the complete history of your repo. Weird. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
 
-They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a slight pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows).
 
-<div class="sidebox">If something goes wrong with the installation of something called "yajl", you might have to uninstall it and reinstall it with
+They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows). But then I had problems with "yajl" and "wdm" on two different PCs (see sidebar) and one of the PCs still can't run github's (old) version of Jekyll.
+
+<div class="sidebox">If Jekyll won't start because it's babbling about something called "yajl", you might have to uninstall "yajl" it and reinstall it with
 <pre>
- rem If github still uses jekyll 1.5.1, the yajl version is v1.1.0
- gem uninstall yajl-ruby
- gem install yajl-ruby -v 1.1.0 --platform=ruby
+rem If github still uses jekyll 1.5.1, the yajl version is v1.1.0
+gem uninstall yajl-ruby
+gem install yajl-ruby -v 1.1.0 --platform=ruby
 </pre>
 And in this situation it seems like bundler might cause a problem with Ruby-2.0.0 so if in doubt, don't use bundler to start jekyll. Finally, if jekyll won't start and says "cannot load such file -- wdm", run <tt>gem install wdm</tt>.
 <br/><br/>
-After I finally got Jekyll all working and rendering this site, I pushed it to github. GitHub sent an email that my site "contains markdown errors". What errors? Who knows, they don't tell you! But of course it worked fine for me, so what the hell was wrong? So I got to work installing Jekyll on a new machine, and this time I took care to install github's version of Jekyll (1.5.1) instead of the latest version, by installing the github-pages gem instead of the normal jekyll gem.
+After I finally got Jekyll all working and rendering this site, I pushed it to github. GitHub sent an email that my site "contains markdown errors". What errors? Who knows, they don't tell you! But of course it worked fine for me, so what the hell was wrong? So I got to work installing Jekyll on a new machine, and this time I took care to install github's version of Jekyll (1.5.1) instead of the latest version, by installing the <tt>github-pages</tt> gem instead of the normal jekyll gem.
 <br/><br/>
-On the new machine I had to work out several errors starting github's version of Jekyll--errors with yajl, the error with wdm--and then finally I'm told "There was an error converting '_posts/2014-06-29-blogging-on-github.md'." (i.e. this post). Which brings us to the worst thing about Jekyll: <b>absolutely terrible error handling</b>. An error with one page usually brings down the whole site (although not in this case), and you're lucky if you even get a filename from the damn thing. So what was causing this new error message? Code blocks. Every code block causes a "conversion error" on my machine. What kind of error? Ha ha, as if Jekyll would tell <i>you</i>.
+On the new machine I had to work out several errors starting github's version of Jekyll--errors with yajl, the error with wdm--and then finally I'm told "There was an error converting '_posts/2014-06-29-blogging-on-github.md'." (i.e. this post). Which brings us to the worst thing about Jekyll: <b>terrible error handling</b>. An error with one page usually brings down the whole site (although not in this case), and you're lucky if you even get a filename from the damn thing. So what was causing this new error message? Code blocks. Every code block causes a "conversion error" on my machine. What kind of error? Ha ha, as if Jekyll would tell <i>you</i>.
 <br/><br/>
 So in desperation I installed github-pages on another machine and, when invoking jekyll, forced version 1.5.1 by running <tt>jekyll _1.5.1_</tt> on the command line instead of <tt>jekyll</tt>. After getting errors about `yajl` and `wdm` yet again, and fixing those, the error stack trace changed to involve <tt>pygments/mentos.rb, line 303, in start</tt>.
 <br/><br/>
 By deleting text from my post, section-by-section, I finally found the problem: I had written <tt>~~~none</tt> to disable syntax highlighting, when I should have used <tt>~~~text</tt>.
-</div>
-
-The [documentation of Jekyll](http://jekyllrb.com/docs/home/) is backwards. The introductory pages give you all the minor details first; the key information comes later. For example, it isn't until the [eighth section](http://jekyllrb.com/docs/posts/) that they finally tell you how to add a blog post. But that's not enough of course, you also need to know how to create a "main page" for your blog and a "history page", and all they provide at first is an incomplete template for part of a history page. Plus, any good web site should have category links on every page (e.g. Main Page, Blog, Documentation, Code) but they don't give you any clues about setting that up until way down deep in the docs. What about styling & theming? In the docs, I haven't seen anything about that yet.
-
-<div class="sidebox">
-Jekyll is proving to be flaky, by the way. Sometimes it spews several errors on startup, the last one being <tt>jekyll 2.1.0 | Error:  no implicit conversion of true into String</tt>.
+<br/><br/>
+Once everything starts working, Jekyll still proves to be flaky. Sometimes it spews several errors on startup, the last one being <tt>jekyll 2.1.0 | Error:  no implicit conversion of true into String</tt>.
 <br/><br/>
 Solution: just run Jekyll again and Hope It Works This Time.
 </div>
+
+The [documentation of Jekyll](http://jekyllrb.com/docs/home/) is backwards. The introductory pages give you all the minor details first; the key information comes later. For example, it isn't until the [eighth section](http://jekyllrb.com/docs/posts/) that they finally tell you how to add a blog post. But that's not enough of course, you also need to know how to create a "main page" for your blog and a "history page", and all they provide at first is an incomplete template for part of a history page. Plus, any good web site should have category links on every page (e.g. Main Page, Blog, Documentation, Code) but they don't give you any clues about setting that up until way down deep in the docs. What about styling & theming? In the docs, I haven't seen anything about that yet.
 
 Instead, it appears that a much better way to get started with Jekyll is to use [Jekyll Bootstrap](http://jekyllbootstrap.com/). The [Quick Start page](http://jekyllbootstrap.com/usage/jekyll-quick-start.html) tells you exactly how to set it up, and it does a better job explaining what Jekyll is and how it works than the Jekyll documentation. Then '[Using Themes](http://jekyllbootstrap.com/usage/jekyll-theming.html)' tells you how to set a theme (because the default theme is ... well, it has _big red headings_! Not my cup of tea), and once you've worked out those two things you can pretty much start blogging in your site's `_posts` folder.
 
@@ -117,22 +133,28 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
 
 4. The `baseurl` option is a problem if you want it to refer to the root of the domain. The `Jekyll` documentation implies you should use "" in this case, and offers sample code that doesn't work correctly with "/"; for example, this code is in the Jekyll site template (`Ruby200\lib\ruby\gems\2.0.0\gems\jekyll-2.1.0\lib\site_template`):
     
-      <ul class="posts">
-        {% for post in site.posts %}
-          <li>
-            <span class="post-date">{{ post.date | date: "%b %-d, %Y" }}</span>
-            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-          </li>
-        {% endfor %}
-      </ul>
+    ~~~html
+    <ul class="posts">
+      {% for post in site.posts %}
+        <li>
+         <span class="post-date">{{ post.date | date: "%b %-d, %Y" }}</span>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+    ~~~
     
-    This produces bogus links if baseurl is "/". But Hyde will break if you use "/" because it uses raw concatenation in `/_includes/head.html`:
+    For some reason this produces bogus links if baseurl is "/". But Hyde will break if you use "/" because it uses raw concatenation in `/_includes/head.html`:
     
-      <link rel="stylesheet" href="{{ site.baseurl }}public/css/poole.css">
-      <link rel="stylesheet" href="{{ site.baseurl }}public/css/syntax.css">
-      <link rel="stylesheet" href="{{ site.baseurl }}public/css/hyde.css">
+    ~~~html
+    <link rel="stylesheet" href="{{ site.baseurl }}public/css/poole.css">
+    <link rel="stylesheet" href="{{ site.baseurl }}public/css/syntax.css">
+    <link rel="stylesheet" href="{{ site.baseurl }}public/css/hyde.css">
+    ~~~
 
     Note that a slash is needed before '`public`'. To fix this I changed all instances of `{{ site.baseurl }}` to `{{ site.baseurl }}/` in all of Hyde's HTML files.
+    
+    Perhaps the same problem would arise if you are _not_ at the root of the domain; i.e. if your web space is at `username.github.io/projectname`. In that case Jekyll wants `baseurl` to be <i>projectname</i> while Hyde expects <i>projectname/</i>.
     
 5. By default, the home page (`index.html`) just shows your blog posts, in full, in chronological order. I didn't want the blog to be the home page so I renamed `index.html` to `blog.html` (giving it the front-matter `layout: page` and `title: Blog`), but this [caused all the blog posts to disappear](http://stackoverflow.com/questions/21248607/jekyll-pagination-on-every-page)! Jekyll has a bizarre limitation here: you are only allowed to show your blog on a single page, and that page **must** be named `index.html`. However, you can use `/blog/index.html` instead if you add the line `paginate_path: "blog/page:num"` to `_config.yml`.
 
@@ -155,23 +177,26 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
 
 11. At the top of the blog I made a "List of all posts" link, which goes to `blog-list.html`:
 
-        ---
-        layout: default
-        title: Blog index
-        ---
-        <h1>Blog index</h1>
-        <div class="home">
-          <ul class="posts">
-            {% for post in site.posts %}
-              <li>
-                <span>{{ post.date | date: "%b %-d, %Y" }}</span>:
-                <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-              </li>
-            {% endfor %}
-          </ul>
+    ~~~html
+    ---
+    layout: default
+    title: Blog index
+    ---
+    <h1>Blog index</h1>
+    <div class="home">
+      <ul class="posts">
+        {% for post in site.posts %}
+          <li>
+            <span>{{ post.date | date: "%b %-d, %Y" }}</span>:
+            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
 
-          <p class="rss-subscribe">subscribe <a href="{{ "atom.xml" | prepend: site.baseurl }}">via Atom</a></p>
-        </div>
+      <p class="rss-subscribe">subscribe <a href="{{ "atom.xml" | prepend: site.baseurl }}">via Atom</a></p>
+    </div>
+    ~~~
+
     
 ## Writing blog posts
 
@@ -195,13 +220,13 @@ Sometimes I like to place sidebars in my posts, which I call ".sidebox" in CSS b
 <style>
 .sidebox {
   border: 1px dotted rgb(127, 127, 127);
-  padding: 4px 3px 4px 4px;
+  padding: 4px 3px 4px 6px; // top right bottom left
   min-width: 100px ! important;
   float: right ! important;
   font-size: 90%;
   margin-top: 1px;
   margin-bottom: 1px;
-  margin-left: 4px;
+  margin-left: 6px;
   visibility: visible;
   max-width: 50%;
   width: 35%;
