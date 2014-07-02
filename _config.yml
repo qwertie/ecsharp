@@ -13,9 +13,6 @@ paginate_path: "blog/page:num"
 safe: true
 lsi: false
 
-# Custom vars
-paginate_prefix: "blog/" # needed for Older/Newer buttons to work right
-
 # Poole/Hyde settings
 title:       "Loyc"                      # shown in large text
 description: "Language of your choice"   # shown under the title
@@ -24,3 +21,5 @@ url:     "http://loyc.net"               # Used by the Atom feed
 baseurl: ""                              # grep "site.baseurl" to see how it is used
 github:
   repo:  https://github.com/qwertie/Loyc # "GitHub project" link on sidebar
+  user: qwertie                          # For comments system (not Hyde)
+  project: loyc                          # For comments system (not Hyde)

@@ -21,3 +21,10 @@ layout: default
     {% endfor %}
   </ul>
 </div>
+{% unless page.commentIssueId %}
+  <div id="comments">
+	<div id="header">Comments are not set up for this post. 
+	If this is an imported post, you can leave comments on the original post on blogspot.
+	</div>
+  </div>
+{% endunless %}

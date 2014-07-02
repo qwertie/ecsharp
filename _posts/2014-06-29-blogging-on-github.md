@@ -4,6 +4,7 @@ layout: post
 title:  "Blogging on GitHub"
 tagline: "At least it's better than Blogspot"
 tags: [jekyll, tutorial]
+commentIssueId: 1
 ---
 {% raw %}
 GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if everyone knows what it means already). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
@@ -63,15 +64,7 @@ So once you figure out how to install Jekyll and a theme and you've written a du
 
 `serve` (rather than `build`) causes it to serve the preview at `http://localhost:4000`, `--drafts` asks Jekyll to render unpublished drafts as if they were published, and `--watch` causes the preview to be automatically updated in response to changes (this works on one of my PCs but not another, I don't know why). The default `--destination` is `_site` within the source folder. And don't name your batch file `jekyll.bat` like I did. You won't like the result...
 
-Once I'm happy with my web site, I push to GitHub and I'm live! But what about comments?
-
-## Comments
-
-Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve static content, which comments are not. And there's no way to have comments directly in GitHub pages, since GitHub provides no place to store the comments. But, it is still possible to use a comment service provided by a third party such as Disqus. Disqus adds ads to make money for them, which you probably will hate.
-
-[Jekyll Bootstrap](http://jekyllbootstrap.com/) currently supports four comment engines including Disqus but I am not sure whether I trust these commercial entities with my comments... although, er, very few comments have ever been left on this blog.
-
-Hopefully GitHub itself will provide a comment engine someday, since the GitHub site obviously supports comments very well. Good news though! It's possible to co-opt the GitHub issue tracker to manage blog comments! [The technique is described here](http://ivanzuzak.info/2011/02/18/github-hosted-comments-for-github-hosted-blogs.html) and y'know what, I'm gonna use it! There's no need to limit comments to blog posts either, I can put them on any page I want, although it does take a little extra effort.
+Once I'm happy with my web site, I push to GitHub and I'm live!
 
 ## Syntax highlighting fails
 
@@ -237,7 +230,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     {% endfor %}
     ~~~
 
-13. (Hyde) Actually, I made so many little changes and fixes, there's little reason to list them all. Let's just say you can clone my repo and make it your own, if you like.
+13. (Hyde) The Older and Newer buttons had broken links because they assumed the blog would be the home page. And you know what, I made so many little changes and fixes, I won't list them all. Let's just say you can clone my repo and make it your own, if you like.
 
 ## Writing blog posts
 
@@ -252,6 +245,48 @@ The content of the post goes here.
 ~~~
 
 Jekyll puts the output HTML in `2014/12/31/file-name.html`, or `2014/12/31/file-name/index.html` instead if your site is using the `permalink: pretty` option in `_config.yml`.
+
+## Comments
+
+Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve static content, which comments are not. And there's no way to have comments directly in GitHub pages, since GitHub provides no place to store the comments. But, it is still possible to use a comment service provided by a third party such as Disqus. Disqus adds ads to make money for them, though: annoying ads with pictures.
+
+[Jekyll Bootstrap](http://jekyllbootstrap.com/) currently supports four comment engines including Disqus but I am not sure whether I trust these commercial entities with my comments... although, er, very few comments have ever been left on this blog.
+
+Hopefully GitHub itself will provide a comment engine someday, since the GitHub site obviously supports comments very well. Good news though! It's possible to co-opt the GitHub issue tracker to manage blog comments! [The technique is described here](http://ivanzuzak.info/2011/02/18/github-hosted-comments-for-github-hosted-blogs.html) and I decided to use it! There's no need to limit comments to blog posts either, I can put them on any page I want, although it does take a little extra effort.
+
+How to set up:
+
+1. Add configuration to `/_config.yml`:
+    
+    ~~~yaml
+    github:
+      user: qwertie
+      project: loyc
+    ~~~
+
+2. In `_layouts/default.html`, include `comments.html` below the content:
+    
+    ~~~
+        ...
+        {{ content }}
+        {% include comments.html %}
+      </div>
+    </body>
+    ~~~
+
+3. Add my copy of [`comments.html`](https://github.com/qwertie/Loyc/tree/gh-pages/_includes) unchanged to your `/_includes` folder, and add [`comments.css`](https://github.com/qwertie/Loyc/tree/gh-pages/res/css) unchanged to `/res/css` (oh, you don't have a `/res/css` folder? Either create that folder, or put `comments.css` wherever you put css files and change `comments.html` to point to the new location.)
+
+4. To add comments to a page, create an issue in your github project (with whatever name and description you want) and then set `commentIssueId` line in the front matter of your blog post to match the issue:
+    
+    ~~~yaml
+    ---
+    layout: post
+    title:  "Blogging on GitHub"
+    commentIssueId: 42
+    ---
+    ~~~
+
+5. [Ivan says](http://ivanzuzak.info/2011/02/18/github-hosted-comments-for-github-hosted-blogs.html) you also have to register an "OAuth application", so I did that for `loyc.net`, but comments are still working when I look at my Jekyll preview at `localhost:4000`.
 
 ## <a name="customcss"></a>Using custom CSS in Markdown
 
