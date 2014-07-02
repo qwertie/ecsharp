@@ -326,3 +326,4 @@ By the way, no matter whether you're using GitHub or not or Jekyll or not, there
 You can even use MDWiki without a web server, if you view `mdwiki.html` in Firefox (it doesn't work in Google Chrome), which means you can use it for offline Markdown previews (which is great because, at least on the Windows, tools for editing Markdown are generally quite limited.)
 
 {% endraw %}
+<a href="http://www.codeproject.com" rel="tag" style="display:none">Published on CodeProject</a>
