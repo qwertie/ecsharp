@@ -1,0 +1,13 @@
+---
+title: "Microsoft C++ doing what Loyc is doing?"
+layout: post
+# Pulled from Blogger. Last updated there on: 2007-08-07
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2007/08/microsoft-c-doing-what-loyc-is-doing.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I came across <a href="http://msdn2.microsoft.com/en-us/library/w3yk4x9b(VS.80).aspx">this MSDN article</a> today, which says <br/>
+
+<blockquote>...when the project is built, the compiler parses each C++ source file, producing an object file. However, when the compiler encounters an attribute, it is parsed and syntactically verified. The compiler then dynamically calls an attribute provider to insert code or make other modifications at compile time. The implementation of the provider differs depending on the type of attribute. For example, ATL-related attributes are implemented by Atlprov.dll.
+</blockquote><br/>
+So, boo and Loyc aren't the only compilers doing binary-compatible compiler extensions. I wonder who else is doing it.
+{% endraw %}

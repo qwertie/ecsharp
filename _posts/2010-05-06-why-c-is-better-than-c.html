@@ -1,0 +1,44 @@
+---
+title: "Why C# is better than C++"
+layout: post
+# Pulled from Blogger. Last updated there on: 2011-07-06
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2010/05/why-c-is-better-than-c.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I could phrase this as "why I hate C++" or "<a href="http://cplusplussucks.com/">why C++ sucks</a>", but let's try the more positive spin, "why C# is better". The reasons are so numerous and compelling that there is only one reason to use C++ instead, and that is better performance.<br/>
+<ol>
+<li>C# compiles much faster</li>
+<li>IntelliSense is much more reliable and faster (press F12 in Visual Studio to see the definition of any symbol)</li>
+<li>Automatic memory management cuts your development time in half <span style="font-style: italic;">all by itself</span> - not just because you write less code, but also because you'll never have to track down "double free" problems and you'll very rarely have memory leaks (and if do you have memory leaks, <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=a362781c-3870-43be-8926-862b40aa0cd0&amp;displaylang=en">CLR profiler</a> can help track them down)</li>
+<li>No weird errors caused by #include order or #defines</li>
+<li>No more buffer overflows or other C-related security vulnerabilities</li>
+<li>Debugging is much easier; you can execute arbitrary expressions and call your own functions and properties from within Visual Studio's debugger (and <a href="http://www.icsharpcode.net/opensource/sd/">SharpDevelop</a>, I expect)</li>
+<li>Strings are handled the same way in all code (no more converting between various string representations)</li>
+<li>C# has anonymous inner functions with type inference (but the newest version of C++ has so-called "lambdas" too)</li>
+<li>GUIs are easier to make in C# (at least if you use WinForms. I found WPF very hard to learn)</li>
+<li><a href="http://msdn.microsoft.com/en-us/vcsharp/aa336746.aspx">LINQ</a> (Language INtegrated Query)</li>
+<li>"yield return" statement for writing generators and coroutines (<a href="http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">approximate C equivalent</a>)</li>
+<li>You can create and compile code at run-time using Reflection.Emit, Dynamic Methods or (easiest) LambdaExpression.Compile. These use the JIT engine to produce new machine code at run-time.</li>
+<li>The .NET standard libraries ("BCL") have more capabilities than those of C++, and the STL is more cumbersome (object->my_vector.erase(object->my_vector.begin() + index), anyone?)</li>
+<li>Unlike C++ templates, C# generics are guaranteed to work for all type parameters, do not bloat your code size, and can be used by modules linked dynamically (mind you, C++ templates can do some things that are hard/impossible for generics, but advanced use of templates is difficult)</li>
+<li>The MS C# compiler gives much better error messages than the MS C++ compiler</li>
+<li>You can mix different programming languages much more easily in .NET. <a href="http://www.wired.com/thisdayintech/2010/10/1014cplusplus-released/all/1">Bjarne Stroustrup said</a>, "I consider the idea of one language, one programming tool, as the one and only best tool for everyone and for every problem infantile"--yet C++ isn't designed to inter-operate with any language other than C. You can use <a href="http://swig.org/">SWIG</a> if necessary, but it's got a big learning curve and C++ can't take credit for it anyway. On Windows, COM is a possible solution, but it's a huge pain to write COM classes in C++.</li>
+<li>There are various tools for analyzing and modifying .NET assemblies/programs after they are compiled, e.g. PostSharp provides aspect-oriented programming and Microsoft Code Contracts let you specify preconditions, postconditions and invariants in your classes.</li>
+<li>You can easily see how the standard libraries work in their binary form, using Reflector (the source code of the BCL is also available).</li>
+<li>You can write "safe" code that can run directly in a web browser (Silverlight)</li>
+<li>It is possible to write a C# program that targets a mobile device (ARM) and run the <span style="font-style: italic;">same binary</span> on your desktop PC</li>
+<li>You'll no longer have to manage *.h files and write every function declaration twice. Well, you can save yourself work by leaving short"inline" functions in the header file, but you'll pay for it later with slower compile times.<br/>
+<br/>
+The need to use a different syntax for member functions in the header file than the implementation is a huge pet peeve of mine. Consider the difference between the header file declaration "virtual std::string Name(bool longForm = false);" and the cpp file equivalent "string ClassName::Name(bool longForm) { ... }". In C++ I'm expected to <i>manually</i> remove "virtual", "= false" and the semicolon, but add "ClassName::". Plus you might want to remove "std::" if you're "using namespace std" in the cpp file. Doing all this a few dozen times in a day can drive me mad, and of course the two copies make maintenance harder too.</li>
+<li>Dynamic linking and reflection make it easy to support plug-in architectures, and to use 3rd party libraries without compiling them yourself.</li>
+<li>No more dependency-detection glitches where you change a struct or virtual function table but not all dependencies are recompiled, leading to bizarre and unpredictable run-time behavior. In C# I never see such glitches, and if they did happen you would get a run-time exception rather than weird crashes or strange behavior.</li>
+<li>C# IDEs support automatic refactoring and Visual C# underlines syntax and semantic errors as soon as you make them. No such luck in C++!</li>
+</ol><div>Unfortunately, I still have to use C++! It is still the performance king and the standard on Windows platforms, and I maintain a performance-critical project for WinCE, on which .NET performs poorly.</div><div><br/>
+</div>Some say C# is slower, but I find that if you write code carefully (more like you would in C), you can make C# almost as fast as C. The Microsoft .NET JIT compiler does not optimize nearly as well as a C compiler, but I find that C# code generally runs faster than a debug build of equivalent C/C++ code.<br/>
+<br/>
+Unfortunately, whereas C++ code may be 20 times slower when it runs on mobile (ARM-based) devices compared to a desktop PC, C# on the Compact Framework seems to be closer to 100 times slower than the same C# code running on a desktop PC. Microsoft needs to put a lot more work into their ARM version! Also note that Compact Framework has fewer features (e.g. no support for run-time code generation).<br/>
+<br/>
+<span style="font-weight:bold;">Update</span>: Long after writing this blog post I made a <a href="http://www.codeproject.com/KB/cross-platform/BenchmarkCppVsDotNet.aspx">C++ vs C# benchmark</a>. The conclusions were exactly as I expected/feared: C# is often almost as fast as C++ (but about half as fast in certain cases), while the Compact Framework is 3-11 times slower than C++.<br/>
+<br/>
+Now as much as I hate C++, and prefer C# over Java, the .NET Framework is far from perfect. Some parts of the BCL were badly designed, and by now it is getting to be extremely bloated. Also, I think the .NET framework needs some new features. Chief among my requests would be <a href="http://golang.org/">Go</a>-style slices and interfaces, and return type covariance (of course). This would bring a lot of C's big-fiddling prowess to C# without compromising type safety. You know, that deserves <a href="http://loyc-etc.blogspot.com/2010/05/new-features-net-framework-should-have.html">its own blog entry</a>.
+{% endraw %}

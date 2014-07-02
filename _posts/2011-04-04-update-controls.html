@@ -1,0 +1,140 @@
+---
+title: "Update Controls"
+layout: post
+# Pulled from Blogger. Last updated there on: 2011-04-09
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2011/04/update-controls.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I've felt for a long time that something was wrong with the way we do GUI development. For instance, suppose we have a form with a list of people and some information about them:<br/>
+<br/>
+
+<img src="http://4.bp.blogspot.com/-Dl_fqw2oUSE/TaC7i0WeR8I/AAAAAAAAACg/oxwJxvjQrNI/s1600/PointlessForm.png" border="0" alt="A pointless person editor"/><br/>
+<small><i>(This used to be an HTML form but CodeProject wouldn't render it.)</i></small><br/>
+<br/>
+Suppose that the "serial number" box should be disabled if the user does not have a bike. Traditionally, we would write an event handler for when the value of the checkbox changes, and update the Enabled property when it does. Some code bases would also have code when the current person changes, and we must also handle the situation that the list of persons is empty.<br/>
+<br/>
+GUI-specific data binding can solve this particular problem most of the time; typically you can bind the Enabled property on the serial number box to the value of the checkbox. However, it might not handle the case that no person is selected. And there are many other scenarios where data binding is insufficient:<br/>
+<ul>
+<li>Suppose we would like the ListBox of persons to show a summary of each person (based on multiple properties of the person)--well, traditional data binding can't aggregate different properties of an object.<br/>
+</li>
+<li>Suppose we have an options dialog box that controls the appearance of the main window, we would like any changes to the options to immediately alter the main window's appearance--well, traditional data binding doesn't work across different windows.<br/>
+</li>
+<li>Suppose we are showing a shopping cart and we'd like to keep a label up-to-date that shows the total number of items and the total price--well, data binding can't aggregate properties of multiple objects.<br/>
+</li>
+<li>Suppose we'd like to display a certain panel only if the application is running in "administrator" mode, AND an item is selected, AND a check box is checked--well, traditional data binding can't derive a value from multiple unrelated sources of information.<br/>
+</li>
+<li>Suppose we'd like to filter a list based on a user's search string--in general, data binding doesn't help with filtering.<br/>
+</li>
+</ul><br/>
+In these cases, if data binding helps at all, it requires you to jump through hoops, or add event handlers for edge cases, or at least keep dependencies in mind when you invoke your INotifyPropertyChanged events. For example, suppose you're using WPF and your ListBox is bound to a Person.ListLabel property that returns a summary string with the name and rank of a Person. If nothing else, you'll have to make sure you raise the PropertyChanged event for "ListLabel" when the name or rank is changed. That is, the code for the Name and Rank properties must explicitly state that ListLabel depends on them. (Now, you can avoid creating the ListLabel property by using a DataTemplate, but if you've programmed WPF then you have probably encountered the need to fire multiple PropertyChanged events for a single property change.)<br/>
+<br/>
+Ideally, the actual code of a program should be closely related to the behavior rules it is supposed to follow. More generally, the solution space should resemble the problem space; your code should express your business rules. Usually, behavior rules can be described in a simple way:<br/>
+<ul>
+<li>"The serial number field is enabled only if 'Has a bike' is checked and a person is selected".<br/>
+</li>
+<li>"The list box will show the name and rank of each person."<br/>
+</li>
+<li>"The font size of the main dialog is to match the font size selected on the options dialog."<br/>
+</li>
+<li>"In the shopping cart, the total price is shown under the list of items."<br/>
+</li>
+<li>"The list only shows items that contain the text typed in the 'Filter' box."<br/>
+</li>
+</ul>Notice how all of these requirements are declarative. They describe the desired results, without considering how to keep the user interface up-to-date when changes occur. What must the program do when the user selects a different person or a different invoice? What must it do when the server tells us there a new person, or that a new item was created remotely in the shopping cart? The requirements don't say anything about that. Wouldn't it be nice if we didn't have to write code to handle these circumstances either?<br/>
+<h4>Introducing Update Controls</h4>In a University undergrad project I experimented with starting to solve this problem, using a concept I called "propagating variables". I didn't entirely figure out how to make it work, though. So I was delighted to find that someone had solved this problem in .NET land, with a framework called <a href="http://updatecontrols.net">Update Controls</a>. Update Controls is a different way of programming, so it takes some practice, but I am delighted with how it streamlines my code.<br/>
+<br/>
+UpdateControls not only keeps your GUI up-to-date, but it also separates the GUI from the rest of the code better than any framework I have seen before. UpdateControls supports not only WPF but WinForms and Silverlight, too, and it encourages you to write your code in such a way that the view is replacable. I'm using UpdateControls for WinForms right now, because I find it easier, but if I ever want to upgrade to WPF, I will be able to do so with minimal changes to my Model and ViewModel code. Moreover, I could easily design a program that supports both a WinForms user interface and a Silverlight one at the same time: two views, one ViewModel. If somebody decides to create "UpdateControls for <a href="http://monotouch.net/">MonoTouch</a>" someday, I could add an iPhone version, sharing the same viewmodel between Silverlight, WinForms and MonoTouch.<br/>
+<br/>
+By strictly separating the ViewModel from the View, and placing all nontrivial logic in the ViewModel, you can effectively write unit tests for your GUI by writing tests for the ViewModel. Just make sure that the code in the View is so simple that no tests are needed, and that the output you want to test for is computed by the ViewModel instead of the View. You still have to manually test the view to make sure it <i>looks</i> right, but its <i>logic and behavior</i> can be unit-tested.<br/>
+<br/>
+<h4>The Presentation and Navigation Models</h4>Moreover, I am finding that the "Update Controls" way of doing things leads to clean, maintainable code. I especially like the <a href="http://updatecontrols.net/doc/tips/navigationmodel">Presentation Model</a> concept. I think of the presentation model as a kind of "file system" of GUI state. That is, the presentation model is the root of a tree structure from which you can reach all of your application's important state information: the list of open documents, the currently selected item in each listbox, the options in your Options dialog, and so forth. The view (Forms and Controls) merely reflects the state of the presentation model.<br/>
+<br/>
+Conceptually the presentation model (PM) is broken down into two parts: the model, and the navigation model. I am not sure where the view-models fit into this pattern; heck, maybe this "file system" idea isn't exactly what Micheal Perry (author of Update Controls) was thinking of when he described the pattern.<br/>
+<br/>
+But I don't think it's necessary to follow the pattern exactly as described in his blog. The key idea is that you can put all important state information in a big tree (analogous to a file system, or to the DOM in web programming), filled with the two basic Update Controls primitives, Independents and Dependents (known collectively as Precedents). Placing state in the UC-enabled presentation model makes your code very maintainable, because<br/>
+<ul>
+<li>You no longer need to answer questions like "what events do I have to fire when I change this?" or "what properties change when this property changes?"<br/>
+</li>
+<li>If your state is in the presentation model, you no longer have to worry about what physical control(s) display a piece of state information--because controls don't depend on each other--and you can even move controls between different dialog boxes without breaking anything (other than the controls being moved).<br/>
+</li>
+<li>A tree structure is a good basis for a mental model of the application. In applications that hold state in many different ways, in separate "islands", it may be hard to keep track of everything. But the PM concept gives you a way to mentally visualize your program state and to communicate about state variables (because everything important has a named location in the tree.)<br/>
+</li>
+</ul><br/>
+Have you ever fiddled with the console variables (CVars) in a video game such as Quake or Crysis? It's cool how you can change a variable and the game's output instantly matches the changes you make. Update Controls and the presentation model bring this kind of magic to your own code. You just define the state variables, stick them in a tree, and write simple snippets of code that describe how a GUI control depends on the tree.<br/>
+<br/>
+<h4>The Presentation Model tree</h4>The tree I'm describing isn't anything fancy. It's just an ordinary collection of classes, organized and nested in whatever way is most natural for the application. For instance, I'm writing an application that displays a collection of objects on a form. Well, actually there might be more than one collection of objects, with each collection shown on a different tab on the user interface; but I decided that my presentation model would only represent one data set (I create extra instances for multiple data sets). This data set has two fundamentally different kinds of objects, but for this discussion it doesn't matter what they are, so let's call them <b>Apples</b> and <b>Bananas</b>.<br/>
+<br/>
+The user can have either a "live view" which shows the current state of the objects, or a historical view, which shows the state of the objects at some point in the past. Plus, there is an options dialog, and the Presentation Model has a reference to the options. Note that there are no GUI objects in the presentation model; it provides access to the options, not to the dialog! It has four main properties (HModel, ApplesVM, BananasVM, Options) which, in turn, contain other properties, forming a tree:<br/>
+
+<pre>
+<b>PresentationModel</b> (class)
+.<b>HModel</b>      (HistoryBrowserModel class: represents the model at one instant in time)
+   .<b>Model</b>       (Model class: holds the core data model)
+      .<b>Apples</b>      (list of FruitObject with state and history of each apple)
+      .<b>Bananas</b>     (list of FruitObject with state and history of each banana)
+         (properties of FruitObject are not shown because they are not relevant
+          to this blog entry. In reality, my app is not fruit-related.)
+   .<b>StartTime</b>   (DateTime: minimum value of the time slider in the GUI)
+   .<b>EndTime</b>     (DateTime: maximum value of the time slider in the GUI;
+                 derived automatically from time stamps on the FruitObjects)
+   .<b>ViewTime</b>    (DateTime: current time being viewed in the GUI)
+   .<b>LiveMode</b>    (bool: if true, ViewTime will be locked to EndTime)
+   .<b>Apples</b>      (a projection of Model.Apples at the current ViewTime)
+   .<b>Bananas</b>     (a projection of Model.Bananas at the current ViewTime)
+.<b>ApplesVM</b>    (FruitListViewModel class)
+   .<b>CompleteList</b> (list of FruitViewModels derived from HModel.Apples)
+   .<b>Filter      </b> (user-defined filter that reduces the set of objects to display)
+   .<b>FilteredList</b> (list of FruitViewModels limited by the Filter)
+   .<b>SelectedItem</b> (currently selected FruitViewModel, or if multiple apples are
+                 selected, a fake ViewModel that provides a combined view)
+.<b>BananasVM</b>   (another instance of FruitListViewModel)
+   .<b>CompleteList</b>
+   .<b>Filter</b>
+   .<b>FilteredList</b>
+   .<b>SelectedItem</b>
+.<b>Options</b>     (shared between all instances of PresentationModel)
+   .<b>ServerAddress</b>
+   ... (more options)
+</pre><br/>
+What I'm most proud of is the time slider. Basically, the time slider is bound to the value of _pm.HModel.ViewTime (where _pm is the presentation model). When the user moves the slider, an event written by me updates _pm.HModel.ViewTime. UpdateControls  figures out the rest:<br/>
+<ol>
+<li>It knows that _pm.HModel.Apples and _pm.HModel.Bananas depend on ViewTime and automatically updates them.<br/>
+</li>
+<li>It also knows that _pm.ApplesVM.CompleteList and _pm.BananasVM.CompleteList depend on _pm.HModel.Apples and _pm.HModel.Bananas so it updates the CompleteLists too.<br/>
+</li>
+<li>In turn, the FilteredList properties depend on the CompleteList properties so they are updated.<br/>
+</li>
+<li>Finally, the Update Controls in the tab (ListBoxes, etc.) know that they depend on FilteredList, so they update themselves too. Like magic!</li>
+</ol><br/>
+All I had to do was correctly associate my data with Update Controls primitives such as Independent, Dependent, Independent&lt;T>, Dependent&lt;T>, DependentList&lt;T> and IndependentList&lt;T>; and to implement GetHashCode and Equals on wrapper objects such as ViewModels (it's important to tell UpdateControls that two wrappers are equal if the wrapped objects are equal.) UpdateControls automatically detects dependencies between properties that use these primitives, and updates all Dependents on-demand (i.e. when their values are requested).<br/>
+<h4>Has a bike?</h4>So let's say you've designed a presentation model "PModel" for your application and it represents the form shown at the beginning of this blog entry. You're using Windows Forms. So, first, you need to give the form a reference to the presentation model:<br/>
+
+<pre>PModel _pm;
+public Form1(PModel pm)
+{
+    InitializeComponent();
+    _pm = pm;
+}
+
+// Somewhere else
+Application.Run(new Form1(new PModel()));
+</pre><br/>
+Then, to ensure that the "serial number" checkbox (an instance of UpdateCheckBox) is enabled at the right time, use the WinForms designer to create an event handler for the "GetEnabled" event, and put the following code in it:<br/>
+
+<pre>return _pm.SelectedPerson != null && _pm.SelectedPerson.HasBike;</pre><br/>
+Similar code snippets must be written for the control's Text property and for properties of all the other controls on the dialog. I'm not going to explain right now how to actually use Independents and Dependents to create the presentation model; I would refer you to the <a href="http://updatecontrols.net/doc/">Update Controls blog</a> for that information. Right now I just want to point out the two key advantages of this approach over conventional event-driven code:<br/>
+<ol>
+<li>The code closely follows the requirement: "The serial number field is enabled only if 'Has a bike' is checked and a person is selected". If the requirements change, it's easy to update the code to match them.<br/>
+</li>
+<li>If you used Update Controls correctly (assuming no bugs in UC itself), there is no way the program can malfunction with respect to this requirement. It will always behave as that one line of code describes. <i>The UC Way automatically leads to fewer bugs</i>--although if you're new to UC, bugs that do occur tend to be serious head-scratchers.</li>
+</ol><br/>
+I should point out one disadvantage to UpdateControls: it will permeate your codebase, changing the way you write both your ViewModels and your Models, so you'll be making a major commitment. And while UpdateControls integrates with WPF very closely, the WinForms version requires a special "Update" version of every control that you want to stay up-to-date automatically, and only a few properties currently support automatic updates. If you need to use 3rd-party Model classes in an UpdateControls app, you'll have to write <a href="http://en.wikipedia.org/wiki/Decorator_pattern">decorator</a> classes to augment the model classes with "Independent sentries". Similarly, to use 3rd-party controls in a WinForms app, you'll need to create a derived class or a special container that has private "Dependent sentries" and updates them during Application.Idle events. For example, I had to write an UpdateTrackBar class to represent my time slider, because UpdateControls didn't come with one.<br/>
+<br/>
+Another issue, currently, is that the way UpdateControls handles lists is not scalable. Normally lists have a single "independent sentry" that controls updates to the lists. Adding, removing, or modifying a single item will cause each dependency to scan the entire list. If you are filtering a million-item list down to 100 items that you show on-screen, that million items will be scanned and filtered every time any item is added, removed, or changed, even if that item is not one of the 100 items displayed.<br/>
+<br/>
+I'm trying to think of a way to make it more scalable, but I have no solutions to offer yet. There is one mitigating factor: UpdateControls updates dependencies in a kind of "lazy" fashion. If you change several items at once (e.g. in a single method or for-loop) in the million-item list, each of its dependencies is typically updated only once (in WinForms, dependencies will be updated in the next Application.Idle event; in WPF they will be updated in a posted message. Early updates occur on-demand, however, e.g. if your code explicitly accesses the filtered list.)<br/>
+<br/>
+Still, I am quite certain that using a framework like UpdateControls will become an industry standard practice someday. <br/>
+<br/>
+To get started with UpdateControls yourself, read its <a href="http://updatecontrols.net/doc/">blog</a>, check out examples such as <a href="http://updatecontrols.net/doc/mvvm-and-linq-to-sql">Noteworthy</a>, and write a small app to try it out. Noteworthy is odd--a "blog editor" that doesn't have a body text field?--but it seems to be the best example available at the moment. If you have any questions about UpdateControls, it's probably best to ask them on the <a href="http://updatecontrols.codeplex.com/discussions">discussions list</a>. <a href="http://www.codeproject.com/script/Articles/BlogFeedList.aspx?amid=3453924" rel="tag" style="display:none">CodeProject</a>
+{% endraw %}

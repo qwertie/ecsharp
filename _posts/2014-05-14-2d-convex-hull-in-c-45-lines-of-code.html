@@ -1,0 +1,110 @@
+---
+title: "2D Convex hull in C#: 40 lines of code"
+layout: post
+# Pulled from Blogger. Last updated there on: 2014-06-17
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2014/05/2d-convex-hull-in-c-45-lines-of-code.html'>blogspot</a>.</i></p></small>
+{% raw %}
+If you want a <a href="http://en.wikipedia.org/wiki/Convex_hull">convex hull</a> and you want it now, you could go get a library like <a href="http://miconvexhull.codeplex.com/">MIConvexHull</a>. That library claims to be high-performance compared to a comparable C++ library, but that claim is implausible, especially for the 2D case, since the algorithm relies heavily on heap memory and dynamic dispatch, accessing all coordinates through an <tt>IVertex</tt> interface that returns coordinates as <tt>double[]</tt>, and it uses LINQ rather liberally. (Update: <a href="http://www.codeproject.com/Articles/775753/Ouellet-Convex-Hull-Algorithm-and-its-implementati">Ouellet's Algorithm</a> is a good choice.) <br/>
+<br/>
+Loyc.Utilities has a much simpler convex hull algorithm in the <tt>PointMath</tt> class that you might find easier to adapt to your own codebase, and although I haven't benchmarked it, you can plainly see that scanning for the convex hull takes O(n) time and needs only simple math, so that the overall running time will be dominated by the initial sorting step (which takes O(n log n) time). Because of the simple math used in this algorithm, it performs well both on powerful desktop machines and (given integer or fixed-point workloads) on lower-power machines with no FPU.  
+<pre>/// &lt;summary>Computes the convex hull of a polygon, in clockwise order in a Y-up 
+/// coordinate system (counterclockwise in a Y-down coordinate system).&lt;/summary>
+/// &lt;remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.&lt;/remarks>
+public static IListSource&lt;Point> ComputeConvexHull(IEnumerable&lt;Point> points)
+{
+  var list = new List&lt;Point>(points);
+  return ComputeConvexHull(list, true);
+}
+public static IListSource&lt;Point> ComputeConvexHull(List&lt;Point> points, bool sortInPlace = false)
+{
+  if (!sortInPlace)
+    points = new List&lt;Point>(points);
+  points.Sort((a, b) => 
+    a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X > b.X ? 1 : -1));
+
+  // Importantly, DList provides O(1) insertion at beginning and end
+  DList&lt;Point> hull = new DList&lt;Point>();
+  int L = 0, U = 0; // size of lower and upper hulls
+
+  // Builds a hull such that the output polygon starts at the leftmost point.
+  for (int i = points.Count - 1; i >= 0 ; i--)
+  {
+    Point p = points[i], p1;
+
+    // build lower hull (at end of output list)
+    while (L >= 2 && (p1 = hull.Last).Sub(hull[hull.Count-2]).Cross(p.Sub(p1)) >= 0) {
+      hull.RemoveAt(hull.Count-1);
+      L--;
+    }
+    hull.PushLast(p);
+    L++;
+
+    // build upper hull (at beginning of output list)
+    while (U >= 2 && (p1 = hull.First).Sub(hull[1]).Cross(p.Sub(p1)) &lt;= 0)
+    {
+      hull.RemoveAt(0);
+      U--;
+    }
+    if (U != 0) // when U=0, share the point added above
+      hull.PushFirst(p);
+    U++;
+    Debug.Assert(U + L == hull.Count + 1);
+  }
+  hull.RemoveAt(hull.Count - 1);
+  return hull;
+}</pre>This code relies on <a href="https://github.com/qwertie/Loyc/tree/master/Src">Loyc</a>'s <tt><a href="https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Implementations/DList.cs">DList</a></tt> class which is like List&lt;T> except that it can efficiently add and remove items from the beginning OR end of the list, and it has some extra stuff, such as First and Last which return the first and last item in the list, repectively. This code assumes the existence of a <tt>Point</tt> struct with any kind of coordinates (int, float, double, etc.) and methods such as <tt>Sub</tt> to subtract, <tt>Cross</tt> to compute the cross-product (a.X * b.Y - a.Y * b.X), etc. In Loyc.Utilities, the code is located within a T4 template and is actually replicated for <tt>int</tt>, <tt>float</tt> and <tt>double</tt> coordinates... although currently the code breaks for large integer coordinates since Cross() returns int, which can easily overflow. <tt>IListSource</tt> was explained in an <a href="http://loyc-etc.blogspot.ca/2014/02/using-loycessentials-collection.html">earlier post</a> and can be replaced with <tt>IEnumerable</tt> if you prefer. <br/>
+<br/>
+Edit: original version was <i>buggy</i>. <br/>
+<br/>
+Edit: I found that the algorithm took 11.3% less time for 10 million points if I changed the sorting step as follows: 
+<pre>
+  points.Sort((a, b) => 
+    a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));   // BEFORE
+    a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X > b.X ? 1 : -1)); // AFTER
+</pre>I wrote this little benchmark: 
+<pre>
+public static void TestConvexHull()
+{
+  int[] testSizes = new int[] { 12345, 100, 316, 1000, 3160, 10000, 
+                 31600, 100000, 316000, 1000000, 3160000, 10000000 };
+  for (int iter = 0; iter &lt; testSizes.Length; iter++) {
+    Random r = new Random();
+    
+    List&lt;PointD> points = new List&lt;PointD>(testSizes[iter]);
+    for (int i = 0; i &lt; points.Capacity; i++) {
+      double size = r.NextDouble();
+      double ang = r.NextDouble() * (Math.PI * 2);
+      points.Add(new PointD(size * Math.Cos(ang), size * Math.Sin(ang)));
+    }
+    // Bonus: test sorting time to learn how much of the time is spent sorting
+    var points2 = new List&lt;PointD>(points);
+    EzStopwatch timer = new EzStopwatch(true);
+    points2.Sort((a, b) => a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X &lt; b.X ? -1 : 1));
+    int sortTime = timer.Restart();
+    
+    var output = PointMath.ComputeConvexHull(points, true);
+    int hullTime = timer.Millisec;
+  
+    if (iter == 0) continue; // first iteration primes the JIT/caches
+    Console.WriteLine("Convex hull of {0,8} points took {1} ms ({2} ms for sorting step). Output has {3} points.", 
+      testSizes[iter], hullTime, sortTime, output.Count);
+  }
+}
+</pre>Which produces these results on my laptop: 
+<pre>
+Convex hull of 100 points took 0 ms (0 ms for sorting step). Output has 12 points.
+Convex hull of 316 points took 0 ms (0 ms for sorting step). Output has 18 points.
+Convex hull of 1000 points took 0 ms (0 ms for sorting step). Output has 28 points.
+Convex hull of 3160 points took 2 ms (1 ms for sorting step). Output has 36 points.
+Convex hull of 10000 points took 5 ms (3 ms for sorting step). Output has 59 points.
+Convex hull of 31600 points took 17 ms (10 ms for sorting step). Output has 85 points.
+Convex hull of 100000 points took 55 ms (37 ms for sorting step). Output has 127 points.
+Convex hull of 316000 points took 197 ms (122 ms for sorting step). Output has 184 points.
+Convex hull of 1000000 points took 636 ms (411 ms for sorting step). Output has 286 points.
+Convex hull of 3160000 points took 2045 ms (1368 ms for sorting step). Output has 379 points.
+Convex hull of 10000000 points took 6949 ms (4953 ms for sorting step). Output has 563 points.
+</pre>Notice that the sorting step takes the majority of the time, as you would expect since sorting is O(N log N) while the rest of the code is O(N). (Why 316? Logarithmically, it's half way between 100 and 1000.) <br/>
+<br/>
+Copyright: me (David Piepgrass). Do with the code as you wish (originally LGPL). 
+{% endraw %}

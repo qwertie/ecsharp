@@ -1,0 +1,134 @@
+---
+title: "The Loyc tree and prefix notation in EC#"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-06-12
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html'>blogspot</a>.</i></p></small>
+{% raw %}
+<b>Update:</b> <a href="http://loyc-etc.blogspot.ca/2013/05/status-update-loyc-tree-rewritten.html">the Loyc tree code has been rewritten</a> and the original concept has been slightly modified from the concept described in this post. <br/>
+<br/>
+As I designed the macro system for Enhanced C#, I thought a lot about what kind of syntax tree would be appropriate--not just for EC# but for tools that could process multiple languages. One of Loyc's goals is conversion between languages, and another goal is to support multiple language syntaxes (perhaps each with a macro system!) in a single project. A third goal is to assist IDE tools (in particular, to be compatible with incremental parsing). And, as always, I wanted a data structure that is fast and uses memory efficiently. <br/>
+<br/>
+I considered using LISP-style lists, but they didn't fit into C# very well. In particular I didn't feel that they were the right way to model complex declarations such as  
+<pre>
+ [Serializable] struct X&lt;T> : IX&lt;T> where T : class, Z { ... }
+</pre>Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree". The Loyc tree is really two independent ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works. <br/>
+<br/>
+The concept of a Loyc node involves three main parts: a "head", an "argument list" and "attributes". The implementation involves two parallel trees, "red" and "green", inspired by a similar idea in Microsoft Roslyn. <br/>
+<br/>
+A Loyc tree is basically "XML for code"--but wait a minute, I hate XML. Maybe "JSON for code"? Well, just as all XML elements have the same structure, all Loyc nodes have the same structure, also. Just as there is a clear and obvious mapping from XML to the code representation of XML (such as an XML DOM or XElement), the mapping from EC# to a Loyc tree is similarly transparent, when the EC# code is written in <i>prefix notation</i>. <br/>
+<br/>
+In EC# prefix notation, the above struct "X&lt;Y>" looks like this: 
+<pre>
+ [Serializable]
+ #struct(#of(X, [#where(#class, Z)] T),
+         #(#of(IX, T)),
+         #{}( ... ));
+</pre>But wait, let's start with some simpler examples: 
+<pre>
+ x += percent * 0.01;       // normal EC#
+ #+=(x, #*(percent, 0.01)); // prefix notation
+ 
+ public int X;              // normal EC#
+ [#public] #var(#int, X);   // prefix notation
+ 
+ using System.Collections.Generic;              // normal
+ #import(#.(#.(System, Collections), Generic)); // prefix
+     // (#using is reserved for the using(...) statement)
+
+ if (condition) { y(); }    // normal EC#
+ @#if(condition, #{}(y())); // prefix notation
+ 
+ Foo(x, y, z);              // normal EC#
+ Foo(x, y, z);              // prefix notation
+</pre>In the pairs above, the EC# parser produces the same syntax tree for the two lines in each pair. EC# accepts prefix notation anywhere that a normal statement or expression is allowed. Prefix notation is based on function-call notation, as you can clearly see in the last example. <br/>
+<br/>
+<b>Note:</b> the "@" in "@#if" avoids confusion between if-statements and the preprocessor directive "#if". The preprocessor in EC# is obsolete and not necessary, but it still exists. I wanted to use the "#" character to indicate a "special name" in prefix notation, but somehow we must avoid conflicts with the preprocessor. The parser converts the identifier "@#if" to "#if" internally, just as "@foo" actually means "foo" in plain C#. <h4>The Loyc syntax tree </h4>In most compilers, the syntax tree is very strongly typed, with separate classes or data structures for, say, variable declarations, binary operators, method calls, method declarations, unary operators, and so forth. Loyc, however, only has a single data type, <b>Node</b>, for all nodes*. There are several reasons for this: <ul>
+<li>Simplicity. Many projects have thousands of lines of code dedicated    to the AST (abstract syntax tree) data structure itself, because each    kind of AST node has its own class. Simplicity means I write less code   and users learn to use it faster.</li>
+<li>Serializability. Loyc nodes can always be serialized to a plain text    "prefix tree" and deserialized back to objects, even by programs that    are not designed to handle the language that the tree represents**. This    makes it easy to visualize syntax trees or exchange them between    programs.</li>
+<li>Extensibility. Loyc nodes can represent any programming language    imaginable, and they are suitable for embedded DSLs (domain-specific    languages). Since nodes do not enforce a particular structure, they can    be used in different ways than originally envisioned. For example, most    languages only have "+" as a binary operator, that is, with two arguments.    If Loyc had a separate class for each AST, there would probably be a    PlusOperator class derived from BinaryOperator, with a LeftChild and a   RightChild. But since there is only one node class, a "+" operator with    three arguments is easy; this is denoted by #+(a, b, c) in EC# source    code. The EC# compiler won't understand it, but it might be meaningful   to another compiler or to a macro.</li>
+</ul><small>* In fact, there are a family of node classes, but this is just an       implementation detail.</small><br/>
+<small>** Currently, the only supported syntax for plain-text Loyc trees is       EC# syntax, either normal EC# or prefix-tree notation.</small><br/>
+<br/>
+EC# syntax trees are stored in a universal format that I call a "Loyc tree". All nodes in a Loyc tree consist of up to four parts: <ol>
+<li>An attribute list (the Attrs property)</li>
+<li>A Value</li>
+<li>A Head or a Name (if a node has a Head, Name refers to Head.Name)</li>
+<li>An argument list (the Args property)</li>
+</ol>The EC# language does not allow (2) and (3) to appear together (specifically, a Value can only be represented in source code if the Name is "#literal"). Therefore, you can think of Value, Head and Name as a discriminated union known as "the head part of a node". There is no easy and efficient way to represent a discriminated union in .NET, so all five properties (Attrs, Value, Head, Name, Args) are present on all nodes. <br/>
+<br/>
+As you've seen, almost any Loyc node can be expressed in EC# using either "prefix notation" or ordinary code. The basic syntax of prefix notation is 
+<pre>
+ [attributes] head(argument_list)
+</pre>where the [attributes] and (argument_list) are both optional, and the head part could be a simple name. For example, the EC# statement 
+<pre>
+ [Foo] Console.WriteLine("Hello");
+</pre>is a single Node object with three children: Foo, Console.WriteLine, and "Hello". Foo is an attribute, Console.WriteLine is a Head, and "Hello" is an argument. Each of these children is a Node too, but neither Foo nor "Hello" have children of their own. The Head, Console.WriteLine, is a Node named "#." with two arguments, Console and WriteLine. The above statement could be expressed equivalently as 
+<pre>
+ [Foo] #.(Console, WriteLine)("Hello");
+</pre>This makes its structure explicit, but the infix dot notation is preferred. Finally, Console and WriteLine are nodes that only have a Name (no Attrs, no Args, no Head, no Value). <br/>
+<br/>
+Conceptually, Loyc trees have either a Head node or a Name symbol but not both. Foo, Console, WriteLine, and #. are all node names, while Console.WriteLine is a head node. However, you can always ask a node what its Name is; if the node has a Head rather than a Name, Name returns Head.Name. Thus, #. is the Name of the entire statement. <br/>
+<br/>
+Attributes can only appear at the beginning of an expression or statement. Use parenthesis to clarify your intention if necessary, but please note that parenthesis are represented explicitly in the syntax tree, not discarded by the parser. Parenthesis cause a node to be inserted into the head of another node, so 
+<pre>
+ (x())
+</pre>is a node with no arguments, that has a Head that points to another node that represents x(). Attributes have lower precedence than everything else, so  
+<pre>
+ [Attr] x = y;
+</pre>associates the attribute Attr with the "#=" node, not with the "x" node. <br/>
+<br/>
+Unlike C# attributes, EC# attributes can be any list of expressions, and do not imply any particular semantics. You can attach any expression as an attribute to any other statement or expression, e.g. 
+<pre>
+ [4 * y << z()]
+ Console.WriteLine("What is this attribute I see before me?");
+</pre>When the time comes to generate code, the compiler will warn you that it does not understand what the hell "4 * y << z()" is supposed to mean, but otherwise this statement is legal. Attributes serve as an information side-channel, used for instructions to macros or to the compiler. Macros can use attributes to receive information from users, to store information in a syntax tree temporarily, or to communicate with other macros. <br/>
+<br/>
+You can mix prefix notation with "normal" EC# in various ways. For example, all of the following versions of "MulDiv" are equivalent: 
+<pre>
+ int MulDiv(int a, int b, int c) { 
+     return (int)((long)a * b / c); 
+ }
+ int MulDiv(int a, int b, int c) { 
+     #return((int)(#cast(a, long) * b / c)); 
+ }
+ #def(#int, MulDiv, #(int a, int b, int c), { 
+     return (int)((long)a * b / c); 
+ });
+ #def(#int, MulDiv, #(#var(#int, a), #var(int, b), #var(int, c)), 
+     #{}(#return(
+         #cast((#/(#*(#cast(a, #long), b), c)), #int)
+     )) 
+ );
+</pre><h4>Statement/expression equivalence </h4>An important feature of EC# is that the difference between "statements" and "expressions" is only syntactic, not semantic, i.e. the difference is only skin-deep. Any EC# expression can be a statement, and any statement can be written in the form of an expression. The EC# parser needs to know whether to expect expressions or statements in a given location, but once a syntax tree is built, the distinction between statements and expressions disappears. Here is an example that mixes statements and expressions: 
+<pre>
+ if (foo.Bar > 0 && #{
+     var stats = GatherStatistics(foo);
+     stats.Avg > foo.Bar && stats.StdDev < 1.0
+ })
+ {
+     Frobnicate(foo, stats);
+ }
+</pre>Roughly, "#{" causes the parser to switch to statement mode, allowing you to write statements where an expression is expected. Of course, plain C# doesn't work this way. Therefore, the conversion to plain C# can sometimes be messy and difficult. <br/>
+<br/>
+The EC# parser also does not distinguish between "executable places" and "places for declarations". For example, this code can be parsed: 
+<pre>
+    Console.WriteLine("This statement is illegal!");
+    using System.Collections.Generic;
+
+    void foo() {
+        WriteLine("This statement makes more sense!");
+
+        int Ecks {
+            int x = 0;
+            get { x }
+            set { x = value; }
+            namespace WTF {
+                Console.WriteLine("This is pretty weird!");
+            }
+        }
+    }
+</pre>Although the parser understands this code, the EC# compiler (as a whole) would reject it, because code cannot run outside of methods (except macros), and namespaces cannot be located inside methods or properties. <br/>
+<br/>
+<b>Note: EC# is not usable yet. This post exists because I want to publish the idea of Loyc trees.</b> I'll update this when the parser is ready. But once the parser is ready, you will still not be able to write code in EC#. Making a programming language by myself is a long process!
+{% endraw %}

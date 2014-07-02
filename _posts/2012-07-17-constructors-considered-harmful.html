@@ -1,0 +1,46 @@
+---
+title: "Constructors Considered Harmful"
+layout: post
+# Pulled from Blogger. Last updated there on: 2012-07-17
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/07/constructors-considered-harmful.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Ahh, constructors, constructors. In my opinion the constructor design in most languages including C++, C#, D and Java is flawed, because it exposes an implementation detail that should not be exposed, namely, which class gets allocated and when. <br/>
+<br/>
+I offer you as "exhibit L" the Lazy&lt;T> class in the .NET framework. This class's main purpose is to compute a value the first time you access it. For example: 
+<pre>
+ <span style="color: blue;">int</span> x;
+ <span style="color: #2b91af;">Lazy</span>&lt;<span style="color: blue;">int</span>&gt; lazy = <span style="color: blue;">new</span> <span style="color: #2b91af;">Lazy</span>&lt;<span style="color: blue;">int</span>&gt;(() =&gt; 7 * x);
+ x = 3;
+ x = lazy.Value; <span style="color: green;">// 21</span>
+ x = lazy.Value; <span style="color: green;">// still 21 (Value is initialized only once)}</span></pre>There is an annoying issue, though: Lazy&lt;T> operates in some different modes, and it also contains a member and extra code to aid debugging. So in addition to holding the value itself and a reference to the initializer delegate, it's got a couple of other member variables and the Value property has to check a couple of things before it returns the value. Thus, Lazy&lt;T> is less efficient than it should be. <br/>
+<br/>
+So what if, in the future, MS decided to optimize Lazy&lt;T> for its default mode of operation, and factor out other modes into derived class(es)? Well, they <i>can't ever do that</i>. If MS wants to return a LazyThreadSafe&lt;T> object (derived from Lazy&lt;T>) when the user requests the thread-safe mode, they can't do that because all the clients are saying "new Lazy", which can only return the exact class Lazy and nothing else. <br/>
+<br/>
+MS could add a static function, Lazy.New(...) but it's too late now that the interface is already defined with all those public constructors. <br/>
+<br/>
+As "exhibit 2", a.k.a. "exhibit Foo", I recently wrote a library where I needed to provide a constructor that does a bunch of initialization work (that may fail) before it actually creates the object. By far the most natural implementation was a static member function: 
+<pre>
+ <span style="color: green;">// Constructor with dependency injection</span>
+ <span style="color: blue;">public</span> Foo(A arg1, B arg2, C arg3)
+ {
+ }
+ <span style="color: green;">// Static helper method provides an easier way to create Foo</span>
+ <span style="color: blue;">public</span> <span style="color: blue;">static</span> <span style="color: #2b91af;">Foo</span> LoadFrom(<span style="color: blue;">string</span> filename, ...)
+ {
+     ... <span style="color: green;">// do some work</span>
+     arg1 = ...; arg2 = ...; arg3 = ...;
+     <span style="color: blue;">return</span> <span style="color: blue;">new</span> Foo(arg1, arg2, arg3);
+ }
+</pre>However, the client didn't like that, and insisted that LoadFrom() should be a constructor "for consistency" with the other constructors. I was able to rearrange things to make LoadFrom() into a constructor, but my code was a little clunkier that way. <br/>
+<br/>
+So what I'm saying is, when clients directly allocate memory themselves with new(), it constrains the class implementation to work a certain way, and this constraint is unnecessary. <br/>
+<br/>
+A final problem with constructors is that they can't have names. <br/>
+<br/>
+For D <a href="http://d.puremagic.com/issues/show_bug.cgi?id=8381">I suggested</a> a simple solution, which in principle could be added to any language that uses "new". The solution is to treat constructors as <i>equivalent</i> to static methods named "new". So when the user writes "new Foo(...)", this call might go to a <i>real</i> constructor, or it could go to a static method named "new" that returns a Foo. Likewise, if the user writes "Foo.new(...)", this call could go to a static method or to an actual constructor. <br/>
+<br/>
+This tweak would allow the class Foo to change the implementation of a constructor to return an object derived from Foo, instead of Foo itself. It would also allow Foo to do some work before actually creating a Foo object. Finally, this proposal doesn't allow named constructors per se, but it does provide a similar syntax for named and unnamed creation methods, because the syntax to call an unnamed constructor, "Foo.new(...)" is similar to the syntax to call a named creation method, "Foo.newFromFile(...)". <br/>
+<br/>
+I don't expect D or any other language to accept my proposal, but it's a good idea so I'm blogging it anyway. In .NET, this feature would be more practical if .NET compilers were to automatically create a static "new" method for every real constructor, and to prefer to emit calls to the static method (if present) instead of the real constructor. This rule would provide for binary compatibility, which improves upon the source-level compatibility provided by my syntax proposal.
+{% endraw %}

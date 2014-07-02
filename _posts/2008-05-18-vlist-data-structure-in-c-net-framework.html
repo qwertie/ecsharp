@@ -1,0 +1,49 @@
+---
+title: "VList data structure in C# (.NET Framework 2.0)"
+layout: post
+# Pulled from Blogger. Last updated there on: 2008-05-18
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2008/05/vlist-data-structure-in-c-net-framework.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I've made an implementation of Phil Bagwell's VList data structure in C#, with a fairly comprehensive test suite. It comes in two flavors: VList(of T), where you normally add/remove items at the beginning of the list, and RVList(of T), to which you normally add/remove items at the end. It implements the complete IList(of T) interface plus quite a few additional members including AddRange, InsertRange, RemoveRange, Push, and Pop. Converting a VList to a RVList and vice versa is a trivial O(1) operation that appears to reverse the order of the elements. VList and RVList are value types (structs) that contain a reference to the underlying linked list of arrays (VListBlock(of T)). Small lists (0 to 2 items) are optimized with a specialized block class (VListBlockOfTwo(of T)).<br/>
+<br/>
+License: Lesser GPL. Contact me at qwertie256, at, gmail.com if you would like the source code. Here's an example usage:<br/>
+
+<pre>
+void Example()
+{
+ VList&lt;int&gt; oneTwo = new VList&lt;int&gt;(1, 2);
+ VList&lt;int&gt; threeFour = new VList&lt;int&gt;(3, 4);
+ VList&lt;int&gt; list = oneTwo;
+ VList&lt;int&gt; list2 = threeFour;
+
+ ExpectList(list, 1, 2);
+ list.InsertRange(1, threeFour);
+ ExpectList(list, 1, 3, 4, 2);
+ list2.InsertRange(2, oneTwo);
+ ExpectList(list2, 3, 4, 1, 2);
+
+ // oneTwo and ThreeFour are unchanged:
+ ExpectList(oneTwo, 1, 2);
+ ExpectList(threeFour, 3, 4);
+}
+static void ExpectList&lt;T&gt;(IList&lt;T&gt; list, params T[] expected)
+{
+ Assert.AreEqual(expected.Length, list.Count);
+ for (int i = 0; i < expected.Length; i++)
+  Assert.AreEqual(expected[i], list[i]);
+}
+</pre><br/>
+I thought that I would use the RVList to implement Loyc's AST to help make it possible to take AST snapshots easily, but I now suspect it's not a good idea. I am still working on the problem.<br/>
+<h2>Performance characteristics</h2>Similarly to a persistent linked list, <ul>
+<li>Adding an item to the front of a VList or the end of an RVList is always O(1) in time, and often O(1) in space (though, unlike a linked list, it may be much more)</li>
+<li>Removing an item from the front of a VList or the end of an RVList is  O(1) in time, although space not necessarily reclaimed.</li> 
+<li>Adding or removing an item at the end of a VList or the front of an  RVList is O(N) and requires making a copy of the entire list.</li> 
+<li>Inserting or removing a list of M items at the end of a VList or the  front of an RVList is O(N + M).</li> 
+<li>Changing an item at an arbitrary position should be avoided, as it performs as poorly as inserting or removing an item at that position.</li> 
+</ul> VLists, however, offer some operations that singly-linked lists cannot  provide efficiently: <ul> 
+<li>Access by index averages O(1) in ideal conditions</li> 
+<li>Getting the list length is typically O(log N), but O(1) in my version</li> 
+<li>If a sublist points somewhere within a larger list, its index within the larger list can be obtained in between O(1) and O(log N) time. Consequently, reverse enumeration is possible without creating a  temporary stack or list.</li> 
+</ul> Also, VLists can (in the best cases) store data almost as compactly as ordinary arrays.
+{% endraw %}

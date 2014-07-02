@@ -1,0 +1,216 @@
+---
+title: "D-style ranges in C# (.NET)"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-06-01
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/06/d-style-ranges-in-c-net.html'>blogspot</a>.</i></p></small>
+{% raw %}
+<style type='text/css'><!--  .sidebox { border: 1px dotted rgb(127, 127, 127); padding: 4px 5px 4px 5px; min-width: 100px ! important; float: right ! important; font-size: small; margin-top: 1px; margin-bottom: 1px; margin-left: 4px; visibility: visible; max-width: 50%; width: 35%; } --></style>Ranges are the most important concept in the design of modern <a href="http://dlang.org/">D</a> collection code, and I want them to be included under the Loyc umbrella (but for now, don't worry what Loyc is.) <br/>
+<br/>
+As I wrote in an as-yet unpublished article on about the design of my new language, Enhanced C#: 
+<blockquote>The really key thing I like about .NET is that it is specifically a multi-language, multi-OS platform with a standard binary format on all platforms--much like Java, but technically superior. It's only "multi-OS", of course, insofar as you avoid Windows-only libraries such as WPF and WCF, and I would encourage you to do so (if your boss will allow it). .NET solves the "integration gap" as long as the languages you want to mash up are available in .NET. <br/>
+<br/>
+Without a multi-language runtime, interoperability is limited to the lowest common denominator, which is C, which is an extremely painful limitation. Modern languages should be able to interact on a much higher level. <br/>
+<br/>
+A multi-language platform avoids a key problem with most new languages: they define their own new "standard library" from scratch. You know what they say about standards, that the nice thing about standards is that there are so many to choose from? <b>I hate that!</b> I don't want to learn a new standard library with every new language I learn. Nor do I want to be locked into a certain API based on the operating system (Windows APIs and Linux APIs). And all the engineering effort that goes into the plethora of "standard" libraries could be better spent on other things. The existence of many standard libraries increases learning curves and severely limits interoperability between languages. <br/>
+<br/>
+In my opinion, this is the most important problem .NET solves; there is just one standard library for all languages and all operating systems (plus an optional "extra" standard library per language, if necessary). All languages and all operating systems are interoperable--it's really nice! The .NET standard library (called the BCL, base class library) definitely could be and should be designed better, but at least they have the Right Idea. 
+</blockquote>Unfortunately, while the .NET standard library has a lot of useful functionality, it has a lot of missing pieces, and pieces whose design was poorly thought out. <br/>
+<br/>
+Since Loyc is all about interoperability between languages, it makes sense that there should be a "Loyc standard library" which provides similar functionality in a variety of programming languages. The .NET BCL is a good start, but not quite good enough. I certainly haven't had time to design a full-fledged standard library, but I'd like to talk today about some ideas I have about <i>collections</i>. <br/>
+<br/>
+One of the most important elements of any standard library is the way it handles collections. Unfortunately, .NET's collection interfaces are a "bare minimum" design. There's IEnumerable(T), ICollection(T), IList(T), IDictionary(T) and that's about all. <ul>
+<li>Read-only lists must use the same interface as writable lists. This reduces type safety, and a read-only list is incompatible with .NET <a href="http://msdn.microsoft.com/en-us/library/dd799517.aspx">generics variance</a>. Plus, implementing the entire IList(T) interface is a huge pain in the butt when you only want to provide read-only access.</li>
+<li>Similarly for read-only collections: you can either implement just IEnumerable(T)--but then Count and Contains() are inaccessible--or the full ICollection(T) interface with Clear(), Add(), Remove(), and even implementing IsReadOnly and CopyTo is a chore.</li>
+<li>There are no interfaces with AddRange() or InsertRange()</li>
+<li>There is no support for slices (sections of a list or a sequence)--this is the single biggest problem in my opinion.</li>
+<li>Although an enumerator can sometimes be restarted from the beginning with Reset(), you cannot save the current position and start from there later.</li>
+<li>There is no specific support for backward enumeration, even though most collections could easily do it.</li>
+<li>Various elements of the design are less efficient than they could be, such as the need to call two interface methods per iteration of IEnumerable, or the fact that two separate operations are required to perform operations such as "add value to dictionary if key does not already exist" (known as AddIfNotPresent in my new mutable dictionary, MMap&ltT>) or "get value and remove pair" (GetAndRemove).</li>
+<li>There's lots of other stuff one could ask for.</li>
+</ul>Here are some of the collection interfaces my Loyc.Essentials library includes already: <ul>
+<li>ISource(out T): IEnumerable(T) plus ICount, which represents the Count property alone (covariant)</li>
+<li>IListSource(out T): a simple read-only list collection (covariant)</li>
+<li>INegListSource(T), INegArray(T) and INegAutoSizeArray(T): interfaces that represent lists that do not start at index zero</li>
+<li>IPush(T), IPop(T), IStack(T), IQueue(T): interfaces with "push" and "pop" actions; IStack(T) and IQueue(T) are identical, but represent different behaviors</li>
+<li>ISetImm(T,SetT): interface that represents an immutable set, with sub-interfaces ISetOperations(T,SetT) and ISetTests(SetT). (SetT is the type that implements the interface. It's a bit inconvenient to <i>use</i> interfaces parameterized on the set type itself, but I found that actually <i>implementing</i> a set interface that is not parameterized on itself is a damned inconvenience, but I digress.)</li>
+<li>IArray(T): interface that represents a collection that can be modified, but cannot be resized.</li>
+<li>IAutoSizeArray(T): an IArray(T) that resizes itself automatically when you assign an item to a new index.</li>
+<li>IAddRange(T), IListRangeMethods(T): interfaces that contain additional collection methods such as AddRange() and RemoveRange()</li>
+<li>ISinkCollection(in T), ISinkArray(in T), ISinkList(in T): interfaces that represent collections you can write to, but not read from (contravariant).</li>
+<li>ICollectionEx(T): combines ISource(T), ISinkCollection(T), IAddRange(T) and RemoveAll(Predicate(T)), and of course ICollection(T).</li>
+<li>IListEx(T): combines ICollectionEx(T), IArray(T), ISinkList(T), and of course IList(T).</li>
+</ul>I have observed that there are never quite enough interfaces: some people want an interface that includes AddRange(...), others will want an interface with RemoveAll(...); somebody will implement a collection that can Add() but not Remove() items; and almost no one actually calls CopyTo(). To meet everyone's needs, <a href="http://www.codeproject.com/Articles/87991/Dynamic-interfaces-in-any-NET-language">Go-style interfaces, which .NET does not support</a>, would really help. With these, the missing interfaces can be retrofitted onto existing classes. And certainly Go-style interfaces are the best workaround for a standard library like the .NET BCL, whose built-in interfaces are so terribly impoverished. <br/>
+<br/>
+But without support for Go-style interfaces, the best alternative is to define a large number of interfaces, and to provide adapter types to coerce old collections to the new interfaces. <br/>
+<br/>
+Anyway, all of this is just background for the real topic of today's post: Ranges. <br/>
+<br/>
+Ranges are an improvement on the C++ concept of iterators. I don't exactly know how ranges were invented in D, but perhaps someone noticed that most of the C++ STL algorithms require pairs of iterators: <pre lang="cpp">
+bool            all_of(InputIterator first, InputIterator last, UnaryPredicate pred);
+Function      for_each(InputIterator first, InputIterator last, Function fn);
+InputIterator     find(InputIterator first, InputIterator last, const T& val);
+difference_type  count(InputIterator first, InputIterator last, const T& val);
+ForwardIterator unique(ForwardIterator first, ForwardIterator last, BinaryPredicate pred);
+void           reverse(BidirectionalIterator first, BidirectionalIterator last);
+void              sort(RandomAccessIterator first, RandomAccessIterator last, Compare comp);
+ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T& val);
+</pre>In fact, most STL algorithms require exactly two iterators--a range--and none require only a single iterator (I think). Passing ranges as iterators tends to be highly cumbersome; you are constantly repeating yourself: 
+<pre>
+push_heap(currentNode().children.begin(), currentNode().children.end());
+</pre>I once read an in-depth article that explained all of this in more detail--I can't find the article now, but it discussed a "corner case" in C++ that requires three iterators instead of two, as well as how STL algorithms that return a single iterator (within a range) can map to D by returning a range. Since D does not use the iterator concept, if a D algorithm wants to return a reference to a single element within a range, instead of returning an iterator, it will return a range whose "front" is the single element that the algorithm wanted to return. But this range can be moved forward as usual with "popFront". Thus, for example, if you search for "6" in a list of numbers from 1 to 10, the search algorithm would return a range from 6 to 10. <br/>
+<br/>
+I frequently run into difficulty in .NET because it does not have a "range" concept. We have LINQ, but that's not really enough. For instance if I want to get a sequence representing the second half of an array, I could write <pre lang="cs">
+     array.Skip(array.Length/2)
+</pre>But the Skip() operation just wasted <tt>array.Length/2</tt> loop iterations skipping elements one at a time, wasting a lot of CPU time, and the return value is no longer <i>array-like</i>--it's just an IEnumerable that can only be read from beginning to end. A lot of programmers are willing to "solve" the problem by throwing away CPU time: <pre lang="cs">
+     array.Skip(array.Length/2).ToArray() // viola!
+</pre>but that's not good enough for me. <br/>
+<br/>
+I'd like to solve many of .NET's limitations by bringing <i>ranges</i> from D to C#. <a href="http://ddili.org/ders/d.en/ranges.html">D ranges are explained in a tutorial at this link</a>. In summary, D has four kinds of ranges: <ul>
+<li>InputRange: requires the empty, front and popFront() member functions</li>
+<li>ForwardRange: additionally requires the save member function</li>
+<li>BidirectionalRange: additionally requires the back and popBack() member functions</li>
+<li>RandomAccessRange: additionally requires the [] operator, and a length property if the range is finite</li>
+</ul>Now, there are some important differences between D and C#, so D-style ranges cannot be ported directly to C#: <ul>
+<li>D has templated methods that can examine an object at compile time to decide how to treat it. For example, to support output ranges, the <tt>put(range, element)</tt> operation can call <tt>range.put(element)</tt> if it exists, or if there is no <tt>put()</tt> method, it can modify <tt>range.front</tt> and then call <tt>range.popFront()</tt> instead.</li>
+<li>D ranges are generally easier to copy (although this is not guaranteed).</li>
+</ul>The issue of how to copy a range is most irksome. To make this situation clear, imagine a C++ iterator. C++ iterators are modeled after C++ pointers, and if you copy a pointer: <pre lang="cs">
+   int* x = &array[i];
+   int* y = x;
+   x++;
+</pre>Then obviously, the two pointers are independent: modifying x did not affect y. The simple '=' operator makes a copy, and copies are independent of each other. <br/>
+<br/>
+So that's how C++ iterators work too. When you transfer an iterator with '=', you expect the copies to be independent, and they are (when implemented properly). <br/>
+<br/>
+Since ranges are essentially just pairs of iterators, ideally, you would expect ranges to work the same way (although I hear that in D, it doesn't always work that way.) <br/>
+<br/>
+Unfortunately, in .NET it is generally <b>impossible</b> to make ranges work that way. Certainly some ranges can work that way, such as a simple array range, which would naturally be a struct type: <pre lang="cs">
+struct ArraySlice&lt;T> : IRange&lt;T> {
+  T[] _array;
+  int _start, _count;
+  ...
+  public T this[int index] { 
+    get { 
+      /* TODO: check if index is out of range */ 
+      return _array[_start + index];
+    }
+  }
+  ...
+}
+</pre>Unfortunately, using '=' to make a copy is impossible in general. First of all, if IRange(T) is an interface that represents a random-access range, simply casting ArraySlice(int) to IRange(int) will defeat the '=' operator, so that it no longer makes copies. <br/>
+<br/>
+And even if every range type were a struct, that still doesn't mean that they could be safely copied with '='. Consider a forward range that walks a <a href="http://en.wikipedia.org/wiki/B%2B_tree">B+ tree</a>. In order to walk the tree, it is necessary to have a stack--a list of parent nodes, which will be an array or perhaps a Stack(T): <pre lang="cs">
+struct TreeRange&lt;T> : IFRange&lt;T> { // forward range
+  private Stack&lt;Pair&lt;InternalNode&lt;T>, int>> _parents;
+  private LeafNode&lt;T> _curNode; // node being walked right now
+  private int _index;           // the current item in _curNode
+  ...
+}
+</pre>But C# does not allow any action to be taken when a struct is copied, so if the array or Stack is stored in a struct, the Stack will not be copied when the '=' operator is used, even though all the other fields are copied. The two copies will have independent _index and _curNode fields, but share the same Stack! Therefore, after you've copied the range, advancing one of the copies of the range will (after a few iterations, anyway) completely screw up the other copy, making it behave in some bizarre way. <br/>
+<br/>
+D mostly solves this problem with a "postblit constructor": like C#, D copies value types bit-for-bit; but unlike C#, D then calls the "postblit constructor", known as <tt>this(this)</tt> in code, on the copy. This allows the copy to properly "finish" the copy operation. <br/>
+<br/>
+I cannot add postblit constructors to C#, but I still think that the range concept is important enough to support. Therefore, I am adding range interfaces to my Loyc.Essentials library in the Loyc.Collections namespace. I recommend that if a range type is not safe to copy with '=' (such as the TreeRange example), it should be a class instead. Luckily, the .NET garbage collector is much faster than the one in D, so using a class does not usually cause significant performance problems. <br/>
+<br/>
+Besides, D does not solve the copying problem completely: <ol>
+<li>D has a class of ranges called "input ranges" that cannot be copied, and</li>
+<li>D ranges could be implemented as class objects, which are very nearly the same as C# class objects; the '=' operator does not copy classes</li>
+</ol>For this reason* D has a <tt>save()</tt> function (actually it is a property, curiously enough) on ranges that duplicates the range safely. (* I speak as if I know what I'm talking about, but please note that I have not written any real programs with D.) <br/>
+<br/>
+For the C# version of ranges, the interfaces will inherit ICloneable&lt;R> so you can copy ranges explicitly with Clone(); this is equivalent to the save() method in D. <br/>
+<br/>
+Here are the proposed range interfaces: IFRange (forward range), IBRange (bidirectional range), and IRange (finite random-access range). Note that it is not really necessary to define an "input range"; the standard IEnumerator(T) interface is already equivalent to an input range. Perhaps I'll add an IIRange (infinite random-access range) later, and maybe an output range, but for now I have defined these three: <pre lang="cs">
+public interface IFRange&lt;out T> : IEnumerable&lt;T>, ICloneable&lt;IFRange&lt;T>>
+{
+  bool IsEmpty { get; }
+  T First { get; }
+  bool DropFirst();
+  T PopFirst(out bool empty);
+}
+public interface IBRange&lt;out T> : IFRange&lt;T>, ICloneable&lt;IBRange&lt;T>>
+{
+  T Last { get; }
+  bool DropLast();
+  T PopLast(out bool empty);
+}
+public interface IRange&lt;out T> : IBRange&lt;T>, IListSource&lt;T>, ICloneable&lt;IRange&lt;T>>
+{
+}
+// IListSource&lt;T> is a read-only list (not a range) and ISource&lt;T>
+// is simply IEnumerable plus Count. I am wondering whether the naming 
+// is appropriate; I chose the name "Source" as opposed to "Sink": a 
+// Source provides data, while Sink accepts data.
+public interface IListSource&lt;out T> : ISource&lt;T>
+{
+  T this[int index] { get; }
+  T TryGet(int index, ref bool fail);
+  IRange&lt;T> Slice(int start, int count);
+}
+</pre>And in addition there are three mutable variants, IMFRange (allows you to modify First), IMBRange (allows you to modify First and Last) and IMRange (allows you to modify any element). <br/>
+<br/>
+Tentatively I have used the names "First" and "Last" instead of "Front" and "Back" because the collection classes I've already written contain "First" and "Last" properties. I'm debating whether to change this for consistency with D. D's "empty" becomes "IsEmpty" in .NET, for consistency with other properties such as "IsReadOnly". <br/>
+<br/>
+"DropFirst()" and "DropLast()" could just as easily be called "PopFirst()" and "PopLast()" for consistency with D, but I would like to eventually have extension methods called "PopFirst()" and "PopLast()" which not only chop off the first element of the range, but return that first element at the same time. These extension methods do not currently exist, however, due to a limitation of C#. Since a range could be a struct type, the extension method <b>must</b> take the range by reference to guarantee that it will actually be modified! Unfortunately, "(this ref Range self)" is an illegal argument list in C#. Nevertheless, I hope Enhanced C# will eventually support this type of extension method. <br/>
+<br/>
+Finally, I've added special Pop operations that D does not have, and a Slice() method from IListSource: <pre lang="cs">
+  T PopFirst(out bool empty);
+  T PopLast(out bool empty);
+  IRange&lt;T> Slice(int start, int count);
+</pre><div class="sidebox">Note: in my opinion it should have been <tt>bool PopFirst(out T current)</tt> instead of <tt>T PopFirst(out bool empty)</tt>, but .NET does not allow my preferred signature in a covariant interface; that's because there is no distinction between "out" and "ref" parameters in the underlying .NET type system.</div>Come to think of it, I don't know how D solves the problem of slicing random-access ranges. Probably something involving the "$" and ".." operators. <br/>
+<br/>
+Anyway, the thing I wanted to highlight was that PopFirst contains the functionality of IsEmpty, First, and DropFirst() all in one single method. It saves the value of IsEmpty in the 'empty' parameter, gets the value of First, drops the first element, and returns the old value of First (if !empty). I have <a href="http://loyc-etc.blogspot.ca/2011/04/iiterable-dilemma.html">complained loudly in the past</a> about the fact that <tt>IEnumerator(T)</tt> requires two interface calls just to yield a single element*, and D's range interface is 50% worse, requiring three method calls per iteration! In D, this is rarely a problem because D ranges are used directly rather than through interfaces, so the compiler can inline the calls to all three methods. But in .NET land, interfaces are used far more often, so the three calls are fairly expensive. <div class="sidebox">* Please note that I am removing IIterable(T) from my collections library, in favor of ranges. Although I put a lot of work into the LINQ-to-IIterable implementation, I decided that IIterable was not a good enough value proposition. All it offers is higher performance, but that's just not enough for most developers. Ranges are better; they can provide the same high performance as IIterable(T) but with more features at the same time.</div><br/>
+<br/>
+The question, though, is whether it's worth requiring both approaches. The "chatty" approach with three methods is more convenient for the average caller who doesn't care much about performance, but the single-call method is crucial for high performance and should not be eliminated. So what should I do? Keep the four methods, drop all but the last one, or have some kind of compromise? <br/>
+<br/>
+If extension methods were compatible with ranges, a very reasonable compromise would be to keep just IsEmpty and PopFirst, but eliminate First and DropFirst. Then, two extension methods would perform PopFirst without requiring a cumbersome "out" argument: <pre lang="cs">
+public static T PopFirst&lt;R, T>(this ref R range, T defaultValue) where R : IFRange&lt;T>
+{
+  bool fail;
+  T next = range.PopFirst(out fail);
+  if (!fail)
+    return next;
+  else
+    return defaultValue;
+}
+public static T PopFirst&lt;R,T>(this ref R range) where R:IFRange&lt;T>
+{
+  bool fail;
+  T next = range.PopFirst(out fail);
+  if (fail) throw new EmptySequenceException();
+  return next;
+}
+</pre>But as I explained, these extension methods cannot currently exist--not as extension methods, anyway. You can, however, call the non-extension method that does exist, <tt>Range.PopFirst(ref r)</tt>. It's better than nothing, anyway. <br/>
+<br/>
+Another compromise would be to eliminate DropFirst(), but keep First in case you want to "peek" at the next value without removing it (note that requiring a First property may increase the complexity or run-time size of a range type; and technically it is possible to implement First() as an extension method, so it is not strictly necessary for it to be part of the interface, although it is potentially faster when it is built-in.) <br/>
+<br/>
+Finally, I am wondering whether to actually use the term "random-access range" or whether to use the term "slice" instead. As far as I can tell, in D the term "slice" means "array range", i.e. a section of an array, not some other data type. But "slice" rolls off the tongue nicely, and I am tempted to use it for all random-access ranges. In that case, IRange(T) would be renamed ISlice(T). Opinions, anyone? <br/>
+<br/>
+In any case, I am in the process of adding range support to my collections library, Loyc.Collections. Note that the <i>collection interfaces</i> will go in Loyc.Essentials, a library of small methods, simple data structures and core interfaces, while most of the actual collection implementations will go in <i>Loyc.Collections</i>. I will also have to review the existing interfaces to understand how they relate to ranges and whether one or more of them should be eliminated or combined with ranges somehow. Perhaps I'll post again when it's done. <br/>
+<br/>
+Loyc.Collections contains some data structures I've published articles about already, such as the <a href="http://www.codeproject.com/Articles/568095/The-List-Trifecta-Part-1">AList</a>, <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">VList</a> and <a href="http://www.codeproject.com/Articles/61230/CPTrie-A-sorted-data-structure-for-NET">CPTrie</a>, but also some interesting unpublished data structures such as the BList, BMultiMap, Set/MSet, Map/MMap, InvertibleSet, and DList. Let me know if you would like me to prioritize writing articles about these things (I also have a parser generator and a new programming language in the works, you know, plus I have to find the time to set up a web site for all of this). <br/>
+<br/>
+P.S. An ominous footnote: <br/>
+<br/>
+The mutable ranges do not include a Clone method due to a limitation of C#. C# does not support covariance, which means that every time a derived interface supports cloning, the implementing class is required to write a separate clone method. Read-only ranges already have to implement up to three clone methods: ICloneable(IFRange(T)), ICloneable(IBRange(T)), ICloneable(IRange(T)), and that's in addition to the Clone method for the concrete type! If mutable ranges also supported cloning, they would add up to three more clone methods, which is really getting out of hand. <br/>
+<br/>
+Even without mutable clone methods, implementing all the ICloneables can be a chore. But you can just copy and paste these, inserting an appropriate constructor call for your range type: <pre lang="cs">
+  IFRange&lt;T>  ICloneable&lt;IFRange&lt;T>>.Clone() { return Clone(); }
+  IBRange&lt;T>  ICloneable&lt;IBRange&lt;T>>.Clone() { return Clone(); }
+  IRange&lt;T>   ICloneable&lt;IRange&lt;T>> .Clone() { return Clone(); }
+  public MyType Clone() { return new MyType(...); }
+</pre>When complete, EC# will, of course, take care of this crap for you. <br/>
+<br/>
+<b>Update</b>: it was pointed out to me that although <i>algorithms</i> usually need ranges, there is other code that has some need for ordinary iterators. In .NET we typically use an <i>index</i> when we need an iterator, but this only works for random-access data structures, and it is not as type-safe as an iterator (although it has the virtue of storage efficiency.) For non-random-access data structures, the solutions are either ad-hoc (e.g. LinkedListNode inside a LinkedList) or non-existant (SortedDictionary has neither an iterator nor a range type; an iterator would have been one solution for <a href="http://stackoverflow.com/questions/1690929/what-net-dictionary-supports-a-find-nearest-key-operation">this question I had</a>). Comments are welcome about how to deal with the need for iterators in .NET. <br/>
+<br/>
+I suppose the problem with C++ iterators is that they are useless without external context: you can't increment or decrement one without also comparing it to begin() or end() in its container, which implies that the caller must manually keep track of which container it came from. Thus, an iterator is hardly an improvement over a plain-old integer index, the only advantages being <ol>
+<li>You can dereference it without reference to its container (but this is nothing special; you can dereference an object reference too)</li>
+<li>Unlike an index, it's compatible with non-random-access data structures (and huge data structures, for which a 32-bit integer index does not suffice).</li>
+</ol>Perhaps the iterator concept could be improved by being made self-aware: if the iterator "knew" and could tell you when it was at the beginning or end of its container. This would increase the storage requirement in some circumstances but not others. For example, an iterator to a doubly-linked list node can tell when  it is at the beginning or end, but an iterator to a singly-linked list node can only tell when it is at the end (or rather, when there are no more elements after the current one. If the iterator follows the 'null' pointer at the end of a linked list, it becomes null itself, and can no longer increment or decrement). <br/>
+<br/>
+A pointer inside an array may or may not be able to tell if it is at the end depending on how arrays work. Perhaps the way D heap arrays work would allow an array iterator, implemented as a simple  pointer, to still know when it is safe to increment and decrement. The simplest possible .NET array iterator is an array reference plus an index, and again the iterator can know when it is at the beginning or end of the array--except that if the iterator came from inside a range, it would be unaware of the range's boundaries, which may be smaller than the array's boundaries. <br/>
+<br/>
+The question is, what does an appropriate iterator type look like? Could it follow an interface that would make it more useful than a C++ iterator, but still more efficient than a range? <br/>
+<br/>
+<small>&lt; Published on <a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag">CodeProject</a> &gt;<br/>
+&lt; <a href="http://www.reddit.com/r/programming/comments/1fgnyl/dstyle_ranges_in_c_net/">Comments on Reddit</a> &gt; because Redditors don't like to comment on the actual blog.  </small>
+{% endraw %}

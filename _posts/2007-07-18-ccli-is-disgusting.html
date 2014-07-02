@@ -1,0 +1,58 @@
+---
+title: "C++/CLI is disgusting"
+layout: post
+# Pulled from Blogger. Last updated there on: 2007-07-18
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2007/07/ccli-is-disgusting.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Microsoft has found a truly awful set of syntax and semantics for their new C++/CLI language, formerly known as "Managed Extensions for C++". They decided that the old syntax was ugly because it used keywords that began with double underscores (which is a standard way to add compiler extensions in C++). Unfortunately, their solution was much worse than the problem they were trying to solve.<br/>
+<br/>
+I had been using the first Managed C++ for a little while, but luckily I only made a single module in it (wrapper classes to allow C# to access some C++ classes). After a couple years I wanted to add a dialog box that accessed the C++ classes directly, but the forms designer only supported the "new" syntax; worse, Microsoft requires that the entire project only use one syntax or the other. So I learned the awfulness of the new design as I laboriously converted each line of the old code to the new syntax; the new syntax is so different that virtually every line of the module's header file had to be changed. And not just slightly. In many cases it was faster to retype the line than to try to adjust it. And they didn't just make new syntax, they invented new problematic semantics as well.<br/>
+<br/>
+The <a href="http://msdn2.microsoft.com/en-us/library/ms235298%28VS.80%29.aspx">changes</a> include<br/>
+<ul>
+<li>The new "handles". A pointer to a managed class used to be called MyClass*, now it's MyClass^. Other than that they are still used like pointers (i.e. with the arrow notation).</li>
+<li>"Tracking references". Instead of writing String^& and Int32&amp; like you would expect, you have to write String^% and Int32%.<br/>
+</li>
+<li>nullptr. Whereas you used to be able to initialize all pointers to NULL, including managed pointers, now you have to remember if it's a managed class and use "nullptr" if so.</li>
+<li>Same with 'new'; now you have to write gcnew if the class is managed.<br/>
+</li>
+<li>New finalizer syntax. Confusingly, whereas C# and Managed C++ use "~ClassName" for finalizers, Microsoft decided it was too predictable and renamed it to "!ClassName". Worse, they now require your Dispose() function to be called ~ClassName(), which causes a silent semantics change in old code. Or it would, except that you'll know something's up because your Dispose() method yields this odd error: "'Dispose' : this method is reserved within a managed class".<br/>
+</li>
+<li>You can no longer use a managed enum like you do a normal enum; you have to qualify the names with "EnumName::EnumValue". This makes it impossible to share an enum between C# and standard C++ code, so you have to create a second enum (with the same items) and convert between them all the time.<br/>
+</li>
+<li>In a managed class you <span style="font-style: italic;">must</span> say if you're overriding a base class function or not, or you'll get a compiler error--whereas in pure standard C++ you <span style="font-style: italic;">can't</span>. Argh! Even C# lets you off with a warning. And what a bizarre syntax they've picked too; instead of grouping the "override" keyword with "static", "virtual", etc., they make you put it at the end: virtual void foo() override {}. What's more, you have to specify <span style="font-style: italic;">both</span> virtual and override.<br/>
+</li>
+<li>Similarly, "sealed" and "abstract" go after the class name.<br/>
+</li>
+<li>When making managed properties, you now have to group the setter with the getter in a single construct like in C#, but unlike in C#, you also have to repeat the data type three times (or twice if it's just a getter). How many times do you want to type Dictionary&lt;string,SomeFreakyLongClassName&gt;?</li>
+<li>CLR enums are no longer implicitly convertable to arithmetic types.</li>
+<li>They've switched to the standard 'typeid' syntax instead of __typeof(MyManagedType). Oh wait, no they haven't! The syntax is randomly different: MyManagedType::typeid versus typeid(UnmanagedType).<br/>
+</li>
+<li>What the hell were they thinking here?<br/>
+virtual Object^ InterfaceClone() = ICloneable::Clone;<br/>
+<br/>
+The old syntax for 'explicit interface implementation' made much more sense:<br/>
+Object* ICloneable::Clone();<br/>
+</li>
+</ul>Tell me, how is it that when C# is supposedly modeled after C++, the C++ version of all these .NET features ends up looking so much <s>longer</s> different than C#?<br/>
+<br/>
+Admittedly, there are a few things that don't suck, like<br/>
+<ul>
+<li>the support for normal C++-style operator overloading in managed classes.</li>
+<li>implicit boxing (although if NULL is defined as 0, watch out for boxed zeros when converting old code)</li>
+<li>default indexers (much like in C#)<br/>
+</li>
+<li>trivial properties (but they're inflexible and so not usable in many scenarios)</li>
+</ul>And now some managed-style features work in unmanaged classes, such as properties. Personally I have no use for this. After all, using such features means you can't compile your unmanaged class in a non-.NET program, so their utility is limited. If I want to write a class that <span style="font-weight: bold;">only</span> works in .NET, I would almost always make it a "ref class" or "ref struct" so I can interoperate with other .NET languages.<br/>
+<br/>
+There are two main problems I see with their design.<br/>
+<br/>
+The first big problem is that they've forgotten the spirit of C++ and discarded longstanding rules of C++ such as implicit overriding. C++'s philosophy has long been that an object should be able to behave like a pointer, like a number, like a function. Smart pointers, iterators, fixed-point/matrix classes/bigints, functors. The ability of one thing to act like something else is the whole basis for the STL. But in Microsoft's new design, everything managed is completely segregated so you can no longer write code that <span style="font-style: italic;">doesn't care</span> whether something is managed or not. It's not just reference types either; value types and even simple enums are segregated to an extent that they weren't before. You always have to think: Do I have to Qualify:: that enum or not? should I use gcnew or new here? NULL or nullptr? * or ^? & or %? I can only use one or the other in a given context, but the wretched compiler still makes me tell it what it wants to hear. Template code that before could have (theoretically) taken managed or unmanaged classes for arguments can now take only one or the other, because a separate syntax is needed for each.<br/>
+<br/>
+The second big problem is that there is no longer anything I can share between C# and standard C++. I have a library that needs to be compiled into both C# programs and MFC programs (which must be Windows CE compatible, so mixing .NET and MFC is not an option). With the old syntax it was possible to share a small number of value types and enums between plain C++ and managed C++ (with the help of some #define macros); now I have to make two versions and convert between them.<br/>
+<br/>
+If anything, Microsoft should have made the managed syntax more like standard C++, not less. It should have considered how to allow people to write classes that could be used directly from C# <span style="font-style: italic;">or</span> (in another program) directly from standard C++. This would have made a much better bridge between unmanaged land and managed land. As it is, Microsoft has imposed a kind of syntax apartheid.<br/>
+<br/>
+Bottom line: I <span style="font-style: italic;">loathe</span> the new syntax. It makes me long for the hellish landscape of double underscores again.
+{% endraw %}

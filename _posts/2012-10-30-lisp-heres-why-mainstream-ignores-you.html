@@ -1,0 +1,49 @@
+---
+title: "Lisp, here's why the mainstream ignores you."
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-04-11
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/10/lisp-heres-why-mainstream-ignores-you.html'>blogspot</a>.</i></p></small>
+{% raw %}
+While I currently don't know how you write a "hello world" in LISP, I am keenly aware that the LISP language, with its powerful macro system, could be very instructive on the topic of metaprogramming. However, it is proving difficult to quickly learn LISP because the community uses terminology, technology and notations that are far outside the mainstream. <br/>
+<br/>
+The most obvious thing is the parenthesis. While a prefix notation such as 
+<pre>    (eqv? (* (+ (2 3)) x) 20)
+    meaning (2 + 3) * x == 20</pre>gives LISP its power as a programming language, it's also a huge turnoff. I can't figure out why they haven't standardized on a syntactic sugar such as <a href="http://readable.sourceforge.net/">sweet expressions</a> that maps in a predictable way back to S-expressions. Even sweet expressions look a lot different than popular languages, but it's clearly an improvement. <br/>
+<br/>
+I went looking for information on the macro system and the first search result for "LISP macros" is some university <a href="http://www.apl.jhu.edu/~hall/Lisp-Notes/Macros.html">lecture notes</a>. It suggests "macroexpand-1" as a debugging tool so I Googled that next, and came upon <a href="http://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node99.html">this page</a> from Common Lisp the Language, 2nd Edition, which states:  
+<blockquote>A form is considered to be a macro call only if it is a cons whose car is a symbol that names a macro.
+</blockquote> Ahh... say what? Well, I guess I can handle learning what a "<a href="http://en.wikipedia.org/wiki/Cons">cons</a>" is (Wikipedia implies that a list like (1 2 3) is shorthand for the singly-linked list (cons 1 (cons 2 (cons 3 nil))), which is a bit surprising since <i>everything</i> in LISP is made out of lists, and the performance and memory consumption of singly-linked lists is known to be rather bad on modern 64-bit machines, but I digress...  <br/>
+<br/>
+Anyway it's slightly amazing that the terms <a href="http://en.wikipedia.org/wiki/CAR_and_CDR">"car" and "cdr"</a> are still in use: 
+<blockquote>Lisp was originally implemented on the IBM 704 computer, in the late 1950s. The 704 hardware had special support for splitting a 36-bit machine word into four parts, an "address part" and "decrement part" of 15 bits each and a "prefix part" and "tag part" of three bits each.<br/>
+...<br/>
+<ul>
+<li>car (short for "Contents of the Address part of Register number"),</li>
+<li>cdr ("Contents of the Decrement part of Register number")</li>
+</ul>
+</blockquote>Considering that LISP was a <a href="http://www.paulgraham.com/rootsoflisp.html">potentially revolutionary idea</a>, I can forgive it for using these terms... in 1959. But to be using them in the 21st century? It's a boneheaded way to alienate potential users. <br/>
+<br/>
+<div class="sidebox">It may seem unfair to call out LISP for having weird names for important functionality: C does the same thing with weird names like "itoa", "fprintf" and "scalb". But C can get away with it because it is already popular. No new language created today could get away with it; and an old language with few users is in almost the same position as a brand new language.</div>I'm not totally new to car and cdr, I've seen it before, but I've had to look up car and cdr about three times now because I keep forgetting which one is which. I think I'll just remember that "a" is the first letter of the alphabet so "car" fetches the first item in a list, while "d"... well, "d" is a different letter of the alphabet. The Wikipedia article even seems to think these names are advantageous:  
+<blockquote>However, car and cdr have the advantage that short compositions of the functions can be given short and more or less pronounceable names of the same form. In Lisp, (cadr '(1 2 3)) is the equivalent of (car (cdr '(1 2 3))); its value is 2 (the first item of the rest of (1 2 3)). Similarly, (caar '((1 2) (3 4))) is the same as (car (car '((1 2) (3 4)))); its value is 1.
+</blockquote> Riiiiight. So you could use "cadr" to mean "first of the rest" and you could use "caar" for "first of the first". Or, why not use something logical like "second" and "first.first". Or if brevity is really that important, "r.f" and "f.f" - but it's probably not <i>that</i> important. <br/>
+<br/>
+So then I figured I'd download LISP and play around with it. I knew Common Lisp was a ... well, a common LISP, so I Googled that. The first four results were sites about common lisp without downloads; the third was the book <a href="http://www.gigamonkeys.com/book/">Practical Common Lisp</a> which suggested Lisp in a Box, linklessly. Searching for Lisp in a Box finds "<a href="http://common-lisp.net/project/lispbox/">LispBox</a>" instead, although it might be the same thing: the book says Lisp in a Box uses emacs as its editor, while Lispbox's page says the same thing. <br/>
+<br/>
+But I don't want to use emacs! I used that bastard a little in university a bit but ugh, it's just an ugly text window with a weird interface that is different from every editor that isn't emacs. Almost every other editor is standardized on Ctrl+S for Save, Ctrl+F for Find, Tab for indenting text, Ctrl+C for copy, etc. But not ugly old emacs, oh no. (Yeah, okay, macs prefer the ⌘ key... if I had a mac I'd probably have to remap it to Ctrl.) <br/>
+<br/>
+They even have a different notation for keyboard shortcuts than everybody else: "C-h t" where the rest of the world would probably say "Ctrl+H, T" (except that the rest of the world wouldn't use multiple-key shortcuts for anything important.) Even worse, referring to the Alt key as "M-"? It's crazy, like they're waiting for the <a href="http://ergoemacs.org/emacs/emacs_kb_shortcuts_pain.html">80s LISP machines</a> to come back. <br/>
+<br/>
+Of course, if you're used to emacs then it must be the rest of the world that seems weird. But there's an easy solution: on first startup, emacs could offer a choice of "Traditional emacs keyboard interface" and "Normal keyboard interface (recommended for new users)", the latter being based on Windows and Mac programs. To decide how to assign other keys, they could copy bindings from the most popular IDEs, Visual Studio and Eclipse. <br/>
+<br/>
+The Lispbox downloads are oddly headlined "Lispbox test builds", but whatever. So I download the Windows one--90 MB compressed? Son of a bitch! That's what happens when you choose emacs as your editor--okay, okay, it's only half of the total size, and maybe I'm being unfair since some IDEs are bigger, but wasn't LISP supposed to be lightweight? <br/>
+<br/>
+Thankfully, emacs offers a "C-x/C-c/C-v Cut and Paste" option, but "Delete" still doesn't delete selected text, "Ctrl+F" doesn't work and "Ctrl+Z" minimizes the damn window, and maybe worst of all, "Tab" either doesn't do anything or indents by a seemingly random amount, depending on the context (I'll figure that out later). <br/>
+<br/>
+It's getting late, maybe I'll finish this later... if anyone can name a non-emacs LISP environment, I'd like to know. <br/>
+----<br/>
+<br/>
+The key problem I'm facing right now in my exploratory design of macros for EC# is the question of how to order macro expansions with respect to each other and with respect to substitution operations (which, for all I know, should themselves be implemented with macros) and what the rules for name resolution should be. However, reading about LISP has provided little insight so far, because (1) I would have to understand LISP fairly well in order to understand the documentation about macros, or <i>extremely</i> well in order to understand any technical specifications; and (2) in tutorial-level material, the ordering of operations, the name resolution rules, and the compilation model are implicit and assumed to be of secondary importance. Quite reasonably they assume you want to <i>use</i> LISP, whereas I just want to shamelessly copy the ideas <i>behind</i> LISP and the lessons that were learned in the course of developing modern LISPs. <br/>
+<br/>
+Perhaps <a href="http://en.wikipedia.org/wiki/Hygienic_macro">this</a> will help me. Since much of LISP is defined with macros, I had also been wondering which parts of LISP were built-in and which were macros. The key to finding this out seems to be the term "<a href="http://www.gigamonkeys.com/book/the-special-operators.html">special operator</a>" aka "<a href="http://simonwillison.net/2002/oct/3/lispspecialforms/">special form</a>", which is like a keyword or built-in statement in other languages. So far I haven't found a complete list of them though.
+{% endraw %}

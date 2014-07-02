@@ -6,6 +6,8 @@ tagline: "At least it's better than Blogspot"
 tags: [jekyll, tutorial]
 ---
 {% raw %}
+GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if everyone knows what it means already). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
+
 <style>
 .sidebox {
   border: 1px dotted rgb(127, 127, 127);
@@ -22,10 +24,7 @@ tags: [jekyll, tutorial]
 }
 </style>
 
-GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if they expect you to already know what it means). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
-
-The way GitHub decided to organize its [web space](https://pages.github.com/) is bizarre; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two copies of the complete history of your repo. Weird. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
-
+The way GitHub decided to organize its [web space](https://pages.github.com/) is odd; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two copies of the complete history of both "halves" of your repo. That is weird to me. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
 
 They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows). But then I had problems with "yajl" and "wdm" on two different PCs (see sidebar) and one of the PCs still can't run github's (old) version of Jekyll.
 
@@ -64,7 +63,15 @@ So once you figure out how to install Jekyll and a theme and you've written a du
 
 `serve` (rather than `build`) causes it to serve the preview at `http://localhost:4000`, `--drafts` asks Jekyll to render unpublished drafts as if they were published, and `--watch` causes the preview to be automatically updated in response to changes (this works on one of my PCs but not another, I don't know why). The default `--destination` is `_site` within the source folder. And don't name your batch file `jekyll.bat` like I did. You won't like the result...
 
-Once I'm happy with my web site, I push to GitHub and I'm live! But what about comments? Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve static content, which comments are not. Well, I'll get back to you on that.
+Once I'm happy with my web site, I push to GitHub and I'm live! But what about comments?
+
+## Comments
+
+Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve static content, which comments are not. And there's no way to have comments directly in GitHub pages, since GitHub provides no place to store the comments. But, it is still possible to use a comment service provided by a third party such as Disqus. Disqus adds ads to make money for them, which you probably will hate.
+
+[Jekyll Bootstrap](http://jekyllbootstrap.com/) currently supports four comment engines including Disqus but I am not sure whether I trust these commercial entities with my comments... although, er, very few comments have ever been left on this blog.
+
+Hopefully GitHub itself will provide a comment engine someday, since the GitHub site obviously supports comments very well. Good news though! It's possible to co-opt the GitHub issue tracker to manage blog comments! [The technique is described here](http://ivanzuzak.info/2011/02/18/github-hosted-comments-for-github-hosted-blogs.html) and y'know what, I'm gonna use it! There's no need to limit comments to blog posts either, I can put them on any page I want, although it does take a little extra effort.
 
 ## Syntax highlighting fails
 
@@ -99,6 +106,8 @@ But by default, syntax highlighting is not supported in fences. To enable this f
 
     markdown: redcarpet
 
+The names you have to use on the fence tend to be longer than just file extensions. For example, `~~~cs` is not recognized as C#, you have to use `~~~csharp`, and `~~~yml` isn't recognized as `.yml`, you have to use `~~~yaml`. Use `~~~text` to ensure that no language auto-detection occurs (GitHub's old version of Jekyll doesn't do that, though.)
+
 Unfortunately, redcarpet and kramdown have different sets of advanced features. Kramdown seems more flexible to me, but redcarpet appears to be [The Standard GitHub Flavored Markdown](https://github.com/blog/832-rolling-out-the-redcarpet).
 
 **ProTip**: Jekyll won't easily let you write the literal character combination `{%` or `{{`, not even inside code blocks. You could write `{{"{%"}}` or `{{ "{{" }}` instead, but if you are not intending to use Liquid (Jekyll's templating ending), a better option is to wrap the entire page in `{% raw %} ... {% endraw %}{{"{%"}} endraw %}`, after the front-matter, as I have done in this post.
@@ -106,13 +115,13 @@ Unfortunately, redcarpet and kramdown have different sets of advanced features. 
 
 ## How I set up this site
 
-I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip` from GitHub](https://github.com/poole/hyde/). The provided Usage instructions are a bit confusing and incomplete so I wrote this in case it helps.
+I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip` from GitHub](https://github.com/poole/hyde/). The provided Usage instructions are a bit confusing and incomplete so I wrote this in case it helps. I added the prefix "(Hyde)" on issues that _only_ apply to Poole or Hyde.
 
 1. Earlier I generated my index.html using GitHub's "Automatic Page Generator". This thing generates not just `index.html` but a bunch of css files and images and javascript files, plus a file in the root directory called `params.json` which contains a description of the content you provided for `index.html`, including the page text. Since "Hyde" uses a different folder structure than the "Automatic Page Generator" and doesn't share any of the same css, I thought I would confuse myself if I kept both... so I deleted all of GitHub's generated stuff, such as the `css` folder, the `images` folder, `params.json` (which had the same content as my README anyhow), `_includes/header.html`, `_includes/footer.html`, and `index.html` itself.
 
-2. After unzipping `hyde-master.zip` I copied most of its contents over my `gh-pages` working copy, *excluding* .gitignore, _config.yml, README.md, CNAME, README.md, LICENSE.md (lest it be confused with the license of my site content), and the _posts folder.
+2. (Hyde) After unzipping `hyde-master.zip` I copied most of its contents over my `gh-pages` working copy, *excluding* .gitignore, _config.yml, README.md, CNAME, README.md, LICENSE.md (lest it be confused with the license of my site content), and the _posts folder.
 
-3. Hyde expects the following options to exist in `_config.yml`:
+3. (Hyde) Hyde expects the following options to exist in `_config.yml`:
 
         title: "Project Name"         # shown in large text
         description: "Blah blah blah" # shown under the title
@@ -123,15 +132,19 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
           repo:  https://github.com/user/Proj # "GitHub project" link on sidebar
 
     Other themes also use `title`, `description`, `baseurl` and possibly other options. Here are some settings recognized by Jekyll itself that you should probably also have:
-    
-        # Jekyll settings
-        markdown: redcarpet
-        encoding: UTF-8                
-        highlighter: rouge             # if you did not install pygments
-        paginate: 10                   # blog posts per page
-        paginate_path: "blog/page:num" # optional, see below
 
-4. The `baseurl` option is a problem if you want it to refer to the root of the domain. The `Jekyll` documentation implies you should use "" in this case, and offers sample code that doesn't work correctly with "/"; for example, this code is in the Jekyll site template (`Ruby200\lib\ruby\gems\2.0.0\gems\jekyll-2.1.0\lib\site_template`):
+    ~~~yaml
+    # Jekyll settings:
+    markdown: redcarpet
+    encoding: UTF-8                
+    highlighter: rouge             # if you did not install pygments
+    paginate: 10                   # blog posts per page
+    paginate_path: "blog/page:num" # optional, see below
+    safe: true
+    lsi: false
+    ~~~
+
+4. (Hyde) The `baseurl` option is a problem if you want it to refer to the root of the domain. The `Jekyll` documentation implies you should use "" in this case, and offers sample code that doesn't work correctly with "/"; for example, this code is in the Jekyll site template (`Ruby200\lib\ruby\gems\2.0.0\gems\jekyll-2.1.0\lib\site_template`):
     
     ~~~html
     <ul class="posts">
@@ -152,13 +165,13 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     <link rel="stylesheet" href="{{ site.baseurl }}public/css/hyde.css">
     ~~~
 
-    Note that a slash is needed before '`public`'. To fix this I changed all instances of `{{ site.baseurl }}` to `{{ site.baseurl }}/` in all of Hyde's HTML files.
+    Note that a slash is needed before '`public`'. To fix this I changed all instances of `{{ site.baseurl }}` to `{{ site.baseurl }}/` in all of Hyde's HTML files (be sure to replace _all_ of them!)
     
     Perhaps the same problem would arise if you are _not_ at the root of the domain; i.e. if your web space is at `username.github.io/projectname`. In that case Jekyll wants `baseurl` to be <i>projectname</i> while Hyde expects <i>projectname/</i>.
     
 5. By default, the home page (`index.html`) just shows your blog posts, in full, in chronological order. I didn't want the blog to be the home page so I renamed `index.html` to `blog.html` (giving it the front-matter `layout: page` and `title: Blog`), but this [caused all the blog posts to disappear](http://stackoverflow.com/questions/21248607/jekyll-pagination-on-every-page)! Jekyll has a bizarre limitation here: you are only allowed to show your blog on a single page, and that page **must** be named `index.html`. However, you can use `/blog/index.html` instead if you add the line `paginate_path: "blog/page:num"` to `_config.yml`.
 
-6. By default, the sidebar lists all pages that use the `layout: page` option in their front-matter (in `_includes/sidebar.html` you can see the for-loop that does this), and the `title: ...` option is used as the link text. After that there is a "Download" link, a "GitHub project" link, and a version number. I did not want the "Download" link, or the version number, or "All Rights Reserved", so I removed those parts from `_includes/sidebar.html`. Of course, if you don't like how the links are auto-generated, you can change the code to suit you.
+6. (Hyde) By default, the sidebar lists all pages that use the `layout: page` option in their front-matter (in `_includes/sidebar.html` you can see the for-loop that does this), and the `title: ...` option is used as the link text. After that there is a "Download" link, a "GitHub project" link, and a version number. I did not want the "Download" link, or the version number, or "All Rights Reserved", so I removed those parts from `_includes/sidebar.html`. Of course, if you don't like how the links are auto-generated, you can change the code to suit you.
 
 7. I created `index.md` and put some content in it:
 
@@ -171,9 +184,9 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
 
 8. I added my `.sidebox` class to `sidebar.html` (see [Using custom CSS](#customcss) below)
 
-9. I switched to a different preset color scheme by changing `<body>` to `<body class="theme-base-0d">` in `/_layouts/default.html`.
+9. (Hyde) I switched to a different preset color scheme by changing `<body>` to `<body class="theme-base-0d">` in `/_layouts/default.html`.
 
-10. I edited `/public/css/hyde.css` to adjust the theme to my liking (to reduce the various `margin-left` and `margin-right` values, to shrink the font a little, and to tweak the sidebar color).
+10. (Hyde) I edited `/public/css/hyde.css` to adjust the theme to my liking. In particular I reduced the various `margin-left` and `margin-right` values, shrunk the font a little, and tweaked the sidebar color. Since this blog contains code (and what GitHub blog doesn't?) wide margins would cause scroll bars or wrapping on every code snippet, and we don't want that.
 
 11. At the top of the blog I made a "List of all posts" link, which goes to `blog-list.html`:
 
@@ -197,7 +210,35 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     </div>
     ~~~
 
+12. (Hyde) if you have enough blog posts to cause pagination, Hyde shows the "Blog" link multiple times, one for each page! This turned out to be slightly difficult to fix; after a little while I realized that Jekyll, or more specifically __Liquid__, __does not support Ruby expressions__. In fact, it hardly supports any expressions at all! Check it out: [Liquid contains only 9 operators __in total__](http://docs.shopify.com/themes/liquid-basics/operators). There is not even a `not` operator, and there is no regex matching (or if there is, it is implemented as something other than an operator.) Anyway, the unwanted pages can still be filtered out, although not with the precision I am used to. In `_includes/sidebar.html`, I changed this code:
+
+    ~~~
+    {% assign pages_list = site.pages %}
+    {% for node in pages_list %}
+      {% if node.title != null %}
+        {% if node.layout == "page" %}
+          <a class="sidebar-nav-item{% if page.url == node.url %} active
+              {% endif %}" href="{{ node.url }}">{{ node.title }}</a>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    ~~~
+    by adding an `unless` statement:
     
+    ~~~
+    {% assign pages_list = site.pages %}
+    {% for node in pages_list %}
+      {% if node.title != null and node.layout == "page" %}
+        {% unless node.url contains '/page' %}
+          <a class="sidebar-nav-item{% if page.url == node.url %} active
+              {% endif %}" href="{{ node.url }}">{{ node.title }}</a>
+        {% endunless %}
+      {% endif %}
+    {% endfor %}
+    ~~~
+
+13. (Hyde) Actually, I made so many little changes and fixes, there's little reason to list them all. Let's just say you can clone my repo and make it your own, if you like.
+
 ## Writing blog posts
 
 Writing a blog post in Jekyll is super easy. Just create a text file in the `/_posts` folder (that's in your `gh-pages` branch if you are using GitHub) and give it a name like `2014-12-31-file-name.md`, but with the correct date, of course. Inside the file, add front matter:
@@ -235,7 +276,7 @@ Sometimes I like to place sidebars in my posts, which I call ".sidebox" in CSS b
 ~~~
 
 <div class="sidebox"><p><b>Hey, look over here!</b></p> This is a <i>sidebar</i>.</div>
-Markdown supports HTML, so you can add a style block like this one at the top of a `.md` file or in your shared `_includes\header.html` file, and then use it like this:
+Markdown supports HTML, so you can add a style block like this one at the top of a `.md` file or in your shared `_includes\head.html` file, and then use it like this:
 
 ~~~
 <div class="sidebox">This is a <i>sidebar</i>.</div>
@@ -247,6 +288,6 @@ Note that all the text inside the `<div>` tag is treated as HTML, not Markdown. 
 
 By the way, no matter whether you're using GitHub or not or Jekyll or not, there's no need to write web sites in HTML anymore. No matter how crappy your web hosting provider might be, no matter whether you're allowed to run scripts or not, you can still author pages in Markdown, thanks to a nifty library called [mdwiki](http://dynalon.github.io/mdwiki/#!index.md). This thing uses Javascript to convert markdown to HTML, 100% client-side, so you don't have to worry about what your web host may or may not support. On GitHub, you may as well use Jekyll, but I must admit, it looks like mdwiki has a fantastic feature set, probably better than I'll get with Jekyll. But the important thing is, I don't have to write HTML anymore. Good riddance!
 
-You can even use MDWiki without a web server, if you view mdwiki.html in Firefox (it doesn't work in Google Chrome), which means you can use it for offline Markdown previews (which is great because, at least on the Windows, tools for editing Markdown are generally quite limited.)
+You can even use MDWiki without a web server, if you view `mdwiki.html` in Firefox (it doesn't work in Google Chrome), which means you can use it for offline Markdown previews (which is great because, at least on the Windows, tools for editing Markdown are generally quite limited.)
 
 {% endraw %}

@@ -1,0 +1,73 @@
+---
+title: "What's wrong with Java"
+layout: post
+# Pulled from Blogger. Last updated there on: 2007-07-12
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2007/07/whats-wrong-with-java.html'>blogspot</a>.</i></p></small>
+{% raw %}
+When I see the <a href="http://72.5.124.55/j2se/1.5.0/docs/relnotes/features.html#lang">features added recently to Java</a>, I'm sure glad I'm using .NET, C# and boo. Even though Java is a lot older than .NET, .NET seems to get the good features first. Care in point: Generics. For a former C++ developer, it seems stupid to give up type-safe collections; I don't know how many years it took before Java got generics (10?) but .NET got them in much less time (less than 4 years, I do believe) and Java was left playing catch-up. In fact, most of the "new" features in Java 5.0 seem to be things that C# had from the beginning:<br/>
+<ul>
+<li>enhanced for loop (foreach in C#)</li>
+<li>autoboxing/unboxing</li>
+<li>enums</li>
+<li>varargs (variable argument lists - "params" in C#)</li>
+<li>annotations (much like .NET attributes)<br/>
+</li>
+</ul>Java generics aren't even supported by the JVM, so you get the same performance penalty from casting that you did before. I've always been unhappy with Java's performance (especially for GUI programs), whereas .NET just doesn't seem slow.<br/>
+<br/>
+Look, Sun, if nothing short of competition from Microsoft can prompt you to improve Java, you must not care very much much about it.<br/>
+<br/>
+Let's see, what else...<br/>
+<ul>
+<li>Value types (structs). This is a big one for me because can offer a big performance boost in many situations. You don't want to allocate a new object if that object contains nothing more than an integer and some methods, do you? A new object sucks up at least 16-20 bytes of memory even if it just contains one integer or reference; creating it requires multiple method calls and all those bytes have to be initialized. Useful value types include</li><ul>
+<li>A "Point" type that has X and Y coordinates</li>
+<li>A "FixedInt" type that contains a fixed-point number (the language must support operator overloading to make it easy to use, of course.)</li>
+<li>A "BigInt" type that contains a small integer normally, but allocates a memory block for a large integer if necessary.</li>
+<li>A "Handle" type that contains an opaque reference to something else<br/>
+</li>
+<li>A "Symbol" type that contains a numeric identifier that represents a string (symbols are a built-in feature of Ruby and are typically used like enums, except they are more flexible)</li>
+<li>A Pair<a,b> type that contains a pair of values A and B; often you get better performance by not allocating memory for this purpose.</a,b></li>
+</ul>
+</ul><ul>
+<li>Multi-language support. Well, the JVM can certainly support multiple languages, but only .NET is specifically designed for it. Admittedly, the design isn't that great, but at Microsoft specifically considers the needs of other languages.</li>
+<li>Delegates. The Java equivalent is using interfaces with one function in them, but this is relatively inflexible and certainly more annoying to use. Java provides inner (<a href="http://www.exciton.cs.rice.edu/JavaResources/Java/innerclasses.htm">even anonymous</a>) classes to help people use the pattern, but delegates are way better.<br/>
+</li>
+<li>Closures (functions inside other functions, where the inner function can access local variables of the outer function). Java doesn't have that, does it? You can access "final" variables from a function-inside-a-class-inside-a-function, but that's all.  By the way, .NET itself doesn't actually support closures, but C# fakes it well.</li>
+<li>Iterators. Now this may be my favorite feature of C# 2.0; it would be hard to choose between iterators and generics. I love them not only because you can create enumerators easily (which is great) but also because you can approximate <a href="http://qdl.sourceforge.net/coroutines.html">coroutines</a> with them.<br/>
+</li>
+<li>Swing. Ugh! It's ugly, it's slow, and the Windows "skin" isn't very convincing. There often seem to be glitches in Swing that you don't find in other programs, such as the failure to resize a window fluidly (i.e. the window doesn't redraw itself until you let go of your mouse button). Finally, and worst of all, developing Swing GUIs is a huge pain in the ass. I absolutely can't stand it. The .NET counterpart, Windows.Forms, doesn't seem all that well designed, but it looks good, it's relatively fast, and it's easy to write code for it. Plus, of course, a good Forms designer is a standard feature of any .NET IDE.</li>
+</ul>Right now I wish I could have the C# 3.0 "var" feature because I'm sick of typing<br/>
+<br/>
+SomeJerkGaveThisClassALongName foo = new SomeJerkGaveThisClassALongName();<br/>
+<br/>
+Obviously we should be able to write simply<br/>
+<br/>
+var foo = new SomeJerkGaveThisClassALongName();<br/>
+<br/>
+And there's a lot of other great stuff in <a href="http://72.14.253.104/search?q=cache:sF_fuakzdkwJ:download.microsoft.com/download/9/5/0/9503e33e-fde6-4aed-b5d0-ffe749822f1b/csharp%25203.0%2520specification.doc+C%23+3.0&hl=en&amp;amp;amp;amp;amp;amp;ct=clnk&cd=3&amp;gl=ca&amp;client=firefox-a">C# 3.0</a> [<a href="http://download.microsoft.com/download/9/5/0/9503e33e-fde6-4aed-b5d0-ffe749822f1b/csharp%203.0%20specification.doc">.doc</a>]:<br/>
+<ul>
+<li>Lambda expressions (syntactic sugar for anonymous inner functions) with type inference<br/>
+</li>
+<li>Type inference for generic method calls</li>
+<li>Extension methods (they are not well thought out, but I'd rather have them than not)</li>
+<li>Object and collection initializers (to make code more brief)</li>
+<li>Anonymous POD ("plain old data") classes, which work like tuples except that the fields have names.</li>
+<li>And last but not least, the query thingie, LINQ.<br/>
+</li>
+</ul> Suddenly, C# is starting to seem a lot more like <a href="http://boo.codehaus.org/">boo</a>.<br/>
+<br/>
+Having said all this, there are a couple of things from Java that I might like to have in C#:<br/>
+<ul>
+<li>The assert statement. Typing Debug.Assert() all the time is driving me nuts.</li>
+<li>Inner classes that have an implicit link to the outer class<br/>
+</li>
+</ul>And let's see, if I could have some more features I think they would include<br/>
+<ul>
+<li>Traits</li>
+<li>The ability to supply a default implementation for a member of an interface<br/>
+</li>
+<li>Preconditions and postconditions on methods<br/>
+</li>
+<li>Static and run-time unit checking (units as in metres, litres, bytes, pixels, etc.)</li>
+</ul>
+{% endraw %}

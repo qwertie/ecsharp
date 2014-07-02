@@ -1,0 +1,69 @@
+---
+title: "I want a conditional dot operator"
+layout: post
+# Pulled from Blogger. Last updated there on: 2011-07-27
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2011/07/i-want-conditional-dot-operator.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I was writing earlier about <a href="http://loyc-etc.blogspot.com/2010/05/new-features-net-framework-should-have.html">features I'd like to have in the .NET Framework and C#</a>, but I forgot a couple. Earlier I wrote about the "<a href="http://loyc-etc.blogspot.com/2010/09/i-want-slide-operator.html">slide operator</a>". Now, I'd like to propose the conditional dot or "null dot" operator.<br/>
+<br/>
+Some people will say this idea makes the language too complex, but I can't seem to get enough language features. I use just about all of C#'s existing features, including the <a href="http://stackoverflow.com/questions/9033/hidden-features-of-c">"hidden" ones</a>. And still I can think of many unsupported features that I know would improve productivity, code clarity, or performance... at least for me.<br/>
+<br/>
+I think it's okay for C# to have tons of features, but the IDE needs to help teach people what they mean. For example, Visual Studio should show the name of an operator in a tooltip when mousing over it, and show a help page for it if the user puts the cursor on it and presses F1.<br/>
+<br/>
+C# already has a handy "??" operator which lets you choose a default value in case the "first choice" is null:<br/>
+
+<pre>Console.WriteLine("Your name is {0}.", firstName ?? "(unknown)");</pre>I use this feature somewhat often. But something's missing. I would like, in addition, a "conditional dot" operator, another kind of null guard that deals with cases where an object you want to access might be null. For example, let's say your class has a reference to another class, and you'd like to inform it when something happened:<br/>
+<pre lang="c#">if (referenceToAnotherClass != null)
+    referenceToAnotherClass.OnSomethingHappened(info);</pre>Of course you can't call the method if the referenceToAnotherClass is null. It would be nice if we could shorten this to something like<br/>
+
+<pre>referenceToAnotherClass??.OnSomethingHappened(info);</pre><br/>
+If the method you want to call returns a value, the "??." operator would substitute null for the return value if the class reference is null. For example,<br/>
+<pre lang="c#">// firstName might be null; length will be null if firstName is null.
+int? length = firstName??.Length;</pre>It would be very natural to combine the "??." operator with the existing "??" operator:<br/>
+<pre lang="c#">// Equivalent to firstName != null ?  firstName.Length : 0
+int length = firstName??.Length ?? 0;</pre>This operator would be most powerful when it is chained together, or used to avoid creating temporary variables:<br/>
+<pre lang="c#">// If "DatabaseConnection", "PersonTable", and "FirstRow" can all 
+// return null, chaining "??." simplifies your code a lot.
+var firstName = DatabaseConnection??.Tables.PersonTable??.FirstRow??.Name;
+
+// Equivalent to:
+string firstName = null;
+var dbc = DatabaseConnection;
+if (dbc != null) {
+    var pt = dbc.Tables.PersonTable;
+    if (pt != null) {
+        var fr = pt.FirstRow;
+        if (fr != null)
+            firstName = fr.Name;
+    }
+}</pre><br/>
+The operator should also help invoke events:<br/>
+<pre lang="c#">public event EventHandler Click;
+protected void OnClick()
+{
+    Click??.(this, EventArgs.Empty);
+    // equivalent to:
+    if (Click != null)
+        Click(this, EventArgs.Empty);
+
+    // Note: the dot in "??." is still required because "X??(Y)" 
+    // would be indistinguishable from the null coalescing operator.
+}</pre>Somebody implemented a "<a href="http://www.forkcan.com/viewcode/277/Null-Dot-Operator-Extension-Method">null dot</a>" extension method that provides this kind of "operator" in C#, except that it only supports one out of the four cases I just described, as it requires that the function you want to call return a reference type; it doesn't support void or struct return values. It's also slightly clumsy, and since it relies on a lambda, it hurts performance. To work well, this feature needs language support.<br/>
+<br/>
+Right now I am working with code that often converts objects to strings (the objects are usually strings, but may be something else). The object is sometimes null, so I write<br/>
+<pre lang="c#">string s = (obj ?? "").ToString();</pre>This works fine, but it's less efficient than it could be, because if obj == null, a virtual call to ToString() will be called on the empty string "". If the "null dot" or "conditional dot" operator existed, I would write this code as<br/>
+<pre lang="c#">string s = obj??.ToString() ?? "";</pre>or even<br/>
+<pre lang="c#">string s = obj??.ToString();</pre>if a null result is acceptable.<br/>
+<br/>
+I know that an operator like this exists in some other languages, but I don't which ones at the moment. Anybody remember?<br/>
+<br/>
+P.S. Microsoft somehow forgot to include a compound assignment operator, which should work like the other compound assignment operators. <br/>
+<pre lang="c#">
+twosies += 2; // equivalent to twosies = twosies + 2
+doubled *= 2; // equivalent to doubled = doubled * 2
+// ensure myList is not null
+myList ??= new List&lt;int&gt;(); // myList = myList ?? new List&lt;int&gt;()
+</pre><br/>
+<a href="http://www.codeproject.com/script/Articles/BlogFeedList.aspx?amid=3453924" rel="tag" style="display:none">CodeProject</a>
+{% endraw %}

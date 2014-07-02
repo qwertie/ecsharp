@@ -1,0 +1,18 @@
+---
+title: "# in operator names to be removed"
+layout: post
+# Pulled from Blogger. Last updated there on: 2014-02-22
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2014/02/in-operator-names-to-be-removed.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Originally I decided that in Loyc trees, '<code>#</code>'  would be a prefix that meant "special" or "keyword". So reserved words  or language constructs would be represented as identifiers that start  with '<code>#</code>', e.g. <code>#class</code>, <code>#enum</code>, <code>#for</code>, <code>#if</code>, <code>#while</code>, etc.<br/>
+<br/>
+Operators seemed special, so I also decided that operators would have the same prefix: <code>#+</code>, <code>#==</code>, <code>#&gt;&gt;</code>, etc. I've changed my mind, though, for two reasons: <ol>
+<li>I no longer think operators are so special. LES and some other  languages have an infinite number of potential operators and they're  treated identically to normal functions, apart from their syntax.</li>
+<li>No language I know of uses the specific prefix '<code>#</code>'</li>
+<li>Most importantly, the syntax for naming operators turned out to be cumbersome: because an operator name like <code>#+</code> generally cannot be used <em>directly</em> as an identifier in most languages, some sort of escaping mechanism is needed. In LES and EC# you have to write, in general, <code>@`special identifier`</code> (not just <code>`special identifier`</code> because the latter is treated as an operator, not an identifier). Therefore the identifier <code>#+</code> is written <code>@`#+`</code> (<code>@#+</code> also works in LES), which is a bit cumbersome and (more importantly IMO) creates a teaching challenge: I have to explain both what <code>#</code> is for <em>and also</em> what <code>@</code> and the backticks are for, and the student must remember not to mix up <code>@</code> and <code>#</code>. Plus, when someone encounters LES or EC# code for the first time it'll be harder to guess what <code>@`#+`</code> means compared to <code>@`+`</code>, and Google won't help ("Your search - @`#+` - did not match any documents.")</li>
+</ol>I've seen a few languages that allow you to use operators like identifiers. The conventions I've seen are: C#/C++ <code>operator+</code>, Haskell <code>(+)</code>, and Nemerle <code>@+</code>. In all of these cases the additional characters near <code>+</code> can be understood as an escaping mechanism, so that the actual identifier name is simply <code>+</code>.<br/>
+<br/>
+Therefore, I will soon dedicate a day or two to removing the hash  characters from the beginning of all operators in both LES and EC#.  Possibly, I'll remember to update the documentation too. We'll see. <br/>
+
+{% endraw %}

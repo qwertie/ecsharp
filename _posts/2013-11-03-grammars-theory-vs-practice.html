@@ -1,0 +1,82 @@
+---
+title: "Grammars: theory vs practice"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-11-22
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/11/grammars-theory-vs-practice.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Theoretical literature is often written in a baffling mathematical form, so I decided to write this post to help people understand the theoretical representation of grammars. My parser generator, <a href="http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp">LLLPG</a>, does not actually use the representation described here, though. <br/>
+<br/>
+If you ever try to read theoretical parsing literature, you might be completely confused by the way grammars are defined, because the standard definition does not resemble the grammars of ANTLR, LLLPG or other tools. For example, Wikipedia gives <a href="http://en.wikipedia.org/wiki/Context-free_grammar#Formal_definitions">this definition of a grammar</a>: 
+<blockquote>A context-free grammar G is defined by the 4-tuple G = (V, Σ, R, S) where <ol>
+<li>V is a finite set; each element v in V is called a non-terminal character or a variable. Each variable represents a different type of phrase or clause in the sentence. Variables are also sometimes called syntactic categories. Each variable defines a sub-language of the language defined by G.</li>
+<li>Σ is a finite set of terminals, disjoint from V, which make up the actual content of the sentence. The set of terminals is the alphabet of the language defined by the grammar G.</li>
+<li>R is a finite relation from V to (V ∪ Σ)*, where the asterisk represents the Kleene star operation. The members of R are called the (rewrite) rules or productions of the grammar. (also commonly symbolized by a P)</li>
+<li>S is the start variable (or start symbol), used to represent the whole sentence (or program). It must be an element of V.</li>
+</ol>
+</blockquote>Decoding the math-speak: V is a list of possible nonterminals (i.e. rules), Σ is a list of possible terminals (input characters or tokens), and R contains the <i>definitions</i> of the nonterminals (i.e. V is only the rule <i>names</i>, R has the rule <i>definitions</i>). The symbol ∪ means "set union", and the expression "(V ∪ Σ)*" means "a sequence of zero or more elements from V or Σ", i.e. an ordered list of terminals and nonterminals. <br/>
+<br/>
+I'll explain what this means by translating an LLLPG grammar to its theoretical 4-tuple representation, G = (V, Σ, R, S). So consider this grammar, which represents a list of numbers separated by spaces (technically it represents a single number or some spaces, but of course we can just invoke Token repeatedly to get a list): 
+<pre>
+  rule Token  @[ Spaces | Number ];
+  rule Spaces @[ (' '|'\t')+ ];
+  rule Number @[ '0'..'9'+ ('.' '0'..'9'+)? ];
+</pre>We can immediately see what V, Σ, and S are. V is <tt>{ Token, Spaces, Number }</tt>, and in university they would probably figure that Σ is the 13 possible input characters, <tt>{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ' ', '\t' }</tt>. In real life, though, there's nothing to restrict the input to these 13 characters; your input could probably include any bytes, or any unicode characters (depending on how you get your input), and the definition of Σ is irrelevant. That is to say, all that matters is that Σ contains characters; who cares what the precise set is? I certainly don't, so let's move on. The start symbol S is the one that uses the others, so S must be Token in this example. <br/>
+<br/>
+That just leaves R. What's R? "a finite relation from V to (V ∪ Σ)*". What Wikipedia means to say is that R is a set of <tt>rule → content</tt> pairs, where "rule" is a member of V and "content" is a sequence of items (terminals and nonterminals) that v can expand to. "rule" can appear more than once on the left side; for example, R will contain two entries for Token: 
+<pre>
+ Token → Spaces
+ Token → Number
+</pre>Now, the right-hand side must only be a simple list; for example, there is no way to express <tt>Spaces | Number</tt> or <tt>(' '|'\t')+</tt> in R. Instead, a list of alternatives like <tt>Spaces | Number</tt> must be split into multiple pairs (as I've shown already), and loops like <tt>(' '|'\t')+</tt> must be split into new rules. Basically, before you can figure out what R is, you have to eliminate all the loops and optional elements from your grammar, like this: 
+<pre>
+  rule Token        @[ Spaces | Number ];
+  
+  rule Spaces       @[ Space SpacesOpt ];
+  rule SpacesOpt    @[ Spaces | () ];     // equivalent to @[ Spaces? ]
+  rule Space        @[ ' ' | '\t' ];
+
+  rule Number       @[ Digits DotDigitsOpt ];
+  rule DotDigitsOps @[ '.' Digits | () ];
+  rule Digits       @[ Digit DigitsOpt ];
+  rule DigitsOpt    @[ Digits | () ];     // equivalent to @[ Digits? ]
+  // Oh, and you have to eliminate ranges too. No '0'..'9' allowed.
+  rule Digit        @[ '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' ];
+</pre>In most ways, this grammar is the same as the original one: the original grammar was LL(1); this one is still LL(1), and it represents the same language (either a number, or a sequence of spaces).  <br/>
+<br/>
+The theoretical definition of R doesn't allow any loops because they are not strictly necessary. It turns out that it's always possible to eliminate loops (and optional elements) from a grammar by defining a bunch of new rules (and it's not difficult either, just tedius to do by hand). Wikipedia's definition of R is the simplest possible definition, and simple definitions tend to be more useful for mathematical analysis than complex definitions. So R doesn't support loops, nor optional elements, in order to make mathematical analysis of grammar theory easier (at the cost of making a grammar more verbose, and cumbersome to describe). <br/>
+<br/>
+I lied before. We actually can't say what V is until we've eliminated all the loops and options. Now we can see that V is not <tt>{ Token, Spaces, Number }</tt>, but rather <tt>{ Token, Spaces, SpacesOpt, Space, Number, DotDigitsOpt, Digits, DigitsOpt, Digit }</tt>. Given the loop-free grammar above, we can finally state the complete contents of R:  
+<pre>{
+ Token → Spaces
+ Token → Number
+ Spaces → Space, SpacesOpt
+ SpacesOpt → Spaces
+ SpacesOpt → ε
+ Space → ' '
+ Space → '\t'
+ Number → Digits, DotDigitsOpt
+ DotDigitsOpt → '.', Digits
+ DotDigitsOpt → ε
+ Digits → Digit, DigitsOpt
+ DigitsOpt → Digits
+ DigitsOpt → ε
+ Digit → '0'
+ Digit → '1'
+ Digit → '2'
+ Digit → '3'
+ Digit → '4'
+ Digit → '5'
+ Digit → '6'
+ Digit → '7'
+ Digit → '8'
+ Digit → '9'
+}</pre> One more thing, in grammar theory, ε represents nothing (an empty list, which is neither a terminal nor nonterminal). <br/>
+<br/>
+That's it! Now you can see the relationship between "user-friendly" grammars like you use with LLLPG, and "theoretical" grammars used by university professors in comp-sci departments. <br/>
+<br/>
+By the way, the theoretical definition of a grammar is based on Noam Chomsky's "generative grammar" concept which says "you expand nonterminals one or more times until all the nonterminals are gone". The "generative grammar" concept, which was originally conceived for the study of natural (human) languages, is oriented around speakers rather than listeners. So rather than parsing "13.5" into a token, the "generative grammar" point of view looks at it in reverse, saying "we expand Token to get Number, then we expand number to get the sequence of characters 13.5"; that is, it takes the perspective of a <i>printer</i> rather than a <i>parser</i>. This explains why theoretical documents will talk about rules "expanding", which is the opposite of a parser's goal (which is to "contract" all the terminals into a single nonterminal). <br/>
+<br/>
+You might wonder where LLLPG features like zero-width assertions (<tt>&foo</tt>) or <a href="http://loyc-etc.blogspot.ca/2013/11/lllpg-greedy-and-nongreedy.html">greedy/nongreedy</a> fit into all this. Answer: they don't fit. The theory around generative grammars does not have any concept of a zero-with assertion, and if your grammar uses a zero-width assertion then it is not an LL(k) grammar. Meanwhile, greedy and nongreedy are used to resolve LL(k) ambiguities. Grammar theory does include the concept of ambiguity, but not so much mechanisms for dealing with ambiguity. I don't completely understand the theory, but I think if you have to use greedy or nongreedy, then perhaps your grammar isn't "truly" LL(k), or maybe it's more correct to say "the grammar is ambiguous in LL(k)". That is, an LL(k) parser cannot parse the grammar unambiguously (which necessitates a mechanism, such as greedy/nongreedy, to choose a single interpretation of the input, out of the multiple possible interpretations.) <br/>
+<br/>
+<small>&lt; Published on <a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag">CodeProject</a> &gt;</small>
+{% endraw %}

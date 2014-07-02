@@ -1,0 +1,101 @@
+---
+title: "Failure"
+layout: post
+# Pulled from Blogger. Last updated there on: 2009-02-21
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2009/02/failure.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Unfortunately, I have lost enthusiasm about Loyc. I just can't bring myself to do the incredibly large amount of work necessary to make a new compiler infrastructure. Besides that, I'm running into severe indecision trying to design the AST. I wish I could completely separate the implementation of the AST from its public interface, so that I could change it later if desired, but that's not entirely possible in C#.<br/>
+<br/>
+I'm sure that if I had supportive friends and another programmer that shares my vision, I could do it, but I am so very alone in this endeavor. If you are reading this article, please leave a comment, otherwise I'll have to assume that not one damn person read it.<br/>
+<br/>
+<a href="http://boo.codehaus.org/">Boo</a> recently added some very cool metaprogramming features in v0.9, the kind of thing that I would have liked to put in Loyc. Also it sounds like eventually boo will move to an extensible (PEG-based) syntax, which will theoretically give it a lot of the power that I wanted to give Loyc (albeit boo will still only be powerful enough to compile boo code, not C#--a key feature of Loyc is supposed to be multi-language support). However, the boo developers are <span style="font-style:italic;">terrible</span> at documenting their language. I wonder how Rodrigo managed to find other developers to work on boo given his reluctance to communicate. Maybe it was that <a href="http://docs.codehaus.org/display/BOO/Boo+Manifesto">boo manifesto</a>--it certainly won <span style="font-style:italic;">me</span> over.<br/>
+<br/>
+In the <a href="http://groups.google.com/group/boolang">boo google group</a> they recently <a href="http://groups.google.com/group/boolang/browse_thread/thread/474190081fa207c1#">called for people to write examples</a> to showcase boo's new features, but they were unwilling to tell people how to actually USE the new features!<br/>
+<br/>
+I asked:<br/>
+
+<blockquote>Where is the documentation for the "macro" macro? Where is the documentation for using the AST and those cool [| AST expressions |] with $interpolation [...and...] where is the documentation for the AST classes? <br/>
+
+</blockquote>No one responded.<br/>
+<br/>
+I wrote:<br/>
+
+<blockquote>I would like to write a macro in which you could write something<br/>
+like...<br/>
+
+<pre>x = 12
+y = 7.0
+z = "11"
+total = 0.0
+witheach Var in x, y, z:
+    total += Convert.ToDouble(Var)</pre><br/>
+and the macro would expand this to<br/>
+<br/>
+x = 12<br/>
+y = 7.0<br/>
+z = "11"<br/>
+total = 0.0<br/>
+total += Convert.ToDouble(x)<br/>
+total += Convert.ToDouble(y)<br/>
+total += Convert.ToDouble(z)<br/>
+<br/>
+But I don't know how to get started.
+</blockquote>No one responded.<br/>
+<br/>
+I asked:<br/>
+
+<blockquote><br/>
+can macros have memory? I think it would be cool to<br/>
+have a pair of macros, let's call them "define" and "expand". define<br/>
+would be used something like this:<br/>
+
+<pre>define PointClass(P, T):
+   class P:
+      public constructor(x as T, y as T):
+          X=x; Y=y
+      public X as T
+      public Y as T
+      static def op_Addition(a as P, b as P):
+                return P(a.X+b.X, a.Y+b.Y)
+      static def op_Subtraction(a as P, b as P):
+                return P(a.X-b.X, a.Y-b.Y)
+      static def op_Multiply(a as P, b as P):
+                return a.X*b.X + a.Y*b.Y</pre><br/>
+and expand would be used like this to define three different kinds of<br/>
+points:<br/>
+
+<pre>expand PointClass(PointF, float)
+expand PointClass(PointD, double)
+expand PointClass(PointI, int)</pre><br/>
+Is this even possible with the current macro architecture? <br/>
+
+</blockquote>No one responded.<br/>
+<br/>
+<span style="font-weight:bold;">A brief history of Loyc</span><br/>
+<br/>
+I actually wrote a complete unit-inference engine for boo around two years ago, including small changes to the parser, so that you could write, for example,<br/>
+
+<pre>_weight as double
+def GetAcceleration(force as double`N`) `m/s^2`:
+   return force/_weight</pre><br/>
+And the boo compiler would automatically determine that _weight is measured in kilograms. Or, you could specify instead that _weight is `kg` and the engine would automatically infer that GetAcceleration returns `m/s^2`. In fact it was not even necessary to specify any units on the GetAcceleration method; it was sufficient to include units in any call to the method:<br/>
+
+<pre>_weight as double`kg`
+def GetAcceleration(force as double):
+   return force/_weight
+def Foo():
+   _weight = 3
+   a = GetAcceleration(2`N`)
+   x = 3
+   a2 = GetAcceleration(x)</pre><br/>
+There are only two unit annotations in this code, but the engine has already inferred that the local variable x has units of `kg m/s^2`, i.e. newtons, while a and a2 have units of `m/s^2`.<br/>
+<br/>
+If you later wrote code that contradicted the units that had been inferred, the compiler would give you a warning. I was very happy with my work and looked forward to using units in my everyday boo programming. I don't always use many physical units like kilograms and metres in my code, mind you, but I would certainly use a lot of other units like bits, bytes, dwords, records, pixels and percentages.<br/>
+<br/>
+Unfortunately, as my engine required a parser change, it could not be used with standard boo unless boo's author accepted a parser patch. Unfortunately, when I announced my completed work on the boo group, there seemed to be absolutely no interest in it, and boo's author, Rodrigo B. de Oliveira, never even commented on it.<br/>
+<br/>
+That's when I earnestly began to work on Loyc. I decided that the set of features a language supports should not be under the control of a single person (boo), corporation (C#), or committee (C++). Instead, I felt, a compiler should exist that allowed anybody to add new features. Soon I came up with a name for this idea: Loyc, or Language of Your Choice, because the my compiler would support multiple languages and it the user could choose what the language would support or prohibit.<br/>
+<br/>
+But without even a single other person rallying behind my cause, I feel at this point it has been a failure. I would certainly consider working on boo instead, except that boo's developers don't seem interested in nurturing their community by helping people use boo. When boo finally has some half-decent documentation, I may start using it again. Hell, I'd write the documentation myself if I had any clue how to use boo's advanced features, but I don't, so I won't.
+{% endraw %}

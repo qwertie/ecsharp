@@ -1,0 +1,27 @@
+---
+title: "Shouldn't you learn that new Microsoft API?"
+layout: post
+# Pulled from Blogger. Last updated there on: 2012-04-05
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/04/shouldnt-you-learn-that-new-microsoft.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I recently responded to someone trying to <a href="http://programmers.stackexchange.com/questions/143201/justification-for-learning-implementing-newer-microsoft-technologies/143242#143242">justify learning all those newfandangled Microsoft APIs</a>. It sounded like a blog entry so I'm copy-pasting here.<br/>
+<br/>
+While you should definitely learn some of the new MS technologies, my recent experience learning about things like WPF and WCF has made me a bit more cautious about learning the newest MS APIs.<br/>
+<br/>
+Now, LINQ is a major boon to productivity that you should definitely be using; the nice thing is that you can introduce LINQ-to-objects piecemeal in all sorts of random situations, with or without the actual query syntax (I commonly call `Where()` without the `from-select` syntax, as it is often shorter.) The mathematical dual of LINQ, Reactive Extensions, is something you should be aware of, although I am still struggling to find a really good use case. Likewise, all features of C# 3/4/5 are useful so you should study them and watch for places where they will be useful, even as you continue using the "old" BCL stuff.<br/>
+<br/>
+However, I'm going to take devil's advocate and suggest that the very newest and biggest MS libraries, such as WCF and WPF are not necessarily worth learning at all.<br/>
+<br/>
+The primary reason is that they are huge, and not especially well-designed (the former being a symptom of the latter). I briefly blogged recently about why <a href="/2011/07/why-wpf-sucks.html">WPF sucks</a>. As for WCF, the <a href="http://msdn.microsoft.com/library/ee958158.aspx">whitepaper</a> makes it sound like it will easily interoperate nicely with "Java EE server running on a non-Windows system" and "Partner applications running on a variety of platforms", but the truth is that WCF APIs are very specifically SOAP-oriented and have very limited support for non-SOAP protocols. MS could have easily designed a general system that allows pluggable protocols, and maybe the capability is hidden (undocumented) in there somewhere, but as far as I can tell they chose to design a much more limited system that can only do SOAP and limited HTTP (as long as your message body is a serialized .NET object, IIRC). I researched Entity Framework more briefly, but noticed some complaints that it was incapable of supporting some scenarios that the (much simpler) LINQ-to-SQL can handle out-of-the-box.<br/>
+<br/>
+IMO the design of all of these libraries are fundamentally flawed because they use a lot of components that are tightly coupled to each other, a dependency graph of the classes in each framework would probably be huge and look like a jumbled mess of scribbly lines. And even if the design were good, we would not be able to tell because there aren't public architectural documents that delve into the lower-level details, and the MSDN docs for the most part aren't very good (they tend to get less and less helpful as you look at lower and lower-level classes.)<br/>
+<br/>
+The sheer size of the libraries also seems like a flaw; I have learned over 20 years of programming that simplicity is a virtue, one that Microsoft has never valued.<br/>
+<br/>
+But you might ask, "so what"? Well, with such big libraries you might never feel like you really understand them. That means that when you want to do something outside the use cases for which Microsoft specifically designed WCF/WPF/EF, you're not going to know how, and it is possible that no one outside Redmond will know how, either. And when something goes wrong, you will have a hard time figuring out what went wrong. And 15 years from now when Microsoft has moved on to their <i>next</i> next-generation API, no one is going to enjoy maintaining software built on a foundation that is so poorly-understood.<br/>
+<br/>
+Also because of the largeness and complexity of these new APIs, the cross-platform alternative to .NET, Mono, has poor support or no support for them. You'll probably have little difficulty using your typed data tables on Linux or Mac, but Entity Framework? Forget about it. I wouldn't be surprised if Mono <i>never</i> supports it.<br/>
+<br/>
+I have used LINQ-to-SQL in a new project and it's not bad. In some ways it could be better, but I think the developer experience is substantially better than ADO.NET. One significant limitation: L2S is easiest by far if you modify tables in "connected" mode, unlike the old ADO.NET which was specifically designed to work without an active database connection. Anyway, since LINQ-to-SQL is (according to Mono people) a quarter the size of Entity Framework, it's a shame that MS decided to quit working on it.
+{% endraw %}

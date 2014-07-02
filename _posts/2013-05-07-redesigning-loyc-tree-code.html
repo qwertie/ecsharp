@@ -1,0 +1,93 @@
+---
+title: "Redesigning the Loyc tree code"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-05-10
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/05/redesigning-loyc-tree-code.html'>blogspot</a>.</i></p></small>
+{% raw %}
+The original (and current) design for the classes that represent <a href="http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html">Loyc trees</a> has some problematic properties:  <ol>
+<li>You can't tell if a node is mutable or immutable without a runtime check.</li>
+<li>Green nodes are hard to work with because they use relative positioning.</li>
+<li>Red nodes (the Node class) are hard to work with because they have parents.</li>
+<li>The "f" part of "f(x)" is not (in general) an independent node--although it could be.</li>
+</ol> First of all, it is a hybrid mutable-immutable design: you can create trees that are mutable, and then freeze them to get immutable trees. This way, they support multiple programming styles depending on what you prefer. If you'd like to modify trees in-place, you can; if you like to work with immutable trees and contruct them bottom-up, you can. In theory, it sounds useful and flexible. <br/>
+<br/>
+However, the original design does not benefit from type safety. You cannot say "this method requires a mutable tree" or "this method requires an immutable tree". It's non-obvious when a method takes or returns a "Node", what exactly that means. <br/>
+<br/>
+I created an optionally-persistent hash-set recently that overcomes this problem by having two separate data types for mutable and immutable sets: Set&lt;T> (immutable) and MSet&lt;T> (mutable); both of these are wrappers around a helper data type InternalSet&lt;T> which contains the algorithms, and the user can convert a set from mutable to immutable (or vice versa) in O(1) time, so I've been considering doing something comparable for Loyc nodes. <br/>
+<br/>
+Parenting is another problem. My current implementation is inspired by Roslyn and has two kinds of nodes, green and red, the meaning of which is <a href="http://blogs.msdn.com/b/ericlippert/archive/2012/06/08/persistence-facades-and-roslyn-s-red-green-trees.aspx">explained by Eric Lippert on his blog</a>. The green nodes are cachable, so that for example the subtree for "Console.WriteLine" can be re-used to save memory if it appears in multiple places in a source file; they also use relative positioning to help support incremental parsing if I ever get around to implementing that. These factors allow Loyc trees to be very lightweight, but the latter fact makes it very hard to manipulate green trees without losing all information about positioning (or worse, causing some calculated positions to be incorrect). Therefore, end-users are generally supposed to use red nodes instead of green ones, leaving green nodes mainly as carefully-constructed products of the parser. <br/>
+<br/>
+However, each red node has a parent, and this turns out to be very inconvenient when transforming syntax trees. Each node can only have a single parent, and if you insert a Node that has a parent as a child of another Node, you get an InvalidOperationException. The compiler cannot help detect the problem, and correcting the problem requires that you first "detach" the Node from its parent. To make matters worse, detaching is an O(N) operation (in general) because the array of Nodes in the parent has to be shifted left (after the spot where the detached Node used to be); plus, if the Node's parent is frozen, detaching causes a ReadOnlyException. Now, you don't actually have to detach; you can clone the node instead, but cloning all over the place could also hurt performance. <br/>
+<br/>
+The way I have defined Loyc trees also makes me slightly uncomfortable. Recall that a node essentially has three parts: <ol>
+<li>The attribute list (may be empty)</li>
+<li>The head (one of: a Symbol, a literal Value, or a Head node)</li>
+<li>The argument list (optional, and if present, may be empty)</li>
+</ol>(There are also cosmetic and diagnostic parts, such as the node's location in a source file, but these three parts are the "semantically important" parts.) <br/>
+<br/>
+A couple of things make me uncomfortable about #2, the head portion. First of all, a call such as "f(x)" normally consists of two nodes: the call "f(x)" is one Node, and the symbol "x" is another Node. "f" is not a Node but merely a Symbol. The advantage of this representation is that it saves memory, since a separate Node does not have to be allocated for "f", we only need memory for the Symbol "f", and this memory is shared every time "f" appears in any source file. But I can certainly imagine that you might want to do something with "just the head part" of a node, ignoring the argument list and the attributes; for example you might want to print "just the head part" as a string, and there is no convenient way to do this right now. <br/>
+<br/>
+A second problem is that there is a weird oddity in the code right now, because the Head part can be a Node rather than a Symbol, and my code currently treats the Node "f" as equivalent to the Symbol "f". This makes me uncomfortable because Loyc trees are not fully round-trippable like they are supposed to be; if you take the tree "f(x)" where "f" is a Node, print it as text and re-parse it, the output is "f(x)" where "f" is a Symbol--a slightly different tree that prints out the same way. <br/>
+<br/>
+An alternative way to interpret this case is that if a Node serves as a Head and has no attributes or arguments, it should be interpreted as being in parenthesis. In that case, when "f" is a Node serving as a Head, it must have parenthesis around it: "(f)(x)". The reason I did not take this route is because allowing "f" to be a Node (without parenthesis) allows it to have its own positioning information. So in the case of code like "2 + 3" (which is "#+(2, 3)" as a Loyc tree in prefix notation), if "#+" is a separate node then it can have its own positioning information, indicating that the "+" sign is two characters to the right of its parent node "2 + 3". On the other hand, this positioning information is perhaps not needed for all method calls, which seems to be an argument in favor of allowing simple Symbols to be heads; and we cannot simply remove the "Symbol" part of a Node, for how would we represent a Node that is just a Symbol? <br/>
+<br/>
+All of the above issues are "design smells", but I am not yet confident about how to eliminate the stink. <br/>
+<br/>
+Here are my thoughts so far. First of all, I am convinced that immutable nodes are more convenient to work with and should be the default choice. Mutable nodes--assuming that I keep support for mutable nodes at all--should have their own data type, but I'm not sure if it should be a completely separate data type or a derived class. Certainly, it's good if code that analyzes immutable nodes can work with mutable nodes "for free", although some code will want to know "for sure" that no other code will modify a tree. The common interface between immutable and mutable nodes could be placed in an INodeReader interface, which allows mutable and immutable nodes to be completely separate, but code that operates on INodeReader instead of a base class would be slower, and implementing INodeReader is a burden on me because the interface needs its own special argument and attribute lists (it must return lists of INodeReader instead of the actual node type). <br/>
+<br/>
+I have an idea that I think would allow nodes to be cached and relocated, without the inconvenience that currently makes green nodes problematic. If this idea works, the green nodes will become the preferred form in which to manipulate syntax trees, while red nodes would only exist as a way to track parents. <br/>
+<br/>
+Dealing with parenting has been annoying and I want the problem to go away. I'm thinking about getting rid of parents--and red nodes--completely, at least temporarily while I finish off LLLPG, the parser generator. Perhaps the parentable nodes (red nodes) could be added later as a special kind of node, derived from the same base class as the green nodes; the red nodes may be simple wrappers, consisting of a reference to a green node plus a reference to a parent. All the methods would simply be forwarded to the green node. <br/>
+<br/>
+Changing the subject now, I need to find a new way to look at Loyc nodes. Clearly, all Loyc nodes can have attributes and position/width/style information, so it's natural to have a common base class with common data. Apart from this common information, nodes represent the following forms: <ul>
+<li>Just an identifier: <tt>simple_symbol</tt></li>
+<li>Call an identifier: <tt>simple_symbol()</tt></li>
+<li>Just a literal: <tt>"literal"</tt></li>
+<li>Call a literal: <tt>"literal"()</tt> (weird, but syntactically legal)</li>
+<li>Call a complex head: <tt>Console.WriteLine()</tt>, <tt>Foo(x)(y)</tt>, <tt>Foo&lt;x>(y)</tt></li>
+<li>Node in parenthesis: <tt>(x + 1)</tt>. I'd like to represent parens explicitly in order to more faithfully represent the input, even though Loyc trees are not designed to support <i>everything</i> the way Roslyn and NRefactory can; for example, there's no obvious way to support round-tripping of syntax errors.</li>
+</ul>If there were <a href="https://en.wikipedia.org/wiki/Algebraic_data_type">algebraic data types</a> in C#, I could represent the head and arguments using something like 
+<pre>
+data NodeData = Symbol
+              | Literal object
+              | InParens Node
+              | Call Node List&lt;Node>
+</pre>In this representation, 'Node' is position information, plus attributes, plus a NodeData. A "Call" consists of the thing being called, plus a list of arguments. Or we could use the LISP representation of a call: 
+<pre>
+data LispNode = Symbol
+              | Literal object
+              | InParens Node
+              | Call List&lt;Node>
+</pre>In the LISP style, the thing being called is the first item in the List (and in LISP, the List is a linked list rather than an array.) The LISP style definitely has advantages, but I'm not sure I'm comfortable mixing the call target with the call's arguments like this. <br/>
+<br/>
+So what should I do in C#? I can certainly map the ADT to C# with something like: 
+<pre>
+public class Node {
+    /* position information and attributes go here */
+}
+public class SymbolNode : Node {
+    public Symbol Name { get; }
+    ...
+}
+public class LiteralNode : Node {
+    public object Value { get; }
+    ...
+}
+public class ParensNode : Node {
+    public Node Child { get; }
+    ...
+}
+public class CallNode : Node {
+    public Node Head { get; }
+    public IList<Node> Args { get; }
+    ...
+}
+</pre>The issues with this mapping are: <ul>
+<li>C# doesn't have features for deconstructing nodes easily; there's no 'match' statement</li>
+<li>Lots of run-time conversions are required: you'd be downcasting constantly, harming performance. You could use visitors though, avoiding some casts (I expect casting to have a significant penalty because the classes above would not be sealed--in fact they'd probably be abstract, to allow support for red nodes, repositioning to account for editing in an IDE, etc.--and casting is rumored to cost more when the target type does not exactly match the actual type). I've never been a fan of the <a href="http://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a> by the way, but it's grown on me recently as I finally grok it. The visitor pattern is brittle with respect to changes in the class hierarchy, but that's not really a problem for Loyc trees, because fundamentally new kinds of nodes should never be needed.</li>
+<li>When you add red nodes and other wrapper classes, the total number of classes could be quite high.</li>
+<li>A simple call such as "f()" will require two nodes, whereas the current implementation only needs a single node. It occurs to me, however, that the child node "f" could be implemented as a temporary object, constructed on-demand and immediately discarded (calling the Name property rather than Target would avoid constructing the temporary object).</li>
+<li>Currently, a mutable node can be converted in-place between any of the possible node types, e.g. you can simply write <tt>node.IsCall = true</tt> to add an empty argument list. That kind of thing is not possible when we use these separate classes.</li>
+</ul>I guess I should keep in mind that EC# will support deconstruction and pattern-matching when it is complete, and the current mutation abilities are not very important to keep. The performance implications still matter, however, and I always love to save memory. 
+{% endraw %}

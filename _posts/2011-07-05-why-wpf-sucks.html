@@ -1,0 +1,34 @@
+---
+title: "Why WPF sucks: an overview"
+layout: post
+# Pulled from Blogger. Last updated there on: 2011-11-10
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2011/07/why-wpf-sucks.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I was just reading <a href="http://www.simple-talk.com/community/blogs/richard/archive/2011/06/16/101966.aspx">this article</a> detailing someone's frustrations with WPF, and thought I should add to the chorus.<br/>
+<br/>
+I agree with Mr. Mitchell, I'm fairly sure I will never like WPF. It has a steep learning curve because it's undiscoverable. WinForms was relatively easy to understand; its most complex feature was <a href="http://www.codeproject.com/KB/database/databinding_tutorial.aspx">data binding</a>. But WPF relies heavily on XAML, a language in which MS somehow expects you to "just know" what to type to get what you want, and when you somehow figure out what to type, half the time it doesn't work and you get a mysterious unhelpful exception (or no exception, but it still doesn't work.)<br/>
+<br/>
+In WinForms, there was an easy-to-use designer and anything you did was translated to easy-to-understand C# (or VB) code; in fact that was the native representation! XAML, however, can't be translated to anything except BAML, so nobody can easily understand what a piece of XAML does, nor can we step through it in the debugger. To make matters worse, XAML relies heavily on dynamic typing (and even the C# part constantly makes you cast "object"s). This prevents IntelliSense from working very well, thwarts the refactoring tools (ever tried renaming a property that was bound in XAML?), and shifts tons of errors from compile-time to run-time.<br/>
+<br/>
+In short, WPF programs look pretty, and offer better options for data visualization than WinForms (DataTemplates in ListBoxes are a major improvement), but beyond that they are a huge step in the wrong direction. How could Microsoft think this design was a good idea? If any company but Microsoft or Apple made a GUI architecture that was this difficult to use, no one would want to use it. For my company I started to develop some ideas for a GUI architecture that would have been much leaner and more elegant than WPF, but it looks like I may never write that code. The point is, I have some sense of how a GUI framework <i>should</i> work, and it's not like WPF.<br/>
+<br/>
+I remember my first WPF app. I had an ItemsControl with a ControlTemplate containing a ScrollViewer with a Grid inside (note the learning curve: you can't use WPF very well without some idea what those terms mean.) I wanted to know: "<a href="http://stackoverflow.com/questions/870137/wpf-how-to-attach-mouse-events-to-a-viewmodel">How do I attach mouse event handlers to an ItemsControl to detect mouse clicks and drags on blank space?</a>" The answer? In order to get mouse events with meaningful mouse coordinates (i.e. coordinates in scrollable space), it was necessary to obtain a reference to the grid using a strange incantation:<br/>
+<br/>
+Grid grid = (Grid)_itemsControl.Template.FindName("Panel", _itemsControl);<br/>
+<br/>
+Then I attached event handlers to the grid, and inside the mouse event handlers, get the mouse coordinates w.r.t. the grid using<br/>
+<br/>
+Point p = e.GetPosition((IInputElement)sender);<br/>
+<br/>
+Plus, in order to get mouse events on the entire surface, the control (actually the grid) must have a background.<br/>
+<br/>
+In another case I had to use this incantation:<br/>
+<br/>
+ var r = VisualTreeHelper.HitTest(_panel, new Point(e.X, e.Y));<br/>
+ var hit = r == null ? null : r.VisualHit as FrameworkElement;<br/>
+<br/>
+In WinForms, pretty much all the methods you need are members of the control class you are using. But this example shows that in WPF, sometimes you have to call a static method of some other class to accomplish what you want. Then consider the minimalist documentation (so that you really need to buy a book to learn WPF)... that's undiscoverability at its finest.<br/>
+<br/>
+Update: Also, WPF is shockingly inefficient, as you may learn if you need to <a href="http://stackoverflow.com/questions/7097999/wpf-binding-to-listboxitem-isselected-doesnt-work-for-off-screen-items">use a non-virtualized ListBox in order to get MVVM to work</a> and the list has more than about 1000 items. Trivial items (short text strings, no DataTemplate) consume about 8 KB of memory per row, or 80 MB for 10000 items, and ListBox takes 4 seconds to handle a single arrow key pressed in a list with this many items.
+{% endraw %}

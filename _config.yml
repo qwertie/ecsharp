@@ -7,9 +7,14 @@ exclude: [Src, Lib, Visual Studio Integration]
 # Jekyll settings
 markdown: redcarpet
 encoding: UTF-8
-highlighter: rouge
-paginate: 10
+highlighter: pygments
+paginate: 5
 paginate_path: "blog/page:num"
+safe: true
+lsi: false
+
+# Custom vars
+paginate_prefix: "blog/" # needed for Older/Newer buttons to work right
 
 # Poole/Hyde settings
 title:       "Loyc"                      # shown in large text
@@ -19,4 +24,3 @@ url:     "http://loyc.net"               # Used by the Atom feed
 baseurl: ""                              # grep "site.baseurl" to see how it is used
 github:
   repo:  https://github.com/qwertie/Loyc # "GitHub project" link on sidebar
-

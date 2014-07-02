@@ -1,0 +1,148 @@
+---
+title: "Bogus ambiguity warnings in LLLPG"
+layout: post
+# Pulled from Blogger. Last updated there on: 2014-01-01
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/12/bogus-ambiguity-warnings-in-lllpg.html'>blogspot</a>.</i></p></small>
+{% raw %}
+Sometimes <a href="http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp">LLLPG</a> gives me a warning that I just can't fathom. I'm currently writing the parser for Enhanced C#, and I got a very puzzling warning:  
+<pre>
+using TT = TokenType;
+
+partial class EcsParser {
+[DefaultK(3)]
+LLLPG parser(laType(TokenType), matchType(int), setType(HashSet!int))
+{
+   alias("(" = TT.LParen);
+   alias(")" = TT.RParen);
+   alias("[" = TT.LBrack);
+   alias("]" = TT.RBrack);
+   alias("." = TT.Dot);
+   alias("!" = TT.Not);
+   alias("<" = TT.LT);
+   alias(">" = TT.GT);
+   alias("," = TT.Comma);
+
+   // Complex identifier, e.g. accepts x.y<z> or x<y, z> but rejects x<y><z>
+   token ComplexId() @[
+      IdAtom 
+      RestOfId()
+   ];
+   rule IdAtom @[
+      (TT.Id|TT.TypeKeyword)
+   ];
+   rule RestOfId() @[
+      <b>// Warning: Optional branch is ambiguous for input such as «TT.Dot TT.Id _»
+      // ((TT.Dot|TT.Not|TT.LT), (TT.Id|TT.TypeKeyword|TT.LParen|TT.LBrack|TT.GT), ~()) </b>
+      TParams()?
+      DotRestOfId()?
+   ];
+   rule DotRestOfId() @[
+      "." IdAtom
+      RestOfId()
+   ];
+   rule TParams() @[ // type parameters
+      ( "<" (ComplexId ("," ComplexId)*)? ">"
+      // Also allow Nemerle-style type parameters (e.g. Dictionary.[int,string])
+      | "." "[" "]"
+      // D-style type parameters (Dictionary!(int, string))
+      //| "!" "(" ")"
+      )
+   ];
+}};
+</pre>I actually started with a 600-line parser and slowly reduced it to this minimal test case. In fact the grammar is unambiguous, so why does this warning occur? (and by the way, LLLPG's example case varies depending on small details of the grammar; at first it always said «TT.LT TT.GT _» but would give some other example if the aliases were removed.) If you can't figure it out, I don't blame you; I actually attached a debugger to see LLLPG's internal state at the time of the warning, and I couldn't figure it out either. <br/>
+<br/>
+The generated code is wrong for <tt>RestOfId()</tt>, but correct for the other rules. How is it wrong?  <br/>
+<br/>
+Notice that the code for <tt>RestOfId()</tt>, as written, accepts ".>" or "<[" as a way of starting <tt>TParams()</tt>; this isn't really why the rule is wrong though, because ".>" or "<[" are invalid inputs, so it isn't super important which path is taken for those cases. This illustrates what LLLPG is "thinking" though: it has "mixed together" the two arms of TParams, <tt>"<" (ComplexId ("," ComplexId)*)? ">"</tt> and <tt>"." "[" "]"</tt>. If it sees "<" (from arm 1 of TParams) and then "[" (from arm 2 of TParams), it will call TParams. 
+<pre>
+void RestOfId()
+{
+   TokenType la0, la1;
+   la0 = LA0;
+   if (la0 == TT.Dot || la0 == TT.LT) {
+      switch (LA(1)) {
+      case TT.LBrack:
+      case TT.GT:
+      case TT.Id:
+      case TT.TypeKeyword:
+         TParams();
+         break;
+      }
+   }
+   la0 = LA0;
+   if (la0 == TT.Dot) {
+      la1 = LA(1);
+      if (la1 == TT.Id || la1 == TT.TypeKeyword)
+         DotRestOfId();
+   }
+}
+</pre>The real problem happens when it sees "." (from arm 2 of TParams) followed by TT.Id (from arm 1 of TParams). In that case <tt>RestOfId()</tt> <i>should skip <tt>TParams()</tt></i> and call <tt>DotRestOfId</tt> instead. But no, it calls <tt>TParams</tt>. <br/>
+<br/>
+This explains why the warning occurs. If, inside <tt>RestOfId</tt>, LLLPG does not separate the logic for the two arms of <tt>TParams</tt>, LLLPG gets confused and thinks that "." followed by an identifier is a valid input for <tt>TParams</tt> as well as <tt>DotRestOfId</tt>. Therefore it can't decide which rule to call, prints a warning, and (because it is greedy by default) calls <tt>TParams</tt>. <br/>
+<br/>
+This is exactly the same sort of problem that you used to get in ANTLR 2 with ANTLR's <a href="http://www.antlr3.org/doc/glossary.html#Linear_approximate_lookahead">linear approximate lookahead</a>. Although Terrance Parr (author of ANTLR) clearly documented how it works and what it means, users (even me!) find its behavior unexpected and confusing. <br/>
+<br/>
+By default, LLLPG's lookahead is more powerful than linear approximate lookahead; the example given by Terrance, (A B | C D) | A D, is no problem for LLLPG. I could go into some detail about how my lookahead differs from ANTLR 2, but I think most readers just want to know "how do I fix this" and the answer is simple: add the <tt>[FullLLk]</tt> attribute, either just to the rule that is giving you trouble, or the entire grammar (the "LLLPG" statement): 
+<pre>
+partial class EcsParser {
+[DefaultK(3)]
+LLLPG parser(laType(TokenType), matchType(int), setType(HashSet!int))
+{
+   ...
+   [FullLLk] // eliminates the bogus warning, and fixes the generated code
+   rule RestOfId() @[
+      TParams()?
+      DotRestOfId()?
+   ];
+   ...
+}};
+</pre>The FullLLk option enables "true" LL(k) prediction, and forces LLLPG to analyze sub-decisions independently. So the decision of whether to call TParams requires not one, but two separate sequences of tests, for the two branches inside TParams: 
+<pre>
+void RestOfId()
+{
+   TokenType la0, la1, la2;
+   la0 = LA0;
+   if (la0 == TT.LT) { // branch 1 of TParams
+      la1 = LA(1);
+      if (la1 == TT.Id || la1 == TT.TypeKeyword) {
+         switch (LA(2)) {
+         case TT.GT:
+         case TT.Comma:
+         case TT.Dot:
+         case TT.LT:
+            TParams();
+            break;
+         }
+      } else if (la1 == TT.GT)
+         TParams();
+   } else if (la0 == TT.Dot) { // branch 2 of TParams
+      la1 = LA(1);
+      if (la1 == TT.LBrack) {
+         la2 = LA(2);
+         if (la2 == TT.RBrack)
+            TParams();
+      }
+   }
+   la0 = LA0;
+   if (la0 == TT.Dot) {
+      la1 = LA(1);
+      if (la1 == TT.Id || la1 == TT.TypeKeyword)
+         DotRestOfId();
+   }
+}
+</pre>Full LL(k) mode doesn't always work perfectly, and may make LLLPG run slower, which is why it is not enabled by default. But usually, it works fine. If you still get the same ambiguity warning after enabling Full LL(k), check over your grammar carefully, because it is probably genuinely ambiguous. <br/>
+<br/>
+<b>Update:</b> By the way, I later noticed that ComplexId, RestOfId and DotRestOfId can be combined into a single rule: 
+<pre>
+[FullLLk]
+token ComplexId() @[
+    IdAtom
+    ( "::" IdAtom )? // omitted from simplified grammar
+    TParams()?
+    (   "." IdAtom
+        TParams()?
+    )*
+];
+</pre>
+{% endraw %}

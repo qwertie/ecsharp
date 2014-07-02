@@ -1,0 +1,57 @@
+---
+title: "Simulating covariant return types in C#"
+layout: post
+# Pulled from Blogger. Last updated there on: 2008-09-12
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2008/09/simulating-covariant-return-types-in-c.html'>blogspot</a>.</i></p></small>
+{% raw %}
+For several years, Microsoft engineers have refused to add support for <a href="http://en.wikipedia.org/wiki/Covariant_return_type">covariant return types</a>, a trivially simple feature that should have been in the CLR from the beginning.<br/>
+<br/>
+Suppose you want to write a Clone() method that returns a copy of the current object. Naturally you want to write the following, but it is illegal:<br/>
+
+<pre>class MyStuff : ICloneable {
+    public MyStuff Clone() { ... }
+}</pre><br/>
+Since you are implementing an interface, you can use this workaround that uses explicit interface implementation:<br/>
+
+<pre>class MyStuff : ICloneable {
+    public MyStuff Clone() { ... }
+    object ICloneable.Clone() { return Clone(); }
+}</pre><br/>
+The above workaround is okay for implementing an interface, but what if you are writing a class hierarchy, and you want a Clone() method that is virtual but has the appropriate return type?<br/>
+
+<pre>class BaseNode : ICloneable
+{
+    object ICloneable.Clone() { return Clone(); }
+    public virtual BaseNode Clone() { ... }
+}
+class ComplexNode : BaseNode
+{
+    override BaseNode BaseNode.Clone() { return Clone(); } // Error!
+    public ComplexNode Clone() { ... }
+}</pre><br/>
+Oops, the workaround that you use for interfaces is illegal for class inheritance. There is still a solution, though:<br/>
+
+<pre>class BaseNode : ICloneable
+{
+    object ICloneable.Clone() { return Clone(); }
+    public BaseNode Clone() { BaseNode c; Clone(out c); return c; }
+    protected virtual void Clone(out BaseNode clone) { ... }
+}
+class ComplexNode : BaseNode
+{
+    public new ComplexNode Clone() { ComplexNode c; Clone(out c); return c; }
+    protected override void Clone(out BaseNode clone) { clone = Clone(); }
+    protected virtual void Clone(out ComplexNode clone) { ... }
+}</pre><br/>
+That's right. You need six Clone() methods. The last method is virtual in case you want to make a class derived from ComplexNode, e.g. VeryComplexNode:<br/>
+
+<pre>class VeryComplexNode : ComplexNode
+{
+    public new VeryComplexNode Clone() { VeryComplexNode c; Clone(out c); return c; }
+    protected override void Clone(out BaseNode clone) { clone = Clone(); }
+    protected override void Clone(out ComplexNode clone) { clone = Clone(); }
+    protected virtual void Clone(out VeryComplexNode clone) { ... }
+}</pre><br/>
+Without covariant return types, you have to to define an additional virtual function for each additional derived class.
+{% endraw %}

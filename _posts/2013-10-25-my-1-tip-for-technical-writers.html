@@ -1,0 +1,23 @@
+---
+title: "My #1 Tip for Technical Writers"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-10-31
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/10/my-1-tip-for-technical-writers.html'>blogspot</a>.</i></p></small>
+{% raw %}
+There are so many docs out there that don't seem to get this. If I could offer one tip for anyone who writes technical or scientific documentation about anything, it's this: <b>use examples</b>. Lots of examples, the more the better. Not just examples--put explanatory prose beside, above or below your examples, but use examples liberally. Diagrams and pictures don't hurt either. <br/>
+<br/>
+It's fundamentally hard to put abstract technical concepts into words, and I've noticed that most people aren't that good at it. Human language is quite ambiguous and besides, we often make mistakes in our writing that can make our prose confusing. I think I'm better than average, but often when I re-read something I wrote a long time ago, I realize that it's ambiguous or that it hasn't given all the information necessary for a novice to understand it, and I have to clarify. (TODO: give an example here.) <br/>
+<br/>
+The only trouble with giving examples is that it can be hard to find good ones. For example, I'd like to give examples from my own life of the things I'm talking about in this post, but it's hard for me to remember my own life, so nothing is coming to mind. <br/>
+<br/>
+Examples can often provide the clarity that the text is lacking, because  <ol>
+<li>they restate the information in a completely different form, giving the reader a different perspective on the topic.</li>
+<li>they make abstract ideas concrete, or visualizable in the mind's eye. Such concrete things are easier to understand and reason about than abstract generalizations.</li>
+<li>they can <i>constrain</i> the possible interpretations of the main text: they can resolve ambiguity by showing that certain interpretations are impossible.</li>
+</ol>A poor example is one that doesn't have the above advantages: <ol>
+<li>If the example is too general and somehow matches the abstract description of a concept, it isn't very helpful. For example, if you're trying to explain what a <a href="http://en.wikipedia.org/wiki/List_comprehension">list comprehension</a> is, <tt>S = { f(x) | x ϵ T }</tt> is a terrible example; it demonstrates the syntax, but nothing else. A better example would be something like <tt>Doubled = { 2n | n ϵ Original }</tt>. Once you explain that {...} represents a set of things (in this case, numbers), that "ϵ" means "is a member of", and "|" means "where", the reader can start to understand the explanation: this takes all the numbers from a set called "Original", doubles them, and uses "Doubled" as the name for the result.</li>
+<li>If the example isn't something concrete, it may not be very good. For example if you want to explain how to use an API called, let's say, Scan(), and your example is simply <tt>Scan(foo, bar)</tt>, it's worthless since "foo" and "bar" are not concrete things that people can imagine. That's not to say one should never use <a href="http://en.wikipedia.org/wiki/Foobar">"foo" and "bar"</a>, but if your example will make more sense if it is based on a real-world scenario, then base your example on a real-world scenario.</li>
+<li>They can <i>constrain</i> the possible interpretations of the main text: they can resolve ambiguity by showing that certain interpretations are impossible. For example, suppose a small child just learned to add numbers, and now you want to teach the child about multiplication. Then "2 × 2 = 4" is a <i>terrible</i> example to introduce multiplication: the child already knows "2 + 2 = 4", and it looks like you just rotated the "+" sign. The example sucks because it fails to show how multiplication is <i>different</i> from related concepts. Likewise "3 × 1 = 3" is a bad example: it does not illustrate the purpose of multiplication (and obviously you shouldn't start with "3 × -4 = -12", it's too advanced). Eventually you can show these examples if you want, but first you must show what multiplication is, how it is used and why it is useful.</li>
+</ol>One more thing, when giving code examples, make sure they compile, and preferably, mention the environmental conditions required to compile them (#include files, assembly references, compiler options, etc.)
+{% endraw %}

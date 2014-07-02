@@ -1,0 +1,66 @@
+---
+title: "I want a \"slide\" operator"
+layout: post
+# Pulled from Blogger. Last updated there on: 2010-09-16
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2010/09/i-want-slide-operator.html'>blogspot</a>.</i></p></small>
+{% raw %}
+I've been writing imperative code for a long time and I noticed that I often extract a value from a variable, then change the variable immediately afterward. This is evident in numerous iterative algorithms, such as the fibonnaci algorithm:
+<pre>{
+  int a = 0, b = 1, tmp;
+  for(;;) {
+    print(u);
+    tmp = b;
+    b = a + b;
+    a = tmp;
+  }
+}</pre>Notice how "a" gets the old value of b, and "b" gets the old value of a + b.<br/>
+<br/>
+Another pattern is that you want to do something the first time some code is reached:<br/>
+
+<pre>if (!initialized) {
+    initialized = true;
+    DoSomething();
+}
+</pre>Again, we read the value of the variable and then change it.<br/>
+<br/>
+What if the user clicks a column on a ListView, then clicks a second column? Then the list should be sorted first by the second column, then by the column that was clicked earlier. I wrote some code for this earlier today:
+<pre>public void SortByColumn(int column)
+{
+ if (_primarySortColumn == column) {
+  _secondarySortAscending = !_secondarySortAscending;
+  _primarySortAscending = !_primarySortAscending;
+ } else {
+  _secondarySortColumn = _primarySortColumn;
+  _secondarySortAscending = _primarySortAscending;
+  _primarySortColumn = column;
+  _primarySortAscending = true;
+ }
+}</pre>Here, the pattern occurs in the "else" clause.<br/>
+<br/>
+Since this pattern happens so much, I think there should be an operator for it, let's say "&lt;-". A natural name for it would be the "shift" operator, but I'll call it the "slide" operator or maybe the "rotate" operator, to distinguish it from the bitwise left shift "<<". Using this operator, fibonnaci becomes
+<pre>{
+  int a = 0, b = 1;
+  for(;;) {
+    print(a);
+    a &lt;- b &lt;- a + b;
+  }
+}</pre>The operator is the same as the assignment operator, except that the result of the expression is the old value of the left-hand side, not the new value. So "a &lt;- b &lt;- a + b" is equivalent to "a &lt;- (b &lt;- a + b)", which is equivalent to "temp = b, b = a + b, a = temp". Note that "a &lt;- b &lt;- a + b" is also equivalent to "a = b &lt;- a + b"; since the old value of "a" is discarded, it doesn't matter whether we use "=" or "&lt;-" to change it.<br/>
+<br/>
+The initialization code could be expressed more briefly with the slide operator:
+<pre>if (!(initialized &lt;- true))
+    DoSomething();
+</pre>And similarly for the sorting code:
+<pre>_secondarySortColumn &lt;- _primarySortColumn &lt;- column;
+_secondarySortAscending &lt;- primarySortAscending &lt;- true;</pre><br/>
+The semantics of the slide operator imply creation of a temporary variable, but probably in some cases the temporary can be eliminated if the compiler can determine that the order of operations doesn't matter, or that the temporary variable isn't being used.<br/>
+<br/>
+The operator could also be used for swapping values:
+<pre>a &lt;- b &lt;- a</pre><br/>
+A second temporary variable is needed in case the left-hand side is expensive or has side-effects, in which case it should only be evaluated once. For example, if the code is
+<pre>savedValue &lt;- GetActiveItem().Value &lt;- savedValue</pre>then GetActiveItem() shouldn't be called twice, so another temporary must be introduced (the exact details depend on the programming language):
+<pre>temp1 = GetActiveItem();
+temp2 = temp1.Value;
+temp1.Value = savedValue;
+savedValue = temp2;</pre>Now when can I get my slide operator in a real language?
+{% endraw %}

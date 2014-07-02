@@ -1,0 +1,253 @@
+---
+title: "Protobuf-net: the unofficial manual"
+layout: post
+# Pulled from Blogger. Last updated there on: 2013-08-24
+---
+<small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/08/protobuf-net-unofficial-manual.html'>blogspot</a>.</i></p></small>
+{% raw %}
+<a href="https://code.google.com/p/protobuf-net/">Protobuf-net</a> is a fast and versatile .NET library for serialization based on Google's <a href="https://code.google.com/p/protobuf/">Protocol Buffers</a>. It's one of those libraries that is both widely used and poorly documented, so usage information is scattered across the internet. Writing a blog post with lots of random information might not solve the situation, but it's better than nothing, right? The majority of the web documentation is in <a href="https://code.google.com/p/protobuf-net/wiki/GettingStarted">GettingStarted</a>,&nbsp;and&nbsp;small amounts of information exist in XML doc-comments in the source code (which will appear automatically in Visual Studio IntelliSense provided that your protobuf-net.dll file has a protobuf-net.xml file beside it.) The doc-comments are rarely more than a vague hint, though, about what something does or means.<br/>
+<br/>
+So here are some things I've learned about this library that may not be obvious. I've mentioned a bunch of things that I <b>don't know</b>&nbsp;or that I merely inferred. If you know something I don't, leave a comment! <h3 style="margin-top:20px;margin-bottom:15px">Overview </h3>Protobuf-net is not compatible with the standard .NET serialization system. It can be configured to behave in a fairly similar way, but one should be aware that<br/>
+<ul>
+<li>protobuf-net ignores the <b>[Serializable]</b> attribute</li>
+<li>protobuf-net does not support custom serialization using <b><a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.iserializable.aspx">ISerializable</a></b> and a private constructor, and AFAIK it does <i>not</i> offer something very similar.</li>
+</ul>However, it does offer several approaches to serialization on a type-by-type basis (see next section).<br/>
+<br/>
+Protobuf is, of course, limited by the way protocol buffers work. Protocol buffers do not define a concept of "record type" (the deserializer is supposed to know the data type in advance, so you must specify a data type at the root level when deserializing), they have only a few <a href="https://developers.google.com/protocol-buffers/docs/encoding">wire formats</a> for data, and all&nbsp;fields in a protocol buffer have only numeric identifiers (called "tags"), not strings. That's why you're supposed to put a <b>[ProtoMember(N)]</b> attribute on every field or property that you want to be serialized.<br/>
+<br/>
+Standard Protocol Buffers offer no way of sharing objects (using the same object in two places) or supporting reference cycles, because they are simply not designed to be a serialization mechanism. That said, protobuf-net <i>does</i> support references and cycles (more information below). Supporting references and cycles is more expensive in terms of time and output size, so it's disabled by default. There are at least two ways to opt-in:<br/>
+<ol>
+<li>If you know that instances of a particular class are often shared, use <b>[ProtoContract(AsReferenceDefault=true)]</b>. This will apply to all fields of that type and collections that contain that type.</li>
+<li>You can opt-in to the reference system on an individual field using <b>[ProtoMember(N, AsReference=true)]</b>. References will be shared with any other field that also uses <b>AsReference=true</b>. If a certain object is placed both in fields that have <b>AsReference=true</b> and fields that do not, the fields where <b>AsReference=false</b> will hold duplicate copies of the object, and these copies will be deserialized into separate objects. I can only assume that&nbsp;<b>AsReference=false</b>&nbsp;will override <b>AsReferenceDefault=true</b>.</li>
+</ol><div>When you use <b>AsReference=true</b> on a collection type, the instances inside the collection are tracked by reference. However, it looks like the collection itself is <i>not</i> tracked by reference. If the same collection object is used in multiple places, it will be serialized multiple times and these copies will not be consolidated during deserialization.</div><div><br/>
+</div>Protobuf is equally comfortable serializing fields and properties, and it can serialize both <b>public</b> and <b>private</b> fields and properties (well, maybe private things won't serialize in Silverlight or partial-trust? I suspect there's a security prohibition in Silverlight). Fields and properties that do not have a <b>[ProtoMember(N)]</b> attribute are normally left unserialized, unless the class has the <b>ImplicitFields</b> option,&nbsp;<b>[ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]</b> or&nbsp;<b>[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]</b>, which causes numbers to be assigned automatically.<br/>
+<div><br/>
+</div><div>I can't find documentation for how the numbers are auto-assigned, but it appears to assign numbers to your fields/properties in alphabetical order starting at 1. It will start numbering at 1 even if your class uses <b>ProtoMember(N)</b> explicitly on some fields. The <b>ProtoMember</b> attribute is not ignored, it just doesn't affect the numbering of the fields that don't use <b>ProtoMember</b>, and tag numbers may end up in conflict (e.g. if you use <b>ProtoMember(1)</b>, the first auto-assigned number will still be 1, causing a conflict.)<br/>
+<div><br/>
+</div><div>When using <b>ImplicitFields</b>, protobuf-net ignores fields/properties marked&nbsp;<b>[ProtoIgnore]</b>. Just to be clear,&nbsp;if you don't use <b>ImplicitFields</b>, fields and properties are ignored by default and must be explicitly serialized with <b>[ProtoMember(N)]</b>.</div><div><br/>
+</div><div>Protocol buffers don't have an inheritance concept <i>per se</i>, but protobuf-net supports inheritance <b>if</b> you specify <b>[ProtoInclude(N, typeof(DerivedClass))]</b> <i>on the base class</i>. There are <a href="http://www.indelible.org/ink/protobuf-polymorphism/">multiple ways that inheritance could work</a>. Protobuf-net's approach is to define an optional field in the base class for each possible derived class; the field number N in <b>ProtoInclude</b> refers to one of these optional fields. For example, the following classes:<br/>
+<br/>
+</div>
+<pre>[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
+[ProtoInclude(100, typeof(Derived))]
+[ProtoInclude(101, typeof(Derive2))]
+class Base { int Old; }
+
+[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
+class Derived : Base { int New; }
+[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
+class Derive2 : Base { int Eew; }</pre><br/>
+have the following schema:<br/>
+<br/>
+
+<pre>message Base {
+   optional int32 Old = 1 [default = 0];
+   // the following represent sub-types; at most 1 should have a value
+   optional Derived Derived = 100;
+   optional Derived Derive2 = 101;
+}
+message Derived {
+   optional int32 New = 1 [default = 0];
+}
+message Derive2 {
+   optional int32 Eew = 1 [default = 0];
+}</pre><h3 style="margin-top:20px;margin-bottom:15px">Forms of type serialization in protobuf-net</h3><div>I would say there are five fundamental kinds of [de]serialization that protobuf-net supports on a type-by-type basis (not including primitive types):</div><div><ol>
+<li>Normal serialization. In this mode, a standard protocol buffer is written, with one field in the protocol buffer for each field or property that you have marked with <b>ProtoMember</b>, or that has been auto-selected by <b>ImplicitFields</b>. During deserialization, the default constructor is called by default, but this can be disabled. I heard protobuf-net lets you&nbsp;<a href="http://stackoverflow.com/questions/17109834/how-does-protobuf-net-handle-readonly-fields">deserialize into readonly fields (?!?)</a>, which should allow you to handle many cases of immutable objects.</li>
+<li>Collection serialization. If protobuf-net identifies a particular data type as a collection, it is serialized using this mode. Thankfully, collection types do not need any <b>ProtoContract</b> or <b>ProtoMember</b> attributes, which means you can serialize types such as <b>List&lt;T></b> and <b>T[]</b> easily. (I don't know how protobuf-net will react if any such attributes are present on your "collection" class).&nbsp;I heard that dictionaries are supported, too.</li>
+<li><a href="http://marcgravell.blogspot.ca/2011/08/automatic-serialization-whats-in-tuple.html">Auto-tuple serialization</a>. Under certain conditions, protobuf-net can deserialize an immutable type that has no&nbsp;<b>ProtoContract</b>&nbsp;attribute by calling its non-default constructor (constructor with more than zero arguments). Luckily this is fully documented at the link. This feature automatically applies to&nbsp;<b>System.Tuple&lt;...&gt;</b>&nbsp;and&nbsp;<b>KeyValuePair<k></k></b>.</li>
+<li>String ("parsable") serialization. Protobuf-net can serialize a class that has a static <b>Parse()</b> method. It calls <b>ToString()</b> to serialize, and then <b>Parse(string)</b> to deserialize the string.&nbsp;However, this feature is disabled by default. Enable it by setting&nbsp;<b>RuntimeTypeModel.Default.AllowParseableTypes = true</b>. I don't know whether&nbsp;<b>[ProtoContract]</b> disables the feature.</li>
+<li><a href="http://stackoverflow.com/questions/18405160/how-to-serialize-a-closed-immutable-type-with-protobuf-net">"Surrogate" serialization</a>, which is very useful for "closed" types that you are not allowed to modify, such as BCL (standard library) types. Instead of serializing a type directly, you can designate a user-defined type as a surrogate using&nbsp;<b>RuntimeTypeModel.Default.Add(typeof(ClosedType), false) .SetSurrogate(typeof(SurrogateType))</b>. To convert between the original type and the surrogate type, protobuf-net looks for conversion operators on the surrogate type (<b>public static implicit operator ClosedType</b>, <b>public static explicit operator SurrogateType</b>); <b>implicit</b> and <b>explicit</b> both work. The conversion operator is invoked even if the "object" to be converted is <b>null</b>.</li>
+</ol></div><div>Let's talk a little about deserialization. Because in order to do that, it needs an object. There are three ways it can get an object:</div><div><ol>
+<li>"Like XML serialization". In this mode, which is the default, your class must have a default constructor. Before starting to deserialize, your default (meaning zero-argument) constructor is called. However, unlike XML serialization, protobuf-net can call a private constructor.</li>
+<li>"Like standard serialization". The option&nbsp;<b>[ProtoContract(SkipConstructor = true)]</b>&nbsp;will deserialize without calling the constructor, like in standard serialization. Magic! If you add <b>ImplicitFields = ImplicitFields.AllFields</b>, protobuf-net behaves even closer to standard serialization.</li>
+<li>Apparently you can deserialize into an object that you created yourself, at least at the root level. Call the (non-static) <b>RuntimeTypeModel.Deserialize(Stream, object, Type)</b> method (e.g.&nbsp;<b>RuntimeTypeModel.Default.Deseralize()</b>). I don't know why it needs <i>both</i>&nbsp;an object <i>and</i>&nbsp;a <b>Type</b>. And perhaps it can do the same trick for sub-objects, I'm not sure. Anyway this is handy if you want to deserialize, examine, and discard several objects in a row; you can avoid creating unnecessary work for the garbage collector.</li>
+</ol><div>It should be noted that some techniques that protobuf-net supports are only available when using the full .NET framework in full-trust mode. As <a href="http://stackoverflow.com/questions/17109834/how-does-protobuf-net-handle-readonly-fields">mentioned here</a>, for example, if you're using the precompiler then you won't be able to deserialize into private readonly fields. Personally I am using the full .NET framework, and I don't know what gotchas lie in wait in other environments.</div></div><div><h3 style="margin-top:20px;margin-bottom:15px">Protobuf-net collection handling</h3><div><ul>
+<li>Protobuf-net serializes a collection using a "repeated" field (in protocol buffer lingo). Therefore, you should be able to safely change collection types between versions. For example, you can serialize a&nbsp;<b>Foo[]</b>&nbsp;and later deserialize it into a&nbsp;<b>List<foo><foo></foo></foo></b>.</li>
+<li>I don't know exactly how protobuf-net decides whether a given type is a collection. Wild guess: it might look for the&nbsp;<b>IEnumerable&lt;T></b>&nbsp;interface and an&nbsp;<b>Add</b>&nbsp;method?</li>
+<li>If you serialize a class that contains an empty but non-null collection, protobuf-net does not seem to distinguish an empty collection from null. When you deserialize the object,&nbsp;protobuf-net will leave the collection equal to null (or if your constructor created a collection, it will remain created).</li>
+<li>By default, protobuf-net "appends" to a collection rather than replacing one. So if you write a default constructor (without suppressing it) that initializes an int[] array to 10 items, and then deserialize a buffer with 10 items, you'll end up with an array of 20 items. Oops. Use the&nbsp;<b>[ProtoMember(N, OverwriteList=true)]</b> option to replace the existing list (if any) instead (or use <b>SkipConstructor</b>).</li>
+</ul></div><h3 style="margin-top:20px;margin-bottom:15px">Random facts and gotchas</h3><div><ul>
+<li>Protobuf.net's <a href="http://marcgravell.blogspot.ca/2012/07/introducing-protobuf-net-precompiler.html">precompiler</a> let's you use protobuf-net on platforms where run-time code generation or reflection are not available. It can also be used on the full .NET framework to avoid some run-time work.</li>
+<li>By default, protobuf-net will accept <b>[XmlType]</b> and <b>[XmlElement(Order = N)]</b> in place of <b>[ProtoContract]</b> and <b>[ProtoMember(N)]</b>, which is nice if you're already using <a href="http://msdn.microsoft.com/en-us/library/182eeyhh.aspx">XML serialization</a> or if you want to avoid explicitly depending on protobuf-net. Similarly, it accepts the <a href="http://msdn.microsoft.com/en-us/library/ms733127.aspx">WCF attributes</a>&nbsp;<b>[DataContract]</b> and <b>[DataMember(Order = N)]</b>. The <b>Order</b> option is required for protobuf support.</li>
+<li><b>[XmlInclude]</b> and <b>[KnownType]</b> cannot be used in place of <b>[ProtoInclude]</b> because they do not have an integer parameter to use as the tag number.</li>
+<li>Tag values must be positive.&nbsp;<b>[ProtoMember(0)]</b> is illegal.</li>
+<li><span style="color: #274e13;"><b><i>Very useful</i></b></span>: print the result of&nbsp;<b>RuntimeTypeModel.GetSchema(typeof(Root))</b> to find out what protocol buffers will be used to represent your data (e.g. <b>RuntimeTypeModel.Default.GetSchema</b>). <b>Note</b>: I assume this will be the actual schema used for serialization, but the documentation says merely that it will "Suggest a .proto definition".</li>
+<li>A constructor with a default argument like&nbsp;<b>Constr(int x = 0)</b>&nbsp;is not recognized as a parameterless constructor.</li>
+<li>The <b>SkipConstructor</b>&nbsp;and <b>ImplicitFields</b> options are not inherited, and probably other options are not inherited either. So, for example, if you use <b>SkipConstructor</b> on a base class, the constructor of the derived class is still called (and, by implication, the base class constructor).</li>
+<li>You may have noticed the "Visual Studio 2008 / 2010 support" download package on the <a href="https://code.google.com/p/protobuf-net/downloads/list">download page</a>, but what the heck is it <i>for</i>? I haven't tried it myself, but based on <a href="http://marcgravell.blogspot.ca/2009/07/protobuf-net-now-with-added-orcas.html">this blog entry</a>, I suspect it's a tool for generating C# code from a .proto file automatically.</li>
+<li>Sometimes protobuf-net can serialize something but not deserialize it; be sure to test both directions.</li>
+<li><b>RuntimeTypeModel.DeepClone()</b>&nbsp;is a handy way to test whether serialization and deserialization both work. This method will typically serialize the object and immediately deserialize it again.</li>
+<li>I suspect you can use the standard <b>[NonSerialized]</b> attribute on a field or property, as an alternative to <b>[ProtoIgnore]</b>.</li>
+<li>When serializing a sub-object, protobuf-net can either write a length-prefixed buffer, or if the field that contains the sub-object has the&nbsp;<b>[ProtoMember(N, DataFormat = DataFormat.Group)]</b>&nbsp;option, it can use what&nbsp;<a href="http://marcgravell.blogspot.ca/">Marc Gravell</a>&nbsp;calls a "group-delimited" record, which avoids the overhead of measuring the record size in advance. Google calls this feature "groups", but it has deprecated the feature and AFAICT, removed any documentation about it that might have existed in the past.</li>
+<li>In&nbsp;<b>[ProtoMember]</b>, the default value of&nbsp;<b>IsRequired</b>&nbsp;is&nbsp;<b>false</b>. I can only assume it means the same as&nbsp;<b>required&nbsp;</b>in a .proto file. I'm guessing that a required field is always written and that there will be some sort of exception if a required field is missing during deserialization.</li>
+<li>Protobuf-net supports&nbsp;<b>Nullable&lt;T></b>. I heard that a value of type&nbsp;<b>int?</b>&nbsp;or any other nullable type will simply not be written to the stream if it is null (therefore, I have <i>no idea</i> what happens if you use&nbsp;<b>IsRequired=true</b>&nbsp;on a nullable field--and that includes a reference-typed field.)</li>
+<li>Protobuf-net will (reasonably) refuse to serialize a property that does not have a setter, saying "Unable to apply changes to property". It will, however, serialize a property whose setter is private, and call that setter during deserialization.</li>
+<li>If you download the source code of protobuf-net <a href="https://code.google.com/p/protobuf-net/source/checkout">via subversion</a>, you'll have access to the Examples project, which demonstrates various ways to use the library.</li>
+</ul><h3 style="margin-top:20px;margin-bottom:15px">Serializing without attributes</h3></div><div>If you can't change an existing class to add <b>[ProtoContract]</b> and <b>[ProtoMember]</b> attributes, you can still use protobuf-net with that class. But before I tell you how, it should be mentioned that protobuf-net's configuration is stored in a class called <b>RuntimeTypeModel</b>&nbsp;(in the <b>Protobuf.Meta</b> namespace). There is one global model, <b>RuntimeTypeModel.Default</b>, and you can create additional models with the static method <b>TypeModel.Create()</b>. This makes it possible to serialize the same class in different ways, using different protocol buffers in the same program.</div><div><br/>
+</div><div>Suppose you have a <b>RuntimeTypeModel</b> object called <b>model</b>. Then <b>model.Add(typeof(C), true)</b> creates a configuration for type C, represented by a <b>MetaType</b> object. You can also call <b>model[typeof(C)]</b> to get or create a MetaType, although I'm not sure what the relationship is between <b>model[type]</b> and <b>model.Add(type, flag)</b>&nbsp;even after decompiling both of them.</div><div><ul>
+<li>Call <b>model.Add(typeof(C), false).SetSurrogate(typeof(S))</b> to establish S as a substitute for C during serialization. If a surrogate is used, all other options for C are ignored (the options for S are used instead). If not using a surrogate, you should probably use&nbsp;<b>model.Add(typeof(C), true)</b> instead although I'm uncertain what the <b>true</b> flag actually does, whether it's equivalent to <b>[ProtoContract]</b> or does something else.</li>
+<li><b>model[type].Add(7, "Foo").Add(5, "Bar")</b> is equivalent to the attributes <b>[ProtoMember(7)]</b> on the field/property <b>Foo</b>, and&nbsp;<b>[ProtoMember(5)]</b> on the field/property <b>Bar</b>.</li>
+<li><b>model[type].Add("Fizz", "Buzz", ...)</b> assigns tag numbers sequentially starting from 1 or, if some tag numbers exist already, from the highest existing tag number plus one. So if the type has no fields defined yet, <b>Fizz</b> will be #1 and <b>Buzz</b> will be #2. </li>
+<li><b>model[type].AddSubType(100, typeof(Derived))</b> is equivalent to <b>[ProtoInclude(100, typeof(Derived))]</b>. <a href="http://stackoverflow.com/questions/6088004/how-runtimetypemodel-can-be-used-to-associate-protoinclude-with-a-type-in-protob">Example here</a>.</li>
+</ul><div>Finally, call <b>model.Serialize(Stream, object)</b> or <b>model.Deserialize(Stream, object, Type)</b>&nbsp;(or another overload).</div></div><h3 style="margin-top:20px;margin-bottom:15px">Data types</h3><div>The following types illustrate how protobuf-net maps primitive types to protocol buffers:<br/>
+<br/>
+</div><table border="1"><tbody>
+<tr><td><i>C#</i><br/>
+
+<pre>[ProtoContract]
+class DefaultRepresentations
+{
+  [ProtoMember(1)] int Int;
+  [ProtoMember(2)] uint Uint;
+  [ProtoMember(3)] byte Byte;
+  [ProtoMember(4)] sbyte Sbyte;
+  [ProtoMember(5)] ushort Ushort;
+  [ProtoMember(6)] short Short;
+  [ProtoMember(7)] long Long;
+  [ProtoMember(8)] ulong Ulong;
+  [ProtoMember(9)] float Float;
+  [ProtoMember(10)] double Double;
+  [ProtoMember(11)] decimal Decimal;
+  [ProtoMember(12)] bool Bool;
+  [ProtoMember(13)] string String;
+  [ProtoMember(14)] DayOfWeek Enum;
+  [ProtoMember(15)] byte[] Bytes;
+  [ProtoMember(16)] string[] Strings;
+  [ProtoMember(17)] char Char;
+}
+</pre></td><td><i>.proto</i><br/>
+
+<pre>message DefaultRepresentations {
+  optional int32 Int = 1 [default = 0];
+  optional uint32 Uint = 2 [default = 0];
+  optional uint32 Byte = 3 [default = 0];
+  optional int32 Sbyte = 4 [default = 0];
+  optional uint32 Ushort = 5 [default = 0];
+  optional int32 Short = 6 [default = 0];
+  optional int64 Long = 7 [default = 0];
+  optional uint64 Ulong = 8 [default = 0];
+  optional float Float = 9 [default = 0];
+  optional double Double = 10 [default = 0];
+  optional bcl.Decimal Decimal = 11 [default=0];
+  optional bool Bool = 12 [default = false];
+  optional string String = 13;
+  optional DayOfWeek Enum = 14 [default=Sunday];
+  optional bytes Bytes = 15;
+  repeated string Strings = 16;
+  optional uint32 Char = 17 [default = 
+</pre><br/>
+(there's a bug in <b>GetSchema</b>; the output is truncated after a field of type char.)</td></tr></tbody></table><div><br/>
+You can look at the <a href="https://developers.google.com/protocol-buffers/docs/overview">protocol buffer documentation</a>, particularly <a href="https://developers.google.com/protocol-buffers/docs/encoding">Encoding</a>, for more information. All of the integer types use the <b>varint</b> wire format. Because protobuf-net uses <b>int32/int64</b> rather than <b>sint32/sint64</b>, negative numbers are stored inefficiently, but you can use the <b>DataFormat</b> option to choose a different representation, as shown below. <b>sint32/sint64</b> (called <b>ZigZag</b> in protobuf-net) are better for fields that are often negative; <b>sfixed32/sfixed64</b> (<b>FixedSize</b> in protobuf-net) are better for numbers have large magnitude most of the time (or if you just prefer a simpler storage representation).<br/>
+<br/>
+By the way, string and byte[] ("bytes" in the .proto) both use length-prefixed notation. Sub-objects (aka "messages") also use length-prefixed notation (is this documented anywhere?) unless you use the "group" format.<br/>
+<br/>
+</div><i>C# </i><br/>
+
+<pre>[ProtoContract]
+class ExplicitRepresentations
+{
+  [ProtoMember(1, DataFormat = DataFormat.TwosComplement)] int defaultInt;
+  [ProtoMember(2, DataFormat = DataFormat.TwosComplement)] int defaultLong;
+  [ProtoMember(3, DataFormat = DataFormat.FixedSize)] int fixedSizeInt;
+  [ProtoMember(4, DataFormat = DataFormat.FixedSize)] long fixedSizeLong;
+  [ProtoMember(5, DataFormat = DataFormat.ZigZag)] int zigZagInt;
+  [ProtoMember(6, DataFormat = DataFormat.ZigZag)] long zigZagLong;
+  [ProtoMember(7, DataFormat = DataFormat.Default)] SubObject lengthPrefixedObject;
+  [ProtoMember(8, DataFormat = DataFormat.Group)] SubObject groupObject;
+}
+[ProtoContract(ImplicitFields=ImplicitFields.AllFields)]
+class SubObject { string x; }
+</pre><br/>
+<i>.proto </i><br/>
+
+<pre>message ExplicitRepresentations {
+   optional int32 defaultInt = 1 [default = 0];
+   optional int32 defaultLong = 2 [default = 0];
+   optional sfixed32 fixedSizeInt = 3 [default = 0];
+   optional sfixed64 fixedSizeLong = 4 [default = 0];
+   optional sint32 zigZagInt = 5 [default = 0];
+   optional sint64 zigZagLong = 6 [default = 0];
+   optional SubObject lengthPrefixedObject = 7;
+   optional group SubObject groupObject = 8;
+}
+message SubObject {
+   optional string x = 1 [default = 0];
+}</pre><br/>
+By the way, since Google doesn't seem to document the "group" format, I'll show you how the two sub-object formats look in binary:<br/>
+<br/>
+
+<pre>[ProtoContract]
+class SubMessageRepresentations
+{
+  [ProtoMember(5, DataFormat = DataFormat.Default)]&nbsp;
+  public SubObject lengthPrefixedObject;
+  [ProtoMember(6, DataFormat = DataFormat.Group)]
+  public SubObject groupObject;
+}
+[ProtoContract(ImplicitFields=ImplicitFields.AllFields)]
+class SubObject { public int x; }
+/*
+message SubMessageRepresentations {
+   optional SubObject lengthPrefixedObject = 5;
+   optional group SubObject groupObject = 6;
+}
+message SubObject {
+   optional int32 x = 1 [default = 0];
+}
+*/
+
+using (var stream = new MemoryStream()) {
+  _pbModel.Serialize(
+    stream, new SubMessageRepresentations {
+      lengthPrefixedObject = new SubObject { x = 0x22 },
+      groupObject = new SubObject { x = 0x44 }
+    });
+  byte[] buf = stream.GetBuffer();
+  for (int i = 0; i &lt; stream.Length; i++)
+    Console.Write("{0:X2} ", buf[i]);
+}
+// Output: 2A 02 08 22 33 08 44 34 </pre><h3 style="margin-top:20px;margin-bottom:15px">Vesioning </h3><div><ul>
+<li>You can safely remove a serialized field (or a derived class) between versions of your software. Protobuf-net simply silently drops fields that are in the data stream but not in the class. Just be careful not to use the removed tag number again.</li>
+<li>You must not change the value of <b>AsReference</b>&nbsp;(or&nbsp;<b>AsReferenceDefault</b>) between versions.</li>
+<li>It's handy to save the results of <b>GetSchema</b>&nbsp;(mentioned above) to keep track of your old versions. You can then "diff" two schema versions to spot potential incompatibilities.</li>
+<li>Don't change the storage representation of an integer between versions; your numbers will be silently messed up if you migrate between TwosComplement and ZigZag. In theory I think protobuf-net could handle a change from FixedSize to TwosComplement or vice-versa, but I don't know if it <i>actually</i> can. Similarly, a change from FixedSize int to FixedSize long could work in theory, but I don't know about practice.</li>
+<li>On the other hand, you can increase the size of a non-FixedSize integer, e.g. byte to short or int to long, since the wire format is unchanged.</li>
+<li>The Google docs have <a href="https://developers.google.com/protocol-buffers/docs/proto#updating">more information relevant to versioning</a>.</li>
+</ul><h3 style="margin-top:20px;margin-bottom:15px">How references work</h3><div>When serializing a class Foo to which <b>AsReference</b> or <b>AsReferenceDefault</b> applies, the type of the field in the protocol buffer changes from <b>Foo</b> to&nbsp;<b>bcl.NetObjectProxy</b>, which is defined as follows in the source code of protobuf-net (<span style="font-family: Courier New, Courier, monospace;">Tools/bcl.proto</span>):<br/>
+
+<pre>message NetObjectProxy {
+  // for a tracked object, the key of the **first** 
+  // time this object was seen
+  optional int32 existingObjectKey = 1; 
+  // for a tracked object, a **new** key, the first 
+  // time this object is seen
+  optional int32 newObjectKey = 2;
+  // for dynamic typing, the key of the **first** time 
+  // this type was seen
+  optional int32 existingTypeKey = 3; 
+  // for dynamic typing, a **new** key, the first time 
+  // this type is seen
+  optional int32 newTypeKey = 4;
+  // for dynamic typing, the name of the type (only 
+  // present along with newTypeKey) 
+  optional string typeName = 8;
+  // the new string/value (only present along with 
+  // newObjectKey)
+  optional bytes payload = 10;
+}
+</pre>So it appears that<br/>
+<br/>
+<ul>
+<li>The first time an object is encountered, the <b>newObjectKey</b> and a <b>payload</b>&nbsp;fields are written; presumably, the <b>payload</b> is stored as if its type is <b>Foo</b>.</li>
+<li>When the object is encountered again, just the <b>existingObjectKey</b> is written.</li>
+</ul><div>I don't know what that "dynamic typing" business is about.</div><div><br/>
+</div><div>Strings,&nbsp;of course, are a reference type. <a href="http://stackoverflow.com/questions/6463460/how-do-i-enable-string-interning-in-protobuf-net">Read here</a> about how protobuf-net handles strings.</div></div></div><h3 style="margin-top:20px;margin-bottom:15px">More stuff I don't know yet</h3></div> <ul>
+<li>I don't know if protobuf-net is capable of deserializing a field of type <b>object</b>. By default, it can't.</li>
+<li>I don't know how protobuf-net <i>deserializes</i> fields of an interface type, e.g. IEnumerable&lt;T> or IFoo. (Serializing is easy, of course, it just uses GetType() to learn the type.)</li>
+<li>I don't know whether the root object is allowed to be a collection.</li>
+<li>I don't know how to run "prep" code before serialization of a particular type, or&nbsp;validation/cleanup code after an object is deserialized, but I do know that some sort of "callback" mechanism exists for this purpose.</li>
+</ul> <h3 style="margin-top:20px;margin-bottom:15px">Other sources of information: </h3> <ul>
+<li><a href="http://marcgravell.blogspot.ca/">Marc Gravell's blog</a></li>
+<li><a href="http://stackoverflow.com/questions/tagged/protobuf-net">StackOverflow questions about protobuf-net</a></li>
+</ul> <div><a href="http://creativecommons.org/licenses/by/2.0/ca/">CC-BY</a></div></div></div>
+{% endraw %}
