@@ -32,6 +32,35 @@ namespace LeMP
 			          "return a.b != null ? a.b.c().d<x> : null;");
 		}
 
+		[Test(Fails="Tuple macro is disabled because it interferes with constructs like #def(void, Foo, (arg, arg))")]
+		public void TestTuples()
+		{
+			TestEcs("use_default_tuple_makers();", "");
+			TestBoth("(1, a) + (2, a, b) + (3, a, b, c);",
+			         "(1, a) + (2, a, b) + (3, a, b, c);",
+			         "Pair.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
+			TestEcs("set_tuple_maker(Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
+			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
+			TestEcs("set_tuple_maker(Tuple.Create); set_tuple_maker(2, Pair.Create);"+
+			        "a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
+			        "a = Tuple.Create(1) + Pair.Create(1, 2) + Tuple.Create(1, 2, 3, 4, 5);");
+			
+			TestBoth("(a, b, c) = foo;", "(a, b, c) = foo;",
+			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
+			int n = StandardMacros.NextTempCounter;
+			TestEcs("(a, b.c.d) = Foo;",
+			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2;");
+			n = StandardMacros.NextTempCounter;
+			TestEcs("(a, b, c, d) = X.Y();",
+			        "var tmp_"+n+" = X.Y(); a = tmp_"+n+".Item1; b = tmp_"+n+".Item2; c = tmp_"+n+".Item3; d = tmp_"+n+".Item4;");
+		}
+
+		[Test]
+		public void TestStringInterpolation()
+		{
+			Assert.Fail("TODO");
+		}
+
 		[Test]
 		public void TestUnroll()
 		{
@@ -118,35 +147,6 @@ namespace LeMP
 			        @"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
 
 			TestEcs(@"replace(TO=>DO) {}", @"");
-		}
-
-		[Test(Fails="Tuple macro is disabled because it interferes with constructs like #def(void, Foo, (arg, arg))")]
-		public void TestTuples()
-		{
-			TestEcs("use_default_tuple_makers();", "");
-			TestBoth("(1, a) + (2, a, b) + (3, a, b, c);",
-			         "(1, a) + (2, a, b) + (3, a, b, c);",
-			         "Pair.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
-			TestEcs("set_tuple_maker(Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
-			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
-			TestEcs("set_tuple_maker(Tuple.Create); set_tuple_maker(2, Pair.Create);"+
-			        "a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
-			        "a = Tuple.Create(1) + Pair.Create(1, 2) + Tuple.Create(1, 2, 3, 4, 5);");
-			
-			TestBoth("(a, b, c) = foo;", "(a, b, c) = foo;",
-			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
-			int n = StandardMacros.NextTempCounter;
-			TestEcs("(a, b.c.d) = Foo;",
-			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2;");
-			n = StandardMacros.NextTempCounter;
-			TestEcs("(a, b, c, d) = X.Y();",
-			        "var tmp_"+n+" = X.Y(); a = tmp_"+n+".Item1; b = tmp_"+n+".Item2; c = tmp_"+n+".Item3; d = tmp_"+n+".Item4;");
-		}
-
-		[Test]
-		public void TestStringInterpolation()
-		{
-			Assert.Fail("TODO");
 		}
 
 		private void TestLes(string input, string outputLes, int maxExpand = 0xFFFF)

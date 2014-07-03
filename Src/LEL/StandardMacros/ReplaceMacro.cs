@@ -119,7 +119,6 @@ namespace LeMP
 					return false;
 				var cArgs = candidate.Args;
 				var pArgs = pattern.Args;
-				int c = 0;
 
 				if (pArgs.Count != cArgs.Count && !pArgs.Any(IsParamsCapture))
 					return false;

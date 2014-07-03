@@ -142,11 +142,9 @@ namespace Ecs
 			p.Node = node;
 			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
 
-			var rec = (style & NodeStyle.Recursive) != 0 ? EcsNodePrinter.Ambiguity.RecursivePrefixNotation : 0;
 			switch (style & NodeStyle.BaseStyleMask) {
 				case NodeStyle.Expression: p.PrintExpr(); break;
-				case NodeStyle.PrefixNotation: p.PrintPrefixNotation(rec, false); break;
-				case NodeStyle.PurePrefixNotation: p.PrintPrefixNotation(rec, true); break;
+				case NodeStyle.PrefixNotation: p.PrintPrefixNotation(StartExpr, true, 0); break;
 				default: p.PrintStmt(); break;
 			}
 		}

@@ -1,0 +1,723 @@
+FAIR WARNING: THIS ARTICLE IS UNPUBLISHED. AN EC# COMPILER DOES NOT EXIST YET.
+
+# Enhanced C# for ordinary coders: Introduction ################################
+
+Enhanced C# (EC#) is a new programming language that supercharges C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my __EC# for PL Nerds__ series.
+
+When complete, EC# should be about 99.7% backward compatible with C#. At first it will compile down to plain C#; eventually I want it to have a proper .NET compiler, and maybe someday, a native-code compiler that can do all the things .NET cannot. EC# enhances C# with the following categories of features:
+
+1. A procedural macro system
+2. Compile-time code execution (CTCE)
+3. A template system (the "parameterized program tree")
+4. An alias system (which is a minor tweak to the type system)
+5. Miscellaneous specific syntax enhancements
+6. Miscellaneous semantic enhancements
+
+It's okay if you have no idea what the items on the list mean. Trust me though, it's good stuff. Only items #1 and #5 (and a bit of #6) are actually implemented, so that's what I'll be talking about in this article.
+
+## A quick tour of features that actually exist ################################
+
+EC# is a grand plan to transform C# into a much more powerful and more succinct language. The plan has a lot of stuff that doesn't exist yet, but I focused on my most-wanted features first, so I hope you'll find that EC# is already powerful enough for a variety of useful tasks where plain C# falls short.
+
+### The safe navigation operator
+
+The "?." operator, called "null dot" for short, allows you to safely "call" a function on an object that might be null.
+
+	string s = SomeObject?.ToString();
+
+This is equivalent to
+
+	string s = (SomeObject != null ? SomeObject.ToString() : null);
+
+It's a very simple feature, but it requires some explanation. First of all, in case SomeObject is a property, the compiler evaluates it only once, as in
+
+	var tmp = SomeObject;
+	string s = (tmp != null ? tmp.ToString() : null);
+
+Secondly, you can use ?. even if the function you are calling is not nullable:
+
+	int? c = list?.Count;
+
+Assuming list.Count returns an integer, list?.Count returns a nullable integer (int?). So you can write
+
+	if (list?.Count > 0) { ... }
+	
+which technically means
+
+	if ((list != null ? (int?)list.Count : (int?)null) > 0) {...}
+
+which is equivalent to
+
+	if (list != null && list.Count > 0) { ... }
+
+The null dot provides an alternative to string.IsNullOrEmpty(). Instead of
+
+	if (string.IsNullOrEmpty(s)) { ... }
+	
+it's faster to write
+
+	if (s?.Length == 0) {...}
+
+In certain cases, this operator is a huge time saver. For example, what if "DBConnection", "PersonTable", and "FirstRow" in the following line might all return null?
+
+	var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
+
+In plain C#, it's a giant pain in the butt to check if each object is null:
+
+	string firstName = null;
+	var dbc = DBConnection;
+	if (dbc != null) {
+		var pt = dbc.Tables.Get("Person");
+		if (pt != null) {
+			var fr = pt.FirstRow;
+			if (fr != null)
+				firstName = fr.Name;
+		}
+	}
+
+But with the safe navigation operator it's easy. The above code only needs one line in EC#:
+
+	var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
+
+The ?. operator is a little bit "smart"; it doesn't work quite like a normal operator. You see, there is a potential problem with the above code: the "Get" function is called with a normal dot, not a null dot. Presumably, you used a normal dot because DBConnection.Tables never returns null. However, what if DBConnection itself is null?
+
+If DBConnection?.Tables is equivalent to
+
+	var dbc = DBConnection;
+	((dbc = DBConnection) != null ? dbc.Tables : null)
+
+then it would seem that DBConnection?.Tables.Get("Person") should be equivalent to
+
+	((dbc = DBConnection) != null ? dbc.Tables : null).Get("Person")
+
+But if that were true, then Get() will throw an exception when DBConnection is null. Luckily, the null dot doesn't work that way. Instead, EC# provides protection on the entire chain of dots (whether they are "null dots" or "regular dots") following the first "?.", in the same subexpression. The way it works is simple: "?." has lower precedence than a normal dot. This code:
+
+	var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
+
+actually parses as 
+
+	var firstName = DBConnection ?. (Tables.Get("Person")) ?. FirstRow ?. Name;
+
+In other words, normal dots bind more tightly than null dots, so as far as the ?. operator is concerned, "Tables.Get("Person")" in an indivisible unit: Get() is called only if Tables is called first. So this statement actually means
+
+	var dbc = DBConnection;
+	var firstName = ((dbc = DBConnection) != null ? dbc.Tables.Get("Person") : null)?.FirstRow?.Name;
+
+You can defeat this safety mechanism with parenthesis:
+
+	var firstName = (DBConnection?.Tables).Get("Person")?.FirstRow?.Name;
+
+Now the ?. operator provides no protection at all; if DBConnection returns null, Get() is still called, causing a NullReferenceException.
+
+Sometimes it's useful to combine ?. with ??:
+
+	int GetCount<T>(ICollection<T> collection) {
+		// Returns the number of items in the collection, or 0 if collection==null.
+		return collection?.Count ?? 0;
+		// Equivalent to "return collection != null ? collection.Count : 0"
+	}
+
+### Building classes quickly
+
+I don't know about you, but I write a lot of "simple" classes and structs, particularly the kind known as "plain-old data" or POD, meaning, little groups of fields like this:
+
+    class FullAddress {
+    	public string Address;
+    	public string City;
+    	public string Province;
+    	public string Country;
+    	public string PostalCode;
+    
+    	public FullAddress(string address, string city, string province, 
+    	                   string country, string postalCode = "") {
+    		Address = address;
+    		City = city;
+    		Province = province;
+    		Country = country;
+    		PostalCode = postalCode;
+    	}
+    }
+
+You don't have to write classes like this very many times before you start to get annoyed at having to repeat the same information over and over: each of "address", "city", "province", "country" and "postalCode" are repeated four times with varying case, "string" is stated ten times, and "FullAddress" is repeated twice (three times if you add a default constructor).
+
+In EC# you get the same effect with much shorter code:
+
+    class FullAddress {
+    	public this(
+    		public string Address,
+    		public string City,
+  	 		public string Province,
+    		public string Country,
+    		public string PostalCode) {}
+    }
+
+There are two bits of new syntax here:
+
+1. `this` denotes a constructor. It lets you make a constructor without the inconvenience of repeating the class name.
+2. You can apply modifiers, like `public`, in many places where it is illegal in C#.
+
+These bits of new syntax are baked into EC#; you cannot add new syntax yourself.
+
+By marking each parameter as `public`, you are instructing EC# to create a `public` field which is set to the value of the parameter. The constructor is replaced with the same code you saw earlier:
+
+    	public string Address;
+    	public string City;
+    	public string Province;
+    	public string Country;
+    	public string PostalCode;
+    
+    	public FullAddress(string address, string city, string province, 
+    	            string country, string postalCode = "") {
+    		this.Address = address;
+    		this.City = city;
+    		this.Province = province;
+    		this.Country = country;
+    		this.PostalCode = postalCode;
+    	}
+
+Currently, EC# can only create _fields_. If you want to create properties you'll have to do so manually, but you can still write the constructor more easily:
+
+    class FullAddress {
+    	public string Address    { get; private set; }
+    	public string City       { get; private set; }
+    	public string Province   { get; private set; }
+    	public string Country    { get; private set; }
+    	public string PostalCode { get; private set; }
+      
+    	public this(
+    		set string Address,
+    		set string City,
+  	 		set string Province,
+    		set string Country,
+    		set string PostalCode) {}
+    }
+
+This time, EC# will insert assignment statements at the beginning of the constructor, to initialize the properties you created separately. The `set` prefix is required on each property that you want to set, otherwise the parameter has no special behavior. For example:
+
+    	public this(
+    		int buildingNumber,
+    		string streetName,
+    		set string City,
+  	 		set string Province,
+    		set string Country,
+    		set string PostalCode)
+    	{
+    		Address = buildingNumber + " " + streetName;
+    	}
+
+Admittedly, it's redundant to specify "string" on each parameter, since the type of each property was already stated earlier. However EC# is still in early stages and is unable to look up the data type, so you are forced to repeat it.
+
+These features aren't limited to constructors. You can use them with normal methods too.
+
+EC# doesn't create properties automatically because there are so many different ways that properties could be written. For instance, here's a similar implementation that makes the class fully immutable:
+
+    class FullAddress {
+      public string Address    => _address;
+      public string City       => _city;
+      public string Province   => _province;
+      public string Country    => _country;
+      public string PostalCode => _postalCode;
+      
+    	public this(
+    		private readonly string _address,
+    		private readonly string _city,
+  	 		private readonly string _province,
+    		private readonly string _country,
+    		private readonly string _postalCode) {}
+    }
+
+EC# allows "lambda" syntax for methods and properties, and I've taken advantage of that here to make properties that are more concise than the old-fashioned style:
+
+    	public string Address    { get { return _address; } }
+      public string City       { get { return _city; } }
+      public string Province   { get { return _province; } }
+      public string Country    { get { return _country; } }
+      public string PostalCode { get { return _postalCode; } }
+
+### String interpolation and triple-quoted strings
+
+I assure you, I did not invent the peculiar phrase "string interpolation", I just brought it to EC#. Perhaps a better name would be "string substitution". It allows you to insert values into strings conveniently:
+
+	MessageBox.Show($"This is a trial version. In $_daysLeft days, the program "+
+	                "will no longer start. It'll 'stop starting'... get it? heheh.");
+
+The $ is a new operator that means "substitute". When its argument is a string, the string is scanned for the pattern $identifier or $(expression), and for any such pattern, the identifier or expression is expanded into the string. By default, the interpolation is translated into concatenations:
+
+	MessageBox.Show("This is a trial version. In " + _daysLeft + " days, the program " + "will no longer start. It'll 'stop starting'... get it? heheh.");
+
+And from there, the C# compiler translates this to a single call to String.Concat (http://ericlippert.com/2013/06/17/string-concatenation-behind-the-scenes-part-one/).
+
+C# has a concept of "verbatim" strings, which allow newlines inside the string:
+
+   class Foo {
+   	static string ThreeLines() { 
+   		return @"Line one
+   			Line two
+   			Line three";
+   	}
+   }
+
+But you might not like how this works. First of all, any indentation of the second line is included in the string. Writing the string so that lines two and three are _not_ indented looks ugly:
+
+   class Foo {
+	   static string ThreeLines() { 
+   		return @"Line one
+	Line two
+   Line three";
+   	}
+   }
+
+Secondly, the newlines in the string depend on the text file format: so a UNIX-style C# file will have "\n" newlines, but a Windows-style C# file will have "\r\n" newlines. Source control repositories may change the format automatically, so that the "same" source file contains a "different" string after it passes from one system to another through source control.
+
+Thus, verbatim strings aren't ideal for representing typical multiline strings. That's why Enhanced C# introduces triple-quoted strings:
+
+   class Foo {
+   	static string ThreeLines() { 
+   		return """Line one
+   		  Line two
+   		  Line three""";
+   	}
+   }
+
+Newlines in a triple-quoted string are always treated as \n characters, no matter whether the text file actually contains Unix (\n), Windows (\r\n) or Mac (\r) line endings. The indentation of the starting line (the line with the opening triple quote) is remembered, and other lines of the string are allowed to begin with the same indentation characters plus up to two additional spaces _or_ one additional tab. Therefore, in this example, "Line two" and "Line three" start with _no_ space characters.
+
+Triple-quoted strings can use either three double-quotes or three single-quotes:
+
+    string DoubleTripleQuoted = """dtq""";
+    string SingleTripleQuoted = '''stq''';
+
+Triple-quoted strings support escape sequences, but they are slightly different than in normal strings. Ordinary C-style escape sequences are not interpreted, so these two strings are identical, each with 7 characters:
+
+    string nab1 = @"\n\a\b\";
+    string nab2 = """\n\a\b\""";
+
+Escape sequences in triple-quoted strings have the format \x/ instead of \x, so these two strings are equivalent:
+
+    string newline1 = "Line1\r\nLine2";
+    string newline2 = """Line1\r/\n/Line2""";
+
+To use three quotes in a row inside a triple-quoted string, you can use an escape sequence to avoid closing the string. These two strings are equivalent:
+
+   string quotes1 = "  \"\"\" '''  ";
+   string quotes2 = """  ""\"/ '''  """;
+
+Triple-quoted strings are useful for printing menus and usage notes, e.g.
+
+class Program {
+	public static void Main(string[] args)
+	{
+		Console.WriteLine(
+			"""What do you want to do?
+			    1. Loop
+			    2. Triangle
+			    X. Exit""");
+		while (!(Console.ReadKey(true).KeyChar=:k in ('1', '2', 'x', 'X'))) {}
+		if (k == '1') 
+			for(int i = 0;; i++)
+				Console.WriteLine("Looping ({0})", i);
+		if (k == '2')
+			for (int i = -12; i <= 12; i++)
+				Console.WriteLine(new string('*', Math.Abs(12 - Math.Abs(i)) * 2));
+	}
+}
+
+In this example, the lines of the menu are indented by two spaces, since "1" and "2" are indented four spaces beyond the indentation level of the first line, and the first two spaces are ignored.
+
+### The quick binding operator
+
+The new quick-binding operator allows you to create a variable any time you need one:
+
+	if (DBConnection.Tables.Get("Person")=:table != null) {
+		foreach (var row in table)
+			Process(row);
+	}
+	return table != null;
+
+`=:table` creates a variable called "table" to hold the return value of `DBConnection.Tables.Get("Person")`.
+
+It makes your workflow easier. Imagine that you just wrote
+
+	if (DBConnection.Tables.Get("Person") != null)
+		foreach (var row in |
+
+And then you realize: "wait, I need that table again!". This happens to me a lot, and over the years I've become adept at quickly rewriting the code as
+
+	var table = DBConnection.Tables.Get("Person");
+	if (table != null)
+		foreach (var row in table|
+
+but I think you'll agree that it's far more convient to add "=:table" than to 
+
+1. select and cut the desired expression
+2. write "table"
+2. insert a newline before "if", then type "var table ="
+3. paste the expression
+
+I also think this is more readable. If you're reading a function that has lots of variable declarations, you can spend a lot of time figuring out what each variable is for. Quick-bind makes code shorter and tells you right away that a variable is used to cache a specific value.
+
+The operator itself, "=:" looks weird to the untrained eye. Originally I chose to use the character sequence "::" for this operator, which definitely looks better, but since "::" is already used for something in C#, it's a bit ambiguous. After deciding to support _yet another operator_ for creating variables, this one imported from Go, I changed my mind.
+
+In Go you can create a variable with ":=", and I thought to myself "hell, that's kind of nice, I'll put that in EC# too". So in EC#, rather than writing
+
+    var list = new List<int>();
+
+you can write
+
+	 list := new List<int>();
+	
+which is exactly equivalent. `:=` and `=:`, and the old `var` statement, all do precisely the same thing, but the order of arguments is reversed. So 
+
+    new List<int>() =: list;
+
+is exactly equivalent again. However, =: is not intended to be used this way. Instead it is meant to appear "inline" so you can create a variable and immediately do something with it, like this:
+
+	new List<int>()=:list.AddRange(someOtherList);
+
+A key feature of the new operator is its high precedence. You could write code like this:
+
+	if ((table := DBConnection.Tables.Get("Person")) != null)
+		...
+
+but this approach requires parenthesis, since `table := ... != null` would be parsed as `table := (... != null)`. You don't want that, so you add parenthesis. But this isn't very convenient, and the parenthesis make the code slightly harder to read. In contrast, "=:" binds as tightly as "." does, so extra parenthesis are rarely needed.
+
+To explain why I think we need this operator, I will use a math analogy. Math-speak is a little different than normal speech; mathematicians have a special way of speaking because it is more efficient than the alternative. For instance they might say: "consider a perfect number x in a set of integers S where x is coprime with some y in S, y != x.". They pair words together like "perfect number X" and "set of integers S", which are basically variable declarations embedded in a sentence. Mathematicians would be very unhappy if some grammar Nazis forced them to separate out those variable declarations: "x and y are integers, and S is a set of integers. x is a perfect number in S where..." It's longer, and when you are used to math-speak, it's slightly harder to understand the statement when the variable declarations are separated.
+
+The quick-bind operator also promotes efficient code by nudging you toward the "pit of success". For example, in the past you might have written:
+
+	if (AdjacencyList.Count > 1)
+		pairs += AdjacencyList.Count - 1;
+
+But in EC# it might be easier to write:
+
+	if (AdjacencyList.Count::c > 1)
+		pairs += c - 1;
+
+And this code is probably faster. AdjacencyList might be a property that reaches into some data structure to retrieve the list, and the Count property might be a virtual or interface method. By using the quick binding operator, you've just optimized your code to call these properties only once. Congratulations, you've just fallen into the pit of success: you wrote faster code with little or no effort.
+
+When you use `=:` in an `if` statement, it survives beyond the `if` statement itself. This works differently than declarations in the first clause of a `for` statement, which cease to exist at the end of the "for" statement:
+
+	if (x=:y != 0) {}
+	Trace.WriteLine(x); // OK
+
+	for (var x = y ;;) {}
+	Trace.WriteLine(x); // ERROR
+
+I decided to change the rule because it makes the conversion to plain C# slightly simpler, and because sometimes you do want to use a variable again after the `if` statement is over.
+
+`=:` always creates a variable. It cannot change an existing variable.
+
+	int x;
+	if ((a + b)=:x > y) // ERROR
+
+The variable created by `=:` is mutable. My first draft of EC# said that the variables would be immutable, but I decided that enforcing immutability wasn't worth the implementation work that would be required (that said, I think immutable would be better, and that you should write your code as if quick-bound variables were `readonly`).
+
+Of course, with variable declarations embedded in expressions like this, they can be slightly harder to notice. I'm planning to experiment with syntax coloring that highlights variable declarations to make them more visible.
+
+### Creating variables on the spot
+
+EC# also lets you create variables as targets of "out" or "ref" variables. This example speaks for itself:
+
+	Dictionary<string,Form> _views;
+
+	// Shows a window corresponding to the specified key, or
+	// creates a new window for the key if one doesn't exist yet.
+	Form GetAndShow(string key)
+	{
+		if (_views.TryGetValue(key, out var form))
+			form.BringToFront();
+		else {
+			_views[key] = form = new MyForm(key);
+			form.Show();
+		}
+		return form;
+	}
+
+### Tuples
+
+Sometimes you want to return multiple values from a function. Traditionally this is accomplished with `out` parameters, and as you've seen, EC# makes `out` parameters easier to use. Another alternative is tuples, a mechanism for bundling values together. Each value in a tuple can have a different type.
+
+Tuple classes were added in .NET 4, but there is no special support for them in C#. To make a tuple in EC#, simply write a list of values in parenthesis:
+
+	var tuple = (1, "2", 3.0);
+	int one = tuple.Item1;
+	string two = tuple.Item2;
+
+For now, EC# doesn't provide any special syntax for expressing the type of a tuple; you'll have to settle for the traditional type-declaration syntax. For example, here is a method that returns a list of values together with the index of each value:
+
+	public static IEnumerable<Tuple<T, int>> WithIndex(this IEnumerable<T> list)
+	{
+		int i = 0;
+		foreach(T value in list)
+			yield return (value, i++);
+	}
+
+The real power of tuples is that you can easily "unpack" them in EC#. For example, you can call this method with code such as
+
+	var list = new[] { 2, 3, 5, 7, 11, 13 };
+	foreach ((var item, int i) in list.WithIndex())
+		Console.WriteLine($"list[$i] = $item");
+
+Here, two variables "item" and "i" are created to hold the two subvalues of each tuple.
+
+### Lambda-style methods
+
+When I saw that methods with lambda syntax were a "likely" feature of C# 6, that seemed like reason enough to include them in EC#.
+
+	int Square(int x) => x * x;
+	int Count => _count;
+	int X { get => _x; set { _x = value; } }
+
+But this wasn't my first idea. My first idea was basically to allow you to eliminate the word `return`--and the semicolon--from the last statement of a method, which makes your code shorter even if your method has more than one statement:
+
+	// Counts the number of 1 bits
+	public static int CountOnes(ushort x)
+	{
+		int X = x;
+		X -= ((X >> 1) & 0x5555);
+		X = (((X >> 2) & 0x3333) + (X & 0x3333));
+		X = (((X >> 4) + X) & 0x0f0f);
+		X += (X >> 8);
+		X & 0x001f     // returned implicitly
+	}
+
+EC# allows this too. It's important that the final semicolon is missing--it's a signal that you want to use the value of the final expression as the result of the method. You can only do this at the end of a block:
+
+`if` and `switch` statements can participate in this feature...
+
+	private IEnumerable GetItems()
+	{
+		if (Items.SelectedItem == null)
+			new Info[0]
+		else
+			Items.SelectedItem.InfoList
+	}
+
+...but in that case they are not really statements.
+
+### "switch" and "if" expressions
+
+One of the biggest differences between C# and EC# is that EC# is an expression-based language; some things that are "statements" in plain C# also serve as "expressions" in EC#. `switch` and `if` expressions are just two examples of this.
+
+You can use the `switch` statement as an expression:
+
+	Console.WriteLine("Input one digit only: ");
+	Console.WriteLine("The word for that is {0}",
+		switch(Console.ReadLine()) {
+			case "0": "zero"
+			case "1": "one"
+			case "2": "two"
+			...
+			case "9": "nine"
+			default: throw new ArgumentException("Curse your invalid digit!");
+		});
+
+For this to work, every case of the switch must either "return" a value to the surrounding expression (by omitting the semicolon) or jump out of the expression (using a throw or goto statement, which requires a semicolon.)
+
+The `if` statement can be used the same way:
+
+	Console.WriteLine("The door is {0}.", if (open) "Open" else "Closed");
+
+If you don't use braces around the then/else parts ("Open" and "Closed" in this example), then only expressions are accepted; If you use braces then statements are allowed. For example,
+
+	TODO.
+
+REVISING STOPPED HERE.
+
+Imported syntax
+---------------
+
+EC# has a small number of "easter eggs" in it, which are homages to other languages.
+
+Specifically, EC# supports some "alternate" syntax elements from other languages. An alternate syntax allows you to import code more quickly from another C-style language by permitting syntax elements from that language. Using an alternate syntax causes a compiler warning, because support for such syntax is not guaranteed to work in the future, and in fact may not always work now. Only small and unambiguous differences are permitted this way. The currently supported alternate syntax elements are:
+
+1. ":=" operator (from Go): behaves the same as the :: operator, except that the precedence is the same as =, and the name of the new variable is on the left-hand side.
+2. "!" operator (from D): alternate mechanism for specifying generic arguments, e.g. List!int means List<int>, and Dictionary!(string,object) means Dictionary<string,object>.
+3. if/while/for statements not surrounded by parenthesis (from Go): if the next token after a keyword such as "if", "while", "for" is not "(", then you are permitted to write an expression followed by "{" to open the statement:
+
+	if list.Count > 0 { Console.WriteLine("Cool!"); }
+
+It does not work if the first character of the expression is '(':
+
+	if (a + b) * c > d { ... } // SYNTAX ERROR!
+
+It is possible for users to support other kinds of imported syntax in EC# by writing macros that interpret #[...] blocks, but that's a bit advanced, and there is no way to change the token parser.
+
+In the future I hope that I, or some other volunteer, will create buttons besides error messages in the IDE. These buttons will "repair" certain kinds of errors at the click of a button. For example, the repair button could add a missing semicolon. The repair buttons would also convert these "imported" syntax elements into proper EC# syntax.
+
+I am open to suggestions about other "syntax easter eggs" that would be helpful for people doing manual code conversion, but requests will be rejected if they create ambiguities. It is also possible to write automatic code conversion libraries, but that's a topic for another article.
+
+Global functions and "static using"
+-----------------------------------
+
+EC# allows you to put methods, fields, properties and events outside any type. When converted to plain C#, global members are implicitly placed in a static class called "G", located in whatever namespace the global members are located. You can use an assembly attribute to change the name of this class:
+
+[assembly:GlobalsClass("MyNamespace.MyGlobals")]
+
+This example changes the class used for members of namespace "MyNamespace" to "MyGlobals". This is a "normal" attribute in that it exists at runtime, so it does not start with the "#" character. However, it is also specially recognized by the compiler, like other attributes that already exist such as [Conditional] and [Extension].
+
+Global fields, methods and properties are public by default. They can't be marked protected. If they are marked private, they are currently inaccessible from inside classes and structs in the same namespace, but this may change in the future because it is inconsistent with the way that inner structs and classes work in plain C#.
+
+The "static using" statement makes the static members of class behave as if they were globals. "static using" will most often be used for System.Math:
+
+	using System;
+	static using System.Math;
+	using Loyc.Math;
+
+	PointD Rotate(PointD pt, double radians)
+	{
+		double cos = Cos(radians), sin = Sin(radians);
+		return new PointD(pt.X * cos - pt.Y * sin,
+		                  pt.X * sin + pt.Y * cos);
+	}
+
+When writing extension methods, or any kind of algorithm that doesn't fit into the object-oriented paradigm, you might scratch your head wondering what name to give to the "dummy class" that C# requires. In EC#, you can stop wondering.
+
+"static using" is equivalent to Java's "import static", but it can only import entire classes, not individual members (at least so far). I reversed the keywords--"static using" instead of "using static"--to increase consistency between statements; after all, you must write "static int Foo" and not "int static Foo" (there is more to it than this, but a complete rationale would require several paragraphs.)
+
+
+Quick constructors and [[set]]
+------------------------------
+
+I often make little data types for holding two or three values, and I hate writing constructors for them because it involve a lot of pointless repetition:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		public NameAndTime(string name, DateTime timeStamp) {
+			Name = name;
+			TimeStamp = timeStamp;
+			// possibly additional initialization work here
+		}
+	}
+
+The data type and name of each member is essentially repeated three times, and the class name is repeated twice. To eliminate this irritating repetition, the [[set]] macro combines it all into one step:
+
+	class NameAndTime {
+		[[set]]
+		public NameAndTime(public readonly string name, public readonly DateTime timeStamp) {
+			// possibly additional initialization work here
+		}
+	}
+
+The [[set]] macro (which can also be used on non-constructor methods) notices the "public" and "readonly" attributes, which are normally invalid on method arguments, and inteprets them as an intention to create and initialize a variable. Therefore, it automatically produces the original code shown above.
+
+If you prefer, you can declare the variables separately and initialize them with [[set]]:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		[[set]]
+		public NameAndTime(set Name, set TimeStamp);
+	}
+
+As you can see, a method body is optional when using the [[set]] macro.
+
+EC# also allows "new" in place of the class name, as a clear and consistent way to denote a constructor:
+
+	class NameAndTime {
+		public readonly string Name;
+		public readonly DateTime TimeStamp;
+		[[set]] public new(set Name, set TimeStamp);
+	}
+
+The [[field]] and [[npc]] macros
+--------------------------------
+
+The [[field]] specifies a backing field for a property. The property itself can have a body or not, as you wish, and the field can have a visibility (public, protected, or internal).
+
+	[[field(protected _foo)]]
+	public int Foo { get; set; } // gets and sets _foo automatically
+
+	object[] _array;
+	[[field(_count)]]
+	public int Count { 
+		get;                      // gets _foo automatically
+		set { 
+			if ((_count = value) > _array.Length)
+			if (shift(_count, value) != value) {
+			}
+		}
+	}
+
+The _count field has the default visibility (private in a struct or class, and public if it is global.)
+
+[[npc]] stands for "notify property changed" and it is intended to help you implement the INotifyPropertyChanged interface.
+
+Symbols
+-------
+
+I was first introduced to the concept of a symbol in Ruby, where is commonly used (instead of enumerations) to indicate options when calling a method. A symbol is like a string, except that it is "interned" by default. This means that the it is guaranteed that only one instance of a symbol string exists. Because of that, comparing two symbols for equality means comparing two references, which is faster than comparing two strings and the the same speed as comparing two integers or enums.
+
+The same concept exists in other languages too, such as LISP. Symbols are more convenient than enums for two reasons:
+
+1. When calling a method, you don't have to write the name of the enum type.
+2. When defining a method, you don't have to define an enum type.
+
+The second point is more important. A lot of times people use one or more boolean flags or integers rather than a descriptive enum because it is inconvenient to define one. Usually you don't want to define the enum right beside the method that needs it, because the caller would have to qualify the name excessively:
+
+	class DatabaseManager {
+		...
+		public static DatabaseConnection Open(string command, MaintainConnection option);
+		public enum MaintainConnection {
+			CloseImmediately, KeepOpen
+		}
+		...
+	}
+	// later...
+	var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImmediately);
+
+Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But it is inconvenient to maintain and document an enum located outside the class. So to avoid the hassle, you replace "MaintainConnection option" with "bool maintainConnection" and you're done.
+
+Symbols make this easier. They are written with a $DollarSign; the symbol "$" should remind you of "S" for "Symbol". The above code would be written like this in EC#:
+
+	class DatabaseManager {
+		...
+		[[oneOf]]
+		public static DatabaseConnection Open(string command, 
+			[$CloseImmediately, $KeepOpen] option);
+		...
+	}
+	// later...
+	void Open() {
+		var c = DatabaseManager.Open("...", $CloseImmediately);
+	}
+
+"[[oneOf]]" looks sort of like an attribute, but isn't one. In fact it is a method name: it refers to a special kind of method called a macro. The compiler finds this method in the standard library of compile-time macros and invokes it. What exactly the macro does is not important; the important thing is the end result:
+
+- The option argument is given a type according to the values listed. $CloseImmediately and $KeepOpen have type Symbol; therefore, option has type Symbol.
+- The compiler will do a compile-time check whenever you call Open() method, to ensure that the "option" argument might match one of the specified values (if the compiler is unsure, it permits the call, with no runtime check.)
+- Static fields will be generated to hold the symbols, accessible to the callers of the method. By default, the above code is converted to plain C# as
+
+	class DatabaseManager {
+		...
+		public static readonly Symbol _CloseImmediately = GSymbol.Get("CloseImmediately");
+		public static readonly Symbol _KeepOpen = GSymbol.Get("KeepOpen");
+		public static DatabaseConnection Open(string command, 
+			[OneOf("CloseImmediately", "KeepOpen")] Symbol option);
+	}
+	// later...
+	void Open() {
+		var c = DatabaseManager.Open("...", DatabaseManager._CloseImmediately);
+	}
+
+GSymbol is a class that constructs "global" symbols; Symbol and GSymbol are defined in the EC# runtime library. The prefix used to define symbols can be changed with the #symbolFieldPrefix attribute:
+
+	[assembly:#symbolFieldPrefix("S_", "S_")]
+
+The "#" character indicates that #symbolFieldPrefix is not a normal attribute; this character marks an identifier as special, something that may be recognized by the compiler. Unlike normal attributes, special attributes do not exist at runtime and are not translated to plain C#.
+
+The two arguments ("S_", "S_") represent
+
+(1) the prefix to use for symbols mentioned by [OneOf()], which are public (or the maximum visibility necessary to be used by callers).
+(2) the prefix to use for symbols not mentioned by [OneOf()], which are private.
+
+The prefix can be "", which is convenient when clients of your code may not be written in EC#, but be aware that EC# might not implement collision avoidance between symbols and other identifiers in the same class.
+
+Please note that [[oneOf]] is not a special attribute--it is not an attribute at all, but rather an "attribute-style macro call". The [[square bracket syntax]] intentionally resembles an attribute because it is used like an attribute, but unlike a real attribute, a macro has the ability to transform the source code to which it is applied. For example, the "option" argument has no data type; the macro notices this and inserts the missing data type. Also, the list of possibilities [$CloseImmediately, $KeepOpen] is a list of literals, not valid attributes. The macro notices this also, and replaces [$CloseImmediately, $KeepOpen] with a valid attribute, [OneOf($CloseImmediately, $KeepOpen)]. Finally, the compiler converts symbols into strings when they are used in attributes, because symbols are not allowed in plain C# attributes.
+
+The EC# compiler, unlike the C# compiler, considers symbols to be constants. Conversion from string to Symbol and back requires a cast, but it is allowed at compile-time. Symbols cannot be concatenated directly, but you can just concatenate two strings and cast the result to a Symbol.
+
+The runtime library provides additional functionality for symbols, such as "symbol pools" that act as namespaces for symbols, and strongly-typed symbols, but the EC# compiler only supports global symbols.
+
+
+

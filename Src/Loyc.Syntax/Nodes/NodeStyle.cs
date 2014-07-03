@@ -26,26 +26,25 @@ namespace Loyc.Syntax
 	[Flags]
 	public enum NodeStyle : byte
 	{
-		/// <summary>No style flags are specified; the printer should choose a 
+		/// <summary>No style category is specified; the printer should choose a 
 		/// style automatically.</summary>
 		Default = 0,
 		/// <summary>The node(s) should be printed as a normal expression, rather
 		/// than using a special or statement notation.</summary>
 		Expression = 1,
-		/// <summary>The node(s) should be printed as a statement, if possible 
-		/// given the context in which it is located.</summary>
+		/// <summary>The node, or its immediate children, should be printed in
+		/// statement notation, if possible in the context in which it is located.</summary>
 		Statement = 2,
 		/// <summary>The node should be printed with infix or suffix notation
 		/// instead of prefix notation if applicable (requests `backquote notation` 
 		/// in LES and EC#).</summary>
 		Operator = 3,
-		/// <summary>The node should be printed in prefix notation, unless it is
-		/// a #::, #. or #of node, which uses a special notation (e.g. 
-		/// Generic.List&lt;T> in C# style or Generic.List!T in LES style).</summary>
+		/// <summary>The node should be printed in prefix notation, e.g. <c>@.(X, Y)</c>
+		/// instead of <c>X.Y</c>.</summary>
 		PrefixNotation = 4,
-		/// <summary>The node should be printed in prefix notation regardless
-		/// of the call target.</summary>
-		PurePrefixNotation = 5,
+		/// <summary>The node should be printed like a data type, if the type 
+		/// notation is somehow different from expression notation.</summary>
+		DataType = 5,
 		/// <summary>A language-specific special notation should be used for this
 		/// node. In LES, this marker requests that the arguments to a call be
 		/// broken out into separate expressions, forming a superexpression, e.g.
@@ -69,10 +68,6 @@ namespace Loyc.Syntax
 		/// <summary>Another alternate style flag. In LES and EC#, this is used for
 		/// binary-format numbers.</summary>
 		Alternate2 = 16,
-
-		/// <summary>Prefer to use the current base style recursively in child 
-		/// nodes (not currently supported).</summary>
-		Recursive = 64,
 		
 		/// <summary>Indicates that some part of a compiler has seen the node and 
 		/// done something with it.</summary>

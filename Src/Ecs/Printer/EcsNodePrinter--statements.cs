@@ -105,7 +105,7 @@ namespace Ecs
 
 			var style = _n.BaseStyle;
 			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && 
-				style != NodeStyle.PurePrefixNotation && (AllowChangeParenthesis || !_n.IsParenthesizedExpr()))
+				style != NodeStyle.PrefixNotation && (AllowChangeParenthesis || !_n.IsParenthesizedExpr()))
 			{
 				StatementPrinter printer;
 				var name = _n.Name;

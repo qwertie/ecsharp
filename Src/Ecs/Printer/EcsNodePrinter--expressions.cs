@@ -170,8 +170,8 @@ namespace Ecs
 			}
 
 			NodeStyle style = _n.BaseStyle;
-			if (style == NodeStyle.PrefixNotation || style == NodeStyle.PurePrefixNotation)
-				PrintPrefixNotation(context, style == NodeStyle.PurePrefixNotation, flags, false);
+			if (style == NodeStyle.PrefixNotation)
+				PrintPrefixNotation(context, true, flags, false);
 			else {
 				bool isVarDecl = IsVariableDecl(false, (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0);
 				

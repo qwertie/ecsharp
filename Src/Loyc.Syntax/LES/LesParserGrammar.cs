@@ -286,7 +286,7 @@ namespace Loyc.Syntax.Les
 								var p = MatchAny();
 								var rp = MatchAny();
 								e = primary = ParseCall(e, p, rp.EndIndex);
-								e.BaseStyle = NodeStyle.PurePrefixNotation;
+								e.BaseStyle = NodeStyle.PrefixNotation;
 							} else
 								goto stop2;
 						} else if (context.CanParse(P_SuperExpr)) {

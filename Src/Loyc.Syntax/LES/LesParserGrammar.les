@@ -119,7 +119,7 @@ namespace Loyc.Syntax.Les
 					&{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
 					p:=TT.LParen rp:=TT.RParen
 					{e = primary = ParseCall(e, p, rp.EndIndex);}
-					{e.BaseStyle = NodeStyle.PurePrefixNotation;}
+					{e.BaseStyle = NodeStyle.PrefixNotation;}
 				|	// Indexer / square brackets
 					&{context.CanParse(P.Primary)}
 					t:=TT.LBrack rb:=TT.RBrack
