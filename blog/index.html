@@ -3,7 +3,8 @@ layout: page
 title: Blog
 note: This renders the blog. The actual blog posts are in /_posts
 ---
-<p><a href="{{ site.base_url }}/blog-list.html">List of all posts</a></p>
+<p><a href="{{ site.base_url }}/blog-list.html">List of all posts</a> • <a href="{{ "atom.xml" | prepend: site.baseurl }}">Atom feed</a>
+</p>
 
 <div class="posts">
   {% for post in paginator.posts %}

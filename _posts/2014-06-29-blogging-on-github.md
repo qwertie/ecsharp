@@ -274,7 +274,7 @@ How to set up:
     </body>
     ~~~
 
-3. Add my copy of [`comments.html`](https://github.com/qwertie/Loyc/tree/gh-pages/_includes) unchanged to your `/_includes` folder, and add [`comments.css`](https://github.com/qwertie/Loyc/tree/gh-pages/res/css) unchanged to `/res/css` (oh, you don't have a `/res/css` folder? Either create that folder, or put `comments.css` wherever you put css files and change `comments.html` to point to the new location.)
+3. Add my copy of [`comments.html`](https://github.com/qwertie/Loyc/tree/gh-pages/_includes/comments.html) unchanged to your `/_includes` folder, and add [`comments.css`](https://github.com/qwertie/Loyc/blob/gh-pages/res/css/comments.css) unchanged to `/res/css` (oh, you don't have a `/res/css` folder? Either create that folder, or put `comments.css` wherever you like to put css files and change `comments.html` to point to the new location.)
 
 4. To add comments to a page, create an issue in your github project (with whatever name and description you want) and then set `commentIssueId` line in the front matter of your blog post to match the issue:
     
