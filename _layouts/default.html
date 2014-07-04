@@ -32,11 +32,11 @@
 	
   {% if page.toc %}
 	<script>// Add table of contents! <![CDATA[
-   function $get(selector) { return document.querySelector(selector); };
-   function $all(selector) {
+	function $get(selector) { return document.querySelector(selector); };
+	function $all(selector) {
 		return Array.prototype.slice.call(document.querySelectorAll(selector));
 	}
-	
+
 	function buildTOC_ul(selector) {
 		var levels=[document.createElement("ul"),null,null];
 		levels[0].style
@@ -46,7 +46,7 @@
 			if (!el.id) el.id='section_'+ ++c;
 			var newLvl=(el.tagName=="H2"?0:el.tagName=="H3"?1:2);
 			for (;lvl<newLvl;lvl++)
-				levels[lvl].appendChild(levels[lvl+1]=document.createElement("ul"));
+				 levels[lvl].appendChild(levels[lvl+1]=document.createElement("ul"));
 			lvl=newLvl;
 			
 			var li=document.createElement('li');
@@ -56,18 +56,18 @@
 		});
 		return levels[0];
 	}
-	function addTOC(contentElement, before) {
-		if (!before) before=contentElement.firstChild;
+	function addTOC(contentElement, before, tocClass) {
+		if (before===undefined) before=contentElement.firstChild;
 		var prefix = "";
 		if (contentElement.className) prefix="."+contentElement.className+" ";
 		var selector = prefix+"h2, "+prefix+"h3, "+prefix+"h4";
 		var toc=document.createElement("div");
-		toc.className="sidebox";
+		toc.className=tocClass||"sidebox";
 		toc.appendChild(document.createTextNode("Contents"));
 		toc.appendChild(buildTOC_ul(selector));
 		contentElement.insertBefore(toc, before);
 	}
-	var _post_ = $get(".post")||$get(".content");
+	var _post_ = $get("#post")||$get("#content");
 	addTOC(_post_, _post_.firstChild.nextSibling.nextSibling);
 	//]]>
 	</script>
