@@ -16,6 +16,7 @@ lsi: false
 
 # Poole/Hyde settings
 title:       "Loyc"                      # shown in large text
+tagline:     "Language of your choice"   # shown in title bar beside title
 description: "Language of your choice"   # shown under the title
 version: (I changed Hyde not to display this)
 url:     "http://loyc.net"               # Used by the Atom feed

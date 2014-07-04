@@ -119,6 +119,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
 
         title: "Project Name"         # shown in large text
         description: "Blah blah blah" # shown under the title
+        tagline: "Blah blah blah"     # shown in title bar beside the title
         version: "1.2.3"              # "Currently v1.2.3"
         url:     "http://loyc.net"    # Used by the Atom feed
         baseurl: ""                   # URL of site relative to domain
@@ -320,9 +321,9 @@ Markdown supports HTML, so you can add a style block like this one at the top of
 
 Note that all the text inside the `<div>` tag is treated as HTML, not Markdown. In kramdown you can also use the "block attribute" `{: .sidebox}` after a paragraph to create a sidebar, or use a "refdef" which allows the sidebox to contain multiple paragraphs. Both of these approaches are better because you can use Markdown syntax inside the sidebar... but also worse because only kramdown will understand your code.
 
-## Traffic data
+## Visitor data
 
-I am using [Google Analytics](http://www.google.ca/analytics/) for traffic data. After you sign up you'll be give a Javascript snippet to put in your web pages; I inserted mine right before `</body>` in `/layouts/default.html`.
+I am using [Google Analytics](http://www.google.ca/analytics/) to track page views. After you sign up you'll be give a Javascript snippet to put in your web pages; I inserted mine right before `</body>` in `/layouts/default.html`.
 
 ## Table-of-contents generation
 

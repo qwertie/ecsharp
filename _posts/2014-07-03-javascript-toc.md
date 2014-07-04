@@ -20,7 +20,7 @@ After installing the code below, call `addTOC(contentElement, before, tocClass)`
 
 See example below.
 
-## The code
+## The _code_
 
 Insert this code at the bottom of any page in which you want to add a TOC (before `</body>`). 
 
