@@ -28,4 +28,4 @@ At the moment, Loyc is limited to the .NET platform. The Loyc core libraries are
 - [Loyc.Syntax.dll](https://sourceforge.net/p/loyc/wiki/Loyc.Syntax/): Contains the [`LNode`](https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Nodes/LNode.cs) class that represents a Loyc tree, the LES parser and printer, and recommended base classes for use with LLLPG.
 - [Loyc.Utilities](https://sourceforge.net/p/loyc/wiki/Loyc.Utilities/): Additional general-purpose classes that either have a dependency on `Loyc.Collections` or were not important enough to go in `Loyc.Essentials`
 
-This is a huge project with many parts and I am looking feverishly for volunteers to help create these parts.
+This is a huge project with many parts and I am looking feverishly for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.
