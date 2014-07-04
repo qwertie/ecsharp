@@ -7,7 +7,7 @@ exclude: [Src, Lib, Visual Studio Integration]
 # Jekyll settings
 markdown: redcarpet
 encoding: UTF-8
-highlighter: pygments
+highlighter: rouge
 paginate: 5
 paginate_path: "blog/page:num"
 permalink: /:categories/:year/:month/:title.html

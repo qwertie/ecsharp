@@ -5,6 +5,7 @@ title:  "Blogging on GitHub"
 tags: [jekyll, tutorial]
 commentIssueId: 1
 paragraphLinks: true
+toc: true
 ---
 {% raw %}
 GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if everyone knows what it means already). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
@@ -103,7 +104,7 @@ The names you have to use on the fence tend to be longer than just file extensio
 
 Unfortunately, redcarpet and kramdown have different sets of advanced features. Kramdown seems more flexible to me, but redcarpet appears to be [The Standard GitHub Flavored Markdown](https://github.com/blog/832-rolling-out-the-redcarpet).
 
-**ProTip**: Jekyll won't easily let you write the literal character combination `{%` or `{{`, not even inside code blocks. You could write `{{"{%"}}` or `{{ "{{" }}` instead, but if you are not intending to use Liquid (Jekyll's templating ending), a better option is to wrap the entire page in `{% raw %} ... {% endraw %}{{"{%"}} endraw %}`, after the front-matter, as I have done in this post.
+**ProTip**: Jekyll won't easily let you write the literal character combination `{%` or `{{`, not even inside code blocks. You could write `{{"{%"}}` or `{{ "{{" }}` instead, but if you are not intending to use Liquid (Jekyll's templating ending), a better option is to wrap the entire page in `{% raw %} ... {% endraw %}{{"{%"}} endraw %}`, after the front-matter, as I have done in this post. One problem with this though: you can't use [jekyll internal links](http://stackoverflow.com/questions/4629675/jekyll-markdown-internal-links).
 {% raw %}
 
 ## How I set up this site
@@ -325,7 +326,7 @@ I am using [Google Analytics](http://www.google.ca/analytics/) for traffic data.
 
 ## Table-of-contents generation
 
-Kramdown has a feature for [automatic generation of a table of contents](http://kramdown.gettalong.org/converter/html.html#toc) for long posts like this one. Sadly I'm not using Kramdown so I don't have access to it.
+Kramdown has a feature for [automatic generation of a table of contents](http://kramdown.gettalong.org/converter/html.html#toc) for long posts like this one. Sadly I'm not using Kramdown so I don't have access to it. A javascript solution is more universal, but when I searched for a solution I didn't immediately find one I was happy with. So I made my own [Javascript table-of-contents builder](/2014/07/javascript-toc.html).
 
 ## Markdown everywhere
 
