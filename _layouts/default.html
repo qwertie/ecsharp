@@ -4,10 +4,23 @@
 <body class="theme-base-0d">
 	{% include sidebar.html %}
 	
-	<div class="content container">
+	<div class="content container" id="content">
 		{{ content }}
 		{% include comments.html %}
 	</div>
+
+	{% if page.paragraphLinks %}
+	<script type="text/javascript">// Add # link to every paragraph
+		$(".post p").each( function(index) {
+			if (index > 0 && $.trim($(this).text()).length > 0) {
+				$(this).attr("id", "para" + index.toString());
+				var html = $(this).html();
+				$(this).html(html + " <a href='#para" + index.toString() + "' style='color:#BBB'>#</a>");
+			}
+		});
+	</script>
+	{% endif %} 
+	
 	<script>// Google Analytics
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

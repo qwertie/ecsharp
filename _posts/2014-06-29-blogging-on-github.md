@@ -2,9 +2,9 @@
 # Jekyll front matter
 layout: post
 title:  "Blogging on GitHub"
-tagline: "At least it's better than Blogspot"
 tags: [jekyll, tutorial]
 commentIssueId: 1
+paragraphLinks: true
 ---
 {% raw %}
 GitHub has a "built-in" simple content management system called Jekyll. It's unobtrusive; you can put ordinary HTML files in your webspace and they will be served unchanged, or you can create Jekyll files, which are text files that start with a header block that the Jekyll documentation calls "front matter" (a phrase that the documentation uses as if everyone knows what it means already). Among other things, Jekyll allows you to write web pages and blog posts in Markdown. And since it's GitHub, you won't be surprised to learn that your web space is version-controlled with Git, which means that you can update your web site with an ordinary Git push.
@@ -230,7 +230,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     {% endfor %}
     ~~~
 
-13. (Hyde) The Older and Newer buttons had broken links because they assumed the blog would be the home page. And you know what, I made so many little changes and fixes, I won't list them all. Let's just say you can clone my repo and make it your own, if you like.
+13. (Hyde) The Older and Newer buttons had broken links because they assumed the blog would be the home page. And you know what, I made so many little changes and fixes, I won't list them all. Let's just say you can clone my repo and make it your own, if you like. And [see here](http://jekyllrb.com/docs/permalinks/) about customizing blog permalinks (why call it "permalink" when you can change the URL schema at any time?)
 
 ## Writing blog posts
 
@@ -319,6 +319,14 @@ Markdown supports HTML, so you can add a style block like this one at the top of
 
 Note that all the text inside the `<div>` tag is treated as HTML, not Markdown. In kramdown you can also use the "block attribute" `{: .sidebox}` after a paragraph to create a sidebar, or use a "refdef" which allows the sidebox to contain multiple paragraphs. Both of these approaches are better because you can use Markdown syntax inside the sidebar... but also worse because only kramdown will understand your code.
 
+## Traffic data
+
+I am using [Google Analytics](http://www.google.ca/analytics/) for traffic data. After you sign up you'll be give a Javascript snippet to put in your web pages; I inserted mine right before `</body>` in `/layouts/default.html`.
+
+## Table-of-contents generation
+
+Kramdown has a feature for [automatic generation of a table of contents](http://kramdown.gettalong.org/converter/html.html#toc) for long posts like this one. Sadly I'm not using Kramdown so I don't have access to it.
+
 ## Markdown everywhere
 
 By the way, no matter whether you're using GitHub or not or Jekyll or not, there's no need to write web sites in HTML anymore. No matter how crappy your web hosting provider might be, no matter whether you're allowed to run scripts or not, you can still author pages in Markdown, thanks to a nifty library called [mdwiki](http://dynalon.github.io/mdwiki/#!index.md). This thing uses Javascript to convert markdown to HTML, 100% client-side, so you don't have to worry about what your web host may or may not support. On GitHub, you may as well use Jekyll, but I must admit, it looks like mdwiki has a fantastic feature set, probably better than I'll get with Jekyll. But the important thing is, I don't have to write HTML anymore. Good riddance!
@@ -326,4 +334,4 @@ By the way, no matter whether you're using GitHub or not or Jekyll or not, there
 You can even use MDWiki without a web server, if you view `mdwiki.html` in Firefox (it doesn't work in Google Chrome), which means you can use it for offline Markdown previews (which is great because, at least on the Windows, tools for editing Markdown are generally quite limited.)
 
 {% endraw %}
-<a href="http://www.codeproject.com" rel="tag" style="display:none">Published on CodeProject</a>
+<a href="http://www.codeproject.com/" rel="tag" style="display:none">Published on CodeProject</a>
