@@ -119,7 +119,6 @@
   <ItemGroup>
     <Compile Include="BaseParser.cs" />
     <Compile Include="CodeSymbols.cs" />
-    <Compile Include="IntSet.cs" />
     <Compile Include="IParsingService.cs" />
     <Compile Include="Les\LesLanguageService.cs" />
     <Compile Include="Les\LesLexer.cs" />
@@ -167,16 +166,7 @@
     <Compile Include="SourceFiles\LineRemapper.cs" />
     <Compile Include="SourceFiles\SourcePos.cs" />
     <Compile Include="SourceFiles\SourceRange.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
-      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
-      <Name>Loyc.Collections.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
-    </ProjectReference>
+    <Compile Include="SourceFiles\StreamCharSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -210,7 +200,16 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
+      <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
+      <Name>Loyc.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <None Include="Les\LesLexerGrammar.les">
       <Generator>LLLPG</Generator>

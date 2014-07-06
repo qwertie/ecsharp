@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
-	/// <summary>Helps you implement sources (read-only collections) by providing
-	/// default implementations for most methods of IListSource(T).</summary>
+	/// <summary>A base class for read-only collections that wish to implement 
+	/// <see cref="IList{T}"/> and <see cref="IListSource{T}"/>. Provides
+	/// default implementations for most of the methods.</summary>
 	/// <remarks>
 	/// You only need to implement two methods yourself:
 	/// <code>
@@ -15,7 +16,7 @@ namespace Loyc.Collections
 	/// </code>
 	/// </remarks>
 	[Serializable]
-	public abstract class ListSourceBase<T> : SourceBase<T>, IListAndListSource<T>, IIsEmpty
+	public abstract class ListSourceBase<T> : ReadOnlyCollectionBase<T>, IListAndListSource<T>, IIsEmpty
 	{
 		#region IListSource<T> Members
 

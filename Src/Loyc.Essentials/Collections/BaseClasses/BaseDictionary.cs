@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Impl
 {
-	/// <summary>Base class for user-defined dictionaries</summary>
+	/// <summary>A base class for user-defined dictionaries that want to implement 
+	/// both <c>IDictionary(K,V)</c> and <c>IReadOnlyDictionary(K, V)</c>.</summary>
 	/// <remarks>Modified version of source: datavault project. License: Apache License 2.0.</remarks>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(PREFIX + "DictionaryDebugView`2" + SUFFIX)]

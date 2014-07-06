@@ -13,7 +13,7 @@ namespace Loyc.Collections
 {
 	public static partial class LCExt
 	{
-		/// <summary>Converts any IList{T} object to IListSource{T}.</summary>
+		/// <summary>Adapter: treats any IList{T} object as IListSource{T}.</summary>
 		/// <remarks>This method is named "AsListSource" and not "ToListSource" 
 		/// because, in contrast to methods like ToArray() and ToList(), it does not 
 		/// make a copy of the sequence.</remarks>

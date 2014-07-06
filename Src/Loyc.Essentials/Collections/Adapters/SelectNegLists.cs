@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Loyc.Collections.Impl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +18,8 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>
-	/// Provides view of an <see cref="IList{T}"/> in which element [i] is a 
+	/// <summary>Adapter:
+	/// provides a view of an <see cref="IList{T}"/> in which element [i] is a 
 	/// <see cref="NegList{T}"/> N such that N[0] refers to element [i] in the 
 	/// original list. See <see cref="LCExt.NegLists{T}(IList{T})"/> for more 
 	/// information.

@@ -736,8 +736,11 @@ namespace Loyc.Syntax
 
 		#region Properties and methods for Literal nodes
 
-		/// <summary>Returns the value of a literal node, or null if this node is 
-		/// not a literal (<see cref="IsLiteral"/> is false).</summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public bool HasValue { get { return Value != NoValue.Value; } }
+
+		/// <summary>Returns the value of a literal node, or <see cref="NoValue.Value"/> 
+		/// if this node is not a literal (<see cref="IsLiteral"/> is false).</summary>
 		public abstract object Value { get; }
 
 		/// <summary>Creates a new literal node with a different Value than the current literal node.</summary>
@@ -1151,4 +1154,5 @@ namespace Loyc.Syntax
 		/// <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
 		public abstract LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true);
 	}
+
 }

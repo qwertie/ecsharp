@@ -31,7 +31,7 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>This class wraps an <see cref="IEnumerator{T}"/> or 
+	/// <summary>Adapter: This class wraps an <see cref="IEnumerator{T}"/> or 
 	/// <see cref="IEnumerable{T}"/> into an <see cref="IListSource{T}"/>, lazily 
 	/// reading the sequence as <see cref="TryGet"/> is called.</summary>
 	/// <remarks>Avoid calling <see cref="Count"/> if you actually want laziness;

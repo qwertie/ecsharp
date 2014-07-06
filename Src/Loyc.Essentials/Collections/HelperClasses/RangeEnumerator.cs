@@ -6,7 +6,7 @@ using Loyc;
 
 namespace Loyc.Collections
 {
-	/// <summary>Enumerates through a forward range (<see cref="IFRange{T}"/>).</summary>
+	/// <summary>Helper struct: enumerates through a forward range (<see cref="IFRange{T}"/>).</summary>
 	public struct RangeEnumerator<T> : IEnumerator<T>
 	{
 		IFRange<T> _range;
@@ -21,7 +21,7 @@ namespace Loyc.Collections
 		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 	}
 
-	/// <summary>Enumerates through a forward range (<see cref="IFRange{T}"/>), 
+	/// <summary>Helper struct: enumerates through a forward range (<see cref="IFRange{T}"/>), 
 	/// calling the range methods through R instead of through <see cref="IFRange{T}"/>.
 	/// </summary>
 	/// <remarks>Although there is a ICloneable{R} constraint on R, it is currently

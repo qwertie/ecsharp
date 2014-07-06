@@ -14,7 +14,7 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>A random-access range for a slice of an <see cref="INegListSource{T}"/>.</summary>
+	/// <summary>Adapter: a random-access range for a slice of an <see cref="INegListSource{T}"/>.</summary>
 	/// <typeparam name="T">Item type in the list</typeparam>
 	/// <remarks>Although this slices a neg-list, the slice itself is an ordinary zero-indexed 
 	/// <see cref="IListSource{T}"/>. It implements <see cref="INegListSource{T}"/> for 

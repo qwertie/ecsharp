@@ -6,6 +6,16 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	public static partial class Range
+	{
+		/// <summary>Returns <c>new IntRange(start, count)</c> (see <see cref="IntRange"/>).</summary>
+		public static IntRange IntRange(int start, int count)
+		{
+			return new IntRange(start, count);
+		}
+	}
+
+	/// <summary>Helper struct: treats a range of integers (e.g. 5..10) as a list. This type is returned by <see cref="Range.IntRange(int, int)"/>.</summary>
 	public struct IntRange : IRange<int>, IListSource<int>, IList<int>, IIsEmpty
 	{
 		int _start, _count;

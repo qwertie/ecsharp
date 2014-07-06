@@ -13,8 +13,27 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
-	/// <summary>A sequence that simply repeats the same value a specified number 
-	/// of times, returned from <see cref="Range.Repeat{T}"/>.</summary>
+	public static partial class Range
+	{
+		/// <summary>Returns a helper object that stores one value, but acts like 
+		/// a read-only list that repeats the value the specified number of times.</summary>
+		/// <returns><c>new Repeated&lt;T>(value, count)</c></returns>
+		public static Repeated<T> Repeat<T>(T value, int count)
+		{
+			return new Repeated<T>(value, count);
+		}
+		/// <summary>Returns a helper object that stores one value, but acts like 
+		/// a read-only list of one item.</summary>
+		/// <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
+		public static Repeated<T> Single<T>(T value)
+		{
+			return new Repeated<T>(value, 1);
+		}
+	}
+
+	/// <summary>Helper struct. A sequence that stores one value, but acts like a list in which
+	/// that value is repeated a specified number of times. Returned from 
+	/// <see cref="Range.Repeat{T}"/>.</summary>
 	[Serializable]
 	public struct Repeated<T> : IListAndListSource<T>, IRange<T>, IIsEmpty
 	{

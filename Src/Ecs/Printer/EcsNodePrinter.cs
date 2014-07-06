@@ -9,7 +9,6 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
-using Loyc.CompilerCore;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;
 using System.IO;
@@ -1129,7 +1128,7 @@ namespace Ecs
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
-						PrintSpaces((attr.Value ?? "").ToString());
+						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
 					} else if (name == S.TriviaInParens) {
 						if ((flags & Ambiguity.NoParenthesis) == 0) {
 							WriteOpenParen(ParenFor.Grouping);
@@ -1162,7 +1161,7 @@ namespace Ecs
 				var name = attr.Name;
 				if (name.Name[0] == '#') {
 					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
-						PrintSpaces((attr.Value ?? "").ToString());
+						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
 						spaces = true;
 					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
 						_out.Write(GetRawText(attr), true);

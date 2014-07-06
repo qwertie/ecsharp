@@ -14,7 +14,7 @@ namespace Loyc.Collections
 {
 	public static partial class LCExt
 	{
-		/// <summary>Converts any IReadOnlyCollection{T} object to a read-only ICollection{T}.</summary>
+		/// <summary>Adapter: treats any IReadOnlyCollection{T} as a read-only ICollection{T}.</summary>
 		/// <remarks>This method is named "AsCollection" and not "ToCollection" 
 		/// because, in contrast to methods like ToArray() and ToList(), it does not 
 		/// make a copy of the sequence, although it does create a new wrapper object.</remarks>

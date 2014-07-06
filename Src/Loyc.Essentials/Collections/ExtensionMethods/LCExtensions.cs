@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Loyc.Collections.Impl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -105,7 +106,7 @@ namespace Loyc.Collections
 		}
 	}
 
-	public class UpCastSource<T, TOut> : SourceBase<TOut> where T : TOut
+	public class UpCastSource<T, TOut> : ReadOnlyCollectionBase<TOut> where T : TOut
 	{
 		protected IReadOnlyCollection<T> s;
 		public UpCastSource(IReadOnlyCollection<T> source) { s = source; }

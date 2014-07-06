@@ -5,7 +5,6 @@ using System.Text;
 using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
-using Loyc.CompilerCore;
 using S = Loyc.Syntax.CodeSymbols;
 using Ecs.Parser;
 using Loyc.Syntax.Lexing;

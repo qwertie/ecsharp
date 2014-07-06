@@ -9,6 +9,10 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
+	/// <summary>
+	/// Standard macros, such as unroll() and replace() that can work in all Loyc languages.
+	/// Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+	/// </summary>
 	[ContainsMacros]
 	public partial class StandardMacros
 	{

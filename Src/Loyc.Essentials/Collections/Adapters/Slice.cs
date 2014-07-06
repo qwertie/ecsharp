@@ -21,7 +21,8 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>A random-access range for a slice of an <see cref="IListSource{T}"/>.</summary>
+	/// <summary>Adapter: a random-access range for a slice of an 
+	/// <see cref="IListSource{T}"/>.</summary>
 	/// <typeparam name="T">Item type in the list</typeparam>
 	/// <remarks>
 	/// This type was supposed to be called simply <c>Slice</c>, but this was not

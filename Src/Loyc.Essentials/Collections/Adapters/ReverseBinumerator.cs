@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary>A <see cref="IBinumerator{T}"/> that swaps the MoveNext() and MovePrev() methods.</summary>
+	/// <summary>Adapter: a <see cref="IBinumerator{T}"/> that swaps the MoveNext() and MovePrev() methods.</summary>
 	public struct ReverseBinumerator<T> : IBinumerator<T>
 	{
 		IBinumerator<T> _e;

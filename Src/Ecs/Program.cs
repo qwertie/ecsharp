@@ -5,12 +5,14 @@ using System.Text;
 using System.Diagnostics;
 using System.IO;
 using Loyc.MiniTest;
-using Loyc.CompilerCore;
 using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Ecs.Parser;
 
+/// <summary>Enhanced C#. Currently only the parser (<see cref="Ecs.Parser.EcsParser"/>)
+/// and printer (<see cref="Ecs.EcsNodePrinter"/>) are implemented, so LeMP is used 
+/// to convert supported features of EC# to C#.</summary>
 namespace Ecs
 {
 	public class Program

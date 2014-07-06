@@ -10,6 +10,8 @@ using Loyc.Math;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 
+/// <summary>Defines prelude macros, which are predefined macros that normally 
+/// do not have to be explicitly imported before use (in LES or EC#).</summary>
 namespace LeMP.Prelude
 {
 	[ContainsMacros]

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;
-using Loyc.LLParserGenerator;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;

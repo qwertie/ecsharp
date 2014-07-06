@@ -149,19 +149,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>PolygonMathTT.tt</DependentUpon>
     </Compile>
-    <Compile Include="Handle.cs" />
+    <Compile Include="IntSet.cs" />
     <Compile Include="IntSetTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Latin1DecoderFallback.cs" />
     <Compile Include="Math\PointExt.cs" />
-    <Compile Include="Output.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="Statistic.cs" />
-    <Compile Include="StreamCharSource.cs" />
     <Compile Include="TagsInWList.cs" />
     <Compile Include="UG.cs" />
-    <Compile Include="Upcasters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -221,15 +217,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
-      <Name>Loyc.Collections.NET4</Name>
+      <Name>Loyc.Collections</Name>
     </ProjectReference>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
       <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj">
-      <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
-      <Name>Loyc.Syntax.NET4</Name>
+      <Name>Loyc.Essentials</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

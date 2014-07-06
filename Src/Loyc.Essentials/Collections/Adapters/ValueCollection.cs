@@ -41,9 +41,9 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	/// <summary>This is a read-only collection of Values read from a generic IDictionary.
-	/// It is a modified version of Dictionary{TKey, TValue}.ValueCollection from
-	/// Mono, changed to use IDictionary instead of Dictionary.
+	/// <summary>Adapter: this is a read-only collection of Values read from a 
+	/// generic IDictionary. It is a modified version of <c>Dictionary{TKey, TValue}.ValueCollection</c>
+	/// from the Mono project, changed to use IDictionary instead of Dictionary.
 	/// </summary>
 	[Serializable]
 	public sealed class ValueCollection<TKey, TValue> : ICollection<TValue>, IReadOnlyCollection<TValue>, IEnumerable<TValue>, ICollection, IEnumerable {

@@ -261,8 +261,8 @@ namespace Loyc.Collections
 		#region Persistent map operations: With, Without, Union, Except, Intersect, Xor
 
 		/// <summary>Returns a copy of the current map with an additional key-value pair.</summary>
-		/// <paparam name="replaceIfPresent">If true, the existing key-value pair is replaced if present. 
-		/// Otherwise, the existing key-value pair is left unchanged.</paparam>
+		/// <param name="replaceIfPresent">If true, the existing key-value pair is replaced if present. 
+		/// Otherwise, the existing key-value pair is left unchanged.</param>
 		/// <returns>A map with the specified key. If the key was already present 
 		/// and replaceIfPresent is false, the same set ('this') is returned.</remarks>
 		public Map<K, V> With(K key, V value, bool replaceIfPresent = true)

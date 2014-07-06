@@ -502,13 +502,13 @@ namespace Loyc.Collections
 			return c - to;
 		}
 
-		public static void Reverse<T>(this IList<T> list) 
+		public static void ReverseInPlace<T>(this IList<T> list) 
 		{
 			int c = list.Count;
 			for (int i = 0; i < (c >> 1); i++)
 				list.Swap(i, c - i);
 		}
-		public static void Reverse<T>(this IArray<T> list) 
+		public static void ReverseInPlace<T>(this IArray<T> list) 
 		{
 			int c = list.Count;
 			for (int i = 0; i < (c >> 1); i++)

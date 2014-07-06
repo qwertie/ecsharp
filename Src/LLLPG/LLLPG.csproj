@@ -187,9 +187,9 @@
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
       <Name>Ecs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LEL\LEL.csproj">
+    <ProjectReference Include="..\LeMP\LeMP.csproj">
       <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>
-      <Name>LEL</Name>
+      <Name>LeMP</Name>
     </ProjectReference>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>

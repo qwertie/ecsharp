@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Loyc.Syntax;
-using Loyc.LLParserGenerator;
 using Loyc.Threading;
 using Loyc.Collections;
 using uchar = System.Int32;
@@ -680,9 +679,11 @@ namespace Loyc.Syntax.Les
 			return sb;
 		}
 
-		static readonly IntSet SpecialIdSet = IntSet.Parse(@"[0-9a-zA-Z_'#~!%^&*\-+=|<>/\\?:.@$]");
-		static readonly IntSet IdContSet = IntSet.Parse("[0-9a-zA-Z_']");
-		static readonly IntSet OpContSet = IntSet.Parse("[\\~!%^&*-+=|<>/?:.@$]");
+		static readonly HashSet<int> SpecialIdSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'', '#', '#', 
+			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '\\', '\\', '?','?', ':',':', '.','.', '@','@', '$','$');
+		static readonly HashSet<int> IdContSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'');
+		static readonly HashSet<int> OpContSet = NewSetOfRanges(
+			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '\\', '\\', '?','?', ':',':', '.','.', '@','@', '$','$');
 
 		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter((char)c); }
 		public static bool IsIdContChar(uchar c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }

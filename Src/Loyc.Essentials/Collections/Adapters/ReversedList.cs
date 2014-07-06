@@ -8,17 +8,21 @@ namespace Loyc.Collections
 {
 	public static partial class ListExt
 	{
-		public static ReversedList<T> ReverseView<T>(this IList<T> list)
+		/// <summary>Returns an editable reversed view of a list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedList<T> Reverse<T>(this IList<T> list)
 		{
 			return new ReversedList<T>(list);
 		}
-		public static ReversedList<T> ReverseView<T>(this IListAndListSource<T> list) // exists to avoid an ambiguity error for collections that offer both IList<T> and IListSource<T>
+		/// <summary>Returns a reversed view of a list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
+		public static ReversedList<T> Reverse<T>(this IListAndListSource<T> list) // exists to avoid an ambiguity error for collections that offer both IList<T> and IListSource<T>
 		{
 			return new ReversedList<T>(list);
 		}
 	}
 
-	/// <summary>A reversed of an <see cref="IList{T}"/>. TODO: unit tests.</summary>
+	/// <summary>Adapter: a reversed of an <see cref="IList{T}"/>. TODO: unit tests.</summary>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public struct ReversedList<T> : IListEx<T>, IListRangeMethods<T>, IEquatable<ReversedList<T>>

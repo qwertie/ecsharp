@@ -42,10 +42,10 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections
 {
-	/// <summary>This is a read-only collection of Keys read from a generic IDictionary.
-	/// It is a modified version of Dictionary{TKey, TValue}.KeyCollection from
-	/// Mono, changed to use IDictionary instead of Dictionary.
-	/// </summary>
+	/// <summary>Adapter: this is a read-only collection of Keys read from a 
+	/// generic IDictionary. It is a modified version of 
+	/// Dictionary{TKey, TValue}.KeyCollection from the Mono project, changed 
+	/// to use IDictionary instead of Dictionary.</summary>
 	[Serializable]
 	public class KeyCollection<TKey, TValue> : ICollection<TKey>, IReadOnlyCollection<TKey>, IEnumerable<TKey>, ICollection, IEnumerable 
 	{

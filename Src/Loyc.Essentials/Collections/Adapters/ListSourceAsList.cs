@@ -30,8 +30,8 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>A read-only wrapper that implements IList(T) and IListSource(T),
-	/// returned from <see cref="LCExt.AsList{T}"/>.</summary>
+	/// <summary>Adapter: a read-only wrapper that implements IList(T) and 
+	/// IListSource(T), returned from <see cref="LCExt.AsList{T}"/>.</summary>
 	[Serializable]
 	public sealed class ListSourceAsList<T> : WrapperBase<IListSource<T>>, IListAndListSource<T>
 	{

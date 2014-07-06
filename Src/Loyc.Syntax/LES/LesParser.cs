@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax.Lexing;
-using Loyc.LLParserGenerator;
 using Loyc.Collections;
 using Loyc.Syntax;
 

@@ -8,7 +8,6 @@ using System.ComponentModel;
 using Loyc;
 using Loyc.Utilities;
 using Loyc.Math;
-using Loyc.CompilerCore;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
 using S = Loyc.Syntax.CodeSymbols;
@@ -927,7 +926,7 @@ namespace Ecs
 		static string GetRawText(LNode rawTextNode)
 		{
 			object value = rawTextNode.Value;
-			if (value == null) {
+			if (value == null || value == NoValue.Value) {
 				var node = rawTextNode.Args[0, null];
 				if (node != null)
 					value = node.Value;

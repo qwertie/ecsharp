@@ -6,6 +6,7 @@ using Loyc.MiniTest;
 
 namespace Loyc.Collections
 {
+	/// <summary>Unit tests for <see cref="ListExt"/>.</summary>
 	[TestFixture]
 	public class ListExtTests
 	{

@@ -10,7 +10,6 @@ import System.Collections.Generic;
 import System.Linq;
 import System.Text;
 import Loyc;
-import Loyc.LLParserGenerator;
 import Loyc.Collections;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;

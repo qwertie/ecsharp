@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Loyc.Collections.Impl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace Loyc.Collections
 		}
 	}
 
-	/// <summary>An adapter from <see cref="IListSource{T}"/> to <see cref="ISparseListSource{T}"/>.</summary>
+	/// <summary>Adapter from <see cref="IListSource{T}"/> to <see cref="ISparseListSource{T}"/>.</summary>
 	/// <seealso cref="LCExt.AsSparse{T}"/>
 	public class ListSourceAsSparse<T> : ListSourceBase<T>, ISparseListSource<T>
 	{

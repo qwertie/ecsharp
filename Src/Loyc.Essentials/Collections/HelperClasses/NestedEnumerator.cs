@@ -6,8 +6,8 @@ using System.Collections;
 
 namespace Loyc.Collections
 {
-	/// <summary>An enumerator that helps enumerate tree data structures. It 
-	/// maintains a virtual call stack that avoids the performance hit of using
+	/// <summary>Helper class. An enumerator that helps enumerate tree data structures. 
+	/// It maintains a virtual call stack that avoids the performance hit of using
 	/// nested "yield return" statements in C#.</summary>
 	/// <typeparam name="Frame">Frame data structure; represents the current 'depth' 
 	/// in a tree data structure, or the current 'stack frame' on a virtual stack.

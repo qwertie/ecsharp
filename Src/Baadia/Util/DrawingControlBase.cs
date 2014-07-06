@@ -260,7 +260,7 @@ namespace Util.WinForms
 			// 2b. That intersection point is the one _entering_ the rectangle. Find 
 			//    the previous intersection point, the one that exits the rectangle.
 			//    this is the beginning of the region to potentially erase.
-			var older = points.ReverseView().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
+			var older = points.Reverse().AdjacentPairs().Select(pair => pair.B.Point.To(pair.A.Point));
 			Point<float> beginning = default(Point<float>);
 			bool keepLooking = false;
 			int offs = 0;

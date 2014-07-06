@@ -11,6 +11,7 @@ namespace Loyc.LLParserGenerator
 {
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of token IDs.</summary>
+	/// <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
 	public class IntSet : IListSource<IntRange>, IEquatable<IntSet>
 	{
 		/// <summary>A list of non-overlapping character ranges, sorted by code 
@@ -82,10 +83,15 @@ namespace Loyc.LLParserGenerator
 				if (inverted = s[1] == '^')
 					i++;
 
+				success = true;
 				while (i + 1 < s.Length)
 				{
 					int lo = ParseChar(s, ref i);
-					if (s[i] == '-') {
+					if (i >= s.Length) {
+						Debug.Assert(s.EndsWith("\\]"));
+						i = s.Length - 1;
+						success = false;
+					} else if (s[i] == '-') {
 						i++;
 						int hi = ParseChar(s, ref i);
 						ranges.Add(new IntRange(lo, hi));
@@ -93,7 +99,6 @@ namespace Loyc.LLParserGenerator
 						ranges.Add(new IntRange(lo));
 					}
 				}
-				success = true;
 			}
 			else if (s.EndsWith(")") && (s.StartsWith("(") || (inverted = s.StartsWith("~("))))
 			{
@@ -103,7 +108,7 @@ namespace Loyc.LLParserGenerator
 
 				for(;;) {
 					int lo, hi;
-					if (!G.TryParseAt(s, ref i, out lo)) {
+					if (!G.TryParseInt(s, ref i, out lo)) {
 						if (i + 1 == s.Length && lo == 0)
 							success = true;
 						break;
@@ -111,7 +116,7 @@ namespace Loyc.LLParserGenerator
 					hi = lo;
 					if (s[i] == '.' && s[i + 1] == '.') {
 						i += 2;
-						if (!G.TryParseAt(s, ref i, out hi)) break;
+						if (!G.TryParseInt(s, ref i, out hi)) break;
 					}
 					if (s[i] == ',')
 						i++;
@@ -246,7 +251,7 @@ namespace Loyc.LLParserGenerator
 			if (l.IsInverted || r.IsInverted)
 			{
 				if (!l.IsInverted) l = l.EquivalentInverted();
-				if (!r.IsInverted) r = l.EquivalentInverted();
+				if (!r.IsInverted) r = r.EquivalentInverted();
 				return New(l.IsInverted ? r : l, true, IntersectCore(l, r));
 			}
 			else
@@ -355,7 +360,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Computes the equivalent inverted set, e.g. if the set is 
 		/// <c>'b'..'y'</c>, the equivalent inverted set is 
 		/// <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
-		protected internal IntSet EquivalentInverted()
+		public IntSet EquivalentInverted()
 		{
 			if (_ranges.Count == 0)
 				return new IntSet(new IntRange(int.MinValue, int.MaxValue), IsCharSet, !IsInverted);
@@ -446,9 +451,9 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return _ranges[index]; }
 		}
-		public IntRange TryGet(int index, ref bool fail)
+		public IntRange TryGet(int index, out bool fail)
 		{
-			return _ranges.TryGet(index, ref fail);
+			return _ranges.TryGet(index, out fail);
 		}
 		public int Count
 		{
@@ -488,6 +493,23 @@ namespace Loyc.LLParserGenerator
 		public InternalList<IntRange> Runs()
 		{
 			return IsInverted ? EquivalentInverted()._ranges : _ranges;
+		}
+
+		public IEnumerable<int> Integers(bool obeyInversion)
+		{
+			if (obeyInversion && IsInverted)
+				return EquivalentInverted().Integers(false);
+			else
+				return Integers();
+		}
+		private IEnumerable<int> Integers()
+		{
+			foreach (var r in _ranges)
+				for (int n = r.Lo; ; n++)
+				{
+					yield return n;
+					if (n == r.Hi) break;
+				}
 		}
 
 		public IntSet Optimize(IntSet dontcare, bool mergeRuns = true)
@@ -615,7 +637,10 @@ namespace Loyc.LLParserGenerator
 			if (asCharRange) {
 				if (Lo == Hi)
 					Append(sb, Lo);
-				else {
+				else if (Lo + 1 == Hi) {
+					Append(sb, Lo);
+					Append(sb, Hi);
+				} else {
 					Append(sb, Lo);
 					sb.Append("-");
 					Append(sb, Hi);

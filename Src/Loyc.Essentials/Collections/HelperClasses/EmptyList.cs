@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-	/// <summary><see cref="EmptyList.Value"/> is a read-only empty list.</summary>
+	/// <summary>Helper class: <see cref="EmptyList{T}.Value"/> is a read-only empty list.</summary>
 	[Serializable]
 	public class EmptyList<T> : IList<T>, IRange<T>, IIsEmpty
 	{

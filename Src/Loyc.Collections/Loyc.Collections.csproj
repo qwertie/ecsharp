@@ -157,8 +157,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
-      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
-      <Name>Loyc.Essentials.NET4</Name>
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

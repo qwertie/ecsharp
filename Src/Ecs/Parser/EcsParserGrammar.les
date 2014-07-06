@@ -1107,7 +1107,7 @@ namespace Ecs.Parser
 				{return F.Call(S.Enum, name, bases,       startIndex, end.EndIndex).WithAttrs(attrs);}
 			|	lb:="{" rb:="}"
 				{
-					var list = AppendExprsInside(lb, new RWList!LNode(), true);
+					var list = ExprListInside(lb, true);
 					var body = F.Braces(list, lb.StartIndex, rb.EndIndex);
 					return F.Call(S.Enum, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);
 				}

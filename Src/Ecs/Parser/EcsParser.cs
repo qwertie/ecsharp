@@ -9,6 +9,7 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 
+/// <summary>Enhanced C# parser</summary>
 namespace Ecs.Parser
 {
 	using TT = TokenType;

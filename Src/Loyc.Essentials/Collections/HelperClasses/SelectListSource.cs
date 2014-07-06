@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Loyc.Collections.Impl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Text;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// Provides a modified view of an IListSource by transforming each element 
+	/// Helper class: provides a modified view of an IListSource by transforming each element 
 	/// on-demand. Objects of this type are returned from 
 	/// <see cref="LCExt.Select{T,TResult}(IListSource{T},Func{T,TResult})"/>
 	/// </summary>

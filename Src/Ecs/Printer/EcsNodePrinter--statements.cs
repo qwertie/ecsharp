@@ -9,7 +9,6 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
-using Loyc.CompilerCore;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using EP = Ecs.EcsPrecedence;

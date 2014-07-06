@@ -155,11 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EcsPrinterAndParserTests.cs" />
-    <Compile Include="Macros\Attributes.cs" />
-    <Compile Include="Macros\NullDot.cs" />
-    <Compile Include="Macros\TinyMacros.cs" />
     <Compile Include="EcsPrecedence.cs" />
-    <Compile Include="ErrorHandling.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
     <Compile Include="Parser\EcsLexerGrammar.cs">

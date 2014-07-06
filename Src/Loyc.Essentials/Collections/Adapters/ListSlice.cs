@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>
-	/// A wrapper of a list that provides a view of a range of elements.
+	/// Adapter: a wrapper of a list that provides a view of a range of elements.
 	/// Objects of this type are returned from <see cref="ListExt.Slice{T}"/>
 	/// </summary>
 	/// <remarks>

@@ -149,7 +149,7 @@ namespace BoxDiagrams
 			return @do =>
 			{
 				IList<PointT> points = Points;
-				if (toSide) points = points.ReverseView();
+				if (toSide) points = points.Reverse();
 				
 				Debug.Assert(points.Count >= 2);
 				if (points.Count < 2)

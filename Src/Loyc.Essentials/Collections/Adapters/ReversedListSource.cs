@@ -1,4 +1,5 @@
-﻿/*
+﻿using Loyc.Collections.Impl;
+/*
  * Created by SharpDevelop.
  * User: Pook
  * Date: 4/10/2011
@@ -13,15 +14,16 @@ namespace Loyc.Collections
 {
 	public static partial class LCExt
 	{
+		/// <summary>Returns a reversed view of a read-only list.</summary>
+		/// <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
 		public static ReversedListSource<T> Reverse<T>(this IListSource<T> c)
 		{
 			return new ReversedListSource<T>(c);
 		}
 	}
 
-	/// <summary>
-	/// Reversed view of IListSource returned from <see cref="LCExt.Reverse{T}"/>
-	/// </summary>
+	/// <summary>Adapter: reversed view of <see cref="IListSource{T}"/> returned 
+	/// from <see cref="LCExt.Reverse{T}"/>.</summary>
 	[Serializable]
 	public class ReversedListSource<T> : ListSourceBase<T>
 	{

@@ -128,7 +128,7 @@
     <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
-    <Compile Include="Collections\BaseClasses\SourceBase.cs" />
+    <Compile Include="Collections\BaseClasses\ReadOnlyCollectionBase.cs" />
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
@@ -163,6 +163,7 @@
     <Compile Include="Collections\Adapters\Slice.cs" />
     <Compile Include="Collections\Adapters\SourceAsCollection.cs" />
     <Compile Include="Collections\Adapters\NegListSlice.cs" />
+    <Compile Include="NamespaceDocs.cs" />
     <Compile Include="Strings\StringSlice.cs" />
     <Compile Include="Strings\UString.cs" />
     <Compile Include="Collections\Adapters\ValueCollection.cs" />

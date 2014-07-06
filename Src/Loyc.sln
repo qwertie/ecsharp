@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Loyc.Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"
@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Collections", "Loyc.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baadia", "Baadia\Baadia.csproj", "{A222E8AD-0CA1-40D2-BAB9-6F710E2215D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEL", "LEL\LEL.csproj", "{E960917A-F32C-469F-91DA-0B75342FA5BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP", "LeMP\LeMP.csproj", "{E960917A-F32C-469F-91DA-0B75342FA5BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

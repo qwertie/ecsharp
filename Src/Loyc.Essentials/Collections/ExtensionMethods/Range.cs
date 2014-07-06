@@ -6,7 +6,8 @@ using System.ComponentModel;
 
 namespace Loyc.Collections
 {
-	public static class Range
+	/// <summary>Extension/helper methods for ranges.</summary>
+	public static partial class Range
 	{
 		/// <summary>Advances by the specified number of elements.</summary>
 		/// <param name="count">Number of items to remove from the beginning of the
@@ -78,21 +79,5 @@ namespace Loyc.Collections
 			return r1 > o0 && o1 > r0
 				&& object.Equals(range.InnerList, other.InnerList);
 		}
-
-		public static Repeated<T> Repeat<T>(T value, int count)
-		{
-			return new Repeated<T>(value, count);
-		}
-		public static Repeated<T> Single<T>(T value)
-		{
-			return new Repeated<T>(value, 1);
-		}
-		/// <summary>Returns <c>new IntRange(start, count)</c>.</summary>
-		public static IntRange IntRange(int start, int count)
-		{
-			return new IntRange(start, count);
-		}
 	}
-
-
 }
