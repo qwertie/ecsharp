@@ -22,4 +22,5 @@ sed --in-place -r "s_<li>.*(/Src/.*)</li>_<li><a href='https://github.com/qwerti
 @REM 9. If using Visual Studio, go to Tools | External Tools... and add this batch 
 @REM    file as a tool. Th "Use Output Window" check box will allow you to double-
 @REM    click errors to go to the error location in source code.
+@REM 10. Output too ugly? Read http://www.stack.nl/~dimitri/doxygen/manual/customize.html
 @echo The End.

@@ -1,0 +1,25 @@
+/* Doxygen's output and CSS is a bit of a mess and a minefield */
+td.entry, td.desc {
+	height: 24px; /*min-height doesn't work for table/tr/td*/
+}
+
+.icona, .arrow { /* Default height is oversized and raises the class name to the top of the cell */
+    height: auto;
+}
+
+.directory tr.even {
+	background-color: #F8F8F8;
+}
+
+.directory td.entry, .directory td.desc { /* make table easier to read! */
+	vertical-align: middle;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	border-top: 1px dotted #888;
+	border-bottom: 1px dotted #888;
+	border-left: 0px;
+}
+
+/* Bizarre fact: in lists of methods/properties, every data left-hand cell (class 
+   memItemLeft) has valign="top" and right-hand cell (class memItemRight) has
+   valign="bottom". This can make styling more difficult. */
