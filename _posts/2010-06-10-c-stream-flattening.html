@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2010/06/c-stream-flattening.html'>blogspot</a>.</i></p></small>
 {% raw %}
 The Microsoft research language Cω (C-omega), which predates C# 3.0 (and even 2.0?), extended C# with a number of interesting features, of which C# 3.0 includes several comparable features. To me the most interesting thing in Cω was streams, which are roughly just lists of things in IEnumerables. For instance, the stream "int*" basically means "IEnumerable&lt;int>", but they allowed you to manipulate lists of things without using explicit loops:
+
+
 <pre>int* FromTo(int from, int to)
 {
     for (i = from; i <= to; i++) yield return i;

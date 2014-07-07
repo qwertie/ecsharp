@@ -6,6 +6,7 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2011/11/taste-of-hardware-programming.html'>blogspot</a>.</i></p></small>
 {% raw %}
 Have you ever tried hardware programming with Verilog or VHDL? During University I had to program FPGAs with Verilog, and it struck me that hardware programming was a lot like software programming, but at the same time much different also. Instead of consuming plentiful RAM, hardware programming consumes a much more scarce resource (transistors) instead. Physics can cause your program to malfunction, but aside from that, I really enjoyed my one little hardware programming course.<br/>
+
 <br/>
 The fundamental difference between hardware and software is that every logic gate inherently operates in parallel, unlike software which inherently operates sequentially, and requires a special mechanism--threads--in order to do tasks in parallel. Traditionally, writing multithreaded programs has been quite difficult, due to the danger of race conditions, the danger of deadlocks, forgetting to lock data structures, and so on. So it was a little surprising that such problems don't necessarily happen in hardware programming. In fact I found that the biggest assignment I was given (to make an "alarm system") was relatively fun and easy. And what made it relatively fun and easy was (1) that the solution was small enough to fit in our FPGAs without much effort, and (2) I didn't have to "update" variables.<br/>
 <br/>

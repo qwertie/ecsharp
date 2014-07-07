@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2007/07/ccli-is-disgusting.html'>blogspot</a>.</i></p></small>
 {% raw %}
 Microsoft has found a truly awful set of syntax and semantics for their new C++/CLI language, formerly known as "Managed Extensions for C++". They decided that the old syntax was ugly because it used keywords that began with double underscores (which is a standard way to add compiler extensions in C++). Unfortunately, their solution was much worse than the problem they were trying to solve.<br/>
+
+
 <br/>
 I had been using the first Managed C++ for a little while, but luckily I only made a single module in it (wrapper classes to allow C# to access some C++ classes). After a couple years I wanted to add a dialog box that accessed the C++ classes directly, but the forms designer only supported the "new" syntax; worse, Microsoft requires that the entire project only use one syntax or the other. So I learned the awfulness of the new design as I laboriously converted each line of the old code to the new syntax; the new syntax is so different that virtually every line of the module's header file had to be changed. And not just slightly. In many cases it was faster to retype the line than to try to adjust it. And they didn't just make new syntax, they invented new problematic semantics as well.<br/>
 <br/>

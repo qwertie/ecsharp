@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/07/constructors-considered-harmful.html'>blogspot</a>.</i></p></small>
 {% raw %}
 Ahh, constructors, constructors. In my opinion the constructor design in most languages including C++, C#, D and Java is flawed, because it exposes an implementation detail that should not be exposed, namely, which class gets allocated and when. <br/>
+
+
 <br/>
 I offer you as "exhibit L" the Lazy&lt;T> class in the .NET framework. This class's main purpose is to compute a value the first time you access it. For example: 
 <pre>

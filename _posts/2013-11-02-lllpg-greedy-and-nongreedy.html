@@ -8,6 +8,8 @@ layout: post
 (Edit: This blog post was incorporated into the <a href="http://www.codeproject.com/Articles/733426/The-Loyc-LL-k-Parser-Generator-Part-4">fourth article about LLLPG</a>.) <br/>
 <br/>
 LLLPG supports "greedy" and "nongreedy" loops and optional items. The "greedy" and "nongreedy" modes refer to the action you prefer to take in case of ambiguity between an exit branch and another branch. Greedy is the default: it means that if the input matches both a non-exit branch and an exit branch, the non-exit branch should be taken. A typical greedy example is this rule for an "if" statement: 
+
+
 <pre>
   private token IfStmt @[ 
     // "if" "(" Expr ")" Stmt ("else" Stmt)?

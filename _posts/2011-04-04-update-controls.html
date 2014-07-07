@@ -7,8 +7,9 @@ layout: post
 {% raw %}
 I've felt for a long time that something was wrong with the way we do GUI development. For instance, suppose we have a form with a list of people and some information about them:<br/>
 <br/>
-
 <img src="http://4.bp.blogspot.com/-Dl_fqw2oUSE/TaC7i0WeR8I/AAAAAAAAACg/oxwJxvjQrNI/s1600/PointlessForm.png" border="0" alt="A pointless person editor"/><br/>
+
+
 <small><i>(This used to be an HTML form but CodeProject wouldn't render it.)</i></small><br/>
 <br/>
 Suppose that the "serial number" box should be disabled if the user does not have a bike. Traditionally, we would write an event handler for when the value of the checkbox changes, and update the Enabled property when it does. Some code bases would also have code when the current person changes, and we must also handle the situation that the list of persons is empty.<br/>

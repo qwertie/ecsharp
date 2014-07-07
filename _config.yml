@@ -8,9 +8,9 @@ exclude: [Src, Lib, Visual Studio Integration]
 markdown: redcarpet
 encoding: UTF-8
 highlighter: rouge
-paginate: 5
+paginate: 8
 paginate_path: "blog/page:num"
-permalink: /:categories/:year/:month/:title.html
+permalink: /:categories/:year/:title.html
 safe: true
 lsi: false
 

@@ -5,7 +5,9 @@ layout: post
 ---
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/05/status-update-loyc-tree-rewritten.html'>blogspot</a>.</i></p></small>
 {% raw %}
-I have made and implemented the changes that I planned to make to the Loyc tree. The code was rewritten from scratch; the new code is not as fancy or complete, but it's easier to use. <ul>
+I have made and implemented the changes that I planned to make to the Loyc tree. The code was rewritten from scratch; the new code is not as fancy or complete, but it's easier to use. 
+
+<ul>
 <li>Red nodes are gone (and GreenNode is now called LNode, for "Loyc Node")</li>
 <li>Mutable nodes are gone, and the data type for Args and Attrs has changed to RVList&lt;T> (<a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">Reverse V-List</a>--since this tends to make people think of Recreational Vehicles, I'm thinking about changing the name to simply VList, with the forward VList still being named FVList). RVList provides a natural way to support the common pattern of gathering a list of statements and then freezing them into a read-only node; you can create a list with RWList&lt;LNode>, mutate it however you like (similar performance to List&lt;T>), and then when the list is complete, call ToRVList() to convert it to RVList&lt;LNode> instantly.</li>
 <li>There are now three kinds of nodes: symbols (now called Ids, i.e. identifiers), literals, and calls. I'm considering whether to add a fourth type for nodes that have both a name and a value, perhaps calling it the Token kind (StdTriviaNode already has both a Name and Value, but it is currently a subclass of StdIdNode.).</li>

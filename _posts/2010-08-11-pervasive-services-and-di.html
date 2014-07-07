@@ -7,7 +7,9 @@ layout: post
 {% raw %}
 I have been learning recently about Dependency Injection for loose coupling (see for example <a href="http://www.codeproject.com/KB/architecture/DependencyInjection.aspx">these</a> <a href="http://www.codeproject.com/KB/architecture/di-with-autofac.aspx">articles</a>).<br/>
 <br/>
-DI is really very simple. When a class X is designed for DI, it means that<ol>
+DI is really very simple. When a class X is designed for DI, it means that...
+
+<ol>
 <li>X itself avoids specifying what other <i>classes</i> it depends on. For example, it avoids calling "new Y()" or using a singleton class, and it accesses the services it needs through interfaces (or, occasionally, abstract classes) rather than references to concrete types.</li>
 <li>X's dependencies are exposed explicitly in the constructor, or by properties of X, so that whoever creates/manages X can choose the dependencies.</li>
 </ol>Because X doesn't choose its own dependencies, a third party can do so on its behalf. This makes it possible to swap out a service that X needs for some other service without changing X itself, which may allow X to be used in more situations than it was designed for. For example, if X needs a database service, it would take a reference to some database-related interface (e.g. IQueryable&lt;T&gt; or whatever, I don't know, I don't use databases much myself) in its constructor. Now X may have initially been intended to use a MySQL database, but because X doesn't open the database connection itself, you may be able to switch to PostgreSQL or Oracle without changing X at all. For unit testing you might not want to use a real database, so you could use a "<a href="http://en.wikipedia.org/wiki/Mock_object">mock object</a>" that contains simulated data, based on LINQ-to-XML or something.<br/>

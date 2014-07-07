@@ -8,6 +8,7 @@ layout: post
 I was just reading <a href="http://www.simple-talk.com/community/blogs/richard/archive/2011/06/16/101966.aspx">this article</a> detailing someone's frustrations with WPF, and thought I should add to the chorus.<br/>
 <br/>
 I agree with Mr. Mitchell, I'm fairly sure I will never like WPF. It has a steep learning curve because it's undiscoverable. WinForms was relatively easy to understand; its most complex feature was <a href="http://www.codeproject.com/KB/database/databinding_tutorial.aspx">data binding</a>. But WPF relies heavily on XAML, a language in which MS somehow expects you to "just know" what to type to get what you want, and when you somehow figure out what to type, half the time it doesn't work and you get a mysterious unhelpful exception (or no exception, but it still doesn't work.)<br/>
+
 <br/>
 In WinForms, there was an easy-to-use designer and anything you did was translated to easy-to-understand C# (or VB) code; in fact that was the native representation! XAML, however, can't be translated to anything except BAML, so nobody can easily understand what a piece of XAML does, nor can we step through it in the debugger. To make matters worse, XAML relies heavily on dynamic typing (and even the C# part constantly makes you cast "object"s). This prevents IntelliSense from working very well, thwarts the refactoring tools (ever tried renaming a property that was bound in XAML?), and shifts tons of errors from compile-time to run-time.<br/>
 <br/>

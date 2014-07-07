@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/06/android-listview-make-selection-stay.html'>blogspot</a>.</i></p></small>
 {% raw %}
 The behavior of Android's ListView is surprising: when the user clicks an item, it doesn't stay selected! It looks selected for a brief instant and then fades away.<br/>
+
+
 <br/>
 Apparently the "disappearing selection" is by design; it's something called "<a href="http://developer.android.com/resources/articles/touch-mode.html">touch mode</a>". I read through that document and still I have no idea why they thought it was a good idea. My guess is that, since Android was originally designed for small-screen devices, they expected that you would fill the screen with a list and then, when the user clicks an item, move to a new list on a different screen. Thus, the user wouldn't be aware that Android lost track of the selected item.<br/>
 <br/>

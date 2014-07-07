@@ -106,9 +106,9 @@ a.sidebar-nav-item:focus {
 @media (min-width: 48em) {
   .sidebar-sticky {
     position: absolute;
-    right:  0.2rem;
+    right:  0.5rem;
     bottom: 0.5rem;
-    left:   0.5rem;
+    left:   1rem;
   }
 }
 
@@ -120,13 +120,14 @@ a.sidebar-nav-item:focus {
  */
 
 .content {
-  padding-top:    4rem;
-  padding-bottom: 4rem;
+  padding-top:    3rem;
+  padding-bottom: 3rem;
+  padding-left:   0.5em;
+  padding-right:  0.3em;
 }
 
 @media (min-width: 48em) {
   .content {
-    max-width: 45rem;
     margin-left: 16.5rem;
     margin-right: 0.5rem;
   }
@@ -134,7 +135,7 @@ a.sidebar-nav-item:focus {
 
 @media (min-width: 64em) {
   .content {
-    margin-left: 17rem;
+    margin-left: 17.5rem;
     margin-right: 1rem;
   }
 }

@@ -11,7 +11,9 @@ SL_COMMENT: '#' (~NEWLINE_CHAR)*;<br/>
 <br/>
 Somehow the generated code for this rule included a check (during the matching stage, if I remember correctly) that said, in essense, "if the comment contains a slash character, generate a syntax error". What the hell? And there was another bug besides that which I've forgotten. My bug report on the first batch of bugs went mostly unacknowledged, so I didn't bother to try isolating this new problem.<br/>
 <br/>
-Instead, I'm planning to try another approach: I'll make my own ANTLR. I bought the ANTLR book May 26, and I've been unable to get the thing to work for me since then. I'm getting impatient. I know how a LL parser generator should behave, so I ought to be able to make one... right?<br/>
+Instead, I'm planning to try another approach: I'll make my own ANTLR.
+
+I bought the ANTLR book May 26, and I've been unable to get the thing to work for me since then. I'm getting impatient. I know how a LL parser generator should behave, so I ought to be able to make one... right?<br/>
 <br/>
 Of course, I would like a parser generator done the Loyc way - as an extension to Loyc. But it'll be a little bit tricky to do this, because Loyc does not actually exist yet. It's still in the planning stages! There are no AST classes, no ONEP. So what will I do?<br/>
 <br/>

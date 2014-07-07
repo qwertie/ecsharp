@@ -4,7 +4,9 @@ layout: default
 
 <div class="post" id="post">
   <h1 class="post-title">{{ page.title }}</h1>
-  <span class="post-date">{{ page.date | date_to_string }}</span>
+  <span class="post-date">
+  {% if page.tagline %}<span class="tagline">{{ page.tagline }} &nbsp;&nbsp;</span>{% endif %}
+  {{ page.date | date_to_string }}</span>
   {{ content }}
 </div>
 

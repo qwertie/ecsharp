@@ -5,7 +5,9 @@ layout: post
 ---
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2012/02/design-flaws-in-net.html'>blogspot</a>.</i></p></small>
 {% raw %}
-I made this list of the flaws in .NET for StackOverflow, but then I noticed that <a href="http://stackoverflow.com/questions/411906/c-sharp-net-design-flaws">the question</a> is closed. Whatever, I may as well CC to my blog. All of these flaws except #3 have irked me personally. .NET is my favorite platform, yet it is still far from ideal.<ol>
+I made this list of the flaws in .NET for StackOverflow, but then I noticed that <a href="http://stackoverflow.com/questions/411906/c-sharp-net-design-flaws">the question</a> is closed. Whatever, I may as well CC to my blog. All of these flaws except #3 have irked me personally. .NET is my favorite platform, yet it is still far from ideal.
+
+<ol>
 <li>There are no subsets of <code>ICollection&lt;T&gt;</code> and <code>IList&lt;T&gt;</code>; at minimum, a covariant read-only collection interface <code>IListSource&lt;out T&gt;</code> (with an enumerator, indexer and Count) would have been extremely useful.</li><br/>
 
 <li>.NET does not support <a href="http://www.codeproject.com/Articles/29922/Weak-Events-in-C" rel="nofollow">weak delegates</a>. The workarounds are clumsy at best, and listener-side workarounds are impossible in partial trust (ReflectionPermission is required).</li><br/>

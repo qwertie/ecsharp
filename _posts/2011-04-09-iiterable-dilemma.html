@@ -5,7 +5,10 @@ layout: post
 ---
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2011/04/iiterable-dilemma.html'>blogspot</a>.</i></p></small>
 {% raw %}
+<i>(This post is obsolete)</i><br/>
 I like the .NET Framework. To me, C# is a much better programming language than Java or C++, and it offers good performance at the same time. However, some of the fundamental design decisions in the .NET framework bother me. Which brings me to the subject of this post: I'm remaking some of the .NET collections library, built on top of a replacement for IEnumerable&lt;T&gt; called IIterable&lt;T&gt;.<br/>
+
+
 <br/>
 You see, I'm a bit of a performance nut. So it bothers me that the <a href="http://msdn.microsoft.com/en-us/library/78dfe2yb.aspx">IEnumerator&lt;T&gt;</a> interface requires two interface calls to retrieve each element of a collection: MoveNext() and Current. Therefore, I invented a replacement and named it Iterator&lt;T&gt;:<br/>
 

@@ -5,10 +5,11 @@ layout: post
 ---
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/06/the-root-of-all-evil-is-optimization-no.html'>blogspot</a>.</i></p></small>
 {% raw %}
-
 <p>You've probably heard the refrain "Premature optimization is the root of all evil". </p>
 <p>Well, how did that turn out? Every Windows computer is filled with little gadgets in the system tray. Users may not know what those little icons are, but each one seems to make the hard drive thrash for 10 additional seconds on startup, and uses 10 additional megabytes of RAM. Plus there's all these hidden services that the user cannot see or measure, but slow down the PC just as much as those system tray icons. Of course, some of these apps are small, optimized, and necessary, but a few bad apples (which users have no way to locate) ruin the startup experience. </p>
-<p>I have a somewhat different opinion: I think that <i>optimization is the main job of many programmers</i>—not all programmers by any means, but many. Look, here's an algorithm that searches a list of points for the closest one: </p><pre lang="cs">
+<p>I have a somewhat different opinion: I think that <i>optimization is the main job of many programmers</i>—not all programmers by any means, but many.
+
+Look, here's an algorithm that searches a list of points for the closest one: </p><pre lang="cs">
   using System.Windows;
   ...
   public int ClosestPointTo(Point near, IList&lt;Point> list)

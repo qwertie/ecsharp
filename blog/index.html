@@ -3,22 +3,22 @@ layout: page
 title: Blog
 note: This renders the blog. The actual blog posts are in /_posts
 ---
-<p><a href="{{ site.base_url }}/blog-list.html">List of all posts</a> • <a href="{{ "atom.xml" | prepend: site.baseurl }}">Atom feed</a>
+<p><a href="{{ site.base_url }}/blog-list.html">List of all posts</a> • <a href="{{ site.baseurl }}/atom.xml">Atom feed</a>
 </p>
 
 <div class="posts">
   {% for post in paginator.posts %}
-  <div class="post">
+  <div>
     <h1 class="post-title">
       <a href="{{ post.url }}">
         {{ post.title }}
       </a>
     </h1>
-    <span class="post-date">{{ post.date | date_to_string }}</span>
-    {{ post.content }}
-	{% if post.commentIssueId %}
-	<p><small>View comments on the <a href="{{ post.url }}">post page</a></small></p>
-	{% endif %}
+	<span class="post-date">
+	{% if post.tagline %}<span class="tagline">{{ post.tagline }} &nbsp;&nbsp;</span>{% endif %}
+	{{ post.date | date_to_string }}</span>
+    {{ post.excerpt }} 
+	<p><a href="{{ post.url }}">(read more)</a></p>
   </div>
   {% endfor %}
 </div>

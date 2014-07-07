@@ -5,12 +5,15 @@ layout: post
 ---
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2013/05/redesigning-loyc-tree-code.html'>blogspot</a>.</i></p></small>
 {% raw %}
-The original (and current) design for the classes that represent <a href="http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html">Loyc trees</a> has some problematic properties:  <ol>
+The original (and current) design for the classes that represent <a href="http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html">Loyc trees</a> has some problematic properties: 
+<ol>
 <li>You can't tell if a node is mutable or immutable without a runtime check.</li>
 <li>Green nodes are hard to work with because they use relative positioning.</li>
 <li>Red nodes (the Node class) are hard to work with because they have parents.</li>
 <li>The "f" part of "f(x)" is not (in general) an independent node--although it could be.</li>
-</ol> First of all, it is a hybrid mutable-immutable design: you can create trees that are mutable, and then freeze them to get immutable trees. This way, they support multiple programming styles depending on what you prefer. If you'd like to modify trees in-place, you can; if you like to work with immutable trees and contruct them bottom-up, you can. In theory, it sounds useful and flexible. <br/>
+</ol>
+
+First of all, it is a hybrid mutable-immutable design: you can create trees that are mutable, and then freeze them to get immutable trees. This way, they support multiple programming styles depending on what you prefer. If you'd like to modify trees in-place, you can; if you like to work with immutable trees and contruct them bottom-up, you can. In theory, it sounds useful and flexible. <br/>
 <br/>
 However, the original design does not benefit from type safety. You cannot say "this method requires a mutable tree" or "this method requires an immutable tree". It's non-obvious when a method takes or returns a "Node", what exactly that means. <br/>
 <br/>

@@ -1,20 +1,4 @@
-<style>
-.sidebox {
-  border: 1px dotted rgb(127, 127, 127);
-  padding: 4px 3px 4px 6px; // top right bottom left
-  min-width: 100px ! important;
-  float: right ! important;
-  font-size: 90%;
-  margin-top: 1px;
-  margin-bottom: 1px;
-  margin-left: 6px;
-  visibility: visible;
-  max-width: 50%;
-  width: 35%;
-}
-.sidebox ul { padding:0em 0em 0em 1.3em; margin:0em; }//TRBL
-</style>
-
+<!--Note: sidebars inside posts (e.g. tables of contents) are defined in res/css/custom.css-->
 <div class="sidebar">
   <div class="container sidebar-sticky">
     <div class="sidebar-about">
@@ -44,6 +28,8 @@
       {% endfor %}
 
       <a class="sidebar-nav-item" href="{{ site.github.repo }}">View on GitHub</a>
+      <a class="sidebar-nav-item" href="http://sourceforge.net/p/loyc/wiki/Home/">Documentation wiki</a>
+      <a class="sidebar-nav-item" href="{{ site.baseurl }}/doc/code">Documentation comments</a>
     </nav>
 
     <p></p>

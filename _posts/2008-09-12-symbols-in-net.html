@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2008/09/symbols-in-net.html'>blogspot</a>.</i></p></small>
 {% raw %}
 I'm a big fan of Ruby's "symbols". Symbols are sort of like strings or enums, but different. Their syntax is an identifier with a colon in front, e.g. :Foo. <a href="http://www.randomhacks.net/articles/2007/01/20/13-ways-of-looking-at-a-ruby-symbol">See here</a> for details.<br/>
+
+
 <br/>
 I love using symbols in place of enums, because if they are implemented properly, comparing two symbols is as fast as comparing two integers (enums). Enums have the problem of non-extensibility; library B can't define new values for an enum in library A. Meanwhile, anybody can define a new symbol at any time.<br/>
 <br/>

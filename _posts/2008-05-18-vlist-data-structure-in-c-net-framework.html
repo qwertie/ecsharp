@@ -6,6 +6,8 @@ layout: post
 <small><p><i>This post was imported from <a href='http://loyc-etc.blogspot.com/2008/05/vlist-data-structure-in-c-net-framework.html'>blogspot</a>.</i></p></small>
 {% raw %}
 I've made an implementation of Phil Bagwell's VList data structure in C#, with a fairly comprehensive test suite. It comes in two flavors: VList(of T), where you normally add/remove items at the beginning of the list, and RVList(of T), to which you normally add/remove items at the end. It implements the complete IList(of T) interface plus quite a few additional members including AddRange, InsertRange, RemoveRange, Push, and Pop. Converting a VList to a RVList and vice versa is a trivial O(1) operation that appears to reverse the order of the elements. VList and RVList are value types (structs) that contain a reference to the underlying linked list of arrays (VListBlock(of T)). Small lists (0 to 2 items) are optimized with a specialized block class (VListBlockOfTwo(of T)).<br/>
+
+
 <br/>
 License: Lesser GPL. Contact me at qwertie256, at, gmail.com if you would like the source code. Here's an example usage:<br/>
 

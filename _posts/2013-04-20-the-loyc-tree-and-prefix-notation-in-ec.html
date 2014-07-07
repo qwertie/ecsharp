@@ -9,7 +9,9 @@ layout: post
 <br/>
 As I designed the macro system for Enhanced C#, I thought a lot about what kind of syntax tree would be appropriate--not just for EC# but for tools that could process multiple languages. One of Loyc's goals is conversion between languages, and another goal is to support multiple language syntaxes (perhaps each with a macro system!) in a single project. A third goal is to assist IDE tools (in particular, to be compatible with incremental parsing). And, as always, I wanted a data structure that is fast and uses memory efficiently. <br/>
 <br/>
-I considered using LISP-style lists, but they didn't fit into C# very well. In particular I didn't feel that they were the right way to model complex declarations such as  
+I considered using LISP-style lists, but they didn't fit into C# very well. In particular I didn't feel that they were the right way to model complex declarations such as...
+
+
 <pre>
  [Serializable] struct X&lt;T> : IX&lt;T> where T : class, Z { ... }
 </pre>Besides, LISP lists don't hold any metadata such as the original source file and line number of a piece of code. And how would I address the needs of IDEs--incremental parsing, for example? So I fiddled around with different ideas until I found something that felt right for C# and other languages descended from Algol. Eventually I decided to call my idea the "Loyc node" or "Loyc tree". The Loyc tree is really two independent ideas that I developed concurrently: one idea for the concept of the tree as viewed by an end-user (i.e. other developers), and another idea for how the implementation works. <br/>

@@ -1,0 +1,35 @@
+.tagline {
+  font-size: 1.3rem;
+  font-style: italic;
+  font-family: serif;
+  color: #888;
+  // I wanted the tagline and date to be shown on the same line but this
+  //Display: run-in; // only works in IE so I'll nest tagline in post-date
+}
+
+.sidebox {
+  border: 1px dotted rgb(127, 127, 127);
+  padding: 4px 3px 4px 6px; // top right bottom left
+  min-width: 100px ! important;
+  float: right ! important;
+  font-size: 90%;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  margin-left: 6px;
+  visibility: visible;
+  max-width: 50%;
+  width: 35%;
+}
+.sidebox ul { padding:0em 0em 0em 1.3em; margin:0em; } /*TRBL*/
+
+/* Magic! auto-styling external links */
+a[href^="http://"]:after,
+a[href^="https://"]:after {
+  content: url(/res/icon_external_link.png);
+  margin: 0 0 0 3px;
+}
+a[href*="loyc.net/"]:after,
+a[href*="//localhost"]:after {
+  content: '';
+  margin: 0;
+}

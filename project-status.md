@@ -2,6 +2,7 @@
 layout: page
 title: "Project Status & Task List"
 commentIssueId: 3
+stripes: true
 ---
 Help wanted!
 
@@ -9,7 +10,7 @@ Help wanted!
 
 This project includes Loyc.Essentials, Loyc.Collections, Loyc.Syntax and Loyc.Utilities.
 
-- TODO: summary & status of these
+- Status: In fairly good shape
 
 ## Loyc trees: in-memory LISP-inspired syntax trees
 
@@ -64,8 +65,8 @@ so that `A` is evaluated only once. However, this would require me to create a c
 - Standard Macros (designed to convert simple EC# code to plain C# code. this is not an exhaustive list):
     - Done: LES to C# macros (LeMP.Prelude.Les.Macros class): Contains numerous macros to convert LES code that resembles C# into syntax trees understood by the C# printer, e.g. the LES expression "class X { two::int; };" is converted to the syntax tree "#class(X, #(), { #var(#int, two); });" which is recognized by the C# printer as a class declaration.
     - Done: Null-dot: e.g. `a = b.c?.d.e` is translated to `a = b.c != null ? b.c.d.e : null`
+    - TODO: Null coalesce set: e.g. `a ??= b` means `a = a ?? b` (`a ?? (a = b)` is potentially more efficient but not always allowed by standard C#).
     - Done: Tuple literals e.g. `(3, "three")`: done. By default `(X, Y)` is mapped to `Pair.Create(X, Y)` while other numbers of arguments are mapped to `Tuple.Create`. Use `set_tuple_maker(Tuple.Create)` if you prefer to use `System.Tuple` for all sizes. Unpacking, e.g. `(x, var y) = Foo();` is supported at the statement level (not inside a more complex statement)
-    - TODO: Tuple data types e.g. `!(int, string, Foo)` => `Tuple<int, string, Foo>` (`!(x,y)` has the syntax tree `#of(@``, x, y)`, which is the same structure as other generic types.)
     - TODO: String interpolation e.g. `$"Did you know that $x + $y = $(x+y)? It's true!"`
     - Done: `unroll(...) {...}`. This EC# example creates three fields and three properties: 
         unroll ((X,_x) in ((X, _x), (Y, _y), (Z, _z))) {
@@ -76,6 +77,14 @@ so that `A` is evaluated only once. However, this would require me to create a c
             }
         }
     - Done: `replace(...) {...}`, e.g. `replace(C => Console, W => WriteLine) {C.WL("Hello");}`
+    - TODO: `in`: `x in (1, 2, 3)` => `x == 1 || x == 2 || x == 3`
+    - TODO: code contracts: `[requires]`, `[required]`, `[assert]` `[ensures]`
+    - TODO: set-field modifiers: `public Foo(public int X, private int Y, set int Z) {}`
+    - TODO: `[field]` attribute: `[field _x] public int X { get; set; }`
+    - TODO: Forwarded methods: `static int InRange(int x, int lo, int hi) ==> MathEx.InRange;`
+    - TODO: D's `scope(exit), scope(success), scope(failure)`, probably renamed `on_finally {}`, `on_return {}`, `on_exception {}`
+    - TODO: `static int Square(int x) => x*x;` becomes `static int Square(int x) { return x*x; }`
+    - TODO: `[unroll<T>(int, long, float, double)] public static T Add<$T>(T a, T b) { return a+b; }`
     - TODO: Code quotes.
     - TODO: A macro that runs C# code at compile-time.
     - Done: `LLLPG`
