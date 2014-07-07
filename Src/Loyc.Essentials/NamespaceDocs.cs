@@ -18,7 +18,9 @@
  * Caution: this documentation is updated less often than the source code and Doxygen 
  * sometimes trips over the syntax of the XML doc comments in the source code, 
  * causing incorrect output. I am thinking about whether to switch to a different
- * documentation generator; ideas welcome.
+ * documentation generator, athough Doxygen's search feature is pretty neat.
+ * 
+ * Questions? You can reach me at `gmail.com`, with account name `qwertie256`.
  * 
  * Click the "Namespaces" or "Classes" tab to begin.
  */

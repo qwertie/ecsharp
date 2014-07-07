@@ -100,7 +100,7 @@ namespace Loyc.Collections.Impl
 		/// informs the caller when replacement occurs in this mode by changing 
 		/// op.Mode to AddDuplicateMode.ReplaceExisting.
 		/// </remarks>
-		public virtual int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -123,7 +123,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>In a language with templates, I would change a couple
 		/// of elements of <see cref="AListSparseOperation{T}"/> into 
 		/// template parameters.</remarks>
-		public virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -267,7 +267,7 @@ namespace Loyc.Collections.Impl
 	/// <remarks>A-List operations as diverse as "add", "remove" and "retrieve"
 	/// are actually very similar and are implemented by the same method, 
 	/// <see cref="AListNode{K,T}.DoSingleOperation"/>.</remarks>
-	public struct AListSingleOperation<K, T>
+	internal struct AListSingleOperation<K, T>
 	{
 		/// <summary>Specifies which operation is to be performed.</summary>
 		public AListOperation Mode;
@@ -354,7 +354,7 @@ namespace Loyc.Collections.Impl
 	/// to the tree (AListNode classes), and it holds information needed to run 
 	/// a command like "change item at index X" or "clear empty space".</summary>
 	/// <typeparam name="T">Item type (stored in leaf nodes)</typeparam>
-	public struct AListSparseOperation<T>
+	internal struct AListSparseOperation<T>
 	{
 		public AListSparseOperation(uint index, bool isInsert, bool writeEmpty, int count, IAListTreeObserver<int, T> tob)
 		{

@@ -133,7 +133,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static Pred SetVar(string varName, Pred pred) {
 			pred.ResultSaver = res => {
-				// #var(#missing, $varName($res))
+				// #var(@``, $varName($res))
 				return F.Var(F._Missing, varName, res);
 			};
 			return pred;
@@ -946,7 +946,7 @@ namespace Loyc.LLParserGenerator
 		}
 	}
 
-	/// <summary>A singleton to be used as the value of <see cref="Alts.ErrorBranch"/>, representing the default error branch.</summary>
+	/// <summary>A singleton to be used as the value of <see cref="Alts.ErrorBranch"/>, representing the <c>default_error</c> branch.</summary>
 	public class DefaultErrorBranch : Pred
 	{
 		public static readonly DefaultErrorBranch Value = new DefaultErrorBranch();

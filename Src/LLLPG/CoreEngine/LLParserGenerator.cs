@@ -13,94 +13,6 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 
-#if false
-	TODO: move to wiki, this is not lllpg-related.
-	TODO: use this table as a test suite for the parser
-
-	General rules:
-	- Variables and fields use #var(type, name1, name2(initial_value), name3)
-	  Properties use #property(name, type, #{ body; }) instead.
-	  The parser treats "var x" as #var(var, x), but #var(#missing, x) is canonical.
-	- All spaces have the form #spacekind(name, #(inherited_types), #{body});
-	  the third argument is omitted if the body is omitted.
-	  e.g. #struct(Point<#T>, #(IPoint), #{ public int X, Y; });
-	- Methods, operators and constructors use #def(retType, name, #(args), #{body});
-	  the body can be omitted, or replaced with #==>(target) for forwarding.
-	  "if" and "where" clauses are attached as #if and #where attributes.
-	  e.g. #def(#double, Square, #(double x), #{ return x*x; });
-
-	Standard EC# statements: Declarations       Prefix notation
-	-------------------------------------       ---------------
-	using System.Collections.Generic;           #import(System.Collections.Generic);
-	using Foo = Bar;                            [#filePrivate] #alias(Foo = Bar);
-	extern alias Z;                             #extern_alias(Z);
-	[assembly:Attr]                             [Attr] #assembly;
-	case 123:                                   #case(123);
-	default:                                    #label(#default);
-	label_name:                                 #label(label_name);
-	int x = 0;                                  #var(int, x(0));
-	int* a, b = &x, c;                          #var(#*(int), a, b(&x), c);
-	public partial class Foo<T> : IFoo {}       [#public, #partial] #class(Foo<T>, #(IFoo), {});
-	struct Foo<$T> if default(T) + 0 is legal   [#if(default(T) + 0 is legal)] #struct(Foo<$T>, #missing, {});
-	enum Foo : byte { A = 1, B, C, Z = 26 }     #enum(Foo, byte, #(A = 1, B, C, Z = 26));
-	trait Foo<$T> : Stream { ... }              #trait(Foo<$T>, #(Stream), {...});
-	interface Foo<T> : IEnumerable<T> { ... }   #interface(Foo<T>, #(IEnumerable<T>), {...});
-	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
-	namespace Foo<T> { ... }                    #namespace(Foo<T>, #missing, {...});
-	alias Map<K,V> = Dictionary<K,V>;           #alias(Foo<T> = Bar<T>);
-	alias Foo = Bar : IFoo { ... }              #alias(Foo<T> = Bar<T>, #(IFoo), { ... });
-	event EventHandler Click;                   #event(EventHandler, Click);
-	event EventHandler A, B;                    #event(EventHandler, A, B));
-	event EventHandler A { add { } remove { } } #event(EventHandler, A, { add({ }); remove({ }); }));
-	delegate void foo<T>(T x) where T:class,X   [#where(T, #class, X)] #delegate(foo<T>, #(T x), void);
-	public new partial string foo(int x);       [#public, #partial, #new] #def(#string, foo, #(int x));
-	int foo(int x) => x * x;                    #def(int, foo, #(int x), { x * x; });
-	int foo(int x) { return x * x; }            #def(int, foo, #(int x), { #return(x * x); });
-	def foo(int x) ==> bar;                     [#def] #def(#missing, foo, #(int x), #==>(bar));
-	int Foo { get; set; }                       #property(int, Foo, { get; set; })
-	IEnumerator IEnumerable.GetEnumerator() { } #def(IEnumerator, IEnumerable.GetEnumerator, #(), { });
-	new (int x) : this(x, 0) { y = x; }         #def(#missing, #new, #(int x), { #this(x, 0); y = x; });
-	Foo (int x) : base(x) { y = x; }            #def(#missing, Foo,  #(int x), { #base(x); y = x; });
-	~Foo () { ... }                             #def(#missing, #~(Foo), #(), { ... });
-	static bool operator==(T a, T b) { ... }    [#static] #def(#bool, [#operator] #==, #(T a, T b), { ... });
-	static implicit operator A(B b) { ... }     [#static, #implicit] #def(A, [#operator] #cast, #(B b), { ... });
-	static explicit operator A<T><$T>(B<T> b);  [#static, #explicit] #def(A<T>, [#operator] #of<#cast, $T>, #(B<T> b));
-	bool operator `when`(Cond cond) { ... }     #def(#bool, [#operator] when, #(Cond cond), { ... });
-
-	Standard EC# statements: Executable         Prefix notation
-	-----------------------------------         ---------------
-	if (c) f();                                 #if(c, f());
-	if (c) { f(); }                             #if(c, { f(); });
-	if (c) a = 1, b = 2;                        #if(c, #(a = 1, b = 2));
-	if (c) f(); else { g(); }                   #if(c, f(), { g() });
-	for (int x = 0; x * y < 100; x++) f(x);     #for(#var(int, x(0)), x * y < 100, x++, f(x));
-	foreach (var x in list) { ... }             #foreach(#var(var, x), list, { ... }) // not "#in(#var(var, x), list)" because that's unparsable
-	while (x > 0) { ... }                       #while(x > 0, { ... })
-	switch (c) { case '+', '-': goto default;   #switch(c, { #case('+', '-'); #goto(#default);
-	             default: break; }                           #default; #break; }
-	checked { ... }                             #checked({ ... })
-	unchecked { ... }                           #unchecked({ ... })
-	using (d = new Form()) { ... }              #using(d = new Form(), { ... })
-	using (IDisposable d = new Form()) { ... }  #using(#var(IDisposable, d(new Form()), { ... })
-	try { } catch (Exception e) { } finally { } #try(code, #catch(#var(Exception, e), { }), #finally({ }))
-
-
-	EC# expressions       Prefix notation            EC# expressions       Prefix notation 
-	---------------       ---------------            ---------------       ---------------
-	foo (or @foo)         foo                        a + b          
-	food.pizza.cheese     #.(food, pizza, cheese)     
-	.foo                  #.(foo)                     
-	foo<A, B>             #of(foo, A, B)              
-	operator ==           #operator(#==)              
-	int                   #int32                      
-	int x = 0             #var(#int32, x(0))          
-    foo()::x              #:::(foo(), x)              
-                                                      
-                                                      
-                                                      
-
-#endif
-
 	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
 	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
@@ -170,7 +82,7 @@ namespace Loyc.LLParserGenerator
 		/// is by creating a test for the common set between two alternatives:
 		/// <code>
 		///     la0 = LA(0);
-		///     if (la0 == 'a' || la0 == 'b') { /* alt 1 or alt 2 */ }
+		///     if (la0 == 'a' || la0 == 'b') { ... alt 1 or alt 2 ... }
 		/// </code>
 		/// Then, inside that "if" statement it adds a test for LA(1). Sadly,
 		/// LLLPG discovers that if (la1 == 'a' || la1 == 'b'), both alternatives 

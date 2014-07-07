@@ -856,7 +856,7 @@ namespace LeMP.Prelude
 		private static LNode TranslateLiteral(LNode node, IMessageSink sink, object literal)
 		{
 			if (!node.IsId) return null;
-			return new StdLiteralNode(literal, node);
+			return LNode.Literal(literal, node);
 		}
 
 		[SimpleMacro("true", "")]

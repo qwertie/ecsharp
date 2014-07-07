@@ -231,7 +231,7 @@ namespace LeMP
 				var io = sourceFiles[i];
 				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<RVList<LNode>>(() => {
 					using (ThreadEx.PropagateVariables(parentThreadId))
-						return new Task(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
+						return new MacroProcessorTask(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 				});
 			}
 			return tasks;

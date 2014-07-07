@@ -10,9 +10,9 @@ using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax
 {
-	/// <summary>Contains static helper methods for creating <see cref="LNode"/>s.
-	/// Also contains the Cache method, which deduplicates subtrees that have the
-	/// same structure.
+	/// <summary>Contains helper methods for creating <see cref="LNode"/>s.
+	/// An LNodeFactory holds a reference to the current source file (<see cref="File"/>) 
+	/// so that it does not need to be repeated every time you create a node.
 	/// </summary>
 	public class LNodeFactory
 	{

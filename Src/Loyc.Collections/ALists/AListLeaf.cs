@@ -138,7 +138,7 @@
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	public class AListLeaf<T> : AListLeaf<int, T>
+	internal class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
 		public AListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }

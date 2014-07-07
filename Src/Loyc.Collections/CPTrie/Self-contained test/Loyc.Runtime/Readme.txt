@@ -1,1 +1,0 @@
-CPTrie depends on some code of Loyc.Runtime.dll. In this folder is the source code for the relevant classes. If you wish to use CPTrie and remove the dependency on Loyc.Runtime.dll, include these source files in your project instead.

@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
-	class AListInner<T> : AListInnerBase<int, T>
+	internal class AListInner<T> : AListInnerBase<int, T>
 	{
 		#region Constructors and boilerplate
 
@@ -101,7 +101,7 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			Debug.Assert(op.Source == null || op.SourceCount == op.Source.Count);

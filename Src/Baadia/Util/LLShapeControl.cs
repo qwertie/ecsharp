@@ -35,7 +35,7 @@ namespace Util.WinForms
 		}
 
 		protected readonly OwnedChildList<LLShapeControl, LLShapeLayer> _layers;
-		public ListExBase<LLShapeLayer> Layers { get { return _layers; } }
+		public Loyc.Collections.Impl.ListExBase<LLShapeLayer> Layers { get { return _layers; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha 

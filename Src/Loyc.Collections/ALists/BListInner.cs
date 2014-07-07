@@ -89,7 +89,7 @@
 			return i;
 		}
 
-		public override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			Debug.Assert(!IsFrozen || op.Mode == AListOperation.Retrieve);
 

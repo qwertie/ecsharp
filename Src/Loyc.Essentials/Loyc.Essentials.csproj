@@ -222,8 +222,6 @@
       <DependentUpon>Maths.tt</DependentUpon>
     </Compile>
     <Compile Include="Utilities\Extensions.cs" />
-    <Compile Include="Utilities\GoInterface.cs" />
-    <Compile Include="Utilities\GoInterfaceTests.cs" />
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
     <Compile Include="Utilities\ITags.cs" />

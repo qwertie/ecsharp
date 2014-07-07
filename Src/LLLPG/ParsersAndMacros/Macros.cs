@@ -6,11 +6,11 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
-using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
 using Loyc.Collections.Impl;
 using Loyc.Syntax.Les;
 using LeMP;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.LLParserGenerator
 {

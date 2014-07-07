@@ -293,7 +293,7 @@ namespace Loyc.Collections.Impl
 			_totalCount += (uint)count;
 		}
 
-		public override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			if (op.IsInsert)

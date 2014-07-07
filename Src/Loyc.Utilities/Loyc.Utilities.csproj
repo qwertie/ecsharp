@@ -149,6 +149,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>PolygonMathTT.tt</DependentUpon>
     </Compile>
+    <Compile Include="GoInterface.cs" />
+    <Compile Include="GoInterfaceTests.cs" />
     <Compile Include="IntSet.cs" />
     <Compile Include="IntSetTests.cs">
       <SubType>Code</SubType>

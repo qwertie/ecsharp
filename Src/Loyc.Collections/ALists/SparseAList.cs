@@ -49,7 +49,7 @@ namespace Loyc.Collections
 
 		#region Insert, InsertRange methods (and DoSparseOperation)
 
-		protected void DoSparseOperation(ref AListSparseOperation<T> op)
+		internal void DoSparseOperation(ref AListSparseOperation<T> op)
 		{
 			uint index = op.AbsoluteIndex;
 			Debug.Assert((_freezeMode & 1) == 0);

@@ -17,7 +17,7 @@
 		public BListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
 		public BListLeaf(BListLeaf<K, T> frozen) : base(frozen) { }
 
-		public override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			T searchItem = op.Item;
 			int index = _list.BinarySearch(op.Key, op.CompareToKey, op.LowerBound);
@@ -135,7 +135,7 @@
 
 		/// <summary>Called by DoSingleOperation to split a full node, then retry the add operation.</summary>
 		/// <remarks>Same arguments and return value as DoSingleOperation.</remarks>
-		protected virtual int SplitAndAdd(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int SplitAndAdd(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
 		{
 			// Tell DoSingleOperation not to send notifications to the observer
 			op.AggregateChanged |= 2;

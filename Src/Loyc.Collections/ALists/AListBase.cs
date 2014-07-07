@@ -380,7 +380,7 @@
 		///   of tree, replacements are generally unsafe (unless the new key and 
 		///   value both compare equal to the old key and value).
 		/// </remarks>
-		protected int DoSingleOperation(ref AListSingleOperation<K, T> op)
+		internal int DoSingleOperation(ref AListSingleOperation<K, T> op)
 		{
 			AutoThrow();
 			int sizeChange;
@@ -430,7 +430,7 @@
 		/// op.BaseIndex will contain the index of the item (see 
 		/// <see cref="AListSingleOperation{K,T}.BaseIndex"/>).
 		/// </param>
-		protected void OrganizedRetrieve(ref AListSingleOperation<K, T> op)
+		internal void OrganizedRetrieve(ref AListSingleOperation<K, T> op)
 		{
 			Debug.Assert(op.Mode == AListOperation.Retrieve);
 			Debug.Assert(op.BaseIndex == 0 && !op.Found && op.AggregateChanged == 0);

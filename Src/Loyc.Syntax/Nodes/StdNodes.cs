@@ -11,7 +11,7 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax
 {
-	public class StdIdNode : IdNode
+	internal class StdIdNode : IdNode
 	{
 		public StdIdNode(Symbol name, LNode ras) : base(ras)
 		{
@@ -37,7 +37,7 @@ namespace Loyc.Syntax
 			return new StdIdNodeWithAttrs(attrs, _name, this);
 		}
 	}
-	public class StdIdNodeWithAttrs : StdIdNode
+	internal class StdIdNodeWithAttrs : StdIdNode
 	{
 		RVList<LNode> _attrs;
 		public StdIdNodeWithAttrs(RVList<LNode> attrs, Symbol name, LNode ras)
@@ -63,7 +63,7 @@ namespace Loyc.Syntax
 	/// of type string, which holds the comment text. The trivia can only be 
 	/// printed when another node has this node attached to it as an attribute,
 	/// and you print that other node.</summary>
-	public class StdTriviaNode : StdIdNode
+	internal class StdTriviaNode : StdIdNode
 	{
 		public StdTriviaNode(Symbol name, object value, LNode ras)
 			: base(name, ras) { _value = value; }
@@ -100,7 +100,7 @@ namespace Loyc.Syntax
 		}
 	}
 
-	public class StdLiteralNode : LiteralNode
+	internal class StdLiteralNode : LiteralNode
 	{
 		public StdLiteralNode(object value, LNode ras) 
 			: base(ras) { _value = value; }
@@ -122,7 +122,7 @@ namespace Loyc.Syntax
 			return new StdLiteralNodeWithAttrs(attrs, _value, this);
 		}
 	}
-	public class StdLiteralNodeWithAttrs : StdLiteralNode
+	internal class StdLiteralNodeWithAttrs : StdLiteralNode
 	{
 		RVList<LNode> _attrs;
 		public StdLiteralNodeWithAttrs(RVList<LNode> attrs, object value, LNode ras) 
@@ -142,7 +142,7 @@ namespace Loyc.Syntax
 	}
 
 
-	public abstract class StdCallNode : CallNode
+	internal abstract class StdCallNode : CallNode
 	{
 		public StdCallNode(RVList<LNode> args, LNode ras)
 			: base(ras) { _args = args; NoNulls(args, "Args"); }
@@ -155,7 +155,7 @@ namespace Loyc.Syntax
 		public sealed override int Max { get { return _args.Count - 1; } }
 	}
 
-	public class StdSimpleCallNode : StdCallNode
+	internal class StdSimpleCallNode : StdCallNode
 	{
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, LNode ras)
 			: base(args, ras) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
@@ -220,7 +220,7 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHead()                     { return true; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
-	public class StdSimpleCallNodeWithAttrs : StdSimpleCallNode
+	internal class StdSimpleCallNodeWithAttrs : StdSimpleCallNode
 	{
 		protected RVList<LNode> _attrs;
 		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode ras) 
@@ -250,7 +250,7 @@ namespace Loyc.Syntax
 		}
 	}
 
-	public class StdComplexCallNode : StdCallNode
+	internal class StdComplexCallNode : StdCallNode
 	{
 		public StdComplexCallNode(LNode target, RVList<LNode> args, LNode ras)
 			: base(args, ras) { CheckParam.IsNotNull("target", target); _target = target; }
@@ -283,7 +283,7 @@ namespace Loyc.Syntax
 			return new StdComplexCallNodeWithAttrs(attrs, _target, _args, this);
 		}
 	}
-	public class StdComplexCallNodeWithAttrs : StdComplexCallNode
+	internal class StdComplexCallNodeWithAttrs : StdComplexCallNode
 	{
 		protected RVList<LNode> _attrs;
 		public StdComplexCallNodeWithAttrs(RVList<LNode> attrs, LNode target, RVList<LNode> args, LNode ras)

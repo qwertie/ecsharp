@@ -120,7 +120,7 @@
 			return _compareKeys(item.Key, key);
 		}
 
-		protected new int DoSingleOperation(ref AListSingleOperation<K, KeyValuePair<K, V>> op)
+		internal new int DoSingleOperation(ref AListSingleOperation<K, KeyValuePair<K, V>> op)
 		{
 			op.CompareKeys = _compareKeys;
 			op.CompareToKey = CompareToKey;
@@ -128,7 +128,7 @@
 			return base.DoSingleOperation(ref op);
 		}
 
-		protected new void OrganizedRetrieve(ref AListSingleOperation<K, KeyValuePair<K, V>> op)
+		internal new void OrganizedRetrieve(ref AListSingleOperation<K, KeyValuePair<K, V>> op)
 		{
 			op.CompareKeys = _compareKeys;
 			op.CompareToKey = CompareToKey;

@@ -209,7 +209,7 @@ namespace Ecs
 		/// false.</remarks>
 		public bool DropNonDeclarationAttributes { get; set; }
 		
-		/// <summary>When an argument to a method or macro has the value #missing,
+		/// <summary>When an argument to a method or macro has an empty name (@``),
 		/// it will be omitted completely if this flag is set.</summary>
 		public bool OmitMissingArguments { get; set; }
 
@@ -607,7 +607,7 @@ namespace Ecs
 			// - A declaration always has 2 args; a definition always has 3 args
 			// - Name must be a complex (definition) identifier without attributes for
 			//   normal spaces, or a #= expression for aliases.
-			// - #(BaseList) can be #missing; the bases can be any expressions
+			// - #(BaseList) can be missing (@``); the bases can be any expressions
 			// - the arguments do not have attributes
 			var type = _n.Name;
 			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 2, 3))
@@ -897,7 +897,7 @@ namespace Ecs
 			// S.If:                     #if(expr, stmt [, stmt])
 			// S.For:                    #for(expr1, expr2, expr3, stmt)
 			// S.ForEach:                #foreach(decl, list, stmt)
-			// S.Try:                    #try(stmt, #catch(expr | #missing, stmt) | #finally(stmt), ...)
+			// S.Try:                    #try(stmt, #catch(expr | @``, stmt) | #finally(stmt), ...)
 			// S.Checked (S.Unchecked):  #checked(@`{}`(...))       // if no braces, it's a checked(expr)
 			var argCount = _n.ArgCount;
 			if (!HasSimpleHeadWPA(_n) || argCount < 1)
