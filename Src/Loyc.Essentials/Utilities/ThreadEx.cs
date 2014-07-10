@@ -174,7 +174,8 @@ namespace Loyc.Threading
 				if (v != null)
 					v.Terminate(Thread.CurrentThread.ManagedThreadId);
 			}
-		} 
+		}
+		/// <summary>See <see cref="PropagateVariables"/> for more information.</summary>
 		public struct ThreadDestructor : IDisposable
 		{
 			bool _destroyNeeded;

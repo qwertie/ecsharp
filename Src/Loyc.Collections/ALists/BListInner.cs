@@ -6,8 +6,9 @@
 	using System.Text;
 	using System.Diagnostics;
 
+	/// <summary>Internal implementation class. Shared code of all BList internal nodes.</summary>
 	[Serializable]
-	public abstract class BListInner<K, T> : AListInnerBase<K, T>
+	internal abstract class BListInner<K, T> : AListInnerBase<K, T>
 	{
 		#region Constructors and boilerplate
 

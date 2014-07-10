@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
+	/// <summary>Internal implementation class. Leaf node of <see cref="SparseAList{T}"/>.</summary>
 	[Serializable]
 	public class SparseAListLeaf<T> : AListNode<int, T>
 	{

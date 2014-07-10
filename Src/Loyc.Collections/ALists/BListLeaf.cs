@@ -5,11 +5,8 @@
 	using System.Linq;
 	using System.Diagnostics;
 	using System.Collections.Specialized;
-	
-	/// <summary>
-	/// Leaf node of <see cref="BList{T}"/>.
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
+
+	/// <summary>Internal implementation class. Leaf node of <see cref="BList{T}"/> and <see cref="BDictionary{K,V}"/>.</summary>
 	[Serializable]
 	public class BListLeaf<K, T> : AListLeaf<K, T>
 	{

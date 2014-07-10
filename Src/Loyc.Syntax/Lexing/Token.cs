@@ -12,6 +12,15 @@ using Loyc.Math;
 
 namespace Loyc.Syntax.Lexing
 {
+	/// <summary>A list of Token structures along with the <see cref="ISourceFile"/> 
+	/// object that represents the source file that the tokens came from.</summary>
+	/// <remarks>This class is called <c>TokenTree</c> because certain kinds of 
+	/// tokens used by some parsers are formed into trees by using <see cref="TokenTree"/> 
+	/// as the type of the <see cref="Token.Value"/> of certain tokens. Specifically,
+	/// the LES and EC# parsers expect open-bracket and open-brace tokens ('(', 
+	/// '[' and '{') to have a child <see cref="TokenTree"/> that contains all the 
+	/// tokens within a pair of brackets or braces. Typically this tree is not 
+	/// created directly by the lexer, but by a helpe clas (<see cref="TokensToTree"/>).</remarks>
 	public class TokenTree : DList<Token>, IListSource<IToken>, IEquatable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }

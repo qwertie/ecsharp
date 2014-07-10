@@ -893,6 +893,7 @@ namespace Loyc.Syntax
 		/// </code>
 		/// </remarks>
 		public static PushedPrinter PushPrinter(LNodePrinter printer) { return new PushedPrinter(printer); }
+		/// <summary>Returned by <see cref="PushPrinter(LNodePrinter)"/>.</summary>
 		public struct PushedPrinter : IDisposable
 		{
 			LNodePrinter old;

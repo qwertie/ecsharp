@@ -36,6 +36,8 @@ namespace Loyc.Collections
 		//protected byte _treeHeight;
 		//protected byte _freezeMode = NotFrozen;
 	
+		/// <summary>A multiplexer that is only created for ALists that have two or more attached intances of 
+		/// <see cref="IAListTreeObserver{K,T}"/>.</summary>
 		protected class ObserverMgr : IAListTreeObserver<K, T>
 		{
 			public ObserverMgr(AListBase<K, T> list, AListNode<K,T> root, IAListTreeObserver<K, T> existingObserver)

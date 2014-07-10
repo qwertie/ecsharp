@@ -18,7 +18,7 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Token types in LLLPG's stage one parser.</summary>
 	/// <remarks>Note: Spaces and Comments should never be encountered by the 
 	/// parser. I assume they are filtered out of all Token Literals.</remarks>
-	public enum TokenType
+	internal enum TokenType
 	{
 		EOF         = 0,
 
@@ -64,7 +64,7 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>Provides the <c>Type()</c> extension method required by <see cref="Token"/>.</summary>
-	public static class TokenExt
+	internal static class TokenExt
 	{
 		/// <summary>Converts <c>t.TypeInt</c> to <see cref="TokenType"/>.</summary>
 		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }

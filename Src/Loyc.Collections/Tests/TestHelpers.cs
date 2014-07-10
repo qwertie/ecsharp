@@ -6,6 +6,7 @@ using Loyc.MiniTest;
 
 namespace Loyc.Collections.Impl
 {
+	/// <summary>Helpers methods for unit tests for Loyc collection classes.</summary>
 	public class TestHelpers : Assert
 	{
 		protected static void ExpectList<T>(IListSource<T> list, params T[] expected)

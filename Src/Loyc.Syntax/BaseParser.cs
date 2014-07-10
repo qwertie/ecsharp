@@ -149,6 +149,7 @@ namespace Loyc.Syntax
 
 		#region Try-matching
 
+		/// <summary>A helper class used by LLLPG for backtracking.</summary>
 		protected struct SavePosition : IDisposable
 		{
 			BaseParser<Token> _parser;

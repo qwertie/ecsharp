@@ -6,7 +6,7 @@
 	using System.Text;
 	using System.Diagnostics;
 
-	/// <summary>Internal implementation class. Shared code of all AList internal nodes.</summary>
+	/// <summary>Internal implementation class. Shared code of AList internal nodes.</summary>
 	[Serializable]
 	public abstract class AListInnerBase<K, T> : AListNode<K, T>
 	{
