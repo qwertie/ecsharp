@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -103,20 +105,19 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html">EcsNodePrinter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to EC# source code. <a href="classEcs_1_1EcsNodePrinter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinterTests.html">EcsNodePrinterTests</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EC# node printer tests <a href="classEcs_1_1EcsNodePrinterTests.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>EcsNodePrinterTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EC# node printer tests<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinterWriter.html">EcsNodePrinterWriter</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsParserTests.html">EcsParserTests</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EC# parser tests <a href="classEcs_1_1EcsParserTests.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>EcsParserTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EC# parser tests<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsPrecedence.html">EcsPrecedence</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains Precedence objects that represent the precedence rules of EC#. <a href="classEcs_1_1EcsPrecedence.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsPrinterAndParserTests.html">EcsPrinterAndParserTests</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>EcsPrinterAndParserTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1Program.html">Program</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Entry point: runs the EC# test suite and related tests. <a href="classEcs_1_1Program.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -125,14 +126,14 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>Default</b> = 0, 
 <b>AllowAttrs</b> = 2, 
 <b>DisallowOf</b> = 8, 
-<b>DisallowDotted</b> = 16, 
 <br />
-&#160;&#160;<b>InOf</b> = 32, 
+&#160;&#160;<b>DisallowDotted</b> = 16, 
+<b>InOf</b> = 32, 
 <b>AllowAnyExprInOf</b> = 64, 
-<b>NameDefinition</b> = 128, 
-<b>AllowParensAround</b> = 256, 
 <br />
-&#160;&#160;<b>ExprMode</b> = 512
+&#160;&#160;<b>NameDefinition</b> = 128, 
+<b>AllowParensAround</b> = 256, 
+<b>ExprMode</b> = 512
 <br />
  }</td></tr>
 <tr class="memdesc:a8b05e2d0be7a2ed96875d3958cc3d903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags for EcsNodePrinter.IsComplexIdentifier. <a href="namespaceEcs.html#a8b05e2d0be7a2ed96875d3958cc3d903">More...</a><br /></td></tr>
@@ -141,30 +142,32 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>Default</b>, 
 <b>AfterComma</b> = 0x00000002, 
 <b>AfterCommaInOf</b> = 0x00000004, 
-<b>AfterCast</b> = 0x00000008, 
 <br />
-&#160;&#160;<b>AfterCastArrow</b> = 0x00000010, 
+&#160;&#160;<b>AfterCast</b> = 0x00000008, 
+<b>AfterCastArrow</b> = 0x00000010, 
 <b>AfterAttribute</b> = 0x00000020, 
-<b>InsideParens</b> = 0x00000080, 
-<b>InsideCallParens</b> = 0x00000100, 
 <br />
-&#160;&#160;<b>InsideAttribute</b> = 0x00000200, 
-<b>OutsideParens</b> = 0x00000400, 
+&#160;&#160;<b>InsideParens</b> = 0x00000080, 
+<b>InsideCallParens</b> = 0x00000100, 
+<b>InsideAttribute</b> = 0x00000200, 
+<br />
+&#160;&#160;<b>OutsideParens</b> = 0x00000400, 
 <b>BeforeKeywordStmtArgs</b> = 0x00000800, 
 <b>BeforePossibleMacroArgs</b> = 0x00001000, 
 <br />
 &#160;&#160;<b>BeforeMethodCall</b> = 0x00002000, 
 <b>BeforeNewCastCall</b> = 0x00004000, 
 <b>BeforeNewInitBrace</b> = 0x00008000, 
-<b>AfterColon</b> = 0x00010000, 
 <br />
-&#160;&#160;<b>InsideNewInitializer</b> = 0x00020000, 
+&#160;&#160;<b>AfterColon</b> = 0x00010000, 
+<b>InsideNewInitializer</b> = 0x00020000, 
 <b>BeforeBaseListColon</b> = 0x00040000, 
-<b>BeforeWhereClauseColon</b> = 0x00080000, 
-<b>BeforeConstructorColon</b> = 0x00100000, 
 <br />
-&#160;&#160;<b>BeforeMethodDeclArgList</b> = 0x00200000, 
-<b>BeforeForwardArrow</b> = 0x00400000, 
+&#160;&#160;<b>BeforeWhereClauseColon</b> = 0x00080000, 
+<b>BeforeConstructorColon</b> = 0x00100000, 
+<b>BeforeMethodDeclArgList</b> = 0x00200000, 
+<br />
+&#160;&#160;<b>BeforeForwardArrow</b> = 0x00400000, 
 <b>AfterOperatorKeyword</b> = 0x00800000, 
 <b>MissingAfterComma</b> = 0x01000000, 
 <br />
@@ -179,30 +182,32 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>Default</b>, 
 <b>BeforeSpaceDefBrace</b> = 0x000001, 
 <b>BeforeMethodBrace</b> = 0x000002, 
-<b>BeforePropBrace</b> = 0x000004, 
 <br />
-&#160;&#160;<b>BeforeGetSetBrace</b> = 0x000008, 
+&#160;&#160;<b>BeforePropBrace</b> = 0x000004, 
+<b>BeforeGetSetBrace</b> = 0x000008, 
 <b>BeforeSimpleStmtBrace</b> = 0x000020, 
-<b>BeforeExecutableBrace</b> = 0x000010, 
-<b>BeforeSingleSubstmt</b> = 0x000080, 
 <br />
-&#160;&#160;<b>BeforeOpenBraceInExpr</b> = 0x000100, 
-<b>BeforeCloseBraceInExpr</b> = 0x000200, 
+&#160;&#160;<b>BeforeExecutableBrace</b> = 0x000010, 
+<b>BeforeSingleSubstmt</b> = 0x000080, 
+<b>BeforeOpenBraceInExpr</b> = 0x000100, 
+<br />
+&#160;&#160;<b>BeforeCloseBraceInExpr</b> = 0x000200, 
 <b>AfterCloseBraceInExpr</b> = 0x000400, 
 <b>BeforeOpenBraceInNewExpr</b> = 0x000800, 
 <br />
 &#160;&#160;<b>AfterOpenBraceInNewExpr</b> = 0x001000, 
 <b>BeforeCloseBraceInNewExpr</b> = 0x002000, 
 <b>AfterCloseBraceInNewExpr</b> = 0x004000, 
-<b>AfterEachInitializerInNew</b> = 0x008000, 
 <br />
-&#160;&#160;<b>AfterAttributes</b> = 0x010000, 
+&#160;&#160;<b>AfterEachInitializerInNew</b> = 0x008000, 
+<b>AfterAttributes</b> = 0x010000, 
 <b>BeforeWhereClauses</b> = 0x020000, 
-<b>BeforeEachWhereClause</b> = 0x040000, 
-<b>BeforeIfClause</b> = 0x080000, 
 <br />
-&#160;&#160;<b>AfterEachEnumValue</b> = 0x100000, 
-<b>BeforeConstructorColon</b> = 0x200000
+&#160;&#160;<b>BeforeEachWhereClause</b> = 0x040000, 
+<b>BeforeIfClause</b> = 0x080000, 
+<b>AfterEachEnumValue</b> = 0x100000, 
+<br />
+&#160;&#160;<b>BeforeConstructorColon</b> = 0x200000
 <br />
  }</td></tr>
 <tr class="separator:aaec948bf5576c06765ca90f20a46d304"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -240,9 +245,10 @@ Enumerations</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

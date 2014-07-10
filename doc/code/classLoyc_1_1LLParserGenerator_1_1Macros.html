@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -94,13 +96,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>.  
+<p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>.  
  <a href="classLoyc_1_1LLParserGenerator_1_1Macros.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/ParsersAndMacros/Macros.cs'>/Src/LLLPG/ParsersAndMacros/Macros.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>. </p>
+<div class="textblock"><p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>. </p>
 <p>Example: </p><div class="fragment"><div class="line"><span class="keyword">class </span>Foo { </div>
 <div class="line">  [DefaultK(2)] LLLPG lexer</div>
 <div class="line">  {</div>
@@ -109,9 +111,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line">    [token] rule token  @[ <span class="keywordtype">int</span> | id ];</div>
 <div class="line">  };</div>
 <div class="line">};</div>
-</div><!-- fragment --><p> Up to three macros are used to invoke <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>. </p><ol>
+</div><!-- fragment --><p> Up to three macros are used to invoke <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>. </p><ol>
 <li>
-there is a macro to recognize the pattern <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(lexer, {...})</code> and translate "lexer" to an unprintable literal of type <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a>, and another macro for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(parser(Symbol, false), {...})"&lt;/c&gt; that creates a 
+there is a macro to recognize the pattern <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(lexer, {...})</code> and translate "lexer" to an unprintable literal of type <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a>, and another macro for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(parser(Symbol, false), {...})"&lt;/c&gt; that creates a 
 &lt;see cref="<a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html" title="General-purpose code generator that supports any language with a finite number of input symbols repre...">GeneralCodeGenHelper</a>"/&gt; (this is the default helper).&lt;/li&gt;
 &lt;li&gt;The stage-one rule() macro uses &lt;see cref="StageOneParser"/&gt; to
 translate token trees into expressions, e.g. &lt;c&gt;@[ ("Foo" | bar)* ~';' ]&lt;/c&gt; 
@@ -123,10 +125,10 @@ The stage-two macro is named run_LLLPG(). It accepts the code-gen helper created
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ac8904266333da1b12018373522147fe2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html#ac8904266333da1b12018373522147fe2">LLLPG_lexer</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="memdesc:ac8904266333da1b12018373522147fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro that translates <code>lexer</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(lexer, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a> object. <a href="#ac8904266333da1b12018373522147fe2">More...</a><br /></td></tr>
+<tr class="memdesc:ac8904266333da1b12018373522147fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro that translates <code>lexer</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(lexer, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a> object. <a href="#ac8904266333da1b12018373522147fe2">More...</a><br /></td></tr>
 <tr class="separator:ac8904266333da1b12018373522147fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7293bcb55b9d96968734651eb802dada"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html#a7293bcb55b9d96968734651eb802dada">LLLPG_parser</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="memdesc:a7293bcb55b9d96968734651eb802dada"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro that translates <code>parser</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(parser, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html" title="General-purpose code generator that supports any language with a finite number of input symbols repre...">GeneralCodeGenHelper</a> object. <a href="#a7293bcb55b9d96968734651eb802dada">More...</a><br /></td></tr>
+<tr class="memdesc:a7293bcb55b9d96968734651eb802dada"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro that translates <code>parser</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(parser, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html" title="General-purpose code generator that supports any language with a finite number of input symbols repre...">GeneralCodeGenHelper</a> object. <a href="#a7293bcb55b9d96968734651eb802dada">More...</a><br /></td></tr>
 <tr class="separator:a7293bcb55b9d96968734651eb802dada"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2349b931b2179b58c7893a412e551129"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2349b931b2179b58c7893a412e551129"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>rule</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
@@ -174,7 +176,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </table>
 </div><div class="memdoc">
 
-<p>Helper macro that translates <code>lexer</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(lexer, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a> object.</p>
+<p>Helper macro that translates <code>lexer</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(lexer, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a> object.</p>
 
 <p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, and <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>.</p>
 
@@ -212,16 +214,17 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </table>
 </div><div class="memdoc">
 
-<p>Helper macro that translates <code>parser</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>(parser, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html" title="General-purpose code generator that supports any language with a finite number of input symbols repre...">GeneralCodeGenHelper</a> object.</p>
+<p>Helper macro that translates <code>parser</code> in <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>(parser, {...})</code> into a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html" title="General-purpose code generator that supports any language with a finite number of input symbols repre...">GeneralCodeGenHelper</a> object.</p>
 
 <p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Symbol.html#a996a6fa3b82af5f6c0fcfaedb0f550a4">Loyc.Symbol.Name</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

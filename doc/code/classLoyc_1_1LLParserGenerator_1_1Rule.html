@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,14 +98,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.LLParserGenerator.Rule Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Represents an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> rule, which is a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icate plus a Name and optional attributes (e.g. token, private, etc.). 
+ <a href="classLoyc_1_1LLParserGenerator_1_1Rule.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/Rule.cs'>/Src/LLLPG/RuleAndPreds/Rule.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Represents an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> rule, which is a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icate plus a Name and optional attributes (e.g. token, private, etc.).</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a8686989cfa5779b9b70c117a890535d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1">Basis</a></td></tr>
-<tr class="memdesc:a8686989cfa5779b9b70c117a890535d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>. <a href="#a8686989cfa5779b9b70c117a890535d1">More...</a><br /></td></tr>
+<tr class="memdesc:a8686989cfa5779b9b70c117a890535d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>. <a href="#a8686989cfa5779b9b70c117a890535d1">More...</a><br /></td></tr>
 <tr class="separator:a8686989cfa5779b9b70c117a890535d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acddd3f2c9cf525874f47b974a2b1adc3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acddd3f2c9cf525874f47b974a2b1adc3"></a>
 readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html">EndOfRule</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EndOfRule</b></td></tr>
@@ -306,7 +313,7 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
       </table>
 </div><div class="memdoc">
 
-<p>A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>.</p>
+<p>A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>.</p>
 <p>The Basis is also used to provide an error location.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>.</p>
@@ -314,9 +321,10 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,11 +98,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This class contains extension methods that are provided as part of various <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource{T}, ranges, etc.), collection implementations (Loyc.Collections.DList{T}, Loyc.Collections.WeakValueDictionary{K,V}, etc.), extension methods (Loyc.Collections.LCExt, Loyc.Collections.EnumerableExt, etc.), helper classes (Loyc.Collections.EmptyList{T}, (Loyc.Collections.Repeated{T}, etc.), and adapter classes (Loyc.Collections.ListSlice{T}, Loyc.Collections.BufferedSequence{T}, etc.). ">Loyc.Collections</a> interfaces. For example, it provides methods such as IndexOf(), Contains() and CopyTo(), that the traditional ICollection{T} and IList{T} interfaces require the author to write himself.  
  <a href="classLoyc_1_1Collections_1_1LCInterfaces.html#details">More...</a></p>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<hr/>Source files:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/ICount.cs'>/Src/Loyc.Essentials/Collections/Interfaces/ICount.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/IListSource.cs'>/Src/Loyc.Essentials/Collections/Interfaces/IListSource.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/INegListSource.cs'>/Src/Loyc.Essentials/Collections/Interfaces/INegListSource.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/ISource.cs'>/Src/Loyc.Essentials/Collections/Interfaces/ISource.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs'>/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/Queue interfaces.cs'>/Src/Loyc.Essentials/Collections/Interfaces/Queue interfaces.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/Read-write interfaces.cs'>/Src/Loyc.Essentials/Collections/Interfaces/Read-write interfaces.cs</a></li>
@@ -157,9 +158,6 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>FirstOrDefault&lt
 <tr class="memitem:afbb064d81e969944297cdab71e80ece3"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#afbb064d81e969944297cdab71e80ece3">IndexOf&lt; T &gt;</a> (this INegListSource&lt; T &gt; list, T item)</td></tr>
 <tr class="memdesc:afbb064d81e969944297cdab71e80ece3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines the index of a specific value. <a href="#afbb064d81e969944297cdab71e80ece3">More...</a><br /></td></tr>
 <tr class="separator:afbb064d81e969944297cdab71e80ece3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2b74695dfcc8dde9957b1f7e214e312"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2b74695dfcc8dde9957b1f7e214e312"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyTo&lt; T &gt;</b> (this IReadOnlyCollection&lt; T &gt; c, T[] array, int arrayIndex)</td></tr>
-<tr class="separator:af2b74695dfcc8dde9957b1f7e214e312"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36a564e6296d30aea1fce8a6c12402bf"><td class="memItemLeft" align="right" valign="top">static IEnumerable<br class="typebreak" />
 &lt; KeyValuePair&lt; int, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a36a564e6296d30aea1fce8a6c12402bf">Items&lt; T &gt;</a> (this ISparseListSource&lt; T &gt; list)</td></tr>
 <tr class="memdesc:a36a564e6296d30aea1fce8a6c12402bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the non-cleared items in the sparse list, along with their indexes, sorted by index. <a href="#a36a564e6296d30aea1fce8a6c12402bf">More...</a><br /></td></tr>
@@ -706,9 +704,10 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:31 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:28 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

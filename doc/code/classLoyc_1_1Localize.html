@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,17 +98,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers.  
+<p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers. TODO: expand I18N features based on Mozilla's L20N.  
  <a href="classLoyc_1_1Localize.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/Localize.cs'>/Src/Loyc.Essentials/Utilities/Localize.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers. </p>
+<div class="textblock"><p><a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> is a global hook into which a string-mapping localizer can be installed. It is designed to make internationalization exceptionally easy for developers. TODO: expand I18N features based on Mozilla's L20N. </p>
 <p>All <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> code should call this hook in order to localize text. Use it like this: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = Localize.From(<span class="stringliteral">&quot;Hello, {0}&quot;</span>, userName);</div>
 </div><!-- fragment --><p>. If you use this facility frequently in a given class, you may want to shorten your typing using a static variable: </p><div class="fragment"><div class="line"><span class="keyword">protected</span> <span class="keyword">static</span> readonly FormatterDelegate L = <a class="code" href="classLoyc_1_1Localize.html#af601a04790ede84ada8e3da04ef02fa4">Localize.From</a>;</div>
 </div><!-- fragment --><p> Then you can simply write L("Hello, {0}", userName) instead. Either way, whatever localizer is installed will look up the text in its database and return a translation. If no translation to the end user's language is available, an appropriate default translation should be returned: either the original text, or a translation to some default language, e.g. English. </p>
-<p>Alternately, assuming you have the ability to change the table of translations, you can use a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, like the feature offered in Ruby.">Symbol</a> in your code and call the other overload of <a class="el" href="classLoyc_1_1Localize.html#af601a04790ede84ada8e3da04ef02fa4" title="This is the heart of the Localize class, which localizes and formats a string. ">From()</a> to look up the text that should be shown to the end user: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = Localize.From(GSymbol.Get(<span class="stringliteral">&quot;MY_STRING&quot;</span>));</div>
+<p>Alternately, assuming you have the ability to change the table of translations, you can use a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> in your code and call the other overload of <a class="el" href="classLoyc_1_1Localize.html#af601a04790ede84ada8e3da04ef02fa4" title="This is the heart of the Localize class, which localizes and formats a string. ">From()</a> to look up the text that should be shown to the end user: </p><div class="fragment"><div class="line"><span class="keywordtype">string</span> result = Localize.From(GSymbol.Get(<span class="stringliteral">&quot;MY_STRING&quot;</span>));</div>
 <div class="line"><span class="keywordtype">string</span> result = Localize.From(:MY_STRING); <span class="comment">// Loyc syntax</span></div>
 </div><!-- fragment --><p> This is most useful for long strings or paragraphs of text, but I expect that some projects, as a policy, will use symbols for all localizable text. </p>
 <p><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b" title="Formatting delegate (thread-local), which is set to StringExt.Format by default.">Localize.Formatter()</a> is then called to make the completed string, unless the variable argument list is empty. It is possible to perform formatting separately, for example: </p><div class="fragment"><div class="line">Console.WriteLine(Localize.From(<span class="stringliteral">&quot;{0} is {0:X} in hexadecimal&quot;</span>), N);</div>
@@ -147,7 +149,7 @@ static ThreadLocalVariable<br class="typebreak" />
 <tr class="separator:a374d50933d2028b44c7d82b4599fdf8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d61e21207b9374db6ac60e8c285ffcc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d61e21207b9374db6ac60e8c285ffcc"></a>
 static ThreadLocalVariable<br class="typebreak" />
-&lt; FormatterDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_formatter</b> = new ThreadLocalVariable&lt;FormatterDelegate&gt;(<a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446">StringExt.Format</a>)</td></tr>
+&lt; FormatterDelegate &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_formatter</b> = new ThreadLocalVariable&lt;FormatterDelegate&gt;(<a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab">StringExt.Format</a>)</td></tr>
 <tr class="separator:a9d61e21207b9374db6ac60e8c285ffcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -156,7 +158,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Localizer method (thread-local) <a href="#aa44d91f1fdb4b4adf5a4927f8ea59e4c">More...</a><br /></td></tr>
 <tr class="separator:aa44d91f1fdb4b4adf5a4927f8ea59e4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="memItemLeft" align="right" valign="top">static FormatterDelegate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Localize.html#abf0bc6e4f5f4b69f3185d8ae11f3a43b">Formatter</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Formatting delegate (thread-local), which is set to <a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.Format</a> by default. <a href="#abf0bc6e4f5f4b69f3185d8ae11f3a43b">More...</a><br /></td></tr>
+<tr class="memdesc:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Formatting delegate (thread-local), which is set to <a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.Format</a> by default. <a href="#abf0bc6e4f5f4b69f3185d8ae11f3a43b">More...</a><br /></td></tr>
 <tr class="separator:abf0bc6e4f5f4b69f3185d8ae11f3a43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -312,7 +314,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (<a
 </table>
 </div><div class="memdoc">
 
-<p>Formatting delegate (thread-local), which is set to <a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.Format</a> by default.</p>
+<p>Formatting delegate (thread-local), which is set to <a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">StringExt.Format</a> by default.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Localize.html#af601a04790ede84ada8e3da04ef02fa4">Loyc.Localize.From()</a>.</p>
 
@@ -343,9 +345,10 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (<a
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -86,7 +88,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">now Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Nodes/LNode.cs'>/Src/Loyc.Syntax/Nodes/LNode.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -143,9 +145,9 @@ int hexChar = {
         else
             '0'
     } + value;
-</pre><p> The braced block is represented by a #{} node, which introduces a new scope. In contrast, the special # node type (known as the "list keyword"), does not create a new scope. It can be used with expression or statement syntax: </p><pre>
+</pre><p> The braced block is represented by a {} node, which introduces a new scope. In contrast, the special # node type (the "list marker"), does not create a new scope. It is normally used with expression syntax: </p><pre>
 var three = #(Console.WriteLine("Fetching the three!"), 3);
-var eight = #{ int x = 5; three + x };
+var eight = #(int x = 5, three + x);
 var seven = x + 2;
 </pre><p> Since # does not create a new scope, the variable "x" is created in the outer scope, where it can be used to compute the value of seven. The # keyword is intended mostly to express lists with prefix notation, but it can be used with braces in case there is a need to switch back to statement notation. </p>
 <p>The above code is a bit confusing because of how it is written; EC# is meant for mature people who have enough sense not to write confusing code like this.</p>
@@ -218,9 +220,10 @@ Non-negative values are indexes of Args, e.g. node[i] means node.Args[i]. </li>
 <h3>Note</h3>
 <p>The argument and attribute lists should never contain null nodes. Any code that puts nulls in Args or Attrs is buggy. However, we can't ensure nulls are not placed into RVList{T} since it's a general-purpose data type, not specialized for LNode. There is code to ensure nulls are not placed in Args and Attrs (NoNulls), but only in debug builds, since null-checking is fairly expensive. </p>
 </div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

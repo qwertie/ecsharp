@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -95,7 +97,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Math.MathFL32 Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Implements IRationalMath{T} for numbers of type <a class="el" href="structLoyc_1_1Math_1_1FPL32.html" title="Fixed-point type based on Int64 with 32 fractional bits">FPL32</a>. 
+ <a href="structLoyc_1_1Math_1_1MathFL32.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Math/Maths.cs'>/Src/Loyc.Essentials/Math/Maths.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -109,27 +114,29 @@ Inheritance diagram for Loyc.Math.MathFL32:</div>
 <area href="interfaceLoyc_1_1Math_1_1ISignedMath_3_01T_01_4.html" title="Provides operations available on all signed numeric types (int, double, etc.); see also IUIntMath{T}..." alt="Loyc.Math.ISignedMath&lt; T &gt;" shape="rect" coords="687,280,906,304"/>
 <area href="interfaceLoyc_1_1Math_1_1IBitwise_3_01T_01_4.html" title="Provides the standard set of bitwise operators." alt="Loyc.Math.IBitwise&lt; T &gt;" shape="rect" coords="1030,280,1249,304"/>
 <area href="interfaceLoyc_1_1Math_1_1IMath_3_01T_01_4.html" title="Provides operations available on all system numeric types (int, uint, double, etc.); see also ISignedMath{T}, IUIntMath{T}, IIntMath{T} and IFloatMath{T}. " alt="Loyc.Math.IMath&lt; T &gt;" shape="rect" coords="687,224,906,248"/>
-<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="916,224,1135,248"/>
-<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1145,224,1364,248"/>
+<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" title="Provides the value of "zero" for type T." alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="916,224,1135,248"/>
+<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" title="Provides the value of "one" for type T." alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1145,224,1364,248"/>
 <area href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html" title="This interface provides information about a numeric type T." alt="Loyc.Math.INumTraits&lt; T &gt;" shape="rect" coords="114,168,333,192"/>
 <area href="interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4.html" title="Provides methods for converting common numeric types to another numeric type "T". ..." alt="Loyc.Math.INumConverter&lt; T &gt;" shape="rect" coords="343,168,562,192"/>
-<area href="interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4.html" alt="Loyc.Math.IOrdered&lt; T &gt;" shape="rect" coords="572,168,791,192"/>
+<area href="interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4.html" title="Provides comparison function for type T along with absolute value (Abs), and the minimum or maximum o..." alt="Loyc.Math.IOrdered&lt; T &gt;" shape="rect" coords="572,168,791,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html" title="Provides increment, decrement, and next/previous-representable- value operations." alt="Loyc.Math.IIncrementer&lt; T &gt;" shape="rect" coords="801,168,1020,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IField_3_01T_01_4.html" title="This defines a Field with the operations +,-,*,/" alt="Loyc.Math.IField&lt; T &gt;" shape="rect" coords="1087,168,1306,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IHasRoot_3_01T_01_4.html" title="Provides the Sqrt operation and its inverse, Square." alt="Loyc.Math.IHasRoot&lt; T &gt;" shape="rect" coords="1316,168,1535,192"/>
-<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="0,112,219,136"/>
-<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="229,112,448,136"/>
+<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" title="Provides the value of "zero" for type T." alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="0,112,219,136"/>
+<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" title="Provides the value of "one" for type T." alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="229,112,448,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IRing_3_01T_01_4.html" title="This defines a Ring with the operations +,* " alt="Loyc.Math.IRing&lt; T &gt;" shape="rect" coords="916,112,1135,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IMultiplicationGroup_3_01T_01_4.html" title="This defines a Group with the operation *, the neutral element One, the inverse Inverse and an operat..." alt="Loyc.Math.IMultiplicationGroup&lt; T &gt;" shape="rect" coords="1259,112,1478,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IAdditionGroup_3_01T_01_4.html" title="This defines a Group with the operation +, the neutral element Zero, and an operation - that is defin..." alt="Loyc.Math.IAdditionGroup&lt; T &gt;" shape="rect" coords="801,56,1020,80"/>
 <area href="interfaceLoyc_1_1Math_1_1IMultiply_3_01T_01_4.html" title="Provides the multiplication operation and the multiplicative identity, one." alt="Loyc.Math.IMultiply&lt; T &gt;" shape="rect" coords="1030,56,1249,80"/>
 <area href="interfaceLoyc_1_1Math_1_1IMultiply_3_01T_01_4.html" title="Provides the multiplication operation and the multiplicative identity, one." alt="Loyc.Math.IMultiply&lt; T &gt;" shape="rect" coords="1259,56,1478,80"/>
-<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="801,0,1020,24"/>
-<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1030,0,1249,24"/>
-<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1259,0,1478,24"/>
+<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" title="Provides the value of "zero" for type T." alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="801,0,1020,24"/>
+<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" title="Provides the value of "one" for type T." alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1030,0,1249,24"/>
+<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" title="Provides the value of "one" for type T." alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="1259,0,1478,24"/>
 </map>
  </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Implements IRationalMath{T} for numbers of type <a class="el" href="structLoyc_1_1Math_1_1FPL32.html" title="Fixed-point type based on Int64 with 32 fractional bits">FPL32</a>.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:ad5493c4423da5a2e37e33c3218f7191a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad5493c4423da5a2e37e33c3218f7191a"></a>
@@ -672,9 +679,10 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Not</b> (T a)</td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:40 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -116,7 +118,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html">MacroProcessor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates the <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> engine, a simple LISP-style macro processor, suitable for running LLLPG and other lexical macros.  <a href="classLeMP_1_1MacroProcessor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessorTests.html">MacroProcessorTests</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>MacroProcessorTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1SimpleMacroAttribute.html">SimpleMacroAttribute</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a method as an LEL simple macro. <a href="classLeMP_1_1SimpleMacroAttribute.html#details">More...</a><br /></td></tr>
@@ -124,7 +126,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1StandardMacros.html">StandardMacros</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard macros, such as unroll() and replace() that can work in all <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> languages. Also includes macros designed to convert EC# feature to C# (e.g. tuples).  <a href="classLeMP_1_1StandardMacros.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1StandardMacroTests.html">StandardMacroTests</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>StandardMacroTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1TestCompiler.html">TestCompiler</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple version of <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on a set of source files.">Compiler</a> that takes a single input and produces a StringBuilder. Pre-opens <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a> namespace. <a href="classLeMP_1_1TestCompiler.html#details">More...</a><br /></td></tr>
@@ -142,15 +144,16 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98">MacroMode.NoReprocessing</a> = 0, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0">MacroMode.Normal</a> = 1, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92">MacroMode.ProcessChildrenAfter</a> = 2, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1">MacroMode.ProcessChildrenBefore</a> = 4, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85">MacroMode.Passive</a> = 8, 
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1">MacroMode.ProcessChildrenBefore</a> = 4, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85">MacroMode.Passive</a> = 8, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721acaccf488509e944ace72367a515cdda5">MacroMode.AllowDuplicates</a> = 16, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a98a208d641d4023e8c975526f57ff76e">MacroMode.FallbackMin</a> = 0x100, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a882277bdf25efaeb8295e842ebcb3d11">MacroMode.Fallback</a> = 0x300, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a19f3ea8b6cb880e0a670e266566df86d">MacroMode.NormalPriority</a> = 0x500, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849">MacroMode.Override</a> = 0x700, 
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a98a208d641d4023e8c975526f57ff76e">MacroMode.FallbackMin</a> = 0x100, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a882277bdf25efaeb8295e842ebcb3d11">MacroMode.Fallback</a> = 0x300, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a19f3ea8b6cb880e0a670e266566df86d">MacroMode.NormalPriority</a> = 0x500, 
+<br />
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849">MacroMode.Override</a> = 0x700, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ae9275e07c79aa464189c6ee9b8724a61">MacroMode.OverrideMax</a> = 0x900, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f">MacroMode.PriorityMask</a> = 0xF00
 <br />
@@ -259,9 +262,10 @@ Functions</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

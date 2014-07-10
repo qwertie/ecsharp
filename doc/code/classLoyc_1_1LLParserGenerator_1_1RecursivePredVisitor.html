@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,7 +95,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.LLParserGenerator.RecursivePredVisitor Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Base class for implementing a visitor that examines a tree of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icates. The default implementation of Visit(P) for each predicate type P recursively visits the children of the P. 
+ <a href="classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/PredVisitor.cs'>/Src/LLLPG/RuleAndPreds/PredVisitor.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -102,11 +107,13 @@ Inheritance diagram for Loyc.LLParserGenerator.RecursivePredVisitor:</div>
  <div class="center">
   <img src="classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.png" usemap="#Loyc.LLParserGenerator.RecursivePredVisitor_map" alt=""/>
   <map id="Loyc.LLParserGenerator.RecursivePredVisitor_map" name="Loyc.LLParserGenerator.RecursivePredVisitor_map">
-<area href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html" alt="Loyc.LLParserGenerator.PredVisitor" shape="rect" coords="0,0,411,24"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html" title="Base class for implementing a visitor that examines a tree of LLLPG Predicates." alt="Loyc.LLParserGenerator.PredVisitor" shape="rect" coords="0,0,411,24"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html" title="Performs prediction analysis using the visitor pattern to visit the predicates in a rule..." alt="Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor" shape="rect" coords="0,112,411,136"/>
 </map>
  </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Base class for implementing a visitor that examines a tree of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icates. The default implementation of Visit(P) for each predicate type P recursively visits the children of the P.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aafae2a3a579b3b0b6c48cd46849f4fe3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aafae2a3a579b3b0b6c48cd46849f4fe3"></a>
@@ -151,9 +158,10 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <tr class="separator:af14de03e3417eb707b2e029d5eb5b992 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1PredVisitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

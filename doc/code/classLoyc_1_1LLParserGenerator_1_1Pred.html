@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -99,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Represents part of a grammar for the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. 
  <a href="classLoyc_1_1LLParserGenerator_1_1Pred.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/Predicates.cs'>/Src/LLLPG/RuleAndPreds/Predicates.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -129,7 +131,7 @@ Inheritance diagram for Loyc.LLParserGenerator.Pred:</div>
 <li>
 Other components of a rule: sequences (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Seq.html" title="Represents a sequence of predicates (Preds).">Seq</a>), branches and loops (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a>), gates (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Gate.html" title="Represents a &quot;gate&quot; (p => m), which is a mechanism to separate prediction from matching in the contex...">Gate</a>, a mechanism to separate prediction from matching), and and-predicates (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html" title="Represents a zero-width assertion: either user-defined code to check a condition, or a predicate that...">AndPred</a>, an assertion that consumes no input). </li>
 <li>
-<a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule.">EndOfRule</a>: a container for the follow set of a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> (this class is not a real predicate; it is derived from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a> so that it can be a legal value for Pred.Next). </li>
+<a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule.">EndOfRule</a>: a container for the follow set of a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a> (this class is not a real predicate; it is derived from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a> so that it can be a legal value for Pred.Next). </li>
 </ul>
 <p>Each <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a> object can be used only once in a grammar, because Preds contain context- sensitive state such as the Next field, which are used during grammar analysis. A <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a> must be <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a4cf6508f14c947c295862db547b52070" title="Deep-clones a predicate tree. Terminal sets and Nodes referenced by the tree are not cloned; the clon...">Clone()</a>d if one wants to use it multiple times. </p>
 </div><table class="memberdecls">
@@ -337,9 +339,10 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

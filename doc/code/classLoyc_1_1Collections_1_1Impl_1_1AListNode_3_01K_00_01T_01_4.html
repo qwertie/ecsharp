@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -99,9 +101,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in-memory B+tree, not necessarily sorted, but structured like a B+tree. That means there are two node types: leaf and inner nodes.  
+<p>Internal implementation class. Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in-memory B+tree, not necessarily sorted, but structured like a B+tree. That means there are two node types: leaf and inner (internal) nodes.  
  <a href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/AListNode.cs'>/Src/Loyc.Collections/ALists/AListNode.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -110,19 +112,14 @@ Inheritance diagram for Loyc.Collections.Impl.AListNode&lt; K, T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.png" usemap="#Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map" alt=""/>
   <map id="Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map" name="Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html" alt="Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;" shape="rect" coords="145,56,426,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html" alt="Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;" shape="rect" coords="727,56,1008,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html" alt="Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;" shape="rect" coords="1018,56,1299,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListInner_3_01T_01_4.html" alt="Loyc.Collections.Impl.AListInner&lt; T &gt;" shape="rect" coords="0,112,281,136"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1BListInner_3_01K_00_01T_01_4.html" alt="Loyc.Collections.Impl.BListInner&lt; K, T &gt;" shape="rect" coords="291,112,572,136"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01T_01_4.html" title="Leaf node of AList{T}. " alt="Loyc.Collections.Impl.AListLeaf&lt; T &gt;" shape="rect" coords="582,112,863,136"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html" title="Leaf node of BList{T}. " alt="Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;" shape="rect" coords="873,112,1154,136"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1BDictionaryInner_3_01K_00_01V_01_4.html" alt="Loyc.Collections.Impl.BDictionaryInner&lt; K, V &gt;" shape="rect" coords="145,168,426,192"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1BListInner_3_01T_01_4.html" alt="Loyc.Collections.Impl.BListInner&lt; T &gt;" shape="rect" coords="436,168,717,192"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared code of AList internal nodes." alt="Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;" shape="rect" coords="0,56,269,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared code of non-sparse AList leaf nodes." alt="Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;" shape="rect" coords="279,56,548,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html" title="Internal implementation class. Leaf node of SparseAList{T}." alt="Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;" shape="rect" coords="558,56,827,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html" title="Internal implementation class. Leaf node of BList{T} and BDictionary{K,V}." alt="Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;" shape="rect" coords="279,112,548,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in-memory B+tree, not necessarily sorted, but structured like a B+tree. That means there are two node types: leaf and inner nodes. </p>
+<div class="textblock"><p>Internal implementation class. Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in-memory B+tree, not necessarily sorted, but structured like a B+tree. That means there are two node types: leaf and inner (internal) nodes. </p>
 <p>Indexes that are passed to methods such as Index, this[] and RemoveAt are not range-checked except by assertion. The caller (AList or BList) is expected to ensure indexes are valid. </p>
 <p>At the root node level, indexes have the same meaning as they do in AListBase itself. However, below the root node, each node has a "base 
 index" that is subtracted from any index passed to the node. For example, if the root node has two leaf children, and the left one has 20 items, then the right child's base index is 20. When accessing item 23, the subindex 3 is passed to the right child. Note that the right child is not aware of its own base index (the parent node manages the base index); as far as each node is concerned, it manages a collection of items numbered 0 to TotalCount-1. </p>
@@ -164,12 +161,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af13714f40db692e2280940eddb8f4628"><td class="memItemLeft" align="right" valign="top">virtual AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out AListNode&lt; K, T &gt; splitRight, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a781c2f51f9403ad3153fdb77122d8781"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a781c2f51f9403ad3153fdb77122d8781">DoSingleOperation</a> (ref AListSingleOperation&lt; K, T &gt; op, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a781c2f51f9403ad3153fdb77122d8781"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a retrieve, add, remove or replace operation on a single item in an organized A-list (such as a BList or BDictionary). <a href="#a781c2f51f9403ad3153fdb77122d8781">More...</a><br /></td></tr>
-<tr class="separator:a781c2f51f9403ad3153fdb77122d8781"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71cbdd80269c6a547523bbf36a43e1dc"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a71cbdd80269c6a547523bbf36a43e1dc">DoSparseOperation</a> (ref AListSparseOperation&lt; T &gt; op, int index, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a71cbdd80269c6a547523bbf36a43e1dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an insert or replace operation in a SparseAList{T}. <a href="#a71cbdd80269c6a547523bbf36a43e1dc">More...</a><br /></td></tr>
-<tr class="separator:a71cbdd80269c6a547523bbf36a43e1dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a092056ac4b87554536876f292ab84c11"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a092056ac4b87554536876f292ab84c11">GetLastItem</a> ()</td></tr>
 <tr class="memdesc:a092056ac4b87554536876f292ab84c11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the last item in the last leaf node (needed by B+ trees, but is also called by AListBase{K,T}.Last). <a href="#a092056ac4b87554536876f292ab84c11">More...</a><br /></td></tr>
 <tr class="separator:a092056ac4b87554536876f292ab84c11"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -392,126 +383,7 @@ Protected fields</h2></td></tr>
 
 <p>Creates an unfrozen shallow duplicate copy of this node. The child nodes (if this is an inner node) are frozen so that they will require duplication if they are to be modified. The name "DetachedClone" is intended to emphasize that the AListNodeObserver (if any) is not notified, and the clone is effectively independent of the list that it came from.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BDictionaryInner_3_01K_00_01V_01_4.html#a1511b5138eb5fa278edb50eb1782b1be">Loyc.Collections.Impl.BDictionaryInner&lt; K, V &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListInner_3_01T_01_4.html#ad09341331b55ce27cae6b46f08ec266c">Loyc.Collections.Impl.BListInner&lt; T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#a95934239c298592b06e1a22951a805fe">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#aa5f791650ecab4d85487e3b735c20cf5">Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01T_01_4.html#ae77e91ebb17eb05bef27c7cf0c1ac0eb">Loyc.Collections.Impl.AListLeaf&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInner_3_01T_01_4.html#aea74c849c81778a705e3232b7f6a3dc6">Loyc.Collections.Impl.AListInner&lt; T &gt;</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a781c2f51f9403ad3153fdb77122d8781"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual int Loyc.Collections.Impl.AListNode&lt; K, T &gt;.DoSingleOperation </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSingleOperation&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>op</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitLeft</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitRight</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Performs a retrieve, add, remove or replace operation on a single item in an organized A-list (such as a BList or BDictionary).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">op</td><td>An object that describes the operation to be performed and the parameters of the tree (comparers and observers).</td></tr>
-    <tr><td class="paramname">splitLeft</td><td>null if the operation completed normally. If an item was added and the node split, splitLeft and splitRight are new nodes that each contain roughly half of the items from this node. </td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If an item was removed and the node became undersized, splitLeft is set to this (the node itself) and splitRight is set to null. Likewise, if the aggregate value of the node changed (in a B+tree, this means that the highest key changed) then splitLeft is set to the node itself and splitRight is set to null. </p>
-<dl class="section return"><dt>Returns</dt><dd>Returns 1 if a new item was added, -1 if an item was removed, or 0 if the number of items in the tree did not change.</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">NotSupportedException</td><td>This node does not belong to an organized tree (e.g. normal AList).</td></tr>
-    <tr><td class="paramname"><a class="el" href="classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html">KeyAlreadyExistsException</a></td><td>The key op.NewKey already existed in the tree and op.Mode was <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee" title="Indicates the way an add operation (such as BList{T}.Do should behave when an item being added to a s...">AListOperation</a>.AddOrThrow.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If op.Mode is <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee" title="Indicates the way an add operation (such as BList{T}.Do should behave when an item being added to a s...">AListOperation</a>.ReplaceIfPresent, this method informs the caller when replacement occurs in this mode by changing op.Mode to AddDuplicateMode.ReplaceExisting. </p>
-
-<p>Reimplemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListInner_3_01K_00_01T_01_4.html#a2d4c0dd357ee66da1c66d88dac241cb4">Loyc.Collections.Impl.BListInner&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#a443b3b981906181dd600cc4021771e8f">Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a71cbdd80269c6a547523bbf36a43e1dc"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual int Loyc.Collections.Impl.AListNode&lt; K, T &gt;.DoSparseOperation </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSparseOperation&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>op</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitLeft</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitRight</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Performs an insert or replace operation in a SparseAList{T}.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">op</td><td>Describes the operation to be performed</td></tr>
-    <tr><td class="paramname">index</td><td>Relative index in child node where the sparse operation began; <code>index + op.SourceIndex</code> is where the next insertion or replacement must occur. For example if the child node represents items 100-200, and op.SourceIndex is 7, and the absolute index of the start of the operation (op.AbsoluteIndex) is 98, then <code>index</code> will be -2 (98-100) and the next insertion or replacement will occur at index 5 in the child. <code>index</code> may be negative but <code>index + op.SourceIndex &gt;= 0</code>.</td></tr>
-    <tr><td class="paramname">splitLeft</td><td>If the node needs to split, splitLeft and splitRight are set to the new pieces. If the node is undersized, splitLeft is set to <code>this</code> (the called node) and splitRight is set to null.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Size change (always 0 for a replacement operation)</dd></dl>
-<p>In a language with templates, I would change a couple of elements of AListSparseOperation{T} into template parameters.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#a95934239c298592b06e1a22951a805fe">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#aa5f791650ecab4d85487e3b735c20cf5">Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -1066,9 +938,10 @@ Protected fields</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:34 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:32 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

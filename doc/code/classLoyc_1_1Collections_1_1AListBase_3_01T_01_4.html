@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -98,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Common base class of AList{T} and SparseAList{T}. Most of the functionality of the two types is identical, so this class is used to share code between them.  
  <a href="classLoyc_1_1Collections_1_1AListBase_3_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/AList.cs'>/Src/Loyc.Collections/ALists/AList.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -332,12 +334,6 @@ virtual Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>NewEnum
 <tr class="memitem:a27109df30b86bcbfe26013886f8c0691 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27109df30b86bcbfe26013886f8c0691"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>HandleChangedOrUndersizedRoot</b> (AListNode&lt; K, T &gt; result)</td></tr>
 <tr class="separator:a27109df30b86bcbfe26013886f8c0691 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3ac64a0e83bd6900c9578a4700f445f inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af3ac64a0e83bd6900c9578a4700f445f">DoSingleOperation</a> (ref AListSingleOperation&lt; K, T &gt; op)</td></tr>
-<tr class="memdesc:af3ac64a0e83bd6900c9578a4700f445f inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an operation on a single item in an organized tree. <a href="#af3ac64a0e83bd6900c9578a4700f445f">More...</a><br /></td></tr>
-<tr class="separator:af3ac64a0e83bd6900c9578a4700f445f inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12c1b2d4c4e6abadb635369b885e49f3 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a12c1b2d4c4e6abadb635369b885e49f3">OrganizedRetrieve</a> (ref AListSingleOperation&lt; K, T &gt; op)</td></tr>
-<tr class="memdesc:a12c1b2d4c4e6abadb635369b885e49f3 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a retrieve operation for a specific item. <a href="#a12c1b2d4c4e6abadb635369b885e49f3">More...</a><br /></td></tr>
-<tr class="separator:a12c1b2d4c4e6abadb635369b885e49f3 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a01a3f8678d0ddb625b168714ca7ea8d4">ClearInternal</a> (bool forceClear)</td></tr>
 <tr class="memdesc:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the tree. <a href="#a01a3f8678d0ddb625b168714ca7ea8d4">More...</a><br /></td></tr>
 <tr class="separator:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -506,9 +502,10 @@ const byte&#160;</td><td class="memItemRight" valign="bottom"><b>FrozenForConcur
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:26 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

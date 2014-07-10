@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -100,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Base class for the indexed tree-based data structures known as AList{T} and BList{T}.  
  <a href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/AListBase.cs'>/Src/Loyc.Collections/ALists/AListBase.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -109,16 +111,15 @@ Inheritance diagram for Loyc.Collections.AListBase&lt; K, T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.png" usemap="#Loyc.Collections.AListBase&lt; K, T &gt;_map" alt=""/>
   <map id="Loyc.Collections.AListBase&lt; K, T &gt;_map" name="Loyc.Collections.AListBase&lt; K, T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="305,56,600,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html" title="Encapsulates the ListChanging event that notifies listeners of dynamic changes to an indexed list..." alt="Loyc.Collections.INotifyListChanging&lt; T &gt;" shape="rect" coords="610,56,905,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="915,56,1210,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html" title="Encapsulates the ListChanging event that notifies listeners of dynamic changes to an indexed list..." alt="Loyc.Collections.INotifyListChanging&lt; T &gt;" shape="rect" coords="1220,56,1515,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="152,56,447,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html" title="Encapsulates the ListChanging event that notifies listeners of dynamic changes to an indexed list..." alt="Loyc.Collections.INotifyListChanging&lt; T &gt;" shape="rect" coords="457,56,752,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="762,56,1057,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html" title="Encapsulates the ListChanging event that notifies listeners of dynamic changes to an indexed list..." alt="Loyc.Collections.INotifyListChanging&lt; T &gt;" shape="rect" coords="1067,56,1362,80"/>
 <area href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1Enumerator.html" alt="Loyc.Collections.AListBase&lt; K, T &gt;.Enumerator" shape="rect" coords="0,168,295,192"/>
-<area href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1ObserverMgr.html" alt="Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr" shape="rect" coords="305,168,600,192"/>
+<area href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1ObserverMgr.html" title="A multiplexer that is only created for ALists that have two or more attached intances of IAListTreeOb..." alt="Loyc.Collections.AListBase&lt; K, T &gt;.ObserverMgr" shape="rect" coords="305,168,600,192"/>
 <area href="classLoyc_1_1Collections_1_1AListBase_3_01T_01_4.html" title="Common base class of AList{T} and SparseAList{T}. Most of the functionality of the two types is ident..." alt="Loyc.Collections.AListBase&lt; T &gt;" shape="rect" coords="610,168,905,192"/>
 <area href="classLoyc_1_1Collections_1_1BDictionary_3_01K_00_01V_01_4.html" title="An sorted dictionary that is efficient for all operations and offers indexed access to its list of ke..." alt="Loyc.Collections.BDictionary&lt; K, V &gt;" shape="rect" coords="915,168,1210,192"/>
 <area href="classLoyc_1_1Collections_1_1BList_3_01T_01_4.html" title="An sorted in-memory list that is efficient for all operations and offers indexed access to its list..." alt="Loyc.Collections.BList&lt; T &gt;" shape="rect" coords="1220,168,1515,192"/>
-<area href="classLoyc_1_1Collections_1_1BListBase_3_01K_00_01T_01_4.html" alt="Loyc.Collections.BListBase&lt; K, T &gt;" shape="rect" coords="1525,168,1820,192"/>
 <area href="classLoyc_1_1Collections_1_1AList_3_01T_01_4.html" title="An all-purpose list structure with the following additional features beyond what&#39;s offered by List{T}..." alt="Loyc.Collections.AList&lt; T &gt;" shape="rect" coords="457,224,752,248"/>
 <area href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html" title="A sparse A-List that implements ISparseList{T}." alt="Loyc.Collections.SparseAList&lt; T &gt;" shape="rect" coords="762,224,1057,248"/>
 <area href="classLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4.html" title="An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. " alt="Loyc.Collections.BMultiMap&lt; K, V &gt;" shape="rect" coords="1220,224,1515,248"/>
@@ -180,10 +181,10 @@ AList{T} has a special sorting algorithm that allows you to sort the list in sli
   </dd>
 </dl>
 <p>TODO:</p><ul>
-<li><a class="el" href="classLoyc_1_1Collections_1_1Check.html">Check</a> that all cloning is handled.</li>
-<li><a class="el" href="classLoyc_1_1Collections_1_1Check.html">Check</a> that all splitting is handled.</li>
-<li><a class="el" href="classLoyc_1_1Collections_1_1Check.html">Check</a> that all TakeFromLeft/Right is handled.</li>
-<li><a class="el" href="classLoyc_1_1Collections_1_1Check.html">Check</a> that all leaf changes are handled</li>
+<li>Check that all cloning is handled.</li>
+<li>Check that all splitting is handled.</li>
+<li>Check that all TakeFromLeft/Right is handled.</li>
+<li>Check that all leaf changes are handled</li>
 <li>Factor out certain calls to indexer to shorten/simplify code</li>
 <li>Add a method to install indexer in AList</li>
 <li>Write unit tests</li>
@@ -196,6 +197,7 @@ Nested classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1Enumerator.html">Enumerator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1ObserverMgr.html">ObserverMgr</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A multiplexer that is only created for ALists that have two or more attached intances of IAListTreeObserver{K,T}. <a href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1ObserverMgr.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -323,12 +325,6 @@ virtual Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>NewEnum
 <tr class="memitem:a27109df30b86bcbfe26013886f8c0691"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27109df30b86bcbfe26013886f8c0691"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>HandleChangedOrUndersizedRoot</b> (AListNode&lt; K, T &gt; result)</td></tr>
 <tr class="separator:a27109df30b86bcbfe26013886f8c0691"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3ac64a0e83bd6900c9578a4700f445f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af3ac64a0e83bd6900c9578a4700f445f">DoSingleOperation</a> (ref AListSingleOperation&lt; K, T &gt; op)</td></tr>
-<tr class="memdesc:af3ac64a0e83bd6900c9578a4700f445f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an operation on a single item in an organized tree. <a href="#af3ac64a0e83bd6900c9578a4700f445f">More...</a><br /></td></tr>
-<tr class="separator:af3ac64a0e83bd6900c9578a4700f445f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12c1b2d4c4e6abadb635369b885e49f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a12c1b2d4c4e6abadb635369b885e49f3">OrganizedRetrieve</a> (ref AListSingleOperation&lt; K, T &gt; op)</td></tr>
-<tr class="memdesc:a12c1b2d4c4e6abadb635369b885e49f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a retrieve operation for a specific item. <a href="#a12c1b2d4c4e6abadb635369b885e49f3">More...</a><br /></td></tr>
-<tr class="separator:a12c1b2d4c4e6abadb635369b885e49f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01a3f8678d0ddb625b168714ca7ea8d4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a01a3f8678d0ddb625b168714ca7ea8d4">ClearInternal</a> (bool forceClear)</td></tr>
 <tr class="memdesc:a01a3f8678d0ddb625b168714ca7ea8d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the tree. <a href="#a01a3f8678d0ddb625b168714ca7ea8d4">More...</a><br /></td></tr>
 <tr class="separator:a01a3f8678d0ddb625b168714ca7ea8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -563,45 +559,6 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="af3ac64a0e83bd6900c9578a4700f445f"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int Loyc.Collections.AListBase&lt; K, T &gt;.DoSingleOperation </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSingleOperation&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>op</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Performs an operation on a single item in an organized tree.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">op</td><td>Describes the operation to perform. The following members must be initialized: Mode, CompareKeys, CompareToKey, Item, and Key. Also, set AListSingleOperation{K,T}.RequireExactMatch if desired.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Returns the number of items that were added or removed, which is always 1, 0, or -1.</dd></dl>
-<p>This method can be used to add, remove, or replace an item in an organized tree such as a B+ tree. It also finds the index of the item that was found, added, removed, or replaced, so it can be used to implement IndexOf(K) for a key K. Please note that in a dictionary, this method cannot find an exact item (key-value pair) reliably when duplicate keys exist.* </p>
-<p>This method could be used to find items also, but it assumes the operation might modify the tree and therefore enables concurrent access detection and will create the root node if it doesn't exist. Therefore, you should call <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a12c1b2d4c4e6abadb635369b885e49f3" title="Performs a retrieve operation for a specific item.">OrganizedRetrieve</a> if you only want to retrieve an item from the tree. </p>
-<p>See the documentation of AListSingleOperation{K,T} and <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee" title="Indicates the way an add operation (such as BList{T}.Do should behave when an item being added to a s...">AListOperation</a> for more information. </p>
-<ul>
-<li>Actually it is possible in a B+ tree, but requires a specially- designed derived class. Specifically, it is necessary to store key-value pairs in inner nodes instead of just keys (so K := T), and to implement two different sorting functions. One sort function only compares keys, but this function can only be used for find and remove operations. The other function compares entire key-value pairs in order to find an exact match (note that this requires ordered values); this second function must be used for all add operations, otherwise the tree may not stay sorted. In this kind of tree, replacements are generally unsafe (unless the new key and value both compare equal to the old key and value). </li>
-</ul>
-
-</div>
-</div>
 <a class="anchor" id="aa239cb09ae589f3f5d90ce00df3f60ab"></a>
 <div class="memitem">
 <div class="memproto">
@@ -624,7 +581,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Prevents further changes to the list.</p>
-<p>After calling this method, any attempt to modify the list will cause a <a class="el" href="classLoyc_1_1ReadOnlyException.html">ReadOnlyException</a> to be thrown. </p>
+<p>After calling this method, any attempt to modify the list will cause a <a class="el" href="classLoyc_1_1ReadOnlyException.html" title="An exception thrown when an attempt is made to modify a read-only object.">ReadOnlyException</a> to be thrown. </p>
 <p>Note: although they will no longer be called, any ListChanging handlers will not be forgotten, because it is possible to clone an unfrozen version of the list while keeping those handlers. </p>
 <p>This feature can be disabled in a derived class by overriding this method to throw NotSupportedException. </p>
 
@@ -714,39 +671,6 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a class="anchor" id="a12c1b2d4c4e6abadb635369b885e49f3"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.AListBase&lt; K, T &gt;.OrganizedRetrieve </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSingleOperation&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>op</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Performs a retrieve operation for a specific item.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">op</td><td>Describes the item to retrieve and receives information about the item retrieved. The following members must be initialized: CompareKeys, CompareToKey, and Key. Also, if desired, set AListSingleOperation{K,T}.RequireExactMatch. </td></tr>
-  </table>
-  </dd>
-</dl>
-<p>When this method returns, op.Found indicates whether the requested key was found, op.Item will contain the item with that key (if found), and op.BaseIndex will contain the index of the item (see AListSingleOperation{K,T}.BaseIndex). </p>
 
 </div>
 </div>
@@ -1004,9 +928,10 @@ public Slice_&lt;T&gt; Slice(int start, int count) { return new Slice_&lt;T&gt;(
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:26 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

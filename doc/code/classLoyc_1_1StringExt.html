@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,10 +95,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.StringExt Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a462ec074863196f5a649a3524fff6bd7" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count > s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count > s.Length.">Right</a>, <a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">Format</a> and USlice. 
+ <a href="classLoyc_1_1StringExt.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Strings/StringExt.cs'>/Src/Loyc.Essentials/Strings/StringExt.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Extension methods for strings, such as <a class="el" href="classLoyc_1_1StringExt.html#a462ec074863196f5a649a3524fff6bd7" title="Gets the substrings to the left and right of a dividing character.">SplitAt</a>, <a class="el" href="classLoyc_1_1StringExt.html#aa87b88b59e7be188702669f8dcbd8478" title="Returns the leftmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count > s.Length.">Left</a>, <a class="el" href="classLoyc_1_1StringExt.html#a882166b32a890f69aef91950f0f01030" title="Returns the rightmost &#39;count&#39; characters of &#39;s&#39;, or s itself if count > s.Length.">Right</a>, <a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">Format</a> and USlice.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a462ec074863196f5a649a3524fff6bd7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a462ec074863196f5a649a3524fff6bd7">SplitAt</a> (this string s, char c)</td></tr>
@@ -135,9 +142,9 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 <tr class="memitem:a3beeb9233645fe2315f544299438fc9e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3beeb9233645fe2315f544299438fc9e"></a>
 static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Find</b> (this string str, <a class="el" href="structLoyc_1_1UString.html">UString</a> what, bool ignoreCase=false)</td></tr>
 <tr class="separator:a3beeb9233645fe2315f544299438fc9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19bb6de2f7be75ed070cb8bfe3642446"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446">Format</a> (string format, params object[] args)</td></tr>
-<tr class="memdesc:a19bb6de2f7be75ed070cb8bfe3642446"><td class="mdescLeft">&#160;</td><td class="mdescRight">This formatter works like string.Format, except that named placeholders accepted as well as numeric placeholders. This method replaces named placeholders with numbers, then calls string.Format.  <a href="#a19bb6de2f7be75ed070cb8bfe3642446">More...</a><br /></td></tr>
-<tr class="separator:a19bb6de2f7be75ed070cb8bfe3642446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11d78509e285afcced8d7916594c7dab"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab">Format</a> (this string format, params object[] args)</td></tr>
+<tr class="memdesc:a11d78509e285afcced8d7916594c7dab"><td class="mdescLeft">&#160;</td><td class="mdescRight">This formatter works like string.Format, except that named placeholders accepted as well as numeric placeholders. This method replaces named placeholders with numbers, then calls string.Format.  <a href="#a11d78509e285afcced8d7916594c7dab">More...</a><br /></td></tr>
+<tr class="separator:a11d78509e285afcced8d7916594c7dab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6678cf856018db0940007295877a337"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1StringExt.html#aa6678cf856018db0940007295877a337">EliminateNamedArgs</a> (string format, params object[] args)</td></tr>
 <tr class="memdesc:aa6678cf856018db0940007295877a337"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by Format to replace named placeholders with numeric placeholders in format strings. <a href="#aa6678cf856018db0940007295877a337">More...</a><br /></td></tr>
 <tr class="separator:aa6678cf856018db0940007295877a337"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,13 +184,13 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 
 <p>Called by Format to replace named placeholders with numeric placeholders in format strings.</p>
 <dl class="section return"><dt>Returns</dt><dd>A format string that can be used to call string.Format.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">Format</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab" title="This formatter works like string.Format, except that named placeholders accepted as well as numeric p...">Format</a></dd></dl>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1StringExt.html#a19bb6de2f7be75ed070cb8bfe3642446">Loyc.StringExt.Format()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1StringExt.html#a11d78509e285afcced8d7916594c7dab">Loyc.StringExt.Format()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a19bb6de2f7be75ed070cb8bfe3642446"></a>
+<a class="anchor" id="a11d78509e285afcced8d7916594c7dab"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -193,7 +200,7 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
         <tr>
           <td class="memname">static string Loyc.StringExt.Format </td>
           <td>(</td>
-          <td class="paramtype">string&#160;</td>
+          <td class="paramtype">this string&#160;</td>
           <td class="paramname"><em>format</em>, </td>
         </tr>
         <tr>
@@ -388,9 +395,10 @@ static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

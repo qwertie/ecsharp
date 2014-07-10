@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -99,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Encapsulates the <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> engine, a simple LISP-style macro processor, suitable for running LLLPG and other lexical macros.  
  <a href="classLeMP_1_1MacroProcessor.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LeMP/MacroProcessor.cs'>/Src/LeMP/MacroProcessor.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -113,11 +115,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>This class processes a batch of files at once. Call either ProcessSynchronously or <a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15" title="Processes source files in parallel. All files are fully processed before the method returns...">ProcessParallel</a>. Parallelizing on a file-by-file basis is easy; each source file is completely independent, since no semantic analysis is being done. </p>
 <p>TODO: add method for processing an LNode instead of a list of source files. </p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Nested classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor_1_1MacroInfo.html">MacroInfo</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:ac7343c2dcf09aff781140f25137620ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac7343c2dcf09aff781140f25137620ac"></a>
@@ -274,9 +271,10 @@ RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -101,9 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree to EC# source code. 
  <a href="classEcs_1_1EcsNodePrinter.html#details">More...</a></p>
-<hr/>The documentation for this class was generated from the following files:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Ecs/Printer/EcsNodePrinter--expressions.cs'>/Src/Ecs/Printer/EcsNodePrinter--expressions.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Ecs/Printer/EcsNodePrinter--statements.cs'>/Src/Ecs/Printer/EcsNodePrinter--statements.cs</a></li>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Ecs/Printer/EcsNodePrinter.cs'>/Src/Ecs/Printer/EcsNodePrinter.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -121,50 +121,36 @@ Names must come from the global symbol pool (GSymbol.Pool). The printer will hap
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:aa4ca90c805a350703c6fe65fbec3642b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4ca90c805a350703c6fe65fbec3642b"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>SPResult</b> { <b>Fail</b>, 
-<b>Complete</b>, 
-<b>NeedSemicolon</b>, 
-<b>NeedSuffixTrivia</b>
- }</td></tr>
-<tr class="separator:aa4ca90c805a350703c6fe65fbec3642b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0704c1e9fe32d570b29323438180ddfa"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> { <br />
 &#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa17ae6185722f0f73997608c3ca841b1d">Ambiguity.AllowUnassignedVarDecl</a> = 0x0001, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa1ae4f69bae69c68dbba947988e250186">Ambiguity.CastRhs</a> = 0x0002, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa3049892795d62eadfd05ad49720c6e86">Ambiguity.IsCallTarget</a> = 0x0004, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa5d8a7fbff5e71284797087e79ee4f8cc">Ambiguity.NoBracedBlock</a> = 0x0008, 
 <br />
-&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa742128b31039daa0f755ac769ae14658">Ambiguity.FinalStmt</a> = 0x0010, 
+&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa5d8a7fbff5e71284797087e79ee4f8cc">Ambiguity.NoBracedBlock</a> = 0x0008, 
+<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa742128b31039daa0f755ac769ae14658">Ambiguity.FinalStmt</a> = 0x0010, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa6200563ef865f533e8447a842e2f29ff">Ambiguity.TypeContext</a> = 0x0020, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa9239b329d3ac06416ebfb984c7d375c0">Ambiguity.InDefinitionName</a> = 0x0040, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaac073a517950215c2a7a059219129c46d">Ambiguity.InOf</a> = 0x0080, 
 <br />
-&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaad7759377a99ca6925880857517ef45b9">Ambiguity.AllowPointer</a> = 0x0100, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa60c8a6d80a80793396e36544c06669d1">Ambiguity.UseBacktick</a> = 0x0400, 
+&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa9239b329d3ac06416ebfb984c7d375c0">Ambiguity.InDefinitionName</a> = 0x0040, 
+<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaac073a517950215c2a7a059219129c46d">Ambiguity.InOf</a> = 0x0080, 
+<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaad7759377a99ca6925880857517ef45b9">Ambiguity.AllowPointer</a> = 0x0100, 
+<br />
+&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa60c8a6d80a80793396e36544c06669d1">Ambiguity.UseBacktick</a> = 0x0400, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa5246efcdea330ea7058b5134460debdd">Ambiguity.DropAttributes</a> = 0x0800, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa906db9293715c6c5d602734d781ab36d">Ambiguity.ForEachInitializer</a> = 0x1000, 
 <br />
 &#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaaadac743356a64174846304ba4b33ee72">Ambiguity.ElseClause</a> = 0x2000, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa888bb746148f4f71dbabfe1ae648e7d3">Ambiguity.RecursivePrefixNotation</a> = 0x4000, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa6cd8d34467de36f84cedd7a7a40ef479">Ambiguity.AllowThisAsCallTarget</a> = 0x8000, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa2e1b04fc1a8e5adcc2f231bb548232e9">Ambiguity.NoIfWithoutElse</a> = 0x10000, 
 <br />
-&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa1490ee442c93799096a36f90f2a72dad">Ambiguity.NoParenthesis</a> = 0x20000
+&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa2e1b04fc1a8e5adcc2f231bb548232e9">Ambiguity.NoIfWithoutElse</a> = 0x10000, 
+<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa1490ee442c93799096a36f90f2a72dad">Ambiguity.NoParenthesis</a> = 0x20000
 <br />
  }</td></tr>
-<tr class="memdesc:a0704c1e9fe32d570b29323438180ddfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that represent special situations in EC# syntax. <a href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">More...</a><br /></td></tr>
+<tr class="memdesc:a0704c1e9fe32d570b29323438180ddfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal enum (marked public for an obscure technical reason). These are flags that represent special situations in EC# syntax. <a href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">More...</a><br /></td></tr>
 <tr class="separator:a0704c1e9fe32d570b29323438180ddfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a0403827aa3a72cdf998ea956cf3cab92"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a0403827aa3a72cdf998ea956cf3cab92">StartStmt</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec, MinPrec, MinPrec)</td></tr>
-<tr class="memdesc:a0403827aa3a72cdf998ea956cf3cab92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: beginning of statement (#namedArg not supported, allow multiple #var decl) <a href="#a0403827aa3a72cdf998ea956cf3cab92">More...</a><br /></td></tr>
-<tr class="separator:a0403827aa3a72cdf998ea956cf3cab92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff81583ea6b0411f191a210765229b1b"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#aff81583ea6b0411f191a210765229b1b">StartExpr</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+1, MinPrec+1, MinPrec+1)</td></tr>
-<tr class="memdesc:aff81583ea6b0411f191a210765229b1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: beginning of expression (#var must have initial value) <a href="#aff81583ea6b0411f191a210765229b1b">More...</a><br /></td></tr>
-<tr class="separator:aff81583ea6b0411f191a210765229b1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fdabd15325919ec51211859adb30e0d"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a8fdabd15325919ec51211859adb30e0d">ContinueExpr</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+2, MinPrec+2, MinPrec+2)</td></tr>
-<tr class="memdesc:a8fdabd15325919ec51211859adb30e0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: middle of expression, top level (#var and #namedArg not supported) <a href="#a8fdabd15325919ec51211859adb30e0d">More...</a><br /></td></tr>
-<tr class="separator:a8fdabd15325919ec51211859adb30e0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0398f19a40059b0cef357e0f1acf616a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0398f19a40059b0cef357e0f1acf616a"></a>
 static readonly LNodePrinter&#160;</td><td class="memItemRight" valign="bottom"><b>Printer</b> = Print</td></tr>
 <tr class="separator:a0398f19a40059b0cef357e0f1acf616a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -231,87 +217,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAfterPrefixStopPr
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4b29963c4145005a6468521523e69235"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4b29963c4145005a6468521523e69235"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintExpr</b> ()</td></tr>
-<tr class="separator:a4b29963c4145005a6468521523e69235"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a279a4a6bc4e1ec37f30a040febf63d6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a279a4a6bc4e1ec37f30a040febf63d6f"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsPrefixOperator</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, bool checkName)</td></tr>
-<tr class="separator:a279a4a6bc4e1ec37f30a040febf63d6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf718721446c4157346d1be79c6fa21f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf718721446c4157346d1be79c6fa21f"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintPrefixUnaryOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:abf718721446c4157346d1be79c6fa21f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab09cbba8e673df21c64ab95b833988f7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab09cbba8e673df21c64ab95b833988f7"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintInfixBinaryOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> prec, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:ab09cbba8e673df21c64ab95b833988f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a247612f44b4ed2bf669358f645d36164"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a247612f44b4ed2bf669358f645d36164"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintPrefixOrInfixOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> infixPrec, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a247612f44b4ed2bf669358f645d36164"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aabb44ca094c47a78358bc9efced062d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aabb44ca094c47a78358bc9efced062d0"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintCastOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:aabb44ca094c47a78358bc9efced062d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a7ee8dec61176f5a19a6344e69bf9a9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a7ee8dec61176f5a19a6344e69bf9a9"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintListOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a1a7ee8dec61176f5a19a6344e69bf9a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fcb111618dafab6aed7312596eaec3a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fcb111618dafab6aed7312596eaec3a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintComplexIdentOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a0fcb111618dafab6aed7312596eaec3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e81c9883c9190bbef1c6668530f23db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e81c9883c9190bbef1c6668530f23db"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintNewOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a0e81c9883c9190bbef1c6668530f23db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2aea7d3c0a37071ecf373777a94b4d75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2aea7d3c0a37071ecf373777a94b4d75"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintOtherSpecialOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a2aea7d3c0a37071ecf373777a94b4d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef4bbfe90334c3f90c31cd91debe1298"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef4bbfe90334c3f90c31cd91debe1298"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintCallOperator</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> precedence, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:aef4bbfe90334c3f90c31cd91debe1298"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a596ef59c803391e0e3151725ecdb6d0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a596ef59c803391e0e3151725ecdb6d0c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>PrintRawText</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> mainPrec, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a596ef59c803391e0e3151725ecdb6d0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05810ee0a4b041268e89396dd5afeccd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05810ee0a4b041268e89396dd5afeccd"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintPrefixNotation</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags=Ambiguity.RecursivePrefixNotation, bool purePrefixNotation=false)</td></tr>
-<tr class="separator:a05810ee0a4b041268e89396dd5afeccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0536ed7bfc9796eadd138f54dd7e7ea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab0536ed7bfc9796eadd138f54dd7e7ea"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags=0)</td></tr>
-<tr class="separator:ab0536ed7bfc9796eadd138f54dd7e7ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94c0eb285c1ff5bbbb0752739ad3049e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94c0eb285c1ff5bbbb0752739ad3049e"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintResult</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a94c0eb285c1ff5bbbb0752739ad3049e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea2161be747f21072c5c721f285e432d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aea2161be747f21072c5c721f285e432d"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintMissingStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:aea2161be747f21072c5c721f285e432d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa76f30da99b6f220bfdd2c389dacf8a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa76f30da99b6f220bfdd2c389dacf8a8"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintRawText</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:aa76f30da99b6f220bfdd2c389dacf8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab082f16b828844d7dbc2fea9d82769d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aab082f16b828844d7dbc2fea9d82769d"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintSpaceDefinition</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:aab082f16b828844d7dbc2fea9d82769d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af273e7bcdc32ab68bc5d0f93d6255378"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af273e7bcdc32ab68bc5d0f93d6255378"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintMethodDefinition</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:af273e7bcdc32ab68bc5d0f93d6255378"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06f7adbbb4aed4191676a93cee785497"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a06f7adbbb4aed4191676a93cee785497"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintProperty</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a06f7adbbb4aed4191676a93cee785497"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a056c04e2825717f58d22c1e0fa941ab6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a056c04e2825717f58d22c1e0fa941ab6"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintVarDecl</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a056c04e2825717f58d22c1e0fa941ab6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc8af63f3af02afd79ac4bd3e4017fc2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc8af63f3af02afd79ac4bd3e4017fc2"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintEvent</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:adc8af63f3af02afd79ac4bd3e4017fc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05d589231d2754196eb86f2709b8d482"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05d589231d2754196eb86f2709b8d482"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintSimpleStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a05d589231d2754196eb86f2709b8d482"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace1022b76254adeec723a63e2e7aacbb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace1022b76254adeec723a63e2e7aacbb"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintTwoArgBlockStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:ace1022b76254adeec723a63e2e7aacbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41f2d782d49db833abbd19e209f0c053"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a41f2d782d49db833abbd19e209f0c053"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintOtherBlockStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a41f2d782d49db833abbd19e209f0c053"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a74663d33e170e0161bf51a3f69eb6c10"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a74663d33e170e0161bf51a3f69eb6c10"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintLabelStmt</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a74663d33e170e0161bf51a3f69eb6c10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d6e0184330a7fcfb8119c30015a68df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d6e0184330a7fcfb8119c30015a68df"></a>
-SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintBlockOfStmts</b> (<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ambiguity</a> flags)</td></tr>
-<tr class="separator:a3d6e0184330a7fcfb8119c30015a68df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02b58d9f742cffd7770fff88de58cc3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02b58d9f742cffd7770fff88de58cc3e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>EcsNodePrinter</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a> target)</td></tr>
 <tr class="separator:a02b58d9f742cffd7770fff88de58cc3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -321,9 +226,6 @@ SPResult&#160;</td><td class="memItemRight" valign="bottom"><b>AutoPrintBlockOfS
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a89ab007608af9823e3edccc690293f50"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a89ab007608af9823e3edccc690293f50">KeyNameComponentOf</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name)</td></tr>
-<tr class="memdesc:a89ab007608af9823e3edccc690293f50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a complex name such as <code>global::Foo&lt;int&gt;.Bar&lt;T&gt;</code>, this method identifies the base name component, which in this example is Bar. This is used, for example, to identify the expected name for a constructor based on the class name, e.g. <code>Foo&lt;T&gt;</code> =&gt; Foo. <a href="#a89ab007608af9823e3edccc690293f50">More...</a><br /></td></tr>
-<tr class="separator:a89ab007608af9823e3edccc690293f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a761ce4ba9956d0fabb57117ed8ffa026"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a761ce4ba9956d0fabb57117ed8ffa026"></a>
 static <a class="el" href="classEcs_1_1EcsNodePrinter.html">EcsNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
 <tr class="separator:a761ce4ba9956d0fabb57117ed8ffa026"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -348,7 +250,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
       </table>
 </div><div class="memdoc">
 
-<p>Flags that represent special situations in EC# syntax.</p>
+<p>Internal enum (marked public for an obscure technical reason). These are flags that represent special situations in EC# syntax.</p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa17ae6185722f0f73997608c3ca841b1d"></a>AllowUnassignedVarDecl&#160;</td><td class="fielddoc">
 <p>The expression can contain uninitialized variable declarations, e.g. because it is the subject of an assignment. In the tree "(x + y, int z) = (a, b)", this flag is passed down to "(x + y, int z)" and then down to "int y" and "x + y", but it doesn't propagate down to "x", "y" and "int".</p>
@@ -406,35 +308,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a89ab007608af9823e3edccc690293f50"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Ecs.EcsNodePrinter.KeyNameComponentOf </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Given a complex name such as <code>global::Foo&lt;int&gt;.Bar&lt;T&gt;</code>, this method identifies the base name component, which in this example is Bar. This is used, for example, to identify the expected name for a constructor based on the class name, e.g. <code>Foo&lt;T&gt;</code> =&gt; Foo.</p>
-<p>It is not verified that name is a complex identifier. There is no error detection but in some cases an empty name may be returned, e.g. for input like <code>Foo."Hello"</code>.</p>
-
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4">Loyc.Syntax.LNode.Name</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="ab0f0e57ea166c5bdab5d4fed0daf0dd2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -460,73 +333,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <dl class="section return"><dt>Returns</dt><dd>this.</dd></dl>
 
 <p>References <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a">Ecs.EcsNodePrinter.AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">Ecs.EcsNodePrinter.AllowConstructorAmbiguity</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a8c58d5d5b0f9afe15e7a9f1158175888">Ecs.EcsNodePrinter.AllowExtraBraceForIfElseAmbig</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0bde4cd0548b0216af7a7194cec73d8e">Ecs.EcsNodePrinter.AvoidMacroSyntax</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac">Ecs.EcsNodePrinter.DropNonDeclarationAttributes</a>, and <a class="el" href="classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a">Ecs.EcsNodePrinter.PreferOldStyleCasts</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a8fdabd15325919ec51211859adb30e0d"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Ecs.EcsNodePrinter.ContinueExpr = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+2, MinPrec+2, MinPrec+2)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Context: middle of expression, top level (#var and #namedArg not supported)</p>
-
-</div>
-</div>
-<a class="anchor" id="aff81583ea6b0411f191a210765229b1b"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Ecs.EcsNodePrinter.StartExpr = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+1, MinPrec+1, MinPrec+1)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Context: beginning of expression (#var must have initial value)</p>
-
-</div>
-</div>
-<a class="anchor" id="a0403827aa3a72cdf998ea956cf3cab92"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Ecs.EcsNodePrinter.StartStmt = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec, MinPrec, MinPrec)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</p>
 
 </div>
 </div>
@@ -878,9 +684,10 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

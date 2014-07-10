@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,11 +95,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Geometry.PointMath Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>The documentation for this class was generated from the following files:<ul>
+
+<p><a class="el" href="namespaceLoyc_1_1Math.html" title="Contains general-purpose math algorithms beyond what is provided in the .NET BCL (Base Class Library)...">Math</a> and extension methods for Point{T}. 
+ <a href="classLoyc_1_1Geometry_1_1PointMath.html#details">More...</a></p>
+<hr/>Source files:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Utilities/Geometry/PointMath.cs'>/Src/Loyc.Utilities/Geometry/PointMath.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Utilities/Geometry/PointMathTT.cs'>/Src/Loyc.Utilities/Geometry/PointMathTT.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p><a class="el" href="namespaceLoyc_1_1Math.html" title="Contains general-purpose math algorithms beyond what is provided in the .NET BCL (Base Class Library)...">Math</a> and extension methods for Point{T}.</p>
+<p>This contains many methods that should be considered "core" functionality, including many methods such as Add(), Sub() and Mul() that would ordinarily be implemented as operators (+ - *) if it weren't for limitations of C#. These operations are implemented as extension methods for performance reasons, because as a generic class, Point{T} cannot do arithmetic quickly. The extension methods provide operations that are optimized for specific data types (currently int, float and double).</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a31a1065e283d188641b326726e679027"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#a31a1065e283d188641b326726e679027">Cross&lt; T &gt;</a> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; b)</td></tr>
@@ -187,6 +195,90 @@ static Point&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:a2faf3e300e8bcfa7d74dd131ff96d0fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2faf3e300e8bcfa7d74dd131ff96d0fe"></a>
 static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Transform</b> (this System.Drawing.Drawing2D.Matrix matrix, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; float &gt; vec)</td></tr>
 <tr class="separator:a2faf3e300e8bcfa7d74dd131ff96d0fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca0422634ef561b823d95cfb1ac866ca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca0422634ef561b823d95cfb1ac866ca"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this Point&lt; T &gt; a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; b)</td></tr>
+<tr class="separator:aca0422634ef561b823d95cfb1ac866ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada6aa3db3e17be32171fb0c6120b8232"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada6aa3db3e17be32171fb0c6120b8232"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; a, Point&lt; T &gt; b)</td></tr>
+<tr class="separator:ada6aa3db3e17be32171fb0c6120b8232"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac40e141f298e8372419f066b6aa129b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac40e141f298e8372419f066b6aa129b2"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; b)</td></tr>
+<tr class="separator:ac40e141f298e8372419f066b6aa129b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acac3b3fa668c008e19152977250b8044"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acac3b3fa668c008e19152977250b8044"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this Point&lt; T &gt; a, Point&lt; T &gt; b)</td></tr>
+<tr class="separator:acac3b3fa668c008e19152977250b8044"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09cd0b17ae08c2eb2e68b45860ec16b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09cd0b17ae08c2eb2e68b45860ec16b5"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; b)</td></tr>
+<tr class="separator:a09cd0b17ae08c2eb2e68b45860ec16b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af476a3c98185eb19c951040e35727ed6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af476a3c98185eb19c951040e35727ed6"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this Point&lt; T &gt; a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; b)</td></tr>
+<tr class="separator:af476a3c98185eb19c951040e35727ed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a924326ca7078e1ef6c64eac68e645551"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a924326ca7078e1ef6c64eac68e645551"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Mul&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:a924326ca7078e1ef6c64eac68e645551"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a376cdadc4a476d76085c47285346b0e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a376cdadc4a476d76085c47285346b0e7"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Mul&lt; T &gt;</b> (this Point&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:a376cdadc4a476d76085c47285346b0e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa95f3cd9bfd035b63d707cd614104e80"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa95f3cd9bfd035b63d707cd614104e80"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Div&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:aa95f3cd9bfd035b63d707cd614104e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a6efc3e0b1cf4ab9b88fcd3d6e0c323"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a6efc3e0b1cf4ab9b88fcd3d6e0c323"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Div&lt; T &gt;</b> (this Point&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:a0a6efc3e0b1cf4ab9b88fcd3d6e0c323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67ceb1c5693f3eeba941405af0f6c225"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67ceb1c5693f3eeba941405af0f6c225"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shl&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a67ceb1c5693f3eeba941405af0f6c225"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24ecc1a239690f4c50b2339ff1c77efe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24ecc1a239690f4c50b2339ff1c77efe"></a>
+static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shr&lt; T &gt;</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a24ecc1a239690f4c50b2339ff1c77efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae014901740cb31234ebfb3dbf2b58cef"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae014901740cb31234ebfb3dbf2b58cef"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shl&lt; T &gt;</b> (this Point&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:ae014901740cb31234ebfb3dbf2b58cef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2eb6e13621aaab8ff9e927483a36418"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af2eb6e13621aaab8ff9e927483a36418"></a>
+static Point&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shr&lt; T &gt;</b> (this Point&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:af2eb6e13621aaab8ff9e927483a36418"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d9fb66849b6b917394304802831de46"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4d9fb66849b6b917394304802831de46"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this Vector3&lt; T &gt; a, Vector3&lt; T &gt; b)</td></tr>
+<tr class="separator:a4d9fb66849b6b917394304802831de46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a604a8e42d18fccb367d07beb77827311"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a604a8e42d18fccb367d07beb77827311"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this Point3&lt; T &gt; a, Vector3&lt; T &gt; b)</td></tr>
+<tr class="separator:a604a8e42d18fccb367d07beb77827311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1682fbb49807eac058fefb3458fcad7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1682fbb49807eac058fefb3458fcad7"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Add&lt; T &gt;</b> (this Vector3&lt; T &gt; a, Point3&lt; T &gt; b)</td></tr>
+<tr class="separator:af1682fbb49807eac058fefb3458fcad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81791dcc69a1a20034161248a5d71871"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a81791dcc69a1a20034161248a5d71871"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this Vector3&lt; T &gt; a, Vector3&lt; T &gt; b)</td></tr>
+<tr class="separator:a81791dcc69a1a20034161248a5d71871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9da0dcecd51bb5c86064588805a02a89"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9da0dcecd51bb5c86064588805a02a89"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this Point3&lt; T &gt; a, Point3&lt; T &gt; b)</td></tr>
+<tr class="separator:a9da0dcecd51bb5c86064588805a02a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61550f389deb526f3a82e2da9f8146f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61550f389deb526f3a82e2da9f8146f8"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Sub&lt; T &gt;</b> (this Point3&lt; T &gt; a, Vector3&lt; T &gt; b)</td></tr>
+<tr class="separator:a61550f389deb526f3a82e2da9f8146f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2ae8eaad9efac3975fe7ad1e87a54ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa2ae8eaad9efac3975fe7ad1e87a54ac"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Mul&lt; T &gt;</b> (this Vector3&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:aa2ae8eaad9efac3975fe7ad1e87a54ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af592ff75fd6d2f269ea2853d8d74ac97"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af592ff75fd6d2f269ea2853d8d74ac97"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Mul&lt; T &gt;</b> (this Point3&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:af592ff75fd6d2f269ea2853d8d74ac97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a92896dc96174bc75ce5ff864513979"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a92896dc96174bc75ce5ff864513979"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Div&lt; T &gt;</b> (this Vector3&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:a3a92896dc96174bc75ce5ff864513979"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd0b8b8b54dd69c635a87ea5a3fb5887"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd0b8b8b54dd69c635a87ea5a3fb5887"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Div&lt; T &gt;</b> (this Point3&lt; T &gt; p, T factor)</td></tr>
+<tr class="separator:acd0b8b8b54dd69c635a87ea5a3fb5887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77c4c6c8a62c6bd965bbd7b7f1f733b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a77c4c6c8a62c6bd965bbd7b7f1f733b6"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shl&lt; T &gt;</b> (this Vector3&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a77c4c6c8a62c6bd965bbd7b7f1f733b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37e8c45fd190b65992d9d289c45141f6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37e8c45fd190b65992d9d289c45141f6"></a>
+static Vector3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shr&lt; T &gt;</b> (this Vector3&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a37e8c45fd190b65992d9d289c45141f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30a043daf6be9d19f059c8c33f3bbf35"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30a043daf6be9d19f059c8c33f3bbf35"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shl&lt; T &gt;</b> (this Point3&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a30a043daf6be9d19f059c8c33f3bbf35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a651bac77228786db5dc6942849e48e92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a651bac77228786db5dc6942849e48e92"></a>
+static Point3&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Shr&lt; T &gt;</b> (this Point3&lt; T &gt; p, int amt)</td></tr>
+<tr class="separator:a651bac77228786db5dc6942849e48e92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ddb6ab69eb418612099b80676bbb1a4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ddb6ab69eb418612099b80676bbb1a4"></a>
 static <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (this <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a> a, <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e">Vector</a> b)</td></tr>
 <tr class="separator:a4ddb6ab69eb418612099b80676bbb1a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2546,9 +2638,10 @@ static IListSource&lt; Point &gt;&#160;</td><td class="memItemRight" valign="bot
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:35 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

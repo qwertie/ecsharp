@@ -815,6 +815,8 @@ EXCLUDE_PATTERNS       = */obj */bin
 EXCLUDE_PATTERNS       += "*/Self-contained test"
 EXCLUDE_PATTERNS       += "*/Test project"
 EXCLUDE_PATTERNS       += "*/GoInterface test project"
+EXCLUDE_PATTERNS       += "*/EcsNodePrinter--statements.cs"
+EXCLUDE_PATTERNS       += "*/EcsNodePrinter--expressions.cs"
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -824,6 +826,7 @@ EXCLUDE_PATTERNS       += "*/GoInterface test project"
 
 # Exclude all unit tests, but not RunTests 
 EXCLUDE_SYMBOLS        = *aTests *bTests *cTests *dTests *eTests *fTests *gTests *hTests *iTests *kTests *lTests *mTests *oTests *pTests *rTests *sTests *tTests *uTests *vTests *wTests *xTests *yTests *zTests GTests UGTests ListCollectionTests
+EXCLUDE_SYMBOLS       += LeMP::Test::Macros GoInterfaceBenchmark CPTrieBenchmark AddRangeTest
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,20 +95,53 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.TypeExt Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Extension methods for <code>Type</code>. 
+ <a href="classLoyc_1_1TypeExt.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/Extensions.cs'>/Src/Loyc.Essentials/Utilities/Extensions.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Extension methods for <code>Type</code>.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a82054fd0e93af58f3a9c26452ded7770"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82054fd0e93af58f3a9c26452ded7770"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>NameWithGenericArgs</b> (this Type type)</td></tr>
+<tr class="memitem:a82054fd0e93af58f3a9c26452ded7770"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1TypeExt.html#a82054fd0e93af58f3a9c26452ded7770">NameWithGenericArgs</a> (this Type type)</td></tr>
+<tr class="memdesc:a82054fd0e93af58f3a9c26452ded7770"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type with generic parameters in C# style, e.g. <code>typeof(List&lt;List&lt;string&gt;&gt;.<a class="el" href="classLoyc_1_1TypeExt.html#a82054fd0e93af58f3a9c26452ded7770" title="Returns the type with generic parameters in C# style, e.g. typeof(List<List<string>>.NameWithGenericArgs() returns List<List<String>>.">NameWithGenericArgs()</a></code> returns <code>List&lt;List&lt;String&gt;&gt;</code>. <a href="#a82054fd0e93af58f3a9c26452ded7770">More...</a><br /></td></tr>
 <tr class="separator:a82054fd0e93af58f3a9c26452ded7770"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a82054fd0e93af58f3a9c26452ded7770"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.TypeExt.NameWithGenericArgs </td>
+          <td>(</td>
+          <td class="paramtype">this Type&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the type with generic parameters in C# style, e.g. <code>typeof(List&lt;List&lt;string&gt;&gt;.<a class="el" href="classLoyc_1_1TypeExt.html#a82054fd0e93af58f3a9c26452ded7770" title="Returns the type with generic parameters in C# style, e.g. typeof(List<List<string>>.NameWithGenericArgs() returns List<List<String>>.">NameWithGenericArgs()</a></code> returns <code>List&lt;List&lt;String&gt;&gt;</code>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:26 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>An interface that is called to notify observers when items or nodes in the tree of a class derived from AListBase{K,T} (e.g. AList or BList) are added or removed.  
  <a href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/IAListTreeObserver.cs'>/Src/Loyc.Collections/ALists/IAListTreeObserver.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -105,8 +107,7 @@ Inheritance diagram for Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;:<
  <div class="center">
   <img src="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.png" usemap="#Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;_map" alt=""/>
   <map id="Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;_map" name="Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html" alt="Loyc.Collections.AListTestObserver&lt; K, T &gt;" shape="rect" coords="0,56,295,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html" title="Observes changes and builds a table of items in the tree." alt="Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;" shape="rect" coords="305,56,600,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html" title="Observes changes and builds a table of items in the tree." alt="Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;" shape="rect" coords="0,56,295,80"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -180,7 +181,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Called when all children are being added to a node (leaf or inner). Notifications are not sent for individual children.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#adc15bfbabac38c61bad2ece966322dd4">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a9ea987f20a54a971acfff33b38a41965">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a9ea987f20a54a971acfff33b38a41965">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -218,7 +219,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <p>If <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#afa78aa67a4893b601952cc8b14084fe3" title="Called when the observer is being attached to an AList.">Attach()</a> throws an exception, AListBase{K,T} will cancel the AddObserver() operation and it will not catch the exception. </p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#ade4eb1e2696e246d3630bb980e5225c6">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a253dbb0a025dba18f3cff443f3f24c11">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a253dbb0a025dba18f3cff443f3f24c11">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -239,7 +240,7 @@ Public Member Functions</h2></td></tr>
 <p>This is called after each modification operation (Add, Insert, Remove, Replace, etc.); the list will normally be in a read-only state ("frozen for concurrency") when this method is called, so do not initiate changes from here. </p>
 <p>This method can safely throw an exception, and the list class will not swallow it. Note: if there are multiple observers, throwing an exception from one observers will prevent this notification from reaching other observers that have not been notified yet. </p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#a6c2857fbdad959ddd1400c8b3c7b534a">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#abda2c5306cc230494d78426a60ae5463">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#abda2c5306cc230494d78426a60ae5463">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -258,7 +259,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Called when the observer is being detached from an AList.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#a221c5ceca05cac2f4a4e7bcce3d2c3e5">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a3c8f6f169cb511632af23deb354611cf">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a3c8f6f169cb511632af23deb354611cf">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -294,7 +295,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#a83967f57fee081625d60c02e6936bea5">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a8c35a45dc0efcea181fc6812b1901228">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a8c35a45dc0efcea181fc6812b1901228">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -330,7 +331,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#aabe2c35430aa852434f594445ab2367c">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a7e20911c4161fa578df5b17f69306237">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a7e20911c4161fa578df5b17f69306237">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -366,7 +367,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#ac5e0e08f6fa2831ddb1e181e348fa89f">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a48fbe8c917f1192577b8822d94ebbab9">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a48fbe8c917f1192577b8822d94ebbab9">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -402,7 +403,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#ac883383f0bc927a67cbd4d1cb85c5f07">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a485240c333c0246e5b2ebea9b672759a">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a485240c333c0246e5b2ebea9b672759a">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -422,7 +423,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Called when all children are being removed from a node (leaf or inner). Notifications are not sent for individual children.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#a4afe72301ce31df13893755d03e24922">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a83d088065dd3b9f3c641880278cdb0c1">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a83d088065dd3b9f3c641880278cdb0c1">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -459,14 +460,15 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#a5953f103c6bbb0feed0de46da86a4efe">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#aac51a0a37a81fb0e1745a23e111fb92f">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#aac51a0a37a81fb0e1745a23e111fb92f">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:35 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:33 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

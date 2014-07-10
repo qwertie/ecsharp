@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,7 +98,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Internal implementation class. Leaf node of SparseAList{T}. 
+ <a href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/SparseAListLeaf.cs'>/Src/Loyc.Collections/ALists/SparseAListLeaf.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -105,10 +110,12 @@ Inheritance diagram for Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.png" usemap="#Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;_map" alt=""/>
   <map id="Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;_map" name="Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html" title="Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in..." alt="Loyc.Collections.Impl.AListNode&lt; K, T &gt;" shape="rect" coords="0,0,260,24"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase{T}..." alt="Loyc.Collections.Impl.AListNode&lt; K, T &gt;" shape="rect" coords="0,0,260,24"/>
 </map>
  </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Internal implementation class. Leaf node of SparseAList{T}.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4_1_1Entry.html">Entry</a></td></tr>
@@ -198,9 +205,6 @@ override AListNode&lt; int, T &gt;&#160;</td><td class="memItemRight" valign="bo
 <tr class="memitem:a3ca7a4537abcf7d7dc93564362d03de5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ca7a4537abcf7d7dc93564362d03de5"></a>
 override AListNode&lt; int, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>InsertRange</b> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out AListNode&lt; int, T &gt; splitRight, IAListTreeObserver&lt; int, T &gt; tob)</td></tr>
 <tr class="separator:a3ca7a4537abcf7d7dc93564362d03de5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e0e45a4cf82fcf0af9800777f4c1b7c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e0e45a4cf82fcf0af9800777f4c1b7c"></a>
-override int&#160;</td><td class="memItemRight" valign="bottom"><b>DoSparseOperation</b> (ref AListSparseOperation&lt; T &gt; op, int index, out AListNode&lt; int, T &gt; splitLeft, out AListNode&lt; int, T &gt; splitRight)</td></tr>
-<tr class="separator:a9e0e45a4cf82fcf0af9800777f4c1b7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a></td></tr>
 <tr class="memitem:a5132343b0095131a391bd3e26be790b2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a5132343b0095131a391bd3e26be790b2">Insert</a> (uint index, T item, out AListNode&lt; K, T &gt; splitRight, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a5132343b0095131a391bd3e26be790b2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the specified index. This method can only be called for ALists, since other tree types don't allow insertion at a specific index. <a href="#a5132343b0095131a391bd3e26be790b2">More...</a><br /></td></tr>
@@ -208,12 +212,6 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>DoSparseOpera
 <tr class="memitem:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out AListNode&lt; K, T &gt; splitRight, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a781c2f51f9403ad3153fdb77122d8781 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a781c2f51f9403ad3153fdb77122d8781">DoSingleOperation</a> (ref AListSingleOperation&lt; K, T &gt; op, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a781c2f51f9403ad3153fdb77122d8781 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a retrieve, add, remove or replace operation on a single item in an organized A-list (such as a BList or BDictionary). <a href="#a781c2f51f9403ad3153fdb77122d8781">More...</a><br /></td></tr>
-<tr class="separator:a781c2f51f9403ad3153fdb77122d8781 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a71cbdd80269c6a547523bbf36a43e1dc">DoSparseOperation</a> (ref AListSparseOperation&lt; T &gt; op, int index, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an insert or replace operation in a SparseAList{T}. <a href="#a71cbdd80269c6a547523bbf36a43e1dc">More...</a><br /></td></tr>
-<tr class="separator:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc74e107bcbc829a07fa46860503ffc2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#acc74e107bcbc829a07fa46860503ffc2">SetAt</a> (uint index, T item, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:acc74e107bcbc829a07fa46860503ffc2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets an item at the specified sub-index. <a href="#acc74e107bcbc829a07fa46860503ffc2">More...</a><br /></td></tr>
 <tr class="separator:acc74e107bcbc829a07fa46860503ffc2 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -347,9 +345,10 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:33 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

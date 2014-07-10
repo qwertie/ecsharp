@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,21 +98,29 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Collections.Impl.KeyWalker Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Internal implementation class. Represents a pointer to a location within a byte array. 
+ <a href="structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/CPTrie/CPTrieMisc.cs'>/Src/Loyc.Collections/CPTrie/CPTrieMisc.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Internal implementation class. Represents a pointer to a location within a byte array.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a174c5c93a167f1cc1a891aa4906e0fd6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a174c5c93a167f1cc1a891aa4906e0fd6"></a>
-byte[]&#160;</td><td class="memItemRight" valign="bottom"><b>_key</b></td></tr>
+byte[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#a174c5c93a167f1cc1a891aa4906e0fd6">_key</a></td></tr>
+<tr class="memdesc:a174c5c93a167f1cc1a891aa4906e0fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">the buffer may be larger than the key <br /></td></tr>
 <tr class="separator:a174c5c93a167f1cc1a891aa4906e0fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b752105a4f9e09c58484d4a31619338"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b752105a4f9e09c58484d4a31619338"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>_left</b></td></tr>
-<tr class="separator:a2b752105a4f9e09c58484d4a31619338"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34b2ddc4d0d97658811c0eea1f0f499c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a34b2ddc4d0d97658811c0eea1f0f499c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>_offset</b></td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#a34b2ddc4d0d97658811c0eea1f0f499c">_offset</a></td></tr>
+<tr class="memdesc:a34b2ddc4d0d97658811c0eea1f0f499c"><td class="mdescLeft">&#160;</td><td class="mdescRight">_key[_offset] is the next byte of the key <br /></td></tr>
 <tr class="separator:a34b2ddc4d0d97658811c0eea1f0f499c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b752105a4f9e09c58484d4a31619338"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b752105a4f9e09c58484d4a31619338"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1KeyWalker.html#a2b752105a4f9e09c58484d4a31619338">_left</a></td></tr>
+<tr class="memdesc:a2b752105a4f9e09c58484d4a31619338"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of bytes in the key that are not yet consumed <br /></td></tr>
+<tr class="separator:a2b752105a4f9e09c58484d4a31619338"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
@@ -155,9 +165,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8346a429a9c04c57d2b978b3c1fcb04c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:33 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

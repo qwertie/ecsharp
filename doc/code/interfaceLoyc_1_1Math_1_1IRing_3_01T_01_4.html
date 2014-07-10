@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -95,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This defines a Ring with the operations +,*  
  <a href="interfaceLoyc_1_1Math_1_1IRing_3_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Math/Interfaces.cs'>/Src/Loyc.Essentials/Math/Interfaces.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -106,8 +108,8 @@ Inheritance diagram for Loyc.Math.IRing&lt; T &gt;:</div>
   <map id="Loyc.Math.IRing&lt; T &gt;_map" name="Loyc.Math.IRing&lt; T &gt;_map">
 <area href="interfaceLoyc_1_1Math_1_1IAdditionGroup_3_01T_01_4.html" title="This defines a Group with the operation +, the neutral element Zero, and an operation - that is defin..." alt="Loyc.Math.IAdditionGroup&lt; T &gt;" shape="rect" coords="174,56,365,80"/>
 <area href="interfaceLoyc_1_1Math_1_1IMultiply_3_01T_01_4.html" title="Provides the multiplication operation and the multiplicative identity, one." alt="Loyc.Math.IMultiply&lt; T &gt;" shape="rect" coords="375,56,566,80"/>
-<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="174,0,365,24"/>
-<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="375,0,566,24"/>
+<area href="interfaceLoyc_1_1Math_1_1IZeroProvider_3_01T_01_4.html" title="Provides the value of "zero" for type T." alt="Loyc.Math.IZeroProvider&lt; T &gt;" shape="rect" coords="174,0,365,24"/>
+<area href="interfaceLoyc_1_1Math_1_1IOneProvider_3_01T_01_4.html" title="Provides the value of "one" for type T." alt="Loyc.Math.IOneProvider&lt; T &gt;" shape="rect" coords="375,0,566,24"/>
 <area href="interfaceLoyc_1_1Math_1_1IField_3_01T_01_4.html" title="This defines a Field with the operations +,-,*,/" alt="Loyc.Math.IField&lt; T &gt;" shape="rect" coords="275,168,466,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IComplexMath_3_01T_01_4.html" title="Use this interface for types such as complex numbers that satisfy the field axioms but do not have a ..." alt="Loyc.Math.IComplexMath&lt; T &gt;" shape="rect" coords="0,224,191,248"/>
 <area href="interfaceLoyc_1_1Math_1_1IMath_3_01T_01_4.html" title="Provides operations available on all system numeric types (int, uint, double, etc.); see also ISignedMath{T}, IUIntMath{T}, IIntMath{T} and IFloatMath{T}. " alt="Loyc.Math.IMath&lt; T &gt;" shape="rect" coords="552,224,743,248"/>
@@ -115,20 +117,20 @@ Inheritance diagram for Loyc.Math.IRing&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Math_1_1IUIntMath_3_01T_01_4.html" title="Provides operations available on all unsigned integer types (byte, uint, etc.); see also IMath{T}..." alt="Loyc.Math.IUIntMath&lt; T &gt;" shape="rect" coords="904,280,1095,304"/>
 <area href="interfaceLoyc_1_1Math_1_1IIntMath_3_01T_01_4.html" title="Provides operations available on all unsigned integer types (byte, uint, etc.); see also IMath{T}..." alt="Loyc.Math.IIntMath&lt; T &gt;" shape="rect" coords="0,336,191,360"/>
 <area href="interfaceLoyc_1_1Math_1_1IRationalMath_3_01T_01_4.html" title="Use this interface for floating-point, fixed-point, and rational types. Rational types support recipr..." alt="Loyc.Math.IRationalMath&lt; T &gt;" shape="rect" coords="402,336,593,360"/>
-<area href="structLoyc_1_1Math_1_1MathU.html" alt="Loyc.Math.MathU" shape="rect" coords="603,336,794,360"/>
-<area href="structLoyc_1_1Math_1_1MathU16.html" alt="Loyc.Math.MathU16" shape="rect" coords="804,336,995,360"/>
-<area href="structLoyc_1_1Math_1_1MathU8.html" alt="Loyc.Math.MathU8" shape="rect" coords="1005,336,1196,360"/>
-<area href="structLoyc_1_1Math_1_1MathUL.html" alt="Loyc.Math.MathUL" shape="rect" coords="1206,336,1397,360"/>
-<area href="structLoyc_1_1Math_1_1MathI.html" alt="Loyc.Math.MathI" shape="rect" coords="201,392,392,416"/>
-<area href="structLoyc_1_1Math_1_1MathI16.html" alt="Loyc.Math.MathI16" shape="rect" coords="201,448,392,472"/>
-<area href="structLoyc_1_1Math_1_1MathI8.html" alt="Loyc.Math.MathI8" shape="rect" coords="201,504,392,528"/>
-<area href="structLoyc_1_1Math_1_1MathL.html" alt="Loyc.Math.MathL" shape="rect" coords="201,560,392,584"/>
+<area href="structLoyc_1_1Math_1_1MathU.html" title="Implements IUIntMath{T} for numbers of type System.UInt32." alt="Loyc.Math.MathU" shape="rect" coords="603,336,794,360"/>
+<area href="structLoyc_1_1Math_1_1MathU16.html" title="Implements IUIntMath{T} for numbers of type System.UInt16." alt="Loyc.Math.MathU16" shape="rect" coords="804,336,995,360"/>
+<area href="structLoyc_1_1Math_1_1MathU8.html" title="Implements IUIntMath{T} for numbers of type System.Byte." alt="Loyc.Math.MathU8" shape="rect" coords="1005,336,1196,360"/>
+<area href="structLoyc_1_1Math_1_1MathUL.html" title="Implements IUIntMath{T} for numbers of type System.UInt64." alt="Loyc.Math.MathUL" shape="rect" coords="1206,336,1397,360"/>
+<area href="structLoyc_1_1Math_1_1MathI.html" title="Implements IIntMath{T} for numbers of type System.Int32." alt="Loyc.Math.MathI" shape="rect" coords="201,392,392,416"/>
+<area href="structLoyc_1_1Math_1_1MathI16.html" title="Implements IIntMath{T} for numbers of type System.Int16." alt="Loyc.Math.MathI16" shape="rect" coords="201,448,392,472"/>
+<area href="structLoyc_1_1Math_1_1MathI8.html" title="Implements IIntMath{T} for numbers of type System.SByte." alt="Loyc.Math.MathI8" shape="rect" coords="201,504,392,528"/>
+<area href="structLoyc_1_1Math_1_1MathL.html" title="Implements IIntMath{T} for numbers of type System.Int64." alt="Loyc.Math.MathL" shape="rect" coords="201,560,392,584"/>
 <area href="interfaceLoyc_1_1Math_1_1IFloatMath_3_01T_01_4.html" title="Provides operations available on floating-point types (float and double), including trigonometry and ..." alt="Loyc.Math.IFloatMath&lt; T &gt;" shape="rect" coords="603,392,794,416"/>
-<area href="structLoyc_1_1Math_1_1MathF16.html" alt="Loyc.Math.MathF16" shape="rect" coords="603,448,794,472"/>
-<area href="structLoyc_1_1Math_1_1MathF23.html" alt="Loyc.Math.MathF23" shape="rect" coords="603,504,794,528"/>
-<area href="structLoyc_1_1Math_1_1MathF8.html" alt="Loyc.Math.MathF8" shape="rect" coords="603,560,794,584"/>
-<area href="structLoyc_1_1Math_1_1MathFL16.html" alt="Loyc.Math.MathFL16" shape="rect" coords="603,616,794,640"/>
-<area href="structLoyc_1_1Math_1_1MathFL32.html" alt="Loyc.Math.MathFL32" shape="rect" coords="603,672,794,696"/>
+<area href="structLoyc_1_1Math_1_1MathF16.html" title="Implements IRationalMath{T} for numbers of type FPI16." alt="Loyc.Math.MathF16" shape="rect" coords="603,448,794,472"/>
+<area href="structLoyc_1_1Math_1_1MathF23.html" title="Implements IRationalMath{T} for numbers of type FPI23." alt="Loyc.Math.MathF23" shape="rect" coords="603,504,794,528"/>
+<area href="structLoyc_1_1Math_1_1MathF8.html" title="Implements IRationalMath{T} for numbers of type FPI8." alt="Loyc.Math.MathF8" shape="rect" coords="603,560,794,584"/>
+<area href="structLoyc_1_1Math_1_1MathFL16.html" title="Implements IRationalMath{T} for numbers of type FPL16." alt="Loyc.Math.MathFL16" shape="rect" coords="603,616,794,640"/>
+<area href="structLoyc_1_1Math_1_1MathFL32.html" title="Implements IRationalMath{T} for numbers of type FPL32." alt="Loyc.Math.MathFL32" shape="rect" coords="603,672,794,696"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -161,9 +163,10 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Mul</b> (T a, T b)</td><
 <tr class="separator:a911f82025884dbfd57ebfa75ca7d62bb inherit pub_methods_interfaceLoyc_1_1Math_1_1IMultiply_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:40 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,20 +1,15 @@
 var searchData=
 [
-  ['macroinfo',['MacroInfo',['../classLeMP_1_1MacroProcessor_1_1MacroInfo.html',1,'LeMP::MacroProcessor']]],
   ['macroprocessor',['MacroProcessor',['../classLeMP_1_1MacroProcessor.html',1,'LeMP']]],
-  ['macroprocessortests',['MacroProcessorTests',['../classLeMP_1_1MacroProcessorTests.html',1,'LeMP']]],
-  ['macros',['Macros',['../classLeMP_1_1Test_1_1Macros.html',1,'LeMP::Test']]],
+  ['macros',['Macros',['../classLoyc_1_1LLParserGenerator_1_1Macros.html',1,'Loyc::LLParserGenerator']]],
   ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Macros.html',1,'LeMP::Prelude']]],
   ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Les_1_1Macros.html',1,'LeMP::Prelude::Les']]],
-  ['macros',['Macros',['../classLoyc_1_1LLParserGenerator_1_1Macros.html',1,'Loyc::LLParserGenerator']]],
   ['map_3c_20k_2c_20v_20_3e',['Map&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1Map_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
   ['mapormmap_3c_20k_2c_20v_20_3e',['MapOrMMap&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
-  ['maptests',['MapTests',['../classLoyc_1_1Collections_1_1Impl_1_1MapTests.html',1,'Loyc::Collections::Impl']]],
   ['math128',['Math128',['../classLoyc_1_1Math_1_1Math128.html',1,'Loyc::Math']]],
   ['mathd',['MathD',['../structLoyc_1_1Math_1_1MathD.html',1,'Loyc::Math']]],
   ['mathex',['MathEx',['../classLoyc_1_1Math_1_1MathEx.html',1,'Loyc::Math']]],
   ['mathextensions',['MathExtensions',['../classLoyc_1_1Math_1_1MathExtensions.html',1,'Loyc::Math']]],
-  ['mathextests',['MathExTests',['../classLoyc_1_1Math_1_1MathExTests.html',1,'Loyc::Math']]],
   ['mathf',['MathF',['../structLoyc_1_1Math_1_1MathF.html',1,'Loyc::Math']]],
   ['mathf16',['MathF16',['../structLoyc_1_1Math_1_1MathF16.html',1,'Loyc::Math']]],
   ['mathf23',['MathF23',['../structLoyc_1_1Math_1_1MathF23.html',1,'Loyc::Math']]],
@@ -39,8 +34,5 @@ var searchData=
   ['messagesinkfromdelegate',['MessageSinkFromDelegate',['../classLoyc_1_1MessageSinkFromDelegate.html',1,'Loyc']]],
   ['messagesplitter',['MessageSplitter',['../classLoyc_1_1MessageSplitter.html',1,'Loyc']]],
   ['mmap_3c_20k_2c_20v_20_3e',['MMap&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
-  ['mset_3c_20t_20_3e',['MSet&lt; T &gt;',['../classLoyc_1_1Collections_1_1MSet_3_01T_01_4.html',1,'Loyc::Collections']]],
-  ['msettests',['MSetTests',['../classLoyc_1_1Collections_1_1Impl_1_1MSetTests.html',1,'Loyc::Collections::Impl']]],
-  ['mutablesettests_3c_20s_2c_20t_20_3e',['MutableSetTests&lt; S, T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1MutableSetTests_3_01S_00_01T_01_4.html',1,'Loyc::Collections::Impl']]],
-  ['mycollection',['MyCollection',['../classLoyc_1_1GoInterfaceTests_1_1MyCollection.html',1,'Loyc::GoInterfaceTests']]]
+  ['mset_3c_20t_20_3e',['MSet&lt; T &gt;',['../classLoyc_1_1Collections_1_1MSet_3_01T_01_4.html',1,'Loyc::Collections']]]
 ];

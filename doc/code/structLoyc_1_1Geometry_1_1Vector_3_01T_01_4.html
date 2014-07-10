@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -100,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Represents a two-dimensional vector, i.e. a magnitude and direction or the difference between two points, stored as X and Y components. 
  <a href="structLoyc_1_1Geometry_1_1Vector_3_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Geometry/VectorT.cs'>/Src/Loyc.Essentials/Geometry/VectorT.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -113,14 +115,15 @@ Inheritance diagram for Loyc.Geometry.Vector&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Geometry_1_1INewPoint_3_01Point_00_01T_01_4.html" title="This interface exists to work around a limitation of C#; see IPoint{T}." alt="Loyc.Geometry.INewPoint&lt; Point, T &gt;" shape="rect" coords="354,112,580,136"/>
 <area href="interfaceLoyc_1_1Geometry_1_1IPointBase_3_01T_01_4.html" title="This interface exists to work around a limitation of C#; use IPoint{T} instead." alt="Loyc.Geometry.IPointBase&lt; T &gt;" shape="rect" coords="0,56,226,80"/>
 <area href="interfaceLoyc_1_1Geometry_1_1INewPoint_3_01Point_00_01T_01_4.html" title="This interface exists to work around a limitation of C#; see IPoint{T}." alt="Loyc.Geometry.INewPoint&lt; Point, T &gt;" shape="rect" coords="236,56,462,80"/>
-<area href="interfaceLoyc_1_1Geometry_1_1IPointReader_3_01T_01_4.html" alt="Loyc.Geometry.IPointReader&lt; T &gt;" shape="rect" coords="0,0,226,24"/>
+<area href="interfaceLoyc_1_1Geometry_1_1IPointReader_3_01T_01_4.html" title="Interface for reading the coordinates of a 2D point." alt="Loyc.Geometry.IPointReader&lt; T &gt;" shape="rect" coords="0,0,226,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents a two-dimensional vector, i.e. a magnitude and direction or the difference between two points, stored as X and Y components.</p>
 <p>A vector is the same as a point except for the operations it supports. For example, it usually does not make sense to add two points, but you can add two vectors (to get another vector) or you can add a vector to a point (to get a point). </p>
 <p>If you really do need to add two points together or something like that, you can typecast from Point{T} to Vector{T}. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html">Loyc.Geometry.PointMath</a></dd></dl>
+<p>Although this structure contains operators such as + and -, their performance is suboptimal due to limitations of C#. The <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html" title="Math and extension methods for Point{T}.">PointMath</a> class of Loyc.Utilities.dll contains extension methods such as Add() and Sub() that perform faster on common coorindate types such as int and double.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html" title="Math and extension methods for Point{T}.">Loyc.Geometry.PointMath</a>, Loyc.Geometry.VectorMath{T}, Point{T}</dd></dl>
 <div class="typeconstraint">
 <dl><dt><b>Type Constraints</b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
@@ -308,9 +311,10 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:35 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

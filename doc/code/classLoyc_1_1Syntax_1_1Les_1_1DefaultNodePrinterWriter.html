@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -96,7 +98,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.Syntax.Les.DefaultNodePrinterWriter Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a> and EcsNodePrinter, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>. 
+ <a href="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/LES/LesNodePrinterWriter.cs'>/Src/Loyc.Syntax/LES/LesNodePrinterWriter.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -105,13 +110,13 @@ Inheritance diagram for Loyc.Syntax.Les.DefaultNodePrinterWriter:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.png" usemap="#Loyc.Syntax.Les.DefaultNodePrinterWriter_map" alt=""/>
   <map id="Loyc.Syntax.Les.DefaultNodePrinterWriter_map" name="Loyc.Syntax.Les.DefaultNodePrinterWriter_map">
-<area href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html" alt="Loyc.Syntax.Les.NodePrinterWriterBase" shape="rect" coords="131,56,383,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing..." alt="Loyc.Syntax.Les.INodePrinterWriter" shape="rect" coords="131,0,383,24"/>
-<area href="classEcs_1_1EcsNodePrinterWriter.html" alt="Ecs.EcsNodePrinterWriter" shape="rect" coords="0,168,252,192"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinterWriter.html" alt="Loyc.Syntax.Les.LesNodePrinterWriter" shape="rect" coords="262,168,514,192"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html" title="Abstract base class for INodePrinterWriter. Has an protected _indentLevel field that is increased by ..." alt="Loyc.Syntax.Les.NodePrinterWriterBase" shape="rect" coords="0,56,252,80"/>
+<area href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing..." alt="Loyc.Syntax.Les.INodePrinterWriter" shape="rect" coords="0,0,252,24"/>
 </map>
  </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Base class for the helper classes of <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html" title="Prints a Loyc tree in LES (Loyc Expression Syntax) format.">LesNodePrinter</a> and EcsNodePrinter, called LesNodePrinterWriter and EcsNodePrinterWriter. See <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html" title="This interface is implemented by helper objects that handle the low-level details of node printing...">INodePrinterWriter</a>.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ac5e6139d437232cf43472badf16e2594"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5e6139d437232cf43472badf16e2594"></a>
@@ -210,9 +215,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_indentLevel</b> = 0</
 <tr class="separator:a540ced4cfbc3469b20d066848d4ee1ee inherit pro_attribs_classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:44 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

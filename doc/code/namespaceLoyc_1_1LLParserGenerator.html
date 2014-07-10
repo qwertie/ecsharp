@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,7 +95,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Code related to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator (LLLPG.exe). 
+<p>Code related to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator (LLLPG.exe). 
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -111,13 +113,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A singleton to be used as the value of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html#ae02c825beea98c33c37f103592967b7a" title="Specifies the action to take for error input. If an error branch is specified, it serves as the defau...">Alts.ErrorBranch</a>, representing the <code>default_error</code> branch. <a href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html">EndOfRule</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A container for the follow set of a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a>. <a href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A container for the follow set of a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>. <a href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Gate.html">Gate</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a "gate" (p =&gt; m), which is a mechanism to separate prediction from matching in the context of branching (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a>). <a href="classLoyc_1_1LLParserGenerator_1_1Gate.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html">GeneralCodeGenHelper</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> parser {...}</code>. <a href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> parser {...}</code>. <a href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a range of single characters (e.g. 'A'..'Z'). <a href="structLoyc_1_1LLParserGenerator_1_1IntRange.html#details">More...</a><br /></td></tr>
@@ -125,10 +127,10 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), or a set of token IDs. <a href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSetTests.html">IntSetTests</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>IntSetTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html">IntStreamCodeGenHelper</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard code generator for character/integer input streams and is the default code generator for <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> lexer {...}</code>. <a href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard code generator for character/integer input streams and is the default code generator for <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> lexer {...}</code>. <a href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class that implements this interface will generate small bits of code that the parser generator will use. The default implementation is <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a>. To install a new code generator, set the LLParserGenerator.CodeGenHelper property or supply the generator in the constructor of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>.  <a href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#details">More...</a><br /></td></tr>
@@ -140,23 +142,25 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bootstrapper. Generates source code for the EC# lexer. <a href="classLoyc_1_1LLParserGenerator_1_1LesLexerGenerator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Entry point of LLLPG.exe, with <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html#a6c43f243f012693ac20312a00a9c31d5" title="Run macro processor for LLLPG on the specified input, with the specified command-line option map...">QuickRun()</a> method to help invoke <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> programmatically. <a href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html">LLParserGenerator</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LlpgCoreTests.html">LlpgCoreTests</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">These are basic tests of the core engine, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. <a href="classLoyc_1_1LLParserGenerator_1_1LlpgCoreTests.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>LlpgCoreTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">These are basic tests of the core engine, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>.<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTests.html">LlpgGeneralTests</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> with the whole <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> pipeline. <a href="classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTests.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>LlpgGeneralTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> with the whole <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> pipeline.<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LlpgHelpers.html">LlpgHelpers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper methods for making <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> grammar nodes. Used by LlphCoreTests. <a href="classLoyc_1_1LLParserGenerator_1_1LlpgHelpers.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LlpgParserTests.html">LlpgParserTests</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests the stage 1 parser and the stage 2 parser. <a href="classLoyc_1_1LLParserGenerator_1_1LlpgParserTests.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>LlpgParserTests</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests the stage 1 parser and the stage 2 parser.<br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html">Macros</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>.  <a href="classLoyc_1_1LLParserGenerator_1_1Macros.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html" title="Macros for using LLLPG in LeMP. ">Macros</a> for using <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> in <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>.  <a href="classLoyc_1_1LLParserGenerator_1_1Macros.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html">PGIntSet</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), or a set of integers, used in the grammar of a parser. <a href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html#details">More...</a><br /></td></tr>
@@ -171,10 +175,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents part of a grammar for the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. <a href="classLoyc_1_1LLParserGenerator_1_1Pred.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">PredVisitor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for implementing a visitor that examines a tree of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icates. <a href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.html">RecursivePredVisitor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for implementing a visitor that examines a tree of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icates. The default implementation of Visit(P) for each predicate type P recursively visits the children of the P. <a href="classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> rule, which is a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icate plus a Name and optional attributes (e.g. token, private, etc.). <a href="classLoyc_1_1LLParserGenerator_1_1Rule.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html">RuleRef</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a nonterminal, which is a reference to a rule. <a href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html#details">More...</a><br /></td></tr>
@@ -185,8 +192,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html">TerminalPred</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a terminal (which is a token or a character) or a set of possible terminals (e.g. 'A'..'Z'). <a href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1TokenTypeExt.html">TokenTypeExt</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -194,78 +199,30 @@ Typedefs</h2></td></tr>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>S</b> = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html">Loyc.Syntax.CodeSymbols</a></td></tr>
 <tr class="separator:a3cbf85d5db4aff2ba65234f1d267b4c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d64f4663f42eb6db5f80e9fefaa5da0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d64f4663f42eb6db5f80e9fefaa5da0"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>TT</b> = <a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a33cd0f427885e814845c7fae8a2f8937">TokenType</a></td></tr>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>TT</b> = TokenType</td></tr>
 <tr class="separator:a5d64f4663f42eb6db5f80e9fefaa5da0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a33cd0f427885e814845c7fae8a2f8937"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a33cd0f427885e814845c7fae8a2f8937">TokenType</a> { <br />
-&#160;&#160;<b>EOF</b> = 0, 
-<b>Spaces</b> = TokenKind.Spaces, 
-<b>Comment</b> = TokenKind.Comment, 
-<b>Id</b> = TokenKind.Id, 
-<br />
-&#160;&#160;<b>Number</b> = TokenKind.Number, 
-<b>String</b> = TokenKind.String, 
-<b>OtherLit</b> = TokenKind.OtherLit, 
-<b>Dot</b> = TokenKind.Dot, 
-<br />
-&#160;&#160;<b>Assignment</b> = TokenKind.Assignment, 
-<b>HostOperator</b> = TokenKind.Operator, 
-<b>Alt</b> = TokenKind.Operator + 1, 
-<b>Slash</b> = TokenKind.Operator + 2, 
-<br />
-&#160;&#160;<b>DotDot</b> = TokenKind.Operator + 3, 
-<b>InvertSet</b> = TokenKind.Operator + 4, 
-<b>Plus</b> = TokenKind.Operator + 5, 
-<b>Star</b> = TokenKind.Operator + 6, 
-<br />
-&#160;&#160;<b>QMark</b> = TokenKind.Operator + 7, 
-<b>Arrow</b> = TokenKind.Operator + 8, 
-<b>And</b> = TokenKind.Operator + 9, 
-<b>Not</b> = TokenKind.Operator + 10, 
-<br />
-&#160;&#160;<b>AndNot</b> = TokenKind.Operator + 11, 
-<b>Minus</b> = TokenKind.Operator + 12, 
-<b>AttrKeyword</b> = TokenKind.AttrKeyword, 
-<b>TypeKeyword</b> = TokenKind.TypeKeyword, 
-<br />
-&#160;&#160;<b>OtherKeyword</b> = TokenKind.OtherKeyword, 
-<b>Greedy</b> = TokenKind.OtherKeyword + 1, 
-<b>Nongreedy</b> = TokenKind.OtherKeyword + 2, 
-<b>Error</b> = TokenKind.OtherKeyword + 3, 
-<br />
-&#160;&#160;<b>Default</b> = TokenKind.OtherKeyword + 4, 
-<b>Separator</b> = TokenKind.Separator, 
-<b>OtherToken</b> = TokenKind.Other, 
-<b>LParen</b> = TokenKind.LParen, 
-<br />
-&#160;&#160;<b>RParen</b> = TokenKind.RParen, 
-<b>LBrack</b> = TokenKind.LBrack, 
-<b>RBrack</b> = TokenKind.RBrack, 
-<b>LBrace</b> = TokenKind.LBrace, 
-<br />
-&#160;&#160;<b>RBrace</b> = TokenKind.RBrace
-<br />
- }</td></tr>
-<tr class="memdesc:a33cd0f427885e814845c7fae8a2f8937"><td class="mdescLeft">&#160;</td><td class="mdescRight">Token types in LLLPG's stage one parser. <a href="namespaceLoyc_1_1LLParserGenerator.html#a33cd0f427885e814845c7fae8a2f8937">More...</a><br /></td></tr>
-<tr class="separator:a33cd0f427885e814845c7fae8a2f8937"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73e40c77d59d71084e7c77e58b02363b"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a73e40c77d59d71084e7c77e58b02363b">LoopMode</a> { <b>None</b>, 
 <b>Opt</b>, 
 <b>Star</b>
  }</td></tr>
 <tr class="memdesc:a73e40c77d59d71084e7c77e58b02363b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Types of Alts objects. <a href="namespaceLoyc_1_1LLParserGenerator.html#a73e40c77d59d71084e7c77e58b02363b">More...</a><br /></td></tr>
 <tr class="separator:a73e40c77d59d71084e7c77e58b02363b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a888ba124aff3c23bd1e4594971fbd53e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a888ba124aff3c23bd1e4594971fbd53e">BranchMode</a> { <b>None</b>, 
+<tr class="memitem:a888ba124aff3c23bd1e4594971fbd53e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html#a888ba124aff3c23bd1e4594971fbd53e">BranchMode</a> { <br />
+&#160;&#160;<b>None</b>, 
 <b>Default</b>, 
 <b>ErrorExit</b>, 
-<b>ErrorContinue</b>
+<br />
+&#160;&#160;<b>ErrorContinue</b>
+<br />
  }</td></tr>
 <tr class="memdesc:a888ba124aff3c23bd1e4594971fbd53e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Types of branches in an Alts object (used during parsing only). <a href="namespaceLoyc_1_1LLParserGenerator.html#a888ba124aff3c23bd1e4594971fbd53e">More...</a><br /></td></tr>
 <tr class="separator:a888ba124aff3c23bd1e4594971fbd53e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Code related to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator (LLLPG.exe).</p>
+<div class="textblock"><p>Code related to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator (LLLPG.exe).</p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a class="anchor" id="a888ba124aff3c23bd1e4594971fbd53e"></a>
 <div class="memitem">
@@ -296,25 +253,11 @@ Enumerations</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a33cd0f427885e814845c7fae8a2f8937"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum Loyc.LLParserGenerator.TokenType</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Token types in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>'s stage one parser.</p>
-<p>Note: Spaces and Comments should never be encountered by the parser. I assume they are filtered out of all Token Literals.</p>
-
-</div>
-</div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:35 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

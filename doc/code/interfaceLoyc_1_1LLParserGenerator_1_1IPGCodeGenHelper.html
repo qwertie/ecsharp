@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -97,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>A class that implements this interface will generate small bits of code that the parser generator will use. The default implementation is <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a>. To install a new code generator, set the LLParserGenerator.CodeGenHelper property or supply the generator in the constructor of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>.  
  <a href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CodeGenHelpers/IPGCodeGenHelper.cs'>/Src/LLLPG/CodeGenHelpers/IPGCodeGenHelper.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -113,7 +115,7 @@ Inheritance diagram for Loyc.LLParserGenerator.IPGCodeGenHelper:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A class that implements this interface will generate small bits of code that the parser generator will use. The default implementation is <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html" title="Standard code generator for character/integer input streams and is the default code generator for LLP...">IntStreamCodeGenHelper</a>. To install a new code generator, set the LLParserGenerator.CodeGenHelper property or supply the generator in the constructor of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. </p>
-<p>Two of these methods (VisitInput and FromCode) are called by the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro. All the others are called by the main engine and its helper classes in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>.</p>
+<p>Two of these methods (VisitInput and FromCode) are called by the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro. All the others are called by the main engine and its helper classes in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -124,7 +126,7 @@ Properties</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a56ad205983c4f44c5deed04ccbe17642"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a56ad205983c4f44c5deed04ccbe17642">VisitInput</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="memdesc:a56ad205983c4f44c5deed04ccbe17642"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> looks at it). No action is required. <a href="#a56ad205983c4f44c5deed04ccbe17642">More...</a><br /></td></tr>
+<tr class="memdesc:a56ad205983c4f44c5deed04ccbe17642"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required. <a href="#a56ad205983c4f44c5deed04ccbe17642">More...</a><br /></td></tr>
 <tr class="separator:a56ad205983c4f44c5deed04ccbe17642"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7cfc0bdfacb01d9b6c542201bee5cd6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#ae7cfc0bdfacb01d9b6c542201bee5cd6">CodeToPred</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr, ref string errorMsg)</td></tr>
 <tr class="memdesc:ae7cfc0bdfacb01d9b6c542201bee5cd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a terminal or sequence predicate from a code expression. <a href="#ae7cfc0bdfacb01d9b6c542201bee5cd6">More...</a><br /></td></tr>
@@ -309,7 +311,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>A expression provided by the user, such as <code>"a string"</code>, a <code>Token.Type</code>, or a <code>value..range</code>. <code>expr</code> will not be a call to the inversion operator #~ (that's handled internally using <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html#a0c7902f443a1e562c2be62ad6e4a25f3" title="Creates a version of the set with IsInverted toggled.">IPGTerminalSet.Inverted()</a>). This method also handles the "any token" input, which is an underscore by convention (_).</td></tr>
-    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
+    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
   </table>
   </dd>
 </dl>
@@ -346,7 +348,7 @@ Public Member Functions</h2></td></tr>
 <p>Generates the method for a rule, given the method's contents.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">rule</td><td><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> for which a method is needed.</td></tr>
+    <tr><td class="paramname">rule</td><td><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a> for which a method is needed.</td></tr>
     <tr><td class="paramname">methodBody</td><td>A list of statements produced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> inside the method.</td></tr>
   </table>
   </dd>
@@ -386,7 +388,7 @@ Public Member Functions</h2></td></tr>
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line">  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p> The <code>Try*</code> helper method is called from normal rules that use an zero-width assertion (<code>&amp;Hello</code>), while the recognizer method <code>Scan_*</code> is called from other recognizers that call the rule normally (i.e. NOT using an and-predicate). By the way, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> core removes actions like <code>_foo++</code> from the recognizer version. </p>
+</div><!-- fragment --><p> The <code>Try*</code> helper method is called from normal rules that use an zero-width assertion (<code>&amp;Hello</code>), while the recognizer method <code>Scan_*</code> is called from other recognizers that call the rule normally (i.e. NOT using an and-predicate). By the way, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> core removes actions like <code>_foo++</code> from the recognizer version. </p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
@@ -463,7 +465,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns an example of an item in the set. If the example is a character, it should be surrounded by single quotes.</p>
-<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>.</p>
+<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a257b95f05cd94f9fb279a9033ab9d7d3">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#adbde0a8b9d6636b7bd14547a98763e08">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad4c27eb153d32cd0c8f00ccad7100eb1">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
@@ -484,7 +486,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns an example of a character in the set, or null if this is not a set of characters or if EOF is the only member of the set.</p>
-<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>.</p>
+<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a0d59dd707630b0b72786ca78c2c89b3c">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4ccbb9268acf9bdae29e75e654fd2601">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
@@ -529,7 +531,7 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> substitutes $LI and $LA before it calls this method.</p>
+<p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> substitutes $LI and $LA before it calls this method.</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#af7745a5200fb646155dd56bbe598c20a">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
@@ -821,7 +823,7 @@ Public Member Functions</h2></td></tr>
         else
             // error
     }
-</pre><p> Please note that given <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>'s current design, it is not possible to "split" a branch. For example, the switch cannot include "case '_': case '$':" and use this to handle branch 2 (but not the error case), while also handling branch 2 in the "default" case. Although <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> has a mechanism to duplicate branches of an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a> so that the code for handling an alternative is located at two different places in a prediction tree (using 'goto' if necessary), it does not have a similar mechanism for arbitrary subtrees of a prediction tree. </p>
+</pre><p> Please note that given <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>'s current design, it is not possible to "split" a branch. For example, the switch cannot include "case '_': case '$':" and use this to handle branch 2 (but not the error case), while also handling branch 2 in the "default" case. Although <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> has a mechanism to duplicate branches of an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a> so that the code for handling an alternative is located at two different places in a prediction tree (using 'goto' if necessary), it does not have a similar mechanism for arbitrary subtrees of a prediction tree. </p>
 <p>'sets' does not include the error branch, if any. If there's no error branch, the last case should be left out of 'casesToInclude' so that there will be a 'default:' case. Note: it should always be the <em>last</em> set that is left out, because that will be the official default branch (the user can control which branch is default, hence which one comes last, using the 'default' keyword in the grammar DSL.) </p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4da34024797e052d4522d9c4ed4bed25">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
@@ -852,7 +854,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> looks at it). No action is required.</p>
+<p>In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required.</p>
 <dl class="section return"><dt>Returns</dt><dd>a new statement to replace the original statement, or null to do nothing.</dd></dl>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
@@ -883,9 +885,10 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

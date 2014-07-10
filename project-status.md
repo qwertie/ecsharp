@@ -11,6 +11,10 @@ Help wanted!
 This project includes Loyc.Essentials, Loyc.Collections, Loyc.Syntax and Loyc.Utilities.
 
 - Status: In fairly good shape
+- TODO: Add more 3D point math
+- TODO: Add N-dimensional points and integrate them nicely with 2- and 3-dimensional points
+- TODO: Add matrix math. Affine and perspective transforms, matrix inverse, etc.
+- TODO: any other important functionality you think .NET framework should have but doesn't
 
 ## Loyc trees: in-memory LISP-inspired syntax trees
 

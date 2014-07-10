@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -119,9 +121,10 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html">TokensToTree</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a token list into a token tree. Everything inside brackets, parens or braces is made a child of the open bracket's Block.  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTreeTests.html">TokensToTreeTests</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>TokensToTreeTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html">TokenTree</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit...">ISourceFile</a> object that represents the source file that the tokens came from. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html">WhitespaceTag</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">WhitespaceTag.Value is used in <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> to represent whitespace and comments, which allows them to be quickly filtered out. <a href="classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html#details">More...</a><br /></td></tr>
@@ -139,30 +142,32 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>Spaces</b> = 0x0000, 
 <b>Comment</b> = 0x0100, 
 <b>Id</b> = 0x0200, 
-<b>Number</b> = 0x0300, 
 <br />
-&#160;&#160;<b>String</b> = 0x0400, 
+&#160;&#160;<b>Number</b> = 0x0300, 
+<b>String</b> = 0x0400, 
 <b>OtherLit</b> = 0x0500, 
-<b>Dot</b> = 0x0600, 
-<b>Assignment</b> = 0x0700, 
 <br />
-&#160;&#160;<b>Operator</b> = 0x0800, 
-<b>Separator</b> = 0x0900, 
+&#160;&#160;<b>Dot</b> = 0x0600, 
+<b>Assignment</b> = 0x0700, 
+<b>Operator</b> = 0x0800, 
+<br />
+&#160;&#160;<b>Separator</b> = 0x0900, 
 <b>AttrKeyword</b> = 0x0A00, 
 <b>TypeKeyword</b> = 0x0B00, 
 <br />
 &#160;&#160;<b>OtherKeyword</b> = 0x0C00, 
 <b>Other</b> = 0x0F00, 
 <b>LParen</b> = 0x1000, 
-<b>RParen</b> = 0x1100, 
 <br />
-&#160;&#160;<b>LBrack</b> = 0x1200, 
+&#160;&#160;<b>RParen</b> = 0x1100, 
+<b>LBrack</b> = 0x1200, 
 <b>RBrack</b> = 0x1300, 
-<b>LBrace</b> = 0x1400, 
-<b>RBrace</b> = 0x1500, 
 <br />
-&#160;&#160;<b>Indent</b> = 0x1600, 
-<b>Dedent</b> = 0x1700, 
+&#160;&#160;<b>LBrace</b> = 0x1400, 
+<b>RBrace</b> = 0x1500, 
+<b>Indent</b> = 0x1600, 
+<br />
+&#160;&#160;<b>Dedent</b> = 0x1700, 
 <b>LOther</b> = 0x1800, 
 <b>ROther</b> = 0x1900, 
 <br />
@@ -192,9 +197,10 @@ Enumerations</h2></td></tr>
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:44 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

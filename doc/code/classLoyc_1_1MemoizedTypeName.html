@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -94,25 +96,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>.NET Framework reflection doesn't offer complete type names for generic types such as "List&amp;lt;int&gt;" (the Type.Name value of that class is "List`1"). <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20" title="Computes a short language-agnostic name for a type, including generic parameters, e...">GetGenericName</a> fills in the gap, and also saves the computed name for fast repeated lookups. 
+<p>.NET Framework reflection doesn't offer complete type names for generic types such as "List&amp;lt;int&gt;" (the <code>Type.Name</code> value of that class is "List`1"). <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">Get</a> fills in the gap, and also saves the computed name for fast repeated lookups. 
  <a href="classLoyc_1_1MemoizedTypeName.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/MemoizedTypeName.cs'>/Src/Loyc.Essentials/Utilities/MemoizedTypeName.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>.NET Framework reflection doesn't offer complete type names for generic types such as "List&amp;lt;int&gt;" (the Type.Name value of that class is "List`1"). <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20" title="Computes a short language-agnostic name for a type, including generic parameters, e...">GetGenericName</a> fills in the gap, and also saves the computed name for fast repeated lookups.</p>
+<div class="textblock"><p>.NET Framework reflection doesn't offer complete type names for generic types such as "List&amp;lt;int&gt;" (the <code>Type.Name</code> value of that class is "List`1"). <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">Get</a> fills in the gap, and also saves the computed name for fast repeated lookups.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a0ec5ddf7e3b402fe8fa57e8bcb719f20"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20">GetGenericName</a> (Type type)</td></tr>
-<tr class="memdesc:a0ec5ddf7e3b402fe8fa57e8bcb719f20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a short language-agnostic name for a type, including generic parameters, e.g. GenericName(typeof(int)) is "Int32"; GenericName(typeof(Dictionary&lt;int, string&gt;)) is "Dictionary&amp;lt;Int32, String&gt;". <a href="#a0ec5ddf7e3b402fe8fa57e8bcb719f20">More...</a><br /></td></tr>
-<tr class="separator:a0ec5ddf7e3b402fe8fa57e8bcb719f20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f414309ee3145fc26da2b76b73a1403"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403">Get</a> (Type type)</td></tr>
+<tr class="memdesc:a2f414309ee3145fc26da2b76b73a1403"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a short language-agnostic name for a type, including generic parameters, e.g. GenericName(typeof(int)) is "Int32"; GenericName(typeof(Dictionary&lt;int, string&gt;)) is "Dictionary&amp;lt;Int32, String&gt;". <a href="#a2f414309ee3145fc26da2b76b73a1403">More...</a><br /></td></tr>
+<tr class="separator:a2f414309ee3145fc26da2b76b73a1403"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39dea69a79f5e34549319a7789d8d3f2"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MemoizedTypeName.html#a39dea69a79f5e34549319a7789d8d3f2">NameWithGenericParams</a> (this Type t)</td></tr>
-<tr class="memdesc:a39dea69a79f5e34549319a7789d8d3f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension method on Type that is an alias for the <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20" title="Computes a short language-agnostic name for a type, including generic parameters, e...">GetGenericName</a> method. <a href="#a39dea69a79f5e34549319a7789d8d3f2">More...</a><br /></td></tr>
+<tr class="memdesc:a39dea69a79f5e34549319a7789d8d3f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension method on <code>Type</code> that is an alias for the <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">Get</a> method. <a href="#a39dea69a79f5e34549319a7789d8d3f2">More...</a><br /></td></tr>
 <tr class="separator:a39dea69a79f5e34549319a7789d8d3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a0ec5ddf7e3b402fe8fa57e8bcb719f20"></a>
+<a class="anchor" id="a2f414309ee3145fc26da2b76b73a1403"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -120,7 +122,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static string Loyc.MemoizedTypeName.GetGenericName </td>
+          <td class="memname">static string Loyc.MemoizedTypeName.Get </td>
           <td>(</td>
           <td class="paramtype">Type&#160;</td>
           <td class="paramname"><em>type</em></td><td>)</td>
@@ -170,16 +172,17 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Extension method on Type that is an alias for the <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20" title="Computes a short language-agnostic name for a type, including generic parameters, e...">GetGenericName</a> method.</p>
+<p>Extension method on <code>Type</code> that is an alias for the <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">Get</a> method.</p>
 
-<p>References <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a0ec5ddf7e3b402fe8fa57e8bcb719f20">Loyc.MemoizedTypeName.GetGenericName()</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403">Loyc.MemoizedTypeName.Get()</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

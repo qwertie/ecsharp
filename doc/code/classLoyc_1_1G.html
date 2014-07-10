@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -87,6 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Nested classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1G-members.html">List of all members</a>  </div>
@@ -95,13 +98,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Contains global functions that don't really belong in any class. 
+<p>Contains global functions that don't belong in any specific class. 
  <a href="classLoyc_1_1G.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/G.cs'>/Src/Loyc.Essentials/G.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Contains global functions that don't really belong in any class.</p>
+<div class="textblock"><p>Contains global functions that don't belong in any specific class.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -109,9 +112,9 @@ Public Types</h2></td></tr>
 &#160;&#160;<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a043a760100cdfb3fea08aa42659395fa">ParseFlag.SkipSpacesInFront</a> = 1, 
 <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a1677c5167d3956aa0281d3682d5496a4">ParseFlag.SkipSpacesInsideNumber</a> = 2, 
 <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65ada1c5c9727a3933ee8789e1cddabd51e">ParseFlag.StopBeforeOverflow</a> = 4, 
-<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a462bc2573b61295f9c4f2448bf0e287d">ParseFlag.SkipUnderscores</a> = 8, 
 <br />
-&#160;&#160;<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a166071b852bb59eee7b5a242f6060161">ParseFlag.AllowCommaDecimalPoint</a> = 8
+&#160;&#160;<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a462bc2573b61295f9c4f2448bf0e287d">ParseFlag.SkipUnderscores</a> = 8, 
+<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a166071b852bb59eee7b5a242f6060161">ParseFlag.AllowCommaDecimalPoint</a> = 8
 <br />
  }</td></tr>
 <tr class="memdesc:aca73b19d9bbc9032dcd639c20a3aff65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that can be used with the overload of TryParseAt() that parses unsigned integers. <a href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">More...</a><br /></td></tr>
@@ -122,21 +125,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5026487dcc499e0485cc2e81fc983e94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5026487dcc499e0485cc2e81fc983e94"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap&lt; T &gt;</b> (ref T a, ref T b)</td></tr>
 <tr class="separator:a5026487dcc499e0485cc2e81fc983e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca42d6d38b2b70f33366789884c85532"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca42d6d38b2b70f33366789884c85532"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (IList&lt; T &gt; list, T value, Comparison&lt; T &gt; pred)</td></tr>
-<tr class="separator:aca42d6d38b2b70f33366789884c85532"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace49cc110f88dd5d5fcc5231a7177a98"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace49cc110f88dd5d5fcc5231a7177a98"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (IList&lt; T &gt; list, T value)</td></tr>
-<tr class="separator:ace49cc110f88dd5d5fcc5231a7177a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a828147697e1bf6fe388eb83d0923ee9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a828147697e1bf6fe388eb83d0923ee9b"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (IList&lt; T &gt; list, T value, IComparer&lt; T &gt; pred)</td></tr>
-<tr class="separator:a828147697e1bf6fe388eb83d0923ee9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1691620ffff28c742698cfe81c8bf4a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac1691620ffff28c742698cfe81c8bf4a"></a>
-static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToComparison&lt; T &gt;</b> (IComparer&lt; T &gt; pred)</td></tr>
-<tr class="separator:ac1691620ffff28c742698cfe81c8bf4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9d9d90722d454664467ed0dc58a58fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9d9d90722d454664467ed0dc58a58fe"></a>
-static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToComparison&lt; T &gt;</b> ()</td></tr>
+<tr class="memitem:ab9d9d90722d454664467ed0dc58a58fe"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab9d9d90722d454664467ed0dc58a58fe">ToComparison&lt; T &gt;</a> ()</td></tr>
+<tr class="memdesc:ab9d9d90722d454664467ed0dc58a58fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a Comparison{T} for the specified type. <a href="#ab9d9d90722d454664467ed0dc58a58fe">More...</a><br /></td></tr>
 <tr class="separator:ab9d9d90722d454664467ed0dc58a58fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1691620ffff28c742698cfe81c8bf4a"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ac1691620ffff28c742698cfe81c8bf4a">ToComparison&lt; T &gt;</a> (IComparer&lt; T &gt; pred)</td></tr>
+<tr class="memdesc:ac1691620ffff28c742698cfe81c8bf4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer{T} to a Comparison{T}. <a href="#ac1691620ffff28c742698cfe81c8bf4a">More...</a><br /></td></tr>
+<tr class="separator:ac1691620ffff28c742698cfe81c8bf4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc087cc7c55ddafb84276e7add77e34d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc087cc7c55ddafb84276e7add77e34d"></a>
 static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitCommandLineArguments</b> (string listString)</td></tr>
 <tr class="separator:adc087cc7c55ddafb84276e7add77e34d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -373,6 +367,65 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 </div><div class="memdoc">
 
 <p>Returns a string with any spaces and tabs removed from the beginning.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab9d9d90722d454664467ed0dc58a58fe"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Comparison&lt;T&gt; Loyc.G.ToComparison&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets a Comparison{T} for the specified type.</p>
+<p>This method is optimized and does not allocate on every call.</p>
+<div class="typeconstraint">
+<dl><dt><b>Type Constraints</b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>T</em></td><td>&#160;:</td><td valign="top"><em>IComparable&lt;T&gt;</em></td><td>&#160;</td></tr>
+</table>
+</dl>
+</div>
+
+</div>
+</div>
+<a class="anchor" id="ac1691620ffff28c742698cfe81c8bf4a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Comparison&lt;T&gt; Loyc.G.ToComparison&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">IComparer&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>pred</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts an IComparer{T} to a Comparison{T}.</p>
 
 </div>
 </div>
@@ -887,9 +940,10 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

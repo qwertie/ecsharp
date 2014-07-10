@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -144,7 +146,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1Values.html#a8f4ad2f1a1df037e52aa8c54e97087ac">Loyc.Collections.BMultiMap&lt; K, V &gt;.Values</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1DList_3_01T_01_4.html#a3424bff1b4734e85cb2b5f3971390fc6">Loyc.Collections.DList&lt; T &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a9060ebd876553a443e2ab3f893eb2c47">Loyc.Collections.FVList&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListTests_3_01AList_01_4.html#ad836563ae19a6de01d4d8fed26a86518">Loyc.Collections.Impl.AListTests&lt; AList &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPByteTrie_3_01TValue_01_4.html#a937ff57812380bae148e634b57e89be3">Loyc.Collections.Impl.CPByteTrie&lt; TValue &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie_3_01TValue_01_4.html#aefc3f371b9754dc7b40f8532ed71c893">Loyc.Collections.Impl.CPIntTrie&lt; TValue &gt;</a>
 , <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalDList_3_01T_01_4.html#abd001ac418a3f8c9a2d8d6009c1c0bc4">Loyc.Collections.Impl.InternalDList&lt; T &gt;</a>
@@ -154,14 +155,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classLoyc_1_1Collections_1_1VListBlockArray_3_01T_01_4.html#a59687daadeb64fa757f61f7e67c72fa5">Loyc.Collections.VListBlockArray&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a70bd823a0e491fc52b8c3b35322b6335">Loyc.Collections.VListBlockOfTwo&lt; T &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a875043ff6608e7b6d6a787e51852b999">Loyc.Collections.WListProtected&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Math_1_1Math128.html#ab876c2ee7fb2847c39dcad99d09ed188">Loyc.Math.Math128</a>
+, <a class="el" href="classLoyc_1_1Math_1_1Math128.html#a235ba027f60edf09e6f2e123769ef565">Loyc.Math.Math128</a>
+, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e610eb42b618674176e0a8fb52cb1c3">Loyc.Syntax.CodeSymbols</a>
 </li>
 <li>Add&lt; Point, T, M &gt;()
 : <a class="el" href="classLoyc_1_1Geometry_1_1PointExt.html#a362997242fbaa4928ec2f333c7966081">Loyc.Geometry.PointExt</a>
 </li>
 <li>AddAll()
-: <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#adc15bfbabac38c61bad2ece966322dd4">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a9ea987f20a54a971acfff33b38a41965">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>
+: <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a9ea987f20a54a971acfff33b38a41965">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>
 , <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#a767a338b6f7dac6380210491cb125cd9">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>
 </li>
 <li>AddComments
@@ -201,11 +202,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>AddRange()
 : <a class="el" href="classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#abd5bd30836ad23c1fb560c60792174b7">Loyc.Collections.BList&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a4ac9ed3b554090fd5ce2a4bfa8f7d3a5">Loyc.Collections.MMap&lt; K, V &gt;</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a758ec7abaee387f62f1ab5b7415e0072">Loyc.Collections.MMap&lt; K, V &gt;</a>
 , <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af81c386ce03cedf0543a940a60ee66f3">Loyc.Collections.VListBlock&lt; T &gt;</a>
 </li>
 <li>AddRemap()
 : <a class="el" href="classLoyc_1_1Syntax_1_1LineRemapper.html#a426318272611d201e22b11cb6069c714">Loyc.Syntax.LineRemapper</a>
+</li>
+<li>AddSet
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a183f62f2c0355c0737c3dfcce7a21ee5">Loyc.Syntax.CodeSymbols</a>
 </li>
 <li>AddToBoth()
 : <a class="el" href="classLoyc_1_1Collections_1_1AListTestBase_3_01AList_00_01T_01_4.html#ab197b08a8423b643c9cac7e7d6744d92">Loyc.Collections.AListTestBase&lt; AList, T &gt;</a>
@@ -229,11 +233,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html#a203e790c2987387bd946c010b649c0f2">Loyc.Syntax.Lexing.BaseLexer</a>
 , <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceFile.html#a8649bca7bc2e21b356f3e3338d01aa2a">Loyc.Syntax.Lexing.LexerSourceFile</a>
 </li>
-<li>AggregateChanged
-: <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1AListSingleOperation_3_01K_00_01T_01_4.html#acba7e2576cf99a332b38540d4a7be2e6">Loyc.Collections.Impl.AListSingleOperation&lt; K, T &gt;</a>
-</li>
-<li>AggregateKey
-: <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1AListSingleOperation_3_01K_00_01T_01_4.html#a4d10763f800d8131236196d4cb19675d">Loyc.Collections.Impl.AListSingleOperation&lt; K, T &gt;</a>
+<li>Alias
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ae417cea7912982a42b2fb0ebf3b911a6">Loyc.Syntax.CodeSymbols</a>
 </li>
 <li>AListBase()
 : <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a018a4a7ca6d3344765e3caec3c892c7c">Loyc.Collections.AListBase&lt; K, T &gt;</a>
@@ -271,12 +272,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Ambiguity
 : <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">Ecs.EcsNodePrinter</a>
 </li>
+<li>And
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8ef98455bd162dec6d12a0cf459241c1">Loyc.Syntax.CodeSymbols</a>
+</li>
+<li>AndBits
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5482443bfc93a989c8506324fbb753aa">Loyc.Syntax.CodeSymbols</a>
+</li>
+<li>AndBitsSet
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a5597ee34ef8ecdeab3a24374979b3aef">Loyc.Syntax.CodeSymbols</a>
+</li>
 <li>Angle()
 : <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#ae0f0211c3511238ea064dfbd1be560f7">Loyc.Geometry.PointMath</a>
-, <a class="el" href="structLoyc_1_1Math_1_1Vector2D.html#ae42b304e9e25a61609e68829f3ab14e1">Loyc.Math.Vector2D</a>
-, <a class="el" href="structLoyc_1_1Math_1_1Vector2F.html#a98459158104156e3052c08e609764f03">Loyc.Math.Vector2F</a>
-, <a class="el" href="structLoyc_1_1Math_1_1Vector2F8.html#a5452d339aecea181b141af35c854daa5">Loyc.Math.Vector2F8</a>
-, <a class="el" href="structLoyc_1_1Math_1_1Vector2I.html#a0d35b1fdaa1191cfa5bd3ef0704d4ec2">Loyc.Math.Vector2I</a>
 </li>
 <li>Angle&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#adf657b053f336451bc3c08616d8e31d0">Loyc.Geometry.PointMath</a>
@@ -291,14 +297,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a2782986d0bb1d4658594027b5dab3167">Loyc.Collections.LCInterfaces</a>
 </li>
 <li>Append()
-: <a class="el" href="classLoyc_1_1Collections_1_1AList_3_01T_01_4.html#af9638505dea97ac472daa0ff98b36803">Loyc.Collections.AList&lt; T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#acb551c3bae2ac3dd9503c2015c96375e">Loyc.Collections.SparseAList&lt; T &gt;</a>
+: <a class="el" href="classLoyc_1_1Collections_1_1AList_3_01T_01_4.html#ae8b25d9e7496c7ce0ef0a96a9bf246c6">Loyc.Collections.AList&lt; T &gt;</a>
+, <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#ad146f88b0edd165e0f8997ac22de80ef">Loyc.Collections.SparseAList&lt; T &gt;</a>
 </li>
 <li>Args
 : <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode</a>
 </li>
+<li>ArrayInit
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a0c04ac007b0e2db947ebc14f4b03d591">Loyc.Syntax.CodeSymbols</a>
+</li>
 <li>ArraySlice()
 : <a class="el" href="structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html#a4626fe837161ca320e33ca0d78aa5ea9">Loyc.Collections.ArraySlice&lt; T &gt;</a>
+</li>
+<li>As
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8fe87592101a85d89beb3c9727eb200b">Loyc.Syntax.CodeSymbols</a>
 </li>
 <li>AsBCL()
 : <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#a68fa459f993cf66526d88d7e896ebca6">Loyc.Geometry.PointMath</a>
@@ -325,10 +337,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#aee395914938617c30ad9627cfa77287c">Loyc.Geometry.PointMath</a>
 </li>
 <li>AsLoycVector()
-: <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#a0c755c025ac16014cf4492b3e045c00a">Loyc.Geometry.PointMath</a>
+: <a class="el" href="classLoyc_1_1Geometry_1_1PointMath.html#aea6cd586ab833c7755cb11ce8b23ea97">Loyc.Geometry.PointMath</a>
 </li>
 <li>AsReadOnly&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#af20d190d81326a9ed2f4b5ae7419ff7c">Loyc.Collections.LCExt</a>
+</li>
+<li>Assembly
+: <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a805db2710da7b2a9b800ed40b3594204">Loyc.Syntax.CodeSymbols</a>
 </li>
 <li>Assert()
 : <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#abd3e880da2ea067fdde7747223fed23f">Loyc.MiniTest.Assert</a>
@@ -337,8 +352,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Collections_1_1LCExt.html#a8cfb154f7f8651be29e8063f922bd415">Loyc.Collections.LCExt</a>
 </li>
 <li>Attach()
-: <a class="el" href="classLoyc_1_1Collections_1_1AListTestObserver_3_01K_00_01T_01_4.html#ade4eb1e2696e246d3630bb980e5225c6">Loyc.Collections.AListTestObserver&lt; K, T &gt;</a>
-, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a253dbb0a025dba18f3cff443f3f24c11">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>
+: <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a253dbb0a025dba18f3cff443f3f24c11">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>
 , <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#afa78aa67a4893b601952cc8b14084fe3">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>
 </li>
 <li>Attrs
@@ -351,7 +365,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a1d2b9e6c5bc98d045b1128c2ca8cceec">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a>
 </li>
 <li>Average()
-: <a class="el" href="classLoyc_1_1Math_1_1MathEx.html#af2d66da935a88197c1b440885f60c147">Loyc.Math.MathEx</a>
+: <a class="el" href="classLoyc_1_1Math_1_1MathEx.html#afc57661f0b295c433e755be39af6de80">Loyc.Math.MathEx</a>
 </li>
 <li>Average&lt; T &gt;()
 : <a class="el" href="classLoyc_1_1Math_1_1MathEx.html#ac83c34de0da22fe0f46febcaf7b4f862">Loyc.Math.MathEx</a>
@@ -361,9 +375,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 </ul>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:47 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

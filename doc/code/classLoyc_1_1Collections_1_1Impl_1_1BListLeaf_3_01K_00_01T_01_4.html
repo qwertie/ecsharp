@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -88,16 +90,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Collections.Impl.BListLeaf&lt; K, T &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Leaf node of BList{T}.  
+<p>Internal implementation class. Leaf node of BList{T} and BDictionary{K,V}. 
  <a href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/BListLeaf.cs'>/Src/Loyc.Collections/ALists/BListLeaf.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -106,18 +107,12 @@ Inheritance diagram for Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.png" usemap="#Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;_map" alt=""/>
   <map id="Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;_map" name="Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html" alt="Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;" shape="rect" coords="0,56,242,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html" title="Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in..." alt="Loyc.Collections.Impl.AListNode&lt; K, T &gt;" shape="rect" coords="0,0,242,24"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared code of non-sparse AList leaf nodes." alt="Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;" shape="rect" coords="0,56,242,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html" title="Internal implementation class. Base class for tree nodes in a list class derived from AListBase{T}..." alt="Loyc.Collections.Impl.AListNode&lt; K, T &gt;" shape="rect" coords="0,0,242,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Leaf node of BList{T}. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
+<div class="textblock"><p>Internal implementation class. Leaf node of BList{T} and BDictionary{K,V}.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -130,9 +125,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a40c8ea5d2f19ab11d81907ed0a58c84c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40c8ea5d2f19ab11d81907ed0a58c84c"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>BListLeaf</b> (BListLeaf&lt; K, T &gt; frozen)</td></tr>
 <tr class="separator:a40c8ea5d2f19ab11d81907ed0a58c84c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a443b3b981906181dd600cc4021771e8f"><td class="memItemLeft" align="right" valign="top">override int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#a443b3b981906181dd600cc4021771e8f">DoSingleOperation</a> (ref AListSingleOperation&lt; K, T &gt; op, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a443b3b981906181dd600cc4021771e8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a retrieve, add, remove or replace operation on a single item in an organized A-list (such as a BList or BDictionary). <a href="#a443b3b981906181dd600cc4021771e8f">More...</a><br /></td></tr>
-<tr class="separator:a443b3b981906181dd600cc4021771e8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5f791650ecab4d85487e3b735c20cf5"><td class="memItemLeft" align="right" valign="top">override AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#aa5f791650ecab4d85487e3b735c20cf5">DetachedClone</a> ()</td></tr>
 <tr class="memdesc:aa5f791650ecab4d85487e3b735c20cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an unfrozen shallow duplicate copy of this node. The child nodes (if this is an inner node) are frozen so that they will require duplication if they are to be modified. The name "DetachedClone" is intended to emphasize that the AListNodeObserver (if any) is not notified, and the clone is effectively independent of the list that it came from. <a href="#aa5f791650ecab4d85487e3b735c20cf5">More...</a><br /></td></tr>
 <tr class="separator:aa5f791650ecab4d85487e3b735c20cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,25 +169,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item, i
 <tr class="memitem:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#af13714f40db692e2280940eddb8f4628">InsertRange</a> (uint index, IListSource&lt; T &gt; source, ref int sourceIndex, out AListNode&lt; K, T &gt; splitRight, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items at the specified index. This method may not insert all items at once, so there is a sourceIndex parameter which points to the next item to be inserted. When sourceIndex reaches source.Count, the insertion is complete. <a href="#af13714f40db692e2280940eddb8f4628">More...</a><br /></td></tr>
 <tr class="separator:af13714f40db692e2280940eddb8f4628 inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a71cbdd80269c6a547523bbf36a43e1dc">DoSparseOperation</a> (ref AListSparseOperation&lt; T &gt; op, int index, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an insert or replace operation in a SparseAList{T}. <a href="#a71cbdd80269c6a547523bbf36a43e1dc">More...</a><br /></td></tr>
-<tr class="separator:a71cbdd80269c6a547523bbf36a43e1dc inherit pub_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
-Protected Member Functions</h2></td></tr>
-<tr class="memitem:a233b4282194fe8cf09b2d2520bef7b89"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html#a233b4282194fe8cf09b2d2520bef7b89">SplitAndAdd</a> (ref AListSingleOperation&lt; K, T &gt; op, out AListNode&lt; K, T &gt; splitLeft, out AListNode&lt; K, T &gt; splitRight)</td></tr>
-<tr class="memdesc:a233b4282194fe8cf09b2d2520bef7b89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by DoSingleOperation to split a full node, then retry the add operation. <a href="#a233b4282194fe8cf09b2d2520bef7b89">More...</a><br /></td></tr>
-<tr class="separator:a233b4282194fe8cf09b2d2520bef7b89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a></td></tr>
-<tr class="memitem:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">IAListTreeObserver&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a6b5f62bf38aebf0a04f924f90a1e2d45">GetObserver</a> (AListBase&lt; K, T &gt; tree)</td></tr>
-<tr class="memdesc:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to access AListBase._observer. <a href="#a6b5f62bf38aebf0a04f924f90a1e2d45">More...</a><br /></td></tr>
-<tr class="separator:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a67d4aeddc04cdb8052e9e09eb3fd4b87">HasListChanging</a> (AListBase&lt; K, T &gt; tree)</td></tr>
-<tr class="memdesc:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to fire the AListBase.ListChanging event. <a href="#a67d4aeddc04cdb8052e9e09eb3fd4b87">More...</a><br /></td></tr>
-<tr class="separator:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (AListBase&lt; K, T &gt; tree, ListChangeInfo&lt; T &gt; listChangeInfo)</td></tr>
-<tr class="memdesc:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to fire the AListBase.ListChanging event properly. <a href="#adc8d3a8df0d066e8bfa632203f001d65">More...</a><br /></td></tr>
-<tr class="separator:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -254,6 +227,16 @@ abstract int&#160;</td><td class="memItemRight" valign="bottom"><b>CapacityLeft<
 <tr class="memitem:a1d2b9e6c5bc98d045b1128c2ca8cceec inherit pub_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a1d2b9e6c5bc98d045b1128c2ca8cceec">AutoClone</a> (ref AListNode&lt; K, T &gt; node, AListInnerBase&lt; K, T &gt; parent, IAListTreeObserver&lt; K, T &gt; tob)</td></tr>
 <tr class="memdesc:a1d2b9e6c5bc98d045b1128c2ca8cceec inherit pub_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks whether 'node' is frozen and if so, replaces it with an unfrozen copy. <a href="#a1d2b9e6c5bc98d045b1128c2ca8cceec">More...</a><br /></td></tr>
 <tr class="separator:a1d2b9e6c5bc98d045b1128c2ca8cceec inherit pub_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a></td></tr>
+<tr class="memitem:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">IAListTreeObserver&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a6b5f62bf38aebf0a04f924f90a1e2d45">GetObserver</a> (AListBase&lt; K, T &gt; tree)</td></tr>
+<tr class="memdesc:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to access AListBase._observer. <a href="#a6b5f62bf38aebf0a04f924f90a1e2d45">More...</a><br /></td></tr>
+<tr class="separator:a6b5f62bf38aebf0a04f924f90a1e2d45 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a67d4aeddc04cdb8052e9e09eb3fd4b87">HasListChanging</a> (AListBase&lt; K, T &gt; tree)</td></tr>
+<tr class="memdesc:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to fire the AListBase.ListChanging event. <a href="#a67d4aeddc04cdb8052e9e09eb3fd4b87">More...</a><br /></td></tr>
+<tr class="separator:a67d4aeddc04cdb8052e9e09eb3fd4b87 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#adc8d3a8df0d066e8bfa632203f001d65">CallListChanging</a> (AListBase&lt; K, T &gt; tree, ListChangeInfo&lt; T &gt; listChangeInfo)</td></tr>
+<tr class="memdesc:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows derived classes of AListNode to fire the AListBase.ListChanging event properly. <a href="#adc8d3a8df0d066e8bfa632203f001d65">More...</a><br /></td></tr>
+<tr class="separator:adc8d3a8df0d066e8bfa632203f001d65 inherit pro_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pro_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Static Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a></td></tr>
 <tr class="memitem:a90604f1a4068d2548486ad00220eca02 inherit pro_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a90604f1a4068d2548486ad00220eca02">Verify</a> (bool condition)</td></tr>
 <tr class="memdesc:a90604f1a4068d2548486ad00220eca02 inherit pro_static_methods_classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as Assert(), except that the condition expression can have side-effects because it is evaluated even in Release builds. <a href="#a90604f1a4068d2548486ad00220eca02">More...</a><br /></td></tr>
@@ -354,67 +337,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 
 </div>
 </div>
-<a class="anchor" id="a443b3b981906181dd600cc4021771e8f"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">override int Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;.DoSingleOperation </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSingleOperation&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>op</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitLeft</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitRight</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Performs a retrieve, add, remove or replace operation on a single item in an organized A-list (such as a BList or BDictionary).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">op</td><td>An object that describes the operation to be performed and the parameters of the tree (comparers and observers).</td></tr>
-    <tr><td class="paramname">splitLeft</td><td>null if the operation completed normally. If an item was added and the node split, splitLeft and splitRight are new nodes that each contain roughly half of the items from this node. </td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If an item was removed and the node became undersized, splitLeft is set to this (the node itself) and splitRight is set to null. Likewise, if the aggregate value of the node changed (in a B+tree, this means that the highest key changed) then splitLeft is set to the node itself and splitRight is set to null. </p>
-<dl class="section return"><dt>Returns</dt><dd>Returns 1 if a new item was added, -1 if an item was removed, or 0 if the number of items in the tree did not change.</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">NotSupportedException</td><td>This node does not belong to an organized tree (e.g. normal AList).</td></tr>
-    <tr><td class="paramname"><a class="el" href="classLoyc_1_1Collections_1_1KeyAlreadyExistsException.html">KeyAlreadyExistsException</a></td><td>The key op.NewKey already existed in the tree and op.Mode was <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee" title="Indicates the way an add operation (such as BList{T}.Do should behave when an item being added to a s...">AListOperation</a>.AddOrThrow.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If op.Mode is <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4ee" title="Indicates the way an add operation (such as BList{T}.Do should behave when an item being added to a s...">AListOperation</a>.ReplaceIfPresent, this method informs the caller when replacement occurs in this mode by changing op.Mode to AddDuplicateMode.ReplaceExisting. </p>
-
-<p>Reimplemented from <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a781c2f51f9403ad3153fdb77122d8781">Loyc.Collections.Impl.AListNode&lt; K, T &gt;</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a10f6ec8a637b4312222852099e5c8071"></a>
 <div class="memitem">
 <div class="memproto">
@@ -461,53 +383,11 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 
 </div>
 </div>
-<a class="anchor" id="a233b4282194fe8cf09b2d2520bef7b89"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual int Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;.SplitAndAdd </td>
-          <td>(</td>
-          <td class="paramtype">ref AListSingleOperation&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>op</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitLeft</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out AListNode&lt; K, T &gt;&#160;</td>
-          <td class="paramname"><em>splitRight</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Called by DoSingleOperation to split a full node, then retry the add operation.</p>
-<p>Same arguments and return value as DoSingleOperation.</p>
-
-</div>
-</div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:34 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:32 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

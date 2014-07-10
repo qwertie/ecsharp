@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,20 +95,27 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.MemoizedTypeName&lt; T &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p><code><a class="el" href="classLoyc_1_1MemoizedTypeName.html" title=".NET Framework reflection doesn&#39;t offer complete type names for generic types such as &quot;List&lt;int>&quot; (th...">MemoizedTypeName</a>&lt;T&gt;.Get()</code> is an alternative to <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">MemoizedTypeName.Get</a>(typeof(T)). 
+ <a href="classLoyc_1_1MemoizedTypeName_3_01T_01_4.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/MemoizedTypeName.cs'>/Src/Loyc.Essentials/Utilities/MemoizedTypeName.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p><code><a class="el" href="classLoyc_1_1MemoizedTypeName.html" title=".NET Framework reflection doesn&#39;t offer complete type names for generic types such as &quot;List&lt;int>&quot; (th...">MemoizedTypeName</a>&lt;T&gt;.Get()</code> is an alternative to <a class="el" href="classLoyc_1_1MemoizedTypeName.html#a2f414309ee3145fc26da2b76b73a1403" title="Computes a short language-agnostic name for a type, including generic parameters, e...">MemoizedTypeName.Get</a>(typeof(T)).</p>
+<p>This class is faster for getting the same name repeatedly, but demands more memory and initialization overhead from the CLR.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:acf63c7cf759231494489538b054a9aa9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf63c7cf759231494489538b054a9aa9"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>GenericName</b> ()</td></tr>
-<tr class="separator:acf63c7cf759231494489538b054a9aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa834f64b801f60b332dfedf520285a1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa834f64b801f60b332dfedf520285a1f"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>Get</b> ()</td></tr>
+<tr class="separator:aa834f64b801f60b332dfedf520285a1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

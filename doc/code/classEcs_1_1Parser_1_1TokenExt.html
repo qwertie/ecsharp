@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,23 +95,86 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Ecs.Parser.TokenExt Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Provides the <code><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#aff2b8fa3534f49d10b063cb940028283" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d" title="Expresses an LES token as a string.">ToString(Token)</a> method to express an EC# token as a string, for tokens that contain sufficient information to do so. 
+ <a href="classEcs_1_1Parser_1_1TokenExt.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Ecs/Parser/TokenType.cs'>/Src/Ecs/Parser/TokenType.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Provides the <code><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#aff2b8fa3534f49d10b063cb940028283" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d" title="Expresses an LES token as a string.">ToString(Token)</a> method to express an EC# token as a string, for tokens that contain sufficient information to do so.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aff2b8fa3534f49d10b063cb940028283"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aff2b8fa3534f49d10b063cb940028283"></a>
-static TokenType&#160;</td><td class="memItemRight" valign="bottom"><b>Type</b> (this <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memitem:aff2b8fa3534f49d10b063cb940028283"><td class="memItemLeft" align="right" valign="top">static TokenType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#aff2b8fa3534f49d10b063cb940028283">Type</a> (this <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memdesc:aff2b8fa3534f49d10b063cb940028283"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts <code>t.TypeInt</code> to TokenType. <a href="#aff2b8fa3534f49d10b063cb940028283">More...</a><br /></td></tr>
 <tr class="separator:aff2b8fa3534f49d10b063cb940028283"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad7fc2e19c2d70f9a1960269b91b4c91d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad7fc2e19c2d70f9a1960269b91b4c91d"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memitem:ad7fc2e19c2d70f9a1960269b91b4c91d"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d">ToString</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> t)</td></tr>
+<tr class="memdesc:ad7fc2e19c2d70f9a1960269b91b4c91d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expresses an LES token as a string. <a href="#ad7fc2e19c2d70f9a1960269b91b4c91d">More...</a><br /></td></tr>
 <tr class="separator:ad7fc2e19c2d70f9a1960269b91b4c91d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ad7fc2e19c2d70f9a1960269b91b4c91d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Ecs.Parser.TokenExt.ToString </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Expresses an LES token as a string.</p>
+<p>Note that some Tokens do not contain enough information to reconstruct a useful token string, e.g. comment tokens do not store the comment but merely contain the location of the comment in the source code. For performance reasons, a Token does not have a reference to its source file, so this method cannot return the original string. </p>
+<p>The results are undefined if the token was not produced by <a class="el" href="classEcs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer).">EcsLexer</a>. </p>
+
+<p>References <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af6a9c75808482f583bb3937121e4b4b1">Loyc.Syntax.Lexing.Token.Kind</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910">Loyc.Syntax.Lexing.Token.Value</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aff2b8fa3534f49d10b063cb940028283"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TokenType Ecs.Parser.TokenExt.Type </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts <code>t.TypeInt</code> to TokenType.</p>
+
+</div>
+</div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

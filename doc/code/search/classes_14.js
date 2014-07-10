@@ -9,6 +9,5 @@ var searchData=
   ['whitespacetag',['WhitespaceTag',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html',1,'Loyc::Syntax::Lexing']]],
   ['wlistbase_3c_20t_20_3e',['WListBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wlistprotected_3c_20t_20_3e',['WListProtected&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html',1,'Loyc::Collections']]],
-  ['wlisttests',['WListTests',['../classLoyc_1_1Collections_1_1WListTests.html',1,'Loyc::Collections']]],
   ['wrapperbase_3c_20t_20_3e',['WrapperBase&lt; T &gt;',['../classLoyc_1_1WrapperBase_3_01T_01_4.html',1,'Loyc']]]
 ];

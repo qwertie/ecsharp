@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -101,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>The <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html" title="The Assert class contains a collection of static methods that mirror the most common assertions used ...">Assert</a> class contains a collection of static methods that mirror the most common assertions used in NUnit.  
  <a href="classLoyc_1_1MiniTest_1_1Assert.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/MiniTest.cs'>/Src/Loyc.Essentials/Utilities/MiniTest.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -110,17 +112,8 @@ Inheritance diagram for Loyc.MiniTest.Assert:</div>
  <div class="center">
   <img src="classLoyc_1_1MiniTest_1_1Assert.png" usemap="#Loyc.MiniTest.Assert_map" alt=""/>
   <map id="Loyc.MiniTest.Assert_map" name="Loyc.MiniTest.Assert_map">
-<area href="classEcs_1_1EcsPrinterAndParserTests.html" alt="Ecs.EcsPrinterAndParserTests" shape="rect" coords="258,56,506,80"/>
-<area href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html" alt="Loyc.Collections.Impl.TestHelpers" shape="rect" coords="258,112,506,136"/>
-<area href="classLoyc_1_1Collections_1_1InvertibleSetTests.html" alt="Loyc.Collections.InvertibleSetTests" shape="rect" coords="258,168,506,192"/>
-<area href="classLoyc_1_1GTests.html" alt="Loyc.GTests" shape="rect" coords="258,224,506,248"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1IntSetTests.html" alt="Loyc.LLParserGenerator.IntSetTests" shape="rect" coords="258,280,506,304"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1LlpgParserTests.html" title="Tests the stage 1 parser and the stage 2 parser." alt="Loyc.LLParserGenerator.LlpgParserTests" shape="rect" coords="258,336,506,360"/>
-<area href="classLoyc_1_1Math_1_1MathExTests.html" alt="Loyc.Math.MathExTests" shape="rect" coords="258,392,506,416"/>
-<area href="classLoyc_1_1StringExtTests.html" alt="Loyc.StringExtTests" shape="rect" coords="258,448,506,472"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1LesParserTests.html" alt="Loyc.Syntax.Les.LesParserTests" shape="rect" coords="258,504,506,528"/>
-<area href="classLoyc_1_1Syntax_1_1LNodeTests.html" alt="Loyc.Syntax.LNodeTests" shape="rect" coords="258,560,506,584"/>
-<area href="classLoyc_1_1UStringTests.html" alt="Loyc.UStringTests" shape="rect" coords="258,616,506,640"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html" title="Helpers methods for unit tests for Loyc collection classes." alt="Loyc.Collections.Impl.TestHelpers" shape="rect" coords="0,56,257,80"/>
+<area href="classLoyc_1_1Collections_1_1AListTestBase_3_01AList_00_01T_01_4.html" title="Contains tests common to AList, BList and BDictionary. " alt="Loyc.Collections.AListTestBase&lt; AList, T &gt;" shape="rect" coords="0,112,257,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -138,10 +131,13 @@ Some overloads were dropped when the compiler can automatically select a differe
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:aba7851ec34f4970023982f0ac53993df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba7851ec34f4970023982f0ac53993df"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>StopReason</b> { <b>Success</b>, 
+<tr class="memitem:aba7851ec34f4970023982f0ac53993df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba7851ec34f4970023982f0ac53993df"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>StopReason</b> { <br />
+&#160;&#160;<b>Success</b>, 
 <b>Fail</b>, 
 <b>Ignore</b>, 
-<b>Inconclusive</b>
+<br />
+&#160;&#160;<b>Inconclusive</b>
+<br />
  }</td></tr>
 <tr class="separator:aba7851ec34f4970023982f0ac53993df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -1284,9 +1280,10 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>DoublesAreEqua
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:40 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

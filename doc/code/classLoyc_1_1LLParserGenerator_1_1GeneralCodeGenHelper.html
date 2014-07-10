@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -99,9 +101,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> parser {...}</code>. 
+<p>General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> parser {...}</code>. 
  <a href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#details">More...</a></p>
-<hr/>Source code:<ul>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CodeGenHelpers/GeneralCodeGenHelper.cs'>/Src/LLLPG/CodeGenHelpers/GeneralCodeGenHelper.cs</a></li>
 </ul>
 <div class="dynheader">
@@ -115,7 +117,7 @@ Inheritance diagram for Loyc.LLParserGenerator.GeneralCodeGenHelper:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> parser {...}</code>.</p>
+<div class="textblock"><p>General-purpose code generator that supports any language with a finite number of input symbols represented by LNode expressions. This is the code generator helper for <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> parser {...}</code>.</p>
 <p>To use, assign a new instance of this class to LLParserGenerator.CodeGenHelper </p>
 <p>This code generator operates on sets of LNodes. It assumes that every expression in a set is a unique terminal; for example, it assumes that the expressions 123 and Foo represent two different terminals. The expected data type of each terminal is given to the constructor (the default is int). </p>
 </div><table class="memberdecls">
@@ -180,7 +182,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa589f6fa590878d894063f1f3c4c7e12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html">Loyc.LLParserGenerator.CodeGenHelperBase</a></td></tr>
 <tr class="memitem:a4296d674e4af706302d4fca4837be0b6 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">VisitInput</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="memdesc:a4296d674e4af706302d4fca4837be0b6 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> looks at it). No action is required. <a href="#a4296d674e4af706302d4fca4837be0b6">More...</a><br /></td></tr>
+<tr class="memdesc:a4296d674e4af706302d4fca4837be0b6 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required. <a href="#a4296d674e4af706302d4fca4837be0b6">More...</a><br /></td></tr>
 <tr class="separator:a4296d674e4af706302d4fca4837be0b6 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89ebc20aea6b1915b1e4599170006cd4 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a89ebc20aea6b1915b1e4599170006cd4">Optimize</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set, <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> dontcare)</td></tr>
 <tr class="memdesc:a89ebc20aea6b1915b1e4599170006cd4 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simplifies the specified set, if possible, so that <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aec228a031cdc56dea1a7a81cd4f9b01a" title="Generates code to test whether the terminal denoted &#39;laVar&#39; is in the set.">GenerateTest()</a> can generate simpler code for an if-else chain in a prediction tree. <a href="#a89ebc20aea6b1915b1e4599170006cd4">More...</a><br /></td></tr>
@@ -379,7 +381,7 @@ readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td 
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>A expression provided by the user, such as <code>"a string"</code>, a <code>Token.Type</code>, or a <code>value..range</code>. <code>expr</code> will not be a call to the inversion operator #~ (that's handled internally using <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html#a0c7902f443a1e562c2be62ad6e4a25f3" title="Creates a version of the set with IsInverted toggled.">IPGTerminalSet.Inverted()</a>). This method also handles the "any token" input, which is an underscore by convention (_).</td></tr>
-    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
+    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
   </table>
   </dd>
 </dl>
@@ -414,7 +416,7 @@ readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td 
 </div><div class="memdoc">
 
 <p>Returns an example of an item in the set. If the example is a character, it should be surrounded by single quotes.</p>
-<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a>.</p>
+<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
 
 <p>Implements <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad4c27eb153d32cd0c8f00ccad7100eb1">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
@@ -685,7 +687,7 @@ readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td 
 
 <p>If MatchCast is set, a cast to this type is added when calling Match() or NewSet() or set.Contains().</p>
 <p>This requires some explanation because it's a bit subtle. I made the decision to implement BaseParser{Token} with <code>Match(...)</code> methods that accept integers, e.g. <code>Match(int a, int b, int c)</code>. I could have parameterized <code>BaseParser</code> and its <code>Match</code> methods on the token type (e.g. BaseParser(Token,TokenType)) but unfortunately this lowers performance because if BaseParser doesn't know that TokenType is an integer or an enum, it requires three virtual method calls to compare the current token with a, b and c (also, note that C# prohibits "enum" as a generic constraint for reasons unknown). </p>
-<p>To avoid this performance snag, BaseParser just assumes that the token type is an integer. Of course, the derived class will still use named enum values. If the enum type is called TT, <code>Match(TT.A, TT.B, TT.C)</code> produces a C# compiler error, so <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html">LLLPG</a> needs to generate a cast to int: <code>Match((int) TT.A, (int) TT.B, (int) TT.C)</code>. That's what this option is for. When you set this option, it inserts a cast to the specified type. Normally you'll set it to #int32. </p>
+<p>To avoid this performance snag, BaseParser just assumes that the token type is an integer. Of course, the derived class will still use named enum values. If the enum type is called TT, <code>Match(TT.A, TT.B, TT.C)</code> produces a C# compiler error, so <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> needs to generate a cast to int: <code>Match((int) TT.A, (int) TT.B, (int) TT.C)</code>. That's what this option is for. When you set this option, it inserts a cast to the specified type. Normally you'll set it to #int32. </p>
 <p>When using this option, LaType should still be the enum type rather than #int32. </p>
 
 </div>
@@ -705,9 +707,10 @@ readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td 
 </div>
 </div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

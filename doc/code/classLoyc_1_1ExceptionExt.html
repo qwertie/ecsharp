@@ -1,3 +1,4 @@
+<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,6 +15,7 @@
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -93,10 +95,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Loyc.ExceptionExt Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<hr/>Source code:<ul>
+
+<p>Extension methods for exceptions. 
+ <a href="classLoyc_1_1ExceptionExt.html#details">More...</a></p>
+<hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/Extensions.cs'>/Src/Loyc.Essentials/Utilities/Extensions.cs</a></li>
 </ul>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>Extension methods for exceptions.</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a79f3642434ac4d4b6db9b2efd77233a8"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#a79f3642434ac4d4b6db9b2efd77233a8">ExceptionMessageAndType</a> (this Exception ex)</td></tr>
@@ -113,23 +120,97 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" h
 <tr class="memitem:a2c4e98f1462a6455be54d3476689f689"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#a2c4e98f1462a6455be54d3476689f689">Description</a> (this Exception ex, bool addStackTrace, string lineSeparator=&quot;\n\n&quot;)</td></tr>
 <tr class="memdesc:a2c4e98f1462a6455be54d3476689f689"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a description of the exception in the form "{ex.Message} ({ex.GetType().Name})". If the exception has InnerExceptions, these are printed afterward in the form "Inner exception: {ex.Message} ({ex.GetType().Name})" and separated from the outer exception by "\n\n" (or a string of your choosing). <a href="#a2c4e98f1462a6455be54d3476689f689">More...</a><br /></td></tr>
 <tr class="separator:a2c4e98f1462a6455be54d3476689f689"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8547940b1585241ff04519de38a9564"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8547940b1585241ff04519de38a9564"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>ToDetailedString</b> (this Exception ex)</td></tr>
+<tr class="memitem:ab8547940b1585241ff04519de38a9564"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#ab8547940b1585241ff04519de38a9564">ToDetailedString</a> (this Exception ex)</td></tr>
+<tr class="memdesc:ab8547940b1585241ff04519de38a9564"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string containing the exception type, message, Data pairs (if any) and stack strace, followed by the type, message and stack strace of inner exceptions, if any. <a href="#ab8547940b1585241ff04519de38a9564">More...</a><br /></td></tr>
 <tr class="separator:ab8547940b1585241ff04519de38a9564"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3e2858b0bbbd9341cd4153314ad98c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3e2858b0bbbd9341cd4153314ad98c3"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>ToDetailedString</b> (this Exception ex, int maxInnerExceptions)</td></tr>
 <tr class="separator:af3e2858b0bbbd9341cd4153314ad98c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0156c141548bbffc7271142e116c9390"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0156c141548bbffc7271142e116c9390"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>DataList</b> (this Exception ex)</td></tr>
+<tr class="memitem:a0156c141548bbffc7271142e116c9390"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#a0156c141548bbffc7271142e116c9390">DataList</a> (this Exception ex)</td></tr>
+<tr class="memdesc:a0156c141548bbffc7271142e116c9390"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts <code>Exception.Data</code> to a string, separating each key-value pair by a newline. <a href="#a0156c141548bbffc7271142e116c9390">More...</a><br /></td></tr>
 <tr class="separator:a0156c141548bbffc7271142e116c9390"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1133d55c63723bcf29bb2e77a068edf8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1133d55c63723bcf29bb2e77a068edf8"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>DataList</b> (this Exception ex, string linePrefix, string keyValueSeparator, string newLine)</td></tr>
+<tr class="memitem:a1133d55c63723bcf29bb2e77a068edf8"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#a1133d55c63723bcf29bb2e77a068edf8">DataList</a> (this Exception ex, string linePrefix, string keyValueSeparator, string newLine)</td></tr>
+<tr class="memdesc:a1133d55c63723bcf29bb2e77a068edf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts <code>Exception.Data</code> to a string, separating each key from each value with <code>keyValueSeparator</code>, prepending each line by <code>linePrefix</code>, and separating each pair with <code>newLine</code>, which may or may not be "\n", your choice. <a href="#a1133d55c63723bcf29bb2e77a068edf8">More...</a><br /></td></tr>
 <tr class="separator:a1133d55c63723bcf29bb2e77a068edf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2cbaadbc2c5113766d7a82ed99202f9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cbaadbc2c5113766d7a82ed99202f9d"></a>
 static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>AppendDataList</b> (IDictionary dict, StringBuilder sb, string linePrefix, string keyValueSeparator, string newLine)</td></tr>
 <tr class="separator:a2cbaadbc2c5113766d7a82ed99202f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a0156c141548bbffc7271142e116c9390"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.ExceptionExt.DataList </td>
+          <td>(</td>
+          <td class="paramtype">this Exception&#160;</td>
+          <td class="paramname"><em>ex</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts <code>Exception.Data</code> to a string, separating each key-value pair by a newline.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1133d55c63723bcf29bb2e77a068edf8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.ExceptionExt.DataList </td>
+          <td>(</td>
+          <td class="paramtype">this Exception&#160;</td>
+          <td class="paramname"><em>ex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>linePrefix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>keyValueSeparator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>newLine</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts <code>Exception.Data</code> to a string, separating each key from each value with <code>keyValueSeparator</code>, prepending each line by <code>linePrefix</code>, and separating each pair with <code>newLine</code>, which may or may not be "\n", your choice.</p>
+
+</div>
+</div>
 <a class="anchor" id="a2c4e98f1462a6455be54d3476689f689"></a>
 <div class="memitem">
 <div class="memproto">
@@ -264,10 +345,42 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 
 </div>
 </div>
+<a class="anchor" id="ab8547940b1585241ff04519de38a9564"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.ExceptionExt.ToDetailedString </td>
+          <td>(</td>
+          <td class="paramtype">this Exception&#160;</td>
+          <td class="paramname"><em>ex</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a string containing the exception type, message, Data pairs (if any) and stack strace, followed by the type, message and stack strace of inner exceptions, if any.</p>
+<p>If <code>maxInnerExceptions</code> is not given, the default is 3.</p>
+
+<p>References <a class="el" href="classLoyc_1_1ExceptionExt.html#ab8547940b1585241ff04519de38a9564">Loyc.ExceptionExt.ToDetailedString()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1ExceptionExt.html#ab8547940b1585241ff04519de38a9564">Loyc.ExceptionExt.ToDetailedString()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jul 6 2014 23:54:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
