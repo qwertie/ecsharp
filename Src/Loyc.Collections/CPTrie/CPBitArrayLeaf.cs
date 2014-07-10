@@ -9,7 +9,7 @@ namespace Loyc.Collections.Impl
 	using System.Diagnostics;
 	using Loyc.Math;
 
-	class CPBitArrayLeaf<T> : CPNode<T>
+	internal class CPBitArrayLeaf<T> : CPNode<T>
 	{
 		// _flags[0..7] is a bitmap of keys that have been assigned.
 		// _flags[8..15] is a bitmap of value slots that have been allocated,

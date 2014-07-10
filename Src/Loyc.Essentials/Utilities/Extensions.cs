@@ -10,28 +10,19 @@ using Loyc.Collections;
 
 namespace Loyc
 {
+	/// <summary>Extension methods for <c>Type</c>.</summary>
 	public static class TypeExt
 	{
+		/// <summary>Returns the type with generic parameters in C# style, e.g.
+		/// <c>typeof(List&lt;List&lt;string>>.NameWithGenericArgs()</c> returns
+		/// <c>List&lt;List&lt;String>></c>.</summary>
 		public static string NameWithGenericArgs(this Type type)
 		{
-			string result = type.Name;
-			if (type.IsGenericType)
-			{
-				// remove generic parameter count (e.g. `1)
-				int i = result.LastIndexOf('`');
-				if (i > 0)
-					result = result.Substring(0, i);
-
-				result = string.Format(
-					"{0}<{1}>",
-					result,
-					StringExt.Join(", ", type.GetGenericArguments()
-					                     .Select(t => NameWithGenericArgs(t))));
-			}
-			return result;
+			return MemoizedTypeName.Get(type);
 		}
 	}
 
+	/// <summary>Extension methods for exceptions.</summary>
 	public static class ExceptionExt
 	{
 		/// <summary>Returns a string of the form "{ex.Message} ({ex.GetType().Name})".</summary>
@@ -82,8 +73,11 @@ namespace Loyc
 			return msg.ToString();
 		}
 
+		/// <summary>Returns a string containing the exception type, message, 
+		/// Data pairs (if any) and stack strace, followed by the type, message and 
+		/// stack strace of inner exceptions, if any.</summary>
+		/// <remarks>If <c>maxInnerExceptions</c> is not given, the default is 3.</remarks>
 		public static string ToDetailedString(this Exception ex) { return ToDetailedString(ex, 3); }
-		
 		public static string ToDetailedString(this Exception ex, int maxInnerExceptions)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -103,10 +97,16 @@ namespace Loyc
 			return sb.ToString();
 		}
 
+		/// <summary>Converts <c>Exception.Data</c> to a string, separating each key-value
+		/// pair by a newline.</summary>
 		public static string DataList(this Exception ex)
 		{
 			return DataList(ex, "", " = ", "\n");
 		}
+		/// <summary>Converts <c>Exception.Data</c> to a string, separating each key
+		/// from each value with <c>keyValueSeparator</c>, prepending each line by
+		/// <c>linePrefix</c>, and separating each pair with <c>newLine</c>, which
+		/// may or may not be "\n", your choice.</summary>
 		public static string DataList(this Exception ex, string linePrefix, string keyValueSeparator, string newLine)
 		{
 			return AppendDataList(ex.Data, null, linePrefix, keyValueSeparator, newLine).ToString();

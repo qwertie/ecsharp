@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Interface for reading the size of a 3D object.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
 	public interface ISize3Reader<T> : ISizeReader<T>
 	{
 		/// <summary>Gets the depth of a rectangle (the difference between Z coordinates).</summary>
@@ -68,6 +70,8 @@ namespace Loyc.Geometry
 		void SetZRange(T z1, T z2);
 	}
 
+	/// <summary>This interface exists to work around a limitation of C#; see
+	/// <see cref="IRectangle3{T}"/>.</summary>
 	public interface INewRectangle3<Rect, T>
 	{
 		Rect NewRect(T x, T y, T z, T width, T height, T depth);

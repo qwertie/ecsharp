@@ -95,11 +95,9 @@
     <Compile Include="ALists\AListNodeObserver.cs" />
     <Compile Include="ALists\BDictionary.cs" />
     <Compile Include="ALists\BList.cs" />
-    <Compile Include="ALists\BListBase.cs" />
     <Compile Include="ALists\BListInner.cs" />
     <Compile Include="ALists\BListLeaf.cs" />
     <Compile Include="ALists\BMultiMap.cs" />
-    <Compile Include="ALists\EmptySpace.cs" />
     <Compile Include="ALists\IAListTreeObserver.cs" />
     <Compile Include="ALists\IndexedAList.cs" />
     <Compile Include="ALists\SparseAList.cs" />

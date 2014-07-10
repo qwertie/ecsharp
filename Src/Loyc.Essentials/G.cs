@@ -15,7 +15,7 @@ namespace Loyc
 {
 	public delegate string WriterDelegate(string format, params object[] args);
 
-	/// <summary>Contains global functions that don't really belong in any class.</summary>
+	/// <summary>Contains global functions that don't belong in any specific class.</summary>
 	public static class G
 	{
 		public static void Swap<T>(ref T a, ref T b)
@@ -24,37 +24,25 @@ namespace Loyc
 			a = b;
 			b = tmp;
 		}
-		public static int BinarySearch<T>(IList<T> list, T value, Comparison<T> pred)
+		private class ComparisonFrom<T> where T : IComparable<T> 
 		{
-			int lo = 0, hi = list.Count, i;
-			while(lo < hi) 
-			{
-				i = (lo+hi)/2;
-				int cmp = pred(list[i], value);
-				if (cmp < 0)
-					lo = i+1;
-				else if (cmp > 0)
-					hi = i;
-				else
-					return i;
+			public static readonly Comparison<T> D = Get();
+			static Comparison<T> Get() {
+				if (typeof(T).IsValueType)
+					return (a, b) => a.CompareTo(b);
+				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
 			}
-			return ~lo;
 		}
-		public static int BinarySearch<T>(IList<T> list, T value) where T : IComparable<T>
+		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
+		/// <remarks>This method is optimized and does not allocate on every call.</remarks>
+		public static Comparison<T> ToComparison<T>() where T : IComparable<T>
 		{
-			return BinarySearch<T>(list, value, ToComparison<T>());
+			return ComparisonFrom<T>.D;
 		}
-		public static int BinarySearch<T>(IList<T> list, T value, IComparer<T> pred)
-		{
-			return BinarySearch<T>(list, value, ToComparison(pred));
-		}
+		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Comparison{T}"/>.</summary>
 		public static Comparison<T> ToComparison<T>(IComparer<T> pred)
 		{
 			return delegate(T a, T b) { return pred.Compare(a, b); };
-		}
-		public static Comparison<T> ToComparison<T>() where T : IComparable<T>
-		{
-			return delegate(T a, T b) { return a.CompareTo(b); };
 		}
 		public static List<string> SplitCommandLineArguments(string listString)
 		{
@@ -718,73 +706,6 @@ namespace Loyc
 			G.Swap(ref a, ref b);
 			Assert.AreEqual(7, b);
 			Assert.AreEqual(13, a);
-		}
-		[Test] public void TestBinarySearch()
-		{
-			int[] list = new int[] { };
-			Assert.AreEqual(~0, G.BinarySearch(list, 15));
-			Assert.AreEqual(~0, G.BinarySearch(list, -15));
-			list = new int[] { 5 };
-			Assert.AreEqual(0, G.BinarySearch(list, 5));
-			Assert.AreEqual(~0, G.BinarySearch(list, 0));
-			Assert.AreEqual(~1, G.BinarySearch(list, 10));
-			list = new int[] { 5, 7 };
-			Assert.AreEqual(~0, G.BinarySearch(list, 0));
-			Assert.AreEqual( 0, G.BinarySearch(list, 5));
-			Assert.AreEqual(~1, G.BinarySearch(list, 6));
-			Assert.AreEqual( 1, G.BinarySearch(list, 7));
-			Assert.AreEqual(~2, G.BinarySearch(list, 10));
-			list = new int[] { 1, 5, 7, 13, 17, 29, 29, 31 };
-			Assert.AreEqual(~0, G.BinarySearch(list, -1));
-			Assert.AreEqual( 0, G.BinarySearch(list, 1));
-			Assert.AreEqual(~1, G.BinarySearch(list, 2));
-			Assert.AreEqual( 1, G.BinarySearch(list, 5));
-			Assert.AreEqual(~2, G.BinarySearch(list, 6));
-			Assert.AreEqual( 2, G.BinarySearch(list, 7));
-			Assert.AreEqual(~3, G.BinarySearch(list, 10));
-			Assert.AreEqual( 3, G.BinarySearch(list, 13));
-			Assert.AreEqual(~4, G.BinarySearch(list, 16));
-			Assert.AreEqual( 4, G.BinarySearch(list, 17));
-			Assert.AreEqual(~5, G.BinarySearch(list, 28));
-			int i = G.BinarySearch(list, 29);
-			Assert.IsTrue(i == 5 || i == 6);
-			Assert.AreEqual(~7, G.BinarySearch(list, 30));
-			Assert.AreEqual( 7, G.BinarySearch(list, 31));
-			Assert.AreEqual(~8, G.BinarySearch(list, 1000));
-		}
-		[Test] public void TestPredicatedBinarySearch()
-		{
-			Comparison<int> p = G.ToComparison<int>();
-			int[] list = new int[] { };
-			Assert.AreEqual(~0, G.BinarySearch<int>(list, 15, p));
-			Assert.AreEqual(~0, G.BinarySearch<int>(list, -15, p));
-			list = new int[] { 5 };
-			Assert.AreEqual(0, G.BinarySearch<int>(list, 5, p));
-			Assert.AreEqual(~0, G.BinarySearch<int>(list, 0, p));
-			Assert.AreEqual(~1, G.BinarySearch<int>(list, 10, p));
-			list = new int[] { 5, 7 };
-			Assert.AreEqual(~0, G.BinarySearch<int>(list, 0, p));
-			Assert.AreEqual( 0, G.BinarySearch<int>(list, 5, p));
-			Assert.AreEqual(~1, G.BinarySearch<int>(list, 6, p));
-			Assert.AreEqual( 1, G.BinarySearch<int>(list, 7, p));
-			Assert.AreEqual(~2, G.BinarySearch<int>(list, 10, p));
-			list = new int[] { 1, 5, 7, 13, 17, 29, 29, 31 };
-			Assert.AreEqual(~0, G.BinarySearch<int>(list, -1, p));
-			Assert.AreEqual( 0, G.BinarySearch<int>(list, 1, p));
-			Assert.AreEqual(~1, G.BinarySearch<int>(list, 2, p));
-			Assert.AreEqual( 1, G.BinarySearch<int>(list, 5, p));
-			Assert.AreEqual(~2, G.BinarySearch<int>(list, 6, p));
-			Assert.AreEqual( 2, G.BinarySearch<int>(list, 7, p));
-			Assert.AreEqual(~3, G.BinarySearch<int>(list, 10, p));
-			Assert.AreEqual( 3, G.BinarySearch<int>(list, 13, p));
-			Assert.AreEqual(~4, G.BinarySearch<int>(list, 16, p));
-			Assert.AreEqual( 4, G.BinarySearch<int>(list, 17, p));
-			Assert.AreEqual(~5, G.BinarySearch<int>(list, 28, p));
-			int i = G.BinarySearch<int>(list, 29, p);
-			Assert.IsTrue(i == 5 || i == 6);
-			Assert.AreEqual(~7, G.BinarySearch<int>(list, 30, p));
-			Assert.AreEqual( 7, G.BinarySearch<int>(list, 31, p));
-			Assert.AreEqual(~8, G.BinarySearch<int>(list, 1000, p));
 		}
 		[Test] public void TestSplitCommandLineArguments()
 		{

@@ -6,6 +6,9 @@ using System.IO;
 
 namespace Loyc.Syntax.Les
 {
+	/// <summary>Base class for the helper classes of <see cref="LesNodePrinter"/>
+	/// and <see cref="EcsNodePrinter"/>, called LesNodePrinterWriter and 
+	/// EcsNodePrinterWriter. See <see cref="INodePrinterWriter"/>.</summary>
 	public abstract class DefaultNodePrinterWriter : NodePrinterWriterBase
 	{
 		protected string _indentString;
@@ -93,7 +96,9 @@ namespace Loyc.Syntax.Les
 		public virtual void Reset() { _lastCh = '\0'; }
 	}
 
-	public class LesNodePrinterWriter : DefaultNodePrinterWriter
+	/// <summary>Helper class of <see cref="LesNodePrinter"/> that ensures there is 
+	/// a tokens are spaced apart properly.</summary>
+	internal class LesNodePrinterWriter : DefaultNodePrinterWriter
 	{
 		public LesNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
 		public LesNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }

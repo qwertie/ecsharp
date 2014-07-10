@@ -393,7 +393,8 @@ namespace Ecs
 
 		#endregion
 
-		/// <summary>Flags that represent special situations in EC# syntax.</summary>
+		/// <summary>Internal enum (marked public for an obscure technical reason). 
+		/// These are flags that represent special situations in EC# syntax.</summary>
 		[Flags] public enum Ambiguity
 		{
 			/// <summary>The expression can contain uninitialized variable 

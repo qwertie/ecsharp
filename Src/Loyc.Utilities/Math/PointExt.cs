@@ -7,6 +7,8 @@
 	using Loyc.Math;
 
 	/// <summary>Contains methods for manipulating points in generic code.</summary>
+	/// <remarks>Using <see cref="PointMath"/> extension methods is easier. These
+	/// methods may be faster but they require a "math" structure (see <see cref="Maths{T}"/>).</remarks>
 	public static class PointExt
 	{
 		/// <summary>Returns the sum of two vectors.</summary>

@@ -165,6 +165,10 @@ namespace Loyc.MiniTest
 		public int? MinTrials { get; set; }
 	}
 
+	/// <summary>
+	/// Marks a test that is expected to throw an exception of a particular type.
+	/// The test fails if the expected exception is not thrown.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 	public class ExpectedExceptionAttribute : Attribute
 	{
@@ -174,6 +178,7 @@ namespace Loyc.MiniTest
 
 	#endregion
 
+	/// <summary>An exception thrown when a method of <see cref="Assert"/> fails.</summary>
 	[Serializable]
 	public class TestException : Exception
 	{

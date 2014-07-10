@@ -62,8 +62,11 @@ namespace Loyc.LLParserGenerator
 		LBrace      = TokenKind.LBrace,
 		RBrace      = TokenKind.RBrace,
 	}
-	public static class TokenTypeExt
+
+	/// <summary>Provides the <c>Type()</c> extension method required by <see cref="Token"/>.</summary>
+	public static class TokenExt
 	{
+		/// <summary>Converts <c>t.TypeInt</c> to <see cref="TokenType"/>.</summary>
 		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
 	}
 

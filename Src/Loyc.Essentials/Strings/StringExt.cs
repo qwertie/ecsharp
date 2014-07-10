@@ -6,6 +6,8 @@ using System.Collections;
 
 namespace Loyc
 {
+	/// <summary>Extension methods for strings, such as <see cref="SplitAt"/>, 
+	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="Format"/> and <see cref="USlice"/>.</summary>
 	public static partial class StringExt
 	{
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
@@ -151,7 +153,7 @@ namespace Loyc
 		/// replaced with a number before the call to string.Format, so a 
 		/// FormatException will occur.
 		/// </remarks>
-		public static string Format(string format, params object[] args)
+		public static string Format(this string format, params object[] args)
 		{
 			format = EliminateNamedArgs(format, args);
 			return string.Format(format, args);

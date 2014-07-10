@@ -124,7 +124,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Downcasters.cs" />
     <Compile Include="Geometry\BoundingBoxMathTT.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

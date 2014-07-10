@@ -6,6 +6,8 @@ using Loyc.Math;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Interface for reading the coordinates of a 2D point.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
 	public interface IPointReader<T>
 	{
 		T X { get; }

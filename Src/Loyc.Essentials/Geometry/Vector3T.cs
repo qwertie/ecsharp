@@ -7,7 +7,22 @@ using System.Diagnostics;
 
 namespace Loyc.Geometry
 {
-	public struct Vector3<T> : IPoint3<T>, INewPoint3<Vector3<T>, T> where T:IConvertible, IEquatable<T>
+	/// <summary>Represents a three-dimensional vector, i.e. a magnitude and 
+	/// direction or the difference between two points, stored as X, Y and Z
+	/// components.</summary>
+	/// <remarks>A vector is the same as a point except for the operations it
+	/// supports. For example, it usually does not make sense to add two points,
+	/// but you can add two vectors (to get another vector) or you can add a 
+	/// vector to a point (to get a point).
+	/// <para/>
+	/// If you really do need to add two points together or something like 
+	/// that, you can typecast from <see cref="Point3{T}"/> to 
+	/// <see cref="Vector3{T}"/>.
+	/// </remarks>
+	/// <seealso cref="Loyc.Geometry.PointMath"/>
+	/// <seealso cref="Loyc.Geometry.VectorMath{T}"/>
+	/// <seealso cref="Point3{T}"/>
+	public struct Vector3<T> : IPoint3<T>, INewPoint3<Vector3<T>, T> where T : IConvertible, IEquatable<T>
 	{
 		static ISignedMath<T> m = Maths<T>.SignedMath;
 
@@ -54,7 +69,9 @@ namespace Loyc.Geometry
 		public bool Equals(Vector3<T> other) { return this == other; }
 	}
 
-	public struct Vector3Math<T> : IAdditionGroup<Vector3<T>> where T:IConvertible, IEquatable<T>
+	/// <summary>Implementation of <see cref="IAdditionGroup{T}"/> for <see cref="Vector{T}"/>.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
+	public struct Vector3Math<T> : IAdditionGroup<Vector3<T>> where T : IConvertible, IEquatable<T>
 	{
 		static IMath<T> m = Maths<T>.Math;
 
@@ -64,6 +81,8 @@ namespace Loyc.Geometry
 		public Vector3<T> Zero { get { return Vector3<T>.Zero; } }
 	}
 
+	/// <summary>Extension methods for vectors. TODO: reconsider distribution of
+	/// methods between this class and <see cref="PointMath"/> in Loyc.Utilities.</summary>
 	public static partial class VectorExt
 	{
 		/// <summary>Computes the "cross product" of a pair of vectors.</summary>

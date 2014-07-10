@@ -131,6 +131,7 @@ namespace Loyc.Collections
 			get { return ((ICollection) dictionary).SyncRoot; }
 		}
 
+		/// <summary>Return type of <see cref="GetEnumerator()"/>.</summary>
 		[Serializable]
 		public struct Enumerator : IEnumerator<TValue>, IDisposable, IEnumerator 
 		{

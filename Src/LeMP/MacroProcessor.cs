@@ -96,7 +96,7 @@ namespace LeMP
 			AbortTimeout = TimeSpan.FromSeconds(30);
 		}
 
-		public class MacroInfo : IComparable<MacroInfo>
+		internal class MacroInfo : IComparable<MacroInfo>
 		{
 			public MacroInfo(Symbol @namespace, Symbol name, SimpleMacro macro, MacroMode mode)
 			{
@@ -564,7 +564,7 @@ namespace LeMP
 					} else
 						return result.Node;
 				} else {
-					// #{} needs special treatment
+					// "{}" needs special treatment
 					if (input.Calls(S.Braces)) {
 						try {
 							return s.preprocessed ?? ApplyMacrosToChildren(input, maxExpansions);

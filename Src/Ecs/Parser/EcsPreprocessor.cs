@@ -302,6 +302,8 @@ namespace Ecs.Parser
 		}
 	}
 
+	/// <summary>Adapter: converts <c>IEnumerable(Token)</c> to the <see cref="ILexer"/> interface.</summary>
+	/// <remarks>TODO: Incomplete, does not track line numbers.</remarks>
 	public class ListAsLexer : ILexer
 	{
 		public ListAsLexer(IEnumerable<Token> tokenList, ISourceFile sourceFile) : this(tokenList.GetEnumerator(), sourceFile) { }

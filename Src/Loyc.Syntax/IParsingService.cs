@@ -116,15 +116,22 @@ namespace Loyc.Syntax
 			get { return _current.Value ?? LesLanguageService.Value; }
 			set { _current.Value = value; }
 		}
+
 		/// <summary>Sets the current language service, returning a value suitable 
 		/// for use in a C# using statement, which will restore the old service.</summary>
 		/// <param name="newValue">new value of Current</param>
+		/// <example><code>
+		/// LNode code;
+		/// using (var old = ParsingService.PushCurrent(LesLanguageService.Value))
+		///     code = ParsingService.Current.ParseSingle("This is les code;");
+		/// </code></example>
 		public static PushedCurrent PushCurrent(IParsingService newValue) { return new PushedCurrent(newValue); }
+		/// <summary>Returned by <see cref="PushCurrent(IParsingService)"/>.</summary>
 		public struct PushedCurrent : IDisposable
 		{
-			IParsingService old;
-			public PushedCurrent(IParsingService @new) { old = Current; Current = @new; }
-			public void Dispose() { Current = old; }
+			public readonly IParsingService OldValue;
+			public PushedCurrent(IParsingService @new) { OldValue = Current; Current = @new; }
+			public void Dispose() { Current = OldValue; }
 		}
 
 		public static string Print(this IParsingService self, LNode node)

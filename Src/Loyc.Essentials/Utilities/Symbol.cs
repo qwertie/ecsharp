@@ -34,7 +34,8 @@ using Loyc.Collections;
 
 namespace Loyc
 {
-	/// <summary>Represents a symbol, like the feature offered in Ruby.</summary>
+	/// <summary>Represents a symbol, which is a singleton string that supports fast 
+	/// comparisons and extensible enums.</summary>
 	/// <remarks>
 	/// Call GSymbol.Get() to create a Symbol from a string, or GSymbol.GetIfExists()
 	/// to find a Symbol that has already been created.
@@ -130,16 +131,12 @@ namespace Loyc
 	/// </remarks>
 	public class GSymbol
 	{
-		#region Public static members
-
 		static public Symbol Get(string name) { return Pool.Get(name); }
 		static public Symbol GetIfExists(string name) { return Pool.GetIfExists(name); }
 		static public Symbol GetById(int id) { return Pool.GetById(id); }
 
 		static public readonly Symbol Empty;
 		static public readonly SymbolPool Pool;
-
-		#endregion
 
 		static GSymbol()
 		{
@@ -150,9 +147,9 @@ namespace Loyc
 		}
 	}
 
-	/// <summary>Tracks a set of symbols.</summary>
+	/// <summary>A collection of <see cref="Symbol"/>s.</summary>
 	/// <remarks>
-	/// There is one global symbol pool (GSymbol.Pool) and you can create an 
+	/// There is one global symbol pool (<c>GSymbol.Pool</c>) and you can create an 
 	/// unlimited number of private pools, each with an independent namespace.
 	/// <para/>
 	/// Methods of this class are synchronized, so a SymbolPool can be used from
@@ -169,7 +166,7 @@ namespace Loyc
 	/// Name is "") has an Id of 0, but in a private pool, "" is not treated 
 	/// differently than any other symbol so a new ID will be allocated for it.
 	/// </remarks>
-	public class SymbolPool : IAutoCreatePool<string, Symbol>
+	public class SymbolPool : IAutoCreatePool<string, Symbol>, IReadOnlyCollection<Symbol>
 	{
 		protected internal IDictionary<int, Symbol> _idMap; // created on-demand
 		protected internal IDictionary<string, Symbol> _map;

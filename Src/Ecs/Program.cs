@@ -15,6 +15,7 @@ using Ecs.Parser;
 /// to convert supported features of EC# to C#.</summary>
 namespace Ecs
 {
+	/// <summary>Entry point: runs the EC# test suite and related tests.</summary>
 	public class Program
 	{
 		public static void Main(string[] args)

@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc.Collections
 {
+	/// <summary>Contains global functions of Loyc.Collections that don't belong in any specific class.</summary>
 	public static class CG
 	{
 		[ThreadStatic] public static SimpleCache<object> _objectCache;

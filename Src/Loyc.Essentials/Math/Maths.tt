@@ -14,6 +14,7 @@ namespace Loyc.Math
 	using System;
 	using T = <#=T.QualifiedName#>;
 
+	/// <summary>Implements <see cref="<#=T.InterfacesXmlDoc#>"/> for numbers of type <#=T.QualifiedName#>.</summary>
 	public struct <#=T.MathType#> : <#=T.Interfaces#>
 	{
 		public static readonly <#=T.MathType#> Value = new <#=T.MathType#>();

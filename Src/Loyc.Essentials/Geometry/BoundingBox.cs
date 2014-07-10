@@ -139,6 +139,7 @@ namespace Loyc.Geometry
 		}
 	}
 
+	/// <summary>Extension methods for <see cref="BoundingBox{T}"/>.</summary>
 	public static class BoundingBoxExt
 	{
 		public static void Normalize<T>(this BoundingBox<T> self) where T : IConvertible, IComparable<T>, IEquatable<T>

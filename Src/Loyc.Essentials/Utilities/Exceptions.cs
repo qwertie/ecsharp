@@ -5,6 +5,13 @@ using System.Text;
 
 namespace Loyc
 {
+	/// <summary>An exception thrown when an object detects that its own state is
+	/// invalid, or in other words, that an invariant has been violated. 
+	/// </summary><remarks>
+	/// This exception often indicates that something went wrong earlier in the 
+	/// execution of the program, before the method was called that threw this
+	/// exception.
+	/// </remarks>
 	[Serializable]
 	public class InvalidStateException : InvalidOperationException
 	{
@@ -13,6 +20,15 @@ namespace Loyc
 		public InvalidStateException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	/// <summary>An exception thrown when a data structure is accessed (read or 
+	/// written) by one thread at the same time as it is modified on another 
+	/// thread.</summary><remarks>
+	/// Note: most data structures do not detect this situation, or do not detect it
+	/// reliably. For example, the <see cref="AList{T}"/> family of data structures 
+	/// may or may not detect this situation. If it is detected then this exception
+	/// is thrown, otherwise the data structure may take on an invalid state, leading
+	/// to <see cref="InvalidStateException"/> or other unexpected exceptions.
+	/// </remarks>
 	[Serializable]
 	public class ConcurrentModificationException : InvalidOperationException
 	{
@@ -21,6 +37,7 @@ namespace Loyc
 		public ConcurrentModificationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	/// <summary>An exception thrown when an attempt is made to modify a read-only object.</summary>
 	[Serializable]
 	public class ReadOnlyException : InvalidOperationException
 	{
@@ -29,6 +46,8 @@ namespace Loyc
 		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	/// <summary>Helper methods for checking argument values that throw exceptions 
+	/// when an argument value is not acceptable.</summary>
 	public static class CheckParam
 	{
 		public static void IsNotNull(string paramName, object arg)
@@ -41,7 +60,7 @@ namespace Loyc
 			if (value < 0)
 				throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' should not be negative.", argName, value));
 		}
-		public static void Range(string paramName, int value, int min, int max)
+		public static void IsInRange(string paramName, int value, int min, int max)
 		{
 			if (value < min || value > max)
 				ThrowOutOfRange(paramName, value, min, max);
@@ -52,15 +71,7 @@ namespace Loyc
 		}
 		public static void ThrowOutOfRange(string argName, int value, int min, int max)
 		{
-			throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' is not within the expected range ({2}..{3})", argName, value, min, max)); 
-		}
-		public static void ThrowIndexOutOfRange(int index, int count)
-		{
-			throw new IndexOutOfRangeException(Localize.From(@"Index '{1}' is not within the expected range ({2}..{3})", index, 0, count-1)); 
-		}
-		public static void ThrowIndexOutOfRange(int index, int min, int max)
-		{
-			throw new IndexOutOfRangeException(Localize.From(@"Index '{1}' is not within the expected range ({2}..{3})", index, min, max)); 
+			throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' is not within the expected range ({2}...{3})", argName, value, min, max)); 
 		}
 		public static void ThrowArgumentNull(string argName)
 		{
@@ -71,16 +82,13 @@ namespace Loyc
 			if (!condition)
 				throw new ArgumentException(string.Format("Invalid value for '{0}'", argName));
 		}
-		public static void ArgRange(string argName, int index, int min, int max)
-		{
-			if (index < min || index > max)
-				ThrowIndexOutOfRange(index, min, max);
-		}
 	}
 }
 
 namespace Loyc.Collections
 {
+	/// <summary>An exception thrown by an enumerator when it detects that the collection
+	/// was modified after enumeration started but before it finished.</summary>
 	[Serializable]
 	public class EnumerationException : InvalidOperationException
 	{
@@ -89,6 +97,8 @@ namespace Loyc.Collections
 		public EnumerationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	/// <summary>An exception thrown by dictionary objects when they are asked to
+	/// "add" a key-value pair that already exists.</summary>
 	[Serializable]
 	public class KeyAlreadyExistsException : InvalidOperationException
 	{
@@ -97,6 +107,8 @@ namespace Loyc.Collections
 		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
+	/// <summary>An exception thrown by methods or properties that require a non-empty
+	/// sequence but were provided with an empty sequence.</summary>
 	[Serializable]
 	public class EmptySequenceException : InvalidOperationException
 	{

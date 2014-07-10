@@ -6,6 +6,8 @@ using Loyc.Math;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Interface for reading the size of a 2D object.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
 	public interface ISizeReader<T>
 	{
 		/// <summary>Gets the width of a rectangle (the difference between X coordinates).</summary>

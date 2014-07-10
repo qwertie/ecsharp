@@ -11,6 +11,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.SByte;
 
+	/// <summary>Implements <see cref="IIntMath{T}"/> for numbers of type System.SByte.</summary>
 	public struct MathI8 : IIntMath<sbyte>
 	{
 		public static readonly MathI8 Value = new MathI8();
@@ -102,6 +103,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Byte;
 
+	/// <summary>Implements <see cref="IUIntMath{T}"/> for numbers of type System.Byte.</summary>
 	public struct MathU8 : IUIntMath<byte>
 	{
 		public static readonly MathU8 Value = new MathU8();
@@ -191,6 +193,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Int16;
 
+	/// <summary>Implements <see cref="IIntMath{T}"/> for numbers of type System.Int16.</summary>
 	public struct MathI16 : IIntMath<short>
 	{
 		public static readonly MathI16 Value = new MathI16();
@@ -282,6 +285,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.UInt16;
 
+	/// <summary>Implements <see cref="IUIntMath{T}"/> for numbers of type System.UInt16.</summary>
 	public struct MathU16 : IUIntMath<ushort>
 	{
 		public static readonly MathU16 Value = new MathU16();
@@ -371,6 +375,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Int32;
 
+	/// <summary>Implements <see cref="IIntMath{T}"/> for numbers of type System.Int32.</summary>
 	public struct MathI : IIntMath<int>
 	{
 		public static readonly MathI Value = new MathI();
@@ -462,6 +467,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.UInt32;
 
+	/// <summary>Implements <see cref="IUIntMath{T}"/> for numbers of type System.UInt32.</summary>
 	public struct MathU : IUIntMath<uint>
 	{
 		public static readonly MathU Value = new MathU();
@@ -551,6 +557,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Int64;
 
+	/// <summary>Implements <see cref="IIntMath{T}"/> for numbers of type System.Int64.</summary>
 	public struct MathL : IIntMath<long>
 	{
 		public static readonly MathL Value = new MathL();
@@ -642,6 +649,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.UInt64;
 
+	/// <summary>Implements <see cref="IUIntMath{T}"/> for numbers of type System.UInt64.</summary>
 	public struct MathUL : IUIntMath<ulong>
 	{
 		public static readonly MathUL Value = new MathUL();
@@ -731,6 +739,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Single;
 
+	/// <summary>Implements <see cref="IFloatMath{T}"/> for numbers of type System.Single.</summary>
 	public struct MathF : IFloatMath<float>
 	{
 		public static readonly MathF Value = new MathF();
@@ -834,6 +843,7 @@ namespace Loyc.Math
 	using System;
 	using T = System.Double;
 
+	/// <summary>Implements <see cref="IFloatMath{T}"/> for numbers of type System.Double.</summary>
 	public struct MathD : IFloatMath<double>
 	{
 		public static readonly MathD Value = new MathD();
@@ -937,6 +947,7 @@ namespace Loyc.Math
 	using System;
 	using T = FPI8;
 
+	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI8.</summary>
 	public struct MathF8 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF8 Value = new MathF8();
@@ -1029,6 +1040,7 @@ namespace Loyc.Math
 	using System;
 	using T = FPI16;
 
+	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI16.</summary>
 	public struct MathF16 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF16 Value = new MathF16();
@@ -1121,6 +1133,7 @@ namespace Loyc.Math
 	using System;
 	using T = FPI23;
 
+	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPI23.</summary>
 	public struct MathF23 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathF23 Value = new MathF23();
@@ -1213,6 +1226,7 @@ namespace Loyc.Math
 	using System;
 	using T = FPL16;
 
+	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPL16.</summary>
 	public struct MathFL16 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathFL16 Value = new MathFL16();
@@ -1305,6 +1319,7 @@ namespace Loyc.Math
 	using System;
 	using T = FPL32;
 
+	/// <summary>Implements <see cref="IRationalMath{T}"/> for numbers of type FPL32.</summary>
 	public struct MathFL32 : IRationalMath<T>, IBinaryMath<T>
 	{
 		public static readonly MathFL32 Value = new MathFL32();

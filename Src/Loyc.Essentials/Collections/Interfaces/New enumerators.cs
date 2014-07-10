@@ -65,6 +65,8 @@ namespace Loyc.Collections
 	{
 	}
 
+	/// <summary>Interface for a collection that can return <see cref="IBinumerator{T}"/>s 
+	/// pointing to the beginning and end of the collection.</summary>
 	interface IBinumerable<T>
 	{
 		/// <summary>Returns a binumerator that points before the beginning of the current collection.</summary>

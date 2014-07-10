@@ -127,12 +127,18 @@ namespace Loyc
 			get { return CurrentTLV ?? Null; }
 			set { CurrentTLV = value ?? Null; }
 		}
+		/// <summary>Used to change the <see cref="MessageSink.Current"/> property temporarily.</summary>
+		/// <example><code>
+		/// using (var old = MessageSink.PushCurrent(MessageSink.Console))
+		///     MessageSink.Current.Write(Severity.Warning, null, "This prints on the console.")
+		/// </code></example>
 		public static PushedCurrent PushCurrent(IMessageSink sink) { return new PushedCurrent(sink); }
+		/// <summary>Returned by <see cref="PushCurrent(IMessageSink)"/>.</summary>
 		public struct PushedCurrent : IDisposable
 		{
-			IMessageSink old;
-			public PushedCurrent(IMessageSink @new) { old = Current; Current = @new; }
-			public void Dispose() { Current = old; }
+			public readonly IMessageSink OldValue;
+			public PushedCurrent(IMessageSink @new) { OldValue = Current; Current = @new; }
+			public void Dispose() { Current = OldValue; }
 		}
 
 		/// <summary>Returns <see cref="ILocationString.LocationString"/> if 

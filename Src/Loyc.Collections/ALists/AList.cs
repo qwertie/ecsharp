@@ -727,7 +727,7 @@ namespace Loyc.Collections
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, new EmptySpace<T>(newSize - Count));
+				InsertRange(Count, new Repeated<T>(default(T), newSize - Count));
 		}
 		
 		#endregion

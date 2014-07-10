@@ -158,7 +158,7 @@ namespace Loyc.Syntax
 
 		private int GetBlockIndex(int charIndex)
 		{
-			int i = G.BinarySearch<Pair<int, uint>>(_blkOffsets,
+			int i = ListExt.BinarySearch<Pair<int, uint>>(_blkOffsets,
 				new Pair<int, uint>(charIndex, 0),
 				delegate(Pair<int, uint> a, Pair<int, uint> b) { return a.A.CompareTo(b.A); });
 			if (i < 0)

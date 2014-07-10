@@ -14,6 +14,7 @@ using Ecs.Parser;
 
 namespace Loyc.LLParserGenerator
 {
+	/// <summary>Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.</summary>
 	public class LLLPG // Avoid name collision with 'Program' class in LinqPad
 	{
 		public static void Main(params string[] args)

@@ -49,7 +49,7 @@ namespace Loyc.Collections
 		{ 
 			get {
 				if ((uint)index >= (uint)_count)
-					CheckParam.ThrowIndexOutOfRange(index, _count);
+					CheckParam.ThrowOutOfRange("index", index, 0, _count-1);
 				return _start + index;
 			}
 		}

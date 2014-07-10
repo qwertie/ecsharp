@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Interface for reading the coordinates of a 3D point.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
 	public interface IPoint3Reader<T> : IPointReader<T>
 	{
 		T Z { get; }

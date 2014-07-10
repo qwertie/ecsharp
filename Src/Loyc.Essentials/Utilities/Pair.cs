@@ -5,6 +5,9 @@ using System.Diagnostics;
 
 namespace Loyc
 {
+	/// <summary><c>Pair.Create(a, b)</c> is a helper method for making pairs.</summary>
+	/// <remarks>To avoid creating an extra class, this class also contains 
+	/// <c>Pair.Create(a, b, c)</c> which makes triplet structs.</remarks>
 	public static class Pair
 	{
 		public static Pair<T1, T2> Create<T1, T2>(T1 item1, T2 item2)

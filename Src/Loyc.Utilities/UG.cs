@@ -11,6 +11,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.Utilities
 {
+	/// <summary>Contains global functions of Loyc.Utilities that don't belong in any specific class.</summary>
 	public static class UG
 	{
 		/// <summary>

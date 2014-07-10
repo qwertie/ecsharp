@@ -11,6 +11,8 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 
+	/// <summary>Represents an LLLPG rule, which is a <see cref="Pred"/>icate plus
+	/// a <see cref="Name"/> and optional attributes (e.g. token, private, etc.).</summary>
 	public class Rule
 	{
 		/// <summary>A node that contains the original code of the rule, or, if the

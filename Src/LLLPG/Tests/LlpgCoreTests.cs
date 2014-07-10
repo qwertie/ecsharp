@@ -11,6 +11,7 @@ using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
+	/// <summary>Helper methods for making LLLPG grammar nodes. Used by <see cref="LlphCoreTests"/>.</summary>
 	public class LlpgHelpers
 	{
 		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("Plain-C# Grammar"));

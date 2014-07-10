@@ -473,7 +473,7 @@ namespace Loyc.Collections
 		}
 	}
 	
-	class ByteArrayComparer : IEqualityComparer<byte[]>
+	internal class ByteArrayComparer : IEqualityComparer<byte[]>
 	{
 		public bool Equals(byte[] x, byte[] y)
 		{

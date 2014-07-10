@@ -94,7 +94,7 @@ namespace Loyc.Collections
 			_map.Add(key, value);
 			try {
 				_inverse.Add(value, key);
-			} catch (KeyAlreadyExistsException) {
+			} catch (InvalidOperationException) {
 				_map.Remove(key);
 				CheckSync();
 				throw;

@@ -135,7 +135,7 @@ namespace MiniTestRunner
 		{
 			get { return _maxThreads; }
 			set {
-				CheckParam.Range("MaxThreads", value, 1, 256);
+				CheckParam.IsInRange("MaxThreads", value, 1, 256);
 				_maxThreads = value;
 			}
 		}

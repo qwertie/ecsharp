@@ -545,7 +545,7 @@ namespace Loyc.Collections
 		}
 	}
 
-	public class AListTestObserver<K, T> : IAListTreeObserver<K, T>
+	internal class AListTestObserver<K, T> : IAListTreeObserver<K, T>
 	{
 		public int ItemCount, NodeCount, CheckPointCount;
 

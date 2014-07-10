@@ -7,7 +7,8 @@ using Loyc.Syntax;
 
 namespace Ecs
 {
-	public class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
+	/// <summary>Helper class of <see cref="EcsNodePrinter"/></summary>
+	internal class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
 	{
 		public EcsNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(sb, indentString, lineSeparator, labelIndent) { }
 		public EcsNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : base(@out, indentString, lineSeparator, labelIndent) { }

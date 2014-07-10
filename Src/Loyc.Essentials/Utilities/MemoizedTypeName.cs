@@ -6,8 +6,8 @@ using System.Text;
 namespace Loyc
 {
 	/// <summary>.NET Framework reflection doesn't offer complete type names for 
-	/// generic types such as "List&lt;int>" (the Type.Name value of that class is 
-	/// "List`1"). <see cref="GetGenericName"/> fills in the gap, and also saves the 
+	/// generic types such as "List&lt;int>" (the <c>Type.Name</c> value of that class is 
+	/// "List`1"). <see cref="Get"/> fills in the gap, and also saves the 
 	/// computed name for fast repeated lookups.</summary>
 	public static class MemoizedTypeName
 	{
@@ -21,7 +21,7 @@ namespace Loyc
 		/// <returns>Name with generic parameters, as explained in the summary.</returns>
 		/// <remarks>The result is memoized for generic types, so that the name is
 		/// computed only once.</remarks>
-		public static string GetGenericName(Type type)
+		public static string Get(Type type)
 		{
 			if (type == null)
 				return null;
@@ -52,25 +52,29 @@ namespace Loyc
 					"{0}<{1}>",
 					result,
 					string.Join(", ", type.GetGenericArguments()
-									  .Select(t => GetGenericName(t)).ToArray()));
+									  .Select(t => Get(t)).ToArray()));
 			}
 			return result;
 		}
 
-		/// <summary>Extension method on Type that is an alias for the <see cref="GetGenericName"/> method.</summary>
+		/// <summary>Extension method on <c>Type</c> that is an alias for the <see cref="Get"/> method.</summary>
 		public static string NameWithGenericParams(this Type t)
 		{
-			return GetGenericName(t);
+			return Get(t);
 		}
 	}
 
+	/// <summary><c>MemoizedTypeName&lt;T>.Get()</c> is an alternative to
+	/// <see cref="MemoizedTypeName.Get"/>(typeof(T)).</summary>
+	/// <remarks>This class is faster for getting the same name repeatedly, but 
+	/// demands more memory and initialization overhead from the CLR.</remarks>
 	public static class MemoizedTypeName<T>
 	{
 		static string _name;
-		public static string GenericName()
+		public static string Get()
 		{
 			if (_name == null)
-				_name = MemoizedTypeName.GetGenericName(typeof(T));
+				_name = MemoizedTypeName.Get(typeof(T));
 			return _name;
 		}
 	}

@@ -33,7 +33,7 @@ namespace Loyc.Syntax
 	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
 	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
 	/// (represented <c>#of(f, x)</c>), braced blocks of statements (represented 
-	/// <c>#{}(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
+	/// <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
 	/// are represented as a call with one argument and <c>null</c> as the <see cref="Target"/>.</li>
 	/// </ul>
 	/// This class provides access to all properties of all three types of nodes,
@@ -332,12 +332,12 @@ namespace Loyc.Syntax
 	///				'0'
 	///		} + value;
 	/// </pre>
-	/// The braced block is represented by a #{} node, which introduces a new scope.
-	/// In contrast, the special # node type (known as the "list keyword"), does 
-	/// not create a new scope. It can be used with expression or statement syntax:
+	/// The braced block is represented by a {} node, which introduces a new scope.
+	/// In contrast, the special # node type (the "list marker"), does not create 
+	/// a new scope. It is normally used with expression syntax:
 	/// <pre>
 	/// var three = #(Console.WriteLine("Fetching the three!"), 3);
-	/// var eight = #{ int x = 5; three + x };
+	/// var eight = #(int x = 5, three + x);
 	/// var seven = x + 2;
 	/// </pre>
 	/// Since # does not create a new scope, the variable "x" is created in the 
@@ -689,7 +689,8 @@ namespace Loyc.Syntax
 		/// <summary>Returns the attribute list for this node.</summary>
 		public virtual RVList<LNode> Attrs { get { return RVList<LNode>.Empty; } }
 
-		/// <summary>Returns true if the node is immutable, and false if any part of it can be edited.</summary>
+		/// <summary>Returns true if the node is immutable, and false if any part of it can be edited.
+		/// Currently, mutable nodes are not implemented.</summary>
 		/// <remarks>Debugger-hidden until such time as mutable nodes actually exist.</remarks>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public virtual bool IsFrozen { get { return true; } }
@@ -760,8 +761,8 @@ namespace Loyc.Syntax
 		/// <remarks>
 		/// Depending on the <see cref="Target"/>, Args may represent an actual 
 		/// argument list, or it may represent some other kind of list. For 
-		/// example, if the target is #{} then Args represents a list of 
-		/// statements in a braced block, and if the target is #>= then Args 
+		/// example, if the target is "{}" then Args represents a list of 
+		/// statements in a braced block, and if the target is ">=" then Args 
 		/// represents the two arguments to the ">=" operator.
 		/// </remarks>
 		public abstract RVList<LNode> Args { get; }

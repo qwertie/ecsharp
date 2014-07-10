@@ -7,6 +7,7 @@ using System.Text;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Contains algorithms that operate on lines.</summary>
 	public static partial class LineMath
 	{
 		public static T Length<T>(this LineSegment<T> seg) where T : IConvertible, IEquatable<T>

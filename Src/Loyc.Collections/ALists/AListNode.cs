@@ -7,10 +7,10 @@ using System.Diagnostics;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>
-	/// Base class for tree nodes in a list class derived from 
-	/// <see cref="AListBase{T}"/>. These nodes basically form an in-memory B+tree, 
-	/// not necessarily sorted, but structured like a B+tree. That means there are 
-	/// two node types: leaf and inner nodes.
+	/// Internal implementation class. Base class for tree nodes in a list class 
+	/// derived from <see cref="AListBase{T}"/>. These nodes basically form an 
+	/// in-memory B+tree, not necessarily sorted, but structured like a B+tree. That 
+	/// means there are two node types: leaf and inner (internal) nodes.
 	/// </summary>
 	/// <remarks>
 	/// Indexes that are passed to methods such as Index, this[] and RemoveAt are

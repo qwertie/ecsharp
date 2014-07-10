@@ -41,6 +41,7 @@ namespace Loyc
 			}
 		}
 	}
+	/// <summary>An <see cref="IEqualityComparer{T}"/> based on reference equality</summary>
 	public class ReferenceComparer<T> : EqualityComparer<T> where T:class
 	{
 		public ReferenceComparer() {}

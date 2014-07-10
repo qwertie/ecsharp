@@ -12,7 +12,7 @@ namespace Loyc.Collections.Impl
 	/// buckets of 5 bytes each; a CPSNode is used to store the keys in each
 	/// bucket.</summary>
 	/// <typeparam name="T">Type of values associated with each key</typeparam>
-	class CPBNode<T> : CPNode<T>
+	internal class CPBNode<T> : CPNode<T>
 	{
 		CPSNode<T>[] _children = new CPSNode<T>[8];
 

@@ -62,9 +62,7 @@ namespace Loyc.Collections
 			Debug.Assert(op.SourceCount <= (int)(_count - index) || op.IsInsert);
 			if (_listChanging != null) {
 				if (op.Source == null)
-					op.Source = op.WriteEmpty 
-						? new EmptySpace<T>(op.SourceCount) 
-						: op.Source ?? new Repeated<T>(op.Item, op.SourceCount);
+					op.Source = new Repeated<T>(op.WriteEmpty ? default(T) : op.Item, op.SourceCount);
 				if (op.IsInsert)
 					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)index, op.SourceCount, op.Source));
 				else

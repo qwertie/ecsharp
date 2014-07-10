@@ -8,6 +8,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax
 {
+	/// <summary>Standard extension methods for <see cref="LNode"/>.</summary>
 	public static class LNodeExt
 	{
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 

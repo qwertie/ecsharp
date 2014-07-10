@@ -9,6 +9,7 @@
 			Abbrev = abbrev;
 			MathType = "Math" + abbrev;
 			Interfaces = interfaces;
+			InterfacesXmlDoc = interfaces.Substring(0, interfaces.IndexOf('<')) + "{T}";
 			MulType = mulType;
 			IsSigned = isSigned;
 			IsFloat = isFloat;
@@ -22,6 +23,7 @@
 		public string Abbrev;        // "I"
 		public string MathType;      // "MathI"
 		public string Interfaces;    // "IIntMath<int>"
+		public string InterfacesXmlDoc; // "IIntMath{T}"
 		public string MulType;       // "long"
 		public string Epsilon { get { return IsInt ? "1" : "T.Epsilon"; } }
 		public string PositiveInfinity { get { return IsFloat ? "T.PositiveInfinity" : "T.MaxValue"; } }

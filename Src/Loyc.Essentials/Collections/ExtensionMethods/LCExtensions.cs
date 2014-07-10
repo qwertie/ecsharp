@@ -106,6 +106,8 @@ namespace Loyc.Collections
 		}
 	}
 
+	/// <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
+	/// <see cref="ListExt.UpCast{T, TResult}(IListSource{T})"/>
 	public class UpCastSource<T, TOut> : ReadOnlyCollectionBase<TOut> where T : TOut
 	{
 		protected IReadOnlyCollection<T> s;
@@ -121,6 +123,8 @@ namespace Loyc.Collections
 		}
 	}
 
+	/// <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
+	/// <see cref="ListExt.UpCast{T, TResult}(IReadOnlyCollection{T})"/>
 	public class UpCastListSource<T, TOut> : ListSourceBase<TOut> where T : TOut
 	{
 		IListSource<T> _list;

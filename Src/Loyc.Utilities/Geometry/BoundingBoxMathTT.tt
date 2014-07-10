@@ -7,6 +7,18 @@ using System;
 using System.Collections.Generic;
 using Loyc.Math;
 
+namespace Loyc.Geometry
+{
+	/// <summary>Math and extension methods for <see cref="BoundingBox{T}"/>.</summary>
+	/// <remarks>This contains many methods that could be considered "core" methods.
+	/// they are implemented as extension methods instead for performance reasons,
+	/// because as a generic class, <see cref="BoundingBox{T}"/> cannot do 
+	/// arithmetic quickly.</remarks>
+	public static partial class BoundingBoxMath
+	{
+	}
+}
+
 <# IList<string> types = new string[] { "I", "F", "D" }; #>
 <# var           traits = _traits.Where(t => types.Contains(t.Abbrev)); #>
 <# foreach(Traits T in traits) { #>

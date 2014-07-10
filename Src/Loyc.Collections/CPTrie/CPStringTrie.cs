@@ -96,11 +96,13 @@ namespace Loyc.Collections
 			}
 		}
 
-		public ICollection<string> Keys
+		ICollection<string> IDictionary<string, TValue>.Keys { get { return Keys; } }
+		ICollection<TValue> IDictionary<string, TValue>.Values { get { return Values; } }
+		public KeyCollection Keys
 		{
 			get { return new KeyCollection(this); }
 		}
-		public ICollection<TValue> Values
+		public CPValueCollection<TValue> Values
 		{
 			get { return new CPValueCollection<TValue>(this); }
 		}
@@ -262,6 +264,7 @@ namespace Loyc.Collections
 		#region KeyCollection
 		// CPValueCollection<TValue> is the corresponding value collection
 
+		/// <summary>Return value of <see cref="CPStringTrie{T}.Keys"/.></summary>
 		public class KeyCollection : ICollection<string>
 		{
 			CPTrie<TValue> _trie;

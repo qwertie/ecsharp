@@ -16,9 +16,16 @@ namespace Loyc.Geometry
 	/// If you really do need to add two points together or something like 
 	/// that, you can typecast from <see cref="Point{T}"/> to 
 	/// <see cref="Vector{T}"/>.
+	/// <para/>
+	/// Although this structure contains operators such as + and -, their 
+	/// performance is suboptimal due to limitations of C#. The <see cref="PointMath"/>
+	/// class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
+	/// that perform faster on common coorindate types such as int and double.</remarks>
 	/// </remarks>
 	/// <seealso cref="Loyc.Geometry.PointMath"/>
-	public struct Vector<T> : IPoint<T>, INewPoint<Vector<T>, T> where T:IConvertible, IEquatable<T>
+	/// <seealso cref="Loyc.Geometry.VectorMath{T}"/>
+	/// <seealso cref="Point{T}"/>
+	public struct Vector<T> : IPoint<T>, INewPoint<Vector<T>, T> where T : IConvertible, IEquatable<T>
 	{
 		static ISignedMath<T> m = Maths<T>.SignedMath;
 
@@ -63,6 +70,8 @@ namespace Loyc.Geometry
 		public bool Equals(Vector<T> other) { return this == other; }
 	}
 
+	/// <summary>An implementation of <see cref="IAdditionGroup{T}"/> for <see cref="Vector{T}"/>.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
 	public struct VectorMath<T> : IAdditionGroup<Vector<T>> where T:IConvertible, IEquatable<T>
 	{
 		static IMath<T> m = Maths<T>.Math;

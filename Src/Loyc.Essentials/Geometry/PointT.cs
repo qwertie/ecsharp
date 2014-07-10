@@ -1,8 +1,16 @@
-﻿namespace Loyc.Geometry
-{
-	using System;
-	using Loyc.Math;
+﻿using System;
+using Loyc.Math;
 
+namespace Loyc.Geometry
+{
+	/// <summary>A 2D point (X-Y pair) structure.</summary>
+	/// <remarks>Although this structure contains operators such as + and -, their 
+	/// performance is suboptimal due to limitations of C#. The <see cref="PointMath"/>
+	/// class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
+	/// that perform faster on common coorindate types such as int and double.</remarks>
+	/// <typeparam name="T">Coordinate type.</typeparam>
+	/// <seealso cref="PointMath"/>
+	/// <seealso cref="Vector{T}"/>
 	public struct Point<T> : IPoint<T>, INewPoint<Point<T>,T> where T:IConvertible, IEquatable<T>
 	{
 		static IMath<T> m = Maths<T>.Math;
@@ -49,7 +57,11 @@
 		public LineSegment<T> To(Point<T> other) { return new LineSegment<T>(this, other); }
 	}
 
-	public struct Point3<T> : IPoint3<T>, INewPoint3<Point3<T>,T> where T:IConvertible, IEquatable<T>
+	/// <summary>A 3D point (X-Y-Z triplet) structure.</summary>
+	/// <typeparam name="T">Coordinate type.</typeparam>
+	/// <seealso cref="PointMath"/>
+	/// <seealso cref="Vector3{T}"/>
+	public struct Point3<T> : IPoint3<T>, INewPoint3<Point3<T>, T> where T : IConvertible, IEquatable<T>
 	{
 		static IMath<T> m = Maths<T>.Math;
 

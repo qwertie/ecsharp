@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 namespace Loyc.Collections.Impl
 {
+	/// <summary>Traverses a <see cref="CPTrie{T}"/>. Returned by 
+	/// <see cref="CPTrie{T}.ValueEnumerator()"/>.</summary>
 	public class CPEnumerator<T> : IEnumerator<T>
 	{
 		protected internal CPEnumerator(CPTrie<T> trie)
@@ -123,11 +125,13 @@ namespace Loyc.Collections.Impl
 		FixedStructure = 4, // Prevent node type from changing
 	}
 
+	/// <summary>Internal implementation class. Represents a pointer to a location 
+	/// within a byte array.</summary>
 	public struct KeyWalker
 	{
-		byte[] _key;
-		int _left;
-		int _offset;
+		byte[] _key; //!< the buffer may be larger than the key
+		int _offset; //!< _key[_offset] is the next byte of the key
+		int _left;   //!< number of bytes in the key that are not yet consumed
 
 		public KeyWalker(byte[] key, int left)
 		{
@@ -211,7 +215,7 @@ namespace Loyc.Collections.Impl
 		public static readonly KeyWalker Empty = new KeyWalker(InternalList<byte>.EmptyArray, 0);
 	}
 
-	abstract class CPNode<T>
+	internal abstract class CPNode<T>
 	{
 		// Returns true if key exists
 		public abstract bool Find(ref KeyWalker key, CPEnumerator<T> e);

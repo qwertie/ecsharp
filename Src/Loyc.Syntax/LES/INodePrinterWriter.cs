@@ -7,7 +7,11 @@ namespace Loyc.Syntax.Les
 {
 	/// <summary>This interface is implemented by helper objects that handle the 
 	/// low-level details of node printing. It is used by <see cref="LesNodePrinter"/>.</summary>
-	/// <remarks>Although this interface is also used by EC#, I've kept it in the 
+	/// <remarks>Specifically, INodePrinterWriter objects are in charge of how much
+	/// to indent lines of code, and ensuring that there are spaces between tokens
+	/// whenever omitting a space would screw up parsing.
+	/// <para/>
+	/// Although this interface is also used by EC#, I've kept it in the 
 	/// Les namespace because I'm not yet confident that it's a <i>good</i> design 
 	/// for arbitrary languages.</remarks>
 	public interface INodePrinterWriter
@@ -26,6 +30,9 @@ namespace Loyc.Syntax.Les
 		void Pop(LNode oldNode);
 	}
 
+	/// <summary>Abstract base class for <see cref="INodePrinterWriter"/>. Has an
+	/// protected <c>_indentLevel</c> field that is increased by Indent() and 
+	/// decreased by Dedent().</summary>
 	public abstract class NodePrinterWriterBase : INodePrinterWriter
 	{
 		protected int _indentLevel = 0;

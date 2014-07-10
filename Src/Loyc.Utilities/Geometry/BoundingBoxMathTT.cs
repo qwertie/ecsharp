@@ -6,6 +6,18 @@ using Loyc.Math;
 
 namespace Loyc.Geometry
 {
+	/// <summary>Math and extension methods for <see cref="BoundingBox{T}"/>.</summary>
+	/// <remarks>This contains many methods that could be considered "core" methods.
+	/// they are implemented as extension methods instead for performance reasons,
+	/// because as a generic class, <see cref="BoundingBox{T}"/> cannot do 
+	/// arithmetic quickly.</remarks>
+	public static partial class BoundingBoxMath
+	{
+	}
+}
+
+namespace Loyc.Geometry
+{
 	using T = System.Int32;
 	using BoundingBox = BoundingBox<int>;
 	using System;

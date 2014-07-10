@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Loyc.LLParserGenerator
 {
+	/// <summary>Base class for implementing a visitor that examines a tree of LLLPG <see cref="Pred"/>icates.</summary>
 	public abstract class PredVisitor
 	{
 		public void Visit(Pred pred) { pred.Call(this); }
@@ -26,6 +27,10 @@ namespace Loyc.LLParserGenerator
 				pred.ErrorBranch.Call(this);
 		}
 	}
+
+	/// <summary>Base class for implementing a visitor that examines a tree of LLLPG 
+	/// <see cref="Pred"/>icates. The default implementation of Visit(P) for each
+	/// predicate type P recursively visits the children of the P.</summary>
 	public abstract class RecursivePredVisitor : PredVisitor
 	{
 		public override void Visit(Seq pred)     { VisitChildrenOf(pred); }

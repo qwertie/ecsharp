@@ -299,6 +299,7 @@ namespace Loyc.Threading
 		}
 	}
 
+	/// <summary>Used by the <see cref="ThreadEx.ThreadStarting"/> and <see cref="ThreadEx.ThreadStopping"/> events.</summary>
 	public class ThreadStartEventArgs : EventArgs
 	{
 		public ThreadStartEventArgs(Thread parent, ThreadEx child) 
@@ -414,7 +415,8 @@ namespace Loyc.Threading
 		}
 	}
 
-
+	/// <summary>When used with ThreadEx, implementing this base class allows you to 
+	/// be notified when a child thread is created or terminates.</summary>
 	public abstract class ThreadLocalVariableBase
 	{
 		internal abstract void Propagate(int parentThreadId, int childThreadId);

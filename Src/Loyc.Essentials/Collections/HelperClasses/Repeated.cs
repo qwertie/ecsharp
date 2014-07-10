@@ -69,7 +69,7 @@ namespace Loyc.Collections
 				bool fail;
 				T value = TryGet(index, out fail);
 				if (fail)
-					CheckParam.ThrowIndexOutOfRange(index, _count);
+					CheckParam.ThrowOutOfRange("index", index, 0, _count-1);
 				return value;
 			}
 		}

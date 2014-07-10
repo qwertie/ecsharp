@@ -8,8 +8,9 @@ using Loyc.Math;
 namespace Loyc
 {
 	/// <summary>
-	/// A wrapper around <see cref="Stopwatch"/> with the convenient interface
-	/// similar to <see cref="SimpleTimer"/>.
+	/// A wrapper around <see cref="Stopwatch"/> with a more convenient interface,
+	/// currently oriented around measuring milliseconds 
+	/// (TODO: increase similarity to <c>Stopwatch</c>)
 	/// </summary>
 	/// <remarks>
 	/// EzStopwatch is a wrapper around the normal <see cref="Stopwatch"/> that

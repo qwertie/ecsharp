@@ -25,6 +25,31 @@ namespace Loyc.Collections
 	/// </remarks>
 	public static partial class ListExt
 	{
+		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>
+		{
+			return BinarySearch<T>(list, value, G.ToComparison<T>());
+		}
+		public static int BinarySearch<T>(this IList<T> list, T value, IComparer<T> pred)
+		{
+			return BinarySearch<T>(list, value, G.ToComparison(pred));
+		}
+		public static int BinarySearch<T>(this IList<T> list, T value, Comparison<T> pred)
+		{
+			int lo = 0, hi = list.Count, i;
+			while(lo < hi) 
+			{
+				i = (lo+hi)/2;
+				int cmp = pred(list[i], value);
+				if (cmp < 0)
+					lo = i+1;
+				else if (cmp > 0)
+					hi = i;
+				else
+					return i;
+			}
+			return ~lo;
+		}
+
 		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)
 		{
 			int space = array.Length - arrayIndex;
@@ -258,8 +283,8 @@ namespace Loyc.Collections
 		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
 		                            int[] indexes, int quickSelectElems = int.MaxValue)
 		{
-			CheckParam.Range("index", index, 0, list.Count);
-			CheckParam.Range("count", count, 0, list.Count - index);
+			CheckParam.IsInRange("index", index, 0, list.Count);
+			CheckParam.IsInRange("count", count, 0, list.Count - index);
 			SortCore(list, index, count, comp, indexes, quickSelectElems);
 		}
 

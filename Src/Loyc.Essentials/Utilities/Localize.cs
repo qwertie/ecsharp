@@ -9,43 +9,43 @@ using Loyc.Threading;
 
 namespace Loyc
 {
-    /// <summary>
-    /// Localize is a global hook into which a string-mapping localizer can be
-    /// installed. It is designed to make internationalization exceptionally easy
-    /// for developers.
-    /// </summary><remarks>
-    /// All Loyc code should call this hook in order to localize text. Use it like
-    /// this:
-    /// <code>
-    /// string result = Localize.From("Hello, {0}", userName);
-    /// </code>. If you use this facility frequently in a given class, you may want
-    /// to shorten your typing using a static variable:
-    /// <code>
-    /// protected static readonly FormatterDelegate L = Localize.From;
-    /// </code>
-    /// Then you can simply write L("Hello, {0}", userName) instead. Either way,
-    /// whatever localizer is installed will look up the text in its database and
-    /// return a translation. If no translation to the end user's language is
-    /// available, an appropriate default translation should be returned: either the
-    /// original text, or a translation to some default language, e.g. English.
+	/// <summary>
+	/// Localize is a global hook into which a string-mapping localizer can be
+	/// installed. It is designed to make internationalization exceptionally easy
+	/// for developers. TODO: expand I18N features based on Mozilla's L20N.
+	/// </summary><remarks>
+	/// All Loyc code should call this hook in order to localize text. Use it like
+	/// this:
+	/// <code>
+	/// string result = Localize.From("Hello, {0}", userName);
+	/// </code>. If you use this facility frequently in a given class, you may want
+	/// to shorten your typing using a static variable:
+	/// <code>
+	/// protected static readonly FormatterDelegate L = Localize.From;
+	/// </code>
+	/// Then you can simply write L("Hello, {0}", userName) instead. Either way,
+	/// whatever localizer is installed will look up the text in its database and
+	/// return a translation. If no translation to the end user's language is
+	/// available, an appropriate default translation should be returned: either the
+	/// original text, or a translation to some default language, e.g. English.
 	/// <p/>
-    /// Alternately, assuming you have the ability to change the table of
-    /// translations, you can use a Symbol in your code and call the other overload
-    /// of From() to look up the text that should be shown to the end user:
-    /// <code>
-    /// string result = Localize.From(GSymbol.Get("MY_STRING"));
-    /// string result = Localize.From(:MY_STRING); // Loyc syntax
-    /// </code>
-    /// This is most useful for long strings or paragraphs of text, but I expect
-    /// that some projects, as a policy, will use symbols for all localizable text.
+	/// Alternately, assuming you have the ability to change the table of
+	/// translations, you can use a Symbol in your code and call the other overload
+	/// of From() to look up the text that should be shown to the end user:
+	/// <code>
+	/// string result = Localize.From(GSymbol.Get("MY_STRING"));
+	/// string result = Localize.From(:MY_STRING); // Loyc syntax
+	/// </code>
+	/// This is most useful for long strings or paragraphs of text, but I expect
+	/// that some projects, as a policy, will use symbols for all localizable text.
 	/// <p/>
-    /// Localize.Formatter() is then called to make the completed string, unless the
-    /// variable argument list is empty. It is possible to perform formatting
-    /// separately, for example:
-    /// <code>
-    /// Console.WriteLine(Localize.From("{0} is {0:X} in hexadecimal"), N);
-    /// </code>
-    /// Here, writeline performs the formatting instead. However, Localize's
+	/// Localize.Formatter() is then called to make the completed string, unless the
+	/// variable argument list is empty. It is possible to perform formatting
+	/// separately, for example:
+	/// <code>
+	/// Console.WriteLine(Localize.From("{0} is {0:X} in hexadecimal"), N);
+	/// </code>
+	/// Here, writeline performs the formatting instead. However, Localize's
 	/// default formatter, Strings.Format, has an extra feature that the standard 
 	/// formatter does not: named arguments. Here is an example:
 	/// <code>
@@ -55,8 +55,8 @@ namespace Loyc
 	///     Localize.From("Not enough memory to {load/parse} '{filename}'."
 	///       {Message}", "load/parse", verb, "filename", FileName));
 	/// }
-    /// </code>
-    /// As you can see, named arguments are mentioned in the format string by
+	/// </code>
+	/// As you can see, named arguments are mentioned in the format string by
 	/// specifying an argument name such as {filename} instead of a number like
 	/// {0}. The variable argument list contains the same name followed by its
 	/// value, e.g. "filename", FileName. This feature gives you, the developer,
@@ -70,41 +70,41 @@ namespace Loyc
 	/// "normal" format string with numbered arguments. The above example would
 	/// become "Could not {1} the file: {3}" and then be passed to string.Format.
 	/// 
-    /// <h3>Design rationale</h3>
-    /// Many developers don't want to spend time writing internationalization or
-    /// localization code, and are tempted to write code that is only for one
-    /// language. It's no wonder, because it's a relative pain in the neck.
-    /// Microsoft suggests that code carry around a "ResourceManager" object and
-    /// directly request strings from it:
-    /// <code>
-    /// private ResourceManager rm;
-    /// rm = new ResourceManager("MyStrings", this.GetType().Assembly);
-    /// Console.Writeline(rm.GetString("HEXER"), N);
-    /// </code>
-    /// This approach has drawbacks:
-    /// * It may be cumbersome to pass around a ResourceManager instance between all
-    ///   classes that might contain localizable strings; a global facility is
-    ///   much more convenient.
-    /// * The programmer has to put all translations in the resource file;
-    ///   consequently, writing the code is bothersome because the programmer has
-    ///   to switch to the resource file and add the string to it. Someone reading
-    ///   the code, in turn, can't tell what the string says and has to load up
-    ///   the resource file to find out.
-    /// * It is nontrivial to change the localization manager; for instance, what if
-    ///   someone wants to store translations in an .ini or .xml file rather than
-    ///   inside the assembly? What if the user wants to centralize all
-    ///   translations for a set of assemblies, rather than having separate
-    ///   resources in each assembly?
-    /// * Keeping in mind that the guy in charge of translation is typically
-    ///   different than the guys writing most of the code, it makes sense to keep
-    ///   translations separate from everything else.
+	/// <h3>Design rationale</h3>
+	/// Many developers don't want to spend time writing internationalization or
+	/// localization code, and are tempted to write code that is only for one
+	/// language. It's no wonder, because it's a relative pain in the neck.
+	/// Microsoft suggests that code carry around a "ResourceManager" object and
+	/// directly request strings from it:
+	/// <code>
+	/// private ResourceManager rm;
+	/// rm = new ResourceManager("MyStrings", this.GetType().Assembly);
+	/// Console.Writeline(rm.GetString("HEXER"), N);
+	/// </code>
+	/// This approach has drawbacks:
+	/// * It may be cumbersome to pass around a ResourceManager instance between all
+	///   classes that might contain localizable strings; a global facility is
+	///   much more convenient.
+	/// * The programmer has to put all translations in the resource file;
+	///   consequently, writing the code is bothersome because the programmer has
+	///   to switch to the resource file and add the string to it. Someone reading
+	///   the code, in turn, can't tell what the string says and has to load up
+	///   the resource file to find out.
+	/// * It is nontrivial to change the localization manager; for instance, what if
+	///   someone wants to store translations in an .ini or .xml file rather than
+	///   inside the assembly? What if the user wants to centralize all
+	///   translations for a set of assemblies, rather than having separate
+	///   resources in each assembly?
+	/// * Keeping in mind that the guy in charge of translation is typically
+	///   different than the guys writing most of the code, it makes sense to keep
+	///   translations separate from everything else.
 	/// <p/>
-    /// The idea of the Localize facility is to convince programmers to support
-    /// localization by making it dead-easy to do. By default it is not connected to
-    /// any translator (it just passes strings through), so people who are only
-    /// writing a program for a one-language market can easily make their code
-    /// "multiligual-ready" without doing any extra work, since Localize.From() is
-    /// no harder to type than String.Format().
+	/// The idea of the Localize facility is to convince programmers to support
+	/// localization by making it dead-easy to do. By default it is not connected to
+	/// any translator (it just passes strings through), so people who are only
+	/// writing a program for a one-language market can easily make their code
+	/// "multiligual-ready" without doing any extra work, since Localize.From() is
+	/// no harder to type than String.Format().
 	/// <p/>
 	/// The translation system itself is separate, and connected to Localize by a
 	/// delegate, for two reasons:
@@ -116,21 +116,21 @@ namespace Loyc
 	///     this time. So until I do, the Localize class will make my code ready for 
 	///     translation, although not actually localized.</li>
 	/// </ol>
-    /// In the open source world, most developers don't have a team of translators
-    /// ready make translations for them. The idea of Loyc, for example, is that
-    /// many different individuals--not one big team--of programmers will create
+	/// In the open source world, most developers don't have a team of translators
+	/// ready make translations for them. The idea of Loyc, for example, is that
+	/// many different individuals--not one big team--of programmers will create
 	/// and maintain features. By centralizing this translation facility, it should
 	/// be straightforward for a single multilingual individual to translate the
 	/// text of many Loyc extensions made by many different people.
 	/// <p/>
-    /// To facilitate this, I propose that in addition to a translator, a Loyc
-    /// extension should be made to figure out all the strings/symbols for which
-    /// translations are needed. To do this it would scan source code (at compile
-    /// time) for calls to methods in this class and generate a list of strings and
-    /// symbols needing translation. It would also have to detect certain calls that
-    /// perform translation implicity, such as ISimpleMessageSink.Write(). See
+	/// To facilitate this, I propose that in addition to a translator, a Loyc
+	/// extension should be made to figure out all the strings/symbols for which
+	/// translations are needed. To do this it would scan source code (at compile
+	/// time) for calls to methods in this class and generate a list of strings and
+	/// symbols needing translation. It would also have to detect certain calls that
+	/// perform translation implicity, such as ISimpleMessageSink.Write(). See
 	/// <see cref="LocalizableAttribute"/>.
-    /// </remarks>
+	/// </remarks>
 	public static class Localize
 	{
 		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru);

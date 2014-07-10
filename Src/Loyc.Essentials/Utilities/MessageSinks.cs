@@ -17,7 +17,7 @@ using Loyc.Collections;
 
 namespace Loyc
 {
-	/// <summary>Sends all messages to the <see cref="System.Console.WriteLine"/>, 
+	/// <summary>Sends all messages to <see cref="System.Console.WriteLine"/>, 
 	/// with hard-coded colors for Error, Warning, Note, Verbose, and Detail.</summary>
 	public class ConsoleMessageSink : IMessageSink
 	{
@@ -155,6 +155,7 @@ namespace Loyc
 	/// <summary>A message sink that stores all messages it receives.</summary>
 	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
 	{
+		/// <summary>Holds an argument list of <see cref="IMessageSink.Write"/>.</summary>
 		public struct Message : ILocationString
 		{
 			public Message(Severity type, object context, string format, object arg0, object arg1 = null)
@@ -283,6 +284,9 @@ namespace Loyc
 		}
 	}
 
+	/// <summary>A decorator (wrapper) for <see cref="IMessageSink"/> that filters
+	/// out some messages if their <see cref="Severity"/> is too low, according
+	/// to the value of the <see cref="MinSeverity"/> property.</summary>
 	public class SeverityMessageFilter : IMessageSink
 	{
 		public SeverityMessageFilter(IMessageSink target, Severity minSeverity) 

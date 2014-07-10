@@ -112,7 +112,7 @@ namespace Loyc.Collections.Impl
 
 		public KeylessHashtable(int numBuckets)
 		{
-			CheckParam.Range("numBuckets", numBuckets, 1, END);
+			CheckParam.IsInRange("numBuckets", numBuckets, 1, END);
 			
 			_buckets = new Int[numBuckets];
 			Clear();

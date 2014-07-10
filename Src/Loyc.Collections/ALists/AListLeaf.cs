@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Diagnostics;
 
+	/// <summary>Internal implementation class. Shared code of non-sparse AList leaf nodes.</summary>
 	[Serializable]
 	public abstract class AListLeaf<K, T> : AListNode<K, T>
 	{

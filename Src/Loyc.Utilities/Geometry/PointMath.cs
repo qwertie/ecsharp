@@ -9,6 +9,14 @@ namespace Loyc.Geometry
 	using System.Diagnostics;
 	using System.Drawing;
 
+	/// <summary>Math and extension methods for <see cref="Point{T}"/>.</summary>
+	/// <remarks>This contains many methods that should be considered "core" 
+	/// functionality, including many methods such as Add(), Sub() and Mul() that 
+	/// would ordinarily be implemented as operators (+ - *) if it weren't for 
+	/// limitations of C#. These operations are implemented as extension methods for 
+	/// performance reasons, because as a generic class, <see cref="Point{T}"/> 
+	/// cannot do arithmetic quickly. The extension methods provide operations that 
+	/// are optimized for specific data types (currently int, float and double).</remarks>
 	public static partial class PointMath
 	{
 		/// <summary>Computes the "cross product" of a pair of vectors.</summary>
@@ -228,5 +236,38 @@ namespace Loyc.Geometry
 			matrix.TransformVectors(OnePointF);
 			return a[0].AsLoycVector();
 		}
+
+		// In cases where we don't have optimized extension methods, do not require 
+		// users to manually fall back on overloaded operators.
+
+		public static Point<T>  Add<T>(this Point<T> a, Vector<T> b)  where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Point<T>  Add<T>(this Vector<T> a, Point<T> b)  where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Vector<T> Add<T>(this Vector<T> a, Vector<T> b) where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Vector<T> Sub<T>(this Point<T> a, Point<T> b)   where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Vector<T> Sub<T>(this Vector<T> a, Vector<T> b) where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Point<T>  Sub<T>(this Point<T> a, Vector<T> b)  where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Vector<T> Mul<T>(this Vector<T> p, T factor)    where T:IEquatable<T>, IConvertible { return p * factor; }
+		public static Point<T>  Mul<T>(this Point<T> p, T factor)     where T:IEquatable<T>, IConvertible { return p * factor; }
+		public static Vector<T> Div<T>(this Vector<T> p, T factor)    where T:IEquatable<T>, IConvertible { return p / factor; }
+		public static Point<T>  Div<T>(this Point<T> p, T factor)     where T:IEquatable<T>, IConvertible { return p / factor; }
+		public static Vector<T> Shl<T>(this Vector<T> p, int amt)     where T:IEquatable<T>, IConvertible { return p << amt; }
+		public static Vector<T> Shr<T>(this Vector<T> p, int amt)     where T:IEquatable<T>, IConvertible { return p >> amt; }
+		public static Point<T>  Shl<T>(this Point<T> p, int amt)      where T:IEquatable<T>, IConvertible { return p << amt; }
+		public static Point<T>  Shr<T>(this Point<T> p, int amt)      where T:IEquatable<T>, IConvertible { return p >> amt; }
+
+		public static Vector3<T> Add<T>(this Vector3<T> a, Vector3<T> b) where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Point3<T>  Add<T>(this Point3<T> a, Vector3<T> b)  where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Point3<T>  Add<T>(this Vector3<T> a, Point3<T> b)  where T:IEquatable<T>, IConvertible { return a + b; }
+		public static Vector3<T> Sub<T>(this Vector3<T> a, Vector3<T> b) where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Vector3<T> Sub<T>(this Point3<T> a, Point3<T> b)   where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Point3<T>  Sub<T>(this Point3<T> a, Vector3<T> b)  where T:IEquatable<T>, IConvertible { return a - b; }
+		public static Vector3<T> Mul<T>(this Vector3<T> p, T factor)     where T:IEquatable<T>, IConvertible { return p * factor; }
+		public static Point3<T>  Mul<T>(this Point3<T> p, T factor)      where T:IEquatable<T>, IConvertible { return p * factor; }
+		public static Vector3<T> Div<T>(this Vector3<T> p, T factor)     where T:IEquatable<T>, IConvertible { return p / factor; }
+		public static Point3<T>  Div<T>(this Point3<T> p, T factor)      where T:IEquatable<T>, IConvertible { return p / factor; }
+		public static Vector3<T> Shl<T>(this Vector3<T> p, int amt)      where T:IEquatable<T>, IConvertible { return p << amt; }
+		public static Vector3<T> Shr<T>(this Vector3<T> p, int amt)      where T:IEquatable<T>, IConvertible { return p >> amt; }
+		public static Point3<T>  Shl<T>(this Point3<T> p, int amt)       where T:IEquatable<T>, IConvertible { return p << amt; }
+		public static Point3<T>  Shr<T>(this Point3<T> p, int amt)       where T:IEquatable<T>, IConvertible { return p >> amt; }
 	}
 }

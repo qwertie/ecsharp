@@ -30,7 +30,7 @@ namespace Loyc.Collections.Impl
 	/// partial keys and their associated values. See my CPTrie article on 
 	/// CodeProject.com for more information.</summary>
 	/// <typeparam name="T">Type of values associated with each key</typeparam>
-	sealed class CPSNode<T> : CPNode<T>
+	internal sealed class CPSNode<T> : CPNode<T>
 	{
 		// _cells contains 4-byte groups called "cells". Cells encode partial (or 
 		// complete) keys and pointers to values or child nodes. The first _count

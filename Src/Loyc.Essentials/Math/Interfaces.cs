@@ -39,6 +39,8 @@ namespace Loyc.Math
 		T Clip(double t);
 	}
 
+	/// <summary>Provides comparison function for type T along with absolute value 
+	/// (Abs), and the minimum or maximum of two values (Min, Max).</summary>
 	public interface IOrdered<T> : IComparer<T>, IEqualityComparer<T>
 	{
 		bool IsLess(T a, T b);
@@ -47,6 +49,8 @@ namespace Loyc.Math
 		T Max(T a, T b);
 		T Min(T a, T b);
 	}
+
+	/// <summary>Standard extension methods for generic math interfaces such as <see cref="IOrdered{T}"/>.</summary>
 	public static partial class MathExtensions
 	{
 		public static bool IsGreater<T,C>(this C c, T a, T b) where C : IOrdered<T>, new()
@@ -71,11 +75,13 @@ namespace Loyc.Math
 		}
 	}
 
+	/// <summary>Provides the value of "zero" for type T.</summary>
 	public interface IZeroProvider<T>
 	{
 		/// <summary>Returns the "zero" or additive identity of this type.</summary>
 		T Zero { get; }
 	}
+	/// <summary>Provides the value of "one" for type T.</summary>
 	public interface IOneProvider<T>
 	{
 		/// <summary>Returns the "one" or identity value of this type.</summary>

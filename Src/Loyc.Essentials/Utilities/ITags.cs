@@ -5,6 +5,8 @@ using Loyc.MiniTest;
 
 namespace Loyc
 {
+	/// <summary>Interface for an object that can have "tags" attached, which are 
+	/// arbitrary objects reached through a key <see cref="Symbol"/>.</summary>
 	public interface ITags<T>
 	{
 		/// <summary>Returns a dictionary that can be used to store additional state

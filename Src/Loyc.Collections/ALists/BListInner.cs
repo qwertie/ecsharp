@@ -250,7 +250,7 @@
 		}
 	}
 
-	public class BListInner<T> : BListInner<T, T>
+	internal class BListInner<T> : BListInner<T, T>
 	{
 		#region Constructors and boilerplate
 
@@ -282,7 +282,7 @@
 		protected override T GetKey(T item) { return item; }
 	}
 
-	public class BDictionaryInner<K, V> : BListInner<K, KeyValuePair<K, V>>
+	internal class BDictionaryInner<K, V> : BListInner<K, KeyValuePair<K, V>>
 	{
 		#region Constructors and boilerplate
 

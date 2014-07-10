@@ -14,6 +14,10 @@ using S = Loyc.Syntax.CodeSymbols;
 /// do not have to be explicitly imported before use (in LES or EC#).</summary>
 namespace LeMP.Prelude
 {
+	/// <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
+	/// <c>import macros your.namespace.name</c> as an alias for 
+	/// <c>#importMacros(your.namespace.name)</c>.
+	/// </summary>
 	[ContainsMacros]
 	public static partial class Macros
 	{
@@ -41,9 +45,12 @@ namespace LeMP.Prelude
 		}
 	}
 
-	namespace Les {
+	/// <summary>Defines prelude macros for LES, which are predefined macros that 
+	/// normally do not have to be explicitly imported before use.</summary>
+	namespace Les
+	{
 
-	/// <summary>Defines the core, predefined constructs of LeMP.</summary>
+	/// <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
 	[ContainsMacros]
 	public static partial class Macros
 	{
