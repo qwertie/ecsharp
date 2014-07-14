@@ -7,9 +7,18 @@ using System.Diagnostics;
 namespace Loyc.Collections.Impl
 {
 	/// <summary>Internal implementation class. Leaf node of <see cref="SparseAList{T}"/>.</summary>
+	/// <remarks>This node consists of a certain number of virtual slots (_totalCount)
+	/// and a certain number of real slots (_list.Count). Node splitting/joining
+	/// behavior is based entirely on the number of real slots. There can be any 
+	/// number of empty spaces anywhere in the list. If there are empty spaces at 
+	/// the beginning, <c>_list[0].Offset > 0</c>; if there are empty spaces at the 
+	/// end, <c>_totalCount > _list.Last.Offset + 1</c>. <c>_list.Count == 0</c> 
+	/// only if the entire list consists of empty space and there is only a single 
+	/// node.</remarks>
 	[Serializable]
 	public class SparseAListLeaf<T> : AListNode<int, T>
 	{
+		[DebuggerDisplay("Offset = {Offset}, Item = {Item}")]
 		protected struct Entry
 		{
 			public Entry(uint offset, T item) { Offset = offset; Item = item; }
@@ -137,23 +146,25 @@ namespace Loyc.Collections.Impl
 		internal override uint TakeFromRight(AListNode<int, T> rightSibling, IAListTreeObserver<int, T> tob)
 		{
 			var right = (SparseAListLeaf<T>)rightSibling;
-			if (IsFullLeaf || _isFrozen || right._isFrozen)
+			if (_isFrozen || right._isFrozen)
 				return 0;
 			
-			var entry = right._list.First;
-			uint amount = entry.Offset + 1;
-			entry.Offset += _totalCount;
-			_list.PushLast(entry);
-			if (right._list.Count == 1) {
-				// this method must have been called to empty out an undersized node. Leave no empty space behind.
+			uint amount;
+			if (right._list.IsEmpty) { // oops, just take the remaining empty space
 				amount = right._totalCount;
+			} else {
+				if (IsFullLeaf)
+					return 0;
+				var entry = right._list.First;
+				amount = entry.Offset + 1;
+				entry.Offset += _totalCount;
+				_list.PushLast(entry);
+				right._list.PopFirst(1);
+				AdjustOffsetsStartingAt(0, ref right._list, -(int)amount);
+				Debug.Assert(_totalCount + amount == entry.Offset + 1);
 			}
-			_totalCount += amount;
-			Debug.Assert(_totalCount == entry.Offset + 1 || right._list.Count == 1);
-			
-			right._list.PopFirst(1);
 			right._totalCount -= amount;
-			AdjustOffsetsStartingAt(0, ref right._list, -(int)amount);
+			_totalCount += amount;
 			//if (tob != null) tob.ItemMoved(item, right, this);
 			return amount;
 		}
@@ -161,23 +172,25 @@ namespace Loyc.Collections.Impl
 		internal override uint TakeFromLeft(AListNode<int, T> leftSibling, IAListTreeObserver<int, T> tob)
 		{
 			var left = (SparseAListLeaf<T>)leftSibling;
-			if (IsFullLeaf || _isFrozen || left._isFrozen)
+			if (_isFrozen || left._isFrozen)
 				return 0;
 
-			var entry = left._list.Last;
-			uint amount = left._totalCount - entry.Offset;
-			entry.Offset = 0;
-			_list.PushFirst(entry);
-			if (left._list.Count == 1) {
-				// this method must have been called to empty out an undersized node. Leave no empty space behind.
-				entry.Offset += left._totalCount - amount;
+			uint amount;
+			if (left._list.IsEmpty) {
 				amount = left._totalCount;
+				AdjustOffsetsStartingAt(0, ref _list, (int)amount);
+			} else {
+				if (IsFullLeaf)
+					return 0;
+				var entry = left._list.Last;
+				amount = left._totalCount - entry.Offset;
+				entry.Offset = 0;
+				_list.PushFirst(entry);
+				left._list.PopLast(1);
+				AdjustOffsetsStartingAt(1, ref _list, (int)amount);
 			}
-			_totalCount += amount;
-			AdjustOffsetsStartingAt(1, ref _list, (int)amount);
-
-			left._list.PopLast(1);
 			left._totalCount -= amount;
+			_totalCount += amount;
 			//if (tob != null) tob.ItemMoved(item, left, this);
 			return amount;
 		}
@@ -204,86 +217,20 @@ namespace Loyc.Collections.Impl
 			return new SparseAListLeaf<T>(_maxNodeSize, section, count);
 		}
 
-		public override int ImmutableCount()
+		public override uint GetImmutableCount(bool excludeSparse)
 		{
-			return IsFrozen ? (int)LocalCount : 0;
+			if (!IsFrozen)
+				return 0;
+			return excludeSparse ? (uint)LocalCount : TotalCount;
 		}
 
 		public override AListNode<int, T> Insert(uint index, T item, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			throw new NotSupportedException();
-			/*Debug.Assert(!IsFrozen);
-			int i;
-			BinarySearch(index, out i);
-			
-			if (_list.Count < _maxNodeSize)
-			{
-				_list.AutoRaiseCapacity(1, _maxNodeSize);
-				_list.Insert(i, new Entry(index, item));
-				AdjustOffsetsStartingAt(i + 1, ref _list, 1);
-				_totalCount++;
-				splitRight = null;
-				//if (tob != null) tob.ItemAdded(item, this);
-				return null;
-			}
-			else
-			{
-				// Split node in half in the middle
-				int divAt = _list.Count >> 1;
-				uint divOffset = _list[divAt].Offset;
-				var left = new SparseAListLeaf<T>(_maxNodeSize, _list.CopySection(0, divAt), divOffset);
-				var rightSec = _list.CopySection(divAt, _list.Count - divAt);
-				AdjustOffsetsStartingAt(0, ref rightSec, -(int)divOffset);
-				var right = new SparseAListLeaf<T>(_maxNodeSize, rightSec, _totalCount - divOffset);
-				
-				if (index < divOffset)
-					left.Insert(index, item, out splitRight, null);
-				else
-					right.Insert(index - (uint)divOffset, item, out splitRight, null);
-				Debug.Assert(splitRight == null);
-				splitRight = right;
-				return left;
-			}*/
 		}
 		public override AListNode<int, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
 		{
 			throw new NotSupportedException();
-			/*Debug.Assert(!IsFrozen);
-			Debug.Assert(_totalCount + source.Count >= _totalCount); // caller ensures list size does not overflow
-			// Note: (int)index may sometimes be negative, but not after adding sourceIndex
-			index += (uint)sourceIndex;
-			int c = source.Count;
-			int leftIns = c - sourceIndex;
-			Debug.Assert(leftIns > 0);
-
-			if (source is EmptySpace<T>) {
-				InsertSpace(index, c);
-				sourceIndex = c;
-				splitRight = null;
-				return null;
-			} else {
-				Debug.Assert(!(source is ISparseListSource<T>)); // sparse lists to be handled at a higher level
-
-				int leftHere = (int)_maxNodeSize - _list.Count;
-				if (leftHere > 1) {
-					int i;
-					BinarySearch(index, out i);
-					int amtToIns = System.Math.Min(leftHere, leftIns);
-					_list.AutoRaiseCapacity(amtToIns, _maxNodeSize);
-					_list.InsertRangeHelper(i, amtToIns);
-					for (int j = 0; j < amtToIns; j++)
-						_list[i + j] = new Entry(index + (uint)j, source[sourceIndex + j]);
-					AdjustOffsetsStartingAt(i + amtToIns, ref _list, amtToIns);
-					_totalCount += (uint)amtToIns;
-
-					sourceIndex += amtToIns;
-					splitRight = null;
-					//if (tob != null) tob.AddingItems(slice, this, false);
-					return null;
-				} else {
-					return Insert(index, source[sourceIndex++], out splitRight, tob);
-				}
-			}*/
 		}
 
 		private void InsertSpace(uint index, int count)
@@ -301,6 +248,22 @@ namespace Loyc.Collections.Impl
 				return DoInsert(ref op, index, out splitLeft, out splitRight);
 			else
 				return DoReplace(ref op, index, out splitLeft, out splitRight);
+		}
+
+		internal override T SparseGetNearest(ref int? index_, int direction)
+		{
+			uint index = index_.Value < 0 ? 0 : (uint)index_.Value;
+			int i;
+			if (!BinarySearch((uint)index, out i)) {
+				if (direction < 0)
+					i--;
+				if (direction == 0 || (uint)i >= (uint)_list.Count) {
+					index_ = null;
+					return default(T);
+				}
+			}
+			index_ = (int)_list[i].Offset;
+			return _list[i].Item;
 		}
 
 		private int DoReplace(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
@@ -408,10 +371,15 @@ namespace Loyc.Collections.Impl
 				var tempList = new InternalList<Entry>(leftHere);
 
 				int? si;
-				for (int prev = op.SourceIndex - 1; (si = source.NextHigher(prev)) != null; prev = si.Value) {
+				T item;
+				for (int prev = op.SourceIndex - 1; ; prev = si.Value) {
+					si = prev;
+					item = source.NextHigherItem(ref si);
+					if (si == null)
+						break;
 					tempList.Add(new Entry {
-						Offset = (uint)(index + si.Value),
-						Item = source[si.Value]
+						Offset = (uint)(index0 + si.Value),
+						Item = item
 					});
 					if (tempList.Count == leftHere)
 						break;
@@ -420,10 +388,9 @@ namespace Loyc.Collections.Impl
 				for (int j = 0; j < tempList.Count; j++)
 					_list[i + j] = tempList[j];
 
-				int virtualItemsInserted = si == null
-					? source.Count - op.SourceIndex
-					: si.Value + 1 - op.SourceIndex;
-				op.SourceIndex += virtualItemsInserted;
+				int newSourceIndex = si == null ? source.Count : si.Value + 1;
+				int virtualItemsInserted = newSourceIndex - op.SourceIndex;
+				op.SourceIndex = newSourceIndex;
 
 				AdjustOffsetsStartingAt(i + tempList.Count, ref _list, virtualItemsInserted);
 				_totalCount += (uint)virtualItemsInserted;
@@ -457,5 +424,7 @@ namespace Loyc.Collections.Impl
 			AdjustOffsetsStartingAt(0, ref rightSec, -(int)divOffset);
 			splitRight = new SparseAListLeaf<T>(_maxNodeSize, rightSec, _totalCount - divOffset);
 		}
+
+		public override uint GetRealItemCount() { return (uint)LocalCount; }
 	}
 }

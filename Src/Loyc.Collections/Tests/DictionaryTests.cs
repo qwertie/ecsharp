@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Math;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	[TestFixture]
 	public class DictionaryTests<DictT> : TestHelpers where DictT : ICollection<KeyValuePair<object,object>>, IDictionary<object,object>, IAddRange<KeyValuePair<object,object>>, ICloneable<DictT>, new()

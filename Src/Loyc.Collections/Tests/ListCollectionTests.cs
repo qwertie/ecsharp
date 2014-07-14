@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	/// <summary>A test class for collections that implement IListSource{int} and 
 	/// are cloneable, such as AList, BList and DList.</summary>

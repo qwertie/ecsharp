@@ -39,6 +39,16 @@ namespace Loyc.Collections.Impl
 	/// AutoClone() to check if the node is frozen and clone it if necessary.
 	/// TakeFromRight and TakeFromLeft can be called when one or both nodes are 
 	/// frozen, but will have no effect.
+	/// <para/>
+	/// Philosophical note: the kinds of features I'd like to see in Enhanced C#
+	/// would make it easier to create the AList series of data structures. Each
+	/// kind of AList is similar yet different and many of the operations of an
+	/// AList are similar yet different and C# doesn't, I think, provide enough
+	/// flexibility to handle this variety without smooshing a bunch of different 
+	/// things clumsily into a single class hierarchy and without having to write
+	/// methods that are in charge of several different operations (e.g. 
+	/// DoSingleOperation). Traits and D-style templates would help make the cod
+	/// of the AList family of types cleaner and faster.
 	/// </remarks>
 	[Serializable]
 	public abstract class AListNode<K, T>
@@ -124,6 +134,16 @@ namespace Loyc.Collections.Impl
 		/// of elements of <see cref="AListSparseOperation{T}"/> into 
 		/// template parameters.</remarks>
 		internal virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		{
+			throw new NotSupportedException();
+		}
+		/// <summary>Same as this[index] except that if there is empty space at 
+		/// the specified location, the index can be adjusted up or down 
+		/// (depending on whether direction is 1 or -1) to reach an item and the 
+		/// item at the new index is returned. index is set to null if this 
+		/// doesn't work because there are no items above or below, or if 
+		/// direction is 0. On entry, index must NOT be null.</summary>
+		internal virtual T SparseGetNearest(ref int? index, int direction)
 		{
 			throw new NotSupportedException();
 		}
@@ -255,7 +275,11 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Diagnostic method. See <see cref="AListBase{K,T}.ImmutableCount"/>.</summary>
-		public abstract int ImmutableCount();
+		/// <param name="excludeSparse">Should be false for normal ALists. If true, the count is of real items only.</param>
+		public abstract uint GetImmutableCount(bool excludeSparse);
+		
+		/// <summary>For sparse lists: counts the number of non-sparse items.</summary>
+		public virtual uint GetRealItemCount() { return TotalCount; }
 	}
 
 	/// <summary>This structure is passed from the collection class (AList, BList 
@@ -372,14 +396,18 @@ namespace Loyc.Collections.Impl
 		public bool IsInsert;
 		/// <summary>Whether to write empty space (true) or values (false)</summary>
 		public bool WriteEmpty;
-
+		/// <summary>Index into sparse list where the operation starts.</summary>
 		public uint AbsoluteIndex;
-		
+		/// <summary>A single item to insert if <c>Source==null && !WriteEmpty</c></summary>
 		public T Item;
+		/// <summary>When nonzero, the operation is partialy complete and items in 
+		/// range Source[0...SourceIndex-1] have already been inserted.</summary>
 		public int SourceIndex;
-		public IListSource<T> Source;
-		public ISparseListSource<T> SparseSource;
+		/// <summary>Equals SparseSource.Count, but SparseSource may be null when inserting
+		/// a single item (then SourceCount==1) or when inserting blank space.</summary>
 		public int SourceCount;
+		public IListSource<T> Source;
+		public ISparseListSource<T> SparseSource; // Source as sparse
 		public IAListTreeObserver<int, T> tob;
 	}
 }

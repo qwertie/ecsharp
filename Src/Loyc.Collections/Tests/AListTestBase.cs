@@ -1,16 +1,16 @@
-﻿
-namespace Loyc.Collections
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.ComponentModel;
+using Loyc.MiniTest;
+using Loyc.Math;
+using Loyc.Collections.Impl;
+
+namespace Loyc.Collections.Tests
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-	using System.Collections.Specialized;
-	using System.Diagnostics;
-	using Loyc.MiniTest;
-	using Loyc.Math;
-	using System.ComponentModel;
-	using Loyc.Collections.Impl;
 
 	/// <summary>
 	/// Contains tests common to AList, BList and BDictionary.
@@ -24,7 +24,12 @@ namespace Loyc.Collections
 		public AListTestBase(bool testExceptions, int randomSeed)
 		{
 			_testExceptions = testExceptions;
-			_r = new Random(_randomSeed = randomSeed);
+			_randomSeed = randomSeed;
+		}
+		[SetUp]
+		public void SetUp()
+		{
+			_r = new Random(_randomSeed);
 		}
 		
 		protected abstract AList NewList();
@@ -95,7 +100,7 @@ namespace Loyc.Collections
 			AList alist = NewList(500, out list);
 			for (int i = 0; i < 500; i++)
 			{
-				Assert.AreEqual(list[i], GetKey(alist.First));
+				Assert.AreEqual(list[i], alist.First);
 				alist.RemoveAt(0);
 			}
 			Assert.AreEqual(0, alist.Count);
@@ -108,7 +113,7 @@ namespace Loyc.Collections
 			AList alist = NewList(500, out list);
 			for (int i = alist.Count-1; i >= 0; i--)
 			{
-				Assert.AreEqual(list[i], GetKey(alist.Last));
+				Assert.AreEqual(list[i], alist.Last);
 				RemoveAtInBoth(alist, list, i);
 				if (i % 100 == 0)
 					ExpectList(alist, list, false);
@@ -396,7 +401,7 @@ namespace Loyc.Collections
 		}*/
 
 		[Test]
-		public void SimpleObserverTests1()
+		public virtual void SimpleObserverTests1()
 		{
 			AList alist = NewList();
 			var tob = new AListTestObserver<int, T>();
@@ -413,7 +418,7 @@ namespace Loyc.Collections
 		}
 
 		[Test]
-		public void SimpleObserverTests2()
+		public virtual void SimpleObserverTests2()
 		{
 			// Note: derived class must test observers with replacement and other 
 			//       functions that this class does not have access to.
@@ -477,7 +482,7 @@ namespace Loyc.Collections
 		}
 
 		[Test]
-		public void ObserveRemoveSection()
+		public virtual void ObserveRemoveSection()
 		{
 			List<T> list;
 			AList alist = NewList(200, out list);

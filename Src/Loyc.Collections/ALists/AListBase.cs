@@ -8,6 +8,7 @@
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
+	using System.ComponentModel;
 
 	/// <summary>
 	/// Base class for the indexed tree-based data structures known as
@@ -149,7 +150,7 @@
 		protected ushort _version;
 		protected ushort _maxLeafSize;
 		protected byte _maxInnerSize;
-		protected byte _treeHeight;
+		protected byte _treeHeight; // 0=empty, 1=leaf only
 		protected byte _freezeMode = NotFrozen;
 		protected const byte NotFrozen = 0;
 		protected const byte Frozen = 1;
@@ -165,6 +166,10 @@
 				lock (this) { _listChanging -= value; }
 			}
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)] // hide from IntelliSense
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // redundant
+		public byte TreeHeight { get { return _treeHeight; } }
 
 		#endregion
 
@@ -836,8 +841,8 @@
 					var tos = stack[stack.Length - 1];
 					_leaf = tos.Item1.Child(tos.Item2);
 					Debug.Assert(_leaf.IsLeaf);
-					_leafIndex = _leaf.LocalCount-1;
-					Debug.Assert(_leaf.LocalCount > 0);
+					_leafIndex = (int)_leaf.TotalCount-1;
+					Debug.Assert(_leaf.TotalCount > 0);
 				}
 				--_currentIndex;
 				return _leaf[(uint)_leafIndex];
@@ -1071,9 +1076,9 @@
 		/// Used by the test suite.</summary>
 		/// <remarks>Variable time required. Scans all nodes if none are immutable; 
 		/// stops at the root if the root is immutable.</remarks>
-		public int ImmutableCount
+		public int GetImmutableCount()
 		{
-			get { return _root == null ? 0 : _root.ImmutableCount(); }
+			return _root == null ? 0 : (int)_root.GetImmutableCount(false);
 		}
 
 		#endregion

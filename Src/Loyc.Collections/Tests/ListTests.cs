@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	/// <summary>A test class for unsorted list classes that implement IList{int} 
 	/// and are cloneable, such as AList and DList.</summary>

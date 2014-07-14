@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections.Impl;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Tests
 {
 	using IntPair = KeyValuePair<int, int>;
 

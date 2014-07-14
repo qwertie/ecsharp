@@ -139,6 +139,7 @@
     <Compile Include="Tests\ListTests.cs" />
     <Compile Include="Tests\MapTests.cs" />
     <Compile Include="Tests\SetTests.cs" />
+    <Compile Include="Tests\SparseAListTests.cs" />
     <Compile Include="Tests\TestHelpers.cs" />
     <Compile Include="VLists\FVList.cs" />
     <Compile Include="VLists\FWList.cs" />

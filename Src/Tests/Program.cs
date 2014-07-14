@@ -15,6 +15,7 @@ using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Syntax;
 using Loyc.Geometry;
+using Loyc.Collections.Tests;
 
 namespace Loyc.Tests
 {
@@ -45,10 +46,22 @@ namespace Loyc.Tests
 			RunTests.Run(new ImmSetTests());
 			RunTests.Run(new SymbolSetTests());
 			RunTests.Run(new InvertibleSetTests());
+			// Test with small node sizes as well as the standard node size,
+			// including the minimum size of 3 (the most problematic size).
+			int seed = Environment.TickCount;
+			RunTests.Run(new SparseAListTests(false, seed, 10, 10));
+			RunTests.Run(new AListTests(false, seed, 8, 8));
+			RunTests.Run(new BListTests(false, seed, 3, 3));
+			RunTests.Run(new BDictionaryTests(false, seed, 6, 6));
+			RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
+			RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
 			RunTests.Run(new UStringTests());
 			RunTests.Run(new UGTests());
 			RunTests.Run(new SymbolTests());
 			RunTests.Run(new PointMathTests());
+			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
+			RunTests.Run(new ListExtTests());
+			RunTests.Run(new LineMathTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -67,26 +80,16 @@ namespace Loyc.Tests
 					RunTests.Run(new GTests());
 					RunTests.Run(new MapTests());
 					RunTests.Run(new GoInterfaceTests());
-					// Test with small node sizes as well as the standard node size,
-					// including the minimum size of 3 (the most problematic size).
+					RunTests.Run(new SparseAListTests(true, seed, 8, 4));
+					RunTests.Run(new SparseAListTests());
 					RunTests.Run(new AListTests());
 					RunTests.Run(new BListTests());
-					RunTests.Run(new AListTests(false, 0, 8, 8));
-					RunTests.Run(new BListTests(false, 0, 3, 3));
-					RunTests.Run(new BDictionaryTests(false, 0, 6, 6));
 					RunTests.Run(new BDictionaryTests());
 					RunTests.Run(new RWListTests()); 
 					RunTests.Run(new WListTests());
 					RunTests.Run(new RVListTests());
 					RunTests.Run(new VListTests());
 				} else if (k.KeyChar == '2') {
-					RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
-					RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
-					RunTests.Run(new ListExtTests());
-					RunTests.Run(new SparseAListTests(false, 0, 8, 8));
-					RunTests.Run(new SparseAListTests());
-					RunTests.Run(new LineMathTests());
-					RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 					RunTests.Run(new KeylessHashtableTests());
 				} else if (k.KeyChar == '9') {
 					Benchmarks();

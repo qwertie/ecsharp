@@ -1,11 +1,12 @@
-﻿namespace Loyc.Collections
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc.Collections;
+using Loyc.MiniTest;
+
+namespace Loyc.Collections.Tests
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-	using Loyc.Collections;
-	using Loyc.MiniTest;
 	
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]

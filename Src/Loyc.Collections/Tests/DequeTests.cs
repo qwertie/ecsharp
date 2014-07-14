@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 
-namespace Loyc.Collections
+namespace Loyc.Collections.Tests
 {
 	[TestFixture]
 	public class DequeTests<ListT> where ListT : IDeque<int>, ICloneable<ListT>

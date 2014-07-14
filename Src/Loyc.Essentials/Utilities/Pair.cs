@@ -36,7 +36,9 @@ namespace Loyc
 	/// (and the problem would largely be fixed by a compiler-recognized attribute 
 	/// like <c>[Mutates]</c> that would detect potential problems).
 	/// </remarks>
-	public struct Pair<T1,T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1,T2>>
+	[Serializable]
+	[DebuggerDisplay("A = {A}, B = {B}")]
+	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }
 		public T1 A;
@@ -94,6 +96,8 @@ namespace Loyc
 	/// <c>Item2</c> and <c>Item3</c> properties, which refer to the A, B and 
 	/// C fields, respectively.
 	/// </remarks>
+	[Serializable]
+	[DebuggerDisplay("A = {A}, B = {B}, C = {C}")]
 	public struct Triplet<T1, T2, T3>
 	{
 		public Triplet(T1 a, T2 b, T3 c) { A = a; B = b; C = c; }

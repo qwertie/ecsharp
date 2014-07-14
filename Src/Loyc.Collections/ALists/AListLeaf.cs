@@ -128,9 +128,9 @@
 			return _list.IndexOf(item, startIndex);
 		}
 		
-		public override int ImmutableCount()
+		public override uint GetImmutableCount(bool _)
 		{
-			return IsFrozen ? (int)LocalCount : 0;
+			return IsFrozen ? (uint)LocalCount : 0;
 		}
 	}
 

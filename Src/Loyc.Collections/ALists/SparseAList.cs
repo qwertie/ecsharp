@@ -20,7 +20,11 @@ namespace Loyc.Collections
 	/// <c>SparseAList</c> is a precise sparse list, meaning that you can rely on 
 	/// it to keep track of which indexes are "set" and which are "empty" (the 
 	/// <see cref="IsSet"/> method tells you which).
+	/// <para/>
+	/// TODO: Add support for A-List tree observers (IAListTreeObserver(K,T))
 	/// </remarks>
+	[Serializable]
+	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	public class SparseAList<T> : AListBase<T>, ISparseList<T>, IListEx<T>, IListRangeMethods<T>, ICloneable<SparseAList<T>>
 	{
 		#region Constructors
@@ -251,24 +255,67 @@ namespace Loyc.Collections
 
 		public bool IsSet(int index)
 		{
-			throw new NotImplementedException();
+			if (_root != null)
+			{
+				int? index_ = index;
+				_root.SparseGetNearest(ref index_, 0);
+				return index_ != null && index_.Value == index;
+			}
+			return false;
 		}
 
-		public int? NextHigher(int index)
+		public T NextHigherItem(ref int? index)
 		{
-			throw new NotImplementedException();
+			if (_root != null)
+			{
+				index = (index == null ? 0 : index + 1);
+				return _root.SparseGetNearest(ref index, 1);
+			}
+			index = null;
+			return default(T);
 		}
 
-		public int? NextLower(int index)
+		public T NextLowerItem(ref int? index)
 		{
-			throw new NotImplementedException();
+			if (_root != null && (index == null || index > 0))
+			{
+				index = (index == null ? Count : index - 1);
+				return _root.SparseGetNearest(ref index, -1);
+			}
+			index = null;
+			return default(T);
 		}
 
 		public override int IndexOf(T item)
 		{
-			// TODO: make efficient by skipping empty slots
-			return base.IndexOf(item);
+			if (_freezeMode == FrozenForConcurrency)
+				AutoThrow();
+			if (_root == null)
+				return -1;
+			var comp = EqualityComparer<T>.Default;
+			bool isDefault = comp.Equals(item, default(T));
+			int prev = -1;
+			// Not well optimized: we have not written an enumerator for the sparse 
+			// items (in a more sophisticated language than C# I would design the
+			// main enumerator to do both jobs) so we just call SparseGetNearest in
+			// a loop; SparseGetNearest is an O(log N) operation.
+			for (int? i = -1; ; prev = i.Value) {
+				i++;
+				T value = _root.SparseGetNearest(ref i, +1);
+				if (isDefault && prev + 1 != (i ?? Count))
+					return prev + 1; // empty space matches the item
+				if (i == null)
+					return -1;
+				if (comp.Equals(item, value))
+					return i.Value;
+			}
 		}
+
+		public int GetRealImmutableCount()
+		{
+			return _root == null ? 0 : (int)_root.GetImmutableCount(true);
+		}
+		public int GetRealItemCount() { return _root == null ? 0 : (int)_root.GetRealItemCount(); }
 	}
 }
 

@@ -42,28 +42,37 @@ namespace Loyc.Collections
 	/// <seealso cref="LCExt.AsSparse"/>
 	public interface ISparseListSource<T> : IListSource<T>
 	{
-		/// <summary>Gets the next higher index of a non-empty (cleared) element 
-		/// of the list, or null if there are no higher indexes.</summary>
-		/// <remarks>This method should skip over all indexes i for which 
+		/// <summary>Increases <c>index</c> by at least one to reach the next index
+		/// that is not classified as empty space, and returns the item at that 
+		/// index.</summary>
+		/// <param name="index">This parameter is increased by at least one, and
+		/// perhaps more than one so that it refers to an index where there is a
+		/// value. If <c>index</c> is null upon entering this method, the first 
+		/// non-empty space in the list is found. If there are no values at higher 
+		/// indexes, if the list is empty or if <c>index + 1 >= Count</c>, 
+		/// <c>index</c> is <c>null</c> when the method returns.</param>
+		/// <remarks>This method must skip over all indexes i for which 
 		/// <c>IsSet(i)</c> returns false, and return the next index for which
-		/// <c>IsSet(i)</c> returns true.
-		/// <para/>
-		/// This method should accept any integer as input, including invalid 
-		/// indexes. For example, if the first existing index is 5, 
-		/// NextHigher(-10) returns 5.
+		/// <c>IsSet(i)</c> returns true. This method must accept any integer as 
+		/// input, including invalid indexes.
 		/// </remarks>
-		int? NextHigher(int index);
-		
-		/// <summary>Gets the next lower index of a non-empty (cleared) element 
-		/// of the list, or null if there are no lower indexes.</summary>
-		/// <remarks>This method should skip over all indexes i for which 
-		/// <c>IsSet(i)</c> returns false, and return the next lower index for 
-		/// which <c>IsSet(i)</c> returns true.
-		/// <para/>
-		/// This method should accept any integer as input, including invalid 
-		/// indexes.
+		T NextHigherItem(ref int? index);
+
+		/// <summary>Decreases <c>index</c> by at least one to reach the next index
+		/// that is not classified as empty space, and returns the item at that 
+		/// index.</summary>
+		/// <param name="index">This parameter is increased by at least one, and
+		/// perhaps more than one so that it refers to an index where there is a
+		/// value. If <c>index</c> is null upon entering this method, the last
+		/// non-empty space in the list is found. If there are no values at lower
+		/// indexes, if the list is empty or if <c>index</c> is 0 or less, 
+		/// <c>index</c> is <c>null</c> when the method returns.</param>
+		/// <remarks>This method must skip over all indexes i for which 
+		/// <c>IsSet(i)</c> returns false, and return the next index for which
+		/// <c>IsSet(i)</c> returns true. This method must accept any integer as 
+		/// input, including invalid indexes.
 		/// </remarks>
-		int? NextLower(int index);
+		T NextLowerItem(ref int? index);
 
 		/// <summary>Determines whether a value exists at the specified index.</summary>
 		/// <param name="index"></param>
@@ -75,6 +84,24 @@ namespace Loyc.Collections
 
 	public partial class LCInterfaces
 	{
+		/// <summary>Gets the next higher index that is not classified as an
+		/// empty space, or null if there are no non-blank higher indexes.</summary>
+		/// <remarks>This extension method works by calling <c>NextHigherItem()</c>.</remarks>
+		public static int? NextHigherIndex<T>(this ISparseListSource<T> list, int? index)
+		{
+			list.NextHigherItem(ref index);
+			return index;
+		}
+		
+		/// <summary>Gets the next lower index that is not classified as an
+		/// empty space, or null if there are no non-blank lower indexes.</summary>
+		/// <remarks>This extension method works by calling <c>NextHigherItem()</c>.</remarks>
+		public static int? NextLowerIndex<T>(this ISparseListSource<T> list, int? index)
+		{
+			list.NextLowerItem(ref index);
+			return index;
+		}
+
 		/// <summary>Returns the non-cleared items in the sparse list, along with 
 		/// their indexes, sorted by index.</summary>
 		/// <remarks>
@@ -82,11 +109,11 @@ namespace Loyc.Collections
 		/// <c>list.IsSet(Key)</c> returns true.</remarks>
 		public static IEnumerable<KeyValuePair<int, T>> Items<T>(this ISparseListSource<T> list)
 		{
-			int i = -1;
-			int? next;
-			while ((next = list.NextHigher(i)) != null) {
-				i = next.Value;
-				yield return new KeyValuePair<int, T>(i, list[i]);
+			int? i = null;
+			for (;;) {
+				T value = list.NextHigherItem(ref i);
+				if (i == null) break;
+				yield return new KeyValuePair<int, T>(i.Value, value);
 			}
 		}
 	}

@@ -377,7 +377,7 @@ namespace Loyc.Geometry
 			if (p.X < bbox.X1) sides |= 1;
 			if (p.X > bbox.X2) sides |= 2;
 			if (p.Y < bbox.Y1) sides |= 4;
-			if (p.Y < bbox.Y2) sides |= 8;
+			if (p.Y > bbox.Y2) sides |= 8;
 			return sides;
 		}
 

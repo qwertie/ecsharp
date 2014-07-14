@@ -6,13 +6,16 @@
 	using System.Text;
 	using System.Diagnostics;
 
-	/// <summary>Internal implementation class. Shared code of AList internal nodes.</summary>
+	/// <summary>Internal implementation class. Shared base class of internal nodes
+	/// for <see cref="AList{T}"/>, <see cref="SparseAList{T}"/>, <see cref="BList{T}"/>, 
+	/// <see cref="BMultiMap{K,V}"/> and <see cref="BDictionary{K,V}"/>.</summary>
 	[Serializable]
 	public abstract class AListInnerBase<K, T> : AListNode<K, T>
 	{
 		public const int DefaultMaxNodeSize = 16;
 
 		[Serializable]
+		[DebuggerDisplay("Index = {Index}, Node = {Node}")]
 		protected struct Entry
 		{
 			// Normally this is the base index of the items in Node (the first entry 
@@ -148,7 +151,8 @@
 		}
 
 		/// <summary>Performs a binary search for an index.</summary>
-		/// <remarks>Optimized. Fastest for power-of-two node sizes.</remarks>
+		/// <remarks>Optimized. Fastest for power-of-two node sizes.
+		/// If index is out of range, returns the highest valid index.</remarks>
 		public int BinarySearchI(uint index)
 		{
 			var children = _children; // might be faster
@@ -445,10 +449,17 @@
 				rightCap = right.CapacityLeft;
 			}
 
-			// If the siblings have enough capacity...
-			if (leftCap + rightCap >= node.LocalCount)
+			if (left == null && right == null)
 			{
-				// Unload data from 'node' into its siblings
+				if (node.TotalCount == 0) {
+					if (tob != null) tob.NodeRemoved(node, this);
+					LLDelete(i, false);
+				}
+				return IsUndersized;
+			}
+			else if (leftCap + rightCap >= node.LocalCount)
+			{	// The siblings have enough capacity that we can data from 'node' 
+				// into its siblings
 				int oldRightCap = rightCap;
 				uint rightAdjustment = 0, a;
 				while (node.LocalCount > 0)
@@ -460,16 +471,27 @@
 						rightAdjustment += a;
 						rightCap--;
 					}
+				if (node.TotalCount > 0) {
+					Debug.Assert(node is SparseAListLeaf<T>);
+					// Bug fix: in case of a sparse leaf it is possible to have LocalCount==0 
+					// but TotalCount>0. In that case leftCap and rightCap could both be zero.
+					// Originally this case was handled within SparseAListLeaf.TakeFromLeft/Right, 
+					// but this method must also be aware of this case because it's possible that 
+					// LocalCount==0 when this method starts, so the loop is skipped.
+					if (left != null)
+						left.TakeFromRight(node, tob);
+					else
+						rightAdjustment += right.TakeFromLeft(node, tob);
+				}
 					
 				if (rightAdjustment != 0) // if rightAdjustment==0, _children[i+1] might not exist
 					_children[i+1].Index -= rightAdjustment;
 
 				if (tob != null) tob.NodeRemoved(node, this);
 				LLDelete(i, false);
-				// Return true if this node has become undersized.
 				return IsUndersized;
 			}
-			else if (left != null || right != null)
+			else
 			{	// Transfer an element from the fullest sibling so that 'node'
 				// is no longer undersized.
 				if (left == null)
@@ -486,8 +508,8 @@
 					Debug.Assert(amt > 0);
 					_children[i+1].Index += amt;
 				}
+				return false;
 			}
-			return false;
 		}
 
 		/// <summary>Deletes the child _children[i], shifting all entries afterward 
@@ -522,6 +544,7 @@
 			var child = right.Child(0);
 			LLInsert(oldLocal, child, 0);
 			Debug.Assert(oldLocal > 0);
+			Debug.Assert(child.TotalCount > 0);
 			_children[oldLocal].Index = oldTotal;
 			right.LLDelete(0, true);
 			AssertValid();
@@ -538,6 +561,7 @@
 				return 0;
 			var child = left.Child(left.LocalCount - 1);
 			LLInsert(0, child, child.TotalCount);
+			Debug.Assert(child.TotalCount > 0);
 			left.LLDelete(left.LocalCount - 1, false);
 			AssertValid();
 			left.AssertValid();
@@ -577,13 +601,13 @@
 			return -1;
 		}
 
-		public override int ImmutableCount()
+		public override uint GetImmutableCount(bool excludeSparse)
 		{
-			if (IsFrozen)
-				return (int)TotalCount;
-			int ic = 0;
+			if (IsFrozen && !excludeSparse)
+				return TotalCount;
+			uint ic = 0;
 			for (int i = 0; i < _childCount; i++)
-				ic += Child(i).ImmutableCount();
+				ic += Child(i).GetImmutableCount(excludeSparse);
 			return ic;
 		}
 	}

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	[TestFixture]
 	public class MapTests : DictionaryTests<MMap<object, object>>

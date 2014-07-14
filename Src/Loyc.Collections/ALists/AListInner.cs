@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace Loyc.Collections.Impl
 {
+	/// <summary>Internal node of <see cref="AList{T}"/> and <see cref="SparseAList{T}"/>.</summary>
 	internal class AListInner<T> : AListInnerBase<int, T>
 	{
 		#region Constructors and boilerplate
@@ -133,6 +134,32 @@ namespace Loyc.Collections.Impl
 				return change;
 			}
 		}
+		
+		internal override T SparseGetNearest(ref int? index, int direction)
+		{
+			int i = BinarySearchI((uint)index.Value);
+			if (i >= _childCount) {
+				if (direction < 0)
+					i = _childCount - 1;
+				else {
+					index = null;
+					return default(T);
+				}
+			}
+			var e = _children[i];
+			int? index2 = index.Value - (int)e.Index;
+			var result = e.Node.SparseGetNearest(ref index2, direction);
+			if (index2 == null && direction != 0 && (uint)(i + direction) < _childCount)
+			{
+				// index must have pointed to blank space. In that case there are 
+				// two children where the nearest might live; now check the other one.
+				e = _children[i + direction];
+				index2 = direction > 0 ? 0 : int.MaxValue;
+				result = e.Node.SparseGetNearest(ref index2, direction);
+			}
+			index = index2 == null ? null : index2 + (int)e.Index;
+			return result;
+		}
 
 		/// <summary>Appends or prepends some other list to this list. The other 
 		/// list must be the same height or less tall.</summary>
@@ -175,6 +202,14 @@ namespace Loyc.Collections.Impl
 			}
 
 			return AutoSplit(out splitRight);
+		}
+
+		public override uint GetRealItemCount()
+		{
+			uint ric = 0;
+			for (int i = 0; i < _childCount; i++)
+				ric += Child(i).GetRealItemCount();
+			return ric;
 		}
 	}
 }

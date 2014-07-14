@@ -53,23 +53,35 @@ namespace Loyc.Collections
 		{
 			return GetEnumerator();
 		}
-		public int? NextHigher(int index)
+		public T NextHigherItem(ref int? index)
 		{
-			if ((uint)(index + 1) < (uint)Count)
-				return index + 1;
-			else if (index < 0)
-				return 0;
-			else
-				return null;
+			if (index == null || index.Value < 0)
+				index = 0;
+			else if (index == int.MaxValue) {
+				index = null;
+				return default(T);
+			} else
+				index++;
+
+			bool fail;
+			var result = _list.TryGet(index.Value, out fail);
+			if (fail) index = null;
+			return result;
 		}
-		public int? NextLower(int index)
+		public T NextLowerItem(ref int? index)
 		{
-			if ((uint)(index - 1) < (uint)Count)
-				return index - 1;
-			else if (index > Count && index > 0)
-				return Count - 1;
-			else
-				return null;
+			if (index == null || index >= Count)
+				index = Count - 1;
+			else if (index == int.MinValue) {
+				index = null;
+				return default(T);
+			} else
+				index--;
+
+			bool fail;
+			var result = _list.TryGet(index.Value, out fail);
+			if (fail) index = null;
+			return result;
 		}
 	}
 }

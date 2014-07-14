@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using System.Diagnostics;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	/// <summary>An class used for testing purposes with three parts: a hashcode,
 	/// a mutable value (ignored for equality testing) and an extended key int

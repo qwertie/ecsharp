@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Tests
 {
 	[TestFixture]
 	public class BListTests : AListTestBase<BList<int>, int>

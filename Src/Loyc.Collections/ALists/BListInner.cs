@@ -150,7 +150,7 @@
 		{
 			// Child i is undersized or its highest key changed. Update _highestKey if possible.
 			bool returnAggChg = i >= _childCount-1;
-			if (!returnAggChg && _children[i].Node.LocalCount > 0)
+			if (!returnAggChg && _children[i].Node.TotalCount > 0)
 				_highestKey[i] = GetHighestKey(_children[i].Node);
 
 			return base.HandleUndersizedOrAggregateChanged(i, tob) | returnAggChg;
