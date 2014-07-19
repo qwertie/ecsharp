@@ -1,0 +1,242 @@
+---
+title: The List Trifecta, Part 1
+layout: article
+tagline: Meet the incredibly flexible AList family of data structures
+---
+<h2>Introduction&nbsp;</h2>
+
+<p><span>The standard <code>List&lt;T&gt;</code> data type is quite fast, if--if!--all you need to do is read from it and add new items on the end. Inserting and deleting at random locations, however, takes O(N) time, and doing so many times on a large <code>List&lt;T&gt;</code> is very slow. If you literally pick random locations to insert and delete, every insert or delete will move, on average, half of the elements of the list. Of course (and this may sound obvious), making a copy of the whole list also takes O(N) time*.<o:p></o:p></span>&nbsp;</p>
+
+<div style="border: 1px dotted rgb(127, 127, 127); padding: 4px 3px 4px 4px; font-size: small; visibility: visible; max-width: 50%; width: 35%; min-width: 100px !important; float: right !important;"><span>* In case any novices are reading this, I&#39;ll briefly explain what &quot;big O&quot; notations like O(N) and O(log N) mean. This notation describes the behavior of an algorithm as its input gets larger and larger (technically it doesn&#39;t tell you anything about performance for small inputs). The time required for an O(N) operation is proportional to the list size, so when I say that inserting an item takes O(N) time, it means that an insert into a list with 2 million items takes twice as much time as an insert into a list with 1 million items. The time required for an O(log N) action, however, grows logarithmically, which means that it only takes slightly longer when there are 2 million items than 1 million. O(1) means that an operation takes the same amount of time, always. &quot;Big O&quot; notation does not tell you anything about relative performance; for example one O(N) operation may take 5 times as long as another O(N) operation. To put it another way, O(5*N) = O(N) because this notation always ignores &quot;constant factors&quot;. If you do a constant number of operations in a row that are all O(N), the total is still O(N). Finally, one should beware of O(N^2), &quot;quadratic complexity&quot;. An O(N^2) operation takes 4 times as long for 2 million items compared to 1 million, and about 1000 times longer for 1 million items compared to 1000 items. O(N^3), &quot;cubic complexity&quot;, is truly horrible and you should stay well away from it, unless you know that your data set will be small.<o:p></o:p></span></div>
+
+<p><span>I used to take these properties for granted, until I read somewhere on StackOverflow that it&#39;s possible to implement a list that does O(log N) inserts and deletes instead. My insatiable fetish for data structures kicked in once again, and after 9 months of work (give or take) my new baby, the A-list, popped out.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>The A-list does everything that a normal list does, but in O(log N) time instead. For small lists it performs slower than <code>List&lt;T&gt;</code>, but for large lists it can be dramatically faster in certain cases. Besides that, it supports batch insertion (inserting an entire list into an A-List in O(log N + M) for a list of size M), fast cloning (O(1) constant-time), O(log N) Split and Join between two A-lists, freezing the list, and observability.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>Although the A-list is pretty complex internally, from the outside it implements the same <code>IList&lt;T&gt;</code> interface as all other lists, plus a bunch of other cool features.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>It is designed primarily for large lists. Memory use is not too bad for small lists, but you should expect a speed penalty if you are mostly doing things that <code>List&lt;T&gt;</code> does well, such as random access by index and adding items only at the end. If you need to add/remove items at both the beginning and end, or if you need to insert/remove at random locations but your list is always small, then my <code>DList&lt;T&gt;</code> data structure (described in a future article), will suit you better than <code>AList&lt;T&gt;</code>.<o:p></o:p></span></p>
+
+<p><span>Since writing the AList family of classes I&rsquo;ve... let it sit unused for more than a year. I had plans to benchmark it, and to reconsider a couple of design decisions, but I&rsquo;ve been too busy to do it so I&rsquo;ve decided to release it at 98% completion with unmeasured performance. Y&#39;all can benchmark it yourself.</span>&nbsp;</p>
+
+<h2>AList&lt;T&gt; will hold your hand&nbsp;</h2>
+
+<p><span>I like to call A-list &quot;the ultimate notice data structure&quot; because it protects application performance like chubby Fisher-Price toys protect your children. It&#39;s not a lean, mean hot rod, but most operations (except <code>Sort()</code>, <code>IndexOf()</code>, <code>Remove(T)</code> and <code>RemoveAll()</code>) can complete in O(log N) or faster, and even <code>IndexOf()</code> and <code>Remove(T)</code> can be accelerated (if you are willing to take a 2x-3x performance hit to all other operations.) It&#39;s definitely not a memory hog, either. So if you want to handle long lists and you don&#39;t have enough experience to know what data structure to use, just use A-List. It might not be fast, but it&#39;s almost guaranteed not to be slow.<o:p></o:p></span>&nbsp;</p>
+
+<p>For example, have you ever wanted to remove some items and perform some operations on them? You cannot accomplish this with a foreach loop such as this:&nbsp;</p>
+
+<pre lang="cs">
+int sum = 0;
+foreach (int item in list)
+  if (item &gt; 2) {
+    sum += item;
+    list.Remove(item);
+    // Exception occurs! foreach loop cannot continue after Remove()!
+  }&nbsp;</pre>
+
+<p><span lang="EN" style="font-size: 11pt; line-height: 115%; font-family: Calibri, sans-serif;">You might try to solve this problem with a reverse for-loop such as this:</span></p>
+
+<pre>
+for (int i = list.Count - 1; i &gt;= 0; i--)
+  if (list[i] &gt; 2) {
+    sum += list[i];
+    list.RemoveAt(i);
+  }&nbsp;&nbsp;</pre>
+
+<p><span lang="EN" style="font-size: 11pt; line-height: 115%; font-family: Calibri, sans-serif;">This works, but it runs in O(N^2) time, so it&#39;s very slow if the list is large. A better solution is to separate the analysis and removal into two passes:</span></p>
+
+<pre>
+int sum = 0;
+foreach (int item in list)
+  if (item &gt; 2)
+    sum += item;
+list.RemoveAll(item =&gt; item &gt; 2);
+</pre>
+
+<p>But what if you didn&#39;t think of that solution and already wrote the O(N^2) version? There&#39;s a lot of code out there already that relies on slow <code>List&lt;T&gt;</code> operations. An easy way to solve performance caused by poor use of <code>List&lt;T&gt;</code> is simply to add &quot;A&quot; in front. AList is pretty much a drop-in replacement for List, so you can convert O(N^2) into faster O(N log N) code simply by using an AList instead of a List.&nbsp;</p>
+
+<h2>AList&lt;T&gt; on the inside&nbsp;&nbsp;</h2>
+
+<p>Structurally, A-Lists are very similar to <a href="http://en.wikipedia.org/wiki/B%2B_tree">B+trees</a>. They use memory almost as efficiently as arrays, and each list is a tree of &quot;nodes&quot;. Each node is either a &quot;leaf&quot; node (which holds your data, i.e. instances of <code>T</code>) or an &quot;inner&quot; node, also known as an &quot;internal&quot; node. Here&#39;s a class diagram of it all:&nbsp;</p>
+
+<p><img height="765" src="AListClassDiagram.png" width="640" /></p>
+
+<p>The key difference between&nbsp;A-Lists and other kinds of trees is that A-Lists are indexable--you can write <code>alist[index]</code>. The way this works is that each inner node contains the first index of each of its children. To locate an item at index <code>i</code>,&nbsp;an inner node performs a binary search to find the child node that contains index <code>i</code>.&nbsp;Whenever an item is inserted or deleted, all the &quot;first indexes&quot; that have changed are updated appropriately.</p>
+
+<p>Like B+trees, A-List trees have a consistent height: if the tree height is 3, for example, then every leaf node is reached through exactly two inner nodes; this is a consequence of the way the tree is updated. Each node has a range of permitted sizes; by default this range is 17 to 48 items for leaf nodes, and 8 to 16 items for inner nodes (I more or less picked these numbers out of a hat, by the way.)</p>
+
+<p>As you add items, a leaf node may grow too large. When a node (leaf or inner) grows too large, an item may be transferred to a sibling, but if the sibling(s) are also too large (or if the node has no siblings because it is the root node), the node is split in half; this causes the parent node to enlarge by 1, which may cause it to also be oversized and split.&nbsp;When the root node splits, a new root node is created to point to the two halves of the data (which increases the tree height by 1).</p>
+
+<p>Here&#39;s an example tree structure, produced by the following code:&nbsp;</p>
+
+<pre lang="cs">
+var list = new AList&lt;char&gt;(maxLeafSize: 6, maxInnerSize: 4) { 
+	&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;, &#39;H&#39;, &#39;I&#39;, &#39;J&#39;,
+	&#39;K&#39;, &#39;L&#39;, &#39;M&#39;, &#39;N&#39;, &#39;O&#39;, &#39;P&#39;, &#39;Q&#39;, &#39;R&#39;, &#39;S&#39;, &#39;T&#39;,
+	&#39;U&#39;, &#39;V&#39;, &#39;W&#39;, &#39;X&#39;
+};
+</pre>
+
+<p>&nbsp;<img height="364" src="AList1.png" width="549" /></p>
+
+<p>Given the configuration of this tree, its capacity is 24 children at depth 2 (4 &times; 6). If we add a 25th item:</p>
+
+<pre>
+ list.Add(&#39;Y&#39;);
+</pre>
+
+<p>This is the result:&nbsp;</p>
+
+<p><img height="545" src="AList2.png" width="576" /></p>
+
+<p>In more detail:</p>
+
+<ol>
+	<li><code>AList.Add(&#39;Y&#39;)</code> calls <code>AList.Insert(24, &#39;Y&#39;)</code>, which calls the virtual method <code>AListNode.Insert</code>, which calls <code>AListNode.Insert</code> on its fourth child (STUVWX) to insert <code>&#39;Y&#39;</code> item at local index <code>6</code> (from the leaf&#39;s point of view).</li>
+	<li>The leaf node STUVWX splits itself into two halves, STU and VWX, which are new objects.</li>
+	<li>The requested item <code>&#39;Y&#39;</code> is added to the right half (VWXY), and the leaf returns the two halves to its parent</li>
+	<li>The parent node has a method <code>HandleChildSplit()</code> which enlarges the node and inserts the new child, then notices that it&#39;s bigger than the size limit (I found it more convenient to insert the item first, enlarging the internal array, before splitting. The code is doing more work than necessary, but don&#39;t worry, inner nodes do not have to split very often. Leaf nodes, meanwhile, split early to avoid the unnecessary enlargement.)</li>
+	<li>The original <code>AListInner</code> is replaced with two others, which are returned to the <code>AList</code>.</li>
+	<li><code>AList.Insert()</code> assigns a new <code>AListInner</code> (initialized with two children) to <code>_root</code>.</li>
+</ol>
+
+<p><code>AList</code> supports lots and lots of other operations, which I won&#39;t cover in so much detail.</p>
+
+<p>When you remove items, a leaf node may become too small. In this case, an item may be transferred from a sibling to make it bigger, but if the sibling(s) are not allowed to shrink,&nbsp;the node&nbsp;merges&nbsp;with one of its siblings. This causes the parent node to shrink by 1, which may cause the parent to also be too small and merge with its sibling (the child&#39;s &quot;uncle&quot;).&nbsp;If the root node is reduced to having only one child, the root node is eliminated and replaced with that single child (which decreases the tree height by 1).&nbsp;&nbsp;</p>
+
+<p>If you&#39;re really clever, you understood all of this. If not, the fast cloning feature will probably make your head explode. Anyway, consider reading the <a href="http://en.wikipedia.org/wiki/B%2B_tree">Wikipedia&nbsp;entry on B+trees</a>. Essentially the same process occurs in ALists and B+trees. In fact, my library has three versions of the <code>AList&lt;T&gt;</code> that are essentially B+trees plus integer indices (<code>BList&lt;T&gt;</code>, <code>BDictionary&lt;K,V&gt;</code> and <code>BMultiMap&lt;K,V&gt;</code>).</p>
+
+<h2>Jack-of-all-trades, master of some&nbsp;</h2>
+
+<p><span>The name &quot;A-List&quot; is short for All-purpose List. It is so named because it has a very large amount of functionality and extension points for further extending this functionality.&nbsp;</span><span>It&#39;s not the fastest or smallest data structure for most tasks, it is very useful when you need to do a variety of different things with a list, or when you plan to merge and split large lists.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>A-Lists use slightly more memory than <code>List&lt;T&gt;</code> for all list sizes. If you expect to do insertions and deletions at random locations, but only occasionally, <code>DList&lt;T&gt;</code> (part 3 of this series) may be a better choice because it has a faster indexer. Both classes provide fast enumeration (O(1) per element), but <code>DList&lt;T&gt;</code> enumerators initialize faster (an <code>AList&lt;T&gt;</code> enumerator needs O(log N) time to prepare itself.)<o:p></o:p></span>&nbsp;</p>
+
+<p><span>It also has some very unique features, my favorite being fast splicing (<code>Append</code>, <code>Prepend</code>, <code>CopySection</code>, <code>RemoveSection</code>) and fast cloning (<code>Clone(bool)</code>). It can also sort in O(N log N) time, which, I learned, is more difficult than it sounds when your data structure is a frickin&#39; tree.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>You can subscribe to the <code>ListChanging</code> event to find out when the list changes (more on that below).</span>&nbsp;</p>
+
+<p><span>Although single insertions, deletions, and random access require O(log N) time, you can get better performance using any overload of <code>InsertRange</code>, <code>RemoveRange</code>, <code>GetEnumerator</code> or <code>Resize</code>. The slowest of these, <code>InsertRange</code>, requires O(log N + M) time, where M is the number of elements you are inserting, and this is much faster than calling <code>Insert</code> repeatedly (which is O(M log N) time).</span>&nbsp;</p>
+
+<p><span><code>AList</code> is an excellent choice if you need to make occasional snapshots of the tree, since it supports O(1) cloning and copy-on-write behavior (more on that below).</span>&nbsp;<span><code>AList</code> is also freezable, which is useful if you need to construct a list in a read-only or freezable data structure. You could also freeze the list in order to return a read-only copy of it, which, compared to cloning, has the advantage that no memory allocation is required at the time you return the list. If you need to edit the list later, you can clone it then (the clone can be modified).</span>&nbsp;</p>
+
+<p><span>In general, <code>AList&lt;T&gt;</code> is NOT multithread-safe. Multiple concurrent readers are allowed, as long as the collection is not modified, so frozen instances ARE multithread-safe.<o:p></o:p></span>&nbsp;</p>
+
+<h2>AList&lt;T&gt;&nbsp;APIs In-Depth&nbsp;</h2>
+
+<h3><span>Standard stuff from IList&lt;T&gt;:</span>&nbsp;</h3>
+
+<ul>
+	<li>O(1): <code>Count</code>, <code>IsReadOnly</code>, <code>Clear</code>, <code>MoveNext</code>/<code>Current </code>(in the enumerator)</li>
+	<li>O(log N): <code>this[index]</code>, <code>Add(item)</code>, <code>Insert(index, item)</code>, <code>RemoveAt(index)</code>, <code>GetEnumerator</code> (the enumerator itself is O(1) per <code>MoveNext</code>)</li>
+	<li>O(N): <code>IndexOf(item)</code>, <code>Remove(item)</code>, <code>Contains(item)</code>, <code>CopyTo(array, index)</code>&nbsp;</li>
+</ul>
+
+<p><span>Some of these operations are slowed down by the presence of a &quot;Node observer&quot; such as <code>AListIndexer&lt;T&gt;</code>; however, <code>AListIndexer</code> can speed up <code>IndexOf(item)</code>, <code>Remove(item)</code> and <code>Contains(item)</code> from O(N) to O(log N).</span>&nbsp;</p>
+
+<h3><span>Range operations (IListRangeMethods&lt;T&gt;)</span>&nbsp;</h3>
+
+<ul>
+	<li><code>AddRange(list)</code>: Insert a list of M items in O(log N + list.Count()) time. There is an overload that takes a list of type <code>AList&lt;T&gt;</code>; if you insert a large AList into another one, the insertion is optimized to O(log N + log M) by cloning subtrees.&nbsp;&nbsp;</li>
+	<li><span><code>InsertRange(index, list)</code>: Insert a list of items at any index in O(log N + list.Count()) time. Similarly, there is an overload of <code>InsertRange</code> for when the list is <code>AList&lt;T&gt;</code>; this overload takes O(log N + log M) time.</span></li>
+	<li><span><code>RemoveRange(index, amount)</code>: Remove a contiguous range of items in O(log N) time.</span>&nbsp;</li>
+	<li><span><code>Sort(index, count, comp)</code>, <code>Sort()</code>, <code>Sort(comp)</code>: Sort the entire list or part of the list in O(N log N) time using a standard <code>Comparison&lt;T&gt;</code> delegate or <code>IComparer&lt;T&gt;</code>. I wrote custom code for this purpose, because a naive quicksort would need O(N (log N)^2) time to operate on a tree like this.<o:p></o:p></span>&nbsp;<span>&nbsp;</span>&nbsp;</li>
+</ul>
+
+<h3><span>Fast Cloning<o:p></o:p></span>&nbsp;</h3>
+
+<p><span>Different <code>AList&lt;T&gt;</code> objects have the ability to share read-only parts of themselves. Taking advantage of this, the <code>Clone()</code> method returns a copy of the tree in O(1) time.<br />
+<br />
+The clone is allowed to be modified without affecting the original, and the original can be modified without affecting the copy. How this works is that the tree is &quot;secretly&quot; marked read-only (actually just the root is marked read-only, at first, but this transitively affects the whole tree), and if either copy wants to modify the tree, the affected tree nodes are duplicated.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>This is really neat, but don&#39;t get too excited. Even though it&#39;s O(1) <em>at first</em>, any changes that you make after cloning the tree take far more time than they normally would, because parts of the tree have to be duplicated to ensure that the clones do not interfere with each other. If the tree is 4 levels deep, then the first time you change a single element after cloning the tree, 4 nodes will get duplicated: the leaf node that contains your element, and the three parent nodes including the root node.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>If you do something like this:<o:p></o:p></span>&nbsp;</p>
+
+<pre lang="cs">
+AList&lt;int&gt; clone = list.Clone(); // very fast
+for (int i = 0; i &lt; list.Count; i += 17) list[i] += 2; // slow
+for (int i = 0; i &lt; clone.Count; i += 17) clone[i] *= 2; // slow</pre>
+
+<p><span>The first for loop will end up duplicating the entire tree, and the second for-loop will duplicate the entire tree <em>again</em>, leaving the original tree nodes as garbage for the garbage collector. In the second loop, the clone cannot modify the original tree because it does not know that the original list is no longer sharing any part of the tree with the clone.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>These loops only change every 17th element, but a single leaf node in a large tree contains between 17 and 48 elements (by default). Nodes are always copied all-at-once, so changing every 17th element guarantees that every node will be duplicated (except maybe the last one).<o:p></o:p></span>&nbsp;</p>
+
+<p><span>Don&#39;t worry too much, though. If you run the two for loops <em>again</em>, they will run much faster because none of the nodes have to be duplicated on the second run.<o:p></o:p></span></p>
+
+<p><span>Note: if the original tree has been frozen with <code>Freeze()</code>,&nbsp; the clone is thawed (unfrozen).</span><span>&nbsp;</span>&nbsp;</p>
+
+<h3><span>More cool stuff</span>&nbsp;</h3>
+
+<ul>
+	<li><code>Freeze()</code>: prevents further changes to the list. After calling this method, any attempt to modify the list will cause a <code>ReadOnlyException</code>. If necessary, this feature can be disabled in a derived class.</li>
+	<li><code>Append(other)</code> and <code>Append(other, true)</code>: appends &#39;other&#39; (another <code>AList&lt;T&gt;</code>) to this list. If the second argument is false or omitted, the tree that is being appended is cloned (marking its nodes read-only). If the second argument is true, the other tree (that is being appended) is cleared to empty, and the contents of the tree are merged into this tree. Remember, if the other tree is cloned then its nodes will be read-only, which will slow down future modifications to the tree. By setting the second argument to true, the nodes are not marked read-only, so they can be modified in the future without being duplicated. <code>Append</code> works in O(log N+log M) time.</li>
+	<li><code>Prepend(other)</code> and <code>Prepend(other, true)</code>: Same as <code>Append</code> except that the contents of &#39;other&#39; are inserted at the beginning of the list instead of the end.&nbsp;</li>
+	<li><span><code>Resize(newSize)</code>: Changes the length of the list. If <code>newSize &lt; Count</code>, the list is truncated in O(log N) time. If <code>newSize &gt; Count</code>, new items are added to the end of the list in O(newSize) time; these new items have a value of <code>default(T)</code>.<o:p></o:p></span>&nbsp;</li>
+	<li><code>TrySet(index, value)</code>: same as <code>list[index] = value</code> except that if the index is invalid, <code>TrySet</code> returns false instead of throwing an exception. <code>TryGet(index, defaultValue)</code> is available as an extension method.&nbsp;</li>
+	<li><span><code>ReverseView</code> property: returns a wrapper that gives you a read-only reversed access to the list items. This is a handy way to enumerate backwards through the collection with a <code>foreach</code> loop (the reverse enumerator runs in O(1) time per element, just like the forward one.)<o:p></o:p></span>&nbsp;</li>
+	<li><code>Slice(start, length)</code>: returns a wrapper that gives you a read-only view of a subsection of the list in O(1) time.</li>
+	<li><code>CopySection(start, count)</code>: similar to <code>Clone</code>, but only clones a section of the list. Most of the time, &#39;start&#39; and &#39;start+count&#39; do not happen to fall on boundaries between tree nodes, so partial nodes will have to be duplicated at the edges of the range. This slows down the operation somewhat, but this function still works in O(log N) time when copying large sections.</li>
+	<li><code>RemoveSection(start, count)</code>: removes a section of the list and returns it. This is different from <code>CopySection</code> because <code>RemoveSection</code> does not have to &quot;clone&quot; any of the nodes that it returns, which would mark them as read-only and slow down future modifications to the section. Like <code>CopySection</code>, <code>RemoveSection</code> normally has to copy some elements around the edges of the range to new nodes, or possibly shuffle the boundaries of nodes near the beginning and end of the range. Still, overall it runs in O(log N) time. &nbsp;</li>
+</ul>
+
+<h3><span>Other stuff (not as cool, but still handy)</span>&nbsp;</h3>
+
+<ul>
+	<li><code>First</code>, <code>Last</code>: get the first or last item in O(log N) time.</li>
+	<li><code>IsFrozen</code>: tells you if this copy of the list is frozen. If you don&#39;t like the fact that it&#39;s frozen, no big deal, just clone it.</li>
+	<li><code>IndexesOf(item)</code> and <code>IndexesOf(item, minIndex, maxIndex)</code>: returns a sequence of integers that represent the locations where a given item appears in the list. <code>IndexedAList</code> has a <code>IndexesOf(item, bool sorted)</code> method that does the same thing faster when the list is indexed.</li>
+	<li><code>Swap(AList&lt;T&gt;)</code>: swaps two lists in-place</li>
+	<li><code>RemoveAll(Predicate&lt;T&gt;)</code>: remove all items that meet a condition&nbsp;</li>
+	<li><span><code>GetIterator</code>: ask me later<o:p></o:p></span>&nbsp;</li>
+</ul>
+
+<p><span>Random fact: <code>AList&lt;T&gt;</code> is serializable, but it is not specifically designed or optimized for serialization.</span>&nbsp;</p>
+
+<h3><span>List Observers<o:p></o:p></span>&nbsp;</h3>
+
+<p><span><code>AList&lt;T&gt;</code> supports two totally different kinds of observation. One is the conventional &quot;tell me when an item is added or removed&quot; kind of observation, which is available through the <code>ListChanging</code> event. For efficiency, it does not use the same interface as an <code>ObservableCollection</code>; most importantly the event is called while the list is changing, unlike the more standard <code>ListChanged</code> which does not call event handlers until after the list has changed. It turns out that finding out about changes in progress is sometimes less useful than finding out about changes after they are complete, so the design of this feature may be changed someday (I&#39;m not actively redesigning it just yet).</span>&nbsp;</p>
+
+<p><span>The other kind of observation is a very low-level &quot;tree observer&quot; which is notified about how nodes are being rearranged in the tree and what items are being added or removed in which nodes. Most people will never want to use this feature, and there may be a significant performance penalty when using it. To observe this way you must write a class that implements <code>IAListTreeObserver&lt;T,T&gt;</code>, then call <code>AddObserver(observer)</code> to link the <code>AList</code> to your observer.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>The second kind of observer is used by <code>AListIndexer&lt;T&gt;</code> to keep track of the index of every item in an <code>AList&lt;T&gt;</code> in order to speed up <code>IndexOf(item)</code>, <code>Contains(item)</code> and <code>Remove(item)</code>.<o:p></o:p></span>&nbsp;<span>&nbsp;</span>&nbsp;</p>
+
+<h3><span>IndexedAList&lt;T&gt;</span>&nbsp;</h3>
+
+<p><span>This is a derived class of <code>AList&lt;T&gt;</code> which can accelerates <code>IndexOf(item)</code>, <code>Contains(item)</code> and <code>Remove(item)</code> when the list is large. It is a simple wrapper that uses a <code>AListIndexer&lt;T,T&gt;</code> to provide indexing functionality. Unfortunately, <code>IndexedAList&lt;T&gt;</code> changes the behavior of these three functions; instead of finding the first occurrence of an item, these functions will find any occurrence.<br />
+<br />
+An index is created by default, but if necessary the index can be disabled temporarily in the constructor or by settings the <code>IsIndexed</code> property to false. However, an index will be recreated automatically if you call one of those three functions (<code>IndexOf</code>...). Index construction takes O(N log N) time where N is the length (<code>Count</code>).<o:p></o:p></span>&nbsp;</p>
+
+<p><span><code>AListIndexer</code>, in turn, observes changes and builds a table of items in the tree. <code>AListIndexer</code> is only designed to accelerate searches in very large lists, and it offers no performance benefit to small lists; to the contrary, it just wastes time and memory in small lists.<o:p></o:p></span></p>
+
+<p><span>In general, <code>AListIndexer</code> requires more memory than the list that is being indexed. Specifically, if pointers use P bytes, then <code>AListIndexer</code> itself consumes moderately MORE than X+P*N bytes of memory, where X is the size of the list being indexed (in bytes), and N is the number of items in the list. Thus, for example, an indexed list of <code>Object</code>s requires approximately three times as much memory as an <code>AList</code> that is not indexed.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>Moreover, changing an indexed list takes at least twice as much time, since the indexer must be notified of each change and updates to the index take O(log N) time per update. Batch operations involving X items that take O(log N) time without an indexer (e.g. <code>RemoveRange(i, X)</code>) will take O(X log N) time instead, because the indexer must be notified about each item changed.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>Still, these costs are worthwhile in applications that frequently search for items in the list.</span>&nbsp;</p>
+
+<h2><span>Conclusion<o:p></o:p></span>&nbsp;</h2>
+
+<p>So what have we learned here today?&nbsp;<code>AList&lt;T&gt;</code>&nbsp;(and its base class,&nbsp;<code>AListBase&lt;T&gt;</code>) is a tree structure that pretends to be a simple list.&nbsp;Its tree&nbsp;structure&nbsp;enables it to manipulate very long lists efficiently, supporting relatively fast insert, remove, and splicing operations (although indexing individual elements costs extra). Nodes can be frozen (and thawed by automatic copying), which enables&nbsp;<code>AList&lt;T&gt;</code>&nbsp;to support fast cloning and limited use as a &quot;<a href="http://en.wikipedia.org/wiki/Persistent_data_structure">persistent</a>&quot; data structure. It has so many methods, it could have been called&nbsp;<code>KS&lt;T&gt;</code>&nbsp;for Kitchen Sink Tree.&nbsp;<code>AList&lt;T&gt;</code>&nbsp;doesn&#39;t have bad performance for short lists, but it is probably not worth using if you know that you&#39;ll never need to process a very long list.&nbsp;</p>
+
+<p><span>It is not clear whether A-List is ready for mission-critical use. It has a lot of internal complexity so I can&#39;t guarantee that it is bug-free, although it does have a pretty decent test suite. Currently, the <code>IndexedAList&lt;T&gt;</code> class which accelerates <code>IndexOf()</code> and <code>Remove(T)</code> has not been tested at all, although a basic series of tests have been done on <code>AListIndexer&lt;K,T&gt;</code>, the core mechanism behind <code>IndexedAList&lt;T&gt;</code>.<o:p></o:p></span>&nbsp;</p>
+
+<p><span>Soon I will write articles about two related data structures, <code>BList&lt;T&gt;</code> and <code>DList&lt;T&gt;</code>. <code>BList&lt;T&gt;</code> and <code>AList&lt;T&gt;</code> are tree-based and that support insert, remove and the indexer (<code>[i]</code>) in O(log N) time; they share a common base class and some of their implementation. <code>DList&lt;T&gt;</code> is a simple data structure similar to <code>List&lt;T&gt;</code>, except that it can quickly add or remove items at the beginning or end of the list (not just at the end). <code>AList&lt;T&gt;</code>, <code>BList&lt;T&gt;</code> and <code>DList&lt;T&gt;</code> all depend on the same data structure internally, <code>DListInternal&lt;T&gt;</code>, which is a struct that consists of an array and two integers. But that&#39;s a story for a future article.</span>&nbsp;</p>
+
+<p><span>Future articles will also cover some of the other collections in this article&#39;s download, including <code>BDictionary&lt;K,V&gt;</code>, <code>BMultiMap&lt;K,V&gt;</code> and <code>InternalList&lt;T&gt;</code>. The articles are not written, but the code is ready, so feel free read the doc-comments above each of these classes.</span>&nbsp;</p>
+
+<p><strong>Note</strong>: I updated the zip file. Now&nbsp;<code>AList&lt;T&gt;</code> is provided as part of a library called <code>Loyc.Collections</code>. This library depends on <code>Loyc.Essentials</code>. What &quot;Loyc&quot;&nbsp;means is not important right now, but the point is that the library is currently much bigger than necessary&nbsp;(&gt;600KB for both) because it&#39;s got lots of other stuff in it besides <code>AList&lt;T&gt;</code>--extension methods, math code, other collection classes, <code><a href="http://www.codeproject.com/Articles/87991/Dynamic-interfaces-in-any-NET-language">GoInterface</a></code>, unit tests, etc. I&#39;m releasing it in this state because I don&#39;t know when I&#39;ll have time to work on this further.</p>
+
+<p>Here is an <a href="https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc.Essentials">overview of Loyc.Essentials stuff</a> and here&#39;s an <a href="https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc.Collections">overview of Loyc.Collections</a>.&nbsp;</p>
+
+<p>A demo app is <strong>not</strong> included, just unit tests. Maybe later.&nbsp;</p>
+
+<h2>History&nbsp;</h2>
+
+<ul>
+	<li>End of 2012: 96% completion&nbsp;</li>
+	<li>March 27, 2013: 98% completion + published CodeProject article</li>
+	<li>September 9, 2013: &quot;AList&lt;T&gt; on the inside&quot;: demonstrated runtime structure with two new diagrams</li>
+</ul>
+
+<p><a href="http://www.codeproject.com/Articles/568095/The-List-Trifecta-Part">Originally published on CodeProject</a></p>
