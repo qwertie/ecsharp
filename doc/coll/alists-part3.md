@@ -75,9 +75,9 @@ Leaf nodes of `AList`s contain a single `InternalDList<T>` structure, to give le
 
 ## `SparseAList<T>`
 
-There is one more `AList<T>` data structure that I created after writing the first two articles. The motivation for this data structure was _syntax highlighting_. The goal is to use the same lexer and parser for syntax highlighting that is used for compiling.
+There is one more `AList<T>` data structure that I created after writing the first two articles. The motivation for this data structure was _syntax highlighting_. More on that later.
 
-The `SparseAList<T>` is a list in which not all the indexes are "set". Unset indexes are "virtual" and use no memory at all, and `sparseAList[i]` returns `default(T)` when `i` is unset. Meanwhile, indexes that _are_ set use 4 bytes extra. The `Count` property returns the total number of "virtual" items, set and unset alike. The internal nodes of `SparseAList<T>` are practically the same as a normal `AList<T>`, but the leaf nodes have a different structure:
+The `SparseAList<T>` is a list in which not all the indexes are "set". Unset a.k.a. "clear" indexes are "virtual" and use no memory at all, and `sparseAList[i]` returns `default(T)` when `i` is clear. Meanwhile, indexes that _are_ set use 4 bytes extra. The `Count` property returns the total number of "virtual" items, set and unset alike. The internal nodes of `SparseAList<T>` are practically the same as a normal `AList<T>`, but the leaf nodes have a different structure:
 
   ~~~csharp
 	public class SparseAListLeaf<T> : AListNode<int, T>
@@ -119,7 +119,7 @@ This kind of list may resemble a `SortedDictionary<int,T>` but there is a big di
 
 `SparseAList<T>` implements my `ISparseListSource<T>` and `ISparseList<T>` interfaces. Compared to a normal list, a sparse list offers the following additional methods:
 
-  ~~~
+  ~~~csharp
 	/// <summary>Represents a read-only indexed list in which parts of the index 
 	/// space may be unused or "clear".</summary>
 	/// ... long remarks section removed ...
