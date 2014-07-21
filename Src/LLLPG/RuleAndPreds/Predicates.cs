@@ -169,7 +169,7 @@ namespace Loyc.LLParserGenerator
 		
 		public string ToStringWithPosition()
 		{
-			var pos = Basis.Range.Begin;
+			var pos = Basis.Range.Start;
 			if (pos.Line < 1) return ToString();
 			return string.Format("({0},{1}) {2}", pos.Line, pos.PosInLine, ToString());
 		}

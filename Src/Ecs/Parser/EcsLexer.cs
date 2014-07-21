@@ -24,7 +24,7 @@ namespace Ecs.Parser
 	public partial class EcsLexer : BaseLexer, ILexer
 	{
 		public EcsLexer(string text, IMessageSink sink) : base(new StringSlice(text), "") { ErrorSink = sink; }
-		public EcsLexer(ICharSource text, string fileName, IMessageSink sink) : base(text, fileName) { ErrorSink = sink; }
+		public EcsLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) { ErrorSink = sink; }
 
 		public bool AllowNestedComments = false;
 		private bool _isFloat, _parseNeeded, _isNegative, _verbatim;
@@ -39,6 +39,11 @@ namespace Ecs.Parser
 		// _allowPPAt is used to detect whether a preprocessor directive is allowed
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
 		private int _allowPPAt;
+
+		new public void Reset(ICharSource source, string fileName = "", int inputPosition = 0)
+		{
+			base.Reset(source, fileName, inputPosition, true);
+		}
 
 		public new ISourceFile SourceFile { get { return base.SourceFile; } }
 		public IMessageSink ErrorSink { get; set; }

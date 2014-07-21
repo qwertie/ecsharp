@@ -40,11 +40,12 @@ namespace Loyc.Syntax.Les
 		private object _value;
 		private int _startPosition;
 
-		protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
+		//now we use LexerSourceFile instead
+		//protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
 
-		new public void Reset(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		new public void Reset(ICharSource source, string fileName = "", int inputPosition = 0)
 		{
-			base.Reset(source, fileName, inputPosition, newSourceFile);
+			base.Reset(source, fileName, inputPosition, true);
 		}
 
 		new public ISourceFile SourceFile { get { return base.SourceFile; } }
@@ -68,7 +69,7 @@ namespace Loyc.Syntax.Les
 		protected sealed override void AfterNewline()
 		{
 			base.AfterNewline();
-			_lineIndexes.Add(InputPosition);
+			//_lineIndexes.Add(InputPosition);
 		}
 
 		public LesLexer Clone()
@@ -736,7 +737,7 @@ namespace Loyc.Syntax.Les
 			return _current.HasValue;
 		}
 
-		public SourcePos IndexToLine(int index)
+		/*public SourcePos IndexToLine(int index)
 		{
 			var fn = SourceFile.FileName;
 			if (index < 0 || _lineIndexes.IsEmpty)
@@ -766,6 +767,6 @@ namespace Loyc.Syntax.Les
 		public int LineToIndex(SourcePos pos)
 		{
 			return LineToIndex(pos.Line) + pos.PosInLine - 1;
-		}
+		}*/
 	}
 }

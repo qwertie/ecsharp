@@ -268,7 +268,7 @@ namespace Ecs.Parser
 		private IListSource<Token> ReadRestAsTokenTree()
 		{
 			ReadRest();
-			var restAsLexer = new ListAsLexer(_rest, _source.SourceFile);
+			var restAsLexer = new TokenListAsLexer(_rest, _source.SourceFile);
 			var treeLexer = new TokensToTree(restAsLexer, false);
 			return treeLexer.Buffered();
 		}
@@ -300,53 +300,5 @@ namespace Ecs.Parser
 			}
 			return t;
 		}
-	}
-
-	/// <summary>Adapter: converts <c>IEnumerable(Token)</c> to the <see cref="ILexer"/> interface.</summary>
-	/// <remarks>TODO: Incomplete, does not track line numbers.</remarks>
-	public class ListAsLexer : ILexer
-	{
-		public ListAsLexer(IEnumerable<Token> tokenList, ISourceFile sourceFile) : this(tokenList.GetEnumerator(), sourceFile) { }
-		public ListAsLexer(IEnumerator<Token> tokenList, ISourceFile sourceFile) { _e = tokenList; _sourceFile = sourceFile; }
-
-		IEnumerator<Token> _e;
-		ISourceFile _sourceFile;
-		Token _current;
-		public Loyc.Syntax.ISourceFile SourceFile
-		{
-			get { return _sourceFile; }
-		}
-
-		public Token? NextToken()
-		{
-			if (MoveNext())
-				return _current;
-			else
-				return null;
-		}
-
-		public Loyc.IMessageSink ErrorSink { get; set; }
-		public int IndentLevel { get { return 0; } } // TODO
-		public int LineNumber { get { return 0; } } // TODO
-		public int InputPosition { get { return _current.EndIndex; } }
-
-		public bool MoveNext()
-		{
-			if (_e.MoveNext()) {
-				_current = _e.Current;
-				return true;
-			}
-			return false;
-		}
-		public Token Current
-		{
-			get { return _current; }
-		}
-		object System.Collections.IEnumerator.Current
-		{
-			get { return _e.Current; }
-		}
-		void IDisposable.Dispose() { _e.Dispose(); }
-		void IEnumerator.Reset() { _e.Reset(); }
 	}
 }

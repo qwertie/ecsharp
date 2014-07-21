@@ -545,7 +545,7 @@ namespace LeMP
 				}
 
 				PrintMessages(s.results, input, accepted,
-					s.messageHolder.List.MaxOrDefault(msg => (int)msg.Type).Type);
+					s.messageHolder.List.MaxOrDefault(msg => (int)msg.Severity).Severity);
 
 				if (accepted >= 1) {
 					var result = s.results[acceptedIndex];
@@ -672,12 +672,12 @@ namespace LeMP
 							// Print all messages from macros that accepted the input. 
 							// For rejecting macros, print warning/error messages, and 
 							// other messages when macroStyleCall.
-							if (_sink.IsEnabled(msg.Type) && (result.Node != null
-								|| (msg.Type == Severity.Detail && printedLast)
-								|| msg.Type >= Severity.Warning
+							if (_sink.IsEnabled(msg.Severity) && (result.Node != null
+								|| (msg.Severity == Severity.Detail && printedLast)
+								|| msg.Severity >= Severity.Warning
 								|| macroStyleCall))
 							{
-								var msg2 = new MessageHolder.Message(msg.Type, msg.Context,
+								var msg2 = new MessageHolder.Message(msg.Severity, msg.Context,
 									QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
 								msg2.WriteTo(_sink);
 								printedLast = true;

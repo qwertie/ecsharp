@@ -20,6 +20,9 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 
+	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
+	#rawText("#pragma warning disable 162, 642");
+
 	public partial class LesParser {
 		[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
 			// An Atom is:
@@ -30,11 +33,11 @@ namespace Loyc.Syntax.Les
 			// - [Attributes] followed by an Atom
 			// - an (expression) in parenthesis
 			// - a { block } in braces
-			private rule Atom(contextA::Precedence, ref attrs::RWList!LNode)::LNode @[
+			private rule Atom(context::Precedence, ref attrs::RWList!LNode)::LNode @[
 				{e::LNode = MissingExpr; _::LNode;}
 				(	// identifier or identifier(call)
 					t:=TT.Id
-					(	&{t.EndIndex == LT($LI).StartIndex && contextA.CanParse(P.Primary)}
+					(	&{[Local] t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
 						p:=TT.LParen rp:=TT.RParen
 						{e = ParseCall(t, p, rp.EndIndex);}
 					/	{e = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
@@ -50,15 +53,14 @@ namespace Loyc.Syntax.Les
 					e = Expr(PrefixPrecedenceOf(t), out _)
 					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 				|	// Prefix operator (also-infix)
-					// (the fact that it's called "contextA" rather than "context" is a hack, part of LLLPG support)
-					&{contextA != P_SuperExpr}
+					&{[Local] context != P.SuperExpr}
 					t:=(TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment|TT.Colon)
 					e=Expr(PrefixPrecedenceOf(t), out _) 
 					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
 				|	// [Attributes]
 					t:=TT.LBrack TT.RBrack
 					{attrs = AppendExprsInside(t, attrs);}
-					e=Atom(contextA, ref attrs)
+					e=Atom(context, ref attrs)
 				|	// (parens)
 					t:=TT.LParen rp:=TT.RParen {e = ParseParens(t, rp.EndIndex);}
 				|	// {braces}
@@ -82,18 +84,17 @@ namespace Loyc.Syntax.Les
 				{e::LNode; _::LNode; prec::Precedence; attrs::RWList!LNode = @null;}
 				e=Atom(context, ref attrs) 
 				{primary = e;}
-				{var contextA = context;} // part of a hack for LLLPG support
 				greedy
 				(	// Infix operator
-					//&{context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
-					{if (!context.CanParse(prec = InfixPrecedenceOf(LT(0)))) { goto end; };}
+					&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
+					//{if (!context.CanParse(prec = InfixPrecedenceOf(LT(0)))) { goto end; };}
 					t:=(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment|TT.Colon)
 					rhs:=Expr(prec, out primary)
 					{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{if (!prec.CanParse(P.NullDot)) primary = e;}
 				|	// ! operator (generics)
-					&{context.CanParse(P.Primary)}
+					&{[Local] context.CanParse(P.Primary)}
 					TT.Not
 					rhs:=Expr(P.Primary, out primary)
 					{
@@ -109,18 +110,18 @@ namespace Loyc.Syntax.Les
 						e.BaseStyle = NodeStyle.Operator;
 					}
 				|	// Suffix operator
-					&{context.CanParse(SuffixPrecedenceOf(LT($LI)))}
+					&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 					t:=(TT.PreSufOp|TT.SuffixOp)
 					{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex);}
 					{e.BaseStyle = NodeStyle.Operator;}
 					{if (t.Type() == TT.PreSufOp) primary = @null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
 				|	// Method call
-					&{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
+					&{[Local] e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
 					p:=TT.LParen rp:=TT.RParen
 					{e = primary = ParseCall(e, p, rp.EndIndex);}
 					{e.BaseStyle = NodeStyle.PrefixNotation;}
 				|	// Indexer / square brackets
-					&{context.CanParse(P.Primary)}
+					&{[Local] context.CanParse(P.Primary)}
 					t:=TT.LBrack rb:=TT.RBrack
 					{
 						var args = (new RWList!LNode { e });
@@ -132,12 +133,10 @@ namespace Loyc.Syntax.Les
 					// A loop is not strictly needed here; we could add each expr
 					// one at a time, but that would be less efficient in the 
 					// majority of cases.
-					&{context.CanParse(P_SuperExpr)}
+					&{[Local] context.CanParse(P.SuperExpr)}
 					{var rhs = RVList!LNode.Empty;}
-					{contextA = P_SuperExpr;} // hack
-					greedy(rhs += Expr(P_SuperExpr, out _))+
+					greedy(rhs += Expr(P.SuperExpr, out _))+
 					{e = MakeSuperExpr(e, ref primary, rhs);}
-					{contextA = context;} // end hack
 				)*
 				{label(end); return attrs == @null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
@@ -171,7 +170,7 @@ namespace Loyc.Syntax.Les
 				{var error::bool = @false;}
 				(	(TT.Semicolon|TT.Comma) =>
 					greedy(
-						&{$LA!=terminator} 
+						&{[Local] $LA!=terminator} 
 						{	if (!error) {
 								error = @true;
 								Error(0, "Expected " + terminator.ToString());

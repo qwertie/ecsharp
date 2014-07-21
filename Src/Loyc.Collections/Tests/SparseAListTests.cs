@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Loyc.Math;
 using Loyc.MiniTest;
 
 namespace Loyc.Collections.Tests
@@ -217,6 +218,44 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(sizeChange, 950);
 			Assert.AreEqual(sizeChange, -sizeChangeTemp);
 			Assert.AreEqual(alist.GetImmutableCount(), 0);
+		}
+
+		[Test]
+		public void TestClearSpace()
+		{
+			for (int iter = 0; iter < 10; iter++)
+			{
+				int i1 = MathEx.Square(_r.Next(50)) + 1;      // e.g. 100
+				int i0 = _r.Next(i1);                         // e.g. 50
+				int i2 = i1 + MathEx.Square(_r.Next(50)) + 1; // e.g. 100
+				int i3 = i2 + _r.Next(2500);                  // e.g. 1000
+
+				SparseAList<int> list = new SparseAList<int>();
+				list.ClearSpace(0, i1);
+				Assert.AreEqual(i1, list.Count);
+				Assert.AreEqual(0, list.GetRealItemCount());
+				Assert.AreEqual(0, list[i1 - 1]);
+				if (_testExceptions)
+				{
+					Assert.Throws<ArgumentOutOfRangeException>(() => { var _ = list[i1]; });
+					Assert.Throws<ArgumentOutOfRangeException>(() => { list.ClearSpace(0, -1); });
+					Assert.Throws<ArgumentOutOfRangeException>(() => { list.ClearSpace(-1, 10); });
+				}
+				list.ClearSpace(i0, i2 - i0);
+				Assert.AreEqual(i2, list.Count);
+				Assert.AreEqual(0, list.GetRealItemCount());
+				for (int i = i0; i < i2; i++)
+					list[i] = i;
+				list.ClearSpace(i1, i3 - i1);
+				Assert.AreEqual(i3, list.Count);
+				Assert.AreEqual(i1 - i0, list.GetRealItemCount());
+				list.ClearSpace(i0 + 1, i1 - (i0 + 1));
+				Assert.AreEqual(i3, list.Count);
+				Assert.AreEqual(1, list.GetRealItemCount());
+				list.ClearSpace(0, i0 + 1);
+				Assert.AreEqual(i3, list.Count);
+				Assert.AreEqual(0, list.GetRealItemCount());
+			}
 		}
 	}
 }

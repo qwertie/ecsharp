@@ -5,7 +5,6 @@ import System.Linq;
 import System.Text;
 import Loyc;
 import Loyc.Syntax;
-import Loyc.Syntax.Les;
 import Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les

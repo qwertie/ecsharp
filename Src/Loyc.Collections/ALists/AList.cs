@@ -783,7 +783,12 @@ namespace Loyc.Collections
 		{
 			get { return IsFrozen; }
 		}
-		
+
+		public new ListSlice<T> Slice(int start, int length)
+		{
+			return new ListSlice<T>(this, start, length);
+		}
+
 		#region Combine: helper method for Append, Prepend
 
 		protected virtual void Combine(AListBase<T> other, bool move, bool append)

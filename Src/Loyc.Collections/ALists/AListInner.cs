@@ -107,20 +107,23 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(!IsFrozen);
 			Debug.Assert(op.Source == null || op.SourceCount == op.Source.Count);
 			AssertValid();
-			Entry e;
+			Entry e = default(Entry);
 			
-			int i = BinarySearchI((uint)(index + op.SourceIndex));
-			AutoClone(ref _children[i].Node, this, op.tob);
-			e = _children[i];
-
-			// Perform the insert
-			int change = 0;
+			// Perform the insert/replace
+			int change = 0, i = 0;
 			do {
+				if (change == 0) {
+					// runs once for insert operations, once or multiple times for replace
+					i = BinarySearchI((uint)(index + op.SourceIndex));
+					AutoClone(ref _children[i].Node, this, op.tob);
+					e = _children[i];
+				}
 				change += e.Node.DoSparseOperation(ref op, index - (int)e.Index, out splitLeft, out splitRight);
 			} while (op.SourceIndex < op.SourceCount && splitLeft == null);
 			
 			// Adjust base index of nodes that follow
-			AdjustIndexesAfter(i, change);
+			if (change != 0)
+				AdjustIndexesAfter(i, change);
 
 			// Handle child split/undersize
 			if (splitLeft == null)
@@ -129,8 +132,7 @@ namespace Loyc.Collections.Impl
 				splitLeft = HandleChildSplit(i, splitLeft, ref splitRight, op.tob);
 				return change;
 			} else {
-				if (HandleUndersized(i, op.tob))
-					splitLeft = this;
+				splitLeft = HandleUndersized(i, op.tob) ? this : null;
 				return change;
 			}
 		}

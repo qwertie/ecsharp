@@ -246,7 +246,7 @@ namespace Loyc.LLParserGenerator
 				
 				// Add comment before code
 				if (LLPG.AddComments) {
-					var pos = alts.Basis.Range.Begin;
+					var pos = alts.Basis.Range.Start;
 					var comment = F.Trivia(S.TriviaSLCommentBefore, string.Format(" Line {0}: {1}", pos.Line, alts.ToString()));
 					if (_target.Count > oldCount)
 						_target[oldCount] = _target[oldCount].PlusAttr(comment);

@@ -498,16 +498,20 @@
 					leftCap = int.MaxValue;
 				if (right == null)
 					rightCap = int.MaxValue;
-				if (leftCap < rightCap) {
-					Debug.Assert(i > 0);
-					uint amt = node.TakeFromLeft(left, tob);
-					Debug.Assert(amt > 0);
-					_children[i].Index -= amt;
-				} else {
-					uint amt = node.TakeFromRight(right, tob);
-					Debug.Assert(amt > 0);
-					_children[i+1].Index += amt;
-				}
+				do {
+					if (leftCap < rightCap) {
+						Debug.Assert(i > 0);
+						uint amt = node.TakeFromLeft(left, tob);
+						leftCap++;
+						Debug.Assert(amt > 0);
+						_children[i].Index -= amt;
+					} else {
+						uint amt = node.TakeFromRight(right, tob);
+						rightCap++;
+						Debug.Assert(amt > 0);
+						_children[i+1].Index += amt;
+					}
+				} while (node.IsUndersized);
 				return false;
 			}
 		}

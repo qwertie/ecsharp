@@ -22,8 +22,8 @@ namespace Loyc.Collections.Impl
 		protected struct Entry
 		{
 			public Entry(uint offset, T item) { Offset = offset; Item = item; }
-			public uint Offset;
 			public T Item;
+			public uint Offset;
 		}
 		protected InternalDList<Entry> _list;
 		protected uint _totalCount;

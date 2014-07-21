@@ -38,7 +38,7 @@ namespace Loyc.LLParserGenerator
 	/// <see cref="GeneralCodeGenHelper"/> (this is the default helper).</li>
 	/// <li>The stage-one rule() macro uses <see cref="StageOneParser"/> to
 	/// translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
-	/// is currently translated to <c>#tuple(@`suf*`("Foo" | bar), ~';')</c>.
+	/// is currently translated to <c>#tuple(@`suf*`("Foo" | bar), ~';')</c>.</li>
 	/// <li>The stage-two macro is named run_LLLPG(). It accepts the code-gen 
 	/// helper created by the LLLPG(lexer) or LLLPG(parser) macro, and it
 	/// has the ProcessChildrenBefore flag so that the stage-1 rule() macros 
@@ -308,7 +308,7 @@ namespace Loyc.LLParserGenerator
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
-							sink.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Begin);
+							sink.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
 						else {
 							rules.Add(Pair.Create(rule, methodBody));
 							stmts[i] = null; // remove processed rules from the list

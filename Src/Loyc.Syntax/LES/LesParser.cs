@@ -20,6 +20,9 @@ namespace Loyc.Syntax.Les
 	/// <remarks>
 	/// You can use <see cref="LesLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
 	/// to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
+	/// <para/>
+	/// This class expects to receive tokens from <see cref="LesLexer"/> that have been 
+	/// preprocessed by <see cref="TokensToTree"/>, with whitespace tokens filtered out.
 	/// </remarks>
 	public partial class LesParser : BaseParser<Token>
 	{
@@ -260,7 +263,6 @@ namespace Loyc.Syntax.Les
 		protected MMap<object, Precedence> _prefixPrecedence = PredefinedPrefixPrecedence.AsMutable();
 		protected MMap<object, Precedence> _suffixPrecedence = PredefinedSuffixPrecedence.AsMutable();
 		protected MMap<object, Precedence> _infixPrecedence = PredefinedInfixPrecedence.AsMutable();
-		protected Precedence P_SuperExpr = P.SuperExpr; // allow derived class to override
 
 		Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default)
 		{
@@ -324,6 +326,12 @@ namespace Loyc.Syntax.Les
 				return _suffixOpNames[symbol] = GSymbol.Get(@"suf" + symbol.ToString());
 		}
 
+		// This is virtual so that a syntax highlighter can easily override and colorize it
+		protected virtual void MarkSpecial(LNode primary)
+		{
+			primary.BaseStyle = NodeStyle.Special;
+		}
+
 		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
 		{
 			if (primary == null)
@@ -334,7 +342,7 @@ namespace Loyc.Syntax.Les
 					primary = F.Call(primary, rhs);
 				else
 					primary = lhs.WithArgs(lhs.Args.AddRange(rhs));
-				primary.BaseStyle = NodeStyle.Special;
+				MarkSpecial(primary);
 				return primary;
 			} else {
 				Debug.Assert(lhs != null && lhs.IsCall && lhs.ArgCount > 0);

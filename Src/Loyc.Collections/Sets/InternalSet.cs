@@ -9,7 +9,6 @@ using Loyc.Math;
 
 namespace Loyc.Collections.Impl
 {
-#if true
 	/// <summary>A hash-trie data structure for use inside other data structures.</summary>
 	/// <remarks>
 	/// <see cref="InternalSet{T}"/> is a dual-mode mutable/immutable "hash trie",
@@ -1684,6 +1683,7 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
+	/// <summary>Statistics returned from <see cref="InternalSet{T}.CountMemory()"/>.</summary>
 	public struct InternalSetStats
 	{
 		/// <summary>Total number of nodes.</summary>
@@ -1749,6 +1749,4 @@ namespace Loyc.Collections.Impl
 			return table;
 		}
 	}
-
-#endif
 }

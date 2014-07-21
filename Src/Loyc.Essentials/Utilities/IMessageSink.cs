@@ -151,6 +151,17 @@ namespace Loyc
 			return ils != null ? ils.LocationString : context.ToString();
 		}
 
+		public static string FormatMessage(Severity type, object context, string format, params object[] args)
+		{
+			string loc = LocationString(context);
+			string formatted = Localize.From(format, args);
+			if (string.IsNullOrEmpty(loc))
+				return Localize.From(type.ToString()) + ": " + formatted;
+			else
+				return loc + ": " + 
+				       Localize.From(type.ToString()) + ": " + formatted;
+		}
+
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
 		public static readonly TraceMessageSink Trace = new TraceMessageSink();
 		/// <summary>Sends all messages to the <see cref="System.Console.WriteLine(string)"/>.</summary>

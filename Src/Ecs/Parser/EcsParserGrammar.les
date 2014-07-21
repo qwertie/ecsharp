@@ -30,7 +30,8 @@ namespace Ecs.Parser
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
 
-	#rawText("#pragma warning disable 162, 642");
+	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
+	#rawText("#pragma warning disable 162, 642"); 
 
 	partial class EcsParser {
 	[LL(2)] [Verbosity(2)]

@@ -5,6 +5,7 @@
 	using System.Text;
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
+	using System.Runtime.CompilerServices;
 
 	/// <summary>
 	/// A compact auto-enlarging list that efficiently supports supports insertions 
@@ -170,11 +171,17 @@
 
 		public T this[int index]
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			get {
 				CheckIndex(index);
 				return _dlist[index];
 			}
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			set {
 				CheckIndex(index);
@@ -183,13 +190,16 @@
 		}
 		public T this[int index, T defaultValue]
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			get { return _dlist[index, defaultValue]; }
 		}
 		private void CheckIndex(int index)
 		{
 			if ((uint)index >= (uint)_dlist.Count)
-				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
+				throw new ArgumentOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
 		public bool TrySet(int index, T value)
@@ -276,12 +286,24 @@
 
 		public T First
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			get { return _dlist.First; }
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			set { _dlist.First = value; }
 		}
 		public T Last
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			get { return _dlist.Last; }
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			set { _dlist.Last = value; }
 		}
 		public bool IsEmpty
@@ -348,9 +370,9 @@
 		{
 			return new Slice_<T>(this, start, count);
 		}
-		public Slice_<T> Slice(int start, int count)
+		public ListSlice<T> Slice(int start, int count)
 		{
-			return new Slice_<T>(this, start, count);
+			return new ListSlice<T>(this, start, count);
 		}
 	}
 

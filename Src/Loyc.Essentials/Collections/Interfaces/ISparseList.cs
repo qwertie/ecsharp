@@ -131,7 +131,7 @@ namespace Loyc.Collections
 	/// of M itself, though, so there is no property to retrieve this value).
 	/// <para/>
 	/// This interface has special methods for creating empty spaces: 
-	/// <see cref="Clear(int, int)"/> and <see cref="InsertSpace(int, int)"/>.
+	/// <see cref="ClearSpace(int, int)"/> and <see cref="InsertSpace(int, int)"/>.
 	/// The implementation can treat all other insertions and changes as non-empty
 	/// values; for example, given code like
 	/// <code>
@@ -144,7 +144,7 @@ namespace Loyc.Collections
 	/// Since the .NET framework does not allow fast bitwise comparisons of a 
 	/// generic T (in other words, there is no fast, generic way to compare a T 
 	/// value with default(T)), implementations will typically treat the last 1000 
-	/// items as "set" and allocate memory for them.
+	/// items as "set" and unnecessarily allocate memory for them. Blame Microsoft.
 	/// <para/>
 	/// This interface has no method to insert another sparse list into the current 
 	/// one, but <see cref="ISparseListEx{T}"/> does.
@@ -182,16 +182,30 @@ namespace Loyc.Collections
 	/// </remarks>
 	public interface ISparseList<T> : ISparseListSource<T>, IListAndListSource<T>
 	{
-		void Clear(int index, int count = 1);
+		/// <summary>Unsets the range of indices <c>index</c> to <c>index+count-1</c> inclusive.
+		/// If <c>index + count > Count</c>, the sparse list shall enlarge <c>Count</c>
+		/// to be equal to <c>index + count</c>.</summary>
+		/// <exception cref="ArgumentOutOfRangeException"><c>index</c> or <c>count</c> was negative.</exception>
+		/// <exception cref="OverflowException"><c>index + count</c> overflowed.</exception>
+		void ClearSpace(int index, int count = 1);
+		/// <summary>Inserts empty space starting at the specified index.</summary>
+		/// <exception cref="OverflowException"><c>index + count</c> overflowed.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><c>index</c> or <c>count</c
+		/// > was negative. If <c>index > Count</c>, this method may throw: if, for 
+		/// this kind of list, setting this[i] for some invalid i>=0 throws 
+		/// <c>ArgumentOutOfRangeException</c>, then so too does this method throw.
+		/// If you want the list to be enlarged instead, call <c>Clear(index, 0)</c> 
+		/// first, since the contract of Clear() requires it not to throw in the 
+		/// same situation.</exception>
 		void InsertSpace(int index, int count = 1);
 	}
 	
 	/// <summary>A sparse list that supports additional methods including 
 	/// <see cref="InsertRange(ISparseListSource{T})"/>.</summary>
 	/// <seealso cref="ISparseList{T}"/>
-	public interface ISparseListEx<T> : ISparseList<T>, IListEx<T>, IAutoSizeArray<T>
+	public interface ISparseListEx<T> : ISparseList<T>, IListEx<T>
 	{
 		/// <summary>Inserts another sparse list into this one.</summary>
-		void InsertRange(ISparseListSource<T> list);
+		void InsertRange(int index, ISparseListSource<T> list);
 	}
 }

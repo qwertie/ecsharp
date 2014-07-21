@@ -85,12 +85,18 @@ namespace Loyc.Collections.Impl
 
 		public T[] InternalArray { get { return _array; } }
 
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		public int Internalize(int index)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
-			return InternalizeNC(index);
+			return Internalize_NoCheck(index);
 		}
-		private int InternalizeNC(int index)
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
+		private int Internalize_NoCheck(int index)
 		{
 			index += _start;
 			if (index - _array.Length >= 0)
@@ -178,6 +184,9 @@ namespace Loyc.Collections.Impl
 			PushLast((ICollection<T>)items);
 		}
 
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		public void PushLast(T item)
 		{
 			AutoRaiseCapacity(1);
@@ -237,6 +246,9 @@ namespace Loyc.Collections.Impl
  			if ((_count << 1) + 2 < _array.Length)
 				Capacity = _count + 2;
 		}
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		public void AutoRaiseCapacity(int more)
 		{
 			if (_count + more > _array.Length)
@@ -317,7 +329,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert((uint)index <= (uint)_count);
 
 			if (amount <= 0)
-				return InternalizeNC(index);
+				return Internalize_NoCheck(index);
 			AutoRaiseCapacity(amount);
 
 			int deltaB = _count - index;
@@ -331,7 +343,7 @@ namespace Loyc.Collections.Impl
 				if (index >= _count)
 				{
 					_count += amount;
-					return InternalizeNC(index);
+					return Internalize_NoCheck(index);
 				}
 				_count += amount;
 				return IH_InsertBack(index, amount);
@@ -404,8 +416,8 @@ namespace Loyc.Collections.Impl
 			// Note: '_count' has already been increased by 'amount'
 			int oldCount = _count - amount;
 			T[] array = _array;
-			int iTo = InternalizeNC(_count);
-			int iFrom = InternalizeNC(oldCount);
+			int iTo = Internalize_NoCheck(_count);
+			int iFrom = Internalize_NoCheck(oldCount);
 
 			int left = oldCount - index, copyAmt;
 			if (iTo <= _start)
@@ -609,19 +621,28 @@ namespace Loyc.Collections.Impl
 
 		public T this[int index]
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			get {
 				Debug.Assert((uint)index < (uint)_count);
-				return _array[Internalize(index)];
+				return _array[Internalize_NoCheck(index)];
 			}
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			set {
 				Debug.Assert((uint)index < (uint)_count);
-				_array[Internalize(index)] = value;
+				_array[Internalize_NoCheck(index)] = value;
 			}
 		}
 		public T this[int index, T defaultValue]
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			[DebuggerStepThrough]
 			get {
 				if ((uint)index < (uint)_count)
@@ -809,12 +830,24 @@ namespace Loyc.Collections.Impl
 
 		public T First
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			get { return this[0]; }
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			set { this[0] = value; }
 		}
 		public T Last
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			get { return this[_count - 1]; }
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			set { this[_count - 1] = value; }
 		}
 		public bool IsEmpty

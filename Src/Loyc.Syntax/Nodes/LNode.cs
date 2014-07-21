@@ -661,7 +661,7 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public string LocationString
 		{
-			get { return Range.Begin.ToString(); }
+			get { return Range.Start.ToString(); }
 		}
 
 		/// <summary>Indicates the preferred style to use when printing the node to a text string.</summary>

@@ -41,7 +41,7 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public SourcePos Begin
+		public SourcePos Start
 		{
 			get { 
 				if (Source == null)

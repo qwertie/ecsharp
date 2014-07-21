@@ -78,7 +78,10 @@ namespace Loyc.Syntax.Lexing
 
 		protected void WriteError(int index, string msg, params object[] args)
 		{
-			ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), msg, args);
+			if (ErrorSink == null)
+				throw new FormatException(MessageSink.FormatMessage(Severity.Error, SourceFile.IndexToLine(index), msg, args));
+			else
+				ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), msg, args);
 		}
 	}
 }

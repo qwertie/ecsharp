@@ -164,12 +164,12 @@ namespace Loyc
 				: this (type, context, format, InternalList<object>.EmptyArray) {}
 			public Message(Severity type, object context, string format, params object[] args)
 			{
-				Type = type;
+				Severity = type;
 				Context = context;
 				Format = format;
 				_args = args;
 			}
-			public readonly Severity Type;
+			public readonly Severity Severity;
 			public readonly object Context;
 			public readonly string Format;
 			readonly object[] _args;
@@ -180,9 +180,7 @@ namespace Loyc
 			}
 			public override string ToString()
 			{
-				string loc = LocationString;
-				string text = Type.ToString() + ": " + Formatted;
-				return string.IsNullOrEmpty(loc) ? text : loc + ": " + text;
+				return MessageSink.FormatMessage(Severity, Context, Format, _args);
 			}
 			public string LocationString
 			{
@@ -191,9 +189,9 @@ namespace Loyc
 			public void WriteTo(IMessageSink sink)
 			{
 				if (_args.Length == 0)
-					sink.Write(Type, Context, Format);
+					sink.Write(Severity, Context, Format);
 				else
-					sink.Write(Type, Context, Format, _args);
+					sink.Write(Severity, Context, Format, _args);
 			}
 		}
 		List<Message> _messages;

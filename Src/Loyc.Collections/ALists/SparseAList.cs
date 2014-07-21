@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public class SparseAList<T> : AListBase<T>, ISparseList<T>, IListEx<T>, IListRangeMethods<T>, ICloneable<SparseAList<T>>
+	public class SparseAList<T> : AListBase<T>, ISparseListEx<T>, IListEx<T>, IListRangeMethods<T>, ICloneable<SparseAList<T>>
 	{
 		#region Constructors
 
@@ -57,11 +57,9 @@ namespace Loyc.Collections
 		{
 			uint index = op.AbsoluteIndex;
 			Debug.Assert((_freezeMode & 1) == 0);
-			if ((uint)index > (uint)_count) {
-				if (index < 0 || op.IsInsert)
-					throw new ArgumentOutOfRangeException("index");
-				return; // this clear operation has no effect
-			}
+			if ((uint)index > (uint)_count)
+				throw new ArgumentOutOfRangeException("index");
+
 			Debug.Assert(op.SourceCount > 0);
 			Debug.Assert(op.SourceCount <= (int)(_count - index) || op.IsInsert);
 			if (_listChanging != null) {
@@ -101,7 +99,7 @@ namespace Loyc.Collections
 		public sealed override void Insert(int index, T item)
 		{
 			AutoThrow();
-			DetectSizeOverflow(1);
+			int newCount = checked(Count + 1);
 			var op = new AListSparseOperation<T>((uint)index, true, false, 1, _observer) { Item = item };
 			DoSparseOperation(ref op);
 		}
@@ -114,11 +112,12 @@ namespace Loyc.Collections
 		{
 			InsertRange(index, list as IListSource<T> ?? new InternalList<T>(list));
 		}
+		void ISparseListEx<T>.InsertRange(int index, ISparseListSource<T> list) { InsertRange(index, list); }
 		public sealed override void InsertRange(int index, IListSource<T> list)
 		{
 			AutoThrow();
 			var count = list.Count;
-			DetectSizeOverflow(count);
+			int newCount = checked(Count + count);
 			if (count <= 0)
 				return;
 			var op = new AListSparseOperation<T>((uint)index, true, false, count, _observer) {
@@ -232,23 +231,29 @@ namespace Loyc.Collections
 			return true;
 		}
 		
-		public void Clear(int index, int count = 1)
+		public void ClearSpace(int index, int count = 1)
 		{
+			CheckParam.IsNotNegative("count", count);
+			//CheckParam.IsNotNegative("index", index); checked by DoSparseOperation
 			AutoThrow();
-			if (count <= 0)
-				return;
-			if (count > (int)_count - index && index >= 0)
-				count = (int)_count - index;
+			int end = checked(index + count);
+			if (end > Count) {
+				if (index >= Count) {
+					InsertSpace(Count, end - Count);
+					return;
+				} else
+					InsertSpace(Count, end - Count);
+			}
 			var op = new AListSparseOperation<T>((uint)index, false, true, count, _observer);
 			DoSparseOperation(ref op);
 		}
 
 		public void InsertSpace(int index, int count = 1)
 		{
+			CheckParam.IsNotNegative("count", count);
+			//CheckParam.IsInRange("index", index, 0, Count); checked by DoSparseOperation
 			AutoThrow();
-			DetectSizeOverflow(count);
-			if (count <= 0)
-				return;
+			var newCount = checked(Count + count);
 			var op = new AListSparseOperation<T>((uint)index, true, true, count, _observer);
 			DoSparseOperation(ref op);
 		}
