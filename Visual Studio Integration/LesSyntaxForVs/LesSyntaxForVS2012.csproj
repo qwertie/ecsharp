@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20305</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{FEE4AD0D-82FC-4232-8E5B-47D0EC09D039}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.VisualStudio</RootNamespace>
+    <AssemblyName>LesSyntaxForVs</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;VS2012</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;VS2010</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ecs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\Ecs.exe</HintPath>
+    </Reference>
+    <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\LEL.exe</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Collections, Version=1.0.5312.15523, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Essentials, Version=1.0.5311.36347, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Essentials.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Syntax, Version=1.0.5312.15524, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Syntax.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Utilities, Version=1.0.5312.15524, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Utilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Language.StandardClassification, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Text.Data">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.Logic">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI.Wpf">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BraceMatchingTagger.cs" />
+    <Compile Include="EcsSyntaxForVS.cs" />
+    <Compile Include="LesParserForVS.cs" />
+    <Compile Include="LesSyntaxForVs.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="BackgroundTaggerForVS.cs" />
+    <Compile Include="SyntaxClassifierForVS.cs" />
+    <Compile Include="TextSnapshotAsSourceFile.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\VSSDK\Microsoft.VsSDK.targets" Condition="false" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,155 +1,33 @@
 ﻿using System;
-using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using System.Windows.Media;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Syntax.Les;
+using Loyc.Syntax.Lexing;
+using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
-using Microsoft.VisualStudio.Language.StandardClassification;
-using System.Diagnostics;
-using Loyc.Syntax.Les;
-using Loyc.Collections;
-using System.Collections;
-using Loyc.Syntax;
-using Loyc;
-using Loyc.Math;
-using Loyc.Syntax.Lexing;
-using Loyc.Utilities;
 
-namespace VS.LesSyntax
+namespace Loyc.VisualStudio
 {
-	#region Classification types & color definitions
-	// - Special: if foo bar();
-	// - Method call: if(foo, bar());
-	// - idea to define keywords:
-	//   [#trivia_keywords("else", "catch", "finally")] { ... };
-
-	/// <summary>Defines the colorization for called methods like "Foo" in <c>Foo()</c>.</summary>
-	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "CallTarget")]
-	[Name("CallTarget")] // I don't know what this does
-	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
-	[Order(Before = Priority.Default)] // Supposedly "sets the priority to be after the default classifiers", even though the word "Before" is used
-	internal sealed class CallTargetDef : ClassificationFormatDefinition
-	{
-		public CallTargetDef()
-		{
-			this.DisplayName = "LES - method call target"; //human readable version of the name
-			this.ForegroundColor = Color.FromRgb(100, 50, 0);
-			this.IsBold = true;
-			this.TextDecorations = System.Windows.TextDecorations.Underline;
-		}
-
-		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("CallTarget")]
-		internal static ClassificationTypeDefinition _ = null;
-	}
-
-	/// <summary>Defines the colorization for called methods like "Foo" in <c>Foo()</c>.</summary>
-	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "LesPreSufOp")]
-	[Name("LesPreSufOp")] // I don't know what this does
-	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
-	[Order(Before = Priority.Default)]
-	internal sealed class PreSufOpDef : ClassificationFormatDefinition
-	{
-		public PreSufOpDef()
-		{
-			this.DisplayName = "LES - prefix/suffix operator";
-			this.ForegroundColor = Color.FromRgb(50, 100, 0);
-			this.IsBold = true;
-		}
-
-		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("LesPreSufOp")]
-		internal static ClassificationTypeDefinition _ = null;
-	}
-
-	/// <summary>Defines the colorization for parens & brackets & braces <c>([{}])</c>.</summary>
-	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "LesBracket")]
-	[Name("LesBracket")]
-	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
-	[Order(Before = Priority.Default)]
-	internal sealed class BracketDef : ClassificationFormatDefinition
-	{
-		public BracketDef()
-		{
-			this.DisplayName = "LES - paren/bracket/brace ({[]})";
-			this.ForegroundColor = Color.FromRgb(40, 80, 120);
-			//this.BackgroundColor = Color.FromRgb(224, 240, 255);
-			this.IsBold = true;
-		}
-
-		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("LesBracket")]
-		internal static ClassificationTypeDefinition _ = null;
-	}
-
-	/// <summary>Defines the colorization for literals other than numbers and strings.
-	/// There is already a predefined classification called "literal", but it shows up
-	/// as plain text and it is not listed on the Visual Studio colors list.</summary>
-	/// <remarks>Originaly I named it "Literal", but doing so caused this strange error
-	/// message from the "Color Theme Service" in VS's ActivityLog.xml:
-	/// <pre>
-	/// The color &apos;Popup&apos; in category &apos;de7b1121-99a4-4708-aedf-15f40c9b332f&apos; does not exist.
-	/// </pre>
-	/// And the Literal classification didn't work (was not colored).
-	/// </remarks>
-	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "LesOtherLiteral")]
-	[Name("LesOtherLiteral")]
-	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
-	[Order(Before = Priority.Default)]
-	internal sealed class OtherLiteralDef : ClassificationFormatDefinition
-	{
-		public OtherLiteralDef()
-		{
-			this.DisplayName = "LES - other literals (@@foo, @true)";
-			this.ForegroundColor = Color.FromRgb(64, 0, 128);
-			this.IsBold = true;
-		}
-
-		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("LesOtherLiteral")]
-		internal static ClassificationTypeDefinition _ = null;
-	}
-
-	/// <summary>
-	/// Defines the colorization for #hash_words, and words that are often used 
-	/// as keywords in other languages.
-	/// </remarks>
-	[Export(typeof(EditorFormatDefinition))]
-	[ClassificationType(ClassificationTypeNames = "LesSpecialName")]
-	[Name("LesSpecialName")]
-	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
-	[Order(Before = Priority.Default)]
-	internal sealed class SpecialNameDef : ClassificationFormatDefinition
-	{
-		public SpecialNameDef()
-		{
-			this.DisplayName = "LES - special names & common keywords";
-			this.ForegroundColor = Color.FromRgb(0, 0, 96);
-			this.IsBold = true;
-		}
-
-		[Export(typeof(ClassificationTypeDefinition))]
-		[Name("LesSpecialName")]
-		internal static ClassificationTypeDefinition _ = null;
-	}
-
-	#endregion
-
-	/// <summary>
-	/// Boilerplate class that seems to act as a factory for <see cref="LesSyntaxForVS"/> objects.
-	/// </summary>
+	/// <summary>Boilerplate factory class for <see cref="LesSyntaxForVS"/> that 
+	/// associates it with content type "LES", and associates file extensions such 
+	/// as .les with content type "LES".</summary>
 	[Export(typeof(IClassifierProvider))]
 	[ContentType("LES")]
 	internal class LesSyntaxForVSProvider : IClassifierProvider
 	{
 		[Export]
-		[Name("LES")]
+		[Name("LES")] // Must match the [ContentType] attributes
 		[BaseDefinition("code")]
 		internal static ContentTypeDefinition _ = null;
 
@@ -166,19 +44,102 @@ namespace VS.LesSyntax
 		[ContentType("LES")]
 		internal static FileExtensionToContentTypeDefinition _3 = null;
 
-		/// <summary>
-		/// Import the classification registry to be used for getting a reference
-		/// to the custom classification type later.
-		/// </summary>
+		/// <summary>This "registry" lets us get IClassificationType objects which 
+		/// represent token types (string, comment, etc.) in Visual Studio.</summary>
 		[Import]
 		internal IClassificationTypeRegistryService ClassificationRegistry = null; // Set via MEF
 
 		public IClassifier GetClassifier(ITextBuffer buffer)
 		{
-			return buffer.Properties.GetOrCreateSingletonProperty<LesSyntaxForVS>(delegate { return new LesSyntaxForVS(buffer, ClassificationRegistry); });
+			return Get(buffer, ClassificationRegistry);
+		}
+		public static LesSyntaxForVS Get(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+		{
+			return buffer.Properties.GetOrCreateSingletonProperty<LesSyntaxForVS>(delegate { return new LesSyntaxForVS(buffer, registry); });
 		}
 	}
 
+	/// <summary>Syntax colorizer for LES, based on LesLexer.</summary>
+	internal class LesSyntaxForVS : SyntaxClassifierForVS
+	{
+		static IClassificationType _superExprTargetType;
+		static IClassificationType _callTargetType;
+		static IClassificationType _preSufOpType;
+
+		HashSet<Symbol> CommonKeywords = new HashSet<Symbol>(new[] {
+			// C# keywords
+			"abstract",  "event",     "new",        "struct", 
+			"as",        "explicit",  "null",       "switch", 
+			"base",      "extern",    "object",     "this", 
+			"bool",      "false",     "operator",   "throw", 
+			"break",     "finally",   "out",        "true", 
+			"byte",      "fixed",     "override",   "try", 
+			"case",      "float",     "params",     "typeof", 
+			"catch",     "for",       "private",    "uint", 
+			"char",      "foreach",   "protected",  "ulong", 
+			"checked",   "goto",      "public",     "unchecked", 
+			"class",     "if",        "readonly",   "unsafe", 
+			"const",     "implicit",  "ref",        "ushort", 
+			"continue",  "in",        "return",     "using", 
+			"decimal",   "int",       "sbyte",      "virtual", 
+			"default",   "interface", "sealed",     "volatile", 
+			"delegate",  "internal",  "short",      "void", 
+			"do",        "is",        "sizeof",     "while", 
+			"double",    "lock",      "stackalloc",
+			"else",      "long",      "static",
+			"enum",      "namespace", "string",
+			// C#/LES contextual keywords (add/remove excluded because they are 
+			// rarely used and, after all, are not real keywords. LINQ keywords
+			// are not likely to be used in LES so they're excluded too.)
+			"partial", "var", "global", "get", "set", "alias",
+			"select", "from", "where", "orderby", "let",
+			// C keywords not listed above
+			"auto", "unsigned", "register", "typedef", "union",
+			// C++ keywords not listed above
+			"asm", "typename", "template", "typeid", "friend", 
+			"const_cast", "dynamic_cast", "static_cast", "reinterpret_cast",
+			"inline", "nullptr", "constexpr", "delete",
+			"mutable", "wchar_t",
+			// alternate operator names in C++11
+			"and", "bitand", "compl", "not_eq", "or_eq", "xor_eq", "and_eq",
+			"bitor", "not", "or", "xor",
+			// Java keywords not in C#
+			"boolean", "extends", "final", "implements", "import", "instanceof", 
+			"native", "package", "strictfp", "super", "synchronized", "throws", 
+			"transient",
+			// python keywords not in C#
+			"and", "assert", "def", "del", "elif", "except", "exec", 
+			"global", "from", "import", "lambda", "not", "or", "pass",
+			"raise", "with",
+			// other
+			"let"
+		}.Select(GSymbol.Get));
+
+		internal LesSyntaxForVS(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+			: base(buffer, registry)
+		{
+			_superExprTargetType = registry.GetClassificationType(PredefinedClassificationTypeNames.Keyword);
+			_callTargetType = registry.GetClassificationType("LoycCallTarget");
+			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
+		}
+
+		protected override ILexer PrepareLexer(ILexer lexer, ICharSource file, int position)
+		{
+			if (lexer == null)
+				return new LesLexer(file, "?", MessageSink.Trace, position);
+			((LesLexer)lexer).Reset(file, "?", position);
+			return lexer;
+		}
+
+		protected override bool IsSpecialIdentifier(object value)
+		{
+			return CommonKeywords.Contains(value) ||
+				(value is Symbol) && ((Symbol)value).Name.StartsWith("#");
+		}
+	}
+
+	#region Old version
+	
 	/// <summary>
 	/// This class is in charge of syntax highlighting. It classifies spans of LES 
 	/// text and reports these classifications to the caller (Visual Studio), which
@@ -190,7 +151,7 @@ namespace VS.LesSyntax
 	/// <see cref="LesSyntaxForVSProvider"/> creates it), so this class contains 
 	/// state related to the "current" source file.
 	/// </remarks>
-	class LesSyntaxForVS : IClassifier
+	class OldLesSyntaxForVS : IClassifier
 	{
 		static IClassificationType _superExprTargetType;
 		static IClassificationType _callTargetType;
@@ -254,13 +215,13 @@ namespace VS.LesSyntax
 			"let"
 		}.Select(GSymbol.Get));
 
-		internal LesSyntaxForVS(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+		internal OldLesSyntaxForVS(ITextBuffer buffer, IClassificationTypeRegistryService registry)
 		{
 			_buffer = buffer;
 			_buffer.Changed += TextBufferChanged;
 
 			_superExprTargetType = registry.GetClassificationType(PredefinedClassificationTypeNames.Keyword);
-			_callTargetType = registry.GetClassificationType("CallTarget");
+			_callTargetType = registry.GetClassificationType("LoycCallTarget");
 			//_whiteSpaceType = registry.GetClassificationType(PredefinedClassificationTypeNames.WhiteSpace);
 			_numberType = registry.GetClassificationType(PredefinedClassificationTypeNames.Number);
 			_commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
@@ -272,11 +233,11 @@ namespace VS.LesSyntax
 			// cannot be changed by the user. "script operator" can be changed though.
 			_operatorType = registry.GetClassificationType("script operator");
 			#endif
-			_literalType = registry.GetClassificationType("LesOtherLiteral");
+			_literalType = registry.GetClassificationType("LoycOtherLiteral");
 			_preSufOpType = registry.GetClassificationType("LesPreSufOp");
 			_separatorType = _operatorType;
-			_parenType = registry.GetClassificationType("LesBracket");
-			_specialNameType = registry.GetClassificationType("LesSpecialName");
+			_parenType = registry.GetClassificationType("LoycBracket");
+			_specialNameType = registry.GetClassificationType("LoycSpecialName");
 		}
 		IClassificationType TokenTypeToClassification(TokenType tt)
 		{
@@ -390,7 +351,7 @@ namespace VS.LesSyntax
 
 			// Prepare lexer object and a list to hold the results
 			_lexer = _lexer ?? new LesLexer("", MessageSink.Null);
-			var sourceFile = new TextSnapshotAsSourceFile(ss, "");
+			var sourceFile = new TextSnapshotAsSourceFile(ss);
 			_lexer.Reset(sourceFile, "", start);
 			List<ClassificationSpan> tags = new List<ClassificationSpan>();
 
@@ -524,81 +485,52 @@ namespace VS.LesSyntax
 		public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 	}
 
-	class TextSnapshotAsSourceFile : ICharSource
-	{
-		ITextSnapshot _ss;
-		string _fileName;
-		public TextSnapshotAsSourceFile(ITextSnapshot ss, string filename) { _ss = ss; _fileName = filename; }
+	#endregion
 
-		public string FileName
+	#region Classification types & color definitions
+
+	/// <summary>Defines the colorization for prefix and suffic operators.</summary>
+	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "LesPreSufOp")]
+	[Name("LesPreSufOp")] // I don't know what this does
+	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
+	[Order(Before = Priority.Default)]
+	internal sealed class PreSufOpDef : ClassificationFormatDefinition
+	{
+		public PreSufOpDef()
 		{
-			get { return _fileName; }
+			this.DisplayName = "LES - prefix/suffix operator";
+			this.ForegroundColor = Color.FromRgb(50, 100, 0);
+			this.IsBold = true;
 		}
-		public Loyc.UString Substring(int startIndex, int length)
-		{
-			return SubstringCore(startIndex, length);
-		}
-		public string SubstringCore(int startIndex, int length)
-		{
-			int c = Count;
-			if (startIndex >= c) return "";
-			if (length > c - startIndex)
-				length = c - startIndex;
-			return _ss.GetText(startIndex, length);
-		}
-		IRange<char> IListSource<char>.Slice(int start, int count) { return Slice(start, count); }
-		public StringSlice Slice(int start, int count = 2147483647)
-		{
-			string s = SubstringCore(start, count);
-			return new StringSlice(s, 0, s.Length);
-		}
-		public char TryGet(int index, out bool fail)
-		{
-			fail = false;
-			if ((uint)index < (uint)Count)
-				return _ss[index];
-			fail = true;
-			return '\0';
-		}
-		public char this[int index]
-		{
-			get { return _ss[index]; }
-		}
-		public int Count
-		{
-			get { return _ss.Length; }
-		}
-		public IEnumerator<char> GetEnumerator()
-		{
-			for (int i = 0; i < Count; i++)
-				yield return this[i];
-		}
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		/*public SourcePos IndexToLine(int index)
-		{
-			var line = _ss.GetLineFromPosition(index);
-			return new SourcePos(FileName, line.LineNumber + 1, index - line.Start.Position + 1);
-		}
-		public int LineToIndex(SourcePos pos)
-		{
-			if (pos.Line <= 0)
-				return -1;
-			if (pos.Line >= _ss.LineCount)
-				return _ss.Length;
-			var line = _ss.GetLineFromLineNumber(pos.Line);
-			return line.Start.Position + MathEx.InRange(pos.PosInLine - 1, 0, line.Length + 1);
-		}
-		public int LineToIndex(int lineNo)
-		{
-			if (lineNo <= 0)
-				return -1;
-			if (lineNo >= _ss.LineCount)
-				return _ss.Length;
-			var line = _ss.GetLineFromLineNumber(lineNo);
-			return line.Start.Position;
-		}*/
+
+		// I don't know what this is for but the Ook! sample had them
+		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("LesPreSufOp")]
+		[BaseDefinition(PredefinedClassificationTypeNames.Operator)]
+		internal static ClassificationTypeDefinition _ = null;
 	}
+
+	/// <summary>Defines the colorization for called methods like "Foo" in <c>Foo()</c>.</summary>
+	[Export(typeof(EditorFormatDefinition))]
+	[ClassificationType(ClassificationTypeNames = "LoycCallTarget")]
+	[Name("LoycCallTarget")] // I don't know what this does
+	[UserVisible(false)] // When true, shows this type in the Fonts & Colors page of the VS Options
+	[Order(Before = Priority.Default)] // Supposedly "sets the priority to be after the default classifiers", even though the word "Before" is used
+	internal sealed class CallTargetDef : ClassificationFormatDefinition
+	{
+		public CallTargetDef()
+		{
+			this.DisplayName = "EC#/LES - method call target"; //human readable version of the name
+			this.ForegroundColor = Color.FromRgb(80, 40, 0);
+		}
+
+		// I don't know what this is for but the Ook! sample had them
+		[Export(typeof(ClassificationTypeDefinition))]
+		[Name("LoycCallTarget")]
+		[BaseDefinition(PredefinedClassificationTypeNames.Identifier)]
+		internal static ClassificationTypeDefinition _ = null;
+	}
+
+	#endregion
 }

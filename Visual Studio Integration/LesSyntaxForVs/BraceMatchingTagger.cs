@@ -14,20 +14,23 @@ using Microsoft.VisualStudio.Utilities;
  
 namespace VS.Common
 {
+	// Compared to ITaggerProvider, IViewTaggerProvider is associated with a 'view' 
+	// as well as a text buffer. Needed for brace matching to know the caret position.
 	[Export(typeof(IViewTaggerProvider))]
-	[ContentType("LES")] // could be any ContentType that wants brace matching
+	[ContentType("LES")] // any ContentType that wants brace matching
+	[ContentType("EC#")] // any ContentType that wants brace matching
 	[TagType(typeof(TextMarkerTag))]
 	public sealed class DefaultBraceMatchingTaggerProvider : IViewTaggerProvider
 	{
-		[Import]
-		public IClassifierAggregatorService AggregatorService;
+		[Import] // For access to an IClassifier, to tell us whether the cursor is in a comment/string
+		public IClassifierAggregatorService ClassifierAggregator;
 
 		public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
 		{
 			if (textView == null)
 				return null;
 
-			var aggregator = AggregatorService.GetClassifier(buffer);
+			var aggregator = ClassifierAggregator.GetClassifier(buffer);
 			var pairs = new KeyValuePair<char, char>[]
 				{
 					new KeyValuePair<char, char>('(', ')'),
@@ -38,20 +41,22 @@ namespace VS.Common
 		}
 	}
 
+	/// <summary>A generic brace-matching tagger that highlights matching open and 
+	/// close parenthesis, brackets and braces in any language.</summary>
 	internal sealed class BraceMatchingTagger : ITagger<TextMarkerTag>
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
-		public BraceMatchingTagger(ITextView textView, ITextBuffer sourceBuffer, IClassifier aggregator, IEnumerable<KeyValuePair<char, char>> matchingCharacters)
+		public BraceMatchingTagger(ITextView textView, ITextBuffer sourceBuffer, IClassifier classifier, IEnumerable<KeyValuePair<char, char>> matchingCharacters)
 		{
 			CheckParam.IsNotNull("textView", textView);
 			CheckParam.IsNotNull("sourceBuffer", sourceBuffer);
-			CheckParam.IsNotNull("aggregator", aggregator);
+			CheckParam.IsNotNull("aggregator", classifier);
 			CheckParam.IsNotNull("matchingCharacters", matchingCharacters);
 
 			this.TextView = textView;
 			this.SourceBuffer = sourceBuffer;
-			this.Aggregator = aggregator;
+			this.Classifier = classifier;
 			this.MatchingCharacters = matchingCharacters.ToList().AsReadOnly();
 
 			this.TextView.Caret.PositionChanged += Caret_PositionChanged;
@@ -60,26 +65,28 @@ namespace VS.Common
 
 		public ITextView TextView { get; private set; }
 		public ITextBuffer SourceBuffer { get; private set; }
-		public IClassifier Aggregator { get; private set; }
+		public IClassifier Classifier { get; private set; }
 		public ReadOnlyCollection<KeyValuePair<char, char>> MatchingCharacters { get; private set; }
 		private SnapshotPoint? CurrentChar { get; set; }
 
-		private static bool IsInCommentOrLiteral(IClassifier aggregator, SnapshotPoint point, PositionAffinity affinity)
+		private static bool IsInCommentOrLiteral(IClassifier classifier, SnapshotPoint point, PositionAffinity affinity)
 		{
-			CheckParam.IsNotNull("aggregator", aggregator);
+			CheckParam.IsNotNull("aggregator", classifier);
 
 			// TODO: handle affinity
 			SnapshotSpan span = new SnapshotSpan(point, 1);
 
-			var classifications = aggregator.GetClassificationSpans(span);
+			var classifications = classifier.GetClassificationSpans(span);
 			var relevant = classifications.FirstOrDefault(classificationSpan => classificationSpan.Span.Contains(point));
 			if (relevant == null || relevant.ClassificationType == null)
 				return false;
 
-			return relevant.ClassificationType.IsOfType(PredefinedClassificationTypeNames.Comment)
-				|| relevant.ClassificationType.IsOfType(PredefinedClassificationTypeNames.Literal)
-				|| relevant.ClassificationType.IsOfType(PredefinedClassificationTypeNames.String)
-				|| relevant.ClassificationType.IsOfType(PredefinedClassificationTypeNames.Identifier);
+			var @class = relevant.ClassificationType;
+			return @class.IsOfType(PredefinedClassificationTypeNames.Comment)
+				|| @class.IsOfType(PredefinedClassificationTypeNames.Literal)
+				|| @class.IsOfType(PredefinedClassificationTypeNames.String)
+				|| @class.IsOfType(PredefinedClassificationTypeNames.Identifier)
+				|| @class.IsOfType("LoycOtherLiteral");
 		}
 
 		private bool IsMatchStartCharacter(char c)
@@ -102,7 +109,7 @@ namespace VS.Common
 			return MatchingCharacters.First(pair => pair.Value == c).Key;
 		}
 
-		private static bool FindMatchingCloseChar(SnapshotPoint start, IClassifier aggregator, char open, char close, int maxLines, out SnapshotSpan pairSpan)
+		private static bool FindMatchingCloseChar(SnapshotPoint start, IClassifier classifier, char open, char close, int maxLines, out SnapshotSpan pairSpan)
 		{
 			pairSpan = new SnapshotSpan(start.Snapshot, 1, 1);
 			ITextSnapshotLine line = start.GetContainingLine();
@@ -121,7 +128,7 @@ namespace VS.Common
 				{
 					char currentChar = lineText[offset];
 					// TODO: is this the correct affinity
-					if (currentChar == close && !IsInCommentOrLiteral(aggregator, new SnapshotPoint(start.Snapshot, offset + line.Start.Position), PositionAffinity.Successor))
+					if (currentChar == close && !IsInCommentOrLiteral(classifier, new SnapshotPoint(start.Snapshot, offset + line.Start.Position), PositionAffinity.Successor))
 					{
 						if (openCount > 0)
 						{
@@ -134,7 +141,7 @@ namespace VS.Common
 						}
 					}
 					// TODO: is this the correct affinity
-					else if (currentChar == open && !IsInCommentOrLiteral(aggregator, new SnapshotPoint(start.Snapshot, offset + line.Start.Position), PositionAffinity.Successor))
+					else if (currentChar == open && !IsInCommentOrLiteral(classifier, new SnapshotPoint(start.Snapshot, offset + line.Start.Position), PositionAffinity.Successor))
 					{
 						openCount++;
 					}
@@ -229,9 +236,9 @@ namespace VS.Common
 				yield break;
 
 			// hold on to a snapshot of the current character
-			var currentChar = CurrentChar.Value;
+			SnapshotPoint currentChar = CurrentChar.Value;
 
-			if (IsInCommentOrLiteral(Aggregator, currentChar, TextView.Caret.Position.Affinity))
+			if (IsInCommentOrLiteral(Classifier, currentChar, TextView.Caret.Position.Affinity))
 				yield break;
 
 			// if the requested snapshot isn't the same as the one the brace is on, translate our spans to the expected snapshot
@@ -251,7 +258,7 @@ namespace VS.Common
 				 *       than 1 screen's worth of lines away. Changing this to 10 * TextView.TextViewLines.Count seemed
 				 *       to improve the situation.
 				 */
-				if (BraceMatchingTagger.FindMatchingCloseChar(currentChar, Aggregator, currentText, closeChar, 10 * TextView.TextViewLines.Count, out pairSpan))
+				if (BraceMatchingTagger.FindMatchingCloseChar(currentChar, Classifier, currentText, closeChar, 10 * TextView.TextViewLines.Count, out pairSpan))
 				{
 					yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(currentChar, 1), BraceHighlightTag);
 					yield return new TagSpan<TextMarkerTag>(pairSpan, BraceHighlightTag);
@@ -260,7 +267,7 @@ namespace VS.Common
 			else if (IsMatchCloseCharacter(lastText))
 			{
 				var open = GetMatchOpenCharacter(lastText);
-				if (BraceMatchingTagger.FindMatchingOpenChar(lastChar, Aggregator, open, lastText, 10 * TextView.TextViewLines.Count, out pairSpan))
+				if (BraceMatchingTagger.FindMatchingOpenChar(lastChar, Classifier, open, lastText, 10 * TextView.TextViewLines.Count, out pairSpan))
 				{
 					yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(lastChar, 1), BraceHighlightTag);
 					yield return new TagSpan<TextMarkerTag>(pairSpan, BraceHighlightTag);
