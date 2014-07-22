@@ -789,6 +789,17 @@ namespace Loyc.Collections
 			return new ListSlice<T>(this, start, length);
 		}
 
+		public T First
+		{
+			get { return this[0]; }
+			set { this[0] = value; }
+		}
+		public T Last
+		{
+			get { return base.Last; }
+			set { this[Count - 1] = value; }
+		}
+
 		#region Combine: helper method for Append, Prepend
 
 		protected virtual void Combine(AListBase<T> other, bool move, bool append)

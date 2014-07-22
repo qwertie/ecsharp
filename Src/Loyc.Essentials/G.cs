@@ -24,23 +24,43 @@ namespace Loyc
 			a = b;
 			b = tmp;
 		}
+
+		public static readonly object BoxedFalse = false;      //!< Singleton false cast to object.
+		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
+		public static readonly object BoxedVoid = new @void(); //!< Singleton void cast to object.
+
 		private class ComparisonFrom<T> where T : IComparable<T> 
 		{
-			public static readonly Comparison<T> D = Get();
-			static Comparison<T> Get() {
+			public static readonly Comparison<T> C = GetC();
+			public static readonly Func<T, T, int> F = GetF();
+			static Comparison<T> GetC() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
 				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+			}
+			static Func<T, T, int> GetF() {
+				if (typeof(T).IsValueType)
+					return (a, b) => a.CompareTo(b);
+				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
 			}
 		}
 		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
 		/// <remarks>This method is optimized and does not allocate on every call.</remarks>
 		public static Comparison<T> ToComparison<T>() where T : IComparable<T>
 		{
-			return ComparisonFrom<T>.D;
+			return ComparisonFrom<T>.C;
+		}
+		public static Func<T, T, int> ToComparisonFunc<T>() where T : IComparable<T>
+		{
+			return ComparisonFrom<T>.F;
 		}
 		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Comparison{T}"/>.</summary>
 		public static Comparison<T> ToComparison<T>(IComparer<T> pred)
+		{
+			return delegate(T a, T b) { return pred.Compare(a, b); };
+		}
+		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Func{T,T,int}"/>.</summary>
+		public static Func<T, T, int> ToComparisonFunc<T>(IComparer<T> pred)
 		{
 			return delegate(T a, T b) { return pred.Compare(a, b); };
 		}

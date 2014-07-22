@@ -415,13 +415,13 @@ namespace Loyc.Syntax.Les
 		{
 			if (SkipValueParsing)
 			{
-				_value = OneDigitInts[0];
+				_value = CG.Cache(0);
 				return;
 			}
 			// Optimize the most common case: a one-digit integer
 			if (InputPosition == _startPosition + 1) {
 				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				_value = OneDigitInts[CharSource[_startPosition] - '0'];
+				_value = CG.Cache((int)(CharSource[_startPosition] - '0'));
 				return;
 			}
 
@@ -470,13 +470,11 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		static readonly object[] OneDigitInts = new object[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
 		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol suffix, ref string error)
 		{
 			if (source.IsEmpty) {
 				error = Localize.From("Syntax error in integer literal");
-				return 0;
+				return CG.Cache(0);
 			}
 			// Parse the integer
 			ulong unsigned;
@@ -488,9 +486,6 @@ namespace Loyc.Syntax.Les
 
 			// If no suffix, automatically choose int, uint, long or ulong
 			if (suffix == null) {
-				if (!isNegative && unsigned < (uint)OneDigitInts.Length)
-					return OneDigitInts[unsigned];
-
 				if (unsigned > long.MaxValue)
 					suffix = _UL;
 				else if (unsigned > uint.MaxValue)

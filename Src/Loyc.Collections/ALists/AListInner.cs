@@ -119,7 +119,7 @@ namespace Loyc.Collections.Impl
 					e = _children[i];
 				}
 				change += e.Node.DoSparseOperation(ref op, index - (int)e.Index, out splitLeft, out splitRight);
-			} while (op.SourceIndex < op.SourceCount && splitLeft == null);
+			} while (op.SourceIndex < op.SourceCount && splitLeft == null && index + op.SourceIndex < TotalCount);
 			
 			// Adjust base index of nodes that follow
 			if (change != 0)

@@ -27,27 +27,71 @@ namespace Loyc.Collections
 	{
 		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>
 		{
-			return BinarySearch<T>(list, value, G.ToComparison<T>());
+			return BinarySearch<T, T>(list, value, G.ToComparisonFunc<T>());
 		}
 		public static int BinarySearch<T>(this IList<T> list, T value, IComparer<T> pred)
 		{
-			return BinarySearch<T>(list, value, G.ToComparison(pred));
+			return BinarySearch<T, T>(list, value, G.ToComparisonFunc(pred));
 		}
-		public static int BinarySearch<T>(this IList<T> list, T value, Comparison<T> pred)
+		public static int BinarySearch<T, K>(this IList<T> list, K find, Func<T, K, int> compare)
 		{
-			int lo = 0, hi = list.Count, i;
-			while(lo < hi) 
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+
+			while (low <= high)
 			{
-				i = (lo+hi)/2;
-				int cmp = pred(list[i], value);
-				if (cmp < 0)
-					lo = i+1;
-				else if (cmp > 0)
-					hi = i;
-				else
-					return i;
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else {
+					high = mid - 1;
+					if (c == 0)
+						invert = 0;
+				}
 			}
-			return ~lo;
+			return low ^ invert;
+		}
+
+		public static int BinarySearch<T>(this IReadOnlyList<T> list, T value) where T : IComparable<T>
+		{
+			return BinarySearch<T,T>(list, value, G.ToComparisonFunc<T>());
+		}
+		public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer)
+		{
+			return BinarySearch<T,T>(list, value, G.ToComparisonFunc(comparer));
+		}
+		public static int BinarySearch<T, K>(this IReadOnlyList<T> list, K find, Func<T, K, int> compare)
+		{
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else {
+					high = mid - 1;
+					if (c == 0)
+						invert = 0;
+				}
+			}
+			return low ^ invert;
+		}
+
+		public static int BinarySearch<T>(this IListAndListSource<T> list, T value) where T : IComparable<T>
+		{
+			return BinarySearch<T,T>((IList<T>)list, value, G.ToComparisonFunc<T>());
+		}
+		public static int BinarySearch<T>(this IListAndListSource<T> list, T value, IComparer<T> comparer)
+		{
+			return BinarySearch<T,T>((IList<T>)list, value, G.ToComparisonFunc(comparer));
+		}
+		public static int BinarySearch<T, K>(this IListAndListSource<T> list, K value, Func<T,K,int> compare)
+		{
+			return BinarySearch<T,K>((IList<T>)list, value, compare);
 		}
 
 		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)

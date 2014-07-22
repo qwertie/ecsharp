@@ -15,7 +15,7 @@ namespace Loyc.Collections
 
 		[Test] public void TestBinarySearch()
 		{
-			int[] list = new int[] { };
+			IList<int> list = new int[] { };
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, 15));
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, -15));
 			list = new int[] { 5 };
@@ -48,8 +48,8 @@ namespace Loyc.Collections
 		}
 		[Test] public void TestPredicatedBinarySearch()
 		{
-			Comparison<int> p = G.ToComparison<int>();
-			int[] list = new int[] { };
+			Func<int,int,int> p = G.ToComparisonFunc<int>();
+			IList<int> list = new int[] { };
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, 15, p));
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, -15, p));
 			list = new int[] { 5 };
@@ -74,15 +74,15 @@ namespace Loyc.Collections
 			Assert.AreEqual(~4, ListExt.BinarySearch(list, 16, p));
 			Assert.AreEqual( 4, ListExt.BinarySearch(list, 17, p));
 			Assert.AreEqual(~5, ListExt.BinarySearch(list, 28, p));
-			int i = ListExt.BinarySearch<int>(list, 29, p);
+			int i = ListExt.BinarySearch(list, 29, p);
 			Assert.IsTrue(i == 5 || i == 6);
 			Assert.AreEqual(~7, ListExt.BinarySearch(list, 30, p));
 			Assert.AreEqual( 7, ListExt.BinarySearch(list, 31, p));
 			Assert.AreEqual(~8, ListExt.BinarySearch(list, 1000, p));
 			
 			// This tests another code path in G.ToComparison<T>()
-			var p2 = G.ToComparison<string>();
-			string[] strs = new string[] {"1", "3", "5", "7", "9"};
+			var p2 = G.ToComparisonFunc<string>();
+			IList<string> strs = new string[] {"1", "3", "5", "7", "9"};
 			Assert.AreEqual(1, ListExt.BinarySearch(strs, "3", p2));
 			Assert.AreEqual(~4, ListExt.BinarySearch(strs, "7b", p2));
 		}

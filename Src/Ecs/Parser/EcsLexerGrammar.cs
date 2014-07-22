@@ -2365,7 +2365,7 @@ namespace Ecs.Parser
 											Skip();
 											Skip();
 											_type = TT.OtherLit;
-											_value = BoxedFalse;
+											_value = G.BoxedFalse;
 										} else
 											Id();
 									} else
@@ -3636,7 +3636,7 @@ namespace Ecs.Parser
 									Skip();
 									Skip();
 									_type = TT.OtherLit;
-									_value = BoxedTrue;
+									_value = G.BoxedTrue;
 								} else
 									Id();
 							} else

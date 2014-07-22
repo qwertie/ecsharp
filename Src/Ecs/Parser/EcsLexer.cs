@@ -346,9 +346,6 @@ namespace Ecs.Parser
 
 		#endregion
 
-		static readonly object BoxedFalse = false;
-		static readonly object BoxedTrue = true; 
-
 		// Due to the way generics are implemented, repeating the implementation 
 		// of this base-class method might improve performance (TODO: verify this idea)
 		new protected int LA(int i)

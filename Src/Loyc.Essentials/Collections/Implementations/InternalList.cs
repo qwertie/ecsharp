@@ -503,9 +503,9 @@ namespace Loyc.Collections.Impl
 		/// the supplied element is higher than desired, and -1 if it is lower than 
 		/// desired.</param>
 		/// <param name="lowerBound">Whether to find the "lower bound" in case there
-		/// are duplicates in the list. If duplicates exist of the search key k 
-		/// exist, the lowest index of a matching duplicate is returned. This
-		/// search mode may be slightly slower when a match exists.</param>
+		/// are duplicates in the list. If duplicates exist of the search key k, the 
+		/// lowest index of a matching duplicate is returned. This search mode may be 
+		/// slightly slower when a match exists.</param>
 		/// <returns>The index of the matching array entry, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
 		/// insertion location that would preserve the order.</returns>
