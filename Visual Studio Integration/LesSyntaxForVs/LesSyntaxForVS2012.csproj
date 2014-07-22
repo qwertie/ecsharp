@@ -97,12 +97,13 @@
   <ItemGroup>
     <Compile Include="BraceMatchingTagger.cs" />
     <Compile Include="EcsSyntaxForVS.cs" />
-    <Compile Include="LesParserForVS.cs" />
-    <Compile Include="LesSyntaxForVs.cs" />
+    <Compile Include="LesSyntaxForVS.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="BackgroundTaggerForVS.cs" />
+    <Compile Include="BackgroundAnalyzerForVS.cs" />
+    <Compile Include="SyntaxAnalyzerForVS.cs" />
     <Compile Include="SyntaxClassifierForVS.cs" />
     <Compile Include="TextSnapshotAsSourceFile.cs" />
+    <Compile Include="VSBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

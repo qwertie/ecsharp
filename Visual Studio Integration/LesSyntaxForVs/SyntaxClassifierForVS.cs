@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Windows.Threading;
-using System.ComponentModel.Composition;
+using System.Windows.Media;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
@@ -17,7 +18,6 @@ using Microsoft.VisualStudio.Utilities;
 namespace Loyc.VisualStudio
 {
 	using System;
-	using System.Windows.Media;
 
 	/// <summary>A compact token representation used by <see cref="SyntaxClassifierForVS"/>.</summary>
 	[DebuggerDisplay("Type = {Type}, Length = {Length}, Value = {Value}")]
@@ -27,7 +27,13 @@ namespace Loyc.VisualStudio
 			{ TypeAndLength = (type & 0x3FFF) | (Math.Min(length, 0x3FFFF) << 14); Value = value; }
 		public int Type { get { return TypeAndLength & 0x3FFF; } }
 		public int Length { get { return (int)((uint)TypeAndLength >> 14); } }
-		public Token ToToken(int start) { return new Token(Type, start, Length, NodeStyle.Default, Value); }
+		public Token ToToken(int start, bool useOriginalValue = true) {
+			object value = Value;
+			if (useOriginalValue)
+				while (value is SyntaxClassifierForVS.LexerMessage)
+					value = ((SyntaxClassifierForVS.LexerMessage)value).OriginalValue;
+			return new Token(Type, start, Length, NodeStyle.Default, value);
+		}
 
 		public object Value;
 		// 14 bits for token type (enough to handle TokenKind), 18 for length
@@ -35,7 +41,8 @@ namespace Loyc.VisualStudio
 	}
 
 	/// <summary>
-	/// Base class for syntax highlighters based on lexers that produce tokens 
+	/// Base class for syntax highlighters based on lexers that implement the
+	/// <see cref="Loyc.Syntax.Lexing.ILexer"/> interface that produce tokens 
 	/// represented by <see cref="Loyc.Syntax.Lexing.Token"/> structures.
 	/// </summary>
 	/// <remarks>
@@ -46,32 +53,62 @@ namespace Loyc.VisualStudio
 	/// Visual Studio creates one classifier instance per text file (actually, 
 	/// a "provider" class such as <see cref="LesSyntaxForVSProvider"/> creates it),
 	/// so this class contains state related to the "current" source file.
+	/// <para/>
+	/// Optionally, this class supports lexer errors by storing error information
+	/// in the <see cref="EditorToken"/> that was produced along with the error, or, 
+	/// if the error occurs at EOF, in the final token. The purpose of storing the 
+	/// errors inside the tokens (not separately) is that old errors are deleted
+	/// automatically as portions of the text are re-lexed.
+	/// <para/>
+	/// To use this functionality, the derived class's <c>PrepareLexer()</c> method 
+	/// must use <c>_lexerErrorSink</c> as the message sink and must manually 
+	/// provide an implementation of <see cref="ITagger<ErrorTag>"/> to Visual 
+	/// Studio (<see cref="SyntaxAnalyzerForVS{R}"/> has an implementation).
+	/// If multiple errors are produced for one token, they are all stored using 
+	/// nested Message objects.
 	/// </remarks>
 	public abstract class SyntaxClassifierForVS : IClassifier
 	{
-		protected ITextBuffer _buffer;
-		public ITextBuffer Buffer { get { return _buffer; } }
+		protected VSBuffer _ctx;
 		protected TextSnapshotAsSourceFile _wrappedBuffer;
+		protected ITextBuffer Buffer { get { return _ctx.Buffer; } }
 
 		protected SparseAList<EditorToken> _tokens = new SparseAList<EditorToken>();
 		protected SparseAList<EditorToken> _nestedTokens = new SparseAList<EditorToken>();
 		ILexer _lexer;
 		protected int _lookahead = 3;
+		protected IMessageSink _lexerMessageSink;
+		LexerMessage _lexerError; // assigned when _lexerMessageSink receives an error
+		protected bool _haveLexerErrors; // Set true when a lexer error occurs
 		protected IClassificationTypeRegistryService _registry;
 		public IClassificationTypeRegistryService ClassificationTypeRegistry { get { return _registry; } }
 
-		protected SyntaxClassifierForVS(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+		public class LexerMessage // Error/warning message stored in a token
 		{
-			_buffer = buffer;
-			_buffer.Changed += OnTextBufferChanged;
-			_wrappedBuffer = new TextSnapshotAsSourceFile(buffer.CurrentSnapshot);
-			_registry = registry;
+			public object OriginalValue;
+			public MessageHolder.Message Msg;
+		}
+
+		protected SyntaxClassifierForVS(VSBuffer ctx)
+		{
+			_ctx = ctx;
+			_wrappedBuffer = new TextSnapshotAsSourceFile(Buffer.CurrentSnapshot);
+			Buffer.Changed += OnTextBufferChanged;
+			
+			_lexerMessageSink = new MessageSinkFromDelegate((severity, context, fmt, args) => {
+				if (severity >= Severity.Note)
+					_lexerError = new LexerMessage {
+						OriginalValue = _lexerError, 
+						Msg = new MessageHolder.Message(severity, context, fmt, args)
+					};
+			});
+
 			InitClassificationTypes();
 		}
 
 		public SparseAList<EditorToken> GetSnapshotOfTokens()
 		{
-			EnsureLexed(_buffer.CurrentSnapshot, _buffer.CurrentSnapshot.Length);
+			EnsureLexed(Buffer.CurrentSnapshot, Buffer.CurrentSnapshot.Length);
 			return _tokens.Clone();
 		}
 
@@ -99,19 +136,33 @@ namespace Loyc.VisualStudio
 				for (Token? t_; _lexer.InputPosition < stopAt && (t_ = _lexer.NextToken()) != null; )
 				{
 					Token t = t_.Value;
-					if (t.EndIndex > stopAt)
-					{
+					if (t.EndIndex > stopAt) {
 						_tokens.ClearSpace(t.StartIndex, t.Length);
 						_nestedTokens.ClearSpace(t.StartIndex, t.Length);
 					}
 					if (t.Children != null)
 						foreach (var ct in t.Children)
 							_nestedTokens[ct.StartIndex] = new EditorToken(ct.TypeInt, ct.Length, ct.Value);
-					else if (!IsWhitespace(t.TypeInt))
-						_tokens[t.StartIndex] = new EditorToken(t.TypeInt, t.Length, t.Value);
+					if (!IsWhitespace(t.TypeInt)) {
+						var et = new EditorToken(t.TypeInt, t.Length, t.Value);
+						_tokens[t.StartIndex] = StoreLexerError(et);
+					}
 				}
+				if (_lexerError != null && _tokens.Count != 0)
+					_tokens.Last = StoreLexerError(_tokens.Last);
 			}
 			return _lexer.InputPosition;
+		}
+
+		EditorToken StoreLexerError(EditorToken token)
+		{
+			if (_lexerError != null) {
+				_haveLexerErrors = true;
+				_lexerError.OriginalValue = token.Value;
+				token.Value = _lexerError;
+				_lexerError = null;
+			}
+			return token;
 		}
 
 		#region Implementation of IClassifier
@@ -123,9 +174,8 @@ namespace Loyc.VisualStudio
 			List<ClassificationSpan> tags = new List<ClassificationSpan>();
 			int? position = span.Start.Position + 1;
 			var eToken = _tokens.NextLowerItem(ref position);
-			do
-			{
-				var tag = MakeClassificationSpan(span.Snapshot, eToken.ToToken(position ?? 0));
+			do {
+				var tag = MakeClassificationSpan(span.Snapshot, eToken.ToToken(position ?? 0, false));
 				if (tag != null)
 					tags.Add(tag);
 				eToken = _tokens.NextHigherItem(ref position);
@@ -151,25 +201,23 @@ namespace Loyc.VisualStudio
 		protected virtual void OnTextBufferChanged(object sender, TextContentChangedEventArgs e)
 		{
 			INormalizedTextChangeCollection changes = e.Changes; // ordered by position
-			int totalDelta = 0;
-			foreach (var change in changes)
-			{
-				int position = change.OldPosition, delta = change.Delta;
-				Debug.Assert(change.Delta == change.NewLength - change.OldLength);
-				Debug.Assert(position + totalDelta == change.NewPosition);
-				TextBufferChanged(position, change.NewLength, delta);
-				totalDelta += delta;
-			}
+			if (changes.Count == 0) return;
+			int start     = changes[0].OldPosition;
+			var last      = changes[changes.Count-1];
+			int newLength = last.NewEnd - start;
+			int delta     = last.NewEnd - last.OldEnd;
+			TextBufferChanged(start, newLength, delta);
 		}
+
 		void TextBufferChanged(int position, int newLength, int dif)
 		{
 			int startLex = Math.Max(position - _lookahead, 0);
-			EnsureLexed(_buffer.CurrentSnapshot, startLex);
+			EnsureLexed(Buffer.CurrentSnapshot, startLex);
 
 			if (dif > 0)
 				_tokens.InsertSpace(position, dif);
-			else
-				_tokens.RemoveRange(position, -dif);
+			else if (_tokens.Count > position)
+				_tokens.RemoveRange(position, Math.Min(-dif, _tokens.Count - position));
 
 			int endLex = position + newLength + _lookahead;
 			endLex = _tokens.NextHigherIndex(endLex - 1) ?? _tokens.Count;
@@ -180,7 +228,7 @@ namespace Loyc.VisualStudio
 
 			if (ClassificationChanged != null)
 			{
-				var span = new SnapshotSpan(_buffer.CurrentSnapshot, new Span(startLex, stoppedAt - startLex));
+				var span = new SnapshotSpan(Buffer.CurrentSnapshot, new Span(startLex, stoppedAt - startLex));
 				ClassificationChanged(this, new ClassificationChangedEventArgs(span));
 			}
 		}
@@ -202,22 +250,23 @@ namespace Loyc.VisualStudio
 
 		private void InitClassificationTypes()
 		{
-			_typeKeywordType = _registry.GetClassificationType("LoycTypeKeyword");
-			_attributeKeywordType = _registry.GetClassificationType("LoycAttributeKeyword");
-			_keywordType = _registry.GetClassificationType(PredefinedClassificationTypeNames.Keyword);
-			_numberType = _registry.GetClassificationType(PredefinedClassificationTypeNames.Number);
-			_commentType = _registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
-			_identifierType = _registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
-			_stringType = _registry.GetClassificationType(PredefinedClassificationTypeNames.String);
-			_operatorType = _registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
+			var registry = _ctx.VS.ClassificationRegistry;
+			_typeKeywordType = registry.GetClassificationType("LoycTypeKeyword");
+			_attributeKeywordType = registry.GetClassificationType("LoycAttributeKeyword");
+			_keywordType = registry.GetClassificationType(PredefinedClassificationTypeNames.Keyword);
+			_numberType = registry.GetClassificationType(PredefinedClassificationTypeNames.Number);
+			_commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
+			_identifierType = registry.GetClassificationType(PredefinedClassificationTypeNames.Identifier);
+			_stringType = registry.GetClassificationType(PredefinedClassificationTypeNames.String);
+			_operatorType = registry.GetClassificationType(PredefinedClassificationTypeNames.Operator);
 			#if VS2010
 			// In VS2010 (not sure about 2012) "Operator" is fixed at teal and 
 			// cannot be changed by the user. "script operator" can be changed though.
-			_operatorType = _registry.GetClassificationType("script operator");
+			_operatorType = registry.GetClassificationType("script operator");
 			#endif
-			_bracketType = _registry.GetClassificationType("LoycBracket");
-			_literalType = _registry.GetClassificationType("LoycOtherLiteral");
-			_specialNameType = _registry.GetClassificationType("LoycSpecialName");
+			_bracketType = registry.GetClassificationType("LoycBracket");
+			_literalType = registry.GetClassificationType("LoycOtherLiteral");
+			_specialNameType = registry.GetClassificationType("LoycSpecialName");
 		}
 
 		protected virtual IClassificationType TokenToVSClassification(Token t)
@@ -257,6 +306,18 @@ namespace Loyc.VisualStudio
 		}
 
 		#endregion
+		
+		public static DList<Token> ToNormalTokens(SparseAList<EditorToken> eTokens)
+		{
+			var output = new DList<Token>();
+			int? index = null;
+			for (;;) {
+				EditorToken eTok = eTokens.NextHigherItem(ref index);
+				if (index == null) break;
+				output.Add(eTok.ToToken(index.Value));
+			}
+			return output;
+		}
 	}
 
 	#region Classification types & color definitions
