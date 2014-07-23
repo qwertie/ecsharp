@@ -68,7 +68,7 @@ namespace Loyc.Collections
 				if (wv.IsAlive() || wv == WeakNull)
 					throw new KeyAlreadyExistsException();
 				else if (value != null) {
-					wv.Target = value;
+					wv.SetTarget(value);
 					return;
 				}
 			}
@@ -125,7 +125,7 @@ namespace Loyc.Collections
 			_accessCounter += 3;
 			WeakReference<V> wv = _dict.TryGetValue(key, null);
 			if (wv != null && (value == null) == (wv == WeakNull))
-				wv.Target = value;
+				wv.SetTarget(value);
 			else
 				_dict[key] = value == null ? WeakNull : new WeakReference<V>(value);
 		}

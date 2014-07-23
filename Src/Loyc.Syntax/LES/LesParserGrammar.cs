@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Les
 			TT la0, la1;
 			LNode e = MissingExpr;
 			LNode _;
-			// Line 39: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.OtherLit|TT.Symbol|TT.Number|TT.String|TT.SQString) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.BQString|TT.Dot|TT.Assignment|TT.Colon|TT.NormalOp|TT.Not) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
+			// Line 39: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Symbol|TT.Number|TT.String|TT.SQString|TT.OtherLit) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.Colon|TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
 			 switch (LA0) {
 			case TT.Id:
 				{
@@ -125,7 +125,7 @@ namespace Loyc.Syntax.Les
 			RWList<LNode> attrs = null;
 			e = Atom(context, ref attrs);
 			primary = e;
-			// Line 89: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.BQString|TT.Dot|TT.Assignment|TT.Colon|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
+			// Line 89: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Colon|TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
 			 for (;;) {
 				switch (LA0) {
 				case TT.Assignment:
@@ -518,7 +518,6 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		 stop2:;
-		end:
 			return attrs == null ? e : e.WithAttrs(attrs.ToRVList());
 		}
 		protected LNode SuperExpr()

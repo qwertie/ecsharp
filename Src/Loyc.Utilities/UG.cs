@@ -205,7 +205,7 @@ namespace Loyc.Utilities
 							list.RemoveRange(maxMore, list.Count - maxMore);
 						}
 
-						args.InsertRange(i + 1, list);
+						args.InsertRange(i + 1, (IReadOnlyList<string>)list);
 					}
 				} catch (Exception e) {
 					MessageSink.Current.Write(Severity.Error, s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);

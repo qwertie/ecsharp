@@ -138,7 +138,7 @@ namespace Loyc.Syntax.Les
 					greedy(rhs += Expr(P.SuperExpr, out _))+
 					{e = MakeSuperExpr(e, ref primary, rhs);}
 				)*
-				{label(end); return attrs == @null ? e : e.WithAttrs(attrs.ToRVList());}
+				{return attrs == @null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
 			
 			// A superexpression is a sequence of expressions with no separator 

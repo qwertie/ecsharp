@@ -120,7 +120,7 @@
 			if (c != null)
 				InsertRange(index, c);
 			else
-				InsertRange(index, new List<T>(e));
+				InsertRange(index, (ICollection<T>)new List<T>(e));
 		}
 
 		public void AddRange(ICollectionAndReadOnly<T> c)

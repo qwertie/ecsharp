@@ -789,12 +789,12 @@ namespace Loyc.Collections
 			return new ListSlice<T>(this, start, length);
 		}
 
-		public T First
+		new public T First
 		{
 			get { return this[0]; }
 			set { this[0] = value; }
 		}
-		public T Last
+		new public T Last
 		{
 			get { return base.Last; }
 			set { this[Count - 1] = value; }

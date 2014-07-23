@@ -292,7 +292,7 @@ namespace Loyc.Threading
 			lock(_TLVs) {
 				for (int i = 0; i < _TLVs.Count; i++)
 					if (!_TLVs[i].IsAlive()) {
-						_TLVs[i].Target = tlv;
+						_TLVs[i].SetTarget(tlv);
 						return;
 					}
 				_TLVs.Add(new WeakReference<ThreadLocalVariableBase>(tlv));
