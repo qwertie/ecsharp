@@ -12,7 +12,7 @@ I made this list of the flaws in .NET for StackOverflow, but then I noticed that
 
 <li>.NET does not support <a href="http://www.codeproject.com/Articles/29922/Weak-Events-in-C" rel="nofollow">weak delegates</a>. The workarounds are clumsy at best, and listener-side workarounds are impossible in partial trust (ReflectionPermission is required).</li><br/>
 
-<li><a href="http://higherlogics.blogspot.com/2011/11/type-unification-forbidden-more-cclr.html" rel="nofollow">Generic interface unification is forbidden</a> even when it makes sense and cause no problems.</li><br/>
+<li><a href="http://higherlogics.blogspot.com/2011/11/type-unification-forbidden-more-cclr.html" rel="nofollow">Generic interface unification is forbidden</a> even when it makes sense and causes no problems.</li><br/>
 
 <li>Unlike in C++, <a href="http://loyc-etc.blogspot.com/2008/09/simulating-covariant-return-types-in-c.html" rel="nofollow">covariant return types</a> are not allowed in .NET</li><br/>
 
@@ -31,6 +31,8 @@ I made this list of the flaws in .NET for StackOverflow, but then I noticed that
 <li>When creating a thread, it is impossible to cause the child thread to inherit thread-local values from the parent thread. Not only does the BCL not support this, but you can't implement it yourself unless you create all threads manually; even if there were a thread-creation event, .NET <a href="http://stackoverflow.com/questions/4214492/net-is-there-a-way-to-get-the-parent-thread-id">can't tell you the "parents" or "children"</a> of a given thread.</li><br/>
 
 <li>The fact that there are two different length attributes for different data types, "Length" and "Count", is a minor nuisance.</li><br/>
+
+<li>Extension methods that accept mutable structures cannot modify those structures. (Yes, I've heard mutable value types are evil. You know what else is evil? Mutable reference types. Unnecessary heap allocations. Immutable structs that make you twist your code in contortions to change one property. It's tradeoffs all the way down, my friend.)</li><br/>
 
 <li>I could go on and on forever about <a href="http://loyc-etc.blogspot.com/2011/07/why-wpf-sucks.html" rel="nofollow">the poor design of WPF</a>... and WCF (though quite useful for some scenarios) is also full of warts. In general, the bloatedness, unintuitiveness, and limited documentation of many of the BCL's newer sublibraries makes me reluctant to use them. A lot of the new stuff could have been far simpler, smaller, easier to use and understand, more loosely coupled, better-documented, applicable to more use cases, faster, and/or more strongly typed.</li><br/>
 
