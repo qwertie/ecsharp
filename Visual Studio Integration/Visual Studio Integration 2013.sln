@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LesSyntaxForVS2013", "LesSyntaxForVs\LesSyntaxForVS2013.csproj", "{0A7D477C-4E6C-4832-ABD4-73F2E414F2DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LesSyntaxForVS2013", "LoycExtensionForVs\LoycSyntaxForVS2013.csproj", "{0A7D477C-4E6C-4832-ABD4-73F2E414F2DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycFileGeneratorForVs", "LoycFileGeneratorForVs\LoycFileGeneratorForVs.csproj", "{43A554C5-DBA1-4DC2-9C9A-6AB509262190}"
 EndProject
