@@ -878,11 +878,7 @@ namespace Loyc.Collections.Impl
 			return ~low;
 		}
 
-		public int BinarySearch<K>(K k, Func<T, K, int> compare)
-		{
-			return BinarySearch(k, compare, false);
-		}
-		public int BinarySearch<K>(K k, Func<T, K, int> compare, bool lowerBound)
+		public int BinarySearch<K>(K k, Func<T, K, int> compare, bool lowerBound = true)
 		{
 			int low = 0;
 			int high = _count - 1;
@@ -898,15 +894,11 @@ namespace Loyc.Collections.Impl
 				else
 				{
 					high = mid - 1;
-					if (c == 0)
-					{
-						if (lowerBound)
-							invert = 0;
-						else
-							return mid;
+					if (c == 0) {
+						if (!lowerBound) return mid;
+						invert = 0;
 					}
 				}
-					
 			}
 
 			return low ^ invert;

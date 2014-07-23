@@ -83,10 +83,11 @@ namespace Loyc.VisualStudio
 			int iStart, iEnd = -1;
 			foreach (var span in spans)
 			{
-				iStart = _results.BinarySearch(span.Start.Position, (tspan, start) => (tspan.Span.End.Position-1).CompareTo(start));
+				TagAggregatorOptions[] x;
+				iStart = _results.BinarySearch2(span.Start.Position, (tspan, start) => (tspan.Span.End.Position-1).CompareTo(start));
 				if (iStart < 0) iStart = ~iStart;
 				if (iStart < iEnd) iStart = iEnd;
-				iEnd = _results.BinarySearch(span.End.Position, (tspan, end) => tspan.Span.Start.Position.CompareTo(end));
+				iEnd = _results.BinarySearch2(span.End.Position, (tspan, end) => tspan.Span.Start.Position.CompareTo(end));
 				if (iEnd < 0) iEnd = ~iEnd;
 
 				for (int i = iStart; i < iEnd; i++)

@@ -48,7 +48,7 @@ namespace Loyc.Collections
 		}
 		[Test] public void TestPredicatedBinarySearch()
 		{
-			Func<int,int,int> p = G.ToComparisonFunc<int>();
+			Comparison<int> p = G.ToComparison<int>();
 			IList<int> list = new int[] { };
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, 15, p));
 			Assert.AreEqual(~0, ListExt.BinarySearch(list, -15, p));
@@ -83,8 +83,8 @@ namespace Loyc.Collections
 			// This tests another code path in G.ToComparison<T>()
 			var p2 = G.ToComparisonFunc<string>();
 			IList<string> strs = new string[] {"1", "3", "5", "7", "9"};
-			Assert.AreEqual(1, ListExt.BinarySearch(strs, "3", p2));
-			Assert.AreEqual(~4, ListExt.BinarySearch(strs, "7b", p2));
+			Assert.AreEqual(1, ListExt.BinarySearch2(strs, "3", p2));
+			Assert.AreEqual(~4, ListExt.BinarySearch2(strs, "7b", p2));
 		}
 
 		struct IntPair : IComparable<IntPair>

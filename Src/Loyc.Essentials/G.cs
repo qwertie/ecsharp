@@ -57,12 +57,12 @@ namespace Loyc
 		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Comparison{T}"/>.</summary>
 		public static Comparison<T> ToComparison<T>(IComparer<T> pred)
 		{
-			return delegate(T a, T b) { return pred.Compare(a, b); };
+			return pred.Compare;
 		}
 		/// <summary>Converts an <see cref="IComparer{T}"/> to a <see cref="Func{T,T,int}"/>.</summary>
 		public static Func<T, T, int> ToComparisonFunc<T>(IComparer<T> pred)
 		{
-			return delegate(T a, T b) { return pred.Compare(a, b); };
+			return pred.Compare;
 		}
 		public static List<string> SplitCommandLineArguments(string listString)
 		{

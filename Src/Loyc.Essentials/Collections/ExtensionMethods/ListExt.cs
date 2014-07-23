@@ -25,15 +25,17 @@ namespace Loyc.Collections
 	/// </remarks>
 	public static partial class ListExt
 	{
+		#region Binary Search (http://www.loyc.net/2014/dotnet-annoyances.html)
+
 		public static int BinarySearch<T>(this IList<T> list, T value) where T : IComparable<T>
 		{
-			return BinarySearch<T, T>(list, value, G.ToComparisonFunc<T>());
+			return BinarySearch<T>(list, value, G.ToComparison<T>());
 		}
 		public static int BinarySearch<T>(this IList<T> list, T value, IComparer<T> pred)
 		{
-			return BinarySearch<T, T>(list, value, G.ToComparisonFunc(pred));
+			return BinarySearch<T>(list, value, G.ToComparison(pred));
 		}
-		public static int BinarySearch<T, K>(this IList<T> list, K find, Func<T, K, int> compare)
+		public static int BinarySearch<T>(this IList<T> list, T find, Comparison<T> compare)
 		{
 			int low = 0, high = list.Count - 1;
 			int invert = -1;
@@ -48,6 +50,27 @@ namespace Loyc.Collections
 					high = mid - 1;
 					if (c == 0)
 						invert = 0;
+				}
+			}
+			return low ^ invert;
+		}
+		public static int BinarySearch2<T, K>(this IList<T> list, K find, Func<T, K, int> compare, bool lowerBound = true)
+		{
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else {
+					high = mid - 1;
+					if (c == 0) {
+						if (!lowerBound) return mid;
+						invert = 0;
+					}
 				}
 			}
 			return low ^ invert;
@@ -55,17 +78,16 @@ namespace Loyc.Collections
 
 		public static int BinarySearch<T>(this IReadOnlyList<T> list, T value) where T : IComparable<T>
 		{
-			return BinarySearch<T,T>(list, value, G.ToComparisonFunc<T>());
+			return BinarySearch<T>(list, value, G.ToComparison<T>());
 		}
 		public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer)
 		{
-			return BinarySearch<T,T>(list, value, G.ToComparisonFunc(comparer));
+			return BinarySearch<T>(list, value, G.ToComparison(comparer));
 		}
-		public static int BinarySearch<T, K>(this IReadOnlyList<T> list, K find, Func<T, K, int> compare)
+		public static int BinarySearch<T>(this IReadOnlyList<T> list, T find, Comparison<T> compare)
 		{
 			int low = 0, high = list.Count - 1;
 			int invert = -1;
-
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
@@ -80,19 +102,45 @@ namespace Loyc.Collections
 			}
 			return low ^ invert;
 		}
+		public static int BinarySearch2<T, K>(this IReadOnlyList<T> list, K find, Func<T, K, int> compare, bool lowerBound = true)
+		{
+			int low = 0, high = list.Count - 1;
+			int invert = -1;
+			while (low <= high)
+			{
+				int mid = low + ((high - low) >> 1);
+				int c = compare(list[mid], find);
+				if (c < 0)
+					low = mid + 1;
+				else {
+					high = mid - 1;
+					if (c == 0) {
+						if (!lowerBound) return mid;
+						invert = 0;
+					}
+				}
+			}
+			return low ^ invert;
+		}
 
 		public static int BinarySearch<T>(this IListAndListSource<T> list, T value) where T : IComparable<T>
 		{
-			return BinarySearch<T,T>((IList<T>)list, value, G.ToComparisonFunc<T>());
+			return BinarySearch<T>((IReadOnlyList<T>)list, value, G.ToComparison<T>());
 		}
 		public static int BinarySearch<T>(this IListAndListSource<T> list, T value, IComparer<T> comparer)
 		{
-			return BinarySearch<T,T>((IList<T>)list, value, G.ToComparisonFunc(comparer));
+			return BinarySearch<T>((IReadOnlyList<T>)list, value, G.ToComparison(comparer));
 		}
-		public static int BinarySearch<T, K>(this IListAndListSource<T> list, K value, Func<T,K,int> compare)
+		public static int BinarySearch<T>(this IListAndListSource<T> list, T value, Comparison<T> compare)
 		{
-			return BinarySearch<T,K>((IList<T>)list, value, compare);
+			return BinarySearch<T>((IReadOnlyList<T>)list, value, compare);
 		}
+		public static int BinarySearch2<T, K>(this IListAndListSource<T> list, K value, Func<T,K,int> compare, bool lowerBound = true)
+		{
+			return BinarySearch2<T,K>((IReadOnlyList<T>)list, value, compare, lowerBound);
+		}
+
+		#endregion
 
 		public static void CopyTo<T>(this IReadOnlyCollection<T> c, T[] array, int arrayIndex)
 		{

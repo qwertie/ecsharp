@@ -24,7 +24,7 @@ namespace Loyc.Collections
 	/// methods are fast, or for which equality is synonymous with "reference 
 	/// equality" so it is not necessary to call Equals() at all.</li>
 	/// <li>This class supports fast cloning and overloads the following operators
-	/// to perform set operations: & (intersection), | (union), - (subtraction, i.e.
+	/// to perform set operations: &amp; (intersection), | (union), - (subtraction, i.e.
 	/// <see cref="ExceptWith"/>) and ^ (xor, i.e. <see cref="SymmetricExceptWith"/>.
 	/// These operators clone the left-hand argument, so they benefit from fast-
 	/// cloning functionality.</li>
