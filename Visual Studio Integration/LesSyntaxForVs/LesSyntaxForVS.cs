@@ -46,7 +46,7 @@ namespace Loyc.VisualStudio
 		[ContentType("LES")]
 		internal static FileExtensionToContentTypeDefinition _3 = null;
 
-		[Import] VSImports _vs;
+		[Import] VSImports _vs = null;
 
 		public static LesSyntaxForVS Get(VSImports vs, ITextBuffer buffer)
 		{

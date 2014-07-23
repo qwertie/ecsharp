@@ -35,8 +35,7 @@ namespace Loyc.VisualStudio
 		// Analysis logic
 		IBackgroundAnalyzerImpl<TInput, TResults> _impl;
 		// Visual Studio imports and text buffer
-		protected VSBuffer _ctx;
-		protected ITextBuffer _buffer { get { return _ctx.Buffer; } }
+		protected ITextBuffer _buffer;
 		// Timer that initiates _impl.Run() a certain amount of time after editing (default: 750ms)
 		protected Lazy<DispatcherTimer> _runTimer;
 		static TimeSpan TimerDelay = TimeSpan.FromMilliseconds(750);
@@ -46,9 +45,9 @@ namespace Loyc.VisualStudio
 		CancellationTokenSource _ctsIfRunning;
 		protected bool IsRunning { get { return _ctsIfRunning != null; } }
 
-		internal BackgroundAnalyzerForVS(VSBuffer ctx, IBackgroundAnalyzerImpl<TInput, TResults> impl, bool createTimerNow)
+		internal BackgroundAnalyzerForVS(ITextBuffer buffer, IBackgroundAnalyzerImpl<TInput, TResults> impl, bool createTimerNow)
 		{
-			_ctx = ctx;
+			_buffer = buffer;
 			_impl = impl;
 			_buffer.Changed += OnTextBufferChanged;
 			_runTimer = new Lazy<DispatcherTimer>(() => {

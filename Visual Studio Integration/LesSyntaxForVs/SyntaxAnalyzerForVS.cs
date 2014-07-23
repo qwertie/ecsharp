@@ -27,12 +27,12 @@ namespace Loyc.VisualStudio
 		ITagger<ErrorTag>
 	{
 		protected BackgroundAnalyzerForVS<SparseAList<EditorToken>, ParseResults> _parseHelper;
-		protected IListSource<ITagSpan<ITag>> _results;
+		protected IReadOnlyList<ITagSpan<ITag>> _results;
 
 		public SyntaxAnalyzerForVS(VSBuffer ctx)
 			: base(ctx)
 		{
-			_parseHelper = new BackgroundAnalyzerForVS<SparseAList<EditorToken>, ParseResults>(ctx, this, false);
+			_parseHelper = new BackgroundAnalyzerForVS<SparseAList<EditorToken>, ParseResults>(ctx.Buffer, this, false);
 		}
 
 		// Derived class is responsible for parsing in this method
@@ -44,11 +44,11 @@ namespace Loyc.VisualStudio
 		}
 
 		// Derived class must override if ParseResults does not implement 
-		// IListSource<ITagSpan<ITag>>. Note: The results must be sorted by 
+		// IReadOnlyList<ITagSpan<ITag>>. Note: The results must be sorted by 
 		// position; GetTags() uses binary searches to find tags.
 		public virtual void OnRunSucceeded(ParseResults results)
 		{
-			_results = results as IListSource<ITagSpan<ITag>> ?? _results;
+			_results = results as IReadOnlyList<ITagSpan<ITag>> ?? _results;
 			
 			// We don't have a "diff" algorithm or anything, so claim everything changed.
 			if (TagsChanged != null)

@@ -1,0 +1,8 @@
+﻿
+	Open this in Visual Studio to see "sample" syntax highlighting.
+	// Backslashes are underlined.
+	\\ <-- Such as those ones.
+	When you start a parenthetical (like this) the parens are highlighted, 
+	but ([nested parens (like this)]) are not highlighted.
+	# Do not write a closing ")" without an opening "(".
+	etc.47321890471295783921705987210983740892710894732091

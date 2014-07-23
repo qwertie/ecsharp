@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycFileGeneratorForVs", "LoycFileGeneratorForVs\LoycFileGeneratorForVs.csproj", "{43A554C5-DBA1-4DC2-9C9A-6AB509262190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LesSyntaxForVS2012", "LesSyntaxForVs\LesSyntaxForVS2012.csproj", "{FEE4AD0D-82FC-4232-8E5B-47D0EC09D039}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycSyntaxForVS2012", "LesSyntaxForVs\LoycSyntaxForVS2012.csproj", "{FEE4AD0D-82FC-4232-8E5B-47D0EC09D039}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

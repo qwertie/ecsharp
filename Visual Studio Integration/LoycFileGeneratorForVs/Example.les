@@ -1,7 +1,0 @@
-﻿// LES code
-import System;
-namespace Bar {
-	class RandomTest { LLLPG {
-		rule Food @[ "pizza" | "lasagna" ];
-	}};
-};

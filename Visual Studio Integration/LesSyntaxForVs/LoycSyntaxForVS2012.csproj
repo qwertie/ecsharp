@@ -45,27 +45,27 @@
   <ItemGroup>
     <Reference Include="Ecs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\Ecs.exe</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\Ecs.exe</HintPath>
     </Reference>
     <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\LEL.exe</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\LEL.exe</HintPath>
     </Reference>
-    <Reference Include="Loyc.Collections, Version=1.0.5312.15523, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Collections, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Collections.dll</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Essentials, Version=1.0.5311.36347, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Essentials, Version=1.0.5316.14859, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Essentials.dll</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Essentials.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Syntax, Version=1.0.5312.15524, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Syntax, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Syntax.dll</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Syntax.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Utilities, Version=1.0.5312.15524, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Utilities, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LEL\Debug.NET4\Loyc.Utilities.dll</HintPath>
+      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility">
       <Private>False</Private>
@@ -100,6 +100,9 @@
     <Compile Include="LesSyntaxForVS.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BackgroundAnalyzerForVS.cs" />
+    <Compile Include="SampleLanguage.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SyntaxAnalyzerForVS.cs" />
     <Compile Include="SyntaxClassifierForVS.cs" />
     <Compile Include="TextSnapshotAsSourceFile.cs" />
