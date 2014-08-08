@@ -13,11 +13,12 @@ using Loyc.Geometry;
 using Tests.Resources;
 using PointD = Loyc.Geometry.Point<double>;
 
-namespace Loyc.Tests
+namespace Benchmark
 {
 	using System;
+	using Loyc;
 
-	static class Benchmark
+	static class Benchmarks
 	{
 		[ThreadStatic]
 		static int _threadStatic;
@@ -829,6 +830,7 @@ namespace Loyc.Tests
 			Console.WriteLine("foreach: {0}ms ({1} results)", t.Restart(), numbers2.Count);
 		}
 
+
 		public static void ConvexHull()
 		{
 			int[] testSizes = new int[] { 12345, 100, 316, 1000, 3160, 10000, 31600, 100000, 316000, 1000000, 3160000, 10000000 };
@@ -855,6 +857,178 @@ namespace Loyc.Tests
 				Console.WriteLine("Convex hull of {0,8} points took {1} ms ({2} ms for sorting step). Output has {3} points.", 
 					testSizes[iter], hullTime, sortTime, output.Count);
 			}
+		}
+	}
+
+	class ListBenchmarks
+	{
+		public void Run()
+		{
+			Benchmarker b = new Benchmarker(1) { NumberFormat = "0.000" };
+			Run(b, 100);
+			Run(b, 300);
+			Run(b, 1000);
+			b.NumberFormat = "0.00";
+			Run(b, 3000);
+			Run(b, 10000);
+			b.NumberFormat = "0.0";
+			Run(b, 30000);
+			Run(b, 100000);
+			b.NumberFormat = "0";
+			Run(b, 300000);
+			Run(b, 1000000);
+		}
+
+		int _count;
+		int _seed = Environment.TickCount;
+
+		public void Run(Benchmarker b, int listCount)
+		{
+			_count = listCount;
+			b.RunPublicBenchmarksInConsole(this, false, string.Format("{0,8}|", listCount), true);
+		}
+
+		[Benchmark("Insert @ random indexes")]
+		public object InsertRandom(Benchmarker b)
+		{
+			b.Run("List", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = new List<int>();
+				for (int i = 0; i < _count; i++)
+					list.Insert(r.Next(list.Count + 1), i);
+			});
+			b.Run("DList", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = new DList<int>();
+				for (int i = 0; i < _count; i++)
+					list.Insert(r.Next(list.Count + 1), i);
+			});
+			b.Run("AList", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = new AList<int>();
+				for (int i = 0; i < _count; i++)
+					list.Insert(r.Next(list.Count + 1), i);
+			});
+			return Benchmarker.DiscardResult;
+		}
+
+		private List MakeList<List>(List list, Benchmarker b) where List : IList<int>
+		{
+			b.PauseTimer();
+			for (int i = 0; i < _count; i++)
+				list.Add(i);
+			b.ResumeTimer();
+			return list;
+		}
+
+		[Benchmark("Remove @ random indexes")]
+		public object RemoveRandom(Benchmarker b)
+		{
+			b.Run("List", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = MakeList(new List<int>(), b);
+				while (list.Count > 0)
+					list.RemoveAt(r.Next(list.Count));
+			});
+			b.Run("DList", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = MakeList(new DList<int>(), b);
+				while (list.Count > 0)
+					list.RemoveAt(r.Next(list.Count));
+			});
+			b.Run("AList", 100, () =>
+			{
+				var r = new Random(_seed);
+				var list = MakeList(new AList<int>(), b);
+				while (list.Count > 0)
+					list.RemoveAt(r.Next(list.Count));
+			});
+			return Benchmarker.DiscardResult;
+		}
+
+		[Benchmark("Scan by [index] 10x")]
+		public object ScanIndexer(Benchmarker b)
+		{
+			b.Run("List", 100, b_ =>
+			{
+				var list = MakeList(new List<int>(), b_);
+				long sum = 0;
+				for (int x = 0; x < 10; x++, sum = 0) {
+					for (int i = 0; i < list.Count; i++)
+						sum += list[i];
+				}
+				return "Sum: " + sum;
+			});
+			b.Run("DList", 100, b_ =>
+			{
+				var list = MakeList(new DList<int>(), b_);
+				long sum = 0;
+				for (int x = 0; x < 10; x++, sum = 0) {
+					for (int i = 0; i < list.Count; i++)
+						sum += list[i];
+				}
+				return "Sum: " + sum;
+			});
+			b.Run("AList", 100, b_ =>
+			{
+				var list = MakeList(new AList<int>(), b_);
+				long sum = 0;
+				for (int x = 0; x < 10; x++, sum = 0) {
+					for (int i = 0; i < list.Count; i++)
+						sum += list[i];
+				}
+				return "Sum: " + sum;
+			});
+			//b.Run("InternalDList", 100, b_ =>
+			//{
+			//	var list = InternalDList<int>.Empty;
+			//	b.PauseTimer();
+			//	for (int i = 0; i < _count; i++)
+			//		list.Add(i);
+			//	b.ResumeTimer();
+			//	long sum = 0;
+			//	for (int x = 0; x < 10; x++, sum = 0) {
+			//		for (int i = 0; i < list.Count; i++)
+			//			sum += list[i];
+			//	}
+			//	return "Sum: " + sum;
+			//});
+			return Benchmarker.DiscardResult;
+		}
+
+		[Benchmark("Scan by IEnumerator 10x")]
+		public object ScanIEnumerator(Benchmarker b)
+		{
+			b.Run("List", 100, b_ =>
+			{
+				var list = MakeList(new List<int>(), b_);
+				double avg = 0;
+				for (int i = 0; i < 10; i++)
+					avg = list.Average();
+				return "Avg: " + avg;
+			});
+			b.Run("DList", 100, b_ =>
+			{
+				var list = MakeList(new DList<int>(), b_);
+				double avg = 0;
+				for (int i = 0; i < 10; i++)
+					avg = list.Average();
+				return "Avg: " + avg;
+			});
+			b.Run("AList", 100, b_ =>
+			{
+				var list = MakeList(new AList<int>(), b_);
+				double avg = 0;
+				for (int i = 0; i < 10; i++)
+					avg = list.Average();
+				return "Avg: " + avg;
+			});
+			return Benchmarker.DiscardResult;
 		}
 	}
 

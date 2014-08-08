@@ -23,9 +23,16 @@ namespace Loyc
 	{
 		protected static ConsoleColor _lastColor;
 
+		public ConsoleMessageSink() { PrintSeverityAt = Severity.Warning; }
+
+		/// <summary>Minimum severity level at which the severity level is printed.
+		/// For example, if set to Severity.Error, then the prefix "Error:" is printed
+		/// for errors but the prefix "Warning:" is not printed for warnings.</summary>
+		public Severity PrintSeverityAt { get; set; }
+
 		protected virtual ConsoleColor PickColor(Severity msgType, out string msgTypeText)
 		{
-			bool implicitText = false;
+			bool implicitText = msgType < PrintSeverityAt;
 			ConsoleColor color;
 
 			if (msgType >= Severity.Critical)

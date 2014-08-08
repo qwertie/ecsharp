@@ -468,18 +468,29 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(Math.Min(from, to) >= 0 && amount >= 0);
 			Debug.Assert(Math.Max(from, to) + amount <= array.Length);
 			Debug.Assert(to < from || to >= from + amount);
-			int stop = to + amount;
-			while (to < stop)
-				array[to++] = array[from++];
+
+			if (amount < 16) {
+				int stop = to + amount;
+				while (to < stop)
+					array[to++] = array[from++];
+			} else
+				// Benchmarks show that Array.Copy is faster for large copies.
+				// Benchmarks have not been done for small copies but Array.Copy
+				// is not likely to be faster in that case due to a larger decision tree
+				// (e.g. detecting if the arrays are the same and the regions overlap)
+				Array.Copy(array, from, array, to, amount);
 		}
 		private static void CopyBwd(T[] array, int fromPlusAmount, int toPlusAmount, int amount)
 		{
 			Debug.Assert(Math.Min(fromPlusAmount, toPlusAmount) >= amount && amount >= 0);
 			Debug.Assert(Math.Max(fromPlusAmount, toPlusAmount) <= array.Length);
 			Debug.Assert(toPlusAmount > fromPlusAmount || toPlusAmount <= fromPlusAmount-amount);
-			int to = toPlusAmount - amount;
-			while (toPlusAmount > to)
-				array[--toPlusAmount] = array[--fromPlusAmount];
+			if (amount < 16) {
+				int to = toPlusAmount - amount;
+				while (toPlusAmount > to)
+					array[--toPlusAmount] = array[--fromPlusAmount];
+			} else
+				Array.Copy(array, fromPlusAmount-amount, array, toPlusAmount-amount, amount);
 		}
 
 		private void RemoveHelper(int index, int amount)

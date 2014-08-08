@@ -16,6 +16,7 @@ using Loyc.Threading;
 using Loyc.Syntax;
 using Loyc.Geometry;
 using Loyc.Collections.Tests;
+using Benchmark;
 
 namespace Loyc.Tests
 {
@@ -92,7 +93,7 @@ namespace Loyc.Tests
 				} else if (k.KeyChar == '2') {
 					RunTests.Run(new KeylessHashtableTests());
 				} else if (k.KeyChar == '9') {
-					Benchmarks();
+					RunBenchmarks();
 				} else if (k.KeyChar == 'z' || k.KeyChar == 'Z') {
 					foreach (EncodingInfo inf in Encoding.GetEncodings())
 						Console.WriteLine("{0} {1}: {2}", inf.CodePage, inf.Name, inf.DisplayName);
@@ -100,24 +101,26 @@ namespace Loyc.Tests
 			}
 		}
 
-		private static void Benchmarks()
+		private static void RunBenchmarks()
 		{
-			Benchmark.ConvexHull();
+			new ListBenchmarks().Run();
+			
+			Benchmarks.ConvexHull();
 
 			// Obtain the word list
 			string wordList = Resources.WordList;
 			string[] words = wordList.Split(new string[] { "\n", "\r\n" }, 
 			                                StringSplitOptions.RemoveEmptyEntries);
 
-			Benchmark.LinqVsForLoop();
-			//Benchmark.CountOnes();
-			Benchmark.BenchmarkSets(words);
-			Benchmark.ThreadLocalStorage();
-			Benchmark.EnumeratorVsIterator();
+			Benchmarks.LinqVsForLoop();
+			//Benchmarks.CountOnes();
+			Benchmarks.BenchmarkSets(words);
+			Benchmarks.ThreadLocalStorage();
+			Benchmarks.EnumeratorVsIterator();
 			GoInterfaceBenchmark.DoBenchmark();
 			CPTrieBenchmark.BenchmarkStrings(words);
 			CPTrieBenchmark.BenchmarkInts();
-			Benchmark.ByteArrayAccess();
+			Benchmarks.ByteArrayAccess();
 		}
 
 		// By examining disassembly of this method in the debugger, I learned that 

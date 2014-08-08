@@ -23,7 +23,7 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>
 		/// This class primarily does prediction analysis. It generates prediction
 		/// trees, which <see cref="GenerateCodeVisitor"/> then uses to generate 
-		/// code. It relies on the "Prediction analysis code" in 
+		/// code. It relies on the #region "Prediction analysis" in 
 		/// <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
 		/// </remarks>
 		protected class PredictionAnalysisVisitor : RecursivePredVisitor
@@ -453,6 +453,51 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
+
+		//TEMP
+		protected class PredictionAnalysisVisitor2 : RecursivePredVisitor
+		{
+			public PredictionAnalysisVisitor2(LLParserGenerator llpg) { LLPG = llpg; }
+
+			LLParserGenerator LLPG;
+			IPGCodeGenHelper CGH { get { return LLPG.CodeGenHelper; } }
+			Rule _currentRule;
+			Alts _currentAlts;
+			int _k;
+
+			public void Analyze(Rule rule)
+			{
+				_currentRule = rule;
+				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
+				rule.Pred.Call(this);
+			}
+
+			bool _codeBeforeAndWarning = false;
+			public override void Visit(AndPred pred)
+			{
+				if (pred.PreAction != null && !_codeBeforeAndWarning) {
+					LLPG.Output(Warning, pred, 
+						"It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first.");
+					_codeBeforeAndWarning = true;
+				}
+				VisitChildrenOf(pred);
+			}
+
+			public override void Visit(Gate pred)
+			{
+				// We don't need prediction trees (or ambig warnings!) for the pred.Predictor
+				pred.Match.Call(this);
+			}
+
+			#region Prediction analysis
+
+			public override void Visit(Alts pred)
+			{
+				base.Visit(pred);
+			}
+
+			#endregion
+		}
 
 
 		/// <summary>Figures out which terminals and and-predicates are "prematched".
