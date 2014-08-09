@@ -12,18 +12,12 @@ namespace Loyc
 	{
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
 		/// <param name="s">String to split</param>
-		/// <param name="c">Dividing character.</param>
+		/// <param name="delimiter">Dividing character.</param>
 		/// <returns>Returns the string to the left and to the right of the
 		/// first occurance of 'c' in the string, not including 'c' itself.
 		/// If 'c' was not found in 's', the pair (s, null) is returned.</returns>
-		public static Pair<UString,UString> SplitAt(this string s, char c)
-		{
-			int i = s.IndexOf(c);
-			if (i == -1)
-				return new Pair<UString, UString>(s, UString.Null);
-			else
-				return new Pair<UString, UString>(s.USlice(0, i), s.USlice(i + 1));
-		}
+		public static Pair<UString, UString> SplitAt(this string s, char delimiter) { return ((UString)s).SplitAt(delimiter); }
+		public static Pair<UString, UString> SplitAt(this string s, string delimiter) { return ((UString)s).SplitAt(delimiter); }
 		
 		/// <summary>Returns the rightmost 'count' characters of 's', or s itself if count > s.Length.</summary>
 		public static string Right(this string s, int count)

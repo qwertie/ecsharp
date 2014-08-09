@@ -11,7 +11,7 @@
 	public class BListLeaf<K, T> : AListLeaf<K, T>
 	{
 		public BListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
-		public BListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
+		protected BListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
 		public BListLeaf(BListLeaf<K, T> frozen) : base(frozen) { }
 
 		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)

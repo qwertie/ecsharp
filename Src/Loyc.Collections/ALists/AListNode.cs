@@ -219,16 +219,23 @@ namespace Loyc.Collections.Impl
 		/// <param name="parent">Parent node (used by tob)</param>
 		/// <param name="tob">Tree observer (null if none)</param>
 		/// <returns>True if the node was unfrozen</returns>
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		public static bool AutoClone(ref AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
 		{
-			bool result = node.IsFrozen;
-			if (result) {
-				var old = node;
-				node = node.DetachedClone();
-				if (tob != null) tob.HandleChildReplaced(old, node, null, parent);
-				Debug.Assert(!node.IsFrozen);
+			if (node.IsFrozen) {
+				node = Clone(node, parent, tob);
+				return true;
 			}
-			return result;
+			return false;
+		}
+		static AListNode<K, T> Clone(AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
+		{
+			var clone = node.DetachedClone();
+			if (tob != null) tob.HandleChildReplaced(node, clone, null, parent);
+			Debug.Assert(!clone.IsFrozen);
+			return clone;
 		}
 
 		/// <summary>Same as Assert(), except that the condition expression can 

@@ -246,6 +246,9 @@
 		/// <summary>Retrieves the key K from an item T. This method is only needed by "B" lists.</summary>
 		protected internal abstract K GetKey(T item);
 
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		protected void CheckPoint()
 		{
 			//uint c;
@@ -255,6 +258,9 @@
 			if (_observer != null)
 				_observer.CheckPoint();
 		}
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		protected void AutoThrow()
 		{
 			if (_freezeMode != NotFrozen) ThrowFrozen();

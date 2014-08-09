@@ -16,7 +16,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Helper struct: treats a range of integers (e.g. 5..10) as a list. This type is returned by <see cref="Range.IntRange(int, int)"/>.</summary>
-	public struct IntRange : IRange<int>, IListSource<int>, IList<int>, IIsEmpty
+	public struct IntRange : IRange<int>, IListAndListSource<int>, IIsEmpty
 	{
 		int _start, _count;
 

@@ -7,6 +7,7 @@ using Loyc.MiniTest;
 using Loyc.Collections;
 using System.ComponentModel;
 using uchar = System.Int32;
+using System.Runtime.CompilerServices;
 
 namespace Loyc
 {
@@ -450,14 +451,22 @@ namespace Loyc
 		{
 			if (what.Length > Length)
 				return false;
+			return SubstringEqualHelper(_str, _start, what, ignoreCase);
+		}
+		
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
+		static bool SubstringEqualHelper(string _str, int _start, UString what, bool ignoreCase = false)
+		{
 			if (ignoreCase)
 				for (int i = 0; i < what.Length; i++) {
-					if (char.ToUpperInvariant(this[i]) != char.ToUpperInvariant(what[i]))
+					if (char.ToUpperInvariant(_str[_start + i]) != char.ToUpperInvariant(what[i]))
 						return false;
 				}
 			else
 				for (int i = 0; i < what.Length; i++) {
-					if (this[i] != what[i])
+					if (_str[_start + i] != what[i])
 						return false;
 				}
 			return true;
@@ -500,6 +509,48 @@ namespace Loyc
 		public UString ReplaceOne(UString what, UString replacement, bool ignoreCase = false)
 		{
 			return Replace(what, replacement, ignoreCase, 1);
+		}
+
+		public int? IndexOf(char find, bool ignoreCase = false)
+		{
+			int stop = _start + _count;
+			if (ignoreCase) {
+				find = char.ToUpperInvariant(find);
+				for (int i = _start; i < stop; i++)
+					if (char.ToUpperInvariant(_str[i]) == find)
+						return i - _start;
+			} else {
+				int i = _str.IndexOf(find, _start, _count);
+				if (i > -1)
+					return i;
+			}
+			return null;
+		}
+		public int? IndexOf(UString find, bool ignoreCase = false)
+		{
+			int end = _start + _count - find.Length;
+			for (int i = _start; i <= end; i++) {
+				if (SubstringEqualHelper(_str, i, find, ignoreCase))
+					return i - _start;
+			}
+			return null;
+		}
+
+		public Pair<UString, UString> SplitAt(char delimiter)
+		{
+			int? i = IndexOf(delimiter);
+			if (i != null)
+				return new Pair<UString, UString>(Substring(0, i.Value), Substring(i.Value + 1));
+			else
+				return new Pair<UString, UString>(this, UString.Null);
+		}
+		public Pair<UString, UString> SplitAt(UString delimiter)
+		{
+			int? i = IndexOf(delimiter);
+			if (i != null)
+				return new Pair<UString, UString>(Substring(0, i.Value), Substring(i.Value + 1));
+			else
+				return new Pair<UString, UString>(this, UString.Null);
 		}
 	}
 

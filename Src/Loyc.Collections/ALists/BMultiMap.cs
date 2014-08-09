@@ -31,7 +31,7 @@ namespace Loyc.Collections
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
 	[Serializable]
-	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>
+	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>
 	{
 		#region Constructors
 
@@ -202,10 +202,10 @@ namespace Loyc.Collections
 		/// for the key you requested. It returns an object that represents the
 		/// set of values associated with a key, but those values are not actually
 		/// retrieved from the collection until you enumerate the collection.</remarks>
-		/// <seealso cref="Values"/>
-		public Values this[K key]
+		/// <seealso cref="ValueList"/>
+		public ValueList this[K key]
 		{
-			get { return new Values(this, key); }
+			get { return new ValueList(this, key); }
 		}
 
 		public void Add(K key, V value)
@@ -215,12 +215,15 @@ namespace Loyc.Collections
 
 		/// <summary>Represents the set of values associated with a particular key 
 		/// in a <see cref="BMultiMap{K,V}"/> collection.</summary>
-		public struct Values : IReadOnlyCollection<V>, ICollection<V>
+		/// <remarks>Renamed from <c>Values</c> because C# wouldn't let me 
+		/// implement a <c>Values</c> property (for the <c>IReadOnlyDictionary</c>
+		/// interface) at the same time.</remarks>
+		public struct ValueList : IReadOnlyCollection<V>, ICollection<V>
 		{
 			readonly BMultiMap<K, V> _map;
 			readonly K _key;
 			
-			internal Values(BMultiMap<K, V> map, K key)
+			internal ValueList(BMultiMap<K, V> map, K key)
 			{
 				_map = map;
 				_key = key;
@@ -355,9 +358,9 @@ namespace Loyc.Collections
 			return (int)op.BaseIndex;
 		}
 
-		/// <summary>Finds the index of the first item in the list that is greater 
-		/// than the specified item.</summary>
-		/// <param name="item">The item to find. If passed by reference, when this 
+		/// <summary>Finds the index of the first item in the list whose key is 
+		/// greater than the specified key.</summary>
+		/// <param name="key">The key to find. If passed by reference, when this 
 		/// method returns, item is set to the next greater item than the item you 
 		/// searched for, or left unchanged if there is no greater item.</param>
 		/// <param name="index">The index of the next greater item that was found,
@@ -424,6 +427,59 @@ namespace Loyc.Collections
 				return -1;
 		}
  
+		#endregion
+
+		#region IReadOnlyDictionary<K, Values> members
+		// Although we implement IReadOnlyDictionary, note that the Values class is mutable!
+
+		bool IReadOnlyDictionary<K, ValueList>.TryGetValue(K key, out BMultiMap<K, V>.ValueList value)
+		{
+			value = this[key]; // always succeeds
+			return true; // not sure if always returning true is a good idea, but it's fast
+		}
+
+		/// <summary>Gets a list of collections of <see cref="ValueList"/> in this object.</summary>
+		public IEnumerable<ValueList> Values
+		{
+			get {
+				if (!IsEmpty) {
+					var key = First.Key;
+					for (int i = 0;;) {
+						yield return new ValueList(this, key);
+						i = FindUpperBound(key);
+						if (i >= Count) break;
+						key = base[i].Key;
+					}
+				}
+			}
+		}
+
+		/// <summary>Returns an enumerator of <c>KeyValuePair&lt;K, Values></c> which lets
+		/// you see the list values associated with each key.</summary>
+		/// <remarks>
+		/// You can safely modify the subcollections as you enumerate, 
+		/// and you can even modify other parts of the BMultiMap.
+		/// <para/>
+		/// Please note that <c>BMultiMap</c> contains two GetEnumerator() methods, due to 
+		/// its dual identity as <c>BList{KeyValuePair{K, V}}</c> and as a 
+		/// <c>IReadOnlyDictionary{K, Values}</c>. <c>IEnumerator.GetEnumerator()</c> 
+		/// and the <c>GetEnumerator()</c> method in the base class both
+		/// enumerate <c>KeyValuePair{K, V}</c>, whereas this method 
+		/// enumerates <c>KeyValuePair{K, Values}</c>.
+		/// </remarks>
+		IEnumerator<KeyValuePair<K, ValueList>> IEnumerable<KeyValuePair<K, ValueList>>.GetEnumerator()
+		{
+			if (!IsEmpty) {
+				var key = First.Key;
+				for (int i = 0;;) {
+					yield return new KeyValuePair<K, ValueList>(key, new ValueList(this, key));
+					i = FindUpperBound(key);
+					if (i >= Count) break;
+					key = base[i].Key;
+				}
+			}
+		}
+
 		#endregion
 	}
 }

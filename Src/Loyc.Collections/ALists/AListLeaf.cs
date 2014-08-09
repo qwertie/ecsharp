@@ -9,7 +9,7 @@
 	[Serializable]
 	public abstract class AListLeaf<K, T> : AListNode<K, T>
 	{
-		public const int DefaultMaxNodeSize = 48;
+		public const int DefaultMaxNodeSize = 64;
 
 		protected InternalDList<T> _list = InternalDList<T>.Empty;
 
@@ -18,7 +18,7 @@
 			Debug.Assert(maxNodeSize >= 3);
 			_maxNodeSize = maxNodeSize;
 		}
-		public AListLeaf(ushort maxNodeSize, InternalDList<T> list) : this(maxNodeSize)
+		protected AListLeaf(ushort maxNodeSize, InternalDList<T> list) : this(maxNodeSize)
 		{
 			_list = list;
 		}
@@ -59,8 +59,8 @@
 			if (IsFullLeaf || _isFrozen || right._isFrozen)
 				return 0;
 			T item = right._list.First;
-			_list.PushLast(item);
-			right._list.PopFirst(1);
+			_list.Add(item);
+			right._list.RemoveAt(0);
 			if (tob != null) tob.ItemMoved(item, right, this);
 			return 1;
 		}
@@ -71,8 +71,14 @@
 			if (IsFullLeaf || _isFrozen || left._isFrozen)
 				return 0;
 			T item = left._list.Last;
+			#if true // InternalDList
 			_list.PushFirst(item);
 			left._list.PopLast(1);
+			#else // InternalList
+			_list.Insert(0, item);
+			left._list.RemoveAt(left._list.Count-1);
+			#endif
+
 			if (tob != null) tob.ItemMoved(item, left, this);
 			return 1;
 		}
@@ -142,7 +148,7 @@
 	internal class AListLeaf<T> : AListLeaf<int, T>
 	{
 		public AListLeaf(ushort maxNodeSize) : base(maxNodeSize) { }
-		public AListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
+		protected AListLeaf(ushort maxNodeSize, InternalDList<T> list) : base(maxNodeSize, list) { }
 		public AListLeaf(AListLeaf<T> frozen) : base(frozen) { }
 
 		public override AListNode<int, T> DetachedClone()

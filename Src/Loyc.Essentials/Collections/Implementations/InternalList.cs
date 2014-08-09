@@ -256,6 +256,11 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+		public T First
+		{
+			get { return _array[0]; }
+			set { _array[0] = value; }
+		}
 		public T Last
 		{
 			get {
@@ -299,6 +304,10 @@ namespace Loyc.Collections.Impl
 		{
 			return InternalList.BinarySearch(_array, _count, lookFor, comp, lowerBound);
 		}
+		public int BinarySearch<K>(K lookFor, Func<T, K, int> func, bool lowerBound)
+		{
+			return InternalList.BinarySearch(_array, _count, lookFor, func, lowerBound);
+		}
 
 		/// <summary>Slides the array entry at [from] forward or backward in the
 		/// list, until it reaches [to].</summary>
@@ -315,12 +324,13 @@ namespace Loyc.Collections.Impl
 
 		#region Boilerplate
 
-		public int IndexOf(T item)
+		public int IndexOf(T item) { return IndexOf(item, 0); }
+		public int IndexOf(T item, int index)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			for (int i = 0; i < Count; i++)
-				if (comparer.Equals(this[i], item))
-					return i;
+			for (; index < Count; index++)
+				if (comparer.Equals(this[index], item))
+					return index;
 			return -1;
 		}
 		public bool Contains(T item)
@@ -329,8 +339,7 @@ namespace Loyc.Collections.Impl
 		}
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			foreach (T item in this)
-				array[arrayIndex++] = item;
+			Array.Copy(_array, 0, array, arrayIndex, _count);
 		}
 		public bool IsReadOnly
 		{
@@ -393,6 +402,17 @@ namespace Loyc.Collections.Impl
 		public Slice_<T> Slice(int start, int count)
 		{
 			return new Slice_<T>(this, start, count);
+		}
+
+		public InternalList<T> CopySection(int start, int subcount)
+		{
+			Debug.Assert((uint)start <= (uint)_count && subcount >= 0);
+			if (subcount > _count - start)
+				subcount = _count - start;
+
+			T[] copy = new T[subcount];
+			Array.Copy(_array, start, copy, 0, subcount);
+			return new InternalList<T>(copy, subcount);
 		}
 	}
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc;
-using System.Diagnostics;
 
 namespace Benchmark
 {
@@ -19,7 +19,7 @@ namespace Benchmark
 	/// themselves (see below).
 	/// <para/>
 	/// The main methods of interest are <see cref="RunPublicBenchmarks"/>,
-	/// <see cref="RunPublicBenchmarksInConsole"/>, <see cref="Subtest"/>
+	/// <see cref="RunPublicBenchmarksInConsole"/>, <see cref="Run"/>
 	/// and <see cref="PrintResults"/> (if you want to print the results to a file).
 	/// <para/>
 	/// Benchmarker normally runs several trials, in order to detect any "jitter" in
@@ -44,7 +44,7 @@ namespace Benchmark
 	/// controls the name of this final column. The final column will not be shown 
 	/// if none of the benchmarks returned any (non-null) data.
 	/// </remarks>
-	public class Benchmarker
+	public partial class Benchmarker
 	{
 		public Benchmarker(int defaultNumTrials = 4, bool doGC = true) 
 			{ DoGC = doGC; DefaultNumTrials = defaultNumTrials; }
@@ -65,28 +65,31 @@ namespace Benchmark
 		/// column, which is given this column heading.</summary>
 		public string UserDataColumnName = "Comment";
 		
+		/// <summary>Returned from a [Benchmark] method to tell Benchmarker not to
+		/// create a result row for the method; one usually returns this when a
+		/// benchmark calls Run() for several sub-tests and the total time is 
+		/// irrelevant.</summary>
 		public static readonly string DiscardResult = "(discard result)";
 		
-		enum Overhead { }
-		public static object SubtractOverhead(int millisec)
-		{
-			return (Overhead)millisec;
-		}
-
 		protected Dictionary<string, int> _errors = new Dictionary<string, int>();
-		protected string _activeBenchmark;
+		
+		public string ActiveBenchmarkName { get; set; }
+
 		// BTW: SortedList is very slow for insert/delete; you should usually use
 		// SortedDictionary instead, but it is missing from the Compact Framework.
 		protected SortedList<string, BenchmarkStatistic> _results = new SortedList<string, BenchmarkStatistic>();
-		IEnumerable<KeyValuePair<string, BenchmarkStatistic>> Results
+		public IEnumerable<KeyValuePair<string, BenchmarkStatistic>> Results
 		{
 			get { return _results; }
 		}
 
+		/// <summary>Used to pause the timer inside a benchmark.</summary>
 		public void PauseTimer()
 		{
 			_currentTimer.Pause();
 		}
+		/// <summary>Used to resume the timer inside a benchmark. Note that the 
+		/// timer is already running when a benchmark method or lambda starts.</summary>
 		public void ResumeTimer()
 		{
 			_currentTimer.Resume();
@@ -121,10 +124,10 @@ namespace Benchmark
 		/// outer benchmark's time will include time used by the sub-benchmark.</remarks>
 		public int Run(string name, int minMillisec, Func<Benchmarker, object> code, int loopTimes = 1)
 		{
-			var oldActive = _activeBenchmark;
+			var oldActive = ActiveBenchmarkName;
 			if (++_nestingDepth > 1)
-				_activeBenchmark += ": ";
-			_activeBenchmark += name;
+				ActiveBenchmarkName += ": ";
+			ActiveBenchmarkName += name;
 
 			var totalTime = new EzStopwatch(true);
 			try {
@@ -145,11 +148,11 @@ namespace Benchmark
 				_errors.TryGetValue(msg, out count);
 				_errors[msg] = count + 1;
 
-				TallyError(_activeBenchmark, excType.Name);
+				TallyError(ActiveBenchmarkName, excType.Name);
 			}
 			finally
 			{
-				_activeBenchmark = oldActive;
+				ActiveBenchmarkName = oldActive;
 				_nestingDepth--;
 			}
 			return totalTime.Millisec;
@@ -167,22 +170,23 @@ namespace Benchmark
 				GC.Collect();
 			}
 
-			_currentTimer = new EzStopwatch(true);
-			do {
-				_currentTimer.Restart();
-				object userData = null;
-				for (int i = 0; i < loopTimes; i++)
-					userData = code(this);
+			var oldTimer = _currentTimer;
+			try {
+				_currentTimer = new EzStopwatch(true);
+				do {
+					_currentTimer.Restart();
+					object userData = null;
+					for (int i = 0; i < loopTimes; i++)
+						userData = code(this);
 
-				double millisec = _currentTimer.Millisec;
-				if (userData is Overhead) {
-					millisec -= (int)(Overhead)userData;
-					userData = null;
-				}
-				
-				if (userData as string != DiscardResult)
-					Tally(_activeBenchmark, millisec, userData);
-			} while (totalTime.Millisec < minMillisec);
+					double millisec = _currentTimer.Millisec;
+
+					if (userData as string != DiscardResult)
+						Tally(ActiveBenchmarkName, millisec, userData);
+				} while (totalTime.Millisec < minMillisec);
+			} finally {
+				_currentTimer = oldTimer;
+			}
 		}
 
 		protected void TallyError(string name, string msg)
@@ -217,11 +221,23 @@ namespace Benchmark
 		/// methods are run in order, collated, sorted by method name.</param>
 		/// <param name="postprocess">A method to run after each trial, if desired, 
 		/// or null.</param>
-		/// <remarks>Existing results are Clear()ed before running the benchmarks.</remarks>
+		/// <param name="clearOldResults">Whether to clear any existing results 
+		/// before running the benchmarks (default: true)</param>
+		/// <remarks>
+		/// Benchmark methods must have one of the following signatures:
+		/// <code>
+		/// [Benchmark("Description")]
+		/// public object MethodName(Benchmarker b) {...}
+		/// [Benchmark("Description")]
+		/// public object MethodName() {...}
+		/// [Benchmark("Description")]
+		/// public void MethodName() {...}
+		/// </code>
+		/// </remarks>
 		public void RunPublicBenchmarks(object subject, bool randomOrder, Action postprocess, string prefix = null, bool clearOldResults = true)
 		{
-			string oldActive = _activeBenchmark;
-			_activeBenchmark = prefix;
+			string oldActive = ActiveBenchmarkName;
+			ActiveBenchmarkName = prefix;
 			try {
 				// Get a list of methods to run
 				var methods = new List<Benchmark>();
@@ -288,7 +304,7 @@ namespace Benchmark
 						postprocess();
 				}
 			} finally {
-				_activeBenchmark = oldActive;
+				ActiveBenchmarkName = oldActive;
 			}
 		}
 

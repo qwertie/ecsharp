@@ -45,7 +45,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Bin\Tests\Debug.NET4\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -55,7 +55,7 @@
     <DebugType>PdbOnly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Bin\Tests\Release.NET4\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DotNet4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -78,7 +78,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\Bin\Tests\Debug.NET3\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet35</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
@@ -94,7 +94,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OutputPath>..\..\Bin\Tests\Release.NET3\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DotNet35</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
@@ -114,7 +114,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug.NET45\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
@@ -124,7 +124,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <OutputPath>bin\Release.NET45\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DotNet45</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
@@ -133,6 +133,14 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'!='v3.5'">
+    <Reference Include="OxyPlot">
+      <HintPath>..\packages\OxyPlot.WindowsForms.2014.1.319.1\lib\NET40\OxyPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot.WindowsForms">
+      <HintPath>..\packages\OxyPlot.WindowsForms.2014.1.319.1\lib\NET40\OxyPlot.WindowsForms.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -157,13 +165,21 @@
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
     <Compile Include="Benchmarker.cs" />
+    <Compile Include="BenchmarkSets.cs" />
     <Compile Include="GoInterfaceBenchmark.cs" />
+    <Compile Include="ListBenchmarks.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="EzChartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EzChartForm.Designer.cs">
+      <DependentUpon>EzChartForm.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -199,12 +215,16 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="EzChartForm.resx">
+      <DependentUpon>EzChartForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\2of12.txt" />
   </ItemGroup>
   <ItemGroup>
