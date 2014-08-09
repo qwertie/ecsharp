@@ -548,7 +548,7 @@ namespace Loyc
 		{
 			int? i = IndexOf(delimiter);
 			if (i != null)
-				return new Pair<UString, UString>(Substring(0, i.Value), Substring(i.Value + 1));
+				return new Pair<UString, UString>(Substring(0, i.Value), Substring(i.Value + delimiter.Length));
 			else
 				return new Pair<UString, UString>(this, UString.Null);
 		}

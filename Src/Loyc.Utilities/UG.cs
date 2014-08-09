@@ -192,23 +192,25 @@ namespace Loyc.Utilities
 			{
 				// e.g. "@list of options.txt"
 				string atFile = s.Substring(1);
+				string fileContents = null;
 				try {
 					string fullpath = Path.Combine(atFolder, atFile);
-					if (File.Exists(fullpath)) {
-						string fileContents = File.OpenText(fullpath).ReadToEnd();
-						List<string> list = G.SplitCommandLineArguments(fileContents);
-
-						int maxMore = System.Math.Max(0, argLimit - args.Count);
-						if (list.Count > maxMore) {
-							// oops, command limit exceeded
-							MessageSink.Current.Write(Severity.Warning, s, "Limit of {0} commands exceeded", argLimit);
-							list.RemoveRange(maxMore, list.Count - maxMore);
-						}
-
-						args.InsertRange(i + 1, (IReadOnlyList<string>)list);
-					}
+					if (File.Exists(fullpath))
+						fileContents = File.OpenText(fullpath).ReadToEnd();
 				} catch (Exception e) {
 					MessageSink.Current.Write(Severity.Error, s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
+				}
+				if (fileContents != null) {
+					List<string> list = G.SplitCommandLineArguments(fileContents);
+
+					int maxMore = System.Math.Max(0, argLimit - args.Count);
+					if (list.Count > maxMore) {
+						// oops, command limit exceeded
+						MessageSink.Current.Write(Severity.Warning, s, "Limit of {0} commands exceeded", argLimit);
+						list.RemoveRange(maxMore, list.Count - maxMore);
+					}
+
+					args.InsertRange(i + 1, (IList<string>) list);
 				}
 			}
 		}

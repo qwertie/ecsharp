@@ -208,32 +208,28 @@ namespace Loyc.Geometry
 
 		[ThreadStatic]
 		static PointF[] _onePointF;
-		static PointF[] OnePointF { 
-			get { 
-				if (_onePointF == null) _onePointF = new PointF[1];
-				return _onePointF;
-			}
+		static PointF[] AsArray(PointF pt) { 
+			if (_onePointF == null) _onePointF = new PointF[1];
+			_onePointF[0] = pt;
+			return _onePointF;
 		}
 
 		public static PointF Transform(this System.Drawing.Drawing2D.Matrix matrix, PointF point)
 		{
-			var a = OnePointF;
-			a[0] = point;
-			matrix.TransformPoints(OnePointF);
+			var a = AsArray(point);
+			matrix.TransformPoints(a);
 			return a[0];
 		}
 		public static Point<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Point<float> point)
 		{
-			var a = OnePointF;
-			a[0] = point.AsBCL();
-			matrix.TransformPoints(OnePointF);
+			var a = AsArray(point.AsBCL());
+			matrix.TransformPoints(a);
 			return a[0].AsLoyc();
 		}
 		public static Vector<float> Transform(this System.Drawing.Drawing2D.Matrix matrix, Vector<float> vec)
 		{
-			var a = OnePointF;
-			a[0] = vec.AsBCL();
-			matrix.TransformVectors(OnePointF);
+			var a = AsArray(vec.AsBCL());
+			matrix.TransformVectors(a);
 			return a[0].AsLoycVector();
 		}
 

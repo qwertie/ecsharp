@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -41,7 +41,7 @@ namespace Loyc
 			static Func<T, T, int> GetF() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
 			}
 		}
 		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
@@ -64,6 +64,7 @@ namespace Loyc
 		{
 			return pred.Compare;
 		}
+		
 		public static List<string> SplitCommandLineArguments(string listString)
 		{
 			List<string> list = new List<string>();
@@ -82,6 +83,37 @@ namespace Loyc
 			return list;
 		}
 
+		static char[] _invalids;
+
+		/// <summary>Replaces characters in <c>text</c> that are not allowed in 
+		/// file names with the specified replacement character.</summary>
+		/// <param name="text">Text to make into a valid filename. The same string is returned if it is valid already.</param>
+		/// <param name="replacement">Replacement character, or null to simply remove bad characters.</param>
+		/// <param name="fancy">Whether to replace quotes and slashes with the non-ASCII characters ” and ⁄.</param>
+		/// <returns>A string that can be used as a filename. If the output string would otherwise be empty, returns "_".</returns>
+		public static string MakeValidFileName(string text, char? replacement = '_', bool fancy = true)
+		{
+			StringBuilder sb = new StringBuilder(text.Length);
+			var invalids = _invalids ?? (_invalids = Path.GetInvalidFileNameChars());
+			bool changed = false;
+			for (int i = 0; i < text.Length; i++) {
+				char c = text[i];
+				if (invalids.Contains(c)) {
+					var repl = replacement ?? '\0';
+					if (fancy) {
+						if (c == '"')       repl = '”'; // U+201D right double quotation mark
+						else if (c == '\'') repl = '’'; // U+2019 right single quotation mark
+						else if (c == '/')  repl = '⁄'; // U+2044 fraction slash
+					}
+					if (repl != '\0')
+						sb.Append(c);
+				} else
+					sb.Append(c);
+			}
+			if (sb.Length == 0)
+				return "_";
+			return changed ? sb.ToString() : text;
+		}
 
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Triplet<T1, T2, T3> Triplet<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Triplet<T1, T2, T3>(a, b, c); }

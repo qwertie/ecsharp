@@ -103,9 +103,7 @@ namespace Loyc.Tests
 
 		private static void RunBenchmarks()
 		{
-			var graphWindow = new EzChartForm(true);
-			new Thread(() => { System.Windows.Forms.Application.Run(graphWindow); }).Start();
-			new ListBenchmarks().Run(graphWindow);
+			new ListBenchmarks().Run(EzChartForm.StartOnNewThread(true));
 			
 			Benchmarks.ConvexHull();
 

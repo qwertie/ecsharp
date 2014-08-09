@@ -75,6 +75,9 @@ namespace Benchmark
 		
 		public string ActiveBenchmarkName { get; set; }
 
+		/// <summary>One-based trial number (0 when not running a [Benchmark] method)</summary>
+		public int CurrentTrialNumber { get; private set; }
+
 		// BTW: SortedList is very slow for insert/delete; you should usually use
 		// SortedDictionary instead, but it is missing from the Compact Framework.
 		protected SortedList<string, BenchmarkStatistic> _results = new SortedList<string, BenchmarkStatistic>();
@@ -207,8 +210,8 @@ namespace Benchmark
 			public BenchmarkAttribute Attr;
 			public Func<Benchmarker, object> Func;
 			public int TotalMillisec; // including setup overhead
-			public int TrialsRun = 0;
-			public bool IsLastTrial { get { return TrialsRun + 1 == Attr.Trials; } }
+			public int TrialsDone = 0;
+			public bool IsLastTrial { get { return TrialsDone + 1 == Attr.Trials; } }
 		}
 
 		/// <summary>Runs all public benchmark methods (static and nonstatic) in the
@@ -299,7 +302,10 @@ namespace Benchmark
 					int minMillisec = 0;
 					if (benchmark.IsLastTrial)
 						minMillisec = Math.Max(benchmark.Attr.MinMillisec - benchmark.TotalMillisec, 0);
+					CurrentTrialNumber = benchmark.TrialsDone + 1;
 					benchmark.TotalMillisec += Run(name, minMillisec, benchmark.Func);
+					benchmark.TrialsDone++;
+					CurrentTrialNumber = 0;
 					if (postprocess != null)
 						postprocess();
 				}

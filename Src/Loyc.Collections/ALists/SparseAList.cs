@@ -244,6 +244,7 @@ namespace Loyc.Collections
 				} else
 					InsertSpace(Count, end - Count);
 			}
+			if (count == 0) return;
 			var op = new AListSparseOperation<T>((uint)index, false, true, count, _observer);
 			DoSparseOperation(ref op);
 		}

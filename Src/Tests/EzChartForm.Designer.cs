@@ -40,13 +40,13 @@
 			this._tabs.Location = new System.Drawing.Point(4, 3);
 			this._tabs.Name = "_tabs";
 			this._tabs.SelectedIndex = 0;
-			this._tabs.Size = new System.Drawing.Size(577, 389);
+			this._tabs.Size = new System.Drawing.Size(577, 429);
 			this._tabs.TabIndex = 1;
 			// 
 			// btnSaveAll
 			// 
 			this.btnSaveAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSaveAll.Location = new System.Drawing.Point(485, 394);
+			this.btnSaveAll.Location = new System.Drawing.Point(485, 434);
 			this.btnSaveAll.Name = "btnSaveAll";
 			this.btnSaveAll.Size = new System.Drawing.Size(96, 23);
 			this.btnSaveAll.TabIndex = 2;
@@ -57,7 +57,7 @@
 			// btnSaveCurrent
 			// 
 			this.btnSaveCurrent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSaveCurrent.Location = new System.Drawing.Point(345, 394);
+			this.btnSaveCurrent.Location = new System.Drawing.Point(345, 434);
 			this.btnSaveCurrent.Name = "btnSaveCurrent";
 			this.btnSaveCurrent.Size = new System.Drawing.Size(134, 23);
 			this.btnSaveCurrent.TabIndex = 2;
@@ -69,7 +69,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(584, 422);
+			this.ClientSize = new System.Drawing.Size(584, 462);
 			this.Controls.Add(this._tabs);
 			this.Controls.Add(this.btnSaveCurrent);
 			this.Controls.Add(this.btnSaveAll);
