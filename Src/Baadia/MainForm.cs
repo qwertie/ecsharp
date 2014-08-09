@@ -28,7 +28,7 @@ namespace BoxDiagrams
 
 		private void menuNew_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented");;
+			MessageBox.Show("Not implemented");
 		}
 		private void menuSave_Click(object sender, EventArgs e) { Save(); }
 
@@ -128,6 +128,16 @@ namespace BoxDiagrams
 		private void menuClearText_Click(object sender, EventArgs e)
 		{
 			_diagramCtrl.ClearText();
+		}
+
+		private void _btnZoomIn_Click(object sender, EventArgs e)
+		{
+			_diagramCtrl.ZoomIn();
+		}
+
+		private void _btnZoomOut_Click(object sender, EventArgs e)
+		{
+			_diagramCtrl.ZoomOut();
 		}
 	}
 	public class CustomComboBox : ComboBox

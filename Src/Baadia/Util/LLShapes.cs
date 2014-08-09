@@ -17,6 +17,7 @@ using ProtoBuf;
 
 namespace Util.WinForms
 {
+
 	/// <summary>
 	/// Base class for a shape with PointF coordinates that supports drawing and 
 	/// hit-testing.
@@ -191,18 +192,16 @@ namespace Util.WinForms
 	/// <see cref="LLShapeGroup"/> is ignored. Hit testing does work, however.</remarks>
 	public class LLShapeGroup : LLShape
 	{
-		public LLShapeGroup(LLShape basis) : base(basis) { }
+		public LLShapeGroup(DrawStyle basis = null) : base(basis) { }
 		
 		Matrix _transform, _inverse;
 		public Matrix Transform 
 		{
 			get { return _transform; }
-			set { 
-				if (!object.Equals(_transform, value)) {
-					_transform = value;
-					_inverse = null;
-					Invalidate();
-				}
+			set {
+				_transform = value;
+				_inverse = null;
+				Invalidate();
 			}
 		}
 		public Matrix InverseTransform

@@ -39,15 +39,15 @@ namespace BoxDiagrams
 	[ProtoInclude(100, typeof(TextBox))]
 	[ProtoInclude(101, typeof(LineOrArrow))]
 	[ProtoInclude(102, typeof(Marker))]
-	public abstract class Shape : ChildOfOneParent<DiagramDocument>, ICloneable<Shape>, IDisposable
+	public abstract class Shape : ChildOfOneParent<DiagramDocument>, IShapeWidget, ICloneable<Shape>, IDisposable
 	{
 		public static readonly DiagramDrawStyle DefaultStyle = new DiagramDrawStyle { LineWidth = 2 };
 
 		[ProtoMember(1)]
 		public DiagramDrawStyle Style;
 
-		public abstract void AddLLShapesTo(MSet<LLShape> list);
-		public abstract void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius);
+		public abstract void AddLLShapesTo(ICollection<LLShape> list);
+		public abstract void AddAdornersTo(ICollection<LLShape> list, SelType selMode, VectorT hitTestRadius);
 
 		public virtual Shape Clone()
 		{

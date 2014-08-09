@@ -37,6 +37,7 @@ namespace Util.UI
 	///		{ Pair.Create(Keys.Delete, 0), S("Delete") },
 	///	};
 	/// </code>
+	/// Of course, code is needed somewhere to detect when shortcut key are pressed...
 	/// </remarks>
 	public interface ICommand
 	{

@@ -141,6 +141,7 @@
     </Compile>
     <Compile Include="DiagramDocument.cs" />
     <Compile Include="DiagramDocumentCore.cs" />
+    <Compile Include="DiagramGestureAnalyzer.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -155,16 +156,19 @@
     <Compile Include="Shapes\Shape helper types.cs" />
     <Compile Include="Shapes\Shape.cs" />
     <Compile Include="Shapes\TextBox.cs" />
-    <Compile Include="Util\DrawingControlBase.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Util\GestureAnalyzer.cs" />
     <Compile Include="Util\DrawStyle.cs" />
     <Compile Include="Util\ICommand etc.cs" />
+    <Compile Include="Util\IWidget.cs" />
     <Compile Include="Util\LLShapeControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Util\LLShapes.cs" />
+    <Compile Include="Util\LLShapeWidgetControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Util\OwnedList.cs" />
+    <Compile Include="Util\ScrollThumb.cs" />
     <Compile Include="Util\UndoStack.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

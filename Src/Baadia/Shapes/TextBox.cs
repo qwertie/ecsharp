@@ -95,7 +95,7 @@ namespace BoxDiagrams
 			return a;
 		}
 
-		public override void AddLLShapesTo(MSet<LLShape> list) // Draw!
+		public override void AddLLShapesTo(ICollection<LLShape> list) // Draw!
 		{
 			int z = DrawZOrder;
 			if (BoxType != BoxType.Borderless) {
@@ -109,8 +109,8 @@ namespace BoxDiagrams
 					BBox.MinPoint, BBox.MaxPoint.Sub(BBox.MinPoint)) 
 					{ ZOrder = z + 0x10 });
 		}
-		
-		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+
+		public override void AddAdornersTo(ICollection<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			PointT tl = BBox.MinPoint, tr = new PointT(Right, Top);
 			PointT br = BBox.MaxPoint, bl = new PointT(Left, Bottom);
@@ -130,7 +130,7 @@ namespace BoxDiagrams
 		protected static DrawStyle SelAdornerLineStyle = new DrawStyle(SelAdornerStyle.LineColor, SelAdornerStyle.LineWidth, Color.Transparent) { LineStyle = SelAdornerStyle.LineStyle };
 		protected static DrawStyle SelAdornerFillStyle = new DrawStyle(Color.Transparent, 0, SelAdornerStyle.FillColor);
 
-		private void AddCornerAdorner(MSet<LLShape> list, PointT point, VectorT vector)
+		private void AddCornerAdorner(ICollection<LLShape> list, PointT point, VectorT vector)
 		{
 			VectorT up = new VectorT(0, -vector.Y), down = new VectorT(0, vector.Y);
 			VectorT left = new VectorT(-vector.X, 0), right = new VectorT(vector.X, 0);

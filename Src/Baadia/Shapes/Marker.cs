@@ -45,7 +45,7 @@ namespace BoxDiagrams
 		[ProtoMember(5)]
 		float Radius { get { return LL.Radius; } set { LL.Radius = value; } }
 
-		public override void AddLLShapesTo(MSet<LLShape> list)
+		public override void AddLLShapesTo(ICollection<LLShape> list)
 		{
 			LL.Style = Style;
 			list.Add(LL);
@@ -61,7 +61,7 @@ namespace BoxDiagrams
 				return new HitTestResult(this, sel != SelType.No ? Cursors.SizeAll : Cursors.Arrow);
 			return null;
 		}
-		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+		public override void AddAdornersTo(ICollection<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			var copy = (LLMarker)LL.Clone();
 			copy.Type = MarkerPolygon.Square;

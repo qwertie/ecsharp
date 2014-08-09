@@ -87,7 +87,7 @@ namespace BoxDiagrams
 			set { _toAnchor = value; }
 		}
 
-		public override void AddLLShapesTo(MSet<LLShape> list) // Draw!
+		public override void AddLLShapesTo(ICollection<LLShape> list) // Draw!
 		{
 			int z = DrawZOrder;
 			if (Points.Count >= 2) {
@@ -217,8 +217,8 @@ namespace BoxDiagrams
 				return _bbox = _bbox ?? Points.ToBoundingBox();
 			}
 		}
-		
-		public override void AddAdornersTo(MSet<LLShape> list, SelType selMode, VectorT hitTestRadius)
+
+		public override void AddAdornersTo(ICollection<LLShape> list, SelType selMode, VectorT hitTestRadius)
 		{
 			if (selMode == SelType.Partial)
 			{
@@ -230,7 +230,7 @@ namespace BoxDiagrams
 					AddAdorner(list, Points[i], hitTestRadius);
 		}
 
-		private void AddAdorner(MSet<LLShape> list, PointT point, VectorT hitTestRadius)
+		private void AddAdorner(ICollection<LLShape> list, PointT point, VectorT hitTestRadius)
 		{
 			list.Add(new LLMarker(SelAdornerStyle, point, hitTestRadius.X, MarkerPolygon.Square));
 		}
