@@ -58,7 +58,8 @@ namespace Benchmark
 			for (int i = 0; i <= 11; i++)
 			{
 				AddGraph("Example", new PlotModel("Example!") {
-					LegendPosition = LegendPosition.TopLeft, LegendPlacement = LegendPlacement.Inside
+					LegendPosition = LegendPosition.TopLeft,
+					LegendPlacement = LegendPlacement.Inside,
 				});
 				Add("Example", "Series A", ((char)('A' + i)).ToString(), i);
 				Add("Example", "Series B", i, i * i / 10.0);
@@ -80,7 +81,7 @@ namespace Benchmark
 		// Can be called from any thread
 		public void AddGraph(object graphId, PlotModel model)
 		{
-			Graphs[graphId] = Pair.Create(model, false); // false = no auto-gridlines
+			Graphs[graphId] = model;
 			AutoUpdateGraphs();
 		}
 		// Can be called from any thread
@@ -92,7 +93,7 @@ namespace Benchmark
 			AutoUpdateGraphs();
 		}
 
-		ConcurrentDictionary<object, Pair<PlotModel, bool>> Graphs = new ConcurrentDictionary<object, Pair<PlotModel, bool>>();
+		ConcurrentDictionary<object, PlotModel> Graphs = new ConcurrentDictionary<object, PlotModel>();
 		ConcurrentDictionary<object, MSet<EzDataPoint>> GraphData = new ConcurrentDictionary<object, MSet<EzDataPoint>>();
 		int _needUpdate;
 
@@ -115,36 +116,32 @@ namespace Benchmark
 		{
 			// Create/update models
 			foreach (var pair in GraphData) {
-				var graphAnd = Graphs.GetOrAdd(pair.Key, graphId => { 
+				var graph = Graphs.GetOrAdd(pair.Key, graphId => { 
 					var m = new PlotModel { Title = graphId.ToString() };
 					if (InitDefaultModel != null) InitDefaultModel(graphId, m);
-					return Pair.Create(m, true);
+					return m;
 				});
-				PlotModel graph = graphAnd.A;
-				bool autoConfig = graphAnd.B;
 				lock (pair.Value)
-					UpdateGraph(graph, pair.Value, autoConfig);
+					UpdateGraph(graph, pair.Value);
 			}
 			// Create/update tabs
 			foreach (var pair in Graphs) {
 				var page = _tabs.TabPages.Cast<ChartPage>().FirstOrDefault(p => object.Equals(p.GraphId, pair.Key));
 				if (page == null) {
-					page = new ChartPage(pair.Key, pair.Value.A, pair.Value.A.Title.Left(25));
+					page = new ChartPage(pair.Key, pair.Value, pair.Value.Title.Left(25));
 					_tabs.TabPages.Add(page);
 				}
-				page.Model = pair.Value.A;
+				page.Model = pair.Value;
 			}
 		}
-		private void UpdateGraph(PlotModel model, MSet<EzDataPoint> points, bool autoConfig)
+		private void UpdateGraph(PlotModel model, MSet<EzDataPoint> points)
 		{
 			model.Series.Clear();
 			var allSeries = new BMultiMap<string, EzDataPoint>();
 			foreach (var dp in points)
 				allSeries.Add(dp.Series, dp);
 
-			if (autoConfig) {
-				// TODO
-			}
+			Axis xAxis = null;
 
 			// Add text labels to axis if the data uses text Parameters
 			CategoryAxis cAxis = null;
@@ -152,7 +149,10 @@ namespace Benchmark
 				var headings = new SortedSet<string>(points.Select(dp => dp.Parameter as string).WhereNotNull());
 				cAxis = model.Axes.OfType<CategoryAxis>().SingleOrDefault();
 				if (cAxis == null)
-					model.Axes.Add(cAxis = new CategoryAxis());
+					model.Axes.Add(cAxis = new CategoryAxis { 
+						MajorGridlineStyle = LineStyle.Dot,
+						Position = AxisPosition.Bottom
+					});
 				cAxis.Labels.Clear();
 				foreach (var text in headings)
 					cAxis.Labels.Add(text);
@@ -170,8 +170,8 @@ namespace Benchmark
 				} else {
 					var plotSeries = new LineSeries { Title = series.First().Series };
 					if (cAxis != null) plotSeries.XAxisKey = cAxis.Key;
-					// There are 8 marker types starting at 1, excluding None (0)
-					plotSeries.MarkerType = (MarkerType)((iSeries & 7) + 1);
+					// There are 7 marker types starting at 1, excluding None (0)
+					plotSeries.MarkerType = (MarkerType)((iSeries % 7) + 1);
 					plotSeries.MarkerSize = 4;
 					plotSeries.MarkerFill = plotSeries.Color; 
 					foreach (var dp in series)

@@ -22,10 +22,20 @@ namespace Benchmark
 			graph.InitDefaultModel = (id, model) =>
 			{
 				model.LegendPosition = LegendPosition.TopLeft;
-				model.Axes.Add(new LogarithmicAxis { Position = AxisPosition.Bottom, Title = "List size" });
+				model.PlotMargins = new OxyThickness(double.NaN, double.NaN, 12, double.NaN); // avoid cutting off "1000000" (NaN=autodetect)
+				model.Axes.Add(new LogarithmicAxis {
+					Position = AxisPosition.Bottom,
+					Title = "List size",
+					MajorGridlineStyle = LineStyle.Solid,
+					MinorGridlineStyle = LineStyle.Dot
+				});
 				int X = id.ToString().StartsWith("Scan by") ? StdIterations * 100 : StdIterations;
-				model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, 
-					Title = string.Format("Milliseconds to perform {0:n0} iterations", X) });
+				model.Axes.Add(new LinearAxis { 
+					Position = AxisPosition.Left, 
+					Title = string.Format("Milliseconds to perform {0:n0} iterations", X),
+					MajorGridlineStyle = LineStyle.Solid,
+					MinorGridlineStyle = LineStyle.Dot
+				});
 			};
 			
 			Run(b, 100);
@@ -99,7 +109,7 @@ namespace Benchmark
 		const int StdIterations = 100000; // Number of random insert/remove ops to perform
 		Random _r;
 
-		[Benchmark("Insert @ random indexes")]
+		[Benchmark("Insert at random indexes")]
 		public object InsertRandom(Benchmarker b)
 		{
 			b.Run("List", () =>
@@ -132,7 +142,7 @@ namespace Benchmark
 			return Benchmarker.DiscardResult;
 		}
 
-		[Benchmark("Insert @ end", Trials=5)]
+		[Benchmark("Insert at end", Trials=5)]
 		public object InsertSequentially(Benchmarker b)
 		{
 			b.Run("List", () =>
@@ -168,7 +178,7 @@ namespace Benchmark
 			return list;
 		}
 
-		[Benchmark("Remove @ random indexes")]
+		[Benchmark("Remove at random indexes")]
 		public object RemoveRandom(Benchmarker b)
 		{
 			var more = new long[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, };
@@ -298,7 +308,7 @@ namespace Benchmark
 			return Benchmarker.DiscardResult;
 		}
 
-		[Benchmark("Dictionary rand add&remove", Trials = 3)]
+		[Benchmark("Dictionary random add+remove", Trials = 3)]
 		public object DictionaryBenchmarks(Benchmarker b)
 		{
 			int max;
