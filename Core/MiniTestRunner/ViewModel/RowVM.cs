@@ -15,7 +15,7 @@ namespace MiniTestRunner.ViewModel
 	{
 		public readonly ProjectVM Tree;
 		public readonly RowVM Parent;
-		DisplaySettingsVM _settings;
+		//DisplaySettingsVM _settings;
 
 		public RowVM(RowModel model, ProjectVM tree, RowVM parent) : base(model)
 		{

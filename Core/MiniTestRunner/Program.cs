@@ -58,6 +58,7 @@ namespace MiniTestRunner
 
 		class Domain : MarshalByRefObject
 		{
+			#pragma warning disable 67 //unused event
 			public event Action TestEvent;
 			public Domain() { Console.WriteLine("Domain created OK"); }
 		}

@@ -48,6 +48,7 @@ namespace MiniTestRunner
 			} else {
 				newDomain = AppDomain.CreateDomain(appDomainName, null, setup);
 			}
+			#pragma warning disable 618 // method is "obsolete" in .NET4 but its replacement does not exist in .NET 3.5
 			return (T)Activator.CreateInstanceFrom(newDomain, 
 				typeof(T).Assembly.ManifestModule.FullyQualifiedName, 
 				typeof(T).FullName, false,

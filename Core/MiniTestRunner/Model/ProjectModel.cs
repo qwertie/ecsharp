@@ -213,6 +213,7 @@ namespace MiniTestRunner.Model
 			var newTasks = new List<AssemblyScanTask>();
 			foreach (var ass in _assemblies.Where(a => a.Row == null))
 			{
+				#pragma warning disable 618 // method is "obsolete" in .NET4 but its replacement does not exist in .NET 3.5
 				var task = (AssemblyScanTask)Activator.CreateInstanceFrom(ass.Domain.Domain,
 					typeof(AssemblyScanTask).Assembly.ManifestModule.FullyQualifiedName,
 					typeof(AssemblyScanTask).FullName, false,
