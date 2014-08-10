@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ICSharpCode.TextEditor.TextEditorControlBase" Collapsed="true">
+    <Position X="0.5" Y="2.25" Width="1.75" />
+    <Members>
+      <Method Name="BeginUpdate" Hidden="true" />
+      <Method Name="CanSaveWithCurrentEncoding" Hidden="true" />
+      <Field Name="currentFileName" Hidden="true" />
+      <Method Name="Dispose" Hidden="true" />
+      <Field Name="document" Hidden="true" />
+      <Field Name="editactions" Hidden="true" />
+      <Field Name="encoding" Hidden="true" />
+      <Method Name="EndUpdate" Hidden="true" />
+      <Method Name="GenerateDefaultActions" Hidden="true" />
+      <Method Name="GetEditAction" Hidden="true" />
+      <Method Name="GetRangeDescription" Hidden="true" />
+      <Method Name="IsEditAction" Hidden="true" />
+      <Method Name="LoadFile" Hidden="true" />
+      <Method Name="OnDocumentChanged" Hidden="true" />
+      <Method Name="OnFileNameChanged" Hidden="true" />
+      <Method Name="OnReloadHighlighting" Hidden="true" />
+      <Method Name="OptionsChanged" Hidden="true" />
+      <Method Name="ParseFont" Hidden="true" />
+      <Method Name="Refresh" Hidden="true" />
+      <Method Name="SaveFile" Hidden="true" />
+      <Method Name="TextEditorControlBase" Hidden="true" />
+      <Field Name="updateLevel" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="2.25" Y="2.429" />
+        <Point X="3.447" Y="2.429" />
+        <Point X="3.447" Y="3" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.085" Y="0.085" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>ECAAAIqgIGBicBEQAQgIBAAAiIYAEIACjAIIChxqXgA=</HashCode>
+      <FileName>Src\Gui\TextEditorControlBase.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Document" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextEditorControl" Collapsed="true">
+    <Position X="0.5" Y="1.25" Width="1.75" />
+    <AssociationLine Name="ActiveTextAreaControl" Type="ICSharpCode.TextEditor.TextAreaControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.688" Y="1.25" />
+        <Point X="1.688" Y="0.875" />
+        <Point X="3.562" Y="0.875" />
+        <Point X="3.562" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.047" Y="0.06" Height="0.16" Width="1.516" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>REAACMIoAKIABCAAAEAIAAABAAAIBAAQwFBAAiAAiAA=</HashCode>
+      <FileName>Src\Gui\TextEditorControl.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ActiveTextAreaControl" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextAreaControl" Collapsed="true">
+    <Position X="2.5" Y="1.25" Width="1.75" />
+    <Members>
+      <Field Name="adjustScrollBarsOnNextUpdate" Hidden="true" />
+      <Field Name="disposed" Hidden="true" />
+      <Field Name="doHandleMousewheel" Hidden="true" />
+      <Field Name="hRuler" Hidden="true" />
+      <Field Name="hScrollBar" Hidden="true" />
+      <Field Name="lineLengthCache" Hidden="true" />
+      <Field Name="LineLengthCacheAdditionalSize" Hidden="true" />
+      <Field Name="motherTextEditorControl" Hidden="true" />
+      <Field Name="mouseWheelHandler" Hidden="true" />
+      <Field Name="scrollMarginHeight" Hidden="true" />
+      <Field Name="scrollToPosOnNextUpdate" Hidden="true" />
+      <Field Name="textArea" Hidden="true" />
+      <Field Name="vScrollBar" Hidden="true" />
+    </Members>
+    <AssociationLine Name="TextArea" Type="ICSharpCode.TextEditor.TextArea" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.031" Y="1.25" />
+        <Point X="4.031" Y="0.875" />
+        <Point X="5.375" Y="0.875" />
+        <Point X="5.375" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="3.438" Y="1.88" />
+        <Point X="3.438" Y="2.44" />
+        <Point X="3.447" Y="2.44" />
+        <Point X="3.447" Y="3" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.081" Y="0.086" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AQLYAAChAChMERCAQogICEAFBAJAAAiCAYBAQUEAAAA=</HashCode>
+      <FileName>Src\Gui\TextAreaControl.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="TextArea" />
+      <Property Name="Document" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.TextArea" Collapsed="true">
+    <Position X="4.5" Y="1.25" Width="1.75" />
+    <Members>
+      <Field Name="autoClearSelection" Hidden="true" />
+      <Method Name="BeginUpdate" Hidden="true" />
+      <Field Name="bracketshemes" Hidden="true" />
+      <Field Name="caret" Hidden="true" />
+      <Method Name="CloseToolTip" Hidden="true" />
+      <Method Name="Dispose" Hidden="true" />
+      <Field Name="disposed" Hidden="true" />
+      <Method Name="DocumentFoldingsChanged" Hidden="true" />
+      <Method Name="EndUpdate" Hidden="true" />
+      <Method Name="ExecuteDialogKey" Hidden="true" />
+      <Method Name="FindMatchingBracketHighlight" Hidden="true" />
+      <Field Name="foldMargin" Hidden="true" />
+      <Method Name="GenerateWhitespaceString" Hidden="true" />
+      <Field Name="gutterMargin" Hidden="true" />
+      <Method Name="HandleKeyPress" Hidden="true" />
+      <Field Name="hiddenMouseCursor" Hidden="true" />
+      <Field Name="iconBarMargin" Hidden="true" />
+      <Method Name="InsertChar" Hidden="true" />
+      <Method Name="InsertLeftMargin" Hidden="true" />
+      <Method Name="InsertString" Hidden="true" />
+      <Method Name="InvalidateLines" Hidden="true" />
+      <Method Name="IsInputChar" Hidden="true" />
+      <Method Name="IsReadOnly" Hidden="true" />
+      <Field Name="lastMouseInMargin" Hidden="true" />
+      <Field Name="leftMargins" Hidden="true" />
+      <Field Name="motherTextAreaControl" Hidden="true" />
+      <Field Name="motherTextEditorControl" Hidden="true" />
+      <Field Name="mouseCursorHidePosition" Hidden="true" />
+      <Field Name="mousepos" Hidden="true" />
+      <Field Name="oldToolTip" Hidden="true" />
+      <Method Name="OnKeyPress" Hidden="true" />
+      <Method Name="OnMouseDown" Hidden="true" />
+      <Method Name="OnMouseHover" Hidden="true" />
+      <Method Name="OnMouseLeave" Hidden="true" />
+      <Method Name="OnMouseMove" Hidden="true" />
+      <Method Name="OnPaint" Hidden="true" />
+      <Method Name="OnPaintBackground" Hidden="true" />
+      <Method Name="OnToolTipRequest" Hidden="true" />
+      <Method Name="OptionsChanged" Hidden="true" />
+      <Method Name="ProcessDialogKey" Hidden="true" />
+      <Method Name="RaiseMouseMove" Hidden="true" />
+      <Method Name="Refresh" Hidden="true" />
+      <Method Name="ReplaceChar" Hidden="true" />
+      <Method Name="RequestToolTip" Hidden="true" />
+      <Method Name="ScrollTo" Hidden="true" />
+      <Method Name="ScrollToCaret" Hidden="true" />
+      <Method Name="SearchMatchingBracket" Hidden="true" />
+      <Field Name="selectionManager" Hidden="true" />
+      <Method Name="SetCaretToDesiredColumn" Hidden="true" />
+      <Method Name="SetDesiredColumn" Hidden="true" />
+      <Method Name="SetToolTip" Hidden="true" />
+      <Method Name="ShowHiddenCursor" Hidden="true" />
+      <Method Name="SimulateKeyPress" Hidden="true" />
+      <Method Name="TextArea" Hidden="true" />
+      <Field Name="textAreaClipboardHandler" Hidden="true" />
+      <Method Name="TextContentChanged" Hidden="true" />
+      <Field Name="textView" Hidden="true" />
+      <Field Name="toolTip" Hidden="true" />
+      <Field Name="toolTipActive" Hidden="true" />
+      <Field Name="toolTipRectangle" Hidden="true" />
+      <Method Name="UpdateLine" Hidden="true" />
+      <Method Name="UpdateLines" Hidden="true" />
+      <Method Name="UpdateLineToEnd" Hidden="true" />
+      <Field Name="updateMargin" Hidden="true" />
+      <Method Name="UpdateMatchingBracket" Hidden="true" />
+      <Method Name="UpdateToEnd" Hidden="true" />
+      <Field Name="virtualTop" Hidden="true" />
+    </Members>
+    <AssociationLine Name="MotherTextEditorControl" Type="ICSharpCode.TextEditor.TextEditorControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="5.75" Y="1.25" />
+        <Point X="5.75" Y="0.57" />
+        <Point X="1.302" Y="0.57" />
+        <Point X="1.302" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-4.057" Y="0.716" Height="0.16" Width="1.697" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="MotherTextAreaControl" Type="ICSharpCode.TextEditor.TextAreaControl" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="5.688" Y="1.25" />
+        <Point X="5.688" Y="0.781" />
+        <Point X="3.885" Y="0.781" />
+        <Point X="3.885" Y="1.25" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.627" Y="0.475" Height="0.16" Width="1.484" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="Document" Type="ICSharpCode.TextEditor.Document.IDocument" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="4.875" Y="1.88" />
+        <Point X="4.875" Y="2.442" />
+        <Point X="3.447" Y="2.442" />
+        <Point X="3.447" Y="3" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.089" Y="0.091" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>EyLAQFOI8qFKkAF5CQgKQAoErBgAKA4KJQZJCXkgQAA=</HashCode>
+      <FileName>Src\Gui\TextArea.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="MotherTextEditorControl" />
+      <Property Name="MotherTextAreaControl" />
+      <Property Name="Document" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ICSharpCode.TextEditor.Document.DefaultDocument" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACIAA0MBTAAAFAg4AsBABgAAUAggUAYIKQCcHAAECHE=</HashCode>
+      <FileName>Src\Document\DefaultDocument.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.205" Collapsed="true" />
+  </Class>
+  <Interface Name="ICSharpCode.TextEditor.Document.IDocument" Collapsed="true">
+    <Position X="2.5" Y="3" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>ACIAA0EACAAAFAA4AMBABgAAQAgAUAYAKQCcDAAAAHE=</HashCode>
+      <FileName>Src\Document\IDocument.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>
