@@ -26,7 +26,7 @@ namespace MiniTestRunner.WinForms
 		ProjectVM _tree;
 		TreeViewAdv _treeView;
 		bool _refreshing;
-		GuiUpdateHelper _updater;
+		//GuiUpdateHelper _updater;
 
 		public TreeViewAdvModel(ProjectVM treeVM, TreeViewAdv treeView)
 		{

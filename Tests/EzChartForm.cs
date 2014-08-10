@@ -66,7 +66,8 @@ namespace Benchmark
 
 			for (int i = 0; i <= 11; i++)
 			{
-				AddGraph("Example", new PlotModel("Example!") {
+				AddGraph("Example", new PlotModel() {
+					Title = "Example!",
 					LegendPosition = LegendPosition.TopLeft,
 					LegendPlacement = LegendPlacement.Inside,
 				});
@@ -149,8 +150,6 @@ namespace Benchmark
 			var allSeries = new BMultiMap<string, EzDataPoint>();
 			foreach (var dp in points)
 				allSeries.Add(dp.Series, dp);
-
-			Axis xAxis = null;
 
 			// Add text labels to axis if the data uses text Parameters
 			CategoryAxis cAxis = null;
