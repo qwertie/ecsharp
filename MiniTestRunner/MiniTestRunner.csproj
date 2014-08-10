@@ -334,15 +334,15 @@
     <None Include="Resources\WordWrap.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
       <Name>Loyc.Collections</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Essentials\Loyc.Essentials.csproj">
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
       <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
       <Name>Loyc.Utilities</Name>
     </ProjectReference>
