@@ -8,6 +8,7 @@ using Loyc;
 using OxyPlot;
 using OxyPlot.Axes;
 using Loyc.Collections.Impl;
+using System.Drawing;
 
 namespace Benchmark
 {
@@ -34,7 +35,8 @@ namespace Benchmark
 					Position = AxisPosition.Left, 
 					Title = string.Format("Milliseconds to perform {0:n0} iterations", X),
 					MajorGridlineStyle = LineStyle.Solid,
-					MinorGridlineStyle = LineStyle.Dot
+					MinorGridlineStyle = LineStyle.Dot,
+					Minimum = 0,
 				});
 			};
 			

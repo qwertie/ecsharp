@@ -48,7 +48,6 @@ namespace Loyc.Collections.Impl
 		public static readonly InternalList<T> Empty = new InternalList<T>(0);
 		private T[] _array;
 		private int _count;
-		public const int BaseCapacity = 4;
 
 		public InternalList(int capacity)
 		{
@@ -146,7 +145,18 @@ namespace Loyc.Collections.Impl
 				}
 			}
 		}
-		
+
+		public void Add(T item)
+		{
+			if (_count == _array.Length)
+				IncreaseCapacity();
+			_array[_count++] = item;
+		}
+		public void AddRange(IEnumerator<T> items)
+		{
+			while (items.MoveNext())
+				Add(items.Current);
+		}
 		public void Insert(int index, T item)
 		{
 			_array = InternalList.Insert(index, item, _array, _count);
@@ -212,18 +222,6 @@ namespace Loyc.Collections.Impl
 		private void InsertRangeSizeMismatch()
 		{
 			throw new ArgumentException("InsertRange: Input collection's Count is different from the number of items enumerated");
-		}
-
-		public void Add(T item)
-		{
-			if (_count == _array.Length)
-				IncreaseCapacity();
-			_array[_count++] = item;
-		}
-		public void AddRange(IEnumerator<T> items)
-		{
-			while (items.MoveNext())
-				Add(items.Current);
 		}
 
 		/// <summary>Clears the list and frees the memory used by the list. Can 
@@ -432,29 +430,7 @@ namespace Loyc.Collections.Impl
 			T[] a = new T[newCapacity];
 			if (_array == null)
 				return a;
-
-			Debug.Assert(_count <= _array.Length);
-			Debug.Assert(_count <= newCapacity);
-			if (_count <= 4)
-			{	
-				// Unroll loop for small list
-				if (_count == 4) {
-					// Most common case, assuming BaseCapacity==4
-					a[3] = _array[3];
-					a[2] = _array[2];
-					a[1] = _array[1];
-					a[0] = _array[0];
-				} else if (_count >= 1) {
-					a[0] = _array[0];
-					if (_count >= 2) {
-						a[1] = _array[1];
-						if (_count >= 3)
-							a[2] = _array[2];
-					}
-				}
-			} else {
-				Array.Copy(_array, a, _count);
-			}
+			Array.Copy(_array, a, _count);
 			return a;
 		}
 		
@@ -658,8 +634,10 @@ namespace Loyc.Collections.Impl
 				int newCap = NextLargerSize(array.Length);
 				array = CopyToNewArray(array, count, newCap);
 			}
-			for (int i = count; i > index; i--)
-				array[i] = array[i - 1];
+			if (count - index > 0)
+				Array.Copy(array, index, array, index + 1, count - index);
+			//for (int i = count; i > index; i--)
+			//	array[i] = array[i - 1];
 			array[index] = item;
 			return array;
 		}
@@ -668,8 +646,10 @@ namespace Loyc.Collections.Impl
 		{
 			Debug.Assert((uint)index <= (uint)count);
 			array = AutoRaiseCapacity(array, count, spaceNeeded, int.MaxValue);
-			for (int i = count; i > index; i--)
-				array[i + spaceNeeded - 1] = array[i - 1];
+			if (count - index > 0)
+				Array.Copy(array, index, array, index + spaceNeeded, count - index);
+			//for (int i = count; i > index; i--)
+			//	array[i + spaceNeeded - 1] = array[i - 1];
 			return array;
 		}
 
@@ -686,8 +666,9 @@ namespace Loyc.Collections.Impl
 		public static int RemoveAt<T>(int index, T[] array, int count)
 		{
 			Debug.Assert((uint)index < (uint)count);
-			for (int i = index; i + 1 < count; i++)
-				array[i] = array[i + 1];
+			Array.Copy(array, index + 1, array, index, count - index - 1);
+			//for (int i = index; i + 1 < count; i++)
+			//	array[i] = array[i + 1];
 			array[count - 1] = default(T);
 			return count - 1;
 		}
@@ -699,8 +680,9 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(removeCount >= 0);
 			if (removeCount > 0)
 			{
-				for (int i = index; i + removeCount < count; i++)
-					array[i] = array[i + removeCount];
+				Array.Copy(array, index + removeCount, array, index, count - index - removeCount);
+				//for (int i = index; i + removeCount < count; i++)
+				//	array[i] = array[i + removeCount];
 				for (int i = count - removeCount; i < count; i++)
 					array[i] = default(T);
 				return count - removeCount;
@@ -712,10 +694,12 @@ namespace Loyc.Collections.Impl
 		{
 			T saved = array[from];
 			if (to < from) {
+				//Array.Copy(array, to, array, to + 1, from - to);
 				for (int i = from; i > to; i--)
 					array[i] = array[i - 1];
 				array[to] = saved;
 			} else if (from < to) {
+				//Array.Copy(array, from + 1, array, from, to - from);
 				for (int i = from; i < to; i++)
 					array[i] = array[i + 1];
 				array[to] = saved;

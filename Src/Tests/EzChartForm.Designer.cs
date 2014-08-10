@@ -50,7 +50,7 @@
 			this.btnSaveAll.Name = "btnSaveAll";
 			this.btnSaveAll.Size = new System.Drawing.Size(96, 23);
 			this.btnSaveAll.TabIndex = 2;
-			this.btnSaveAll.Text = "Save all";
+			this.btnSaveAll.Text = "Save all...";
 			this.btnSaveAll.UseVisualStyleBackColor = true;
 			this.btnSaveAll.Click += new System.EventHandler(this.btnSaveAll_Click);
 			// 

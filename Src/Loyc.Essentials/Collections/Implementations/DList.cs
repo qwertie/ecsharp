@@ -196,10 +196,17 @@
 			[DebuggerStepThrough]
 			get { return _dlist[index, defaultValue]; }
 		}
+		#if DotNet45
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		#endif
 		private void CheckIndex(int index)
 		{
-			if ((uint)index >= (uint)_dlist.Count)
-				throw new ArgumentOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
+			if ((uint)index >= (uint)_dlist.Count) 
+				ThrowOutOfRange(index);
+		}
+		private void ThrowOutOfRange(int index)
+		{
+			throw new ArgumentOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
 		public bool TrySet(int index, T value)
