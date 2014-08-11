@@ -97,10 +97,10 @@ for (int i = 0; i &lt; values.Count; i++) {
 <p>In terms of performance, I haven't benchmarked any of these data structures, but I can predict with confidence that: </p>
 
 <ul>
-	<li>The <code>AList&lt;T&gt;</code> family of data structures is generally slower than <code>List&lt;T&gt;</code> for indexing, enumerating (foreach), adding items at the end, removing items from the end, and any operation involving a short list (less than 20-50 items).  </li>
-	<li>The <code>AList&lt;T&gt;</code> family of data structures is generally faster than <code>List&lt;T&gt;</code> for inserting and removing at random locations, merging lists, splitting lists, cloning, etc., for lists that are long.</li>
-	<li>The <code>AList&lt;T&gt;</code> family of data structures will generally use slightly more memory than <code>List&lt;T&gt;</code>.  </li>
-	<li><code>BDictionary&lt;K,V&gt;</code> is generally much faster than <code>SortedList&lt;K,V&gt;</code> for lists of significant size (above 50 items). <code>BList&lt;T&gt;</code> and <code>BMultiMap&lt;K,V&gt;</code> have similar performance as <code>BDictionary&lt;T&gt;</code>. </li>
+	<li>The <code>AList&lt;T&gt;</code> family of data structures is generally slower than <code>List&lt;T&gt;</code> for indexing, enumerating (foreach), adding items at the end, removing items from the end, and <i>any</i> operation involving a short list (less than about 100 items).</li>
+	<li>The <code>AList&lt;T&gt;</code> family of data structures is generally faster than <code>List&lt;T&gt;</code> for inserting and removing at random locations, merging lists, splitting lists, cloning, etc., in lists that are very long.</li>
+	<li>The <code>AList&lt;T&gt;</code> family of data structures will generally use slightly more memory than <code>List&lt;T&gt;</code> (but significantly less memory than <code>HashSet&lt;T></code>).</li>
+	<li><code>BDictionary&lt;K,V&gt;</code> is generally much faster than <code>SortedList&lt;K,V&gt;</code> for lists of significant size (above 50 items). <code>BList&lt;T&gt;</code> and <code>BMultiMap&lt;K,V&gt;</code> have similar performance as <code>BDictionary&lt;K,V&gt;</code>. </li>
 	<li><code>BDictionary&lt;K,V&gt;</code> will be slower than <code>Dictionary&lt;K,V&gt;</code> but it will generally use less memory.</li>
 	<li>I don't know whether <code>BDictionary&lt;K,V&gt;</code> is faster or slower than <code>SortedDictionary&lt;K,V&gt;</code> but it will definitely use less memory.</li>
 	<li><code>BMultiMap&lt;K,V&gt;</code> has the same memory requirements as <code>BDictionary&lt;K,V&gt;</code>, and it will use <em>much</em> less memory than <code>Dictionary&lt;K,List&lt;V&gt;&gt;</code>.  </li>
