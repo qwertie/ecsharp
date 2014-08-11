@@ -1,0 +1,220 @@
+import macros LeMP.Prelude.Les;
+import System;
+import System.Collections.Generic;
+import System.Linq;
+import System.Text;
+import Loyc;
+import Loyc.Syntax;
+import Loyc.Syntax.Lexing;
+
+namespace Loyc.Syntax.Les
+{
+	using TT = TokenType;
+	
+	public partial class LesLexer {
+	[FullLLk] LLLPG lexer
+	{
+		// Whitespace & comments -------------------------------------------------
+
+		extern token Newline @[ '\r' '\n'? | '\n' ];
+		[#new] def Newline() {
+			base.Newline();
+			_value = WhitespaceTag.Value;
+		};
+		private token DotIndent {
+			@[	&{_startPosition == _lineStartAt}
+				('.' (' '|'\t')+)+ ];
+			_type = TT.Spaces;
+			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
+			_value = WhitespaceTag.Value;
+		};
+		private token Spaces {
+			@[ (' '|'\t')+ ];
+			if (_lineStartAt == _startPosition) 
+				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
+			_value = WhitespaceTag.Value;
+		};
+		private token UTF_BOM {
+			@[ '\uFEFF' ]; // Byte order mark, in case the Encoding didn't strip it out.
+			if (_lineStartAt == _startPosition) 
+				_lineStartAt = InputPosition;
+			_value = WhitespaceTag.Value;
+		};
+		private token SLComment {
+			@[ "//" (~('\r'|'\n'))* ];
+			_value = WhitespaceTag.Value;
+		};
+		[k(3)]
+		private token MLComment {
+			@[ "/*" nongreedy(MLComment / Newline / _)* "*/" ];
+			_value = WhitespaceTag.Value;
+		};
+		
+		// Numbers ---------------------------------------------------------------
+		
+		private rule DecDigits() @[ '0'..'9'+ ('_' '0'..'9'+)* ];
+		private rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+		private rule HexDigits() @[ greedy(HexDigit)+ greedy('_' HexDigit+)* ];
+		private rule BinDigits() @[ '0'..'1'+ ('_' '0'..'1'+)* ];
+		private rule DecNumber() @[
+			{_numberBase=10;}
+			( '.' DecDigits   {_isFloat=true;}
+			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			)
+			( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
+		];
+		private rule HexNumber() @[
+		   '0' ('x'|'X') {_numberBase=16;}
+			HexDigits?
+			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
+			(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 
+				{_isFloat=true;} HexDigits )?
+			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		];
+		private rule BinNumber() @[
+			'0' ('b'|'B')     {_numberBase=2;}
+			( '.' DecDigits   {_isFloat=true;}
+			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
+			)
+			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
+		];
+		private token Number() @[
+		    { _isFloat = _isNegative = false; _typeSuffix = null; }
+		    ('-' {_isNegative = true;})?
+		    (HexNumber / BinNumber / DecNumber)
+		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
+		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
+		      | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
+		      )
+		    | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
+		    | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?
+		    )?
+		    {ParseNumberValue();}
+		];
+		
+		// Strings ---------------------------------------------------------------
+		
+		private token SQString {
+			_parseNeeded = false;
+			@[ '\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* 
+			  ('\'' / {_parseNeeded = true;}) ];
+			ParseSQStringValue();
+		};
+		private token DQString {
+			_parseNeeded = false;
+			@[ '"' ('\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n'))* 
+			  ('"' / {_parseNeeded = true;}) ];
+			ParseStringValue(false);
+		};
+		[k(4)]
+		private token TQString {
+			_parseNeeded = true;
+			_style = NodeStyle.Alternate;
+			@[ '"' '"' '"' nongreedy(Newline / _)* '"' '"' '"' 
+			 | {_style |= NodeStyle.Alternate2;}
+			   "'''"       nongreedy(Newline / _)* "'''" ];
+			ParseStringValue(true);
+		};
+		
+		private token BQString2 @[
+			{_parseNeeded = false;}
+			'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`'
+		];
+		private token BQString @[ BQString2 {ParseBQStringValue();} ];
+
+		// Identifiers and Symbols -----------------------------------------------
+
+		private token IdStartChar @[ '#'|'_'|'a'..'z'|'A'..'Z' ];
+		private token IdExtLetter @[ &{char.IsLetter($LA -> char)} 0x80..0xFFFC ];
+		private token NormalId @[ 
+			(IdStartChar|IdExtLetter) (IdStartChar|'0'..'9'|'\''|IdExtLetter)*
+		];
+		private token FancyId @[ (BQString2 | (&!CommentStart LettersOrPunc | IdExtLetter)+) ];
+		private token Symbol {
+			_parseNeeded = false;
+			@[ '@' '@' FancyId ];
+			ParseSymbolValue();
+		};
+		private token Id {
+			_parseNeeded = false;
+			@[ NormalId | '@' FancyId {_parseNeeded=true;} ];
+			ParseIdValue();
+		};
+		private token LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
+			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
+
+		// Punctuation & operators -----------------------------------------------
+		
+		private token OpChars @[
+			 '~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
+		private token Comma     @[ ',' { _value = _Comma; } ];
+		private token Semicolon @[ ';' { _value = _Semicolon; } ];
+		private token Colon     @[ ':' { _value = _Colon; } ];
+		private token At        @[ '@' { _value = GSymbol.Empty; } ];
+		private token CommentStart @[ '/' ('/'|'*') ];
+		private token Operator  @[ (&!CommentStart OpChars)+ {ParseNormalOp();} ];
+		private token BackslashOp @[ '\\' FancyId? {ParseBackslashOp();} ];
+
+		// Shebang ---------------------------------------------------------------
+
+		private token Shebang @[ "#!" ~('\r'|'\n')* Newline? ];
+
+		// Token -----------------------------------------------------------------
+
+		[k(3)]
+		private token Token @[
+			( &{InputPosition == 0} 
+			  {_type = TT.Shebang;}   Shebang
+			/ {_type = TT.Symbol;}    Symbol
+			/ {_type = TT.Id;}        Id
+			/ {_type = TT.Spaces;}    Spaces
+			/ {_type = TT.Newline;}   Newline
+			/                         DotIndent
+			/ {_type = TT.SLComment;} SLComment
+			/ {_type = TT.MLComment;} MLComment
+			/ {_type = TT.Number;}    Number
+			/ {_type = TT.String;}    TQString
+			/ {_type = TT.String;}    DQString
+			/ {_type = TT.SQString;}  SQString
+			/ {_type = TT.BQString;}  BQString
+			/ {_type = TT.Comma;}     Comma
+			/ {_type = TT.Semicolon;} Semicolon
+			/ {_type = TT.LParen;}    '('
+			/ {_type = TT.RParen;}    ')'
+			/ {_type = TT.LBrack;}    '['
+			/ {_type = TT.RBrack;}    ']'
+			/ {_type = TT.LBrace;}    '{'
+			/ {_type = TT.RBrace;}    '}'
+			/ {_type = TT.At;}        At
+			/                         BackslashOp
+			/                         Operator
+			/ {_type = TT.Spaces;}    UTF_BOM
+			/ {_type = TT.Colon;}     Colon
+			/ error { _value = @null; }
+			  ( EOF {_type = TT.EOF;}
+			  | _   {_type = TT.Unknown;} )
+			)
+		];
+		static readonly _Comma::Symbol = GSymbol.Get(",");
+		static readonly _Semicolon::Symbol = GSymbol.Get(";");
+		static readonly _Colon::Symbol = GSymbol.Get(":");
+
+		// Partial tokens used for syntax highlighting. A LES syntax highlighter
+		// can record the token continued in each line (''', """ or /*) call one
+		// of these rules to proces that token until it ends or the line ends.
+		
+		[k(3)]
+		public token TDQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | '"' '"' '"' {return true;}) ];
+		[k(3)]
+		public token TSQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | "'''" {return true;}) ];
+		public token MLCommentLine(ref nested::int)::bool @[ 
+			(greedy
+			  ( &{nested>0} "*/" {nested--;}
+			  / "/*" {nested++;}
+			  / ~('\r'|'\n'|'*')
+			  / '*' (&!'/')
+			  ))*
+			(Newline {return false;} | "*/" {return true;})
+		];
+	}}
+}
