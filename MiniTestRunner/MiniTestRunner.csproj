@@ -196,18 +196,18 @@
     <Reference Include="System.Deployment" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="UpdateControls, Version=2.1.3.0, Culture=neutral, PublicKeyToken=19e83a8289e31a8f, processorArchitecture=MSIL">
+    <Reference Include="UpdateControls">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\UpdateControls.dll</HintPath>
     </Reference>
-    <Reference Include="UpdateControls.Forms, Version=2.1.3.0, Culture=neutral, PublicKeyToken=19e83a8289e31a8f, processorArchitecture=MSIL">
+    <Reference Include="UpdateControls.Forms">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\UpdateControls.Forms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
     <Reference Include="Theraot.Core">
-      <HintPath>..\..\Lib\DotNet35\Theraot.Core.dll</HintPath>
+      <HintPath>..\Lib\DotNet35\Theraot.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
