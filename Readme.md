@@ -33,5 +33,12 @@ These projects use couple of tricks to support .NET 3.5, .NET 4 and .NET 4.5 in 
 
 TODO: Add portable class library version. I may wait until PCLs are supported by Visual Studio Express Edition.
 
-Home page: http://loyc.net
-Future home page: http://core.loyc.net
+Note: the versions of these libraries for .NET 3.5 depend on the compatibility library [Theraot.Core.dll](https://github.com/theraot/Theraot).
+
+## Links
+
+- [Home Page](http://core.loyc.net)
+- [Reference Documentation](http://loyc.net/doc/code/)
+- [Source code](http://github.com/qwertie/LoycCore)
+- [Wiki](https://github.com/qwertie/LoycCore/wiki)
+- [Blog](http://loyc.net/blog)
