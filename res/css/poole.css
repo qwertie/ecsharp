@@ -34,12 +34,12 @@
  *
  * Update the foundational and global aspects of the page.
  */
-
+/*
 * {
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
-}
+}*/
 
 html,
 body {
@@ -329,7 +329,7 @@ tbody tr:nth-child(odd) th {
 
 .page,
 .post {
-  margin-bottom: 4em;
+  margin-bottom: 1em;
 }
 
 /* Blog post or page title */
