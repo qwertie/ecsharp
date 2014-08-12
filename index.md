@@ -4,12 +4,12 @@ title: Home
 ---
 # About Loyc
 
-The Language of Your Choice (Loyc) project is intended to become a rich set of tools for:
+The Language of Your Choice (Loyc) project is intended to become a rich set of tools for cross-language interoperability:
 
 - Transforming source code between different languages
+- Code analysis and transformation
 - Writing libraries (or entire programs) in multiple programming languages
 - IDEs (code completion lists, various kinds of code visualization, intellisense)
-- Code analysis and transformation
 
 Its subprojects include:
 

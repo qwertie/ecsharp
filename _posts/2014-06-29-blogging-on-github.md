@@ -104,6 +104,8 @@ The names you have to use on the fence tend to be longer than just file extensio
 
 Unfortunately, redcarpet and kramdown have different sets of advanced features. Kramdown seems more flexible to me, but redcarpet appears to be [The Standard GitHub Flavored Markdown](https://github.com/blog/832-rolling-out-the-redcarpet).
 
+**Update: As of August 1, commiting a `_config.yml` that uses `rouge` now causes "Page build failure" on GitHub with a misleading error message like "The file `_posts/2014-08-01-blah.md` contains syntax errors."** Before you commit & push, you must set `highlighter: pygments` in `_config.yml`, even if you don't care to install pygments locally.
+
 **ProTip**: Jekyll won't easily let you write the literal character combination `{%` or `{{`, not even inside code blocks. You could write `{{"{%"}}` or `{{ "{{" }}` instead, but if you are not intending to use Liquid (Jekyll's templating ending), a better option is to wrap the entire page in `{% raw %} ... {% endraw %}{{"{%"}} endraw %}`, after the front-matter, as I have done in this post. One problem with this though: you can't use [jekyll internal links](http://stackoverflow.com/questions/4629675/jekyll-markdown-internal-links).
 {% raw %}
 
@@ -132,7 +134,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     # Jekyll settings:
     markdown: redcarpet
     encoding: UTF-8                
-    highlighter: rouge             # if you did not install pygments
+    highlighter: pygments          # rouge now causes Page Build Failure on GitHub
     paginate: 10                   # blog posts per page
     paginate_path: "blog/page:num" # optional, see below
     safe: true
