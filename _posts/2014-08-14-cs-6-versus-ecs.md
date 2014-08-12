@@ -16,7 +16,7 @@ var cppHelloWorldProgram = new Dictionary<int, string>
 };
 ~~~
 
-It's not like Microsoft to do minor syntax tweaks with no major advantage, but that's exactly what this is. It's an improvement over the old syntax, whose meaning was less apparent:
+It's not like Microsoft to do minor syntax tweaks with no major advantage, but that's exactly what this seems to be. This is just an improvement over the old syntax, whose meaning was less apparent:
 
 ~~~csharp
 var cppHelloWorldProgram = new Dictionary<int, string>
@@ -27,15 +27,15 @@ var cppHelloWorldProgram = new Dictionary<int, string>
 };
 ~~~
 
-At first glance, this syntax appears to be in conflict with EC#'s ability to attach attributes to any expression. Isn't it a problem that [...] looks like an attribute? I don't think so; my parser can easily look ahead and see the '=' to determine that it is not an attribute.
+At first glance, the new syntax appears to be in conflict with EC#'s ability to attach attributes to any expression. Isn't it a problem that [...] looks like an attribute? I don't think so; my parser can easily look ahead and see the '=' to determine that it is not an attribute.
 
 ## 2. Dollar-sign operator
 
-This is a weird one to me. In Enhanced C#, $ means "substitute" and will be used inside code literals to represent "capturing" or "expanding" an expression or statement; I was also planning to use it for C++-style template code.
+This is a weird one to me. In Enhanced C#, $ means "substitute" and will be used inside code literals to represent "capturing" or "expanding" an expression or statement; I was also planning to use it to identify a C++-style template parameter.
 
-The C# team has more banal ideas for the dollar sign: It appears that $Foo can be expanded lexically to ["Foo"]. For example, `X.$Y = Z` means `X["Y"] = Z`. Thus it is not a true operator, but a lexical shortcut. Nevertheless, so far it looks like the EC# parser can already parse it without difficulty, and $X could be translated to ["X"] somewhere in semantic analysis.
+The C# team has more banal ideas for the dollar sign: It appears that $Foo can be expanded lexically to `["Foo"]`. For example, `X.$Y = Z` means `X["Y"] = Z`. Perhaps it is not a true operator, but just a lexical shortcut. Nevertheless, so far it looks like the EC# parser can already parse it without difficulty, and `$X` could be translated to `["X"]` somewhere in semantic analysis.
 
-Using both the C# 6 and EC# definitions of $ in a single language looks doable, but it doesn't feel right. Maybe I'll give it some thought later.
+Using both the C# 6 and EC# definitions of `$` in a single language looks doable, but it doesn't feel right. Maybe I'll give it some thought later.
 
 ## 3. Auto-Properties with Initializers
 
@@ -80,7 +80,7 @@ I heard it said that X is read-only in a normal constructor; thus primary constr
 
 Secondly, as [Jon Skeet mentioned](msmvps.com/blogs/jon_skeet/), the feature is not usable in various circumstances because it is overly limited:
 
-- The primary constructor must be essentially public (or internal if the class is internal). You might not want that!
+- The primary constructor must be essentially `public` (or `internal` if the class is `internal`). You might not want that!
 - The primary constructor cannot (easily) add validation code to check the arguments and it cannot add pre- or post-processing code to run before/after the class members are initialized.
 - All other constructors are forced to call the primary constructor (granted, it's rare that you wouldn't want to).
 
@@ -105,17 +105,26 @@ The EC# version of the `Patent` class might look like this:
 
 I realize that this may look weird at first, but bear with me.
 
-First of all, "this" just means "define a constructor". One of the annoying things about constructors is that you must repeat the class name, no matter how long it is (and you cannot text-search for constructors of different types). The D language already solved this problem by using "this" as the constructor name instead.
+First of all, "this" just means "define a constructor". One of the annoying things about constructors is that you must repeat the class name, no matter how long it is (plus, you cannot text-search to find all constructors in a file or project). The D language already solved this problem by using `this` as the constructor name instead.
 
-Second, you can use a field or property declaration as a constructor argument, which is interpreted to mean "create this field or property _and also_ create a matching parameter and assign it". You can also use the "set" prefix on any parameter (including normal methods), which means "assign this parameter to the matching field or property, without creating a new field or property".
+Second, you can use a field or property declaration as a constructor argument, which is interpreted to mean "create this field or property _and also_ create a matching parameter and assign it". So this constructor does three things at once:
 
-Internally, the compiler would rename the format parameter to have a lowercase first letter (e.g. `yearOfPublication` instead of `YearOfPublication`), since uppercase parameter names are unconventional. This only makes a difference if you use keyword arguments. 
+      public this(
+        private string Title { get; [required] set; },
+        private string YearOfPublication { get; set; }
+      ) {}
 
-Finally, the [required] attribute will mean "throw `ArgumentNullException` if the parameter is null", which eliminates some extra code from the C# 6 `Patent` class.
+1. It declares two properties, `Patent.Title` and `Patent.YearOfPublication`
+2. It declares two constructor parameters, `title` and `yearOfPublication` (the compiler would rename the format parameter to have a lowercase first letter, since uppercase parameter names are unconventional. This only makes a difference if you use keyword arguments.)
+3. It implicitly sets `this.Title = title` and `this.YearOfPublication = yearOfPublication`
+
+You can also use the "set" prefix on any parameter (even in normal methods), which means "assign this parameter to the matching field or property, without creating a new field or property". That's what the other constructor does.
+
+Finally, the `[required]` attribute will mean "throw `ArgumentNullException` if the parameter is null", which eliminates some extra code from the C# 6 `Patent` class.
 
 Although the C# 6 syntax is slightly more elegant, notice that EC#'s syntax removes all the limitations I mentioned:
 
-- The "primary" constructor does not have to be public (and since it is no longer special, you need not call it "primary").
+- The "primary" constructor does not have to be `public` (and since it is no longer a special constructor, we can stop calling it "primary").
 - The "primary" constructor can easily add validation code to check the arguments and do any other necessary initialization.
 - The other constructors are not forced to call it.
 
@@ -293,5 +302,6 @@ I have written draft articles about my various ideas, but they will not happen u
 
 ## So much left to fix
 
-I just finished writing a whole nother article about the flaws in the CLR, and as I mentioned I could have made the list longer by including flaws in C#. Sadly, C# 6 does not try to work around the limitations of .NET or address flaws inherited from prior versions of C#. Enhanced C# will address some, but not all, of these flaws. To fix everything we need not only a new language, but a new runtime environment. So let's save that for later.
+I just finished writing a whole nother article about the [flaws in the CLR](http://loyc.net/2014/dotnet-annoyances.html), and as I mentioned I could have made the list longer by including flaws in C#. Sadly, C# 6 does not try to work around the limitations of .NET or address flaws inherited from prior versions of C#. Enhanced C# will address some, but not all, of these flaws. To fix everything we need not only a new language, but a [new runtime environment](http://loyc.net/2014/open-letter.html); no one is stepping up to fund such a thing, however.
 
+<small><a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag" style="display:none">Published on CodeProject</a></small>

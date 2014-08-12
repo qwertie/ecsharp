@@ -2,6 +2,8 @@
 title: A plea for html subsets
 layout: post
 ---
+The following is a message I attempted to post to the [Servo group](https://groups.google.com/forum/#!forum/mozilla.dev.servo). I attempted to post twice, but apparently it was rejected by the moderator.
+
 Hi folks. I'm not involved in Servo development and may be repeating thoughts you might have had already; if so, sorry for the redundancy.
 
 Today there is one document format that is used more and understood better than any other. It's not docx, it's not odf, it's not pdf and it's obviously not ps, rtf or latex. The single most recognized and used document format is, of course, html. In fact, today it is used not just for documents but for entire user interfaces for "web" applications.

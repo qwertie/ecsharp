@@ -53,7 +53,8 @@ function buildTOC_ul(selector) {
 function addTOC(contentElement, before, tocClass) {
 	  if (before===undefined) before=contentElement.firstChild;
 	  var prefix = "";
-	  if (contentElement.className) prefix="."+contentElement.className+" ";
+		var c = contentElement.className;
+		if (c) prefix="." + (c.indexOf(" ")==-1?c:c.substr(0,c.indexOf(" "))) + " ";
 	  var selector = prefix+"h2, "+prefix+"h3, "+prefix+"h4";
 	  var toc=document.createElement("div");
 	  toc.className=tocClass||"sidebox";
