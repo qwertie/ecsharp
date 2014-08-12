@@ -10,14 +10,12 @@
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Core libraries to "fill in the gaps" in the .NET Base Class Library.</summary>
-    <description>A set of useful libraries for many kinds of .NET developers, 
-    starting with Loyc.Essentials, a library that "fills in the gaps" in the 
-    core of the .NET Base Class Library. LoycCore is especially focused on 
-    collections: classes, interfaces, adapters, and extension methods. 
-    Contributors welcome: more unit tests, code reviews, and new features are desired.</description>
+    <description>A set of useful libraries for many kinds of .NET developers, starting with Loyc.Essentials, a library that "fills in the gaps" in the core of the .NET Base Class Library. LoycCore is especially focused on collections: classes, interfaces, adapters, and extension methods. 
+    
+    Contributors are welcome: more unit tests, code reviews, and new features are desired, anything relatively small (under about 3000 lines of code) that fits the theme "things that should have been built into the .NET framework, but aren't".</description>
     <releaseNotes>Initial NuGet package!</releaseNotes>
     <copyright>Copyright 2014</copyright>
-    <tags>Loyc Core Collections ExtensionMethods</tags>
+    <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
     <dependencies>
       <!--<dependency id="SampleDependency" version="1.0"/>-->
     </dependencies>
