@@ -39,11 +39,12 @@ namespace Benchmark
 					Title = string.Format("Milliseconds to perform {0:n0} iterations", X),
 					MajorGridlineStyle = LineStyle.Solid,
 					MinorGridlineStyle = LineStyle.Dot,
-					Minimum = 0,
+					Minimum = -1,
 				});
 			};
 			#endif
-			
+
+			Run(b, 30);
 			Run(b, 100);
 			Run(b, 300);
 			Run(b, 1000);
@@ -53,6 +54,7 @@ namespace Benchmark
 			Run(b, 100000);
 			Run(b, 300000);
 			Run(b, 1000000);
+			//Run(b, 3000000);
 		}
 
 		int _count;
@@ -153,19 +155,19 @@ namespace Benchmark
 		{
 			b.Run("List", () =>
 			{
-				var list = new List<long>();
+				var list = MakeList(new List<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
 			b.Run("DList", () =>
 			{
-				var list = new DList<long>();
+				var list = MakeList(new DList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
 			b.Run("AList", () =>
 			{
-				var list = new AList<long>();
+				var list = MakeList(new AList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
