@@ -236,9 +236,9 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
     {% endfor %}
     ~~~
 
-13. (Hyde) The Older and Newer buttons had broken links because they assumed the blog would be the home page. And you know what, I made so many little changes and fixes, I won't list them all. Let's just say you can clone my repo and make it your own, if you like. And [see here](http://jekyllrb.com/docs/permalinks/) about customizing blog permalinks (why call it "permalink" when you can change the URL schema at any time?)
+13. (Hyde) The Older and Newer buttons had broken links because they assumed the blog would be the home page. And you know what, I made so many little changes and fixes, I won't list them all. Let's just say you can clone my repo and make it your own, if you like.
 
-## Writing blog posts
+## Writing blog posts ##
 
 Writing a blog post in Jekyll is easy. Just create a text file in the `/_posts` folder (that's in your `gh-pages` branch if you are using GitHub) and give it a name like `2014-12-31-file-name.md`, but with the correct date, of course. Inside the file, add front matter:
 
@@ -252,9 +252,15 @@ The content of the post goes here.
 
 Jekyll puts the output HTML in `2014/12/31/file-name.html`, or `2014/12/31/file-name/index.html` instead if your site is using the `permalink: pretty` option in `_config.yml`.
 
-## Comments
+If you'd like to get shorter URLs by eliminating part of the date, change the `permalink` option in `_config.yml`. For example I use this:
 
-Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve static content, which comments are not. And there's no way to have comments directly in GitHub pages, since GitHub provides no place to store the comments. But, it is still possible to use a comment service provided by a third party such as Disqus. Disqus adds ads to make money for them, though: annoying ads with pictures.
+    permalink: /:categories/:year/:title.html
+
+Or [see here](http://jekyllrb.com/docs/permalinks/) (why call it "permalink" when you can change the URL schema at any time?)
+
+## Comments ##
+
+Although Jekyll supports blogging, it is incomplete as a blogging engine since it is strictly designed to serve _static_ content, which comments are not. And there's no way to have comments directly in GitHub pages, since GitHub provides no place to store the comments. But, it is still possible to use a comment service provided by a third party such as Disqus. Disqus adds ads to make money for them, though. Annoying ads. With pictures.
 
 [Jekyll Bootstrap](http://jekyllbootstrap.com/) currently supports four comment engines including Disqus but I am not sure whether I trust these commercial entities with my comments... although, er, very few comments have ever been left on this blog.
 
@@ -302,7 +308,7 @@ Sometimes I like to place sidebars in my posts, which I call ".sidebox" in CSS b
 <style>
 .sidebox {
   border: 1px dotted rgb(127, 127, 127);
-  padding: 4px 3px 4px 6px; // top right bottom left
+  padding: 4px 3px 4px 6px; /* top right bottom left */
   min-width: 100px ! important;
   float: right ! important;
   font-size: 90%;
@@ -325,15 +331,15 @@ Markdown supports HTML, so you can add a style block like this one at the top of
 
 Note that all the text inside the `<div>` tag is treated as HTML, not Markdown. In kramdown you can also use the "block attribute" `{: .sidebox}` after a paragraph to create a sidebar, or use a "refdef" which allows the sidebox to contain multiple paragraphs. Both of these approaches are better because you can use Markdown syntax inside the sidebar... but also worse because only kramdown will understand your code.
 
-## Visitor data
+## Visitor data ##
 
 I am using [Google Analytics](http://www.google.ca/analytics/) to track page views. After you sign up you'll be give a Javascript snippet to put in your web pages; I inserted mine right before `</body>` in `/layouts/default.html`.
 
-## Table-of-contents generation
+## Table-of-contents generation ##
 
-Kramdown has a feature for [automatic generation of a table of contents](http://kramdown.gettalong.org/converter/html.html#toc) for long posts like this one. Sadly I'm not using Kramdown so I don't have access to it. A javascript solution is more universal, but when I searched for a solution I didn't immediately find one I was happy with. So I made my own [Javascript table-of-contents builder](/2014/07/javascript-toc.html).
+Kramdown has a feature for [automatic generation of a table of contents](http://kramdown.gettalong.org/converter/html.html#toc) for long posts like this one. Sadly I'm not using Kramdown so I don't have access to it. A javascript solution is more universal, but when I searched for a solution I didn't immediately find one I was happy with. So I made my own [Javascript table-of-contents builder](/2014/javascript-toc.html).
 
-## Markdown everywhere
+## Markdown everywhere ##
 
 By the way, no matter whether you're using GitHub or not or Jekyll or not, there's no need to write web sites in HTML anymore. No matter how crappy your web hosting provider might be, no matter whether you're allowed to run scripts or not, you can still author pages in Markdown, thanks to a nifty library called [mdwiki](http://dynalon.github.io/mdwiki/#!index.md). This thing uses Javascript to convert markdown to HTML, 100% client-side, so you don't have to worry about what your web host may or may not support. On GitHub, you may as well use Jekyll, but I must admit, it looks like mdwiki has a fantastic feature set, probably better than I'll get with Jekyll. But the important thing is, I don't have to write HTML anymore. Good riddance!
 

@@ -94,7 +94,7 @@ The default class is `sidebox`, and if you insert the following CSS on your page
 <style>
 .sidebox {
   border: 1px dotted rgb(127, 127, 127);
-  padding: 4px 3px 4px 6px; // top right bottom left
+  padding: 4px 3px 4px 6px; /* top right bottom left */
   min-width: 100px ! important;
   float: right ! important;
   font-size: 90%;
