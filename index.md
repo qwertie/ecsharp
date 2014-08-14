@@ -18,7 +18,7 @@ Its subprojects include:
 - [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) (Loyc Expression Syntax): a compact textual interchange format for Loyc trees
 - [LeMP](https://github.com/qwertie/Loyc/wiki/Loyc-Expression-Language/#lemp) (Lexical Macro Processor): a LISP-style macro preprocessor that operates on Loyc trees
 - [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) (Loyc LL(k) Parser Generator): The parser generator being used to parse Enhanced C# and LES
-- MLSL (Multi-Language Standard Library): not yet started
+- [MLSL](http://loyc.net/2014/design-elements-of-mlsl.html) (Multi-Language Standard Library): not yet started
 - [SIL](https://github.com/qwertie/Loyc/wiki/Standard-Imperative-Language) (Standard Imperative Language): not yet started
 
 At the moment, Loyc is limited to the .NET platform. The Loyc core libraries are
