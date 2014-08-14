@@ -28,7 +28,7 @@ GitHub has a "built-in" simple content management system called Jekyll. It's uno
 
 The way GitHub decided to organize its [web space](https://pages.github.com/) is unusual; it's based on an "orphan branch" within the _same_ repository as your project, which is basically a "parallel universe" within the same, well, universe as the repo you already have. This means that you typically have to clone your repository _twice_ on the same PC, once for your code and again for your web site, but you are storing two copies of the complete history of both "halves" of your repo. That is weird to me. (In theory you only _need_ one clone of your repo, but then git would have to delete your entire source tree whenever you want to edit your web site. Unsettling, no? Why can't I just have the web site in a subfolder, let's say, `/www` in `master`?)
 
-They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on Windows was a pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows). But then I had problems with "yajl" and "wdm" on two different PCs (see sidebar) and one of the PCs still can't run github's (old) version of Jekyll.
+They recommend installing [Jekyll](http://jekyllrb.com/) on your local computer to be able to preview your web site, but installing Jekyll on _Windows_ was a pain in the ass. The Jekyll gem normally fails to install; you have to install something called Ruby Installer DevKit first. Here's a hint, because it took me awhile to find the download link to this thing. It turns out that the DevKit download link is on [this page](http://rubyinstaller.org/downloads/) underneath the download links for the Ruby Installer for Windows, under the heading "Development Kit". Later I found [instructions for installing Jekyll on Windows](https://github.com/juthilo/run-jekyll-on-windows). But then I had problems with "yajl" and "wdm" on two different PCs (see sidebar) and one of the PCs still can't run github's (old) version of Jekyll.
 
 <div class="sidebox">If Jekyll won't start because it's babbling about something called "yajl", you might have to uninstall "yajl" it and reinstall it with
 <pre>
@@ -50,6 +50,8 @@ Once everything starts working, Jekyll still proves to be flaky. Sometimes it sp
 <br/><br/>
 Solution: just run Jekyll again and Hope It Works This Time.
 </div>
+
+Anyway, see [GitHub's official install instructions](https://help.github.com/articles/using-jekyll-with-pages).
 
 The [documentation of Jekyll](http://jekyllrb.com/docs/home/) is backwards. The introductory pages give you all the minor details first; the key information comes later. For example, it isn't until the [eighth section](http://jekyllrb.com/docs/posts/) that they finally tell you how to add a blog post. But that's not enough of course, you also need to know how to create a "main page" for your blog and a "history page", and all they provide at first is an incomplete template for part of a history page. Plus, any good web site should have category links on every page (e.g. Main Page, Blog, Documentation, Code) but they don't give you any clues about setting that up until way down deep in the docs. What about styling & theming? In the docs, I haven't seen anything about that yet.
 
@@ -238,7 +240,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
 
 ## Writing blog posts
 
-Writing a blog post in Jekyll is super easy. Just create a text file in the `/_posts` folder (that's in your `gh-pages` branch if you are using GitHub) and give it a name like `2014-12-31-file-name.md`, but with the correct date, of course. Inside the file, add front matter:
+Writing a blog post in Jekyll is easy. Just create a text file in the `/_posts` folder (that's in your `gh-pages` branch if you are using GitHub) and give it a name like `2014-12-31-file-name.md`, but with the correct date, of course. Inside the file, add front matter:
 
 ~~~
 ---
