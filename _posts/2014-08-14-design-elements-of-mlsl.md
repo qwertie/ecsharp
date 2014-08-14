@@ -2,6 +2,7 @@
 title: Design elements of a multi-language standard library
 layout: post
 toc: true
+commentIssueId: 5
 ---
 
 Recently the Wolfram Language became available. While the language itself has some innovations, the primary attraction of this language is a fantastically rich library of professionally curated functionality. But it is a proprietary "cethedral" model and it the library is tied to just one language, the Wolfram Language. Meanwhile, the open-source "bazaar" model has almost taken over the landscape of software development, but in a messy and irregular way. Given any two random open-source libraries, chances are they cannot talk to each other even if they are designed for the same domain. Because most standard libraries are impoverished, with a dearth of standard interfaces, it is often the case that two libraries written for the same domain are incompatible, even if they are written in the same language. In other words, the output of one library cannot be used directly as the input of the other.
@@ -243,3 +244,5 @@ The language will not have a single syntax either. There should be a simple "can
 The type system is a very important piece that I haven't really worked out yet. I'm looking into things like higher-kinded types, multiple kinds of type aliases, dependent types, and union and intersection types.
 
 So let me know if you're interested in helping me design this language.
+
+<small><a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag" style="display:none">Published on CodeProject</a></small>
