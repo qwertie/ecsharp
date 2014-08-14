@@ -218,10 +218,10 @@ Usually when I seek feedback about research topics like this, I get none. But he
 
 Here are some questions for you, the reader:
 
-- What are some of the best-designed _interfaces_ you know of?
-- In your programming specialty, whether it's DNA processing or ORMs, which libraries do you feel are the best designed? In particular I'd like to hear about libraries that feel small and easy to learn, yet are powerful.
+- What are some of the best-designed _interfaces_ you know of, regardless of programming language? 
+- In your programming specialty, whether it's DNA processing or ORMs, which libraries do you feel are the best designed? I'm not asking about libraries that are _useful_; I'm talking about design aesthetics, like elegance, power, extensibility and ease-of-use, all shaved by [occam's razor](http://en.wikipedia.org/wiki/Occam's_razor).
 - What "antipatterns" or poor design elements do you think should be avoided?
-- What programming language features do you think are important for facilitating good library design (e.g. type system features, code contracts, shorthand notations)
+- What programming language features do you think are important for facilitating good library design (e.g. type system features, code contracts, shorthand notations)?
 
 I've been meaning to look at the KDE Frameworks project as a possible starting point for the MLSL, but I haven't got around to it yet. Can anyone point me to a primer on the Tier 1 components?
 
@@ -233,12 +233,12 @@ I'm considering defining a new programming language family for the Loyc project,
 
 1. "Expression language": an expression evaluator that may support loops but probably not function or type definitions. This subset of the language would be part of the MLSL, as a compact interpreter that could be used, for example, to add searching and filtering functionality in end-user applications.
 2. "Basic": a subset of the language such that a compiler for it is relatively easy to implement, a language that is powerful for its size: a competitor to Lua.
-3. "Universal": a subset of the language designed to allow code written in it to be automatically converted to popular statically-typed languages like C#, Java, and C++. This version of the language could and should contain features that the target languages _do not have_, such as LISP-style macros, "traits", or static unit checking; the only constraint is that there must be some way to translate the code into the target language, and both the translation process and the target language code must be reasonably efficient.
+3. "Universal": a subset of the language designed to allow code written in it to be automatically converted to popular statically-typed languages like C#, Java, and C++. This version of the language could and should contain features that the target languages _do not have_, such as LISP-style macros, "traits", or static unit checking; the only constraint is that there must be some way to translate the code into the target language, and both the translation process and the target language code must be reasonably efficient. Hopefully code in the "Universal" subset can also be converted to the "Basic" subset.
 4. "Flagship": a maximal version of the language using all standard modules, including features that some popular languages cannot efficiently support, e.g. pointers, fibers, multiple dispatch.
 
 To be clear, that's not a list of modules, it's a list of subsets. The language would consist of dozens of modules that can be put together in various ways; a "subset" refers to a specific collections of modules, configured in a specific way.
 
-The language will not have a single syntax either. There should be a simple "canonical" syntax, probably based on [LES](http://sourceforge.net/p/loyc/wiki/LES/), but other parsers could be written that would allow the Loyc language to directly compile _subsets_ of other languages such as C# or Julia.
+The language will not have a single syntax either. There should be a simple "canonical" syntax, probably [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax), but other parsers could be written that would allow the Loyc language to directly compile _subsets_ of other languages such as C# or Julia.
 
 The type system is a very important piece that I haven't really worked out yet. I'm looking into things like higher-kinded types, multiple kinds of type aliases, dependent types, and union and intersection types.
 
