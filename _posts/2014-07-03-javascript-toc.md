@@ -88,7 +88,7 @@ This allows the content area to have `id="post"` or `id="content"`. `_post_.firs
 
 ## Sidebar style
 
-The default class is `sidebox`, and if you insert the following CSS on your page, you will get a table of contents that floats beside the content, just as you see on [this page](http://loyc.net/2014/07/javascript-toc.html).
+The default class is `sidebox`, and if you insert the following CSS on your page, you will get a table of contents that floats beside the content, just as you see on [this page](http://loyc.net/2014/javascript-toc.html).
 
 ~~~html
 <style>
@@ -111,7 +111,7 @@ The default class is `sidebox`, and if you insert the following CSS on your page
 
 ## Usage with GitHub Pages / Jekyll
 
-If you're publishing with Jekyll, I suggest adding the above code to the bottom of `/_layouts/default.html` (and any other layouts you might use that might need a TOC, as long as they do _not_ import `default.html` using a `layout: default` option), just before `</body>`, surrounded by a test like this:
+If you're [publishing with Jekyll](http://loyc.net/2014/blogging-on-github.html), I suggest adding the above code to the bottom of `/_layouts/default.html` (and any other layouts you might use that might need a TOC, as long as they do _not_ import `default.html` using a `layout: default` option), just before `</body>`, surrounded by a test like this:
 
     {% if page.toc %}
     <script>
