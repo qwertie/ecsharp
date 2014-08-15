@@ -12,7 +12,7 @@
 	[Serializable]
 	public abstract class AListInnerBase<K, T> : AListNode<K, T>
 	{
-		public const int DefaultMaxNodeSize = 16;
+		public const int DefaultMaxNodeSize = 32;
 
 		[Serializable]
 		[DebuggerDisplay("Index = {Index}, Node = {Node}")]

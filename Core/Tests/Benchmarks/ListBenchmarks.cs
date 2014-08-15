@@ -17,11 +17,20 @@ namespace Benchmark
 	class ListBenchmarks
 	{
 		IAdd<EzDataPoint> _graph;
+		Predicate<EzDataPoint> _where;
 
-		public void Run(EzChartForm graph = null)
+		void Add(EzDataPoint dp)
+		{
+			if (_where == null || _where(dp))
+				_graph.Add(dp);
+		}
+
+		public void Run(EzChartForm graph = null, Predicate<EzDataPoint> where = null)
 		{
 			Benchmarker b = new Benchmarker(1);
 			_graph = graph;
+			_where = null;
+
 			#if !DotNet35
 			graph.InitDefaultModel = (id, model) =>
 			{
@@ -39,11 +48,12 @@ namespace Benchmark
 					Title = string.Format("Milliseconds to perform {0:n0} iterations", X),
 					MajorGridlineStyle = LineStyle.Solid,
 					MinorGridlineStyle = LineStyle.Dot,
-					Minimum = 0,
+					Minimum = -1,
 				});
 			};
 			#endif
-			
+
+			Run(b, 30);
 			Run(b, 100);
 			Run(b, 300);
 			Run(b, 1000);
@@ -53,6 +63,7 @@ namespace Benchmark
 			Run(b, 100000);
 			Run(b, 300000);
 			Run(b, 1000000);
+			//Run(b, 3000000);
 		}
 
 		int _count;
@@ -88,20 +99,20 @@ namespace Benchmark
 							Series = pair2.B.ToString(),
 							Value = result.Avg()
 						};
-						_graph.Add(dp);
+						Add(dp);
 
 						// Make a second version of the dictionary graph without SortedList
 						if (dp.GraphId.ToString().StartsWith("Dictionary") && dp.Series != "SortedList") {
 							dp = dp.Clone();
 							dp.GraphId = dp.GraphId.ToString() + " (no SortedList)";
-							_graph.Add(dp);
+							Add(dp);
 						}
 						
 						// Make a second version of the "@ random indexes" graphs for small lists
 						if (dp.GraphId.ToString().Contains("random index") && (double)dp.Parameter < 10000) {
 							dp = dp.Clone();
 							dp.GraphId = dp.GraphId.ToString() + " "; // extra space just to change the graph ID
-							_graph.Add(dp);
+							Add(dp);
 						}
 					}
 				}
@@ -121,6 +132,15 @@ namespace Benchmark
 			b.Run("List", () =>
 			{
 				var list = MakeList(new List<long>(), b);
+				for (int i = 0; i < StdIterations; i++) {
+					int c = list.Count;
+					list.Insert(_r.Next(c + 1), i);
+					if (c >= _count + 5) list.RemoveRange(list.Count - 10, 10);
+				}
+			});
+			b.Run("InternalList", () =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b);
 				for (int i = 0; i < StdIterations; i++) {
 					int c = list.Count;
 					list.Insert(_r.Next(c + 1), i);
@@ -153,19 +173,25 @@ namespace Benchmark
 		{
 			b.Run("List", () =>
 			{
-				var list = new List<long>();
+				var list = MakeList(new List<long>(), b);
+				for (int i = 0; i < StdIterations; i++)
+					list.Add(i);
+			});
+			b.Run("InternalList", () =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
 			b.Run("DList", () =>
 			{
-				var list = new DList<long>();
+				var list = MakeList(new DList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
 			b.Run("AList", () =>
 			{
-				var list = new AList<long>();
+				var list = MakeList(new AList<long>(), b);
 				for (int i = 0; i < StdIterations; i++)
 					list.Add(i);
 			});
@@ -195,6 +221,15 @@ namespace Benchmark
 					int c = list.Count;
 					list.RemoveAt(_r.Next(c));
 					if (c <= _count - 5) list.AddRange(more);
+				}
+			});
+			b.Run("InternalList", () =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b);
+				for (int i = 0; i < StdIterations; i++) {
+					int c = list.Count;
+					list.RemoveAt(_r.Next(c));
+					if (c <= _count - 5) list.AddRange((IList<long>)more);
 				}
 			});
 			b.Run("DList", () =>
@@ -229,6 +264,17 @@ namespace Benchmark
 			b.Run("List", b_ =>
 			{
 				var list = MakeList(new List<long>(), b_);
+				long sum = 0;
+				for (int c = 0; c < Cycles; c++) {
+					sum = 0;
+					for (int i = 0; i < list.Count; i++)
+						sum += list[i];
+				}
+				return "Sum: " + sum;
+			});
+			b.Run("InternalList", b_ =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b_);
 				long sum = 0;
 				for (int c = 0; c < Cycles; c++) {
 					sum = 0;
@@ -290,6 +336,14 @@ namespace Benchmark
 			b.Run("List", b_ =>
 			{
 				var list = MakeList(new List<long>(), b_);
+				double avg = 0;
+				for (int c = 0; c < Cycles; c++)
+					avg = list.Average();
+				return "Avg: " + avg;
+			});
+			b.Run("InternalList", b_ =>
+			{
+				var list = MakeList(InternalList<long>.Empty, b_);
 				double avg = 0;
 				for (int c = 0; c < Cycles; c++)
 					avg = list.Average();

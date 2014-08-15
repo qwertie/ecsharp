@@ -106,7 +106,9 @@ namespace Loyc.Syntax.Les
 			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
-			Stmt(@"a `=` b \&& c", F.Call(_("&&"), F.Call(_("="), a, b), c));
+			Stmt(@"a `=` b && c", F.Call(_("&&"), F.Call(_("="), a, b), c));
+			// Currently \* is equivalent to plain * (the backslash just indicates that the operator may contain letters)
+			Stmt(@"Foo * a \* b * c", F.Call(_("*"), F.Call(_("*"), F.Call(_("*"), Foo, a), b), c));
 			Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}
 

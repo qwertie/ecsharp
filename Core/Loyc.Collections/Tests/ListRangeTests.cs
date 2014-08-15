@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc.MiniTest;
+using Loyc.Collections;
 
 namespace Loyc.Collections.Tests
 {
@@ -175,28 +176,30 @@ namespace Loyc.Collections.Tests
 			}
 		}
 
-		[Test]
-		public void TestSort()
-		{
-			for (int size = 0; size <= 2000; size = size*2 + _r.Next(4))
-			{
-				ListT list = _newList();
-				List<int> list2 = new List<int>(size);
-				int threshold = _r.Next(255);
-				for (int i = 0; i < size; i++)
-				{
-					int n = _r.Next(size+1);
-					if (_r.Next(256) < threshold) {
-						// Front-inserts are needed to test DList<T>.Sort() thoroughly
-						list.InsertRange(0, Range.Single(n));
-						list2.Insert(0, n);
-					} else {
-						list.AddRange(Range.Single(n));
-						list2.Add(n);
-					}
-				}
-			}
-		}
+		//[Test]
+		//public void TestSort()
+		//{
+		//	for (int size = 0; size <= 2000; size = size*2 + _r.Next(4))
+		//	{
+		//		ListT list = _newList();
+		//		List<int> list2 = new List<int>(size);
+		//		int threshold = _r.Next(255);
+		//		for (int i = 0; i < size; i++)
+		//		{
+		//			int n = _r.Next(size+1);
+		//			if (_r.Next(256) < threshold) {
+		//				// Front-inserts are needed to test DList<T>.Sort() thoroughly
+		//				list.InsertRange(0, Range.Single(n));
+		//				list2.Insert(0, n);
+		//			} else {
+		//				list.AddRange(Range.Single(n));
+		//				list2.Add(n);
+		//			}
+		//		}
+
+		//		//list.Sort(); has been removed from IListRangeMethods<T>
+		//	}
+		//}
 
 		protected int StressTestIterations = 1000;
 		protected int MaxListSize = 10000;

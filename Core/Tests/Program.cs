@@ -17,6 +17,9 @@ using Loyc.Syntax;
 using Loyc.Geometry;
 using Loyc.Collections.Tests;
 using Benchmark;
+using Loyc.Syntax.Lexing;
+using Loyc.Syntax.Les;
+using Loyc.LLParserGenerator;
 
 namespace Loyc.Tests
 {
@@ -29,40 +32,54 @@ namespace Loyc.Tests
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
 			Console.WriteLine("Running tests on stable code...");
+			// Omitted: unit tests that throw & catch exceptions (those are below)
+			
+			// Loyc.Essentials
+			RunTests.Run(new ListExtTests());
 			RunTests.Run(new MathExTests());
-			RunTests.Run(new SimpleCacheTests());
+			RunTests.Run(new UStringTests());
+			RunTests.Run(new StringExtTests());
 			RunTests.Run(new HashTagsTests());
-			RunTests.Run(new ThreadExTests());
-			RunTests.Run(new ExtraTagsInWListTests());
 			RunTests.Run(new LocalizeTests());
-			RunTests.Run(new CPTrieTests());
+			RunTests.Run(new SymbolTests());
+			RunTests.Run(new ThreadExTests());
 			RunTests.Run(new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }));
 			RunTests.Run(new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }));
 			RunTests.Run(new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }));
 			RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
 			RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
-			RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
-			RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
-			RunTests.Run(new MSetTests());
-			RunTests.Run(new ImmSetTests());
-			RunTests.Run(new SymbolSetTests());
+
+			// Loyc.Collections
+			RunTests.Run(new CPTrieTests());
+			RunTests.Run(new SimpleCacheTests());
 			RunTests.Run(new InvertibleSetTests());
 			// Test with small node sizes as well as the standard node size,
 			// including the minimum size of 3 (the most problematic size).
 			int seed = Environment.TickCount;
-			RunTests.Run(new SparseAListTests(false, seed, 10, 10));
 			RunTests.Run(new AListTests(false, seed, 8, 8));
 			RunTests.Run(new BListTests(false, seed, 3, 3));
 			RunTests.Run(new BDictionaryTests(false, seed, 6, 6));
+			RunTests.Run(new SparseAListTests(false, seed, 10, 10));
+			RunTests.Run(new DequeTests<AList<int>>(delegate() { return new AList<int>(); }));
+			RunTests.Run(new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }));
+			RunTests.Run(new DictionaryTests<BDictionary<object, object>>(true, true));
+			RunTests.Run(new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }));
+			RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
 			RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
 			RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
-			RunTests.Run(new UStringTests());
-			RunTests.Run(new UGTests());
-			RunTests.Run(new SymbolTests());
-			RunTests.Run(new PointMathTests());
-			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
-			RunTests.Run(new ListExtTests());
+
+			// Loyc.Utilities
 			RunTests.Run(new LineMathTests());
+			RunTests.Run(new PointMathTests());
+			RunTests.Run(new IntSetTests());
+			RunTests.Run(new ExtraTagsInWListTests());
+			RunTests.Run(new UGTests());
+
+			// Loyc.Syntax
+			RunTests.Run(new LesLexerTests());
+			RunTests.Run(new LesParserTests());
+			RunTests.Run(new TokensToTreeTests());
+			RunTests.Run(new StreamCharSourceTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;
@@ -78,14 +95,23 @@ namespace Loyc.Tests
 				if (k.Key == ConsoleKey.Escape || k.Key == ConsoleKey.Enter)
 					break;
 				else if (k.KeyChar == '1') {
+					// Loyc.Essentials
 					RunTests.Run(new GTests());
-					RunTests.Run(new MapTests());
+					
+					// Loyc.Utilities
 					RunTests.Run(new GoInterfaceTests());
+					
+					// Loyc.Collections
+					RunTests.Run(new MapTests());
 					RunTests.Run(new SparseAListTests(true, seed, 8, 4));
 					RunTests.Run(new SparseAListTests());
 					RunTests.Run(new AListTests());
 					RunTests.Run(new BListTests());
 					RunTests.Run(new BDictionaryTests());
+					RunTests.Run(new MSetTests()); // derived from MutableSetTests<MSet<STI>, STI>
+					RunTests.Run(new SymbolSetTests()); // derived from MutableSetTests<MSet<Symbol>, Symbol>
+					RunTests.Run(new ImmSetTests()); // tests for Set<T>
+					RunTests.Run(new MapTests()); // derived from DictionaryTests<MMap<object, object>>
 					RunTests.Run(new RWListTests()); 
 					RunTests.Run(new WListTests());
 					RunTests.Run(new RVListTests());
