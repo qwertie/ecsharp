@@ -625,7 +625,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	public abstract class AListBase<T> : AListBase<int, T>, IListAndListSource<T>, ICloneable<AListBase<T>>
+	public abstract class AListBase<T> : AListBase<int, T>, IListAndListSource<T>, ICloneable<AListBase<T>>, IDeque<T>
 	{
 		#region Constructors
 
@@ -878,6 +878,47 @@ namespace Loyc.Collections
 				other.ClearInternal(true);
 		}
 
+		#endregion
+
+		#region IDeque<T>
+		// implemented explicitly because it's all just aliases for existing functionality
+
+		void IDeque<T>.PushFirst(T item)
+		{
+			Insert(0, item);
+		}
+
+		void IDeque<T>.PushLast(T item)
+		{
+			Insert(Count, item);
+		}
+
+		T IDeque<T>.TryPopFirst(out bool isEmpty)
+		{
+			var result = TryGet(0, out isEmpty);
+			if (!isEmpty)
+				RemoveAt(0);
+			return result;
+		}
+
+		T IDeque<T>.TryPeekFirst(out bool isEmpty)
+		{
+			return TryGet(0, out isEmpty);
+		}
+
+		T IDeque<T>.TryPopLast(out bool isEmpty)
+		{
+			var result = TryGet(Count - 1, out isEmpty);
+			if (!isEmpty)
+				RemoveAt(Count-1);
+			return result;
+		}
+
+		T IDeque<T>.TryPeekLast(out bool isEmpty)
+		{
+			return TryGet(Count-1, out isEmpty);
+		}
+		
 		#endregion
 	}
 }

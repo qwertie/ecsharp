@@ -44,6 +44,17 @@ namespace Loyc.Collections
 			return Cache((object)num);
 		}
 
+		/// <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+		public static object Cache(char o) { return Cache((object)o); }
+		/// <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+		public static object Cache(byte o) { return Cache((object)o); }
+		/// <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+		public static object Cache(sbyte o) { return Cache((object)o); }
+		/// <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+		public static object Cache(short o) { return Cache((object)o); }
+		/// <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+		public static object Cache(ushort o) { return Cache((object)o); }
+
 		/// <summary>Returns <see cref="G.BoxedTrue"/> or <see cref="G.BoxedFalse"/> depending on the parameter.</summary>
 		public static object Cache(bool value)
 		{

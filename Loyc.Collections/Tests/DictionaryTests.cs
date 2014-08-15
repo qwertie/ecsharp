@@ -11,8 +11,8 @@ namespace Loyc.Collections.Tests
 	[TestFixture]
 	public class DictionaryTests<DictT> : TestHelpers where DictT : ICollection<KeyValuePair<object,object>>, IDictionary<object,object>, IAddRange<KeyValuePair<object,object>>, ICloneable<DictT>, new()
 	{
-		bool _tryNullKey;
-		public DictionaryTests(bool tryNullKey = false) { _tryNullKey = tryNullKey; }
+		bool _tryNullKey, _isSortedDict;
+		public DictionaryTests(bool tryNullKey = false, bool isSortedDict = false) { _tryNullKey = tryNullKey; _isSortedDict = isSortedDict; }
 
 		protected KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
 		protected KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
@@ -38,6 +38,11 @@ namespace Loyc.Collections.Tests
 			Assert.IsFalse(dict.IsReadOnly);
 			Assert.AreEqual(0, Count(dict));
 			dict["A"] = "B";
+			ExpectSet(dict, P("A", "B"));
+
+			// oops, this code was not designed for sorted dictionaries
+			if (_isSortedDict) return;
+
 			dict.Add(1, 1);
 			ExpectSet(dict, P("A", "B"), P(1, 1));
 			dict[1] = 2;
@@ -130,7 +135,7 @@ namespace Loyc.Collections.Tests
 				foreach (var pair in removePlan) {
 					dict1.Remove(pair.Key);
 					if (removePair) {
-						Assert.That(!dict2.Remove(P(pair.Key, -1)));
+						Assert.That(!Remove(dict2, P(pair.Key, -1)));
 						Assert.That(Remove(dict2, pair));
 						Assert.That(!Remove(dict2, pair));
 					} else {
@@ -150,6 +155,9 @@ namespace Loyc.Collections.Tests
 		[Test]
 		public void AddRangeAndClone()
 		{
+			// oops, this code was not designed for sorted dictionaries
+			if (_isSortedDict) return;
+
 			var dict = New(P(1, 2));
 			dict.AddRange(Ps());
 			dict.AddRange(Ps(P(2, 1), P("black", "white"), P("foo", "bar")));

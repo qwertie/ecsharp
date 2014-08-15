@@ -350,6 +350,7 @@ namespace Loyc.Collections.Tests
 		}
 	}
 
+	[TestFixture]
 	public class ImmSetTests : TestHelpers
 	{
 		protected Symbol S(string text) { return GSymbol.Get(text); }

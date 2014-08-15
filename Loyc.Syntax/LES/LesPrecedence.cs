@@ -221,7 +221,6 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
 	{
-		public static readonly Precedence TightAttr   = Precedence.MaxValue;
 		public static readonly Precedence Substitute  = new Precedence(102,103,103,102);
 		public static readonly Precedence Primary     = new Precedence(100,101,100);
 		public static readonly Precedence NullDot     = new Precedence(98,  99, 98);

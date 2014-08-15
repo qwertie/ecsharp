@@ -16,7 +16,7 @@ The libraries are:
 
   [1]: http://www.codeproject.com/Articles/568095/The-List-Trifecta-Part
   [2]: http://www.codeproject.com/Articles/26171/VList-data-structures-in-C
-  [3]: https://github.com/qwertie/Loyc/wiki/Loyc-Expression-Syntax
+  [3]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
 
 You can find more detailed descriptions in the Wiki.
 

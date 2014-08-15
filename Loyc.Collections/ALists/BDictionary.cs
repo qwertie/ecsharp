@@ -14,6 +14,10 @@
 	/// indexed access to its list of key-value pairs.
 	/// </summary>
 	/// <remarks>
+	/// The keys must be comparable (ordered); if the type does not implement
+	/// <c>IComparable</c> or <c>IComparable(T)</c>, you must provide a 
+	/// Comparison(T) delegate to perform comparisons.
+	/// <para/>
 	/// This class offers the following additional features beyond what's offered 
 	/// by <see cref="SortedDictionary{T}"/>: indexed access, a find-nearest-key
 	/// operation called <see cref="FindLowerBound"/> (similar to lower_bound in 
