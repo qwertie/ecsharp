@@ -124,4 +124,4 @@ If you're [publishing with Jekyll](http://loyc.net/2014/blogging-on-github.html)
 
 This way, Jekyll only adds the TOC code to a page if the front-matter contains a `toc: true` option.
 {% endraw %}
-<a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag">Published on CodeProject</a>. Comments? Leave them there.
+Published on <a href="http://www.codeproject.com/script/Articles/BlogArticleList.aspx?amid=3453924" rel="tag">CodeProject</a>. Comments? Leave them there.
