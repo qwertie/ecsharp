@@ -257,6 +257,13 @@
             it defines.
             </remarks>
         </member>
+        <member name="M:Loyc.Collections.AListBase`2.GetImmutableCount">
+            <summary>Diagnostic method. Returns the number of elements of the list
+            that are located in immutable nodes, which will be copied if modified.
+            Used by the test suite.</summary>
+            <remarks>Variable time required. Scans all nodes if none are immutable; 
+            stops at the root if the root is immutable.</remarks>
+        </member>
         <member name="M:Loyc.Collections.AListBase`2.AddObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
             <summary>Attaches a tree observer to this object.</summary>
             <returns>True if the observer was added, false if it was already attached.</returns>
@@ -275,13 +282,6 @@
         <member name="M:Loyc.Collections.AListBase`2.RemoveObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
             <summary>Removes a previously attached tree observer from this list.</summary>
             <returns>True if the observer was removed, false if it was not attached.</returns>
-        </member>
-        <member name="P:Loyc.Collections.AListBase`2.ImmutableCount">
-            <summary>Diagnostic method. Returns the number of elements of the list
-            that are located in immutable nodes, which will be copied if modified.
-            Used by the test suite.</summary>
-            <remarks>Variable time required. Scans all nodes if none are immutable; 
-            stops at the root if the root is immutable.</remarks>
         </member>
         <member name="P:Loyc.Collections.AListBase`2.ObserverCount">
             <summary>Returns the number of tree observers attached to this list.</summary>
@@ -311,6 +311,10 @@
             which this enumerator was initialized, e.g. -1 when enumerating 
             the entire list from the beginning.
             </summary>
+        </member>
+        <member name="T:Loyc.Collections.AListBase`2.ObserverMgr">
+            <summary>A multiplexer that is only created for ALists that have two or more attached intances of 
+            <see cref="T:Loyc.Collections.Impl.IAListTreeObserver`2"/>.</summary>
         </member>
         <member name="T:Loyc.Collections.Impl.IAListTreeObserver`2">
             <summary>
@@ -557,12 +561,20 @@
             this method is called a lot in unit tests to help work out the bugs.
             </remarks>
         </member>
+        <member name="T:Loyc.Collections.Impl.AListInner`1">
+            <summary>Internal node of <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.SparseAList`1"/>.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.AListInnerBase`2">
+            <summary>Internal implementation class. Shared base class of internal nodes
+            for <see cref="T:Loyc.Collections.AList`1"/>, <see cref="T:Loyc.Collections.SparseAList`1"/>, <see cref="T:Loyc.Collections.BList`1"/>, 
+            <see cref="T:Loyc.Collections.BMultiMap`2"/> and <see cref="T:Loyc.Collections.BDictionary`2"/>.</summary>
+        </member>
         <member name="T:Loyc.Collections.Impl.AListNode`2">
             <summary>
-            Base class for tree nodes in a list class derived from 
-            <see cref="T:Loyc.Collections.AListBase`1"/>. These nodes basically form an in-memory B+tree, 
-            not necessarily sorted, but structured like a B+tree. That means there are 
-            two node types: leaf and inner nodes.
+            Internal implementation class. Base class for tree nodes in a list class 
+            derived from <see cref="T:Loyc.Collections.AListBase`1"/>. These nodes basically form an 
+            in-memory B+tree, not necessarily sorted, but structured like a B+tree. That 
+            means there are two node types: leaf and inner (internal) nodes.
             </summary>
             <remarks>
             Indexes that are passed to methods such as Index, this[] and RemoveAt are
@@ -591,6 +603,16 @@
             AutoClone() to check if the node is frozen and clone it if necessary.
             TakeFromRight and TakeFromLeft can be called when one or both nodes are 
             frozen, but will have no effect.
+            <para/>
+            Philosophical note: the kinds of features I'd like to see in Enhanced C#
+            would make it easier to create the AList series of data structures. Each
+            kind of AList is similar yet different and many of the operations of an
+            AList are similar yet different and C# doesn't, I think, provide enough
+            flexibility to handle this variety without smooshing a bunch of different 
+            things clumsily into a single class hierarchy and without having to write
+            methods that are in charge of several different operations (e.g. 
+            DoSingleOperation). Traits and D-style templates would help make the cod
+            of the AList family of types cleaner and faster.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.Impl.AListNode`2.Insert(System.UInt32,`1,Loyc.Collections.Impl.AListNode{`0,`1}@,Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
@@ -663,6 +685,14 @@
             <remarks>In a language with templates, I would change a couple
             of elements of <see cref="T:Loyc.Collections.Impl.AListSparseOperation`1"/> into 
             template parameters.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.SparseGetNearest(System.Nullable{System.Int32}@,System.Int32)">
+            <summary>Same as this[index] except that if there is empty space at 
+            the specified location, the index can be adjusted up or down 
+            (depending on whether direction is 1 or -1) to reach an item and the 
+            item at the new index is returned. index is set to null if this 
+            doesn't work because there are no items above or below, or if 
+            direction is 0. On entry, index must NOT be null.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.AListNode`2.GetLastItem">
             <summary>Gets the last item in the last leaf node (needed by B+ trees, 
@@ -757,8 +787,12 @@
         <member name="M:Loyc.Collections.Impl.AListNode`2.CallListChanging(Loyc.Collections.AListBase{`0,`1},Loyc.Collections.ListChangeInfo{`1})">
             <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event properly.</summary>
         </member>
-        <member name="M:Loyc.Collections.Impl.AListNode`2.ImmutableCount">
-            <summary>Diagnostic method. See <see cref="P:Loyc.Collections.AListBase`2.ImmutableCount"/>.</summary>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.GetImmutableCount(System.Boolean)">
+            <summary>Diagnostic method. See <see cref="!:AListBase&lt;K,T&gt;.ImmutableCount"/>.</summary>
+            <param name="excludeSparse">Should be false for normal ALists. If true, the count is of real items only.</param>
+        </member>
+        <member name="M:Loyc.Collections.Impl.AListNode`2.GetRealItemCount">
+            <summary>For sparse lists: counts the number of non-sparse items.</summary>
         </member>
         <member name="P:Loyc.Collections.Impl.AListNode`2.TotalCount">
             <summary>Gets the total number of (T) items in this node and all children</summary>
@@ -793,7 +827,8 @@
         </member>
         <member name="M:Loyc.Collections.Impl.AListInnerBase`2.BinarySearchI(System.UInt32)">
             <summary>Performs a binary search for an index.</summary>
-            <remarks>Optimized. Fastest for power-of-two node sizes.</remarks>
+            <remarks>Optimized. Fastest for power-of-two node sizes.
+            If index is out of range, returns the highest valid index.</remarks>
         </member>
         <member name="M:Loyc.Collections.Impl.AListInnerBase`2.HandleChildSplit(System.Int32,Loyc.Collections.Impl.AListNode{`0,`1},Loyc.Collections.Impl.AListNode{`0,`1}@,Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
             <summary>Inserts a slot after _children[i], increasing _childCount and 
@@ -843,6 +878,9 @@
             <param name="move">Move semantics (avoids freezing the nodes of the other tree)</param>
             <param name="append">Operation to perform (true => append)</param>
             <returns>Normally null, or left half in case node is split</returns>
+        </member>
+        <member name="T:Loyc.Collections.Impl.AListLeaf`2">
+            <summary>Internal implementation class. Shared code of non-sparse AList leaf nodes.</summary>
         </member>
         <member name="T:Loyc.Collections.Impl.AListLeaf`1">
             <summary>
@@ -964,6 +1002,18 @@
         <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.WriteEmpty">
             <summary>Whether to write empty space (true) or values (false)</summary>
         </member>
+        <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.AbsoluteIndex">
+            <summary>Index into sparse list where the operation starts.</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:Loyc.Collections.Impl.AListSparseOperation`1.Item" -->
+        <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.SourceIndex">
+            <summary>When nonzero, the operation is partialy complete and items in 
+            range Source[0...SourceIndex-1] have already been inserted.</summary>
+        </member>
+        <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.SourceCount">
+            <summary>Equals SparseSource.Count, but SparseSource may be null when inserting
+            a single item (then SourceCount==1) or when inserting blank space.</summary>
+        </member>
         <member name="T:Loyc.Collections.AListOperation">
             <summary>Indicates the way an add operation (such as <see cref="M:Loyc.Collections.BList`1.Do(Loyc.Collections.AListOperation,`0@)"/>
             should behave when an item being added to a set or list is a duplicate of 
@@ -1014,6 +1064,10 @@
             indexed access to its list of key-value pairs.
             </summary>
             <remarks>
+            The keys must be comparable (ordered); if the type does not implement
+            <c>IComparable</c> or <c>IComparable(T)</c>, you must provide a 
+            Comparison(T) delegate to perform comparisons.
+            <para/>
             This class offers the following additional features beyond what's offered 
             by <see cref="!:SortedDictionary&lt;T&gt;"/>: indexed access, a find-nearest-key
             operation called <see cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/> (similar to lower_bound in 
@@ -1384,6 +1438,9 @@
             not guaranteed to work in case of duplicates.
             </remarks>
         </member>
+        <member name="T:Loyc.Collections.Impl.BListInner`2">
+            <summary>Internal implementation class. Shared code of all BList internal nodes.</summary>
+        </member>
         <member name="F:Loyc.Collections.Impl.BListInner`2._highestKey">
             <summary>Stores the highest key that applies to the node with the same index.</summary>
         </member>
@@ -1397,10 +1454,7 @@
             guarantees that _aggregateKey[i] won't have to be updated).</remarks>
         </member>
         <member name="T:Loyc.Collections.Impl.BListLeaf`2">
-            <summary>
-            Leaf node of <see cref="T:Loyc.Collections.BList`1"/>.
-            </summary>
-            <typeparam name="T"></typeparam>
+            <summary>Internal implementation class. Leaf node of <see cref="T:Loyc.Collections.BList`1"/> and <see cref="T:Loyc.Collections.BDictionary`2"/>.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.BListLeaf`2.SplitAndAdd(Loyc.Collections.Impl.AListSingleOperation{`0,`1}@,Loyc.Collections.Impl.AListNode{`0,`1}@,Loyc.Collections.Impl.AListNode{`0,`1}@)">
             <summary>Called by DoSingleOperation to split a full node, then retry the add operation.</summary>
@@ -1488,9 +1542,9 @@
             <inheritdoc cref="M:Loyc.Collections.BMultiMap`2.FindLowerBound(`0)"/>
         </member>
         <member name="M:Loyc.Collections.BMultiMap`2.FindUpperBound(`0)">
-            <summary>Finds the index of the first item in the list that is greater 
-            than the specified item.</summary>
-            <param name="item">The item to find. If passed by reference, when this 
+            <summary>Finds the index of the first item in the list whose key is 
+            greater than the specified key.</summary>
+            <param name="key">The key to find. If passed by reference, when this 
             method returns, item is set to the next greater item than the item you 
             searched for, or left unchanged if there is no greater item.</param>
             <param name="index">The index of the next greater item that was found,
@@ -1518,6 +1572,21 @@
             hashcode (which is usually a bad idea, but occasionally useful).
             </remarks>
         </member>
+        <member name="M:Loyc.Collections.BMultiMap`2.System#Collections#Generic#IEnumerable{System#Collections#Generic#KeyValuePair{K@Loyc#Collections#BMultiMap{K@V}#ValueList}}#GetEnumerator">
+            <summary>Returns an enumerator of <c>KeyValuePair&lt;K, Values></c> which lets
+            you see the list values associated with each key.</summary>
+            <remarks>
+            You can safely modify the subcollections as you enumerate, 
+            and you can even modify other parts of the BMultiMap.
+            <para/>
+            Please note that <c>BMultiMap</c> contains two GetEnumerator() methods, due to 
+            its dual identity as <c>BList{KeyValuePair{K, V}}</c> and as a 
+            <c>IReadOnlyDictionary{K, Values}</c>. <c>IEnumerator.GetEnumerator()</c> 
+            and the <c>GetEnumerator()</c> method in the base class both
+            enumerate <c>KeyValuePair{K, V}</c>, whereas this method 
+            enumerates <c>KeyValuePair{K, Values}</c>.
+            </remarks>
+        </member>
         <member name="P:Loyc.Collections.BMultiMap`2.Item(`0)">
             <summary>Gets a collection associated with the specified key.</summary>
             <param name="key"></param>
@@ -1526,20 +1595,22 @@
             for the key you requested. It returns an object that represents the
             set of values associated with a key, but those values are not actually
             retrieved from the collection until you enumerate the collection.</remarks>
-            <seealso cref="T:Loyc.Collections.BMultiMap`2.Values"/>
+            <seealso cref="T:Loyc.Collections.BMultiMap`2.ValueList"/>
         </member>
-        <member name="T:Loyc.Collections.BMultiMap`2.Values">
+        <member name="P:Loyc.Collections.BMultiMap`2.Values">
+            <summary>Gets a list of collections of <see cref="T:Loyc.Collections.BMultiMap`2.ValueList"/> in this object.</summary>
+        </member>
+        <member name="T:Loyc.Collections.BMultiMap`2.ValueList">
             <summary>Represents the set of values associated with a particular key 
             in a <see cref="T:Loyc.Collections.BMultiMap`2"/> collection.</summary>
+            <remarks>Renamed from <c>Values</c> because C# wouldn't let me 
+            implement a <c>Values</c> property (for the <c>IReadOnlyDictionary</c>
+            interface) at the same time.</remarks>
         </member>
-        <member name="M:Loyc.Collections.BMultiMap`2.Values.Add(`1)">
+        <member name="M:Loyc.Collections.BMultiMap`2.ValueList.Add(`1)">
             <summary>Adds a new item associated with the key that this object 
             represents. Allows duplicate values.</summary>
             <param name="item">Value to add.</param>
-        </member>
-        <member name="T:Loyc.Collections.Impl.EmptySpace`1">
-            <summary>Represents a list of default(T) values.</summary>
-            <typeparam name="T"></typeparam>
         </member>
         <member name="T:Loyc.Collections.Impl.AListTreeObserverExt">
             <summary>Helper methods for <see cref="T:Loyc.Collections.Impl.IAListTreeObserver`2"/>.</summary>
@@ -1607,6 +1678,8 @@
             <c>SparseAList</c> is a precise sparse list, meaning that you can rely on 
             it to keep track of which indexes are "set" and which are "empty" (the 
             <see cref="M:Loyc.Collections.SparseAList`1.IsSet(System.Int32)"/> method tells you which).
+            <para/>
+            TODO: Add support for A-List tree observers (IAListTreeObserver(K,T))
             </remarks>
         </member>
         <member name="M:Loyc.Collections.SparseAList`1.Swap(Loyc.Collections.SparseAList{`0})">
@@ -1628,6 +1701,58 @@
             <summary>Prepends an AList to this list in sublinear time.</summary>
             <param name="other">A list of items to be added to the front of this list (at index 0).</param>
             <inheritdoc cref="M:Loyc.Collections.SparseAList`1.Append(Loyc.Collections.SparseAList{`0},System.Boolean)"/>
+        </member>
+        <member name="T:Loyc.Collections.Impl.SparseAListLeaf`1">
+            <summary>Internal implementation class. Leaf node of <see cref="T:Loyc.Collections.SparseAList`1"/>.</summary>
+            <remarks>This node consists of a certain number of virtual slots (_totalCount)
+            and a certain number of real slots (_list.Count). Node splitting/joining
+            behavior is based entirely on the number of real slots. There can be any 
+            number of empty spaces anywhere in the list. If there are empty spaces at 
+            the beginning, <c>_list[0].Offset &gt; 0</c>; if there are empty spaces at the 
+            end, <c>_totalCount &gt; _list.Last.Offset + 1</c>. <c>_list.Count == 0</c> 
+            only if the entire list consists of empty space and there is only a single 
+            node.</remarks>
+        </member>
+        <member name="T:Loyc.Collections.CG">
+            <summary>Contains global functions of Loyc.Collections that don't belong in any specific class.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Object)">
+            <summary>Passes the object through a thread-static instance of <see cref="T:Loyc.Collections.SimpleCache`1"/>.</summary>
+            <remarks>If o is a string, an alternative to Caching is interning 
+            (String.Intern("...")). The latter tends to be more dangerous 
+            because an interned string can never be garbage-collected.
+            <para/>
+            Note that <see cref="!:SimpleCache"/> contains strong references to 
+            cached items, and the maximum cache size is 1024 items. The references 
+            are released when the current thread terminates or when you call 
+            <c>ObjectCache.Clear()</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Int32)">
+            <summary>If the specified number is in the range -3 to 9 inclusive, an 
+            equivalent preallocated boxed integer is returned, otherwise the other
+            overload, <c>Cache(object)</c>, is invoked to handle the request.</summary>
+            <param name="num">An integer you want to box.</param>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Char)">
+            <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Byte)">
+            <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.SByte)">
+            <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Int16)">
+            <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.UInt16)">
+            <summary>Special overload to avoid treating argument as int32 in C#.</summary>
+        </member>
+        <member name="M:Loyc.Collections.CG.Cache(System.Boolean)">
+            <summary>Returns <see cref="F:Loyc.G.BoxedTrue"/> or <see cref="F:Loyc.G.BoxedFalse"/> depending on the parameter.</summary>
+        </member>
+        <member name="P:Loyc.Collections.CG.ObjectCache">
+            <summary>Gets the cache used by <see cref="M:Loyc.Collections.CG.Cache(System.Object)"/>.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.CPNode`1.MoveFirst(Loyc.Collections.Impl.CPEnumerator{`0})">
             <summary>Sets up the specified enumerator to point at the first item in
@@ -1822,6 +1947,10 @@
             <summary>Finds the specified key and returns its associated value. If 
             the key did not exist, TryGetValue returns defaultValue instead.</summary>
         </member>
+        <member name="T:Loyc.Collections.Impl.CPEnumerator`1">
+            <summary>Traverses a <see cref="T:Loyc.Collections.CPTrie`1"/>. Returned by 
+            <see cref="M:Loyc.Collections.CPTrie`1.ValueEnumerator"/>.</summary>
+        </member>
         <member name="P:Loyc.Collections.Impl.CPEnumerator`1.IsValid">
             <summary>Returns true if this enumerator points to an item and Current
             is valid.</summary>
@@ -2008,6 +2137,7 @@
             key to be decoded from the bytes it is made up of.
             </remarks>
         </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.CPStringTrie`1.KeyCollection" -->
         <member name="T:Loyc.Collections.CPValueCollection`1">
             <summary>Provides read-only access to the values of a CPTrie.</summary>
             <typeparam name="T">Type of values in the collection</typeparam>
@@ -2024,6 +2154,10 @@
         </member>
         <member name="M:Loyc.Collections.CPTrieBenchmark.GetLongClusters(System.Int32,System.Int32,System.Int64,System.Int32,System.Int64)">
             <summary>Same as GetIntClusters, but gets longs instead.</summary>
+        </member>
+        <member name="T:Loyc.Collections.Impl.KeyWalker">
+            <summary>Internal implementation class. Represents a pointer to a location 
+            within a byte array.</summary>
         </member>
         <member name="T:Loyc.Collections.CPTrieTests">
             <summary>
@@ -2457,6 +2591,9 @@
             hashcodes).
             </remarks>
         </member>
+        <member name="T:Loyc.Collections.Impl.InternalSetStats">
+            <summary>Statistics returned from <see cref="!:InternalSet&lt;T&gt;.CountMemory()"/>.</summary>
+        </member>
         <member name="F:Loyc.Collections.Impl.InternalSetStats.NodeCount">
             <summary>Total number of nodes.</summary>
         </member>
@@ -2719,7 +2856,35 @@
         <member name="M:Loyc.Collections.MMap`2.Xor(Loyc.Collections.MapOrMMap{`0,`1})">
             <inheritdoc cref="M:Loyc.Collections.Map`2.Xor(Loyc.Collections.MapOrMMap{`0,`1})"/>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.MSet`1" -->
+        <member name="T:Loyc.Collections.MSet`1">
+            <summary>A mutable set.</summary>
+            <remarks>
+            This class is based on <see cref="!:InternalSet&lt;T&gt;"/>; see its documentation 
+            for technical details about the implementation.
+            <para/>
+            Assuming T is a reference type, this class uses less memory than <see cref="T:System.Collections.Generic.HashSet`1"/> and, under certain conditions, is faster. Specifically, 
+            <ul>
+            <li>This class is optimized for objects whose Equals() and GetHashCode() 
+            methods are fast, or for which equality is synonymous with "reference 
+            equality" so it is not necessary to call Equals() at all.</li>
+            <li>This class supports fast cloning and overloads the following operators
+            to perform set operations: &amp; (intersection), | (union), - (subtraction, i.e.
+            <see cref="M:Loyc.Collections.MSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})"/>) and ^ (xor, i.e. <see cref="M:Loyc.Collections.MSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})"/>.
+            These operators clone the left-hand argument, so they benefit from fast-
+            cloning functionality.</li>
+            </ul>
+            This class may be slower than <see cref="T:System.Collections.Generic.HashSet`1"/> if the comparison
+            method for T is slow; up to four comparisons are required per add/remove
+            operation.
+            <para/>
+            You can convert <see cref="T:Loyc.Collections.MSet`1"/> to <see cref="T:Loyc.Collections.Set`1"/> 
+            and back in O(1) time using a C# cast operator.
+            <para/>
+            Performance warning: GetHashCode() XORs the hashcodes of all items in the
+            set, while Equals() is a synonym for SetEquals(). Be aware that these 
+            methods are very slow for large sets.
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.MSet`1.AddUnique(`0)">
             <summary>Adds the specified item to the set, or throws an exception if
             a matching item is already present.</summary>
@@ -2916,37 +3081,40 @@
             <remarks>This is a wrapper of <see cref="!:InternalSet&lt;T&gt;.Enumerator"/> 
             that blocks editing functionality.</remarks>
         </member>
-        <member name="T:Loyc.Collections.AListTestBase`2">
+        <member name="T:Loyc.Collections.Tests.AListTestBase`2">
             <summary>
             Contains tests common to AList, BList and BDictionary.
             </summary>
         </member>
-        <member name="M:Loyc.Collections.AListTestBase`2.AddToBoth(`0,System.Collections.Generic.List{`1},System.Int32,System.Int32)">
+        <member name="T:Loyc.Collections.Impl.TestHelpers">
+            <summary>Helpers methods for unit tests for Loyc collection classes.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Tests.AListTestBase`2.AddToBoth(`0,System.Collections.Generic.List{`1},System.Int32,System.Int32)">
             <summary>Adds an item to an AList and then to a List at the same place.</summary>
             <param name="preferredIndex">Index to use if alist is an AList. 
             If it is a B+ tree then the item is always added in sorted order.</param>
         </member>
-        <member name="M:Loyc.Collections.AListTestBase`2.Add(`0,System.Int32,System.Int32)">
+        <member name="M:Loyc.Collections.Tests.AListTestBase`2.Add(`0,System.Int32,System.Int32)">
             <summary>Adds an item to an AList.</summary>
         </member>
-        <member name="M:Loyc.Collections.AListTestBase`2.RemoveAtInBoth(`0,System.Collections.Generic.List{`1},System.Int32)">
+        <member name="M:Loyc.Collections.Tests.AListTestBase`2.RemoveAtInBoth(`0,System.Collections.Generic.List{`1},System.Int32)">
             <summary>Remove an item from an AList and then from a List at the same location.</summary>
         </member>
-        <member name="T:Loyc.Collections.Impl.ListCollectionTests`1">
+        <member name="T:Loyc.Collections.Tests.ListCollectionTests`1">
             <summary>A test class for collections that implement IListSource{int} and 
             are cloneable, such as AList, BList and DList.</summary>
         </member>
-        <member name="T:Loyc.Collections.AddRangeTest`1">
+        <member name="T:Loyc.Collections.Tests.AddRangeTest`1">
             <summary>Tests the IAddRange interface of a list class.</summary>
         </member>
-        <member name="T:Loyc.Collections.ListRangeTests`1">
+        <member name="T:Loyc.Collections.Tests.ListRangeTests`1">
             <summary>Tests the IAddRange and IListRangeMethod interfaces of a list class.</summary>
         </member>
-        <member name="T:Loyc.Collections.Impl.ListTests`1">
+        <member name="T:Loyc.Collections.Tests.ListTests`1">
             <summary>A test class for unsorted list classes that implement IList{int} 
             and are cloneable, such as AList and DList.</summary>
         </member>
-        <member name="T:Loyc.Collections.Impl.SetTestItem">
+        <member name="T:Loyc.Collections.Tests.SetTestItem">
             <summary>An class used for testing purposes with three parts: a hashcode,
             a mutable value (ignored for equality testing) and an extended key int
             which affects equality but not the hashcode.</summary>

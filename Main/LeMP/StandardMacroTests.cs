@@ -15,7 +15,7 @@ namespace LeMP
 	[TestFixture]
 	public class StandardMacroTests
 	{
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
 
 		[Test]
 		public void TestNullDot()
@@ -41,7 +41,7 @@ namespace LeMP
 			         "Pair.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
 			TestBoth("x::#!(String, DateTime) = ('''''', DateTime.Now); y::#!(Y) = (new Y(),);",
 			         "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
-			         "Pair<String, DateTime> x = Pair.Create(\"\", DateTime.Now); Tuple<Y> = (new Y());");
+			         "Pair<String, DateTime> x = Pair.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
 			TestEcs("set_tuple_type(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
 			TestEcs("set_tuple_type(Tuple); set_tuple_type(2, Pair, Pair.Create);"+
@@ -67,12 +67,45 @@ namespace LeMP
 		[Test]
 		public void SetMemberTest()
 		{
-			TestEcs("void Set(set int X, set int Y);",
-				"void Set(int X, int Y) { this.X = X; this.Y = Y; }");
+			var old = _sink;
+			_sink = MessageSink.Trace;
+			try {
+				TestEcs("void Set(set int X);", "void Set(set int X);"); // Body required
+			} finally { _sink = old; }
+			TestEcs("void Set(set int X, set int Y) {}",
+				"void Set(int x, int y) { X = x; Y = y; }");
 			TestEcs("void Set(public int X, bool Y, private string Z) { if (Y) Rejoice(); }",
 				@"public int X; private string Z; 
-				void Set(int X, bool Y, string Z) {
-					this.X = X; this.Z = Z; if (Y) Rejoice();
+				void Set(int x, bool Y, string z) {
+					X = x; Z = z; if (Y) Rejoice();
+				}");
+			TestEcs(
+				@"void Set(
+					[Spanish] set int _hola, 
+					[English] static int _hello, 
+					[Alzheimer's] partial long goodbye = 8, 
+					[Hawaii] protected internal string Aloha = 5,
+					[French] internal string _Bonjour = 7,
+					[Other] readonly int _ciao = 4) { Foo(_ciao); }",
+				@"
+				[English] static int _hello;
+				[Alzheimer's] partial long goodbye;
+				[Hawaii] protected internal string Aloha;
+				[French] internal string _Bonjour;
+				void Set(
+					[Spanish] int hola, 
+					int hello, 
+					long goodbye = 8, 
+					string aloha = 5,
+					string Bonjour = 7,
+					[Other] readonly int _ciao = 4)
+				{
+					_hola = hola;
+					_hello = hello;
+					this.goodbye = goodbye;
+					Aloha = aloha;
+					_Bonjour = Bonjour;
+					Foo(_ciao);
 				}");
 		}
 		[Test]
@@ -110,8 +143,12 @@ namespace LeMP
 			        "static int InRange(int x, int lo, int hi) { return MathEx.InRange(x, lo, hi); }");
 			TestEcs("void Append(string fmt, params string[] args) ==> sb.AppendFormat;",
 			        "void Append(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
+			TestEcs("void AppendFormat(string fmt, params string[] args) ==> sb.#;",
+					"void AppendFormat(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
 			TestEcs("int Count ==> _list.Count;",
-					"int Count { get { return _list.Count; } set { _list.Count = value; } }");
+			        "int Count { get { return _list.Count; } set { _list.Count = value; } }");
+			TestEcs("int Count ==> _list.#;",
+			        "int Count { get { return _list.Count; } set { _list.Count = value; } }");
 		}
 		[Test]
 		public void BackingFieldTest()
@@ -121,9 +158,11 @@ namespace LeMP
 			TestEcs("[protected field _name] public string Name { get; protected set; }",
 			        "protected string _name; public string Name { get { return _name; } protected set { _name = value; } }");
 			TestEcs("[field] public string Name { get; }",
-					"string _name; public string Name { get { return _name; } }");
+			        "string _name; public string Name { get { return _name; } }");
 			TestEcs("[field _lives = 3] public int LivesLeft { internal get; set; }",
-			        "int _lives = 3; public int LivesLeft { internal get { return _name; } set { _name = value; } }");
+			        "int _lives = 3; public int LivesLeft { internal get { return _lives; } set { _lives = value; } }");
+			TestEcs("[field] public string Name { get; set { _name = value; } }",
+			        "string _name; public string Name { get { return _name; } set { _name = value; } }");
 		}
 		[Test]
 		public void RequireTest()
@@ -235,8 +274,30 @@ namespace LeMP
 		}
 
 		[Test]
-		public void Test()
+		public void TestNameOf()
 		{
+			TestBoth(@"s = nameof(hello);", @"s = nameof(hello);", @"s = ""hello"";");
+			TestBoth(@"s = nameof(f(x, 'y'));", @"s = nameof(f(x, 'y'));", @"s = ""f(x, 'y')"";");
+		}
+
+		[Test]
+		public void TestConcat()
+		{
+			TestBoth(@"@1stprog = hello `##` world;", @"@1stprog = hello `##` world;", @"@1stprog = helloworld;");
+			TestLes(@"##(call, ""_func_"", with(argument));", @"call_func_with(argument);");
+		}
+
+		[Test]
+		public void TestTreeEqualsAndStaticIf()
+		{
+			TestEcs(@"bool b = a `tree==` 'A';",                        @"bool b = false;");
+			TestEcs(@"bool b = f(x) `tree==` f(x /*comment*/);",        @"bool b = true;");
+			TestEcs(@"a(); static if (true)  { b(); c(); } d();",       @"a(); b(); c(); d();");
+			TestEcs(@"a(); static if (false) { b(); c(); } d();",       @"a(); d();");
+			TestEcs(@"a(); static if (a `tree==` 'A') {{ b(); }} c();", @"a(); c();");
+			TestEcs(@"a(); static if (foo() `tree==` foo(2)) b(); else {{ c(); }} d();", @"a(); { c(); } d();");
+			TestEcs(@"a(); static if (foo.bar<baz> `tree==` foo.bar<baz>) b(); else c(); d();", @"a(); b(); d();");
+			TestEcs(@"c = static_if(false, see, C);", @"c = C;");
 		}
 
 		[Test]

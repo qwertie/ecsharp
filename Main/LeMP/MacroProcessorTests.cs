@@ -268,7 +268,7 @@ namespace LeMP
 			     "protected internal var X = 0, Y = 0;");
 			// In EC#, this(...) prints as #this(...) if not inside a method
 			Test("def Foo() { this(@false); base(@true); }",
-			     "void Foo() { this(false); base(true); }");
+				 "void Foo() { this(false); base(true); }");
 			Test("internal cons Foo() { base(17); return; }",
 			     "internal Foo() : base(17) { return; }");
 			Test("public cons Foo() { this(@null); return; }",

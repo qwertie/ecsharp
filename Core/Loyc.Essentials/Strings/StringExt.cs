@@ -62,8 +62,22 @@ namespace Loyc
 			return defaultValue;
 		}
 
-		public static string SafeSubstring(this string s, int startIndex, int length)
+		/// <summary>A variation on String.Substring() that never throws.</summary>
+		/// <remarks>This is best explained by examples:
+		/// <example>
+		/// "Hi everybody!".SafeSubstring(8, 500) == "body!"
+		/// "Hi everybody!".SafeSubstring(-3, 5) == "Hi"
+		/// "Hi everybody!".SafeSubstring(-5, 5) == ""
+		/// "Hi everybody!".SafeSubstring(8, -5) == ""
+		/// "Hi everybody!".SafeSubstring(500, 8) == ""
+		/// "Hi everybody!".SafeSubstring(int.MinValue + 500, int.MaxValue) == "Hi everybody!"
+		/// ((string)null).SafeSubstring(0, 1) == null
+		/// </example>
+		/// </remarks>
+		public static string SafeSubstring(this string s, int startIndex, int length = int.MaxValue)
 		{
+			if (s == null)
+				return null;
 			if ((uint)startIndex > (uint)s.Length)
 			{
 				if (startIndex < 0) {

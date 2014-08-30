@@ -210,7 +210,7 @@ namespace Loyc.Syntax.Les
 				{ S.LT,          P.Reserved   }, // <
 				{ S.GT,          P.Reserved   }, // >
 				{ S.QuestionMark,P.Reserved   }, // ?
-				{ S.Set,         P.Reserved   }, // =
+				{ S.Assign,      P.Reserved   }, // =
 			}.AsImmutable();
 
 		protected static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
@@ -254,7 +254,7 @@ namespace Loyc.Syntax.Les
 				{ S.Xor,        P.Or        }, // ^^
 				{ S.QuestionMark,P.IfElse   }, // ?
 				{ S.Colon,      P.Reserved  }, // :
-				{ S.Set,        P.Assign    }, // =
+				{ S.Assign,     P.Assign    }, // =
 				{ S.Lambda,     P.Lambda    }, // =>
 				{ S.NotBits,    P.Reserved  }, // ~
 			}.AsImmutable();
@@ -280,7 +280,7 @@ namespace Loyc.Syntax.Les
 			// All one-character operators should be found in the table
 
 			if (table == _infixPrecedence && last == '=')
-				return table[symbol] = table[S.Set];
+				return table[symbol] = table[S.Assign];
 			
 			var twoCharOp = GSymbol.Get(first.ToString() + last);
 			if (table.TryGetValue(twoCharOp, out prec))

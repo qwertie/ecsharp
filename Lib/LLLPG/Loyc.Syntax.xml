@@ -8,7 +8,6 @@
             <summary>
             An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
             </summary>
-            <typeparam name="Token">T</typeparam>
         </member>
         <member name="M:Loyc.Syntax.BaseParser`1.EofInt">
             <summary>Returns the value used for EOF (normally 0)</summary>
@@ -34,10 +33,22 @@
         <member name="P:Loyc.Syntax.BaseParser`1.LA0Int">
             <summary>Returns the token type of _lt0 (normally _lt0.TypeInt)</summary>
         </member>
+        <member name="T:Loyc.Syntax.BaseParser`1.SavePosition">
+            <summary>A helper class used by LLLPG for backtracking.</summary>
+        </member>
         <member name="T:Loyc.Syntax.CodeSymbols">
             <summary>
             A list of common symbols that have special meaning somewhere in Loyc or EC#:
             operators, built-in data types, keywords, trivia, etc.
+            </summary>
+        </member>
+        <member name="F:Loyc.Syntax.CodeSymbols.List">
+            <summary># is used for lists of things in definition constructs, e.g. 
+                <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
+            For a time, #tuple was used for this purpose; the problem is that a
+            find-and-replace operation intended to find run-time tuples could 
+            accidentally match one of these lists. So I decided to dedicate # 
+            for use inside special constructs; its meaning depends on context.
             </summary>
         </member>
         <member name="F:Loyc.Syntax.CodeSymbols.BadCode">
@@ -88,53 +99,31 @@
             current source file. <c>[#filePrivate] #alias(X = Y, #())</c> is the long
             form of <c>using X = Y</c> in EC#.</summary>
         </member>
-        <member name="T:Loyc.LLParserGenerator.IntSet">
-            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
-            or a set of token IDs.</summary>
-            <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
+        <member name="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore">
+            if `#trivia_rawText` has the string "eat my shorts!" attached as its Value,
+            then `[#trivia_rawText] x;` is printed "eat my shorts!x;". It can also be
+            structured as a call: `[#trivia_rawText("eat my shorts!")] x;`
         </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
-            <summary>A list of non-overlapping character ranges, sorted by code 
-            point. EOF can be included in this list as character -1 (hence CharRange 
-            holds ints instead of chars).</summary>
+        <member name="F:Loyc.Syntax.CodeSymbols.TriviaWordAttribute">
+            "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
         </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet.IsCharSet">
-            <summary>Controls the default stringization mode. When IsCharSet, the
-            set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
-            </summary>
+        <member name="F:Loyc.Syntax.CodeSymbols.RawText">
+            #rawText must have a Value, or be a call with a single literal argument.
+            The Value is converted to a string and printed out by EcsNodePrinter 
+            without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
         </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.EquivalentInverted">
-            <summary>Computes the equivalent inverted set, e.g. if the set is 
-            <c>'b'..'y'</c>, the equivalent inverted set is 
-            <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
+        <member name="M:Loyc.Syntax.CodeSymbols.IsArrayKeyword(Loyc.Symbol)">
+            <summary>Returns true if the symbol is a pair of square brackets with 
+            zero or more commas inside, e.g. "[,]", which in EC# represents an array 
+            type of a specific number of dimensions.</summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.ToString">
-            <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
-            means "EOF or a to z", [^\n\r] means "not \n or \r". Use 
-            ToString(false) if this is an integer set.</summary>
+        <member name="M:Loyc.Syntax.CodeSymbols.CountArrayDimensions(Loyc.Symbol)">
+            <summary>Returns the rank of an array symbol when <see cref="M:Loyc.Syntax.CodeSymbols.IsArrayKeyword(Loyc.Symbol)"/> 
+            is true, or 0 if the symbol does not represent an array type.</summary>
         </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsInverted">
-            <summary>When Inverted is true, the set behaves as if it contains the
-            opposite set of items. That is, membership tests that succeeded when
-            Inverted was false will fail, and vice versa.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsEmptySet">
-            <summary>Returns true iff the set is empty. When the set is inverted 
-            and contains the set of all integers, that also counts as empty.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.ContainsEverything">
-            <summary>Returns true iff the set covers all integers. This includes 
-            the common scenario that the set is empty but inverted.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.Size">
-            <summary>Gets the number of integers whose membership test would 
-            succeed (the maximum possible value is 0x100000000L).</summary>
-        </member>
-        <member name="T:Loyc.LLParserGenerator.IntRange">
-            <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.IntRange.CompareTo(Loyc.LLParserGenerator.IntRange)">
-            <summary>Compares only the <see cref="F:Loyc.LLParserGenerator.IntRange.Lo"/> values of two ranges.</summary>
+        <member name="M:Loyc.Syntax.CodeSymbols.GetArrayKeyword(System.Int32)">
+            <summary>Gets the Symbol for an array with the specified number of 
+            dimensions, e.g. <c>GetArrayKeyword(3)</c> returns <c>[,,]</c>.</summary>
         </member>
         <member name="T:Loyc.Syntax.IParsingService">
             <summary>An interface that encapsulates the lexer, parser, and printer
@@ -202,6 +191,14 @@
         </member>
         <member name="M:Loyc.Syntax.IParsingService.Print(Loyc.Syntax.LNode,Loyc.IMessageSink,System.Object,System.String,System.String)">
             <summary>Converts the specified syntax tree to a string.</summary>
+            <param name="node">A syntax tree to print.</param>
+            <param name="msgs">If errors or warnings occur during printing, they are sent here.</param>
+            <param name="mode">Language-defined configuration. It is suggested 
+            that the printing service should accept ParsingService.Exprs, 
+            ParsingService.Stmts and ParsingService.File as possible printing 
+            modes.</param>
+            <param name="indentString">Indent character for multi-line nodes</param>
+            <param name="lineSeparator">Newline string for multi-line nodes</param>
         </member>
         <member name="P:Loyc.Syntax.IParsingService.FileExtensions">
             <summary>Standard file extensions for this language, without leading 
@@ -239,10 +236,18 @@
             <summary>Sets the current language service, returning a value suitable 
             for use in a C# using statement, which will restore the old service.</summary>
             <param name="newValue">new value of Current</param>
+            <example><code>
+            LNode code;
+            using (var old = ParsingService.PushCurrent(LesLanguageService.Value))
+                code = ParsingService.Current.ParseSingle("This is les code;");
+            </code></example>
         </member>
         <member name="P:Loyc.Syntax.ParsingService.Current">
             <summary>Gets or sets the active language service on this thread. If 
             no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ParsingService.PushedCurrent">
+            <summary>Returned by <see cref="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)"/>.</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.LesLanguageService">
             <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
@@ -352,6 +357,9 @@
         <member name="P:Loyc.Syntax.Lexing.BaseLexer.LineNumber">
             <summary>Current line number. Starts at 1 for the first line, unless derived class changes it.</summary>
         </member>
+        <member name="T:Loyc.Syntax.Lexing.BaseLexer.SavePosition">
+            <summary>A helper class used by LLLPG for backtracking.</summary>
+        </member>
         <member name="T:Loyc.Syntax.Lexing.ILexer">
             <summary>
             A standard interface for lexers.
@@ -445,7 +453,7 @@
             <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
             <param name="error">Set to an error message in case of error.</param>
             <returns>Boxed value of the literal, null if total failure (result 
-            is not null in case of overflow), or <see cref="F:Loyc.Syntax.CodeSymbols.Sub"/> (#-)
+            is not null in case of overflow), or <see cref="F:Loyc.Syntax.CodeSymbols.Sub"/> (-)
             if isNegative is true but the type suffix is unsigned or the number 
             is larger than long.MaxValue.</returns>
         </member>
@@ -505,12 +513,30 @@
         <member name="T:Loyc.Syntax.Les.INodePrinterWriter">
             <summary>This interface is implemented by helper objects that handle the 
             low-level details of node printing. It is used by <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>.</summary>
-            <remarks>Although this interface is also used by EC#, I've kept it in the 
+            <remarks>Specifically, INodePrinterWriter objects are in charge of how much
+            to indent lines of code, and ensuring that there are spaces between tokens
+            whenever omitting a space would screw up parsing.
+            <para/>
+            Although this interface is also used by EC#, I've kept it in the 
             Les namespace because I'm not yet confident that it's a <i>good</i> design 
             for arbitrary languages.</remarks>
         </member>
         <member name="P:Loyc.Syntax.Les.INodePrinterWriter.Target">
             <summary>Gets the object being written to (TextWriter or StringBuilder)</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.NodePrinterWriterBase">
+            <summary>Abstract base class for <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>. Has an
+            protected <c>_indentLevel</c> field that is increased by Indent() and 
+            decreased by Dedent().</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.DefaultNodePrinterWriter">
+            <summary>Base class for the helper classes of <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/>
+            and <see cref="!:EcsNodePrinter"/>, called LesNodePrinterWriter and 
+            EcsNodePrinterWriter. See <see cref="T:Loyc.Syntax.Les.INodePrinterWriter"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesNodePrinterWriter">
+            <summary>Helper class of <see cref="T:Loyc.Syntax.Les.LesNodePrinter"/> that ensures there is 
+            a tokens are spaced apart properly.</summary>
         </member>
         <member name="T:Loyc.Syntax.Les.LesParser">
             <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
@@ -518,6 +544,9 @@
             <remarks>
             You can use <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink,Loyc.Symbol)"/>
             to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
+            <para/>
+            This class expects to receive tokens from <see cref="T:Loyc.Syntax.Les.LesLexer"/> that have been 
+            preprocessed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>, with whitespace tokens filtered out.
             </remarks>
         </member>
         <member name="T:Loyc.Syntax.Les.LesPrinterTests">
@@ -526,6 +555,25 @@
             what was printed to get the same Loyc tree.</summary>
         </member>
         <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.Les.LesPrecedence" -->
+        <member name="T:Loyc.Syntax.Les.TokenExt">
+            <summary>Provides the <c>Type()</c> extension method required by 
+            <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an LES token
+            as a string, for tokens that contain sufficient information to do so.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
+            <summary>Converts <c>t.TypeInt</c> to <see cref="T:Loyc.Syntax.Les.TokenType"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
+            <summary>Expresses an LES token as a string.</summary>
+            <remarks>Note that some Tokens do not contain enough information to
+            reconstruct a useful token string, e.g. comment tokens do not store the 
+            comment but merely contain the location of the comment in the source code.
+            For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
+            to its source file, so this method cannot return the original string.
+            <para/>
+            The results are undefined if the token was not produced by <see cref="T:Loyc.Syntax.Les.LesLexer"/>.
+            </remarks>
+        </member>
         <member name="T:Loyc.Syntax.Lexing.LexerSourceFile">
             <summary>Adds the <see cref="M:Loyc.Syntax.Lexing.LexerSourceFile.AfterNewline(System.Int32)"/> method to <see cref="T:Loyc.Syntax.SourceFile"/>.</summary>
             <remarks>
@@ -602,6 +650,25 @@
         <member name="T:Loyc.Syntax.Lexing.LexerWrapper">
             <summary>A base class for wrappers that modify lexer behavior.
             Implements the ILexer interface, except for the NextToken() method.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.TokenListAsLexer">
+            <summary>Adapter: converts <c>IEnumerable(Token)</c> to the <see cref="T:Loyc.Syntax.Lexing.ILexer"/> interface.</summary>
+            <remarks>
+            The LineNumber property is computed on-demand by the <see cref="T:Loyc.Syntax.ISourceFile"/> provided.
+            <para/>
+            TODO: IndentLevel does not work.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.TokenTree">
+            <summary>A list of Token structures along with the <see cref="T:Loyc.Syntax.ISourceFile"/> 
+            object that represents the source file that the tokens came from.</summary>
+            <remarks>This class is called <c>TokenTree</c> because certain kinds of 
+            tokens used by some parsers are formed into trees by using <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> 
+            as the type of the <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> of certain tokens. Specifically,
+            the LES and EC# parsers expect open-bracket and open-brace tokens ('(', 
+            '[' and '{') to have a child <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> that contains all the 
+            tokens within a pair of brackets or braces. Typically this tree is not 
+            created directly by the lexer, but by a helpe clas (<see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>).</remarks>
         </member>
         <member name="M:Loyc.Syntax.Lexing.TokenTree.Equals(Loyc.Syntax.Lexing.TokenTree)">
             <summary>Compares the elements of the token tree for equality.</summary>
@@ -803,7 +870,7 @@
              <li>A <see cref="T:Loyc.Syntax.CallNode"/> encompasses all other kinds of nodes, such as
              normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x&gt;</c>
              (represented <c>#of(f, x)</c>), braced blocks of statements (represented 
-             <c>#{}(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
+             <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
              are represented as a call with one argument and <c>null</c> as the <see cref="P:Loyc.Syntax.LNode.Target"/>.</li>
              </ul>
              This class provides access to all properties of all three types of nodes,
@@ -885,8 +952,8 @@
              Some users will also find it useful to use <see cref="T:Loyc.Syntax.LNodeFactory"/> for 
              generating synthetic code snippets (bits of code that never existed in any 
              source file), although you can also use the methods defined here in this
-             class: <see cref="M:Loyc.Syntax.LNode.Id(Loyc.Symbol,Loyc.Syntax.SourceRange)"/>(), <see cref="M:Loyc.Syntax.LNode.Literal(System.Object,Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(), <see cref="M:Loyc.Syntax.LNode.Call(Loyc.Symbol,Loyc.Syntax.SourceRange,Loyc.Syntax.NodeStyle)"/>(),
-             <see cref="M:Loyc.Syntax.LNode.InParens(Loyc.Syntax.LNode,Loyc.Syntax.SourceRange)"/>().
+             class: <see cref="M:Loyc.Syntax.LNode.Id(Loyc.Symbol,Loyc.Syntax.LNode)"/>(), <see cref="M:Loyc.Syntax.LNode.Literal(System.Object,Loyc.Syntax.LNode)"/>(), <see cref="M:Loyc.Syntax.LNode.Call(Loyc.Symbol,Loyc.Syntax.LNode)"/>(),
+             <see cref="M:Loyc.Syntax.LNode.InParens(Loyc.Syntax.LNode)"/>().
              <para/>
              Normal <see cref="T:Loyc.Syntax.LNode"/>s are "persistent" in the comp-sci sense, which 
              means that a subtree can be shared among multiple syntax trees, and nodes
@@ -909,10 +976,10 @@
              Also, virtually any tree of nodes can be represented in EC# source code 
              using a prefix notation, which helps you understand Loyc ASTs because
              the prefix notation closely corresponds to the AST. For example, 
-             #=(x, #*(y, 2)) is equivalent to the expression x = y * 2. This notation 
+             @=(x, @*(y, 2)) is equivalent to the expression x = y * 2. This notation 
              tells you that 
              - there are two nodes with two arguments each, 
-             - the outer one is named #= and the inner is named #*
+             - the outer one is named "=" and the inner is named "*"
              The syntax tree built from these two representations is identical.
              <para/>
              Prefix notation can be freely mixed with normal EC# code, although usually 
@@ -925,50 +992,56 @@
             	});
              <para/>
              The prefix notation often involves special identifiers of the form #X, 
-             where X is
-             <ol>
-             <li>1. A C# or EC# identifier</li>
-             <li>2. A C# keyword</li>
-             <li>3. A C# or EC# operator</li>
-             <li>4. A single-quoted string containing one or more characters</li>
-             <li>5. A backquoted string</li>
-             <li>6. One of the following pairs of tokens: {}, [], or &lt;&gt; (angle brackets)</li>
-             <li>7. Nothing. If # is not followed by one of the above, "#" by itself is 
-                    counted as identifier.</li>
-             </ol>
+             where X is an identifier (or keyword). In the LES and EC# parsers, the # 
+             character is considered a normal part of an identifier, no different than
+             a letter (A-Z) or an underscore (_). However, the # is "special" in the
+             sense that when a special construct (like a method, or a field declaration)
+             is converted to a Loyc tree, the Loyc tree represents that special 
+             construct using an identifier that starts with "#".
              <para/>
-             As it builds the AST, the parser translates all of these forms into a 
-             Symbol that also starts with '#'. The following examples show how source 
-             code text is translated into symbol names:
+             Code in prefix notation also often has identifiers of the form @X, where X is
+             <ol>
+             <li>An operator such as + or ==</li>
+             <li>A C# keyword</li>
+             <li>A backquoted string</li>
+             </ol>
+             The @ character is <i>not</i> part of the identifier; it merely indicates
+             that the characters after the @ symbol represent an identifier, rather than
+             an operator or keyword. For example, "==" is normally an operator, and 
+             "class" is normally a keyword, but @== and @class are both identifiers,
+             not operators or keywords.
+             <para/>
+             The following examples show how source code text is translated into symbol names:
              <pre>
-             #foo     ==&gt; "#foo"         #&gt;&gt;          ==&gt; "#&gt;&gt;"
-             #?       ==&gt; "#?"           #{}          ==&gt; "#{}"          
-             #while   ==&gt; "#while"       #'Newline\n' ==&gt; "#Newline\n"
-             #@while  ==&gt; "#while"       #`hi there!` ==&gt; "#`hi there!`"
-             #'while' ==&gt; "#while"       #(whatever)  ==&gt; "#"
+             #foo     ==&gt; "#foo"        @&gt;&gt;           ==&gt; "&gt;&gt;"
+             #?       ==&gt; "?"           @`{}`         ==&gt; "{}"
+             #while   ==&gt; "#while"      @`#Newline\n` ==&gt; "#Newline\n"
+             @#while  ==&gt; "#while"      @`hi there!`  ==&gt; "hi there!"
+             @while   ==&gt; "while"
              </pre>
-             The parser treats all of these forms as "special identifiers". Special
-             identifiers are parsed like normal identifiers, but are reserved for
-             things that have special semantic meaning. For example, "#class" has 
+             Identifiers that start with # are parsed like normal identifiers, but 
+             are reserved for things that have special semantic meaning. For example, 
+             "#class" is treated by the parser like any other identifier, but it has
              the same semantic meaning as "class", although a structure defined with 
              "#class" looks quite different from the same structure defined using 
              "class". For example, the following forms are equivalent:
              <pre>
-             #class(X, #(), #(int x));
+             #class(X, #(), @`{}`(int x));
              class X { int x; }
              </pre>
-             The #class(...) form is the prefix notation, and it demonstrates the
+             The #class(...) form uses prefix notation, and it demonstrates the
              structure of the Loyc tree for a class declaration.
              <para/>
-             As another example, "#return(7);" is (syntactically) a function call to a 
+             As another example, "#return(7);" is syntactically a function call to a 
              function called "#return". Although the parser treats it like a function 
              call, it produces the same syntax tree as "return 7;" does.
              <para/>
              Ordinary method calls like <c>Foo(x, y)</c> count as prefix notation, and 
              in EC# there is actually a non-prefix notation for this call: <c>x `Foo` y</c>.
              Both forms are equivalent, but the infix notation can only be used when you
-             are calling a method that takes two arguments (also, the string `Foo` must 
-             be a simple identifier; it cannot contain dots or have generic arguments.)
+             are calling a method that takes two arguments (also, the string `Foo` should
+             be a simple identifier; if it contains a dot, it is treated as part of the
+             identifier name, not as a normal dot operator.)
              <para/>
              So #class is a keyword that is parsed like an identifier, but this is 
              different from the notation @class which already exists in plain C#.
@@ -1005,7 +1078,7 @@
              <para/>
              The special #X tokens don't require an argument list, although the compiler
              expects most of them to have one (and often it must have a specific length).
-             This doesn't matter for parsing, however, only for later stages of analysis.
+             Again, this doesn't matter for parsing, only for later stages of analysis.
              <para/>
              Any statement or expression can have attributes attached to it; when 
              attributes are seen beside a statement, they are attached to the root node 
@@ -1096,12 +1169,12 @@
             				'0'
             		} + value;
              </pre>
-             The braced block is represented by a #{} node, which introduces a new scope.
-             In contrast, the special # node type (known as the "list keyword"), does 
-             not create a new scope. It can be used with expression or statement syntax:
+             The braced block is represented by a {} node, which introduces a new scope.
+             In contrast, the special # node type (the "list marker"), does not create 
+             a new scope. It is normally used with expression syntax:
              <pre>
              var three = #(Console.WriteLine("Fetching the three!"), 3);
-             var eight = #{ int x = 5; three + x };
+             var eight = #(int x = 5, three + x);
              var seven = x + 2;
              </pre>
              Since # does not create a new scope, the variable "x" is created in the 
@@ -1247,6 +1320,26 @@
              <para/>
              The argument and attribute lists cannot be null, since they have type 
              <see cref="T:Loyc.Collections.RVList`1"/> which is a struct.
+             <para/>
+             <c>LNode</c> implements <see cref="T:Loyc.Collections.INegListSource`1"/>, so you can loop 
+             through all children of the node like this:
+             <code>
+             for (int i = node.Min; i &lt;= node.Max; i++) {
+                 LNode child = node[i];
+             }
+             </code>
+             You can also use <c>foreach</c>. The children are numbered like this:
+             <ul>
+             <li>if i is less than -1, node[i] refers to an attribute. Specifically, node[i] 
+             means node.Attrs[i + node.Attrs.Count + 1] in that case.</li>
+             <li>node[-1] refers to <c>Target</c> (but throws if there is no target)</li>
+             <li>Non-negative values are indexes of Args, e.g. node[i] means node.Args[i].</li>
+             </ul>
+             LNode also provides <c>Select(child =&gt; result)</c> and <c>ReplaceRecursive(child =&gt; result)</c>
+             methods which allows you to transform all children (Atrrs, Target and Args).
+             Currently there is no <c>Where(child =&gt; bool)</c> method because it is not
+             possible to remove the <see cref="P:Loyc.Syntax.LNode.Target"/> of an LNode (you can still use
+             standard LINQ Where(), of course, but the result is not an LNode).
              
              <h3>Note</h3>
              
@@ -1264,6 +1357,10 @@
             this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
             (which may be optimized for the particular call type). If <see cref="P:Loyc.Syntax.LNode.IsLiteral"/>, the <see cref="P:Loyc.Syntax.LNode.Kind"/> changes to <see cref="F:Loyc.Syntax.NodeKind.Id"/> in
             order to set the name.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.WithValue(System.Object)">
+            <summary>Creates a new literal node with a different Value than the current literal node.</summary>
+            <exception cref="T:System.InvalidOperationException">The node was not a literal already.</exception>
         </member>
         <member name="M:Loyc.Syntax.LNode.WithArgs(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
             <summary>Creates a Node with a new argument list. If this node is not a 
@@ -1332,10 +1429,10 @@
             method merges two nodes, forming or appending a list (see remarks).</summary>
             <param name="node1">First node, list, or null.</param>
             <param name="node2">Second node, list, or null.</param>
-            <param name="listName">The Name used to detect whether a node is a list
-            (typically "#"). Any other name is considered a normal call, not a list.
-            If this method creates a list from two non-lists, this parameter 
-            specifies the Name that the list will have.</param>
+            <param name="listName">The <see cref="P:Loyc.Syntax.LNode.Name"/> used to detect whether a 
+            node is a list (typically "#splice"). Any other name is considered a 
+            normal call, not a list. If this method creates a list from two non-
+            lists, this parameter specifies the Name that the list will have.</param>
             <returns>The merged list.</returns>
             <remarks>
             The order of the data is retained (i.e. the data in node1 is inserted
@@ -1351,6 +1448,24 @@
             its two Args.</li>
             </ul>
             </remarks>
+            <seealso cref="M:Loyc.Syntax.LNodeExt.WithSpliced(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Int32,Loyc.Syntax.LNode,Loyc.Symbol)"/>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.Select(System.Func{Loyc.Syntax.LNode,Loyc.Syntax.LNode})">
+            <summary>Transforms the attributes, <see cref="P:Loyc.Syntax.LNode.Target"/>, and parameters 
+            of an LNode, returning another LNode of the same Kind. If the selector
+            makes no changes, Select() returns <c>this</c>.</summary>
+            <remarks>The selector is not allowed to return null.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.ReplaceRecursive(System.Func{Loyc.Syntax.LNode,Loyc.Syntax.LNode},System.Boolean)">
+            <summary>Performs a recursive find-and-replace operation, by attempting
+            to replace each child (among <see cref="P:Loyc.Syntax.LNode.Attrs"/>, <see cref="P:Loyc.Syntax.LNode.Target"/>, 
+            <see cref="P:Loyc.Syntax.LNode.Args"/>) using the specified selector.</summary>
+            <param name="selector">The selector is called for each descendant, and
+            optionally the root node. If the selector returns a node, the new node 
+            replaces the node that was passed to <c>selector</c> and the children of 
+            the new node are ignored. If the selector returns null, children of the 
+            child are scanned recursively.</param>
+            <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
         </member>
         <member name="P:Loyc.Syntax.LNode.Range">
             <summary>Returns the location and range in source code of this node.</summary>
@@ -1387,7 +1502,8 @@
             <summary>Returns the attribute list for this node.</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.IsFrozen">
-            <summary>Returns true if the node is immutable, and false if any part of it can be edited.</summary>
+            <summary>Returns true if the node is immutable, and false if any part of it can be edited.
+            Currently, mutable nodes are not implemented.</summary>
             <remarks>Debugger-hidden until such time as mutable nodes actually exist.</remarks>
         </member>
         <member name="P:Loyc.Syntax.LNode.Kind">
@@ -1403,8 +1519,8 @@
             <summary>Returns true if <see cref="P:Loyc.Syntax.LNode.Name"/> starts with '#'.</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.Value">
-            <summary>Returns the value of a literal node, or null if this node is 
-            not a literal (<see cref="P:Loyc.Syntax.LNode.IsLiteral"/> is false).</summary>
+            <summary>Returns the value of a literal node, or <see cref="F:Loyc.NoValue.Value"/> 
+            if this node is not a literal (<see cref="P:Loyc.Syntax.LNode.IsLiteral"/> is false).</summary>
         </member>
         <member name="P:Loyc.Syntax.LNode.Target">
             <summary>Returns the target of a method call, or null if <see cref="P:Loyc.Syntax.LNode.IsCall"/> 
@@ -1416,8 +1532,8 @@
             <remarks>
             Depending on the <see cref="P:Loyc.Syntax.LNode.Target"/>, Args may represent an actual 
             argument list, or it may represent some other kind of list. For 
-            example, if the target is #{} then Args represents a list of 
-            statements in a braced block, and if the target is #&gt;= then Args 
+            example, if the target is "{}" then Args represents a list of 
+            statements in a braced block, and if the target is "&gt;=" then Args 
             represents the two arguments to the "&gt;=" operator.
             </remarks>
         </member>
@@ -1426,6 +1542,9 @@
             which controls how nodes are serialized to text by default.</summary>
             <remarks>The LES printer is the default, and will be used if you try
             to set this property to null.</remarks>
+        </member>
+        <member name="T:Loyc.Syntax.LNode.PushedPrinter">
+            <summary>Returned by <see cref="M:Loyc.Syntax.LNode.PushPrinter(Loyc.Syntax.LNodePrinter)"/>.</summary>
         </member>
         <member name="T:Loyc.Syntax.LNode.DeepComparer">
             <summary>An IEqualityComparer that compares nodes structurally.</summary>
@@ -1458,10 +1577,26 @@
             <remarks>This delegate only prints to a StringBuilder. Printing directly to 
             a stream requires language-specific facilities.</remarks>
         </member>
+        <member name="T:Loyc.Syntax.LNodeExt">
+            <summary>Standard extension methods for <see cref="T:Loyc.Syntax.LNode"/>.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.AsList(Loyc.Syntax.LNode,Loyc.Symbol)">
+            <summary>Interprets a node as a list by returning <c>block.Args</c> if 
+            <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
+            with <c>block</c> as the only item.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNodeExt.AsLNode(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Symbol)">
+            <summary>Converts a list of LNodes to a single LNode by using the list 
+            as the argument list in a call to the specified identifier, or, if the 
+            list contains a single item, by returning that single item.</summary>
+            <param name="listIdentifier">Target of the node that is created if <c>list</c>
+            does not contain exactly one item. Typical values include "{}" and "#splice".</param>
+            <remarks>This is the reverse of the operation performed by <see cref="M:Loyc.Syntax.LNodeExt.AsList(Loyc.Syntax.LNode,Loyc.Symbol)"/>.</remarks>
+        </member>
         <member name="T:Loyc.Syntax.LNodeFactory">
-            <summary>Contains static helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
-            Also contains the Cache method, which deduplicates subtrees that have the
-            same structure.
+            <summary>Contains helper methods for creating <see cref="T:Loyc.Syntax.LNode"/>s.
+            An LNodeFactory holds a reference to the current source file (<see cref="P:Loyc.Syntax.LNodeFactory.File"/>) 
+            so that it does not need to be repeated every time you create a node.
             </summary>
         </member>
         <member name="M:Loyc.Syntax.LNodeFactory.Trivia(System.String,System.Object)">
@@ -1502,7 +1637,7 @@
             understand.</remarks>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Default">
-            <summary>No style flags are specified; the printer should choose a 
+            <summary>No style category is specified; the printer should choose a 
             style automatically.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Expression">
@@ -1510,9 +1645,8 @@
             than using a special or statement notation.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Statement">
-            <summary>The node(s) should be printed as a statement, if possible 
-            given the context in which it is located (for example, EC# can only 
-            switch to statement mode at certain node types such as # and #quote.)</summary>
+            <summary>The node, or its immediate children, should be printed in
+            statement notation, if possible in the context in which it is located.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Operator">
             <summary>The node should be printed with infix or suffix notation
@@ -1520,13 +1654,12 @@
             in LES and EC#).</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.PrefixNotation">
-            <summary>The node should be printed in prefix notation, unless it is
-            a #::, #. or #of node, which uses a special notation (e.g. 
-            Generic.List&lt;T> in C# style or Generic.List!T in LES style).</summary>
+            <summary>The node should be printed in prefix notation, e.g. <c>@.(X, Y)</c>
+            instead of <c>X.Y</c>.</summary>
         </member>
-        <member name="F:Loyc.Syntax.NodeStyle.PurePrefixNotation">
-            <summary>The node should be printed in prefix notation regardless
-            of the call target.</summary>
+        <member name="F:Loyc.Syntax.NodeStyle.DataType">
+            <summary>The node should be printed like a data type, if the type 
+            notation is somehow different from expression notation.</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Special">
             <summary>A language-specific special notation should be used for this
@@ -1555,12 +1688,29 @@
             <summary>Another alternate style flag. In LES and EC#, this is used for
             binary-format numbers.</summary>
         </member>
-        <member name="F:Loyc.Syntax.NodeStyle.Recursive">
-            <summary>Prefer to use the current base style recursively in child 
-            nodes (not currently supported).</summary>
-        </member>
-        <member name="F:Loyc.Syntax.NodeStyle.UserFlag">
-            <summary>User-defined meaning.</summary>
+        <member name="F:Loyc.Syntax.NodeStyle.Handled">
+            <summary>Indicates that some part of a compiler has seen the node and 
+            done something with it.</summary>
+            <remarks>The idea behind this flag relates to compilers that allow 
+            user-defined attributes for plug-ins that add functionality. For 
+            example, internationalization plug-in might notice a language marker:
+            <code>
+               MessageBox.Show([en] "Hello, World!");
+            </code>
+            If an attribute is not used by any plug-in, the compiler should print 
+            a warning that the attribute is unused. This leads to the question, how
+            can a compiler tell if an attribute was used or not? The Handled flag
+            is one possible mechanism; when any part of the compiler or its plug-
+            ins use an attribute, the Handled flag should be set to disable the
+            compiler warning.
+            <para/>
+            Remember that the same node can theoretically appear in multiple
+            places in a syntax tree, which typically happens when a statement or
+            expression is duplicated by a macro, without being changed. Remember 
+            that when a style is changed on such a node, the change is visible at 
+            all locations where the same node is used. However, style flags are
+            not synchronized between copies of a node.
+            </remarks>
         </member>
         <member name="T:Loyc.Syntax.StdTriviaNode">
             <summary>A node that has both a Name and a Value. This type of node is not 
@@ -1751,6 +1901,12 @@
             indicate that a specific precedence has not been chosen for an operator. 
             If a precedence is chosen in the future, it will be somewhere within the 
             range.
+            
+            <h3>Overall Range</h3>
+            
+            By convention, precedence scales range from 0 to 100 (or slightly higher).
+            The precedence numbers are stored in this structure as <c>sbyte</c>s, so the 
+            standard range cannot be exceeded by much.
             </remarks>
         </member>
         <member name="F:Loyc.Syntax.Precedence.Lo">
@@ -1888,6 +2044,31 @@
             Holds a reference to a source file (ISourceFile&lt;char&gt;) and the
             beginning and end indices of a range in that file.
             </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.StreamCharSource" -->
+        <member name="F:Loyc.Syntax.StreamCharSource._blkOffsets">
+            <summary>A sorted list of mappings between byte positions and character 
+            indexes. In each Pair(of A,B), A is the character index and B is the byte 
+            index. This list is built on-demand.
+            </summary>
+        </member>
+        <member name="F:Loyc.Syntax.StreamCharSource._reachedEnd">
+            <summary>Set true when the last block has been scanned. If true, then
+            _eofIndex and _eofPosition indicate the Count and the size of the 
+            stream, respectively.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.StreamCharSource._eofIndex">
+            <summary>_eofIndex is the character index of EOF if it has been reached 
+            or, if not, the index of the first unscanned character. _eofIndex 
+            equals _blkOffsets[_blkOffsets.Count-1].A.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.StreamCharSource._eofPosition">
+            <summary>_eofPosition is the byte position of EOF if it has been reached 
+            or, if not, the position of the first unscanned character. _eofPosition 
+            equals _blkOffsets[_blkOffsets.Count-1].B.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.StreamCharSourceTests">
+            <summary>Unit tests of StreamCharSource</summary>
         </member>
     </members>
 </doc>

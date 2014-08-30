@@ -90,9 +90,17 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroundAnalyzerForVS.cs" />
     <Compile Include="BraceMatchingTagger.cs" />
+    <Compile Include="EcsSyntaxForVS.cs" />
     <Compile Include="LesSyntaxForVs.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="LesSyntaxForVSFormat.cs" />
+    <Compile Include="SampleLanguage.cs" />
+    <Compile Include="SyntaxAnalyzerForVS.cs" />
+    <Compile Include="SyntaxClassifierForVS.cs" />
+    <Compile Include="TextSnapshotAsSourceFile.cs" />
+    <Compile Include="VSBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

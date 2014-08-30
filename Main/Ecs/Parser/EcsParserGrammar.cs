@@ -2097,7 +2097,7 @@ namespace Ecs.Parser
 			if (la0 == TT.QuickBindSet || la0 == TT.Set) {
 				Skip();
 				var init = Expr(ContinueExpr);
-				return F.Call(S.Var, type, F.Call(S.Set, name, init, name.Range.StartIndex, init.Range.EndIndex), type.Range.StartIndex, init.Range.EndIndex);
+				return F.Call(S.Var, type, F.Call(S.Assign, name, init, name.Range.StartIndex, init.Range.EndIndex), type.Range.StartIndex, init.Range.EndIndex);
 			}
 			return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);
 		}
@@ -5351,7 +5351,7 @@ namespace Ecs.Parser
 			var oldName = ComplexNameDecl();
 			var bases = BaseListOpt();
 			WhereClausesOpt(ref newName);
-			var name = F.Call(S.Set, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);
+			var name = F.Call(S.Assign, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);
 			// Line 1096: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
@@ -5696,7 +5696,7 @@ namespace Ecs.Parser
 							var initializers = InitializerListInside(lb).ToRVList();
 							var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
 							expr = SetBaseStyle(expr, NodeStyle.OldStyle);
-							r = F.Call(S.Set, r, expr, name.StartIndex, rb.EndIndex);
+							r = F.Call(S.Assign, r, expr, name.StartIndex, rb.EndIndex);
 						} else
 							goto match2;
 					} else
@@ -5705,7 +5705,7 @@ namespace Ecs.Parser
 				match2:
 					{
 						var init = ExprStart(false);
-						r = F.Call(S.Set, r, init, name.StartIndex, init.Range.EndIndex);
+						r = F.Call(S.Assign, r, init, name.StartIndex, init.Range.EndIndex);
 					}
 				} while (false);
 			}

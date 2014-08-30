@@ -107,7 +107,7 @@ namespace Loyc.LLParserGenerator
 		{
 			if (varStmt.Calls(S.Var, 2)) {
 				var nameAndInit = varStmt.Args[1];
-				if (nameAndInit.Calls(S.Set, 2))
+				if (nameAndInit.Calls(S.Assign, 2))
 					return nameAndInit.Args[0];
 				else
 					return nameAndInit;

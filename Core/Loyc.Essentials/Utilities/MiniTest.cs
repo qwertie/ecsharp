@@ -403,9 +403,9 @@ namespace Loyc.MiniTest
 					msg.AppendFormat("  String lengths are both {0}. Strings differ at index {1}.\n", c, i);
 				else
 					msg.AppendFormat("  Expected string length {0} but was {1}. Strings differ at index {2}.\n", a.Length, b.Length, i);
-				int a_i = i, b_i = i;
-				msg.AppendFormat("  Expected: {0}\n", GetQuotedString(ref a, ref a_i));
-				msg.AppendFormat("  But was:  {0}\n", GetQuotedString(ref b, ref b_i));
+				int a_i = i, b_i = i, maxlen = System.Math.Max(a.Length, b.Length);
+				msg.AppendFormat("  Expected: {0}\n", GetQuotedString(ref a, ref a_i, maxlen));
+				msg.AppendFormat("  But was:  {0}\n", GetQuotedString(ref b, ref b_i, maxlen));
 				
 				int TailLength = "-----------".Length;
 				var prefix = b.Left(b_i);
@@ -416,19 +416,18 @@ namespace Loyc.MiniTest
 				return msg.ToString();
 			}
 		}
-		static string GetQuotedString(ref string s, ref int dif_i)
+		static string GetQuotedString(ref string s, ref int dif_i, int len)
 		{
-			int len = s.Length, max = TruncateStringsLongerThan;
-			if (len <= max) {
-			} else {
-				if (dif_i < max/2) {
-					s = s.Left(max - 3) + "..."; // "beginning..."
-				} else if (len - dif_i < max/2) {
-					s = "..." + s.Right(max - 3); // "...ending"
-					dif_i -= len - s.Length;
+			int maxw = TruncateStringsLongerThan;
+			if (len > maxw) {
+				if (dif_i < maxw/2) {
+					s = s.Left(maxw - 3) + "..."; // "beginning..."
+				} else if (len - dif_i < maxw/2) {
+					s = "..." + s.SafeSubstring(len - (maxw - 3)); // "...ending"
+					dif_i -= len - maxw;
 				} else {
-					s = "..." + s.Substring(dif_i - max / 2 + 3, max - 6) + "...";
-					dif_i = max / 2; // "...middle..."
+					s = "..." + s.SafeSubstring(dif_i - maxw / 2 + 3, maxw - 6) + "...";
+					dif_i = maxw / 2; // "...middle..."
 				}
 			}
 			return "\"" + G.EscapeCStyle(s, EscapeC.Default, '"') + "\"";

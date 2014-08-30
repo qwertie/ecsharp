@@ -6,6 +6,7 @@ using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Math;
 
 namespace LeMP
 {
@@ -49,10 +50,10 @@ namespace LeMP
 		// $"The value is {Value,-10:C}." => string.Format("The value is {0,-10:C}", Value)
 		// save_and_restore _foo { Foo(_foo = true); } => var tmp17 = _foo; try { Foo(_foo = true); } finally { _foo = tmp17; }
 
-		#region concat_id, ##
+		#region concat_id (##), nameof
 
 		[SimpleMacro(@"a `##` b", "Concatenates identifiers and/or literals to produce an identifier", "##", "concat_id")]
-		public static LNode concat(LNode node, IMessageSink sink)
+		public static LNode concat_id(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
 			if (args.Count == 0)
@@ -60,20 +61,83 @@ namespace LeMP
 			if (args.Slice(0, args.Count - 1).Any(n => n.IsCall))
 				return Reject(sink, node, "All arguments to ##() or concat() must be identifiers or literals (except the last one)");
 
+			RVList<LNode> attrs = node.Attrs;
+			LNode arg = null;
 			StringBuilder sb = new StringBuilder();
-			foreach (LNode arg in args) 
+			for (int i = 0; i < args.Count; i++)
 			{
-				object name = arg.IsLiteral ? arg.Value ?? "null" : arg.Name;
-				sb.Append(name);
+				arg = args[i];
+				attrs.AddRange(arg.Attrs);
+
+				if (arg.IsLiteral)
+					sb.Append(arg.Value ?? "null");
+				else if (arg.IsId)
+					sb.Append(arg.Name);
+				else { // call
+					if (i + 1 != args.Count || !arg.HasSimpleHead())
+						return Reject(sink, arg, "Expected simple identifier or literal");
+					sb.Append(arg.Name);
+				}
 			}
 			Symbol combined = GSymbol.Get(sb.ToString());
-			if (args.Last.IsCall)
-				return node.WithTarget(combined);
+			LNode result;
+			if (arg.IsCall)
+				result = arg.WithTarget(combined);
 			else
-				return LNode.Id(combined, node);
+				result = LNode.Id(combined, node);
+			return result.WithAttrs(attrs);
 		}
 
+		[SimpleMacro(@"nameof(id_or_expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
+		public static LNode @nameof(LNode @nameof, IMessageSink sink)
+		{
+			if (@nameof.ArgCount != 1)
+				return null;
+			return F.Literal(ParsingService.Current.Print(@nameof.Args[0], sink, ParsingService.Exprs));
+		}
+		
 		#endregion
+
+		[SimpleMacro(@"x `tree==` y", "Returns the literal true if two or more syntax trees are equal, or false if not.", "tree==")]
+		public static LNode TreeEqual(LNode node, IMessageSink sink)
+		{
+			var a = node.Args;
+			if (a.Count < 2) return null;
+			
+			LNode left = a[0];
+			for (int i = 1; i < a.Count; i++)
+				if (!left.Equals(a[i]))
+					return F.Literal(G.BoxedFalse);
+			return F.Literal(G.BoxedTrue);
+		}
+
+		[SimpleMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", Mode = MacroMode.Passive)]
+		public static LNode StaticIf(LNode @if, IMessageSink sink)
+		{
+			LNode @static;
+			if ((@static = @if.AttrNamed(S.Static)) == null || !@static.IsId)
+				return null;
+			return static_if(@if, sink);
+		}
+		
+		[SimpleMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now", Mode = MacroMode.Passive)]
+		public static LNode static_if(LNode @if, IMessageSink sink)
+		{
+			if (!MathEx.IsInRange(@if.ArgCount, 2, 3))
+				return null;
+			RVList<LNode> conds = MacroProcessor.Current.ProcessSynchronously(@if.Args[0]);
+			object @bool;
+			if (conds.Count == 1 && (@bool = conds[0].Value) is bool)
+			{
+				LNode output = (bool)@bool ? @if.Args[1] : @if.Args.TryGet(2, null) ?? F.Call(S.Splice);
+				if (output.Calls(S.Braces))
+					return output.WithTarget(S.Splice);
+				else
+					return output;
+			}
+			else
+				return Reject(sink, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
+		}
 
 		[SimpleMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]
 		public static LNode NullCoalesceSet(LNode node, IMessageSink sink)

@@ -234,7 +234,7 @@ namespace Loyc.LLParserGenerator
 						newType = TT.Arrow;
 						break;
 					}
-					if (token.Value == S.Colon && list[i].Value == S.Set) {
+					if (token.Value == S.Colon && list[i].Value == S.Assign) {
 						i++;
 						token = token.WithValue(S.QuickBindSet);
 						newType = TT.Assignment;

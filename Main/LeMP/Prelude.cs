@@ -135,7 +135,7 @@ namespace LeMP.Prelude
 			if (args.Count == 1 ? !isAlias : (args.Count != 2 || !body.Calls(S.Braces)))
 				return Reject(sink, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
 			if (isAlias) {
-				if (!nameEtc.Calls(S.Set, 2))
+				if (!nameEtc.Calls(S.Assign, 2))
 					return Reject(sink, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
 				oldName = nameEtc.Args[1];
 				nameEtc = nameEtc.Args[0];
@@ -160,9 +160,9 @@ namespace LeMP.Prelude
 
 			if (isAlias) {
 				if (body == null)
-					return node.With(newTarget, F.Call(S.Set, name, oldName), bases);
+					return node.With(newTarget, F.Call(S.Assign, name, oldName), bases);
 				else
-					return node.With(newTarget, F.Call(S.Set, name, oldName), bases, body);
+					return node.With(newTarget, F.Call(S.Assign, name, oldName), bases, body);
 			} else {
 				Debug.Assert(body != null);
 				return node.With(newTarget, name, bases, body);
@@ -339,7 +339,7 @@ namespace LeMP.Prelude
 			LNode varStmt = null;
 			for (int i = 0; i < parts.Count; i++) {
 				LNode part = parts[i], type = null, init = null;
-				if (part.Calls(S.Set, 2)) {
+				if (part.Calls(S.Assign, 2)) {
 					init = part.Args[1];
 					part = part.Args[0];
 				}
@@ -347,7 +347,7 @@ namespace LeMP.Prelude
 					type = part.Args[1];
 					part = part.Args[0];
 				}
-				if (init == null && part.Calls(S.Set, 2)) {
+				if (init == null && part.Calls(S.Assign, 2)) {
 					init = part.Args[1];
 					part = part.Args[0];
 				}
@@ -357,7 +357,7 @@ namespace LeMP.Prelude
 					return Reject(sink, type, "Expected a type name here");
 				type = type ?? F._Missing;
 
-				var nameAndInit = init == null ? part : F.Call(S.Set, part, init);
+				var nameAndInit = init == null ? part : F.Call(S.Assign, part, init);
 				if (varStmt != null && varStmt.Args[0].Equals(type)) {
 					// same type used again, e.g. (var x::int y::int) => (#var int x y)
 					varStmt = varStmt.WithArgs(varStmt.Args.Add(nameAndInit));
@@ -799,7 +799,7 @@ namespace LeMP.Prelude
 			if (a.Count == 2) {
 				LNode name = a[0], value = a[1];
 				if (name.Calls(S.ColonColon, 2))
-					return node.With(S.Var, name.Args[1], F.Call(S.Set, name.Args[0], value));
+					return node.With(S.Var, name.Args[1], F.Call(S.Assign, name.Args[0], value));
 			}
 			return null;
 		}
@@ -809,7 +809,7 @@ namespace LeMP.Prelude
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode name = a[0], value = a[1];
-				return node.With(S.Var, F._Missing, F.Call(S.Set, name, value));
+				return node.With(S.Var, F._Missing, F.Call(S.Assign, name, value));
 			}
 			return null;
 		}
@@ -818,7 +818,7 @@ namespace LeMP.Prelude
 		{
 			var a = node.Args;
 			if (a.Count == 2)
-				return node.With(S.Var, new RVList<LNode>(F._Missing, F.Call(S.Set, a[1], a[0])));
+				return node.With(S.Var, new RVList<LNode>(F._Missing, F.Call(S.Assign, a[1], a[0])));
 			return null;
 		}
 		

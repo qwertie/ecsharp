@@ -277,7 +277,7 @@ namespace Ecs
 					PrintType(bases.Args[i], ContinueExpr);
 				}
 			}
-			bool alias = name.Calls(S.Set, 2);
+			bool alias = name.Calls(S.Assign, 2);
 			var name2 = name;
 			if (name2.Calls(S.Of) || (alias && (name2 = name.Args[0]).Calls(S.Of)))
 				PrintWhereClauses(name2);

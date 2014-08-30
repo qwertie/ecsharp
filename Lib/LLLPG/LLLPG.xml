@@ -7,6 +7,9 @@
         <member name="T:Loyc.LLParserGenerator.LesLexerGenerator">
             <summary>Bootstrapper. Generates source code for the EC# lexer.</summary>
         </member>
+        <member name="T:Loyc.LLParserGenerator.LlpgHelpers">
+            <summary>Helper methods for making LLLPG grammar nodes. Used by <see cref="T:Loyc.LLParserGenerator.LlpgCoreTests"/>.</summary>
+        </member>
         <member name="T:Loyc.Syntax.Les.LesParserGenerator">
             <summary>Generates source code for the LES parser.</summary>
         </member>
@@ -524,7 +527,7 @@
             is by creating a test for the common set between two alternatives:
             <code>
                 la0 = LA(0);
-                if (la0 == 'a' || la0 == 'b') { /* alt 1 or alt 2 */ }
+                if (la0 == 'a' || la0 == 'b') { ... alt 1 or alt 2 ... }
             </code>
             Then, inside that "if" statement it adds a test for LA(1). Sadly,
             LLLPG discovers that if (la1 == 'a' || la1 == 'b'), both alternatives 
@@ -869,9 +872,17 @@
             <remarks>
             This class primarily does prediction analysis. It generates prediction
             trees, which <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor"/> then uses to generate 
-            code. It relies on the "Prediction analysis code" in 
+            code. It relies on the #region "Prediction analysis" in 
             <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> for the lowest-level analysis tasks.
             </remarks>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.RecursivePredVisitor">
+            <summary>Base class for implementing a visitor that examines a tree of LLLPG 
+            <see cref="T:Loyc.LLParserGenerator.Pred"/>icates. The default implementation of Visit(P) for each
+            predicate type P recursively visits the children of the P.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.PredVisitor">
+            <summary>Base class for implementing a visitor that examines a tree of LLLPG <see cref="T:Loyc.LLParserGenerator.Pred"/>icates.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor.SimplifyPredictionTree(Loyc.LLParserGenerator.LLParserGenerator.PredictionTree)">
             <summary>Recursively merges adjacent duplicate cases in prediction trees.
@@ -915,13 +926,13 @@
             For example, suppose the grammar is as follows (where "strings" are
             actually aliases for tokens):
             <code>
-                rule For   @[ "for" (\id "in" $collection | \id '=' range) ];
+                rule For   @[ "for" ($id "in" $collection | $id '=' range) ];
                 rule Range @[ start ".." stop ];
             </code>
             If the starting position is right after "for", then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/>
-            will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>\id."in" $collection</c> 
+            will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>$id."in" $collection</c> 
             and another at <c>\id.'=' stop</c>. In both cases, the Set is $id, 
-            so <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> will also be \id.
+            so <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Set"/> will also be $id.
             </remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.LLParserGenerator.Transition">
@@ -1076,16 +1087,16 @@
             <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/>, and another macro for 
             <c>LLLPG(parser(Symbol, false), {...})"</c> that creates a 
             <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> (this is the default helper).</li>
-            <li>The stage-one LLLPG() macro uses <see cref="T:Loyc.LLParserGenerator.StageOneParser"/> to
+            <li>The stage-one rule() macro uses <see cref="T:Loyc.LLParserGenerator.StageOneParser"/> to
             translate token trees into expressions, e.g. <c>@[ ("Foo" | bar)* ~';' ]</c> 
-            is currently translated to <c>#tuple(@`#suf*`("Foo" | bar), ~';')</c>.
-            LLLPG() replaces itself with LLLPG_stage2() so users need not be aware
-            that two stages exist. <c>LLLPG()</c> expects an entire grammar, but
-            <c>LLLPG_stage1(@[...])</c> might be used in advanced scenarios to invoke 
-            the stage-one parser directly.</li>
-            <li>The stage-two LLLPG_stage2() macro calls <see cref="T:Loyc.LLParserGenerator.StageTwoParser"/>
-            to translate expressions into <see cref="T:Loyc.LLParserGenerator.Pred"/> objects, and then
-            invokes <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> to generate code.</li>
+            is currently translated to <c>#tuple(@`suf*`("Foo" | bar), ~';')</c>.</li>
+            <li>The stage-two macro is named run_LLLPG(). It accepts the code-gen 
+            helper created by the LLLPG(lexer) or LLLPG(parser) macro, and it
+            has the ProcessChildrenBefore flag so that the stage-1 rule() macros 
+            run first. run_LLLPG calls <see cref="T:Loyc.LLParserGenerator.StageTwoParser"/> to translate 
+            expressions into <see cref="T:Loyc.LLParserGenerator.Pred"/> objects, and then invokes 
+            <see cref="T:Loyc.LLParserGenerator.LLParserGenerator"/> to analyze the grammar and generate 
+            code.</li>
             </ol>
             </remarks>
         </member>
@@ -1102,6 +1113,12 @@
             <remarks>Note: Spaces and Comments should never be encountered by the 
             parser. I assume they are filtered out of all Token Literals.</remarks>
         </member>
+        <member name="T:Loyc.LLParserGenerator.TokenExt">
+            <summary>Provides the <c>Type()</c> extension method required by <see cref="T:Loyc.Syntax.Lexing.Token"/>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
+            <summary>Converts <c>t.TypeInt</c> to <see cref="T:Loyc.LLParserGenerator.TokenType"/>.</summary>
+        </member>
         <member name="T:Loyc.LLParserGenerator.StageOneParser">
             <summary>
             Parses a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> from LES or EC# into an LNode.
@@ -1109,7 +1126,7 @@
             <remarks>
             LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
             an <see cref="T:Loyc.Syntax.LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-            <c>(a, b) | @#suf*(c)</c>. This class handles the first stage. The second 
+            <c>(a, b) | @`suf*`(c)</c>. This class handles the first stage. The second 
             stage (<see cref="T:Loyc.LLParserGenerator.StageTwoParser"/>) is that the <see cref="T:Loyc.Syntax.LNode"/> is 
             parsed into a tree of <see cref="T:Loyc.LLParserGenerator.Pred"/> objects.
             <para/>
@@ -1307,7 +1324,11 @@
             <summary>A container for the follow set of a <see cref="T:Loyc.LLParserGenerator.Rule"/>.</summary>
         </member>
         <member name="T:Loyc.LLParserGenerator.DefaultErrorBranch">
-            <summary>A singleton to be used as the value of <see cref="F:Loyc.LLParserGenerator.Alts.ErrorBranch"/>, representing the default error branch.</summary>
+            <summary>A singleton to be used as the value of <see cref="F:Loyc.LLParserGenerator.Alts.ErrorBranch"/>, representing the <c>default_error</c> branch.</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.Rule">
+            <summary>Represents an LLLPG rule, which is a <see cref="F:Loyc.LLParserGenerator.Rule.Pred"/>icate plus
+            a <see cref="F:Loyc.LLParserGenerator.Rule.Name"/> and optional attributes (e.g. token, private, etc.).</summary>
         </member>
         <member name="F:Loyc.LLParserGenerator.Rule.Basis">
             <summary>A node that contains the original code of the rule, or, if the
@@ -1332,6 +1353,9 @@
             the rule name.</summary>
             <param name="methodBody">The parsing code that was generated for this rule.</param>
             <returns>A method.</returns>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.LLLPG">
+            <summary>Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.LLLPG.QuickRun(System.String,System.Reflection.Assembly[])">
             <summary>Run macro processor for LLLPG on the specified input, with the

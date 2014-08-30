@@ -19,11 +19,11 @@ namespace LeMP
 
 		static void MaybeInitTupleMakers() {
 			if (TupleMakers == null) {
-				DefaultTupleMaker = Pair.Create(F.Id("Pair"), F.Dot("Pair", "Create"));
+				DefaultTupleMaker = Pair.Create(F.Id("Tuple"), F.Dot("Tuple", "Create"));
 				TupleMakers = new List<Pair<LNode, LNode>>() {
-					Pair.Create<LNode,LNode>(null, null),           // ignore 0 args
-					Pair.Create(F.Id("Tuple"), F.Dot("Tuple", "Create")), // 1 arg
-					DefaultTupleMaker, // 2 args
+					Pair.Create<LNode,LNode>(null, null),               // ignore 0 args
+					DefaultTupleMaker,                                  // 1 arg
+					Pair.Create(F.Id("Pair"), F.Dot("Pair", "Create")), // 2 args
 				};
 			}
 		}
@@ -110,7 +110,7 @@ namespace LeMP
 					rhs = tmp;
 				}
 				for (int i = 0; i < tuple.Count; i++)
-					stmts.Add(F.Call(S.Set, tuple[i], F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))))));
+					stmts.Add(F.Call(S.Assign, tuple[i], F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))))));
 				return F.Call(S.Splice, stmts.ToRVList());
 			}
 			return null;

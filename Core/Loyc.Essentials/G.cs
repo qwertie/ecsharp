@@ -106,7 +106,7 @@ namespace Loyc
 						else if (c == '/')  repl = '⁄'; // U+2044 fraction slash
 					}
 					if (repl != '\0')
-						sb.Append(c);
+						sb.Append(repl);
 				} else
 					sb.Append(c);
 			}

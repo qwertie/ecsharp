@@ -87,7 +87,12 @@ namespace LeMP
 		IMessageSink _sink;
 		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
 		public int MaxExpansions = 0xFFFF;
-	
+
+		[ThreadStatic]
+		static MacroProcessor _current;
+		/// <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+		public static MacroProcessor Current { get { return _current; } }
+
 		public MacroProcessor(Type prelude, IMessageSink sink)
 		{
 			_sink = sink;
@@ -188,6 +193,10 @@ namespace LeMP
 
 		#endregion
 
+		public RVList<LNode> ProcessSynchronously(LNode stmt)
+		{
+			return ProcessSynchronously(new RVList<LNode>(stmt));
+		}
 		public RVList<LNode> ProcessSynchronously(RVList<LNode> stmts)
 		{
 			return new MacroProcessorTask(this).ProcessCompilationUnit(stmts);
@@ -434,11 +443,17 @@ namespace LeMP
 			/// <summary>Top-level macro applicator.</summary>
 			public RVList<LNode> ProcessCompilationUnit(RVList<LNode> stmts)
 			{
-				Debug.Assert(_scopes.Count == 0);
-				_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
-				_scopes.Add(_curScope);
+				var old = MacroProcessor._current;
+				MacroProcessor._current = _parent;
+				try {
+					Debug.Assert(_scopes.Count == 0);
+					_curScope = new Scope { OpenNamespaces = _parent.PreOpenedNamespaces.Clone() };
+					_scopes.Add(_curScope);
 
-				return ApplyMacrosToList(stmts, MaxExpansions);
+					return ApplyMacrosToList(stmts, MaxExpansions);
+				} finally {
+					_current = old;
+				}
 			}
 
 			LNode ApplyMacros(LNode input, int maxExpansions)
@@ -520,6 +535,7 @@ namespace LeMP
 							s.foundMacros = new List<MacroInfo>(s.foundMacros);
 							s.results = new List<Result>(s.results);
 							s.messageHolder = s.messageHolder.Clone();
+							foundMacros = new List<MacroInfo>(foundMacros).Slice(0);
 							
 							s.preprocessed = ApplyMacrosToChildren(input, maxExpansions) ?? input;
 						}

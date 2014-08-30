@@ -51,7 +51,7 @@ namespace Ecs
 			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
 			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
 			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
-			P(S.Set, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
+			P(S.Assign, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
 			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),         P(S.Lambda, EP.Lambda),
 			P(S.DotDot, EP.Range),      P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
 			P(S.GT, EP.Compare),        P(S.Shr, EP.Shift),     P(S.Div, EP.Multiply),
@@ -332,7 +332,7 @@ namespace Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				PrintExpr(left, prec.LeftContext(context), (name == S.Set || name == S.Lambda ? Ambiguity.AllowUnassignedVarDecl : 0));
+				PrintExpr(left, prec.LeftContext(context), (name == S.Assign || name == S.Lambda ? Ambiguity.AllowUnassignedVarDecl : 0));
 				if (backtick)
 					flags |= Ambiguity.UseBacktick;
 				PrintInfixWithSpace(_n.Name, prec, flags);

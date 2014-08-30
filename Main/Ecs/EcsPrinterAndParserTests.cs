@@ -89,7 +89,7 @@ namespace Ecs
 			Expr("a > b || a < c",   F.Call(S.Or, F.Call(S.GT, a, b), F.Call(S.LT, a, c)));
 			Expr("a == b ^^ a != c", F.Call(S.Xor, F.Call(S.Eq, a, b), F.Call(S.Neq, a, c)));
 			Expr("a & b | c ^ 1",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), F.Call(S.XorBits, c, one)));
-			Expr("a = b ?? c",       F.Call(S.Set, a, F.Call(S.NullCoalesce, b, c)));
+			Expr("a = b ?? c",       F.Call(S.Assign, a, F.Call(S.NullCoalesce, b, c)));
 			Expr("a += b ~ c",       F.Call(S.AddSet, a, F.Call(S.NotBits, b, c)));
 			Expr("a >>= b <<= c",    F.Call(S.ShrSet, a, F.Call(S.ShlSet, b, c)));
 			Expr("a.b - a::b",       F.Call(S.Sub, F.Call(S.Dot, a, b), F.Call(S.ColonColon, a, b)));
@@ -193,7 +193,7 @@ namespace Ecs
 			Stmt("@var a;",  F.Vars(_("var"), a));
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));
 			Stmt(@"$(a(b)) x;", F.Vars(F.Call(S.Substitute, F.Call(a, b)), x));
-			Stmt("Foo a, b = c;", F.Vars(Foo, a, F.Call(S.Set, b, c)));
+			Stmt("Foo a, b = c;", F.Vars(Foo, a, F.Call(S.Assign, b, c)));
 		}
 
 		protected LNode Attr(LNode attr, LNode node)
@@ -236,17 +236,17 @@ namespace Ecs
 		[Test]
 		public void ParsingChallenges() // See also: ParserOnlyTests()
 		{
-			Stmt("Foo? a = 0, b;",        F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Set, a, zero), b));
-			Stmt("Foo? a = b ? c : null;", F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Set, a,
+			Stmt("Foo? a = 0, b;",        F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero), b));
+			Stmt("Foo? a = b ? c : null;", F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a,
 			                              F.Call(S.QuestionMark, b, c, F.Literal(null)))));
 			// Note: To simplify the parser, EC# cannot parse the standalone 
 			//       statement "Foo ? a = 0 : b;" - you must use parentheses.
-			Stmt("(Foo? a = 0, b);",      F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Set, a, zero)), b));
-			Stmt("(Foo ? a = 0 : b);",    F.InParens(F.Call(S.QuestionMark, Foo, F.Call(S.Set, a, zero), b)));
+			Stmt("(Foo? a = 0, b);",      F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero)), b));
+			Stmt("(Foo ? a = 0 : b);",    F.InParens(F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, zero), b)));
 			Stmt("(Foo? a = b ? c : null);", F.InParens(
-				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Set, a, F.Call(S.QuestionMark, b, c, F.Literal(null))))));
+				F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))))));
 			Stmt("(Foo ? a = b ? c : null : 0);", F.InParens(
-				F.Call(S.QuestionMark, Foo, F.Call(S.Set, a, F.Call(S.QuestionMark, b, c, F.Literal(null))), zero)));
+				F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, F.Call(S.QuestionMark, b, c, F.Literal(null))), zero)));
 		}
 
 		[Test]
@@ -610,11 +610,11 @@ namespace Ecs
 			if (this is EcsNodePrinterTests)
 				Stmt("int x;",             F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = true);
 			Stmt("#var(int, (x));",    F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = false);
-			Stmt("int x = (1);",       F.Call(S.Var, F.Int32, F.Call(S.Set, x, F.InParens(one))), p => p.AllowChangeParenthesis = true);
-			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Set, F.InParens(x), one)), p => p.AllowChangeParenthesis = false);
-			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Set, F.InParens(x), one)), p => p.AllowChangeParenthesis = true);
+			Stmt("int x = (1);",       F.Call(S.Var, F.Int32, F.Call(S.Assign, x, F.InParens(one))), p => p.AllowChangeParenthesis = true);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParenthesis = false);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParenthesis = true);
 			Option(Mode.PrintBothParseFirst, "#var(int, (x = 1));", "int x = 1;",
-				F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Set, x, one))), p => p.AllowChangeParenthesis = true);
+				F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Assign, x, one))), p => p.AllowChangeParenthesis = true);
 			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = false);
 			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = true);
 			// TODO
@@ -721,7 +721,7 @@ namespace Ecs
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new",                  F.Id(S.New));
 			Expr("#new()",                F.Call(S.New));
-			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F._Missing, F.Call(S.Set, a, one), F.Call(S.Set, b, two)));
+			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F._Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
 
 			//int[,] a = null;
 			//int[][,] aa = new int[][,] { a };
@@ -853,7 +853,7 @@ namespace Ecs
 			Stmt("public new partial string Foo(int x);", stmt);
 			// The printer does not print trivia attributes, but the parsing test will fail if the trivia is missing
 			Expr("[#public, #new, "         +            "#partial] #def(string, Foo, #(#var(int, x)))", stmt, Mode.PrintOnly);
-			Expr("[#public, #new, [#trivia_WordAttribute] #partial] #def(string, Foo, #(#var(int, x)))", stmt, Mode.ParseOnly);
+			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #def(string, Foo, #(#var(int, x)))", stmt, Mode.ParseOnly);
 			stmt = F.Def(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
 			Expr("#def(int, Foo, #(#var(int, x)), {\n  x * x\n})", stmt);
@@ -1094,7 +1094,7 @@ namespace Ecs
 		public void UsingStmts()
 		{
 			Stmt("using Foo.x;",       F.Call(S.Import, F.Dot(Foo, x)));
-			Stmt("using Foo = x;",     Attr(F.Id(S.FilePrivate), F.Call(S.Alias, F.Call(S.Set, Foo, x), F._Missing)));
+			Stmt("using Foo = x;",     Attr(F.Id(S.FilePrivate), F.Call(S.Alias, F.Call(S.Assign, Foo, x), F._Missing)));
 			Stmt("using (var x = Foo)\n  x.a();", F.Call(S.UsingStmt, F.Var(F._Missing, x.Name, Foo), F.Call(F.Dot(x, a))));
 		}
 
@@ -1241,7 +1241,8 @@ namespace Ecs
 			Stmt("set(1, Foo());", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
-			Stmt("set (1) {\n  Foo();\n}",  AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
+			Stmt("protected set {\n  Foo();\n}", Attr(F.Protected, AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special)));
+			Stmt("set (1) {\n  Foo();\n}", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
 			Stmt("set(1, {\n  Foo();\n});", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
 		}
 
@@ -1250,13 +1251,13 @@ namespace Ecs
 		{
 			// TODO: The printer's newline choices are odd. See if we can improve them.
 			Stmt("int[,] Foo = new[,] { { 0\n  }, { 1, 2\n  } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Set, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), 
+				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), 
 					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
 					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
 			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S._Array, S.Int32), 
-				F.Call(S.Set, Foo, AsStyle(F.Call(S.ArrayInit, zero, one, two), NodeStyle.OldStyle))));
+				F.Call(S.Assign, Foo, AsStyle(F.Call(S.ArrayInit, zero, one, two), NodeStyle.OldStyle))));
 			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Set, Foo, F.Call(S.ArrayInit, 
+				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, 
 					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
 					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
 		}
@@ -1403,9 +1404,9 @@ namespace Ecs
 		public void TODO()
 		{
 			Stmt("var a = (Foo ? b = c as Foo? : 0);", 
-				F.Var(F._Missing, F.Call(S.Set, a, F.InParens(
+				F.Var(F._Missing, F.Call(S.Assign, a, F.InParens(
 					F.Call(S.QuestionMark, Foo,
-						F.Call(S.Set, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
+						F.Call(S.Assign, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
 		}
 	}
 
@@ -1555,11 +1556,11 @@ namespace Ecs
 
 			// Trailing commas
 			Stmt("int[] Foo = { 0, 1, 2, };", F.Call(S.Var, F.Of(S._Array, S.Int32), 
-				F.Call(S.Set, Foo, F.Call(S.ArrayInit, zero, one, two))));
+				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, zero, one, two))));
 			Stmt("int[,] Foo = { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Set, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
+				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
 			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Set, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
+				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 		}
 	}
 }

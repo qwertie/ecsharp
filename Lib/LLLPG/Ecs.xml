@@ -144,6 +144,25 @@
             <summary>A helper class that removes comments from a token stream, saving 
             them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
         </member>
+        <member name="T:Ecs.Parser.TokenExt">
+            <summary>Provides the <c>Type()</c> extension method required by 
+            <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an EC# token
+            as a string, for tokens that contain sufficient information to do so.</summary>
+        </member>
+        <member name="M:Ecs.Parser.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
+            <summary>Converts <c>t.TypeInt</c> to <see cref="T:Ecs.Parser.TokenType"/>.</summary>
+        </member>
+        <member name="M:Ecs.Parser.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
+            <summary>Expresses an LES token as a string.</summary>
+            <remarks>Note that some Tokens do not contain enough information to
+            reconstruct a useful token string, e.g. comment tokens do not store the 
+            comment but merely contain the location of the comment in the source code.
+            For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
+            to its source file, so this method cannot return the original string.
+            <para/>
+            The results are undefined if the token was not produced by <see cref="T:Ecs.Parser.EcsLexer"/>.
+            </remarks>
+        </member>
         <member name="T:Ecs.EcsNodePrinter">
             <summary>Prints a Loyc tree to EC# source code.</summary>
             <remarks>
@@ -188,7 +207,7 @@
             <para/>
             This class contains some configuration options that will defeat round-
             tripping but will make the output look better. For example,
-            <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/> will print a tree such as <c>#*(a + b, c)</c> 
+            <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/> will print a tree such as <c>@*(a + b, c)</c> 
             as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
             even though parenthesis make the Loyc tree slightly different.
             <para/>
@@ -235,7 +254,7 @@
             <summary>Permits extra parenthesis to express precedence, instead of
             resorting to prefix notation (defaults to true). Also permits removal
             of parenthesis if necessary to print special constructs.</summary>
-            <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
+            <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
             <c>x * (a + b)</c>. Originally, the second tree had a significantly 
             different structure from the first, as parenthesis were represented
             by a call to the empty symbol @``. This was annoyingly restrictive, so 
@@ -263,14 +282,14 @@
             <summary>Suppresses printing of all attributes that are not on 
             declaration or definition statements (such as classes, methods and 
             variable declarations at statement level). Also, avoids prefix notation 
-            when the attributes would have required it, e.g. <c>#+([Foo] a, b)</c> 
+            when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
             can be printed "a+b" instead.</summary>
             <remarks>This also affects the validation methods such as <see cref="M:Ecs.EcsNodePrinter.IsVariableDecl(System.Boolean,System.Boolean)"/>. With this flag, validation methods will ignore
             attributes in locations where they don't belong instead of returning
             false.</remarks>
         </member>
         <member name="P:Ecs.EcsNodePrinter.OmitMissingArguments">
-            <summary>When an argument to a method or macro has the value #missing,
+            <summary>When an argument to a method or macro has an empty name (@``),
             it will be omitted completely if this flag is set.</summary>
         </member>
         <member name="P:Ecs.EcsNodePrinter.OmitSpaceTrivia">
@@ -309,7 +328,8 @@
             <summary>Controls the locations where newlines should be emitted.</summary>
         </member>
         <member name="T:Ecs.EcsNodePrinter.Ambiguity">
-            <summary>Flags that represent special situations in EC# syntax.</summary>
+            <summary>Internal enum (marked public for an obscure technical reason). 
+            These are flags that represent special situations in EC# syntax.</summary>
         </member>
         <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowUnassignedVarDecl">
             <summary>The expression can contain uninitialized variable 
@@ -391,6 +411,12 @@
             <see cref="P:Ecs.EcsNodePrinter.SpaceAroundInfixStopPrecedence"/> and
             <see cref="P:Ecs.EcsNodePrinter.SpaceAfterPrefixStopPrecedence"/>.
             </remarks>
+        </member>
+        <member name="T:Ecs.EcsNodePrinterWriter">
+            <summary>Helper class of <see cref="T:Ecs.EcsNodePrinter"/></summary>
+        </member>
+        <member name="T:Ecs.Program">
+            <summary>Entry point: runs the EC# test suite and related tests.</summary>
         </member>
     </members>
 </doc>

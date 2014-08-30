@@ -88,6 +88,14 @@ namespace Loyc.Syntax
 		LNodePrinter Printer { get; }
 
 		/// <summary>Converts the specified syntax tree to a string.</summary>
+		/// <param name="node">A syntax tree to print.</param>
+		/// <param name="msgs">If errors or warnings occur during printing, they are sent here.</param>
+		/// <param name="mode">Language-defined configuration. It is suggested 
+		/// that the printing service should accept ParsingService.Exprs, 
+		/// ParsingService.Stmts and ParsingService.File as possible printing 
+		/// modes.</param>
+		/// <param name="indentString">Indent character for multi-line nodes</param>
+		/// <param name="lineSeparator">Newline string for multi-line nodes</param>
 		string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 	}
 	

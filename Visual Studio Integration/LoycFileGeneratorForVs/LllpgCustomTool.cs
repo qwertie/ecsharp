@@ -167,7 +167,7 @@ namespace Loyc.VisualStudio
 
 						// Report errors
 						foreach (var msg in innerSink.List)
-							ReportErrorToVS(progressCallback, msg.Type, msg.Context, msg.Format, msg.Args);
+							ReportErrorToVS(progressCallback, msg.Severity, msg.Context, msg.Format, msg.Args);
 
 						return Encoding.UTF8.GetBytes(c.Output.ToString());
 					}
@@ -184,14 +184,14 @@ namespace Loyc.VisualStudio
 			string message2 = Localize.From(message, args);
 			if (context is LNode) {
 				var range = ((LNode)context).Range;
-				line = range.Begin.Line;
-				col = range.Begin.PosInLine;
+				line = range.Start.Line;
+				col = range.Start.PosInLine;
 			} else if (context is SourcePos) {
 				line = ((SourcePos)context).Line;
 				col = ((SourcePos)context).PosInLine;
 			} else if (context is SourceRange) {
-				line = ((SourceRange)context).Begin.Line;
-				col = ((SourceRange)context).Begin.PosInLine;
+				line = ((SourceRange)context).Start.Line;
+				col = ((SourceRange)context).Start.PosInLine;
 			} else
 				message2 = MessageSink.LocationString(context) + ": " + message2;
 

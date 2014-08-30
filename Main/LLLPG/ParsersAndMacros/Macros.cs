@@ -192,6 +192,10 @@ namespace Loyc.LLParserGenerator
 		//    return false;
 		//}
 
+		// *********************************************************************
+		// TODO: ProcessChildrenBefore is a performance problem because it applies to ALL methods.
+		// *********************************************************************
+
 		[SimpleMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
 			"#def", "#property", Mode = MacroMode.Passive | MacroMode.ProcessChildrenBefore)]

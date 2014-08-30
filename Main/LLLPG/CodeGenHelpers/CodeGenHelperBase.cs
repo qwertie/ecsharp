@@ -58,7 +58,7 @@ namespace Loyc.LLParserGenerator
 		{
 			LNode assignment;
 			if ((stmt.Calls(_alias, 1) || stmt.CallsMin(S.Alias, 1)) &&
-				(assignment = stmt.Args[0]).Calls(S.Set, 2))
+				(assignment = stmt.Args[0]).Calls(S.Assign, 2))
 			{
 				IEnumerable<KeyValuePair<LNode, LNode>> q; 
 				LNode alias = assignment.Args[0], replacement = assignment.Args[1], old;

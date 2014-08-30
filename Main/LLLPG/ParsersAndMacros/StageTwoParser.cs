@@ -167,7 +167,7 @@ namespace Loyc.LLParserGenerator
 					if (expr.Calls(S.AddSet))
 						pred.ResultSaver = result => F.Call(F.Dot(lhs, _Add), result);
 					else if (expr.Calls(S.QuickBindSet))
-						pred.ResultSaver = result => F.Call(S.Var, F._Missing, F.Call(S.Set, lhs, result));
+						pred.ResultSaver = result => F.Call(S.Var, F._Missing, F.Call(S.Assign, lhs, result));
 					else
 						pred.ResultSaver = result => F.Call(expr.Target, lhs, result);
 					return pred;

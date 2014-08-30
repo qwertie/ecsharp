@@ -250,15 +250,16 @@ namespace Loyc.VisualStudio
 	[Export(typeof(EditorFormatDefinition))]
 	[ClassificationType(ClassificationTypeNames = "LoycCallTarget")]
 	[Name("LoycCallTarget")] // I don't know what this does
-	[UserVisible(false)] // When true, shows this type in the Fonts & Colors page of the VS Options
+	[UserVisible(true)] // When true, shows this type in the Fonts & Colors page of the VS Options
 	[Order(Before = Priority.Default)] // Supposedly "sets the priority to be after the default classifiers", even though the word "Before" is used
 	internal sealed class CallTargetDef : ClassificationFormatDefinition
 	{
 		public CallTargetDef()
 		{
 			this.DisplayName = "LES - method call target"; //human readable version of the name
-			this.ForegroundColor = Color.FromRgb(40, 20, 0);
-			this.BackgroundColor = Color.FromRgb(255, 224, 192);
+			this.ForegroundColor = Color.FromRgb(80, 40, 0);
+			this.BackgroundColor = Color.FromRgb(255, 248, 240);
+			this.IsBold = true; // doesn't work
 		}
 
 		// I don't know what this is for but the Ook! sample had them

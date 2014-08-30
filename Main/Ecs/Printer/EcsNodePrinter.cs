@@ -140,6 +140,8 @@ namespace Ecs
 		{
 			p.Node = node;
 			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
+			if (mode == ParsingService.Exprs)
+				style = NodeStyle.Expression;
 
 			switch (style & NodeStyle.BaseStyleMask) {
 				case NodeStyle.Expression: p.PrintExpr(); break;
@@ -615,7 +617,7 @@ namespace Ecs
 			{
 				LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
 				if (type == S.Alias) {
-					if (!CallsWPAIH(name, S.Set, 2))
+					if (!CallsWPAIH(name, S.Assign, 2))
 						return false;
 					if (!IsComplexIdentifier(name.Args[0], ICI.Default | ICI.NameDefinition) ||
 						!IsComplexIdentifier(name.Args[1]))
@@ -730,7 +732,7 @@ namespace Ecs
 						if (!allowNoAssignment)
 							return false;
 					} else {
-						if (!CallsWPAIH(var, S.Set, 2))
+						if (!CallsWPAIH(var, S.Assign, 2))
 							return false;
 						LNode name = var.Args[0], init = var.Args[1];
 						if (name.IsParenthesizedExpr())

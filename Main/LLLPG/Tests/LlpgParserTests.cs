@@ -51,7 +51,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("(a) (b)", F.Tuple(a, b));
 			TestStage1("(a b)?", F.Call(Opt, F.Tuple(a, b)));
 			TestStage1("{ a(); }", F.Braces(F.Call(a)));
-			TestStage1("a = b..c", F.Call(S.Set, a, F.Call(S.DotDot, b, c)));
+			TestStage1("a = b..c", F.Call(S.Assign, a, F.Call(S.DotDot, b, c)));
 			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
 			TestStage1("a := b", F.Call(S.QuickBindSet, a, b));
 			TestStage1("greedy a", F.Call(Greedy, a));
@@ -59,7 +59,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("nongreedy(a)", F.Call(Nongreedy, a));
 			TestStage1("default a", F.Call(Default, a), false);
 			TestStage1("error a", F.Call(Error, a));
-			TestStage1("&{ a = b / c }", F.Call(S.AndBits, F.Braces(F.Call(S.Set, a, F.Call(S.Div, b, c)))));
+			TestStage1("&{ a = b / c }", F.Call(S.AndBits, F.Braces(F.Call(S.Assign, a, F.Call(S.Div, b, c)))));
 			TestStage1("&!{ a(); b(); }", F.Call(AndNot, F.Braces(F.Call(a), F.Call(b))), false);
 		}
 		[Test]
@@ -85,7 +85,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Tuple(a, b)), c));
 			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), F.Literal('c')))));
 			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
-				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Set, F.Id("x"), F.Id("t")))),
+				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Assign, F.Id("x"), F.Id("t")))),
 				F.Tuple(F.Literal('-'), F.Call(S.QuickBindSet, F.Id("t"), F.Id("num")), F.Braces())),
 				F.Tuple(F.Literal('('), F.Literal(')'))));
 		}

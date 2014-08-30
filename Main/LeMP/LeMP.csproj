@@ -219,9 +219,11 @@
     <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleMacro.cs" />
+    <Compile Include="StandardMacros\BackingFieldMacro.cs" />
+    <Compile Include="StandardMacros\ForwardingMacro.cs" />
     <Compile Include="StandardMacros\NullDotMacro.cs" />
     <Compile Include="StandardMacros\ReplaceMacro.cs" />
-    <Compile Include="StandardMacros\SetMemberMacro.cs" />
+    <Compile Include="StandardMacros\SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros\StandardMacros.cs" />
     <Compile Include="StandardMacros\TupleMacros.cs" />
     <Compile Include="StandardMacros\UnrollMacro.cs" />

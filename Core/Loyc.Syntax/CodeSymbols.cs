@@ -26,20 +26,20 @@ namespace Loyc.Syntax
 		public static readonly Symbol PreDec = GSymbol.Get("--"); //!< "--" Unary prefix decrement
 		public static readonly Symbol PostInc = GSymbol.Get("suf++"); //!< "suf++" Unary suffix increment
 		public static readonly Symbol PostDec = GSymbol.Get("suf--"); //!< "suf--" Unary suffix decrement
-		public static readonly Symbol Mod = GSymbol.Get("%");   //!< "%"  Remainder operator
-		public static readonly Symbol And = GSymbol.Get("&&");  //!< "&&" Logical short-circuit 'and' operator
-		public static readonly Symbol Or = GSymbol.Get("||");   //!< "||" Logical short-circuit 'or' operator
-		public static readonly Symbol Xor = GSymbol.Get("^^");  //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
-		public static readonly Symbol Eq = GSymbol.Get("==");   //!< "==" Equality test operator
-		public static readonly Symbol Neq = GSymbol.Get("!=");  //!< "!=" Inequality test operator
-		public static readonly Symbol GT = GSymbol.Get(">");    //!< ">"  Greater-than operator
-		public static readonly Symbol GE = GSymbol.Get(">=");   //!< ">=" Greater-than-or-equal-to operator
-		public static readonly Symbol LT = GSymbol.Get("<");    //!< "<"  Less-than operator
-		public static readonly Symbol LE = GSymbol.Get("<=");   //!< "<=" Less-than-or-equal-to operator
-		public static readonly Symbol Shr = GSymbol.Get(">>");  //!< ">>" Right-shift operator
-		public static readonly Symbol Shl = GSymbol.Get("<<");  //!< "<<" Left-shift operator
-		public static readonly Symbol Not = GSymbol.Get("!");   //!< "!"  Logical 'not' operator
-		public static readonly Symbol Set = GSymbol.Get("=");   //!< "="  Assignment operator
+		public static readonly Symbol Mod = GSymbol.Get("%");    //!< "%"  Remainder operator
+		public static readonly Symbol And = GSymbol.Get("&&");   //!< "&&" Logical short-circuit 'and' operator
+		public static readonly Symbol Or = GSymbol.Get("||");    //!< "||" Logical short-circuit 'or' operator
+		public static readonly Symbol Xor = GSymbol.Get("^^");   //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
+		public static readonly Symbol Eq = GSymbol.Get("==");    //!< "==" Equality test operator
+		public static readonly Symbol Neq = GSymbol.Get("!=");   //!< "!=" Inequality test operator
+		public static readonly Symbol GT = GSymbol.Get(">");     //!< ">"  Greater-than operator
+		public static readonly Symbol GE = GSymbol.Get(">=");    //!< ">=" Greater-than-or-equal-to operator
+		public static readonly Symbol LT = GSymbol.Get("<");     //!< "<"  Less-than operator
+		public static readonly Symbol LE = GSymbol.Get("<=");    //!< "<=" Less-than-or-equal-to operator
+		public static readonly Symbol Shr = GSymbol.Get(">>");   //!< ">>" Right-shift operator
+		public static readonly Symbol Shl = GSymbol.Get("<<");   //!< "<<" Left-shift operator
+		public static readonly Symbol Not = GSymbol.Get("!");    //!< "!"  Logical 'not' operator
+		public static readonly Symbol Assign = GSymbol.Get("="); //!< "="  Assignment operator
 		public static readonly Symbol OrBits = GSymbol.Get("|");     //!< "|" Bitwise or operator
 		public static readonly Symbol AndBits = GSymbol.Get("&");    //!< "&" Bitwise and operator. Also, address-of (unary &)
 		public static readonly Symbol _AddressOf = GSymbol.Get("&"); //!< Alias for AndBits
@@ -203,7 +203,14 @@ namespace Loyc.Syntax
 		public static readonly Symbol IsLegal = GSymbol.Get("#isLegal");     //!< "#isLegal" TODO
 		public static readonly Symbol Result = GSymbol.Get("#result");       //!< #result(expr) indicates that expr was missing a semicolon, which
 		                                                                     //!< indicates that "expr" will be the value of the containing block.
-		
+
+		// Names of property getters & setters, and event adders & removers
+		public static readonly Symbol get = GSymbol.Get("get");
+		public static readonly Symbol set = GSymbol.Get("set");
+		public static readonly Symbol add = GSymbol.Get("add");
+		public static readonly Symbol remove = GSymbol.Get("remove");
+		public static readonly Symbol value = GSymbol.Get("value");
+
 		// EC# directives (not to be confused with preprocessor directives)
 		public static readonly Symbol Error = GSymbol.Get("#error");         // e.g. #error("This feature is not supported in Windows CE")
 		public static readonly Symbol Warning = GSymbol.Get("#warning");     // e.g. #warning("Possibly mistaken empty statement")
