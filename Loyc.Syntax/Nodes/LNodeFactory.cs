@@ -325,7 +325,7 @@ namespace Loyc.Syntax
 		public LNode Set(LNode lhs, LNode rhs, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return Call(S.Set, new RVList<LNode>(lhs, rhs), startIndex, endIndex);
+			return Call(S.Assign, new RVList<LNode>(lhs, rhs), startIndex, endIndex);
 		}
 
 		public LNode List()
@@ -411,7 +411,7 @@ namespace Loyc.Syntax
 		public LNode Var(LNode type, Symbol name, LNode initValue = null)
 		{
 			if (initValue != null)
-				return Call(S.Var, type, Call(S.Set, Id(name), initValue));
+				return Call(S.Var, type, Call(S.Assign, Id(name), initValue));
 			else
 				return Call(S.Var, type, Id(name));
 		}

@@ -85,10 +85,10 @@ namespace Loyc.Syntax.Les
 			Stmt("/x;", F.Call(S.Div, x));
 			Stmt("-a * b;", F.Call(S.Mul, F.Call(S._Negate, a), b));
 			Stmt("-x ** +x / ~x + &x & *x && !x = ^x;",
-				F.Call(S.Set, F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
+				F.Call(S.Assign, F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)), F.Call(S.Not, x)), F.Call(S.XorBits, x)));
-			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Set, a, F.Call(S.Mod, b))));
+			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Stmt(".. a & b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.AndBits, a, b)), c));
 		}
 
@@ -147,16 +147,16 @@ namespace Loyc.Syntax.Les
 			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));
 			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
 			// This last one may seem meaningless, but LES does not judge
-			Stmt("Foo = a.b!c!x;", F.Call(S.Set, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
+			Stmt("Foo = a.b!c!x;", F.Call(S.Assign, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
 		}
 
 		[Test]
 		public void Attributes()
 		{
 			Expr("[Foo] a();", F.Attr(Foo, F.Call(a)));
-			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Set, a, b)));
+			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
 			Expr("[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
-			Expr("a = [Foo] b + c;", F.Call(S.Set, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Expr("a = [Foo] b + c;", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
 		}
 
 		[Test]
