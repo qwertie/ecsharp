@@ -285,6 +285,45 @@ After hearing about the lambda syntax for methods and properties, I added it to 
 
 I wasn't planning the "params IEnumerable" or constructor type inference features for EC#, but I'll support whatever C# does.
 
+## Record types
+
+Record types are a quick way to declare bundles of data.
+
+    //example here
+
+This is one of those features that aren't needed in a language like EC# that supports macros. EC# could support the same thing, with no changes to the parser, using a syntax like this:
+
+    record Point(string FirstName, string LastName, int Age);
+
+Or like this:
+
+    record(Person) { string FirstName, LastName; int Age; }
+
+## Pattern matching
+
+[It is said](http://www.infoq.com/news/2014/08/Pattern-Matching) that C# 6 will support a new "pattern matching" syntax that looks like this:
+
+    public static class PhoneNumber
+    {
+       public static bool operator is(string s, out int areaCode, out int number)
+       {
+          Match m = Regex.Match(s, @"^\s*(\((\d\d\d)\))?\s*(\d\d\d)-?(\d\d\d\d)$");
+          if (!m.Success) return false;
+          areaCode = int.Parse(m.Groups[2].Value);
+          number = int.Parse(m.Groups[3].Value) * 10000 + int.Parse(m.Groups[4].Value);
+          return true;
+       }
+    }
+    string s = "(403) 777-3760";
+    if (c is PhoneNumber(var acode, *))
+        Console.WriteLine("Area code: " + acode);
+
+I can only assume this feature works automatically in conjunction with record types. It seems a little odd that one writes `var acode` rather than `out var acode`; I wonder if this means that the pattern-matching `is` operator is only allowed to have output parameters, not input parameters.
+
+I wasn't sure how to support pattern matching in EC#. This plan seems as good as any.
+
+"`*`" means "don't care". In EC# I was planning to introduce "`_`" to represent "don't care" for any out parameter or unused result (e.g. `_ = control.Handle` calls a property and discards the result) rather than `*`; `_` would mean "don't care" only if there was no explicitly-declared variable named `_`. I suppose `*` can do the same job instead.
+
 ## A lot more is planned for EC#
 
 In the long run I want to add tons of stuff to EC#, but for now EC# is just a parser plus LeMP (Lexical Macro Processor), not a complete compiler. There is, of course, one thing that EC# can do already that C# cannot: lexical macros. Lexical macros are powerful: have you heard of the [Loyc LL(k) Parser Generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), well, that's just a macro inside a nascent version of EC#. Macros allow third parties to add a variety of features to the language, and some of EC#'s features (such as the `?.` operator) will initially (if not forever) be implemented as lexical macros.
