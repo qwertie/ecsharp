@@ -322,7 +322,7 @@ namespace Loyc.Syntax
 			return Call(S.Braces, contents, startIndex, endIndex);
 		}
 
-		public LNode Set(LNode lhs, LNode rhs, int startIndex = -1, int endIndex = -1)
+		public LNode Assign(LNode lhs, LNode rhs, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
 			return Call(S.Assign, new RVList<LNode>(lhs, rhs), startIndex, endIndex);
@@ -410,6 +410,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Var(LNode type, Symbol name, LNode initValue = null)
 		{
+			type = type ?? _Missing;
 			if (initValue != null)
 				return Call(S.Var, type, Call(S.Assign, Id(name), initValue));
 			else
@@ -417,16 +418,18 @@ namespace Loyc.Syntax
 		}
 		public LNode Var(LNode type, LNode name)
 		{
-			return Call(S.Var, type, name);
+			return Call(S.Var, type ?? _Missing, name);
 		}
 		public LNode Vars(LNode type, params Symbol[] names)
 		{
+			type = type ?? _Missing;
 			var list = new List<LNode>(names.Length + 1) { type };
 			list.AddRange(names.Select(n => Id(n)));
 			return Call(S.Var, list.ToArray());
 		}
 		public LNode Vars(LNode type, params LNode[] namesWithValues)
 		{
+			type = type ?? _Missing;
 			var list = new RWList<LNode>() { type };
 			list.AddRange(namesWithValues);
 			return Call(S.Var, list.ToRVList());
