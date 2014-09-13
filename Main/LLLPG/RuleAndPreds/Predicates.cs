@@ -127,7 +127,7 @@ namespace Loyc.LLParserGenerator
 		static LNodeFactory F = new LNodeFactory(LNode.SyntheticSource);
 		public static Pred Set(string varName, Pred pred) {
 			pred.ResultSaver = res => {
-				return F.Set(F.Id(varName), res);
+				return F.Assign(F.Id(varName), res);
 			};
 			return pred;
 		}
@@ -819,8 +819,8 @@ namespace Loyc.LLParserGenerator
 			: base(basis) { Pred = pred; Not = not; Local = local; }
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
-		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA"));
-		internal static readonly LNode SubstituteLI = F.Call(S.Substitute, F.Id("LI"));
+		internal static readonly LNode SubstituteLA = F.Call(S.Substitute, F.Id("LA")); // $LA
+		internal static readonly LNode SubstituteLI = F.Call(S.Substitute, F.Id("LI")); // $LI
 
 		/// <summary>Inverts the condition if Not==true, so that if the 
 		/// <see cref="Pred"/> matches, the <see cref="AndPred"/> does not 

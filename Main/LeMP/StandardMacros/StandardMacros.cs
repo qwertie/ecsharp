@@ -148,7 +148,7 @@ namespace LeMP
 			LNode x = a[0], y = a[1];
 			// This is INCOMPLETE! But it'll suffice temporarily.
 			// #??=(x, y) => x = x ?? y => #=(x, #??(x, y))
-			return F.Set(x, F.Call(S.NullCoalesce, x, y));
+			return F.Assign(x, F.Call(S.NullCoalesce, x, y));
 		}
 
 		[SimpleMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
@@ -158,7 +158,7 @@ namespace LeMP
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode A = a[0], B = a[1];
-				return F.Vars(F._Missing, F.Set(B, A));
+				return F.Vars(F._Missing, F.Assign(B, A));
 			}
 			return null;
 		}
@@ -169,7 +169,7 @@ namespace LeMP
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode A = a[0], B = a[1];
-				return F.Vars(F._Missing, F.Set(A, B));
+				return F.Vars(F._Missing, F.Assign(A, B));
 			}
 			return null;
 		}

@@ -82,7 +82,7 @@ namespace LeMP
 	/// <para/>
 	/// TODO: add method for processing an LNode instead of a list of source files.
 	/// </remarks>
-	public class MacroProcessor
+	public partial class MacroProcessor
 	{
 		IMessageSink _sink;
 		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
@@ -456,6 +456,14 @@ namespace LeMP
 				}
 			}
 
+			/// <summary>Applies macros in scope to <c>input</c>.</summary>
+			/// <param name="maxExpansions">Maximum number of opportunities given 
+			/// to macros to transform a given subtree. The output of any macro is
+			/// transformed again (as if by calling this method) with 
+			/// <c>maxExpansions = maxExpansions - 1</c> to encourage the 
+			/// expansion process to terminate eventually.</param>
+			/// <returns>Returns a transformed tree or null if the macros did not 
+			/// change the syntax tree at any level.</returns>
 			LNode ApplyMacros(LNode input, int maxExpansions)
 			{
 				if (maxExpansions <= 0)
@@ -493,27 +501,29 @@ namespace LeMP
 				// temporaries that are re-used between invocations of this method to 
 				// avoid stressing the garbage collector.
 				var s = new ApplyMacroState { foundMacros = _foundMacros, results = _results, messageHolder = _messageHolder };
-				List<MacroInfo> foundMacros = _foundMacros;
 
 				// if any of the macros use a priority flag, group by priority.
 				if (_foundMacros.Count > 1) {
-					var p = _foundMacros[0].Mode & MacroMode.PriorityMask;
-					for (int x = 1, c = _foundMacros.Count; x < c; x++) {
-						if ((_foundMacros[x].Mode & MacroMode.PriorityMask) != p) {
-							_foundMacros.Sort();
+					var p = s.foundMacros[0].Mode & MacroMode.PriorityMask;
+					for (int x = 1, c = s.foundMacros.Count; x < c; x++) {
+						if ((s.foundMacros[x].Mode & MacroMode.PriorityMask) != p) {
+							// need to make an independent list because _foundMacros may be cleared and re-used for descendant nodes
+							s.foundMacros = new List<MacroInfo>(s.foundMacros);
+							s.foundMacros.Sort();
 							for (int i = 0, j; i < c; i = j) {
-								p = _foundMacros[i].Mode & MacroMode.PriorityMask;
+								p = s.foundMacros[i].Mode & MacroMode.PriorityMask;
 								for (j = i + 1; j < c; j++)
-									if ((_foundMacros[j].Mode & MacroMode.PriorityMask) != p)
+									if ((s.foundMacros[j].Mode & MacroMode.PriorityMask) != p)
 										break;
-								LNode result = ApplyMacrosFound2(input, maxExpansions, _foundMacros.Slice(i, j - i), ref s);
+								LNode result = ApplyMacrosFound2(input, maxExpansions, s.foundMacros.Slice(i, j - i), ref s);
 								if (result != null)
 									return result;
 							}
+							return null;
 						}
 					}
 				}
-				return ApplyMacrosFound2(input, maxExpansions, foundMacros.Slice(0), ref s);
+				return ApplyMacrosFound2(input, maxExpansions, s.foundMacros.Slice(0), ref s);
 			}
 			private LNode ApplyMacrosFound2(LNode input, int maxExpansions, ListSlice<MacroInfo> foundMacros, ref ApplyMacroState s)
 			{

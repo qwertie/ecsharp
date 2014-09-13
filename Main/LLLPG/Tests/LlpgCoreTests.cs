@@ -728,7 +728,7 @@ namespace Loyc.LLParserGenerator
 			//
 			// Since the C# parser doesn't exist yet, this is done the hard way...
 			var n = F.Id("n");
-			var stmt = F.Set(n, F.Call(S.Checked, 
+			var stmt = F.Assign(n, F.Call(S.Checked, 
 					F.Call(S.Add, F.Call(S.Mul, n, F.Literal(10)),
 					   F.InParens(F.Call(S.Sub, F.Id("c"), F.Literal('0'))))));
 			var Number = Rule("Number", 
@@ -866,7 +866,7 @@ namespace Loyc.LLParserGenerator
 
 		protected virtual LNode Set(string var, object value)
 		{
-			return F.Set(F.Id(var), F.Literal(value));
+			return F.Assign(F.Id(var), F.Literal(value));
 		}
 
 		[Test]

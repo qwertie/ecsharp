@@ -32,12 +32,12 @@ namespace Loyc.VisualStudio
 
 	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
 	[ComVisible(true)]
-	[Guid("91585B26-E0B4-4BEE-B4A5-56FD529B9157")]
-	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator to C#", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	[Guid("3583EDC5-48F7-49F5-8502-DE18F30F9825")]
+	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
 	//[ProvideObject(typeof(LLLPG))]
-	public class LLLPG : LllpgCustomTool
+	public class LeMP : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
 		{
@@ -46,17 +46,17 @@ namespace Loyc.VisualStudio
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
- 				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
+				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
 		}
 	}
 
 	[ComVisible(true)]
-	[Guid("01D3BAE6-ED5F-4FDB-AA7A-9D37ED878E02")]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator to LES", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	[Guid("A246E3E1-BAA6-40BD-804E-144A422FEF0D")]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
 	//[ProvideObject(typeof(LLLPG_Les))]
-	public class LLLPG_Les : LllpgCustomTool
+	public class LeMP_Les : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
 		{
@@ -69,15 +69,45 @@ namespace Loyc.VisualStudio
 		}
 	}
 
+	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
+	[ComVisible(true)]
+	[Guid("91585B26-E0B4-4BEE-B4A5-56FD529B9157")]
+	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator (C# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator (C# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG), "LL(k) Parser Generator (C# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	//[ProvideObject(typeof(LLLPG))]
+	public class LLLPG : LeMP
+	{
+		public override void Configure(global::LeMP.Compiler c)
+		{
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			base.Configure(c);
+		}
+	}
 
-	public abstract class LllpgCustomTool : CustomToolBase
+	[ComVisible(true)]
+	[Guid("01D3BAE6-ED5F-4FDB-AA7A-9D37ED878E02")]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	//[ProvideObject(typeof(LLLPG_Les))]
+	public class LLLPG_Les : LeMP_Les
+	{
+		public override void Configure(global::LeMP.Compiler c)
+		{
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			base.Configure(c);
+		}
+	}
+
+	public abstract class LeMPCustomTool : CustomToolBase
 	{
 		protected override abstract string DefaultExtension();
 
-		class Compiler : LeMP.Compiler
+		class Compiler : global::LeMP.Compiler
 		{
 			public Compiler(IMessageSink sink, InputOutput file)
-				: base(sink, typeof(LeMP.Prelude.Macros), new [] { file }) { }
+				: base(sink, typeof(global::LeMP.Prelude.Macros), new [] { file }) { }
 
 			public StringBuilder Output = new StringBuilder();
 			public bool NoOutHeader;
@@ -100,6 +130,14 @@ namespace Loyc.VisualStudio
 					Output.Append(NewlineString);
 				}
 			}
+		}
+
+		public virtual void Configure(global::LeMP.Compiler c)
+		{
+			c.AddMacros(typeof(Loyc.LLParserGenerator.Macros).Assembly);
+			c.AddMacros(typeof(global::LeMP.Prelude.Macros).Assembly);
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 		}
 
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
@@ -156,13 +194,9 @@ namespace Loyc.VisualStudio
 					LeMP.Compiler.WarnAboutUnknownOptions(options, sink, KnownOptions);
 					if (c != null)
 					{
-						c.AddMacros(typeof(Loyc.LLParserGenerator.Macros).Assembly);
-						c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 						if (inputFilePath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
 							c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
-
+						Configure(c);
 						c.Run();
 
 						// Report errors

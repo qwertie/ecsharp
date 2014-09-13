@@ -223,10 +223,12 @@
     <Compile Include="StandardMacros\ForwardingMacro.cs" />
     <Compile Include="StandardMacros\NullDotMacro.cs" />
     <Compile Include="StandardMacros\ReplaceMacro.cs" />
+    <Compile Include="StandardMacros\RequiresMacro.cs" />
     <Compile Include="StandardMacros\SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros\StandardMacros.cs" />
     <Compile Include="StandardMacros\TupleMacros.cs" />
     <Compile Include="StandardMacros\UnrollMacro.cs" />
+    <Compile Include="StandardMacros\WithMacro.cs" />
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
   <ItemGroup>

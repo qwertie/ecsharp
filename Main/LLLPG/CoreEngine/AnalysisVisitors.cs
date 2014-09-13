@@ -462,7 +462,6 @@ namespace Loyc.LLParserGenerator
 			LLParserGenerator LLPG;
 			IPGCodeGenHelper CGH { get { return LLPG.CodeGenHelper; } }
 			Rule _currentRule;
-			Alts _currentAlts;
 			int _k;
 
 			public void Analyze(Rule rule)

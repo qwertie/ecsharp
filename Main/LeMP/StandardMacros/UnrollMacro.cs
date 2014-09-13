@@ -16,7 +16,8 @@ namespace LeMP
 
 		[SimpleMacro(@"unroll ((X, Y) \in ((X, Y), (Y, X))) {...}",
 			"Produces variations of a block of code. The braces are omitted from the output.")]
-		public static LNode unroll(LNode node, IMessageSink sink) {
+		public static LNode unroll(LNode node, IMessageSink sink)
+		{
 			LNode clause;
 			// unroll (X, Y) \in ((X, Y), (Y, X)) {...}
 			// unroll ((X, Y) in ((X, Y), (Y, X))) {...}
@@ -51,10 +52,10 @@ namespace LeMP
 						// Check for duplicate names
 						for (int j = 0; j < i; j++)
 							if (replacements[i].A == replacements[j].A)
-								sink.Write(Severity.Error, vars[i], "static foreach: duplicate name in the left-hand tuple"); // non-fatal
+								sink.Write(Severity.Error, vars[i], "unroll: duplicate name in the left-hand tuple"); // non-fatal
 					}
 				} else
-					return Reject(sink, cases, "static foreach: the left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
+					return Reject(sink, cases, "unroll: the left-hand side of 'in' should be a simple identifier or a tuple of simple identifiers.");
 			}
 
 			ReplaceCtx ctx = new ReplaceCtx { Replacements = replacements };
@@ -67,7 +68,7 @@ namespace LeMP
 				int count = tuple ? replacement.ArgCount : 1;
 				if (replacements.Length != count)
 				{
-					sink.Write(Severity.Error, replacement, "static foreach, iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Length, count);
+					sink.Write(Severity.Error, replacement, "unroll, iteration {0}: Expected {1} replacement items, got {2}", iteration, replacements.Length, count);
 					if (count < replacements.Length)
 						continue; // too few
 				}
@@ -87,7 +88,7 @@ namespace LeMP
 			
 			return body.With(S.Splice, output.ToRVList());
 		}
-		class ReplaceCtx // helper class for static foreach
+		class ReplaceCtx // helper class for unroll
 		{
 			Func<LNode, LNode> _replace;
 			public ReplaceCtx() { _replace = Replace; } // optimization

@@ -1721,6 +1721,11 @@
             printed when another node has this node attached to it as an attribute,
             and you print that other node.</summary>
         </member>
+        <member name="T:Loyc.Syntax.LTree">
+            <summary>
+            Standard methods to help pick apart Loyc trees
+            </summary>
+        </member>
         <member name="T:Loyc.Syntax.Precedence">
             <summary>Represents the precedence and miscibility of an operator.</summary>
             <remarks>

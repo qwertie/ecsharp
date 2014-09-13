@@ -236,6 +236,12 @@ namespace LeMP.Prelude
 		{
 			return DefOrConstructor(node, sink, false);
 		}
+		[SimpleMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name ==> ForwardingTarget { Body }",
+			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
+		public static LNode @fn(LNode node, IMessageSink sink)
+		{
+			return DefOrConstructor(node, sink, false);
+		}
 		[SimpleMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
 		public static LNode cons(LNode node, IMessageSink sink)
 		{

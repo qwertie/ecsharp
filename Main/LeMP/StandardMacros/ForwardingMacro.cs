@@ -9,6 +9,7 @@ using System.Text;
 namespace LeMP
 {
 	using S = CodeSymbols;
+	using System.Diagnostics;
 
 	public partial class StandardMacros
 	{
@@ -17,7 +18,7 @@ namespace LeMP
 		[SimpleMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", "#def", Mode = MacroMode.Passive)]
 		public static LNode ForwardMethod(LNode fn, IMessageSink sink)
 		{
-			LNode name, args, fwd, body;
+			LNode args, fwd, body;
 			if (fn.ArgCount != 4 || !(fwd = fn.Args[3]).Calls(S.Forward, 1) || !(args = fn.Args[2]).Calls(S.List))
 				return null;
 			
@@ -36,11 +37,7 @@ namespace LeMP
 				argList.Add(argName);
 			}
 
-			LNode target = fwd.Args[0];
-			if (target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(_hash)) {
-				name = fn.Args[1];
-				target = target.WithArgChanged(1, target.Args[1].WithName(Ecs.EcsNodePrinter.KeyNameComponentOf(name)));
-			}
+			LNode target = GetForwardingTarget(fwd, fn.Args[1]);
 			LNode call = F.Call(target, argList);
 			
 			bool isVoidFn = fn.Args[0].IsIdNamed(S.Void);
@@ -48,25 +45,45 @@ namespace LeMP
 			return fn.WithArgChanged(3, body);
 		}
 
-		[SimpleMacro("Type Prop ==> target;", "Forward property getter and setter at once", "#property", Mode = MacroMode.Passive)]
+		[SimpleMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }", "Forward property getter and/or setter", "#property", Mode = MacroMode.Passive)]
 		public static LNode ForwardProperty(LNode prop, IMessageSink sink)
 		{
 			LNode name, fwd, body;
-			if (prop.ArgCount != 3 || !(fwd = prop.Args[2]).Calls(S.Forward, 1))
+			if (prop.ArgCount != 3)
 				return null;
-
-			LNode target = fwd.Args[0];
-			if (target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(_hash))
+			LNode target = GetForwardingTarget(fwd = prop.Args[2], name = prop.Args[1]);
+			if (target != null)
 			{
-				name = prop.Args[1];
-				target = target.WithArgChanged(1, target.Args[1].WithName(Ecs.EcsNodePrinter.KeyNameComponentOf(name)));
+				body = F.Braces(new RVList<LNode>(
+					F.Call(S.get, F.Braces(F.Call(S.Return, target))),
+					F.Call(S.set, F.Braces(F.Call(S.Assign, target, F.Id(S.value))))));
+
+				return prop.WithArgChanged(2, body);
 			}
-
-			body = F.Braces(new RVList<LNode>(
-				F.Call(S.get, F.Braces(F.Call(S.Return, target))),
-				F.Call(S.set, F.Braces(F.Call(S.Assign, target, F.Id(S.value))))));
-
-			return prop.WithArgChanged(2, body);
+			else if ((body = fwd).Calls(S.Braces))
+			{
+				var body2 = body.WithArgs(stmt => {
+					if (stmt.Calls(S.get, 1) && (target = GetForwardingTarget(stmt.Args[0], name)) != null)
+						return stmt.WithArgs(new RVList<LNode>(F.Braces(F.Call(S.Return, target))));
+					if (stmt.Calls(S.set, 1) && (target = GetForwardingTarget(stmt.Args[0], name)) != null)
+						return stmt.WithArgs(new RVList<LNode>(F.Braces(F.Call(S.Assign, target, F.Id(S.value)))));
+					return stmt;
+				});
+				if (body2 != body)
+					return prop.WithArgChanged(2, body2);
+			}
+			return null;
+		}
+		static LNode GetForwardingTarget(LNode fwd, LNode methodName)
+		{
+			if (fwd.Calls(S.Forward, 1)) {
+				LNode target = fwd.Args[0];
+				if (target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(_hash))
+					return target.WithArgChanged(1, target.Args[1].WithName(
+						Ecs.EcsNodePrinter.KeyNameComponentOf(methodName)));
+				return target;
+			} else
+				return null;
 		}
 	}
 }

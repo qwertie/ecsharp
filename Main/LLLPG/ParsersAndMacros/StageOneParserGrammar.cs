@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.0.1.0
+// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')
@@ -66,7 +66,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			Token? altType = null;
-			// Line 65: ((TT.Error|TT.Default))?
+			// Line 65: ((TT.Default|TT.Error))?
 			la0 = LA0;
 			if (la0 == TT.Default || la0 == TT.Error)
 				altType = MatchAny();
@@ -134,7 +134,7 @@ namespace Loyc.LLParserGenerator
 				a = F.Call((Symbol) loopMod.Value, a, loopMod.StartIndex, a.Range.EndIndex);
 			} else
 				a = AssignExpr();
-			// Line 89: (TT.Star | TT.Plus | TT.QMark)?
+			// Line 89: ( TT.Star | TT.Plus | TT.QMark )?
 			la0 = LA0;
 			if (la0 == TT.Star) {
 				var op = MatchAny();
@@ -152,7 +152,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			var a = PrefixExpr();
-			// Line 98: ((TT.Assignment|TT.HostOperator) AssignExpr)?
+			// Line 98: ((TT.HostOperator|TT.Assignment) AssignExpr)?
 			la0 = LA0;
 			if (la0 == TT.Assignment || la0 == TT.HostOperator) {
 				var op = MatchAny();
@@ -163,7 +163,7 @@ namespace Loyc.LLParserGenerator
 		}
 		LNode PrefixExpr()
 		{
-			// Line 103: (TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | (TT.Not|TT.AndNot) PrefixExprOrBraces | RangeExpr)
+			// Line 103: ( TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | (TT.AndNot|TT.Not) PrefixExprOrBraces | RangeExpr )
 			 switch (LA0) {
 			case TT.InvertSet:
 				{
@@ -256,7 +256,7 @@ namespace Loyc.LLParserGenerator
 		LNode Atom()
 		{
 			LNode e;
-			// Line 135: (TT.Id | (TT.Number|TT.String|TT.OtherLit) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.Star|TT.QMark)))
+			// Line 135: ( TT.Id | (TT.String|TT.OtherLit|TT.Number) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.Star|TT.QMark)) )
 			 switch (LA0) {
 			case TT.Id:
 				{

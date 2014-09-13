@@ -238,10 +238,10 @@ namespace Ecs.Parser
 				//       x as Foo?[y]        // Parsed OK
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				t:="?" (&!{afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Number
-				                            | TT.String | TT.SQString | TT.OtherLit | TT.Symbol | "(" | "{" 
-				                            | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
-				                            | "$" | "@" | UnusualId))
+				t:="?" (&!{[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Number
+				                               | TT.String | TT.SQString | TT.OtherLit | TT.Symbol | "(" | "{" 
+				                               | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
+				                               | "$" | "@" | UnusualId))
 				       {e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
 				// unconditionally accept "*" as a pointer marker.
@@ -715,7 +715,7 @@ namespace Ecs.Parser
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
 			(	("="|":=") init:=Expr(ContinueExpr)
 				{return F.Call(S.Var, type, 
-					F.Call(S.Set, name, init, name.Range.StartIndex, init.Range.EndIndex),
+					F.Call(S.Assign, name, init, name.Range.StartIndex, init.Range.EndIndex),
 					type.Range.StartIndex, init.Range.EndIndex);}
 			)?
 			{return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}
@@ -1092,7 +1092,7 @@ namespace Ecs.Parser
 			("="|":=") oldName:=ComplexNameDecl
 			bases:=BaseListOpt
 			WhereClausesOpt(ref newName)
-			{var name = F.Call(S.Set, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);}
+			{var name = F.Call(S.Assign, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);}
 			(	end:=";"
 				{return F.Call(S.Alias, name, bases,       startIndex, end.EndIndex);}
 			|	body:=BracedBlock(CoreName(newName).Name)
@@ -1329,10 +1329,10 @@ namespace Ecs.Parser
 						var initializers = InitializerListInside(lb).ToRVList();
 						var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
 						expr = SetBaseStyle(expr, NodeStyle.OldStyle);
-						r = F.Call(S.Set, r, expr, name.StartIndex, rb.EndIndex);
+						r = F.Call(S.Assign, r, expr, name.StartIndex, rb.EndIndex);
 					}
 				/	init:=ExprStart(false)
-					{r = F.Call(S.Set, r, init, name.StartIndex, init.Range.EndIndex);}
+					{r = F.Call(S.Assign, r, init, name.StartIndex, init.Range.EndIndex);}
 				)
 			)?
 			{return r;}

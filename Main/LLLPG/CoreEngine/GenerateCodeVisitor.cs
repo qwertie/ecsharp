@@ -453,7 +453,7 @@ namespace Loyc.LLParserGenerator
 
 				var code = GenerateIfElseChain(tree, branchCode, ref laVar, switchCases);
 				if (laVar != null) {
-					block.Insert(0, F.Set(laVar, CGH.LA(tree.Lookahead)));
+					block.Insert(0, F.Assign(laVar, CGH.LA(tree.Lookahead)));
 					_laVarsNeeded |= 1ul << tree.Lookahead;
 				} else if (should)
 					laVar = CGH.LA(tree.Lookahead);
@@ -558,27 +558,16 @@ namespace Loyc.LLParserGenerator
 					_target.Add(term.AutoSaveResult(CGH.GenerateMatch(term.Set, term.ResultSaver != null, false)));
 			}
 
-			static LNode FindAndReplace(LNode root, Func<LNode, LNode> func)
-			{
-				Func<LNode, LNode> replacer = null; replacer = node =>
-				{
-					LNode @new = func(node);
-					return @new ?? node.Select(replacer);
-				};
-				LNode newRoot = func(root);
-				return newRoot ?? root.Select(replacer);
-			}
-
 			LNode GetAndPredCode(AndPred pred, int lookaheadAmt, LNode laVar)
 			{
 				if (pred.Pred is LNode) {
 					LNode code = (LNode)pred.Pred;
 
 					// replace $LI and $LA
-					return FindAndReplace(code, arg => {
-						if (arg.Equals(AndPred.SubstituteLA))
+					return code.FindAndReplace(arg => {
+						if (arg.Equals(AndPred.SubstituteLA)) // $LA
 							return (LNode)laVar;
-						if (arg.Equals(AndPred.SubstituteLI))
+						if (arg.Equals(AndPred.SubstituteLI)) // $LI
 							return (LNode)F.Literal(lookaheadAmt);
 						return null;
 					});

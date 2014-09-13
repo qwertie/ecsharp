@@ -59,6 +59,28 @@ namespace LeMP
 		}
 
 		[Test]
+		public void WithTest()
+		{
+			int n = StandardMacros.NextTempCounter;
+			TestEcs("with (foo) { .bar = .baz(); }",
+			        "{ var tmp_"+n+" = foo; tmp_"+n+".bar = tmp_"+n+".baz(); }");
+			n = StandardMacros.NextTempCounter;
+			TestEcs(@"with (jekyll) { 
+						.A = 1; 
+						with(mr.hyde()) { x = .F(x); }
+						with(.B + .C(.D));
+					}", string.Format(@"{{
+						var tmp_{0} = jekyll;
+						tmp_{0}.A = 1;
+						{{
+							var tmp_{1} = mr.hyde();
+							x = tmp_{1}.F(x);
+						}}
+						with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
+					}}", n + 1, n));
+		}
+
+		[Test]
 		public void TestStringInterpolation()
 		{
 			Assert.Fail("TODO");
@@ -107,7 +129,17 @@ namespace LeMP
 					_Bonjour = Bonjour;
 					Foo(_ciao);
 				}");
+			TestEcs(@"class Point { 
+				public Point(public int X, public int Y) {}
+				public this(set int X, set int Y) {}
+			}", @"class Point {
+				public int X;
+				public int Y;
+				public Point(int x, int y) { X = x; Y = y; }
+				public this(int x, int y) { X = x; Y = y; }
+			}");
 		}
+		
 		[Test]
 		public void ResultTest()
 		{
@@ -134,6 +166,7 @@ namespace LeMP
 						default: {return ""(not supported)"";} 
 					} }");
 		}
+		
 		[Test]
 		public void ForwardedMethodTest()
 		{
@@ -145,10 +178,12 @@ namespace LeMP
 			        "void Append(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
 			TestEcs("void AppendFormat(string fmt, params string[] args) ==> sb.#;",
 					"void AppendFormat(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
-			TestEcs("int Count ==> _list.Count;",
-			        "int Count { get { return _list.Count; } set { _list.Count = value; } }");
-			TestEcs("int Count ==> _list.#;",
-			        "int Count { get { return _list.Count; } set { _list.Count = value; } }");
+			TestEcs("internal int Count ==> _list.Count;",
+					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
+			TestEcs("internal int Count ==> _list.#;",
+					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
+			TestEcs("internal int Count { get ==> _list.#; set ==> _list.#; }",
+					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
 		}
 		[Test]
 		public void BackingFieldTest()
@@ -159,10 +194,12 @@ namespace LeMP
 			        "protected string _name; public string Name { get { return _name; } protected set { _name = value; } }");
 			TestEcs("[field] public string Name { get; }",
 			        "string _name; public string Name { get { return _name; } }");
-			TestEcs("[field _lives = 3] public int LivesLeft { internal get; set; }",
-			        "int _lives = 3; public int LivesLeft { internal get { return _lives; } set { _lives = value; } }");
+			TestEcs("[[A] field _lives = 3] [B] public int LivesLeft { internal get; set; }",
+					"[A] int _lives = 3; [B] public int LivesLeft { internal get { return _lives; } set { _lives = value; } }");
 			TestEcs("[field] public string Name { get; set { _name = value; } }",
-			        "string _name; public string Name { get { return _name; } set { _name = value; } }");
+					"string _name; public string Name { get { return _name; } set { _name = value; } }");
+			TestEcs("[[A] field] [B, C] public string Name { get; }",
+					"[A] string _name; [B, C] public string Name { get { return _name; } }");
 		}
 		[Test]
 		public void RequireTest()

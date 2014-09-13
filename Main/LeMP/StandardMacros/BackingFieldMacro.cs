@@ -14,6 +14,7 @@ namespace LeMP
 	{
 		static readonly Symbol _field = GSymbol.Get("field");
 
+		// TODO: support "attribute" macros.
 		[SimpleMacro("[field x] int X { get; set; }", "Create a backing field for a property.", "#property", Mode = MacroMode.Passive)]
 		public static LNode BackingField(LNode prop, IMessageSink sink)
 		{
@@ -44,7 +45,8 @@ namespace LeMP
 			type = prop.Args[0];
 			if (field.IsId) {
 				name = prop.Args[1];
-				field = F.Call(S.Var, type, fieldName = F.Id(ChooseFieldName(Ecs.EcsNodePrinter.KeyNameComponentOf(name))));
+				fieldName = F.Id(ChooseFieldName(Ecs.EcsNodePrinter.KeyNameComponentOf(name)));
+				field = F.Call(S.Var, type, fieldName).WithAttrs(fieldAttr.Attrs);
 			} else {
 				fieldName = field.Args[1];
 				if (fieldName.Calls(S.Assign, 2))

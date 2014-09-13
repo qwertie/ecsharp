@@ -14,7 +14,7 @@ namespace LeMP
 	{
 		static readonly Symbol _set = GSymbol.Get("#set");
 
-		[SimpleMacro("Type Name(set Type name) {...}", "Set a method parameter to an existing field/property", "#def", Mode = MacroMode.Passive)]
+		[SimpleMacro("Type Name(set Type name) {...}", "Set a method parameter to an existing field/property", "#def", "#cons", Mode = MacroMode.Passive)]
 		public static LNode SetOrCreateMember(LNode fn, IMessageSink sink)
 		{
 			// Expecting #def(Type, Name, #(args), {body})

@@ -850,15 +850,21 @@ namespace Loyc.Syntax
 		{
 			CheckParam.IsNotNull("newValue", newValue);
 			var a = Args;
-			a[index] = newValue;
-			return WithArgs(a);
+			if (newValue != a[index]) {
+				a[index] = newValue;
+				return WithArgs(a);
+			} else
+				return this;
 		}
 		public LNode WithAttrChanged(int index, LNode newValue)
 		{
 			CheckParam.IsNotNull("newValue", newValue);
 			var a = Attrs;
-			a[index] = newValue;
-			return WithAttrs(a);
+			if (newValue != a[index]) {
+				a[index] = newValue;
+				return WithAttrs(a);
+			} else
+				return this;
 		}
 
 		#endregion
@@ -1005,8 +1011,15 @@ namespace Loyc.Syntax
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
-		public LNode WithAttrs(Func<LNode, LNode> selector) { return WithAttrs(Attrs.SmartSelect(selector)); }
+		
+		public LNode WithAttrs(Func<LNode, LNode> selector) {
+			RVList<LNode> attrs = Attrs, newAttrs = attrs.SmartSelect(selector);
+			if (attrs == newAttrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
 		public virtual LNode WithArgs(Func<LNode, LNode> selector) { Debug.Assert(!IsCall); return this; }
+		
 		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdWithoutPAttrs(Symbol name)         { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdNamed(Symbol name)                 { Debug.Assert(!IsId); return false; }

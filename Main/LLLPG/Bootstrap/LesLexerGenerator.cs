@@ -242,9 +242,9 @@ namespace Loyc.LLParserGenerator
 		{
 			if (value is Symbol)
 				// As long as we're targeting plain C#, don't output \Symbol literals
-				return F.Set(F.Id(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
+				return F.Assign(F.Id(var), F.Call(F.Dot("GSymbol", "Get"), F.Literal(value.ToString())));
 			else
-				return F.Set(F.Id(var), F.Literal(value));
+				return F.Assign(F.Id(var), F.Literal(value));
 		}
 
 		Pred T(Rule token)
