@@ -7,10 +7,11 @@ using Loyc.Geometry;
 using Util.WinForms;
 using PointT = Loyc.Geometry.Point<float>;
 using VectorT = Loyc.Geometry.Vector<float>;
+using System.Drawing;
 
 namespace Util.WinForms
 {
-	class ScrollThumb : IShapeWidget
+	public class ScrollThumb : IShapeWidget
 	{
 		LLShapeControl _container;
 		float _xAlign, _yAlign;
@@ -35,35 +36,33 @@ namespace Util.WinForms
 			if (c.Sub(pos).Length() > _radius)
 				return null;
 
-			throw new NotImplementedException();
+			return new HitTestResult(this, Cursors.SizeAll);
 		}
 
 		public void OnKeyDown(System.Windows.Forms.KeyEventArgs e)
 		{
-			throw new NotImplementedException();
 		}
 
 		public void OnKeyUp(System.Windows.Forms.KeyEventArgs e)
 		{
-			throw new NotImplementedException();
 		}
 
 		public void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)
 		{
-			throw new NotImplementedException();
 		}
 
 		#endregion
 
+		static DrawStyle style = new DrawStyle(Color.Gray, 2, Color.FromArgb(192, Color.White));
+
 		public void AddLLShapesTo(ICollection<LLShape> list)
 		{
-			throw new NotImplementedException();
+			list.Add(new LLMarker(style, Center, _radius, MarkerPolygon.ScrollThumb));
 		}
 
 		public void AddAdornersTo(ICollection<LLShape> list, SelType selMode, Loyc.Geometry.Vector<float> hitTestRadius)
 		{
 			throw new NotImplementedException();
 		}
-
 	}
 }

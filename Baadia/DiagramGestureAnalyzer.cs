@@ -22,7 +22,7 @@ namespace BoxDiagrams
 	class DiagramGestureAnalyzer : GestureAnalyzer
 	{
 		DiagramControl _control;
-		public DiagramControl Control { get { return _control; } }
+		public new DiagramControl Control { get { return _control; } }
 		public DiagramDocument _doc { get { return _control.Document; } }
 
 		public DiagramGestureAnalyzer(DiagramControl control) : base(control)

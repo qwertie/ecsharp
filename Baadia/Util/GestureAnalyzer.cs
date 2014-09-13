@@ -24,10 +24,10 @@ namespace Util.WinForms
 		No, Yes, Partial
 	}
 
-	/// <summary>Base class for results returned from <see cref="Shape.HitTest()"/>.</summary>
+	/// <summary>Base class for results returned from <see cref="IInputWidget.HitTest()"/>.</summary>
 	public class HitTestResult
 	{
-		public HitTestResult(Shape shape, Cursor cursor)
+		public HitTestResult(IShapeWidget shape, Cursor cursor)
 			{ Shape = shape; MouseCursor = cursor; Debug.Assert(cursor != null && shape != null); }
 		public IShapeWidget Shape;
 		public Cursor MouseCursor;

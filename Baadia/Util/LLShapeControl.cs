@@ -40,10 +40,16 @@ namespace Util.WinForms
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha 
 		/// channel, see <see cref="LLShapeLayer"/> for more information.</param>
-		public virtual LLShapeLayer AddLayer(bool? useAlpha = null)
+		public LLShapeLayer AddLayer(bool? useAlpha = null)
 		{
 			var layer = new LLShapeLayer(useAlpha);
 			_layers.Add(layer);
+			return layer;
+		}
+		public virtual LLShapeLayer AddLayerAbove(LLShapeLayer otherLayer, bool? useAlpha = null)
+		{
+			var layer = new LLShapeLayer(useAlpha);
+			_layers.Insert(_layers.IndexOf(otherLayer) + 1, layer);
 			return layer;
 		}
 
@@ -98,8 +104,8 @@ namespace Util.WinForms
 				_designStyle = _designStyle ?? new DrawStyle();
 				_designStyle.Font = Font;
 				_designStyle.TextColor = ForeColor;
-				if (_layers.Count != 0 && _layers.All(l => l.Shapes.Count == 0))
-					_layers[0].Shapes.Add(new LLTextShape(_designStyle, GetType().Name, null, new Point<float>(3, 3)));
+				if (_layers.Count != 0 && _layers.All(l => !l.Shapes.Any()))
+					_layers[0].Shapes = new LLShape[] { new LLTextShape(_designStyle, GetType().Name, null, new Point<float>(3, 3)) };
 			}
 
 			try {
@@ -189,8 +195,8 @@ namespace Util.WinForms
 		bool? _useAlpha;
 		bool _invalid;
 
-		MSet<LLShape> _shapes = new MSet<LLShape>();
-		public MSet<LLShape> Shapes { get { return _shapes; } }
+		IEnumerable<IDrawable> _shapes = new List<LLShape>();
+		public IEnumerable<IDrawable> Shapes { get { return _shapes; } set { _shapes = value; } }
 
 		/// <summary>Initializes a new LLShapeLayer.</summary>
 		/// <param name="useAlpha">Whether the backing bitmap should have an alpha channel.</param>
@@ -215,7 +221,7 @@ namespace Util.WinForms
 		}
 		public bool UseAlpha
 		{
-			get { return _useAlpha == true || (_useAlpha == null && Shapes.Count >= 12); }
+			get { return _useAlpha == true || (_useAlpha == null && Shapes.Take(12).Count() >= 12); }
 		}
 		public Bitmap AutoDraw(Bitmap lowerLevel, int width, int height)
 		{
@@ -225,7 +231,7 @@ namespace Util.WinForms
 			{
 				_invalid = false;
 				
-				if (_shapes.Count == 0 && lowerLevel != null)
+				if (!_shapes.Any() && lowerLevel != null)
 					return lowerLevel;
 				
 				var pixFmt = useAlpha ? PixelFormat.Format32bppArgb : PixelFormat.Format24bppRgb;
@@ -244,10 +250,10 @@ namespace Util.WinForms
 				else
 					g.DrawImage(lowerLevel, new Point(0, 0));
 
-				var shapes = new List<Pair<LLShape, Matrix>>();
-				foreach (LLShape shape in _shapes)
+				var shapes = new List<Pair<IDrawable, Matrix>>();
+				foreach (IDrawable shape in _shapes)
 					Add(shape, shapes, null);
-				shapes.Sort((p1,p2) => p1.A.CompareTo(p2.A));
+				shapes.Sort((p1,p2) => p1.A.ZOrder.CompareTo(p2.A.ZOrder));
 
 				Matrix curMatrix = null, oldMatrix = g.Transform;
 				foreach (var pair in shapes) {
@@ -263,7 +269,7 @@ namespace Util.WinForms
 			return _bmp;
 		}
 
-		private void Add(LLShape shape, List<Pair<LLShape, Matrix>> shapes, Matrix matrix)
+		private void Add(IDrawable shape, List<Pair<IDrawable, Matrix>> shapes, Matrix matrix)
 		{
 			if (!shape.IsVisible)
 				return;

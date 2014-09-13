@@ -101,14 +101,16 @@ namespace BoxDiagrams
 	{
 		DiagramGestureAnalyzer _gestureAnalyzer;
 
+
 		public DiagramControl()
 		{
 			_mainLayer = Layers[0]; // predefined
-			_mainLayer.Shapes.Add(_shapeGroup);
-			_selAdornerLayer = AddLayer(false);
-			_selAdornerLayer.Shapes.Add(_selAdornerGroup);
-			_dragAdornerLayer = AddLayer(false);
-			_dragAdornerLayer.Shapes.Add(_dragAdornerGroup);
+			
+			_mainLayer.Shapes = new MSet<LLShape> { _shapeGroup };
+			_selAdornerLayer = AddLayerAbove(_mainLayer, false);
+			_selAdornerLayer.Shapes = new MSet<LLShape> { _selAdornerGroup };
+			_dragAdornerLayer = AddLayerAbove(_selAdornerLayer, false);
+			_dragAdornerLayer.Shapes = new MSet<LLShape> { _dragAdornerGroup };
 			_shapeGroup.Transform = _scrollZoom;
 			_selAdornerGroup.Transform = _scrollZoom;
 			_dragAdornerGroup.Transform = _scrollZoom;
@@ -124,7 +126,6 @@ namespace BoxDiagrams
 			MarkerType = MarkerPolygon.Circle;
 			FromArrow = null;
 			ToArrow = Arrowhead.Arrow30deg;
-
 		}
 
 		// This oversized attribute tells the WinForms designer to ignore the property
@@ -222,6 +223,8 @@ namespace BoxDiagrams
 
 		protected SelType GetSelType(Shape shape)
 		{
+			if (shape == null)
+				return SelType.No;
 			if (shape == _partialSelShape)
 				return SelType.Partial;
 			return _selectedShapes.Contains(shape) ? SelType.Yes : SelType.No;
@@ -394,21 +397,26 @@ namespace BoxDiagrams
 			var htRadiusSS = ToShapeSpace(HitTestRadius);
 			Util.WinForms.HitTestResult best = null;
 			bool bestSel = false;
-			foreach (Shape shape in ShapesOnScreen(mouseLoc))
+			int bestZOrder = 0;
+			foreach (IShapeWidget shapeW in WidgetsOnScreen(mouseLoc))
 			{
-				var result = shape.HitTest(mouseSS, htRadiusSS, GetSelType(shape));
+				var shape = shapeW as Shape;
+				var result = shapeW.HitTest(mouseSS, htRadiusSS, GetSelType(shapeW as Shape));
 				if (result != null)
 				{
-					Debug.Assert(result.Shape == shape);
-					bool resultSel = _selectedShapes.Contains(result.Shape);
+					Debug.Assert(result.Shape == shapeW);
+					bool resultSel = shape == null || _selectedShapes.Contains(shape);
+					int zOrder = shape != null ? shape.HitTestZOrder : int.MaxValue;
 					// Prefer to hit test against an already-selected shape (unless 
-					// it's a panel), otherwise the thing with the highest Z-order.
-					if (shape.IsPanel)
+					// it's a panel) or a non-Shape widget, otherwise the thing with 
+					// the highest Z-order.
+					if (shape != null && shape.IsPanel)
 						resultSel = false;
-					if (best == null || (resultSel && !bestSel) || (bestSel == resultSel && ((Shape)best.Shape).HitTestZOrder < shape.HitTestZOrder))
+					if (best == null || (resultSel && !bestSel) || (bestSel == resultSel && bestZOrder < zOrder))
 					{
 						best = result;
 						bestSel = resultSel;
+						bestZOrder = zOrder;
 					}
 				}
 			}
@@ -417,6 +425,7 @@ namespace BoxDiagrams
 
 		// TODO optimization: return a cached subset rather than all shapes
 		public IEnumerable<Shape> ShapesOnScreen(PointT mousePos) { return _doc.Shapes; }
+		public IEnumerable<IShapeWidget> WidgetsOnScreen(PointT mousePos) { return _widgets.Concat(_doc.Shapes); }
 
 		const int MinDistBetweenDragPoints = 2;
 
@@ -627,7 +636,7 @@ namespace BoxDiagrams
 			var cancellingShapes = erasedShapes.Select(s => Pair.Create(s, s.Opacity)).ToList();
 			var cancellingTimer = new Timer { Interval = 30, Enabled = true };
 			var cancellingLayer = AddLayer();
-			cancellingLayer.Shapes.AddRange(erasedShapes);
+			cancellingLayer.Shapes = erasedShapes;
 			int opacity = 255;
 			cancellingTimer.Tick += (s, e) =>
 			{

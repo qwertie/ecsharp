@@ -17,6 +17,17 @@ using ProtoBuf;
 
 namespace Util.WinForms
 {
+	public interface IDrawable
+	{
+		/// <summary>Draws the drawable object. The graphics object will be set up 
+		/// with the correct affine transformation matrix for this shape.</summary>
+		void Draw(Graphics g);
+		/// <summary>Holds the ZOrder (draw order, where higher-ZOrder shapes are 
+		/// on top of lower-ZOrder shapes). Shapes with a negative ZOrder are not
+		/// drawn.</summary>
+		int ZOrder { get; }
+		bool IsVisible { get; }
+	}
 
 	/// <summary>
 	/// Base class for a shape with PointF coordinates that supports drawing and 
@@ -30,7 +41,7 @@ namespace Util.WinForms
 	/// that is specific to the GUI library (WinForms). But I was in a hurry to get 
 	/// this done.
 	/// </remarks>
-	public abstract class LLShape : IComparable<LLShape>, ICloneable<LLShape>
+	public abstract class LLShape : IComparable<LLShape>, ICloneable<LLShape>, IDrawable
 	{
 		public static int NextZOrder;
 		public static DrawStyle DefaultStyle = new DrawStyle { LineColor = Color.Black, TextColor = Color.Black, FillColor = Color.White };
@@ -53,7 +64,7 @@ namespace Util.WinForms
 		/// <summary>Holds the ZOrder (draw order, where higher-ZOrder shapes are 
 		/// on top of lower-ZOrder shapes). Shapes with a negative ZOrder are not
 		/// drawn.</summary>
-		public int ZOrder;
+		public int ZOrder { get; set; }
 		/// <summary>Gets or sets a flag that controls whether to draw the
 		/// shape, which is the sign bit of ZOrder. The shape is hidden iff 
 		/// the ZOrder is negative.</summary>
@@ -63,6 +74,7 @@ namespace Util.WinForms
 
 		public virtual void Invalidate() { }
 
+		/// <summary>Draws the shape.</summary>
 		public abstract void Draw(Graphics g);
 		
 		/// <summary>Determines whether a test point is close to the shape.</summary>
@@ -662,7 +674,6 @@ namespace Util.WinForms
 	/// An <see cref="LLMarker"/> is a point shape that draws itself using one of 
 	/// these <see cref="MarkerPolygon"/>s.
 	/// </remarks>
-
 	[ProtoContract(AsReferenceDefault=true, SkipConstructor=true)]
 	public class MarkerPolygon
 	{
@@ -706,6 +717,9 @@ namespace Util.WinForms
 			}.AsListSource());
 		public static readonly MarkerPolygon Donut = new MarkerPolygon(
 			Circle.Points.Concat(Circle.Points.Reverse().Select(p => P(p.X/2,p.Y/2))).Buffered(),
+			new Repeated<int>(Circle.Points.Count, 1));
+		public static readonly MarkerPolygon ScrollThumb = new MarkerPolygon(
+			Circle.Points.Concat(new[] { P(-0.5f, 0), P(0, 0.5f), P(0.5f, 0), P(0, -0.5f) }).Buffered(),
 			new Repeated<int>(Circle.Points.Count, 1));
 		public static readonly MarkerPolygon Diamond = new MarkerPolygon(
 			new[] { P(0,-1), P(1,0), P(0,1), P(-1,0) }.AsListSource());
