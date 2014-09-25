@@ -28,8 +28,10 @@ namespace Loyc.Collections
 		public static IEnumerable<KeyValuePair<int, T>> WithIndexes<T>(this IEnumerable<T> c)
 		{
 			int i = 0;
-			foreach (T item in c)
+			foreach (T item in c) {
 				yield return new KeyValuePair<int, T>(i, item);
+				i++;
+			}
 		}
 
 		/// <summary>Gets the lowest index at which a condition is true, or -1 if nowhere.</summary>

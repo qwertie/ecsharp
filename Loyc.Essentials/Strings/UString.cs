@@ -513,8 +513,8 @@ namespace Loyc
 
 		public int? IndexOf(char find, bool ignoreCase = false)
 		{
-			int stop = _start + _count;
 			if (ignoreCase) {
+				int stop = _start + _count;
 				find = char.ToUpperInvariant(find);
 				for (int i = _start; i < stop; i++)
 					if (char.ToUpperInvariant(_str[i]) == find)
@@ -522,7 +522,7 @@ namespace Loyc
 			} else {
 				int i = _str.IndexOf(find, _start, _count);
 				if (i > -1)
-					return i;
+					return i - _start;
 			}
 			return null;
 		}
@@ -536,9 +536,9 @@ namespace Loyc
 			return null;
 		}
 
-		public Pair<UString, UString> SplitAt(char delimiter)
+		public Pair<UString, UString> SplitAt(char delimiter, bool ignoreCase = false)
 		{
-			int? i = IndexOf(delimiter);
+			int? i = IndexOf(delimiter, ignoreCase);
 			if (i != null)
 				return new Pair<UString, UString>(Substring(0, i.Value), Substring(i.Value + 1));
 			else
