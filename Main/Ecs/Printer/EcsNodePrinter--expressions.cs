@@ -890,7 +890,7 @@ namespace Ecs
 				// Print Target
 				var target = _n.Target;
 				var f = Ambiguity.IsCallTarget;
-				if (_spaceName == S.Def || context != StartStmt)
+				if (_spaceName == S.Fn || context != StartStmt)
 					f |= Ambiguity.AllowThisAsCallTarget;
 				if (!purePrefixNotation && IsComplexIdentifier(target, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround)) {
 					PrintExpr(target, EP.Primary.LeftContext(context), f);

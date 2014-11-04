@@ -33,7 +33,7 @@ namespace Loyc.Syntax
 		public LNode @this { get { return Id(S.This); } }
 		public LNode @base { get { return Id(S.Base); } }
 
-		public LNode DefKeyword { get { return Id(S.Def, -1); } }
+		public LNode DefKeyword { get { return Id(S.Fn, -1); } }
 
 		// Standard data types (marked synthetic)
 		public LNode Void { get { return Id(S.Void, -1); } }
@@ -380,19 +380,19 @@ namespace Loyc.Syntax
 			return Call(S.Tuple, contents, startIndex, endIndex);
 		}
 
-		public LNode Def(LNode retType, Symbol name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
+		public LNode Fn(LNode retType, Symbol name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
-			return Def(retType, Id(name), argList, body, startIndex, endIndex);
+			return Fn(retType, Id(name), argList, body, startIndex, endIndex);
 		}
-		public LNode Def(LNode retType, LNode name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
+		public LNode Fn(LNode retType, LNode name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
 			Debug.Assert(endIndex >= startIndex);
 			CheckParam.Arg("argList", argList.Name == S.List || argList.Name == S.Missing);
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };
-			return new StdSimpleCallNode(S.Def, new RVList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.Fn, new RVList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode Property(LNode type, LNode name, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{

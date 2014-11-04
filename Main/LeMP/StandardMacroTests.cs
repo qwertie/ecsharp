@@ -201,6 +201,7 @@ namespace LeMP
 			TestEcs("[[A] field] [B, C] public string Name { get; }",
 					"[A] string _name; [B, C] public string Name { get { return _name; } }");
 		}
+
 		[Test]
 		public void RequireTest()
 		{

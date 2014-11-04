@@ -15,7 +15,7 @@ namespace LeMP
 	{
 		static readonly Symbol _hash = GSymbol.Get("#");
 
-		[SimpleMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", "#def", Mode = MacroMode.Passive)]
+		[SimpleMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", "#fn", Mode = MacroMode.Passive)]
 		public static LNode ForwardMethod(LNode fn, IMessageSink sink)
 		{
 			LNode args, fwd, body;

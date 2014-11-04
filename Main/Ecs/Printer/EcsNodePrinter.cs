@@ -641,7 +641,7 @@ namespace Ecs
 		public bool IsMethodDefinition(bool orDelegate) // method declarations (no body) also count
 		{
 			var def = _n.Name;
-			if ((def != S.Def && def != S.Delegate && def != S.Cons) || !HasSimpleHeadWPA(_n))
+			if ((def != S.Fn && def != S.Delegate && def != S.Cons) || !HasSimpleHeadWPA(_n))
 				return false;
 			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
 				return false;
@@ -1457,7 +1457,7 @@ namespace Ecs
 	{
 		Default = 0,
 		AllowAttrs = 2, // outer level only. e.g. this flag is used on return types, where
-			// #def([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
+			// #fn([Attr] int, Foo, #()) is printed "[return: Attr] int Foo();"
 		// For internal use
 		DisallowOf = 8,
 		DisallowDotted = 16,

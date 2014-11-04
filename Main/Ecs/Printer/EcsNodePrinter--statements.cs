@@ -41,7 +41,7 @@ namespace Ecs
 		});
 		// Definition statements define types, spaces, methods, properties, events and variables
 		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Var, S.Def, S.Cons, S.Delegate, S.Event, S.Property
+			S.Var, S.Fn, S.Cons, S.Delegate, S.Event, S.Property
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
 		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
@@ -443,7 +443,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
-			// S.Def, S.Delegate: #def(#int32, Square, #(int x), { return x * x; });
+			// S.Fn, S.Delegate: #fn(#int32, Square, #(int x), { return x * x; });
 			if (!IsMethodDefinition(true))
 				return SPResult.Fail;
 
@@ -463,20 +463,20 @@ namespace Ecs
 			}
 
 			if (!AllowConstructorAmbiguity) {
-				if (isDestructor && _spaceName == S.Def)
+				if (isDestructor && _spaceName == S.Fn)
 					// When destructor syntax is ambiguous, use prefix notation.
 					return SPResult.Fail;
 				else if (isConstructor && firstStmt == null) {
 					// When constructor syntax is ambiguous, use prefix notation.
 					if (name.IsIdNamed(S.This)) {
-						if (_spaceName == S.Def)
+						if (_spaceName == S.Fn)
 							return SPResult.Fail;
 					} else if (!name.IsIdNamed(_spaceName))
 						return SPResult.Fail;
 				}
 			}
 
-			// A cast operator with the structure: #def(Foo, operator`#cast`, #(...))
+			// A cast operator with the structure: #fn(Foo, operator`#cast`, #(...))
 			// can be printed in a special format: operator Foo(...);
 			bool isCastOperator = (name.Name == S.Cast && name.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 
@@ -503,7 +503,7 @@ namespace Ecs
 		}
 
 		// e.g. given the method void f() {...}, prints "void f"
-		//      for a cast operator #def(Foo, #cast, #(...)) it prints "operator Foo" if requested
+		//      for a cast operator #fn(Foo, #cast, #(...)) it prints "operator Foo" if requested
 		private LNode PrintTypeAndName(bool isConstructor, bool isCastOperator = false, AttrStyle attrStyle = AttrStyle.IsDefinition, string eventKeywordOpt = null)
 		{
 			LNode retType = _n.Args[0], name = _n.Args[1];
@@ -562,7 +562,7 @@ namespace Ecs
 		}
 		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, LNode ifClause, bool skipFirstStmt = false)
 		{
-			using (WithSpace(S.Def)) {
+			using (WithSpace(S.Fn)) {
 				AutoPrintIfClause(ifClause);
 
 				if (body == null)
@@ -577,7 +577,7 @@ namespace Ecs
 				}
 				else if (body.Name == S.Braces && body.BaseStyle != NodeStyle.PrefixNotation)
 				{
-					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Def);
+					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Fn);
 					return SPResult.NeedSuffixTrivia;
 				}
 				else

@@ -91,7 +91,7 @@ namespace Ecs.Parser
 
 		// Used to resolve the constructor ambiguity, in which "Foo()" could be a
 		// constructor declaration or a method call. _spaceName is the name of the
-		// current space, or #def (S.Def) when inside a method or constructor.
+		// current space, or #fn (S.Fn) when inside a method or constructor.
 		_spaceName::Symbol;
 		
 		// Inside a LINQ expression, certain ContextualKeywords are to be treated
@@ -905,7 +905,7 @@ namespace Ecs.Parser
 					// non-keyword attributes located prior to any of those.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
 				|	(TT.AttrKeyword | TT.@new)
-				|	&{_spaceName!=S.Def} TT.(noMacro(this))
+				|	&{_spaceName!=S.Fn} TT.(noMacro(this))
 				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
 				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
 					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
@@ -1227,7 +1227,7 @@ namespace Ecs.Parser
 				{r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);}
 			/	name:=ComplexNameDecl()
 				(	// Method declaration/definition
-					r=MethodArgListAndBody(startIndex, attrs, S.Def, type, name)
+					r=MethodArgListAndBody(startIndex, attrs, S.Fn, type, name)
 				|	// Property definition
 					WhereClausesOpt(ref name)
 					body:=MethodBodyOrForward
@@ -1244,7 +1244,7 @@ namespace Ecs.Parser
 			{r::LNode;}
 			op:=TT.@operator type:=DataType
 			{var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));}
-			r=MethodArgListAndBody(startIndex, attrs, S.Def, type, name)
+			r=MethodArgListAndBody(startIndex, attrs, S.Fn, type, name)
 			{return r;}
 		];
 
@@ -1295,7 +1295,7 @@ namespace Ecs.Parser
 			(	op:="==>" e:=ExprStart(false) ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
 			|	op:="=>"  e:=ExprStart(false) ";" {return e;}
 			|	at:="@" lb:="[" rb:="]" ";"       {return F.Literal(lb.Children, at.StartIndex, rb.EndIndex);}
-			|	body:=BracedBlock(S.Def)          {return body;} )
+			|	body:=BracedBlock(S.Fn)           {return body;} )
 		];
 
 		def IsArrayType(type::LNode)::bool 
@@ -1349,7 +1349,7 @@ namespace Ecs.Parser
 			(	&{_spaceName == LT($LI).Value}
 				n=(TT.Id|TT.ContextualKeyword)
 				&("(" ")" ("{" | ";"))
-			/	&{_spaceName != S.Def}
+			/	&{_spaceName != S.Fn}
 				n=TT.(noMacro(@this))
 				&("(" ")" ("{" | ";"))
 			/	n=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@this)))
@@ -1369,7 +1369,7 @@ namespace Ecs.Parser
 			|	n=TT.(noMacro(@this))
 			)
 			{name::LNode = F.Call(S.NotBits, F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex), tilde.StartIndex, n.EndIndex);}
-			r=MethodArgListAndBody(startIndex, attrs, S.Def, F._Missing, name)
+			r=MethodArgListAndBody(startIndex, attrs, S.Fn, F._Missing, name)
 			{return r;}
 		];
 
@@ -1391,7 +1391,7 @@ namespace Ecs.Parser
 				( "," parts+=ComplexNameDecl )*
 				end:=";"         
 				{r = F.Call(S.Event, parts, startIndex, end.EndIndex);}
-			|	body:=BracedBlock(S.Def)
+			|	body:=BracedBlock(S.Fn)
 				{r = F.Call(S.Event, type, name, body, startIndex, body.Range.EndIndex);}
 			)
 			{return r.WithAttrs(attrs);}
