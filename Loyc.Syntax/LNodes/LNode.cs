@@ -102,7 +102,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// Another major disadvantage is that it is more difficult to interpret a 
 	/// syntax tree correctly: you have to remember that a method definition has 
-	/// the structure <c>#def(return_type, name, args, body)</c>, so if "node" is 
+	/// the structure <c>#fn(return_type, name, args, body)</c>, so if "node" is 
 	/// a method definition then <c>node.Args[2]</c> represents the return type, 
 	/// for example. In contrast, most compilers have an AST class called 
 	/// <c>MethodDefinition</c> or something, that provides properties such as 
@@ -150,7 +150,7 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// public Point OneTwo = MakePoint(1, 2);
 	/// public #var(Point, Origin(MakePoint(0, 0)));
-	/// public static #def(MakePoint, #(int x, int y), System.Drawing.Point, #{
+	/// public static #fn(MakePoint, #(int x, int y), System.Drawing.Point, #{
 	///		return new Point(x, y);
 	///	});
 	/// <para/>
@@ -299,7 +299,7 @@ namespace Loyc.Syntax
 	///			return (char)('0' + value);
 	///	}
 	///	// Bizarro EC#
-	///	[#public, #static] #def(HexDigitChar, #(#var(int, value)), #char, #
+	///	[#public, #static] #fn(HexDigitChar, #(#var(int, value)), #char, #
 	///	(
 	///		Debug.Assert(16u > (uint)value),
 	///		#if ((uint)value >= 10,

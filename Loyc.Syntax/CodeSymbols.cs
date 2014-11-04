@@ -141,9 +141,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(#of(Foo, [#where(#class, Foo)] T), #(), {});
 		public static readonly Symbol This = GSymbol.Get("#this");         //!< "#this" e.g. this.X <=> #this.X; this(arg) <=> #this(arg).
 		public static readonly Symbol Base = GSymbol.Get("#base");         //!< "#base" e.g. base.X <=> #base.X; base(arg) <=> #base(arg).
-		public static readonly Symbol Operator = GSymbol.Get("#operator"); //!< e.g. #def(#bool, [#operator] @`==`, #(Foo a, Foo b))
-		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); //!< e.g. [#implicit] #def(#int32, [#operator] #cast, (Foo a,))
-		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); //!< e.g. [#explicit] #def(#int32, [#operator] #cast, (Foo a,))
+		public static readonly Symbol Operator = GSymbol.Get("#operator"); //!< e.g. #fn(#bool, [#operator] @`==`, #(Foo a, Foo b))
+		public static readonly Symbol Implicit = GSymbol.Get("#implicit"); //!< e.g. [#implicit] #fn(#int32, [#operator] #cast, (Foo a,))
+		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); //!< e.g. [#explicit] #fn(#int32, [#operator] #cast, (Foo a,))
 		public static readonly Symbol Missing = GSymbol.Empty;             //!< Indicates that a syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
 		public static readonly Symbol Splice = GSymbol.Get("#splice");     //!< When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
 		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); //!< e.g. [assembly: Foo] <=> [Foo] #assembly;
@@ -195,7 +195,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)
-		public static readonly Symbol Def = GSymbol.Get("#def");         //!< e.g. #def(F, #([required] #var(#of(List, int), list)), #void, {return;})
+		public static readonly Symbol Fn = GSymbol.Get("#fn");          //!< e.g. #fn(F, #([required] #var(#of(List, int), list)), #void, {return;})
 		public static readonly Symbol Cons = GSymbol.Get("#cons");       //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
 		public static readonly Symbol Forward = GSymbol.Get("==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
