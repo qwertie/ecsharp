@@ -79,7 +79,7 @@ namespace Loyc.LLParserGenerator
 			// The set of possible non-error inputs; null for an assertion level
 			public IPGTerminalSet TotalCoverage;
 
-			public override string ToString()
+			public override string ToString() // for debugging
 			{
 				var s = new StringBuilder(
 					string.Format(IsAssertionLevel ? "test and-predicates at LA({0}):" : "test LA({0}):", Lookahead));

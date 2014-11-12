@@ -336,14 +336,12 @@ namespace Loyc.LLParserGenerator
 			private void AutoAddBranchForAndPred(ref InternalList<PredictionBranch> children, AndPred andPred, List<KthSet> alts, Set<AndPred> matched, MSet<AndPred> falsified)
 			{
 				if (!falsified.Contains(andPred)) {
-					var apSet = GetBuddies(alts, andPred, matched, falsified);
-					if (!apSet.IsEmpty) {
-						var innerMatched = matched | apSet;
-						var result = new PredictionBranch(apSet, ComputeAssertionTree2(alts, innerMatched));
-						falsified.UnionWith(apSet);
-						RemoveFalsifiedCases(alts, falsified);
-						children.Add(result);
-					}
+					var innerMatched = matched.With(andPred);
+					var result = new PredictionBranch(new Set<AndPred>().With(andPred),
+						ComputeAssertionTree2(alts, innerMatched));
+					falsified.Add(andPred);
+					RemoveFalsifiedCases(alts, falsified);
+					children.Add(result);
 				}
 			}
 			private void RemoveFalsifiedCases(List<KthSet> alts, MSet<AndPred> falsified)
@@ -357,24 +355,6 @@ namespace Loyc.LLParserGenerator
 						alt.UpdateSet(alt.Set.ContainsEOF);
 				}
 				alts.RemoveAll(alt => alt.Cases.Count == 0);
-			}
-			private Set<AndPred> GetBuddies(List<KthSet> alts, AndPred ap, Set<AndPred> matched, MSet<AndPred> falsified)
-			{
-				// Given an AndPred, find any other AndPreds that always appear 
-				// together with ap; if any are found, we want to group them 
-				// together because doing so will simplify the prediction tree.
-				return new Set<AndPred>(
-					alts.SelectMany(alt => alt.Cases)
-						.Where(trans => trans.AndPreds.Contains(ap))
-						.Aggregate(null, (MSet<AndPred> set, Transition trans) => {
-							if (set == null) {
-								set = new MSet<AndPred>(trans.AndPreds);
-								set.ExceptWith(matched);
-								set.ExceptWith(falsified);
-							}
-							set.IntersectWith(trans.AndPreds);
-							return set;
-						}));
 			}
 			
 			#endregion
@@ -452,52 +432,6 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 		}
-
-
-		//TEMP
-		protected class PredictionAnalysisVisitor2 : RecursivePredVisitor
-		{
-			public PredictionAnalysisVisitor2(LLParserGenerator llpg) { LLPG = llpg; }
-
-			LLParserGenerator LLPG;
-			IPGCodeGenHelper CGH { get { return LLPG.CodeGenHelper; } }
-			Rule _currentRule;
-			int _k;
-
-			public void Analyze(Rule rule)
-			{
-				_currentRule = rule;
-				_k = rule.K > 0 ? rule.K : LLPG.DefaultK;
-				rule.Pred.Call(this);
-			}
-
-			bool _codeBeforeAndWarning = false;
-			public override void Visit(AndPred pred)
-			{
-				if (pred.PreAction != null && !_codeBeforeAndWarning) {
-					LLPG.Output(Warning, pred, 
-						"It's poor style to put a code block {} before an and-predicate &{} because the and-predicate normally runs first.");
-					_codeBeforeAndWarning = true;
-				}
-				VisitChildrenOf(pred);
-			}
-
-			public override void Visit(Gate pred)
-			{
-				// We don't need prediction trees (or ambig warnings!) for the pred.Predictor
-				pred.Match.Call(this);
-			}
-
-			#region Prediction analysis
-
-			public override void Visit(Alts pred)
-			{
-				base.Visit(pred);
-			}
-
-			#endregion
-		}
-
 
 		/// <summary>Figures out which terminals and and-predicates are "prematched".
 		/// A prematched "Match()" call can be replaced with "Skip()" or "MatchAny()"

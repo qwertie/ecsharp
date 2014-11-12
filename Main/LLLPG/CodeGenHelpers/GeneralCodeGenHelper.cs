@@ -329,15 +329,16 @@ namespace Loyc.LLParserGenerator
 				sb.Append('~');
 			sb.Append('(');
 			bool first = true;
-			foreach (var item in BaseSet) {
+			var items = BaseSet.Select(node => node.Print(ExprMode)).ToList();
+			items.Sort();
+			foreach (var item in items) {
 				if (!first)
 					sb.Append('|');
-				sb.Append(item.Print(ExprMode));
+				sb.Append(item);
 				first = false;
 			}
 			sb.Append(')');
 			return sb.ToString();
 		}
 	}
-
 }

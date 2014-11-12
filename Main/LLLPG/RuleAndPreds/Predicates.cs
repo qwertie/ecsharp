@@ -173,6 +173,15 @@ namespace Loyc.LLParserGenerator
 			if (pos.Line < 1) return ToString();
 			return string.Format("({0},{1}) {2}", pos.Line, pos.PosInLine, ToString());
 		}
+
+		/// <summary>Optional. If this predicate represents the matching code for a 
+		/// branch of an Alts and this code is reached through a goto statement, 
+		/// this method is used to select a label name. Supported by RuleRef.</summary>
+		/// <returns>A label name, or null if the predicate did not choose one.</returns>
+		public virtual string ChooseGotoLabel()
+		{
+			return null;
+		}
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -189,6 +198,10 @@ namespace Loyc.LLParserGenerator
 		public override string ToString()
 		{
 			return Rule.Name.Name;
+		}
+		public override string ChooseGotoLabel()
+		{
+			return "match" + Rule.Name.Name;
 		}
 	}
 	
@@ -236,6 +249,22 @@ namespace Loyc.LLParserGenerator
 		public override string ToString()
 		{
 			return StringExt.Join(" ", List);
+		}
+		public override string ChooseGotoLabel()
+		{
+			string label = null, label2;
+			int count = 0;
+			foreach (Pred p in List) {
+				if ((label2 = p.ChooseGotoLabel()) != null) {
+					if (++count > 1 && label != label2)
+						return null;
+					label = label ?? label2;
+				} else if (p is TerminalPred)
+					return null;
+			}
+			if (count > 1)
+				return label + "x" + count;
+			return label;
 		}
 	}
 	
@@ -610,7 +639,7 @@ namespace Loyc.LLParserGenerator
 
 		private void UpdateSlashDivs(bool slashJoined, int boundary, bool append, Alts bAlts)
 		{
-			Debug.Assert(boundary > 0 && boundary < Arms.Count);
+			//Debug.Assert(boundary > 0 && boundary < Arms.Count); //not true when joining with error branch
 			Division prev = _divisions.LastOrDefault();
 			var bDivs = bAlts != null ? bAlts._divisions : InternalList<Division>.Empty;
 			if (append) {

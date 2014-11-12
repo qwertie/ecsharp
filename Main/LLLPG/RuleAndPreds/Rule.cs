@@ -17,7 +17,7 @@ namespace Loyc.LLParserGenerator
 	{
 		/// <summary>A node that contains the original code of the rule, or, if the
 		/// rule was created programmatically, the method prototype (e.g. 
-		/// <c>#def(int, Rule, #(#var(int, arg)))</c>, which means 
+		/// <c>#fn(int, Rule, #(#var(int, arg)))</c>, which means 
 		/// <c>int Rule(int arg)</c>). This can be null, in which case the
 		/// default prototype is <c>void Rule();</c>, or if the rule is a 
 		/// starting rule or token, <c>public void Rule();</c>.</summary>
@@ -138,7 +138,7 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Returns Basis if it's a method signature; otherwise constructs a default signature.</summary>
 		public LNode GetMethodSignature()
 		{
-			if (Basis != null && Basis.Calls(S.Def) && Basis.ArgCount.IsInRange(3, 4)) {
+			if (Basis != null && Basis.Calls(S.Fn) && Basis.ArgCount.IsInRange(3, 4)) {
 				var parts = Basis.Args;
 				if (parts.Count == 4)
 					parts.RemoveAt(3);
@@ -147,7 +147,7 @@ namespace Loyc.LLParserGenerator
 				parts[1] = F.Id(Name);
 				return Basis.WithArgs(parts);
 			} else {
-				var method = F.Def(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
+				var method = F.Fn(IsRecognizer ? F.Bool : F.Void, F.Id(Name), F.List());
 				if (IsPrivate)
 					method = F.Attr(F.Id(S.Private), method);
 				else if (IsStartingRule | IsToken)

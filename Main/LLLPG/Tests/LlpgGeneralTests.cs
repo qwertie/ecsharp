@@ -917,13 +917,13 @@ namespace Loyc.LLParserGenerator
 							} else if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
 								SQString();
 							else
-								goto match4;
+								goto error;
 						} else if (la0 == ' ')
 							Skip();
 						else
-							goto match4;
+							goto error;
 						break;
-					match4:
+					error:
 						{
 							Error();
 							Skip();
@@ -1606,7 +1606,7 @@ namespace Loyc.LLParserGenerator
 						la0 = LA0;
 						if (la0 >= '1' && la0 <= '9') {
 							if (a || b || c || d || e || f || g || h || i)
-								goto match1;
+								goto matchWeirdDigit;
 							else {
 								PositiveDigit();
 								for (;;) {
@@ -1618,9 +1618,9 @@ namespace Loyc.LLParserGenerator
 								}
 							}
 						} else
-							goto match1;
+							goto matchWeirdDigit;
 						break;
-					match1:
+					matchWeirdDigit:
 						{
 							WeirdDigit();
 							for (;;) {
@@ -1936,7 +1936,7 @@ namespace Loyc.LLParserGenerator
 								{
 									la1 = LA(1);
 									if (la1 >= '0' && la1 <= '9')
-										goto match1;
+										goto matchNum;
 									else if (la1 == 'n') {
 										_type = num;
 										Skip();
@@ -1952,7 +1952,7 @@ namespace Loyc.LLParserGenerator
 										Match('f');
 										_value = double.PositiveInfinity;
 									} else
-										goto match10;
+										goto error;
 								}
 								break;
 							case '0':
@@ -1965,7 +1965,7 @@ namespace Loyc.LLParserGenerator
 							case '7':
 							case '8':
 							case '9':
-								goto match1;
+								goto matchNum;
 							case '*':
 								{
 									_type = mul;
@@ -2002,17 +2002,17 @@ namespace Loyc.LLParserGenerator
 									_type = id;
 									Id();
 								} else
-									goto match10;
+									goto error;
 								break;
 							}
 							break;
-						match1:
+						matchNum:
 							{
 								_type = num;
 								Num();
 							}
 							break;
-						match10:
+						error:
 							{
 								_type = EOF;
 								la0 = LA0;

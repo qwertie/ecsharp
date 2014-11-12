@@ -11,6 +11,7 @@ namespace Loyc.LLParserGenerator
 	using System.Diagnostics;
 	using Loyc.Utilities;
 	using Loyc.Syntax;
+	using Loyc.Math;
 
 	partial class LLParserGenerator
 	{
@@ -28,6 +29,7 @@ namespace Loyc.LLParserGenerator
 			public LNodeFactory F;
 			Rule _currentRule;
 			Pred _currentPred;
+			HashSet<string> _labelsInUse = new HashSet<string>(); // for deduplication of goto-labels
 			RWList<LNode> _classBody; // Location where we generate terminal sets
 			RWList<LNode> _target; // List of statements in method being generated
 			ulong _laVarsNeeded;
@@ -52,6 +54,7 @@ namespace Loyc.LLParserGenerator
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = _stopLabelCounter = 0;
 				_recognizerMode = rule.IsRecognizer;
+				_labelsInUse.Clear();
 
 				Visit(rule.Pred);
 
@@ -147,15 +150,16 @@ namespace Loyc.LLParserGenerator
 
 			private void GenerateCodeForAlts(Alts alts, Dictionary<int, int> timesUsed, PredictionTree tree)
 			{
-				// Generate matching code for each arm. The "bool" in each pair 
-				// indicates whether the matching code needs to be split out 
-				// (separated) from the prediction tree.
 				bool needError = LLPG.NeedsErrorBranch(tree, alts);
 				if (!needError && alts.ErrorBranch != null)
 					LLPG.Output(Warning, alts, "The error branch will not be used because the other alternatives are exhaustive (cover all cases)");
 				bool userDefinedError = needError && alts.ErrorBranch != null && alts.ErrorBranch != DefaultErrorBranch.Value;
 
-				Pair<LNode, bool>[] matchingCode = new Pair<LNode, bool>[alts.Arms.Count + (userDefinedError ? 1 : 0)];
+				// Generate matching code for each arm. the "string" in each pair 
+				// becomes non-null if the matching code for that branch needs to be
+				// split out (separated) from the prediction tree because it appears
+				// multiple times in the tree. The string is the goto-label name.
+				Pair<LNode, string>[] matchingCode = new Pair<LNode, string>[alts.Arms.Count + (userDefinedError ? 1 : 0)];
 				MSet<int> unreachable = new MSet<int>();
 				int separateCount = 0;
 				for (int i = 0; i < alts.Arms.Count; i++) {
@@ -168,8 +172,11 @@ namespace Loyc.LLParserGenerator
 					VisitWithNewTarget(alts.Arms[i], codeForThisArm);
 
 					matchingCode[i].A = F.Braces(codeForThisArm.ToRVList());
-					if (matchingCode[i].B = timesUsed[i] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A))
+					if (timesUsed[i] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A)) {
 						separateCount++;
+						matchingCode[i].B = alts.Arms[i].ChooseGotoLabel() 
+							?? "match" + (i + 1).ToString();
+					}
 				}
 
 				// Add matching code for the error branch, if present. Note: the
@@ -182,10 +189,13 @@ namespace Loyc.LLParserGenerator
 					var errorHandler = new RWList<LNode>();
 					VisitWithNewTarget(alts.ErrorBranch, errorHandler);
 					matchingCode[i].A = F.Braces(errorHandler.ToRVList());
-					if (matchingCode[i].B = timesUsed[ErrorAlt] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A))
+					if (timesUsed[ErrorAlt] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A)) {
+						matchingCode[i].B = "error";
 						separateCount++;
+					}
 				}
 
+				// Print unreachability warnings 
 				if (unreachable.Count == 1)
 					LLPG.Output(Warning, alts, string.Format("Branch {{{0}}} is unreachable.", alts.AltName(unreachable.First())));
 				else if (unreachable.Count > 1)
@@ -195,7 +205,7 @@ namespace Loyc.LLParserGenerator
 
 				Symbol loopType = null;
 
-				// Generate a loop body for (...)* or (...)?:
+				// Choose a loop type for (...)* or (...)?:
 				if (alts.Mode == LoopMode.Star)
 					loopType = S.For;
 				else if (alts.Mode == LoopMode.Opt) {
@@ -208,6 +218,7 @@ namespace Loyc.LLParserGenerator
 				// labeled block and reached via "goto". I'd rather just do a goto
 				// from inside one "if" statement to inside another, but in C# 
 				// (unlike in CIL, and unlike in C) that is prohibited :(
+				DeduplicateLabels(matchingCode);
 				var extraMatching = GenerateExtraMatchingCode(matchingCode, separateCount, ref loopType);
 				if (separateCount != 0)
 					loopType = loopType ?? S.DoWhile;
@@ -253,24 +264,40 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
+			private void DeduplicateLabels(Pair<LNode, string>[] matchingCode)
+			{
+				for (int i = 0; i < matchingCode.Length; i++) {
+					string label = matchingCode[i].B;
+					if (label != null) {
+						while (_labelsInUse.Contains(label)) {
+							if (label.Length > 2 && label[label.Length-2] == '_' && label[label.Length-1].IsInRange('a','y'))
+								label = label.Left(label.Length-1) + (char)(label[label.Length-1] + 1);
+							else
+								label += "_a";
+						}
+						_labelsInUse.Add(label);
+						matchingCode[i].B = label;
+					}
+				}
+			}
+
 			private bool SimpleEnoughToRepeat(LNode code)
 			{
 				Debug.Assert(code.Calls(S.Braces));
+				// a simple heuristic
 				if (code.ArgCount > 1)
 					return false;
 				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.ArgNamed(S.Braces) == null;
 			}
 
-			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, bool>[] matchingCode, int separateCount, ref Symbol loopType)
+			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, string>[] matchingCode, int separateCount, ref Symbol loopType)
 			{
 				var extraMatching = new RWList<LNode>();
 				if (separateCount != 0) {
-					string suffix = NextGotoSuffix();
-
 					for (int i = 0; i < matchingCode.Length; i++) {
-						if (matchingCode[i].B) // split out this case
+						if (matchingCode[i].B != null) // split out this case
 						{
-							var label = F.Id("match" + (i + 1) + suffix);
+							var label = F.Id(matchingCode[i].B);
 
 							// break/continue; matchN: matchingCode[i].A;
 							if (extraMatching.Count > 0)
@@ -294,17 +321,8 @@ namespace Loyc.LLParserGenerator
 				else
 					return string.Format("stop{0}", _stopLabelCounter);
 			}
-			private string NextGotoSuffix()
-			{
-				if (++_separatedMatchCounter == 1)
-					return "";
-				if (_separatedMatchCounter > 26)
-					return string.Format("_{0}", _separatedMatchCounter - 1);
-				else
-					return ((char)('a' + _separatedMatchCounter - 1)).ToString();
-			}
 
-			protected LNode GetPredictionSubtree(PredictionBranch branch, Pair<LNode, bool>[] matchingCode, ref Symbol haveLoop)
+			protected LNode GetPredictionSubtreeCode(PredictionBranch branch, Pair<LNode, string>[] matchingCode, ref Symbol haveLoop)
 			{
 				if (branch.Sub.Tree != null)
 					return GeneratePredictionTreeCode(branch.Sub.Tree, matchingCode, ref haveLoop);
@@ -336,7 +354,7 @@ namespace Loyc.LLParserGenerator
 				return F.Call(S.Goto, F.Id(haveLoop));
 			}
 
-			protected LNode GeneratePredictionTreeCode(PredictionTree tree, Pair<LNode, bool>[] matchingCode, ref Symbol haveLoop)
+			protected LNode GeneratePredictionTreeCode(PredictionTree tree, Pair<LNode, string>[] matchingCode, ref Symbol haveLoop)
 			{
 				var braces = F.Braces();
 
@@ -344,7 +362,7 @@ namespace Loyc.LLParserGenerator
 				var alts = (Alts)_currentPred;
 
 				if (tree.Children.Count == 1)
-					return GetPredictionSubtree(tree.Children[0], matchingCode, ref haveLoop);
+					return GetPredictionSubtreeCode(tree.Children[0], matchingCode, ref haveLoop);
 
 				// From the prediction table, we can generate either an if-else chain:
 				//
@@ -374,46 +392,13 @@ namespace Loyc.LLParserGenerator
 				// This class makes if-else chains directly (using IPGTerminalSet.
 				// GenerateTest() to generate the test expressions), but the code 
 				// snippet generator (CSG) is used to generate switch statements 
-				// because the required code may be more complex and depends on the 
-				// type of terminals--for example, if the terminals are Symbols, 
-				// we'll need a static Dictionary in order to use a switch:
-				//
-				// static Dictionary<Symbol, int> Foo_JmpTbl = Foo_MakeJmpTbl();
-				// static Dictionary<Symbol, int> Foo_MakeJmpTbl()
-				// {
-				//    var tbl = new Dictionary<Symbol, int>();
-				//    tbl.Add(GSymbol.Get("0"), 1);
-				//    ...
-				//    tbl.Add(GSymbol.Get("7"), 1);
-				//    tbl.Add(GSymbol.Get("-"), 2);
-				// }
-				// void Foo()
-				// {
-				//   Symbol la0;
-				//   for (;;) {
-				//     la0 = LA(0);
-				//     int label;
-				//     Foo_JmpTbl.TryGetValue(la0, out label);
-				//     switch(label) {
-				//     case 0:
-				//       goto breakfor;
-				//     case 1:
-				//       sub_tree_1();
-				//       break;
-				//     case 2:
-				//       sub_tree_2();
-				//       break;
-				//     }
-				//   }
-				//   breakfor:;
-				// }
+				// because the required code may be more complex.
 				//
 				// We may or may not be generating code inside a for(;;) loop. If we 
 				// decide to generate a switch() statement, one of the branches will 
 				// usually need to break out of the for loop, but "break" can only
-				// break out of the switch(). Therefore, if any of the matching code
-				// is a break statement, .... hmm... I guess we could put a "breakfor"
-				// label outside the for-loop and goto it.
+				// break out of the switch(). In that case, add "stop:" after the
+				// switch() and use "goto stop" instead of "break".
 
 				RWList<LNode> block = new RWList<LNode>();
 				LNode laVar = null;
@@ -436,7 +421,8 @@ namespace Loyc.LLParserGenerator
 						if (!should)
 							switchCases.Clear();
 						else if (should && haveLoop == S.For)
-							haveLoop = GSymbol.Get(NextStopLabel());
+							// Can't "break" out of the for-loop when there is a nested switch,
+							haveLoop = GSymbol.Get(NextStopLabel()); // so use "goto stop".
 					}
 				}
 
@@ -449,7 +435,7 @@ namespace Loyc.LLParserGenerator
 						} else
 							branchCode[i] = CGH.ErrorBranch(tree.TotalCoverage, tree.Lookahead);
 					} else
-						branchCode[i] = GetPredictionSubtree(tree.Children[i], matchingCode, ref haveLoop);
+						branchCode[i] = GetPredictionSubtreeCode(tree.Children[i], matchingCode, ref haveLoop);
 
 				var code = GenerateIfElseChain(tree, branchCode, ref laVar, switchCases);
 				if (laVar != null) {

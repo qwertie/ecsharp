@@ -56,12 +56,12 @@ namespace Loyc.LLParserGenerator
 
 		public virtual LNode VisitInput(LNode stmt, IMessageSink sink)
 		{
-			LNode assignment;
+			LNode aliasSet;
 			if ((stmt.Calls(_alias, 1) || stmt.CallsMin(S.Alias, 1)) &&
-				(assignment = stmt.Args[0]).Calls(S.Assign, 2))
+				(aliasSet = stmt.Args[0]).Calls(S.Assign, 2))
 			{
 				IEnumerable<KeyValuePair<LNode, LNode>> q; 
-				LNode alias = assignment.Args[0], replacement = assignment.Args[1], old;
+				LNode alias = aliasSet.Args[0], replacement = aliasSet.Args[1], old;
 				if (_definedAliases.TryGetValue(alias, out old)) {
 					if (stmt.AttrNamed(S.Partial) == null || !old.Equals(replacement))
 						sink.Write(Severity.Warning, alias, "Redefinition of alias '{0}'", alias);
@@ -120,7 +120,7 @@ namespace Loyc.LLParserGenerator
 		/// second time, giving the name of an external variable in which the
 		/// set is held (see <see cref="GenerateSetDecl(IPGTerminalSet)"/>).
 		/// <para/>
-		/// For example, if the subject is @(la0), the test for a simple set
+		/// For example, if the subject is @la0, the test for a simple set
 		/// like [a-z?] might be something like <c>(la0 >= 'a' &amp;&amp; 'z' >= la0)
 		/// || la0 == '?'</c>. When the setName is <c>foo</c>, the test might be 
 		/// <c>foo.Contains(la0)</c> instead.
@@ -402,7 +402,7 @@ namespace Loyc.LLParserGenerator
 
 				// Allow recognizers to take fewer arguments than the normal rule 
 				// by truncating argument(s) at the call site.
-				int maxArgCount = target.Basis.CallsMin(S.Def, 3) ? target.Basis.Args[2].ArgCount : 0;
+				int maxArgCount = target.Basis.CallsMin(S.Fn, 3) ? target.Basis.Args[2].ArgCount : 0;
 				if (@params.Count > maxArgCount)
 					@params = @params.First(maxArgCount);
 			}

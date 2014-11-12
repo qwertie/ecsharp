@@ -741,7 +741,7 @@ namespace Loyc.LLParserGenerator
 				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
 				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
 				F.Call(S.Return, F.Id("total")));
-			Number.Basis = (LNode)F.Attr(F.Public, F.Def(F.Int32, F.Id("Number"), F.List()));
+			Number.Basis = (LNode)F.Attr(F.Public, F.Fn(F.Int32, F.Id("Number"), F.List()));
 			//Number.MethodCreator = (rule, body) => {
 			//    return Node.FromGreen(
 			//        F.Attr(F.Public, F.Def(F.Int32, F.Id(rule.Name), F.List(), F.Braces(
@@ -947,9 +947,12 @@ namespace Loyc.LLParserGenerator
 					do {
 						la0 = LA0;
 						if (la0 == 'x') {
-							if (a && b)
-								goto match1;
-							else
+							if (b) {
+								if (a)
+									goto match1;
+								else
+									goto match2;
+							} else
 								goto match2;
 						} else if (la0 == 'X')
 							goto match1;
@@ -1961,7 +1964,7 @@ namespace Loyc.LLParserGenerator
 			Rule NTokens = Rule("NTokens", 
 				Set("x", 0) + Opt(And(Expr("x < max")) + Plus(Set("[^\n\r ]"))) +
 				             Star(And(Expr("x < max")) + C(' ') + Star(Set("[^\n\r ]")) + Stmt("x++"), true));
-			NTokens.Basis = F.Def(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
+			NTokens.Basis = F.Fn(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
 			Rule Line = Rule("Line", SetVar("c", Set("[0-9]")) + Call(NTokens, Expr("c - '0'")) + Opt(Set("[\n\r]")));
 
 			_pg.AddRules(NTokens, Line);

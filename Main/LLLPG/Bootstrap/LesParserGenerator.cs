@@ -88,7 +88,7 @@ namespace Loyc.Syntax.Les
 			
 			Rule expr = Rule("Expr", null, Token);
 			Rule atom = Rule("Atom", null, Private);
-			atom.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence contextA"), Expr("ref RWList<LNode> attrs")));
+			atom.Basis = F.Fn(F.Id("LNode"), F._Missing, F.List(Expr("Precedence contextA"), Expr("ref RWList<LNode> attrs")));
 			atom.Pred =
 				Stmt("LNode e = F._Missing, _") +
 				(	// identifier or identifier(call)
@@ -195,7 +195,7 @@ namespace Loyc.Syntax.Les
 				{label(end); return attrs == null ? e : e.WithAttrs(attrs.ToRVList());}
 			];
 #endif
-			expr.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
+			expr.Basis = F.Fn(F.Id("LNode"), F._Missing, F.List(Expr("Precedence context"), Expr("out LNode primary")));
 			Alts alts;
 			expr.Pred = Stmt("LNode e, _; Precedence prec; " +
 				"RWList<LNode> attrs = null; ") +
@@ -271,7 +271,7 @@ namespace Loyc.Syntax.Les
 				{return e;}
 			];
 #endif
-			LNode ReturnsLNode = F.Attr(F.Protected, F.Def(F.Id("LNode"), F._Missing, F.List()));
+			LNode ReturnsLNode = F.Attr(F.Protected, F.Fn(F.Id("LNode"), F._Missing, F.List()));
 
 			//Rule superExpr = Rule("SuperExpr", 
 			//    Stmt("LNode primary, p_") +
@@ -310,7 +310,7 @@ namespace Loyc.Syntax.Les
 				SetVar("e", superExpr) + Stmt("return e") | Expr("return MissingExpr") + Seq(), Private);
 			superExprOpt.Basis = ReturnsLNode;
 			
-			LNode AppendsExprList = F.Attr(F.Protected, F.Def(F.Void, F._Missing, F.List(Expr("ref RWList<LNode> exprs"))));
+			LNode AppendsExprList = F.Attr(F.Protected, F.Fn(F.Void, F._Missing, F.List(Expr("ref RWList<LNode> exprs"))));
 			Rule exprList = Rule("ExprList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +
 				Opt(
@@ -365,7 +365,7 @@ namespace Loyc.Syntax.Les
 					,true)) +
 				Stmt("return e"), Private
 			);
-			superExprOptUntil.Basis = F.Def(F.Id("LNode"), F._Missing, F.List(Expr("TokenType terminator")));
+			superExprOptUntil.Basis = F.Fn(F.Id("LNode"), F._Missing, F.List(Expr("TokenType terminator")));
 
 			Rule stmtList = Rule("StmtList",
 				Stmt("exprs = exprs ?? new RWList<LNode>()") +

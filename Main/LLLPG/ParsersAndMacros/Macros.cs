@@ -198,13 +198,13 @@ namespace Loyc.LLParserGenerator
 
 		[SimpleMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"#def", "#property", Mode = MacroMode.Passive | MacroMode.ProcessChildrenBefore)]
+			"#fn", "#property", Mode = MacroMode.Passive | MacroMode.ProcessChildrenBefore)]
 		public static LNode ECSharpRule(LNode node, IMessageSink sink)
 		{
 			// This will be called for all methods and properties, so we have to 
 			// examine it for the earmarks of a rule definition.
 			bool isProp;
-			if (!(isProp = node.Calls(S.Property, 3)) && !node.Calls(S.Def, 4))
+			if (!(isProp = node.Calls(S.Property, 3)) && !node.Calls(S.Fn, 4))
 				return null;
 			LNode returnType = node.Args[0];
 			bool isToken;
@@ -304,10 +304,10 @@ namespace Loyc.LLParserGenerator
 				LNode stmt = stmts[i];
 				bool isToken;
 				if ((isToken = stmt.Calls(_hash_token, 4)) || stmt.Calls(_hash_rule, 4)) {
-					LNode basis = stmt.WithTarget(S.Def);
+					LNode basis = stmt.WithTarget(S.Fn);
 					LNode methodBody = stmt.Args.Last;
 
-					// basis has the form #def(ReturnType, Name, #(Args))
+					// basis has the form #fn(ReturnType, Name, #(Args))
 					var rule = MakeRuleObject(isToken, ref basis, sink);
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
@@ -422,7 +422,7 @@ namespace Loyc.LLParserGenerator
 							//       e.g. "public Foo()::bool;" is not supported by def() alone.
 							sig = LeMP.Prelude.Les.Macros.def(sig, sink) ?? sig;
 						}
-						if (sig != null && sig.CallsMin(S.Def, 3))
+						if (sig != null && sig.CallsMin(S.Fn, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();
 						else
 							sink.Write(Severity.Error, sig, "'recognizer' expects one parameter, a method signature.");
