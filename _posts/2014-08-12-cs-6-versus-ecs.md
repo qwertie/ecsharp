@@ -330,6 +330,16 @@ I wasn't sure how to support pattern matching in EC#. This plan seems as good as
 
 "`*`" means "don't care". In EC# I was planning to introduce "`_`" to represent "don't care" for any out parameter or unused result (e.g. `_ = control.Handle` calls a property and discards the result) rather than `*`; `_` would mean "don't care" only if there was no explicitly-declared variable named `_`. I suppose `*` can do the same job instead.
 
+## nameof
+
+In C# 6 you can write nameof(Foo) and this will be treated as the string "Foo". I suppose the point of this is that if there is a property called Foo, the Rename refactoring tool can treat `nameof(Foo)` as a reference to Foo and rename it. My code base supports `nameof()`, but sadly it is not compatible with any refactoring tools so you don't get much benefit from it. It's not hard to imagine other uses for this in the future, though, such as an attribute that allows you to pass both the _value_ of an expression to a function and also the _string_ form of that expression. For example, I think I might just write an `assert` macro that translates
+
+    assert(x > 0);
+
+into
+
+    System.Diagnostics.Debug.Assert(x > 0, "Assertion failed: x > 0");
+
 ## A lot more is planned for EC# ##
 
 In the long run I want to add tons of stuff to EC#, but for now EC# is just a parser plus LeMP (Lexical Macro Processor), not a complete compiler. There is, of course, one thing that EC# can do already that C# cannot: lexical macros. Lexical macros are powerful: have you heard of the [Loyc LL(k) Parser Generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), well, that's just a macro inside a nascent version of EC#. Macros allow third parties to add a variety of features to the language, and some of EC#'s features (such as the `?.` operator) will initially (if not forever) be implemented as lexical macros.

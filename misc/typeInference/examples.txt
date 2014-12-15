@@ -1,0 +1,185 @@
+//////////////////////////////////////////////////////////////////
+// Prelude ///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+// Math
+pi = 3.14159265359;
+sqrt = \x. pow x 0.5;
+square = \x. x*x;
+abs = \x. if x < 0 then -x else x;
+even = \x. (x & 1) == 0;
+odd  = \x. (x & 1) != 0;
+max  = \a b. if a > b then a else b;
+min  = \a b. if a < b then a else b;
+
+// Most float math is not supported by type checker, including these fns:
+recip = \x. 1.0 / toFloat x;
+round = \x. toInt (x + 0.5);
+
+// ALL HAIL THE Y COMBINATOR.
+// "\\f. (\\a. a a) (\\a. f (\\x. (a a) x))"
+//Y = \f. (\a. a a) (\a. f (\x. (a a) x));
+//Y = \f. (\a. f (\x. (a a) x)) (\a. f (\x. (a a) x));
+
+case = \list n c. case list of nil -> n; h:T -> c h T;
+
+// Basic list operations including length, indexer `at`
+// You know, the "case" primitive is a pain... it would have been
+// easier to implement as three primitives isNil, head, tail. On
+// the other hand, as a primitive "case" gets to be lazy...
+isNil = \list. case list of nil -> true; h:T -> false;
+// An incorrect type is inferred for head and `at` because the nil case can't 
+// be polymorphic. The problem is essentially that there is no "bottom" type.
+head  = \list. case list of nil -> nil; h:T -> h;
+tail  = \list. case list of nil -> nil; h:T -> T;
+length = Y (\length list. case list of nil -> 0; x:xs -> 1 + length xs);
+at     = Y (\at list i.    case list of nil -> nil; x:xs -> if i <= 0 then x else xs `at` (i-1));
+
+// Higher-order list stuff: map, fold, filter, etc.
+map    = Y (\map f L. case L of nil -> nil; h:rest -> f h : (map f rest));
+foldr  = Y (\foldr f z list. 
+         case list of nil -> z; x:xs -> x `f` foldr f z xs);
+foldl  = Y (\foldl f z list. 
+         case list of nil -> z; x:xs -> foldl f (z `f` x) xs);
+filter = Y (\filtr pred list. case list of nil -> nil; 
+          x:xs -> if pred x then x : filtr pred xs 
+                                else filtr pred xs);
+take   = Y \take N list. case list nil 
+         (\x xs. if N <= 0 then nil else x : take (N-1) xs);
+skip   = Y \skip N list. case list nil
+         (\x xs. if N <= 0 then list else skip (N-1) xs);
+append = (Y \append x y. case x of nil -> y; x:xs -> x : append xs y);
+concat = Y \concat lists. case lists of nil -> nil;
+           list:lists -> append list (concat lists);
+range  = Y \range start stop. 
+         if stop <= start then nil 
+         else start : range (start+1) stop;
+
+// You can make data structures in the usual "lambda calculus" way,
+// but in order to print them out you must convert them to a list.
+Pair = \x y. \p. p x y;
+fst = \p. p (\x y. x);
+snd = \p. p (\x y. y);
+first = fst;
+second = snd;
+pair2list = \pair. first pair : second pair : nil;
+
+// Maybe
+Nothing   = \n j. n;
+Just      = \x. \n j. j x;
+fromJust  = \j. j "fromJust: got Nothing" (\x. x);
+isJust    = \j. j false (\x. true);
+just2list = \j. j nil (\x. x : nil);
+
+// Conventionally, data structures act as their own fold function.
+fold = \data. data;
+
+// Other stuff
+
+// loopRange times state (\i state. ...):
+// Loops a specified number of times, calling (f i state) each time
+// where i is the current iteration and state is the current state.
+loopRange = Y \loopRange i stop state f.
+    if i >= stop then state 
+    else loopRange (i+1) stop (f i state) f;
+// loopWhile (\state. ...) state (\state. ...)
+loopWhile = Y \loopWhile pred state f. 
+            if pred state then 
+               loopWhile pred (f state) f
+            else state;
+
+qsort = Y \qsort list. 
+        case list nil 
+          (\pivot rest. append
+                    (qsort (filter (\x. x < pivot) rest))
+            (pivot : qsort (filter (\x. x >= pivot) rest)));
+
+//////////////////////////////////////////////////////////////////
+// Tests /////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+(); // yup, that's unit.
+case (0, "Pair case swap!") of (x, y) -> (y, x);
+case nil of 
+  nil -> "Hooray!"; 
+  cons pair -> 'F':'A':'I':'L':nil;
+case "Useless list case required in assignment 4" of 
+  nil -> nil; 
+  cons pair -> (case pair of (h, T) -> h:T);
+case "USEFUL list case NOT required in assignment 4" of 
+  nil -> nil; 
+  h:T -> h:T;
+case 0 of 0 -> "Useless Nat case required in assignment 4"; succ p -> "FAIL";
+case 778 of 0 -> 666; succ p -> p;
+case (\x.x) () of () -> 'c':"ase (): everyone's favorite no-op";
+
+fact = (\f x. if x<=1 then 1 else x * f (x-1));
+factorial = Y fact;
+"factorials:";
+    factorial 1 : factorial 2 : factorial 3 
+  : factorial 4 : factorial 5 : factorial 6 : nil;
+"factorial 5 using a 'loop':";
+  (\x. loopRange 1 (x+1) 1 (\i state. state * i)) 5 : nil;
+
+"if-then spec flaw workaround: ";
+(if true then 22 else 0) + 20;
+(case nil "YAY" (\h T. "BUG")) : (case ("YAY":nil) "BUG" (\h T. h)) : nil;
+"case spec flaw workaround: ";
+    (case nil 4 (\h T. 0))
+  : (case (2:nil) 0 (\h T. h)) : nil;
+
+pi = 3.14159265;
+"length test";
+length nil : length (1:nil) : length (1:2:nil)
+           : length ('1':'2':'3':nil) : nil;
+append "append " "test!";
+concat ("con" : "cat" : " " : "test!" : nil);
+"range 0 10:";
+range 0 10;
+
+// Operator tests
+"Misc. operators:";
+(255&300 | 15) : 170/10%10 : nil;
+"<= operator:";
+(0 <= 1) : (1 <= 1) : (2 <= 1) : (3 <= 1) : nil;
+
+Omega = (\x. x x) (\x. x x);
+
+// Calculating the roots of quadratic formulas - types cannot be inferred
+//quadratic1 = \a b R. (-b + R) / 2.0*a;
+//quadratic2 = \a b R. (-b - R) / 2.0*a;
+//quadratic = \a b c. (\R. quadratic1 a b R : quadratic2 a b R : nil) (sqrt (square b - 4.0*a*c));
+//"Roots of x^2 - 25 = 0:" : quadratic 1.0 0.0 (-25.0) : nil;
+//"Roots of x^2 + 8x - 20 = 0:" : quadratic 1.0 8.0 (-20.0) : nil;
+
+// Higher-order function tests
+"Squares: ";
+map square (1:2:3:4:5:6:7:8:9:10:nil);
+"Take two, skip two:";
+take 2 (1:2:3:4:5:6:nil) : skip 2 (1:2:3:4:5:6:nil) : nil;
+"50-some odd: ";
+filter odd (range 0 50);
+
+//(\f. (\a. a a) (\a. f (\x. (a a) x)))
+//(\take N list. case list list (\x xs. if N <= 0 then nil else x : take (N-1) xs))
+
+"OMG Quick sort OMG!!!"; 
+qsort (4:9:10:13:105:-1:50:20:30:65:40:nil);
+
+// And now for the coup de grâce
+chkPrime = Y \chk x div. if div <= 1 then true
+                  else if x % div == 0 then false
+                  else chk x (div-2);
+isPrime = \x.
+          if x == 2 then true 
+          else if (x & 1) == 0 then false
+          else chkPrime x
+            // Choose a search limit based on sqrt x. Must be odd.
+            ((toInt (sqrt (toFloat x)) - 1) | 1);
+primes = \max.
+         2 : (filter 
+           (\x. if (x & 1) == 0 then false else isPrime x)
+           (range 3 (max+1)));
+"Prime numbers up to 1000:";
+primes 1000;
+
