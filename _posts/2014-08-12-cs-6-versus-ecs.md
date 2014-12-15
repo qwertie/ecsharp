@@ -1,6 +1,7 @@
 ---
 title: C# 6 versus Enhanced C#
 layout: post
+commentIssueId: 6
 ---
 
 With some C# 6 features semi-officially announced, it's time to comment on C# 6 and how it affects Enhanced C#.
