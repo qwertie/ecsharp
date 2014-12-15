@@ -27,6 +27,8 @@ var cppHelloWorldProgram = new Dictionary<int, string>
 };
 ~~~
 
+_Edit_: It's not _quite_ the same; The old syntax `{key, value}` calls `.Add(key, value)`, while the new syntax calls `[key] = value`. Which means that the new syntax will not cause a runtime error in case of duplicate keys.
+
 At first glance, the new syntax appears to be in conflict with EC#'s ability to attach attributes to any expression. Isn't it a problem that [...] looks like an attribute? I don't think so; my parser can easily look ahead and see the '=' to determine that it is not an attribute.
 
 ## 2. Dollar-sign operator
@@ -193,7 +195,7 @@ This definition made the code more straightforward to convert to C# 4/5, and it 
 
 ## Exception-Handling Improvements
 
-In C# 6 you can use `await` in catch and finally blocks. Nuff said. YOu can also write exception filters:
+In C# 6 you can use `await` in catch and finally blocks. Nuff said. You can also write exception filters:
 
     try {
       throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -289,7 +291,7 @@ I wasn't planning the "params IEnumerable" or constructor type inference feature
 
 Record types are a quick way to declare bundles of data.
 
-    //example here
+    public record class Cartesian(double x: X, double y: Y);
 
 This is one of those features that aren't needed in a language like EC# that supports macros. EC# could support the same thing, with no changes to the parser, using a syntax like this:
 
@@ -298,6 +300,8 @@ This is one of those features that aren't needed in a language like EC# that sup
 Or like this:
 
     record(Person) { string FirstName, LastName; int Age; }
+
+Someone simply needs to write a macro to translate this into a normal class declaration.
 
 ## Pattern matching
 
