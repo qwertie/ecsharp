@@ -49,13 +49,13 @@ The assignment itself (Ass4.hs), however, needs to support not just the 7 types 
                 | YClosure [CesInstr] [Value']
                 deriving (Eq, Show)
 
-Since Haskell doesn't have a concept of inheritance, I build `Value'` with composition instead and a new constructor 'V'. (There are two types of closures, due to the fact that the professor decided that recursive functions built with the Y combinator would work differently than those built without it.)
+(There are two types of closures, due to the fact that the professor decided that recursive functions built with the Y combinator would work differently than those built without it.) Since Haskell doesn't have a concept of inheritance, I build `Value'` with composition instead and a new constructor `V`. It's a bit annoying that I can't "inherit" `Value`, but hey, it works, right?
 
-This causes a limitation at run time, though, one that I didn't mention when I handed in the assignment. Remember that there is a `ListVal [Value]` constructor `Value`. This means that lists can only contain values of type `Value`, not `Value'`. This, in turn, means that my runtime engine cannot support lists of closures. You'll get a runtime error if you try to store a lambda function in a list. In principle it is perfectly possible, but because of the types involved, you aren't allowed.
+This causes a limitation at run time, though, one that I didn't mention when I handed in the assignment. Remember that there is a `ListVal [Value]` constructor. This means that lists can only contain values of type `Value`, not `Value'`. This, in turn, means that my runtime engine cannot support lists of closures. You'll get a runtime error if you try to store a lambda function in a list. In principle it is perfectly possible, but because of the types involved, you can't.
 
 How can we solve this problem? In Haskell there are multiple ways, none of which are very satisfying.
 
-The first solution is that we could modify the definition of Value in the ParserA4 module to support closures. But this would be inappropriate. The parser module is supposed to define the parser--it knows nothing about the runtime engine, and it would be inappropriate to define large types like `CesInstr` in the Parser module since `CesInstr` is unrelated to parsing. I suppose that's the main point I want to make: as long as you're writing a single module or you have global knowledge of what the program as a whole wants to accomplish, you can introduce unnecessary dependencies between different components to solve your typing problems. This, however, is hostile to large-scale software engineering.
+The first solution is that we could modify the definition of `Value` in the ParserA4 module to support closures. But this would be inappropriate. The parser module is supposed to define the parser--it knows nothing about the runtime engine, and it would be inappropriate to define large types like `CesInstr` in the Parser module since `CesInstr` is unrelated to parsing. I suppose that's the main point I want to make: as long as you're writing a single module or you have global knowledge of what the program as a whole wants to accomplish, you can introduce unnecessary dependencies between different components to solve your typing problems. This, however, is hostile to large-scale software engineering.
 
 The second solution is to define a completely separate type for run-time values versus compile-time values:
 
@@ -126,3 +126,15 @@ The inferred return value of `toRuntimeValue` will be `IntVal|FloatVal|ListVal'|
 Note that inside the last case, `v'` would have type `IntVal|FloatVal|...` where `ListVal` is _not_ one of the possibilities; thus `v'` is compatible with `Value'`, or in other words `v'` is a subtype of `Value'`.
 
 Hope that makes sense. Anyway, it's just a thought. It's possible that Haskell's type system has some limitations that would prevent such a feature from being added, I don't know.
+
+P.S. I would have liked to explore a slightly different solution in which the `ListVal` constructor can hold a specified type:
+
+    data Value v = IntVal Int
+                 ...
+                 | ListVal [v]
+                 ...
+                 deriving (Eq)
+
+That way we wouldn't need separate `ListVal` and `ListVal'` constructors, we'd use `Value Value` and `Value' Value'` instead. But there's an obvious problem--`Value Value` is ill-formed. `Value` requires one type parameter, and we want to essentially give the same type to itself as its own parameter, making an infinite cycle `Value (Value (Value (Value...`, which is illegal. I have run into this problem at least once before in C#, but I don't have a proposal handy for solving this problem in the type system.
+
+_Edit_: I've since noticed that there are a large number of exotic and less-known type system features in Haskell. It would not be surprising if the problem I've described can be avoided with one of them.
