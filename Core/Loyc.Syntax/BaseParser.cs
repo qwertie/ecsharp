@@ -255,7 +255,7 @@ namespace Loyc.Syntax
 		protected void Error(bool inverted, params Int32[] expected) { Error(inverted, (IEnumerable<Int32>)expected); }
 		protected virtual void Error(bool inverted, IEnumerable<Int32> expected)
 		{
-			Error(0, Localize.From("Error: '{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
+			Error(0, Localize.From("'{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
 		}
 		protected virtual string ToString(bool inverted, IEnumerable<Int32> expected)
 		{

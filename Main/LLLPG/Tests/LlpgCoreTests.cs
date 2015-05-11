@@ -75,7 +75,8 @@ namespace Loyc.LLParserGenerator
 	}
 
 	/// <summary>These are basic tests of the core engine, <see cref="LLParserGenerator"/>.</summary>
-	/// <remarks>This was the initial test suite, written before the LES and EC# parsers existed.</remarks>
+	/// <remarks>This was the initial test suite, written before the LES and EC# 
+	/// parsers existed, although new tests are still added occasionally.</remarks>
 	[TestFixture]
 	public class LlpgCoreTests : LlpgHelpers
 	{
@@ -947,8 +948,8 @@ namespace Loyc.LLParserGenerator
 					do {
 						la0 = LA0;
 						if (la0 == 'x') {
-							if (b) {
-								if (a)
+							if (a) {
+								if (b)
 									goto match1;
 								else
 									goto match2;
@@ -2148,7 +2149,49 @@ namespace Loyc.LLParserGenerator
 			// Then verify that the rule produces no warnings
 			_pg.AddRule(slashes);
 			LNode result = _pg.Run(_file);
+		}
 
+		[Test]
+		public void ChangedInputSource()
+		{
+			Rule IdStuff = Rule("IdStuff", Plus(Set("[0-9A-Za-z]")));
+			Rule BangCap = Rule("BangCap", '!' + R('A', 'Z'));
+			Rule Foo = Rule("Foo", BangCap | IdStuff);
+			_pg.AddRules(IdStuff, BangCap, Foo);
+			((CodeGenHelperBase)_pg.CodeGenHelper).InputSource = F.Id("input");
+			((CodeGenHelperBase)_pg.CodeGenHelper).InputClass = F.Id("LexerSource");
+			LNode result = _pg.Run(_file);
+
+			CheckResult(result, @"
+				{
+					static readonly HashSet<int> IdStuff_set0 = LexerSource.NewSetOfRanges('0', '9', 'A', 'Z', 'a', 'z');
+					public void IdStuff()
+					{
+						int la0;
+						input.Match(IdStuff_set0);
+						for (;;) {
+							la0 = input.LA0;
+							if (IdStuff_set0.Contains(la0))
+								input.Skip();
+							else
+								break;
+						}
+					}
+					public void BangCap()
+					{
+						input.Match('!');
+						input.MatchRange('A', 'Z');
+					}
+					public void Foo()
+					{
+						int la0;
+						la0 = input.LA0;
+						if (la0 == '!')
+							BangCap();
+						else
+							IdStuff();
+					}
+				}");
 		}
 	}
 }

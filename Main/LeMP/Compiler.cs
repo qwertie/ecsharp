@@ -252,7 +252,7 @@ namespace LeMP
 		public bool Verbose { get { return Sink.IsEnabled(Severity.Verbose); } }
 		public bool Parallel = true;
 		public string IndentString = "\t";
-		public string NewlineString = "\r\n";
+		public string NewlineString = "\n";
 		public MacroProcessor MacroProcessor; // the core LeMP engine
 		public IParsingService InLang;  // null to choose by extension or use ParsingService.Current
 		public LNodePrinter OutLang;    // null to use LNode.Printer
@@ -358,7 +358,7 @@ namespace LeMP
 			#endif
 			WriteOutput2(io);
 		}
-
+		
 		private void WriteOutput2(InputOutput io)
 		{
 			Debug.Assert(io.FileName != io.OutFileName);

@@ -10,7 +10,8 @@ namespace Loyc.Syntax.Les
 	using TT = Loyc.Syntax.Les.TokenType;
 	using Loyc.Utilities;
 
-	/// <summary>Generates source code for the LES parser.</summary>
+	/// <summary>Bootstrapper. Generates source code for the LES parser.</summary>
+	[Obsolete]
 	class LesParserGenerator : LlpgHelpers
 	{
 		LLParserGenerator _pg;

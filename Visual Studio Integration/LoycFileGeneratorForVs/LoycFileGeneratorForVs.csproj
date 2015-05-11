@@ -77,9 +77,10 @@
       <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <HintPath>..\..\Lib\LLLPG\LEL.exe</HintPath>
+    <Reference Include="LeMP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\Lib\LLLPG\LeMP.exe</HintPath>
     </Reference>
     <Reference Include="LLLPG">
       <HintPath>..\..\Lib\LLLPG\LLLPG.exe</HintPath>

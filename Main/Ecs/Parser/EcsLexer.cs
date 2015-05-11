@@ -67,12 +67,12 @@ namespace Ecs.Parser
 			}
 		}
 
-		protected override void Error(int index, string message)
+		protected override void Error(int lookaheadIndex, string message)
 		{
 			// the fast "blitting" code path may not be able to handle errors
 			_parseNeeded = true;
 
-			var pos = SourceFile.IndexToLine(index);
+			var pos = SourceFile.IndexToLine(InputPosition + lookaheadIndex);
 			if (ErrorSink != null)
 				ErrorSink.Write(Severity.Error, pos, message);
 			else

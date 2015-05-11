@@ -19,6 +19,8 @@ namespace Loyc.LLParserGenerator
 		public const int EOF_int = PGIntSet.EOF_int;
 		static readonly Symbol _EOF = GSymbol.Get("EOF");
 		static readonly Symbol _HashSet = GSymbol.Get("HashSet");
+		static readonly Symbol _NewSet = GSymbol.Get("NewSet");
+		static readonly Symbol _NewSetOfRanges = GSymbol.Get("NewSetOfRanges");
 
 		LNode _setType;
 		public LNode SetType
@@ -132,7 +134,30 @@ namespace Loyc.LLParserGenerator
 		}
 		protected override LNode GenerateSetDecl(IPGTerminalSet set, Symbol setName)
 		{
-			return ((PGIntSet)set).GenerateSetDecl(SetType, setName);
+			return GenerateSetDecl((PGIntSet)set, setName);
+		}
+		protected LNode GenerateSetDecl(PGIntSet set, Symbol setName)
+		{
+			var ranges = set.InternalRangeList();
+			IEnumerable<object> args;
+			Symbol method;
+			if (ranges.Count * 2 < set.SizeIgnoringInversion) { // use ranges
+				method = _NewSetOfRanges;
+				args = ranges.SelectMany(r => {
+					if (r.Lo >= 32 && r.Hi < 0xFFFC)
+						return new object[] { (char)r.Lo, (char)r.Hi };
+					else
+						return new object[] { r.Lo, r.Hi };
+				});
+			} else {
+				method = _NewSet;
+				args = set.IntegerSequence(false).Select(n => 
+					set.IsCharSet && n >= 32 && n < 0xFFFC ? (object)(char)n : (object)(int)n);
+			}
+			return
+				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
+					F.Var(SetType, setName,
+						ApiCall(method, new RVList<LNode>(args.Select(a => F.Literal(a))), true)));
 		}
 
 		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
@@ -154,7 +179,7 @@ namespace Loyc.LLParserGenerator
 					var target = recognizerMode
 						? (set.IsInverted ? _TryMatchExceptRange : _TryMatchRange)
 						: (set.IsInverted ? _MatchExceptRange : _MatchRange);
-					call = F.Call(target, args.ToRVList());
+					call = ApiCall(target, args);
 				} else {
 					// Use Match or MatchExcept
 					foreach (var r in set) {
@@ -166,14 +191,14 @@ namespace Loyc.LLParserGenerator
 					var target = recognizerMode
 						? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 						: (set.IsInverted ? _MatchExcept : _Match);
-					call = F.Call(target, args.ToRVList());
+					call = ApiCall(target, args.ToRVList());
 				}
 			} else {
 				var setName = GenerateSetDecl(set);
 				if (set.IsInverted)
-					call = F.Call(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
+					call = ApiCall(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
 				else
-					call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
+					call = ApiCall(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			return call;
 		}

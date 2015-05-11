@@ -124,35 +124,41 @@ namespace SingleFileGenerator
 		public static bool RegisterSingleFileGenerators(IMessageSink sink, Assembly assembly, string generatorsKey, bool unregister = false)
 		{
 			bool ok = false;
-			foreach (Type type in assembly.GetTypes())
-			{
-				var a = type.GetCustomAttributes(typeof(CodeGeneratorRegistrationAttribute), true);
-				foreach (CodeGeneratorRegistrationAttribute attr in a) {
-					string subKey = string.Format(@"{0}\{1}", attr.ContextGuid, attr.GeneratorType.Name);
-					string path = Path.Combine(generatorsKey, subKey);
-					if (unregister) {
-						try {
-							Registry.LocalMachine.DeleteSubKey(path, true);
-							ok = true;
-						} catch {}
-					} else {
-						try { 
-							using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
-								if (key == null)
-									sink.Write(Severity.Error, path, "Failed to create registry key");
-								else {
-									key.SetValue("", attr.GeneratorName);
-									key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
-									key.SetValue("GeneratesDesignTimeSource", 1);
-									ok = true;
+			try {
+				foreach (Type type in assembly.GetTypes())
+				{
+					var a = type.GetCustomAttributes(typeof(CodeGeneratorRegistrationAttribute), true);
+					foreach (CodeGeneratorRegistrationAttribute attr in a) {
+						string subKey = string.Format(@"{0}\{1}", attr.ContextGuid, attr.GeneratorType.Name);
+						string path = Path.Combine(generatorsKey, subKey);
+						if (unregister) {
+							try {
+								Registry.LocalMachine.DeleteSubKey(path, true);
+								ok = true;
+							} catch {}
+						} else {
+							try { 
+								using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
+									if (key == null)
+										sink.Write(Severity.Error, path, "Failed to create registry key");
+									else {
+										key.SetValue("", attr.GeneratorName);
+										key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
+										key.SetValue("GeneratesDesignTimeSource", 1);
+										ok = true;
+									}
 								}
+							} catch (Exception ex) {
+								sink.Write(Severity.Error, path, "{0}: {1}", ex.GetType().Name, ex.Message);
+								return false;
 							}
-						} catch (Exception ex) {
-							sink.Write(Severity.Error, path, "{0}: {1}", ex.GetType().Name, ex.Message);
-							return false;
 						}
 					}
 				}
+			} catch (System.Reflection.ReflectionTypeLoadException ex) {
+				// For unknown reasons this exception occurred outside VS... The Message
+				// just says to look inside LoaderExceptions. So I am forced to do this:
+				throw ex.LoaderExceptions[0];
 			}
 			return ok;
 		}

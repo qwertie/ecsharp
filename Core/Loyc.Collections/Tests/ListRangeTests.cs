@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc.MiniTest;
-using Loyc.Collections;
 
 namespace Loyc.Collections.Tests
 {

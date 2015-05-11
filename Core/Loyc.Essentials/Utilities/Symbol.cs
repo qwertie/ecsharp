@@ -120,6 +120,9 @@ namespace Loyc
 		}
 
 		#endregion
+
+		public static explicit operator Symbol(string s) { return GSymbol.Get(s); }
+		public static explicit operator string(Symbol s) { return s.Name; }
 	}
 
 	/// <summary>This class produces global symbols.</summary>

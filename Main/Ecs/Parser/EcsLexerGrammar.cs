@@ -107,7 +107,7 @@ namespace Ecs.Parser
 		static readonly Symbol _descending = GSymbol.Get("descending");
 		static readonly Symbol _group = GSymbol.Get("group");
 		static readonly Symbol _by = GSymbol.Get("by");
-		internal static readonly HashSet<object> LinqKeywords = new HashSet<object> { 
+		public static readonly HashSet<object> LinqKeywords = new HashSet<object> { 
 			_where, _select, _from, _join, _on, _equals, _into, _let, _orderby, _ascending, _descending, _group, _by
 		};
 		void DotIndent()

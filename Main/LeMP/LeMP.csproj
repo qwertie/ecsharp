@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LeMP</RootNamespace>
-    <AssemblyName>LEL</AssemblyName>
+    <AssemblyName>LeMP</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -219,7 +219,9 @@
     <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleMacro.cs" />
+    <Compile Include="StandardMacros\AttrMacroRegistrar.cs" />
     <Compile Include="StandardMacros\BackingFieldMacro.cs" />
+    <Compile Include="StandardMacros\CodeQuoteMacro.cs" />
     <Compile Include="StandardMacros\FluentMacro.cs" />
     <Compile Include="StandardMacros\ForwardingMacro.cs" />
     <Compile Include="StandardMacros\NullDotMacro.cs" />

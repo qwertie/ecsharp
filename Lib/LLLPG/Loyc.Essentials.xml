@@ -1553,7 +1553,7 @@
             <summary>A read-only list of characters plus a <see cref="M:Loyc.Collections.ICharSource.Slice(System.Int32,System.Int32)"/> method.</summary>
             <remarks>
             To get an instance of this interface from a string, write
-            <c>new StringSlice("string")</c>.
+            <c>new StringSlice("string")</c> or <c>(UString)"string"</c>.
             <para/>
             This is the standard interface for lexers to use as a source of 
             characters; is it defined in Loyc.Essentials rather than Loyc.Syntax
@@ -1585,6 +1585,13 @@
             just substrings, but subarrays of any element type, which would be
             useful any time you want to optimize your code by reducing dynamic 
             dispatch.
+            <para/>
+            Note about Count: if ICharSource represents to a file or other Stream,
+            reading Count forces the entire stream to be scanned in order to determine
+            the number of characters in the file (which may be different from the number 
+            of bytes). Rather than do a test like <c>if (index &gt;= charSource.Count)</c>
+            it is better to use <c>if (Slice(index, 1).Count == 0)</c>, or better yet,
+            <c>TryGet(index, out fail)</c>.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.ICharSource.Slice(System.Int32,System.Int32)">
@@ -4351,7 +4358,7 @@
             For message sinks that are used for compiler messages, the standard
             levels are: Fatal, Error, SoftError, Warning, Note, Detail. "SoftError"
             is intended to describe code that is technically illegal, but which
-            does not impede code generation. "Detail" provides more information 
+            does not prevent code generation. "Detail" provides more information 
             about a previously-printed message, while "Note" is intended for
             independent messages that are less severe than warnings.
             <para/>
@@ -4359,7 +4366,7 @@
             with <see cref="M:Loyc.Localize.From(Loyc.Symbol,System.String,System.Object[])"/>.
             <para/>
             Only a single Write() method is truly needed (<see cref="M:Loyc.IMessageSink.Write(Loyc.Severity,System.Object,System.String,System.Object[])"/>),
-            but efficiency reasons the interface contains two other writers. It 
+            but for efficiency reasons the interface contains two other writers. It 
             is expected to be fairly common that a message sink will drop some or
             all messages without printing them, e.g. if a message sink is used for 
             logging, verbose messages might be "off" by default. It would be 
@@ -4390,15 +4397,15 @@
             types include Error, Warning, Note, Debug, and Verbose. The special 
             type Detail is intended to provide more information about a previous 
             message.</param>
-            <param name="context">An object that represents the location that the
-            message applies to, a string that indicates what the program was doing 
-            when the message was generated, or any other relevant context information.
+            <param name="context">An object that the message is related to, or that 
+            represents the location that the message applies to. The message sink
+            may try to convert this object to a string and include it in its output.
             See also <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/>().</param>
             <param name="format">A message to display. If there are additional 
             arguments, placeholders such as {0} and {1} refer to these arguments.</param>
         </member>
         <member name="M:Loyc.IMessageSink.IsEnabled(Loyc.Severity)">
-            <summary>Returns true if messages of type 'type' will actually be 
+            <summary>Returns true if messages of the specified type will actually be 
             printed, or false if Write(type, ...) is a no-op.</summary>
         </member>
         <member name="T:Loyc.Severity">
@@ -4433,9 +4440,30 @@
             </code></example>
         </member>
         <member name="M:Loyc.MessageSink.LocationString(System.Object)">
-            <summary>Returns <see cref="P:Loyc.ILocationString.LocationString"/> if 
-            'context' implements that interface, null if context is null, and
-            <see cref="M:System.Object.ToString"/> otherwise.</summary>
+            <summary>Gets the location information from the specified object, or
+            converts the object to a string.</summary>
+            <param name="context">A value whose string representation you want to get.</param>
+            <returns>
+            If <c>context</c> implements <see cref="T:Loyc.ILocationString"/>,
+            this function returns <see cref="P:Loyc.ILocationString.LocationString"/>; 
+            if <c>context</c> is null, this method returns <c>null</c>; otherwise 
+            it returns <c>context.ToString()</c>.
+            </returns>
+            <remarks>Message sinks are commonly used to display error and warning 
+            messages, and when you write a message with <c>IMessageSink.Write()</c>, 
+            the second parameter is a "context" argument which specifies the object
+            to which the message is related (for example, when writing compiler 
+            output, the context might be a node in a syntax tree). Most message 
+            sinks display the message in text form (in a log file or terminal), and 
+            in that case the best option is to display the location information 
+            associated with the context object (e.g. Foo.cpp:45), rather than a 
+            string representation of the object itself.
+            <para/>
+            Therefore, message sinks that display a message in text form will call
+            this method to convert the context object to a string, and if available,
+            this method calls the <see cref="P:Loyc.ILocationString.LocationString"/>
+            property of the context object.
+            </remarks>
         </member>
         <member name="F:Loyc.MessageSink.Trace">
             <summary>Sends all messages to <see cref="M:System.Diagnostics.Trace.WriteLine(System.String)"/>.</summary>
@@ -4446,7 +4474,7 @@
         <member name="F:Loyc.MessageSink.Null">
             <summary>Discards all messages.</summary>
         </member>
-        <member name="M:Loyc.MessageSink.FromDelegate(System.Action{Loyc.Severity,System.Object,System.String,System.Object[]},System.Func{Loyc.Severity,System.Boolean})">
+        <member name="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})">
             <summary>Sends all messages to a user-defined method.</summary>
         </member>
         <member name="T:Loyc.MessageSink.PushedCurrent">
@@ -4458,8 +4486,25 @@
             the "context" of a message into a string.</summary>
             <remarks>For example, <see cref="!:Loyc.Syntax.LNode"/> implements this 
             interface so that when a compiler error refers to a source code construct,
-            the error message contains the location of that construct rather than 
-            the code itself.</remarks>
+            the error message contains the location of that source code rather than the
+            code itself.</remarks>
+        </member>
+        <member name="T:Loyc.WriteMessageFn">
+            <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 
+            can convert from one of these delegates to <see cref="T:Loyc.IMessageSink"/> by 
+            calling <see cref="M:Loyc.MessageSink.FromDelegate(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})"/>.</summary>
+            <param name="type">Severity or importance of the message; widely-used
+            types include Error, Warning, Note, Debug, and Verbose. The special 
+            type Detail is intended to provide more information about a previous 
+            message.</param>
+            <param name="context">An object that represents the location that the
+            message applies to, a string that indicates what the program was doing 
+            when the message was generated, or any other relevant context information.
+            See also <see cref="M:Loyc.MessageSink.LocationString(System.Object)"/>().</param>
+            <param name="format">A message to display. If there are additional 
+            arguments, placeholders such as {0} and {1} refer to these arguments.</param>
+            <param name="args">Optional arguments to fill in placeholders in the format 
+            string.</param>
         </member>
         <member name="T:Loyc.Localize">
             <summary>
@@ -4716,7 +4761,7 @@
             <summary>This helper class lets you implement <see cref="T:Loyc.IMessageSink"/> 
             with one or two delegates (a writer method, and an optional severity filter).</summary>
         </member>
-        <member name="M:Loyc.MessageSinkFromDelegate.#ctor(System.Action{Loyc.Severity,System.Object,System.String,System.Object[]},System.Func{Loyc.Severity,System.Boolean})">
+        <member name="M:Loyc.MessageSinkFromDelegate.#ctor(Loyc.WriteMessageFn,System.Func{Loyc.Severity,System.Boolean})">
             <summary>Initializes this object.</summary>
             <param name="writer">Required. A method that accepts output.</param>
             <param name="isEnabled">Optional. A method that decides whether to 

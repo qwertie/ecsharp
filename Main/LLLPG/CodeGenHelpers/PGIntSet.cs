@@ -128,36 +128,7 @@ namespace Loyc.LLParserGenerator
 		#region Code gen helpers
 
 		protected static LNodeFactory F = new LNodeFactory(new EmptySourceFile("PGIntSet.cs"));
-		static readonly Symbol _setName = GSymbol.Get("setName");
-		static readonly Symbol _NewSet = GSymbol.Get("NewSet");
-		static readonly Symbol _NewSetOfRanges = GSymbol.Get("NewSetOfRanges");
 		static readonly Symbol _Contains = GSymbol.Get("Contains");
-		static readonly Symbol _With = GSymbol.Get("With");
-		static readonly Symbol _Without = GSymbol.Get("Without");
-		static readonly LNode _false = F.Literal(false);
-
-		public LNode GenerateSetDecl(LNode setType, Symbol setName)
-		{
-			IEnumerable<object> args;
-			Symbol method;
-			if (_ranges.Count * 2 < SizeIgnoringInversion) { // use ranges
-				method = _NewSetOfRanges;
-				args = _ranges.SelectMany(r => {
-					if (r.Lo >= 32 && r.Hi < 0xFFFC)
-						return new object[] { (char)r.Lo, (char)r.Hi };
-					else
-						return new object[] { r.Lo, r.Hi };
-				});
-			} else {
-				method = _NewSet;
-				args = Integers(false).Select(n => 
-					IsCharSet && n >= 32 && n < 0xFFFC ? (object)(char)n : (object)(int)n);
-			}
-			return
-				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
-					F.Var(setType, setName,
-						F.Call(method, new RVList<LNode>(args.Select(a => F.Literal(a))))));
-		}
 
 		/// <summary>Returns the "complexity" of the set.</summary>
 		/// <remarks>The parser generator tests simple sets such as "la0 == ' ' || 

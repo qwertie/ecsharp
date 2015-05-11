@@ -1506,6 +1506,166 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void ChangedInputSource()
+		{
+			Test(@"
+			LLLPG lexer(inputSource(b)) {
+				[pub] rule Foo(b::Bar) @[ 'x' '0'..'9' '0'..'9' ];
+			}", @"
+				public void Foo(Bar b)
+				{
+					b.Match('x');
+					b.MatchRange('0', '9');
+					b.MatchRange('0', '9');
+				}");
+		}
+
+		[Test]
+		public void ChangedEofClass()
+		{
+			Test(@"[NoDefaultArm] 
+			LLLPG(parser(inputSource(inp), inputClass(ParserClass))) {
+				rule AllBs @[ 'B'* ];
+			};", @"
+				void AllBs()
+				{
+					int la0;
+					for (;;) {
+						la0 = inp.LA0;
+						if (la0 == 'B')
+							inp.Skip();
+						else if (la0 == ParserClass.EOF)
+							break;
+						else
+							inp.Error(0, ""In rule 'AllBs', expected one of: ('B'|EOF)"");
+					}
+				}");
+		}
+
+		[Test]
+		public void ParseEmails()
+		{
+			// Parses email address according to RFC 5322, excluding quoted usernames.
+			// This example demonstrates a few things...
+			// - It shows how to use the inputSource and inputClass options when
+			//   you don't want to make a class derived from BaseLexer
+			// - It shows how you optimize a parser to avoid memory allocations.
+			//   Memory allocation is required only once, before the first parse.
+			//   However, there is a risk of a memory leak in this example...
+			// - It also demonstrates how to pass the lexer state between rules,
+			//   although it is redundant to do so here since the state is already
+			//   available through the static variable 'src'.
+			string input = @"struct EmailAddress 
+			{
+				public EmailAddress(string userName, string domain) { UserName = userName; Domain = domain; }
+				public UString UserName;
+				public UString Domain;
+				public override string ToString() { return UserName + ""@"" + Domain; }
+
+				LLLPG (lexer(inputSource(src), inputClass(LexerSource))) {
+					// LexerSource provides the APIs expected by LLLPG. This is
+					// static to avoid reallocating the helper object for each email.
+					[ThreadStatic] static LexerSource<UString> src;
+					public static rule EmailAddress Parse(UString email) {
+						if (src == null)
+							src = new LexerSource<UString>(email, """", 0, false);
+						else
+							src.Reset(email, """", 0, false);
+						@[ UsernameChar(src) ('.' UsernameChar(src))* ];
+						int at = src.InputPosition;
+						UString userName = email.Substring(0, at);
+						@[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+						UString domain = email.Substring(at + 1);
+						return new EmailAddress(userName, domain);
+					}
+					static rule UsernameChar(LexerSource<UString> src) @[
+						'a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
+						'*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-'
+					];
+					static rule DomainCharSeq(LexerSource<UString> src) @[
+						  ('a'..'z'|'A'..'Z'|'0'..'9')
+						[ ('a'..'z'|'A'..'Z'|'0'..'9'|'-')*
+						  ('a'..'z'|'A'..'Z'|'0'..'9') ]?
+					];
+				}
+			}";
+			string expectedOutput = @"
+				struct EmailAddress
+				{
+					public EmailAddress(string userName, string domain) { UserName = userName; Domain = domain; }
+					public UString UserName;
+					public UString Domain;
+					public override string ToString() { return UserName + ""@"" + Domain; }
+
+					[ThreadStatic] static LexerSource<UString> src;
+					public static EmailAddress Parse(UString email)
+					{
+						int la0;
+						if (src == null)
+							src = new LexerSource<UString>(email, """", 0, false);
+						else
+							src.Reset(email, """", 0, false);
+						UsernameChar(src);
+						for (;;) {
+							la0 = src.LA0;
+							if (la0 == '.') {
+								src.Skip();
+								UsernameChar(src);
+							} else
+								break;
+						}
+						int at = src.InputPosition;
+						UString userName = email.Substring(0, at);
+						src.Match('@');
+						DomainCharSeq(src);
+						for (;;) {
+							la0 = src.LA0;
+							if (la0 == '.') {
+								src.Skip();
+								DomainCharSeq(src);
+							} else
+								break;
+						}
+						src.Match(-1);
+						UString domain = email.Substring(at + 1);
+						return new EmailAddress(userName, domain);
+					}
+					static readonly HashSet<int> UsernameChar_set0 = LexerSourceFile.NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', '-', '/', '9', '=', '=', '?', '?', 'A', 'Z', '^', '~');
+					static void UsernameChar(LexerSource<UString> src)
+					{
+						src.Match(UsernameChar_set0);
+					}
+					static readonly HashSet<int> DomainCharSeq_set0 = LexerSourceFile.NewSetOfRanges('0', '9', 'A', 'Z', 'a', 'z');
+					static readonly HashSet<int> DomainCharSeq_set1 = LexerSourceFile.NewSetOfRanges('-', '-', '0', '9', 'A', 'Z', 'a', 'z');
+					static void DomainCharSeq(LexerSource<UString> src)
+					{
+						int la0, la1;
+						src.Match(DomainCharSeq_set0);
+						// Line 30: (([\-0-9A-Za-z])* [0-9A-Za-z])?
+						la0 = src.LA0;
+						if (DomainCharSeq_set1.Contains(la0)) {
+							// Line 30: ([\-0-9A-Za-z])*
+							 for (;;) {
+								la0 = src.LA0;
+								if (DomainCharSeq_set0.Contains(la0)) {
+									la1 = src.LA(1);
+									if (DomainCharSeq_set1.Contains(la1))
+										src.Skip();
+									else
+										break;
+								} else if (la0 == '-')
+									src.Skip();
+								else
+									break;
+							}
+							src.Match(DomainCharSeq_set0);
+						}
+					}
+				}";
+			Test(input, expectedOutput, null, EcsLanguageService.Value);
+		}
+
+		[Test]
 		public void SlugTest()
 		{
 			// [2013-12-25]

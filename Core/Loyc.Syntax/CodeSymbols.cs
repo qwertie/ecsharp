@@ -190,8 +190,6 @@ namespace Loyc.Syntax
 		public static readonly Symbol Substitute = GSymbol.Get(@"$");   //!< "$"   substitution operator
 		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$"); //!< Alias for Substitude
 		public static readonly Symbol DotDot = GSymbol.Get("..");       //!< ".." Binary range operator
-		public static readonly Symbol CodeQuote = GSymbol.Get("@");              // "@" TODO Code quote @(...), @{...} or @[...]
-		public static readonly Symbol CodeQuoteSubstituting = GSymbol.Get("@@"); // "@" TODO Code quote @@(...), @@{...} or @@[...]
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)

@@ -8,7 +8,7 @@ namespace Loyc.Collections
 	/// <summary>A read-only list of characters plus a <see cref="Slice(int,int)"/> method.</summary>
 	/// <remarks>
 	/// To get an instance of this interface from a string, write
-	/// <c>new StringSlice("string")</c>.
+	/// <c>new StringSlice("string")</c> or <c>(UString)"string"</c>.
 	/// <para/>
 	/// This is the standard interface for lexers to use as a source of 
 	/// characters; is it defined in Loyc.Essentials rather than Loyc.Syntax
@@ -41,6 +41,13 @@ namespace Loyc.Collections
 	/// just substrings, but subarrays of any element type, which would be
 	/// useful any time you want to optimize your code by reducing dynamic 
 	/// dispatch.
+	/// <para/>
+	/// Note about Count: if ICharSource represents to a file or other Stream,
+	/// reading Count forces the entire stream to be scanned in order to determine
+	/// the number of characters in the file (which may be different from the number 
+	/// of bytes). Rather than do a test like <c>if (index >= charSource.Count)</c>
+	/// it is better to use <c>if (Slice(index, 1).Count == 0)</c>, or better yet,
+	/// <c>TryGet(index, out fail)</c>.
 	/// </remarks>
 	public interface ICharSource : IListSource<char>
 	{

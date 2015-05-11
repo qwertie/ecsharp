@@ -35,7 +35,10 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _TryMatchExcept = GSymbol.Get("TryMatchExcept");
 		protected static readonly Symbol _TryMatchRange = GSymbol.Get("TryMatchRange");
 		protected static readonly Symbol _TryMatchExceptRange = GSymbol.Get("TryMatchExceptRange");
+		protected static readonly Symbol _LA = GSymbol.Get("LA");
+		protected static readonly Symbol _LA0 = GSymbol.Get("LA0");
 		protected static readonly Symbol _Check = GSymbol.Get("Check");
+		protected static readonly Symbol _Error = GSymbol.Get("Error");
 		protected static readonly Symbol _underscore = GSymbol.Get("_");
 		protected static readonly Symbol _alias = GSymbol.Get("alias");
 
@@ -45,6 +48,14 @@ namespace Loyc.LLParserGenerator
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
+		/// <summary>Specifies an object or class on which LLLPG APIs such as 
+		/// Match() and LA() should be called.</summary>
+		public LNode InputSource { get; set; }
+		/// <summary>Specifies a class or namespace to use when calling static
+		/// functions. There is only one currently: NewSet(), which applies only
+		/// to .</summary>
+		public LNode InputClass { get; set; }
+		
 		protected Dictionary<LNode, LNode> _definedAliases = new Dictionary<LNode, LNode>();
 		protected LNode ResolveAlias(LNode expr)
 		{
@@ -157,9 +168,9 @@ namespace Loyc.LLParserGenerator
 		public virtual LNode GenerateSkip(bool savingResult) // match anything
 		{
 			if (savingResult && !_currentRule.IsRecognizer)
-				return F.Call(_MatchAny);
+				return ApiCall(_MatchAny);
 			else
-				return F.Call(_Skip);
+				return ApiCall(_Skip);
 		}
 
 		/// <summary>Generate code to check an and-predicate during or after prediction, 
@@ -189,7 +200,7 @@ namespace Loyc.LLParserGenerator
 					: andPred.Pred.ToString());
 				if (andPred.Not)
 					asString = "!(" + asString + ")";
-				return F.Call(_Check, code, F.Literal(asString));
+				return ApiCall(_Check, code, F.Literal(asString));
 			}
 		}
 
@@ -206,14 +217,12 @@ namespace Loyc.LLParserGenerator
 		/// If the set is too complex, a declaration for it is created in classBody.</summary>
 		public abstract LNode GenerateMatchExpr(IPGTerminalSet set, bool savingResult, bool recognizerMode);
 
-		protected readonly Symbol _LA = GSymbol.Get("LA");
-		protected readonly Symbol _LA0 = GSymbol.Get("LA0");
-
 		/// <summary>Generates code to read LA(k).</summary>
 		/// <returns>Default implementation returns LA0 for k==0, LA(k) otherwise.</returns>
 		public virtual LNode LA(int k)
 		{
-			return k == 0 ? F.Id(_LA0) : F.Call(_LA, F.Literal(k));
+			return k == 0 ? ApiCall(_LA0, null, false) 
+			              : ApiCall(_LA,  F.Literal(k));
 		}
 
 		/// <summary>Generates code for the default error branch of prediction
@@ -228,7 +237,7 @@ namespace Loyc.LLParserGenerator
 			string coveredS = covered.ToString();
 			if (coveredS.Length > 45)
 				coveredS = coveredS.Substring(0, 40) + "...";
-			return F.Call("Error", F.Literal(laIndex),
+			return ApiCall(_Error, F.Literal(laIndex),
 				F.Literal(string.Format("In rule '{0}', expected one of: {1}", _currentRule.Name.Name, coveredS)));
 		}
 
@@ -420,6 +429,37 @@ namespace Loyc.LLParserGenerator
 			LNode name = target.TryWrapperName;
 			var @params = rref.Params;
 			return F.Call(name, @params.Insert(0, F.Literal(lookahead)));
+		}
+
+		/// <summary>Returns an LNode representing a call to the specified LLLPG API.
+		/// For example, if the user used a "inputSource=input" option, then 
+		/// <c>ApiCall(_Match, F.Literal('7'))</c> would generate a node that 
+		/// represents <c>input.Match('7')</c>.</summary>
+		protected virtual LNode ApiCall(Symbol apiName, params LNode[] args)
+		{
+			return ApiCall(apiName, (IEnumerable<LNode>)args);
+		}
+		/// <summary>Returns an LNode representing a call to the specified LLLPG API.
+		/// For example, if the user used a "inputSource=input" option, then 
+		/// <c>ApiCall(_Match, F.Literal('7'))</c> would generate a node that 
+		/// represents <c>input.Match('7')</c>.</summary>
+		/// <param name="args">Parameters to the API call, or null to access a 
+		/// property or field.</param>
+		protected virtual LNode ApiCall(Symbol apiName, IEnumerable<LNode> args, bool isStatic = false)
+		{
+			LNode inputSource = isStatic ? InputClass : InputSource;
+			LNode result;
+			if (inputSource != null) {
+				result = F.Dot(inputSource, F.Id(apiName));
+				if (args != null)
+					result = F.Call(result, args);
+			} else {
+				if (args == null)
+					result = F.Id(apiName);
+				else
+					result = F.Call(apiName, args);
+			}
+			return result;
 		}
 	}
 }

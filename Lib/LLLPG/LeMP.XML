@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LeMP</name>
+    </assembly>
+    <members>
+        <member name="T:LeMP.Compiler">
+            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
+            set of source files.</summary>
+            <remarks>
+            Helps you process command-line options (e.g. --outext=cs), complete 
+            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
+            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
+            </remarks>
+        </member>
+        <member name="F:LeMP.Compiler.Languages">
+            <summary>A list of available syntaxes.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
+            <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
+            based on the command-line options.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
+            <summary>Finds a language service in ExtensionToLanguage() for the 
+            specified file extension, or null if there is no match.</summary>
+        </member>
+        <member name="T:LeMP.InputOutput">
+            <summary>
+            For LeMP: an input file plus per-file options (input and output language) and output code.
+            </summary>
+        </member>
+        <member name="T:LeMP.MacroProcessor">
+            <summary>
+            Encapsulates the LeMP engine, a simple LISP-style macro processor, 
+            suitable for running LLLPG and other lexical macros.
+            </summary>
+            <remarks>
+            MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
+            statements, and { braces } (for scoping the #import statements). The
+            macro processor should be configured with any needed macros like this:
+            <code>
+              var MP = new MacroProcessor(prelude, sink);
+              MP.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
+              MP.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+            </code>
+            In order for the input code to have access to macros, two steps are 
+            necessary: you have to add the macro classes with <see cref="M:LeMP.MacroProcessor.AddMacros(System.Type)"/>
+            and then you have to import the namespace that contains the class(es).
+            Higher-level code (e.g. <see cref="T:LeMP.Compiler"/>) can define "always-open"
+            namespaces by adding entries to PreOpenedNamespaces, and the code being 
+            processed can open additional namespaces with a #importMacros(Namespace) 
+            statement (in LES, "import macros Namespace" can be used as a synonym if 
+            PreOpenedNamespaces contains LeMP.Prelude).
+            <para/>
+            MacroProcessor is not aware of any distinction between "statements"
+            and "expressions"; it will run macros no matter where they are located,
+            whether as standalone statements, attributes, or arguments to functions.
+            <para/>
+            MacroProcessor's main responsibilities are to keep track of a table of 
+            registered macros (call <see cref="M:LeMP.MacroProcessor.AddMacros(System.Type)"/> to register more), to
+            keep track of which namespaces are open (namespaces can be imported by
+            <c>#import</c>, or by <c>import</c> which is defined in the LES prelude);
+            to scan the input for macros to call; and to control the printout of 
+            messages.
+            <para/>
+            This class processes a batch of files at once. Call either
+            <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Syntax.LNode)"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
+            Parallelizing on a file-by-file basis is easy; each source file is completely 
+            independent, since no semantic analysis is being done. 
+            <para/>
+            TODO: add method for processing an LNode instead of a list of source files.
+            </remarks>
+        </member>
+        <member name="M:LeMP.MacroProcessor.ProcessSynchronously(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
+            <summary>Processes source files one at a time (may be easier for debugging).</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
+            <summary>Processes source files in parallel. All files are fully 
+            processed before the method returns.</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.ProcessAsync(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
+            <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
+        </member>
+        <member name="P:LeMP.MacroProcessor.Current">
+            <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+        </member>
+        <member name="T:LeMP.MacroProcessor.MacroProcessorTask">
+            <summary>Holds the transient state of the macro processor. Since one
+            <see cref="T:LeMP.MacroProcessor"/> object can process multiple files in 
+            parallel, we need an inner class to hold the state of each individual 
+            transformation task.</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.MacroProcessorTask.ProcessCompilationUnit(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+            <summary>Top-level macro applicator.</summary>
+        </member>
+        <member name="M:LeMP.MacroProcessor.MacroProcessorTask.ApplyMacros(Loyc.Syntax.LNode,System.Int32)">
+            <summary>Applies macros in scope to <c>input</c>.</summary>
+            <param name="maxExpansions">Maximum number of opportunities given 
+            to macros to transform a given subtree. The output of any macro is
+            transformed again (as if by calling this method) with 
+            <c>maxExpansions = maxExpansions - 1</c> to encourage the 
+            expansion process to terminate eventually.</param>
+            <returns>Returns a transformed tree or null if the macros did not 
+            change the syntax tree at any level.</returns>
+        </member>
+        <member name="T:LeMP.TestCompiler">
+            <summary>A simple version of Compiler that takes a single input and produces 
+            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
+        </member>
+        <member name="T:LeMP.Prelude.Macros">
+            <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
+            <c>import macros your.namespace.name</c> as an alias for 
+            <c>#importMacros(your.namespace.name)</c>.
+            </summary>
+        </member>
+        <member name="T:LeMP.Prelude.Les.Macros">
+            <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
+        </member>
+        <member name="T:LeMP.SimpleMacro">
+            <summary>Method signature of an LEL simple macro.</summary>
+            <param name="node">The node that caused the macro to be invoked (includes 
+            the name of the macro itself, and any attributes applied to the macro)</param>
+            <param name="rejectReason">If the input does not have a valid form, the
+            macro rejects it by returning null. When returning null, the macro should
+            explain the reason for the rejection (including a pattern that the macro 
+            accepts) via this object.</param>
+            <returns>A node to replace the original <c>node</c>, or null if this 
+            macro rejects the input node. Returning null can allow a different macro 
+            to accept the node instead.</returns>
+            <remarks>If there are multiple macros in scope with the same name, they 
+            are <i>all</i> called. Macro expansion succeeds if exactly one macro accepts 
+            the input. If no macros accept the input, the error message given by each
+            macro is printed; if multiple macros accept the input, an ambiguity error
+            is printed.
+            <para/>
+            When the macro processor scans an assembly looking for macros, it requires
+            <see cref="!:ContainsMacroAttribute"/> on the containing class, and 
+            <see cref="T:LeMP.SimpleMacroAttribute"/> on each macro in the class. The macros 
+            must be public static methods.
+            </remarks>
+        </member>
+        <member name="T:LeMP.ContainsMacrosAttribute">
+            <summary>Marks a class to be searched for macros.</summary>
+            <remarks>The method signature of a macro must be <see cref="T:LeMP.SimpleMacro"/> and
+            it must be marked with <see cref="T:LeMP.SimpleMacroAttribute"/>.</remarks>
+        </member>
+        <member name="T:LeMP.SimpleMacroAttribute">
+            <summary>Marks a method as an LEL simple macro.</summary>
+            <remarks>
+            To be recognized as a macro, the method must be public and static and its 
+            signature must be <see cref="T:LeMP.SimpleMacro"/>. A class will not be automatically
+            searched for macros unless the class is marked with <see cref="T:LeMP.ContainsMacrosAttribute"/>.</remarks>
+        </member>
+        <member name="T:LeMP.MacroMode">
+            <summary>Flags that affect the way that <see cref="T:LeMP.MacroProcessor"/>
+            uses a SimpleMacro. Unless otherwise specified, these flags only apply when 
+            the macro accepts the input by returning a non-null result.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.NoReprocessing">
+            <summary>The macro's result (including children) is not processed further.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Normal">
+            <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.ProcessChildrenAfter">
+            <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.ProcessChildrenBefore">
+            <summary>The result is pre-processed before calling the macro.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Passive">
+            <summary>It is normal for this macro not to change the code, so a warning should not be printed when the macro "rejects" the input.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.AllowDuplicates">
+            <summary>If this macro is ambiguous with one or more macro of the same priority, this flag blocks the ambiguity error message if all the macros produce the same results.</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.FallbackMin">
+            <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Fallback">
+            <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.NormalPriority">
+            <summary>Normal priority (this is the default and does not need to be specified.)</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.Override">
+            <summary>High priority. If this macro is ambiguous with another macro that doesn't have this flag nor OverrideAll, this macro takes precedence (note: only one priority flag can be used at a time).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.OverrideMax">
+            <summary>Highest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by this macro are used (note: only one priority flag can be used at a time).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.PriorityMask">
+            <summary>For internal use to isolate the priority of a macro.</summary>
+        </member>
+        <member name="T:LeMP.StandardMacros">
+            <summary>
+            Standard macros, such as unroll() and replace() that can work in all Loyc languages.
+            Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+            </summary>
+        </member>
+        <member name="M:LeMP.StandardMacros.FindStaticReadOnlies``1(System.Type,System.Predicate{System.Reflection.FieldInfo})">
+            <summary>Helper function that finds the static readonly fields of a given 
+            type in a given class, and creates a table from the _values_ of those 
+            fields to the _names_ of those fields.</summary>
+        </member>
+    </members>
+</doc>

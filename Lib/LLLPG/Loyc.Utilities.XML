@@ -1306,7 +1306,10 @@
         <member name="T:Loyc.LLParserGenerator.IntSet">
             <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
             or a set of token IDs.</summary>
-            <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
+            <remarks>This class was written for, and is used by, LLLPG. In addition to
+            set operations like union and Subtract, one of its main features is that it 
+            can convert a set of integers or characters to/from a string form like 
+            "[A-Z]" or "(65..90)".</remarks>
         </member>
         <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
             <summary>A list of non-overlapping character ranges, sorted by code 

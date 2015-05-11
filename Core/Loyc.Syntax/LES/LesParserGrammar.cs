@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Les
 			TT la0, la1;
 			LNode e = MissingExpr;
 			LNode _;
-			// Line 39: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Symbol|TT.Number|TT.String|TT.SQString|TT.OtherLit) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.Colon|TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
+			// Line 39: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Number|TT.OtherLit|TT.SQString|TT.String|TT.Symbol) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp|TT.Not) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
 			 switch (LA0) {
 			case TT.Id:
 				{
@@ -125,7 +125,7 @@ namespace Loyc.Syntax.Les
 			RWList<LNode> attrs = null;
 			e = Atom(context, ref attrs);
 			primary = e;
-			// Line 89: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Colon|TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.SuffixOp|TT.PreSufOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
+			// Line 89: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.PreSufOp|TT.SuffixOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
 			 for (;;) {
 				switch (LA0) {
 				case TT.Assignment:
@@ -186,7 +186,7 @@ namespace Loyc.Syntax.Les
 							case TT.SQString:
 							case TT.String:
 							case TT.Symbol:
-								goto match6;
+								goto matchExpr;
 							default:
 								goto stop2;
 							}
@@ -255,7 +255,7 @@ namespace Loyc.Syntax.Les
 							case TT.SQString:
 							case TT.String:
 							case TT.Symbol:
-								goto match6;
+								goto matchExpr;
 							default:
 								goto stop2;
 							}
@@ -287,7 +287,7 @@ namespace Loyc.Syntax.Les
 							case TT.SQString:
 							case TT.String:
 							case TT.Symbol:
-								goto match6;
+								goto matchExpr;
 							default:
 								goto stop2;
 							}
@@ -315,7 +315,7 @@ namespace Loyc.Syntax.Les
 						} else if (context.CanParse(P.SuperExpr)) {
 							la1 = LA(1);
 							if (la1 == TT.RParen)
-								goto match6;
+								goto matchExpr;
 							else
 								goto stop2;
 						} else
@@ -340,7 +340,7 @@ namespace Loyc.Syntax.Les
 						} else if (context.CanParse(P.SuperExpr)) {
 							la1 = LA(1);
 							if (la1 == TT.RBrack)
-								goto match6;
+								goto matchExpr;
 							else
 								goto stop2;
 						} else
@@ -355,7 +355,7 @@ namespace Loyc.Syntax.Les
 				case TT.Symbol:
 					{
 						if (context.CanParse(P.SuperExpr))
-							goto match6;
+							goto matchExpr;
 						else
 							goto stop2;
 					}
@@ -364,7 +364,7 @@ namespace Loyc.Syntax.Les
 						if (context.CanParse(P.SuperExpr)) {
 							la1 = LA(1);
 							if (la1 == TT.LBrack)
-								goto match6;
+								goto matchExpr;
 							else
 								goto stop2;
 						} else
@@ -392,7 +392,7 @@ namespace Loyc.Syntax.Les
 							case TT.SQString:
 							case TT.String:
 							case TT.Symbol:
-								goto match6;
+								goto matchExpr;
 							default:
 								goto stop2;
 							}
@@ -404,7 +404,7 @@ namespace Loyc.Syntax.Les
 						if (context.CanParse(P.SuperExpr)) {
 							la1 = LA(1);
 							if (la1 == TT.RBrace)
-								goto match6;
+								goto matchExpr;
 							else
 								goto stop2;
 						} else
@@ -423,7 +423,7 @@ namespace Loyc.Syntax.Les
 						primary = null;
 				}
 				continue;
-			match6:
+			matchExpr:
 				{
 					var rhs = RVList<LNode>.Empty;
 					rhs.Add(Expr(P.SuperExpr, out _));

@@ -89,6 +89,8 @@ namespace Loyc.LLParserGenerator
 						key = option.Args[0].Name;
 					switch (key.Name)
 					{
+						case "inputSource": helper.InputSource = value; break;
+						case "inputClass": helper.InputClass = value; break;
 						case "setType": helper.SetType = value; break;
 						default:
 							ok = false;
@@ -126,6 +128,8 @@ namespace Loyc.LLParserGenerator
 					if ((key = option.Name) == S.NamedArg)
 						key = option.Args[0].Name;
 					switch (key.Name) {
+						case "inputSource": helper.InputSource = value; break;
+						case "inputClass":  helper.InputClass = value; break;
 						case "laType":      helper.LaType = value;    break;
 						case "matchCast":   // alternate name
 						case "matchType":   helper.MatchType = value; break;

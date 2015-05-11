@@ -73,7 +73,7 @@ namespace Ecs
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
-			S.Tuple, S.CodeQuote, S.CodeQuoteSubstituting, S.Braces, S.ArrayInit });
+			S.Tuple, S.Braces, S.ArrayInit });
 
 		static readonly Dictionary<Symbol,Precedence> SpecialCaseOperators = Dictionary(
 			// Operators that need special treatment (neither prefix nor infix nor casts)
@@ -445,7 +445,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintListOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles one of: #tuple #`@` #`@@`.
+			// Handles #tuple and {} braces.
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			Debug.Assert(_n.IsCall);
@@ -467,8 +467,10 @@ namespace Ecs
 			} else if (name == S.ArrayInit) {
 				braceMode = null; // initializer mode
 			} else {
-				Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
-				_out.Write(name == S.CodeQuote ? "@" : "@@", false);
+				Debug.Assert(false);
+				// Code quote operator has been REMOVED from EC#, in favor of #quote(...), at least for now.
+				//Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
+				//_out.Write(name == S.CodeQuote ? "@" : "@@", false);
 				braceMode = _n.BaseStyle == NodeStyle.Statement && (flags & Ambiguity.NoBracedBlock) == 0;
 				flags = 0;
 			}

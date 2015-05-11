@@ -1,5 +1,5 @@
 ﻿//
-// Standard message sinks:
+// This file defines several standard message sinks:
 //     ConsoleMessageSink, 
 //     NullMessageSink,
 //     TraceMessageSink,
@@ -366,7 +366,7 @@ namespace Loyc
 	/// with one or two delegates (a writer method, and an optional severity filter).</summary>
 	public class MessageSinkFromDelegate : IMessageSink
 	{
-		Action<Severity, object, string, object[]> _writer;
+		WriteMessageFn _writer;
 		Func<Severity, bool> _isEnabled;
 
 		/// <summary>Initializes this object.</summary>
@@ -375,7 +375,7 @@ namespace Loyc
 		/// output based on the message type. If this parameter is provided,
 		/// then <see cref="Write"/>() will not invoke the writer when isEnabled
 		/// returns false. This delegate is also called by <see cref="IsEnabled"/>().</param>
-		public MessageSinkFromDelegate(Action<Severity, object, string, object[]> writer, Func<Severity, bool> isEnabled = null)
+		public MessageSinkFromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
 		{
 			CheckParam.IsNotNull("writer", writer);
 			_writer = writer;

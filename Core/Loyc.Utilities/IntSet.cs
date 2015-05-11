@@ -11,7 +11,10 @@ namespace Loyc.LLParserGenerator
 {
 	/// <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
 	/// or a set of token IDs.</summary>
-	/// <remarks>Now that BaseLexer no longer depends on this class, it could be moved to Loyc.Utilities.</remarks>
+	/// <remarks>This class was written for, and is used by, LLLPG. In addition to
+	/// set operations like union and Subtract, one of its main features is that it 
+	/// can convert a set of integers or characters to/from a string form like 
+	/// "[A-Z]" or "(65..90)".</remarks>
 	public class IntSet : IListSource<IntRange>, IEquatable<IntSet>
 	{
 		/// <summary>A list of non-overlapping character ranges, sorted by code 
@@ -494,15 +497,19 @@ namespace Loyc.LLParserGenerator
 		{
 			return IsInverted ? EquivalentInverted()._ranges : _ranges;
 		}
+		public InternalList<IntRange> InternalRangeList()
+		{
+			return _ranges;
+		}
 
-		public IEnumerable<int> Integers(bool obeyInversion)
+		public IEnumerable<int> IntegerSequence(bool obeyInversion)
 		{
 			if (obeyInversion && IsInverted)
-				return EquivalentInverted().Integers(false);
+				return EquivalentInverted().IntegerSequence(false);
 			else
-				return Integers();
+				return IntegerSequence();
 		}
-		private IEnumerable<int> Integers()
+		private IEnumerable<int> IntegerSequence()
 		{
 			foreach (var r in _ranges)
 				for (int n = r.Lo; ; n++)

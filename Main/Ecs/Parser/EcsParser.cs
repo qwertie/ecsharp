@@ -131,13 +131,13 @@ namespace Ecs.Parser
 		{
 			_messages.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
 		}
-		protected override void Error(int inputPosition, string message)
+		protected override void Error(int lookaheadIndex, string message)
 		{
-			Error(inputPosition, message, InternalList<object>.EmptyArray);
+			Error(lookaheadIndex, message, InternalList<object>.EmptyArray);
 		}
-		protected void Error(int inputPosition, string message, params object[] args)
+		protected void Error(int lookaheadIndex, string message, params object[] args)
 		{
-			int iPos = GetTextPosition(inputPosition);
+			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
 			_messages.Write(_Error, pos, message, args);
 		}

@@ -80,7 +80,7 @@ namespace Loyc.Syntax.Les
 			// - suffix_operators++
 			// - method_calls(with arguments)
 			// - indexers[with indexes]
-			token Expr(context::Precedence, [out] primary::LNode)::LNode @[
+			token Expr(context::Precedence, out primary::LNode)::LNode @[
 				{e::LNode; _::LNode; prec::Precedence; attrs::RWList!LNode = @null;}
 				e=Atom(context, ref attrs) 
 				{primary = e;}
@@ -163,7 +163,7 @@ namespace Loyc.Syntax.Les
 					(TT.Comma exprs+=SuperExprOpt)+
 				)?
 			];
-			
+
 			token SuperExprOptUntil(terminator::TokenType)::LNode @[
 				{var e::LNode = MissingExpr;}
 				e=SuperExpr?

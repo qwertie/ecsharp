@@ -1,24 +1,24 @@
-namespace Loyc.Syntax
+﻿namespace Loyc.Syntax
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Text;
 	using System.IO;
+	using System.Linq;
+	using System.Diagnostics;
 	using Loyc.Utilities;
 	using Loyc.Math;
 	using Loyc.MiniTest;
-	using System.Diagnostics;
 	using Loyc.Syntax;
 	using Loyc.Collections;
 	using Loyc.Collections.Impl;
+	using Loyc.Syntax.Les;
 
 	/// <summary>
 	/// Exposes a stream as an ICharSource, as though it were an array of 
 	/// characters. The stream must support seeking, and if a text decoder 
 	/// is specified, it must meet certain constraints.
 	/// </summary><remarks>
-	/// TODO: test & debug. This class has never been used yet!
-	/// <para/>
 	/// This class reads small blocks of bytes from a stream, reloading 
 	/// blocks from the stream when necessary. Data is cached with a pair 
 	/// of character buffers, and a third buffer is used to read from the
@@ -95,9 +95,8 @@ namespace Loyc.Syntax
 
 			StringBuilder sb = new StringBuilder(Math.Min(length, 1024));
 			for (int i = startIndex; i < startIndex + length; i++) {
-				if ((uint)(i - _blkStart) > (uint)_blkLen) {
-					Access(i);
-					if ((uint)(i - _blkStart) > (uint)_blkLen)
+				if ((uint)(i - _blkStart) >= (uint)_blkLen) {
+					if (!Access(i))
 						break;
 				}
 				sb.Append(_blk[i - _blkStart]);
@@ -107,8 +106,7 @@ namespace Loyc.Syntax
 
 		public sealed override char TryGet(int index, out bool fail)
 		{
-			Access(index);
-			if ((uint)(index - _blkStart) >= (uint)_blkLen) {
+			if (!Access(index)) {
 				fail = true;
 				return (char)0xFFFF;
 			}
@@ -124,19 +122,22 @@ namespace Loyc.Syntax
 		}
 
 		// Goal: get a block of characters, so that _blkStart <= charIndex < _blkStart + _blkLen
-		protected void Access(int charIndex)
+		protected bool Access(int charIndex)
 		{
 			if (charIndex >= _blkStart && charIndex < _blkStart + _blkLen) {
-				return;
+				return true;
 			} else if (charIndex >= _blk2Start && charIndex < _blk2Start + _blk2Len) {
 				SwapBlks();
-				return;
+				return true;
+			} else if (_reachedEnd && charIndex >= _eofIndex) {
+				return false;
 			} else {
 				SwapBlks(); // current _blk is backed up as _blk2
 				if (charIndex >= _eofIndex)
 					ScanPast(charIndex);
 				else if (charIndex >= 0)
 					ReloadBlockOf(charIndex);
+				return (uint)(charIndex - _blkStart) < (uint)_blkLen;
 			}
 		}
 
@@ -158,7 +159,7 @@ namespace Loyc.Syntax
 
 		private int GetBlockIndex(int charIndex)
 		{
-			int i = ListExt.BinarySearch((IReadOnlyList<Pair<int,uint>>) _blkOffsets,
+			int i = ListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
 				new Pair<int, uint>(charIndex, 0),
 				delegate(Pair<int, uint> a, Pair<int, uint> b) { return a.A.CompareTo(b.A); });
 			if (i < 0)
@@ -182,7 +183,7 @@ namespace Loyc.Syntax
 			_decoder.Reset();
 
 			// Read the next block
-			int amtRequested = _buf.Length - MaxSeqSize;
+			int amtRequested = _buf.Length;
 			int amtRead = _stream.Read(_buf, 0, amtRequested);
 			if (amtRead < amtRequested) {
 				_reachedEnd = true;
@@ -208,7 +209,8 @@ namespace Loyc.Syntax
 				_blkStart = _eofIndex;
 				_blkLen = _decoder.GetChars(_buf, 0, amtProcessed, _blk, 0, false);
 				
-				// then 'top it up'
+				// then add one more char, hopefully reaching a "checkpoint" where
+				// the decoder's internal state is empty (a seekable block boundary)
 				int n = 1, cc;
 				while((cc = _decoder.GetCharCount(_buf, amtProcessed, n)) == 0) {
 					n++;
@@ -247,22 +249,70 @@ namespace Loyc.Syntax
 
 	/// <summary>Unit tests of StreamCharSource</summary>
 	[TestFixture]
-	public class StreamCharSourceTests
+	public class StreamCharSourceTests : TestHelpers
 	{
 		Encoding _enc;
-		int _bufSize = 256;
+		int _bufSize = 200;
 		
 		public StreamCharSourceTests() { _enc = UTF8Encoding.Default; }
 		public StreamCharSourceTests(Encoding enc, int bufSize) { _enc = enc; _bufSize = bufSize; }
 		
-		//protected CharIndexPositionMapper CreateSource(string s)
-		//{
-		//    MemoryStream ms = new MemoryStream(s.Length * 2);
-		//    byte[] b = _enc.GetBytes(s);
-		//    ms.Write(b, 0, b.Length);
-			
-		//    // StreamCharSource will set ms.Position = 0 by itself
-		//    //return new StreamCharSource(ms, _enc.GetDecoder(), _bufSize);
-		//}
+		[Test]
+		public void TestWithLes()
+		{
+			// The idea: write some simple, correct LES code, then randomize it by
+			// inserting comments in a bunch of places. Lex it both ways and verify 
+			// that the non-whitespace tokens are the same either way.
+			string lesCode = @"import System;
+				import Loyc;
+				namespace TestCode {
+					class TestClass {
+						public answer::float = 42.0e0f;
+						public ComputeAnswer()::object {
+							你好();
+							// slack off while pretending to work
+							Thread.Sleep(1042.0 * 1000 -> int);
+							return answer;
+						};
+					};
+				};";
+			MessageHolder msgs = new MessageHolder();
+			var lexer = LesLanguageService.Value.Tokenize(lesCode, msgs);
+			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			Debug.Assert(msgs.List.Count == 0);
+
+			LexWithSCSAndCompare(tokens, lesCode);
+
+			var r = new Random();
+			var lesCode2 = new StringBuilder(lesCode);
+			for (int i = lesCode2.Length-1; i >= 0; i--)
+				if (lesCode2[i] == ' ' || (i > 0 && lesCode[i-1] == ' '))
+					if (r.Next(4) == 0) {
+						if (r.Next(2) == 0)
+							lesCode2.Insert(i, "/*你好 你好*/");
+						else
+							lesCode2.Insert(i, "/*2345678901234567 lárgér cómmént 45678901234567*/"); // 50
+					}
+
+			LexWithSCSAndCompare(tokens, lesCode2.ToString());
+		}
+
+		private void LexWithSCSAndCompare(List<Lexing.Token> originalTokens, string lesCode)
+		{
+			var msgs = new MessageHolder();
+			var stream = new MemoryStream(Encoding.UTF8.GetBytes(lesCode));
+			var source = new StreamCharSource(stream, Encoding.UTF8.GetDecoder(), _bufSize);
+			var lexer = LesLanguageService.Value.Tokenize(source, "StreamCharSource.les", msgs);
+			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			Assert.AreEqual(0, msgs.List.Count);
+			ExpectList(tokens, originalTokens);
+
+			// Now reset the lexer and read the same StreamCharSource again 
+			// (different code paths are used the second time)
+			lexer.Reset();
+			tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			Assert.AreEqual(0, msgs.List.Count);
+			ExpectList(tokens, originalTokens);
+		}
 	}
 }

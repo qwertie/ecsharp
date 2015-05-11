@@ -139,7 +139,10 @@ namespace Loyc.LLParserGenerator
 				LNode test, result = null;
 				// Note: sort the set so that the unit tests are deterministic
 				foreach (LNode item in set.BaseSet.OrderBy(s => s.ToString())) {
-					test = F.Call(S.Eq, subject, item);
+					var item2 = item;
+					if (item == PGNodeSet.EOF_node && InputClass != null)
+						item2 = F.Dot(InputClass, item);
+					test = F.Call(S.Eq, subject, item2);
 					if (result == null)
 						result = test;
 					else
@@ -187,16 +190,16 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			if (baseCount <= 4) {
-				call = F.Call(recognizerMode 
+				call = ApiCall(recognizerMode 
 					? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 					: (set.IsInverted ? _MatchExcept : _Match),
 					MatchArgs(symbols));
 			} else {
 				var setName = GenerateSetDecl(set);
 				if (set.IsInverted)
-					call = F.Call(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
+					call = ApiCall(recognizerMode ? _TryMatchExcept : _MatchExcept, F.Id(setName));
 				else
-					call = F.Call(recognizerMode ? _TryMatch : _Match, F.Id(setName));
+					call = ApiCall(recognizerMode ? _TryMatch : _Match, F.Id(setName));
 			}
 			return call;
 		}
@@ -250,7 +253,6 @@ namespace Loyc.LLParserGenerator
 		public static readonly LNode EOF_node = GeneralCodeGenHelper.EOF;
 		public new static readonly PGNodeSet Empty = new PGNodeSet(Set<LNode>.Empty);
 		public new static readonly PGNodeSet All = new PGNodeSet(InvertibleSet<LNode>.All);
-		public static readonly PGNodeSet EOF = new PGNodeSet(InvertibleSet<LNode>.Empty.With(EOF_node));
 		public static readonly PGNodeSet AllExceptEOF = new PGNodeSet(InvertibleSet<LNode>.All.Without(EOF_node));
 
 		#region IPGTerminalSet

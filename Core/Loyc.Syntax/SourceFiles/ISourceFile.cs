@@ -16,16 +16,28 @@ namespace Loyc.Syntax
 	}
 
 	/// <summary>A default implementation of ISourceFile based on <see cref="IndexPositionMapper"/>.</summary>
-	public class SourceFile : IndexPositionMapper, ISourceFile
+	public class SourceFile<CharSource> : IndexPositionMapper<CharSource>, ISourceFile
+		where CharSource : ICharSource
 	{
-		new protected ICharSource _source;
+		new protected CharSource _source;
 
-		public SourceFile(ICharSource source, SourcePos startingPos = null) : base(source, startingPos) { _source = source; }
-		public SourceFile(ICharSource source, string fileName) : base(source, fileName) { _source = source; }
+		public SourceFile(CharSource source, SourcePos startingPos = null) : base(source, startingPos) { _source = source; }
+		public SourceFile(CharSource source, string fileName) : base(source, fileName) { _source = source; }
 
-		public ICharSource Text
+		public CharSource Text
 		{
 			get { return _source; }
 		}
+		ICharSource ISourceFile.Text
+		{
+			get { return Text; }
+		}
 	}
+
+	[Obsolete("Please use SourceFile<ICharSource> instead.")]
+	public class SourceFile : SourceFile<ICharSource>
+	{
+		public SourceFile(ICharSource source, SourcePos startingPos = null) : base(source, startingPos) { }
+		public SourceFile(ICharSource source, string fileName) : base(source, fileName) { }
+	} 
 }

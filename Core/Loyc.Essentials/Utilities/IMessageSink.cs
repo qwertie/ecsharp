@@ -27,7 +27,7 @@ namespace Loyc
 	/// For message sinks that are used for compiler messages, the standard
 	/// levels are: Fatal, Error, SoftError, Warning, Note, Detail. "SoftError"
 	/// is intended to describe code that is technically illegal, but which
-	/// does not impede code generation. "Detail" provides more information 
+	/// does not prevent code generation. "Detail" provides more information 
 	/// about a previously-printed message, while "Note" is intended for
 	/// independent messages that are less severe than warnings.
 	/// <para/>
@@ -35,7 +35,7 @@ namespace Loyc
 	/// with <see cref="Localize.From"/>.
 	/// <para/>
 	/// Only a single Write() method is truly needed (<see cref="Write(Severity, object, string, object[])"/>),
-	/// but efficiency reasons the interface contains two other writers. It 
+	/// but for efficiency reasons the interface contains two other writers. It 
 	/// is expected to be fairly common that a message sink will drop some or
 	/// all messages without printing them, e.g. if a message sink is used for 
 	/// logging, verbose messages might be "off" by default. It would be 
@@ -66,9 +66,9 @@ namespace Loyc
 		/// types include Error, Warning, Note, Debug, and Verbose. The special 
 		/// type Detail is intended to provide more information about a previous 
 		/// message.</param>
-		/// <param name="context">An object that represents the location that the
-		/// message applies to, a string that indicates what the program was doing 
-		/// when the message was generated, or any other relevant context information.
+		/// <param name="context">An object that the message is related to, or that 
+		/// represents the location that the message applies to. The message sink
+		/// may try to convert this object to a string and include it in its output.
 		/// See also <see cref="MessageSink.LocationString"/>().</param>
 		/// <param name="format">A message to display. If there are additional 
 		/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
@@ -76,7 +76,7 @@ namespace Loyc
 		void Write(Severity type, object context, string format, object arg0, object arg1 = null);
 		void Write(Severity type, object context, string format, params object[] args);
 		
-		/// <summary>Returns true if messages of type 'type' will actually be 
+		/// <summary>Returns true if messages of the specified type will actually be 
 		/// printed, or false if Write(type, ...) is a no-op.</summary>
 		bool IsEnabled(Severity type);
 	}
@@ -141,9 +141,30 @@ namespace Loyc
 			public void Dispose() { Current = OldValue; }
 		}
 
-		/// <summary>Returns <see cref="ILocationString.LocationString"/> if 
-		/// 'context' implements that interface, null if context is null, and
-		/// <see cref="object.ToString()"/> otherwise.</summary>
+		/// <summary>Gets the location information from the specified object, or
+		/// converts the object to a string.</summary>
+		/// <param name="context">A value whose string representation you want to get.</param>
+		/// <returns>
+		/// If <c>context</c> implements <see cref="ILocationString"/>,
+		/// this function returns <see cref="ILocationString.LocationString"/>; 
+		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
+		/// it returns <c>context.ToString()</c>.
+		/// </returns>
+		/// <remarks>Message sinks are commonly used to display error and warning 
+		/// messages, and when you write a message with <c>IMessageSink.Write()</c>, 
+		/// the second parameter is a "context" argument which specifies the object
+		/// to which the message is related (for example, when writing compiler 
+		/// output, the context might be a node in a syntax tree). Most message 
+		/// sinks display the message in text form (in a log file or terminal), and 
+		/// in that case the best option is to display the location information 
+		/// associated with the context object (e.g. Foo.cpp:45), rather than a 
+		/// string representation of the object itself.
+		/// <para/>
+		/// Therefore, message sinks that display a message in text form will call
+		/// this method to convert the context object to a string, and if available,
+		/// this method calls the <see cref="ILocationString.LocationString"/>
+		/// property of the context object.
+		/// </remarks>
 		public static string LocationString(object context)
 		{
 			if (context == null) return null;
@@ -169,7 +190,7 @@ namespace Loyc
 		/// <summary>Discards all messages.</summary>
 		public static readonly NullMessageSink Null = new NullMessageSink();
 		/// <summary>Sends all messages to a user-defined method.</summary>
-		public static MessageSinkFromDelegate FromDelegate(Action<Severity, object, string, object[]> writer, Func<Severity, bool> isEnabled = null)
+		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn writer, Func<Severity, bool> isEnabled = null)
 		{
 			return new MessageSinkFromDelegate(writer, isEnabled);
 		}
@@ -180,10 +201,27 @@ namespace Loyc
 	/// the "context" of a message into a string.</summary>
 	/// <remarks>For example, <see cref="Loyc.Syntax.LNode"/> implements this 
 	/// interface so that when a compiler error refers to a source code construct,
-	/// the error message contains the location of that construct rather than 
-	/// the code itself.</remarks>
+	/// the error message contains the location of that source code rather than the
+	/// code itself.</remarks>
 	public interface ILocationString
 	{
 		string LocationString { get; }
 	}
+
+	/// <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 
+	/// can convert from one of these delegates to <see cref="IMessageSink"/> by 
+	/// calling <see cref="MessageSink.FromDelegate"/>.</summary>
+	/// <param name="type">Severity or importance of the message; widely-used
+	/// types include Error, Warning, Note, Debug, and Verbose. The special 
+	/// type Detail is intended to provide more information about a previous 
+	/// message.</param>
+	/// <param name="context">An object that represents the location that the
+	/// message applies to, a string that indicates what the program was doing 
+	/// when the message was generated, or any other relevant context information.
+	/// See also <see cref="MessageSink.LocationString"/>().</param>
+	/// <param name="format">A message to display. If there are additional 
+	/// arguments, placeholders such as {0} and {1} refer to these arguments.</param>
+	/// <param name="args">Optional arguments to fill in placeholders in the format 
+	/// string.</param>
+	public delegate void WriteMessageFn(Severity type, object context, string format, params object[] args);
 }

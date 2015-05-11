@@ -81,6 +81,29 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestCodeQuote()
+		{
+			TestEcs("quote { F(); }",
+				   @"F.Call(""F"");");
+			TestEcs("quote(F(x, 0));",
+				   @"F.Call(""F"", F.Id(""x""), F.Literal(0));");
+			TestEcs("quote { x = x + 1; }",
+				   @"F.Call(CodeSymbols.Assign, F.Id(""x""), F.Call(CodeSymbols.Add, F.Id(""x""), F.Literal(1)));");
+			TestEcs("quote { Console.WriteLine(\"Hello\"); }",
+				   @"F.Call(F.Dot(F.Id(""Console""), F.Id(""WriteLine"")), F.Literal(""Hello""));");
+			TestEcs("q = quote({ while (Foo<T>) Yay(); });",
+				   @"q = F.Call(CodeSymbols.While, F.Of(F.Id(""Foo""), F.Id(""T"")), F.Call(""Yay""));");
+			TestEcs("q = quote({ if (true) { Yay(); } });",
+				   @"q = F.Call(CodeSymbols.If, F.Literal(true), F.Braces(F.Call(""Yay"")));");
+			TestEcs("q = quote({ Yay(); break; });",
+				   @"q = F.Braces(F.Call(""Yay""), F.Call(CodeSymbols.Break));");
+			TestEcs("q = quote({ $(dict[key]) = 1; });",
+				   @"q = F.Call(CodeSymbols.Assign, dict[key], F.Literal(1));");
+			TestEcs("q = quote(hello + $x);",
+				   @"q = F.Call(CodeSymbols.Add, F.Id(""hello""), x);");
+		}
+
+		[Test]
 		public void TestStringInterpolation()
 		{
 			Assert.Fail("TODO");
