@@ -223,27 +223,37 @@ namespace Loyc
 		public uchar DecodeAt(int index)
 		{
 			uchar r = TryDecodeAt(index);
-			if (r != -1)
-				return r;
-			throw new IndexOutOfRangeException();
+			if (r == -1)
+				ThrowIndexOutOfRange(index);
+			return r;
 		}
 
+		void ThrowIndexOutOfRange(int i)
+		{
+			throw new IndexOutOfRangeException(string.Format("UString index out of range ([{0}]/{1})", i, Length));
+		}
 
 		/// <summary>Returns the code unit (16-bit value) at the specified index.</summary>
 		/// <exception cref="IndexOutOfRangeException">Oops.</exception>
 		public char this[int index]
 		{
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
 			get { 
-				if ((uint)index < (uint)_count)
-					return _str[_start + index];
-				throw new IndexOutOfRangeException();
+				if ((uint)index >= (uint)_count)
+					ThrowIndexOutOfRange(index);
+				return _str[_start + index];
 			}
 		}
 		/// <summary>Returns the code unit (16-bit value) at the specified index,
 		/// or a default value if the specified index was out of range.</summary>
 		public char this[int index, char defaultValue]
 		{
-			get { 
+			#if DotNet45
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			#endif
+			get {
 				if ((uint)index < (uint)_count)
 					return _str[_start + index];
 				return defaultValue;

@@ -7,6 +7,7 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Syntax.Les;
 using Loyc.Threading;
+using System.IO;
 
 namespace Loyc.Syntax
 {
@@ -172,6 +173,44 @@ namespace Loyc.Syntax
 			if (e.TryGet(1, null) != null) // don't call Count because e is typically Buffered()
 				throw new InvalidOperationException(Localize.From("ParseSingle: multiple parse results."));
 			return node;
+		}
+		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, Symbol inputType = null)
+		{
+			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType);
+		}
+		public static ILexer Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
+		{
+			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
+		}
+		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, Symbol inputType = null)
+		{
+			using (var stream = new FileStream(fileName, FileMode.Open))
+				return Parse(parser, stream, fileName, msgs, inputType);
+		}
+		public static ILexer TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
+		{
+			using (var stream = new FileStream(fileName, FileMode.Open))
+				return Tokenize(parser, stream, fileName, msgs);
+		}
+		/// <summary>Converts a sequences of LNodes to strings, adding a newline after each.</summary>
+		/// <param name="printer">Printer for a single LNode.</param>
+		/// <param name="mode">A language-specific way of modifying printer behavior.
+		/// The printer ignores the mode object if it does not not understand it.</param>
+		/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
+		/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
+		/// <returns>A string form of the nodes.</returns>
+		public static string PrintMultiple(this LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		{
+			var sb = new StringBuilder();
+			foreach (LNode node in nodes) {
+				printer(node, sb, msgs, mode, indentString, lineSeparator);
+				sb.Append(lineSeparator);
+			}
+			return sb.ToString();
+		}
+		public static string PrintMultiple(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		{
+			return PrintMultiple(service.Printer, nodes, msgs, mode, indentString, lineSeparator);
 		}
 	}
 }

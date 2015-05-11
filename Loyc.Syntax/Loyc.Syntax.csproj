@@ -168,6 +168,8 @@
     <Compile Include="Les\TokenType.cs" />
     <Compile Include="Lexing\BaseLexer.cs" />
     <Compile Include="Lexing\ILexer.cs" />
+    <Compile Include="Lexing\ILllpgApi.cs" />
+    <Compile Include="Lexing\LexerSource.cs" />
     <Compile Include="Lexing\TokenListAsLexer.cs" />
     <Compile Include="Lexing\Token.cs" />
     <Compile Include="Lexing\TokenKind.cs" />

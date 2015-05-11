@@ -27,9 +27,15 @@ namespace Loyc.Syntax
 	/// entire input file or string has been scanned, since the list of line breaks
 	/// is built on-demand, without locking.
 	/// </remarks>
-	public class IndexPositionMapper : IIndexPositionMapper
+	/// <typeparam name="CharSource">A type that implements <c>IListSource(Char)</c>.
+	/// Originally this class did not have any type parameters and dealt with
+	/// <c>IListSource(Char)</c>, but it was made generic so that one could wrap
+	/// value types such as <c>UString</c> without boxing.
+	/// </typeparam>
+	public class IndexPositionMapper<CharSource> : IIndexPositionMapper 
+		where CharSource : IListSource<char>
 	{
-		protected IListSource<char> _source;
+		protected CharSource _source;
 
 		/// <summary>Initializes CharIndexPositionMapper.</summary>
 		/// <param name="source">An immutable list of characters.</param>
@@ -37,20 +43,31 @@ namespace Loyc.Syntax
 		/// will be considered to have the file name and line number specified by 
 		/// this object. If this is null, IndexToLine() will return a blank file 
 		/// name ("").</param>
-		public IndexPositionMapper(IListSource<char> source, SourcePos startingPos = null)
+		public IndexPositionMapper(CharSource source, SourcePos startingPos = null)
 		{
-			_source = source;
-			_lineOffsets.Add(0);
-			_startingPos = startingPos;
+			Reset(source, startingPos);
 		}
-		public IndexPositionMapper(IListSource<char> source, string fileName) : this(source, new SourcePos(fileName, 1, 1)) {}
+		public IndexPositionMapper(CharSource source, string fileName)
+		{
+			Reset(source, fileName);
+		}
 
 		// This code computes the line boundaries lazily. 
 		// _lineOffsets contains the indices of the start of every line, so
 		// this[_lineOffsets[2]] would be the first character of the third line.
 		protected InternalList<int> _lineOffsets = InternalList<int>.Empty;
 		protected bool _offsetsComplete = false;
-		protected readonly SourcePos _startingPos = null;
+		protected SourcePos _startingPos = null;
+
+		/// <summary>Reinitializes the object (as though the constructor were called again).</summary>
+		protected void Reset(CharSource source, string fileName) { Reset(source, new SourcePos(fileName, 1, 1)); }
+		protected void Reset(CharSource source, SourcePos startingPos = null)
+		{
+			_source = source;
+			_lineOffsets = InternalList<int>.Empty;
+			_lineOffsets.Add(0);
+			_startingPos = startingPos;
+		}
 
 		public string FileName
 		{
@@ -143,14 +160,22 @@ namespace Loyc.Syntax
 		}
 	}
 
+	/// <summary>Synonym for <c>IndexPositionMapper&lt;IListSource&lt;char>></c>.</summary>
+	[Obsolete("Please use IndexPositionMapper<IListSource<char>> instead.")]
+	public class IndexPositionMapper : IndexPositionMapper<IListSource<char>>
+	{
+		public IndexPositionMapper(IListSource<char> source, SourcePos startingPos = null) : base(source, startingPos) {}
+		public IndexPositionMapper(IListSource<char> source, string fileName) : base(source, fileName) {}
+	}
+
 	public class CharIndexPositionMapperTests
 	{
 		protected const char EOF = (char)0xFFFF;
-		protected IndexPositionMapper CreateSource(string s) { return new IndexPositionMapper((UString)s); }
+		protected IndexPositionMapper<UString> CreateSource(string s) { return new IndexPositionMapper<UString>((UString)s); }
 
 		[Test] public void TestOneLine()
 		{
-			IndexPositionMapper cs;
+			IndexPositionMapper<UString> cs;
 			cs = CreateSource("One line");
 			Assert.AreEqual(new SourcePos("", 1, 6), cs.IndexToLine(5));
 			Assert.AreEqual(new SourcePos("", 1, 13), cs.IndexToLine(12));
@@ -165,7 +190,7 @@ namespace Loyc.Syntax
 
 		[Test] public void TestMultiLine()
 		{
-			IndexPositionMapper cs;
+			IndexPositionMapper<UString> cs;
 			cs = CreateSource("Line 1\r\nLine 2\n\nLine 4\n\rLine 6");
 			Assert.AreEqual(new SourcePos("", 1, 8), cs.IndexToLine(7));
 			Assert.AreEqual(new SourcePos("", 2, 1), cs.IndexToLine(8));

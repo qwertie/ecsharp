@@ -60,8 +60,9 @@ namespace Loyc.Syntax.Les
 		public int IndentLevel { get { return _indentLevel; } }
 		public int SpacesPerTab = 4;
 
-		protected override void Error(int index, string message)
+		protected override void Error(int lookaheadIndex, string message)
 		{
+			int index = InputPosition + lookaheadIndex; 
 			_parseNeeded = true; // don't use the "fast" code path
 			ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), message);
 		}
@@ -82,7 +83,7 @@ namespace Loyc.Syntax.Les
 			_startPosition = InputPosition;
 			_value = null;
 			_style = 0;
-			if (InputPosition >= CharSource.Count)
+			if (LA0 == -1) // EOF
 				return null;
 			else {
 				Token();
@@ -725,7 +726,7 @@ namespace Loyc.Syntax.Les
 		void IDisposable.Dispose() {}
 		Token IEnumerator<Token>.Current { get { return _current.Value; } }
 		object System.Collections.IEnumerator.Current { get { return _current; } }
-		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
+		void System.Collections.IEnumerator.Reset() { Reset(CharSource, FileName, 0); }
 		bool System.Collections.IEnumerator.MoveNext()
 		{
 			_current = NextToken();
