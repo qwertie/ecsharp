@@ -9,20 +9,30 @@ using Loyc.Syntax.Lexing;
 namespace Loyc.Syntax
 {
 	/// <summary>
-	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
+	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+	/// Generator). Note: this is the old (harder to use) base class. You should 
+	/// use <see cref="BaseParserForList{Token}"/> instead.
 	/// </summary>
 	public abstract class BaseParser<Token>
 	{
 		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
 		protected static HashSet<int> NewSet<T>(params T[] items) where T:IConvertible { return new HashSet<int>(items.Select(t => t.ToInt32(null))); }
 
-		protected BaseParser() { EOF = EofInt(); }
+		protected BaseParser(ISourceFile file = null, int startIndex = 0) { 
+			EOF = EofInt();
+			_sourceFile = file;
+			_inputPosition = startIndex;
+		}
+
+		/// <summary>The <see cref="ISourceFile"/> object that was provided to the constructor, if any.</summary>
+		protected ISourceFile SourceFile { get { return _sourceFile; } }
+		protected ISourceFile _sourceFile;
 
 		protected Token _lt0;
-		/// <summary>Next token to parse (set to LT(0) whenever InputPosition is changed).</summary>
+		/// <summary>Next token to parse (cached; is set to LT(0) whenever InputPosition is changed).</summary>
 		public Token LT0 { [DebuggerStepThrough] get { return _lt0; } }
 
-		private int _inputPosition = 0;
+		protected int _inputPosition;
 		/// <summary>Current position of the next token to be parsed.</summary>
 		protected int InputPosition
 		{
@@ -42,12 +52,38 @@ namespace Loyc.Syntax
 		/// <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
 		/// if the tokens come from a list called Source) </summary>
 		protected abstract Token LT(int i);
-		/// <summary>Records an error or throws an exception. When called by 
-		/// BaseParser, li is always equal to 0.</summary>
-		protected abstract void Error(int li, string message);
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>
 		protected abstract string ToString(Int32 tokenType);
+
+		/// <summary>Records an error or throws an exception.</summary>
+		/// <param name="lookaheadIndex">Location of the error relative to the
+		/// current <c>InputPosition</c>. When called by BaseParser, lookaheadIndex 
+		/// is always equal to 0.</param>
+		/// <remarks>
+		/// The default implementation throws a <see cref="FormatException"/>.
+		/// When overriding this method, you can convert the lookaheadIndex
+		/// to a <see cref="SourcePos"/> using the expression
+		/// <c>SourceFile.IndexToLine(LT(lookaheadIndex).StartIndex)</c>. This only
+		/// works if an <c>ISourceFile</c> object was provided to the constructor of 
+		/// this class, and <c>Token</c> implements <see cref="ISimpleToken"/>.</c>.
+		/// </remarks>
+		protected virtual void Error(int lookaheadIndex, string message)
+		{
+			var token = LT(lookaheadIndex) as ISimpleToken;
+			if (token == null)
+				throw new FormatException(message);
+			int charIdx = token.StartIndex;
+			if (SourceFile == null)
+				throw new FormatException(string.Format("at [{0}]: {1}", charIdx, message));
+			else
+				throw new FormatException(SourceFile.IndexToLine(charIdx) + ": " + message);
+		}
+		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
+		{
+			string msg = Localize.From(format, args);
+			Error(lookaheadIndex, msg);
+		}
 
 		protected void Skip()
 		{

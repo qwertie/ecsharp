@@ -141,6 +141,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseParser.cs" />
+    <Compile Include="BaseParserForList.cs" />
+    <Compile Include="BaseParserNoBacktracking.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IParsingService.cs" />
     <Compile Include="Les\LesLanguageService.cs" />
