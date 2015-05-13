@@ -22,6 +22,8 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _NewSet = GSymbol.Get("NewSet");
 		static readonly Symbol _NewSetOfRanges = GSymbol.Get("NewSetOfRanges");
 
+		public IntStreamCodeGenHelper() { TerminalType = LNode.Id(S.Int32); }
+
 		LNode _setType;
 		public LNode SetType
 		{

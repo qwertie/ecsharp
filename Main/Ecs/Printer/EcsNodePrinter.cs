@@ -1449,6 +1449,49 @@ namespace Ecs
 		//    return _operatorChars.Contains(c);
 		//}
 
+		/// <summary>Eliminates punctuation and special characters from a string so
+		/// that the string can be used as a plain C# identifier, e.g. 
+		/// "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
+		/// <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
+		/// "_xyz" where xyz is an HTML entity name, e.g. '&' becomes "_amp",
+		/// and all other characters become "Xxx" where xx is the hexadecimal 
+		/// representation of the code point. Designed for the Unicode BMP only.</remarks>
+		public static string SanitizeIdentifier(string id)
+		{
+			if (id == "")
+				return "__";
+			int i = 0;
+			if (IsIdentStartChar(id[0])) {
+				for (i = 1; i < id.Length; i++)
+					if (!IsIdentStartChar(id[i]) && !char.IsDigit(id[i]))
+						break;
+			}
+			if (i >= id.Length)
+				return id; // it's a normal identifier, do not change
+			
+			var sb = new StringBuilder(id.Left(i));
+			for (; i < id.Length; i++) {
+				char c = id[i];
+				if (IsIdentStartChar(c))
+					sb.Append(c);
+				else if (c >= '0' && c <= '9') {
+					if (i == 0) sb.Append('_');
+					sb.Append(c);
+				} else {
+					char prefix = '_';
+					string ent = G.BareHtmlEntityNameForAscii(c);
+					if (ent == null || (c < 256 && ent.Length > 5)) {
+						prefix = 'x';
+						ent = ((int)c).ToString("X2");
+					}
+					sb.Append(prefix);
+					sb.Append(ent);
+				}
+			}
+			return sb.ToString();
+		}
+
+
 		#endregion
 	}
 

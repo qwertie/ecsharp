@@ -213,6 +213,7 @@
     <Compile Include="CoreEngine\KthSet.cs" />
     <Compile Include="CoreEngine\LLParserGenerator.cs" />
     <Compile Include="CoreEngine\PredictionTree.cs" />
+    <Compile Include="ParsersAndMacros\AutoValueSaverVisitor.cs" />
     <Compile Include="ParsersAndMacros\Macros.cs" />
     <Compile Include="ParsersAndMacros\StageOneParser.cs" />
     <Compile Include="ParsersAndMacros\StageOneParserGrammar.cs">
@@ -221,14 +222,18 @@
       <DependentUpon>StageOneParserGrammar.ecs</DependentUpon>
     </Compile>
     <Compile Include="ParsersAndMacros\StageTwoParser.cs" />
+    <Compile Include="ParsersAndMacros\VList.cs" />
     <Compile Include="RuleAndPreds\Predicates.cs" />
     <Compile Include="RuleAndPreds\PredVisitor.cs" />
     <Compile Include="RuleAndPreds\Rule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\LlpgAutoValueSaverVisitorTests.cs" />
+    <Compile Include="Tests\LlpgGeneralTestsBase.cs" />
     <Compile Include="Tests\LlpgGeneralTests.cs" />
     <Compile Include="Tests\LlpgCoreTests.cs" />
     <Compile Include="Tests\LlpgParserTests.cs" />
+    <Compile Include="Tests\LlpgTestLargerExamples.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ecs\Ecs.csproj">
@@ -260,8 +265,8 @@
     <None Include="OpenSourceKey.snk" />
     <None Include="ParsersAndMacros\StageOneParserGrammar.ecs">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>StageOneParserGrammar.cs</LastGenOutput>
       <CustomToolNamespace>--timeout=5</CustomToolNamespace>
+      <LastGenOutput>StageOneParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

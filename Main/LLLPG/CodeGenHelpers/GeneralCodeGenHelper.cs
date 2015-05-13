@@ -70,7 +70,7 @@ namespace Loyc.LLParserGenerator
 		/// When using this option, LaType should still be the enum type rather 
 		/// than #int32.
 		/// </remarks>
-		public LNode MatchType;
+		public LNode MatchCast;
 
 		public GeneralCodeGenHelper(LNode laType = null, bool allowSwitch = true) 
 			: this(laType ?? F_.Int32, null, allowSwitch) { }
@@ -128,8 +128,8 @@ namespace Loyc.LLParserGenerator
 
 			if (setName != null) {
 				// setName.Contains($subject)
-				if (MatchType != null)
-					subject = F.Call(S.Cast, subject, MatchType);
+				if (MatchCast != null)
+					subject = F.Call(S.Cast, subject, MatchCast);
 				var test = F.Call(F.Dot(setName, _Contains), subject);
 				return set.IsInverted ? F.Call(S.Not, test) : test;
 			} else {
@@ -166,8 +166,8 @@ namespace Loyc.LLParserGenerator
 			// static readonly $SetType $setName = NewSet(new $SetType[] { ... });
 			// Sort the list so that the test suite can compare results deterministically
 			IEnumerable<LNode> setMemberList = set.BaseSet.OrderBy(s => s.ToString());
-			if (MatchType != null)
-				setMemberList = setMemberList.Select(item => F.Call(S.Cast, item, MatchType));
+			if (MatchCast != null)
+				setMemberList = setMemberList.Select(item => F.Call(S.Cast, item, MatchCast));
 			return F.Attr(F.Id(S.Static), F.Id(S.Readonly),
 				F.Var(SetType, setName, F.Call(_NewSet, setMemberList)));
 		}
@@ -206,8 +206,8 @@ namespace Loyc.LLParserGenerator
 		private IEnumerable<LNode> MatchArgs(IEnumerable<LNode> symbols)
 		{
 			symbols = symbols.OrderBy(s => s.ToString());
-			if (MatchType != null)
-				symbols = symbols.Select(s => F.Call(S.Cast, s, MatchType));
+			if (MatchCast != null)
+				symbols = symbols.Select(s => F.Call(S.Cast, s, MatchCast));
 			return symbols;
 		}
 

@@ -18,7 +18,7 @@ namespace Loyc.Syntax.Les
 
 		public LNode GenerateParserCode()
 		{
-			_pg = new LLParserGenerator(new GeneralCodeGenHelper(F.Id("TT"), true) { MatchType = F.Int32 }, MessageSink.Console);
+			_pg = new LLParserGenerator(new GeneralCodeGenHelper(F.Id("TT"), true) { MatchCast = F.Int32 }, MessageSink.Console);
 
 			// Just do whitespace-agnostic LES at first
 

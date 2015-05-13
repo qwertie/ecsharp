@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Syntax;
+using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
 {
@@ -27,30 +28,36 @@ namespace Loyc.LLParserGenerator
 			_sink = sink;
 		}
 
+		/// <summary>Given Rules paired with LNodes produced by <see cref="StageOneParser"/>,
+		/// this method translates each LNode into a <see cref="Pred"/> and updates
+		/// <see cref="Rule.Pred"/> to point to the new Pred.</summary>
 		public void Parse(IEnumerable<Pair<Rule,LNode>> rules)
 		{
-			_rules = new Dictionary<Symbol, Rule>();
-			foreach (var pair in rules)
-				_rules.Add(pair.A.Name, pair.A);
+			_rules = LLParserGenerator.AddRulesToDict(rules.Select(p => p.A));
 			foreach (var pair in rules) {
 				Debug.Assert(pair.A.Pred == null);
 				pair.A.Pred = NodeToPred(pair.B);
+				AnalyzeSubstitutions(pair.A.Pred);
 				if (pair.A.HasRecognizerVersion) // oops, need to keep recognizer in sync with main rule
 					pair.A.MakeRecognizerVersion().Pred = pair.A.Pred;
 			}
 		}
 
+		private void AnalyzeSubstitutions(Pred pred)
+		{
+		}
+
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG parser"));
 		static readonly Symbol _Gate = S.Lambda;
 		static readonly Symbol _EqGate = GSymbol.Get("<=>");
+		static readonly Symbol _AddColon = GSymbol.Get("+:");
 		static readonly Symbol _Star = GSymbol.Get("suf*");
 		static readonly Symbol _Plus = GSymbol.Get("suf+");
 		static readonly Symbol _Opt = GSymbol.Get("suf?");
-		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
-		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _And = S.AndBits;
 		static readonly Symbol _AndNot = GSymbol.Get("&!");
-		static readonly Symbol _Add = GSymbol.Get("Add");
+		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
+		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Default2 = GSymbol.Get("#default");
 		static readonly Symbol _Error = GSymbol.Get("error");
@@ -160,23 +167,24 @@ namespace Loyc.LLParserGenerator
 						return subpred;
 					}
 				}
-				else if (expr.Name.Name.EndsWith("=") && expr.ArgCount == 2)
+				else if ((expr.Name.Name.EndsWith(":") || expr.Name.Name.EndsWith("=")) && expr.ArgCount == 2)
 				{
-					var lhs = expr.Args[0];
 					var pred = NodeToPred(expr.Args[1], ctx);
-					if (expr.Calls(S.AddSet))
-						pred.ResultSaver = result => F.Call(F.Dot(lhs, _Add), result);
-					else if (expr.Calls(S.QuickBindSet))
-						pred.ResultSaver = result => F.Call(S.Var, F._Missing, F.Call(S.Assign, lhs, result));
-					else
-						pred.ResultSaver = result => F.Call(expr.Target, lhs, result);
+					var label = expr.Args[0];
+					if (label.IsId) {
+						var oper = expr.Name;
+						pred.VarLabel = label.Name;
+						pred.VarIsList = oper == S.AddSet || oper == _AddColon;
+						pred.ResultSaver = Pred.GetStandardResultSaver(label, expr.Name);
+					} else
+						_sink.Write(Severity.Error, label, "A label must be an identifier");
 					return pred;
 				}
 			}
 			
 			// expr is an Id, literal, or non-special call
-			Rule rule;
-			if (!expr.IsLiteral && _rules.TryGetValue(expr.Name, out rule))
+			Rule rule = TryGetRule(expr);
+			if (rule != null)
 			{
 				//int ruleArgc = rule.Basis.Args[2].ArgCount;
 				//if (expr.ArgCount > ruleArgc) // don't complain about too few args, in case there are default args (I'm too lazy to check)
@@ -193,6 +201,15 @@ namespace Loyc.LLParserGenerator
 			} else if (errorMsg != null)
 				_sink.Write(Severity.Warning, expr, errorMsg);
 			return terminal;
+		}
+
+		/// <summary>Tries to interpret expr as a reference to an existing rule.</summary>
+		Rule TryGetRule(LNode expr)
+		{
+			Rule rule;
+			if (!expr.IsLiteral && _rules.TryGetValue(expr.Name, out rule))
+				return rule;
+			return null;
 		}
 
 		Pred BranchToPred(LNode expr, out BranchMode mode, Context ctx)

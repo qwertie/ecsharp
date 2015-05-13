@@ -23,13 +23,16 @@ namespace Loyc.LLParserGenerator
 		/// starting rule or token, <c>public void Rule();</c>.</summary>
 		/// <remarks>The Basis is also used to provide an error location.</remarks>
 		public LNode Basis;
+		public LNode ReturnType; // extracted from Basis, used by AutoValueSaverVisitor
 		public readonly EndOfRule EndOfRule;
-
+		
 		public Rule(LNode basis, Symbol name, Pred pred, bool isStartingRule = true)
 		{
 			Basis = basis; Pred = pred; Name = name;
 			IsStartingRule = isStartingRule;
 			EndOfRule = new EndOfRule(this);
+			if (basis != null && basis.Calls(S.Fn) && basis.ArgCount >= 3)
+				ReturnType = basis.Args[0];
 		}
 		public Symbol Name;
 

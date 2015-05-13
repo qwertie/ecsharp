@@ -253,6 +253,12 @@ namespace Loyc.LLParserGenerator
 		/// </returns>
 		LNode CallRule(RuleRef rref, bool recognizerMode);
 
+		/// <summary>Generates a call to the Try_Scan_*() function that wraps around 
+		/// a Scan_*() recognizer. Called while generating code for an and-pred.</summary>
 		LNode CallTryRecognizer(RuleRef rref, int lookahead);
+
+		/// <summary>Type of variables auto-declared when you use labels in your
+		/// grammar (e.g. x:Foo (list+:Bar)*)</summary>
+		LNode TerminalType { get; }
 	}
 }

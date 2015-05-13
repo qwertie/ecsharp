@@ -14,7 +14,7 @@ namespace Loyc.LLParserGenerator
 	using TT = TokenType;
 	using S = CodeSymbols;
 
-	internal partial class StageOneParser : BaseParser<Token>
+	internal partial class StageOneParser
 	{
 		static readonly TT EOF = TT.EOF;
 
@@ -44,12 +44,14 @@ namespace Loyc.LLParserGenerator
 			alias("|"   = TT.Alt);
 			alias("/"   = TT.Slash);
 			
+			// Replaces 'a' with the LNode for the infix expression a`op`b (e.g. a | b)
 			void Infix(ref LNode a, Symbol op, LNode b) {
 				a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
 			}
 
 			public rule LNode Parse @[ e:=Expr EOF {return e;} ];
 			
+			// Top-level expression: a | b | ...
 			private rule LNode Expr() @[
 				a:=SlashExpr
 				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*

@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 		String      = TokenKind.String,
 		OtherLit    = TokenKind.OtherLit,
 		Dot         = TokenKind.Dot,
-		Assignment  = TokenKind.Assignment, // = += :=
+		Assignment  = TokenKind.Assignment, // = += := $=
 		
 		HostOperator= TokenKind.Operator,
 		Alt         = TokenKind.Operator + 1, // |
@@ -170,20 +170,24 @@ namespace Loyc.LLParserGenerator
 		#region Token reclassification
 
 		static readonly Symbol _EqGate = GSymbol.Get("<=>");
+		static readonly Symbol _ColonSet = GSymbol.Get(":=");
+		static readonly Symbol _AddColon = GSymbol.Get("+:");
 		static readonly Symbol _AndNot = GSymbol.Get("&!");
+		static readonly Symbol _SufStar = GSymbol.Get("suf*");
+		static readonly Symbol _SufPlus = GSymbol.Get("suf+");
+		static readonly Symbol _SufOpt = GSymbol.Get("suf?");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Error = GSymbol.Get("error");
-		static readonly Symbol _SufStar = GSymbol.Get("suf*");
-		static readonly Symbol _SufPlus = GSymbol.Get("suf+");
-		static readonly Symbol _SufOpt = GSymbol.Get("suf?");
 		
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
 			{S.Div,      TT.Slash},
 			{S.DotDot,   TT.DotDot},
-			{S.Colon,    TT.DotDot},
+			{S.Colon,    TT.Assignment},
+			{_AddColon,  TT.Assignment},
+			{_ColonSet,  TT.Assignment},
 			{S.NotBits,  TT.InvertSet},
 			{S.Add,      TT.Plus},
 			{S.Sub,      TT.Minus},
@@ -220,23 +224,29 @@ namespace Loyc.LLParserGenerator
 				token.Value != null) do
 			{
 				TT newType_;
-				if (i < list.Count && token.EndIndex == list[i].StartIndex) {
-					// Detect the two-token combinations &!, <=>, :=
-					if (token.Value == S.AndBits && list[i].Value == S.Not) {
+				if (i < list.Count && token.EndIndex >= list[i].StartIndex) {
+					// Detect the two-token combinations &!, <=>, :=, $=
+					if (token.Value == S.AndBits && list[i].Value == S.Not) { // &!
 						i++;
 						token = token.WithValue(_AndNot);
 						newType = TT.AndNot;
 						break;
 					}
-					if (token.Value == S.LE && list[i].Value == S.GT) {
+					if (token.Value == S.LE && list[i].Value == S.GT) { // <=>
 						i++;
 						token = token.WithValue(_EqGate);
 						newType = TT.Arrow;
 						break;
 					}
-					if (token.Value == S.Colon && list[i].Value == S.Assign) {
+					if (token.Value == S.Colon && list[i].Value == S.Assign) { // :=
 						i++;
 						token = token.WithValue(S.QuickBindSet);
+						newType = TT.Assignment;
+						break;
+					}
+					if (token.Value == S.Add && list[i].Value == S.Colon) { // +:
+						i++;
+						token = token.WithValue(_AddColon);
 						newType = TT.Assignment;
 						break;
 					}

@@ -148,25 +148,21 @@ namespace Loyc.LLParserGenerator
 		protected static Severity Verbose = Severity.Verbose;
 		private void Output(Severity type, Pred pred, string msg)
 		{
-			Output(type, pred != null ? pred.Basis : null, pred, msg);
-		}
-		private void Output(Severity type, LNode node, Pred pred, string msg)
-		{
-			Sink.Write(type, node == null || node.IsIdNamed(S.Missing) ? (object)pred : node, msg);
+			Sink.Write(type, pred, msg);
 		}
 
 		#region Step 1: AddRules (see also the Macros, StageOneParser & StageTwoParser classes)
 
-		public void AddRules(params Rule[] rules) { AddRules((IEnumerable<Rule>)rules); }
-		public void AddRules(IEnumerable<Rule> rules)
+		public static Dictionary<Symbol, Rule> AddRulesToDict(IEnumerable<Rule> rules, Dictionary<Symbol, Rule> dict = null)
 		{
+			dict = dict ?? new Dictionary<Symbol, Rule>();
 			foreach (var rule in rules)
-				AddRule(rule);
+				dict.Add(rule.Name, rule);
+			return dict;
 		}
-		public void AddRule(Rule rule)
-		{
-			_rules.Add(rule.Name, rule);
-		}
+		public void AddRules(params Rule[] rules)     { AddRulesToDict(rules, _rules); }
+		public void AddRules(IEnumerable<Rule> rules) { AddRulesToDict(rules, _rules); }
+		public void AddRule(Rule rule) { _rules.Add(rule.Name, rule); }
 
 		#endregion
 
@@ -702,7 +698,7 @@ namespace Loyc.LLParserGenerator
 					if (rule.IsToken)
 						tokens++;
 					else {
-						Output(Verbose, rule.Basis, rule.Pred, Localize.From("Follow set of '{0}': {1}", 
+						Output(Verbose, rule.Pred, Localize.From("Follow set of '{0}': {1}", 
 							rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
 						if (Verbosity >= 2) {
 							var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
@@ -722,7 +718,7 @@ namespace Loyc.LLParserGenerator
 							}
 							casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
 							
-							Output(Verbose, rule.Basis, rule.Pred, Localize.From(message, 
+							Output(Verbose, rule.Pred, Localize.From(message, 
 								rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr)); 
 						}
 					}

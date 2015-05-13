@@ -76,32 +76,43 @@ namespace Loyc.LLParserGenerator
 
 			// Scan options in lexer(...) node
 			var helper = new IntStreamCodeGenHelper();
-			foreach (var option in lexer.Args)
+			foreach (var option in DecodeOptions(lexer.Args))
 			{
-				Symbol key;
-				LNode value;
-				bool ok = false;
-				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2))
+				LNode value = option.Value;
+				switch (option.Key.Name)
 				{
-					ok = true;
-					value = option.Args.Last;
-					if ((key = option.Name) == S.NamedArg)
-						key = option.Args[0].Name;
-					switch (key.Name)
-					{
-						case "inputSource": helper.InputSource = value; break;
-						case "inputClass": helper.InputClass = value; break;
-						case "setType": helper.SetType = value; break;
-						default:
-							ok = false;
-							break;
-					}
+					case "inputSource":  helper.InputSource = value; break;
+					case "inputClass":   helper.InputClass = value; break;
+					case "terminalType": helper.TerminalType = value; break;
+					case "setType":      helper.SetType = value; break;
+					default:
+						sink.Write(Severity.Error, value, "Unrecognized option. Available options: "+
+							"inputSource = var, inputClass = type, terminalType = type, setType = type");
+						break;
 				}
-				if (!ok)
-					sink.Write(Severity.Error, option, "Unrecognized option. There is one supported option: setType(type)");
 			}
 
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
+		}
+
+		/// <summary>Decodes options in the format <c>option1(v1), option2(v2)</c> 
+		/// or <c>option1 = v1, option2 = v2</c>. If the format of a given
+		/// node is invalid, this function yields <c>(null, node)</c>.</summary>
+		static IEnumerable<KeyValuePair<Symbol, LNode>> DecodeOptions(RVList<LNode> optionList)
+		{
+			foreach (var option in optionList) {
+				Symbol key;
+				LNode value;
+				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2) || option.Calls(S.Assign, 2)) {
+					value = option.Args.Last;
+					if (option.ArgCount == 1)
+						key = option.Name;
+					else
+						key = option.Args[0].Name;
+					yield return new KeyValuePair<Symbol, LNode>(key, value);
+				} else
+					yield return new KeyValuePair<Symbol, LNode>(null, option);
+			}
 		}
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
@@ -118,35 +129,27 @@ namespace Loyc.LLParserGenerator
 
 			// Scan options in parser(...) node
 			var helper = new GeneralCodeGenHelper();
-			foreach (var option in parser.Args) {
-				Symbol key;
-				LNode value;
-				bool ok = false;
-				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2)) {
-					ok = true;
-					value = option.Args.Last;
-					if ((key = option.Name) == S.NamedArg)
-						key = option.Args[0].Name;
-					switch (key.Name) {
-						case "inputSource": helper.InputSource = value; break;
-						case "inputClass":  helper.InputClass = value; break;
-						case "laType":      helper.LaType = value;    break;
-						case "matchCast":   // alternate name
-						case "matchType":   helper.MatchType = value; break;
-						case "setType":     helper.SetType = value;   break;
-						case "allowSwitch":
-							if (value.Value is bool)
-								helper.AllowSwitch = (bool)value.Value;
-							else
-								sink.Write(Severity.Error, parser, "allowSwitch: expected literal boolean argument.");
-							break;
-						default:
-							ok = false;
-							break;
-					}
+			foreach (var option in DecodeOptions(parser.Args)) {
+				LNode value = option.Value;
+				switch (option.Key.Name) {
+					case "inputSource": helper.InputSource = value; break;
+					case "inputClass":  helper.InputClass = value; break;
+					case "terminalType":helper.TerminalType = value; break;
+					case "laType":      helper.LaType = value;    break;
+					case "matchType":   // alternate name
+					case "matchCast":   helper.MatchCast = value; break;
+					case "setType":     helper.SetType = value;   break;
+					case "allowSwitch":
+						if (value.Value is bool)
+							helper.AllowSwitch = (bool)value.Value;
+						else
+							sink.Write(Severity.Error, value, "allowSwitch: expected literal boolean argument.");
+						break;
+					default:
+						sink.Write(Severity.Error, value, "Unrecognized option. Available options: "
+							+"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool");
+						break;
 				}
-				if (!ok)
-					sink.Write(Severity.Error, option, "Unrecognized option. Available options: laType(type), matchType(type), setType(type), allowSwitch(bool)");
 			}
 
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
@@ -239,6 +242,7 @@ namespace Loyc.LLParserGenerator
 		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
 		{
 			TokenTree ruleTokens;
+			// Expecting @[...] or {...}
 			if ((ruleTokens = ruleBody.Value as TokenTree) == null && !ruleBody.Calls(S.Braces))
 				return null;
 
@@ -336,6 +340,11 @@ namespace Loyc.LLParserGenerator
 			// to refer to a terminal).
 			new StageTwoParser(helper, sink).Parse(rules);
 			
+			// Create variables for labeled Preds (e.g x:Foo y+:Bar Baz {$Baz;})
+			var rulesDict = LLParserGenerator.AddRulesToDict(rules.Select(p => p.A));
+			foreach (var entry in rulesDict)
+				AutoValueSaverVisitor.Run(entry.Value, sink, rulesDict, helper.TerminalType);
+
 			// Process the grammar & generate code
 			var lllpg = new LLParserGenerator(helper, sink);
 			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]

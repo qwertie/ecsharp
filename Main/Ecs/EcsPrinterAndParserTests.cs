@@ -1570,5 +1570,15 @@ namespace Ecs
 			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 		}
+
+		[Test]
+		public void SanitizeIdentifierTests()
+		{
+			AreEqual("I_aposd", EcsNodePrinter.SanitizeIdentifier("I'd"));
+			AreEqual("_123",    EcsNodePrinter.SanitizeIdentifier("123"));
+			AreEqual("_plus5",  EcsNodePrinter.SanitizeIdentifier("+5" ));
+			AreEqual("__",      EcsNodePrinter.SanitizeIdentifier(""   ));
+			AreEqual("_lt_gt",  EcsNodePrinter.SanitizeIdentifier("<>"));
+		}
 	}
 }

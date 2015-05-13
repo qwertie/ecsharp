@@ -95,6 +95,8 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgParserTests());
+			RunTests.Run(new LlpgAutoValueSaverVisitorTests());
+			RunTests.Run(new LlpgTestLargerExamples());
 			RunTests.Run(new LlpgGeneralTests());
 
 			Console.WriteLine("******************************");

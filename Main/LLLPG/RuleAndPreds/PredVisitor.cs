@@ -33,9 +33,9 @@ namespace Loyc.LLParserGenerator
 	/// predicate type P recursively visits the children of the P.</summary>
 	public abstract class RecursivePredVisitor : PredVisitor
 	{
-		public override void Visit(Seq pred)     { VisitChildrenOf(pred); }
-		public override void Visit(Alts pred)    { VisitChildrenOf(pred, true); }
-		public override void Visit(AndPred pred) { VisitChildrenOf(pred); }
-		public override void Visit(Gate pred)    { VisitChildrenOf(pred); }
+		public override void Visit(Seq pred)     { VisitOther(pred); VisitChildrenOf(pred); }
+		public override void Visit(Alts pred)    { VisitOther(pred); VisitChildrenOf(pred, true); }
+		public override void Visit(AndPred pred) { VisitOther(pred); VisitChildrenOf(pred); }
+		public override void Visit(Gate pred)    { VisitOther(pred); VisitChildrenOf(pred); }
 	}
 }

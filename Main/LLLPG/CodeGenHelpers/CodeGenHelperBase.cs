@@ -55,6 +55,8 @@ namespace Loyc.LLParserGenerator
 		/// functions. There is only one currently: NewSet(), which applies only
 		/// to .</summary>
 		public LNode InputClass { get; set; }
+		/// <summary>The type returned from Match() methods.</summary>
+		public LNode TerminalType { get; set; }
 		
 		protected Dictionary<LNode, LNode> _definedAliases = new Dictionary<LNode, LNode>();
 		protected LNode ResolveAlias(LNode expr)

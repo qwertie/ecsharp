@@ -34,7 +34,7 @@ namespace Loyc.LLParserGenerator
 	/// sensitive state such as the <see cref="Next"/> field, which are used during grammar 
 	/// analysis. A Pred must be Clone()d if one wants to use it multiple times.
 	/// </remarks>
-	public abstract class Pred : ICloneable<Pred>
+	public abstract class Pred : ICloneable<Pred>, ILocationString
 	{
 		public abstract void Call(PredVisitor visitor); // visitor pattern
 
@@ -47,6 +47,10 @@ namespace Loyc.LLParserGenerator
 		protected internal Pred Prev; // For debugging only
 		protected internal Pred Next; // The predicate that follows this one or EndOfRule
 
+		// A variable name assigned to the pred with the : operator (letter:'a'..'z')
+		public Symbol VarLabel;
+		public bool VarIsList;  // whether the +: operator was used
+
 		/// <summary>A function that saves the result produced by the matching code 
 		/// of this predicate (null if the result is not saved). For example, if 
 		/// the parser generator is given the predicate <c>@[ x='a'..'z' ]</c>, the 
@@ -57,6 +61,20 @@ namespace Loyc.LLParserGenerator
 		public LNode AutoSaveResult(LNode matchingCode)
 		{
 			return ResultSaver != null ? ResultSaver(matchingCode) : matchingCode;
+		}
+
+		static readonly Symbol _Add = GSymbol.Get("Add");
+
+		internal static Func<LNode, LNode> GetStandardResultSaver(LNode lhs, Symbol @operator)
+		{
+			if (@operator == S.AddSet)
+				return result => F.Call(F.Dot(lhs, _Add), result);
+			else if (@operator == S.QuickBindSet)
+				return result => F.Call(S.Var, F._Missing, F.Call(S.Assign, lhs, result));
+			else if (@operator.Name.EndsWith(":"))
+				return null;
+			else
+				return result => F.Call(@operator, lhs, result);
 		}
 
 		/// <summary>Returns true if this predicate can match an empty input.</summary>
@@ -181,6 +199,11 @@ namespace Loyc.LLParserGenerator
 		public virtual string ChooseGotoLabel()
 		{
 			return null;
+		}
+
+		public string LocationString
+		{
+			get { return Basis != LNode.Missing ? Basis.LocationString : ToString(); }
 		}
 	}
 
@@ -390,7 +413,7 @@ namespace Loyc.LLParserGenerator
 		{
 			if (bMode == BranchMode.ErrorExit || bMode == BranchMode.ErrorContinue) {
 				if (ErrorBranch != null)
-					warnings.Write(Severity.Error, b.Basis, "There is already an error branch.");
+					warnings.Write(Severity.Error, b, "There is already an error branch.");
 				else {
 					ErrorBranch = b;
 					ExitOnError = bMode == BranchMode.ErrorExit;
@@ -404,7 +427,7 @@ namespace Loyc.LLParserGenerator
 				if (bMode == BranchMode.Default) {
 					if (DefaultArm != null) {
 						int a = DefaultArm.Value;
-						warnings.Write(Severity.Error, b.Basis, "There is already a default branch");
+						warnings.Write(Severity.Error, b, "There is already a default branch");
 					} else
 						DefaultArm = atIndex;
 				}
@@ -414,7 +437,7 @@ namespace Loyc.LLParserGenerator
 
 		private static void Warning_ErrorBranchNotLast(Pred b, IMessageSink warnings)
 		{
-			warnings.Write(Severity.Warning, b.Basis, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
+			warnings.Write(Severity.Warning, b, "The error branch should come last to avoid confusion. It is not numbered like the others, e.g. 'c' is considered the second arm in (a | error b | c).");
 		}
 
 		private bool SupportsMerge()
