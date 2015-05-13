@@ -692,6 +692,14 @@ namespace Loyc.Collections.Impl
 			_array = InternalList<T>.EmptyArray;
 			_count = _start = 0;
 		}
+		public void Resize(int newSize)
+		{
+			int count = this.Count;
+			if (newSize < count)
+				this.RemoveRange(newSize, count - newSize);
+			else if (newSize > count)
+				this.InsertRange(count, (IListSource<T>)Range.Repeat(default(T), newSize - count));
+		}
 
 		public bool Contains(T item)
 		{

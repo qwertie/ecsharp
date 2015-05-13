@@ -461,17 +461,6 @@ namespace Loyc
 		#endregion
 	}
 
-	/// <summary>This is a tag which indicates that objects of this type are 
-	/// unique; specifically, any two different objects that implement this 
-	/// interface are always unequal (while one object is equal only to itself).</summary>
-	/// <remarks>
-	/// This interface is recognized by <see cref="Loyc.Collections.MSet{T}"/>, <see cref="Loyc.Collections.Set{T}"/>
-	/// and <see cref="Loyc.Collections.InternalSet{T}"/>. It causes normal comparison (via
-	/// <see cref="IEqualityComparer{T}"/> to be skipped in favor of reference 
-	/// comparison. <see cref="Symbol"/> implements this interface.
-	/// </remarks>
-	public interface IReferenceComparable { }
-
 	[TestFixture]
 	public class SymbolTests
 	{

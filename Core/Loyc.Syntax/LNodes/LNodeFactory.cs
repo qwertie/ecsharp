@@ -38,6 +38,7 @@ namespace Loyc.Syntax
 		// Standard data types (marked synthetic)
 		public LNode Void { get { return Id(S.Void, -1); } }
 		public LNode String { get { return Id(S.String, -1); } }
+		public LNode Object { get { return Id(S.Object, -1); } }
 		public LNode Char { get { return Id(S.Char, -1); } }
 		public LNode Bool { get { return Id(S.Bool, -1); } }
 		public LNode Int8 { get { return Id(S.Int8, -1); } }

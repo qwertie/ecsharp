@@ -125,16 +125,6 @@ namespace Loyc
 			Debug.Assert(condition);
 			return condition;
 		}
-		public static void RequireArg(bool condition)
-		{
-			if (!condition)
-				throw new ArgumentException();
-		}
-		public static void RequireArg(bool condition, string argName, object argValue)
-		{
-			if (!condition)
-				throw new ArgumentException(Localize.From("Invalid argument ({0} = '{1}')", argName, argValue));
-		}
 		public static void Require(bool condition)
 		{
 			if (!condition)
@@ -732,6 +722,34 @@ namespace Loyc
 			while ((c = s[0, '\0']) == ' ' || c == '\t')
 				s = s.Slice(1);
 			return s;
+		}
+
+		static Dictionary<char, string> HtmlEntityTable;
+
+		/// <summary>Gets a bare HTML entity name for an ASCII character, or null if
+		/// there is no entity name for the given character, e.g. <c>'&'=>"amp"</c>.
+		/// </summary><remarks>
+		/// The complete entity name is <c>"&" + GetHtmlEntityNameForAscii(c) + ";"</c>.
+		/// Some HTML entities have multiple names; this function returns one of them.
+		/// There is a name in this table for all ASCII punctuation characters.
+		/// </remarks>
+		public static string BareHtmlEntityNameForAscii(char c)
+		{
+			if (HtmlEntityTable == null)
+				HtmlEntityTable = new Dictionary<char,string>() {
+					{' ', "sp"},     {'!', "excl"},   {'\"', "quot"},  {'#', "num"},
+					{'$', "dollar"}, {'%', "percnt"}, {'&', "amp"},    {'\'', "apos"},  
+					{'(', "lpar"},   {')', "rpar"},   {'*', "ast"},    {'+', "plus"}, 
+					{',', "comma"},  {'-', "dash"},   {'.', "period"}, {'/', "sol"},
+					{':', "colon"},  {';', "semi"},   {'<', "lt"},     {'=', "equals"}, 
+					{'>', "gt"},     {'?', "quest"},  {'@', "commat"}, 
+					{'[', "lsqb"},   {'\\', "bsol"},  {']', "rsqb"},   {'^', "caret"}, 
+					{'_', "lowbar"}, {'`', "grave"},  {'{', "lcub"},   {'}', "rcub"},
+					{'|', "vert"},   {'~', "tilde"}, // {(char)0xA0, "nbsp"}
+				};
+			string name;
+			HtmlEntityTable.TryGetValue(c, out name);
+			return name;
 		}
 	}
 

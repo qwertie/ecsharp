@@ -562,13 +562,6 @@ namespace Loyc.Syntax.Lexing
 		/// msg is the result of formatting the message with <see cref="Localize.From"/>.</remarks>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			int index = InputPosition + lookaheadIndex;
-			SourcePos pos;
-			if (SourceFile == null)
-				pos = new SourcePos(_fileName, LineNumber, index - _lineStartAt + 1);
-			else
-				pos = SourceFile.IndexToLine(index);
-
 			string msg = Localize.From(format, args);
 			Error(lookaheadIndex, msg);
 		}

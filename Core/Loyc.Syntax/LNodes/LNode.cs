@@ -1160,7 +1160,9 @@ namespace Loyc.Syntax
 		
 		/// <summary>Performs a recursive find-and-replace operation, by attempting
 		/// to replace each child (among <see cref="Attrs"/>, <see cref="Target"/>, 
-		/// <see cref="Args"/>) using the specified selector.</summary>
+		/// <see cref="Args"/>) using the specified selector. This method can also
+		/// be used for simple searching, by giving a selector that always returns 
+		/// null.</summary>
 		/// <param name="selector">The selector is called for each descendant, and
 		/// optionally the root node. If the selector returns a node, the new node 
 		/// replaces the node that was passed to <c>selector</c> and the children of 
@@ -1169,5 +1171,4 @@ namespace Loyc.Syntax
 		/// <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
 		public abstract LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true);
 	}
-
 }

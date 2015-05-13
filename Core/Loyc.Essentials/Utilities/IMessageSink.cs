@@ -84,13 +84,13 @@ namespace Loyc
 	/// <summary>A linear scale to categorize the importance and seriousness of 
 	/// messages sent to <see cref="IMessageSink"/>.</summary>
 	/// <remarks>
-	/// The numbers are Fatal=11, Critical=9, Error=7, Warning=6, Note=5, 
-	/// Debug=3, Verbose=1 and Detail=0. The severity numbers are based on 
+	/// The numbers are Fatal=110, Critical=90, Error=70, Warning=60, Note=50, 
+	/// Debug=30, Verbose=10 and Detail=0. The severity numbers are based on 
 	/// those defined in log4net, divided by 1000, e.g. Warning=60000 in log4net
 	/// but 60 in this enum.
 	/// <para/>
 	/// Some of the enumeration values begin with an underscore. These are
-	/// values defined by Log4net that are deprecated in Loyc.
+	/// values defined by Log4net that are deprecated in LoycCore.
 	/// <para/>
 	/// Messages of type Detail are meant to contain extra information associated 
 	/// with the most recent non-Detail message, e.g. stack traces or extra 

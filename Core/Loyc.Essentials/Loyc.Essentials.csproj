@@ -236,7 +236,6 @@
     <Compile Include="Math\MathsT.cs" />
     <Compile Include="Utilities\ExtensionsTests.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
-    <Compile Include="Utilities\ICloneable.cs" />
     <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Math\MathEx.cs" />
     <Compile Include="Math\Maths.cs">
@@ -247,11 +246,11 @@
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
-    <Compile Include="Utilities\ITags.cs" />
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
     <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
+    <Compile Include="Utilities\MiscInterfaces.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\PushedTLV.cs" />
     <Compile Include="Utilities\RunTests.cs" />

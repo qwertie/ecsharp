@@ -183,6 +183,8 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Location in the orginal source file where the token starts, or
 		/// -1 for a synthetic token.</summary>
 		public readonly int StartIndex;
+		int ISimpleToken.StartIndex { get { return StartIndex; } }
+
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] int _length;
 		const int LengthMask = 0x00FFFFFF;
 		const int StyleMask = unchecked((int)0xFF000000);
@@ -344,12 +346,12 @@ namespace Loyc.Syntax.Lexing
 		#endregion
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		int IToken.TypeInt { get { return TypeInt; } }
+		int ISimpleToken.TypeInt { get { return TypeInt; } }
 		IToken IToken.WithType(int type) { return WithType(type); }
 		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		object IToken.Value { get { return Value; } }
+		object ISimpleToken.Value { get { return Value; } }
 		IToken IToken.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
 
@@ -371,15 +373,31 @@ namespace Loyc.Syntax.Lexing
 		}
 	}
 
-	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>
-	public interface IToken : ICloneable<IToken>
+	/// <summary>Basic information about a token as expected by <see cref="BaseParser"/>:
+	/// type (as an integer), index where the token starts in the source file, 
+	/// and a value.</summary>
+	public interface ISimpleToken
 	{
+		/// <summary>Token type (cast to an integer if it is an enum).</summary>
 		int TypeInt { get; }
+		/// <summary>Character index where the token starts in the source file.</summary>
+		int StartIndex { get; }
+		/// <summary>Value of the token. The meaning of this property is defined
+		/// by the particular implementation of this interface, but typically this 
+		/// property contains a parsed form of the token (e.g. if the token came 
+		/// from the text "3.14", its value might be <c>(double)3.14</c>.</summary>
+		object Value { get; }
+	}
+
+	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>
+	public interface IToken : ISimpleToken, ICloneable<IToken>
+	{
+		int Length { get; }
+
 		IToken WithType(int type);
 
 		TokenKind Kind { get; }
 
-		object Value { get; }
 		IToken WithValue(object value);
 
 		IListSource<IToken> Children { get; }
