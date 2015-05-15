@@ -153,7 +153,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Clears the list and frees the memory it used.</summary>
-		protected void Clear()
+		protected internal void Clear()
 		{
 			if (Block != null) {
 				if (IsOwner)

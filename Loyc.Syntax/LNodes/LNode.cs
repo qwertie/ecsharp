@@ -1003,22 +1003,24 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsTrivia
 		{
-			get { return Name.Name.StartsWith("#trivia_"); }
+			get { return CodeSymbols.IsTriviaSymbol(Name); }
 		}
 
 		public virtual bool Calls(Symbol name, int argCount)       { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(Symbol name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
+		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</summary>
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
+		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
 		
-		public LNode WithAttrs(Func<LNode, LNode> selector) {
-			RVList<LNode> attrs = Attrs, newAttrs = attrs.SmartSelect(selector);
+		public LNode WithAttrs(Func<LNode, Maybe<LNode>> selector) {
+			RVList<LNode> attrs = Attrs, newAttrs = attrs.WhereSelect(selector);
 			if (attrs == newAttrs)
 				return this;
 			return WithAttrs(newAttrs);
 		}
-		public virtual LNode WithArgs(Func<LNode, LNode> selector) { Debug.Assert(!IsCall); return this; }
+		public virtual LNode WithArgs(Func<LNode, Maybe<LNode>> selector) { Debug.Assert(!IsCall); return this; }
 		
 		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdWithoutPAttrs(Symbol name)         { Debug.Assert(!IsId); return false; }

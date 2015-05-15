@@ -343,5 +343,6 @@ namespace Loyc.Syntax
 			if (dims == 2) return TwoDimensionalArray;
 			return GSymbol.Get("[" + new string(',', dims-1) + "]");
 		}
+		public static bool IsTriviaSymbol(Symbol name) { return name.Name.StartsWith("#trivia_"); }
 	}
 }

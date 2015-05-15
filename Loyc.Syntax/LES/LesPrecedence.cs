@@ -29,14 +29,15 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// An operator consists of a sequence of the following characters:
 	/// <pre>
-	///    ~ ! % ^ &amp; * - + = | &lt; > / ? : . $
+	///    ~ ! % ^ &amp; * \ - + = | &lt; > / ? : . $
 	/// </pre>
 	/// Or a backslash (\) followed by a sequence of the above characters and/or 
-	/// letters, numbers, underscores or #s.
+	/// letters, numbers, underscores or #s. Or a string with `backtick quotes`.
 	/// <para/>
 	/// "@" is not considered an operator. It is used to mark a sequence of 
 	/// punctuation and/or non-punctuation characters as an identifier, a symbol,
-	/// or a special literal.
+	/// or a special literal. "#" is not an operator; like an underscore, it is 
+	/// considered to be an identifier character, and it's used to mark "keywords".
 	/// <para/>
 	/// "," and ";" are not considered operators; rather they are separators, and
 	/// they cannot be combined with operators. For example, "?,!" is parsed as 
@@ -151,11 +152,17 @@ namespace Loyc.Syntax.Les
 	/// same time.
 	/// <para/>
 	/// So, to determine the precedence of any given operator, first you must
-	/// decide whether it is a prefix, binary, or suffix operator (remember,
-	/// only operators derived from <c>++, --, \\</c> can be suffix operators).
-	/// If the operator starts with a single backslash (\), discard it for the 
-	/// purpose of choosing precedence (if there are backquotes, discard them 
-	/// and replace escape sequences with the characters that they represent). 
+	/// decide, mainly based on the context in which the operator appears, whether 
+	/// it is a prefix, binary, or suffix operator. Suffix operators can only be
+	/// derived from the following operators: <c>++, --, \\</c>
+	/// <para/>
+	/// If an operator starts with a backslash (\), the backslash is not considered 
+	/// part of the operator name and it not used for the purpose of choosing 
+	/// precedence either (rather, it is used to allow letters and digits in the 
+	/// operator name). A `backquoted` operator always has precedence of 
+	/// <see cref="Backtick"/> and again, the backticks are not considered part
+	/// of the operator name.
+	/// <para/></remarks>
 	/// Next, if the operator is only one character, simply find it 
 	/// in the above table. If the operator is two or more characters, take the 
 	/// first character A and the last character Z, and apply the following rules 

@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LLLPG custom tool. LLLPG version: 1.1.0.0
+// Generated from LesParserGrammar.les by LLLPG custom tool. LLLPG version: 1.2.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')
@@ -24,12 +24,12 @@ namespace Loyc.Syntax.Les
 			TT la0, la1;
 			LNode e = MissingExpr;
 			LNode _;
-			// Line 39: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Number|TT.OtherLit|TT.SQString|TT.String|TT.Symbol) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp|TT.Not) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
+			// Line 40: ( TT.Id (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / ) | (TT.Number|TT.OtherLit|TT.SQString|TT.String|TT.Symbol) | TT.At TT.LBrack TT.RBrack | (TT.PrefixOp|TT.PreSufOp) Expr | &{context != P.SuperExpr} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp|TT.Not) Expr | TT.LBrack TT.RBrack Atom | TT.LParen TT.RParen | TT.LBrace TT.RBrace )
 			 switch (LA0) {
 			case TT.Id:
 				{
 					var t = MatchAny();
-					// Line 40: (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / )
+					// Line 41: (&{t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen / )
 					la0 = LA0;
 					if (la0 == TT.LParen) {
 						if (t.EndIndex == LT(0).StartIndex && context.CanParse(P.Primary)) {
@@ -70,6 +70,7 @@ namespace Loyc.Syntax.Les
 					var t = MatchAny();
 					e = Expr(PrefixPrecedenceOf(t), out _);
 					e = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex);
+					e.BaseStyle = NodeStyle.Operator;
 				}
 				break;
 			case TT.Assignment:
@@ -83,6 +84,7 @@ namespace Loyc.Syntax.Les
 					var t = MatchAny();
 					e = Expr(PrefixPrecedenceOf(t), out _);
 					e = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex);
+					e.BaseStyle = NodeStyle.Operator;
 				}
 				break;
 			case TT.LBrack:
@@ -125,7 +127,7 @@ namespace Loyc.Syntax.Les
 			RWList<LNode> attrs = null;
 			e = Atom(context, ref attrs);
 			primary = e;
-			// Line 89: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.PreSufOp|TT.SuffixOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
+			// Line 92: greedy( (&{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} TT.Not Expr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} (TT.PreSufOp|TT.SuffixOp) | &{e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)} TT.LParen TT.RParen) | (&{context.CanParse(P.Primary)} TT.LBrack TT.RBrack / &{context.CanParse(P.SuperExpr)} Expr greedy(Expr)*) )*
 			 for (;;) {
 				switch (LA0) {
 				case TT.Assignment:
@@ -427,7 +429,7 @@ namespace Loyc.Syntax.Les
 				{
 					var rhs = RVList<LNode>.Empty;
 					rhs.Add(Expr(P.SuperExpr, out _));
-					// Line 138: greedy(Expr)*
+					// Line 141: greedy(Expr)*
 					 for (;;) {
 						switch (LA0) {
 						case TT.Id:
@@ -528,7 +530,7 @@ namespace Loyc.Syntax.Les
 		}
 		protected LNode SuperExprOpt()
 		{
-			// Line 155: (SuperExpr | )
+			// Line 158: (SuperExpr | )
 			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
@@ -562,7 +564,7 @@ namespace Loyc.Syntax.Les
 		{
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();
-			// Line 160: (SuperExpr (TT.Comma SuperExprOpt)* | TT.Comma SuperExprOpt (TT.Comma SuperExprOpt)*)?
+			// Line 163: (SuperExpr (TT.Comma SuperExprOpt)* | TT.Comma SuperExprOpt (TT.Comma SuperExprOpt)*)?
 			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
@@ -584,7 +586,7 @@ namespace Loyc.Syntax.Les
 			case TT.Symbol:
 				{
 					exprs.Add(SuperExpr());
-					// Line 161: (TT.Comma SuperExprOpt)*
+					// Line 164: (TT.Comma SuperExprOpt)*
 					 for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -600,7 +602,7 @@ namespace Loyc.Syntax.Les
 					exprs.Add(MissingExpr);
 					Skip();
 					exprs.Add(SuperExprOpt());
-					// Line 163: (TT.Comma SuperExprOpt)*
+					// Line 166: (TT.Comma SuperExprOpt)*
 					 for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -617,7 +619,7 @@ namespace Loyc.Syntax.Les
 		{
 			TT la0;
 			LNode e = MissingExpr;
-			// Line 169: (SuperExpr)?
+			// Line 172: (SuperExpr)?
 			 switch (LA0) {
 			case TT.Assignment:
 			case TT.At:
@@ -641,7 +643,7 @@ namespace Loyc.Syntax.Les
 				break;
 			}
 			bool error = false;
-			// Line 173: greedy(&{$LA != terminator} ~(EOF))*
+			// Line 176: greedy(&{$LA != terminator} ~(EOF))*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 != EOF) {
@@ -664,7 +666,7 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			exprs = exprs ?? new RWList<LNode>();
 			var next = SuperExprOptUntil(TT.Semicolon);
-			// Line 187: (TT.Semicolon SuperExprOptUntil)*
+			// Line 190: (TT.Semicolon SuperExprOptUntil)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Semicolon) {

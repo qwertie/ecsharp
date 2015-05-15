@@ -165,6 +165,17 @@ namespace Loyc.Collections
 			return slice;
 		}
 
+		/// <summary>Returns the original list.</summary>
+		/// <remarks>Ideally, to protect the list there would be no way to access
+		/// its contents beyond the boundaries of the slice. However, the 
+		/// reality in .NET today is that many methods accept "slices" in the 
+		/// form of a triple (list, start index, count). In order to call such an
+		/// old-style API using a slice, one must be able to extract the internal
+		/// list and start index values.</remarks>
+		public IList<T> InternalList { get { return _list; } }
+		public int InternalStart { get { return _start; } }
+		public int InternalStop { get { return _start + _count; } }
+
 		#region IListEx<T> methods
 
 		public bool IsReadOnly

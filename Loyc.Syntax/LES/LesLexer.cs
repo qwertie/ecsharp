@@ -20,7 +20,7 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="TokensToTree"/>
 	public partial class LesLexer : BaseLexer, ILexer, ICloneable<LesLexer>
 	{
-		public LesLexer(string text, IMessageSink errorSink) : this(new StringSlice(text), "", errorSink) { }
+		public LesLexer(string text, IMessageSink errorSink) : this(new UString(text), "", errorSink) { }
 		public LesLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
 			ErrorSink = sink;
 		}

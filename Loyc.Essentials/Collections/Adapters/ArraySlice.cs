@@ -146,5 +146,16 @@ namespace Loyc.Collections
 				array[i] = _list[_start + i];
 			return array;
 		}
+
+		/// <summary>Returns the original array.</summary>
+		/// <remarks>Ideally, to protect the array there would be no way to access
+		/// its contents beyond the boundaries of the slice. However, the 
+		/// reality in .NET today is that many methods accept "slices" in the 
+		/// form of a triple (list, start index, count). In order to call such an
+		/// old-style API using a slice, one must be able to extract the internal
+		/// list and start index values.</remarks>
+		public T[] InternalList { get { return _list; } }
+		public int InternalStart { get { return _start; } }
+		public int InternalStop { get { return _start + _count; } }
 	}
 }

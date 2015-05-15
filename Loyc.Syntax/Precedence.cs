@@ -226,7 +226,7 @@ namespace Loyc.Syntax
 		}
 		/// <summary>For use in printers. Auto-raises the precedence floor to 
 		/// prepare to print an expression on the right side of an operator.</summary>
-		/// <param name="outerContext"></param>
+		/// <param name="outerContext">Context in which this operator is being printed</param>
 		/// <returns></returns>
 		public Precedence RightContext(Precedence outerContext) {
 			return new Precedence(this.Lo, this.Hi, this.Right, outerContext.Right);

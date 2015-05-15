@@ -58,7 +58,7 @@ namespace Loyc.Syntax
 		public override bool IsIdNamed(Symbol name)             { return Name == name; }
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(selector); }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Just(selector(n))); }
 		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
 		{
 			return replaceRoot ? selector(this) ?? this : this;
@@ -107,7 +107,7 @@ namespace Loyc.Syntax
 		}
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(selector); }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Just(selector(n))); }
 		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
 		{
 			return replaceRoot ? selector(this) ?? this : this;
@@ -181,16 +181,16 @@ namespace Loyc.Syntax
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
 		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
-		public override LNode WithArgs(Func<LNode, LNode> selector)
+		public override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
 		{
-			RVList<LNode> args = Args, newArgs = args.SmartSelect(selector);
+			RVList<LNode> args = Args, newArgs = args.WhereSelect(selector);
 			if (args == newArgs)
 				return this;
 			return WithArgs(newArgs);
 		}
 		public sealed override LNode Select(Func<LNode, LNode> selector)
 		{
-			LNode result = WithAttrs(selector);
+			LNode result = WithAttrs(n => Maybe.Just(selector(n)));
 			LNode target = selector(Target);
 			var args = Args.SmartSelect(selector);
 			return result.With(target, args);

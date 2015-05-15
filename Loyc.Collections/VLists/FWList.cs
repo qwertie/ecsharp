@@ -150,6 +150,25 @@ namespace Loyc.Collections
 			return newList;
 		}
 
+		/// <summary>Filters and maps a list with a user-defined function.</summary>
+		/// <param name="filter">A function that chooses which items to include
+		/// in a new list, and what to change them to.</param>
+		/// <returns>The list after filtering has been applied. The original list
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// This is a smart function. If the filter does not modify the first N 
+		/// items it is passed (which are the last items in a FWList), those N items 
+		/// are typically not copied, but shared between the existing list and the 
+		/// new one.
+		/// </remarks>
+		public FWList<T> WhereSelect(Func<T,Maybe<T>> filter)
+		{
+			FWList<T> newList = new FWList<T>();
+			if (LocalCount != 0)
+				Block.WhereSelect(LocalCount, filter, newList);
+			return newList;
+		}
+
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 

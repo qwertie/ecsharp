@@ -23,7 +23,7 @@ namespace Loyc.Syntax.Les
 		int Indent();
 		int Dedent();
 		void Space(); // should merge adjacent spaces
-		void Newline(bool pending = false);
+		void Newline(bool pending = false); // pending = don't actually write a newline until next token starts
 		void BeginStatement();
 		void BeginLabel();
 		void Push(LNode newNode);

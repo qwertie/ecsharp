@@ -87,6 +87,9 @@
 			_blkOffsets.Add(new Pair<int, uint>(0, 0)); // start of the first block
 		}
 
+		protected const int DefaultBufSize = 2048 + MaxSeqSize - 1;
+		protected const int MaxSeqSize = 8;
+
 		public new StringSlice Slice(int startIndex, int length)
 		{
 			CheckParam.IsNotNegative("startIndex", startIndex);
@@ -153,7 +156,12 @@
 			if (_stream.Read(_buf, 0, bytesToRead) != bytesToRead)
 				throw new Exception(Localize.From("Result of {0} changed unexpectedly", "stream.Read"));
 			_decoder.Reset();
-			if (_decoder.GetChars(_buf, 0, bytesToRead, _blk, 0, true) != _blkLen)
+			// We already read this region before so we should't have to increase 
+			// the buffer size... UNLESS we were using the other buffer last time!
+			if (_blk2.Length > _blk.Length)
+				_blk = new char[_blk2.Length];
+			int cc = _decoder.GetChars(_buf, 0, bytesToRead, _blk, 0, true);
+			if (cc != _blkLen)
 				throw new Exception(Localize.From("Result of {0} changed unexpectedly", "decoder.GetChars"));
 		}
 
@@ -166,9 +174,6 @@
 				i = ~i - 1;
 			return i;
 		}
-
-		protected const int DefaultBufSize = 2048 + MaxSeqSize - 1;
-		protected const int MaxSeqSize = 8;
 
 		protected void ScanPast(int index)
 		{
@@ -185,15 +190,13 @@
 			// Read the next block
 			int amtRequested = _buf.Length;
 			int amtRead = _stream.Read(_buf, 0, amtRequested);
-			if (amtRead < amtRequested) {
+			if (amtRead < amtRequested) { // EOF!
 				_reachedEnd = true;
 				if (amtRead > 0) {
 					// decode the block
 					_blkStart = _eofIndex;
 					int cc = _decoder.GetCharCount(_buf, 0, amtRead, true);
-					if (_blk.Length < cc)
-						Array.Resize(ref _blk, cc);
-					_blkLen = _decoder.GetChars(_buf, 0, amtRead, _blk, 0, true);
+					_blkLen = AutoResizeAndGetChars(_buf.Slice(0, amtRead), ref _blk, 0, cc, true);
 					Debug.Assert(cc == _blkLen);
 					// compute & record location of end of block
 					_eofIndex += _blkLen;
@@ -204,10 +207,8 @@
 				// decode the block...
 				int amtProcessed = amtRead - MaxSeqSize;
 				int minBlkSize = _decoder.GetCharCount(_buf, 0, amtProcessed) + 1;
-				if (_blk.Length < minBlkSize)
-					Array.Resize(ref _blk, minBlkSize);
 				_blkStart = _eofIndex;
-				_blkLen = _decoder.GetChars(_buf, 0, amtProcessed, _blk, 0, false);
+				_blkLen = AutoResizeAndGetChars(_buf.Slice(0, amtProcessed), ref _blk, 0, minBlkSize, false);
 				
 				// then add one more char, hopefully reaching a "checkpoint" where
 				// the decoder's internal state is empty (a seekable block boundary)
@@ -217,17 +218,15 @@
 					if (amtProcessed + n == _buf.Length)
 						throw new ArgumentException(Localize.From("StreamCharSource cannot use the supplied decoder because it can produce single characters from byte sequences longer than {0} characters", MaxSeqSize));
 				}
-				minBlkSize = _blkLen + cc;
-				if (_blk.Length < minBlkSize)
-					Array.Resize(ref _blk, minBlkSize);
 				try {
-					_blkLen += _decoder.GetChars(_buf, amtProcessed, n, _blk, _blkLen, true);
+					_blkLen += AutoResizeAndGetChars(_buf.Slice(amtProcessed, n), ref _blk, _blkLen, _blkLen + cc, true);
 					amtProcessed += n;
 				} catch(Exception exc) { 
 					// assume index-out-of-range encountered. Note that this exception 
 					// may never happen even if the decoder is incompatible.
 					throw new ArgumentException(Localize.From("StreamCharSource cannot use the supplied decoder because it seems to divide characters on bit boundaries"), exc);
 				}
+
 				// compute & record location of end of block
 				_eofIndex += _blkLen;
 				_eofPosition += (uint)amtProcessed;
@@ -235,6 +234,13 @@
 				// note: when necessary, the caller will rewind to the last byte 
 				// actually processed by doing _stream.Position = _eofPosition
 			}
+		}
+
+		int AutoResizeAndGetChars(ArraySlice<byte> buf, ref char[] outChars, int outIndex, int neededOutSize, bool flush)
+		{
+			if (outChars.Length < neededOutSize)
+				Array.Resize(ref outChars, neededOutSize);
+			return _decoder.GetChars(buf.InternalList, buf.InternalStart, buf.Count, outChars, outIndex, flush);
 		}
 
 		public override int Count
@@ -286,7 +292,7 @@
 			var r = new Random();
 			var lesCode2 = new StringBuilder(lesCode);
 			for (int i = lesCode2.Length-1; i >= 0; i--)
-				if (lesCode2[i] == ' ' || (i > 0 && lesCode[i-1] == ' '))
+				if (lesCode2[i > 0 ? i-1 : i] == ' ')
 					if (r.Next(4) == 0) {
 						if (r.Next(2) == 0)
 							lesCode2.Insert(i, "/*你好 你好*/");

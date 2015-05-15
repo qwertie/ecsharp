@@ -20,7 +20,7 @@ namespace Loyc.Syntax.Lexing
 	/// the LES and EC# parsers expect open-bracket and open-brace tokens ('(', 
 	/// '[' and '{') to have a child <see cref="TokenTree"/> that contains all the 
 	/// tokens within a pair of brackets or braces. Typically this tree is not 
-	/// created directly by the lexer, but by a helpe clas (<see cref="TokensToTree"/>).</remarks>
+	/// created directly by the lexer, but by a helper class (<see cref="TokensToTree"/>).</remarks>
 	public class TokenTree : DList<Token>, IListSource<IToken>, IEquatable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
@@ -127,7 +127,9 @@ namespace Loyc.Syntax.Lexing
 	/// <ol>
 	/// <li><see cref="TypeInt"/>: each language can use a different set of token types 
 	/// represented by a different <c>enum</c>. All enums can be converted to 
-	/// an integer, so <see cref="Token"/> uses Int32 as the token type.</li>
+	/// an integer, so <see cref="Token"/> uses Int32 as the token type. In order
+	/// to support DSLs via token literals (e.g. LLLPG is a DSL inside EC#), the
+	/// TypeInt should be based on <see cref="TokenKind"/>.
 	/// <li><see cref="Value"/>: this can be any object. For literals, this should 
 	/// be the actual value of the literal, for whitespace it should be 
 	/// <see cref="WhitespaceTag.Value"/>, etc. See <see cref="Value"/> for 

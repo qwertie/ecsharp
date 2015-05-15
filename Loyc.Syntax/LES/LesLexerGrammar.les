@@ -129,7 +129,7 @@ namespace Loyc.Syntax.Les
 		private token NormalId @[ 
 			(IdStartChar|IdExtLetter) (IdStartChar|'0'..'9'|'\''|IdExtLetter)*
 		];
-		private token FancyId @[ (BQString2 | (&!CommentStart LettersOrPunc | IdExtLetter)+) ];
+		private token FancyId @[ BQString2 | (LettersOrPunc | IdExtLetter)+ ];
 		private token Symbol {
 			_parseNeeded = false;
 			@[ '@' '@' FancyId ];
@@ -145,14 +145,14 @@ namespace Loyc.Syntax.Les
 
 		// Punctuation & operators -----------------------------------------------
 		
-		private token OpChars @[
+		private token OpChar @[
 			 '~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
 		private token Comma     @[ ',' { _value = _Comma; } ];
 		private token Semicolon @[ ';' { _value = _Semicolon; } ];
 		private token Colon     @[ ':' { _value = _Colon; } ];
 		private token At        @[ '@' { _value = GSymbol.Empty; } ];
 		private token CommentStart @[ '/' ('/'|'*') ];
-		private token Operator  @[ (&!CommentStart OpChars)+ {ParseNormalOp();} ];
+		private token Operator  @[ OpChar+ {ParseNormalOp();} ];
 		private token BackslashOp @[ '\\' FancyId? {ParseBackslashOp();} ];
 
 		// Shebang ---------------------------------------------------------------

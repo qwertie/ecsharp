@@ -183,10 +183,40 @@ namespace Loyc.Collections
 			}
 		}
 
+		public override FVList<T> WhereSelect(int _localCount, Func<T, Maybe<T>> map, WListProtected<T> forWList)
+		{	// Optimization
+			Maybe<T> item, item2;
+
+			Debug.Assert(_localCount > 0);
+			if (IsSame(_1, item = map(_1))) {
+				if (_localCount == 2) {
+					if (IsSame(_2, item2 = map(_2))) {
+						_immCount = 2; // Mark immutable if it isn't already
+						return MakeResult(this, 2, forWList);
+					} else {
+						return MakeResult(item.Value, item2.Value, forWList);
+					}
+				} else {
+					if (_immCount == MutableFlag)
+						_immCount = 1; // Ensure first item is immutable
+					return MakeResult(this, 1, forWList);
+				}
+			} else if (!item.HasValue) {
+				if (_localCount == 1 || !(item2 = map(_2)).HasValue) {
+					Debug.Assert(forWList == null || forWList.Count == 0);
+					return FVList<T>.Empty;
+				} else
+					return MakeResult(item2.Value, forWList);
+			} else {
+				if (_localCount == 1 || !(item2 = map(_2)).HasValue)
+					return MakeResult(item.Value, forWList);
+				else 
+					return MakeResult(item.Value, item2.Value, forWList);
+			}
+		}
+
 		public override FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
-		{
-			// Optimization
-			
+		{	// Optimization
 			T item, item2;
 
 			Debug.Assert(_localCount > 0);
@@ -202,7 +232,6 @@ namespace Loyc.Collections
 				} else {
 					if (_immCount == MutableFlag)
 						_immCount = 1; // Ensure first item is immutable
-
 					return MakeResult(this, 1, forWList);
 				}
 			} else {

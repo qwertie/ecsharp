@@ -126,7 +126,7 @@ namespace Loyc.Collections
 
 		/// <summary>Applies a filter to a list, to exclude zero or more
 		/// items.</summary>
-		/// <param name="keep">A function that chooses which items to include
+		/// <param name="filter">A function that chooses which items to include
 		/// (exclude items by returning false).</param>
 		/// <returns>The list after filtering has been applied. The original RVList
 		/// structure is not modified.</returns>
@@ -135,11 +135,29 @@ namespace Loyc.Collections
 		/// last or "tail" items in a WList), those N items are typically not 
 		/// copied, but shared between the existing list and the new one.
 		/// </remarks>
-		public RWList<T> Where(Predicate<T> keep)
+		public RWList<T> Where(Predicate<T> filter)
 		{
 			RWList<T> newList = new RWList<T>();
 			if (LocalCount != 0)
-				Block.Where(LocalCount, keep, newList);
+				Block.Where(LocalCount, filter, newList);
+			return newList;
+		}
+
+		/// <summary>Filters and maps a list with a user-defined function.</summary>
+		/// <param name="filter">A function that chooses which items to include
+		/// in a new list, and what to change them to.</param>
+		/// <returns>The list after filtering has been applied. The original list
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// This is a smart function. If the filter does not modify the first N 
+		/// items it is passed those N items are typically not copied, but shared 
+		/// between the existing list and the new one.
+		/// </remarks>
+		public RWList<T> WhereSelect(Func<T,Maybe<T>> filter)
+		{
+			RWList<T> newList = new RWList<T>();
+			if (LocalCount != 0)
+				Block.WhereSelect(LocalCount, filter, newList);
 			return newList;
 		}
 

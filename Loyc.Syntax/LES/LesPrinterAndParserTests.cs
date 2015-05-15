@@ -2,25 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc.MiniTest;
 using Loyc.Collections;
+using Loyc.Utilities;
 
 namespace Loyc.Syntax.Les
 {
 	using S = CodeSymbols;
-	using Loyc.Utilities;
-	using System.Diagnostics;
 
+	// Tests shared between the printer and the parser. Both tests together verify 
+	// round-tripping from AST -> text -> AST, although the other kind of round-
+	// tripping, text -> AST -> text, is not fully verified (and is not designed to
+	// be fully supported, as the printer is not designed to preserve spacing.)
 	[TestFixture]
-	public class LesParserTests : Assert
+	public abstract class LesPrinterAndParserTests : Assert
 	{
-		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
+		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
 		
-		LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
-		LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
-		LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
-		LNode _(string name) { return F.Id(name); }
-		LNode _(Symbol name) { return F.Id(name); }
+		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
+		protected LNode Foo = F.Id("Foo"), IFoo = F.Id("IFoo"), T = F.Id("T");
+		protected LNode zero = F.Literal(0), one = F.Literal(1), two = F.Literal(2);
+		protected LNode _(string name) { return F.Id(name); }
+		protected LNode _(Symbol name) { return F.Id(name); }
 
 		[Test]
 		public void SimpleCalls()
@@ -112,10 +116,17 @@ namespace Loyc.Syntax.Les
 			Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}
 
+		protected static LNode AsOperator(LNode node) { return AsStyle(NodeStyle.Operator, node); }
+		protected static LNode AsStyle(NodeStyle s, LNode node)
+		{
+			node.BaseStyle = s;
+			return node;
+		}
+
 		[Test]
 		public void Stmts()
 		{
-			Stmt(0, "a; b; c;", a, b, c);
+			Test(false, -1, "a; b; c;", a, b, c);
 			Stmt("a.b(c);", F.Call(F.Dot(a, b), c));
 			Expr("{ b(c); } + { ; Foo() }", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F._Missing, F.Call(Foo))));
 			Stmt("a.{b;c;}();", F.Call(F.Dot(a, F.Braces(b, c))));
@@ -156,71 +167,49 @@ namespace Loyc.Syntax.Les
 			Expr("[Foo] a();", F.Attr(Foo, F.Call(a)));
 			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
 			Expr("[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
-			Expr("a = [Foo] b + c;", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Test(false, 0, "a = [Foo] b + c;", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
 		}
 
+		protected virtual void Expr(string text, LNode expr, int errorsExpected = -1)
+		{
+			Test(true, errorsExpected, text, new[] { expr });
+		}
+		protected virtual void Stmt(string text, LNode code, int errorsExpected = -1)
+		{
+			Test(false, errorsExpected, text, new[] { code });
+		}
+		/// <summary>Runs a printer or parser test.</summary>
+		/// <param name="parseErrors">-1 if the printer and parser should both 
+		/// test this example. If above -1, only the parser will run this example,
+		/// and this parameter specifies the number of parse errors to expect 
+		/// (may be 0).</param>
+		protected abstract void Test(bool exprMode, int parseErrors, string text, params LNode[] code);
+	}
+
+	[TestFixture]
+	public class LesParserTests : LesPrinterAndParserTests
+	{
 		[Test]
-		public void Errors()
+		public void ParseErrors()
 		{
-			Stmt(1, "a, 5 c b; x();", a, F.Call(x));
-			Stmt(1, @"a ** b \foo;", F.Call(S.Exp, a, b));
-			Stmt(1, "a = ) b c 5", a); // again, interpretation is a bit weird, but ok
+			Test(false, 1, "a, 5 c b; x();", a, F.Call(x));
+			Test(false, 1, @"a ** b \foo;", F.Call(S.Exp, a, b));
+			Test(false, 1, "a = ) b c 5", a); // again, interpretation is a bit weird, but ok
 		}
 
-		protected virtual void Expr(string str, LNode node, int errorsExpected = 0)
-		{
-			Stmt(errorsExpected, str, node);
-		}
-		protected virtual void Stmt(string str, LNode node) { Expr(str, node); }
-		protected virtual void Stmt(int errorsExpected, string str, params LNode[] expected)
+		protected override void Test(bool exprMode, int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages);
+			var results = LesLanguageService.Value.Parse(str, messages, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
 			for (int i = 0; i < expected.Length; i++) {
-				var result = results[i]; // this is where parsing actually occurs
+				var result = results[i]; // this is when parsing actually occurs
 				AreEqual(expected[i], result);
 			}
 			AreEqual(expected.Length, results.Count);
-			if (messages.List.Count != errorsExpected) {
+			if (messages.List.Count != System.Math.Max(errorsExpected, 0)) {
 				messages.WriteListTo(MessageSink.Console);
 				AreEqual(errorsExpected, messages.List.Count); // fail
 			}
-		}
-	}
-
-	/// <summary>Uses the parser tests as the basis for printer tests. We simply 
-	/// make sure that after parsing something, we can print it out and re-parse
-	/// what was printed to get the same Loyc tree.</summary>
-	[TestFixture]
-	public class LesPrinterTests : LesParserTests
-	{
-		protected override void Stmt(int errorsExpected, string str, params LNode[] nodes)
-		{
-			// Start by parsing. If parsing fails, just stop; such errors are 
-			// already reported by LesParserTests so we need not report them here.
-			if (errorsExpected != 0)
-				return;
-			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages);
-			if (messages.List.Count != 0)
-				return;
-
-			foreach (LNode node in results)
-				DoPrinterTest(node);
-		}
-
-		MessageHolder messages = new MessageHolder();
-
-		private void DoPrinterTest(LNode node)
-		{
-			var sb = new StringBuilder();
-			messages.List.Clear();
-			LesNodePrinter.Printer(node, sb, messages, null, "  ");
-			Assert.AreEqual(0, messages.List.Count);
-			var reparsed = LesLanguageService.Value.Parse(sb.ToString(), messages);
-			Assert.AreEqual(0, messages.List.Count);
-			Assert.AreEqual(1, reparsed.Count);
-			Assert.AreEqual(node, reparsed[0]);
 		}
 	}
 }
