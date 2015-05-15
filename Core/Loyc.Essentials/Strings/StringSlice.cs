@@ -11,6 +11,9 @@ namespace Loyc.Collections
 	/// <summary>A random-access slice of System.String.</summary>
 	/// <remarks>
 	/// Where possible, it is recommended that you use <see cref="UString"/> instead.
+	/// <para/>
+	/// Note to self: I forgot why I made this type as a distinct entity from 
+	/// <see cref="UString"/>. Consider attempting to eliminate StringSlice.
 	/// </remarks>
 	public struct StringSlice : IRange<char>, ICharSource, ICloneable<StringSlice>
 	{

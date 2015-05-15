@@ -33,7 +33,9 @@ namespace Loyc.Tests
 
 			Console.WriteLine("Running tests on stable code...");
 			// Omitted: unit tests that throw & catch exceptions (those are below)
-			
+
+			RunTests.Run(new StreamCharSourceTests());//TEMP
+
 			// Loyc.Essentials
 			RunTests.Run(new ListExtTests());
 			RunTests.Run(new MathExTests());
@@ -78,6 +80,7 @@ namespace Loyc.Tests
 			// Loyc.Syntax
 			RunTests.Run(new LesLexerTests());
 			RunTests.Run(new LesParserTests());
+			RunTests.Run(new LesPrinterTests());
 			RunTests.Run(new TokensToTreeTests());
 			RunTests.Run(new StreamCharSourceTests());
 
@@ -102,6 +105,10 @@ namespace Loyc.Tests
 					RunTests.Run(new GoInterfaceTests());
 					
 					// Loyc.Collections
+					RunTests.Run(new RWListTests()); 
+					RunTests.Run(new WListTests());
+					RunTests.Run(new RVListTests());
+					RunTests.Run(new VListTests());
 					RunTests.Run(new MapTests());
 					RunTests.Run(new SparseAListTests(true, seed, 8, 4));
 					RunTests.Run(new SparseAListTests());
@@ -112,10 +119,6 @@ namespace Loyc.Tests
 					RunTests.Run(new SymbolSetTests()); // derived from MutableSetTests<MSet<Symbol>, Symbol>
 					RunTests.Run(new ImmSetTests()); // tests for Set<T>
 					RunTests.Run(new MapTests()); // derived from DictionaryTests<MMap<object, object>>
-					RunTests.Run(new RWListTests()); 
-					RunTests.Run(new WListTests());
-					RunTests.Run(new RVListTests());
-					RunTests.Run(new VListTests());
 				} else if (k.KeyChar == '2') {
 					RunTests.Run(new KeylessHashtableTests());
 				} else if (k.KeyChar == '9') {

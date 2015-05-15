@@ -24,7 +24,8 @@ namespace Loyc.Syntax.Les
 	#rawText("#pragma warning disable 162, 642");
 
 	public partial class LesParser {
-		[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
+		[FullLLk] 
+		LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
 			// An Atom is:
 			// - a literal or simple identifier
 			//   - simple calls are also handled here, as a space optimization
@@ -52,11 +53,13 @@ namespace Loyc.Syntax.Les
 					t:=(TT.PrefixOp | TT.PreSufOp)
 					e = Expr(PrefixPrecedenceOf(t), out _)
 					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
-				|	// Prefix operator (also-infix)
+					{e.BaseStyle = NodeStyle.Operator;}
+				|	// Prefix operator (infix in other contexts)
 					&{[Local] context != P.SuperExpr}
 					t:=(TT.NormalOp|TT.Not|TT.BQString|TT.Dot|TT.Assignment|TT.Colon)
 					e=Expr(PrefixPrecedenceOf(t), out _) 
 					{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
+					{e.BaseStyle = NodeStyle.Operator;}
 				|	// [Attributes]
 					t:=TT.LBrack TT.RBrack
 					{attrs = AppendExprsInside(t, attrs);}

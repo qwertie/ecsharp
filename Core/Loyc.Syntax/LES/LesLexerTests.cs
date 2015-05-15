@@ -52,7 +52,8 @@ namespace Loyc.Syntax.Les
 			Case("@>>@>>=@<<",   A(TT.Id, TT.Id, TT.Id),             _(">>"), _(">>="), _("<<"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
-			Case("@+-/**/",      A(TT.Id, TT.MLComment), _("+-"), WS);
+			Case("@+- /**/",     A(TT.Id, TT.Spaces, TT.MLComment),  _("+-"), WS, WS);
+			Case("@+-/**/",      A(TT.Id),                           _("+-/**/"));
 		}
 
 		[Test]
@@ -217,7 +218,8 @@ namespace Loyc.Syntax.Les
 				A(TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol),
 				_("public"), _("is"), _("A"), _(@"common\word"), _("around"), _("here"));
 			Case(@"@@+-*/", A(TT.Symbol), _("+-*/"));
-			Case(@"@@+-/**/", A(TT.Symbol, TT.MLComment), _("+-"), WS);
+			Case(@"@@+- //x", A(TT.Symbol, TT.Spaces, TT.SLComment), _("+-"), WS, WS);
+			Case(@"@@+-//x", A(TT.Symbol), _("+-//x"));
 		}
 
 		const string ERROR = "ERROR";

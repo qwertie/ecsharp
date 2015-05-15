@@ -514,21 +514,40 @@ namespace Loyc.Collections
 		// perform the requested operation immediately, not on-demand.
 
 		/// <summary>Applies a filter to a list, to exclude zero or more items.</summary>
-		/// <param name="keep">A function that chooses which items to include
+		/// <param name="filter">A function that chooses which items to include
 		/// (exclude items by returning false).</param>
-		/// <returns>The list after filtering has been applied. The original FVList
+		/// <returns>The list after filtering has been applied. The original list
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
 		/// last items in a FVList), those N items are typically not copied, but 
 		/// shared between the existing list and the new one.
 		/// </remarks>
-		public FVList<T> Where(Predicate<T> keep)
+		public FVList<T> Where(Predicate<T> filter)
 		{
 			if (_localCount == 0)
 				return this;
 			else
-				return _block.Where(_localCount, keep, null);
+				return _block.Where(_localCount, filter, null);
+		}
+
+		/// <summary>Filters and maps a list with a user-defined function.</summary>
+		/// <param name="filter">A function that chooses which items to include
+		/// in a new list, and what to change them to.</param>
+		/// <returns>The list after filtering has been applied. The original list
+		/// structure is not modified.</returns>
+		/// <remarks>
+		/// This is a smart function. If the filter does not modify the first N 
+		/// items it is passed (which are the last items in a FVList), those N items 
+		/// are typically not copied, but shared between the existing list and the 
+		/// new one.
+		/// </remarks>
+		public FVList<T> WhereSelect(Func<T,Maybe<T>> filter)
+		{
+			if (_localCount == 0)
+				return this;
+			else
+				return _block.WhereSelect(_localCount, filter, null);
 		}
 		
 		/// <summary>Maps a list to another list of the same length.</summary>

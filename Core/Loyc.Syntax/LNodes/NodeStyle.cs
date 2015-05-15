@@ -43,7 +43,8 @@ namespace Loyc.Syntax
 		/// instead of <c>X.Y</c>.</summary>
 		PrefixNotation = 4,
 		/// <summary>The node should be printed like a data type, if the type 
-		/// notation is somehow different from expression notation.</summary>
+		/// notation is somehow different from expression notation. (Note: in 
+		/// general, one cannot expect data types to have this style).</summary>
 		DataType = 5,
 		/// <summary>A language-specific special notation should be used for this
 		/// node. In LES, this marker requests that the arguments to a call be

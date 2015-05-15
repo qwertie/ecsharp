@@ -247,6 +247,7 @@
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
     <Compile Include="Utilities\Localize.cs" />
+    <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
     <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />

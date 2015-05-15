@@ -1082,14 +1082,27 @@ namespace Loyc.Collections
 
 		#region LINQ-like methods
 
-		public virtual FVList<T> Where(int _localCount, Predicate<T> keep, WListProtected<T> forWList)
+		public virtual FVList<T> Where(int _localCount, Predicate<T> map, WListProtected<T> forWList)
+		{
+			return WhereSelect(_localCount, t => map(t) ? Maybe.Just(t) : Maybe<T>.Null, forWList);
+		}
+		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		{
+			return WhereSelect(_localCount, t => Maybe.Just(map(t)), forWList);
+		}
+		protected bool IsSame(T old, Maybe<T> @new)
+		{
+			return @new.HasValue && EqualityComparer.Equals(@new.Value, old);
+		}
+		public virtual FVList<T> WhereSelect(int _localCount, Func<T, Maybe<T>> map, WListProtected<T> forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
 			FVList<T> self = new FVList<T>(this, _localCount);
 			RVList<T>.Enumerator e = new RVList<T>.Enumerator(self);
 			FVList<T> output;
-			for(int commonTailLength = 0; ; commonTailLength++)
+			Maybe<T> maybe;
+			for (int commonTailLength = 0; ; commonTailLength++)
 			{
 				if (!e.MoveNext())
 				{
@@ -1097,7 +1110,8 @@ namespace Loyc.Collections
 						forWList.InternalVList = EnsureImmutable(this, _localCount);
 					return self;
 				}
-				if (!keep(e.Current))
+				maybe = map(e.Current);
+				if (!IsSame(e.Current, maybe))
 				{
 					if (commonTailLength == 0)
 						output = FVList<T>.Empty;
@@ -1111,26 +1125,31 @@ namespace Loyc.Collections
 					break;
 				}
 			}
-
 			if (forWList != null)
 			{
-				while (e.MoveNext())
-					if (keep(e.Current))
-						MuAdd(forWList, e.Current);
-
-				return forWList.InternalVList;
+				for(;;)
+				{
+					if (maybe.HasValue)
+						MuAdd(forWList, maybe.Value);
+					if (!e.MoveNext())
+						return forWList.InternalVList;
+					maybe = map(e.Current);
+				}
 			}
 			else
 			{
-				while (e.MoveNext())
-					if (keep(e.Current))
-						output.Add(e.Current);
-
-				return output;
+				for(;;)
+				{
+					if (maybe.HasValue)
+						output.Add(maybe.Value);
+					if (!e.MoveNext())
+						return output;
+					maybe = map(e.Current);
+				}
 			}
 		}
 
-		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		/*public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
@@ -1181,7 +1200,7 @@ namespace Loyc.Collections
 					item = map(e.Current);
 				}
 			}
-		}
+		}*/
 		
 		public static FVList<Out> Select<Out>(VListBlock<T> _block, int _localCount, Func<T, Out> map, WListProtected<Out> forWList)
 		{

@@ -264,6 +264,20 @@ namespace Loyc.Collections
 					yield return item.Value;
 		}
 
+		/// <summary>Combines 'Select' and 'Where' in a single operation.</summary>
+		/// <param name="filter">If this function returns <see cref="Maybe{O}.Null"/> 
+		/// then the element is suppressed from the output; otherwise the 
+		/// <see cref="Maybe{T}.Value"/> is sent to the output.</param>
+		/// <returns>A sequence filtered and changed by <c>filter</c>.</returns>
+		public static IEnumerable<Out> SelectFilter<T,Out>(this IEnumerable<T> list, Func<T,Maybe<Out>> filter)
+		{
+			foreach (var item in list) {
+				var maybe = filter(item);
+				if (maybe.HasValue)
+					yield return maybe.Value;
+			}
+		}
+
 		/// <summary>Returns the <i>item</i> in the list that has the maximum value for some selector.</summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="list">A list to search</param>

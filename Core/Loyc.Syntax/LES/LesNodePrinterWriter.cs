@@ -111,6 +111,8 @@ namespace Loyc.Syntax.Les
 				_out.Write(' ');
 			else if (LesLexer.IsOpContChar(_lastCh) && LesLexer.IsOpContChar(nextCh))
 				_out.Write(' ');
+			else if (_lastCh == '-' && (nextCh >= '0' && nextCh <= '9')) // - 2 is different from -2 (-(2) vs integer literal)
+				_out.Write(' ');
 		}
 	}
 }

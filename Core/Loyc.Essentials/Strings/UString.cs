@@ -107,18 +107,16 @@ namespace Loyc
 			_count = count;
 			Debug.Assert(start >= 0 && count >= 0 && start + count <= _str.Length);
 		}
-		public string InternalString
-		{
-			get { return _str; }
-		}
-		public int InternalStart
-		{
-			get { return _start; }
-		}
-		public int InternalStop
-		{
-			get { return _start + _count; }
-		}
+		/// <summary>Returns the original string.</summary>
+		/// <remarks>Ideally, keep the string private, there would be no way to 
+		/// access its contents beyond the boundaries of the slice. However, the
+		/// reality in .NET today is that many methods accept "slices" in the 
+		/// form of a triple (string, start index, count). In order to call such an
+		/// old-style API using a slice, one must be able to extract the internal
+		/// string and start index values.</remarks>
+		public string InternalString { get { return _str; } }
+		public int InternalStart { get { return _start; } }
+		public int InternalStop { get { return _start + _count; } }
 
 		public int Length
 		{

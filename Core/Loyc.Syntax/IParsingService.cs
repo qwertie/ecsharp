@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 		bool HasTokenizer { get; }
 
 		/// <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
-		/// <param name="file">Text to be tokenized (e.g. <see cref="StringSlice"/>)</param>
+		/// <param name="file">Text to be tokenized (e.g. <see cref="UString"/>)</param>
 		/// <param name="fileName">File name to be associated with any errors that occur.</param>
 		/// <param name="msgs">Error messages are sent to this object.</param>
 		/// <param name="onComment">Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</param>
