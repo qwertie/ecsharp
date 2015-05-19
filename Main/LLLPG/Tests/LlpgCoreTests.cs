@@ -2193,5 +2193,36 @@ namespace Loyc.LLParserGenerator
 					}
 				}");
 		}
-	}
+
+		[Test]
+		public void SimpleInlining()
+		{
+			Rule A = Rule("A", C('a') | 'A');
+			Rule B = Rule("B", C('b') | 'B');
+			Rule Foo = Rule("Foo", A | B);
+			// inline A (always), and inline B (just inside Foo)
+			A.IsInline = true;
+			((RuleRef)(((Alts)Foo.Pred).Arms[1])).IsInline = true;
+			A.IsExternal = true; // suppress code generation of A
+			_pg.AddRules(A, B, Foo);
+			LNode result = _pg.Run(_file);
+
+			CheckResult(result, @"
+				{
+					public void B()
+					{
+						Match('B', 'b');
+					}
+					public void Foo()
+					{
+						int la0;
+						la0 = LA0;
+						if (la0 == 'A' || la0 == 'a')
+							Skip();
+						else
+							Match('B', 'b');
+					}
+				}");
+		}
+}
 }

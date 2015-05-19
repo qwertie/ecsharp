@@ -3228,14 +3228,27 @@
         </member>
         <member name="M:Loyc.Collections.FVList`1.Where(System.Predicate{`0})">
             <summary>Applies a filter to a list, to exclude zero or more items.</summary>
-            <param name="keep">A function that chooses which items to include
+            <param name="filter">A function that chooses which items to include
             (exclude items by returning false).</param>
-            <returns>The list after filtering has been applied. The original FVList
+            <returns>The list after filtering has been applied. The original list
             structure is not modified.</returns>
             <remarks>
             If the predicate keeps the first N items it is passed (which are the
             last items in a FVList), those N items are typically not copied, but 
             shared between the existing list and the new one.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.FVList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+            <summary>Filters and maps a list with a user-defined function.</summary>
+            <param name="filter">A function that chooses which items to include
+            in a new list, and what to change them to.</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            This is a smart function. If the filter does not modify the first N 
+            items it is passed (which are the last items in a FVList), those N items 
+            are typically not copied, but shared between the existing list and the 
+            new one.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.FVList`1.SmartSelect(System.Func{`0,`0})">
@@ -3544,6 +3557,19 @@
             copied, but shared between the existing list and the new one.
             </remarks>
         </member>
+        <member name="M:Loyc.Collections.FWList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+            <summary>Filters and maps a list with a user-defined function.</summary>
+            <param name="filter">A function that chooses which items to include
+            in a new list, and what to change them to.</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            This is a smart function. If the filter does not modify the first N 
+            items it is passed (which are the last items in a FWList), those N items 
+            are typically not copied, but shared between the existing list and the 
+            new one.
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.FWList`1.SmartSelect(System.Func{`0,`0})">
             <summary>Maps a list to another list of the same length.</summary>
             <param name="map">A function that transforms each item in the list.</param>
@@ -3685,12 +3711,24 @@
             items.</summary>
             <param name="keep">A function that chooses which items to include
             (exclude items by returning false).</param>
-            <returns>The list after filtering has been applied. The original RVList
+            <returns>The list after filtering has been applied. The original list
             structure is not modified.</returns>
             <remarks>
             If the predicate keeps the first N items it is passed, those N items are
             typically not copied, but shared between the existing list and the new 
             one.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.RVList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+            <summary>Filters and maps a list with a user-defined function.</summary>
+            <param name="filter">A function that chooses which items to include
+            in a new list, and what to change them to.</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            This is a smart function. If the filter does not modify the first N 
+            items it is passed, those N items are typically not copied, but shared 
+            between the existing list and the new one.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.RVList`1.SmartSelect(System.Func{`0,`0})">
@@ -3758,7 +3796,7 @@
         <member name="M:Loyc.Collections.RWList`1.Where(System.Predicate{`0})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
-            <param name="keep">A function that chooses which items to include
+            <param name="filter">A function that chooses which items to include
             (exclude items by returning false).</param>
             <returns>The list after filtering has been applied. The original RVList
             structure is not modified.</returns>
@@ -3766,6 +3804,18 @@
             If the predicate keeps the first N items it is passed (which are the
             last or "tail" items in a WList), those N items are typically not 
             copied, but shared between the existing list and the new one.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.RWList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+            <summary>Filters and maps a list with a user-defined function.</summary>
+            <param name="filter">A function that chooses which items to include
+            in a new list, and what to change them to.</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            This is a smart function. If the filter does not modify the first N 
+            items it is passed those N items are typically not copied, but shared 
+            between the existing list and the new one.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.RWList`1.SmartSelect(System.Func{`0,`0})">

@@ -1542,296 +1542,188 @@ namespace Loyc.LLParserGenerator
 				}");
 		}
 
-
 		[Test]
-		public void SlugTest()
+		public void TestInlining()
 		{
-			// [2013-12-25]
-			// It became very clear while writing the EC# grammar that large, 
-			// complex, ambiguous grammars could make LLLPG run very slowly, but 
-			// this was the first SMALL grammar I could find that would make LLLPG 
-			// run very slowly (25 seconds to analyze 'Start' with k=2!).
-			Test(@"[DefaultK(2)] [FullLLk(false)]
-			LLLPG lexer {
-				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
-				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' ];
-				rule Start @[ (WeirdDigit / PositiveDigit)* ];
-			}",
-				@"void PositiveDigit()
-				{
-					MatchRange('1', '9');
-					""Think positive!"";
-				}
-				void WeirdDigit()
-				{
-					switch (LA0) {
-					case '0': Skip(); break;
-					case '1': { Check(a, ""a""); Skip(); } break;
-					case '2': { Check(b, ""b""); Skip(); } break;
-					case '3': { Check(c, ""c""); Skip(); } break;
-					case '4': { Check(d, ""d""); Skip(); } break;
-					case '5': { Check(e, ""e""); Skip(); } break;
-					case '6': { Check(f, ""f""); Skip(); } break;
-					case '7': { Check(g, ""g""); Skip(); } break;
-					case '8': { Check(h, ""h""); Skip(); } break;
-					default:  { Check(i, ""i""); Match('9'); } break;
-					}
-				}
-				void Start()
-				{
-					int la0;
-					for (;;) {
+			// This inlining example demonstrates:
+			// - Inlining isn't fully operational yet - The Alts in Letter are
+			//   not merged with the Alts in IdStartChar or in IdContChar.
+			// - 'extern' suppresses generation of IdStartChar and IdContChar
+			// - order matters: inlining is applied only once, from top to bottom.
+			//   so Letter is inlined into IdStartChar BEFORE IdStartChar is inlined
+			//   into Id. Thus Id has an inlined copy of Letter as referenced by
+			//   IdStartChar, but later makes normal method call to Letter() when
+			//   it inlines IdContChar.
+			// - (side node) and-preds still aren't handled the way I'd like
+			Test(@"LLLPG(lexer) {
+					[inline] rule Letter      @[ 'a'..'z' | 'A'..'Z' | _x:128..65534 &{_x > 128 && char.IsLetter(_x)} ];
+					extern rule IdStartChar   @[ Letter | '_' ];
+					public token Id            @[ inline:IdStartChar inline:IdContChar+ ];
+					[inline] extern rule IdContChar @[ '0'..'9' | '_' | Letter ];
+				};", @"
+					void Letter()
+					{
+						int la0;
+						int _x = 0;
+						// Line 2: ([A-Za-z] | (128..65534) &{_x > 128 && @char.IsLetter(_x)})
 						la0 = LA0;
-						if (la0 >= '1' && la0 <= '9') {
-							if (a || b || c || d || e || f || g || h || i)
-								WeirdDigit();
-							else
-								PositiveDigit();
-						} else if (la0 == '0')
-							WeirdDigit();
-						else
-							break;
-					}
-				}");
-
-			Console.WriteLine("-----------------");
-
-			// This example is just a slight variation on the first, but it is
-			// more difficult to fix.
-			//
-			// This takes over 15 seconds to analyze 'Start' with k=2, and
-			// 8 minutes and 20 seconds (and almost 2 GB memory) for k=3!).
-			//
-			// Each branch of WeirdDigit that overlaps PositiveDigit and has an
-			// &and-predicate increases CPU time and memory by a factor of four.
-			// FullLLk(false) is required to cause the slug; with FullLLk(true),
-			// processing time drops dramatically but the output is nearly seven
-			// times larger.
-			Test(@"[DefaultK(2)] [FullLLk(false)] //[Verbosity(3)]
-			LLLPG lexer {
-				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
-				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' ];
-				rule Start @[ WeirdDigit+ / PositiveDigit+ ];
-			}",
-				@"void PositiveDigit()
-				{
-					MatchRange('1', '9');
-					""Think positive!"";
-				}
-				void WeirdDigit()
-				{
-					switch (LA0) {
-					case '0': Skip(); break;
-					case '1': { Check(a, ""a""); Skip(); } break;
-					case '2': { Check(b, ""b""); Skip(); } break;
-					case '3': { Check(c, ""c""); Skip(); } break;
-					case '4': { Check(d, ""d""); Skip(); } break;
-					case '5': { Check(e, ""e""); Skip(); } break;
-					case '6': { Check(f, ""f""); Skip(); } break;
-					case '7': { Check(g, ""g""); Skip(); } break;
-					case '8': { Check(h, ""h""); Skip(); } break;
-					default:  { Check(i, ""i""); Match('9'); } break;
-					}
-				}
-				void Start()
-				{
-					int la0;
-					do {
-						la0 = LA0;
-						if (la0 >= '1' && la0 <= '9') {
-							if (a || b || c || d || e || f || g || h || i)
-								goto matchWeirdDigit;
-							else {
-								PositiveDigit();
-								for (;;) {
-									la0 = LA0;
-									if (la0 >= '1' && la0 <= '9')
-										PositiveDigit();
-									else
-										break;
-								}
-							}
-						} else
-							goto matchWeirdDigit;
-						break;
-					matchWeirdDigit:
-						{
-							WeirdDigit();
-							for (;;) {
-								la0 = LA0;
-								if (la0 >= '0' && la0 <= '9')
-									WeirdDigit();
-								else
-									break;
-							}
+						if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
+							Skip();
+						else {
+							_x = MatchRange(128, 65534);
+							Check(_x > 128 && char.IsLetter(_x), ""_x > 128 && @char.IsLetter(_x)"");
 						}
-					} while (false);
-				}");
-		}
-
-		[Test]
-		public void Regressions()
-		{
-			// 2014-2-05: Weird threading bug while adding --timeout option
-			// The bug was that StageOneParser.ReclassifyTokens was called twice on 
-			// the same tokens. Mysteriously, this caused parsing errors only when
-			// StageOneParser ran on an a worker thread (i.e. for --timeout=i, i != 0)
-			Test(@"LLLPG lexer { rule Foo @[ _ greedy('g')* _ ]; }",
-				@"void Foo() {
-					int la0, la1;
-					MatchExcept();
-					for(;;) {
-						la0 = LA0;
-						if (la0=='g') {
-							la1 = LA(1);
-							if (la1 != -1)
-								Skip();
-							else
-								break;
-						} else
-							break;
 					}
-					MatchExcept();
-				}");
-
-
-			// 2013-12-01: Regression test: $LI and $LA were not replaced inside call targets or attributes
-			Test(@"LLLPG parser { 
-				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
-			}", @"void Foo()
-				{
-					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
-					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
-					Check($LI, ""$LI"");
-					MatchExcept();
-				}");
-
-			// 2013-12-22: I really thought by now that I had found most of the
-			// bugs, but this example exposed two separate bugs:
-			// 1. {Money();} was dropped by Alts constructor, as the inner and
-			//    outer Alts were merged and should not have been.
-			// 2. GenerateExtraMatchingCode() didn't add "break;" before "match1:"
-			Test(@"
-			LLLPG lexer {
-				rule Test @[
-					({Money();} ('$' {Dollar();} | '#' {Pound();}))?
-					'$'
-				];
-			}", @"
-				void Test()
-				{
-					int la0, la1;
-					do {
+					static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', 'a', 'z', 128, 65534);
+					static readonly HashSet<int> Id_set1 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z', 128, 65534);
+					public void Id()
+					{
+						int la0;
+						// Line 3: (([A-Za-z] | (128..65534) &{_x > 128 && @char.IsLetter(_x)}) | [_])
 						la0 = LA0;
-						if (la0 == '$') {
-							la1 = LA(1);
-							if (la1 == '$')
-								goto match1;
-						} else if (la0 == '#')
-							goto match1;
-						break;
-					match1: {
-							Money();
+						if (Id_set0.Contains(la0)) {
+							int _x = 0;
+							// Line 2: ([A-Za-z] | (128..65534) &{_x > 128 && @char.IsLetter(_x)})
 							la0 = LA0;
-							if (la0 == '$') {
+							if (la0 >= 'A' && la0 <= 'Z' || la0 >= 'a' && la0 <= 'z')
 								Skip();
-								Dollar();
-							} else {
-								Match('#');
-								Pound();
+							else {
+								_x = MatchRange(128, 65534);
+								Check(_x > 128 && char.IsLetter(_x), ""_x > 128 && @char.IsLetter(_x)"");
 							}
-						}
-					} while(false);
-					Match('$');
-				}");
-			
-			// 2013-12-22: A variation on the same bug in GenerateExtraMatchingCode
-			Test(@"
-			LLLPG lexer {
-				rule Test @[
-					(	'a'..'b' 'c'
-					|	'b'..'c' 'a'
-					)?	'$'
-				];
-			}",
-			@"	void Test()
-				{
-					int la0, la1;
-					do {
-						la0 = LA0;
-						if (la0 == 'b') {
-							la1 = LA(1);
-							if (la1 == 'c')
-								goto match1;
-							else
-								goto match2;
-						} else if (la0 == 'a')
-							goto match1;
-						else if (la0 == 'c')
-							goto match2;
-						break;
-					match1:
-						{
-							Skip();
-							Match('c');
-						}
-						break;
-					match2:
-						{
-							Skip();
-							Match('a');
-						}
-					} while (false);
-					Match('$');
-				}");
-
-			// This grammar used to crash LLLPG with a NullReferenceException.
-			// The output doesn't seem quite right; probably because of the left recursion.
-			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
-				private rule Atom @[
-					TT.Id (TT.LParen TT.RParen)?
-				];
-				token Expr @[
-					greedy(
-						Atom
-					|	&{foo}
-						greedy(Expr)+
-					)*
-				];
-			}", // Output changed 2013-12-21; doesn't matter because grammar is invalid.
-			@"	void Atom()
-				{
-					TT la0;
-					Skip();
-					la0 = LA0;
-					if (la0 == TT.LParen) {
-						Skip();
-						Match((int) TT.RParen);
-					}
-				}
-				void Expr()
-				{
-					TT la0, la1;
-					for (;;) {
-						la0 = LA0;
-						if (la0 == TT.Id) {
-							la1 = LA(1);
-							if (la1 == TT.Id || la1 == TT.LParen)
-								Atom();
-							else
-								break;
 						} else
-							break;
-					}
-				}
-			",
-			MessageSink.Trace); // Suppress warnings caused by this test
+							Match('_');
+						// Line 5: ([0-9_] | Letter)
+						la0 = LA0;
+						if (la0 >= '0' && la0 <= '9' || la0 == '_')
+							Skip();
+						else
+							Letter();
+						// Line 4: (([0-9_] | Letter))*
+						for (;;) {
+							la0 = LA0;
+							if (Id_set1.Contains(la0)) {
+								// Line 5: ([0-9_] | Letter)
+								la0 = LA0;
+								if (la0 >= '0' && la0 <= '9' || la0 == '_')
+									Skip();
+								else
+									Letter();
+							} else
+								break;
+						}
+					}");
 		}
 
-
+		[Test]
+		public void TestAnyIn()
+		{
+			Test(@"LLLPG (lexer()) {
+					rule Words @[ (any fruit ' ')* ];
+					[#fruit] rule A @[ ""apple"" ];
+					[#fruit] rule G @[ ""grape"" ];
+					[#fruit] rule L @[ ""lemon"" ];
+				}", @"
+					void Words()
+					{
+						int la0;
+						// Line 2: (( A | G | L ) [ ])*
+						 for (;;) {
+							la0 = LA0;
+							if (la0 == 'a' || la0 == 'g' || la0 == 'l') {
+								// Line 0: ( A | G | L )
+								la0 = LA0;
+								if (la0 == 'a')
+									A();
+								else if (la0 == 'g')
+									G();
+								else
+									L();
+								Match(' ');
+							} else
+								break;
+						}
+					}
+					void A()
+					{
+						Match('a'); Match('p'); Match('p'); Match('l'); Match('e');
+					}
+					void G()
+					{
+						Match('g'); Match('r'); Match('a'); Match('p'); Match('e');
+					}
+					void L()
+					{
+						Match('l'); Match('e'); Match('m'); Match('o'); Match('n');
+					}
+				");
+			Test(@"LLLPG (lexer()) {
+					rule SumWords::int @[ {var x=0;} (any Literal in (x+=Literal) ' ')* {return x;} ];
+					[Literal] rule One::int @[ ""one"" {return 1;}  ];
+					[Literal] rule Two::int @[ ""two"" {return 2;}  ];
+					[Literal] rule Ten::int @[ ""ten"" {return 10;} ];
+				}", @"
+					int SumWords()
+					{
+						int la0, la1;
+						var x = 0;
+						// Line 2: (( One | Two | Ten ) [ ])*
+						 for (;;) {
+							la0 = LA0;
+							if (la0 == 'o' || la0 == 't') {
+								// Line 0: ( One | Two | Ten )
+								la0 = LA0;
+								if (la0 == 'o')
+									x.Add(One());
+								else {
+									la1 = LA(1);
+									if (la1 == 'w')
+										x.Add(Two());
+									else
+										x.Add(Ten());
+								}
+								Match(' ');
+							} else
+								break;
+						}
+						return x;
+					}
+					[Literal] int One()
+					{
+						Match('o');
+						Match('n');
+						Match('e');
+						return 1;
+					}
+					[Literal] int Two()
+					{
+						Match('t');
+						Match('w');
+						Match('o');
+						return 2;
+					}
+					[Literal] int Ten()
+					{
+						Match('t');
+						Match('e');
+						Match('n');
+						return 10;
+					}
+				");
+		}
+		[Test]
+		public void TestResultVariable()
+		{
+			Test(@"LLLPG (lexer()) {
+					rule DigitList::List!int @[ {$result = new List!int();} result+:'0'..'9' ];
+				}", @"
+					List<int> DigitList()
+					{
+						List<int> result = default(List<int>);
+						result = new List<int>();
+						result.Add(MatchRange('0', '9'));
+						return result;
+					}");
+		}
 	}
 }

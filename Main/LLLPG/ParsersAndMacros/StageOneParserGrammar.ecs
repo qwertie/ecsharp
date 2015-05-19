@@ -19,7 +19,7 @@ namespace Loyc.LLParserGenerator
 		static readonly TT EOF = TT.EOF;
 
 		[FullLLk] [Verbosity(3)]
-		LLLPG(parser(laType(TT), matchType(int), allowSwitch(true)))
+		LLLPG(parser(laType(TT), matchType(int), allowSwitch(true), terminalType(Token)))
 		{
 			alias("("   = TT.LParen);
 			alias(")"   = TT.RParen);
@@ -33,12 +33,12 @@ namespace Loyc.LLParserGenerator
 			alias(".."  = TT.DotDot);
 			alias("~"   = TT.InvertSet);
 			alias("&"   = TT.And);
-			alias("!"   = TT.Not);
 			alias("&!"  = TT.AndNot);
 			alias(":="  = TT.Assignment);
 			alias("+"   = TT.Plus);
 			alias("*"   = TT.Star);
 			alias("?"   = TT.QMark);
+			alias("!"   = TT.Bang);
 			alias(","   = TT.Separator);
 			alias("=>,<=>" = TT.Arrow);
 			alias("|"   = TT.Alt);
@@ -96,15 +96,17 @@ namespace Loyc.LLParserGenerator
 			];
 			
 			private rule LNode AssignExpr() @[
+				{Token op;}
 				a:=PrefixExpr
-				( op:=(":="|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op=(":="|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op="!" {a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);} )*
 				{return a;}
 			];
 			
 			private rule LNode PrefixExpr() @
 			[	op:="~"       r:=PrefixExpr         {return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);}
 			|	op:="&"       r:=PrefixExprOrBraces {return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);}
-			|	op:=("!"|"&!")r:=PrefixExprOrBraces {return F.Call(_AndNot,   r, op.StartIndex, r.Range.EndIndex);}
+			|	op:=("&!")    r:=PrefixExprOrBraces {return F.Call(_AndNot,   r, op.StartIndex, r.Range.EndIndex);}
 			|	r:=RangeExpr  {return r;}
 			];
 			private rule LNode PrefixExprOrBraces() @
@@ -120,6 +122,12 @@ namespace Loyc.LLParserGenerator
 			
 			private rule LNode PrimaryExpr() @
 				[	"-" e:=PrimaryExpr {return F.Call(S._Negate, e);}
+				|	{LNode e, id;}
+					TT.Any TT.Id {id = F.Id($(TT.Id));}
+					( TT.In e=PrimaryExpr
+					| {e = id;})
+					{e = F.Call(_Any, id, e, $(TT.Any).StartIndex, e.Range.EndIndex);}
+					{return e;}
 				|	a:=Atom
 					greedy(
 						// dotted expr

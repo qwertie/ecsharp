@@ -70,6 +70,7 @@ namespace LeMP
 				Console.WriteLine("Running unit tests...");
 				RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
+				RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 				RunLeMPTests();
 				Ecs.Program.RunEcsTests();
 			}
@@ -325,7 +326,7 @@ namespace LeMP
 			foreach (var filename in fileNames) {
 				try {
 					var text = File.ReadAllText(filename, Encoding.UTF8);
-					openFiles.Add(new InputOutput(new StringSlice(text), filename));
+					openFiles.Add(new InputOutput(new UString(text), filename));
 				} catch (Exception ex) {
 					sink.Write(Severity.Error, filename, ex.GetType().Name + ": " + ex.Message);
 				}

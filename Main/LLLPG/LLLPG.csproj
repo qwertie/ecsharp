@@ -222,13 +222,13 @@
       <DependentUpon>StageOneParserGrammar.ecs</DependentUpon>
     </Compile>
     <Compile Include="ParsersAndMacros\StageTwoParser.cs" />
-    <Compile Include="ParsersAndMacros\VList.cs" />
     <Compile Include="RuleAndPreds\Predicates.cs" />
     <Compile Include="RuleAndPreds\PredVisitor.cs" />
     <Compile Include="RuleAndPreds\Rule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\LlpgAutoValueSaverVisitorTests.cs" />
+    <Compile Include="Tests\LlpgBugsAndSlugs.cs" />
     <Compile Include="Tests\LlpgGeneralTestsBase.cs" />
     <Compile Include="Tests\LlpgGeneralTests.cs" />
     <Compile Include="Tests\LlpgCoreTests.cs" />

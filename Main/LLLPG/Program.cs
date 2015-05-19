@@ -64,7 +64,7 @@ namespace Loyc.LLParserGenerator
 		}
 		public static string QuickRun(IParsingService inputLang, int maxExpand, string input, params Assembly[] macroAssemblies)
 		{
-			var c = new LeMP.TestCompiler(MessageSink.Trace, new StringSlice(input));
+			var c = new LeMP.TestCompiler(MessageSink.Trace, new UString(input));
 			c.Parallel = false;
 			c.MaxExpansions = maxExpand;
 			c.AddMacros(Assembly.GetExecutingAssembly());
@@ -89,15 +89,17 @@ namespace Loyc.LLParserGenerator
 
 			RunTests.Run(new IntSetTests());
 			//RunTests.Run(new LNodeTests());
+			RunTests.Run(new LlpgParserTests());
+			RunTests.Run(new LlpgGeneralTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
+			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 			RunTests.Run(new LeMP.MacroProcessorTests());
 			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());
-			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgAutoValueSaverVisitorTests());
 			RunTests.Run(new LlpgTestLargerExamples());
-			RunTests.Run(new LlpgGeneralTests());
+			RunTests.Run(new LlpgBugsAndSlugs());
 
 			Console.WriteLine("******************************");
 			Console.WriteLine("**** Generating LES lexer ****");

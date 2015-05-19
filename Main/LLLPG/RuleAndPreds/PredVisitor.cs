@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -37,5 +38,60 @@ namespace Loyc.LLParserGenerator
 		public override void Visit(Alts pred)    { VisitOther(pred); VisitChildrenOf(pred, true); }
 		public override void Visit(AndPred pred) { VisitOther(pred); VisitChildrenOf(pred); }
 		public override void Visit(Gate pred)    { VisitOther(pred); VisitChildrenOf(pred); }
+	}
+
+	/// <summary>Base class for visitors that can replace predicates entirely.</summary>
+	/// <remarks>Only used by <see cref="LLParserGenerator.ApplyInlines"/></remarks>
+	public abstract class RecursiveReplacementPredVisitor : PredVisitor
+	{
+		public override void Visit(Seq pred)     { VisitOther(pred); ReplaceChildrenOf(pred); }
+		public override void Visit(Alts pred)    { VisitOther(pred); ReplaceChildrenOf(pred, true); }
+		public override void Visit(AndPred pred) { VisitOther(pred); ReplaceChildrenOf(pred); }
+		public override void Visit(Gate pred)    { VisitOther(pred); ReplaceChildrenOf(pred); }
+			
+		protected Pred Replacement { get; set; }
+
+		public virtual void ReplaceChildrenOf(Seq pred)
+		{
+			VisitAndReplace(pred.List);
+		}
+		public virtual void ReplaceChildrenOf(AndPred pred)
+		{
+			if (pred.Pred is Pred) {
+				var child = (pred.Pred as Pred);
+				if (VisitAndReplace(ref child))
+					pred.Pred = child;
+			}
+		}
+		public virtual void ReplaceChildrenOf(Gate pred) 
+		{
+			VisitAndReplace(ref pred.Predictor);
+			VisitAndReplace(ref pred.Match);
+		}
+		public virtual void ReplaceChildrenOf(Alts pred, bool includeError) 
+		{
+			VisitAndReplace(pred.Arms);
+			if (includeError && pred.ErrorBranch != null && pred.ErrorBranch != DefaultErrorBranch.Value)
+				VisitAndReplace(ref pred.ErrorBranch);
+		}
+		private void VisitAndReplace(IList<Pred> list)
+		{
+			for (int i = 0; i < list.Count; i++) {
+				var child = list[i];
+				if (VisitAndReplace(ref child))
+					list[i] = child;
+			}
+		}
+		private bool VisitAndReplace(ref Pred p)
+		{
+			Debug.Assert(Replacement == null);
+			p.Call(this);
+			if (Replacement != null) {
+				p = Replacement;
+				Replacement = null;
+				return true;
+			}
+			return false;
+		}
 	}
 }

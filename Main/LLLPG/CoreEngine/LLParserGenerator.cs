@@ -25,7 +25,9 @@ namespace Loyc.LLParserGenerator
 	/// assertions, and "semantic predicates" which are arbitrary expressions.
 	/// <para/>
 	/// The LLParserGenerator class is the core engine. It generates parsers in the 
-	/// form of a Loyc tree, which can be printed out as C# code.
+	/// form of a Loyc tree, which can be printed out as C# code. Look at the 
+	/// documentation of the Run() method for an overview of how the LLLPG engine 
+	/// works.
 	/// <para/>
 	/// Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
 	/// In that case, there is no need to use this class directly. The source code of
@@ -142,6 +144,7 @@ namespace Loyc.LLParserGenerator
 		IMessageSink _sink;
 		
 		Dictionary<Symbol, Rule> _rules = new Dictionary<Symbol, Rule>();
+		List<Rule> _rulesInOrder = new List<Rule>(); // in the order they were added
 
 		protected static Severity Warning = Severity.Warning;
 		protected static Severity Error = Severity.Error;
@@ -153,6 +156,16 @@ namespace Loyc.LLParserGenerator
 
 		#region Step 1: AddRules (see also the Macros, StageOneParser & StageTwoParser classes)
 
+		public void AddRules(params Rule[] rules) { AddRules((IEnumerable<Rule>)rules); }
+		public void AddRules(IEnumerable<Rule> rules)
+		{
+			_rulesInOrder.AddRange(rules);
+			AddRulesToDict(rules, _rules); 
+		}
+		public void AddRule(Rule rule) { 
+			_rulesInOrder.Add(rule); 
+			_rules.Add(rule.Name, rule);
+		}
 		public static Dictionary<Symbol, Rule> AddRulesToDict(IEnumerable<Rule> rules, Dictionary<Symbol, Rule> dict = null)
 		{
 			dict = dict ?? new Dictionary<Symbol, Rule>();
@@ -160,13 +173,127 @@ namespace Loyc.LLParserGenerator
 				dict.Add(rule.Name, rule);
 			return dict;
 		}
-		public void AddRules(params Rule[] rules)     { AddRulesToDict(rules, _rules); }
-		public void AddRules(IEnumerable<Rule> rules) { AddRulesToDict(rules, _rules); }
-		public void AddRule(Rule rule) { _rules.Add(rule.Name, rule); }
 
 		#endregion
 
-		#region Step 2b: DetermineFollowSets() and related
+		#region Step 2a: ApplyInlines (also, see AutoValueSaverVisitor in a separate file)
+
+		// Finds rules for which the user has requested inlining. Inlined rules 
+		// are pasted (unhygienically) into the rule that refers to them. Only
+		// one level of inlining is performed, so I don't have to think about the 
+		// horror of infinite recursion.
+		// TODO: move the logic for merging nested Alts from StageTwoParser to Alts 
+		//       itself so ApplyInlines can use it
+		class ApplyInlines : RecursiveReplacementPredVisitor
+		{
+			Rule _curRule;
+			IMessageSink _sink;
+			public void Run(Rule rule, IMessageSink sink)
+			{
+				_curRule = rule;
+				_sink = sink;
+				Visit(rule.Pred);
+			}
+			public override void Visit(RuleRef rref)
+			{
+				if (rref.IsInline ?? rref.Rule.IsInline)
+					if (rref.ResultSaver == null && rref.Params.IsEmpty) {
+						Replacement = rref.Rule.Pred.Clone();
+						Replacement.PreAction = Pred.MergeActions(rref.PreAction, Replacement.PreAction);
+						Replacement.PostAction = Pred.MergeActions(Replacement.PostAction, rref.PreAction);
+					} else {
+						ParamError(rref);
+					}
+			}
+			private void ParamError(object ctx)
+			{
+				_sink.Write(Severity.Error, ctx, "Inlining is not supported for rules that take parameters or return results.");
+			}
+		}
+
+		#endregion
+
+		#region Step 2b: Recognizer planning
+
+		// "mini-recognizers" refer to the test methods produced in response to 
+		// syntactic predicates that do not simply call another rule, e.g. 
+		// &('.'|'0'..'9') or &('<' Id '>').
+		MSet<Symbol> _miniRecognizerNames = new MSet<Symbol>();
+		Dictionary<Pred, Rule> _miniRecognizerMap = new Dictionary<Pred,Rule>();
+		
+		// Produces sub-rules for &(...) syntactic predicates.
+		// Must be done before everything else.
+		class AddMiniRecognizers : RecursivePredVisitor
+		{
+			LLParserGenerator LLPG;
+			public AddMiniRecognizers(LLParserGenerator llpg) { LLPG = llpg; }
+			Rule _currentRule;
+
+			internal void FindAndPreds(Rule rule)
+			{
+				_currentRule = rule;
+				rule.Pred.Call(this);
+			}
+			public override void Visit(AndPred pred)
+			{
+				var synPred = pred.Pred as Pred;
+				if (synPred != null) {
+					var rref = pred.Pred as RuleRef;
+					if (rref == null) {
+						// Construct a rule from this predicate
+						var synPred2 = synPred.Clone();
+						var rule = new Rule(pred.Basis, null, synPred2, false);
+						var recogName = Enumerable.Range(0, int.MaxValue)
+							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
+							.First(n => !LLPG._miniRecognizerNames.Contains(n));
+						rule.Name = recogName;
+						rule.IsToken = true; // gives us a follow set of .*
+						rule.IsPrivate = true;
+						rule.IsRecognizer = true;
+						rule.TryWrapperNeeded();
+						LLPG._miniRecognizerNames.Add(recogName);
+						LLPG._miniRecognizerMap[synPred] = rule;
+						LLPG.AddRule(rule);
+					} else {
+						rref.Rule.MakeRecognizerVersion().TryWrapperNeeded();
+					}
+				}
+			}
+		}
+
+		// Requests a recognizer (Scan_Xyz()) for each rule that is directly or 
+		// indirectly referenced by another rule that will be turned into a recognizer.
+		class AddRecognizersRecursively : RecursivePredVisitor
+		{
+			LLParserGenerator LLPG;
+			public AddRecognizersRecursively(LLParserGenerator llpg) { LLPG = llpg; }
+			public void Scan(Rule rule)
+			{
+				Debug.Assert(rule.HasRecognizerVersion);
+				rule.Pred.Call(this);
+			}
+			public override void Visit(RuleRef rref)
+			{
+				if (!rref.Rule.HasRecognizerVersion) {
+					rref.Rule.MakeRecognizerVersion();
+					Scan(rref.Rule);
+				}
+			}
+			public override void Visit(AndPred pred) { } // ignore &(...)
+		}
+
+		internal Rule GetRecognizerRule(Pred synPred)
+		{
+			var rref = synPred as RuleRef;
+			if (rref != null)
+				return rref.Rule.MakeRecognizerVersion();
+			else
+				return _miniRecognizerMap[synPred];
+		}
+
+		#endregion
+
+		#region Step 2c: DetermineFollowSets() and related
 
 		internal static TerminalPred EndOfToken;
 
@@ -308,86 +435,6 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 
-		#region Step 2a: Recognizer planning
-
-		// "mini-recognizers" refer to the test methods produced in response to 
-		// syntactic predicates that do not simply call another rule, e.g. 
-		// &('.'|'0'..'9') or &('<' Id '>').
-		MSet<Symbol> _miniRecognizerNames = new MSet<Symbol>();
-		Dictionary<Pred, Rule> _miniRecognizerMap = new Dictionary<Pred,Rule>();
-		
-		// Produces sub-rules for &(...) syntactic predicates.
-		// Must be done before everything else.
-		class AddMiniRecognizers : RecursivePredVisitor
-		{
-			LLParserGenerator LLPG;
-			public AddMiniRecognizers(LLParserGenerator llpg) { LLPG = llpg; }
-			Rule _currentRule;
-
-			internal void FindAndPreds(Rule rule)
-			{
-				_currentRule = rule;
-				rule.Pred.Call(this);
-			}
-			public override void Visit(AndPred pred)
-			{
-				var synPred = pred.Pred as Pred;
-				if (synPred != null) {
-					var rref = pred.Pred as RuleRef;
-					if (rref == null) {
-						// Construct a rule from this predicate
-						var synPred2 = synPred.Clone();
-						var rule = new Rule(pred.Basis, null, synPred2, false);
-						var recogName = Enumerable.Range(0, int.MaxValue)
-							.Select(i => GSymbol.Get(string.Format("{0}_Test{1}", _currentRule.Name, i)))
-							.First(n => !LLPG._miniRecognizerNames.Contains(n));
-						rule.Name = recogName;
-						rule.IsToken = true; // gives us a follow set of .*
-						rule.IsPrivate = true;
-						rule.IsRecognizer = true;
-						rule.TryWrapperNeeded();
-						LLPG._miniRecognizerNames.Add(recogName);
-						LLPG._miniRecognizerMap[synPred] = rule;
-						LLPG.AddRule(rule);
-					} else {
-						rref.Rule.MakeRecognizerVersion().TryWrapperNeeded();
-					}
-				}
-			}
-		}
-
-		// Requests a recognizer (Scan_Xyz()) for each rule that is directly or 
-		// indirectly referenced by another rule that will be turned into a recognizer.
-		class AddRecognizersRecursively : RecursivePredVisitor
-		{
-			LLParserGenerator LLPG;
-			public AddRecognizersRecursively(LLParserGenerator llpg) { LLPG = llpg; }
-			public void Scan(Rule rule)
-			{
-				Debug.Assert(rule.HasRecognizerVersion);
-				rule.Pred.Call(this);
-			}
-			public override void Visit(RuleRef rref)
-			{
-				if (!rref.Rule.HasRecognizerVersion) {
-					rref.Rule.MakeRecognizerVersion();
-					Scan(rref.Rule);
-				}
-			}
-			public override void Visit(AndPred pred) { } // ignore &(...)
-		}
-
-		internal Rule GetRecognizerRule(Pred synPred)
-		{
-			var rref = synPred as RuleRef;
-			if (rref != null)
-				return rref.Rule.MakeRecognizerVersion();
-			else
-				return _miniRecognizerMap[synPred];
-		}
-
-		#endregion
-
 		#region Run()
 
 		protected ISourceFile _sourceFile;
@@ -399,6 +446,8 @@ namespace Loyc.LLParserGenerator
 		/// <param name="sourceFile"></param>
 		/// <returns>The generated parser class.</returns>
 		/// <remarks>
+		/// [This may be outdated, TODO: review it]
+		/// <para/>
 		/// By far the greatest difficulty in this process is generating prediction 
 		/// code when the grammar branches: (<c>x | y | z</c>). Since this class 
 		/// creates LL(k) parsers without memoization or implicit backtracking, it 
@@ -672,8 +721,17 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		public LNode Run(ISourceFile sourceFile)
 		{
-			var rules = _rules.Values.Where(r => !r.IsExternal);
-			var rulesAndExterns = _rules.Values;
+			var rules = _rulesInOrder.Where(r => !r.IsExternal);
+			var rulesAndExterns = _rulesInOrder;
+			
+			// Generate variables for labeled Preds (e.g x:Foo y+:Bar Baz {$Baz;})
+			foreach (var rule in rulesAndExterns)
+				AutoValueSaverVisitor.Run(rule, _sink, _rules, _helper.TerminalType);
+
+			// Expand rules or rule references marked inline, if any
+			var inl = new ApplyInlines();
+			foreach (var rule in rulesAndExterns)
+				inl.Run(rule, _sink);
 
 			// Add special recognizer rules for &(syntactic predicates)
 			var pmr = new AddMiniRecognizers(this);
@@ -690,42 +748,8 @@ namespace Loyc.LLParserGenerator
 			DetermineFollowSets(rulesAndExterns);
 
 			// Print some stats if grammar has [Verbosity(n)] option.
-			if (Verbosity > 0) {
-				int tokens = 0, privates = 0;
-				foreach (var rule in rules) {
-					if (rule.IsPrivate)
-						privates++;
-					if (rule.IsToken)
-						tokens++;
-					else {
-						Output(Verbose, rule.Pred, Localize.From("Follow set of '{0}': {1}", 
-							rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
-						if (Verbosity >= 2) {
-							var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
-							var followSet = ComputeNextSet(end, false);
-							
-							string casesStr;
-							IList<Transition> cases = followSet.Cases;
-							string message = "Follow set of '{0}': {1} from {2} cases: {4}";
-							if (Verbosity <= 2) {
-								message = "Follow set of '{0}': {1} from {2} cases ({3} abridged): {4}";
-								var coverage = CodeGenHelper.EmptySet;
-								cases = cases.Where(c => {
-									bool subset = c.Set.IsSubsetOf(coverage);
-									if (!subset) coverage = coverage.Union(c.Set);
-									return !subset;
-								}).ToList();
-							}
-							casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
-							
-							Output(Verbose, rule.Pred, Localize.From(message, 
-								rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr)); 
-						}
-					}
-				}
-				Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
-				Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
-			}
+			if (Verbosity > 0)
+				PrintVerboseStats(rules);
 
 			// ***** PREDICTION ANALYSIS *****: everyone's favorite part
 			var pav = new PredictionAnalysisVisitor(this);
@@ -756,6 +780,44 @@ namespace Loyc.LLParserGenerator
 			_helper.Done();
 
 			return F.Braces(_classBody.ToRVList());
+		}
+
+		private void PrintVerboseStats(IEnumerable<Rule> rules)
+		{
+			int tokens = 0, privates = 0;
+			foreach (var rule in rules) {
+				if (rule.IsPrivate)
+					privates++;
+				if (rule.IsToken)
+					tokens++;
+				else {
+					Output(Verbose, rule.Pred, Localize.From("Follow set of '{0}': {1}",
+						rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
+					if (Verbosity >= 2) {
+						var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
+						var followSet = ComputeNextSet(end, false);
+
+						string casesStr;
+						IList<Transition> cases = followSet.Cases;
+						string message = "Follow set of '{0}': {1} from {2} cases: {4}";
+						if (Verbosity <= 2) {
+							message = "Follow set of '{0}': {1} from {2} cases ({3} abridged): {4}";
+							var coverage = CodeGenHelper.EmptySet;
+							cases = cases.Where(c => {
+								bool subset = c.Set.IsSubsetOf(coverage);
+								if (!subset) coverage = coverage.Union(c.Set);
+								return !subset;
+							}).ToList();
+						}
+						casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
+
+						Output(Verbose, rule.Pred, Localize.From(message,
+							rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr));
+					}
+				}
+			}
+			Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
+			Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
 		}
 
 		#endregion

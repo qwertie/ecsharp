@@ -340,11 +340,6 @@ namespace Loyc.LLParserGenerator
 			// to refer to a terminal).
 			new StageTwoParser(helper, sink).Parse(rules);
 			
-			// Create variables for labeled Preds (e.g x:Foo y+:Bar Baz {$Baz;})
-			var rulesDict = LLParserGenerator.AddRulesToDict(rules.Select(p => p.A));
-			foreach (var entry in rulesDict)
-				AutoValueSaverVisitor.Run(entry.Value, sink, rulesDict, helper.TerminalType);
-
 			// Process the grammar & generate code
 			var lllpg = new LLParserGenerator(helper, sink);
 			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
@@ -352,7 +347,7 @@ namespace Loyc.LLParserGenerator
 				lllpg.AddRule(pair.A);
 			
 			// TODO: change lllpg so we can interleave generated code with other 
-			// user code, to preserve the order of the original code.
+			// user code, to preserve the order of declarations in the original code.
 			var results = lllpg.Run(node.Source);
 			return F.Call(S.Splice, stmts.Where(p => p != null).Concat(results.Args));
 		}
@@ -421,6 +416,9 @@ namespace Loyc.LLParserGenerator
 						break;
 					case "#extern": case "extern": case "Extern":
 						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
+						break;
+					case "#inline": case "inline": case "Inline":
+						ReadOption<bool>(sink, attr, v => rule.IsInline = v, true);
 						break;
 					case "k": case "K": case "LL":
 						ReadOption<int>(sink, attr, k => rule.K = k, null);

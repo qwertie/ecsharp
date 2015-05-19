@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.LLParserGenerator.ParsersAndMacros;
 using Loyc.Syntax;
 using Loyc.Collections;
 
@@ -10,13 +9,20 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 
-	/// <summary>Helper class invoked after <see cref="StageTwoParser"/>. Its job
-	/// is to create variables referenced by labels (label:item) and by code blocks
-	/// ($RuleName), to modify the code blocks to remove the $ operator, and to
-	/// update the ResultSaver of each labeled predicate.
+	/// <summary>Helper class invoked just after <see cref="StageTwoParser"/>. Its 
+	/// job is to create variables referenced by labels (label:item) and by code 
+	/// blocks ($RuleName), to modify the code blocks to remove the $ operator, and 
+	/// to update the ResultSaver of each labeled predicate. Also supports $result.
 	/// </summary>
+	/// <remarks>Labels and $substitutions can also be used with <see cref="Pred"/>s 
+	/// constructed by hand, except that referencing tokens directly from code 
+	/// blocks (e.g. $'#') won't work unless the corresponding grammar Pred has
+	/// a Pred.Basis is an equal syntax tree.</remarks>
 	class AutoValueSaverVisitor : RecursivePredVisitor
 	{
+		static readonly Symbol _result = GSymbol.Get("result");
+		static readonly LNode _resultId = LNode.Id(_result);
+
 		public static void Run(Rule rule, IMessageSink sink, IDictionary<Symbol, Rule> rules, LNode terminalType)
 		{
 			// 1. Scan for a list of code blocks that use $labels, and a list of rules referenced.
@@ -24,22 +30,34 @@ namespace Loyc.LLParserGenerator
 			if (data.RulesReferenced.Count != 0 || data.OtherReferences.Count != 0 || data.ProperLabels.Count != 0)
 			{
 				var vsv = new AutoValueSaverVisitor(data, sink, rules, terminalType);
-				// 2. Scan for predicates with labels, and RuleRefs referenced by 
+				// 2. Create $result variable if it was used
+				// 3. Scan for predicates with labels, and RuleRefs referenced by 
 				//    code blocks. For each such predicate, generate a variable at 
-				//    the beginning of the rule and set the ResultSaver (TODO).
+				//    the beginning of the rule and set the ResultSaver.
 				vsv.Process(rule);
-				// 3. Replace recognized $substitutions in code blocks
+				// 4. Replace recognized $substitutions in code blocks
 				data.ReplaceSubstitutionsInCodeBlocks();
 			}
 		}
 
 		void Process(Rule rule)
 		{
+			// Create $result variable if it was used
+			bool usingResult = _data.OtherReferences.ContainsKey(_resultId);
+			if (usingResult && rule.ReturnType != null) {
+				_data.OtherReferences[_resultId] = 1;
+				var type = rule.ReturnType;
+				_newVarInitializers[_result] = Pair.Create(type, F.Var(type, _result, DefaultOf(type)));
+			}
+
 			Visit(rule.Pred);
+
 			if (_newVarInitializers.Count != 0) {
 				var decls = _newVarInitializers.OrderBy(p => p.Key.Name).Select(p => p.Value.B);
 				LNode decls2 = F.Call(S.Splice, decls);
 				rule.Pred.PreAction = Pred.MergeActions(decls2, rule.Pred.PreAction);
+				if (usingResult)
+					rule.Pred.PostAction = Pred.MergeActions(rule.Pred.PostAction, F.Call(S.Return, _resultId));
 			}
 		}
 

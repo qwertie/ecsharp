@@ -6,7 +6,9 @@
     <members>
         <member name="T:Loyc.Syntax.BaseParser`1">
             <summary>
-            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator).
+            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+            Generator). Note: this is the old (harder to use) base class. You should 
+            use <see cref="T:Loyc.Syntax.BaseParserForList`1"/> instead.
             </summary>
         </member>
         <member name="M:Loyc.Syntax.BaseParser`1.EofInt">
@@ -16,16 +18,16 @@
             <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
             if the tokens come from a list called Source) </summary>
         </member>
-        <member name="M:Loyc.Syntax.BaseParser`1.Error(System.Int32,System.String)">
-            <summary>Records an error or throws an exception. When called by 
-            BaseParser, li is always equal to 0.</summary>
-        </member>
         <member name="M:Loyc.Syntax.BaseParser`1.ToString(System.Int32)">
             <summary>Returns a string representation of the specified token type.
             These strings are used in error messages.</summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:Loyc.Syntax.BaseParser`1.Error(System.Int32,System.String)" -->
+        <member name="P:Loyc.Syntax.BaseParser`1.SourceFile">
+            <summary>The <see cref="T:Loyc.Syntax.ISourceFile"/> object that was provided to the constructor, if any.</summary>
+        </member>
         <member name="P:Loyc.Syntax.BaseParser`1.LT0">
-            <summary>Next token to parse (set to LT(0) whenever InputPosition is changed).</summary>
+            <summary>Next token to parse (cached; is set to LT(0) whenever InputPosition is changed).</summary>
         </member>
         <member name="P:Loyc.Syntax.BaseParser`1.InputPosition">
             <summary>Current position of the next token to be parsed.</summary>
@@ -36,6 +38,115 @@
         <member name="T:Loyc.Syntax.BaseParser`1.SavePosition">
             <summary>A helper class used by LLLPG for backtracking.</summary>
         </member>
+        <member name="T:Loyc.Syntax.BaseParserForList`2">
+            <summary>
+            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+            Generator) and receive tokens from any <see cref="T:System.Collections.Generic.IEnumerator`1"/>.
+            </summary>
+            <remarks>
+            This version of BaseParserForList has List as a generic parameter. Compared 
+            to using IList{Token} directly, this can increase performance in case 
+            the list is a value type (e.g. <c>InternalList&lt;Token&gt;</c>).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserForList`2.#ctor(`1,`0,Loyc.Syntax.ISourceFile,System.Int32)">
+            <summary>Initializes this object to begin parsing the specified tokens.</summary>
+            <param name="list">A list of tokens that the derived class will parse.</param>
+            <param name="eofToken">A token value to return when the input position 
+            reaches the end of the token list.</param>
+            <param name="file">A source file object that will be returned by the <see cref="T:Loyc.Syntax.SourceFile"/>
+            property. By default, this object is used to get the file name, line 
+            number and column number shown in parser errors. If you are using 
+            <see cref="T:Loyc.Syntax.Lexing.BaseLexer"/>, you can get this object from the
+            <see cref="P:Loyc.Syntax.Lexing.BaseLexer`1.SourceFile"/> property. The <see cref="T:Loyc.Syntax.SourceFile"/>
+            property (in this class) will return this value. It can be null, which
+            means that default error messages will show the character index instead
+            of the file, line number and column number.</param>
+            <param name="startIndex">The initial index from which to start reading
+            tokens from the list (normally 0).</param>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserForList`2.ToString(System.Int32)">
+            <summary>Returns a string representation of the specified token type.
+            These strings are used in error messages.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.BaseParserForList`2.List">
+            <summary>The IList{Token} that was provided to the constructor, if any.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.BaseParserForList`1">
+            <summary>
+            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+            Generator) and receive tokens from any <see cref="T:System.Collections.Generic.IEnumerator`1"/>.
+            </summary>
+            <remarks>
+            This base class for LLLPG parsers reads tokens from <see cref="T:System.Collections.Generic.IList`1"/>,
+            but you can also pass an <see cref="T:System.Collections.Generic.IEnumerable`1"/> or 
+            <see cref="T:System.Collections.Generic.IEnumerator`1"/> to the constructor and it will use
+            <see cref="T:Loyc.Collections.BufferedSequence`1"/> to convert the sequence to a list.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserForList`1.#ctor(System.Collections.Generic.IList{`0},`0,Loyc.Syntax.ISourceFile,System.Int32)">
+            <inheridoc/>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserForList`1.#ctor(System.Collections.Generic.IEnumerable{`0},`0,Loyc.Syntax.ISourceFile,System.Int32)">
+            <inheridoc/>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserForList`1.#ctor(System.Collections.Generic.IEnumerator{`0},`0,Loyc.Syntax.ISourceFile,System.Int32)">
+            <inheridoc/>
+        </member>
+        <member name="T:Loyc.Syntax.BaseParserNoBacktracking`2">
+            <summary>
+            An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+            Generator) and receive tokens from any <see cref="T:System.Collections.Generic.IEnumerator`1"/>.
+            </summary>
+            <remarks>
+            This base class for LLLPG parsers simply requires an enumerator to work,
+            and it has a small buffer to hold lookahead tokens. Old tokens are 
+            forgotten, so this base class does not support backtracking (i.e. syntactic 
+            predicates), but it can save memory. Please use <see cref="!:BaseParserFoList"/> 
+            if your input sequence comes in the form of a list.
+            <para/>
+            This version of BaseParser has Enumerator as a generic parameter. Compared 
+            to using IEnumerator{Token} directly, this can increase performance in case 
+            Enumerator is a value type (e.g. <c>List&lt;Token&gt;.Enumerator</c>).
+            <para/>
+            (I wrote this class by mistake... I actually forgot about backtracking!)
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserNoBacktracking`2.#ctor(`1,`0,Loyc.Syntax.ISourceFile,System.Int32)">
+            <summary>Initializes this object to begin parsing the specified tokens.</summary>
+            <param name="list">A list of tokens to be parsed.</param>
+            <param name="eofToken">A token value to return when the input position 
+            reaches the end of the token list.</param>
+            <param name="file">A source file object that will be returned by the <see cref="T:Loyc.Syntax.SourceFile"/>
+            property. By default, this object is used to get the file name, line 
+            number and column number shown in parser errors. If you are using 
+            <see cref="T:Loyc.Syntax.Lexing.BaseLexer"/>, you can get this object from the
+            <see cref="P:Loyc.Syntax.Lexing.BaseLexer`1.SourceFile"/> property. The <see cref="T:Loyc.Syntax.SourceFile"/>.
+            property (in this class) will return this value. It can be null, which
+            means that default error messages will show the character index instead
+            of the file, line number and column number.</param>
+            <param name="startIndex">The initial value of the InputPosition property.
+            This is informational only, and has no effect on the behavior of this 
+            class.</param>
+            <remarks>If your list is stored in any <see cref="T:System.Collections.Generic.IEnumerable`1"/> 
+            that is not a list, use <see cref="!:BaseParserForSeq"/> instead.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserNoBacktracking`2.LT(System.Int32)">
+            <summary>Returns the Token at lookahead i, where 0 is the next token.
+            This class does not support negative lookahead because old tokens from 
+            the IEnumerator are discarded.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.BaseParserNoBacktracking`2.ToString(System.Int32)">
+            <summary>Returns a string representation of the specified token type.
+            These strings are used in error messages.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.BaseParserNoBacktracking`2.InputPosition">
+            <summary>Cumulative index of the next token to be parsed.</summary>
+            <remarks>This class doesn't care what the absolute InputPosition is, 
+            since it reads from an <see cref="T:System.Collections.Generic.IEnumerator`1"/>. This property
+            is constrained to always increase, since old tokens are forgotten.</remarks>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.BaseParserNoBacktracking`1" -->
         <member name="T:Loyc.Syntax.CodeSymbols">
             <summary>
             A list of common symbols that have special meaning somewhere in Loyc or EC#:
@@ -140,7 +251,7 @@
         </member>
         <member name="M:Loyc.Syntax.IParsingService.Tokenize(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink)">
             <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
-            <param name="file">Text to be tokenized (e.g. <see cref="T:Loyc.Collections.StringSlice"/>)</param>
+            <param name="file">Text to be tokenized (e.g. <see cref="T:Loyc.UString"/>)</param>
             <param name="fileName">File name to be associated with any errors that occur.</param>
             <param name="msgs">Error messages are sent to this object.</param>
             <param name="onComment">Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</param>
@@ -508,6 +619,7 @@
         </member>
         <member name="T:Loyc.Syntax.Les.LesNodePrinter">
             <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
+            <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
         </member>
         <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartStmt">
             <summary>Context: beginning of statement (';' printed at the end)</summary>
@@ -538,14 +650,25 @@
             <summary>When this flag is set, comment trivia attributes are ignored
             (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
         </member>
-        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitRawText">
-            <summary>When this flag is set, raw text trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>).</summary>
-        </member>
         <member name="P:Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals">
             <summary>When the printer encounters an unprintable literal, it calls
             Value.ToString(). When this flag is set, the string is placed in double
             quotes; when this flag is clear, it is printed as raw text.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.OmitUnknownTrivia">
+            <summary>Causes unknown trivia (other than comments, spaces and raw 
+            text) to be dropped from the output.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.PrintExplicitTrivia">
+            <summary>Causes comments and spaces to be printed as attributes in order 
+            to ensure faithful round-trip parsing. By default, only "raw text" and
+            unrecognized trivia is printed this way. Note: #trivia_inParens is 
+            always printed as parentheses.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Les.LesNodePrinter.ObeyRawText">
+            <summary>Causes raw text to be printed verbatim, as the EC# printer does.
+            When this option is false, raw text trivia is printed as a normal 
+            attribute.</summary>
         </member>
         <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.Wsa">
             <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
@@ -594,12 +717,62 @@
             preprocessed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>, with whitespace tokens filtered out.
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesPrinterTests">
-            <summary>Uses the parser tests as the basis for printer tests. We simply 
-            make sure that after parsing something, we can print it out and re-parse
-            what was printed to get the same Loyc tree.</summary>
+        <member name="M:Loyc.Syntax.Les.LesPrinterAndParserTests.Test(System.Boolean,System.Int32,System.String,Loyc.Syntax.LNode[])">
+            <summary>Runs a printer or parser test.</summary>
+            <param name="parseErrors">-1 if the printer and parser should both 
+            test this example. If above -1, only the parser will run this example,
+            and this parameter specifies the number of parse errors to expect 
+            (may be 0).</param>
         </member>
         <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.Les.LesPrecedence" -->
+        <member name="T:Loyc.Syntax.Les.LesPrecedenceMap">
+            <summary>This class's main job is to maintains a table of 
+            <see cref="T:Loyc.Syntax.Precedence"/> values for LES operators. When you ask about a
+            new operator, its precedence is cached for future reference.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.Reset">
+            <summary>Forgets previously encountered operators to save memory.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.Find(Loyc.Syntax.OperatorShape,System.Object,System.Boolean)">
+            <summary>Gets the precedence of a prefix, suffix, or infix operator in 
+            LES, under the assumption that the operator isn't surrounded in 
+            backticks (in which case its precedence is always Backtick).</summary>
+            <param name="op">Parsed form of the operator. op must be a Symbol, but 
+            the parameter has type object to avoid casting Token.Value in the parser.</param>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsOpChar(System.Char)">
+            <summary>Returns true if this character is one of those that operators are normally made out of in LES.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsNaturalOperator(Loyc.Symbol)">
+            <summary>Returns true if the given Symbol can be printed as an operator 
+            without escaping it.</summary>
+            <remarks>The parser should read something like <c>+/*</c> as an operator
+            with three characters rather than "+" and a comment, but the printer 
+            should be conservative, so this function returns false in such a case.
+            "Be liberal in what you accept, and conservative in what you produce."</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.ToSuffixOpName(System.Object)">
+            <summary>Given a normal operator symbol like <c>(Symbol)"++"</c>, gets
+            the suffix form of the name, such as <c>(Symbol)"suf++"</c>. In LES,
+            operators that end with a backslash (\) are always suffix operators, so
+            their names are left unchanged.</summary>
+            <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName(Loyc.Symbol,Loyc.Symbol@,System.Boolean)">
+            <summary>Decides whether the name appears to represent a suffix operator 
+            of the form <c>sufOP</c> or <c>OP\</c>.</summary>
+            <param name="name">Potential operator name to evaluate.</param>
+            <param name="bareName">If the name starts with "suf", this is the same 
+            name without "suf", otherwise it is set to <c>name</c> itself. This
+            output is calculated even if the function returns false.</param>
+            <param name="checkNatural">If true, part of the requirement for 
+            returning true will be that IsNaturalOperator(bareName) == true.</param>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesPrinterTests">
+            <summary>Uses the parser tests as the basis for printer tests. Since the
+            printer isn't done yet, we simply make sure that after parsing something, 
+            we can print it out and re-parse what was printed to get the same Loyc tree.</summary>
+        </member>
         <member name="T:Loyc.Syntax.Les.TokenExt">
             <summary>Provides the <c>Type()</c> extension method required by 
             <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an LES token
@@ -795,8 +968,9 @@
             <summary>Reinitializes the object (as though the constructor were called again).</summary>
         </member>
         <member name="T:Loyc.Syntax.ISourceFile">
-            <summary>Represents a text file with a file name, plus the data necessary 
-            to convert between line-column positions and 0-based integer indexes.</summary>
+            <summary>Represents a text file with a file name and its textual content,
+            plus the data necessary to convert between line-column positions and 
+            0-based integer indexes.</summary>
         </member>
         <member name="M:Loyc.Syntax.Lexing.LexerSourceFile`1.AfterNewline(System.Int32)">
             <summary>Allows a lexer to record the index of the character after 
@@ -826,7 +1000,7 @@
             the LES and EC# parsers expect open-bracket and open-brace tokens ('(', 
             '[' and '{') to have a child <see cref="T:Loyc.Syntax.Lexing.TokenTree"/> that contains all the 
             tokens within a pair of brackets or braces. Typically this tree is not 
-            created directly by the lexer, but by a helpe clas (<see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>).</remarks>
+            created directly by the lexer, but by a helper class (<see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>).</remarks>
         </member>
         <member name="M:Loyc.Syntax.Lexing.TokenTree.Equals(Loyc.Syntax.Lexing.TokenTree)">
             <summary>Compares the elements of the token tree for equality.</summary>
@@ -839,57 +1013,26 @@
             to represent whitespace and comments, which allows them to be quickly 
             filtered out.</summary>
         </member>
-        <member name="T:Loyc.Syntax.Lexing.Token">
-            <summary>
-            A common token type recommended for Loyc languages that want to use 
-            features such as token literals or the <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/> class.
-            </summary>
-            <remarks>
-            For performance reasons, a Token ought to be a structure rather than
-            a class. But if Token is a struct, we have a conundrum: how do we support 
-            tokens from different languages? We can't use inheritance since structs
-            do not support it. When EC# is ready, we could use a single struct plus
-            an alias for each language, but of course this structure predates the 
-            implementation of EC#.
-            <para/>
-            Luckily, tokens in most languages are very similar. A four-word structure
-            generally suffices:
-            <ol>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.TypeInt"/>: each language can use a different set of token types 
-            represented by a different <c>enum</c>. All enums can be converted to 
-            an integer, so <see cref="T:Loyc.Syntax.Lexing.Token"/> uses Int32 as the token type.</li>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.Value"/>: this can be any object. For literals, this should 
-            be the actual value of the literal, for whitespace it should be 
-            <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>, etc. See <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> for 
-            the complete list.</li>
-            <li><see cref="F:Loyc.Syntax.Lexing.Token.StartIndex"/>: location in the original source file where 
-            the token starts.</li>
-            <li><see cref="P:Loyc.Syntax.Lexing.Token.Length"/>: length of the token in the source file (24 bits).</li>
-            <li><see cref="P:Loyc.Syntax.Lexing.Token.Style"/>: 8 bits for other information.</li>
-            </ol>
-            Originally I planned to use <see cref="T:Loyc.Symbol"/> as the common token 
-            type, because it is extensible and could nicely represent tokens in all
-            languages; unfortunately, Symbol may reduce parsing performance because 
-            it cannot be used with the switch opcode (i.e. the switch statement in 
-            C#), so I decided to switch to integers instead and to introduce the 
-            concept of <see cref="T:Loyc.Syntax.Lexing.TokenKind"/>, which is derived from 
-            <see cref="T:System.Type"/> using <see cref="F:Loyc.Syntax.Lexing.TokenKind.KindMask"/>.
-            Each language should have, in the namespace of that language, an
-            extension method <c>public static TokenType Type(this Token t)</c> that 
-            converts the TypeInt to the enum type for that language.
-            <para/>
-            To save space (and because .NET doesn't handle large structures well),
-            tokens do not know what source file they came from and cannot convert 
-            their location to a line number. For this reason, one should keep a
-            reference to the <see cref="T:Loyc.Syntax.ISourceFile"/> and call <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/> 
-            to get the source location.
-            <para/>
-            A generic token also cannot convert itself to a properly-formatted 
-            string. The <see cref="M:Loyc.Syntax.Lexing.Token.ToString"/> method does allow 
-            </remarks>
-        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Syntax.Lexing.Token" -->
         <member name="T:Loyc.Syntax.Lexing.IToken">
             <summary>The methods of <see cref="T:Loyc.Syntax.Lexing.Token"/> in the form of an interface.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.ISimpleToken">
+            <summary>Basic information about a token as expected by <see cref="!:BaseParser"/>:
+            type (as an integer), index where the token starts in the source file, 
+            and a value.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ISimpleToken.TypeInt">
+            <summary>Token type (cast to an integer if it is an enum).</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ISimpleToken.StartIndex">
+            <summary>Character index where the token starts in the source file.</summary>
+        </member>
+        <member name="P:Loyc.Syntax.Lexing.ISimpleToken.Value">
+            <summary>Value of the token. The meaning of this property is defined
+            by the particular implementation of this interface, but typically this 
+            property contains a parsed form of the token (e.g. if the token came 
+            from the text "3.14", its value might be <c>(double)3.14</c>.</summary>
         </member>
         <member name="F:Loyc.Syntax.Lexing.Token.TypeInt">
             <summary>Token type.</summary>
@@ -992,22 +1135,83 @@
             <summary>A list of token categories that most programming languages have.</summary>
             <remarks>
             Some Loyc languages will support the concept of a "token literal" which
-            is a tree of tokens, and some DSLs will rely on these token literals for
-            input. However, tokens differ between different languages; for instance
-            the set of operators varies between languages. On the other hand, most
-            languages do have some concept of "an operator", and the TokenKind reflects
-            this fact.
+            is a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/>, and some DSLs will rely on these token 
+            literals for input. However, tokens differ between different languages; 
+            for instance the set of operators varies between languages. On the other 
+            hand, most languages do have some concept of "an operator" and "an 
+            identifier", and the TokenKind reflects this fact.
             <para/>
-            The "TokenKind" concept may assist some simple DSLs to support multiple 
-            host languages, by breaking tokens down into common categories. Thus, for
-            instance, all the various strings in a language should be based on 
-            TokenKind.String, the dot operator should be TokenKind.Dot, etc. A DSL
-            that just needs simple tokens like "strings", "identifiers" and "dots" 
+            When you are using <see cref="T:Loyc.Syntax.Lexing.Token"/> to represent tokens in your language,
+            it is recommended to define every value of your "TokenType" enumeration in 
+            terms of TokenKind using integer offsets, like this:
+            <pre>
+            enum MyTokenType {
+                EOF         = TokenKind.Spaces,
+                Id          = TokenKind.Id,
+                IfKeyword   = TokenKind.OtherKeyword,
+                ForKeyword  = TokenKind.OtherKeyword + 1,
+                LoopKeyword = TokenKind.OtherKeyword + 2,
+                ...
+                MulOp   = TokenKind.Operator,
+                AddOp   = TokenKind.Operator + 1,
+                DivOp   = TokenKind.Operator + 2,
+                DotOp   = TokenKind.Dot,
+                ...
+            }
+            </pre>
+            Using TokenKind is only important if you intend to support DSLs via token
+            literals (e.g. LLLPG) in your language.
+            <para/>
+            A DSL that just needs simple tokens like "strings", "identifiers" and "dots" 
             can write a parser based on values of <see cref="P:Loyc.Syntax.Lexing.Token.Kind"/> alone; if 
             it needs certain specific operators or "keywords" that do not have a 
-            dedicated TokenKind, such as + and %, it can further check the 
-            <see cref="F:Loyc.Syntax.Lexing.Token.Value"/>.
+            dedicated TokenKind, such as + and %, it can further check the Value of the 
+            token; meanwhile, the host language put a global <see cref="T:Loyc.Symbol"/> 
+            in the <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> to represent operators, keywords and 
+            identifiers.
             </remarks>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Spaces">
+            <summary>Spaces, tabs, non-semantic newlines, and EOF</summary>
+            <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Comment">
+            <summary>Single- and multi-line comments</summary>
+            <remarks>Spaces and comments are typically filtered out before parsing and will not appear in token literals.</remarks>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Id">
+            <summary>Simple identifiers</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Number">
+            <summary>Integers, floats</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.String">
+            <summary>e.g. single-quoted, double-quoted, triple-quoted</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.OtherLit">
+            <summary>Literals other than numbers and strings</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:Loyc.Syntax.Lexing.TokenKind.Dot" -->
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Assignment">
+            <summary>Simple or compound assignment</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Operator">
+            <summary>All operators except assignment, dot, or separators</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Separator">
+            <summary>e.g. semicolon, comma (if not considered an operator)</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.AttrKeyword">
+            <summary>e.g. public, private, static, virtual</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.TypeKeyword">
+            <summary>e.g. int, bool, double, void</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.OtherKeyword">
+            <summary>e.g. sizeof, struct</summary>
+        </member>
+        <member name="F:Loyc.Syntax.Lexing.TokenKind.Other">
+            <summary>For token types not covered by other token kinds.</summary>
         </member>
         <member name="T:Loyc.Syntax.Lexing.TokensToTree">
             <summary>
@@ -1582,6 +1786,12 @@
             but usually it is less than 100).
             </remarks>
         </member>
+        <member name="M:Loyc.Syntax.LNode.HasSimpleHead">
+            <summary>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.HasSimpleHeadWithoutPAttrs">
+            <summary>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
+        </member>
         <member name="M:Loyc.Syntax.LNode.MergeLists(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Symbol)">
             <summary>Some <see cref="T:Loyc.Syntax.CallNode"/>s are used to represent lists. This 
             method merges two nodes, forming or appending a list (see remarks).</summary>
@@ -1617,7 +1827,9 @@
         <member name="M:Loyc.Syntax.LNode.ReplaceRecursive(System.Func{Loyc.Syntax.LNode,Loyc.Syntax.LNode},System.Boolean)">
             <summary>Performs a recursive find-and-replace operation, by attempting
             to replace each child (among <see cref="P:Loyc.Syntax.LNode.Attrs"/>, <see cref="P:Loyc.Syntax.LNode.Target"/>, 
-            <see cref="P:Loyc.Syntax.LNode.Args"/>) using the specified selector.</summary>
+            <see cref="P:Loyc.Syntax.LNode.Args"/>) using the specified selector. This method can also
+            be used for simple searching, by giving a selector that always returns 
+            null.</summary>
             <param name="selector">The selector is called for each descendant, and
             optionally the root node. If the selector returns a node, the new node 
             replaces the node that was passed to <c>selector</c> and the children of 
@@ -1876,7 +2088,8 @@
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.DataType">
             <summary>The node should be printed like a data type, if the type 
-            notation is somehow different from expression notation.</summary>
+            notation is somehow different from expression notation. (Note: in 
+            general, one cannot expect data types to have this style).</summary>
         </member>
         <member name="F:Loyc.Syntax.NodeStyle.Special">
             <summary>A language-specific special notation should be used for this
@@ -1938,10 +2151,10 @@
             printed when another node has this node attached to it as an attribute,
             and you print that other node.</summary>
         </member>
-        <member name="T:Loyc.Syntax.LTree">
-            <summary>
-            Standard methods to help pick apart Loyc trees
-            </summary>
+        <member name="T:Loyc.Syntax.OperatorShape">
+            <summary>An enum of common operator formats.</summary>
+            <remarks>It is intentional that the absolute value of each OperatorShape
+            (except Other) is the arity of (number of arguments to) that shape.</remarks>
         </member>
         <member name="T:Loyc.Syntax.Precedence">
             <summary>Represents the precedence and miscibility of an operator.</summary>
@@ -2158,7 +2371,7 @@
         <member name="M:Loyc.Syntax.Precedence.RightContext(Loyc.Syntax.Precedence)">
             <summary>For use in printers. Auto-raises the precedence floor to 
             prepare to print an expression on the right side of an operator.</summary>
-            <param name="outerContext"></param>
+            <param name="outerContext">Context in which this operator is being printed</param>
             <returns></returns>
         </member>
         <member name="M:Loyc.Syntax.Precedence.CanAppearIn(Loyc.Syntax.Precedence)">

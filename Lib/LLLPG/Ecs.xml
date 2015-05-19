@@ -144,15 +144,6 @@
             <summary>A helper class that removes comments from a token stream, saving 
             them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
         </member>
-        <member name="T:Ecs.Parser.PartialEcsParser">
-            <summary>Parses Enhanced C# code into a sequence of Loyc trees 
-            (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
-            <remarks>
-            You can use <see cref="F:Ecs.Parser.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,System.String,Loyc.IMessageSink,Loyc.Symbol)"/>
-            to easily parse a text string (holding zero or more EC# statements) into a 
-            Loyc tree. One does not normally use this class directly.
-            </remarks>
-        </member>
         <member name="T:Ecs.Parser.TokenExt">
             <summary>Provides the <c>Type()</c> extension method required by 
             <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an EC# token
@@ -255,6 +246,7 @@
             most one #in or #out attribute, and at most one #where attribute with
             an argument list consisting of complex identifiers.</remarks>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:Ecs.EcsNodePrinter.SanitizeIdentifier(System.String)" -->
         <member name="P:Ecs.EcsNodePrinter.Errors">
             <summary>Any error that occurs during printing is printed to this object.</summary>
         </member>

@@ -214,6 +214,7 @@ namespace Loyc.LLParserGenerator
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
 		public RVList<LNode> Params = RVList<LNode>.Empty; // Params.Args is a list of parameters
+		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 		public override bool IsNullable
 		{
 			get { return Rule.Pred.IsNullable; }
@@ -775,16 +776,14 @@ namespace Loyc.LLParserGenerator
 		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
 			G.Require(!(predictor is Gate) && !(match is Gate),
 				"A gate '=>' cannot contain another gate");
-			_predictor = predictor;
-			_match = match;
+			Predictor = predictor;
+			Match = match;
 		}
-		Pred _predictor;
-		Pred _match;
 
 		/// <summary>Left-hand side of the gate, which is used for prediction decisions.</summary>
-		public Pred Predictor { get { return _predictor; } }
+		public Pred Predictor;
 		/// <summary>Right-hand side of the gate, which is used for matching decisions.</summary>
-		public Pred Match { get { return _match; } }
+		public Pred Match;
 
 		/// <summary>If true, this is an "&lt;=>" equivalency gate, otherwise it's 
 		/// a "=>" normal gate.</summary>
@@ -851,8 +850,8 @@ namespace Loyc.LLParserGenerator
 		public override Pred Clone()
 		{
 			Gate clone = (Gate)base.Clone();
-			clone._predictor = _predictor.Clone();
-			clone._match = _match.Clone();
+			clone.Predictor = Predictor.Clone();
+			clone.Match = Match.Clone();
 			return clone;
 		}
 		public override string ToString()

@@ -23,7 +23,7 @@ namespace Ecs.Parser
 	/// <seealso cref="TokensToTree"/>
 	public partial class EcsLexer : BaseLexer, ILexer
 	{
-		public EcsLexer(string text, IMessageSink sink) : base(new StringSlice(text), "") { ErrorSink = sink; }
+		public EcsLexer(string text, IMessageSink sink) : base(new UString(text), "") { ErrorSink = sink; }
 		public EcsLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) { ErrorSink = sink; }
 
 		public bool AllowNestedComments = false;

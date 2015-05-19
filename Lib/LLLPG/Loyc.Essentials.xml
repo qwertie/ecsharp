@@ -354,6 +354,13 @@
         <member name="M:Loyc.Collections.EnumerableExt.MinOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Double},``0)">
             <inheritdoc cref="M:Loyc.Collections.EnumerableExt.MinOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Int32},``0)"/>
         </member>
+        <member name="M:Loyc.Collections.EnumerableExt.SelectFilter``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,Loyc.Maybe{``1}})">
+            <summary>Combines 'Select' and 'Where' in a single operation.</summary>
+            <param name="filter">If this function returns <see cref="F:Loyc.Maybe`1.Null"/> 
+            then the element is suppressed from the output; otherwise the 
+            <see cref="P:Loyc.Maybe`1.Value"/> is sent to the output.</param>
+            <returns>A sequence filtered and changed by <c>filter</c>.</returns>
+        </member>
         <member name="M:Loyc.Collections.EnumerableExt.MaxOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Int32},``0)">
             <summary>Returns the <i>item</i> in the list that has the maximum value for some selector.</summary>
             <typeparam name="T"></typeparam>
@@ -1020,6 +1027,15 @@
             </ul>
             </remarks>
         </member>
+        <member name="P:Loyc.Collections.ArraySlice`1.InternalList">
+            <summary>Returns the original array.</summary>
+            <remarks>Ideally, to protect the array there would be no way to access
+            its contents beyond the boundaries of the slice. However, the 
+            reality in .NET today is that many methods accept "slices" in the 
+            form of a triple (list, start index, count). In order to call such an
+            old-style API using a slice, one must be able to extract the internal
+            list and start index values.</remarks>
+        </member>
         <member name="T:Loyc.Collections.BufferedSequence`1">
             <summary>Adapter: This class wraps an <see cref="T:System.Collections.Generic.IEnumerator`1"/> or 
             <see cref="T:System.Collections.Generic.IEnumerable`1"/> into an <see cref="T:Loyc.Collections.IListSource`1"/>, lazily 
@@ -1096,6 +1112,15 @@
             created.</li>
             </ul>
             </remarks>
+        </member>
+        <member name="P:Loyc.Collections.ListSlice`1.InternalList">
+            <summary>Returns the original list.</summary>
+            <remarks>Ideally, to protect the list there would be no way to access
+            its contents beyond the boundaries of the slice. However, the 
+            reality in .NET today is that many methods accept "slices" in the 
+            form of a triple (list, start index, count). In order to call such an
+            old-style API using a slice, one must be able to extract the internal
+            list and start index values.</remarks>
         </member>
         <member name="T:Loyc.Collections.ListSourceAsList`1">
             <summary>Adapter: a read-only wrapper that implements IList(T) and 
@@ -1547,6 +1572,9 @@
             <summary>A random-access slice of System.String.</summary>
             <remarks>
             Where possible, it is recommended that you use <see cref="T:Loyc.UString"/> instead.
+            <para/>
+            Note to self: I forgot why I made this type as a distinct entity from 
+            <see cref="T:Loyc.UString"/>. Consider attempting to eliminate StringSlice.
             </remarks>
         </member>
         <member name="T:Loyc.Collections.ICharSource">
@@ -1735,6 +1763,15 @@
             <param name="maxReplacements"></param>
             <returns>Returns a new string with replacements made, or the same 
             string if no replacements occurred.</returns>
+        </member>
+        <member name="P:Loyc.UString.InternalString">
+            <summary>Returns the original string.</summary>
+            <remarks>Ideally, keep the string private, there would be no way to 
+            access its contents beyond the boundaries of the slice. However, the
+            reality in .NET today is that many methods accept "slices" in the 
+            form of a triple (string, start index, count). In order to call such an
+            old-style API using a slice, one must be able to extract the internal
+            string and start index values.</remarks>
         </member>
         <member name="P:Loyc.UString.Item(System.Int32)">
             <summary>Returns the code unit (16-bit value) at the specified index.</summary>
@@ -2892,6 +2929,7 @@
         <member name="M:Loyc.G.SkipSpaces(Loyc.UString)">
             <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)" -->
         <member name="T:Loyc.G.ParseFlag">
             <summary>Flags that can be used with the overload of TryParseAt() 
             that parses unsigned integers.</summary>
@@ -4412,13 +4450,13 @@
             <summary>A linear scale to categorize the importance and seriousness of 
             messages sent to <see cref="T:Loyc.IMessageSink"/>.</summary>
             <remarks>
-            The numbers are Fatal=11, Critical=9, Error=7, Warning=6, Note=5, 
-            Debug=3, Verbose=1 and Detail=0. The severity numbers are based on 
+            The numbers are Fatal=110, Critical=90, Error=70, Warning=60, Note=50, 
+            Debug=30, Verbose=10 and Detail=0. The severity numbers are based on 
             those defined in log4net, divided by 1000, e.g. Warning=60000 in log4net
             but 60 in this enum.
             <para/>
             Some of the enumeration values begin with an underscore. These are
-            values defined by Log4net that are deprecated in Loyc.
+            values defined by Log4net that are deprecated in LoycCore.
             <para/>
             Messages of type Detail are meant to contain extra information associated 
             with the most recent non-Detail message, e.g. stack traces or extra 
@@ -4673,6 +4711,20 @@
             parameter as the format string.
             </summary>
         </member>
+        <member name="M:Loyc.Maybe.Just``1(``0)">
+            <summary>Returns <c>new Maybe&lt;T>(value)</c>. (exists for type inference)</summary>
+        </member>
+        <member name="T:Loyc.Maybe`1">
+            <summary>Same as <see cref="T:System.Nullable`1"/> except that it behaves like a
+            normal type, i.e. (1) T is allowed to be a reference type and (2) you can
+            nest them, as in <c>Maybe{Maybe{int}}</c>.</summary>
+            <remarks>The name of this type comes from some functional programming 
+            languages which define a type such as <c>data Maybe t = Null | Just t</c>.
+            <para/>
+            There is an implicit conversion from T that returns <see cref="F:Loyc.Maybe`1.Null"/>
+            if the T value is null and <c>new Maybe{T}(value)</c> otherwise.
+            </remarks>
+        </member>
         <member name="T:Loyc.MemoizedTypeName">
             <summary>.NET Framework reflection doesn't offer complete type names for 
             generic types such as "List&lt;int&gt;" (the <c>Type.Name</c> value of that class is 
@@ -4907,6 +4959,17 @@
         <member name="T:Loyc.MiniTest.SuccessException">
             <summary>Thrown by <see cref="M:Loyc.MiniTest.Assert.Success"/>.</summary>
         </member>
+        <member name="T:Loyc.IReferenceComparable">
+            <summary>This is a tag which indicates that objects of this type are 
+            unique; specifically, any two different objects that implement this 
+            interface are always unequal, and one object is equal only to itself.</summary>
+            <remarks>
+            This interface is recognized by <see cref="!:Loyc.Collections.MSet&lt;T&gt;"/>, <see cref="!:Loyc.Collections.Set&lt;T&gt;"/>
+            and <see cref="!:Loyc.Collections.InternalSet&lt;T&gt;"/>. It causes normal comparison (via
+            <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> to be skipped in favor of reference 
+            comparison. <see cref="T:Loyc.Symbol"/> implements this interface.
+            </remarks>
+        </member>
         <member name="T:Loyc.Pair">
             <summary><c>Pair.Create(a, b)</c> is a helper method for making pairs.</summary>
             <remarks>To avoid creating an extra class, this class also contains 
@@ -5085,17 +5148,6 @@
             Symbols are also useful in compilers and Loyc trees, where there may be a 
             performance advantage in comparing identifiers by reference rather than
             character-by-character.
-            </remarks>
-        </member>
-        <member name="T:Loyc.IReferenceComparable">
-            <summary>This is a tag which indicates that objects of this type are 
-            unique; specifically, any two different objects that implement this 
-            interface are always unequal (while one object is equal only to itself).</summary>
-            <remarks>
-            This interface is recognized by <see cref="!:Loyc.Collections.MSet&lt;T&gt;"/>, <see cref="!:Loyc.Collections.Set&lt;T&gt;"/>
-            and <see cref="!:Loyc.Collections.InternalSet&lt;T&gt;"/>. It causes normal comparison (via
-            <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> to be skipped in favor of reference 
-            comparison. <see cref="T:Loyc.Symbol"/> implements this interface.
             </remarks>
         </member>
         <member name="M:Loyc.Symbol.#ctor(System.Int32,System.String,Loyc.SymbolPool)">

@@ -267,12 +267,12 @@ namespace Ecs
 				p => p.DropNonDeclarationAttributes = true);
 		}
 
-		LNode Alternate(LNode node)
+		static LNode Alternate(LNode node)
 		{
 			node.Style |= NodeStyle.Alternate;
 			return node;
 		}
-		LNode AsStyle(LNode node, NodeStyle s)
+		static LNode AsStyle(LNode node, NodeStyle s)
 		{
 			node.BaseStyle = s;
 			return node;
@@ -1404,7 +1404,6 @@ namespace Ecs
 			Stmt("Foo Foo.a() => @[ x ];", F.Fn(Foo, F.Dot(Foo, a), F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			// Currently supported. Not sure if it'll stay that way.
 			Stmt("void Foo() @[ x ];", def, Mode.ParseOnly);
-			Stmt("void Foo @[ x ];", prop, Mode.ParseOnly);
 		}
 
 		// Stuff that is intentionally left broken for the time being
@@ -1497,6 +1496,15 @@ namespace Ecs
 		}
 
 		[Test]
+		public void SanitizeIdentifierTests()
+		{
+			AreEqual("I_aposd", EcsNodePrinter.SanitizeIdentifier("I'd"));
+			AreEqual("_123",    EcsNodePrinter.SanitizeIdentifier("123"));
+			AreEqual("_plus5",  EcsNodePrinter.SanitizeIdentifier("+5" ));
+			AreEqual("__",      EcsNodePrinter.SanitizeIdentifier(""   ));
+			AreEqual("_lt_gt",  EcsNodePrinter.SanitizeIdentifier("<>"));
+		}
+		[Test]
 		public void StaticMethods()
 		{
 			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));
@@ -1520,7 +1528,7 @@ namespace Ecs
 			// This is the easy way: 
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
 			// But to make debugging easier, I'll do it the long way:
-			ILexer lexer = EcsLanguageService.Value.Tokenize(new StringSlice(text), "", MessageSink.Console);
+			ILexer lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", MessageSink.Console);
 			var preprocessed = new EcsPreprocessor(lexer);
 			var treeified = new TokensToTree(preprocessed, false);
 			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, MessageSink.Console);
@@ -1569,16 +1577,6 @@ namespace Ecs
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
 			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
-		}
-
-		[Test]
-		public void SanitizeIdentifierTests()
-		{
-			AreEqual("I_aposd", EcsNodePrinter.SanitizeIdentifier("I'd"));
-			AreEqual("_123",    EcsNodePrinter.SanitizeIdentifier("123"));
-			AreEqual("_plus5",  EcsNodePrinter.SanitizeIdentifier("+5" ));
-			AreEqual("__",      EcsNodePrinter.SanitizeIdentifier(""   ));
-			AreEqual("_lt_gt",  EcsNodePrinter.SanitizeIdentifier("<>"));
 		}
 	}
 }

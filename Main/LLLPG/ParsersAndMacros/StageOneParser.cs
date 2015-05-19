@@ -41,7 +41,7 @@ namespace Loyc.LLParserGenerator
 		QMark       = TokenKind.Operator + 7, // ?
 		Arrow       = TokenKind.Operator + 8, // => <=>
 		And         = TokenKind.Operator + 9, // &
-		Not         = TokenKind.Operator + 10, // !
+		Bang        = TokenKind.Operator + 10, // !
 		AndNot      = TokenKind.Operator + 11, // &!
 		Minus       = TokenKind.Operator + 12, // -
 
@@ -52,6 +52,8 @@ namespace Loyc.LLParserGenerator
 		Nongreedy   = TokenKind.OtherKeyword + 2,
 		Error       = TokenKind.OtherKeyword + 3,
 		Default     = TokenKind.OtherKeyword + 4,
+		Any         = TokenKind.OtherKeyword + 5,
+		In          = TokenKind.OtherKeyword + 6,
 		
 		Separator   = TokenKind.Separator,
 		OtherToken  = TokenKind.Other,
@@ -76,13 +78,18 @@ namespace Loyc.LLParserGenerator
 	/// <remarks>
 	/// LLLPG grammars are parsed in two stages. First, a token tree is parsed into 
 	/// an <see cref="LNode"/>, e.g. <c>a b | c*</c> is parsed into the tree 
-	/// <c>(a, b) | @`suf*`(c)</c>. This class handles the first stage. The second 
+	/// <c>(a, b) | @`suf*`(c)</c>. This class handles this first stage. The second 
 	/// stage (<see cref="StageTwoParser"/>) is that the <see cref="LNode"/> is 
 	/// parsed into a tree of <see cref="Pred"/> objects.
 	/// <para/>
+	/// See <see cref="LlpgParserTests"/> for many examples of each stage in isolation.
+	/// <para/>
 	/// There is no lexer for LLLPG; LLLPG relies on the host language for lexing.
-	/// This class contains code to change the Type() of each token to one of the 
-	/// types that LLLPG supports (see the #region "Token reclassification").
+	/// The host language normally classifies tokens a bit differently than LLLPG
+	/// wants to; this class relies on the host language using tree parsing
+	/// (<see cref="TokenTree"/>) and <see cref="TokenKind"/> correctly, and it 
+	/// contains code to change the Type() of each token to one of the types that 
+	/// LLLPG supports (see the #region "Token reclassification").
 	/// <para/>
 	/// Stage 1 does not transform the entire token tree, because many of the 
 	/// tokens must be interpreted by the host language. Luckily such tokens are 
@@ -176,10 +183,13 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _SufStar = GSymbol.Get("suf*");
 		static readonly Symbol _SufPlus = GSymbol.Get("suf+");
 		static readonly Symbol _SufOpt = GSymbol.Get("suf?");
+		static readonly Symbol _SufBang = GSymbol.Get("suf!");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Error = GSymbol.Get("error");
+		static readonly Symbol _Any = GSymbol.Get("any");
+		static readonly Symbol _In = GSymbol.Get("in");
 		
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
@@ -196,12 +206,14 @@ namespace Loyc.LLParserGenerator
 			{S.Lambda,   TT.Arrow},
 			{_EqGate,    TT.Arrow},
 			{S.AndBits,  TT.And},
-			{S.Not,      TT.AndNot},
-			{_AndNot,    TT.Greedy},
+			{S.Not,      TT.Bang},
+			{_AndNot,    TT.AndNot},
 			{_Nongreedy, TT.Nongreedy},
 			{_Greedy,    TT.Greedy},
 			{_Error,     TT.Error},
-			{S.Error,    TT.Error},
+			{_Any,       TT.Any},
+			{_In,        TT.In},
+			{S.In,       TT.In},
 			{_Default,   TT.Default},
 			{S.Default,  TT.Default},
 		};

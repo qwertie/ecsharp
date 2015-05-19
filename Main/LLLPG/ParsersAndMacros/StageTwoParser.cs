@@ -28,6 +28,8 @@ namespace Loyc.LLParserGenerator
 			_sink = sink;
 		}
 
+		HashSet<Symbol> any_in_HashLabels = new HashSet<Symbol>();
+
 		/// <summary>Given Rules paired with LNodes produced by <see cref="StageOneParser"/>,
 		/// this method translates each LNode into a <see cref="Pred"/> and updates
 		/// <see cref="Rule.Pred"/> to point to the new Pred.</summary>
@@ -37,14 +39,10 @@ namespace Loyc.LLParserGenerator
 			foreach (var pair in rules) {
 				Debug.Assert(pair.A.Pred == null);
 				pair.A.Pred = NodeToPred(pair.B);
-				AnalyzeSubstitutions(pair.A.Pred);
 				if (pair.A.HasRecognizerVersion) // oops, need to keep recognizer in sync with main rule
 					pair.A.MakeRecognizerVersion().Pred = pair.A.Pred;
 			}
-		}
-
-		private void AnalyzeSubstitutions(Pred pred)
-		{
+			Remove_any_in_Labels();
 		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG parser"));
@@ -60,9 +58,13 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
 		static readonly Symbol _Default2 = GSymbol.Get("#default");
+		static readonly Symbol _Inline = GSymbol.Get("inline");
+		static readonly Symbol _Inline2 = GSymbol.Get("#inline");
+		static readonly Symbol _NoInline = GSymbol.Get("noinline");
 		static readonly Symbol _Error = GSymbol.Get("error");
 		static readonly Symbol _DefaultError = GSymbol.Get("default_error");
 		static readonly Symbol _Local = GSymbol.Get("Local");
+		static readonly Symbol _Any = GSymbol.Get("any");
 		
 		enum Context { Rule, GateLeft, GateRight, And };
 
@@ -106,27 +108,7 @@ namespace Loyc.LLParserGenerator
 				else if (expr.Calls(_Star, 1) || expr.Calls(_Plus, 1) || expr.Calls(_Opt, 1))
 				{
 					// loop (a+, a*) or optional (a?)
-					Symbol type = expr.Name;
-					bool? greedy = null;
-					bool g;
-					expr = expr.Args[0];
-					if ((g = expr.Calls(_Greedy, 1)) || expr.Calls(_Nongreedy, 1))
-					{
-						greedy = g;
-						expr = expr.Args[0];
-					}
-					BranchMode branchMode;
-					Pred subpred = BranchToPred(expr, out branchMode, ctx);
-
-					if (branchMode != BranchMode.None)
-						_sink.Write(Severity.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
-					
-					if (type == _Star)
-						return new Alts(expr, LoopMode.Star, subpred, greedy);
-					else if (type == _Plus) {
-						return new Seq(subpred, new Alts(expr, LoopMode.Star, subpred.Clone(), greedy), expr);
-					} else // type == _Opt
-						return new Alts(expr, LoopMode.Opt, subpred, greedy);
+					return TranslateLoopExpr(expr, ctx);
 				}
 				else if (expr.Calls(_Gate, 1) || expr.Calls(_EqGate, 1))
 				{
@@ -167,18 +149,13 @@ namespace Loyc.LLParserGenerator
 						return subpred;
 					}
 				}
+				else if (expr.Calls(_Any, 2) && expr.Args[0].IsId) 
+				{
+					return Translate_any_in_Expr(expr, ctx);
+				}
 				else if ((expr.Name.Name.EndsWith(":") || expr.Name.Name.EndsWith("=")) && expr.ArgCount == 2)
 				{
-					var pred = NodeToPred(expr.Args[1], ctx);
-					var label = expr.Args[0];
-					if (label.IsId) {
-						var oper = expr.Name;
-						pred.VarLabel = label.Name;
-						pred.VarIsList = oper == S.AddSet || oper == _AddColon;
-						pred.ResultSaver = Pred.GetStandardResultSaver(label, expr.Name);
-					} else
-						_sink.Write(Severity.Error, label, "A label must be an identifier");
-					return pred;
+					return TranslateLabeledExpr(expr, ctx);
 				}
 			}
 			
@@ -201,6 +178,108 @@ namespace Loyc.LLParserGenerator
 			} else if (errorMsg != null)
 				_sink.Write(Severity.Warning, expr, errorMsg);
 			return terminal;
+		}
+
+		private Pred TranslateLoopExpr(LNode expr, Context ctx)
+		{
+			Symbol type = expr.Name;
+			bool? greedy = null;
+			bool g;
+			expr = expr.Args[0];
+			if ((g = expr.Calls(_Greedy, 1)) || expr.Calls(_Nongreedy, 1)) {
+				greedy = g;
+				expr = expr.Args[0];
+			}
+			BranchMode branchMode;
+			Pred subpred = BranchToPred(expr, out branchMode, ctx);
+
+			if (branchMode != BranchMode.None)
+				_sink.Write(Severity.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
+
+			if (type == _Star)
+				return new Alts(expr, LoopMode.Star, subpred, greedy);
+			else if (type == _Plus) {
+				return new Seq(subpred, new Alts(expr, LoopMode.Star, subpred.Clone(), greedy), expr);
+			} else // type == _Opt
+				return new Alts(expr, LoopMode.Opt, subpred, greedy);
+		}
+
+		private Pred TranslateLabeledExpr(LNode expr, Context ctx)
+		{
+			var pred = NodeToPred(expr.Args[1], ctx);
+			// Note: it's required that we don't change pred.Basis here--
+			// AutoValueSaverVisitor expects the Basis of x:'#' to be '#' so 
+			// that in code blocks $'#' is recognized as being "the same".
+			var label = expr.Args[0];
+			var labelName = label.Name;
+			if (!label.IsId) {
+				_sink.Write(Severity.Error, label, "A label must be an identifier");
+			} else if (labelName == _Inline2 || labelName == _Inline || labelName == _NoInline) {
+				if (pred is RuleRef)
+					((RuleRef)pred).IsInline = labelName != _NoInline;
+				else
+					_sink.Write(Severity.Error, label, "'{0}:' can only be attached to a rule reference, which '{1}' is not", labelName, pred.ToString());
+			} else {
+				var oper = expr.Name;
+				pred.VarLabel = labelName;
+				pred.VarIsList = oper == S.AddSet || oper == _AddColon;
+				pred.ResultSaver = Pred.GetStandardResultSaver(label, expr.Name);
+			}
+			return pred;
+		}
+
+		private Pred Translate_any_in_Expr(LNode expr, Context ctx)
+		{
+			// The user typed something of the form "any idNode in subExpr"
+			LNode idNode = expr.Args[0], subExpr = expr.Args[1];
+			Symbol id = idNode.Name, id2 = (Symbol)("#" + id.Name);
+			any_in_HashLabels.Add(id2);
+			if (id.Name.StartsWith("#"))
+				any_in_HashLabels.Add(id);
+			// Scan the rules looking for ones marked with the specified ID.
+			LNode newExpr = null;
+			foreach (var rul in _rules.Values) {
+				if (rul.Basis.Attrs.Any(attr => attr.Name == id || attr.Name == id2)) {
+					// Given "any foo in (A foo B)", suppose we find rules Foo1, 
+					// Foo2 & Foo3 having the attribute 'foo'. We're constructing
+					// the grammar fragment (A Foo1 B | A Foo2 B | A Foo3 B)
+					// i.e. ((A, Foo1, B) | (A, Foo2, B)) | (A, Foo3, B) in LES.
+					bool found = false;
+					LNode subExpr2 = subExpr.ReplaceRecursive(node => {
+						if (node.Equals(idNode)) {
+							found = true;
+							return node.WithName(rul.Name);
+						}
+						return null;
+					});
+					if (!found) {
+						_sink.Write(Severity.Error, subExpr,
+							"'any': expected '{0}' somewhere in the expression following 'in'", id);
+						break;
+					}
+					if (newExpr == null)
+						newExpr = subExpr2;
+					else
+						newExpr = F.Call(S.OrBits, newExpr, subExpr2);
+				}
+			}
+			if (newExpr == null) {
+				_sink.Write(Severity.Warning, expr,
+					"'any': there are no rules marked with the attribute '{0}', so this item has no effect", id);
+				newExpr = F.Tuple();
+			}
+			return NodeToPred(newExpr, ctx);
+		}
+		private void Remove_any_in_Labels()
+		{
+			// Remove #attr in rules referred to by an "any attr in ..." expression.
+			// (If we don't delete them, the final output will cause C# compiler errors.)
+			if (any_in_HashLabels.Count == 0)
+				return;
+			foreach (var rule in _rules.Values) {
+				rule.Basis = rule.Basis.WithAttrs(a =>
+					any_in_HashLabels.Contains(a.Name) ? Maybe<LNode>.Null : a);
+			}
 		}
 
 		/// <summary>Tries to interpret expr as a reference to an existing rule.</summary>

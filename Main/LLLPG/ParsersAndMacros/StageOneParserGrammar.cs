@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.2.0.0
+// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.3.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')
@@ -91,6 +91,7 @@ namespace Loyc.LLParserGenerator
 				switch (LA0) {
 				case TT.And:
 				case TT.AndNot:
+				case TT.Any:
 				case TT.Greedy:
 				case TT.Id:
 				case TT.InvertSet:
@@ -99,7 +100,6 @@ namespace Loyc.LLParserGenerator
 				case TT.LParen:
 				case TT.Minus:
 				case TT.Nongreedy:
-				case TT.Not:
 				case TT.Number:
 				case TT.OtherLit:
 				case TT.String:
@@ -151,50 +151,52 @@ namespace Loyc.LLParserGenerator
 		LNode AssignExpr()
 		{
 			TT la0;
+			Token op;
 			var a = PrefixExpr();
-			// Line 100: ((TT.Assignment|TT.HostOperator) AssignExpr)?
+			// Line 101: ((TT.Assignment|TT.HostOperator) AssignExpr)?
 			la0 = LA0;
 			if (la0 == TT.Assignment || la0 == TT.HostOperator) {
-				var op = MatchAny();
+				op = MatchAny();
 				var b = AssignExpr();
 				Infix(ref a, (Symbol) op.Value, b);
+			}
+			// Line 102: (TT.Bang)*
+			 for (;;) {
+				la0 = LA0;
+				if (la0 == TT.Bang) {
+					op = MatchAny();
+					a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);
+				} else
+					break;
 			}
 			return a;
 		}
 		LNode PrefixExpr()
 		{
-			// Line 105: ( TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | (TT.AndNot|TT.Not) PrefixExprOrBraces | RangeExpr )
-			 switch (LA0) {
-			case TT.InvertSet:
-				{
-					var op = MatchAny();
-					var r = PrefixExpr();
-					return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);
-				}
-			case TT.And:
-				{
-					var op = MatchAny();
-					var r = PrefixExprOrBraces();
-					return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);
-				}
-			case TT.AndNot:
-			case TT.Not:
-				{
-					var op = MatchAny();
-					var r = PrefixExprOrBraces();
-					return F.Call(_AndNot, r, op.StartIndex, r.Range.EndIndex);
-				}
-			default:
-				{
-					var r = RangeExpr();
-					return r;
-				}
+			TT la0;
+			// Line 107: ( TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | TT.AndNot PrefixExprOrBraces | RangeExpr )
+			la0 = LA0;
+			if (la0 == TT.InvertSet) {
+				var op = MatchAny();
+				var r = PrefixExpr();
+				return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);
+			} else if (la0 == TT.And) {
+				var op = MatchAny();
+				var r = PrefixExprOrBraces();
+				return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);
+			} else if (la0 == TT.AndNot) {
+				var op = MatchAny();
+				var r = PrefixExprOrBraces();
+				return F.Call(_AndNot, r, op.StartIndex, r.Range.EndIndex);
+			} else {
+				var r = RangeExpr();
+				return r;
 			}
 		}
 		LNode PrefixExprOrBraces()
 		{
 			TT la0;
-			// Line 111: (TT.LBrace TT.RBrace / PrefixExpr)
+			// Line 113: (TT.LBrace TT.RBrace / PrefixExpr)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
 				var lb = MatchAny();
@@ -209,7 +211,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			var a = PrimaryExpr();
-			// Line 117: (TT.DotDot PrimaryExpr)?
+			// Line 119: (TT.DotDot PrimaryExpr)?
 			la0 = LA0;
 			if (la0 == TT.DotDot) {
 				var op = MatchAny();
@@ -221,15 +223,31 @@ namespace Loyc.LLParserGenerator
 		LNode PrimaryExpr()
 		{
 			TT la0, la1;
-			// Line 122: (TT.Minus PrimaryExpr | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*)
+			Token tok__Any = default(Token);
+			Token tok__Id = default(Token);
+			// Line 124: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr | ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)* )
 			la0 = LA0;
 			if (la0 == TT.Minus) {
 				Skip();
 				var e = PrimaryExpr();
 				return F.Call(S._Negate, e);
+			} else if (la0 == TT.Any) {
+				LNode e, id;
+				tok__Any = MatchAny();
+				tok__Id = Match((int) TT.Id);
+				id = F.Id(tok__Id);
+				// Line 127: (TT.In PrimaryExpr | )
+				la0 = LA0;
+				if (la0 == TT.In) {
+					Skip();
+					e = PrimaryExpr();
+				} else
+					e = id;
+				e = F.Call(_Any, id, e, tok__Any.StartIndex, e.Range.EndIndex);
+				return e;
 			} else {
 				var a = Atom();
-				// Line 126: greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*
+				// Line 134: greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*
 				 for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Dot) {
@@ -256,7 +274,7 @@ namespace Loyc.LLParserGenerator
 		LNode Atom()
 		{
 			LNode e;
-			// Line 137: ( TT.Id | (TT.Number|TT.OtherLit|TT.String) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
+			// Line 145: ( TT.Id | (TT.Number|TT.OtherLit|TT.String) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
 			 switch (LA0) {
 			case TT.Id:
 				{

@@ -34,7 +34,7 @@ namespace LeMP
 		public static LNode unroll(LNode var, LNode cases, LNode body, IMessageSink sink)
 		{
 			if (!cases.Calls(S.Tuple) && !cases.Calls(S.Braces))
-				return Reject(sink, cases, "static foreach: the right-hand side of 'in' should be a tuple");
+				return Reject(sink, cases, "unroll: the right-hand side of 'in' should be a tuple");
 
 			// Maps identifiers => replacements. The integer counts how many times replacement occurred.
 			Triplet<Symbol, LNode, int>[] replacements = null;

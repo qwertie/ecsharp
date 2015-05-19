@@ -43,7 +43,7 @@ namespace Loyc.LLParserGenerator
 		{
 			using (ParsingService.PushCurrent(parser ?? LesLanguageService.Value))
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
-				var c = new TestCompiler(sink ?? _sink, new StringSlice(input));
+				var c = new TestCompiler(sink ?? _sink, new UString(input));
 				c.Run();
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}
