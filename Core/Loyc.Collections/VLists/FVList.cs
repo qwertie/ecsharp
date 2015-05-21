@@ -24,7 +24,11 @@ namespace Loyc.Collections
     /// <summary>
     /// A reference to a FVList, a so-called persistent list data structure.
     /// </summary>
-    /// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
+    /// <remarks>
+	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+	/// is available online about the VList data types.
+	/// <para/>
+	/// See the remarks of <see cref="VListBlock{T}"/> for more information
     /// about VLists. Items are normally added to, and removed from, the front of a 
 	/// FVList or to the back of an RVList; adding, removing or changing items at any 
 	/// other position is inefficient. You can call ToRVList() to convert a FVList to 
@@ -498,7 +502,7 @@ namespace Loyc.Collections
 		}
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
+		public Slice_<T> Slice(int start, int count = int.MaxValue) { return new Slice_<T>(this, start, count); }
 		
 		#endregion 
 

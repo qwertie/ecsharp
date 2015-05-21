@@ -27,7 +27,6 @@ namespace Loyc.Syntax.Les
 	{
 		protected IMessageSink _messages;
 		protected LNodeFactory F;
-		protected ISourceFile _sourceFile;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
 		// index into source text of the first token at the current depth (inside 
@@ -36,7 +35,6 @@ namespace Loyc.Syntax.Les
 		protected LNode _missingExpr = null; // used by MissingExpr
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
 		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
-		public ISourceFile SourceFile { get { return _sourceFile; } }
 
 		static readonly Severity _Error = Severity.Error;
 

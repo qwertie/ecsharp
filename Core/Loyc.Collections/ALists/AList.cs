@@ -15,6 +15,9 @@ namespace Loyc.Collections
 	/// (O(log N)), batch insertion and deletion, observability, fast cloning, 
 	/// freezability, and fast splitting and joining of large collections.
 	/// </summary>
+	/// An <a href="http://core.loyc.net/collections/alists-part1.html">article</a>
+	/// about this class is available.
+	/// <para/>
 	/// <typeparam name="T">Type of each element in the list</typeparam>
 	/// <remarks>
 	/// The name "A-List" is short for All-purpose List. It is so named because

@@ -156,6 +156,11 @@
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
+    <Compile Include="Collections\ExtensionMethods\LinqToCollections.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LinqToCollections.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
     <Compile Include="Collections\ExtensionMethods\ListExtTests.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsSparse.cs" />
@@ -172,7 +177,6 @@
     <Compile Include="Collections\Adapters\ListSourceAsList.cs" />
     <Compile Include="Collections\Adapters\NegList.cs" />
     <Compile Include="Collections\Adapters\NegListSource.cs" />
-    <Compile Include="Collections\HelperClasses\NestedEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\RangeEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -265,6 +269,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Collections\ExtensionMethods\LinqToCollections.ecs">
+      <Generator>LLLPG</Generator>
+      <LastGenOutput>LinqToCollections.cs</LastGenOutput>
+    </None>
     <None Include="Math\FixedPoint.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedPoint.cs</LastGenOutput>

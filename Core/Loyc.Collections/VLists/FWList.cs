@@ -22,6 +22,9 @@ namespace Loyc.Collections
 	/// <summary>
 	/// FWList is the mutable variant of the FVList data structure.
 	/// </summary>
+	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+	/// is available online about the VList data types.
+	/// <para/>
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
 	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>

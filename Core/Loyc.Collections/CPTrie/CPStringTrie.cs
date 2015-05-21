@@ -8,6 +8,9 @@ using Loyc.Collections.Impl;
 namespace Loyc.Collections
 {
 	/// <summary>A compact patricia trie that uses strings as keys.</summary>
+	/// <remarks>This data structure can be very space-efficient when asked to 
+	/// store a large numbers of keys with common prefixes; maximum efficiency is
+	/// achieved when the associated values are all (or almost all) null.</remarks>
 	/// <typeparam name="TValue">Type of value associated with each key.</typeparam>
 	public class CPStringTrie<TValue> : CPTrie<TValue>, IDictionary<string, TValue>
 	{

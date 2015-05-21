@@ -13,6 +13,9 @@ namespace Loyc.Collections.Impl
 	/// "private" or "protected" members of low-level code.
 	/// </summary>
 	/// <remarks>
+	/// An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
+	/// about this class is available.
+	/// <para/>
 	/// InternalList is a struct, not a class, in order to save memory; and for 
 	/// maximum performance, it asserts rather than throwing an exception 
 	/// when an incorrect array index is used. Besides that, it has an 
@@ -251,6 +254,14 @@ namespace Loyc.Collections.Impl
 			set {
 				Debug.Assert((uint)index < (uint)_count);
 				_array[index] = value;
+			}
+		}
+        public T this[int index, T defaultValue]
+		{
+			get {
+				if ((uint)index < (uint)_count)
+					return _array[index];
+				return defaultValue;
 			}
 		}
 

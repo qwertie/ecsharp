@@ -14,6 +14,9 @@
 	/// indexed access to its list of key-value pairs.
 	/// </summary>
 	/// <remarks>
+	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+	/// about the BList classes is available.
+	/// <para/>
 	/// The keys must be comparable (ordered); if the type does not implement
 	/// <c>IComparable</c> or <c>IComparable(T)</c>, you must provide a 
 	/// Comparison(T) delegate to perform comparisons.

@@ -63,7 +63,7 @@ namespace Loyc.Collections
 	/// requires more developer effort. Here's how the GetEnumerator() method can 
 	/// be implemented using <c>NestedEnumerator</c>:
 	/// <code>
-	/// public static IEnumerator&lt;string> GetEnumerator()
+	/// public IEnumerator&lt;string> GetEnumerator()
 	/// {
 	/// 	return new NestedEnumerator&lt;Frame, string>(new Frame(this));
 	/// }
@@ -143,6 +143,7 @@ namespace Loyc.Collections
 	/// constructor, and then a copy of this <c>Frame</c> is used to construct a
 	/// new <see cref="NestedEnumerator{Frame,T}"/> each time the user calls 
 	/// <see cref="GetEnumerator"/>.</summary>
+	/// <remarks>For more information see <see cref="NestedEnumerator{Frame,T}"/>.</remarks>
 	public struct NestedEnumerable<Frame, T> : IEnumerable<T>
 		where Frame : IEnumeratorFrame<Frame, T>, ICloneable<Frame>
 	{

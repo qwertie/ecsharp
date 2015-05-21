@@ -32,6 +32,8 @@ namespace Loyc.Collections
 	/// </remarks>
 	public struct Slice_<T> : IRange<T>, ICloneable<Slice_<T>>, IIsEmpty
 	{
+		public static readonly Slice_<T> Empty = new Slice_<T>();
+
 		IListSource<T> _list;
 		int _start, _count;
 		

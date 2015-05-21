@@ -24,6 +24,9 @@ namespace Loyc.Collections
 	/// <summary>
 	/// RVList represents a reference to a reverse-order FVList.
 	/// </summary><remarks>
+	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+	/// is available online about the VList data types.
+	/// <para/>
 	/// FVList is a persistent list data structure described in Phil Bagwell's 2002
 	/// paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
 	/// Arrays". RVList is the name I (DLP) give to a variant of this structure in
@@ -473,7 +476,7 @@ namespace Loyc.Collections
 		}
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public Slice_<T> Slice(int start, int count) { return new Slice_<T>(this, start, count); }
+		public Slice_<T> Slice(int start, int count = int.MaxValue) { return new Slice_<T>(this, start, count); }
 		
 		#endregion 
 

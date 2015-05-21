@@ -14,6 +14,9 @@
 	/// indexed access to its list.
 	/// </summary>
 	/// <remarks>
+	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+	/// about the BList classes is available.
+	/// <para/>
 	/// When you need a sorted list of items, there's nothing quite like a BList. BList offers
 	/// numerous features that none of the standard .NET collections can offer:
 	/// <ul>
