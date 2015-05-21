@@ -28,7 +28,6 @@ namespace Ecs.Parser
 	{
 		protected IMessageSink _messages;
 		protected LNodeFactory F;
-		protected ISourceFile _sourceFile;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
 		// index into source text of the first token at the current depth (inside 
@@ -41,7 +40,6 @@ namespace Ecs.Parser
 			set { _messages = value ?? Loyc.MessageSink.Current; }
 		}
 		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
-		public ISourceFile SourceFile { get { return _sourceFile; } }
 
 		static readonly Severity _Error = Severity.Error;
 		static readonly Severity _Warning = Severity.Warning;
@@ -135,7 +133,7 @@ namespace Ecs.Parser
 		{
 			Error(lookaheadIndex, message, InternalList<object>.EmptyArray);
 		}
-		protected void Error(int lookaheadIndex, string message, params object[] args)
+		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);

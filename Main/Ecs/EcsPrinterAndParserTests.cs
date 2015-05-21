@@ -293,7 +293,8 @@ namespace Ecs
 			Expr("2f",       F.Literal(2f));
 			Expr("1u",       F.Literal(1u));
 			Expr("0uL",      F.Literal(0uL));
-			Expr("-1",       F.Literal(-1));
+			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
+			Expr("-1",       F.Literal(-1), Mode.PrintOnly);
 			Expr("0xff",     Alternate(F.Literal(0xFF)));
 			Expr("null",     F.Literal(null));
 			Expr("false",    F.Literal(false));
@@ -362,6 +363,7 @@ namespace Ecs
 			Expr("c ? Foo(x) : a + b", F.Call(S.QuestionMark, c, F.Call(Foo, x), F.Call(S.Add, a, b)));
 			Expr("Foo[x]",           F.Call(S.Bracks, Foo, x));
 			Expr("Foo[a, b]",        F.Call(S.Bracks, Foo, a, b));
+			Expr("Foo[a - 1]",       F.Call(S.Bracks, Foo, F.Call(S.Sub, a, one)));
 			Expr("Foo[]",            F.Call(S.Bracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
 			Expr("@`[]`()",          F.Call(S.Bracks));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
@@ -1577,6 +1579,9 @@ namespace Ecs
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
 			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
+
+			// 2015-05-20: parsed incorrectly
+			Expr("Foo[a-1]",         F.Call(S.Bracks, Foo, F.Call(S.Sub, a, one)), Mode.ParseOnly);
 		}
 	}
 }

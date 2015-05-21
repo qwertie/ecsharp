@@ -27,7 +27,7 @@ namespace Ecs.Parser
 		public EcsLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) { ErrorSink = sink; }
 
 		public bool AllowNestedComments = false;
-		private bool _isFloat, _parseNeeded, _isNegative, _verbatim;
+		private bool _isFloat, _parseNeeded, _verbatim;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
 		private NodeStyle _style;
@@ -40,7 +40,7 @@ namespace Ecs.Parser
 		// at the current input position. When _allowPPAt==_startPosition, it's allowed.
 		private int _allowPPAt;
 
-		new public void Reset(ICharSource source, string fileName = "", int inputPosition = 0)
+		public void Reset(ICharSource source, string fileName = "", int inputPosition = 0)
 		{
 			base.Reset(source, fileName, inputPosition, true);
 		}
@@ -322,8 +322,6 @@ namespace Ecs.Parser
 		void ParseNumberValue()
 		{
 			int start = _startPosition;
-			if (_isNegative)
-				start++;
 			if (_numberBase != 10)
 				start += 2;
 			int stop = InputPosition;
@@ -332,7 +330,7 @@ namespace Ecs.Parser
 
 			UString digits = CharSource.Slice(start, stop - start);
 			string error;
-			if ((_value = LesLexer.ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
+			if ((_value = LesLexer.ParseNumberCore(digits, false, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
 			else if (_value == CodeSymbols.Sub) {
 				InputPosition = _startPosition + 1;

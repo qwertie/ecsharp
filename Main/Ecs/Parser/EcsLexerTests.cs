@@ -97,10 +97,10 @@ namespace Ecs.Parser
 		{
 			Case("9", A(TT.Number), 9);
 			Case("1337", A(TT.Number), 1337);
-			Case("-1", A(TT.Number), -1);
+			Case("-1", A(TT.Sub, TT.Number), _("-"), 1);
 			Case("9111222U", A(TT.Number), 9111222U);
 			Case("0L", A(TT.Number), 0L);
-			Case("-9111222L", A(TT.Number), -9111222L);
+			Case("-9111222L", A(TT.Sub, TT.Number), _("-"), 9111222L);
 			Case("-1U", A(TT.Sub, TT.Number), _("-"), 1U);
 			Case("9_111_222", A(TT.Number), 9111222);
 			Case("9_111_222_333", A(TT.Number), 9111222333);

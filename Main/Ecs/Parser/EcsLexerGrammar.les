@@ -85,8 +85,7 @@ namespace Ecs.Parser
 			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		];
 		private token Number() @[
-		    { _isFloat = _isNegative = false; _typeSuffix = null; }
-		    ('-' {_isNegative = true;})?
+		    { _isFloat = false; _typeSuffix = null; }
 		    (HexNumber / BinNumber / DecNumber)
 		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
 		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}

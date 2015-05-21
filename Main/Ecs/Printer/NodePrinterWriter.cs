@@ -21,7 +21,7 @@ namespace Ecs
 				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
 			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+') 
-			      || (_lastCh == '-' && (nextCh == '-' || char.IsDigit(nextCh)))
+			      || (_lastCh == '-' && nextCh == '-')
 			      || (_lastCh == '.' && (nextCh == '.' || char.IsDigit(nextCh)))
 			      || (_lastCh == '/' && nextCh == '*'))
 				_out.Write(' ');
