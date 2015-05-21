@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Loyc.Collections
+{
+	/// <summary>Work in progress. This is a set of extension methods that is 
+	/// designed to supplant the normal extension methods designed for 
+	/// <see cref="IEnumerable{T}"/> with equivalent faster methods designed for 
+	/// <see cref="IList{T}"/> and other collection interfaces.
+	/// </summary><remarks>
+	/// For example, the <see cref="Enumerable.Last(IEnumerable{T})"/> extension 
+	/// method scans the entire list before returning the last item, while 
+	/// <see cref="Last(IReadOnlyList{T})"/> and <see cref="Last(IList{T})"/> simply
+	/// return the last item directly.
+	/// </remarks>
+	public static class LinqToCollections
+	{
+		unroll (List in (IList<T>, IReadOnlyList<T>)) {
+			public static int Count<T>(this List list) { return list.Count; }
+			public static T Last<T>(this List list) {
+				int last = list.Count - 1;
+				if (last < 0)
+					throw new EmptySequenceException();
+				return list[last];
+			}
+			public static T LastOrDefault<T>(this List list, T defaultValue = default(T)) {
+				int last = list.Count - 1;
+				return last < 0 ? defaultValue : list[last];
+			}
+		}
+	}
+}

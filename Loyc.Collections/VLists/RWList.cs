@@ -22,7 +22,11 @@ namespace Loyc.Collections
 	/// <summary>
 	/// RWList is the mutable variant of the RVList data structure.
 	/// </summary>
-	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
+	/// <remarks>
+	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+	/// is available online about the VList data types.
+	/// <para/>
+	/// See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
 	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
 	public sealed class RWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<RWList<T>>, ICloneable

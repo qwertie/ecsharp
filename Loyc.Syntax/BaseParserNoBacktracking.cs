@@ -53,6 +53,7 @@ namespace Loyc.Syntax
 		}
 		protected void Reset(Enumerator sequence, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
+			_sequence = sequence;
 			EofToken = eofToken;
 			EOF = EofToken.TypeInt;
 			_tokenBuffer.Resize(0);

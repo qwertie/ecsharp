@@ -13,6 +13,9 @@ namespace Loyc.Collections
 	/// single key. Note: both keys and values must be comparable.
 	/// </summary>
 	/// <remarks>
+	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+	/// about the BList classes is available.
+	/// <para/>
 	/// Often when people want to be able to associate multiple values with a 
 	/// single key, they use a Dictionary with values of type <see cref="List{T}"/>.
 	/// This approach is very inefficient (in terms of memory use) if most keys are 

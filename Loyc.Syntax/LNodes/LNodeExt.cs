@@ -28,7 +28,16 @@ namespace Loyc.Syntax
 		/// <remarks>This is the reverse of the operation performed by <see cref="AsList(LNode,Symbol)"/>.</remarks>
 		public static LNode AsLNode(this RVList<LNode> list, Symbol listIdentifier)
 		{
-			return list.Count == 1 ? list[0] : LNode.Call(listIdentifier, list, SourceRange.Nowhere);
+			if (list.Count == 1)
+				return list[0];
+			else {
+				var r = SourceRange.Nowhere;
+				if (list.Count != 0) {
+					r = list[0].Range;
+					r = new SourceRange(r.Source, r.StartIndex, list.Last.Range.EndIndex - r.StartIndex);
+				}
+ 				return LNode.Call(listIdentifier, list, r);
+			}
 		}
 
 		public static RVList<LNode> WithSpliced(this RVList<LNode> list, int index, LNode node, Symbol listName)

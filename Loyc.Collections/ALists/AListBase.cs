@@ -15,6 +15,9 @@
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/>.
 	/// </summary>
 	/// <remarks>
+	/// You can read <a href="http://core.loyc.net/collections/">articles</a> about
+	/// the AList family of data structures online.
+	/// <para/>
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/> are excellent data 
 	/// structures to choose if you aren't sure what your requirements are. The 
 	/// main difference between them is that BList is sorted and AList is not. 

@@ -26,6 +26,10 @@ namespace Loyc.Collections
 	/// This class is intended to be use as a base class; a derived class can
 	/// give meaning to the byte arrays, e.g. CPStringTrie encodes strings into
 	/// byte arrays so they can be placed in the trie.</summary>
+	/// <remarks>
+	/// An <a href="http://www.codeproject.com/Articles/61230/CPTrie-A-sorted-data-structure-for-NET">article</a>
+	/// is available online the CPTrie data types.
+	/// </remarks>
 	/// <typeparam name="T">Type of values to be associated with the keys. CPTrie
 	/// can save memory if many or all values are null; therefore, if you wish
 	/// to store a set rather than a dictionary, set T=object and associate null

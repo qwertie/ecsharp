@@ -24,12 +24,16 @@ namespace Loyc
 	/// type of message being printed. For message sinks that are used as 
 	/// loggers, this should be one of the following logging levels, listed
 	/// in order of importance: Fatal, Error, Warning, Note, Debug, Verbose.
+	/// <para/>
 	/// For message sinks that are used for compiler messages, the standard
-	/// levels are: Fatal, Error, SoftError, Warning, Note, Detail. "SoftError"
-	/// is intended to describe code that is technically illegal, but which
-	/// does not prevent code generation. "Detail" provides more information 
-	/// about a previously-printed message, while "Note" is intended for
-	/// independent messages that are less severe than warnings.
+	/// levels are: Fatal, Error, Warning, Note, Detail. "Detail" provides more 
+	/// information about a previously-printed message, while "Note" is intended 
+	/// for independent messages that are less severe than warnings (e.g. lints).
+	/// Some compilers may distiguish "soft" errors (which do not prevent the
+	/// program from starting) from "critical" errors (which do). In that case, 
+	/// Error may represents such a "soft" error and Critical may represent a
+	/// "hard" error. Fatal, in contrast, represents an error that causes the
+	/// compiler to halt immediately.
 	/// <para/>
 	/// The message sink itself should perform localization, which can be done
 	/// with <see cref="Localize.From"/>.

@@ -123,6 +123,10 @@ namespace Loyc
 
 		public static explicit operator Symbol(string s) { return GSymbol.Get(s); }
 		public static explicit operator string(Symbol s) { return s.Name; }
+		
+		/// <summary>Alias for <see cref="GSymbol.Get(string)"/>. This function was 
+		/// introduced to match the equivalent ES6 API <c>Symbol.for("string")</c></summary>
+		public static Symbol For(string s) { return GSymbol.Get(s); }
 	}
 
 	/// <summary>This class produces global symbols.</summary>

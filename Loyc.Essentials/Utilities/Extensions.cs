@@ -7,6 +7,7 @@ using Loyc.Math;
 using Loyc.Collections.Impl;
 using System.Diagnostics;
 using Loyc.Collections;
+using System.Reflection;
 
 namespace Loyc
 {
@@ -124,6 +125,40 @@ namespace Loyc
 				sb.Append(newLine);
 			}
 			return sb;
+		}
+
+		/// <summary>Calls an internal method of <see cref="Exception"/> that records 
+		/// an exception's stack trace so that the stack trace does not change if 
+		/// the exception is rethrown (e.g. on another thread).</summary>
+		/// <remarks>
+		/// <example>
+		///		Exception ex = null;
+		/// 	var thread = new ThreadEx(() => {
+		/// 		try { 
+		/// 			SomethingThatMightThrowOrTakeForever(); 
+		/// 		} catch (Exception e) { 
+		/// 			ex = e; 
+		/// 			ex.PreserveStackTrace();
+		/// 		}
+		/// 	});
+		/// 	thread.Start();
+		/// 	if (!thread.Join(timeout)) {
+		/// 		thread.Abort();
+		/// 		thread.Join(timeout);
+		/// 	}
+		/// 	if (ex != null)
+		/// 		throw ex; // includes stack trace from the other thread
+		/// </example>
+		/// Note: when rethrowing an exception that was just caught, you
+		/// should always use "catch;" instead of calling this method.
+		/// </remarks>
+		public static void PreserveStackTrace(this Exception exception)
+		{
+			try {
+				MethodInfo preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
+					BindingFlags.Instance | BindingFlags.NonPublic);
+				preserveStackTrace.Invoke(exception, null);
+			} catch { }
 		}
 	}
 }

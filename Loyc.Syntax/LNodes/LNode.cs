@@ -523,7 +523,7 @@ namespace Loyc.Syntax
 
 		protected LNode(LNode prototype)
 		{
-			RAS = prototype.RAS;
+			RAS = (prototype ?? LNode.Missing).RAS;
 		}
 		protected LNode(SourceRange range, NodeStyle style)
 		{
@@ -532,7 +532,7 @@ namespace Loyc.Syntax
 				RAS.Source = SyntheticSource;
 		}
 
-		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<SyntheticCode>");
+		public static readonly EmptySourceFile SyntheticSource = new EmptySourceFile("<Synthetic Code>");
 
 		public static readonly IdNode Missing = Id(CodeSymbols.Missing);
 
