@@ -153,14 +153,7 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			Token op;
 			var a = PrefixExpr();
-			// Line 101: ((TT.Assignment|TT.HostOperator) AssignExpr)?
-			la0 = LA0;
-			if (la0 == TT.Assignment || la0 == TT.HostOperator) {
-				op = MatchAny();
-				var b = AssignExpr();
-				Infix(ref a, (Symbol) op.Value, b);
-			}
-			// Line 102: (TT.Bang)*
+			// Line 101: (TT.Bang)*
 			 for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Bang) {
@@ -168,6 +161,13 @@ namespace Loyc.LLParserGenerator
 					a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);
 				} else
 					break;
+			}
+			// Line 102: ((TT.Assignment|TT.HostOperator) AssignExpr)?
+			la0 = LA0;
+			if (la0 == TT.Assignment || la0 == TT.HostOperator) {
+				op = MatchAny();
+				var b = AssignExpr();
+				Infix(ref a, (Symbol) op.Value, b);
 			}
 			return a;
 		}

@@ -12,29 +12,33 @@ namespace LeMP
 {
 	public partial class StandardMacros
 	{
-		[SimpleMacro(@"replace (input($capture) => output($capture), ...) {...}",
-			"Finds one or more patterns in a block of code and replaces each matching expression with another expression. The braces are omitted from the output (and are not matchable).")]
-		public static LNode replace(LNode node, IMessageSink sink)
+		[LexicalMacro(@"replace (input($capture) => output($capture), ...) {...}",
+			"Finds one or more patterns in a block of code and replaces each matching expression with another expression. "+
+			"The braces are omitted from the output (and are not matchable)."+
+			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list.")]
+		public static LNode replace(LNode node, IMacroContext context)
 		{
-			if (node.ArgCount >= 2)
+			var args_body = context.GetArgsAndBody(true);
+			var args = args_body.A;
+			var body = args_body.B;
+			if (args.Count >= 1)
 			{
-				var patterns = new Pair<LNode, LNode>[node.ArgCount-1];
+				var patterns = new Pair<LNode, LNode>[args.Count];
 				for (int i = 0; i < patterns.Length; i++)
 				{
-					var pair = node.Args[i];
+					var pair = args[i];
 					if (pair.Calls(S.Lambda, 2)) {
 						LNode pattern = pair[0], repl = pair[1];
 						patterns[i] = Pair.Create(pattern, repl);
 					} else {
 						string msg = "Expected 'pattern => replacement'.";
 						if (pair.Descendants().Any(n => n.Calls(S.Lambda, 2)))
-							msg += " " + "(Using '=>' already? Put the pattern in parentheses.)";
-						return Reject(sink, pair, msg);
+							msg += " " + "(Using '=>' already? Put the pattern on the left-hand side in parentheses.)";
+						return Reject(context, pair, msg);
 					}
 				}
 
-				var stmts = node.Args.Last.AsList(S.Braces);
-				var output = Replace(stmts, patterns);
+				var output = Replace(body, patterns);
 				return output.AsLNode(S.Splice);
 			}
 			return null;

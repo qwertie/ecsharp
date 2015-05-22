@@ -14,7 +14,7 @@ namespace LeMP
 	{
 		static readonly Symbol _with = GSymbol.Get("with");
 
-		[SimpleMacro("with (Some.Thing) { .Member = 0; .Method(); }", 
+		[LexicalMacro("with (Some.Thing) { .Member = 0; .Method(); }", 
 			"Use members of a particular object (WARNING: COPIES VALUE TYPES)", 
 			Mode = MacroMode.ProcessChildrenBefore)] // post-normal-macro-expansion
 		public static LNode with(LNode fn, IMessageSink sink)

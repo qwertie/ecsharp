@@ -52,7 +52,7 @@ namespace LeMP
 
 		#region concat_id (##), nameof
 
-		[SimpleMacro(@"a `##` b", "Concatenates identifiers and/or literals to produce an identifier", "##", "concat_id")]
+		[LexicalMacro(@"a `##` b", "Concatenates identifiers and/or literals to produce an identifier", "##", "concat_id")]
 		public static LNode concat_id(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
@@ -88,7 +88,7 @@ namespace LeMP
 			return result.WithAttrs(attrs);
 		}
 
-		[SimpleMacro(@"nameof(id_or_expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
+		[LexicalMacro(@"nameof(id_or_expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
 		public static LNode @nameof(LNode @nameof, IMessageSink sink)
 		{
 			if (@nameof.ArgCount != 1)
@@ -98,7 +98,7 @@ namespace LeMP
 		
 		#endregion
 
-		[SimpleMacro(@"x `tree==` y", "Returns the literal true if two or more syntax trees are equal, or false if not.", "tree==")]
+		[LexicalMacro(@"x `tree==` y", "Returns the literal true if two or more syntax trees are equal, or false if not.", "tree==")]
 		public static LNode TreeEqual(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -111,7 +111,7 @@ namespace LeMP
 			return F.Literal(G.BoxedTrue);
 		}
 
-		[SimpleMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", Mode = MacroMode.Passive)]
+		[LexicalMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", Mode = MacroMode.Passive)]
 		public static LNode StaticIf(LNode @if, IMessageSink sink)
 		{
 			LNode @static;
@@ -120,7 +120,7 @@ namespace LeMP
 			return static_if(@if, sink);
 		}
 		
-		[SimpleMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now", Mode = MacroMode.Passive)]
+		[LexicalMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now", Mode = MacroMode.Passive)]
 		public static LNode static_if(LNode @if, IMessageSink sink)
 		{
 			if (!MathEx.IsInRange(@if.ArgCount, 2, 3))
@@ -139,7 +139,7 @@ namespace LeMP
 				return Reject(sink, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
 		}
 
-		[SimpleMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]
+		[LexicalMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]
 		public static LNode NullCoalesceSet(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -151,7 +151,7 @@ namespace LeMP
 			return F.Assign(x, F.Call(S.NullCoalesce, x, y));
 		}
 
-		[SimpleMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
+		[LexicalMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
 			"e.g. if (int.Parse(text):::num > 0) positives += num;", "=:", ":::")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
@@ -163,7 +163,7 @@ namespace LeMP
 			return null;
 		}
 		
-		[SimpleMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".")]
+		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

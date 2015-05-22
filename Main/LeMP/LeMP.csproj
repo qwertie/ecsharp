@@ -214,7 +214,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler.cs" />
+    <Compile Include="IMacroContext.cs" />
     <Compile Include="MacroProcessor.cs" />
+    <Compile Include="MacroProcessorTask.cs" />
     <Compile Include="MacroProcessorTests.cs" />
     <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

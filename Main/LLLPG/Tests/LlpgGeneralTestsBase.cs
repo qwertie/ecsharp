@@ -24,7 +24,7 @@ namespace Loyc.LLParserGenerator
 				: base(sink, text, fileName)
 			{
 				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
-				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+				MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 				MacroProcessor.AbortTimeout = TimeSpan.Zero;
 				AddMacros(Assembly.GetExecutingAssembly());
 			}

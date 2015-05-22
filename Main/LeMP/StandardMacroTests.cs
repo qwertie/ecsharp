@@ -449,6 +449,13 @@ namespace LeMP
 			TestEcs(@"replace(TO=>DO) {}", @"");
 		}
 
+		[Test]
+		public void TestReplace_RemainingNodes()
+		{
+			TestEcs(@"{ replace(C => Console, WL => WriteLine); string name = ""Bob""; C.WL(""Hi ""+name); }",
+			        @"{ string name = ""Bob""; Console.WriteLine(""Hi ""+name); }");
+		}
+
 		private void TestLes(string input, string outputLes, int maxExpand = 0xFFFF)
 		{
 			Test(input, LesLanguageService.Value, outputLes, LesLanguageService.Value, maxExpand);

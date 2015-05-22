@@ -28,7 +28,7 @@ namespace LeMP
 			}
 		}
 
-		[SimpleMacro("use_default_tuple_types()", "")]
+		[LexicalMacro("use_default_tuple_types()", "")]
 		public static LNode use_default_tuple_types(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount != 0)
@@ -38,7 +38,7 @@ namespace LeMP
 		}
 
 		// Flaw: this is nondeterministic... given multiple files, set_tuple_type() in one file may or may not affect other files.
-		[SimpleMacro("set_tuple_type(BareName); set_tuple_type(TupleSize, BareName); set_tuple_type(TupleSize, BareName, Factory.Method)",
+		[LexicalMacro("set_tuple_type(BareName); set_tuple_type(TupleSize, BareName); set_tuple_type(TupleSize, BareName, Factory.Method)",
 			"Set type and creation method for tuples, for a specific size of tuple or for all sizes at once")]
 		public static LNode set_tuple_type(LNode node, IMessageSink sink) {
 			MaybeInitTupleMakers();
@@ -64,7 +64,7 @@ namespace LeMP
 			return F.Call(S.Splice);
 		}
 
-		[SimpleMacro("#<x, y, ...>", "Represents a tuple type", "#of")]
+		[LexicalMacro("#<x, y, ...>", "Represents a tuple type", "#of")]
 		public static LNode TupleType(LNode node, IMessageSink sink)
 		{
 			var stem = node.Args[0, F._Missing];
@@ -79,7 +79,7 @@ namespace LeMP
 			return null;
 		}
 
-		[SimpleMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple")]
+		[LexicalMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple")]
 		public static LNode Tuple(LNode node, IMessageSink sink)
 		{
 			// TODO: consider supporting .[a, b] (and !(a, b)) as syntax for @``<a, b> 
@@ -95,7 +95,7 @@ namespace LeMP
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
-		[SimpleMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=")]
+		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=")]
 		public static LNode UnpackTuple(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

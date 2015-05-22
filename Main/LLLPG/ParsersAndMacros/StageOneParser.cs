@@ -125,13 +125,11 @@ namespace Loyc.LLParserGenerator
 		{
 			_hostLanguage = hostLanguage ?? ParsingService.Current;
 			_tokensRoot = _tokens = ReclassifyTokens(tokens);
-			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
 		}
 
 		protected LNodeFactory F;
-		protected ISourceFile _sourceFile;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
 		// index into source text of the first token at the current depth (inside 

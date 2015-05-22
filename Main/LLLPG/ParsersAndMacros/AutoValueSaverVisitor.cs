@@ -222,7 +222,6 @@ namespace Loyc.LLParserGenerator
 		// ifier, under the assumption that it doesn't refer to a rule or label.
 		static Symbol PickVarNameForLNode(LNode label)
 		{
-			LNode a, b;
 			if (label.IsId) {
 				// Ignore the predefined special substitutions $LA and $LI
 				if (label.Name.Name == "LA" || label.Name.Name == "LI")

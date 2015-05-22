@@ -15,7 +15,7 @@ namespace LeMP
 	{
 		static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
 
-		[SimpleMacro("e.g. quote({ foo(); }) ==> F.Id(id);", 
+		[LexicalMacro("e.g. quote({ foo(); }) ==> F.Id(id);", 
 			"Poor-man's code quote mechanism, to be used until something more sophisticated becomes available. "+
 			"Assumes the existence of an LNodeFactory F, which is used to build a syntax tree from the specified code. "+
 			"If there is a single parameter that is braces, the braces are stripped out. "+
@@ -27,7 +27,7 @@ namespace LeMP
 		{
 			return quote2(node, sink, true);
 		}
-		[SimpleMacro(@"e.g. quoteRaw($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
+		[LexicalMacro(@"e.g. quoteRaw($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
 			"Behaves the same as quote(code) except that the substitution operator $ is not recognized as a request for substitution.",
 			"rawQuote", "#rawQuote")]
 		public static LNode rawQuote(LNode node, IMessageSink sink)

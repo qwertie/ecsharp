@@ -23,7 +23,7 @@ namespace LeMP.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 		
-		[SimpleMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.", 
+		[LexicalMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.", 
 			Mode = MacroMode.NoReprocessing)]
 		public static LNode noMacro(LNode node, IMessageSink sink)
 		{
@@ -35,7 +35,7 @@ namespace LeMP.Prelude
 		static readonly Symbol _macros = GSymbol.Get("macros");
 		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 
-		[SimpleMacro("import macros Namespace",
+		[LexicalMacro("import macros Namespace",
 			"Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.")]
 		public static LNode import(LNode node, IMessageSink sink)
 		{
@@ -66,45 +66,45 @@ namespace LeMP.Prelude
 
 		static readonly Symbol _macros = GSymbol.Get("macros");
 
-		[SimpleMacro("import Namespace;", "Use symbols from specified namespace ('using' in C#).")]
+		[LexicalMacro("import Namespace;", "Use symbols from specified namespace ('using' in C#).")]
 		public static LNode import(LNode node, IMessageSink sink)
 		{
 			if (!node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
 				return node.WithTarget(S.Import);
 			return null;
 		}
-		[SimpleMacro("class Name { Members; }; class Name(Bases...) { Members... }", 
+		[LexicalMacro("class Name { Members; }; class Name(Bases...) { Members... }", 
 			"Defines a class (a by-reference data type with data and/or methods).")]
-		public static LNode @class(LNode node, IMessageSink sink)
+		public static LNode @class(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Class);
 		}
-		[SimpleMacro("struct Name { Members; }; struct Name(Bases...) { Members... }", 
+		[LexicalMacro("struct Name { Members; }; struct Name(Bases...) { Members... }", 
 			"Defines a struct (a by-value data type with data and/or methods).")]
-		public static LNode @struct(LNode node, IMessageSink sink)
+		public static LNode @struct(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Struct);
 		}
-		[SimpleMacro("enum Name { Tag1 = Num1; Tag2 = Num2; ... }; enum Name(BaseInteger) { Tag1 = Num1; Tag2 = Num2; ... }", 
+		[LexicalMacro("enum Name { Tag1 = Num1; Tag2 = Num2; ... }; enum Name(BaseInteger) { Tag1 = Num1; Tag2 = Num2; ... }", 
 			"Defines an enumeration (a integer that represents one of several identifiers, or a combination of bit flags when marked with [Flags]).")]
-		public static LNode @enum(LNode node, IMessageSink sink)
+		public static LNode @enum(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Enum);
 		}
-		[SimpleMacro("trait Name { Members; }; trait Name(Bases...) { Members... }",
+		[LexicalMacro("trait Name { Members; }; trait Name(Bases...) { Members... }",
 			"Not implemented. A set of methods that can be inserted easily into a host class or struct; just add the trait to the host's list of Bases.")]
-		public static LNode @trait(LNode node, IMessageSink sink)
+		public static LNode @trait(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Trait);
 		}
-		[SimpleMacro("alias NewName = OldName; alias NewName(Bases...) = OldName; alias NewName(Bases) = OldName { FakeMembers... }",
+		[LexicalMacro("alias NewName = OldName; alias NewName(Bases...) = OldName; alias NewName(Bases) = OldName { FakeMembers... }",
 			"Not implemented. Defines an alternate view on a data type. If 'Bases' specifies one or more interfaces, a variable of type NewName can be implicitly converted to those interfaces.")]
-		public static LNode @alias(LNode node, IMessageSink sink)
+		public static LNode @alias(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Alias);
 		}
-		[SimpleMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
-		public static LNode @using1(LNode node, IMessageSink sink)
+		[LexicalMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
+		public static LNode @using1(LNode node, IMacroContext sink)
 		{
 			if (node.ArgCount == 1 && IsComplexId(node.Args[0])) {
 				// Looks like an import statement
@@ -116,14 +116,14 @@ namespace LeMP.Prelude
 				return result.PlusAttr(F.Id(S.FilePrivate));
 			return null;
 		}
-		[SimpleMacro("namespace Name { Members... }",
+		[LexicalMacro("namespace Name { Members... }",
 			"Adds the specified members to a namespace. Namespaces are used to organize code; it is recommended that every data type and method be placed in a namespace. The 'Name' can have multiple levels (A.B.C).")]
-		public static LNode @namespace(LNode node, IMessageSink sink)
+		public static LNode @namespace(LNode node, IMacroContext sink)
 		{
 			return TranslateSpaceDefinition(node, sink, S.Namespace);
 		}
 
-		public static LNode TranslateSpaceDefinition(LNode node, IMessageSink sink, Symbol newTarget)
+		public static LNode TranslateSpaceDefinition(LNode node, IMacroContext context, Symbol newTarget)
 		{
 			if (!node.IsCall)
 				return null;
@@ -132,11 +132,17 @@ namespace LeMP.Prelude
 			var args = node.Args;
 			LNode nameEtc = args.TryGet(0, null), body = args.TryGet(1, null), oldName = null;
 
-			if (args.Count == 1 ? !isAlias : (args.Count != 2 || !body.Calls(S.Braces)))
-				return Reject(sink, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
+			if (args.Count == 1 ? !isAlias : (args.Count != 2 || !body.Calls(S.Braces))) {
+				if (isNamespace && args.Count == 1) {
+					// Special case: a namespace can auto-wrap whatever statements follow.
+					body = F.Braces(context.RemainingNodes);
+					context.DropRemainingNodes = true;
+				} else
+					return Reject(context, node, "A type definition must have the form kind(Name, { Body }) or kind(Name(Bases), { Body }) (where «kind» is struct/class/enum/trait/alias)");
+			}
 			if (isAlias) {
 				if (!nameEtc.Calls(S.Assign, 2))
-					return Reject(sink, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
+					return Reject(context, node, "An 'alias' (or 'using') definition must have the form alias(NewName = OldName, { Body }) or alias(NewName(Interfaces) = OldName, { Body })");
 				oldName = nameEtc.Args[1];
 				nameEtc = nameEtc.Args[0];
 			}
@@ -152,10 +158,10 @@ namespace LeMP.Prelude
 
 			if (isNamespace) {
 				if (!IsComplexId(name, true))
-					return Reject(sink, name, "Invalid namespace name (expected a complex identifier)");
+					return Reject(context, name, "Invalid namespace name (expected a complex identifier)");
 			} else {
 				if (!IsDefinitionId(name, false))
-					return Reject(sink, name, "Invalid type name (expected a simple name or Name!(T1,T2,...))");
+					return Reject(context, name, "Invalid type name (expected a simple name or Name!(T1,T2,...))");
 			}
 
 			if (isAlias) {
@@ -230,19 +236,19 @@ namespace LeMP.Prelude
 		//   (def $name($args)) `where` (name 
 		// };
 
-		[SimpleMacro("def Name(Args...) { Body... }; def Name(Args...)::ReturnType { Body }; def Name ==> ForwardingTarget { Body }",
+		[LexicalMacro("def Name(Args...) { Body... }; def Name(Args...)::ReturnType { Body }; def Name ==> ForwardingTarget { Body }",
 			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
 		public static LNode @def(LNode node, IMessageSink sink)
 		{
 			return DefOrConstructor(node, sink, false);
 		}
-		[SimpleMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name ==> ForwardingTarget { Body }",
+		[LexicalMacro("fn Name(Args...) { Body... }; fn Name(Args...)::ReturnType { Body }; fn Name ==> ForwardingTarget { Body }",
 			"Defines a function (also known as a method). The '==> ForwardingTarget' version is not implemented.")]
 		public static LNode @fn(LNode node, IMessageSink sink)
 		{
 			return DefOrConstructor(node, sink, false);
 		}
-		[SimpleMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
+		[LexicalMacro("cons ClassName(Args...) {Body...}", "Defines a constructor for the enclosing type. To call the base class constructor, call base(...) as the first statement of the Body.")]
 		public static LNode cons(LNode node, IMessageSink sink)
 		{
 			return DefOrConstructor(node, sink, true);
@@ -295,7 +301,7 @@ namespace LeMP.Prelude
 		//   get x::int { _x; }
 		//   set x::int { _x = value; }
 		
-		[SimpleMacro("prop Name::Type { get {Body...} set {Body...} }", 
+		[LexicalMacro("prop Name::Type { get {Body...} set {Body...} }", 
 			"Defines a property. The getter and setter are optional, but there must be at least one of them.")]
 		public static LNode @prop(LNode node, IMessageSink sink)
 		{
@@ -331,7 +337,7 @@ namespace LeMP.Prelude
 		//}
 		
 
-		[SimpleMacro("var Name::Type; var Name::Type = Value; var Name = Value",
+		[LexicalMacro("var Name::Type; var Name::Type = Value; var Name = Value",
 			"Defines a variable or field in the current scope. You can define more than one at a time, e.g. 'var X::int Name::string;'")]
 		public static LNode @var(LNode node, IMessageSink sink)
 		{
@@ -396,7 +402,7 @@ namespace LeMP.Prelude
 			return node.WithTarget(symbol);
 		}
 
-		[SimpleMacro("for Init Test Increment {Body...}; for (Init, Test, Increment) {Body...};",
+		[LexicalMacro("for Init Test Increment {Body...}; for (Init, Test, Increment) {Body...};",
 			"Represents the standard C/C++/C#/Java 'for' statement, e.g. 'for i=0 i<10 i++ { Console.WriteLine(i); };'")]
 		public static LNode @for(LNode node, IMessageSink sink)
 		{
@@ -410,7 +416,7 @@ namespace LeMP.Prelude
 
 		static readonly Symbol _in = GSymbol.Get("in");
 
-		[SimpleMacro(@"foreach Item \in Collection {Body...}; foreach Item::Type \in Collection {Body...}", "Represents the C# 'foreach' statement.")]
+		[LexicalMacro(@"foreach Item \in Collection {Body...}; foreach Item::Type \in Collection {Body...}", "Represents the C# 'foreach' statement.")]
 		public static LNode @foreach(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
@@ -423,14 +429,14 @@ namespace LeMP.Prelude
 			return null;
 		}
 		
-		[SimpleMacro("while Condition {Body...}",
+		[LexicalMacro("while Condition {Body...}",
 			"Runs the Body code repeatedly, as long as 'Condition' is true. The Condition is checked before Body is run the first time.")]
 		public static LNode @while(LNode node, IMessageSink sink)
 		{
 			return TranslateCall(node, S.While);
 		}
 
-		[SimpleMacro("do {Body...} while Condition; do {Body...} while(Condition)",
+		[LexicalMacro("do {Body...} while Condition; do {Body...} while(Condition)",
 			"Runs the Body code repeatedly, as long as 'Condition' is true. The Condition is checked after Body has already run.")]
 		public static LNode @do(LNode node, IMessageSink sink)
 		{
@@ -445,7 +451,7 @@ namespace LeMP.Prelude
 		static readonly Symbol _while = GSymbol.Get("while");
 
 		static readonly Symbol _else = GSymbol.Get("else");
-		[SimpleMacro("if Condition {Then...}; if Condition {Then...} else {Else...}",
+		[LexicalMacro("if Condition {Then...}; if Condition {Then...} else {Else...}",
 			"If 'Condition' is true, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @if(LNode node, IMessageSink sink)
 		{
@@ -462,7 +468,7 @@ namespace LeMP.Prelude
 				return node.With(S.If, cond, then, @else);
 		}
 
-		[SimpleMacro("unless Condition {Then...}; unless Condition {Then...} else {Else...}",
+		[LexicalMacro("unless Condition {Then...}; unless Condition {Then...} else {Else...}",
 			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @unless(LNode node, IMessageSink sink)
 		{
@@ -476,28 +482,28 @@ namespace LeMP.Prelude
 				return node.With(S.If, F.Call(S.Not, cond), then, @else);
 		}
 
-		[SimpleMacro("switch Value { case ConstExpr1; Handler1; break; case ConstExpr2; Handler2; break; default; DefaultHandler; }",
+		[LexicalMacro("switch Value { case ConstExpr1; Handler1; break; case ConstExpr2; Handler2; break; default; DefaultHandler; }",
 			"Chooses one of several code paths based on the specified 'Value'.")]
 		public static LNode @switch(LNode node, IMessageSink sink)
 		{
 			return TranslateCall(node, S.Switch);
 		}
 
-		[SimpleMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)")]
+		[LexicalMacro("break", "Exit the loop or switch body (the innermost loop, if more than one enclosing loop)")]
 		public static LNode @break(LNode node, IMessageSink sink)
 		{
 			if (!node.IsId) return null;
 			return node.WithTarget(S.Break);
 		}
 
-		[SimpleMacro("continue", "Jump to the end of the loop body, running the loop again if the loop condition is true.")]
+		[LexicalMacro("continue", "Jump to the end of the loop body, running the loop again if the loop condition is true.")]
 		public static LNode @continue(LNode node, IMessageSink sink)
 		{
 			if (!node.IsId) return null;
 			return node.WithTarget(S.Continue);
 		}
 
-		[SimpleMacro("case ConstExpr; case ConstExpr { Code... }", "One label in a switch statement.")]
+		[LexicalMacro("case ConstExpr; case ConstExpr { Code... }", "One label in a switch statement.")]
 		public static LNode @case(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1)
@@ -507,7 +513,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 		
-		[SimpleMacro("default; default { Code... }", "The default label in a switch statement.", "default")]
+		[LexicalMacro("default; default { Code... }", "The default label in a switch statement.", "default")]
 		public static LNode @default1(LNode node, IMessageSink sink)
 		{
 			if (node.IsId)
@@ -517,7 +523,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro("goto LabelName", "Run code starting at the specified label in the same method.")]
+		[LexicalMacro("goto LabelName", "Run code starting at the specified label in the same method.")]
 		public static LNode @goto(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1)
@@ -526,7 +532,7 @@ namespace LeMP.Prelude
 		}
 		
 		static readonly Symbol _case = GSymbol.Get("case");
-		[SimpleMacro("goto case ConstExpr", "Jump to the specified case in the body of the same switch statement.", "goto")]
+		[LexicalMacro("goto case ConstExpr", "Jump to the specified case in the body of the same switch statement.", "goto")]
 		public static LNode GotoCase(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[0].IsIdNamed(_case))
@@ -534,7 +540,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro("label LabelName", "Define a label here that 'goto' can jump to.")]
+		[LexicalMacro("label LabelName", "Define a label here that 'goto' can jump to.")]
 		public static LNode label(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1)
@@ -542,7 +548,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 		
-		[SimpleMacro("lock Object {Body...}",
+		[LexicalMacro("lock Object {Body...}",
 			"Acquires a multithreading lock associated with the specified object. 'lock' waits for any other thread holding the lock to release it before running the statements in 'Body'.")]
 		public static LNode @lock(LNode node, IMessageSink sink)
 		{
@@ -552,7 +558,7 @@ namespace LeMP.Prelude
 		static readonly Symbol _catch = GSymbol.Get("catch");
 		static readonly Symbol _finally = GSymbol.Get("finally");
 		
-		[SimpleMacro("try {Code...} catch (E::Exception) {Handler...} finally {Cleanup...}",
+		[LexicalMacro("try {Code...} catch (E::Exception) {Handler...} finally {Cleanup...}",
 			"Runs 'Code'. The try block must be followed by at least one catch or finally clause. A catch clause catches any exceptions that are thrown while the Code is running, and executes 'Handler'. A finally clause runs 'Cleanup' code before propagating the exception to higher-level code.")]
 		public static LNode @try(LNode node, IMessageSink sink)
 		{
@@ -603,14 +609,14 @@ namespace LeMP.Prelude
 			return node.With(S.Try, clauses.ToRVList());
 		}
 
-		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
+		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
 		public static LNode @throw(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount > 1) return null;
 			return node.With(S.Throw, node.Args); // change throw -> #throw() and throw(x) -> #throw(x)
 		}
 
-		[SimpleMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
+		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
 		public static LNode @return(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount <= 1)
@@ -618,7 +624,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro("using Disposable {Body...}; using VarName := Disposable {Body...}", "The Dispose() method of the 'Disposable' expression is called when the Body finishes.", "using")]
+		[LexicalMacro("using Disposable {Body...}; using VarName := Disposable {Body...}", "The Dispose() method of the 'Disposable' expression is called when the Body finishes.", "using")]
 		public static LNode @using2(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -626,13 +632,13 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro("this(Params...)", "Calls a constructor in the same class. Can only be used inside a constructor.")]
+		[LexicalMacro("this(Params...)", "Calls a constructor in the same class. Can only be used inside a constructor.")]
 		public static LNode @this(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.This);
 		}
 
-		[SimpleMacro("base(Params...)", "Calls a constructor in the base class. Can only be used inside a constructor.")]
+		[LexicalMacro("base(Params...)", "Calls a constructor in the base class. Can only be used inside a constructor.")]
 		public static LNode @base(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Base);
@@ -642,7 +648,7 @@ namespace LeMP.Prelude
 
 		#region Operators
 
-		[SimpleMacro("(new Type); (new Type(Args...))", "Initializes a new instance of the specified type.")]
+		[LexicalMacro("(new Type); (new Type(Args...))", "Initializes a new instance of the specified type.")]
 		public static LNode @new(LNode node, IMessageSink sink)
 		{
 			LNode consExpr = node.Args.TryGet(0, null), csharpInitializer = node.Args.TryGet(1, null);
@@ -657,7 +663,7 @@ namespace LeMP.Prelude
 				return F.Call(S.New, consExpr);
 		}
 
-		[SimpleMacro("default(Type)", "The default value for the specified type (@null or an empty structure).", "default")]
+		[LexicalMacro("default(Type)", "The default value for the specified type (@null or an empty structure).", "default")]
 		public static LNode @default2(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1 && !node.Args[0].Calls(S.Braces))
@@ -665,7 +671,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "->")]
+		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "->")]
 		public static LNode cast(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -673,7 +679,7 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[SimpleMacro(@"Expr \as Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
+		[LexicalMacro(@"Expr \as Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
 		public static LNode @as(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -682,7 +688,7 @@ namespace LeMP.Prelude
 		}
 
 		// only works as long as : is allowed
-		[SimpleMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "?")]
+		[LexicalMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "?")]
 		public static LNode QuestionMark(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[1].Calls(S.Colon, 2))
@@ -691,7 +697,7 @@ namespace LeMP.Prelude
 		}
 
 		// only works as long as : is allowed
-		[SimpleMacro(@"arg: value", "Represents a named argument.", ":")]
+		[LexicalMacro(@"arg: value", "Represents a named argument.", ":")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.Calls(S.Colon, 2) && node.Args[0].IsId)
@@ -703,7 +709,7 @@ namespace LeMP.Prelude
 		static readonly Symbol _opt = GSymbol.Get("opt");
 		static readonly Symbol _ptr = GSymbol.Get("ptr");
 
-		[SimpleMacro("array!Type; opt!Type; ptr!Type", "array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", "#of")]
+		[LexicalMacro("array!Type; opt!Type; ptr!Type", "array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", "#of")]
 		public static LNode of(LNode node, IMessageSink sink)
 		{
 			LNode kind;
@@ -752,42 +758,42 @@ namespace LeMP.Prelude
 			return x;
 		}
 
-		[SimpleMacro("[pub]", "Used as an attribute to indicate that a type, method or field is publicly accessible.")]
+		[LexicalMacro("[pub]", "Used as an attribute to indicate that a type, method or field is publicly accessible.")]
 		public static LNode pub(LNode node, IMessageSink sink) { return TranslateId(node, S.Public); }
-		[SimpleMacro("[priv]", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
+		[LexicalMacro("[priv]", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
 		public static LNode priv(LNode node, IMessageSink sink) { return TranslateId(node, S.Private); }
-		[SimpleMacro("[prot]", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
+		[LexicalMacro("[prot]", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
 		public static LNode prot(LNode node, IMessageSink sink) { return TranslateId(node, S.Protected); }
-		[SimpleMacro("[virt]", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
+		[LexicalMacro("[virt]", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
 		public static LNode virt(LNode node, IMessageSink sink) { return TranslateId(node, S.Virtual); }
-		[SimpleMacro("public <declaration>", "Indicates that a type, method or field is publicly accessible.")]
+		[LexicalMacro("public <declaration>", "Indicates that a type, method or field is publicly accessible.")]
 		public static LNode @public(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Public); }
-		[SimpleMacro("private <declaration>", "Indicates that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
+		[LexicalMacro("private <declaration>", "Indicates that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
 		public static LNode @private(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Private); }
-		[SimpleMacro("protected <declaration>", "Indicates that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
+		[LexicalMacro("protected <declaration>", "Indicates that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
 		public static LNode @protected(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Protected); }
-		[SimpleMacro("internal <declaration>", "Indicates that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
+		[LexicalMacro("internal <declaration>", "Indicates that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
 		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Internal); }
 
-		[SimpleMacro("virtual <declaration>", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
+		[LexicalMacro("virtual <declaration>", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
 		public static LNode @virtual(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Virtual); }
-		[SimpleMacro("override <declaration>", "Indicates that a method overrides a virtual method in the base class.")]
+		[LexicalMacro("override <declaration>", "Indicates that a method overrides a virtual method in the base class.")]
 		public static LNode @override(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Override); }
-		[SimpleMacro("extern <declaration>", "Indicates that the definition is supplies elsewhere.")]
+		[LexicalMacro("extern <declaration>", "Indicates that the definition is supplies elsewhere.")]
 		public static LNode @extern(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Extern); }
-		[SimpleMacro("static <declaration>", "Applies the #static attribute to a declaration.")]
+		[LexicalMacro("static <declaration>", "Applies the #static attribute to a declaration.")]
 		public static LNode @static(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Static); }
-		[SimpleMacro("unsafe <declaration>", "Indicates that the definition may use 'unsafe' parts of C#, such as pointers")]
+		[LexicalMacro("unsafe <declaration>", "Indicates that the definition may use 'unsafe' parts of C#, such as pointers")]
 		public static LNode @unsafe(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Unsafe); }
 
-		[SimpleMacro("partial <declaration>", "Indicates that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.")]
+		[LexicalMacro("partial <declaration>", "Indicates that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.")]
 		public static LNode @partial(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Partial); }
-		[SimpleMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Indicates that a variable cannot be changed after it is initialized.")]
+		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Indicates that a variable cannot be changed after it is initialized.")]
 		public static LNode @readonly(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Readonly); }
-		[SimpleMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
+		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
 		public static LNode @const(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Const); }
 
-		[SimpleMacro("Name::Type", "Defines a variable or field in the current scope.", "::")]
+		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::")]
 		public static LNode ColonColon(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -798,7 +804,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=")]
+		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=")]
 		public static LNode ColonColonInit(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -809,7 +815,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Name := Value", "Defines a variable or field in the current scope.", ":=")]
+		[LexicalMacro("Name := Value", "Defines a variable or field in the current scope.", ":=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -819,7 +825,7 @@ namespace LeMP.Prelude
 			}
 			return null;
 		}
-		[SimpleMacro("Value=:Name", "Defines a variable or field in the current scope.", "=:")]
+		[LexicalMacro("Value=:Name", "Defines a variable or field in the current scope.", "=:")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -828,42 +834,42 @@ namespace LeMP.Prelude
 			return null;
 		}
 		
-		[SimpleMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
+		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
 		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Ref); }
-		[SimpleMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
+		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
 		public static LNode @out(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Out); }
 
-		[SimpleMacro("sbyte", "A signed 8-bit data type")]
+		[LexicalMacro("sbyte", "A signed 8-bit data type")]
 		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, S.Int8); }
-		[SimpleMacro("byte", "An unsigned 8-bit data type")]
+		[LexicalMacro("byte", "An unsigned 8-bit data type")]
 		public static LNode @byte(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt8); }
-		[SimpleMacro("short", "A signed 16-bit data type")]
+		[LexicalMacro("short", "A signed 16-bit data type")]
 		public static LNode @short(LNode node, IMessageSink sink) { return TranslateId(node, S.Int16); }
-		[SimpleMacro("ushort", "An unsigned 16-bit data type")]
+		[LexicalMacro("ushort", "An unsigned 16-bit data type")]
 		public static LNode @ushort(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt16); }
-		[SimpleMacro("int", "A signed 32-bit data type")]
+		[LexicalMacro("int", "A signed 32-bit data type")]
 		public static LNode @int(LNode node, IMessageSink sink) { return TranslateId(node, S.Int32); }
-		[SimpleMacro("uint", "An unsigned 32-bit data type")]
+		[LexicalMacro("uint", "An unsigned 32-bit data type")]
 		public static LNode @uint(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt32); }
-		[SimpleMacro("long", "A signed 64-bit data type")]
+		[LexicalMacro("long", "A signed 64-bit data type")]
 		public static LNode @long(LNode node, IMessageSink sink) { return TranslateId(node, S.Int64); }
-		[SimpleMacro("ulong", "An unsigned 64-bit data type")]
+		[LexicalMacro("ulong", "An unsigned 64-bit data type")]
 		public static LNode @ulong(LNode node, IMessageSink sink) { return TranslateId(node, S.UInt64); }
-		[SimpleMacro("char", "A 16-bit single-character data type")]
+		[LexicalMacro("char", "A 16-bit single-character data type")]
 		public static LNode @char(LNode node, IMessageSink sink) { return TranslateId(node, S.Char); }
-		[SimpleMacro("float", "A 32-bit floating-point data type")]
+		[LexicalMacro("float", "A 32-bit floating-point data type")]
 		public static LNode @float(LNode node, IMessageSink sink) { return TranslateId(node, S.Single); }
-		[SimpleMacro("double", "A 64-bit floating-point data type")]
+		[LexicalMacro("double", "A 64-bit floating-point data type")]
 		public static LNode @double(LNode node, IMessageSink sink) { return TranslateId(node, S.Double); }
-		[SimpleMacro("bool", "The boolean data type (holds one of two values, @true or @false)")]
+		[LexicalMacro("bool", "The boolean data type (holds one of two values, @true or @false)")]
 		public static LNode @bool(LNode node, IMessageSink sink) { return TranslateId(node, S.Bool); }
-		[SimpleMacro("string", "The string data type: a read-only sequence of characters.")]
+		[LexicalMacro("string", "The string data type: a read-only sequence of characters.")]
 		public static LNode @string(LNode node, IMessageSink sink) { return TranslateId(node, S.String); }
-		[SimpleMacro("decimal", "A 128-bit floating-point BCD data type")]
+		[LexicalMacro("decimal", "A 128-bit floating-point BCD data type")]
 		public static LNode @decimal(LNode node, IMessageSink sink) { return TranslateId(node, S.Decimal); }
-		[SimpleMacro("void", "An empty data type that always has the same value, known as '@void'")]
+		[LexicalMacro("void", "An empty data type that always has the same value, known as '@void'")]
 		public static LNode @void(LNode node, IMessageSink sink) { return TranslateId(node, S.Void); }
-		[SimpleMacro("object", "Common base class of all .NET data types")]
+		[LexicalMacro("object", "Common base class of all .NET data types")]
 		public static LNode @object(LNode node, IMessageSink sink) { return TranslateId(node, S.Object); }
 
 		private static LNode TranslateLiteral(LNode node, IMessageSink sink, object literal)
@@ -872,11 +878,11 @@ namespace LeMP.Prelude
 			return LNode.Literal(literal, node);
 		}
 
-		[SimpleMacro("true", "")]
+		[LexicalMacro("true", "")]
 		public static LNode @true(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, true); }
-		[SimpleMacro("false", "")]
+		[LexicalMacro("false", "")]
 		public static LNode @false(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, false); }
-		[SimpleMacro("null", "(Nothing in Visual Basic)")]
+		[LexicalMacro("null", "(Nothing in Visual Basic)")]
 		public static LNode @null(LNode node, IMessageSink sink) { return TranslateLiteral(node, sink, null); }
 
 		#endregion

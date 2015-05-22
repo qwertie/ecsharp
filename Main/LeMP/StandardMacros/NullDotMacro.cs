@@ -11,7 +11,7 @@ namespace LeMP
 {
 	public partial class StandardMacros
 	{
-		[SimpleMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "?.", "??.")]
+		[LexicalMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "?.", "??.")]
 		public static LNode NullDot(LNode node, IMessageSink sink)
 		{
 			if (!node.Calls(S.NullDot, 2))

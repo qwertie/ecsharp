@@ -44,7 +44,7 @@ namespace Loyc.LLParserGenerator
 				LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 				if (c != null) {
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+					c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 					c.AddMacros(Assembly.GetExecutingAssembly());
 					c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
 					using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
@@ -70,7 +70,7 @@ namespace Loyc.LLParserGenerator
 			c.AddMacros(Assembly.GetExecutingAssembly());
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 			foreach (var assembly in macroAssemblies)
 				c.AddMacros(assembly);
 			using (ParsingService.PushCurrent(inputLang ?? ParsingService.Current))

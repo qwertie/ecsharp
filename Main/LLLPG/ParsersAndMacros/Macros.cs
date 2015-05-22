@@ -12,8 +12,10 @@ using Loyc.Syntax.Les;
 using LeMP;
 using S = Loyc.Syntax.CodeSymbols;
 
-namespace Loyc.LLParserGenerator
+namespace Loyc.LLPG
 {
+	using Loyc.LLParserGenerator;
+
 	/// <summary>
 	/// Macros for using LLLPG in LeMP.
 	/// </summary>
@@ -23,9 +25,9 @@ namespace Loyc.LLParserGenerator
 	///   class Foo { 
 	///     [DefaultK(2)] LLLPG lexer
 	///     {
-	///       [priv]  rule int  @[ '0'..'9'+ ];
-	///       [priv]  rule id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
-	///       [token] rule token  @[ int | id ];
+	///       private rule Int  @[ '0'..'9'+ ];
+	///       private rule Id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
+	///       token Token  @[ Int | Id ];
 	///     };
 	///   };
 	/// </code>
@@ -63,10 +65,11 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _recognizer = GSymbol.Get("recognizer");
 		static readonly Symbol _run_LLLPG = GSymbol.Get("run_LLLPG");
 		static readonly LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG"));
+		public static readonly Symbol MacroNamespace = GSymbol.Get("Loyc.LLPG");
 
 		/// <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
 		/// into a <see cref="IntStreamCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG",
+		[LexicalMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG",
 			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_lexer(LNode node, IMessageSink sink)
 		{
@@ -117,7 +120,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
-		[SimpleMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(option(value), ...) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
+		[LexicalMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(option(value), ...) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
 			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_parser(LNode node, IMessageSink sink)
 		{
@@ -155,13 +158,14 @@ namespace Loyc.LLParserGenerator
 			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
 		}
 
-		[SimpleMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
+		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"rule", "token", Mode = MacroMode.ProcessChildrenBefore)]
-		public static LNode rule(LNode node, IMessageSink sink)
+			"rule", "token", Mode = MacroMode.NoReprocessing)]
+		public static LNode rule(LNode node, IMacroContext context)
 		{
 			bool isToken;
 			if ((isToken = node.Calls(_token, 2)) || node.Calls(_rule, 2)) {
+				node = context.PreProcessChildren();
 				LNode sig = node.Args[0];
 				// Ugh. Because the rule has been macro-processed, "rule X::Y ..." 
 				// has become "rule #var(Y,X) ...". Reverse this transform.
@@ -179,7 +183,7 @@ namespace Loyc.LLParserGenerator
 				RVList<LNode> args = name.Args;
 				name = name.Target;
 				
-				LNode newBody = ParseRuleBody(node.Args[1], sink);
+				LNode newBody = ParseRuleBody(node.Args[1], context);
 				if (newBody != null)
 					return node.With(isToken ? _hash_token : _hash_rule, 
 						returnType, name, F.List(args), newBody);
@@ -199,14 +203,10 @@ namespace Loyc.LLParserGenerator
 		//    return false;
 		//}
 
-		// *********************************************************************
-		// TODO: ProcessChildrenBefore is a performance problem because it applies to ALL methods.
-		// *********************************************************************
-
-		[SimpleMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
+		[LexicalMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"#fn", "#property", Mode = MacroMode.Passive | MacroMode.ProcessChildrenBefore)]
-		public static LNode ECSharpRule(LNode node, IMessageSink sink)
+			"#fn", "#property", Mode = MacroMode.Passive)]
+		public static LNode ECSharpRule(LNode node, IMacroContext context)
 		{
 			// This will be called for all methods and properties, so we have to 
 			// examine it for the earmarks of a rule definition.
@@ -215,11 +215,11 @@ namespace Loyc.LLParserGenerator
 				return null;
 			LNode returnType = node.Args[0];
 			bool isToken;
-			bool ruleRetVal = (isToken = returnType.IsIdNamed(_token)) || returnType.IsIdNamed(_rule);
+			bool retValIsRule = (isToken = returnType.IsIdNamed(_token)) || returnType.IsIdNamed(_rule);
 			
 			var attrs = node.Attrs;
 			LNode lastAttr = null;
-			if (!ruleRetVal) {
+			if (!retValIsRule) {
 				if (attrs.IsEmpty)
 					return null;
 				lastAttr = attrs.Last;
@@ -228,9 +228,12 @@ namespace Loyc.LLParserGenerator
 				attrs.RemoveAt(attrs.Count - 1);
 			} else
 				returnType = F.Void;
+
+			//node = context.PreProcessChildren();
+
 			LNode name = node.Args[1];
 			LNode args = isProp ? F.List() : node.Args[2];
-			LNode newBody = ParseRuleBody(node.Args.Last, sink);
+			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
 					new RVList<LNode> { returnType, name, args, newBody }, 
@@ -264,7 +267,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		// This macro is used to translate a single token tree or rule body
-		[SimpleMacro("LLLPG_stage1(@[...])", "The LLLPG stage-1 parser converts a token tree into a Loyc tree suitable for input into stage 2.")]
+		[LexicalMacro("LLLPG_stage1(@[...])", "The LLLPG stage-1 parser converts a token tree into a Loyc tree suitable for input into stage 2.")]
 		public static LNode LLLPG_stage1(LNode node, IMessageSink sink)
 		{
 			LNode result;
@@ -276,7 +279,7 @@ namespace Loyc.LLParserGenerator
 			}
 		}
 
-		[SimpleMacro("LLLPG Helper {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
+		[LexicalMacro("LLLPG Helper {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
 			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
 		public static LNode run_LLLPG(LNode node, IMessageSink sink)
 		{

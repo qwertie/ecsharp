@@ -15,7 +15,7 @@ namespace LeMP.Test
 	[ContainsMacros]
 	public class Macros
 	{
-		[SimpleMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
+		[LexicalMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
 		public static LNode Identity(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Splice);
@@ -99,7 +99,7 @@ namespace LeMP
 			Test("no.macros apply.here;",  // LES input
 				"no.macros(apply.here);"); // C# output
 			Test("while (@true) {};",      // LES input
-				"while ((true)) {}");        // C# output
+				"while ((true)) {}");      // C# output
 		}
 
 		[Test]
@@ -273,6 +273,16 @@ namespace LeMP
 			     "internal Foo() : base(17) { return; }");
 			Test("public cons Foo() { this(@null); return; }",
 			     "public Foo() : this(null) { return; }");
+		}
+		
+		[Test]
+		public void TestChangeRemainingNodes()
+		{
+			// Use namespace macro to test the DropRemainingNodes feature
+			Test("namespace Foo { import System; namespace Etc; Bar::string; };",
+				 "namespace Foo { using  System; namespace Etc { string Bar; } }");
+			Test("internal namespace Foo.Etc; Bar::string; public fn Baz() {};",
+				 "internal namespace Foo.Etc { string Bar; public void Baz() {} }");
 		}
 
 		[Test]

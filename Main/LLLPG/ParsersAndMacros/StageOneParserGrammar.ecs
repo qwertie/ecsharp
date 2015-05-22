@@ -98,8 +98,8 @@ namespace Loyc.LLParserGenerator
 			private rule LNode AssignExpr() @[
 				{Token op;}
 				a:=PrefixExpr
-				( op=(":="|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				( op="!" {a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);} )*
+				( op=(":="|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				{return a;}
 			];
 			
