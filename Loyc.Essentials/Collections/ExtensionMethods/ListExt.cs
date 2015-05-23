@@ -151,25 +151,25 @@ namespace Loyc.Collections
 				array[arrayIndex++] = item;
 		}
 
-		public static T TryGet<T>(this T[] list, int index, T defaultValue)
+		public static T TryGet<T>(this T[] list, int index, T defaultValue = default(T))
 		{
 			if ((uint)index < (uint)list.Length)
 				return list[index];
 			return defaultValue;
 		}
-		public static T TryGet<T>(this List<T> list, int index, T defaultValue)
+		public static T TryGet<T>(this List<T> list, int index, T defaultValue = default(T))
 		{
 			if ((uint)index < (uint)list.Count)
 				return list[index];
 			return defaultValue;
 		}
-		public static T TryGet<T>(this IList<T> list, int index, T defaultValue)
+		public static T TryGet<T>(this IList<T> list, int index, T defaultValue = default(T))
 		{
 			if ((uint)index < (uint)list.Count)
 				return list[index];
 			return defaultValue;
 		}
-		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue)
+		public static T TryGet<T>(this IListAndListSource<T> list, int index, T defaultValue = default(T))
 		{
 			return ((IList<T>)list).TryGet(index, defaultValue);
 		}

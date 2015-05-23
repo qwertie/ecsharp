@@ -436,6 +436,13 @@ namespace Loyc.Collections.Impl
 	/// </remarks>
 	public static class InternalList
 	{
+		/// <summary>Converts an array to InternalList (exists to help infer type params)</summary>
+		public static InternalList<T> AsInternalList<T>(this T[] array) { return AsInternalList(array, array.Length); }
+		public static InternalList<T> AsInternalList<T>(this T[] array, int count)
+		{
+			return new InternalList<T>(array, count);
+		}
+
 		public static T[] CopyToNewArray<T>(T[] _array, int _count, int newCapacity)
 		{
 			T[] a = new T[newCapacity];

@@ -47,7 +47,7 @@ namespace Loyc.Syntax.Lexing
 				return null;
 
 			TK tt = _current.Value.Kind;
-			if (IsOpener(tt)) {
+			if (Token.IsOpener(tt)) {
 				var v = _current.Value;
 				GatherChildren(ref v);
 				return _current = v;
@@ -72,7 +72,7 @@ namespace Loyc.Syntax.Lexing
 					break;
 				}
 				TK tt = t.Value.Kind;
-				if (IsOpener(tt)) {
+				if (Token.IsOpener(tt)) {
 					var v = t.Value;
 					GatherChildren(ref v);
 					children.Add(v);
@@ -80,7 +80,7 @@ namespace Loyc.Syntax.Lexing
 						children.Add(_closer.Value);
 						_closer = null;
 					}
-				} else if (IsCloser(tt)) {
+				} else if (Token.IsCloser(tt)) {
 					// indent must match dedent, '{' must match '}' (the parser 
 					// can complain itself about "(]" and "[)" if it wants; we 
 					// allow these to match because some languages might want it.)
@@ -110,15 +110,6 @@ namespace Loyc.Syntax.Lexing
 					children.Add(t.Value);
 			}
 			openToken.Value = children;
-		}
-
-		private bool IsOpener(TK tt)
-		{
-			return tt >= TK.LParen && ((int)tt & 0x0100) == 0;
-		}
-		private bool IsCloser(TK tt)
-		{
-			return tt >= TK.LParen && ((int)tt & 0x0100) != 0;
 		}
 	}
 }

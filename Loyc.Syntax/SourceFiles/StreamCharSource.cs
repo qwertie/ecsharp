@@ -80,7 +80,7 @@
 			if (!stream.CanSeek)
 				throw new ArgumentException("stream does not support seeking.");
 			_buf = new byte[bufSize];
-			_blk = _blk2 = new char[0];
+			_blk = _blk2 = EmptyArray<char>.Value;
 			_stream = stream;
 			_decoder = decoder;
 			_blkStart = _blk2Start = int.MinValue;

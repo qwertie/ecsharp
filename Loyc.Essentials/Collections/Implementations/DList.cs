@@ -30,6 +30,7 @@
 		public DList(ICollection<T> items) { PushLast(items); }
 		public DList(ICollectionAndReadOnly<T> items) { PushLast(items); }
 		public DList(IEnumerable<T> items) { PushLast(items); }
+		public DList(T[] items) : this((ICollection<T>)items) { }
 		public DList() { }
 
 		private void CheckPopCount(int amount)

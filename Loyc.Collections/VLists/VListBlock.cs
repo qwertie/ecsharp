@@ -1048,7 +1048,7 @@ namespace Loyc.Collections
 			Debug.Assert(localCount >= 0);
 			
 			if (self == null)
-				return new T[0];
+				return EmptyArray<T>.Value;
 			
 			T[] array = new T[localCount + self.PriorCount];
 			FVList<T> p;

@@ -64,7 +64,7 @@ namespace Loyc.Collections.Impl
 	#endif
 	public struct InternalDList<T> : IListSource<T>, ICloneable<InternalDList<T>>
 	{
-		public static readonly T[] EmptyArray = InternalList<T>.EmptyArray;
+		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
 		internal T[] _array;
 		internal int _count, _start;
@@ -689,7 +689,7 @@ namespace Loyc.Collections.Impl
 
 		public void Clear()
 		{
-			_array = InternalList<T>.EmptyArray;
+			_array = EmptyArray<T>.Value;
 			_count = _start = 0;
 		}
 		public void Resize(int newSize)

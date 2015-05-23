@@ -168,6 +168,7 @@
     <Compile Include="Collections\Adapters\ArraySlice.cs" />
     <Compile Include="Collections\Adapters\BufferedSequence.cs" />
     <Compile Include="Collections\Adapters\CollectionAsSource.cs" />
+    <Compile Include="Collections\HelperClasses\EmptyArray.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\EmptyList.cs" />
     <Compile Include="Collections\HelperClasses\IntRange.cs" />

@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 		protected IdNode(LNode ras) : base(ras) { }
 		protected IdNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeKind Kind { get { return NodeKind.Id; } }
+		public sealed override LNodeKind Kind { get { return LNodeKind.Id; } }
 		public abstract override Symbol Name { get; }
 		public abstract override LNode WithName(Symbol name);
 		
@@ -71,7 +71,7 @@ namespace Loyc.Syntax
 		protected LiteralNode(LNode ras) : base(ras) { }
 		protected LiteralNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeKind Kind { get { return NodeKind.Literal; } }
+		public sealed override LNodeKind Kind { get { return LNodeKind.Literal; } }
 		public abstract override object Value { get; }
 		public abstract override LiteralNode WithValue(object value);
 
@@ -122,7 +122,7 @@ namespace Loyc.Syntax
 		protected CallNode(LNode ras) : base(ras) { }
 		protected CallNode(SourceRange range, NodeStyle style) : base(range, style) { }
 
-		public sealed override NodeKind Kind { get { return NodeKind.Call; } }
+		public sealed override LNodeKind Kind { get { return LNodeKind.Call; } }
 		public override Symbol Name {
 			get {
 				var target = Target;

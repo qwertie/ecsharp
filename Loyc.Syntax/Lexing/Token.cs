@@ -9,6 +9,9 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Threading;
 using Loyc.Math;
+using Loyc.Collections.Impl;
+using Loyc.MiniTest;
+using Loyc.Syntax.Les;
 
 namespace Loyc.Syntax.Lexing
 {
@@ -20,14 +23,20 @@ namespace Loyc.Syntax.Lexing
 	/// the LES and EC# parsers expect open-bracket and open-brace tokens ('(', 
 	/// '[' and '{') to have a child <see cref="TokenTree"/> that contains all the 
 	/// tokens within a pair of brackets or braces. Typically this tree is not 
-	/// created directly by the lexer, but by a helper class (<see cref="TokensToTree"/>).</remarks>
-	public class TokenTree : DList<Token>, IListSource<IToken>, IEquatable<TokenTree>
+	/// created directly by the lexer, but by a helper class (<see cref="TokensToTree"/>).
+	/// <para/>
+	/// Caution: this class is mutable, even though TokenTrees are sometimes stored
+	/// in <see cref="LNode"/>s which are supposed to be immutable. Please do not
+	/// modify token trees that are stored inside LNodes.
+	/// </remarks>
+	public class TokenTree : DList<Token>, IListSource<Token>, IListSource<IToken>, IEquatable<TokenTree>, ICloneable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
 		public TokenTree(ISourceFile file, ICollectionAndReadOnly<Token> items) : this(file, (IReadOnlyCollection<Token>)items) { }
 		public TokenTree(ISourceFile file, IReadOnlyCollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, ICollection<Token> items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file, IEnumerable<Token> items) : base(items) { File = file; }
+		public TokenTree(ISourceFile file, Token[] items) : base(items) { File = file; }
 		public TokenTree(ISourceFile file) { File = file; }
 		
 		public readonly ISourceFile File;
@@ -47,6 +56,15 @@ namespace Loyc.Syntax.Lexing
 		IEnumerator<IToken> IEnumerable<IToken>.GetEnumerator()
 		{
 			return Enumerable.Cast<IToken>(this).GetEnumerator();
+		}
+		/// <summary>Gets a deep (recursive) clone of the token tree.</summary>
+		public new TokenTree Clone() { return Clone(true); }
+		public     TokenTree Clone(bool deep)
+		{
+			return new TokenTree(File, ((DList<Token>)this).Select(t => { 
+				var c = t.Children; 
+				return c != null ? t.WithValue(c.Clone(true)) : t;
+			}));
 		}
 
 		#region ToString, Equals, GetHashCode
@@ -98,6 +116,16 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		#endregion
+
+		/// <summary>Converts this list of <see cref="Token"/> to a list of <see cref="LNode"/>.</summary>
+		/// <remarks>See <see cref="Token.ToLNode(ISourceFile)"/> for more information.</remarks>
+		public RVList<LNode> ToLNodes()
+		{
+			RVList<LNode> list = RVList<LNode>.Empty;
+			foreach (var item in (DList<Token>)this)
+				list.Add(item.ToLNode(File));
+			return list;
+		}
 	}
 
 	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/>
@@ -373,6 +401,139 @@ namespace Loyc.Syntax.Lexing
 		{
 			return new SourceRange(sourceFile, StartIndex, Length);
 		}
+
+		public static bool IsOpener(TokenKind tt)
+		{
+			return tt >= TokenKind.LParen && ((int)tt & 0x0100) == 0 && tt <= TokenKind.LOther;
+		}
+		public static bool IsCloser(TokenKind tt)
+		{
+			return tt >= TokenKind.RParen && ((int)tt & 0x0100) != 0 && tt <= TokenKind.ROther;
+		}
+		public static bool IsOpenerOrCloser(TokenKind tt)
+		{
+			return tt >= TokenKind.LParen && tt < (TokenKind)((int)TokenKind.ROther + (1 << TokenKindShift));
+		}
+
+		public static TokenKind GetLiteralKind(object value)
+		{
+			if (value == null)
+				return TokenKind.OtherLit;
+			if (value == NoValue.Value)
+				return TokenKind.Other;
+			if (value is String || value is StringBuilder)
+				return TokenKind.String;
+			else if (value is Int32 || value is Int64 || value is Int16 || value is SByte ||
+					 value is UInt32 || value is UInt64 || value is UInt16 || value is Byte ||
+					 value is Single || value is Double || value is System.Numerics.BigInteger)
+				return TokenKind.Number;
+			else
+				return TokenKind.OtherLit;
+		}
+
+		#region ToLNode()
+
+		/// <summary>Converts a <see cref="Token"/> to a <see cref="LNode"/>.</summary>
+		/// <param name="file">This becomes the <see cref="LNode.Source"/> property.</param>
+		/// <remarks>If you really need to store tokens as LNodes, use this. Only
+		/// the <see cref="Kind"/>, not the TypeInt, is preserved. Identifiers 
+		/// (where Kind==TokenKind.Id and Value is Symbol) are translated as Id 
+		/// nodes; everything else is translated as a call, using the TokenKind as
+		/// the <see cref="LNode.Name"/> and the value, if any, as parameters. For
+		/// example, if it has been treeified with <see cref="TokensToTree"/>, the
+		/// token list for <c>"Nodes".Substring(1, 3)</c> as parsed by LES might 
+		/// translate to the LNode sequence <c>String("Nodes"), Dot(@@.), 
+		/// Substring, LParam(Number(1), Separator(@@,), Number(3)), RParen()</c>.
+		/// The <see cref="LNode.Range"/> will match the range of the token.
+		/// </remarks>
+		public LNode ToLNode(ISourceFile file)
+		{
+			var kind = Kind;
+			Symbol kSym = GSymbol.Empty;
+			Symbol id;
+			if (kind != TokenKind.Id) {
+				int k = (int)kind >> TokenKindShift;
+				kSym = _kindAttrTable.TryGet(k);
+			}
+
+			var r = new SourceRange(file, StartIndex, Length);
+			var c = Children;
+			if (c != null) {
+				if (c.Count != 0)
+					r = new SourceRange(file, StartIndex, System.Math.Max(EndIndex, c.Last.EndIndex) - StartIndex);
+				return LNode.Call(kSym, c.ToLNodes(), r, Style);
+			} else if (IsOpenerOrCloser(kind) || Value == WhitespaceTag.Value) {
+				return LNode.Call(kSym, RVList<LNode>.Empty, r, Style);
+			} else if (kind == TokenKind.Id && (id = this.Value as Symbol) != null) {
+				return LNode.Id(id, r, Style);
+			} else {
+				return LNode.Trivia(kSym, this.Value, r, Style);
+			}
+		}
+
+		private Symbol GetPunctuationSymbol(TokenKind Kind)
+		{
+			int i = (Kind - TokenKind.LParen) >> TokenKindShift;
+			if ((uint)i < (uint)TokenKindPunctuationSymbols.Length)
+				return TokenKindPunctuationSymbols[i];
+			return null;
+		}
+
+		internal Symbol GetParenPairSymbol(Token followingToken)
+		{
+			Symbol opener = Value as Symbol;
+			Symbol closer = followingToken.Value as Symbol;
+			if (opener != null && closer != null)
+				return GSymbol.Get(opener.Name + closer.Name);
+			else
+				return GetParenPairSymbol(Kind, followingToken.Kind);
+		}
+		public static Symbol GetParenPairSymbol(TokenKind k, TokenKind k2)
+		{
+			Symbol both;
+			if (k == TokenKind.LParen && k2 == TokenKind.RParen)
+				both = Parens;
+			else if (k == TokenKind.LBrack && k2 == TokenKind.RBrack)
+				both = CodeSymbols.Bracks;
+			else if (k == TokenKind.LBrace && k2 == TokenKind.RBrace)
+				both = CodeSymbols.Braces;
+			else if (k == TokenKind.Indent && k2 == TokenKind.Dedent)
+				both = IndentDedent;
+			else if (k == TokenKind.LOther && k2 == TokenKind.ROther)
+				both = LOtherROther;
+			else
+				return null;
+			return both;
+		}
+
+		static readonly Symbol Parens = GSymbol.Get("()");
+		static readonly Symbol IndentDedent = GSymbol.Get("IndentDedent");
+		static readonly Symbol LOtherROther = GSymbol.Get("LOtherROther");
+		const int TokenKindShift = 8;
+		const int NumPuncSymbols = ((TokenKind.RBrace - TokenKind.LParen) >> TokenKindShift) + 1;
+		static readonly Symbol[] TokenKindPunctuationSymbols = new Symbol[NumPuncSymbols] {
+			(Symbol)"(", (Symbol)")", 
+			(Symbol)"[", (Symbol)"]",
+			(Symbol)"{", (Symbol)"}"
+		};
+		// Each list contains a single item, the attribute to be associated with
+		// the node returned from ToLNode. Why a list for only one item? This is
+		// an optimization to ensure we only allocate the list once. Example:
+		// _kindAttrTable[(int)TokenKind.Operator >> TokenKindShift][0].Name.Name == "Operator"
+		static readonly InternalList<Symbol> _kindAttrTable = KindAttrTable();
+		private static InternalList<Symbol> KindAttrTable()
+		{
+			Debug.Assert(((int)TokenKind.KindMask & ((2 << TokenKindShift) - 1)) == (1 << TokenKindShift));
+			int incr = (1 << TokenKindShift), stopAt = (int)TokenKind.KindMask;
+			var table = new InternalList<Symbol>(stopAt / incr);
+			for (int kind = 0; kind < stopAt; kind += incr) {
+				string kindStr = ((TokenKind)kind).ToString();
+				table.Add((Symbol)kindStr);
+			}
+			return table;
+		}
+		
+		#endregion
 	}
 
 	/// <summary>Basic information about a token as expected by <see cref="BaseParser"/>:
@@ -403,5 +564,85 @@ namespace Loyc.Syntax.Lexing
 		IToken WithValue(object value);
 
 		IListSource<IToken> Children { get; }
+	}
+
+	[TestFixture]
+	public class TokenTests : Assert
+	{
+		[Test]
+		public void ToLiteralLNodeTests()
+		{
+			var file = EmptySourceFile.Unknown;
+			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
+				P(new Token((int)TokenKind.String,   3, 7, 0, "hello!"), @"String(""hello!"")"),
+				P(new Token((int)TokenKind.Number,   3, 7, 0, 12345),    @"Number(12345)"),
+				P(new Token((int)TokenKind.OtherLit, 3, 7, 0, GSymbol.Get("foo")),  @"OtherLit(@@foo)"),
+			});
+		}
+
+		[Test]
+		public void ToIdLNodeTests()
+		{
+			var file = EmptySourceFile.Unknown;
+			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
+				P(new Token((int)TokenKind.Dot,          5, 11, 0, CodeSymbols.ColonColon), @"Dot(@@::)"),
+				P(new Token((int)TokenKind.Assignment,   5, 11, 0, CodeSymbols.AddSet),  @"Assignment(@@+=)"),
+				P(new Token((int)TokenKind.Operator,     5, 11, 0, CodeSymbols.Mul),     @"Operator(@@*)"),
+				P(new Token((int)TokenKind.Separator,    5, 11, 0, CodeSymbols.Comma),   @"Separator(@@`,`)"),
+				P(new Token((int)TokenKind.AttrKeyword,  5, 11, 0, CodeSymbols.Public),  @"AttrKeyword(@@#public)"),
+				P(new Token((int)TokenKind.TypeKeyword,  5, 11, 0, CodeSymbols.Int32),   @"TypeKeyword(@@#int32)"),
+				P(new Token((int)TokenKind.OtherKeyword, 5, 11, 0, CodeSymbols.While),   @"OtherKeyword(@@#while)"),
+				P(new Token((int)TokenKind.Other,        5, 11, 0, GSymbol.Get("test")), @"Other(@@test)"),
+				P(new Token((int)TokenKind.Other,        5, 11, 0, "test"),              @"Other(""test"")"),
+			});
+		}
+
+		[Test]
+		public void ToBracketsLNodeTests()
+		{
+			var file = EmptySourceFile.Unknown;
+			var child = new TokenTree(file, new[] { new Token((int)TokenKind.Id, 6, 1, NodeStyle.Default, GSymbol.Get("x")) });
+			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
+				P(new Token((int)TokenKind.LParen, 5, 1, 0, child), @"LParen(x)"),
+				P(new Token((int)TokenKind.RParen, 7, 1, 0, null),  @"RParen()"),
+				P(new Token((int)TokenKind.LParen, 5, 1, 0, null),  @"LParen()"),
+				P(new Token((int)TokenKind.RParen, 7, 1, 0, null),  @"RParen()"),
+				P(new Token((int)TokenKind.LBrack, 5, 1, 0, child), @"LBrack(x)"),
+				P(new Token((int)TokenKind.RBrack, 7, 1, 0, null),  @"RBrack()"),
+				P(new Token((int)TokenKind.LBrace, 5, 1, 0, child), @"LBrace(x)"),
+				P(new Token((int)TokenKind.RBrace, 7, 1, 0, null),  @"RBrace()"),
+				P(new Token((int)TokenKind.Indent, 5, 1, 0, child), @"Indent(x)"),
+				P(new Token((int)TokenKind.Dedent, 7, 1, 0, null),  @"Dedent()"),
+				P(new Token((int)TokenKind.LOther, 5, 1, 0, child), @"LOther(x)"),
+				P(new Token((int)TokenKind.ROther, 7, 1, 0, null),  @"ROther()"),
+			});
+		}
+
+		[Test]
+		void LiteralToLNodeTests()
+		{
+			var file = EmptySourceFile.Unknown;
+			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
+				P(new Token((int)TokenKind.String,   3, 7, 0, "hello!"), @"[String] ""hello""!"),
+				P(new Token((int)TokenKind.Number,   3, 7, 0, 12345),    @"[Number] 12345"),
+				P(new Token((int)TokenKind.OtherLit, 3, 7, 0, GSymbol.Get("foo")),  @"[OtherLit] @@foo"),
+			});
+		}
+
+		static Pair<K,V> P<K,V>(K key, V value) 
+			{ return G.Pair(key, value); }
+		private void TestToLNode(ISourceFile file, IList<Pair<Token,string>> pairs)
+		{
+			for (int i = 0; i < pairs.Count; i++)
+				TestToLNode(pairs[i].A, file, pairs[i].B);
+		}
+		private void TestToLNode(Token t, ISourceFile file, string lesString)
+		{
+			LNode n = t.ToLNode(file);
+			AreEqual(lesString, LesLanguageService.Value.Print(n, MessageSink.Current, ParsingService.Exprs, "", ""));
+			AreEqual(file, n.Source);
+			AreEqual(t.StartIndex, n.Range.StartIndex);
+			AreEqual((t.Children != null && t.Children.Count > 0 ? t.Children.Last : t).EndIndex, n.Range.EndIndex);
+		}
 	}
 }

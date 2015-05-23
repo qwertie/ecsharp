@@ -204,9 +204,9 @@ namespace Loyc.Syntax
 
 			if (candidate.Name != pattern.Name)
 				return false;
-			if (kind == NodeKind.Literal)
+			if (kind == LNodeKind.Literal)
 				return object.Equals(candidate.Value, pattern.Value);
-			else if (kind == NodeKind.Call) {
+			else if (kind == LNodeKind.Call) {
 				if (!MatchesPatternNested(candidate.Target, pattern.Target, ref captures, ref unmatchedAttrs))
 					return false;
 				var cArgs = candidate.Args;

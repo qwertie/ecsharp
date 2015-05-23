@@ -118,8 +118,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
 		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
-		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement
-		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement
+		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), {...})
+		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement: #finally({...})
 		
 		// Space definitions
 		public static readonly Symbol Class = GSymbol.Get("#class");    //!< e.g. #class(Foo, #(IFoo), { });  <=> class Foo : IFoo { }

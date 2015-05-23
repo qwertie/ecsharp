@@ -41,7 +41,7 @@ namespace Loyc.LLParserGenerator
 		public static implicit operator IntSet(int c) { return new IntSet(new IntRange(c)); }
 		public static implicit operator IntSet(IntRange r) { return new IntSet(r); }
 
-		public static readonly IntSet All = IntSet.Without(new int[0]);
+		public static readonly IntSet All = IntSet.Without(EmptyArray<int>.Value);
 		public static readonly IntSet Empty = new IntSet();
 		public static IntSet With(params int[] members)             { return new IntSet(false, false, false, members); }
 		public static IntSet WithRanges(params int[] ranges)        { return new IntSet(false, false, true, ranges); }
