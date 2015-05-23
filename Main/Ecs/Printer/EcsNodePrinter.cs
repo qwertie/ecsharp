@@ -285,7 +285,7 @@ namespace Ecs
 				_self = self;
 				self._out.Push(_old = self._n); 
 				if (inner == null) {
-					self.Errors.Write(Severity.Error, self._n, "Encountered null LNode");
+					self.Errors.Write(Severity.Error, self._n, "EcsNodePrinter: Encountered null LNode");
 					self._n = LNode.Id("(null)");
 				} else
 					self._n = inner;
@@ -1131,7 +1131,8 @@ namespace Ecs
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
-						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
+						var tValue = attr.TriviaValue;
+						PrintSpaces(GetRawText(attr));
 					} else if (name == S.TriviaInParens) {
 						if ((flags & Ambiguity.NoParenthesis) == 0) {
 							WriteOpenParen(ParenFor.Grouping);
@@ -1416,7 +1417,7 @@ namespace Ecs
 			else if (LiteralPrinters.TryGetValue(_n.Value.GetType().TypeHandle, out p))
 				p(this);
 			else {
-				Errors.Write(Severity.Error, _n, "Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
+				Errors.Write(Severity.Error, _n, "EcsNodePrinter: Encountered unprintable literal of type '{0}'", _n.Value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

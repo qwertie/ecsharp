@@ -208,6 +208,7 @@ namespace LeMP
 			TestEcs("internal int Count { get ==> _list.#; set ==> _list.#; }",
 					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
 		}
+
 		[Test]
 		public void BackingFieldTest()
 		{
@@ -223,6 +224,49 @@ namespace LeMP
 					"string _name; public string Name { get { return _name; } set { _name = value; } }");
 			TestEcs("[[A] field] [B, C] public string Name { get; }",
 					"[A] string _name; [B, C] public string Name { get { return _name; } }");
+		}
+
+		[Test]
+		public void Test_on_finally()
+		{
+			TestEcs(@"{ Foo(); on_finally { Console.WriteLine(""Finally!""); } Bar(); }",
+					@"{ Foo(); try { Bar(); } finally { Console.WriteLine(""Finally!""); } }");
+			TestEcs(@"{ x++; on_finally { x--; Foo(); } DoSomeStuff(); Etc(); }",
+					@"{ x++; try { DoSomeStuff(); Etc(); } finally { x--; Foo(); } }");
+			// Alternate syntax from D
+			TestEcs(@"scope(exit) { Leaving(); } while(_fun) KeepDoingIt();",
+			        @"try { while(_fun) KeepDoingIt(); } finally { Leaving(); }");
+		}
+		[Test]
+		public void Test_on_catch_on_throw()
+		{
+			TestEcs(@"{ bool ok = true; on_catch { ok = false; } DoSomeStuff(); Etc(); }",
+					@"{ bool ok = true; try { DoSomeStuff(); Etc(); } catch { ok = false; } }");
+			TestEcs(@"{ _crashed = false; on_catch { _crashed = true; } DoSomeStuff(); }",
+					@"{ _crashed = false; try { DoSomeStuff(); } catch { _crashed = true; } }");
+			TestEcs(@"{ on_catch(ex) { MessageBox.Show(ex.Message); } Etc(); }",
+					@"{ try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); } }");
+			TestEcs(@"on_throw(ex) { MessageBox.Show(ex.Message); } Etc();",
+					@"try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); throw; }");
+			TestEcs(@"on_catch(var FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); }");
+			TestEcs(@"on_throw(var FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); throw; }");
+		}
+
+		[Test]
+		public void Test_on_return()
+		{
+			TestEcs(@"{ on_return(R) { Log(R); } Foo(); return Bar(); }",
+			        @"{ Foo(); { var R = Bar(); Log(R); return R; } }");
+			TestEcs(@"{ on_return(r) { r++; } Foo(); return x > 0 ? x : -x; }",
+					@"{ Foo(); { var r = x > 0 ? x : -x; r++; return r; } }");
+			TestEcs(@"{ on_return { Log(""return""); } if (true) return 5; else return; }",
+			        @"{ if (true) { var __result__ = 5; Log(""return""); return __result__; } else { Log(""return""); return; } }");
+			TestEcs(@"on_return(int r = 5) { r++; } return;",
+			        @"{ int r = 5; r++; return r; }");
+			TestEcs(@"on_return(int r) { r++; } return 5;",
+			        @"{ int r = 5; r++; return r; }");
 		}
 
 		[Test]
@@ -434,7 +478,20 @@ namespace LeMP
 			
 			// ([foo] F([x] X, [y] Y, [a1(...), a2(...)] Z) `MatchesPattern`
 			//        F(X, $Y, $(params P), [$A, a1($(params args))] $Z)) == false cuz [x] is unmatched
-			TestEcs(@"replace(TO=>DO) {}", @"");
+
+			// TODO
+		}
+
+		[Test]
+		public void TestReplaceInTokenTree()
+		{
+			TestLes("replace(foo => bar, bar => foo) { foo(@[ foo(*****) ]); }", "bar(@[ bar(*****) ]);");
+			TestLes("replace(foo => bar, bar => foo) { foo(@[ foo(%bar%) ]); }", "bar(@[ bar(%foo%) ]);");
+			TestLes("replace(foo => bar, bar => foo) { foo(@[ ***(%bar%) ]); }", "bar(@[ ***(%foo%) ]);");
+			TestLes(@"unroll((A, B) `in` ((Eh, Bee), ('a', ""b""), (1, 2d))) { foo(B - A, @[A + B]); }",
+				@"foo(Bee - Eh,  @[Eh + Bee]);
+				  foo(""b"" - 'a', @['a' + ""b""]);
+				  foo(2d - 1, @[1 + 2d]);");
 		}
 
 		[Test]

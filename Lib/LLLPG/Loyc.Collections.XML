@@ -11,6 +11,9 @@
             (O(log N)), batch insertion and deletion, observability, fast cloning, 
             freezability, and fast splitting and joining of large collections.
             </summary>
+            An <a href="http://core.loyc.net/collections/alists-part1.html">article</a>
+            about this class is available.
+            <para/>
             <typeparam name="T">Type of each element in the list</typeparam>
             <remarks>
             The name "A-List" is short for All-purpose List. It is so named because
@@ -82,9 +85,9 @@
             <para/>
             Although single insertions, deletions, and random access require O(log N)
             time, you can get better performance using any overload of 
-            <see cref="M:Loyc.Collections.AList`1.InsertRange(System.Int32,Loyc.Collections.AList{`0})"/>, <see cref="!:RemoveRange"/>, <see cref="!:GetIterator"/> or <see cref="!:Resize"/>. These methods require only
-            O(log N + M) time, where M is the number of elements you are inserting,
-            removing or enumerating.
+            <see cref="M:Loyc.Collections.AList`1.InsertRange(System.Int32,Loyc.Collections.AList{`0})"/> or <see cref="M:Loyc.Collections.AListBase`2.RemoveRange(System.Int32,System.Int32)"/>.
+            These methods require only O(log N + M) time, where M is the number of 
+            elements you are inserting, removing or enumerating.
             <para/>
             AList is an excellent choice if you need to make occasional snapshots of
             the tree. Cloning is fast and memory-efficient, because none of the tree
@@ -108,7 +111,7 @@
             as the collection is not modified, so frozen instances ARE multithread-safe.
             </remarks>
             <seealso cref="T:Loyc.Collections.BList`1"/>
-            <seealso cref="!:BTree&lt;T&gt;"/>
+            <seealso cref="T:Loyc.Collections.BDictionary`2"/>
             <seealso cref="T:Loyc.Collections.DList`1"/>
         </member>
         <member name="T:Loyc.Collections.AListBase`1">
@@ -127,10 +130,158 @@
             (<see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.SparseAList`1"/>).
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.AListBase`2" -->
+        <member name="T:Loyc.Collections.AListBase`2">
+            <summary>
+            Base class for the indexed tree-based data structures known as
+            <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.BList`1"/>.
+            </summary>
+            <remarks>
+            You can read <a href="http://core.loyc.net/collections/">articles</a> about
+            the AList family of data structures online.
+            <para/>
+            <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.BList`1"/> are excellent data 
+            structures to choose if you aren't sure what your requirements are. The 
+            main difference between them is that BList is sorted and AList is not. 
+            <see cref="T:Loyc.Collections.DList`1"/>, meanwhile, is a simpler data structure with a 
+            faster indexer and lower memory requirements. In fact, the leaf nodes
+            of this class are built upon <see cref="!:DListInternal&lt;T&gt;"/>.
+            <para/>
+            Classes derived from AListBase typically have the following abilities:
+            <ul>
+            <li>Items can always be inserted or removed in O(log N) time (by convention,
+            N refers to the number of items in the list, although it is the 
+            <see cref="P:Loyc.Collections.AListBase`2.Count"/> property that actually returns this number).</li>
+            <li>Elements can also be accessed by index in O(log N) time.</li>
+            <li>Scanning the list with an enumerator or foreach loop takes O(1) time 
+            per element (plus O(log N) to initialize the enumerator), and it is 
+            possible to start enumerating somewhere in the middle of the list.</li>
+            <li>The list can be frozen with <see cref="M:Loyc.Collections.AListBase`2.Freeze"/>, making it read-only.</li>
+            <li>The list can be cloned in O(1) time and space, with incremental copy-
+            on-write semantics. Thus, changing either copy of the tree costs extra time
+            and space in order to duplicate parts of the tree that are changing. A 
+            frozen list can be cloned to produce a non-frozen list. In the language of
+            comp-sci techno-babble, A-lists are related to the family of "persistent"
+            data structures, although I could not find a term that describes the form 
+            of persistence that A-lists support.</li>
+            <li>Changes can be observed through the <see cref="E:Loyc.Collections.AListBase`2.ListChanging"/> event.
+            The performance penalty for this feature is lower than for the standard
+            <see cref="!:ObservableCollection&lt;T&gt;"/> class.</li>
+            <li>Changes to the tree structure can be observed through the object 
+            returned by <see cref="!:MakeObserver"/>(). The performance penalty for this 
+            feature is significant, but can be largely avoided by not calling 
+            MakeObserver().</li>
+            <li>A section of the list can be cloned in O(log N) time, although there is 
+            no time savings when extracting a small section.</li>
+            <li>Removing a contiguous group of items takes O(log N + M) time, where M is
+            the number of items being removed.</li>
+            <li>A reversed view of the list is given by the <see cref="P:Loyc.Collections.AListBase`2.ReverseView"/> 
+            property, and the list can be enumerated backwards, also in O(1) time 
+            per element.</li>.
+            </ul>
+            Derived classes provide the following additional capabilities:
+            <ul>
+            <li><see cref="T:Loyc.Collections.BList`1"/> and <see cref="T:Loyc.Collections.IndexedAList`1"/> allow you to 
+            find items in O(log N) time. BList is a sorted B+tree, so it achieves this 
+            ability through a kind of binary search, while IndexedAList uses a special 
+            kind of hashtable maintained in parallel with the tree.</li>
+            <li><see cref="M:Loyc.Collections.BList`1.FindLowerBound(`0)"/>allows you to find the closest 
+            larger item to an item that is not in the list. For example, if a BList(of 
+            int) contains { 1, 3, 9 }, you can search for 5 in order to find 9.</li>
+            <li><see cref="T:Loyc.Collections.AList`1"/> allows a contiguous group of items to be 
+            inserted in O(log N + M) time, where M is the number of items being 
+            inserted.</li>
+            <li><see cref="T:Loyc.Collections.AList`1"/> allows you to concatenate two lists in O(log N) 
+            time, where N is the size of the combined list, although there is no time
+            savings when combining small lists.</li>
+            <li><see cref="T:Loyc.Collections.AList`1"/> has a special sorting algorithm that allows you 
+            to sort the list in slightly more than O(N log N) time. This is slower than
+            sorting an array or <see cref="T:System.Collections.Generic.List`1"/>, but faster than a quicksort 
+            applied directly to <see cref="T:Loyc.Collections.AList`1"/>, which would take O(N log^2 N) 
+            time.</li>
+            </ul>
+            As you can see, the A-List family of data structures allows you to 
+            accomplish a wide variety of tasks efficiently, so the letter "A" in A-List 
+            stands for All-purpose.
+            <para/>
+            A-Lists use memory efficiently because they are similar to B+trees. A-Lists 
+            tend to use slightly more memory than <see cref="T:System.Collections.Generic.List`1"/> but have lower 
+            peak memory usage, because their size never suddenly doubles. A-Lists use 
+            much less memory than <see cref="T:System.Collections.Generic.HashSet`1"/>, so they are useful for 
+            storing large data sets in RAM.
+            <para/>
+            The efficiency of various operations is affected by the maximum sizes of the
+            inner nodes and leaf nodes, which can be set independently when constructing 
+            an <see cref="T:Loyc.Collections.AList`1"/> or <see cref="T:Loyc.Collections.BList`1"/>. Generally, larger leaf
+            nodes allow faster indexing but slower insertions and removals. If the list
+            is cloned frequently, smaller inner and leaf nodes will speed up all 
+            modifications (insertions, removals, and modification of individual items), 
+            although small node sizes suffer increased overhead (higher memory usage and 
+            slower indexing). The default inner node size of 16 is usually best for 
+            performance, because the binary searches required for lookups will have good
+            locality-of-reference. Small size limits (less than 8) have a high overhead 
+            and are not recommended for any purpose except unit testing. The minimum
+            allowed maximum node size is 3.
+            <para/>
+            In general, the tree is structured so that indexing is faster than 
+            insertions and removals, even though these three operations have the same 
+            scalability, O(log N).
+            <para/>
+            In general, this family of classes is NOT multithread-safe; concurrency 
+            support is the only major feature that AListBase lacks. It supports 
+            multiple readers concurrently, as long as the collection is not modified,
+            so frozen instances ARE multithread-safe. However, classes derived from 
+            AListBase must not be accessed from other threads during any modification. 
+            There is a mechanism to detect illegal concurrent access and throw 
+            InvalidOperationException if it is detected, but this is not designed to be 
+            reliable; its main purpose is to help you find bugs. If concurrent 
+            modification is not detected, the AList will probably become corrupted and 
+            produce strange exceptions, or fail an assertion (in debug builds).
+            <para/>
+            Although AListBase provides neither concurrent operations nor safety for
+            concurrent modification, the fast-clone feature makes it a useful parallel 
+            data structure. Consider, for instance, a document editor that wants to 
+            run a spell-check on a background thread, with an AList(of Char) object 
+            representing the document. The spell checker cannot access the document 
+            if the user might modify it concurrently; luckily, it can be cloned 
+            instantly before starting the spell-checking thread. The root of the AList's
+            B+ tree is marked frozen, and when the user modifies the original document,
+            the AList will duplicate a few frozen nodes in order to modify them without
+            crashing the spell-check operation that is running concurrently. You will,
+            of course, have to deal with the fact that the spell-check results apply 
+            to an old version of the document, but at least the program won't crash 
+            and the user won't be blocked from editing while the spellcheck is running.
+            <para/>
+            The disadvantage of the fast-clone approach is that the immutability of the
+            tree cannot be cancelled. So if the spell-check finishes after a half-second
+            and the user did not modify the document, the tree still remains frozen and
+            will still have to be copied later when the user does modify it. Still, the
+            copying is a pay-as-you-go cost, so the app will stay responsive and the 
+            entire tree will not be copied unless you make widespread changes to the 
+            collection (e.g. converting the document to all-uppercase.)
+            </remarks>
+            <typeparam name="K">Type of keys that are used to classify items in a tree</typeparam>
+            <typeparam name="T">Type of each element in the list. The derived class 
+            must implement the <see cref="M:Loyc.Collections.AListBase`2.GetKey(`1)"/> method that converts T to K.</typeparam>
+            <summary>Manages a collection of <see cref="T:Loyc.Collections.Impl.IAListTreeObserver`2"/>.</summary>
+            <remarks>
+            
+            TODO:
+            - Check that all cloning is handled.
+            - Check that all splitting is handled.
+            - Check that all TakeFromLeft/Right is handled.
+            - Check that all leaf changes are handled
+            - Factor out certain calls to indexer to shorten/simplify code
+            - Add a method to install indexer in AList
+            - Write unit tests
+            - Write benchmarks
+            - Try optimizations: _isFrozen in AListNode, _children[0].Index always 0, 
+                                 redundant-if optimization on calls to AutoClone, 
+                                 larger inner nodes
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.AListBase`2.#ctor(Loyc.Collections.AListBase{`0,`1},System.Boolean)">
             <summary>Cloning constructor. Does not duplicate the observer 
-            (<see cref="!:AListNodeObserver&lt;T&gt;"/>), if any, because it may not be 
+            (<see cref="!:IAListTreeObserver&lt;T&gt;"/>), if any, because it may not be 
             cloneable.</summary>
             <param name="items">Original list</param>
             <param name="keepListChangingHandlers">Whether to duplicate the 
@@ -240,7 +391,7 @@
             </remarks>
         </member>
         <member name="M:Loyc.Collections.AListBase`2.CopySectionHelper(System.Int32,System.Int32)">
-            <summary>Together with the <see cref="!:AListBase(AListBase&lt;T&gt;,AListNode&lt;T&gt;)"/>
+            <summary>Together with the <see cref="M:Loyc.Collections.AListBase`2.#ctor(Loyc.Collections.AListBase{`0,`1},Loyc.Collections.Impl.AListNode{`0,`1})"/>
             constructor, this method helps implement the CopySection() method in derived 
             classes, by cloning a section of the tree.</summary>
         </member>
@@ -282,6 +433,9 @@
         <member name="M:Loyc.Collections.AListBase`2.RemoveObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})">
             <summary>Removes a previously attached tree observer from this list.</summary>
             <returns>True if the observer was removed, false if it was not attached.</returns>
+        </member>
+        <member name="E:Loyc.Collections.AListBase`2.ListChanging">
+            <summary>Event for learning about changes in progress on a list.</summary>
         </member>
         <member name="P:Loyc.Collections.AListBase`2.ObserverCount">
             <summary>Returns the number of tree observers attached to this list.</summary>
@@ -345,7 +499,7 @@
             must not throw exceptions because these methods are called during 
             operations in progress. If you throw an exception, the tree can be 
             left in an invalid state. Attach() can safety throw, but the exception 
-            will propagate out of the <see cref="!:AListBase.AddObserver"/> method.
+            will propagate out of the <see cref="M:Loyc.Collections.AListBase`2.AddObserver(Loyc.Collections.Impl.IAListTreeObserver{`0,`1})"/> method.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.Impl.IAListTreeObserver`2.Attach(Loyc.Collections.AListBase{`0,`1},System.Action{System.Boolean})">
@@ -431,7 +585,7 @@
             <param name="item">An item for which to search.</param>
             <returns>An index of the item.</returns>
             <remarks>
-            The default implementation simply calls <see cref="!:LinearScanFor"/>.
+            The default implementation simply calls <see cref="M:Loyc.Collections.AListBase`2.LinearScanFor(`1,System.Int32,System.Collections.Generic.EqualityComparer{`1})"/>.
             This method is called by <see cref="M:Loyc.Collections.AListBase`1.Remove(`0)"/> and <see cref="M:Loyc.Collections.AListBase`1.Contains(`0)"/>.
             </remarks>
         </member>
@@ -456,7 +610,33 @@
         <member name="M:Loyc.Collections.AList`1.Append(Loyc.Collections.AList{`0})">
             <inheritdoc cref="M:Loyc.Collections.AList`1.Append(Loyc.Collections.AList{`0},System.Boolean)"/>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Collections.AList`1.Append(Loyc.Collections.AList{`0},System.Boolean)" -->
+        <member name="M:Loyc.Collections.AList`1.Append(Loyc.Collections.AList{`0},System.Boolean)">
+            <summary>Appends another AList to this list in sublinear time.</summary>
+            <param name="other">A list of items to be added to this list.</param>
+            <param name="move">If this parameter is true, items from the other list 
+            are transferred to this list, causing the other list to be cleared. 
+            This parameter does not affect the speed of this method itself, but
+            if you use "true" then future modifications to the combined list may
+            be faster. If this parameter is "false" then it will be necessary to 
+            freeze the contents of the other list so that both lists can share
+            the same tree nodes. Using "true" instead avoids the freeze operation,
+            which in turn avoids the performance penalty on future modifications.</param>
+            <remarks>
+            The default value of the 'move' parameter is false.
+            <para/>
+            When the 'source' list is short, this method doesn't perform 
+            any better than a standard AddRange() operation (in fact, the operation 
+            is delegated to <see cref="M:Loyc.Collections.AList`1.InsertRange(System.Int32,Loyc.Collections.AList{`0})"/>()). However, when 'source' 
+            has several hundred or thousand items, the append/prepend operation is 
+            performed in roughly O(log N) time where N is the combined list size.
+            <para/>
+            Parts of the tree that end up shared between this list and the other 
+            list will be frozen. Frozen parts of the tree must be cloned in order
+            to be modified, which will slow down future operations on the tree.
+            In order to avoid this problem, use move semantics (which clears the
+            other list).
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.AList`1.Prepend(Loyc.Collections.AList{`0})">
             <summary>Prepends an AList to this list in sublinear time.</summary>
             <param name="other">A list of items to be added to the front of this list (at index 0).</param>
@@ -508,7 +688,7 @@
             indexed. Specifically, if pointers use P bytes, then AListIndexer itself
             consumes moderately MORE than X+P*N bytes of memory, where X is the size 
             of the list being indexed, and N is the number of items in the list. Thus,
-            for example, an indexed list of <see cref="!:AList&lt;object&gt;"/> requires 
+            for example, an indexed list of <see cref="T:Loyc.Collections.AList`1"/> requires 
             approximately three times as much memory as an AList that is not indexed.
             <para/>
             Moreover, changing an indexed list takes at least twice as much time, since 
@@ -770,7 +950,7 @@
             <remarks>
             Since <see cref="T:Loyc.Collections.Impl.AListLeaf`1"/> uses DListInternal, a separate item
             count is not needed and this counter is always zero. This field 
-            logically belongs in <see cref="!:AListInnerBase&lt;T&gt;"/> but is defined here
+            logically belongs in <see cref="T:Loyc.Collections.Impl.AListInnerBase`2"/> but is defined here
             to ensure that inner nodes are not 4 bytes larger than necessary. This
             field is "free" if it is declared in the base class, since class sizes
             are rounded up to the nearest multiple of 4 bytes (8 bytes in 64-bit).
@@ -788,7 +968,7 @@
             <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event properly.</summary>
         </member>
         <member name="M:Loyc.Collections.Impl.AListNode`2.GetImmutableCount(System.Boolean)">
-            <summary>Diagnostic method. See <see cref="!:AListBase&lt;K,T&gt;.ImmutableCount"/>.</summary>
+            <summary>Diagnostic method. See <see cref="M:Loyc.Collections.AListBase`2.GetImmutableCount"/>.</summary>
             <param name="excludeSparse">Should be false for normal ALists. If true, the count is of real items only.</param>
         </member>
         <member name="M:Loyc.Collections.Impl.AListNode`2.GetRealItemCount">
@@ -1005,7 +1185,9 @@
         <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.AbsoluteIndex">
             <summary>Index into sparse list where the operation starts.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "F:Loyc.Collections.Impl.AListSparseOperation`1.Item" -->
+        <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.Item">
+            <summary>A single item to insert if <c>Source==null &amp;&amp; !WriteEmpty</c></summary>
+        </member>
         <member name="F:Loyc.Collections.Impl.AListSparseOperation`1.SourceIndex">
             <summary>When nonzero, the operation is partialy complete and items in 
             range Source[0...SourceIndex-1] have already been inserted.</summary>
@@ -1021,7 +1203,7 @@
             added to a dictionary is a duplicate of a key that is already present in 
             the dictionary.</summary>
             <remarks>All the "add" operations are deliberately listed last, so that
-            <see cref="!:AListNode&lt;K,T&gt;.DoSingleOperation"/> can use a greater-than 
+            <see cref="M:Loyc.Collections.AListBase`2.DoSingleOperation(Loyc.Collections.Impl.AListSingleOperation{`0,`1}@)"/> can use a greater-than 
             operator to figure out whether an item may be added or not.</remarks>
         </member>
         <member name="F:Loyc.Collections.AListOperation.Retrieve">
@@ -1064,6 +1246,9 @@
             indexed access to its list of key-value pairs.
             </summary>
             <remarks>
+            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            about the BList classes is available.
+            <para/>
             The keys must be comparable (ordered); if the type does not implement
             <c>IComparable</c> or <c>IComparable(T)</c>, you must provide a 
             Comparison(T) delegate to perform comparisons.
@@ -1090,16 +1275,16 @@
             <see cref="P:System.Collections.Generic.Comparer`1.Default"/>.Compare.</remarks>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.#ctor(System.Int32)">
-            <inheritdoc cref="!:BDictionary(Func&lt;T,T,int&gt;, int, int)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32,System.Int32)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.#ctor(System.Int32,System.Int32)">
-            <inheritdoc cref="!:BDictionary(Func&lt;T,T,int&gt;, int, int)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32,System.Int32)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32})">
-            <inheritdoc cref="!:BDictionary(Func&lt;T,T,int&gt;, int, int)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32,System.Int32)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32)">
-            <inheritdoc cref="!:BDictionary(Func&lt;T,T,int&gt;, int, int)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32,System.Int32)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.#ctor(System.Func{`0,`0,System.Int32},System.Int32,System.Int32)">
             <summary>Initializes an empty BDictionary.</summary>
@@ -1147,23 +1332,22 @@
             in the list.</returns>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0,System.Boolean@)">
-            <inheritdoc cref="!:FindLowerBound(T)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0@)">
-            <inheritdoc cref="!:FindLowerBound(T)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0@,System.Boolean@)">
-            <inheritdoc cref="!:FindLowerBound(T)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.FindLowerBound(`0)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.FindUpperBound(`0)">
             <summary>Finds the index of the first item in the list that is greater 
             than the specified item.</summary>
-            <param name="item">The item to find. If passed by reference, when this 
+            <param name="key">The item to find. If passed by reference, when this 
             method returns, item is set to the next greater item than the item you 
             searched for, or left unchanged if there is no greater item.</param>
-            <param name="index">The index of the next greater item that was found,
-            or Count if the given item is greater than all items in the list.</param>
-            <returns></returns>
+            <returns>The index of the next greater item that was found,
+            or Count if the given item is greater than all items in the list.</returns>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.Clone">
             <inheritdoc cref="M:Loyc.Collections.BDictionary`2.Clone(System.Boolean)"/>
@@ -1173,7 +1357,7 @@
             <param name="keepListChangingHandlers">If true, ListChanging handlers
             will be copied from the existing list of items to the new collection.
             Note: if it exists, the NodeObserver is never copied. 
-            <see cref="!:NodeObserver"/> will be null in the new list.</param>
+            <see cref="P:Loyc.Collections.AListBase`2.ObserverCount"/> will be 0 in the new list.</param>
             <remarks>
             Cloning is performed in O(1) time by marking the tree root as frozen 
             and sharing it between the two lists. However, the new dictionary 
@@ -1204,7 +1388,7 @@
             <returns>True if the new pair was added, false if it was replaced.</returns>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0@,`1@)">
-            <inheritdoc cref="!:SetAndGetOldValue(K,V)"/>
+            <inheritdoc cref="M:Loyc.Collections.BDictionary`2.SetAndGetOldValue(`0,`1@)"/>
         </member>
         <member name="M:Loyc.Collections.BDictionary`2.ReplaceIfPresent(`0,`1)">
             <summary>Replaces the value associated with a specified key, if it already exists in the dictionary.</summary>
@@ -1227,19 +1411,22 @@
             indexed access to its list.
             </summary>
             <remarks>
+            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            about the BList classes is available.
+            <para/>
             When you need a sorted list of items, there's nothing quite like a BList. BList offers
             numerous features that none of the standard .NET collections can offer:
             <ul>
             <li>O(log N) efficiency for all standard list operations (Add, Remove, 
             IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration.</li>
-            <li>Changes can be observed through the <see cref="!:ListChanging"/> event.
+            <li>Changes can be observed through the <see cref="E:Loyc.Collections.AListBase`2.ListChanging"/> event.
             The performance penalty for this feature is lower than for the standard
             <see cref="!:ObservableCollection&lt;T&gt;"/> class.</li>
-            <li>Changes to the tree structure can be observed too (see <see cref="!:MakeObserver"/>).</li>
-            <li>The list can be frozen with <see cref="!:Freeze"/>, making it read-only.</li>
+            <li>Changes to the tree structure can be observed too (see <see cref="T:Loyc.Collections.Impl.IAListTreeObserver`2"/>).</li>
+            <li>The list can be frozen with <see cref="M:Loyc.Collections.AListBase`2.Freeze"/>, making it read-only.</li>
             <li><see cref="M:Loyc.Collections.BList`1.FindLowerBound(`0)"/> and <see cref="M:Loyc.Collections.BList`1.FindUpperBound(`0)"/> operations
             that find the nearest item equal to or greater than a specified item.</li>
-            <li>A reversed view of the list is available through the <see cref="!:Reversed"/> 
+            <li>A reversed view of the list is available through the <see cref="P:Loyc.Collections.AListBase`2.ReverseView"/> 
             property, and the list can be enumerated backwards, also in O(1) time 
             per element.</li>.
             <li>A BList normally uses less memory than a <see cref="T:System.Collections.Generic.SortedDictionary`2"/> 
@@ -1413,9 +1600,8 @@
             <param name="item">The item to find. If passed by reference, when this 
             method returns, item is set to the next greater item than the item you 
             searched for, or left unchanged if there is no greater item.</param>
-            <param name="index">The index of the next greater item that was found,
-            or Count if the given item is greater than all items in the list.</param>
-            <returns></returns>
+            <returns>The index of the next greater item that was found,
+            or Count if the given item is greater than all items in the list.</returns>
         </member>
         <member name="M:Loyc.Collections.BList`1.IndexOfExact(`0)">
             <summary>
@@ -1466,6 +1652,9 @@
             single key. Note: both keys and values must be comparable.
             </summary>
             <remarks>
+            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            about the BList classes is available.
+            <para/>
             Often when people want to be able to associate multiple values with a 
             single key, they use a Dictionary with values of type <see cref="T:System.Collections.Generic.List`1"/>.
             This approach is very inefficient (in terms of memory use) if most keys are 
@@ -1623,7 +1812,7 @@
             Contains(item) and Remove(item).
             </summary>
             <remarks>
-            The <see cref="M:Loyc.Collections.IndexedAList`1.IndexOf(`0)"/>, <see cref="!:Remove"/> and <see cref="!:Contains"/>
+            The <see cref="M:Loyc.Collections.IndexedAList`1.IndexOf(`0)"/>, <see cref="!:AList&lt;T&gt;.Remove"/> and <see cref="!:AList&lt;T&gt;.Contains"/>
             methods are accelerated by the indexer, but please note that the indexer
             is expensive in terms of memory usage and CPU time. In total, once the 
             index has been built, IndexedAList typically uses about three times as
@@ -1661,13 +1850,16 @@
             <remarks>
             You can set this property to false to discard the index if it has been 
             built, or set it to true to create a new index if it has not yet been
-            built (which takes O(N log N) where N is the <see cref="!:Count"/> of 
-            this list).
+            built (which takes O(N log N) where N is the <see cref="P:Loyc.Collections.AListBase`2.Count"/> 
+            of this list).
             </remarks>
         </member>
         <member name="T:Loyc.Collections.SparseAList`1">
             <summary>A sparse A-List that implements <see cref="T:Loyc.Collections.ISparseList`1"/>.</summary>
             <remarks>
+            An <a href="http://core.loyc.net/collections/alists-part3.html">article</a>
+            about this class is available.
+            <para/>
             The sparse A-List is implemented similarly to a normal A-List; the main 
             difference is that leaf nodes have a list of (int, T) pairs rather than
             a list of T values. The integers represent the relative index of each T
@@ -1722,7 +1914,7 @@
             (String.Intern("...")). The latter tends to be more dangerous 
             because an interned string can never be garbage-collected.
             <para/>
-            Note that <see cref="!:SimpleCache"/> contains strong references to 
+            Note that <see cref="T:Loyc.Collections.SimpleCache`1"/> contains strong references to 
             cached items, and the maximum cache size is 1024 items. The references 
             are released when the current thread terminates or when you call 
             <c>ObjectCache.Clear()</c>.</remarks>
@@ -1831,6 +2023,10 @@
             This class is intended to be use as a base class; a derived class can
             give meaning to the byte arrays, e.g. CPStringTrie encodes strings into
             byte arrays so they can be placed in the trie.</summary>
+            <remarks>
+            An <a href="http://www.codeproject.com/Articles/61230/CPTrie-A-sorted-data-structure-for-NET">article</a>
+            is available online the CPTrie data types.
+            </remarks>
             <typeparam name="T">Type of values to be associated with the keys. CPTrie
             can save memory if many or all values are null; therefore, if you wish
             to store a set rather than a dictionary, set T=object and associate null
@@ -2103,6 +2299,9 @@
         </member>
         <member name="T:Loyc.Collections.CPStringTrie`1">
             <summary>A compact patricia trie that uses strings as keys.</summary>
+            <remarks>This data structure can be very space-efficient when asked to 
+            store a large numbers of keys with common prefixes; maximum efficiency is
+            achieved when the associated values are all (or almost all) null.</remarks>
             <typeparam name="TValue">Type of value associated with each key.</typeparam>
         </member>
         <member name="M:Loyc.Collections.CPStringTrie`1.TryAdd(System.String,`0)">
@@ -2137,7 +2336,9 @@
             key to be decoded from the bytes it is made up of.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.CPStringTrie`1.KeyCollection" -->
+        <member name="T:Loyc.Collections.CPStringTrie`1.KeyCollection">
+            <summary>Return value of <see cref="P:Loyc.Collections.CPStringTrie`1.Keys"/>.</summary>
+        </member>
         <member name="T:Loyc.Collections.CPValueCollection`1">
             <summary>Provides read-only access to the values of a CPTrie.</summary>
             <typeparam name="T">Type of values in the collection</typeparam>
@@ -2267,6 +2468,79 @@
              elements increases: at 40 items, p exceeds 50%.
              </remarks>
         </member>
+        <member name="T:Loyc.Utilities.Co`1">
+            <summary>A structure that helps you to write coroutines, or to avoid the 
+            performance penalty of nested iterators.</summary>
+            <remarks>
+            This data type helps you solve the performance problem with using "yield
+            return" recursively.
+            <para/>
+            To illustrate the problem, let's consider the case of binary tree traversal. 
+            Suppose you define this data structure to hold a subtree of a sorted binary 
+            tree of strings:
+            <code>
+            internal class StringNode : IEnumerable&lt;string&gt;
+            {
+                internal StringNode LeftChild;
+                internal string Value;
+                internal StringNode RightChild;
+            }
+            </code>
+            You want to write an enumerator that returns all the strings in order.
+            So you add this method to the StringNode class:
+            <code>
+            public IEnumerator&lt;string&gt; GetEnumerator()
+            {
+            	foreach(string item in LeftChild)
+            		yield return item;
+            	yield return Value;
+            	foreach(string item in RightChild)
+            		yield return item;
+            }
+            </code>
+            As explained in <a href="http://stackoverflow.com/questions/3969963/when-not-to-use-yield-return">
+            this web page</a>, this implementation will be slow, and it will get slower 
+            and slower as the tree gets deeper.
+            <para/>
+            <see cref="T:Loyc.Utilities.Co`1"/> (Co is short for "coroutine") helps to solve this 
+            problem with a postprocessing stage. Instead of writing GetEnumerator()
+            directly as above, you write it like this instead:
+            <code>
+            public IEnumerator&lt;string&gt; GetEnumerator()
+            {
+            	return CoGetEnumerator().Unwrap();
+            }
+            public IEnumerator&lt;Co&lt;string&gt;&gt; CoGetEnumerator()
+            {
+            	yield return LeftChild.All();
+            	yield return Value;
+            	yield return RightChild.All();
+            }
+            </code>
+            Simple, right? String is automatically converted to Co{string} so that you 
+            can "yield return" one, but C# does not allow automatic coersion from 
+            IEnumerator{Co{T}} to Co{T} so you must add the suffix <c>.All()</c> which
+            really means "wrap the IEnumerator{Co{T}} into a Co{T} object".
+            <para/>
+            In fact, this class simulates the core functionality of C# 5's async/await 
+            feature just using C# 2's iterators. However, the C# 5 async feature is 
+            richer; for example, it supports exceptions properly. If an exception is
+            thrown from within a nested iterator, the outer iterator is unable to catch
+            the exception; it will be thrown directly into whatever foreach loop (or
+            other code) that is enumerating the sequence.
+            <para/>
+            This class solves the same problem as <see cref="!:NestedEnumerator&lt;F,T&gt;"/> in
+            a way that is very easy to use. You should use <see cref="!:NestedEnumerator&lt;F,T&gt;"/>
+            instead if you need the highest possible performance.
+            </remarks>
+            <typeparam name="T">Type of item being enumerated.</typeparam>
+        </member>
+        <member name="M:Loyc.Utilities.Co`1.GetEnumerator">
+            <summary>Enumerates the underlying sequence.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.Co">
+            <summary>Extension methods for <see cref="T:Loyc.Utilities.Co`1"/>.</summary>
+        </member>
         <member name="T:Loyc.Collections.Impl.KeylessHashtable`1">
             <summary>
             A fairly obscure space-saving hashtable that offers no built-in way to 
@@ -2312,6 +2586,136 @@
             <summary>The concrete implementation of <see cref="T:Loyc.Collections.Impl.KeylessHashtable`1"/>.
             Do not use directly; instead, call <see cref="M:Loyc.Collections.Impl.KeylessHashtable`1.New(System.Int32)"/>.</summary>
         </member>
+        <member name="T:Loyc.Collections.NestedEnumerator`2">
+            <summary>Helper class. An enumerator that helps enumerate tree data structures. 
+            It maintains a virtual call stack that avoids the performance hit of using
+            nested "yield return" statements in C#.</summary>
+            <typeparam name="Frame">Frame data structure; represents the current 'depth' 
+            in a tree data structure, or the current 'stack frame' on a virtual stack.
+            Typically, this parameter will either be <see cref="T:Loyc.Collections.Impl.EnumeratorFrame`1"/> or 
+            a struct that implements <see cref="T:Loyc.Collections.Impl.IEnumeratorFrame`2"/>.</typeparam>
+            <typeparam name="T">Item data type returned by the enumerator.</typeparam>
+            <remarks>
+            This data type helps you solve the performance problem with using "yield
+            return" recursively ().
+            <para/>
+            To illustrate how to use <see cref="T:Loyc.Collections.NestedEnumerator`2"/> let's 
+            consider the case of binary tree traversal. Suppose you define this data
+            structure to hold a subtree of a sorted binary tree of strings:
+            <code>
+            internal class StringNode : IEnumerable&lt;string&gt;
+            {
+                internal StringNode LeftChild;
+                internal string Value;
+                internal StringNode RightChild;
+                public IEnumerator&lt;string&gt; GetEnumerator() { ... }
+            }
+            </code>
+            You want to write an enumerator that returns all the strings in order.
+            So you write this method in the StringNode class:
+            <code>
+            public IEnumerator&lt;string&gt; GetEnumerator()
+            {
+            	foreach(string item in LeftChild)
+            		yield return item;
+            	yield return Value;
+            	foreach(string item in RightChild)
+            		yield return item;
+            }
+            </code>
+            As explained in <a href="http://stackoverflow.com/questions/3969963/when-not-to-use-yield-return">
+            this web page</a>, this implementation will be slow, and it will get slower 
+            and slower as the tree gets deeper.
+            <para/>
+            NestedEnumerator helps to solve this problem using a "virtual stack". It 
+            keeps track of all the nested enumerators and always returns values from 
+            the current, deepest enumerator. The enumerator objects are called "frames",
+            because they are "stack frames" on the virtual stack.
+            <para/>
+            Each enumerator implements <see cref="T:Loyc.Collections.Impl.IEnumeratorFrame`2"/> instead
+            of just <see cref="T:System.Collections.Generic.IEnumerator`1"/>. A normal enumerator can only do one
+            of two actions on each call to MoveNext(): it can return a T value, or stop.
+            But an <c>IEnumeratorFrame</c> can do one of three things: it can return a T
+            value, it can stop, or it can return a new (child) stack frame. These actions
+            are represented by <c>MoveNext</c> return values of 1, 0, and -1 respectively.
+            <para/>
+            You cannot use <c>yield return</c> with <c>NestedEnumerator</c> because it 
+            is not supported by the C# compiler, so using <c>NestedEnumerator</c> 
+            requires more developer effort. Here's how the GetEnumerator() method can 
+            be implemented using <c>NestedEnumerator</c>:
+            <code>
+            public IEnumerator&lt;string&gt; GetEnumerator()
+            {
+            	return new NestedEnumerator&lt;Frame, string&gt;(new Frame(this));
+            }
+            struct Frame : IEnumeratorFrame&lt;Frame, string&gt;
+            {
+                StringNode self;
+                int step;
+                public Frame(StringNode self) { _self = self; step = 0; }
+                
+                int MoveNext(ref Frame frame, ref T current)
+                {
+                    switch(++step) {
+                        case 1: frame = new Frame(self.LeftChild);  return -1;
+                        case 2: current = Value;                    return 1;
+                        case 3: frame = new Frame(self.RightChild); return -1;
+                    }
+                    return 0;
+                }
+            }
+            </code>
+            The <c>NestedEnumerator</c> takes care of managing the stack and invoking 
+            <c>MoveNext</c> on the deepest instance of <c>IEnumeratorFrame</c>.
+            <para/>
+            <see cref="T:Loyc.Collections.Impl.IEnumeratorFrame`2"/> is an unusual interface that 
+            requires <c>Frame</c> to be derived from the interface itself. The purpose 
+            of this design is to allow the <c>Frame</c> data type to be a struct,
+            which allows the virtual stack to consist of value types (structs), which
+            improves performance because a new object does not have to be allocated on
+            the heap for every stack frame. Also, if <c>Frame</c> is a struct, 
+            NestedEnumerator can call <see cref="M:Loyc.Collections.Impl.IEnumeratorFrame`2.MoveNext(`0@,`1@)"/>
+            directly, rather than via interface dispatch, which also improves 
+            performance.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Collections.NestedEnumerable`2">
+            <summary>Helper type. You pass a cloneable <c>Frame</c> object to the 
+            constructor, and then a copy of this <c>Frame</c> is used to construct a
+            new <see cref="T:Loyc.Collections.NestedEnumerator`2"/> each time the user calls 
+            <see cref="M:Loyc.Collections.NestedEnumerable`2.GetEnumerator"/>.</summary>
+            <remarks>For more information see <see cref="T:Loyc.Collections.NestedEnumerator`2"/>.</remarks>
+        </member>
+        <member name="T:Loyc.Collections.Impl.IEnumeratorFrame`2">
+            <summary>Helper interface for <see cref="T:Loyc.Collections.NestedEnumerator`2"/>.</summary>
+            <typeparam name="Frame">A data type that implements this interface.</typeparam>
+            <typeparam name="T">Type of items enumerated by this interface.</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.Impl.IEnumeratorFrame`2.MoveNext(`0@,`1@)">
+            <summary>Enumerates the next item, or the next child collection.</summary>
+            <param name="frame">Current frame (on entry, 'frame' is the same as 'this').
+            To begin enumerating a child frame, this method must change 'frame' to the
+            desired child frame and return -1.</param>
+            <param name="current">Current item (on entry, 'current' is value most 
+            recently enumerated by <see cref="T:Loyc.Collections.NestedEnumerator`2"/>.) To 
+            enumerate an item, MoveNext must change the value of 'current' and 
+            return 1.</param>
+            <returns>1 to enumerate 'current', 0 when there are no more items in 
+            this frame's sequence, and any other value to enumerate a child frame.</returns>
+        </member>
+        <member name="T:Loyc.Collections.Impl.EnumeratorFrame`1">
+            <summary>A standard base class for enumerator frames used by 
+            <c>NestedEnumerator{EnumeratorFrame{T},T}</c>.</summary>
+            <typeparam name="T">Type of items enumerated by this class.</typeparam>
+            <remarks>
+            This base class should be used whenever more than one type of frame
+            will be present on <see cref="T:Loyc.Collections.NestedEnumerator`2"/>'s internal stack 
+            of frames.
+            <para/>
+            If the enumerator will only use a single type of frame, then
+            (in some cases) the frame data type can be a 'struct' to achieve higher 
+            performance. But in that case, this class cannot be used.</remarks>
+        </member>
         <member name="T:Loyc.Collections.SimpleCache`1">
             <summary>A cache designed to save memory by sharing instances of identical 
             strings and other immutable objects.</summary>
@@ -2350,7 +2754,362 @@
             TODO: try supporting hashtables with non-power-of-2 sizes for possible speedup.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.Impl.InternalSet`1" -->
+        <member name="T:Loyc.Collections.Impl.InternalSet`1">
+            <summary>A hash-trie data structure for use inside other data structures.</summary>
+            <remarks>
+            <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> is a dual-mode mutable/immutable "hash trie",
+            which is a kind of tree that is built from the hashcode of the items it 
+            contains. It supports fast cloning, and is suitable as a persistent data
+            structure.
+            <para/>
+            InternalSet&lt;T&gt; is not designed to be used by itself, but as a building
+            block for other data structures. It has no Count property because it does 
+            not know its own size; the outer data structure must track the size if 
+            the size is needed. The lack of a Count property allows an empty 
+            InternalSet to use a mere single word of memory!
+            <para/>
+            This is my second implementation of InternalSet. The original version
+            used memory very efficiently for reference types, but required boxing for
+            value types; this version needs more memory, but is moderately faster in
+            most cases and supports value types without boxing. I estimate that 
+            InternalSet (the second version) uses roughly the same amount of memory as 
+            <see cref="T:System.Collections.Generic.HashSet`1"/> (actually more or less depending on the number of 
+            items in the set, and on the hashcode distribution.)
+            <para/>
+            Collection classes based on InternalSet are most efficient for small sets,
+            but if you always need small sets then a simple wrapper around HashSet 
+            would suffice. In fact, despite my best efforts, this data type rarely 
+            outperforms HashSet, but this is because <see cref="T:System.Collections.Generic.HashSet`1"/> is quite
+            fast, not because <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> is slow. Still, there are
+            several reasons to consider using a collection class based on InternalSet
+            instead of <see cref="T:System.Collections.Generic.HashSet`1"/>:
+            <ul>
+            <li>All of my set collections offer read-only variants. You can instantly 
+            convert any mutable set or dictionary into an immutable one, and convert 
+            any immutable set or dictionary back into a mutable one in O(1) time; 
+            this relies on the same fast-cloning technique I developed for 
+            <see cref="T:Loyc.Collections.AList`1"/>*.</li>
+            <li>All of my set collections offer set operators that combine or intersect
+            two sets without modifying the source sets ("|" for union, "&amp;" for
+            intersection, "-" for subtraction); these operators are available on both
+            the mutable and immutable versions of the sets.</li>
+            <li><see cref="T:Loyc.Collections.Impl.InternalSet`1"/> supports combined "get-and-replace" and 
+            "get-and-remove" operations, which is mainly useful when it is being used
+            as a dictionary (i.e. when T is a key-value pair). There are two "Add" 
+            modes, "add if not present" and "add or replace"; both modes retrieve the 
+            existing value if the key was already present, and the "add or replace" 
+            mode furthermore changes the value. Also, when removing an item, you can
+            get the value that was removed.</li>
+            <li><see cref="T:Loyc.Collections.Impl.InternalSet`1"/>'s enumerator allows you to change or
+            delete the current value (this feature is used internally by set operations
+            such as <see cref="M:Loyc.Collections.Impl.InternalSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0},System.Boolean)"/> and <see cref="M:Loyc.Collections.Impl.InternalSet`1.IntersectWith(Loyc.Collections.Impl.InternalSet{`0},System.Collections.Generic.IEqualityComparer{`0})"/>).</li>
+            <li><see cref="T:Loyc.Collections.Impl.InternalSet`1"/> was inspired by Clojure's PersistentHashMap,
+            or rather by Karl Krukow's blog posts about PersistentHashMap**, and so it
+            is designed so that you can use it as a fully persistent set, which means
+            that you can keep a copy of every old version of the set that has ever 
+            existed, if you want. The "+" and "-" operators (provided on the wrapper 
+            classes, not on <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> itself) allow you to add or 
+            remove a single item without modifying the original set. There is a 
+            substantial performance penalty for overusing these operators, but these
+            operators are cheaper than duplicating a <see cref="T:System.Collections.Generic.HashSet`1"/> every 
+            time you modify it.</li>
+            </ul>
+            * After developing <see cref="T:Loyc.Collections.AList`1"/> and Loyc trees, I realized that
+              freezable classes are error-prone, because it is sometimes difficult for
+              a developer to figure out (before run-time) whether a given object could
+              be frozen. If an object is frozen and you modify it, the compiler will
+              never detect your mistake in advance and warn you. The collections based 
+              on <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> fix this problem by having separate data 
+              types for frozen and unfrozen (a.k.a. immutable and mutable) collections.<br/>
+            ** http://blog.higher-order.net/2010/08/16/assoc-and-clojures-persistenthashmap-part-ii/
+            <para/>
+            InternalSet is not efficient for Ts that are expensive to compare; unlike 
+            standard .NET collections, this data structure does not store the hashcode 
+            of each item inside the collection. The memory saved by not storing the 
+            hashcode compensates for the extra memory that <c>InternalSet</c> tends to 
+            require due to its structure.
+            <para/>
+            As I was saying, this data structure is inspired by Clojure's 
+            PersistentHashMap. Whereas PersistentHashMap uses nodes of size 32, I chose 
+            to use nodes of size 16 in order to increase space efficiency for small 
+            sets; for some reason I tend to design programs that use many small 
+            collections and a few big ones, so I tend to prefer designs that stay 
+            efficient at small sizes.
+            <para/>
+            So InternalSet is a tree of nodes, with each level of the tree 
+            representing 4 bits of the hashcode. Slots in the root node are selected
+            based on bits 0 to 3 of the hashcode, slots in children of the root are
+            selected based on bits 4 to 7 of the hashcode, and so forth. Here's a 
+            diagram:
+            <pre>
+                                         _root*
+            * IsFrozen=true                |
+                                           |
+                  +---------+---------+----+----+---------+---------+
+                  |         |         |         |         |         |
+                 0x2       0x3       0x6       0x7       0x9       0xF
+                            |                   |         |
+                         +--+--+                |      +--+--+
+                         |     |                |      |     |
+                       0x13   0x73             0x57  0x09   0x59
+            </pre>
+            Each of the 12 nodes on this diagram has 16 slots for items of type T, and 
+            the 4 nodes that have children have 16 additional slots for references to 
+            children. The numbers on the nodes represent their role in the tree; for 
+            example:
+            <ul>
+            <li>0x59 is at depth 2 and only holds items whose hashcodes end with 0x59.</li>
+            <li>0x9 is at depth 1 and only holds items whose hashcodes end with 0x9.  </li>
+            <li>the root node is always at depth 0 and can hold any item regardless of 
+                hashcode.</li> 
+            </ul>
+            <para/>
+            Technically, this data structure has O(log N) time complexity for search,
+            insertion and removal. However, it's a base-16 logarithm and maxes out at
+            8 levels, so it is faster than typical O(log N) algorithms that are 
+            base-2. At smaller sizes, its speed is similar to a conventional hashtable,
+            and some operations are still efficient at large sizes, too.
+            <para/>
+            Unlike <see cref="T:Loyc.Collections.Impl.InternalList`1"/>, <c>new InternalSet&lt;T&gt;()</c> is a 
+            valid empty set. Moreover, because the root node is never changed after
+            it is created (unless you modify it while it is frozen), all copies of
+            an <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> represent the same set unless the set is
+            frozen with <see cref="M:Loyc.Collections.Impl.InternalSet`1.CloneFreeze"/>; see <see cref="M:Loyc.Collections.Impl.InternalSet`1.Thaw"/> for more
+            information.
+            <para/>
+            The neatest feature of this data structure is fast cloning and subtree 
+            sharing. You can call <see cref="M:Loyc.Collections.Impl.InternalSet`1.CloneFreeze"/> to freeze/clone the trie 
+            in O(1) time; this freezes the root node (a transitive property that 
+            implicitly affects all children), but still permits the hashtrie to be 
+            modified by copying nodes on-demand. Thus the trie is actually frozen, but 
+            copy-on-write behavior provides the illusion that it is still editable.
+            <para/>
+            This data structure is designed to support classes that contain mutable
+            data, so that it can be used to construct dictionaries; that is, it allows
+            T values that have an immutable "key" part and a mutable "value" part.
+            Call <see cref="M:Loyc.Collections.Impl.InternalSet`1.Find(`0@,System.Collections.Generic.IEqualityComparer{`0})"/> to retrieve the value associated with a key, and
+            call <see cref="M:Loyc.Collections.Impl.InternalSet`1.Add(`0@,System.Collections.Generic.IEqualityComparer{`0},System.Boolean)"/> with replaceIfPresent=true to change the "value" 
+            associated with a key. The <see cref="!:Map"/> and <see cref="!:MMap"/> 
+            classes rely on this feature to implement a dictionary.
+            <para/>
+            <b>How it works</b>: I call this data structure a "hash-trie" because it
+            blends properties of hashtables and tries. It places items into a tree 
+            by taking their hashcode and dividing it into 8 groups of 4 bits, starting 
+            at the least significant bits. Each group of 4 bits is used to select a
+            location in the tree/trie, and each node of the tree always has 16 items
+            (and 16 children, if it has any children at all.) For example, consider a 
+            tree with 7 items that have the following hash codes:
+            <para/>
+            - J: 0x89BC98B1 <br/>
+            - K: 0xB173A12C <br/>
+            - L: 0x20913491 <br/>
+            - M: 0x1977FEB3 <br/>
+            - N: 0x01299451 <br/>
+            - O: 0x0732AF01 <br/>
+            - P: 0x0732AF01 (Note: O.Equals(P)==false, but the hashcodes are equal)
+            <para/>
+            The top level of the trie represents the lowest 4 bits of the hashcode.
+            Since each node has 16 items, 7 items can usually fit in a single node, 
+            but in this case there are too many hashcodes that end with "1", causing
+            a node split:
+            <pre>
+                                       |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+                   _root ==&gt; _items    | |!|!|M|!| | | | | | | |K| | | |
+                             _children | |*| | | | | | | | | | | | | | |
+                             
+                                       |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+            * child node ==&gt; _items    |O|P| | | |N| | | |L| |J| | | | |
+                             _children (null)
+                             
+            ("!" represents the deleted flag, which indicates that an item was 
+             once present at this location.)
+            </pre>
+            The second level of the trie represents bits 4-7, which is the second-
+            last hex digit. You can see, for example, that the second-last digit of 
+            N is 5, therefore N is stored at index 5 of the child node.
+            <para/>
+            In case hashcodes of different objects collide at a particular digit,
+            adjacent array elements can be used to hold the different objects that
+            share the same 4-bit sub-hashcode; this is a bounded-time variation on 
+            the linearly-probed hashtable. In this example, both O and P have 
+            zero as their second-last digit. Assuming O is added first, it takes
+            slot [0]; then P takes slot [1]. Up to 3 adjacent entries can be used
+            for a given hashcode; therefore, when searching for an entry it is 
+            necessary to search up to 4 locations in each node: the preferred 
+            location, plus 3 adjacent locations.
+            <para/>
+            For example, support we search for an item X that is not in the set
+            and has hashcode 0xCCA9A241. In that case, the Find methods starts with 
+            the least-significant digit, 1. This points us to the child slot; an 
+            invariant of our hashtrie is that if there is a child node, all items 
+            with the corresponding sub-hashcode must be placed in the child node. 
+            Therefore it is impossible, for example, that X could be located at 
+            index 2 of the root node; the existence of the child node guarantees
+            that it is not there. So the Find method looks inside the child node,
+            at index 4 (the second-last digit of X's hashcode) and finds nothing.
+            It also looks at indexes 5, 6, and 7, comparing N to X in the process.
+            Since none of these slots contain X, the Find method returns false.
+            <para/>
+            Something unfortunate happens if five or more objects have the same 
+            hashcode: it forces the tree to have maximum depth. Since a particular
+            hashcode can only be repeated four times in a single node, upon adding
+            a fifth item with the same hashcode, child nodes are created for all
+            8 digits of the hashcode. At the 8th level, a special node type is 
+            allocated that contains, in addition to the usual 16 slots, a list of
+            "overflow slots" holds items that cannot fit in the normal slots due
+            to excessive collisions. All of this has a substantial memory penalty;
+            to avoid this problem, use a better hash function that does not create 
+            false collisions.
+            <para/>
+            If there are more than 16 items that share the same 28 lower-order 
+            bits, the overflow area on the 8th level node will expand to hold all 
+            of these items; this is the only way that a node can have more than 
+            16 items.
+            <para/>
+            Fast cloning works by setting the "IsFrozen" flag on the root node.
+            When a node is frozen, all its children are frozen implicitly; since 
+            the children are not marked right away, the <see cref="M:Loyc.Collections.Impl.InternalSet`1.CloneFreeze"/>
+            method can return immediately. The frozen flag will be propagated from 
+            parents to children lazily, when the tree is modified later.
+            <para/>
+            To "thaw" a node, a copy is made of that node and all of its parents.
+            For example, suppose that the following tree is frozen and cloned:
+            <pre>
+                                         _root*
+            * IsFrozen=true                |
+                                           |
+                  +---------+---------+----+----+---------+---------+
+                  |         |         |         |         |         |
+                 0x2       0x3       0x6       0x7       0x9       0xF
+                            |                   |         |
+                         +--+--+                |      +--+--+
+                         |     |                |      |     |
+                       0x13   0x73             0x57  0x09   0x59
+            </pre>
+            Remember, only the root's IsFrozen flag is set at first; all other nodes
+            do not have the frozen flag yet.
+            <para/>
+            Now suppose that an item is added to node 0x9 (e.g. something with hashcode 
+            0x39 could go in this node). Before the new item can be placed in node 0x9, 
+            it must be thawed. To thaw it, an unfrozen copy is made, leaving the 
+            original untouched. The copy is not frozen, but it does point to the same 
+            frozen children (0x09 and 0x59), so a for-loop sets the IsFrozen flag of 
+            each child. Then, the new item is added to the copy of node 0x9. Next, the 
+            _root is also unfrozen by making a copy of it with <c>IsFrozen=false</c>. 
+            Again, a for-loop sets the IsFrozen flag of each frozen child, and then 
+            child slot [9] in the root is replaced with the new copy of 0x9 (which has 
+            the new item).
+            <para/>
+            This concludes the thawing process. So at this point, just two nodes are
+            actually unfrozen, and the modified tree looks like this:
+            <pre>
+            ! Unfrozen copy              _root!
+            * IsFrozen=true                |
+                                           |
+                  +---------+---------+----+----+---------+---------+
+                  |         |         |         |         |         |
+                 0x2*      0x3*      0x6*      0x7*      0x9!      0xF*
+                            |                   |         |
+                         +--+--+                |      +--+--+
+                         |     |                |      |     |
+                       0x13   0x73             0x57  0x09*  0x59*
+            </pre>
+            There are 12 nodes here and 2 have been copied. The other 10 nodes are 
+            still shared between the modified tree and the clone. Next, if you add an
+            item to node 0x6, only that one node has to be thawed; the root has already
+            been thawed and there is no need to make another copy of it. Due to the 
+            random nature of hashcodes, it is probable that as you modify the set after 
+            cloning it, it is typical for each modification to require approximately
+            one node to be thawed, until the majority of the nodes have been thawed.
+            <para/>
+            InternalSet does not thaw unnecessarily. If you try to remove an item that 
+            is not present, none of the tree will be thawed. If you add an item that is 
+            already present in a frozen node (and you do not ask for replacement), 
+            that node will not be thawed. <see cref="M:Loyc.Collections.Impl.InternalSet`1.Contains(`0,System.Collections.Generic.IEqualityComparer{`0})"/> and <see cref="M:Loyc.Collections.Impl.InternalSet`1.Find(`0@,System.Collections.Generic.IEqualityComparer{`0})"/>
+            never cause thawing.
+            <para/>
+            I am not aware whether a data structure quite like this has been described
+            in the comp-sci literature or not (although it probably has). If you see 
+            something like this in a paper, let me know.
+            <para/>
+            When attempting to insert a new item in a node, the first available empty 
+            slot will be used; and when searching for an item, the search stops at an
+            empty slot. For example, suppose that the root node contains these items:
+            <pre>
+                                |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+            _root ==&gt; _items    |A| |C| |E|F| | |I| |K|L| |N| | |
+            </pre>
+            Now suppose that you are searching for, or adding, or an item 'D' whose 
+            hashcode ends with '3'. Slot 3 is empty, and this data structure works
+            in such a way that the search for 'D' can end immediately with a result 
+            of 'false', or it can be added at slot 2 immediately without comparing
+            'D' with slots 4, 5 and 6 which (if 2 were not empty) might already 
+            contain 'D'.
+            <para/>
+            The reasoning behind this rule is that if 'D' already existed in the set, 
+            slot 2 should not be empty; since it is empty, 'D' must not be in the set
+            already. However, deletions could violate this logic. For example, imagine
+            that we add two items, first 'd' and then 'D', which both have a hashcode 
+            that ends in '3'. Then the node would look like this:
+            <pre>
+                                |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+            _root ==&gt; _items    |A| |C|d|E|F|D| |I| |K|L| |N| | |
+            </pre>
+            Next, you delete 'd'. Imagine that this leaves the node in the following state:
+            <pre>
+                                |0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|
+            _root ==&gt; _items    |A| |C| |E|F|D| |I| |K|L| |N| | |
+            </pre>
+            Now 'D' is left outside its 'home' location of 3. If you then attempt to
+            add 'D' to the set, a duplicate copy would be added at position '3'! Or if
+            you search for 'D' instead, the result would be 'false' even though D is 
+            present in the set.
+            <para/>
+            I thought of two solutions to this problem; the first was to 'fix' the node
+            after a deletion so that 'D' would move from slot 6 to 3. But there's a big
+            problem with this solution because <see cref="T:Loyc.Collections.Impl.InternalSet`1.Enumerator"/> 
+            has a <c>RemoveCurrent()</c> method which is supposed to delete the current
+            item and move to the next one. If the node had to be rearranged in response 
+            to a deletion, it would be very difficult to guarantee that the enumerator 
+            still returns each item in the set exactly once.
+            <para/>
+            The second solution, which I actually implemented, puts a special "deleted"
+            marker in slot 3 (denoted ! on the first diagram). This marker forces the
+            search routine to compare the item being added or searched for with other
+            slots beyond the current one, but otherwise it behaves like an empty slot.
+            <para/>
+            There is a third solution--always check all four possible slots. But the
+            comparison is not always cheap, so <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> does not
+            use this solution unless you are using <c>null</c> as the value of the 
+            <see cref="T:System.Collections.Generic.IEqualityComparer`1"/>.
+            <para/>
+            Since <see cref="T:Loyc.Collections.Impl.InternalSet`1"/> can hold any value of type T, the 
+            "deleted" and "empty/in use" indicators cannot physically be stored in the 
+            slots of type T. Instead, these indicators are stored separately, with 16 
+            bits for "deleted" flags and 16 bits for "used" flags.
+            <para/>
+            During a normal delete operation, if a node has no children and is using 
+            only one or two slots after an item is deleted, the parent is checked for 
+            empty slots to find out whether the child is really necessary. If there are 
+            enough free slot(s) in the parent node, the remaining items in the child 
+            are transferred back back to the parent and the child is deleted (the 
+            reference to it is cleared to null).
+            <para/>
+            Unfortunately, this behavior is not available when you call
+            <see cref="M:Loyc.Collections.Impl.InternalSet`1.Enumerator.RemoveCurrent(Loyc.Collections.Impl.InternalSet{`0}@)"/>. In order to maintain the integrity
+            of the enumerator, a child node will not be deleted during a call to
+            <c>RemoveCurrent</c> unless the node is completely empty after the removal.
+            Consequently, the tree will use extra memory if you remove most, but not 
+            all, items from the set using <c>RemoveCurrent</c>.
+            <para/>
+            By the way, unlike the original implementation, this version of InternalSet 
+            allows 'null' to be a member of the set.
+            <para/>
+            Interesting fact: it is possible for two sets to be equal (contain the 
+            same items), and yet for those items to be enumerated in different orders
+            in the two sets.
+            </remarks>
+        </member>
         <member name="F:Loyc.Collections.Impl.InternalSet`1.Empty">
             <summary>An empty set.</summary>
             <remarks>This property comes with a frozen, empty root node,
@@ -2440,7 +3199,7 @@
         <member name="M:Loyc.Collections.Impl.InternalSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
             <summary>Removes all items from this set that are present in 'other'.</summary>
             <param name="other">The set whose members should be removed from this set.</param>
-            <param name="otherComparer">The comparer for this set (not for 'other',
+            <param name="thisComparer">The comparer for this set (not for 'other',
             which is simply enumerated).</param>
             <returns>Returns the number of items that were removed.</returns>
         </member>
@@ -2677,7 +3436,16 @@
             common code into this base class. The end.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Collections.MapOrMMap`2.System#Collections#Generic#IEqualityComparer{System#Collections#Generic#KeyValuePair{K@V}}#Equals(System.Collections.Generic.KeyValuePair{`0,`1},System.Collections.Generic.KeyValuePair{`0,`1})" -->
+        <member name="M:Loyc.Collections.MapOrMMap`2.System#Collections#Generic#IEqualityComparer{System#Collections#Generic#KeyValuePair{K@V}}#Equals(System.Collections.Generic.KeyValuePair{`0,`1},System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>Not intended to be called by users.</summary>
+            <remarks>
+            The user can provide a <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> to compare keys. 
+            However, InternalSet&lt;KeyValuePair&lt;K, V&gt;&gt; requires a comparer that 
+            can compare <see cref="T:System.Collections.Generic.KeyValuePair`2"/> values. Therefore, MapOrMMap 
+            implements IEqualityComparer&lt;KeyValuePair&lt;K, V&gt;&gt; to provide the 
+            necessary comparer without an unnecessary memory allocation.
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.MapOrMMap`2.System#Collections#Generic#IEqualityComparer{System#Collections#Generic#KeyValuePair{K@V}}#GetHashCode(System.Collections.Generic.KeyValuePair{`0,`1})">
             <summary>Not intended to be called by users.</summary>
         </member>
@@ -2732,8 +3500,18 @@
         <member name="M:Loyc.Collections.Map`2.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{`0,`1}},System.Collections.Generic.IEqualityComparer{`0})">
             <summary>Creates a map with the specified elements and key comparer.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Collections.Map`2.With(`0,`1,System.Boolean)" -->
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Collections.Map`2.Without(`0)" -->
+        <member name="M:Loyc.Collections.Map`2.With(`0,`1,System.Boolean)">
+            <summary>Returns a copy of the current map with an additional key-value pair.</summary>
+            <param name="replaceIfPresent">If true, the existing key-value pair is replaced if present. 
+            Otherwise, the existing key-value pair is left unchanged.</param>
+            <returns>A map with the specified key. If the key was already present 
+            and replaceIfPresent is false, the same set ('this') is returned.</returns>
+        </member>
+        <member name="M:Loyc.Collections.Map`2.Without(`0)">
+            <summary>Returns a copy of the current map without the specified key.</summary>
+            <returns>A map without the specified key. If the key was not present,
+            the same set ('this') is returned.</returns>
+        </member>
         <member name="M:Loyc.Collections.Map`2.Union(Loyc.Collections.MapOrMMap{`0,`1})">
             <summary>Returns a copy of the current map with the specified items 
             added; each item is added only if the key is not already present.</summary>
@@ -2859,7 +3637,7 @@
         <member name="T:Loyc.Collections.MSet`1">
             <summary>A mutable set.</summary>
             <remarks>
-            This class is based on <see cref="!:InternalSet&lt;T&gt;"/>; see its documentation 
+            This class is based on <see cref="T:Loyc.Collections.Impl.InternalSet`1"/>; see its documentation 
             for technical details about the implementation.
             <para/>
             Assuming T is a reference type, this class uses less memory than <see cref="T:System.Collections.Generic.HashSet`1"/> and, under certain conditions, is faster. Specifically, 
@@ -2893,15 +3671,16 @@
         <member name="M:Loyc.Collections.MSet`1.Find(`0@)">
             <summary>Searches for an item. If the item is found, the copy in the 
             set is returned in the 'item' parameter. Note: there is no reason to 
-            call this method in a <see cref="!:SymbolSet"/> because the item reference
-            will never change; call <see cref="M:Loyc.Collections.MSet`1.Contains(`0)"/> instead.</summary>
+            call this method in a set of completely immutable; in such cases,
+            call <see cref="M:Loyc.Collections.MSet`1.Contains(`0)"/> instead.</summary>
             <returns>true if the item was found, false if not.</returns>
         </member>
         <member name="M:Loyc.Collections.MSet`1.AddOrFind(`0@,System.Boolean)">
             <summary>Adds the specified item to the set, and retrieves an existing 
             copy of the item if one existed. Note: there is no reason to call this
-            method in a <see cref="!:SymbolSet"/> because if an item is found, it 
-            will always be the exact same object that you searched for.</summary>
+            method in a set of singletons (e.g. <see cref="T:Loyc.Symbol"/>) because if an 
+            item is found, it will always be the exact same object that you searched 
+            for.</summary>
             <param name="item">An object to search for. If this method returns false,
             this parameter is changed to the existing value that was found in the
             collection.</param>
@@ -2916,7 +3695,7 @@
             <param name="replaceIfPresent">If true, and a matching item is 
             already present in the set, the specified item replaces the existing 
             copy. If false, the existing copy is left alone. This parameter
-            has no effect in a <see cref="!:SymbolSet"/>.</param>
+            has no effect in a set of singletons (e.g. <see cref="T:Loyc.Symbol"/>).</param>
             <returns>true if the item was new, false if it was already present.</returns>
         </member>
         <member name="M:Loyc.Collections.MSet`1.Clone">
@@ -3018,7 +3797,23 @@
             collection, in bytes, including the size of this object itself; see
             <see cref="!:InternalSet&lt;T&gt;.CountMemory"/>.</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Collections.Set`1" -->
+        <member name="T:Loyc.Collections.Set`1">
+            <summary>An immutable set.</summary>
+            <remarks>
+            This is the immutable version of <see cref="T:Loyc.Collections.MSet`1"/>. It does not
+            allow changes to the set, but it provides operators (&amp;, |, ^, -) for 
+            intersecting, merging, and subtracting sets, and it can be converted to 
+            a mutable <see cref="T:Loyc.Collections.MSet`1"/> in O(1) time. You can also add
+            single items to the set using operators + and -.
+            <para/>
+            For more information, please read the documentation of <see cref="T:Loyc.Collections.Set`1"/> 
+            and <see cref="!:InternalSet&lt;T&gt;"/>.
+            <para/>
+            Performance warning: GetHashCode() XORs the hashcodes of all items in the
+            set, while Equals() is a synonym for SetEquals(). Be aware that these 
+            methods are very slow for large sets.
+            </remarks>
+        </member>
         <member name="M:Loyc.Collections.Set`1.Find(`0@)">
             <inheritdoc cref="M:Loyc.Collections.MSet`1.Find(`0@)"/>
         </member>
@@ -3123,7 +3918,11 @@
             <summary>
             A reference to a FVList, a so-called persistent list data structure.
             </summary>
-            <remarks>See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
+            <remarks>
+            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+            is available online about the VList data types.
+            <para/>
+            See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
             about VLists. Items are normally added to, and removed from, the front of a 
             FVList or to the back of an RVList; adding, removing or changing items at any 
             other position is inefficient. You can call ToRVList() to convert a FVList to 
@@ -3399,6 +4198,9 @@
             <summary>
             FWList is the mutable variant of the FVList data structure.
             </summary>
+            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+            is available online about the VList data types.
+            <para/>
             <remarks>See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
             about VLists and WLists. It is most efficient to add items to the front of
             a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
@@ -3626,6 +4428,9 @@
             <summary>
             RVList represents a reference to a reverse-order FVList.
             </summary><remarks>
+            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+            is available online about the VList data types.
+            <para/>
             FVList is a persistent list data structure described in Phil Bagwell's 2002
             paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
             Arrays". RVList is the name I (DLP) give to a variant of this structure in
@@ -3789,7 +4594,11 @@
             <summary>
             RWList is the mutable variant of the RVList data structure.
             </summary>
-            <remarks>See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
+            <remarks>
+            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+            is available online about the VList data types.
+            <para/>
+            See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
             about VLists and WLists. It is most efficient to add items to the front of
             a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
         </member>

@@ -172,12 +172,14 @@ namespace Loyc.Syntax.Les
 		/// <summary>Returns true if the given Symbol can be printed as an operator 
 		/// without escaping it.</summary>
 		/// <remarks>The parser should read something like <c>+/*</c> as an operator
-		/// with three characters rather than "+" and a comment, but the printer 
-		/// should be conservative, so this function returns false in such a case.
+		/// with three characters, rather than "+" and a comment, but the printer 
+		/// should be conservative, so this function returns false in such a case:
 		/// "Be liberal in what you accept, and conservative in what you produce."</remarks>
 		public static bool IsNaturalOperator(Symbol s)
 		{
 			string name = s.Name;
+			if (name.Length == 0)
+				return false;
 			for (int i = 0; ;) {
 				char c = name[i];
 				if (!IsOpChar(c))
@@ -187,13 +189,16 @@ namespace Loyc.Syntax.Les
 				if (c == '/' && (name[i] == '/' || name[i] == '*'))
 					return false; // oops, looks like a comment
 			}
-			return name.Length > 0;
+			return true;
 		}
+		/// <summary>Returns true if a given Les operator can only be printed with 
+		/// backticks, because a leading backslash is insufficient.</summary>
 		public static bool RequiresBackticks(Symbol s)
 		{
 			string name = s.Name;
 			for (int i = 0; i < name.Length; i++)
-				if (!IsOpChar(name[i]) && !char.IsLetter(name[i]) && !char.IsDigit(name[i]) && name[i] != '_')
+				if (!IsOpChar(name[i]) && !char.IsLetter(name[i]) && !char.IsDigit(name[i]) 
+					&& name[i] != '_' && name[i] != '\'')
 					return true;
 			return name.Length == 0;
 		}

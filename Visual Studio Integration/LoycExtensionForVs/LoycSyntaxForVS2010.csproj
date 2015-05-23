@@ -36,10 +36,10 @@
     <Reference Include="Ecs">
       <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
     </Reference>
-    <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=x86">
+    <Reference Include="LeMP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\Lib\LLLPG\LEL.exe</HintPath>
+      <HintPath>..\..\Lib\LLLPG\LeMP.exe</HintPath>
     </Reference>
     <Reference Include="LLLPG, Version=0.9.2.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>

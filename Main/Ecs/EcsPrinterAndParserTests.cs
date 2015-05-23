@@ -1251,6 +1251,7 @@ namespace Ecs
 			Stmt("set(1, Foo());", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special));
 			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
+			Stmt("{\n  set {\n    Foo();\n  }\n  etc;\n}", F.Braces(AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), _("etc")));
 			Stmt("protected set {\n  Foo();\n}", Attr(F.Protected, AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special)));
 			Stmt("set (1) {\n  Foo();\n}", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
 			Stmt("set(1, {\n  Foo();\n});", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);

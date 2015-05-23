@@ -68,6 +68,7 @@ namespace LeMP
 					c.Run();
 			} else if (args.Length == 0) {
 				Console.WriteLine("Running unit tests...");
+				RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());

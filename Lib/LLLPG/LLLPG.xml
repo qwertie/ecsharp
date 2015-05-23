@@ -1121,7 +1121,7 @@
             blocks (e.g. $'#') won't work unless the corresponding grammar Pred has
             a Pred.Basis is an equal syntax tree.</remarks>
         </member>
-        <member name="T:Loyc.LLParserGenerator.Macros">
+        <member name="T:Loyc.LLPG.Macros">
             <summary>
             Macros for using LLLPG in LeMP.
             </summary>
@@ -1131,9 +1131,9 @@
               class Foo { 
                 [DefaultK(2)] LLLPG lexer
                 {
-                  [priv]  rule int  @[ '0'..'9'+ ];
-                  [priv]  rule id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
-                  [token] rule token  @[ int | id ];
+                  private rule Int  @[ '0'..'9'+ ];
+                  private rule Id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
+                  token Token  @[ Int | Id ];
                 };
               };
             </code>
@@ -1157,16 +1157,16 @@
             </ol>
             </remarks>
         </member>
-        <member name="M:Loyc.LLParserGenerator.Macros.LLLPG_lexer(Loyc.Syntax.LNode,Loyc.IMessageSink)">
+        <member name="M:Loyc.LLPG.Macros.LLLPG_lexer(Loyc.Syntax.LNode,Loyc.IMessageSink)">
             <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/> object.</summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.Macros.DecodeOptions(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.LLPG.Macros.DecodeOptions(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
             <summary>Decodes options in the format <c>option1(v1), option2(v2)</c> 
             or <c>option1 = v1, option2 = v2</c>. If the format of a given
             node is invalid, this function yields <c>(null, node)</c>.</summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.Macros.LLLPG_parser(Loyc.Syntax.LNode,Loyc.IMessageSink)">
+        <member name="M:Loyc.LLPG.Macros.LLLPG_parser(Loyc.Syntax.LNode,Loyc.IMessageSink)">
             <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> object.</summary>
         </member>

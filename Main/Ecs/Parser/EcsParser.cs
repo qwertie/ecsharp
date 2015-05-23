@@ -131,7 +131,7 @@ namespace Ecs.Parser
 		}
 		protected override void Error(int lookaheadIndex, string message)
 		{
-			Error(lookaheadIndex, message, InternalList<object>.EmptyArray);
+			Error(lookaheadIndex, message, EmptyArray<object>.Value);
 		}
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{

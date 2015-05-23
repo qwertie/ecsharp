@@ -7,6 +7,8 @@ using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Collections;
 using System.Diagnostics;
+using Loyc.Syntax.Lexing;
+using Loyc.Collections.Impl;
 
 namespace LeMP
 {
@@ -38,16 +40,35 @@ namespace LeMP
 					}
 				}
 
-				var output = Replace(body, patterns);
+				int replacementCount;
+				var output = Replace(body, patterns, out replacementCount);
+				if (replacementCount == 0)
+					context.Write(Severity.Warning, node, "No patterns recognized; no replacements were made.");
 				return output.AsLNode(S.Splice);
 			}
 			return null;
 		}
 
-		static RVList<LNode> Replace(RVList<LNode> stmts, Pair<LNode, LNode>[] patterns)
+		[ThreadStatic]
+		static InternalList<Triplet<Symbol, LNode, int>> _tokenTreeRepls;
+
+		public static RVList<LNode> Replace(RVList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
+			// This list is used to support simple token replacement in TokenTrees
+			_tokenTreeRepls = InternalList<Triplet<Symbol, LNode, int>>.Empty;
+			foreach (var pair in patterns) // Look for Id => Id or Id => Literal
+				if (pair.A.IsId && (pair.B.IsId || pair.B.IsLiteral))
+					_tokenTreeRepls.Add(new Triplet<Symbol,LNode,int>(pair.A.Name, pair.B, 0));
+
+			// Scan the syntax tree for things to replace...
+			int count = 0;
 			var temp = new MMap<Symbol, LNode>();
-			var output = stmts.SmartSelect(stmt => stmt.ReplaceRecursive(n => TryReplaceHere(n, patterns, temp)));
+			var output = stmts.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
+				LNode r = TryReplaceHere(n, patterns, temp);
+				if (r != null) count++;
+				return r;
+			}));
+			replacementCount = count;
 			return output;
 		}
 
@@ -59,20 +80,31 @@ namespace LeMP
 				LNode r = TryReplaceHere(node, patterns[i].A, patterns[i].B, temp, patterns);
 				if (r != null) return r;
 			}
+
+			// Support simple token replacement in TokenTrees
+			TokenTree tt;
+			if (node.IsLiteral && (tt = node.Value as TokenTree) != null) {
+				bool modified = ReplaceInTokenTree(ref tt, _tokenTreeRepls);
+				if (modified)
+					return node.WithValue(tt);
+			}
+	
 			return null;
 		}
-		public static LNode TryReplaceHere(LNode candidate, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
+		public static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
 		{
 			RVList<LNode> attrs;
-			if (LNodeExt.MatchesPattern(candidate, pattern, ref captures, out attrs)) {
+			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out attrs)) {
 				foreach (var pair in captures) {
 					var input = pair.Value.AsList(S.Splice);
-					var output = Replace(input, allPatterns);
+					int c;
+					var output = Replace(input, allPatterns, out c);
 					if (output != input)
 						captures[pair.Key] = output.AsLNode(S.Splice);
 				}
 				return ReplaceCaptures(replacement, captures).PlusAttrs(attrs);
 			}
+
 			return null;
 		}
 		static LNode ReplaceCaptures(LNode node, MMap<Symbol, LNode> captures)

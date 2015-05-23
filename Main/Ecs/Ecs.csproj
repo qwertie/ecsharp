@@ -242,8 +242,8 @@
     <None Include="OpenSourceKey.snk" />
     <None Include="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
+      <CustomToolNamespace>--timeout=20</CustomToolNamespace>
       <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
-      <CustomToolNamespace>--timeout=10</CustomToolNamespace>
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>

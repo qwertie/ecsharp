@@ -19,9 +19,9 @@ namespace Loyc.LLParserGenerator
 	{
 		public static void Main(params string[] args)
 		{
+			IDictionary<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 			if (args.Length != 0) {
 				BMultiMap<string,string> options = new BMultiMap<string,string>();
-				IDictionary<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 
 				var argList = args.ToList();
 				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
@@ -29,7 +29,7 @@ namespace Loyc.LLParserGenerator
 					Console.WriteLine("LLLPG/LeMP macro compiler (alpha)");
 
 				string _;
-				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
+				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _) || args.Length == 0) {
 					LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
 					return;
 				}
@@ -51,6 +51,7 @@ namespace Loyc.LLParserGenerator
 						c.Run();
 				}
 			} else {
+				LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
 				Tests();
 				Ecs.Program.Main(args); // do EC# tests
 			}
@@ -81,7 +82,7 @@ namespace Loyc.LLParserGenerator
 
 		static void Tests()
 		{
-			Console.WriteLine("Running tests...");
+			Console.WriteLine("Running tests... (a small number of them are broken)");
 
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
@@ -91,6 +92,7 @@ namespace Loyc.LLParserGenerator
 			//RunTests.Run(new LNodeTests());
 			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgGeneralTests());
+			RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());

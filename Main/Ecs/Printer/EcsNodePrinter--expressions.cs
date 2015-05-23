@@ -927,13 +927,8 @@ namespace Ecs
 
 		static string GetRawText(LNode rawTextNode)
 		{
-			object value = rawTextNode.Value;
-			if (value == null || value == NoValue.Value) {
-				var node = rawTextNode.Args[0, null];
-				if (node != null)
-					value = node.Value;
-			}
-			return (value ?? rawTextNode.Name).ToString();
+			object tVal = rawTextNode.TriviaValue;
+			return tVal == NoValue.Value || tVal == null ? rawTextNode.Name.Name : tVal.ToString();
 		}
 		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
 		{

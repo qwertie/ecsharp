@@ -134,7 +134,7 @@ namespace Loyc.VisualStudio
 
 		public virtual void Configure(global::LeMP.Compiler c)
 		{
-			c.AddMacros(typeof(Loyc.LLParserGenerator.Macros).Assembly);
+			c.AddMacros(typeof(Loyc.LLPG.Macros).Assembly);
 			c.AddMacros(typeof(global::LeMP.Prelude.Macros).Assembly);
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));

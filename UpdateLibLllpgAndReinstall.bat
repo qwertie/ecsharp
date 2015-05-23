@@ -3,7 +3,7 @@ copy Bin\LLLPG\Release.NET4\*.exe Lib\LLLPG
 copy Bin\LLLPG\Release.NET4\*.xml Lib\LLLPG
 copy Bin\LLLPG\Release.NET4\*.pdb Lib\LLLPG
 del Lib\LLLPG\*.vshost.exe
-"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\devenv.exe" /build Debug "Visual Studio Integration\Visual Studio Integration 2010.sln"
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\devenv.exe" /out vsbuild.log /build Debug "Visual Studio Integration\Visual Studio Integration 2010.sln"
 @IF ERRORLEVEL 1 GOTO ERROR
 copy "Visual Studio Integration\LoycFileGeneratorForVs\bin\Debug\LllpgForVisualStudio.exe" "Lib\LLLPG"
 @IF ERRORLEVEL 1 GOTO ERROR
@@ -15,5 +15,6 @@ copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsi
 GOTO PAUSE
 :ERROR
 @echo *** ERROR OCCURRED ***
+more vsbuild.log
 :PAUSE
 pause

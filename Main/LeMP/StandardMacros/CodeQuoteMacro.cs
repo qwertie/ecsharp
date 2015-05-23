@@ -78,10 +78,10 @@ namespace LeMP
 		{
 			LNode result;
 			switch (node.Kind) {
-			case NodeKind.Literal: // => F.Literal(value)
+			case LNodeKind.Literal: // => F.Literal(value)
 				result = F.Call(F_Literal, node.WithoutAttrs());
 				break;
-			case NodeKind.Id: // => F.Id(string), F.Id(CodeSymbols.Name)
+			case LNodeKind.Id: // => F.Id(string), F.Id(CodeSymbols.Name)
 				result = F.Call(F_Id, QuoteIdHelper(node.Name));
 				break;
 			default: // NodeKind.Call => F.Dot(...), F.Of(...), F.Call(...), F.Braces(...)

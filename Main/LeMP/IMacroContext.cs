@@ -93,16 +93,6 @@ namespace LeMP
 		/// null.</summary>
 		/// <remarks>See remarks at <see cref="MacroContext.GetArgsAndBody"/>.</remarks>
 		bool DropRemainingNodes { get; set; }
-		// properties
-		// fields
-		// functions
-		// events 
-		// types
-		//   namespaces
-		//   classes
-		//   structs
-		//   delegates
-		//   enums
 
 		/// <summary>Runs the macro processor on the specified node(s).</summary>
 		/// <param name="input">The node or node list to process.</param>

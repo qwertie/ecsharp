@@ -709,7 +709,7 @@ namespace LeMP
 				changed = true;
 			}
 			LNode target = node.Target;
-			if (target != null && target.Kind != NodeKind.Literal) {
+			if (target != null && target.Kind != LNodeKind.Literal) {
 				LNode newTarget = ApplyMacros(target, maxExpansions, true);
 				if (newTarget != null) {
 					if (newTarget.Calls(S.Splice, 1))

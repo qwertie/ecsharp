@@ -227,6 +227,7 @@
     <Compile Include="StandardMacros\FluentMacro.cs" />
     <Compile Include="StandardMacros\ForwardingMacro.cs" />
     <Compile Include="StandardMacros\NullDotMacro.cs" />
+    <Compile Include="StandardMacros\OnFinallyReturnCatch.cs" />
     <Compile Include="StandardMacros\ReplaceMacro.cs" />
     <Compile Include="StandardMacros\RequiresMacro.cs" />
     <Compile Include="StandardMacros\SetOrCreateMemberMacro.cs" />

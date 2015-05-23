@@ -19,11 +19,12 @@ namespace SingleFileGenerator
 {
 	/// <summary>
 	/// Installer window designed to for Single-File Generators. This code works 
-	/// for any SFG defined in the assembly given to the constructor; it does not 
-	/// depend on LLLPG specifically.
+	/// for *any* SFG defined in the assembly given to the constructor; it does 
+	/// not depend on LLLPG specifically and it will work without changes on any
+	/// other assembly that contains SFGs.
 	/// </summary>
 	/// <remarks>
-	/// Note: correct registration requires that this installer be run from an
+	/// NOTE: correct registration requires that this installer be run from an
 	/// x86 executable. Although a program written in .NET for "AnyCPU" works in 
 	/// both 32-bit and 64-bit, we use the <see cref="System.Runtime.InteropServices.RegistrationServices"/>
 	/// class to register the assembly with COM. Unfortunately, if the installer 
@@ -58,20 +59,28 @@ namespace SingleFileGenerator
 		private void InstallForm_Load(object sender, EventArgs e)
 		{
 			foreach (VSType vs in VSType.VSEditions.Where(t => t.VersionNumber >= 8.0)) {
-				string path = null;
-				RegistryKey key = null;
-				// In a 32-bit process, Windows adds "Wow6432Node" automatically
-				if (IntPtr.Size == 8)
-					key = Registry.LocalMachine.OpenSubKey(path = Path.Combine(vs.RegistryPath64, "Generators"), false);
-				key = key ?? Registry.LocalMachine.OpenSubKey(path = Path.Combine(vs.RegistryPath, "Generators"), false);
-				if (key != null)
+				string path, path_norm = vs.RegistryPath, path_wow = PathForWow64(path_norm);
+				string path2, path2_norm = vs.RegistryPath, path2_wow = PathForWow64(path2_norm);
+				RegistryKey key = Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_wow, "Generators"), false)
+				               ?? Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_norm, "Generators"), false);
+				RegistryKey key2 = Registry.LocalMachine.OpenSubKey(path2 = Path.Combine(path2_wow, "Generators"), false)
+							    ?? Registry.LocalMachine.OpenSubKey(path2 = Path.Combine(path2_norm, "Generators"), false);
+				if (key != null || key2 != null)
 					using (key) {
 						var lvi = new ListViewItem(vs.Name);
 						lvi.SubItems.Add("{HKLM}\\" + path);
+						lvi.SubItems.Add(path2);
 						lvi.Checked = true;
 						listVisualStudios.Items.Add(lvi);
 					}
 			}
+		}
+		static string PathForWow64(string path)
+		{
+			if (IntPtr.Size == 8)
+				return path.Insert("SOFTWARE\\".Length, "Wow6432Node\\");
+			else
+				return path;
 		}
 
 		void MessageBoxWriter(Severity type, object context, string msg, object[] args)
@@ -82,14 +91,14 @@ namespace SingleFileGenerator
 
 		private void btnRegister_Click(object sender, EventArgs e)
 		{
-			int count = RegisterOrUnregister(new MessageSinkFromDelegate(MessageBoxWriter), false);
+			int count = RegisterOrUnregister(MessageSink.FromDelegate(MessageBoxWriter), false);
 			MessageBox.Show(string.Format("Registered with {0} Visual Studio edition(s).", count));
 			Close();
 		}
 		
 		private void btnUnregister_Click(object sender, EventArgs e)
 		{
-			int count = RegisterOrUnregister(new MessageSinkFromDelegate(MessageBoxWriter), true);
+			int count = RegisterOrUnregister(MessageSink.FromDelegate(MessageBoxWriter), true);
 			MessageBox.Show(string.Format("Unregistered from {0} Visual Studio edition(s).", count));
 			Close();
 		}
@@ -99,9 +108,12 @@ namespace SingleFileGenerator
 			int count = 0;
 			foreach (ListViewItem lvi in listVisualStudios.Items) {
 				if (lvi.Checked) {
-					string hive = lvi.SubItems[1].Text.Replace("{HKLM}\\", "");
-					if (RegisterSingleFileGenerators(sink, _sfgAssembly, hive, unregister))
+					var normalHive = lvi.SubItems[1].Text.Replace("{HKLM}\\", "");
+					var liveHive   = lvi.SubItems[2].Text;
+					if (RegisterSingleFileGenerators(sink, _sfgAssembly, normalHive, unregister))
 						count++;
+					if (!string.IsNullOrEmpty(liveHive))
+						RegisterSingleFileGenerators(sink, _sfgAssembly, liveHive, unregister);
 				}
 			}
 
@@ -172,57 +184,63 @@ namespace SingleFileGenerator
 	{
 		public readonly string Name;
 		public readonly double VersionNumber;
+		// There are two copies of the VS registry hive. Apparently,
+		// «You absolutely must write to both sections, ie, ...
+		//  1) [HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\12.0\Generators\
+		//    and more importantly
+        //  2) [HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\12.0_Config\Generators\
+        //  NOTICE IN #2 I wrote to "12.0_Config" that always works. All of Microsoft's 
+		//  documentation is wrong, if you use their registry settings it will fail about 
+		//  half the time, the registry hive concept DOES NOT WORK. You have to also write 
+		//  to the {Version}_Config section of the registry and everything always works. 
+		//  Forget what Microsoft says about this, they don't know their own system. I 
+		//  changed your program to write to both places and my deploys always work.»
 		public readonly string RegistryPath;
+		public readonly string RegistryPath2;
 		public readonly string SpecificLanguage;
 		public readonly bool IsPro;
-		public VSType(string name, double versionNumber, string registryPath, bool pro = false, string language = null)
+		public VSType(string name, double versionNumber, string registryPath, string registryPath2, bool pro = false, string language = null)
 		{
 			Name = name;
 			VersionNumber = versionNumber;
 			RegistryPath = registryPath;
+			RegistryPath2 = registryPath2 ?? registryPath + "_Config";
 			SpecificLanguage = language;
 			IsPro = pro;
 		}
-		public string RegistryPath64 
-		{
-			get { 
-				Debug.Assert(RegistryPath.StartsWith("SOFTWARE\\"));
-				return RegistryPath.Insert("SOFTWARE\\".Length, "Wow6432Node\\");
-			}
-		}
 
-		public static readonly VSType VS2002 = new VSType("VS 2002", 7.0,  "SOFTWARE\\Microsoft\\VisualStudio\\7.0", true);
-		public static readonly VSType VS2003 = new VSType("VS 2003", 7.1, "SOFTWARE\\Microsoft\\VisualStudio\\7.1", true);
+		public static readonly VSType VS2002 = new VSType("VS 2002", 7.0,  "SOFTWARE\\Microsoft\\VisualStudio\\7.0", null, true);
+		public static readonly VSType VS2003 = new VSType("VS 2003", 7.1, "SOFTWARE\\Microsoft\\VisualStudio\\7.1", null, true);
 
 		// 2005  ***********************************************************************
-		public static readonly VSType VS2005 = new VSType("VS 2005", 8.0,  "SOFTWARE\\Microsoft\\VisualStudio\\8.0", true);
-		public static readonly VSType VSExpress2005CSharp = new VSType("Visual C# 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VCSExpress\\8.0", false, "C#");
-		public static readonly VSType VSExpress2005VB  = new VSType("Visual Basic 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VBExpress\\8.0", false, "VB");
-		public static readonly VSType VSExpress2005Web = new VSType("Visual Web Developer 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VWDExpress\\8.0", false, "Web");
+		public static readonly VSType VS2005 = new VSType("VS 2005", 8.0,  "SOFTWARE\\Microsoft\\VisualStudio\\8.0", null, true);
+		public static readonly VSType VSExpress2005CSharp = new VSType("Visual C# 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VCSExpress\\8.0", null, false, "C#");
+		public static readonly VSType VSExpress2005VB = new VSType("Visual Basic 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VBExpress\\8.0", null, false, "VB");
+		public static readonly VSType VSExpress2005Web = new VSType("Visual Web Developer 2005 Express", 8.0, "SOFTWARE\\Microsoft\\VWDExpress\\8.0", null, false, "Web");
 
 		// 2008  ***********************************************************************
-		public static readonly VSType VS2008 = new VSType("VS 2008", 9.0,  "SOFTWARE\\Microsoft\\VisualStudio\\9.0", true);
-		public static readonly VSType VSExpress2008CSharp = new VSType("Visual C# 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VCSExpress\\9.0", false, "C#");
-		public static readonly VSType VSExpress2008VB  = new VSType("Visual Basic 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VBExpress\\9.0", false, "VB");
-		public static readonly VSType VSExpress2008Web = new VSType("Visual Web Developer 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VWDExpress\\9.0", false, "Web");
+		public static readonly VSType VS2008 = new VSType("VS 2008", 9.0, "SOFTWARE\\Microsoft\\VisualStudio\\9.0", null, true);
+		public static readonly VSType VSExpress2008CSharp = new VSType("Visual C# 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VCSExpress\\9.0", null, false, "C#");
+		public static readonly VSType VSExpress2008VB = new VSType("Visual Basic 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VBExpress\\9.0", null, false, "VB");
+		public static readonly VSType VSExpress2008Web = new VSType("Visual Web Developer 2008 Express", 9.0, "SOFTWARE\\Microsoft\\VWDExpress\\9.0", null, false, "Web");
 
 		// 2010  ***********************************************************************
-		public static readonly VSType VS2010 = new VSType("VS 2010", 10.0, "SOFTWARE\\Microsoft\\VisualStudio\\10.0", true);
-		public static readonly VSType VSExpress2010CSharp = new VSType("Visual C# 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VCSExpress\\10.0", false, "C#");
-		public static readonly VSType VSExpress2010VB  = new VSType("Visual Basic 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VBExpress\\10.0", false, "VB");
-		public static readonly VSType VSExpress2010Web = new VSType("Visual Web Developer 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VWDExpress\\10.0", false, "Web");
+		public static readonly VSType VS2010 = new VSType("VS 2010", 10.0, "SOFTWARE\\Microsoft\\VisualStudio\\10.0", null, true);
+		public static readonly VSType VSExpress2010CSharp = new VSType("Visual C# 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VCSExpress\\10.0", null, false, "C#");
+		public static readonly VSType VSExpress2010VB  = new VSType("Visual Basic 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VBExpress\\10.0", null, false, "VB");
+		public static readonly VSType VSExpress2010Web = new VSType("Visual Web Developer 2010 Express", 10.0, "SOFTWARE\\Microsoft\\VWDExpress\\10.0", null, false, "Web");
 
 		// 2012 ***********************************************************************
-		public static readonly VSType VS2012 = new VSType("VS 2012", 11.0, "SOFTWARE\\Microsoft\\VisualStudio\\11.0", true);
+		public static readonly VSType VS2012 = new VSType("VS 2012", 11.0, "SOFTWARE\\Microsoft\\VisualStudio\\11.0", null, true);
 		// This is unverified:
-		public static readonly VSType VSExpress2012Desktop = new VSType("VS Express 2012 for Desktop", 11.0, "SOFTWARE\\Microsoft\\WDExpress\\11.0");
-		public static VSType VSExpress2012WIn8 = new VSType("VS Express 2012 for Windows 8", 11.0, "SOFTWARE\\Microsoft\\VSWinExpress\\11.0");
-		public static VSType VSExpress2012Web = new VSType("VS Express 2012 for Web", 11.0, "SOFTWARE\\Microsoft\\VWDExpress\\11.0");
-		public static VSType VSExpressTFS2012 = new VSType("VS TFS Express 2012", 11.0, "SOFTWARE\\Microsoft\\TeamFoundationServer\\11.0", false, "TFS");
+		public static readonly VSType VSExpress2012Desktop = new VSType("VS Express 2012 for Desktop", 11.0, "SOFTWARE\\Microsoft\\WDExpress\\11.0", null);
+		public static VSType VSExpress2012WIn8 = new VSType("VS Express 2012 for Windows 8", 11.0, "SOFTWARE\\Microsoft\\VSWinExpress\\11.0", null);
+		public static VSType VSExpress2012Web = new VSType("VS Express 2012 for Web", 11.0, "SOFTWARE\\Microsoft\\VWDExpress\\11.0", null);
+		public static VSType VSExpressTFS2012 = new VSType("VS TFS Express 2012", 11.0, "SOFTWARE\\Microsoft\\TeamFoundationServer\\11.0", null, false, "TFS");
 
 		// 2013 ***********************************************************************
-		public static readonly VSType VS2013 = new VSType("VS 2013", 12.0, "SOFTWARE\\Microsoft\\VisualStudio\\12.0", true);
-		public static readonly VSType VSExpress2013Desktop = new VSType("VS Express 2013 for Desktop", 12.0, "SOFTWARE\\Microsoft\\WDExpress\\12.0");
+		public static readonly VSType VS2013 = new VSType("VS 2013", 12.0, "SOFTWARE\\Microsoft\\VisualStudio\\12.0", null, true);
+		public static readonly VSType VSExpress2013Desktop = new VSType("VS Express 2013 for Desktop", 12.0, "SOFTWARE\\Microsoft\\WDExpress\\12.0", null);
 
 		public static readonly List<VSType> VSEditions = new List<VSType> {
 			VS2002, VS2003,
