@@ -94,20 +94,20 @@ namespace Loyc.Syntax
 		{
 			return new StdLiteralNode(t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
-		/// <summary>Creates a node named <c>"#trivia_" + suffix</c> with the 
+		/// <summary>Creates a trivia node named <c>"#trivia_" + suffix</c> with the 
 		/// specified Value attached.</summary>
-		/// <remarks>This method adds the prefix <c>#trivia_</c> if it is not 
-		/// already present in the 'suffix' argument. See <see cref="StdTriviaNode"/> 
-		/// for more information.</remarks>
+		/// <remarks>This method only adds the prefix <c>#trivia_</c> if it is not 
+		/// already present in the 'suffix' argument.</remarks>
 		public LNode Trivia(string suffix, object value)
 		{
 			string name = suffix.StartsWith("#trivia_") ? suffix : "#trivia_" + suffix;
-			return new StdTriviaNode(GSymbol.Get(name), value, new SourceRange(_file));
+			return LNode.Trivia(GSymbol.Get(name), value, new SourceRange(_file));
 		}
 		/// <summary>Creates a trivia node with the specified Value attached.</summary>
-		public LNode Trivia(Symbol name, object value)
+		/// <seealso cref="LNode.Trivia(Symbol, object, LNode)"/>
+		public LNode Trivia(Symbol name, object value, int startIndex = -1, int endIndex = -1)
 		{
-			return new StdTriviaNode(name, value, new SourceRange(_file));
+			return LNode.Trivia(name, value, new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 
 		// Calls

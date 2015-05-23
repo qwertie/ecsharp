@@ -124,7 +124,7 @@ namespace Loyc.Collections
 		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
 		/// <param name="defaultValue">A value to return if the index is not valid.</param>
 		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
+		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue = default(T))
 		{
 			bool fail;
 			T result = list.TryGet(index, out fail);

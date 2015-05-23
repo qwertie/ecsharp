@@ -682,7 +682,7 @@ namespace Loyc.Syntax.Les
 		static readonly HashSet<int> OpContSet = NewSetOfRanges(
 			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '\\', '\\', '?','?', ':',':', '.','.', '@','@', '$','$');
 
-		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c >= 0x80 && char.IsLetter((char)c); }
+		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c == '#' || c >= 0x80 && char.IsLetter((char)c); }
 		public static bool IsIdContChar(uchar c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
 		public static bool IsOpContChar(char c) { return OpContSet.Contains(c); }
 		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }

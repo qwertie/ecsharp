@@ -6,6 +6,7 @@ using System.IO;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using System.Diagnostics;
+using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
 {
@@ -265,11 +266,11 @@ namespace Loyc.Syntax.Les
 		void PrintPrefixNotation(LNode node, Mode mode, Precedence context)
 		{
 			switch(node.Kind) {
-				case NodeKind.Id:
+				case LNodeKind.Id:
 					PrintIdOrSymbol(node.Name, false); break;
-				case NodeKind.Literal:
+				case LNodeKind.Literal:
 					PrintLiteral(node); break;
-				case NodeKind.Call: default:
+				case LNodeKind.Call: default:
 					Print(node.Target, mode, LesPrecedence.Primary.LeftContext(context));
 					_out.Write('(', true);
 					var a = node.Args;
@@ -322,7 +323,7 @@ namespace Loyc.Syntax.Les
 				Print(A[i], Mode.InParens, StartExpr);
 			}
 			if (wroteBrack)
-				_out.Write(']', true);
+				_out.Write("] ", true);
 			return extraParen;
 		}
 
@@ -486,7 +487,7 @@ namespace Loyc.Syntax.Les
 
 		private void PrintIdOrSymbol(Symbol name, bool isSymbol)
 		{
-			// Figure out what style we need to use: plain, \\special, or \\`backquoted`
+			// Figure out what style we need to use: plain, @special, or @`backquoted`
 			bool special = isSymbol, backquote = name.Name.Length == 0, first = true;
 			foreach (char c in name.Name)
 			{
@@ -564,11 +565,16 @@ namespace Loyc.Syntax.Les
 				bool tripleQuoted = (style & NodeStyle.Alternate) != 0;
 				np.PrintStringCore('"', tripleQuoted, value.ToString());
 			}),
-			P<Symbol> ((np, value, style) => np.PrintIdOrSymbol((Symbol)value, true)));
+			P<Symbol> ((np, value, style) => np.PrintIdOrSymbol((Symbol)value, true)),
+			P<TokenTree> ((np, value, style) => {
+				np._out.Write("@[", true);
+				np._out.Write(((TokenTree)value).ToString(TokenExt.ToString), true);
+				np._out.Write(" ]", true);
+			}));
 
 		private void PrintShortInteger(object value, NodeStyle style, string type)
 		{
-			Errors.Write(Severity.Warning, "Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
+			Errors.Write(Severity.Warning, null, "LesNodePrinter: Encountered literal of type '{0}'. It will be printed as 'Int32'.", type);
 			PrintIntegerToString(value, style, "");
 		}
 		void PrintValueToString(object value, string suffix)
@@ -606,7 +612,8 @@ namespace Loyc.Syntax.Les
 			else if (LiteralPrinters.TryGetValue(value.GetType().TypeHandle, out p))
 				p(this, value, style);
 			else {
-				Errors.Write(Severity.Error, "Encountered unprintable literal of type {0}", value.GetType().Name);
+				// TODO: add current LNode as context to error message
+				Errors.Write(Severity.Error, null, "LesNodePrinter: Encountered unprintable literal of type {0}", value.GetType().Name);
 				bool quote = QuoteUnprintableLiterals;
 				string unprintable;
 				try {

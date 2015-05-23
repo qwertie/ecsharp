@@ -37,6 +37,7 @@ namespace Loyc.Syntax.Les
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen), null, null, null, null, null, null);
 			Case(@"finally@@{`boom!` \bam;}", A(TT.Id, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.NormalOp, TT.Semicolon, TT.RBrace),
 				_("finally"), _(""), _(""), null, _("boom!"), WS, _("bam"), _(";"), null);
+			Case(@"a""b""", A(TT.Id, TT.String), _("a"), "b");
 		}
 
 		[Test]

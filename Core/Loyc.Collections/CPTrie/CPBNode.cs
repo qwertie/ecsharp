@@ -179,7 +179,7 @@ namespace Loyc.Collections.Impl
 					_children[i].MoveAllTo(self);
 				}
 			if (_zlk != NoZLK) {
-				KeyWalker kw = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+				KeyWalker kw = new KeyWalker(EmptyArray<byte>.Value, 0);
 				T value = (T)_zlk;
 				G.Verify(!self.Set(ref kw, ref value, ref self, CPMode.Create));
 				count++;

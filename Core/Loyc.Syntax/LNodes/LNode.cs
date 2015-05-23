@@ -10,7 +10,7 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
-	public enum NodeKind { Id, Literal, Call }
+	public enum LNodeKind { Id, Literal, Call }
 
 	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
 	/// programming language will have one.</summary>
@@ -548,20 +548,22 @@ namespace Loyc.Syntax
 		public static CallNode Call(LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNode(target, args, prototype); }
 		public static CallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode prototype) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
 		public static CallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
+		public static CallNode Trivia(Symbol name, object value, LNode prototype) { return new StdTriviaNode(name, value, prototype); }
 		public static LNode InParens(LNode node) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, node.Range)); }
 
-		public static IdNode Id(Symbol name, SourceRange range) { return new StdIdNode(name, range); }
-		public static IdNode Id(string name, SourceRange range) { return new StdIdNode(GSymbol.Get(name), range); }
-		public static IdNode Id(RVList<LNode> attrs, Symbol name, SourceRange range) { return new StdIdNodeWithAttrs(attrs, name, range); }
-		public static IdNode Id(RVList<LNode> attrs, string name, SourceRange range) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range); }
+		public static IdNode Id(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(name, range, style); }
+		public static IdNode Id(string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(GSymbol.Get(name), range, style); }
+		public static IdNode Id(RVList<LNode> attrs, Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, name, range, style); }
+		public static IdNode Id(RVList<LNode> attrs, string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), range, style); }
 		public static LiteralNode Literal(object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, range, style); }
-		public static LiteralNode Literal(RVList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode(value, range, style); }
+		public static LiteralNode Literal(RVList<LNode> attrs, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdLiteralNodeWithAttrs(attrs, value, range, style); }
 		public static CallNode Call(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, RVList<LNode>.Empty, range, style); }
 		public static CallNode Call(LNode target, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, RVList<LNode>.Empty, range, style); }
 		public static CallNode Call(Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, range, style); }
 		public static CallNode Call(LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, range, style); }
-		public static CallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
+		public static CallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
 		public static CallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
+		public static CallNode Trivia(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, range, style); }
 		public static LNode InParens(LNode node, SourceRange range) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, range)); }
 
 		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(name, new SourceRange(file, position, width)); }
@@ -576,6 +578,7 @@ namespace Loyc.Syntax
 		public static CallNode Call(LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file, position, width), style); }
 		public static CallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
 		public static CallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
+		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file, position, width), style); }
 		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
 
 		// It's difficult to enforce "nulls not allowed" with high performance.
@@ -695,14 +698,14 @@ namespace Loyc.Syntax
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public virtual bool IsFrozen { get { return true; } }
 		
-		/// <summary>Returns the <see cref="NodeKind"/>: Symbol, Literal, or Call.</summary>
-		public abstract NodeKind Kind { get; }
+		/// <summary>Returns the <see cref="LNodeKind"/>: Symbol, Literal, or Call.</summary>
+		public abstract LNodeKind Kind { get; }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool IsCall { get { return Kind == NodeKind.Call; } }
+		public bool IsCall { get { return Kind == LNodeKind.Call; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool IsId { get { return Kind == NodeKind.Id; } }
+		public bool IsId { get { return Kind == LNodeKind.Id; } }
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool IsLiteral { get { return Kind == NodeKind.Literal; } }
+		public bool IsLiteral { get { return Kind == LNodeKind.Literal; } }
 
 		#endregion
 
@@ -722,7 +725,7 @@ namespace Loyc.Syntax
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 
 		/// this method returns the equivalent of <c>WithTarget(Target.WithName(name))</c>
 		/// (which may be optimized for the particular call type). If <see 
-		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="NodeKind.Id"/> in
+		/// cref="IsLiteral"/>, the <see cref="Kind"/> changes to <see cref="LNodeKind.Id"/> in
 		/// order to set the name.</remarks>
 		public virtual LNode WithName(Symbol name)
 		{
@@ -917,6 +920,37 @@ namespace Loyc.Syntax
 		#endregion
 
 		#region Other stuff
+
+		/// <summary>Gets the value of <c>Args[0].Value</c>, if Args[0] exists; 
+		/// otherwise, returns <see cref="NoValue.Value"/>.</summary>
+		/// <remarks>"Trivia nodes" are used to efficiently represent the value of
+		/// trivia and non-tree <see cref="Token"/>s; they can be created by calling 
+		/// the <see cref="LNode.Trivia"/> function. Since an LNode is not allowed 
+		/// to have both a Name and a Value (as there is no syntax in LES or EC# for 
+		/// such a node), a trivia node pretends that there is an argument list with 
+		/// one item, and that one item is always a literal whose Value is the value
+		/// stored in the trivia node. Thus, a token node is printed out as 
+		/// <c>TokenType(Value)</c> where <c>Value</c> is some literal.
+		/// <para/>
+		/// If you suspect you're dealing with a trivia node, it is wasteful to 
+		/// actually call <c>node.Args[0].Value</c> since this causes a temporary
+		/// token list to be allocated. Instead you should use this property, which
+		/// returns the token value without allocating memory. Of course, if this 
+		/// property is called on a non-trivia node, it simply returns 
+		/// <c>Args[0].Value</c>.
+		/// </remarks>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public virtual object TriviaValue
+		{
+			get {
+				RVList<LNode> args = Args;
+				if (args.Count >= 1)
+					return args[0].Value;
+				return NoValue.Value;
+			}
+		}
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		public bool HasTokenValue { get { return TriviaValue != NoValue.Value; } }
 
 		public override string ToString()
 		{

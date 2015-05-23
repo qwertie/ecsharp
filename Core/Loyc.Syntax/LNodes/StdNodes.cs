@@ -56,48 +56,65 @@ namespace Loyc.Syntax
 		}
 	}
 
-	/// <summary>A node that has both a Name and a Value. This type of node is not 
-	/// directly printable in EC#, but is used to hold trivia efficiently.
-	/// For example, a single-line comment can be held in this node type using
-	/// the name "#trivia_SLCommentBefore" or "#trivia_SLCommentAfter" with a Value
-	/// of type string, which holds the comment text. The trivia can only be 
-	/// printed when another node has this node attached to it as an attribute,
-	/// and you print that other node.</summary>
-	internal class StdTriviaNode : StdIdNode
+	/// <summary>A node that has both a Name and a Value. </summary>
+	/// <remarks>
+	/// Since there is no syntax (or <see cref="LNodeKind"/>) for a node that has
+	/// both a Name and a Value, the node pretends that it is has a single argument,
+	/// Args[0], which allows this node to be printed as if it were a normal call
+	/// node. For example, if this node has Name=(Symbol)"PI" and Value=3.1415,
+	/// it will be printed as <c>PI(3.1415)</c>. The <see cref="TriviaValue"/>
+	/// property returns this value (in this case, (object)3.1415). Please note
+	/// that the normal <see cref="Value"/> is still <see cref="NoValue.Value"/>
+	/// so that if the node is printed and reparsed, it doesn't behave differently.
+	/// <para/>
+	/// This node type is used to represent tokens and trivia nodes with values.
+	/// </remarks>
+	internal class StdTriviaNode : CallNode
 	{
 		public StdTriviaNode(Symbol name, object value, LNode ras)
-			: base(name, ras) { _value = value; }
-		public StdTriviaNode(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default)
-			: base(name, range, style) { _value = value; }
+			: base(ras)          { _name = name ?? GSymbol.Empty; _tokenValue = value; }
+		public StdTriviaNode(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) 
+			: base(range, style) { _name = name ?? GSymbol.Empty; _tokenValue = value; }
+		
+		private Symbol _name;
+		private object _tokenValue;
 
-		protected object _value;
-		public override object Value { get { return _value; } }
-		public new StdTriviaNode WithValue(object value) { return new StdTriviaNode(_name, value, this); }
+		public sealed override Symbol Name { get { return _name; } }
+		public sealed override object TriviaValue { get { return _tokenValue; } }
 
-		public override StdIdNode cov_Clone() { return new StdTriviaNode(_name, _value, this); }
-
-		public override LNode WithAttrs(RVList<LNode> attrs) { 
-			if (attrs.Count == 0)
-				return this;
-			throw new NotImplementedException();
-		}
-
-		public override string ToString()
+		public override RVList<LNode> Args
 		{
-			return string.Format("{0} /* {1} */", base.ToString(), (_value ?? "(null)").ToString());
+			get { 
+				if (_tokenValue != NoValue.Value) 
+					return new RVList<LNode>(LNode.Literal(_tokenValue, this));
+				else
+					return new RVList<LNode>();
+			}
+		}
+		
+		public override int Max { get { return 0; } }
+
+		public override LNode WithName(Symbol name) { var copy = cov_Clone(); copy._name = name; return copy; }
+
+		public override LNode Target
+		{
+			get { return new StdIdNode(_name, this); }
+		}
+		public override CallNode WithArgs(RVList<LNode> args)
+		{
+			return LNode.Call(_name, args, this);
 		}
 
-		public override bool Equals(LNode b, bool compareStyles)
+		public override LNode Clone() { return cov_Clone(); }
+		public virtual StdTriviaNode cov_Clone() { return new StdTriviaNode(_name, _tokenValue, this); }
+
+		public override LNode WithAttrs(RVList<LNode> attrs)
 		{
-			return base.Equals(b, compareStyles) && object.Equals(_value, b.Value);
+			return LNode.Call(attrs, _name, Args, this);
 		}
-		protected internal override int GetHashCode(int recurse, int styleMask)
-		{
-			int hash = base.GetHashCode(recurse, styleMask);
-			if (_value != null)
-				hash ^= _value.GetHashCode();
-			return hash;
-		}
+
+		public override bool HasSimpleHead()                     { return true; }
+		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
 
 	internal class StdLiteralNode : LiteralNode

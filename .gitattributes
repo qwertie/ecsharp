@@ -1,4 +1,4 @@
 # Normalize line endings of *.cs (text=auto is supposed to mean "use LFs")
-*.cs  text=auto
-# Normalize line endings of *.ecs and additionally store LFs in working directory
+*.cs  text=auto eol=lf
+# Normalize line endings of *.ecs (eol=lf is supposed to mean "store LFs in working directory")
 *.ecs text=auto eol=lf

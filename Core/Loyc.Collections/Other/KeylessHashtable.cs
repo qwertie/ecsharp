@@ -70,7 +70,7 @@ namespace Loyc.Collections.Impl
 
 		protected KeylessHashtable()
 		{
-			_values = InternalList<T>.EmptyArray;
+			_values = EmptyArray<T>.Value;
 		}
 		
 		protected T[] _values;
@@ -107,7 +107,7 @@ namespace Loyc.Collections.Impl
 		readonly static int END = (int)M.MaxInt;
 		readonly static Int IntEND = M.From(M.MaxInt);
 
-		Int[] _next = InternalList<Int>.EmptyArray;
+		Int[] _next = EmptyArray<Int>.Value;
 		Int[] _buckets;
 
 		public KeylessHashtable(int numBuckets)
@@ -224,8 +224,8 @@ namespace Loyc.Collections.Impl
 		public sealed override void Clear()
 		{
 			_count = 0;
-			_values = InternalList<T>.EmptyArray;
-			_next = InternalList<Int>.EmptyArray;
+			_values = EmptyArray<T>.Value;
+			_next = EmptyArray<Int>.Value;
 			InternalList.Fill(_buckets, IntEND);
 		}
 

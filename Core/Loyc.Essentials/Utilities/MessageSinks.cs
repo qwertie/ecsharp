@@ -168,7 +168,7 @@ namespace Loyc
 			public Message(Severity type, object context, string format, object arg0, object arg1 = null)
 				: this (type, context, format, new object[2] { arg0, arg1 }) {}
 			public Message(Severity type, object context, string format)
-				: this (type, context, format, InternalList<object>.EmptyArray) {}
+				: this (type, context, format, EmptyArray<object>.Value) {}
 			public Message(Severity type, object context, string format, params object[] args)
 			{
 				Severity = type;
@@ -385,7 +385,7 @@ namespace Loyc
 		public void Write(Severity type, object context, string format)
 		{
 			if (IsEnabled(type))
-				_writer(type, context, format, InternalList<object>.EmptyArray);
+				_writer(type, context, format, EmptyArray<object>.Value);
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{

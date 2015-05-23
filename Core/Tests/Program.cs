@@ -78,6 +78,7 @@ namespace Loyc.Tests
 			RunTests.Run(new UGTests());
 
 			// Loyc.Syntax
+			RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
 			RunTests.Run(new LesLexerTests());
 			RunTests.Run(new LesParserTests());
 			RunTests.Run(new LesPrinterTests());

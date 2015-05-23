@@ -104,7 +104,7 @@ namespace Loyc.Collections.Impl
 		internal InternalList<Entry> Stack;
 		internal protected T CurrentValue;
 		
-		internal KeyWalker Key = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+		internal KeyWalker Key = new KeyWalker(EmptyArray<byte>.Value, 0);
 		protected InternalList<byte> CurrentKey
 		{
 			get { return new InternalList<byte>(Key.Buffer, Key.Offset + Key.Left); }
@@ -212,7 +212,7 @@ namespace Loyc.Collections.Impl
 
 		public byte[] Buffer { get { return _key; } }
 
-		public static readonly KeyWalker Empty = new KeyWalker(InternalList<byte>.EmptyArray, 0);
+		public static readonly KeyWalker Empty = new KeyWalker(EmptyArray<byte>.Value, 0);
 	}
 
 	internal abstract class CPNode<T>
