@@ -240,8 +240,8 @@ namespace Loyc.Syntax.Les
 					_out.Write("{ }", true);
 				else {
 					_out.Write('{', true);
-					_out.Newline();
 					_out.Indent();
+					_out.Newline();
 					foreach (var stmt in node.Args)
 						Print(stmt, Mode.Wsa, StartStmt);
 					_out.Dedent();
@@ -364,7 +364,7 @@ namespace Loyc.Syntax.Les
 				_out.Write(')', true);
 			if (needSemicolon) {
 				_out.Write(';', true);
-				_out.Newline();
+				_out.Newline(true);
 			}
 
 			bool spaces = false;
