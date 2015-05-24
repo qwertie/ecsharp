@@ -80,13 +80,42 @@ namespace Loyc.LLParserGenerator
 			new public void Visit(Pred pred)
 			{
 				if (pred.PreAction != null && !_recognizerMode)
-					_target.SpliceAdd(pred.PreAction, S.Splice);
+					AddUserAction(pred.PreAction);
 				var old = _currentPred;
 				_currentPred = pred;
 				pred.Call(this);
 				_currentPred = old;
 				if (pred.PostAction != null && !_recognizerMode)
-					_target.SpliceAdd(pred.PostAction, S.Splice);
+					AddUserAction(pred.PostAction);
+			}
+
+			private void AddUserAction(LNode action)
+			{
+				int i = _target.Count;
+				_target.SpliceAdd(action, S.Splice);
+				if (action.Range.StartIndex > 0 && _target.Count > i) {
+					if (LLPG.AddCsLineDirectives) {
+						// Remove folder name. This only makes sense if the output
+						// file and input file are in the same folder; sadly we have
+						// no access to the output file name, but as of 2015-05 it's
+						// always true that the output file will be in the same folder.
+						string filename = System.IO.Path.GetFileName(_target[i].Range.Source.FileName);
+						int line = 0;
+						for (; i < _target.Count; i++, line++)
+						{
+							var r = _target[i].Range;
+							if (line != r.Start.Line) {
+								line = r.Start.Line;
+								_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaRawTextBefore,
+									string.Format("#line {0} {1}\n", line, Ecs.EcsNodePrinter.PrintString(filename, '"'))));
+							}
+						}
+						_target.Add(F.Trivia(S.RawText, "#line default"));
+					} else {
+						_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaSLCommentBefore,
+							string.Format(" line {0}", _target[i].Range.Start.Line)));
+					}
+				}
 			}
 
 			void VisitWithNewTarget(Pred toBeVisited, RWList<LNode> target)

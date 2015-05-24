@@ -272,14 +272,14 @@ namespace Ecs
 			node.Style |= NodeStyle.Alternate;
 			return node;
 		}
-		static LNode AsStyle(LNode node, NodeStyle s)
+		static LNode AsStyle(NodeStyle s, LNode node)
 		{
 			node.BaseStyle = s;
 			return node;
 		}
-		LNode Operator(LNode node) { return AsStyle(node, NodeStyle.Operator); }
-		LNode StmtStyle(LNode node) { return AsStyle(node, NodeStyle.Statement); }
-		LNode ExprStyle(LNode node) { return AsStyle(node, NodeStyle.Expression); }
+		LNode Operator(LNode node) { return AsStyle(NodeStyle.Operator, node); }
+		LNode StmtStyle(LNode node) { return AsStyle(NodeStyle.Statement, node); }
+		LNode ExprStyle(LNode node) { return AsStyle(NodeStyle.Expression, node); }
 
 		[Test]
 		public void Literals()
@@ -417,7 +417,7 @@ namespace Ecs
 			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
 			Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
 			Expr("b + {\n  Foo.x=:a;\n  @`*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
-			Expr("b + @`{}`(Foo.x=:a, a * a + a)",            F.Call(S.Add, b, AsStyle(F.Braces(stmt1, stmt2), NodeStyle.PrefixNotation)));
+			Expr("b + @`{}`(Foo.x=:a, a * a + a)", F.Call(S.Add, b, AsStyle(NodeStyle.PrefixNotation, F.Braces(stmt1, stmt2))));
 		}
 
 		[Test]
@@ -1034,8 +1034,8 @@ namespace Ecs
 			Stmt("event EventHandler a, b;", stmt);
 			Expr("#event(EventHandler, a, b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, a, F.Braces(
-				AsStyle(F.Call(add, F.Braces()), NodeStyle.Special), 
-				AsStyle(F.Call(remove, F.Braces()), NodeStyle.Special)));
+				AsStyle(NodeStyle.Special, F.Call(add, F.Braces())),
+				AsStyle(NodeStyle.Special, F.Call(remove, F.Braces()))));
 			Stmt("event EventHandler a\n{\n  add {\n  }\n  remove {\n  }\n}", stmt);
 			Expr("#event(EventHandler, a, {\n  add {\n  }\n  remove {\n  }\n})", stmt);
 			
@@ -1055,8 +1055,8 @@ namespace Ecs
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
 			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
-			                       AsStyle(F.Call(get, F.Braces(F.Call(S.Return, x))), NodeStyle.Special),
-			                       AsStyle(F.Call(set, F.Braces(F.Assign(x, value))), NodeStyle.Special))));
+								   AsStyle(NodeStyle.Special, F.Call(get, F.Braces(F.Call(S.Return, x)))),
+								   AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Assign(x, value)))))));
 			Stmt("public int Foo\n{\n"
 			      +"  get {\n    return x;\n  }\n"
 			      +"  set {\n    x = value;\n  }\n}", stmt);
@@ -1210,6 +1210,14 @@ namespace Ecs
 		}
 
 		[Test]
+		public void BlockCallVsNormalCall()
+		{
+			Stmt("a(Foo < T > b);", F.Call(a, F.Call(S.GT, F.Call(S.LT, Foo, T), b)));
+			Stmt("a (Foo<T> b) {\n  Foo();\n}", AsStyle(NodeStyle.Special, F.Call(a,
+				F.Var(F.Of(Foo, T), b), F.Braces(F.Call(Foo)))));
+		}
+
+		[Test]
 		public void StmtsWithAttributes()
 		{
 			LNode[] args = new LNode[4] { Foo, fooWA, @public, null };
@@ -1247,14 +1255,14 @@ namespace Ecs
 		[Test]
 		public void MacroStmts()
 		{
-			Stmt("set(1, -Foo());", AsStyle(F.Call(set, one, F.Call(S._Negate, F.Call(Foo))), NodeStyle.Special));
-			Stmt("set(1, Foo());", AsStyle(F.Call(set, one, F.Call(Foo)), NodeStyle.Special));
-			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special));
-			Stmt("set {\n  Foo();\n}", AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
-			Stmt("{\n  set {\n    Foo();\n  }\n  etc;\n}", F.Braces(AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special), _("etc")));
-			Stmt("protected set {\n  Foo();\n}", Attr(F.Protected, AsStyle(F.Call(set, F.Braces(F.Call(Foo))), NodeStyle.Special)));
-			Stmt("set (1) {\n  Foo();\n}", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special));
-			Stmt("set(1, {\n  Foo();\n});", AsStyle(F.Call(set, one, F.Braces(F.Call(Foo))), NodeStyle.Special), p => p.AvoidMacroSyntax = true);
+			Stmt("set(1, -Foo());", AsStyle(NodeStyle.Special, F.Call(set, one, F.Call(S._Negate, F.Call(Foo)))));
+			Stmt("set(1, Foo());", AsStyle(NodeStyle.Special, F.Call(set, one, F.Call(Foo))));
+			Stmt("set {\n  Foo();\n}", AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Call(Foo)))));
+			Stmt("set {\n  Foo();\n}", AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Call(Foo)))), p => p.AvoidMacroSyntax = true);
+			Stmt("{\n  set {\n    Foo();\n  }\n  etc;\n}", F.Braces(AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Call(Foo)))), _("etc")));
+			Stmt("protected set {\n  Foo();\n}", Attr(F.Protected, AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Call(Foo))))));
+			Stmt("set (1) {\n  Foo();\n}", AsStyle(NodeStyle.Special, F.Call(set, one, F.Braces(F.Call(Foo)))));
+			Stmt("set(1, {\n  Foo();\n});", AsStyle(NodeStyle.Special, F.Call(set, one, F.Braces(F.Call(Foo)))), p => p.AvoidMacroSyntax = true);
 		}
 
 		[Test]
@@ -1262,15 +1270,15 @@ namespace Ecs
 		{
 			// TODO: The printer's newline choices are odd. See if we can improve them.
 			Stmt("int[,] Foo = new[,] { { 0\n  }, { 1, 2\n  } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), 
-					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
-					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
-			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S._Array, S.Int32), 
-				F.Call(S.Assign, Foo, AsStyle(F.Call(S.ArrayInit, zero, one, two), NodeStyle.OldStyle))));
+				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
+					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
+					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
+			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S._Array, S.Int32),
+				F.Call(S.Assign, Foo, AsStyle(NodeStyle.OldStyle, F.Call(S.ArrayInit, zero, one, two)))));
 			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
-				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, 
-					AsStyle(F.Braces(zero), NodeStyle.OldStyle), 
-					AsStyle(F.Braces(one, two), NodeStyle.OldStyle)))));
+				F.Call(S.Assign, Foo, F.Call(S.ArrayInit,
+					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
+					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
 		}
 
 		[Test(Fails = true)] // Parser does not yet preserve comments

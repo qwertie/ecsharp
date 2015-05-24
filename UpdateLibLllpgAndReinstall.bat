@@ -12,9 +12,12 @@ copy "Visual Studio Integration\LoycFileGeneratorForVs\bin\Debug\LllpgForVisualS
 copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsix" "Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs2010.vsix"
 @IF ERRORLEVEL 1 GOTO ERROR
 "Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs2010.vsix"
-GOTO PAUSE
+pause
+GOTO STOP
 :ERROR
 @echo *** ERROR OCCURRED ***
 more vsbuild.log
-:PAUSE
+del vsbuild.log
 pause
+:STOP
+

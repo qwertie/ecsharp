@@ -119,10 +119,12 @@ namespace SingleFileGenerator
 
 			var registrar = new RegistrationServices();
 			try {
-				if (!unregister) { 
+				if (!unregister) {
 					if (!registrar.RegisterAssembly(_sfgAssembly, AssemblyRegistrationFlags.SetCodeBase))
 						sink.Write(Severity.Error, "COM registration", "Failed (No eligible types?!)");
-				} else {
+				}
+				else
+				{
 					if (!registrar.UnregisterAssembly(_sfgAssembly))
 						sink.Write(Severity.Error, "COM unregistration", "Failed (No eligible types?!)");
 				}
@@ -155,9 +157,9 @@ namespace SingleFileGenerator
 									if (key == null)
 										sink.Write(Severity.Error, path, "Failed to create registry key");
 									else {
-										key.SetValue("", attr.GeneratorName);
-										key.SetValue("CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
-										key.SetValue("GeneratesDesignTimeSource", 1);
+										SetValue(key, "", attr.GeneratorName);
+										SetValue(key, "CLSID", "{" + attr.GeneratorGuid.ToString() + "}");
+										SetValue(key, "GeneratesDesignTimeSource", 1);
 										ok = true;
 									}
 								}
@@ -174,6 +176,12 @@ namespace SingleFileGenerator
 				throw ex.LoaderExceptions[0];
 			}
 			return ok;
+		}
+
+		private static void SetValue(RegistryKey key, string name, object value)
+		{
+			Debug.WriteLine(@"Set {0}\{1} = {2}", key.Name, name, value); 
+			key.SetValue(name, value);
 		}
 	}
 

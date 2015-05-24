@@ -1139,7 +1139,7 @@ namespace Ecs
 							haveParens++;
 						}
 					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
-						_out.Write(GetRawText(attr), true);
+						WriteRawText(GetRawText(attr));
 					} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
 						_out.Write("//", false);
 						_out.Write(GetRawText(attr), true);
@@ -1168,7 +1168,7 @@ namespace Ecs
 						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
 						spaces = true;
 					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
-						_out.Write(GetRawText(attr), true);
+						WriteRawText(GetRawText(attr));
 					} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);
@@ -1186,6 +1186,16 @@ namespace Ecs
 					}
 				}
 			}
+		}
+
+		private void WriteRawText(string text)
+		{
+			if (text.EndsWith("\n")) {
+				// use our own newline logic so indentation works
+				_out.Write(text.Substring(0, text.Length - 1), true);
+				_out.Newline(true);
+			} else
+				_out.Write(text, true);
 		}
 
 		private void PrintSpaces(string spaces)

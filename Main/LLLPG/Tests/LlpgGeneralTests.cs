@@ -1724,6 +1724,71 @@ namespace Loyc.LLParserGenerator
 						result.Add(MatchRange('0', '9'));
 						return result;
 					}");
+			Test(@"
+				LLLPG(lexer(inputSource(src), inputClass(LexerSource))) {
+					static rule int ParseInt(string input) {
+						var src = input.AsLexerSource();
+						@[ (d:='0'..'9' {$result = $result * 10 + (d - '0');})+ ];
+					}
+				}", @"
+				static int ParseInt(string input)
+				{
+					int la0;
+					int result = 0;
+					var src = input.AsLexerSource();
+					var d = src.MatchRange('0', '9');
+					result = result * 10 + (d - '0');
+					for (;;) {
+						la0 = src.LA0;
+						if (la0 >= '0' && la0 <= '9') {
+							var d = src.MatchAny();
+							result = result * 10 + (d - '0');
+						} else
+							break;
+					}
+					return result;
+				}", null, EcsLanguageService.Value);
+		}
+
+		[Test]
+		public void TestImplicitLllpgBlock()
+		{
+			Test(@" {
+					Before::int;
+					LLLPG lexer;
+					public rule Foo @[ 'x' ];
+				}", @"{
+					int Before;
+					public void Foo()
+					{
+						Match('x');
+					}
+				}");
+			DualLanguageTest(@"
+				LLLPG parser(laType = Symbol, allowSwitch = @false);
+				public rule Number @[ @@Number ];
+				public rule Numbers @[ Number* ];
+			", @"
+				LLLPG (parser(laType = Symbol, allowSwitch = false));
+				public rule Number @[ @@Number ];
+				public rule Numbers @[ Number* ];
+			", @"
+				public void Number()
+				{
+					Match(@@Number);
+				}
+				public void Numbers()
+				{
+					Symbol la0;
+					for (;;) {
+						la0 = LA0;
+						if (la0 == @@Number)
+							Number();
+						else
+							break;
+					}
+				}
+			");
 		}
 	}
 }

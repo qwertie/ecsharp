@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 			// Create $result variable if it was used
 			bool usingResult = _data.OtherReferences.ContainsKey(_resultId);
 			if (usingResult && rule.ReturnType != null) {
-				_data.OtherReferences[_resultId] = 1;
+				_data.ProperLabels.Add(_result);
 				var type = rule.ReturnType;
 				_newVarInitializers[_result] = Pair.Create(type, F.Var(type, _result, DefaultOf(type)));
 			}
@@ -224,8 +224,8 @@ namespace Loyc.LLParserGenerator
 		{
 			if (label.IsId) {
 				// Ignore the predefined special substitutions $LA and $LI
-				if (label.Name.Name == "LA" || label.Name.Name == "LI")
-					return null;
+				//if (label.Name.Name == "LA" || label.Name.Name == "LI")
+				//	return null;
 				return GSymbol.Get("tok_" + label.Name);
 			} else if (label.IsLiteral) {
 				return LiteralToVarName(label.Value);

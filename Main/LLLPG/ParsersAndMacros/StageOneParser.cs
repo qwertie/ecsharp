@@ -125,6 +125,7 @@ namespace Loyc.LLParserGenerator
 		{
 			_hostLanguage = hostLanguage ?? ParsingService.Current;
 			_tokensRoot = _tokens = ReclassifyTokens(tokens);
+			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
 		}
@@ -153,7 +154,7 @@ namespace Loyc.LLParserGenerator
 		protected override void Error(int li, string message)
 		{
 			int iPos = GetTextPosition(InputPosition + li);
-			ErrorSink.Write(Severity.Error, _sourceFile.IndexToLine(iPos), message);
+			ErrorSink.Write(Severity.Error, (_sourceFile ?? EmptySourceFile.Unknown).IndexToLine(iPos), message);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

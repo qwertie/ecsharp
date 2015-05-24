@@ -65,21 +65,31 @@ namespace LeMP
 				Assert.AreEqual(StripExtraWhitespace(output), StripExtraWhitespace(c.Output.ToString()));
 			}
 		}
-		public static string StripExtraWhitespace(string a)
+		
+		static readonly string[] CommentPrefix = new[] { "//" };
+		/// <summary>Strips whitespace and single-line comments from a string.
+		/// Helps test whether two blocks of code are "sufficiently equal".</summary>
+		public static string StripExtraWhitespace(string a, string[] commentPrefixes = null)
 		{
+			commentPrefixes = commentPrefixes ?? CommentPrefix;
 			StringBuilder sb = new StringBuilder();
 			char prev_c = '\0';
 			for (int i = 0; i < a.Length; i++) {
 				char c = a[i];
+
+				var slice = a.USlice(i);
+				for (int cp = 0; cp < commentPrefixes.Length; cp++) {
+					if (slice.StartsWith(commentPrefixes[cp])) {
+						do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
+						break;
+					}
+				}
+
 				if (c == '\n' || c == '\r' || c == '\t')
 					c = ' ';
 				if (c == ' ' && (!MaybeId(prev_c) || !MaybeId(a.TryGet(i + 1, '\0'))))
 					continue;
-				if (c == '/' && a.TryGet(i + 1, '\0') == '/') {
-					// Skip comment
-					do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');
-					continue;
-				}
+
 				sb.Append(c);
 				prev_c = c;
 			}

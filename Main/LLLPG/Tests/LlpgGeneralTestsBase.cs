@@ -48,6 +48,9 @@ namespace Loyc.LLParserGenerator
 				Assert.AreEqual(StripExtraWhitespace(expected), StripExtraWhitespace(c.Output.ToString()));
 			}
 		}
-		protected static string StripExtraWhitespace(string a) { return LeMP.TestCompiler.StripExtraWhitespace(a); }
+		static readonly string[] CommentPrefixes = new[] { "//", "#line" };
+		protected static string StripExtraWhitespace(string a) { 
+			return LeMP.TestCompiler.StripExtraWhitespace(a, CommentPrefixes);
+		}
 	}
 }

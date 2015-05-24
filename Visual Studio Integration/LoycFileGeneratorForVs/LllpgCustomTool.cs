@@ -43,7 +43,7 @@ namespace Loyc.VisualStudio
 	{
 		protected override string DefaultExtension()
 		{
-			return ".cs";
+			return ".out.cs";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -55,15 +55,15 @@ namespace Loyc.VisualStudio
 	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
 	[ComVisible(true)]
 	[Guid("35860B1B-43E7-49F5-FC2C-DE18F30F2598")]
-	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
 	//[ProvideObject(typeof(LeMP_Ecs))]
-	public class LeMP_Ecs : LeMPCustomTool
+	public class LeMP_ecs : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
 		{
-			return ".ecs";
+			return ".out.ecs";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -74,15 +74,15 @@ namespace Loyc.VisualStudio
 
 	[ComVisible(true)]
 	[Guid("A246E3E1-BA36-40BD-804E-144A422FEF0D")]
-	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
 	//[ProvideObject(typeof(LeMP_Les))]
-	public class LeMP_Les : LeMPCustomTool
+	public class LeMP_les : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
 		{
-			return ".les";
+			return ".out.les";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -100,6 +100,10 @@ namespace Loyc.VisualStudio
 	//[ProvideObject(typeof(LLLPG))]
 	public class LLLPG : LeMP
 	{
+		protected override string DefaultExtension()
+		{
+			return ".cs";
+		}
 		public override void Configure(global::LeMP.Compiler c)
 		{
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
@@ -109,12 +113,16 @@ namespace Loyc.VisualStudio
 
 	[ComVisible(true)]
 	[Guid("01D3BAE6-ED5F-4FDB-AA7A-9D37ED878E02")]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LLLPG_les), "LL(k) Parser Generator (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
 	//[ProvideObject(typeof(LLLPG_Les))]
-	public class LLLPG_Les : LeMP_Les
+	public class LLLPG_les : LeMP_les
 	{
+		protected override string DefaultExtension()
+		{
+			return ".les";
+		}
 		public override void Configure(global::LeMP.Compiler c)
 		{
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
@@ -144,9 +152,10 @@ namespace Loyc.VisualStudio
 					Output.AppendFormat(
 						"// Generated from {1} by LeMP custom tool. LLLPG version: {2}{0}"
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
+						+ "// --no-out-header       Suppress this message{0}"
+						+ "// --verbose             Allow verbose messages (shown by VS as 'warnings'){0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
-						+ "// --verbose             Allow verbose messages (shown as 'warnings'){0}"
-						+ "// --no-out-header       Suppress this message{0}", NewlineString, 
+						+ "// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);{0}", NewlineString, 
 						Path.GetFileName(io.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
 				foreach (LNode node in results)
 				{
@@ -205,7 +214,7 @@ namespace Loyc.VisualStudio
 				}
 				var sink = new SeverityMessageFilter(innerSink, sev);
 
-				var sourceFile = new InputOutput((StringSlice)inputFileContents, inputFilePath);
+				var sourceFile = new InputOutput((StringSlice)inputFileContents, Path.GetFileName(inputFilePath));
 
 				var c = new Compiler(sink, sourceFile);
 				c.Parallel = false; // only one file, parallel doesn't help

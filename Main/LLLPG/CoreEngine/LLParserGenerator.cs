@@ -123,6 +123,9 @@ namespace Loyc.LLParserGenerator
 		/// not specify a lookahead value.</summary>
 		public bool AddComments = true;
 
+		/// <summary>Whether to add #line directives for C# before & after user actions.</summary>
+		public bool AddCsLineDirectives = true;
+
 		/// <summary>Called when an error or warning occurs while parsing a grammar
 		/// or while generating code for a parser. Also called to print "verbose" 
 		/// messages.</summary>

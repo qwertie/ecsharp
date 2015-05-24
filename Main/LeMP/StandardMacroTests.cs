@@ -248,9 +248,9 @@ namespace LeMP
 					@"{ try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); } }");
 			TestEcs(@"on_throw(ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); throw; }");
-			TestEcs(@"on_catch(var FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+			TestEcs(@"on_catch(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); }");
-			TestEcs(@"on_throw(var FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+			TestEcs(@"on_throw(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); throw; }");
 		}
 

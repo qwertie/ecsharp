@@ -69,17 +69,19 @@ namespace Loyc.LLPG
 
 		/// <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
 		/// into a <see cref="IntStreamCodeGenHelper"/> object.</summary>
-		[LexicalMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG",
-			Mode = MacroMode.Normal)]
-		public static LNode LLLPG_lexer(LNode node, IMessageSink sink)
+		[LexicalMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG", Mode = MacroMode.Normal)]
+		public static LNode LLLPG_lexer(LNode node, IMacroContext context)
 		{
-			LNode lexer;
-			if (node.ArgCount != 2 || (lexer = node.Args[0]).Name != _lexer)
+			var p = context.GetArgsAndBody(true);
+			var args = p.A;
+			var body = p.B;
+			LNode lexerCfg;
+			if (args.Count != 1 || (lexerCfg = node.Args[0]).Name != _lexer)
 				return null;
 
 			// Scan options in lexer(...) node
 			var helper = new IntStreamCodeGenHelper();
-			foreach (var option in DecodeOptions(lexer.Args))
+			foreach (var option in DecodeOptions(lexerCfg.Args))
 			{
 				LNode value = option.Value;
 				switch (option.Key.Name)
@@ -89,13 +91,13 @@ namespace Loyc.LLPG
 					case "terminalType": helper.TerminalType = value; break;
 					case "setType":      helper.SetType = value; break;
 					default:
-						sink.Write(Severity.Error, value, "Unrecognized option. Available options: "+
+						context.Write(Severity.Error, value, "Unrecognized option. Available options: "+
 							"inputSource = var, inputClass = type, terminalType = type, setType = type");
 						break;
 				}
 			}
 
-			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
+			return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
 		}
 
 		/// <summary>Decodes options in the format <c>option1(v1), option2(v2)</c> 
@@ -122,40 +124,46 @@ namespace Loyc.LLPG
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
 		[LexicalMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(option(value), ...) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
 			Mode = MacroMode.Normal)]
-		public static LNode LLLPG_parser(LNode node, IMessageSink sink)
+		public static LNode LLLPG_parser(LNode node, IMacroContext context)
 		{
-			LNode parser;
-			if (node.ArgCount == 1)
-				return node.With(_run_LLLPG, node.Args.Insert(0, F.Literal(new GeneralCodeGenHelper())));
-			if (node.ArgCount != 2 || (parser = node.Args[0]).Name != _parser)
-				return null;
-
+			var p = context.GetArgsAndBody(true);
+			var args = p.A;
+			var body = p.B;
+			LNode parserCfg = null;
+			if (args.Count > 0) {
+				parserCfg = args[0];
+				if (parserCfg.Name != _parser || args.Count > 1)
+					return null;
+			}
+			
 			// Scan options in parser(...) node
 			var helper = new GeneralCodeGenHelper();
-			foreach (var option in DecodeOptions(parser.Args)) {
-				LNode value = option.Value;
-				switch (option.Key.Name) {
-					case "inputSource": helper.InputSource = value; break;
-					case "inputClass":  helper.InputClass = value; break;
-					case "terminalType":helper.TerminalType = value; break;
-					case "laType":      helper.LaType = value;    break;
-					case "matchType":   // alternate name
-					case "matchCast":   helper.MatchCast = value; break;
-					case "setType":     helper.SetType = value;   break;
-					case "allowSwitch":
-						if (value.Value is bool)
-							helper.AllowSwitch = (bool)value.Value;
-						else
-							sink.Write(Severity.Error, value, "allowSwitch: expected literal boolean argument.");
-						break;
-					default:
-						sink.Write(Severity.Error, value, "Unrecognized option. Available options: "
-							+"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool");
-						break;
+			if (parserCfg != null) {
+				foreach (var option in DecodeOptions(parserCfg.Args)) {
+					LNode value = option.Value;
+					switch (option.Key.Name) {
+						case "inputSource": helper.InputSource = value; break;
+						case "inputClass":  helper.InputClass = value; break;
+						case "terminalType":helper.TerminalType = value; break;
+						case "laType":      helper.LaType = value;    break;
+						case "matchType":   // alternate name
+						case "matchCast":   helper.MatchCast = value; break;
+						case "setType":     helper.SetType = value;   break;
+						case "allowSwitch":
+							if (value.Value is bool)
+								helper.AllowSwitch = (bool)value.Value;
+							else
+								context.Write(Severity.Error, value, "allowSwitch: expected literal boolean argument.");
+							break;
+						default:
+							context.Write(Severity.Error, value, "Unrecognized option. Available options: "
+								+"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool");
+							break;
+					}
 				}
 			}
 
-			return node.WithTarget(_run_LLLPG).WithArgChanged(0, F.Literal(helper));
+			return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
 		}
 
 		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
@@ -392,10 +400,13 @@ namespace Loyc.LLPG
 					case "AddComments":
 						ReadOption<bool>(sink, attr, v => lllpg.AddComments = v, true);
 						break;
+					case "AddCsLineDirectives":
+						ReadOption<bool>(sink, attr, v => lllpg.AddCsLineDirectives = v, true);
+						break;
 					default:
 						sink.Write(Severity.Error, attr,
 							"Unrecognized attribute. LLLPG supports the following options: " +
-							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), and DefaultK(1..9)");
+							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), and AddCsLineDirectives(bool)");
 						break;
 				}
 			}

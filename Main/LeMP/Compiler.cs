@@ -67,6 +67,7 @@ namespace LeMP
 				using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
 					c.Run();
 			} else if (args.Length == 0) {
+				ShowHelp(KnownOptions.OrderBy(p => p.Key));
 				Console.WriteLine("Running unit tests...");
 				RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());

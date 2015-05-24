@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LLLPG custom tool. LLLPG version: 1.3.0.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LLLPG version: 1.3.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // --verbose             Allow verbose messages (shown as 'warnings')
@@ -35,7 +35,7 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			var a = SlashExpr();
 			// Line 57: (TT.Alt SlashExpr)*
-			 for (;;) {
+			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Alt) {
 					var op = MatchAny();
@@ -51,7 +51,7 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			var a = GateExpr();
 			// Line 62: (TT.Slash GateExpr)*
-			 for (;;) {
+			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Slash) {
 					var op = MatchAny();
@@ -87,13 +87,14 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			var seq = RVList<LNode>.Empty;
 			// Line 78: (LoopExpr (TT.Separator)?)*
-			 for (;;) {
+			for (;;) {
 				switch (LA0) {
 				case TT.And:
 				case TT.AndNot:
 				case TT.Any:
 				case TT.Greedy:
 				case TT.Id:
+				case TT.In:
 				case TT.InvertSet:
 				case TT.LBrace:
 				case TT.LBrack:
@@ -115,7 +116,7 @@ namespace Loyc.LLParserGenerator
 					goto stop;
 				}
 			}
-		 stop:;
+		stop:;
 			if (seq.Count == 1)
 				return seq[0];
 			else if (seq.IsEmpty)
@@ -154,7 +155,7 @@ namespace Loyc.LLParserGenerator
 			Token op;
 			var a = PrefixExpr();
 			// Line 101: (TT.Bang)*
-			 for (;;) {
+			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Bang) {
 					op = MatchAny();
@@ -225,7 +226,7 @@ namespace Loyc.LLParserGenerator
 			TT la0, la1;
 			Token tok__Any = default(Token);
 			Token tok__Id = default(Token);
-			// Line 124: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr | ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)* )
+			// Line 124: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr / ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)* )
 			la0 = LA0;
 			if (la0 == TT.Minus) {
 				Skip();
@@ -236,11 +237,29 @@ namespace Loyc.LLParserGenerator
 				tok__Any = MatchAny();
 				tok__Id = Match((int) TT.Id);
 				id = F.Id(tok__Id);
-				// Line 127: (TT.In PrimaryExpr | )
+				// Line 127: (TT.In PrimaryExpr / )
 				la0 = LA0;
 				if (la0 == TT.In) {
-					Skip();
-					e = PrimaryExpr();
+					switch (LA(1)) {
+					case TT.Any:
+					case TT.Id:
+					case TT.In:
+					case TT.LBrace:
+					case TT.LBrack:
+					case TT.LParen:
+					case TT.Minus:
+					case TT.Number:
+					case TT.OtherLit:
+					case TT.String:
+						{
+							Skip();
+							e = PrimaryExpr();
+						}
+						break;
+					default:
+						e = id;
+						break;
+					}
 				} else
 					e = id;
 				e = F.Call(_Any, id, e, tok__Any.StartIndex, e.Range.EndIndex);
@@ -248,7 +267,7 @@ namespace Loyc.LLParserGenerator
 			} else {
 				var a = Atom();
 				// Line 134: greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*
-				 for (;;) {
+				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Dot) {
 						var op = MatchAny();
@@ -274,9 +293,10 @@ namespace Loyc.LLParserGenerator
 		LNode Atom()
 		{
 			LNode e;
-			// Line 145: ( TT.Id | (TT.Number|TT.OtherLit|TT.String) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
-			 switch (LA0) {
+			// Line 145: ( (TT.Id|TT.In) | (TT.Number|TT.OtherLit|TT.String) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
+			switch (LA0) {
 			case TT.Id:
+			case TT.In:
 				{
 					var t = MatchAny();
 					e = F.Id(t);

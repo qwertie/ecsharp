@@ -118,7 +118,7 @@ namespace Ecs
 					}
 				}
 
-				if (_n.BaseStyle == NodeStyle.Special && AutoPrintMacroCall(flags | Ambiguity.NoParenthesis))
+				if (_n.BaseStyle == NodeStyle.Special && AutoPrintMacroBlockCall(flags | Ambiguity.NoParenthesis))
 					return;
 
 				var attrs = _n.Attrs;
@@ -146,7 +146,7 @@ namespace Ecs
 			// _out.Write("]]", true);
 			return false;
 		}
-		private bool AutoPrintMacroCall(Ambiguity flags)
+		private bool AutoPrintMacroBlockCall(Ambiguity flags)
 		{
 			var argCount = _n.ArgCount;
 			if (!_n.HasSimpleHead() && !IsComplexIdentifier(_n.Target))
@@ -186,7 +186,7 @@ namespace Ecs
 				else
 					PrintSimpleIdent(_n.Name, 0);
 
-				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, 0, OmitMissingArguments);
+				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 
 				PrintBracedBlockOrStmt(body, flags, NewlineOpt.BeforeExecutableBrace);
 				return true;
@@ -235,7 +235,7 @@ namespace Ecs
 			if (OmitRawText)
 				return SPResult.Fail;
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, flags));
-			_out.Write(GetRawText(_n), true);
+			WriteRawText(GetRawText(_n));
 			return SPResult.NeedSuffixTrivia;
 		}
 

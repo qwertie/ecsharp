@@ -31,7 +31,7 @@ namespace Ecs.Parser
 	using EP = EcsPrecedence;
 
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
-	#rawText("#pragma warning disable 162, 642"); 
+	#rawText("\n\t#pragma warning disable 162, 642\n\t"); 
 
 	partial class EcsParser {
 	[LL(2)] [Verbosity(2)]
@@ -1219,7 +1219,7 @@ namespace Ecs.Parser
 		private rule MethodOrPropertyOrVar(startIndex::int, attrs::RVList!LNode)::LNode @[
 			{r::LNode;}
 			type:=DataType
-			(	// Variable declaration
+			(	// Variable declaration statement
 				{MaybeRecognizeVarAsKeyword(ref type);}
 				{var parts = (new RVList!LNode() { type });}
 				     parts+=NameAndMaybeInit(IsArrayType(type))
@@ -1415,18 +1415,22 @@ namespace Ecs.Parser
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
 		];
 
-		// Block-call statement (e.g. get {...}) -------------------------------
+		// Block-call statement (e.g. get {...}, unroll(...) {...}) ----------------
 
-		// This is the same as a block-call expression like (foo {y}) except
-		// that no semicolon is required at the end, and the expression cannot
-		// continue afterward (e.g. at statement level, foo {y} = z is a 
-		// syntax error since '}' marks the end of the statement.)
+		// Block-call statements help support properties (get/set), events (add/
+		// remove) and macros. No semicolon is required at the end, and the 
+		// statement cannot continue afterward (at statement level, foo {y} = z; 
+		// is a syntax error since '}' marks the end of the statement.)
+		// The expressions in "foo(exprs) {...}" are parsed subtly differently than
+		// for "foo(exprs);" : unassigned variable declarations are allowed only in
+		// the former. This enables macro syntax like "on_throw(Exception e) {...}";
+		// in contrast we MUST NOT parse "Foo(Bar<T> x);" as a variable declaration.
 		private rule BlockCallStmt::LNode @[
 			id:=(TT.Id|TT.ContextualKeyword)
 			&( "(" ")" ("{" "}" | TT.Id) | "{" "}" | "==>" ) // Used by Stmt to disambiguate
 			{var args = (new RWList!LNode());}
 			{block::LNode;}
-			(	lp:="(" rp:=")" {AppendExprsInside(lp, args);}
+			(	lp:="(" rp:=")" {AppendExprsInside(lp, args, false, true);}
 				(	block=BracedBlock 
 				|	TT.Id => block=Stmt
 					{	// Not using braces? Could be a missing semicolon...

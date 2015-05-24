@@ -125,7 +125,7 @@ namespace Loyc.LLParserGenerator
 				|	{LNode e, id;}
 					TT.Any TT.Id {id = F.Id($(TT.Id));}
 					( TT.In e=PrimaryExpr
-					| {e = id;})
+					/ {e = id;})
 					{e = F.Call(_Any, id, e, $(TT.Any).StartIndex, e.Range.EndIndex);}
 					{return e;}
 				|	a:=Atom
@@ -142,7 +142,7 @@ namespace Loyc.LLParserGenerator
 
 			private rule LNode Atom() @[
 				{LNode e;}
-				(	t:=TT.Id
+				(	t:=(TT.Id|TT.In)
 					{e = F.Id(t);}
 				|	t:=(TT.Number | TT.String | TT.OtherLit)
 					{e = F.Literal(t);}
