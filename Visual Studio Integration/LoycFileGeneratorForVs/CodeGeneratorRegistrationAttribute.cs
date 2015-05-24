@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Shell
 	/// 
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-	public sealed class CodeGeneratorRegistrationAttribute : Attribute //: RegistrationAttribute
+	public sealed class CodeGeneratorRegistrationAttribute : RegistrationAttribute
 	{
 		private string _contextGuid;
 		private Type _generatorType;
@@ -125,30 +125,36 @@ namespace Microsoft.VisualStudio.Shell
             get { return string.Format(CultureInfo.InvariantCulture, @"Generators\{0}\{1}", ContextGuid, GeneratorRegKeyName); }
         }
 		/// <summary>
-		///     Called to register this attribute with the given context.  The context
-		///     contains the location where the registration inforomation should be placed.
+		///     Called by VS to register this attribute with the given context.  The context
+		///     contains the location where the registration information should be placed.
 		///     It also contains other information such as the type being registered and path information.
 		/// </summary>
-		//public override void Register(RegistrationContext context)
-		//{
-		//    using (Key childKey = context.CreateKey(GeneratorRegKey))
-		//    {
-		//        childKey.SetValue(string.Empty, GeneratorName);
-		//        childKey.SetValue("CLSID", GeneratorGuid.ToString("B"));
-		//        if (GeneratesDesignTimeSource)
-		//            childKey.SetValue("GeneratesDesignTimeSource", 1);
-		//        if (GeneratesSharedDesignTimeSource)
-		//            childKey.SetValue("GeneratesSharedDesignTimeSource", 1);
-		//    }
-		//}
+		/// <remarks>
+		/// This method and the base class, RegistrationAttribute, require a reference to 
+		/// Microsoft.VisualStudio.Shell.Immutable.10.0.dll. This dll is not needed when 
+		/// performing the registration process outside Visual Studio (with InstallForm.cs),
+		/// so you can comment this out and change the base class to Attribute.
+		/// </remarks>
+		public override void Register(RegistrationContext context)
+		{
+		    using (Key childKey = context.CreateKey(GeneratorRegKey))
+		    {
+		        childKey.SetValue(string.Empty, GeneratorName);
+		        childKey.SetValue("CLSID", GeneratorGuid.ToString("B"));
+		        if (GeneratesDesignTimeSource)
+		            childKey.SetValue("GeneratesDesignTimeSource", 1);
+		        if (GeneratesSharedDesignTimeSource)
+		            childKey.SetValue("GeneratesSharedDesignTimeSource", 1);
+		    }
+		}
 
 		/// <summary>
 		/// Unregister this file extension.
 		/// </summary>
 		/// <param name="context"></param>
-		//public override void Unregister(RegistrationContext context)
-		//{
-		//    context.RemoveKey(GeneratorRegKey);
-		//}
+		public override void Unregister(RegistrationContext context)
+		{
+		    context.RemoveKey(GeneratorRegKey);
+		}
 	}
 }

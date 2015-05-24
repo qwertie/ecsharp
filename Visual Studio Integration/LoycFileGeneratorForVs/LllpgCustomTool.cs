@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,6 +18,7 @@ using LeMP;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Windows.Forms;
 
 namespace Loyc.VisualStudio
 {
@@ -33,10 +35,10 @@ namespace Loyc.VisualStudio
 	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
 	[ComVisible(true)]
 	[Guid("3583EDC5-48F7-49F5-8502-DE18F30F9825")]
-	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
-	//[ProvideObject(typeof(LLLPG))]
+	[CodeGeneratorRegistration(typeof(LeMP), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP), "Lexical Macro Processor (C# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	//[ProvideObject(typeof(LeMP))]
 	public class LeMP : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
@@ -50,12 +52,32 @@ namespace Loyc.VisualStudio
 		}
 	}
 
+	// Note: the class name is used as the name of the Custom Tool from the end-user's perspective.
 	[ComVisible(true)]
-	[Guid("A246E3E1-BAA6-40BD-804E-144A422FEF0D")]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
-	[CodeGeneratorRegistration(typeof(LLLPG_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
-	//[ProvideObject(typeof(LLLPG_Les))]
+	[Guid("35860B1B-43E7-49F5-FC2C-DE18F30F2598")]
+	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_Ecs), "Lexical Macro Processor (EC# output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	//[ProvideObject(typeof(LeMP_Ecs))]
+	public class LeMP_Ecs : LeMPCustomTool
+	{
+		protected override string DefaultExtension()
+		{
+			return ".ecs";
+		}
+		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
+		{
+			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
+				return base.Generate(inputFilePath, inputFileContents, defaultNamespace, progressCallback);
+		}
+	}
+
+	[ComVisible(true)]
+	[Guid("A246E3E1-BA36-40BD-804E-144A422FEF0D")]
+	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVCSProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVBProject, GeneratesDesignTimeSource = true)]
+	[CodeGeneratorRegistration(typeof(LeMP_Les), "Lexical Macro Processor (LES output)", vsContextGuids.vsContextGuidVJSProject, GeneratesDesignTimeSource = true)]
+	//[ProvideObject(typeof(LeMP_Les))]
 	public class LeMP_Les : LeMPCustomTool
 	{
 		protected override string DefaultExtension()
@@ -80,7 +102,7 @@ namespace Loyc.VisualStudio
 	{
 		public override void Configure(global::LeMP.Compiler c)
 		{
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
 			base.Configure(c);
 		}
 	}
@@ -95,13 +117,15 @@ namespace Loyc.VisualStudio
 	{
 		public override void Configure(global::LeMP.Compiler c)
 		{
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLParserGenerator"));
+			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
 			base.Configure(c);
 		}
 	}
 
 	public abstract class LeMPCustomTool : CustomToolBase
 	{
+		public LeMPCustomTool() { } // exists for a breakpoint
+
 		protected override abstract string DefaultExtension();
 
 		class Compiler : global::LeMP.Compiler
@@ -118,7 +142,7 @@ namespace Loyc.VisualStudio
 				var printer = LNode.Printer;
 				if (!NoOutHeader)
 					Output.AppendFormat(
-						"// Generated from {1} by LLLPG custom tool. LLLPG version: {2}{0}"
+						"// Generated from {1} by LeMP custom tool. LLLPG version: {2}{0}"
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
 						+ "// --verbose             Allow verbose messages (shown as 'warnings'){0}"
@@ -232,6 +256,29 @@ namespace Loyc.VisualStudio
 			bool subwarning = severity < Severity.Warning;
 			int n = subwarning ? 2 : severity == Severity.Warning ? 1 : 0;
 			generatorProgress.GeneratorError(n, 0u, message2, (uint)line - 1u, (uint)col - 1u);
+		}
+	}
+}
+
+namespace SingleFileGenerator
+{
+	public partial class InstallForm
+	{
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			
+			// This is a simple self test to make sure there's no DLLs version mismatches.
+			try {
+				var testCode = @"Hello(""World!"");";
+				var parsed = Ecs.Parser.EcsLanguageService.Value.Parse(testCode);
+				string printed = Ecs.Parser.EcsLanguageService.Value.Print(parsed.First());
+				Loyc.MiniTest.Assert.AreEqual(testCode, printed);
+			} catch (Exception ex) {
+				MessageBox.Show(Localize.From(
+					"Self-test failed with the following exception:\n{0}\n{1}", 
+					ex.ExceptionMessageAndType(), ex.StackTrace));
+			}
 		}
 	}
 }

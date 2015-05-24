@@ -60,7 +60,7 @@ namespace SingleFileGenerator
 		{
 			foreach (VSType vs in VSType.VSEditions.Where(t => t.VersionNumber >= 8.0)) {
 				string path, path_norm = vs.RegistryPath, path_wow = PathForWow64(path_norm);
-				string path2, path2_norm = vs.RegistryPath, path2_wow = PathForWow64(path2_norm);
+				string path2, path2_norm = vs.RegistryPath2, path2_wow = PathForWow64(path2_norm);
 				RegistryKey key = Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_wow, "Generators"), false)
 				               ?? Registry.LocalMachine.OpenSubKey(path = Path.Combine(path_norm, "Generators"), false);
 				RegistryKey key2 = Registry.LocalMachine.OpenSubKey(path2 = Path.Combine(path2_wow, "Generators"), false)
@@ -69,7 +69,7 @@ namespace SingleFileGenerator
 					using (key) {
 						var lvi = new ListViewItem(vs.Name);
 						lvi.SubItems.Add("{HKLM}\\" + path);
-						lvi.SubItems.Add(path2);
+						lvi.SubItems.Add("{HKCU}\\" + path2);
 						lvi.Checked = true;
 						listVisualStudios.Items.Add(lvi);
 					}
@@ -109,11 +109,11 @@ namespace SingleFileGenerator
 			foreach (ListViewItem lvi in listVisualStudios.Items) {
 				if (lvi.Checked) {
 					var normalHive = lvi.SubItems[1].Text.Replace("{HKLM}\\", "");
-					var liveHive   = lvi.SubItems[2].Text;
-					if (RegisterSingleFileGenerators(sink, _sfgAssembly, normalHive, unregister))
+					var liveHive   = lvi.SubItems[2].Text.Replace("{HKCU}\\", "");
+					if (RegisterSingleFileGenerators(sink, _sfgAssembly, Registry.LocalMachine, normalHive, unregister))
 						count++;
 					if (!string.IsNullOrEmpty(liveHive))
-						RegisterSingleFileGenerators(sink, _sfgAssembly, liveHive, unregister);
+						RegisterSingleFileGenerators(sink, _sfgAssembly, Registry.CurrentUser, liveHive, unregister);
 				}
 			}
 
@@ -133,7 +133,7 @@ namespace SingleFileGenerator
 			return count;
 		}
 
-		public static bool RegisterSingleFileGenerators(IMessageSink sink, Assembly assembly, string generatorsKey, bool unregister = false)
+		public static bool RegisterSingleFileGenerators(IMessageSink sink, Assembly assembly, RegistryKey rootKey, string generatorsKey, bool unregister = false)
 		{
 			bool ok = false;
 			try {
@@ -145,12 +145,13 @@ namespace SingleFileGenerator
 						string path = Path.Combine(generatorsKey, subKey);
 						if (unregister) {
 							try {
-								Registry.LocalMachine.DeleteSubKey(path, true);
+								rootKey.DeleteSubKey(path, true);
 								ok = true;
 							} catch {}
 						} else {
-							try { 
-								using (RegistryKey key = Registry.LocalMachine.CreateSubKey(path)) {
+							try {
+								using (RegistryKey key = rootKey.CreateSubKey(path))
+								{
 									if (key == null)
 										sink.Write(Severity.Error, path, "Failed to create registry key");
 									else {
