@@ -89,10 +89,9 @@ namespace Loyc.Collections
 	/// <para/>
 	/// Although single insertions, deletions, and random access require O(log N)
 	/// time, you can get better performance using any overload of 
-	/// <see cref="InsertRange"/>, <see cref="RemoveRange"/>, <see 
-	/// cref="GetIterator"/> or <see cref="Resize"/>. These methods require only
-	/// O(log N + M) time, where M is the number of elements you are inserting,
-	/// removing or enumerating.
+	/// <see cref="InsertRange"/> or <see cref="AListBase{K,T}.RemoveRange"/>.
+	/// These methods require only O(log N + M) time, where M is the number of 
+	/// elements you are inserting, removing or enumerating.
 	/// <para/>
 	/// AList is an excellent choice if you need to make occasional snapshots of
 	/// the tree. Cloning is fast and memory-efficient, because none of the tree
@@ -116,7 +115,7 @@ namespace Loyc.Collections
 	/// as the collection is not modified, so frozen instances ARE multithread-safe.
 	/// </remarks>
 	/// <seealso cref="BList{T}"/>
-	/// <seealso cref="BTree{T}"/>
+	/// <seealso cref="BDictionary{K,V}"/>
 	/// <seealso cref="DList{T}"/>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
@@ -316,7 +315,7 @@ namespace Loyc.Collections
 		/// be faster. If this parameter is "false" then it will be necessary to 
 		/// freeze the contents of the other list so that both lists can share
 		/// the same tree nodes. Using "true" instead avoids the freeze operation,
-		/// which in turn avoids the performance penalty on future modifications.
+		/// which in turn avoids the performance penalty on future modifications.</param>
 		/// <remarks>
 		/// The default value of the 'move' parameter is false.
 		/// <para/>
@@ -741,7 +740,7 @@ namespace Loyc.Collections
 		/// <param name="item">An item for which to search.</param>
 		/// <returns>An index of the item.</returns>
 		/// <remarks>
-		/// The default implementation simply calls <see cref="LinearScanFor"/>.
+		/// The default implementation simply calls <see cref="AListBase{K,T}.LinearScanFor"/>.
 		/// This method is called by <see cref="Remove"/> and <see cref="Contains"/>.
 		/// </remarks>
 		public virtual int IndexOf(T item)

@@ -189,7 +189,7 @@ namespace Loyc
 
 		/// <summary>Returns the UCS code point that starts at the specified index.</summary>
 		/// <remarks>
-		/// Works the same way as <see cref="DecodeAt()"/> except that if the index
+		/// Works the same way as <see cref="DecodeAt(int)"/> except that if the index
 		/// is invalid, this method returns -1 rather than throwing.
 		/// </remarks>
 		public uchar TryDecodeAt(int index)

@@ -7,7 +7,7 @@ namespace Loyc.Geometry
 	/// <remarks>Although this structure contains operators such as + and -, their 
 	/// performance is suboptimal due to limitations of C#. The <see cref="PointMath"/>
 	/// class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
-	/// that perform faster on common coorindate types such as int and double.</remarks>
+	/// that perform faster on common coordindate types such as int and double.</remarks>
 	/// <typeparam name="T">Coordinate type.</typeparam>
 	/// <seealso cref="PointMath"/>
 	/// <seealso cref="Vector{T}"/>

@@ -78,7 +78,7 @@ namespace Loyc.Syntax.Lexing
 		/// <see cref="LineNumber"/> still starts at 1, and (if <c>newSourceFile</c>
 		/// is true) the <see cref="SourceFile"/> object may or may not discover 
 		/// line breaks prior to the starting point, depending on how it is used.</param>
-		/// <param name="newSourceFile">Whether to create a <see cref="LexerSourceFile"/>
+		/// <param name="newSourceFile">Whether to create a <see cref="LexerSourceFile{C}"/>
 		/// object (an implementation of <see cref="ISourceFile"/>) to keep track 
 		/// of line boundaries. The <see cref="SourceFile"/> property will point
 		/// to this object, and it will be null if this parameter is false. Using 
@@ -630,7 +630,7 @@ namespace Loyc.Syntax.Lexing
 		}
 	}
 
-	/// <summary>Alias for <see cref="BaseLexer<C>"/> where C is <see cref="ICharSource"/>.</summary>
+	/// <summary>Alias for <see cref="BaseLexer{C}"/> where C is <see cref="ICharSource"/>.</summary>
 	public abstract class BaseLexer : BaseLexer<ICharSource>
 	{
 		protected BaseLexer(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true) : base(source, fileName, inputPosition, newSourceFile) { }

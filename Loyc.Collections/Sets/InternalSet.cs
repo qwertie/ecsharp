@@ -44,7 +44,7 @@ namespace Loyc.Collections.Impl
 	/// this relies on the same fast-cloning technique I developed for 
 	/// <see cref="AList{T}"/>*.</li>
 	/// <li>All of my set collections offer set operators that combine or intersect
-	/// two sets without modifying the source sets ("|" for union, "&" for
+	/// two sets without modifying the source sets ("|" for union, "&amp;" for
 	/// intersection, "-" for subtraction); these operators are available on both
 	/// the mutable and immutable versions of the sets.</li>
 	/// <li><see cref="InternalSet{T}"/> supports combined "get-and-replace" and 
@@ -65,7 +65,7 @@ namespace Loyc.Collections.Impl
 	/// classes, not on <see cref="InternalSet{T}"/> itself) allow you to add or 
 	/// remove a single item without modifying the original set. There is a 
 	/// substantial performance penalty for overusing these operators, but these
-	/// operators are cheaper than duplicating a <see cref="HashSet<T>"/> every 
+	/// operators are cheaper than duplicating a <see cref="HashSet{T}"/> every 
 	/// time you modify it.</li>
 	/// </ul>
 	/// * After developing <see cref="AList{T}"/> and Loyc trees, I realized that
@@ -1383,7 +1383,7 @@ namespace Loyc.Collections.Impl
 		}
 		/// <summary>Removes all items from this set that are present in 'other'.</summary>
 		/// <param name="other">The set whose members should be removed from this set.</param>
-		/// <param name="otherComparer">The comparer for this set (not for 'other',
+		/// <param name="thisComparer">The comparer for this set (not for 'other',
 		/// which is simply enumerated).</param>
 		/// <returns>Returns the number of items that were removed.</returns>
 		public int ExceptWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer)

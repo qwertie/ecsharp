@@ -24,7 +24,7 @@ namespace Loyc.Collections
 	}
 
 	/// <summary>Adapter from <see cref="IListSource{T}"/> to <see cref="ISparseListSource{T}"/>.</summary>
-	/// <seealso cref="LCExt.AsSparse{T}"/>
+	/// <seealso cref="LCExt.AsSparse{T}(IListSource{T})"/>
 	public class ListSourceAsSparse<T> : ListSourceBase<T>, ISparseListSource<T>
 	{
 		private IListSource<T> _list;

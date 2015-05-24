@@ -31,7 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Collections.XML</DocumentationFile>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591,1573,0419</NoWarn>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>

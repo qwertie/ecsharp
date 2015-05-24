@@ -411,7 +411,7 @@ namespace Loyc.Syntax
 	/// statements there; once the list is finished, create the braced block or
 	/// loop afterward. The new design stores arguments and attributes in 
 	/// <see cref="RVList{LNode}"/> objects; you can instantly convert your WList 
-	/// to a VList by calling <see cref="RWList{LNode}.ToRVList()"/>.
+	/// to a VList by calling <see cref="WListBase{LNode}.ToRVList()"/>.
 	/// <para/>
 	/// During the redesign I've decided on some small changes to the representation
 	/// of certain expressions in EC#.
@@ -924,13 +924,14 @@ namespace Loyc.Syntax
 		/// <summary>Gets the value of <c>Args[0].Value</c>, if Args[0] exists; 
 		/// otherwise, returns <see cref="NoValue.Value"/>.</summary>
 		/// <remarks>"Trivia nodes" are used to efficiently represent the value of
-		/// trivia and non-tree <see cref="Token"/>s; they can be created by calling 
-		/// the <see cref="LNode.Trivia"/> function. Since an LNode is not allowed 
-		/// to have both a Name and a Value (as there is no syntax in LES or EC# for 
-		/// such a node), a trivia node pretends that there is an argument list with 
-		/// one item, and that one item is always a literal whose Value is the value
-		/// stored in the trivia node. Thus, a token node is printed out as 
-		/// <c>TokenType(Value)</c> where <c>Value</c> is some literal.
+		/// trivia and non-tree <see cref="Lexing.Token"/>s; they can be created by 
+		/// calling the <see cref="LNode.Trivia"/> function. Since an LNode is not 
+		/// allowed to have both a Name and a Value (as there is no syntax in LES 
+		/// or EC# for such a node), a trivia node pretends that there is an 
+		/// argument list with one item, and that one item is always a literal 
+		/// whose Value is the value stored in the trivia node. Thus, a token node 
+		/// is printed out as <c>TokenType(Value)</c> where <c>Value</c> is some 
+		/// literal.
 		/// <para/>
 		/// If you suspect you're dealing with a trivia node, it is wasteful to 
 		/// actually call <c>node.Args[0].Value</c> since this causes a temporary

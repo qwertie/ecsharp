@@ -108,7 +108,6 @@ namespace Loyc.Syntax.Les
 			/// <summary>Inside parenthesis (implies Wsa, and additionally allows 
 			/// ':' as an operator).</summary>
 			InParens = 24,
-			/// <summary></summary>
 		}
 
 		public void Print(LNode node)

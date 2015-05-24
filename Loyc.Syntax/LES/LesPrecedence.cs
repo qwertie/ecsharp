@@ -59,7 +59,7 @@ namespace Loyc.Syntax.Les
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>
 	/// <li>Add: binary + -</li>
 	/// <li>Arrow: binary right-associative -> &lt;-</li>
-	/// <li>AndBits: binary &</li>
+	/// <li>AndBits: binary &amp;</li>
 	/// <li>OrBits: binary | ^</li>
 	/// <li>OrIfNull: binary ??</li>
 	/// <li>PrefixDots: prefix ..</li>

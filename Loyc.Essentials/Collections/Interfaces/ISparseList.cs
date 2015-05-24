@@ -25,7 +25,7 @@ namespace Loyc.Collections
 	/// interface as follows:
 	/// <ul>
 	/// <li><c>Count</c> returns <c>int.MaxValue</c>,</li>
-	/// <li><see cref="NextHigher"/> and <see cref="NextLower"/> do a linear scan 
+	/// <li><see cref="NextHigherItem"/> and <see cref="NextLowerItem"/> do a linear scan 
 	/// to find the next higher or lower key that exists.</li>
 	/// <li><see cref="IsSet(int)"/> returns the result of <see cref="SortedDictionary{K,V}.ContainsKey"/>, and</li>
 	/// <li><see cref="IListSource{T}.TryGet(int, out bool)"/> returns the value 
@@ -33,8 +33,8 @@ namespace Loyc.Collections
 	/// only if the index is negative.</li>
 	/// </ul>
 	/// <c>SortedDictionary</c> is not a very useful example in practise, though,
-	/// because it does not provide a way for <see cref="NextHigher"/> and
-	/// <see cref="NextLower"/> to work efficiently, and it cannot efficiently 
+	/// because it does not provide a way for <see cref="NextHigherItem"/> and
+	/// <see cref="NextLowerItem"/> to work efficiently, and it cannot efficiently 
 	/// support the <see cref="ISparseList{T}"/> interface. A more useful example
 	/// is SparseAList{T} in Loyc.Collections.dll, which efficiently implements 
 	/// this interface and <see cref="ISparseList{T}"/>.
@@ -201,7 +201,7 @@ namespace Loyc.Collections
 	}
 	
 	/// <summary>A sparse list that supports additional methods including 
-	/// <see cref="InsertRange(ISparseListSource{T})"/>.</summary>
+	/// <see cref="InsertRange(int, ISparseListSource{T})"/>.</summary>
 	/// <seealso cref="ISparseList{T}"/>
 	public interface ISparseListEx<T> : ISparseList<T>, IListEx<T>
 	{

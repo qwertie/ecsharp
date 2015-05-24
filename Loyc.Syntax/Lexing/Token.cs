@@ -102,7 +102,7 @@ namespace Loyc.Syntax.Lexing
 			return Equals(obj as TokenTree);
 		}
 		/// <summary>Compares the elements of the token tree for equality.</summary>
-		/// <remarks>Because <see cref="LNodes"/> are compared by value and not by 
+		/// <remarks>Because <see cref="LNode"/>s are compared by value and not by 
 		/// reference, and LNodes can contain TokenTrees, TokenTrees should also be
 		/// compared by value.</remarks>
 		public bool Equals(TokenTree other)
@@ -157,7 +157,7 @@ namespace Loyc.Syntax.Lexing
 	/// represented by a different <c>enum</c>. All enums can be converted to 
 	/// an integer, so <see cref="Token"/> uses Int32 as the token type. In order
 	/// to support DSLs via token literals (e.g. LLLPG is a DSL inside EC#), the
-	/// TypeInt should be based on <see cref="TokenKind"/>.
+	/// TypeInt should be based on <see cref="TokenKind"/>.</li>
 	/// <li><see cref="Value"/>: this can be any object. For literals, this should 
 	/// be the actual value of the literal, for whitespace it should be 
 	/// <see cref="WhitespaceTag.Value"/>, etc. See <see cref="Value"/> for 
@@ -536,7 +536,7 @@ namespace Loyc.Syntax.Lexing
 		#endregion
 	}
 
-	/// <summary>Basic information about a token as expected by <see cref="BaseParser"/>:
+	/// <summary>Basic information about a token as expected by <see cref="BaseParser{Token}"/>:
 	/// type (as an integer), index where the token starts in the source file, 
 	/// and a value.</summary>
 	public interface ISimpleToken

@@ -38,16 +38,16 @@ namespace Loyc.Syntax.Lexing
 		/// which will be used for error reporting.</param>
 		/// <param name="inputPosition">A location to start lexing (normally 0).
 		/// Careful: If you're starting to lex in the middle of the file, the 
-		/// <see cref="LineNumber"/> still starts at 1, and (if <c>newSourceFile</c>
+		/// <see cref="BaseLexer{C}.LineNumber"/> still starts at 1, and (if <c>newSourceFile</c>
 		/// is true) the <see cref="SourceFile"/> object may or may not discover 
 		/// line breaks prior to the starting point, depending on how it is used.</param>
-		/// <param name="newSourceFile">Whether to create a <see cref="LexerSourceFile"/>
+		/// <param name="newSourceFile">Whether to create a <see cref="LexerSourceFile{C}"/>
 		/// object (an implementation of <see cref="ISourceFile"/>) to keep track 
 		/// of line boundaries. The <see cref="SourceFile"/> property will point
 		/// to this object, and it will be null if this parameter is false. Using 
 		/// 'false' will avoid memory allocation, but prevent you from mapping 
 		/// character positions to line numbers and vice versa. However, this
-		/// object will still keep track of the current <see cref="LineNumber"/> 
+		/// object will still keep track of the current <see cref="BaseLexer{C}.LineNumber"/> 
 		/// and <see cref="LineStartAt"/> (the index where the current line started) 
 		/// when this parameter is false.</param>
 		public LexerSource(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
@@ -199,7 +199,7 @@ namespace Loyc.Syntax.Lexing
 			{ Error_Renamed(lookaheadIndex, format, args); }
 	}
 
-	/// <summary>A synonym for <see cref="LexerSource<C>"/> where C is <see cref="ICharSource"/>.</summary>
+	/// <summary>A synonym for <see cref="LexerSource{C}"/> where C is <see cref="ICharSource"/>.</summary>
 	public class LexerSource : LexerSource<ICharSource>
 	{
 		public LexerSource(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)

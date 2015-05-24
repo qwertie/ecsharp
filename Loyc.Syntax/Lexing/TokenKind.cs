@@ -60,7 +60,7 @@ namespace Loyc.Syntax.Lexing
 		String       = 0x0400,
 		/// <summary>Literals other than numbers and strings</summary>
 		OtherLit     = 0x0500,
-		/// <summary>Scope operator (dot & dot-like ops such as :: in C++) </summary>
+		/// <summary>Scope operator (dot and dot-like ops such as :: in C++) </summary>
 		Dot          = 0x0600,
 		/// <summary>Simple or compound assignment</summary>
 		Assignment   = 0x0700,

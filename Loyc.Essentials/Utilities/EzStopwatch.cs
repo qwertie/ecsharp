@@ -20,8 +20,9 @@ namespace Loyc
 	/// calls to do the same thing: you have to call ElapsedMilliseconds, then 
 	/// Reset(), then Start().
 	/// <para/>
-	/// Unlike <see cref="SimpleTimer"/>, this class does not start timing when
-	/// it is created, which allows it to be a struct without a constructor.
+	/// Unlike <see cref="Loyc.Utilities.SimpleTimer"/>, this class does not start 
+	/// timing when it is created, which allows it to be a struct without a 
+	/// constructor.
 	/// <para/>
 	/// EzStopwatch behaves differently from Stopwatch when restarting, because I
 	/// observed a problem using the timer to measure short time intervals. I ran

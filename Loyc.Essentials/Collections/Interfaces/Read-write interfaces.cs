@@ -148,7 +148,7 @@ namespace Loyc.Collections
 	/// cref="IListSource{T}"/> for more information. TryGet() may be called
 	/// in different ways, through extension methods with the same name.
 	/// <para/>
-	/// Using <see cref="ListExBase{T}"/> as your base class can help you implement
+	/// Using <see cref="Impl.ListExBase{T}"/> as your base class can help you implement
 	/// this interface more easily.
 	/// </remarks>
 	public interface IListEx<T> : IListAndListSource<T>, ICollectionEx<T>, IArray<T>, IListRangeMethods<T>

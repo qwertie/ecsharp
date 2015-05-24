@@ -55,7 +55,7 @@
 	/// the number of items being removed.</li>
 	/// <li>A reversed view of the list is given by the <see cref="ReverseView"/> 
 	/// property, and the list can be enumerated backwards, also in O(1) time 
-	/// per element.</li>.</li>
+	/// per element.</li>.
 	/// </ul>
 	/// Derived classes provide the following additional capabilities:
 	/// <ul>
@@ -160,6 +160,7 @@
 		protected const byte FrozenForListChanging = 2;
 		protected const byte FrozenForConcurrency = 3;
 
+		/// <summary>Event for learning about changes in progress on a list.</summary>
 		public virtual event ListChangingHandler<T> ListChanging
 		{
 			add {
@@ -197,7 +198,7 @@
 		}
 
 		/// <summary>Cloning constructor. Does not duplicate the observer 
-		/// (<see cref="AListNodeObserver{T}"/>), if any, because it may not be 
+		/// (<see cref="IAListTreeObserver{T}"/>), if any, because it may not be 
 		/// cloneable.</summary>
 		/// <param name="items">Original list</param>
 		/// <param name="keepListChangingHandlers">Whether to duplicate the 
@@ -1001,7 +1002,7 @@
 			get { return _freezeMode == Frozen; }
 		}
 
-		/// <summary>Together with the <see cref="AListBase(AListBase{T},AListNode{T})"/>
+		/// <summary>Together with the <see cref="AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T})"/>
 		/// constructor, this method helps implement the CopySection() method in derived 
 		/// classes, by cloning a section of the tree.</summary>
 		protected AListNode<K, T> CopySectionHelper(int start, int subcount)
@@ -1170,19 +1171,6 @@
 
 		#endregion
 	}
-
-	/// <summary>Enhances <see cref="ListSourceSlice{T}"/> with a faster iterator 
-	/// for <see cref="AListBase{T}"/>.</summary>
-	//public class AListSlice<K, T> : ListSourceSlice<T>, IIterable<T>
-	//{
-	//    public AListSlice(AListBase<K, T> list, int start, int length)
-	//        : base((IListSource<T>)list, start, length) { }
-
-	//    public new Iterator<T> GetIterator()
-	//    {
-	//        return ((AListBase<K, T>)_obj).GetIterator(_start, _length);
-	//    }
-	//}
 
 	/// <summary>A reverse view of an AList.</summary>
 	public struct AListReverseView<K, T> : IListSource<T>

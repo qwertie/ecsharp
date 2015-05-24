@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 	/// This base class for LLLPG parsers simply requires an enumerator to work,
 	/// and it has a small buffer to hold lookahead tokens. Old tokens are 
 	/// forgotten, so this base class does not support backtracking (i.e. syntactic 
-	/// predicates), but it can save memory. Please use <see cref="BaseParserFoList"/> 
+	/// predicates), but it can save memory. Please use <see cref="BaseParserForList"/> 
 	/// if your input sequence comes in the form of a list.
 	/// <para/>
 	/// This version of BaseParser has Enumerator as a generic parameter. Compared 
@@ -31,7 +31,7 @@ namespace Loyc.Syntax
 		where Enumerator : IEnumerator<Token>
 	{
 		/// <summary>Initializes this object to begin parsing the specified tokens.</summary>
-		/// <param name="list">A list of tokens to be parsed.</param>
+		/// <param name="sequence">A list of tokens to be parsed.</param>
 		/// <param name="eofToken">A token value to return when the input position 
 		/// reaches the end of the token list.</param>
 		/// <param name="file">A source file object that will be returned by the <see cref="SourceFile"/>
@@ -45,8 +45,6 @@ namespace Loyc.Syntax
 		/// <param name="startIndex">The initial value of the InputPosition property.
 		/// This is informational only, and has no effect on the behavior of this 
 		/// class.</param>
-		/// <remarks>If your list is stored in any <see cref="IEnumerable{T}"/> 
-		/// that is not a list, use <see cref="BaseParserForSeq"/> instead.</remarks>
 		protected BaseParserNoBacktracking(Enumerator sequence, Token eofToken, ISourceFile file, int startIndex = 0) : base(file, startIndex)
 		{
 			Reset(sequence, eofToken, file);
@@ -142,7 +140,7 @@ namespace Loyc.Syntax
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
 	/// Generator) and receive tokens from an <see cref="IEnumerator{Token}"/>.
 	/// </summary>
-	/// <seealso cref="BaseParserNoBacktracking<Token, Enumerator>"/>
+	/// <seealso cref="BaseParserNoBacktracking{Token, Enumerator}"/>
 	public abstract class BaseParserNoBacktracking<Token> : BaseParserNoBacktracking<Token, IEnumerator<Token>>
 		where Token : ISimpleToken
 	{

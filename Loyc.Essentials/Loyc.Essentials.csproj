@@ -50,7 +50,7 @@
     <DebugType>pdbonly</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE;DotNet4,CSharp4</DefineConstants>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

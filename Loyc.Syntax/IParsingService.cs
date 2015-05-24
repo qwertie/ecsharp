@@ -35,7 +35,6 @@ namespace Loyc.Syntax
 		/// <param name="file">Text to be tokenized (e.g. <see cref="UString"/>)</param>
 		/// <param name="fileName">File name to be associated with any errors that occur.</param>
 		/// <param name="msgs">Error messages are sent to this object.</param>
-		/// <param name="onComment">Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</param>
 		/// <remarks>
 		/// The returned lexer should be a "simple" tokenizer. If the language uses 
 		/// tree lexing (in which tokens are grouped by parentheses and braces),

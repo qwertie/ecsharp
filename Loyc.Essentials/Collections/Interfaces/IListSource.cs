@@ -48,7 +48,7 @@ namespace Loyc.Collections
 	/// Microsoft's own TryGetValue() implementations. Using ref parameter allows
 	/// the caller to choose his own default value in case TryGet() returns false.
 	/// <para/>
-	/// Using <see cref="ListSourceBase{T}"/> as your base class can help you
+	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
 	/// implement this interface faster.
 	/// </remarks>
 	#if !DotNet2 && !DotNet3

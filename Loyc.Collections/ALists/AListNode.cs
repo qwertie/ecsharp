@@ -261,7 +261,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>
 		/// Since <see cref="AListLeaf{T}"/> uses DListInternal, a separate item
 		/// count is not needed and this counter is always zero. This field 
-		/// logically belongs in <see cref="AListInnerBase{T}"/> but is defined here
+		/// logically belongs in <see cref="AListInnerBase{K,T}"/> but is defined here
 		/// to ensure that inner nodes are not 4 bytes larger than necessary. This
 		/// field is "free" if it is declared in the base class, since class sizes
 		/// are rounded up to the nearest multiple of 4 bytes (8 bytes in 64-bit).
@@ -281,7 +281,7 @@ namespace Loyc.Collections.Impl
 				tree.CallListChanging(listChangeInfo);
 		}
 
-		/// <summary>Diagnostic method. See <see cref="AListBase{K,T}.ImmutableCount"/>.</summary>
+		/// <summary>Diagnostic method. See <see cref="AListBase{K,T}.GetImmutableCount()"/>.</summary>
 		/// <param name="excludeSparse">Should be false for normal ALists. If true, the count is of real items only.</param>
 		public abstract uint GetImmutableCount(bool excludeSparse);
 		
@@ -405,7 +405,7 @@ namespace Loyc.Collections.Impl
 		public bool WriteEmpty;
 		/// <summary>Index into sparse list where the operation starts.</summary>
 		public uint AbsoluteIndex;
-		/// <summary>A single item to insert if <c>Source==null && !WriteEmpty</c></summary>
+		/// <summary>A single item to insert if <c>Source==null &amp;&amp; !WriteEmpty</c></summary>
 		public T Item;
 		/// <summary>When nonzero, the operation is partialy complete and items in 
 		/// range Source[0...SourceIndex-1] have already been inserted.</summary>
@@ -427,7 +427,7 @@ namespace Loyc.Collections
 	/// added to a dictionary is a duplicate of a key that is already present in 
 	/// the dictionary.</summary>
 	/// <remarks>All the "add" operations are deliberately listed last, so that
-	/// <see cref="AListNode{K,T}.DoSingleOperation"/> can use a greater-than 
+	/// <see cref="AListBase{K,T}.DoSingleOperation"/> can use a greater-than 
 	/// operator to figure out whether an item may be added or not.</remarks>
 	public enum AListOperation
 	{

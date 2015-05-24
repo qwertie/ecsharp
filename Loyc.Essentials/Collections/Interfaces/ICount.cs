@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Loyc.Collections
 {
-
 	/// <summary>Holds the Count property found in nearly all collection interfaces.</summary>
 	/// <remarks>
 	/// Microsoft has made this interface unusable by not defining it themselves in 

@@ -66,8 +66,8 @@ namespace Loyc.Utilities
 	/// the exception; it will be thrown directly into whatever foreach loop (or
 	/// other code) that is enumerating the sequence.
 	/// <para/>
-	/// This class solves the same problem as <see cref="NestedEnumerator{T}"/> in
-	/// a way that is very easy to use. You should use <see cref="NestedEnumerator{T}"/>
+	/// This class solves the same problem as <see cref="NestedEnumerator{F,T}"/> in
+	/// a way that is very easy to use. You should use <see cref="NestedEnumerator{F,T}"/>
 	/// instead if you need the highest possible performance.
 	/// </remarks>
 	/// <typeparam name="T">Type of item being enumerated.</typeparam>

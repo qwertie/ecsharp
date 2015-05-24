@@ -51,16 +51,16 @@
 		/// <see cref="Comparer{T}.Default"/>.Compare.</remarks>
 		public BDictionary() 
 			: this(DefaultComparison, DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
-		/// <inheritdoc cref="BDictionary(Func{T,T,int}, int, int)"/>
+		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
 		public BDictionary(int maxLeafSize)
 			: this(DefaultComparison, maxLeafSize, DefaultMaxInnerNodeSize) { }
-		/// <inheritdoc cref="BDictionary(Func{T,T,int}, int, int)"/>
+		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
 		public BDictionary(int maxLeafSize, int maxInnerSize)
 			: this(DefaultComparison, maxLeafSize, maxInnerSize) { }
-		/// <inheritdoc cref="BDictionary(Func{T,T,int}, int, int)"/>
+		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
 		public BDictionary(Func<K, K, int> compareKeys)
 			: this(compareKeys, DefaultMaxLeafNodeSize, DefaultMaxInnerNodeSize) { }
-		/// <inheritdoc cref="BDictionary(Func{T,T,int}, int, int)"/>
+		/// <inheritdoc cref="BDictionary(Func{K,K,int}, int, int)"/>
 		public BDictionary(Func<K, K, int> compareKeys, int maxLeafSize)
 			: this(compareKeys, maxLeafSize, DefaultMaxInnerNodeSize) { }
 		
@@ -206,7 +206,7 @@
 			bool found;
 			return FindLowerBound(key, out found);
 		}
-		/// <inheritdoc cref="FindLowerBound(T)"/>
+		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(K key, out bool found)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
@@ -215,13 +215,13 @@
 			found = op.Found;
 			return (int)op.BaseIndex;
 		}
-		/// <inheritdoc cref="FindLowerBound(T)"/>
+		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(ref K key)
 		{
 			bool found;
 			return FindLowerBound(ref key, out found);
 		}
-		/// <inheritdoc cref="FindLowerBound(T)"/>
+		/// <inheritdoc cref="FindLowerBound(K)"/>
 		public int FindLowerBound(ref K key, out bool found)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
@@ -246,12 +246,11 @@
 
 		/// <summary>Finds the index of the first item in the list that is greater 
 		/// than the specified item.</summary>
-		/// <param name="item">The item to find. If passed by reference, when this 
+		/// <param name="key">The item to find. If passed by reference, when this 
 		/// method returns, item is set to the next greater item than the item you 
 		/// searched for, or left unchanged if there is no greater item.</param>
-		/// <param name="index">The index of the next greater item that was found,
-		/// or Count if the given item is greater than all items in the list.</param>
-		/// <returns></returns>
+		/// <returns>The index of the next greater item that was found,
+		/// or Count if the given item is greater than all items in the list.</returns>
 		public int FindUpperBound(K key)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();
@@ -388,7 +387,7 @@
 		/// <param name="keepListChangingHandlers">If true, ListChanging handlers
 		/// will be copied from the existing list of items to the new collection.
 		/// Note: if it exists, the NodeObserver is never copied. 
-		/// <see cref="NodeObserver"/> will be null in the new list.</param>
+		/// <see cref="AListBase{K,T}.ObserverCount"/> will be 0 in the new list.</param>
 		/// <remarks>
 		/// Cloning is performed in O(1) time by marking the tree root as frozen 
 		/// and sharing it between the two lists. However, the new dictionary 
@@ -465,7 +464,7 @@
 			return SetAndGetOldValue(ref key, ref value);
 		}
 
-		/// <inheritdoc cref="SetAndGetOldValue(K,V)"/>
+		/// <inheritdoc cref="SetAndGetOldValue(K,ref V)"/>
 		public bool SetAndGetOldValue(ref K key, ref V value)
 		{
 			var op = new AListSingleOperation<K, KeyValuePair<K, V>>();

@@ -267,7 +267,7 @@ namespace Loyc.Collections
 		#region KeyCollection
 		// CPValueCollection<TValue> is the corresponding value collection
 
-		/// <summary>Return value of <see cref="CPStringTrie{T}.Keys"/.></summary>
+		/// <summary>Return value of <see cref="CPStringTrie{T}.Keys"/>.</summary>
 		public class KeyCollection : ICollection<string>
 		{
 			CPTrie<TValue> _trie;
