@@ -71,7 +71,7 @@ namespace Loyc.Collections
 		/// <remarks>
 		/// The user can provide a <see cref="IEqualityComparer{K}"/> to compare keys. 
 		/// However, InternalSet&lt;KeyValuePair&lt;K, V>> requires a comparer that 
-		/// can compare <see cref="KeyValuePair<K, V>"/> values. Therefore, MapOrMMap 
+		/// can compare <see cref="KeyValuePair{K,V}"/> values. Therefore, MapOrMMap 
 		/// implements IEqualityComparer&lt;KeyValuePair&lt;K, V>> to provide the 
 		/// necessary comparer without an unnecessary memory allocation.
 		/// </remarks>
@@ -264,7 +264,7 @@ namespace Loyc.Collections
 		/// <param name="replaceIfPresent">If true, the existing key-value pair is replaced if present. 
 		/// Otherwise, the existing key-value pair is left unchanged.</param>
 		/// <returns>A map with the specified key. If the key was already present 
-		/// and replaceIfPresent is false, the same set ('this') is returned.</remarks>
+		/// and replaceIfPresent is false, the same set ('this') is returned.</returns>
 		public Map<K, V> With(K key, V value, bool replaceIfPresent = true)
 		{
 			Debug.Assert(_set.IsRootFrozen);
@@ -278,7 +278,7 @@ namespace Loyc.Collections
 		}
 		/// <summary>Returns a copy of the current map without the specified key.</summary>
 		/// <returns>A map without the specified key. If the key was not present,
-		/// the same set ('this') is returned.</remarks>
+		/// the same set ('this') is returned.</returns>
 		public Map<K, V> Without(K key)
 		{
 			Debug.Assert(_set.IsRootFrozen);

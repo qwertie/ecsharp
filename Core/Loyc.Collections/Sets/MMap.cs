@@ -23,7 +23,7 @@ namespace Loyc.Collections
 	/// an incredibly annoying exception if you have the audacity to ask whether 
 	/// there is a null key in the collection.</li>
 	/// <li>This class supports fast cloning in O(1) time.</li>
-	/// <li>You can convert a mutable <see cref="MMap<K,V>"/> into an immutable
+	/// <li>You can convert a mutable <see cref="MMap{K,V}"/> into an immutable
 	/// <see cref="Map<K,V>"/>, a read-only dictionary that does not change when 
 	/// you change the original MMap.</li>
 	/// <li>This class has an <see cref="AddRange"/> method.</li>

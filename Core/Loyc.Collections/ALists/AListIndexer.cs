@@ -25,7 +25,7 @@ namespace Loyc.Collections.Impl
 	/// indexed. Specifically, if pointers use P bytes, then AListIndexer itself
 	/// consumes moderately MORE than X+P*N bytes of memory, where X is the size 
 	/// of the list being indexed, and N is the number of items in the list. Thus,
-	/// for example, an indexed list of <see cref="AList{object}"/> requires 
+	/// for example, an indexed list of <see cref="AList{Object}"/> requires 
 	/// approximately three times as much memory as an AList that is not indexed.
 	/// <para/>
 	/// Moreover, changing an indexed list takes at least twice as much time, since 

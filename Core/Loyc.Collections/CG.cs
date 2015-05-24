@@ -17,7 +17,7 @@ namespace Loyc.Collections
 		/// (String.Intern("...")). The latter tends to be more dangerous 
 		/// because an interned string can never be garbage-collected.
 		/// <para/>
-		/// Note that <see cref="SimpleCache"/> contains strong references to 
+		/// Note that <see cref="SimpleCache{T}"/> contains strong references to 
 		/// cached items, and the maximum cache size is 1024 items. The references 
 		/// are released when the current thread terminates or when you call 
 		/// <c>ObjectCache.Clear()</c>.</remarks>

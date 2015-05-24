@@ -35,7 +35,7 @@ namespace Loyc.Collections.Impl
 	/// must not throw exceptions because these methods are called during 
 	/// operations in progress. If you throw an exception, the tree can be 
 	/// left in an invalid state. Attach() can safety throw, but the exception 
-	/// will propagate out of the <see cref="AListBase.AddObserver"/> method.
+	/// will propagate out of the <see cref="AListBase{K,T}.AddObserver"/> method.
 	/// </remarks>
 	public interface IAListTreeObserver<K,T>
 	{
@@ -152,12 +152,12 @@ namespace Loyc.Collections.Impl
 				self.ItemRemoved(list[i], parent);
 		}
 
-		public static void ItemMoved<K, T>(this IAListTreeObserver<K, T> self, T item, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
+		internal static void ItemMoved<K, T>(this IAListTreeObserver<K, T> self, T item, AListLeaf<K, T> oldParent, AListLeaf<K, T> newParent)
 		{
 			self.ItemRemoved(item, oldParent);
 			self.ItemAdded(item, newParent);
 		}
-		public static void NodeMoved<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> child, AListInnerBase<K, T> oldParent, AListInnerBase<K, T> newParent)
+		internal static void NodeMoved<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> child, AListInnerBase<K, T> oldParent, AListInnerBase<K, T> newParent)
 		{
 			self.NodeRemoved(child, oldParent);
 			self.NodeAdded(child, newParent);
@@ -190,7 +190,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		public static void HandleNodeReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight)
+		internal static void HandleNodeReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight)
 		{
 			if (newRight == null)
 			{	// cloned, not split

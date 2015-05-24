@@ -17,7 +17,7 @@ using Loyc.Collections;
 
 namespace Loyc
 {
-	/// <summary>Sends all messages to <see cref="System.Console.WriteLine"/>, 
+	/// <summary>Sends all messages to <see cref="System.Console.WriteLine()"/>, 
 	/// with hard-coded colors for Error, Warning, Note, Verbose, and Detail.</summary>
 	public class ConsoleMessageSink : IMessageSink
 	{

@@ -22,14 +22,14 @@
 	/// <ul>
 	/// <li>O(log N) efficiency for all standard list operations (Add, Remove, 
 	/// IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration.</li>
-	/// <li>Changes can be observed through the <see cref="ListChanging"/> event.
+	/// <li>Changes can be observed through the <see cref="AListBase{K,T}.ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
 	/// <see cref="ObservableCollection{T}"/> class.</li>
-	/// <li>Changes to the tree structure can be observed too (see <see cref="MakeObserver"/>).</li>
-	/// <li>The list can be frozen with <see cref="Freeze"/>, making it read-only.</li>
+	/// <li>Changes to the tree structure can be observed too (see <see cref="IAListTreeObserver{K,T}"/>).</li>
+	/// <li>The list can be frozen with <see cref="AListBase{K,T}.Freeze"/>, making it read-only.</li>
 	/// <li><see cref="FindLowerBound"/> and <see cref="FindUpperBound"/> operations
 	/// that find the nearest item equal to or greater than a specified item.</li>
-	/// <li>A reversed view of the list is available through the <see cref="Reversed"/> 
+	/// <li>A reversed view of the list is available through the <see cref="AListBase{K,T}.ReverseView"/> 
 	/// property, and the list can be enumerated backwards, also in O(1) time 
 	/// per element.</li>.
 	/// <li>A BList normally uses less memory than a <see cref="SortedDictionary{K,V}"/> 
@@ -380,9 +380,8 @@
 		/// <param name="item">The item to find. If passed by reference, when this 
 		/// method returns, item is set to the next greater item than the item you 
 		/// searched for, or left unchanged if there is no greater item.</param>
-		/// <param name="index">The index of the next greater item that was found,
-		/// or Count if the given item is greater than all items in the list.</param>
-		/// <returns></returns>
+		/// <returns>The index of the next greater item that was found,
+		/// or Count if the given item is greater than all items in the list.</returns>
 		public int FindUpperBound(T item)
 		{
 			var op = new AListSingleOperation<T, T>();

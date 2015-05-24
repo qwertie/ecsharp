@@ -24,7 +24,7 @@ namespace Loyc
 	/// written) by one thread at the same time as it is modified on another 
 	/// thread.</summary><remarks>
 	/// Note: most data structures do not detect this situation, or do not detect it
-	/// reliably. For example, the <see cref="AList{T}"/> family of data structures 
+	/// reliably. For example, the <see cref="Loyc.Collections.AList{T}"/> family of data structures 
 	/// may or may not detect this situation. If it is detected then this exception
 	/// is thrown, otherwise the data structure may take on an invalid state, leading
 	/// to <see cref="InvalidStateException"/> or other unexpected exceptions.

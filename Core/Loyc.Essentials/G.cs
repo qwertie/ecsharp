@@ -377,10 +377,6 @@ namespace Loyc
 		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
 		/// the ' ' and '\t' characters are treated as spaces. No space is allowed 
 		/// between '-' and the digits of a negative number, even with this flag.</param>
-		/// <param name="stopBeforeOverflow">Changes overflow handling behavior
-		/// so that the result does not overflow, and the digit(s) at the end of
-		/// the string, that would have caused overflow, are ignored. In this case,
-		/// the return value is still false.</param>
 		/// <returns>True if a number was found starting at the specified index
 		/// and it was successfully converted to a number, or false if not.</returns>
 		/// <remarks>
@@ -727,7 +723,7 @@ namespace Loyc
 		static Dictionary<char, string> HtmlEntityTable;
 
 		/// <summary>Gets a bare HTML entity name for an ASCII character, or null if
-		/// there is no entity name for the given character, e.g. <c>'&'=>"amp"</c>.
+		/// there is no entity name for the given character, e.g. <c>'"'=>"quot"</c>.
 		/// </summary><remarks>
 		/// The complete entity name is <c>"&" + GetHtmlEntityNameForAscii(c) + ";"</c>.
 		/// Some HTML entities have multiple names; this function returns one of them.

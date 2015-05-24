@@ -66,7 +66,7 @@ namespace Loyc.Syntax
 		/// to a <see cref="SourcePos"/> using the expression
 		/// <c>SourceFile.IndexToLine(LT(lookaheadIndex).StartIndex)</c>. This only
 		/// works if an <c>ISourceFile</c> object was provided to the constructor of 
-		/// this class, and <c>Token</c> implements <see cref="ISimpleToken"/>.</c>.
+		/// this class, and <c>Token</c> implements <see cref="ISimpleToken"/>.
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{

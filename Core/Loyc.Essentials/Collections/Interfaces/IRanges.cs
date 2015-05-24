@@ -146,8 +146,8 @@ namespace Loyc.Collections
 	/// Since a random-access range is also a bidirectional range, you can begin
 	/// writing algorithms that accept forward and bidirectional ranges (for read 
 	/// access). Any collection that implements <see cref="IListSource{T}"/> can 
-	/// be treated as a range using the <see cref="LCExt.AsRange()"/> extension 
-	/// method, which is like calling <c>Slice(0)</c>.
+	/// be treated as a range using the <see cref="ListExt.AsRange{T}(IListSource{T})"/> 
+	/// extension method, which is like calling <c>Slice(0)</c>.
 	/// <para/>
 	/// The design philosophy of Loyc.Essentials is that potentially useful 
 	/// interfaces should be included even if there are no implementations of the 
@@ -190,7 +190,7 @@ namespace Loyc.Collections
 		/// </remarks>
 		T Front { get; }
 		/// <summary>Removes the first item from the range and returns it.</summary>
-		/// <param name="fail">Receives the current value of <see cref="IsEmpty"/>.</param>
+		/// <param name="fail">Receives the current value of <see cref="IIsEmpty.IsEmpty"/>.</param>
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
 		/// <remarks>This method is a little unweildy in plain C#, but in EC# it 
 		/// will be a bit more convenient to use via extension methods like 

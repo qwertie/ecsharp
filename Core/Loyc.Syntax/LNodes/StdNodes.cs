@@ -64,7 +64,7 @@ namespace Loyc.Syntax
 	/// node. For example, if this node has Name=(Symbol)"PI" and Value=3.1415,
 	/// it will be printed as <c>PI(3.1415)</c>. The <see cref="TriviaValue"/>
 	/// property returns this value (in this case, (object)3.1415). Please note
-	/// that the normal <see cref="Value"/> is still <see cref="NoValue.Value"/>
+	/// that the normal <see cref="LNode.Value"/> is still <see cref="NoValue.Value"/>
 	/// so that if the node is printed and reparsed, it doesn't behave differently.
 	/// <para/>
 	/// This node type is used to represent tokens and trivia nodes with values.

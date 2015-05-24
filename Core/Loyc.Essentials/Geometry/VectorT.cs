@@ -21,7 +21,6 @@ namespace Loyc.Geometry
 	/// performance is suboptimal due to limitations of C#. The <see cref="PointMath"/>
 	/// class of Loyc.Utilities.dll contains extension methods such as Add() and Sub()
 	/// that perform faster on common coorindate types such as int and double.</remarks>
-	/// </remarks>
 	/// <seealso cref="Loyc.Geometry.PointMath"/>
 	/// <seealso cref="Loyc.Geometry.VectorMath{T}"/>
 	/// <seealso cref="Point{T}"/>

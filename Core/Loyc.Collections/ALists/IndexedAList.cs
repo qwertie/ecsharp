@@ -15,7 +15,7 @@ namespace Loyc.Collections
 	/// Contains(item) and Remove(item).
 	/// </summary>
 	/// <remarks>
-	/// The <see cref="IndexOf"/>, <see cref="Remove"/> and <see cref="Contains"/>
+	/// The <see cref="IndexOf"/>, <see cref="AList{T}.Remove"/> and <see cref="AList{T}.Contains"/>
 	/// methods are accelerated by the indexer, but please note that the indexer
 	/// is expensive in terms of memory usage and CPU time. In total, once the 
 	/// index has been built, IndexedAList typically uses about three times as
@@ -93,8 +93,8 @@ namespace Loyc.Collections
 		/// <remarks>
 		/// You can set this property to false to discard the index if it has been 
 		/// built, or set it to true to create a new index if it has not yet been
-		/// built (which takes O(N log N) where N is the <see cref="Count"/> of 
-		/// this list).
+		/// built (which takes O(N log N) where N is the <see cref="AListBase{K,T}.Count"/> 
+		/// of this list).
 		/// </remarks>
 		public bool IsIndexed
 		{

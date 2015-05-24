@@ -14,7 +14,7 @@ namespace Loyc.Collections
 {
 	/// <summary>A mutable set.</summary>
 	/// <remarks>
-	/// This class is based on <see cref="InternalSet{T}"/>; see its documentation 
+	/// This class is based on <see cref="Impl.InternalSet{T}"/>; see its documentation 
 	/// for technical details about the implementation.
 	/// <para/>
 	/// Assuming T is a reference type, this class uses less memory than <see 
@@ -83,8 +83,8 @@ namespace Loyc.Collections
 
 		/// <summary>Searches for an item. If the item is found, the copy in the 
 		/// set is returned in the 'item' parameter. Note: there is no reason to 
-		/// call this method in a <see cref="SymbolSet"/> because the item reference
-		/// will never change; call <see cref="Contains"/> instead.</summary>
+		/// call this method in a set of completely immutable; in such cases,
+		/// call <see cref="Contains"/> instead.</summary>
 		/// <returns>true if the item was found, false if not.</returns>
 		public bool Find(ref T item)
 		{
@@ -93,8 +93,9 @@ namespace Loyc.Collections
 
 		/// <summary>Adds the specified item to the set, and retrieves an existing 
 		/// copy of the item if one existed. Note: there is no reason to call this
-		/// method in a <see cref="SymbolSet"/> because if an item is found, it 
-		/// will always be the exact same object that you searched for.</summary>
+		/// method in a set of singletons (e.g. <see cref="Symbol"/>) because if an 
+		/// item is found, it will always be the exact same object that you searched 
+		/// for.</summary>
 		/// <param name="item">An object to search for. If this method returns false,
 		/// this parameter is changed to the existing value that was found in the
 		/// collection.</param>
@@ -116,7 +117,7 @@ namespace Loyc.Collections
 		/// <param name="replaceIfPresent">If true, and a matching item is 
 		/// already present in the set, the specified item replaces the existing 
 		/// copy. If false, the existing copy is left alone. This parameter
-		/// has no effect in a <see cref="SymbolSet"/>.</param>
+		/// has no effect in a set of singletons (e.g. <see cref="Symbol"/>).</param>
 		/// <returns>true if the item was new, false if it was already present.</returns>
 		public bool Add(T item, bool replaceIfPresent)
 		{

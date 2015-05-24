@@ -10,7 +10,7 @@ namespace Loyc.Collections
 	/// <summary>An immutable set.</summary>
 	/// <remarks>
 	/// This is the immutable version of <see cref="MSet{T}"/>. It does not
-	/// allow changes to the set, but it provides operators (&, |, ^, -) for 
+	/// allow changes to the set, but it provides operators (&amp;, |, ^, -) for 
 	/// intersecting, merging, and subtracting sets, and it can be converted to 
 	/// a mutable <see cref="MSet{T}"/> in O(1) time. You can also add
 	/// single items to the set using operators + and -.

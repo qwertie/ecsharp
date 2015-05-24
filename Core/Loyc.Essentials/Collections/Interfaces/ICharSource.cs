@@ -16,12 +16,12 @@ namespace Loyc.Collections
 	/// implement it.
 	/// <para/>
 	/// This interface was created to read characters more efficiently. 
-	/// Although a lexer could read characters one-at-a-time from <see 
-	/// cref="IReadOnlyList{char}"/> or <see cref="IListSource{char}"/>, 
-	/// it requires dynamic interface dispatch for every character. On the 
-	/// other hand, if lexers avoid this overhead by requiring the entire
-	/// file in the form of a string, it becomes necessary to hold the 
-	/// entire file in memory at once, in a very specific format (a string).
+	/// Although a lexer could read characters one-at-a-time from 
+	/// IReadOnlyList{char} or IListSource{char}, it requires dynamic interface 
+	/// dispatch for every character. On the other hand, if lexers avoid this 
+	/// overhead by requiring the entire file in the form of a string, it becomes 
+	/// necessary to hold the entire file in memory at once, in a very specific 
+	/// format (a string).
 	/// <para/>
 	/// Slice() allows the lexer to request small pieces of the file that
 	/// it can read without dynamic dispatch. Typically a lexer will be
