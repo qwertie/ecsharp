@@ -101,11 +101,11 @@ namespace Loyc.LLParserGenerator
 				public void Foo()
 				{
 					int la0;
-					la0 = LA0;
+					la0 = (int)LA0;
 					if (la0 == A)
 						Skip();
 					for (;;) {
-						la0 = LA0;
+						la0 = (int)LA0;
 						if (la0 == B)
 							Skip();
 						else
@@ -176,7 +176,7 @@ namespace Loyc.LLParserGenerator
 				public void DisOrDat()
 				{
 					int la0;
-					la0 = LA0;
+					la0 = (int)LA0;
 					if (!DisOrDat_set0.Contains(la0))
 						Skip();
 					else {
@@ -382,7 +382,7 @@ namespace Loyc.LLParserGenerator
 				{
 					Symbol la0;
 					Match(@@Number);
-					la0 = LA0;
+					la0 = (Symbol)LA0;
 					if (la0 == @@print) {
 						Skip();
 						Match(@@DQString);
@@ -396,7 +396,7 @@ namespace Loyc.LLParserGenerator
 				{
 					Symbol la0;
 					for (;;) {
-						la0 = LA0;
+						la0 = (Symbol)LA0;
 						if (la0 == @@Number)
 							Stmt();
 						else
@@ -1080,12 +1080,12 @@ namespace Loyc.LLParserGenerator
 		{
 			// LLLPG can truncate arguments when generating a recognizer. In this
 			// example, the call Foo(2, -2) becomes RecognizeFoo(2)
-			Test(@"LLLPG parser {
+			Test(@"LLLPG parser(CastLA(@false)) {
 				[recognizer(def RecognizeFoo(z::int))]
 				rule Foo(x::int, y::int) @[ 'F''u' ];
 				rule Foo2 @[ Foo(2, -2) '2' ];
 				rule Main @[ Foo2 (&Foo2 _)? ];
-			}", @"
+			};", @"
 				void Foo(int x, int y)
 				{
 					Match('F');
@@ -1159,7 +1159,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AliasInParser()
 		{
-			Test(@"LLLPG parser {
+			Test(@"LLLPG parser(CastLA(@false)) {
 				alias('\'' = TokenType.Quote);
 				alias(Bang = TokenType.ExclamationMark);
 				rule QuoteBang @[ Bang | '\'' QuoteBang '\'' ];
@@ -1181,7 +1181,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ExplicitEof()
 		{
-			Test(@"LLLPG parser {
+			Test(@"LLLPG parser(CastLA(@false)) {
 				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
 				rule Expr() @[ Atom (('+'|'-'|'*'|'/') Atom | error { Error(); })* ];
 				rule Start() @[ Expr EOF ];
@@ -1222,7 +1222,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SetTypeCast()
 		{
-			Test(@"LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@false)) {
+			Test(@"LLLPG parser(laType(TokenType), castLA(@false), matchType(int), allowSwitch(@false)) {
 				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
 				rule Expr() @[ Atom (('+'|'-'|'*'|'/'|'%'|'^') Atom)* ];
 			}", @"
@@ -1366,7 +1366,7 @@ namespace Loyc.LLParserGenerator
 			// The [Local] flag also prevents hoisting to the SAME rule, which is important
 			// for the technique (used by LES and EC# parsers) of collapsing many precedence
 			// levels into a single rule.
-			Test(@"LLLPG parser(laType(string)) {
+			Test(@"LLLPG parser(laType(string), castLA(@false)) {
 				rule Expr(context::Precedence)::object @[
 					{prec::Precedence;}
 					result:=(Id|Number)
@@ -1424,7 +1424,7 @@ namespace Loyc.LLParserGenerator
 			// to describe this bug; let it suffice to say that follow sets were 
 			// not always complete. In this case PrimaryExpr had only EOF as its
 			// follow set, so the test &(TParams (~TT.Id | EOF)) had no effect.
-			Test(@"LLLPG parser(laType(string), allowSwitch(@false), setType(HashSet!string))
+			Test(@"LLLPG parser(laType(string), castLA(@false), allowSwitch(@false), setType(HashSet!string))
 				{
 					extern rule IdAtom @[
 						(TT.Id|TT.TypeKeyword)
@@ -1531,7 +1531,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0;
 					for (;;) {
-						la0 = inp.LA0;
+						la0 = (int)inp.LA0;
 						if (la0 == 'B')
 							inp.Skip();
 						else if (la0 == ParserClass.EOF)
@@ -1727,7 +1727,7 @@ namespace Loyc.LLParserGenerator
 			Test(@"
 				LLLPG(lexer(inputSource(src), inputClass(LexerSource))) {
 					static rule int ParseInt(string input) {
-						var src = input.AsLexerSource();
+						var src = (LexerSource)input;
 						@[ (d:='0'..'9' {$result = $result * 10 + (d - '0');})+ ];
 					}
 				}", @"
@@ -1735,7 +1735,7 @@ namespace Loyc.LLParserGenerator
 				{
 					int la0;
 					int result = 0;
-					var src = input.AsLexerSource();
+					var src = (LexerSource)input;
 					var d = src.MatchRange('0', '9');
 					result = result * 10 + (d - '0');
 					for (;;) {
@@ -1781,7 +1781,7 @@ namespace Loyc.LLParserGenerator
 				{
 					Symbol la0;
 					for (;;) {
-						la0 = LA0;
+						la0 = (Symbol)LA0;
 						if (la0 == @@Number)
 							Number();
 						else
@@ -1789,6 +1789,37 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			");
+		}
+
+		[Test]
+		public void SimpleParserSourceExample()
+		{
+			// How to use ParserSource
+			Test(@"{
+					using TT = MyTokenType;
+					enum MyTokenType { EOF = 0, Id = 1, Etc }
+					ParserSource<Token> _ps;
+					
+					LLLPG (parser(laType(TT), matchCast(int), inputSource(_ps), inputClass(ParserSource<Token>)));
+					public rule IdList @[ list+=TT.Id (TT.Comma list+=TT.Id)* ];
+				}", @"{
+					using TT = MyTokenType;
+					enum MyTokenType { EOF = 0, Id = 1, Etc }
+					ParserSource<Token> _ps;
+					
+					public void IdList() {
+						TT la0;
+						list.Add(_ps.Match((int)TT.Id));
+						for(;;) {
+							la0 = (TT)_ps.LA0;
+							if (la0 == TT.Comma) {
+								_ps.Skip();
+								list.Add(_ps.Match((int)TT.Id));
+							} else
+								break;
+						}
+					}
+				}", null, EcsLanguageService.Value);
 		}
 	}
 }

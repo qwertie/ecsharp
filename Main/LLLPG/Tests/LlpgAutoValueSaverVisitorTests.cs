@@ -69,7 +69,7 @@ namespace Loyc.LLParserGenerator
 						Token tok_B = default(Token);
 						Token tok_C = default(Token);
 						// Line 2: (A C | B C)
-						la0 = LA0;
+						la0 = (int)LA0;
 						if (la0 == A) {
 							Skip();
 							tok_C = Match(C);
@@ -92,7 +92,7 @@ namespace Loyc.LLParserGenerator
 						char tok_Op = default(char);
 						tok_Op = Match(Op);
 						// Line 2: (&{tok_Op == '$'} '$')?
-						la0 = LA0;
+						la0 = (int)LA0;
 						if (la0 == '$') {
 							if (tok_Op == '$')
 								Skip();
@@ -152,7 +152,7 @@ namespace Loyc.LLParserGenerator
 						int x;
 						a = Match(A);
 						for (;;) {
-							la0 = LA0;
+							la0 = (int)LA0;
 							if (la0 == B)
 								b.Add(MatchAny());
 							else
@@ -174,7 +174,7 @@ namespace Loyc.LLParserGenerator
 						List<Token> c = default(List<Token>);
 						Token tok_C = default(Token);
 						// Line 2: (A C | B (C)*)
-						la0 = LA0;
+						la0 = (int)LA0;
 						if (la0 == A) {
 							Skip();
 							tok_C = Match(C);
@@ -183,7 +183,7 @@ namespace Loyc.LLParserGenerator
 							Match(B);
 							// Line 3: (C)*
 							for (;;) {
-								la0 = LA0;
+								la0 = (int)LA0;
 								if (la0 == C)
 									c.Add(MatchAny());
 								else

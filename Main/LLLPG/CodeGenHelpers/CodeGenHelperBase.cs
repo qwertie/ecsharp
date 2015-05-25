@@ -244,7 +244,6 @@ namespace Loyc.LLParserGenerator
 		}
 
 		/// <summary>Returns the data type of LA(k)</summary>
-		/// <returns>Default implementation returns @(int).</returns>
 		public abstract LNode LAType();
 
 		/// <summary>Used to help decide whether a "switch" or an if-else chain 

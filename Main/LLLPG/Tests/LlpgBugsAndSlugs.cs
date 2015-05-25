@@ -172,7 +172,7 @@ namespace Loyc.LLParserGenerator
 			}", @"void Foo()
 				{
 					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");
-					Check(0() && Bar(LA0()), ""$LI() && Bar($LA())"");
+					Check(0() && Bar(((int)LA0)()), ""$LI() && Bar($LA())"");
 					Check($LI, ""$LI"");
 					MatchExcept();
 				}");
@@ -265,7 +265,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// This grammar used to crash LLLPG with a NullReferenceException.
 			// The output doesn't seem quite right; probably because of the left recursion.
-			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true)) {
+			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true), castLA(@false)) {
 				private rule Atom @[
 					TT.Id (TT.LParen TT.RParen)?
 				];

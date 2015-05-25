@@ -449,7 +449,7 @@ namespace Loyc.LLParserGenerator
 					};
 				};
 
-				LLLPG
+				LLLPG (parser(castLA(@false)))
 				{
 					rule Atom::double @[
 						{ result::double; }

@@ -260,7 +260,7 @@ namespace Loyc.LLParserGenerator
 					if (newExpr == null)
 						newExpr = subExpr2;
 					else
-						newExpr = F.Call(S.OrBits, newExpr, subExpr2);
+						newExpr = F.Call(S.Div, newExpr, subExpr2);
 				}
 			}
 			if (newExpr == null) {

@@ -99,12 +99,12 @@ namespace LeMP
 		/// <param name="asRoot">If false, the nodes are treated as children of the 
 		/// current node (using the current list of ancestors as a basis), otherwise
 		/// the nodes are processed alone as if they were a separate file.</param>
-		/// <param name="clearOpenNamespaces">If false, the set of open namespaces
+		/// <param name="resetOpenNamespaces">If false, the set of open namespaces
 		/// stays the same; if true it is cleared to the set of pre-opened 
 		/// namespaces (<see cref="MacroProcessor.PreOpenedNamespaces"/>).</param>
 		/// <remarks>The node(s)</remarks>
 		RVList<LNode> PreProcess(RVList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
-		/// <inheritdoc cref="PreProcess(RVList{LNode}, bool, bool)"/>
+		/// <inheritdoc cref="PreProcess(RVList{LNode}, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false);
 	}
 

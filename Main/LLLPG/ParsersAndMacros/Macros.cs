@@ -76,7 +76,7 @@ namespace Loyc.LLPG
 			var args = p.A;
 			var body = p.B;
 			LNode lexerCfg;
-			if (args.Count != 1 || (lexerCfg = node.Args[0]).Name != _lexer)
+			if (args.Count != 1 || (lexerCfg = args[0]).Name != _lexer)
 				return null;
 
 			// Scan options in lexer(...) node
@@ -84,15 +84,16 @@ namespace Loyc.LLPG
 			foreach (var option in DecodeOptions(lexerCfg.Args))
 			{
 				LNode value = option.Value;
-				switch (option.Key.Name)
+				string key = (option.Key ?? (Symbol)"??").Name;
+				switch (key)
 				{
 					case "inputSource":  helper.InputSource = value; break;
 					case "inputClass":   helper.InputClass = value; break;
 					case "terminalType": helper.TerminalType = value; break;
 					case "setType":      helper.SetType = value; break;
 					default:
-						context.Write(Severity.Error, value, "Unrecognized option. Available options: "+
-							"inputSource = var, inputClass = type, terminalType = type, setType = type");
+						context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
+							"inputSource = var, inputClass = type, terminalType = type, setType = type", key);
 						break;
 				}
 			}
@@ -131,8 +132,7 @@ namespace Loyc.LLPG
 			var body = p.B;
 			LNode parserCfg = null;
 			if (args.Count > 0) {
-				parserCfg = args[0];
-				if (parserCfg.Name != _parser || args.Count > 1)
+				if ((parserCfg = args[0]).Name != _parser || args.Count > 1)
 					return null;
 			}
 			
@@ -141,23 +141,30 @@ namespace Loyc.LLPG
 			if (parserCfg != null) {
 				foreach (var option in DecodeOptions(parserCfg.Args)) {
 					LNode value = option.Value;
-					switch (option.Key.Name) {
-						case "inputSource": helper.InputSource = value; break;
-						case "inputClass":  helper.InputClass = value; break;
-						case "terminalType":helper.TerminalType = value; break;
-						case "laType":      helper.LaType = value;    break;
-						case "matchType":   // alternate name
-						case "matchCast":   helper.MatchCast = value; break;
-						case "setType":     helper.SetType = value;   break;
-						case "allowSwitch":
+					string key = (option.Key ?? (Symbol)"??").Name;
+					switch (key.ToLowerInvariant()) {
+						case "inputsource": helper.InputSource = value; break;
+						case "inputclass":  helper.InputClass = value; break;
+						case "terminaltype":helper.TerminalType = value; break;
+						case "latype":      helper.LaType = value;    break;
+						case "matchtype":   // alternate name
+						case "matchcast":   helper.MatchCast = value; break;
+						case "settype":     helper.SetType = value;   break;
+						case "allowswitch":
 							if (value.Value is bool)
 								helper.AllowSwitch = (bool)value.Value;
 							else
-								context.Write(Severity.Error, value, "allowSwitch: expected literal boolean argument.");
+								context.Write(Severity.Error, value, "AllowSwitch: expected literal boolean argument.");
+							break;
+						case "castla":
+							if (value.Value is bool)
+								helper.CastLA = (bool)value.Value;
+							else
+								context.Write(Severity.Error, value, "CastLA: expected literal boolean argument.");
 							break;
 						default:
-							context.Write(Severity.Error, value, "Unrecognized option. Available options: "
-								+"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool");
+							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
+								"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool", key);
 							break;
 					}
 				}

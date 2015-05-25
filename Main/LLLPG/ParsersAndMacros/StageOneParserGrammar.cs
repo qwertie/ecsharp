@@ -19,7 +19,7 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 	internal partial class StageOneParser
 	{
-		static readonly TT EOF = TT.EOF;
+		static new readonly TT EOF = TT.EOF;
 		void Infix(ref LNode a, Symbol op, LNode b)
 		{
 			a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);

@@ -685,6 +685,7 @@ namespace LeMP
 				else
 					results.Add(input);
 			}
+			_s.DropRemainingNodes = false;
 			_s.IsAttribute = false;
 			return results;
 		}

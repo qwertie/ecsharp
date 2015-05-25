@@ -291,6 +291,8 @@ namespace LeMP
 			// Use namespace macro to test the DropRemainingNodes feature
 			Test("namespace Foo { import System; namespace Etc; Bar::string; };",
 				 "namespace Foo { using  System; namespace Etc { string Bar; } }");
+			Test("{ import System; namespace Etc; Bar::string;   }; Baz();",
+				 "{ using  System; namespace Etc { string Bar; } }  Baz();");
 			Test("internal namespace Foo.Etc; Bar::string; public fn Baz() {};",
 				 "internal namespace Foo.Etc { string Bar; public void Baz() {} }");
 		}

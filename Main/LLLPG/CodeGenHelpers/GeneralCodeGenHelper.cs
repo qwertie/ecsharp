@@ -35,6 +35,9 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Specifies the data type of LA0 and lookahead variables.</summary>
 		public LNode LaType;
+
+		/// <summary>Whether to cast the result of LA0 and LA(i) to LaType (default: true)</summary>
+		public bool CastLA { get; set; }
 		
 		/// <summary>Specifies the data type for large terminal sets (default: <see cref="HashSet{T}"/>).</summary>
 		public LNode SetType;
@@ -77,6 +80,7 @@ namespace Loyc.LLParserGenerator
 		public GeneralCodeGenHelper(LNode laType, LNode setType = null, bool allowSwitch = true)
 		{
 			LaType = laType;
+			CastLA = true;
 			SetType = setType ?? F_.Of(F_.Id(_HashSet), laType);
 			AllowSwitch = allowSwitch;
 		}
@@ -214,6 +218,16 @@ namespace Loyc.LLParserGenerator
 		public override LNode LAType()
 		{
 			return LaType;
+		}
+
+		/// <summary>Generates code to read LA(k).</summary>
+		public override LNode LA(int k)
+		{
+			var laK = base.LA(k);
+			if (CastLA)
+				return F.Call(S.Cast, laK, LaType);
+			else
+				return laK;
 		}
 
 		protected override int GetRelativeCostForSwitch(IPGTerminalSet set_)
