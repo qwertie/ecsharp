@@ -65,7 +65,7 @@ namespace Loyc.Syntax.Les
 	/// <li>PrefixDots: prefix ..</li>
 	/// <li>Range: binary right-associative ..</li>
 	/// <li>Compare: binary != == >= > &lt; &lt;=</li>
-	/// <li>And: binary &&</li>
+	/// <li>And: binary &amp;&amp;</li>
 	/// <li>Or: binary || ^^</li>
 	/// <li>IfElse: binary right-associative ? :</li>
 	/// <li>Assign: binary right-associative =</li>
@@ -222,7 +222,7 @@ namespace Loyc.Syntax.Les
 	/// the normal + operator, it just has a different precedence. However, a 
 	/// single backslash (\) followed by whitespace is named "\".</li>
 	/// <li>For operators surrounded by `backquotes`, the backquotes are not 
-	/// part of the name either; \> and `>` and > differ only in precedence.
+	/// part of the name either; \> and `>` and > differ only in precedence.</li>
 	/// </ul>
 	/// </remarks>
 	/// <seealso cref="Precedence"/>

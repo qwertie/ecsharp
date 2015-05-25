@@ -189,6 +189,7 @@
     <Compile Include="LNodes\NodeStyle.cs" />
     <Compile Include="LNodes\StdNodes.cs" />
     <Compile Include="OperatorShape.cs" />
+    <Compile Include="ParserSource.cs" />
     <Compile Include="Precedence.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceFiles\EmptySourceFile.cs" />

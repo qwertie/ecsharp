@@ -10,13 +10,13 @@ namespace Loyc.Syntax
 {
 	/// <summary>
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
-	/// Generator). Note: this is the old (harder to use) base class. You should 
-	/// use <see cref="BaseParserForList{Token}"/> instead.
+	/// Generator). Note: this is the old (harder to use) base class design. You 
+	/// should use <see cref="BaseParserForList{Token, LaType}"/> instead.
 	/// </summary>
-	public abstract class BaseParser<Token>
+	public abstract class BaseParser<Token, MatchType> 
+		where MatchType : IEquatable<MatchType>
 	{
-		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
-		protected static HashSet<int> NewSet<T>(params T[] items) where T:IConvertible { return new HashSet<int>(items.Select(t => t.ToInt32(null))); }
+		protected static HashSet<MatchType> NewSet(params MatchType[] items) { return new HashSet<MatchType>(items); }
 
 		protected BaseParser(ISourceFile file = null, int startIndex = 0) { 
 			EOF = EofInt();
@@ -44,17 +44,39 @@ namespace Loyc.Syntax
 			}
 		}
 
-		private Int32 EOF;
+		protected MatchType EOF;
 		/// <summary>Returns the value used for EOF (normally 0)</summary>
-		protected abstract Int32 EofInt();
+		protected abstract MatchType EofInt();
 		/// <summary>Returns the token type of _lt0 (normally _lt0.TypeInt)</summary>
-		protected abstract Int32 LA0Int { get; }
+		protected abstract MatchType LA0Int { get; }
 		/// <summary>Returns the token at lookahead i (e.g. <c>Source[InputPosition + i]</c>
 		/// if the tokens come from a list called Source) </summary>
 		protected abstract Token LT(int i);
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>
-		protected abstract string ToString(Int32 tokenType);
+		protected abstract string ToString(MatchType tokenType);
+
+		/// <summary>Converts a lookahead token index to a character index (used 
+		/// for error reporting). Returns -1 if unsuccessful.</summary>
+		protected virtual int LaIndexToSourcePos(int lookaheadIndex)
+		{
+			var token = LT(lookaheadIndex) as ISimpleToken<MatchType>;
+			if (token == null)
+				return -1;
+			int charIdx = token.StartIndex;
+			if (token.Type.Equals(EOF)) {
+				// Our EOF token may not contain the correct character position,
+				// so scan backward and look for the final token...
+				for (int li = lookaheadIndex; li > lookaheadIndex-100;  li--) {
+					var token2 = LT(li) as ISimpleToken<MatchType>;
+					if (!token2.Type.Equals(EOF)) {
+						charIdx = System.Math.Max(charIdx, token2.StartIndex + 1);
+						break;
+					}
+				}
+			}
+			return charIdx;
+		}
 
 		/// <summary>Records an error or throws an exception.</summary>
 		/// <param name="lookaheadIndex">Location of the error relative to the
@@ -70,10 +92,7 @@ namespace Loyc.Syntax
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			var token = LT(lookaheadIndex) as ISimpleToken;
-			if (token == null)
-				throw new FormatException(message);
-			int charIdx = token.StartIndex;
+			var charIdx = LaIndexToSourcePos(lookaheadIndex);
 			if (SourceFile == null)
 				throw new FormatException(string.Format("at [{0}]: {1}", charIdx, message));
 			else
@@ -99,7 +118,7 @@ namespace Loyc.Syntax
 			InputPosition++;
 			return lt;
 		}
-		protected Token Match(HashSet<Int32> set, bool inverted = false)
+		protected Token Match(HashSet<MatchType> set, bool inverted = false)
 		{
 			Token lt = _lt0;
 			if (set.Contains(LA0Int) == inverted)
@@ -108,37 +127,37 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(Int32 a)
+		protected Token Match(MatchType a)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if (!(la == a))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (!la.Equals(a))
 				Error(false, a);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(Int32 a, Int32 b)
+		protected Token Match(MatchType a, MatchType b)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if (!(la == a) && !(la == b))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b))
 				Error(false, a, b);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(Int32 a, Int32 b, Int32 c)
+		protected Token Match(MatchType a, MatchType b, MatchType c)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if (!(la == a) && !(la == b) && !(la == c))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b) && !la.Equals(c))
 				Error(false, a, b, c);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token Match(Int32 a, Int32 b, Int32 c, Int32 d)
+		protected Token Match(MatchType a, MatchType b, MatchType c, MatchType d)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if (!(la == a) && !(la == b) && !(la == c) && !(la == d))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b) && !la.Equals(c) && !la.Equals(d))
 				Error(false, a, b, c, d);
 			else
 				InputPosition++;
@@ -146,39 +165,52 @@ namespace Loyc.Syntax
 		}
 		protected Token MatchExcept()
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if ((la == EOF))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (la.Equals(EOF))
 				Error(true);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(Int32 a)
+		protected Token MatchExcept(MatchType a)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if ((la == a) || (la == EOF))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (la.Equals(a) || la.Equals(EOF))
 				Error(true, a);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(Int32 a, Int32 b)
+		protected Token MatchExcept(MatchType a, MatchType b)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if ((la == a) || (la == b) || (la == EOF))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (la.Equals(a) || la.Equals(b) || la.Equals(EOF))
 				Error(true, a, b);
 			else
 				InputPosition++;
 			return lt;
 		}
-		protected Token MatchExcept(Int32 a, Int32 b, Int32 c)
+		protected Token MatchExcept(MatchType a, MatchType b, MatchType c)
 		{
-			Token lt = _lt0; Int32 la = LA0Int;
-			if ((la == a) || (la == b) || (la == c) || (la == EOF))
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (la.Equals(a) || la.Equals(b) || la.Equals(c) || la.Equals(EOF))
 				Error(true, a, b, c);
 			else
 				InputPosition++;
 			return lt;
+		}
+		protected Token MatchExcept(MatchType a, MatchType b, MatchType c, MatchType d)
+		{
+			Token lt = _lt0; MatchType la = LA0Int;
+			if (la.Equals(a) || la.Equals(b) || la.Equals(c) || la.Equals(d) || la.Equals(EOF))
+				Error(true, a, b, c, d);
+			else
+				InputPosition++;
+			return lt;
+		}
+		protected Token MatchExcept(HashSet<MatchType> set)
+		{
+			return Match(set, true);
 		}
 
 		#endregion
@@ -194,7 +226,7 @@ namespace Loyc.Syntax
 				{ _parser = parser; _oldPosition = parser.InputPosition; parser.InputPosition += lookaheadAmt; }
 			public void Dispose() { _parser.InputPosition = _oldPosition; }
 		}
-		protected bool TryMatch(HashSet<Int32> set, bool inverted = false)
+		protected bool TryMatch(HashSet<MatchType> set, bool inverted = false)
 		{
 			if (set.Contains(LA0Int) == inverted)
 				return false;
@@ -202,36 +234,36 @@ namespace Loyc.Syntax
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(Int32 a)
+		protected bool TryMatch(MatchType a)
 		{
-			if (!(LA0Int == a))
+			if (!(LA0Int.Equals(a)))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(Int32 a, Int32 b)
+		protected bool TryMatch(MatchType a, MatchType b)
 		{
-			Int32 la = LA0Int;
-			if (!(la == a) && !(la == b))
+			MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(Int32 a, Int32 b, Int32 c)
+		protected bool TryMatch(MatchType a, MatchType b, MatchType c)
 		{
-			Int32 la = LA0Int;
-			if (!(la == a) && !(la == b) && !(la == c))
+			MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b) && !la.Equals(c))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatch(Int32 a, Int32 b, Int32 c, Int32 d)
+		protected bool TryMatch(MatchType a, MatchType b, MatchType c, MatchType d)
 		{
-			Int32 la = LA0Int;
-			if (!(la == a) && !(la == b) && !(la == c) && !(la == d))
+			MatchType la = LA0Int;
+			if (!la.Equals(a) && !la.Equals(b) && !la.Equals(c) && !la.Equals(d))
 				return false;
 			else
 				InputPosition++;
@@ -239,61 +271,61 @@ namespace Loyc.Syntax
 		}
 		protected bool TryMatchExcept()
 		{
-			if ((LA0Int == EOF))
+			if ((LA0Int.Equals(EOF)))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(Int32 a)
+		protected bool TryMatchExcept(MatchType a)
 		{
-			Int32 la = LA0Int;
-			if ((la == EOF) || (la == a))
+			MatchType la = LA0Int;
+			if (la.Equals(EOF) || la.Equals(a))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(Int32 a, Int32 b)
+		protected bool TryMatchExcept(MatchType a, MatchType b)
 		{
-			Int32 la = LA0Int;
-			if ((la == EOF) || (la == a) || (la == b))
+			MatchType la = LA0Int;
+			if (la.Equals(EOF) || la.Equals(a) || la.Equals(b))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(Int32 a, Int32 b, Int32 c)
+		protected bool TryMatchExcept(MatchType a, MatchType b, MatchType c)
 		{
-			Int32 la = LA0Int;
-			if ((la == EOF) || (la == a) || (la == b) || (la == c))
+			MatchType la = LA0Int;
+			if (la.Equals(EOF) || la.Equals(a) || la.Equals(b) || la.Equals(c))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(Int32 a, Int32 b, Int32 c, Int32 d)
+		protected bool TryMatchExcept(MatchType a, MatchType b, MatchType c, MatchType d)
 		{
-			Int32 la = LA0Int;
-			if ((la == EOF) || (la == a) || (la == b) || (la == c) || (la == d))
+			MatchType la = LA0Int;
+			if (la.Equals(EOF) || la.Equals(a) || la.Equals(b) || la.Equals(c) || la.Equals(d))
 				return false;
 			else
 				InputPosition++;
 			return true;
 		}
-		protected bool TryMatchExcept(HashSet<Int32> set)
+		protected bool TryMatchExcept(HashSet<MatchType> set)
 		{
 			return TryMatch(set, true);
 		}
 
 		#endregion
 
-		protected void Error(bool inverted, params Int32[] expected) { Error(inverted, (IEnumerable<Int32>)expected); }
-		protected virtual void Error(bool inverted, IEnumerable<Int32> expected)
+		protected void Error(bool inverted, params MatchType[] expected) { Error(inverted, (IEnumerable<MatchType>)expected); }
+		protected virtual void Error(bool inverted, IEnumerable<MatchType> expected)
 		{
 			Error(0, Localize.From("'{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
 		}
-		protected virtual string ToString(bool inverted, IEnumerable<Int32> expected)
+		protected virtual string ToString(bool inverted, IEnumerable<MatchType> expected)
 		{
 			int plural = expected.Take(2).Count();
 			if (plural == 0)
@@ -310,5 +342,15 @@ namespace Loyc.Syntax
 			if (!expectation)
 				Error(0, Localize.From("An expected condition was false: {0}", expectedDescr));
 		}
+	}
+	/// <summary>
+	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
+	/// Generator). Note: this is the old (harder to use) base class. You should 
+	/// use <see cref="BaseParserForList{Token, LaType}"/> instead. This class is
+	/// now an alias for BaseParser{Token,int}.
+	/// </summary>
+	public abstract class BaseParser<Token> : BaseParser<Token, Int32>
+	{
+		protected BaseParser(ISourceFile file = null, int startIndex = 0) : base(file, startIndex) {} 
 	}
 }

@@ -13,53 +13,69 @@ namespace Loyc.Syntax
 	/// Generator) and receive tokens from any <see cref="IEnumerator{Token}"/>.
 	/// </summary>
 	/// <remarks>
-	/// This version of BaseParserForList has List as a generic parameter. Compared 
-	/// to using IList{Token} directly, this can increase performance in case 
-	/// the list is a value type (e.g. <c>InternalList&lt;Token></c>).
+	/// This version of BaseParserForList has TokenList as a generic parameter. 
+	/// Compared to using IList{Token} directly, this can increase performance in 
+	/// case the list is a value type (e.g. <c>InternalList&lt;Token></c>).
 	/// </remarks>
-	public abstract class BaseParserForList<Token, TokenList> : BaseParser<Token>
-		where Token : ISimpleToken
-		where TokenList : IList<Token>
+	/// <typeparam name="Token">Data type of complete tokens in the token list. A 
+	/// token contains the type of a "word" in the program (string, identifier, plus 
+	/// sign, etc.), a value (e.g. the name of an identifier), and a range of 
+	/// characters in the source file. See <see cref="ISimpleToken{MatchType}"/>.
+	/// Note: Token is usually a small struct; this class does not expect that it
+	/// will ever be null.</typeparam>
+	/// <typeparam name="MatchType">A data type, usually int, that represents a 
+	/// token type (identifier, operator, etc.) and implements <see cref="IEquatable{T}"/>
+	/// so it can be compared for equality with other token types; this is also the 
+	/// type of the <see cref="ISimpleToken{Matchtype}.Type"/> property.</typeparam>
+	/// <typeparam name="List">Data type of the list that contains the tokens (one 
+	/// often uses IList{Token}, but one could use <see cref="Loyc.Collections.Impl.InternalList{T}"/> 
+	/// for potentially higher performance.)</typeparam>
+	public abstract class BaseParserForList<Token, MatchType, List> : BaseParser<Token, MatchType>
+		where Token : ISimpleToken<MatchType>
+		where MatchType : IEquatable<MatchType>
+		where List : IList<Token>
 	{
 		/// <summary>Initializes this object to begin parsing the specified tokens.</summary>
 		/// <param name="list">A list of tokens that the derived class will parse.</param>
 		/// <param name="eofToken">A token value to return when the input position 
-		/// reaches the end of the token list.</param>
-		/// <param name="file">A source file object that will be returned by the <see cref="SourceFile"/>
-		/// property. By default, this object is used to get the file name, line 
-		/// number and column number shown in parser errors. If you are using 
-		/// <see cref="BaseLexer"/>, you can get this object from the
-		/// <see cref="BaseLexer{C}.SourceFile"/> property. The <see cref="SourceFile"/>
-		/// property (in this class) will return this value. It can be null, which
-		/// means that default error messages will show the character index instead
-		/// of the file, line number and column number.</param>
+		/// reaches the end of the token list. If possible this EOF token should 
+		/// contain the position of EOF, but if you have arranged to use zero as 
+		/// your EOF token type, default</param>
+		/// <param name="file">A source file object that will be returned by the 
+		/// <see cref="SourceFile"/> property. By default, this object is used to 
+		/// get the file name, line number and column number shown in parser errors. 
+		/// If you are using <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
+		/// you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
+		/// property. The <see cref="SourceFile"/> property (in this class) will 
+		/// return this value. It can be null, which will cause default error 
+		/// messages to show the character index instead of the file, line number 
+		/// and column number.</param>
 		/// <param name="startIndex">The initial index from which to start reading
 		/// tokens from the list (normally 0).</param>
-		protected BaseParserForList(TokenList list, Token eofToken, ISourceFile file, int startIndex = 0) : base(file, startIndex)
+		protected BaseParserForList(List list, Token eofToken, ISourceFile file, int startIndex = 0) : base(file, startIndex)
 		{
 			Reset(list, eofToken, file);
 		}
-		protected void Reset(TokenList list, Token eofToken, ISourceFile file, int startIndex = 0)
+		protected void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
 			EofToken = eofToken;
-			EOF = EofToken.TypeInt;
+			EOF = EofToken.Type;
 			_list = list;
 			_sourceFile = file;
 			_inputPosition = startIndex;
 		}
 
 		protected Token EofToken;
-		protected Int32 EOF; // EofToken.TypeInt
 
 		/// <summary>The IList{Token} that was provided to the constructor, if any.</summary>
-		protected TokenList List { get { return _list; } }
-		private   TokenList _list;
+		protected List TokenList { get { return _list; } }
+		private   List _list;
 		// cached list size to avoid frequently calling the virtual Count property.
 		// (don't worry, it's updated automatically by LT() if the list size changes)
 		private int _listCount;
 
-		protected sealed override Int32 EofInt() { return EOF; }
-		protected sealed override Int32 LA0Int { get { return _lt0.TypeInt; } }
+		protected sealed override MatchType EofInt() { return EOF; }
+		protected sealed override MatchType LA0Int { get { return _lt0.Type; } }
 		protected sealed override Token LT(int i)
 		{
 			i += InputPosition;
@@ -72,10 +88,12 @@ namespace Loyc.Syntax
 			}
 			return EofToken;
 		}
+
+		protected MatchType LA(int i) { return LT(i).Type; }
 		
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>
-		protected override abstract string ToString(Int32 tokenType);
+		protected override abstract string ToString(MatchType tokenType);
 
 		protected new int InputPosition
 		{
@@ -98,8 +116,9 @@ namespace Loyc.Syntax
 	/// <see cref="IEnumerator{Token}"/> to the constructor and it will use
 	/// <see cref="BufferedSequence{T}"/> to convert the sequence to a list.
 	/// </remarks>
-	public abstract class BaseParserForList<Token> : BaseParserForList<Token, IList<Token>>
-		where Token : ISimpleToken
+	public abstract class BaseParserForList<Token, MatchType> : BaseParserForList<Token, MatchType, IList<Token>>
+		where Token : ISimpleToken<MatchType>
+		where MatchType : IEquatable<MatchType>
 	{
 		/// <inheridoc/>
 		protected BaseParserForList(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0) 
