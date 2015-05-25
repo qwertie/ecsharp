@@ -12,13 +12,15 @@ namespace Loyc.Syntax.Lexing
 	/// <remarks>
 	/// This derived class simply makes public all of the LLLPG APIs which are 
 	/// marked protected in <see cref="BaseLexer{CharSrc}"/>.
-	/// <para/>
-	/// <example>
-	///   LLLPG(lexer(inputSource(src), inputClass(LexerSource)) {
-	///       ...
-	///   }
-	/// </example>
 	/// </remarks>
+	/// <example>
+	/// LLLPG(lexer(inputSource(src), inputClass(LexerSource))) {
+	/// 	static rule int ParseInt(string input) {
+	/// 		var src = (LexerSource&lt;UString>)input;
+	/// 		@[ (d:='0'..'9' {$result = $result * 10 + (d - '0');})+ ];
+	/// 	}
+	/// }
+	/// </example>
 	/// <typeparam name="CharSrc">A class that implements ICharSource. In order
 	/// to write lexers that can accept any source of characters, set 
 	/// CharSrc=ICharSource. For maximum performance when parsing strings (or
@@ -52,6 +54,8 @@ namespace Loyc.Syntax.Lexing
 		/// when this parameter is false.</param>
 		public LexerSource(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 			: base(source, fileName, inputPosition, newSourceFile) {}
+
+		public static explicit operator LexerSource<CharSrc>(CharSrc str) { return new LexerSource<CharSrc>(str); }
 	
 		/// <inheritdoc/>
 		public new virtual void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
@@ -202,8 +206,11 @@ namespace Loyc.Syntax.Lexing
 	/// <summary>A synonym for <see cref="LexerSource{C}"/> where C is <see cref="ICharSource"/>.</summary>
 	public class LexerSource : LexerSource<ICharSource>
 	{
+		void f<T>() where T:IServiceProvider{}
 		public LexerSource(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 			: base(source, fileName, inputPosition, newSourceFile) { }
+		
+		public static explicit operator LexerSource(string str)      { return new LexerSource((UString)str); }
 	}
 
 	/// <summary>Adds the <see cref="AfterNewline"/> method to <see cref="SourceFile"/>.</summary>

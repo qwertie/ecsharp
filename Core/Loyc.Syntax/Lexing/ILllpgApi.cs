@@ -12,27 +12,31 @@ namespace Loyc.Syntax.Lexing
 	/// contains.</summary>
 	/// <typeparam name="Token">The return value of the Match methods. LLLPG does 
 	/// not care and does not need to know what this type is. In lexers, these 
-	/// methods should return the character that was matched, and in parsers they 
-	/// should return the token that was matched.</typeparam>
+	/// methods typically return the character that was matched (i.e. int, because
+	/// EOF is -1), and in parsers they should return the token that was matched.</typeparam>
 	/// <typeparam name="MatchType">The data type of arguments to Match, 
 	/// MatchExcept, TryMatch and TryMatchExcept. In lexers, MatchType is always 
 	/// int. In parsers, by default, LLLPG generates code as though MatchType is 
-	/// same as LaType, but BaseParser uses int instead for performance reasons. 
-	/// Consequently, when using BaseParser you need to use the matchType(int) 
+	/// same as LaType, but one often uses int instead, e.g. because enums do not
+	/// implement <see cref="IEquatable{T}"/> as required by 
+	/// <see cref="BaseParser{Token,MatchType}"/>. you're using
+	/// <see cref="BaseParser{Token,MatchType}"/> with LaType=int token 
+	/// type is an enum, which for some reason does not implement 
+	/// IEquatable{T}. So, often, when using BaseParser{Token you need to use the matchType(int) 
 	/// option to change MatchType to int.</typeparam>
 	/// <typeparam name="LaType">The data type of LA0 and LA(i). This is always int 
-	/// in lexers, but in parsers you can use the laType(...) option (documented in 
-	/// the previous article) to change this type.</typeparam>
+	/// in lexers, but in parsers you can use the laType(...) option to change this 
+	/// type.</typeparam>
 	/// <seealso cref="ILllpgLexerApi{Char}"/>
 	public interface ILllpgApi<Token, MatchType, LaType>
 	{
 		// Note: the set type is expected to contain a Contains(MatchType) method.
 		//static HashSet<MatchType> NewSet(params MatchType[] items);
 		//static HashSet<MatchType> NewSetOfRanges(params MatchType[] ranges);
+		//static const LaType EOF;
 
 		LaType LA0 { get; }
 		LaType LA(int i);
-		//static const LaType EOF;
 
 		void Error(int lookaheadIndex, string message);
 
@@ -67,16 +71,12 @@ namespace Loyc.Syntax.Lexing
 		bool TryMatch(MatchType a, MatchType b, MatchType c);
 		bool TryMatch(MatchType a, MatchType b, MatchType c, MatchType d);
 		bool TryMatch(HashSet<MatchType> set);
-		bool TryMatchRange(int aLo, int aHi);
-		bool TryMatchRange(int aLo, int aHi, int bLo, int bHi);
 		bool TryMatchExcept();
 		bool TryMatchExcept(MatchType a);
 		bool TryMatchExcept(MatchType a, MatchType b);
 		bool TryMatchExcept(MatchType a, MatchType b, MatchType c);
 		bool TryMatchExcept(MatchType a, MatchType b, MatchType c, MatchType d);
 		bool TryMatchExcept(HashSet<MatchType> set);
-		bool TryMatchExceptRange(int aLo, int aHi);
-		bool TryMatchExceptRange(int aLo, int aHi, int bLo, int bHi);
 	}
 
 	/// <summary>For reference purposes, this interface contains the non-static 
@@ -92,5 +92,10 @@ namespace Loyc.Syntax.Lexing
 		Token MatchRange(int aLo, int aHi, int bLo, int bHi);
 		Token MatchExceptRange(int aLo, int aHi);
 		Token MatchExceptRange(int aLo, int aHi, int bLo, int bHi);
+		
+		bool TryMatchRange(int aLo, int aHi);
+		bool TryMatchRange(int aLo, int aHi, int bLo, int bHi);
+		bool TryMatchExceptRange(int aLo, int aHi);
+		bool TryMatchExceptRange(int aLo, int aHi, int bLo, int bHi);
 	}
 }

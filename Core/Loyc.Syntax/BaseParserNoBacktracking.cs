@@ -17,7 +17,7 @@ namespace Loyc.Syntax
 	/// This base class for LLLPG parsers simply requires an enumerator to work,
 	/// and it has a small buffer to hold lookahead tokens. Old tokens are 
 	/// forgotten, so this base class does not support backtracking (i.e. syntactic 
-	/// predicates), but it can save memory. Please use <see cref="BaseParserForList"/> 
+	/// predicates), but it can save memory. Please use <see cref="BaseParserForList{Tok,La}"/> 
 	/// if your input sequence comes in the form of a list.
 	/// <para/>
 	/// This version of BaseParser has Enumerator as a generic parameter. Compared 
@@ -53,7 +53,7 @@ namespace Loyc.Syntax
 		{
 			_sequence = sequence;
 			EofToken = eofToken;
-			EOF = EofToken.TypeInt;
+			EOF = EofToken.Type;
 			_tokenBuffer.Resize(0);
 			_sourceFile = file;
 			_inputPosition = startIndex;
@@ -61,7 +61,6 @@ namespace Loyc.Syntax
 		}
 
 		protected Token EofToken;
-		protected Int32 EOF; // EofToken.TypeInt
 
 		// Holds lookahead tokens only, starting at LT(0)
 		private InternalDList<Token> _tokenBuffer = new InternalDList<Token>(8);
@@ -70,7 +69,7 @@ namespace Loyc.Syntax
 		protected new int _inputPosition; // hack related to BaseParser.InputPosition being nonvirtual
 
 		protected sealed override Int32 EofInt() { return EOF; }
-		protected sealed override Int32 LA0Int { get { return _lt0.TypeInt; } }
+		protected sealed override Int32 LA0Int { get { return _lt0.Type; } }
 		/// <summary>Returns the Token at lookahead i, where 0 is the next token.
 		/// This class does not support negative lookahead because old tokens from 
 		/// the IEnumerator are discarded.</summary>

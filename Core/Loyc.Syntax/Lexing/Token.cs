@@ -29,7 +29,7 @@ namespace Loyc.Syntax.Lexing
 	/// in <see cref="LNode"/>s which are supposed to be immutable. Please do not
 	/// modify token trees that are stored inside LNodes.
 	/// </remarks>
-	public class TokenTree : DList<Token>, IListSource<Token>, IListSource<IToken>, IEquatable<TokenTree>, ICloneable<TokenTree>
+	public class TokenTree : DList<Token>, IListSource<Token>, IListSource<IToken<int>>, IEquatable<TokenTree>, ICloneable<TokenTree>
 	{
 		public TokenTree(ISourceFile file, int capacity) : base(capacity) { File = file; }
 		public TokenTree(ISourceFile file, ICollectionAndReadOnly<Token> items) : this(file, (IReadOnlyCollection<Token>)items) { }
@@ -41,21 +41,21 @@ namespace Loyc.Syntax.Lexing
 		
 		public readonly ISourceFile File;
 
-		IToken IListSource<IToken>.TryGet(int index, out bool fail)
+		IToken<int> IListSource<IToken<int>>.TryGet(int index, out bool fail)
 		{
 			return TryGet(index, out fail);
 		}
-		IRange<IToken> IListSource<IToken>.Slice(int start, int count)
+		IRange<IToken<int>> IListSource<IToken<int>>.Slice(int start, int count)
 		{
-			return new UpCastListSource<Token, IToken>(this).Slice(start, count);
+			return new UpCastListSource<Token, IToken<int>>(this).Slice(start, count);
 		}
-		IToken IReadOnlyList<IToken>.this[int index]
+		IToken<int> IReadOnlyList<IToken<int>>.this[int index]
 		{
 			get { return this[index]; }
 		}
-		IEnumerator<IToken> IEnumerable<IToken>.GetEnumerator()
+		IEnumerator<IToken<int>> IEnumerable<IToken<int>>.GetEnumerator()
 		{
-			return Enumerable.Cast<IToken>(this).GetEnumerator();
+			return Enumerable.Cast<IToken<int>>(this).GetEnumerator();
 		}
 		/// <summary>Gets a deep (recursive) clone of the token tree.</summary>
 		public new TokenTree Clone() { return Clone(true); }
@@ -187,7 +187,7 @@ namespace Loyc.Syntax.Lexing
 	/// A generic token also cannot convert itself to a properly-formatted 
 	/// string. The <see cref="ToString"/> method does allow 
 	/// </remarks>
-	public struct Token : IListSource<Token>, IToken, IEquatable<Token>
+	public struct Token : IListSource<Token>, IToken<int>, IEquatable<Token>
 	{
 		public Token(int type, int startIndex, int length, NodeStyle style = 0, object value = null)
 		{
@@ -213,7 +213,7 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Location in the orginal source file where the token starts, or
 		/// -1 for a synthetic token.</summary>
 		public readonly int StartIndex;
-		int ISimpleToken.StartIndex { get { return StartIndex; } }
+		int ISimpleToken<int>.StartIndex { get { return StartIndex; } }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] int _length;
 		const int LengthMask = 0x00FFFFFF;
@@ -376,23 +376,23 @@ namespace Loyc.Syntax.Lexing
 		#endregion
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		int ISimpleToken.TypeInt { get { return TypeInt; } }
-		IToken IToken.WithType(int type) { return WithType(type); }
+		int ISimpleToken<int>.Type { get { return TypeInt; } }
+		IToken<int> IToken<int>.WithType(int type) { return WithType(type); }
 		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		object ISimpleToken.Value { get { return Value; } }
-		IToken IToken.WithValue(object value) { return WithValue(value); }
+		object ISimpleToken<int>.Value { get { return Value; } }
+		IToken<int> IToken<int>.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
 
 		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		IListSource<IToken> IToken.Children
+		IListSource<IToken<int>> IToken<int>.Children
 		{
-			get { return new UpCastListSource<Token, IToken>(Children); }
+			get { return new UpCastListSource<Token, IToken<int>>(Children); }
 		}
-		IToken ICloneable<IToken>.Clone()
+		IToken<int> ICloneable<IToken<int>>.Clone()
 		{
 			return this;
 		}
@@ -537,12 +537,14 @@ namespace Loyc.Syntax.Lexing
 	}
 
 	/// <summary>Basic information about a token as expected by <see cref="BaseParser{Token}"/>:
-	/// type (as an integer), index where the token starts in the source file, 
-	/// and a value.</summary>
-	public interface ISimpleToken
+	/// a token <see cref="Type"/>, which is the type of a "word" in the program 
+	/// (string, identifier, plus sign, etc.), a value (e.g. the name of an 
+	/// identifier), and an index where the token starts in the source file.</summary>
+	public interface ISimpleToken<TokenType>
 	{
-		/// <summary>Token type (cast to an integer if it is an enum).</summary>
-		int TypeInt { get; }
+		/// <summary>The category of the token (integer, keyword, etc.) used as
+		/// the primary value for identifying the token in a parser.</summary>
+		TokenType Type { get; }
 		/// <summary>Character index where the token starts in the source file.</summary>
 		int StartIndex { get; }
 		/// <summary>Value of the token. The meaning of this property is defined
@@ -551,19 +553,24 @@ namespace Loyc.Syntax.Lexing
 		/// from the text "3.14", its value might be <c>(double)3.14</c>.</summary>
 		object Value { get; }
 	}
+	
+	/// <summary>Alias for ISimpleToken{int}.</summary>
+	public interface ISimpleToken : ISimpleToken<Int32> { }
 
 	/// <summary>The methods of <see cref="Token"/> in the form of an interface.</summary>
-	public interface IToken : ISimpleToken, ICloneable<IToken>
+	/// <typeparam name="TT">Token Type: the data type of the Type property of 
+	/// <see cref="ISimpleToken{LaType}"/> (one often uses int).</typeparam>
+	public interface IToken<TT> : ISimpleToken<TT>, ICloneable<IToken<TT>>
 	{
 		int Length { get; }
 
-		IToken WithType(int type);
+		IToken<TT> WithType(int type);
 
 		TokenKind Kind { get; }
 
-		IToken WithValue(object value);
+		IToken<TT> WithValue(object value);
 
-		IListSource<IToken> Children { get; }
+		IListSource<IToken<TT>> Children { get; }
 	}
 
 	[TestFixture]

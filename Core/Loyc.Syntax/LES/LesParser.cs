@@ -97,7 +97,7 @@ namespace Loyc.Syntax.Les
 			bool fail;
 			return _tokens.TryGet(InputPosition + i, out fail).Type();
 		}
-		const TokenType EOF = TT.EOF;
+		new const TokenType EOF = TT.EOF;
 		
 		#endregion
 		
