@@ -731,13 +731,11 @@ namespace Ecs
 					if (var.IsId) {
 						if (!allowNoAssignment)
 							return false;
-					} else {
+					} else if (!CallsWPAIH(var, S.Substitute, 1)) {
 						if (!CallsWPAIH(var, S.Assign, 2))
 							return false;
 						LNode name = var.Args[0], init = var.Args[1];
-						if (name.IsParenthesizedExpr())
-							return false;
-						if (!name.IsId || HasPAttrs(name) || HasPAttrs(init))
+						if (!IsSimpleIdentifier(name) || HasPAttrs(init))
 							return false;
 					}
 				}

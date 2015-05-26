@@ -411,11 +411,15 @@ namespace Loyc.Syntax
 		}
 		public LNode Var(LNode type, Symbol name, LNode initValue = null)
 		{
+			return Var(type, Id(name), initValue);
+		}
+		public LNode Var(LNode type, LNode name, LNode initValue = null)
+		{
 			type = type ?? _Missing;
 			if (initValue != null)
-				return Call(S.Var, type, Call(S.Assign, Id(name), initValue));
+				return Call(S.Var, type, Call(S.Assign, name, initValue));
 			else
-				return Call(S.Var, type, Id(name));
+				return Call(S.Var, type, name);
 		}
 		public LNode Var(LNode type, LNode name)
 		{

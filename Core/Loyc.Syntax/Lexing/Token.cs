@@ -196,11 +196,11 @@ namespace Loyc.Syntax.Lexing
 			_length = length | (((int)style << StyleShift) & StyleMask);
 			Value = value;
 		}
-		private Token(int type, int startIndex, int lengthAndStyle, object value)
+		public Token(int type, int startIndex, int length, object value)
 		{
 			TypeInt = type;
 			StartIndex = startIndex;
-			_length = lengthAndStyle;
+			_length = length;
 			Value = value;
 		}
 
@@ -327,7 +327,7 @@ namespace Loyc.Syntax.Lexing
 			return obj is Token && Equals((Token)obj);
 		}
 		/// <summary>Equality depends on TypeInt and Value, but not StartIndex and 
-		/// Length (which matches the equality condition of <see cref="LNode"/>).</summary>
+		/// Length (this is the same equality condition as <see cref="LNode"/>).</summary>
 		public bool Equals(Token other)
 		{
 			return TypeInt == other.TypeInt && object.Equals(Value, other.Value);

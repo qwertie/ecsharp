@@ -644,7 +644,7 @@ namespace Ecs.Parser
 				if (la0 == TT.QuestionMark) {
 					if (!afterAsOrIs)
 						goto match1;
-					else if ((count = CountDims(LT(1), true)) > 0 || LT(1).EndIndex == LT(1 + 1).StartIndex || !(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value)) || Is(1, _where)) {
+					else if ((count = CountDims(LT(1), true)) > 0 || LT(1).EndIndex == LT(1 + 1).StartIndex || !(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value)) || Is(1, _where) || Try_MethodOrPropertyOrVar_Test0(1)) {
 						if (!Try_TypeSuffixOpt_Test0(1))
 							goto match1;
 						else
@@ -738,7 +738,7 @@ namespace Ecs.Parser
 				if (la0 == TT.QuestionMark) {
 					if (!afterAsOrIs)
 						goto match1;
-					else if ((count = CountDims(LT(1), true)) > 0 || LT(1).EndIndex == LT(1 + 1).StartIndex || !(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value)) || Is(1, _where)) {
+					else if ((count = CountDims(LT(1), true)) > 0 || LT(1).EndIndex == LT(1 + 1).StartIndex || !(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value)) || Is(1, _where) || Try_MethodOrPropertyOrVar_Test0(1)) {
 						if (!Try_TypeSuffixOpt_Test0(1))
 							goto match1;
 						else
@@ -1948,8 +1948,8 @@ namespace Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (context.CanParse(EP.Shift)) {
-								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								if (context.CanParse(EP.Shift)) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -1964,12 +1964,6 @@ namespace Ecs.Parser
 									else
 										goto stop;
 								}
-							} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								la1 = LA(1);
-								if (PrefixExpr_set0.Contains((int) la1))
-									goto match1;
-								else
-									goto stop;
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -1977,8 +1971,8 @@ namespace Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (context.CanParse(EP.Shift)) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+							if (context.CanParse(EP.Shift)) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match3;
@@ -2313,31 +2307,16 @@ namespace Ecs.Parser
 		}
 		Pair<LNode,LNode> VarDeclStart()
 		{
-			TokenType la0;
-			#line 725 "EcsParserGrammar.les"
-			Token name;
-			#line default
 			var e = DataType();
-			// Line 727: (TT.Id | UnusualId)
-			la0 = LA0;
-			if (la0 == TT.Id)
-				name = MatchAny();
-			else
-				name = UnusualId();
+			var id = IdAtom();
 			MaybeRecognizeVarAsKeyword(ref e);
-			return Pair.Create(e, IdNode(name));
+			return Pair.Create(e, id);
 		}
 		bool Scan_VarDeclStart()
 		{
-			TokenType la0;
 			if (!Scan_DataType())
 				return false;
-			// Line 727: (TT.Id | UnusualId)
-			la0 = LA0;
-			if (la0 == TT.Id)
-				{if (!TryMatch((int) TT.Id))
-					return false;}
-			else if (!Scan_UnusualId())
+			if (!Scan_IdAtom())
 				return false;
 			return true;
 		}
@@ -2345,7 +2324,7 @@ namespace Ecs.Parser
 		{
 			var lp = Match((int) TT.LParen);
 			var rp = Match((int) TT.RParen);
-			#line 751 "EcsParserGrammar.les"
+			#line 750 "EcsParserGrammar.les"
 			if ((!Down(lp))) {
 				return F.Call(S.Tuple, lp.StartIndex, rp.EndIndex);
 			}
@@ -2364,19 +2343,19 @@ namespace Ecs.Parser
 		LNode InParens_ExprOrTuple(bool allowUnassignedVarDecl, int startIndex, int endIndex)
 		{
 			TokenType la0, la1;
-			// Line 757: (ExprStart (TT.Comma (~(EOF))* => (TT.Comma ExprStart | TT.Comma)*)? | )
+			// Line 756: (ExprStart (TT.Comma (~(EOF))* => (TT.Comma ExprStart | TT.Comma)*)? | )
 			la0 = LA0;
 			if (InParens_ExprOrTuple_set0.Contains((int) la0)) {
 				var e = ExprStart(allowUnassignedVarDecl);
-				// Line 758: (TT.Comma (~(EOF))* => (TT.Comma ExprStart | TT.Comma)*)?
+				// Line 757: (TT.Comma (~(EOF))* => (TT.Comma ExprStart | TT.Comma)*)?
 				la0 = LA0;
 				if (la0 == TT.Comma) {
-					#line 759 "EcsParserGrammar.les"
+					#line 758 "EcsParserGrammar.les"
 					var list = new RVList<LNode> { 
 						e
 					};
 					#line default
-					// Line 760: (TT.Comma ExprStart | TT.Comma)*
+					// Line 759: (TT.Comma ExprStart | TT.Comma)*
 					for (;;) {
 						la0 = LA0;
 						if (la0 == TT.Comma) {
@@ -2389,15 +2368,15 @@ namespace Ecs.Parser
 						} else
 							break;
 					}
-					#line 763 "EcsParserGrammar.les"
+					#line 762 "EcsParserGrammar.les"
 					return F.Tuple(list, startIndex, endIndex);
 					#line default
 				}
-				#line 765 "EcsParserGrammar.les"
+				#line 764 "EcsParserGrammar.les"
 				return F.InParens(e, startIndex, endIndex);
 				#line default
 			} else {
-				#line 767 "EcsParserGrammar.les"
+				#line 766 "EcsParserGrammar.les"
 				return F.Tuple(RVList<LNode>.Empty, startIndex, endIndex);
 				#line default
 			}
@@ -2424,7 +2403,7 @@ namespace Ecs.Parser
 		void NormalAttributes(ref RWList<LNode> attrs)
 		{
 			TokenType la0, la1;
-			// Line 786: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
+			// Line 785: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LBrack) {
@@ -2433,7 +2412,7 @@ namespace Ecs.Parser
 						if (la1 == TT.RBrack) {
 							var t = MatchAny();
 							Skip();
-							#line 789 "EcsParserGrammar.les"
+							#line 788 "EcsParserGrammar.les"
 							if ((Down(t))) {
 								AttributeContents(ref attrs);
 								Up();
@@ -2455,7 +2434,7 @@ namespace Ecs.Parser
 		bool Scan_NormalAttributes()
 		{
 			TokenType la0, la1;
-			// Line 786: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
+			// Line 785: (&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.LBrack) {
@@ -2478,10 +2457,10 @@ namespace Ecs.Parser
 		void AttributeContents(ref RWList<LNode> attrs)
 		{
 			TokenType la0, la1;
-			#line 797 "EcsParserGrammar.les"
+			#line 796 "EcsParserGrammar.les"
 			Token attrTarget = default(Token);
 			#line default
-			// Line 799: greedy((@`.`(TT, noMacro(@return))|TT.ContextualKeyword|TT.Id) TT.Colon)?
+			// Line 798: greedy((@`.`(TT, noMacro(@return))|TT.ContextualKeyword|TT.Id) TT.Colon)?
 			la0 = LA0;
 			if (la0 == TT.@return || la0 == TT.ContextualKeyword || la0 == TT.Id) {
 				la1 = LA(1);
@@ -2491,7 +2470,7 @@ namespace Ecs.Parser
 				}
 			}
 			ExprList(attrs = attrs ?? new RWList<LNode>(), allowTrailingComma: true, allowUnassignedVarDecl: true);
-			#line 804 "EcsParserGrammar.les"
+			#line 803 "EcsParserGrammar.les"
 			if (attrTarget.Value != null) {
 				var attrTargetNode = IdNode(attrTarget);
 				for (int i = 0; i < attrs.Count; i++) {
@@ -2509,12 +2488,12 @@ namespace Ecs.Parser
 		void AttributeKeywords(ref RWList<LNode> attrs)
 		{
 			TokenType la0;
-			// Line 823: (TT.AttrKeyword)*
+			// Line 822: (TT.AttrKeyword)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.AttrKeyword) {
 					var t = MatchAny();
-					#line 824 "EcsParserGrammar.les"
+					#line 823 "EcsParserGrammar.les"
 					(attrs = attrs ?? new RWList<LNode>()).Add(IdNode(t));
 					#line default
 				} else
@@ -2524,12 +2503,12 @@ namespace Ecs.Parser
 		void TParamAttributeKeywords(ref RWList<LNode> attrs)
 		{
 			TokenType la0;
-			// Line 829: ((TT.@in|TT.AttrKeyword))*
+			// Line 828: ((TT.@in|TT.AttrKeyword))*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.@in || la0 == TT.AttrKeyword) {
 					var t = MatchAny();
-					#line 830 "EcsParserGrammar.les"
+					#line 829 "EcsParserGrammar.les"
 					(attrs = attrs ?? new RWList<LNode>()).Add(IdNode(t));
 					#line default
 				} else
@@ -2544,7 +2523,7 @@ namespace Ecs.Parser
 		bool Scan_TParamAttributeKeywords()
 		{
 			TokenType la0;
-			// Line 829: ((TT.@in|TT.AttrKeyword))*
+			// Line 828: ((TT.@in|TT.AttrKeyword))*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.@in || la0 == TT.AttrKeyword)
@@ -2558,21 +2537,21 @@ namespace Ecs.Parser
 		int WordAttributes(ref RWList<LNode> attrs)
 		{
 			TokenType la0;
-			#line 896 "EcsParserGrammar.les"
+			#line 895 "EcsParserGrammar.les"
 			TokenType LA1;
 			int nonKeywords = 0;
 			if (LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot))
 				 return 0;
-			#line 900 "EcsParserGrammar.les"
+			#line 899 "EcsParserGrammar.les"
 			Token t;
 			#line default
-			// Line 902: (TT.AttrKeyword | ((@`.`(TT, noMacro(@this))|TT.@new|TT.Id) | UnusualId) &(( DataType ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId) | (TT.@new|TT.AttrKeyword) | &{_spaceName != S.Fn} @`.`(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | @`.`(TT, noMacro(@default)) TT.Colon | TT.@using TT.LParen | (@`.`(TT, noMacro(@break))|@`.`(TT, noMacro(@continue))|@`.`(TT, noMacro(@return))|@`.`(TT, noMacro(@throw))|TT.@case|TT.@class|TT.@delegate|TT.@do|TT.@enum|TT.@event|TT.@fixed|TT.@for|TT.@foreach|TT.@goto|TT.@interface|TT.@lock|TT.@namespace|TT.@struct|TT.@switch|TT.@try|TT.@while) )))*
+			// Line 901: (TT.AttrKeyword | ((@`.`(TT, noMacro(@this))|TT.@new|TT.Id) | UnusualId) &(( DataType ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId) | (TT.@new|TT.AttrKeyword) | &{_spaceName != S.Fn} @`.`(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | @`.`(TT, noMacro(@default)) TT.Colon | TT.@using TT.LParen | (@`.`(TT, noMacro(@break))|@`.`(TT, noMacro(@continue))|@`.`(TT, noMacro(@return))|@`.`(TT, noMacro(@throw))|TT.@case|TT.@class|TT.@delegate|TT.@do|TT.@enum|TT.@event|TT.@fixed|TT.@for|TT.@foreach|TT.@goto|TT.@interface|TT.@lock|TT.@namespace|TT.@struct|TT.@switch|TT.@try|TT.@while) )))*
 			for (;;) {
 				switch (LA0) {
 				case TT.AttrKeyword:
 					{
 						t = MatchAny();
-						#line 902 "EcsParserGrammar.les"
+						#line 901 "EcsParserGrammar.les"
 						attrs.Add(IdNode(t));
 						#line default
 					}
@@ -2583,19 +2562,19 @@ namespace Ecs.Parser
 				case TT.Id:
 					{
 						if (Try_WordAttributes_Test0(1)) {
-							// Line 903: ((@`.`(TT, noMacro(@this))|TT.@new|TT.Id) | UnusualId)
+							// Line 902: ((@`.`(TT, noMacro(@this))|TT.@new|TT.Id) | UnusualId)
 							la0 = LA0;
 							if (la0 == TT.@this || la0 == TT.@new || la0 == TT.Id)
 								t = MatchAny();
 							else
 								t = UnusualId();
-							#line 916 "EcsParserGrammar.les"
+							#line 915 "EcsParserGrammar.les"
 							LNode node;
 							if ((t.Type() == TT.@new || t.Type() == TT.@this))
 								node = IdNode(t);
 							else
 								node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
-							#line 921 "EcsParserGrammar.les"
+							#line 920 "EcsParserGrammar.les"
 							attrs = attrs ?? new RWList<LNode>();
 							attrs.Add(node);
 							nonKeywords++;
@@ -2609,7 +2588,7 @@ namespace Ecs.Parser
 				}
 			}
 		stop:;
-			#line 926 "EcsParserGrammar.les"
+			#line 925 "EcsParserGrammar.les"
 			return nonKeywords;
 			#line default
 		}
@@ -2618,10 +2597,11 @@ namespace Ecs.Parser
 		static readonly HashSet<int> Stmt_set2 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
 		static readonly HashSet<int> Stmt_set3 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
 		static readonly HashSet<int> Stmt_set4 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.Comma, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Number, (int) TT.OrBits, (int) TT.OrXor, (int) TT.OtherLit, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Semicolon, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set5 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set6 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
-		static readonly HashSet<int> Stmt_set7 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
-		static readonly HashSet<int> Stmt_set8 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Forward, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.Semicolon, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		static readonly HashSet<int> Stmt_set5 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.Backslash, (int) TT.BQString, (int) TT.Colon, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.ContextualKeyword, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.Forward, (int) TT.GT, (int) TT.Id, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.Number, (int) TT.OrBits, (int) TT.OrXor, (int) TT.OtherLit, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.QuickBindSet, (int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen, (int) TT.Set, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set6 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.BQString, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LEGE, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set7 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.At, (int) TT.ColonColon, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Id, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.Number, (int) TT.OtherLit, (int) TT.QuestionMark, (int) TT.SQString, (int) TT.String, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
+		static readonly HashSet<int> Stmt_set8 = NewSet((int) EOF, (int) TT.@as, (int) TT.@catch, (int) TT.@else, (int) TT.@finally, (int) TT.@in, (int) TT.@is, (int) TT.@using, (int) TT.@while, (int) TT.Add, (int) TT.And, (int) TT.AndBits, (int) TT.At, (int) TT.BQString, (int) TT.ColonColon, (int) TT.CompoundSet, (int) TT.DivMod, (int) TT.Dot, (int) TT.DotDot, (int) TT.EqNeq, (int) TT.GT, (int) TT.IncDec, (int) TT.LambdaArrow, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LEGE, (int) TT.LT, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.NullCoalesce, (int) TT.NullDot, (int) TT.OrBits, (int) TT.OrXor, (int) TT.Power, (int) TT.PtrArrow, (int) TT.QuestionMark, (int) TT.QuickBind, (int) TT.Semicolon, (int) TT.Set, (int) TT.Sub, (int) TT.XorBits);
+		static readonly HashSet<int> Stmt_set9 = NewSet((int) TT.@base, (int) TT.@default, (int) TT.@this, (int) TT.@checked, (int) TT.@delegate, (int) TT.@new, (int) TT.@operator, (int) TT.@sizeof, (int) TT.@typeof, (int) TT.@unchecked, (int) TT.Add, (int) TT.AndBits, (int) TT.At, (int) TT.AttrKeyword, (int) TT.ContextualKeyword, (int) TT.Dot, (int) TT.Forward, (int) TT.Id, (int) TT.IncDec, (int) TT.LBrace, (int) TT.LBrack, (int) TT.LParen, (int) TT.Mul, (int) TT.Not, (int) TT.NotBits, (int) TT.Number, (int) TT.OtherLit, (int) TT.Power, (int) TT.Semicolon, (int) TT.SQString, (int) TT.String, (int) TT.Sub, (int) TT.Substitute, (int) TT.Symbol, (int) TT.TypeKeyword);
 		public LNode Stmt()
 		{
 			TokenType la1, la2;
@@ -2632,7 +2612,7 @@ namespace Ecs.Parser
 			var wc = WordAttributes(ref _stmtAttrs);
 			var attrs = _stmtAttrs.ToRVList();
 			LNode r;
-			// Line 982: ( (UsingDirective | AssemblyOrModuleAttribute | EventDecl | DelegateDecl | SpaceDecl | EnumDecl) | (TraitDecl / AliasDecl / &(DataType ComplexNameDecl (TT.At|TT.Comma|TT.Forward|TT.LambdaArrow|TT.LBrace|TT.LParen|TT.QuickBindSet|TT.Semicolon|TT.Set)) MethodOrPropertyOrVar / OperatorCast / Constructor / Destructor / BracedBlock / BlockCallStmt / ExprStatement) | CheckedOrUncheckedStmt | DoStmt | CaseStmt | GotoStmt | GotoCaseStmt | LabelStmt | ReturnBreakContinueThrow | WhileStmt | ForStmt | ForEachStmt | IfStmt | SwitchStmt | UsingStmt | LockStmt | FixedStmt | TryStmt | TT.Semicolon )
+			// Line 981: ( (UsingDirective | AssemblyOrModuleAttribute | EventDecl | DelegateDecl | SpaceDecl | EnumDecl) | (TraitDecl / AliasDecl / &(DataType ComplexNameDecl (TT.At|TT.Comma|TT.Forward|TT.LambdaArrow|TT.LBrace|TT.LParen|TT.QuickBindSet|TT.Semicolon|TT.Set)) MethodOrPropertyOrVar / OperatorCast / Constructor / Destructor / BracedBlock / BlockCallStmt / ExprStatement) | CheckedOrUncheckedStmt | DoStmt | CaseStmt | GotoStmt | GotoCaseStmt | LabelStmt | ReturnBreakContinueThrow | WhileStmt | ForStmt | ForEachStmt | IfStmt | SwitchStmt | UsingStmt | LockStmt | FixedStmt | TryStmt | TT.Semicolon )
 			do {
 				switch (LA0) {
 				case TT.@using:
@@ -2648,7 +2628,7 @@ namespace Ecs.Parser
 						case TT.LParen:
 							{
 								r = UsingStmt(startIndex);
-								#line 1019 "EcsParserGrammar.les"
+								#line 1018 "EcsParserGrammar.les"
 								r = r.PlusAttrs(attrs);
 								#line default
 							}
@@ -2704,13 +2684,27 @@ namespace Ecs.Parser
 											case TT.Substitute:
 											case TT.TypeKeyword:
 												{
-													la2 = LA(2);
-													if (Stmt_set0.Contains((int) la2))
+													if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+														if (Try_MethodOrPropertyOrVar_Test0(1)) {
+															la2 = LA(2);
+															if (Stmt_set0.Contains((int) la2))
+																r = TraitDecl(startIndex, attrs);
+															else if (la2 == TT.Comma)
+																r = MethodOrPropertyOrVar(startIndex, attrs);
+															else
+																goto error;
+														} else
+															r = TraitDecl(startIndex, attrs);
+													} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set0.Contains((int) la2))
+															r = TraitDecl(startIndex, attrs);
+														else if (la2 == TT.Comma)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
 														r = TraitDecl(startIndex, attrs);
-													else if (la2 == TT.Comma)
-														r = MethodOrPropertyOrVar(startIndex, attrs);
-													else
-														goto error;
 												}
 												break;
 											case TT.ColonColon:
@@ -2900,13 +2894,27 @@ namespace Ecs.Parser
 											case TT.Substitute:
 											case TT.TypeKeyword:
 												{
-													la2 = LA(2);
-													if (Stmt_set0.Contains((int) la2))
+													if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+														if (Try_MethodOrPropertyOrVar_Test0(1)) {
+															la2 = LA(2);
+															if (Stmt_set0.Contains((int) la2))
+																r = TraitDecl(startIndex, attrs);
+															else if (la2 == TT.Comma)
+																r = MethodOrPropertyOrVar(startIndex, attrs);
+															else
+																goto error;
+														} else
+															r = TraitDecl(startIndex, attrs);
+													} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set0.Contains((int) la2))
+															r = TraitDecl(startIndex, attrs);
+														else if (la2 == TT.Comma)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
 														r = TraitDecl(startIndex, attrs);
-													else if (la2 == TT.Comma)
-														r = MethodOrPropertyOrVar(startIndex, attrs);
-													else
-														goto error;
 												}
 												break;
 											case TT.ColonColon:
@@ -3353,13 +3361,27 @@ namespace Ecs.Parser
 										case TT.Substitute:
 										case TT.TypeKeyword:
 											{
-												la2 = LA(2);
-												if (Stmt_set0.Contains((int) la2))
+												if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+													if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set0.Contains((int) la2))
+															r = TraitDecl(startIndex, attrs);
+														else if (la2 == TT.Comma)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
+														r = TraitDecl(startIndex, attrs);
+												} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+													la2 = LA(2);
+													if (Stmt_set0.Contains((int) la2))
+														r = TraitDecl(startIndex, attrs);
+													else if (la2 == TT.Comma)
+														r = MethodOrPropertyOrVar(startIndex, attrs);
+													else
+														goto error;
+												} else
 													r = TraitDecl(startIndex, attrs);
-												else if (la2 == TT.Comma)
-													r = MethodOrPropertyOrVar(startIndex, attrs);
-												else
-													goto error;
 											}
 											break;
 										case TT.ColonColon:
@@ -3549,13 +3571,27 @@ namespace Ecs.Parser
 										case TT.Substitute:
 										case TT.TypeKeyword:
 											{
-												la2 = LA(2);
-												if (Stmt_set0.Contains((int) la2))
+												if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+													if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set0.Contains((int) la2))
+															r = TraitDecl(startIndex, attrs);
+														else if (la2 == TT.Comma)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
+														r = TraitDecl(startIndex, attrs);
+												} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+													la2 = LA(2);
+													if (Stmt_set0.Contains((int) la2))
+														r = TraitDecl(startIndex, attrs);
+													else if (la2 == TT.Comma)
+														r = MethodOrPropertyOrVar(startIndex, attrs);
+													else
+														goto error;
+												} else
 													r = TraitDecl(startIndex, attrs);
-												else if (la2 == TT.Comma)
-													r = MethodOrPropertyOrVar(startIndex, attrs);
-												else
-													goto error;
 											}
 											break;
 										case TT.ColonColon:
@@ -4003,13 +4039,27 @@ namespace Ecs.Parser
 										case TT.Substitute:
 										case TT.TypeKeyword:
 											{
-												la2 = LA(2);
-												if (Stmt_set1.Contains((int) la2))
+												if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+													if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set1.Contains((int) la2))
+															r = AliasDecl(startIndex, attrs);
+														else if (la2 == TT.Comma || la2 == TT.Semicolon)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
+														r = AliasDecl(startIndex, attrs);
+												} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+													la2 = LA(2);
+													if (Stmt_set1.Contains((int) la2))
+														r = AliasDecl(startIndex, attrs);
+													else if (la2 == TT.Comma || la2 == TT.Semicolon)
+														r = MethodOrPropertyOrVar(startIndex, attrs);
+													else
+														goto error;
+												} else
 													r = AliasDecl(startIndex, attrs);
-												else if (la2 == TT.Comma || la2 == TT.Semicolon)
-													r = MethodOrPropertyOrVar(startIndex, attrs);
-												else
-													goto error;
 											}
 											break;
 										case TT.ColonColon:
@@ -4199,13 +4249,27 @@ namespace Ecs.Parser
 										case TT.Substitute:
 										case TT.TypeKeyword:
 											{
-												la2 = LA(2);
-												if (Stmt_set1.Contains((int) la2))
+												if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+													if (Try_MethodOrPropertyOrVar_Test0(1)) {
+														la2 = LA(2);
+														if (Stmt_set1.Contains((int) la2))
+															r = AliasDecl(startIndex, attrs);
+														else if (la2 == TT.Comma || la2 == TT.Semicolon)
+															r = MethodOrPropertyOrVar(startIndex, attrs);
+														else
+															goto error;
+													} else
+														r = AliasDecl(startIndex, attrs);
+												} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
+													la2 = LA(2);
+													if (Stmt_set1.Contains((int) la2))
+														r = AliasDecl(startIndex, attrs);
+													else if (la2 == TT.Comma || la2 == TT.Semicolon)
+														r = MethodOrPropertyOrVar(startIndex, attrs);
+													else
+														goto error;
+												} else
 													r = AliasDecl(startIndex, attrs);
-												else if (la2 == TT.Comma || la2 == TT.Semicolon)
-													r = MethodOrPropertyOrVar(startIndex, attrs);
-												else
-													goto error;
 											}
 											break;
 										case TT.ColonColon:
@@ -5817,8 +5881,122 @@ namespace Ecs.Parser
 					{
 						if (Try_Stmt_Test0(0)) {
 							la1 = LA(1);
-							if (Stmt_set6.Contains((int) la1)) {
+							if (Stmt_set7.Contains((int) la1)) {
 								if (!(_insideLinqExpr && LinqKeywords.Contains(LT(1).Value))) {
+									if (Try_MethodOrPropertyOrVar_Test0(1)) {
+										if (Down(1) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)) {
+											if (Try_PrimaryExpr_Test0(1)) {
+												la2 = LA(2);
+												if (Stmt_set4.Contains((int) la2))
+													r = MethodOrPropertyOrVar(startIndex, attrs);
+												else
+													goto matchExprStatement;
+											} else {
+												la2 = LA(2);
+												switch (la2) {
+												case EOF:
+												case TT.@as:
+												case TT.@catch:
+												case TT.@else:
+												case TT.@finally:
+												case TT.@in:
+												case TT.@is:
+												case TT.@using:
+												case TT.@while:
+													goto matchExprStatement;
+												default:
+													if (Stmt_set4.Contains((int) la2))
+														r = MethodOrPropertyOrVar(startIndex, attrs);
+													else
+														goto error;
+													break;
+												}
+											}
+										} else if (Try_PrimaryExpr_Test0(1)) {
+											la2 = LA(2);
+											if (Stmt_set4.Contains((int) la2))
+												r = MethodOrPropertyOrVar(startIndex, attrs);
+											else
+												goto matchExprStatement;
+										} else {
+											la2 = LA(2);
+											switch (la2) {
+											case EOF:
+											case TT.@as:
+											case TT.@catch:
+											case TT.@else:
+											case TT.@finally:
+											case TT.@in:
+											case TT.@is:
+											case TT.@using:
+											case TT.@while:
+												goto matchExprStatement;
+											default:
+												if (Stmt_set4.Contains((int) la2))
+													r = MethodOrPropertyOrVar(startIndex, attrs);
+												else
+													goto error;
+												break;
+											}
+										}
+									} else if (Down(1) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)) {
+										if (Try_PrimaryExpr_Test0(1)) {
+											la2 = LA(2);
+											if (Stmt_set5.Contains((int) la2))
+												r = MethodOrPropertyOrVar(startIndex, attrs);
+											else
+												goto matchExprStatement;
+										} else {
+											la2 = LA(2);
+											switch (la2) {
+											case EOF:
+											case TT.@as:
+											case TT.@catch:
+											case TT.@else:
+											case TT.@finally:
+											case TT.@in:
+											case TT.@is:
+											case TT.@using:
+											case TT.@while:
+											case TT.Semicolon:
+												goto matchExprStatement;
+											default:
+												if (Stmt_set5.Contains((int) la2))
+													r = MethodOrPropertyOrVar(startIndex, attrs);
+												else
+													goto error;
+												break;
+											}
+										}
+									} else if (Try_PrimaryExpr_Test0(1)) {
+										la2 = LA(2);
+										if (Stmt_set5.Contains((int) la2))
+											r = MethodOrPropertyOrVar(startIndex, attrs);
+										else
+											goto matchExprStatement;
+									} else {
+										la2 = LA(2);
+										switch (la2) {
+										case EOF:
+										case TT.@as:
+										case TT.@catch:
+										case TT.@else:
+										case TT.@finally:
+										case TT.@in:
+										case TT.@is:
+										case TT.@using:
+										case TT.@while:
+										case TT.Semicolon:
+											goto matchExprStatement;
+										default:
+											if (Stmt_set5.Contains((int) la2))
+												r = MethodOrPropertyOrVar(startIndex, attrs);
+											else
+												goto error;
+											break;
+										}
+									}
+								} else if (Try_MethodOrPropertyOrVar_Test0(1)) {
 									if (Down(1) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)) {
 										if (Try_PrimaryExpr_Test0(1)) {
 											la2 = LA(2);
@@ -5877,7 +6055,7 @@ namespace Ecs.Parser
 								} else if (Down(1) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)) {
 									if (Try_PrimaryExpr_Test0(1)) {
 										la2 = LA(2);
-										if (Stmt_set4.Contains((int) la2))
+										if (Stmt_set5.Contains((int) la2))
 											r = MethodOrPropertyOrVar(startIndex, attrs);
 										else
 											goto matchExprStatement;
@@ -5893,9 +6071,10 @@ namespace Ecs.Parser
 										case TT.@is:
 										case TT.@using:
 										case TT.@while:
+										case TT.Semicolon:
 											goto matchExprStatement;
 										default:
-											if (Stmt_set4.Contains((int) la2))
+											if (Stmt_set5.Contains((int) la2))
 												r = MethodOrPropertyOrVar(startIndex, attrs);
 											else
 												goto error;
@@ -5904,7 +6083,7 @@ namespace Ecs.Parser
 									}
 								} else if (Try_PrimaryExpr_Test0(1)) {
 									la2 = LA(2);
-									if (Stmt_set4.Contains((int) la2))
+									if (Stmt_set5.Contains((int) la2))
 										r = MethodOrPropertyOrVar(startIndex, attrs);
 									else
 										goto matchExprStatement;
@@ -5920,16 +6099,17 @@ namespace Ecs.Parser
 									case TT.@is:
 									case TT.@using:
 									case TT.@while:
+									case TT.Semicolon:
 										goto matchExprStatement;
 									default:
-										if (Stmt_set4.Contains((int) la2))
+										if (Stmt_set5.Contains((int) la2))
 											r = MethodOrPropertyOrVar(startIndex, attrs);
 										else
 											goto error;
 										break;
 									}
 								}
-							} else if (Stmt_set5.Contains((int) la1))
+							} else if (Stmt_set6.Contains((int) la1))
 								goto matchExprStatement;
 							else
 								goto error;
@@ -5946,7 +6126,7 @@ namespace Ecs.Parser
 									goto matchConstructor;
 								else
 									goto matchExprStatement;
-							} else if (Stmt_set7.Contains((int) la1))
+							} else if (Stmt_set8.Contains((int) la1))
 								goto matchExprStatement;
 							else
 								goto error;
@@ -5957,7 +6137,7 @@ namespace Ecs.Parser
 									goto matchConstructor;
 								else
 									goto matchExprStatement;
-							} else if (Stmt_set7.Contains((int) la1))
+							} else if (Stmt_set8.Contains((int) la1))
 								goto matchExprStatement;
 							else
 								goto error;
@@ -5973,11 +6153,11 @@ namespace Ecs.Parser
 								la2 = LA(2);
 								if (la2 == TT.LParen) {
 									r = Destructor(startIndex, attrs);
-									#line 997 "EcsParserGrammar.les"
+									#line 996 "EcsParserGrammar.les"
 									if ((wc != 0))
 										NonKeywordAttrError(attrs, "destructor");
 									#line default
-								} else if (Stmt_set7.Contains((int) la2))
+								} else if (Stmt_set8.Contains((int) la2))
 									goto matchExprStatement;
 								else
 									goto error;
@@ -6034,7 +6214,7 @@ namespace Ecs.Parser
 							goto matchExprStatement;
 						else if (la1 == TT.LBrace) {
 							r = CheckedOrUncheckedStmt(startIndex);
-							#line 1006 "EcsParserGrammar.les"
+							#line 1005 "EcsParserGrammar.les"
 							r = r.PlusAttrs(attrs);
 							#line default
 						} else
@@ -6075,7 +6255,7 @@ namespace Ecs.Parser
 				case TT.@do:
 					{
 						r = DoStmt(startIndex);
-						#line 1007 "EcsParserGrammar.les"
+						#line 1006 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6083,7 +6263,7 @@ namespace Ecs.Parser
 				case TT.@case:
 					{
 						r = CaseStmt(startIndex);
-						#line 1008 "EcsParserGrammar.les"
+						#line 1007 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6091,14 +6271,14 @@ namespace Ecs.Parser
 				case TT.@goto:
 					{
 						la1 = LA(1);
-						if (Stmt_set8.Contains((int) la1)) {
+						if (Stmt_set9.Contains((int) la1)) {
 							r = GotoStmt(startIndex);
-							#line 1009 "EcsParserGrammar.les"
+							#line 1008 "EcsParserGrammar.les"
 							r = r.PlusAttrs(attrs);
 							#line default
 						} else if (la1 == TT.@case) {
 							r = GotoCaseStmt(startIndex);
-							#line 1010 "EcsParserGrammar.les"
+							#line 1009 "EcsParserGrammar.les"
 							r = r.PlusAttrs(attrs);
 							#line default
 						} else
@@ -6111,7 +6291,7 @@ namespace Ecs.Parser
 				case TT.@throw:
 					{
 						r = ReturnBreakContinueThrow(startIndex);
-						#line 1012 "EcsParserGrammar.les"
+						#line 1011 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6119,7 +6299,7 @@ namespace Ecs.Parser
 				case TT.@while:
 					{
 						r = WhileStmt(startIndex);
-						#line 1013 "EcsParserGrammar.les"
+						#line 1012 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6127,7 +6307,7 @@ namespace Ecs.Parser
 				case TT.@for:
 					{
 						r = ForStmt(startIndex);
-						#line 1014 "EcsParserGrammar.les"
+						#line 1013 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6135,7 +6315,7 @@ namespace Ecs.Parser
 				case TT.@foreach:
 					{
 						r = ForEachStmt(startIndex);
-						#line 1015 "EcsParserGrammar.les"
+						#line 1014 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6151,7 +6331,7 @@ namespace Ecs.Parser
 				case TT.@switch:
 					{
 						r = SwitchStmt(startIndex);
-						#line 1018 "EcsParserGrammar.les"
+						#line 1017 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6159,7 +6339,7 @@ namespace Ecs.Parser
 				case TT.@lock:
 					{
 						r = LockStmt(startIndex);
-						#line 1020 "EcsParserGrammar.les"
+						#line 1019 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6167,7 +6347,7 @@ namespace Ecs.Parser
 				case TT.@fixed:
 					{
 						r = FixedStmt(startIndex);
-						#line 1021 "EcsParserGrammar.les"
+						#line 1020 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6175,7 +6355,7 @@ namespace Ecs.Parser
 				case TT.@try:
 					{
 						r = TryStmt(startIndex);
-						#line 1022 "EcsParserGrammar.les"
+						#line 1021 "EcsParserGrammar.les"
 						r = r.PlusAttrs(attrs);
 						#line default
 					}
@@ -6195,7 +6375,7 @@ namespace Ecs.Parser
 			matchConstructor:
 				{
 					r = Constructor(startIndex, attrs);
-					#line 994 "EcsParserGrammar.les"
+					#line 993 "EcsParserGrammar.les"
 					if ((wc != 0 && !r.Args[1, F._Missing].IsIdNamed(S.This)))
 						NonKeywordAttrError(attrs, "constructor");
 					#line default
@@ -6220,27 +6400,27 @@ namespace Ecs.Parser
 			matchLabelStmt:
 				{
 					r = LabelStmt(startIndex);
-					#line 1011 "EcsParserGrammar.les"
+					#line 1010 "EcsParserGrammar.les"
 					r = r.PlusAttrs(attrs);
 					#line default
 				}
 				break;
 			error:
 				{
-					#line 1025 "EcsParserGrammar.les"
+					#line 1024 "EcsParserGrammar.les"
 					r = Error("Syntax error: statement expected at '{0}'", LT(0).SourceText(SourceFile.Text));
 					#line default
 					ScanToEndOfStmt();
 				}
 			} while (false);
-			#line 1028 "EcsParserGrammar.les"
+			#line 1027 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
 		LNode ExprStatement()
 		{
 			var r = Expr(ContinueExpr);
-			// Line 1033: ((EOF|TT.@catch|TT.@else|TT.@finally|TT.@while) =>  | default TT.Semicolon)
+			// Line 1032: ((EOF|TT.@catch|TT.@else|TT.@finally|TT.@while) =>  | default TT.Semicolon)
 			switch (LA0) {
 			case EOF:
 			case TT.@catch:
@@ -6248,7 +6428,7 @@ namespace Ecs.Parser
 			case TT.@finally:
 			case TT.@while:
 				{
-					#line 1034 "EcsParserGrammar.les"
+					#line 1033 "EcsParserGrammar.les"
 					r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);
 					#line default
 				}
@@ -6257,14 +6437,14 @@ namespace Ecs.Parser
 				Match((int) TT.Semicolon);
 				break;
 			}
-			#line 1037 "EcsParserGrammar.les"
+			#line 1036 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
 		void ScanToEndOfStmt()
 		{
 			TokenType la0;
-			// Line 1042: greedy(~(EOF|TT.LBrace|TT.Semicolon))*
+			// Line 1041: greedy(~(EOF|TT.LBrace|TT.Semicolon))*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == EOF || la0 == TT.LBrace || la0 == TT.Semicolon))
@@ -6272,13 +6452,13 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			// Line 1043: greedy(TT.Semicolon | TT.LBrace (TT.RBrace)?)?
+			// Line 1042: greedy(TT.Semicolon | TT.LBrace (TT.RBrace)?)?
 			la0 = LA0;
 			if (la0 == TT.Semicolon)
 				Skip();
 			else if (la0 == TT.LBrace) {
 				Skip();
-				// Line 1043: (TT.RBrace)?
+				// Line 1042: (TT.RBrace)?
 				la0 = LA0;
 				if (la0 == TT.RBrace)
 					Skip();
@@ -6287,11 +6467,11 @@ namespace Ecs.Parser
 		LNode SpaceDecl(int startIndex, RVList<LNode> attrs)
 		{
 			var t = MatchAny();
-			#line 1052 "EcsParserGrammar.les"
+			#line 1051 "EcsParserGrammar.les"
 			var kind = (Symbol) t.Value;
 			#line default
 			var r = RestOfSpaceDecl(startIndex, kind, attrs);
-			#line 1054 "EcsParserGrammar.les"
+			#line 1053 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
@@ -6300,7 +6480,7 @@ namespace Ecs.Parser
 			Check(Is(0, _trait), "Is($LI, _trait)");
 			var t = Match((int) TT.ContextualKeyword);
 			var r = RestOfSpaceDecl(startIndex, S.Trait, attrs);
-			#line 1060 "EcsParserGrammar.les"
+			#line 1059 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
@@ -6310,16 +6490,16 @@ namespace Ecs.Parser
 			var name = ComplexNameDecl();
 			var bases = BaseListOpt();
 			WhereClausesOpt(ref name);
-			// Line 1067: (TT.Semicolon | BracedBlock)
+			// Line 1066: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				#line 1068 "EcsParserGrammar.les"
+				#line 1067 "EcsParserGrammar.les"
 				return F.Call(kind, name, bases, startIndex, end.EndIndex).WithAttrs(attrs);
 				#line default
 			} else {
 				var body = BracedBlock(CoreName(name).Name);
-				#line 1070 "EcsParserGrammar.les"
+				#line 1069 "EcsParserGrammar.les"
 				return F.Call(kind, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);
 				#line default
 			}
@@ -6330,7 +6510,7 @@ namespace Ecs.Parser
 			var t = Match((int) TT.ContextualKeyword);
 			var newName = ComplexNameDecl();
 			var r = RestOfAlias(startIndex, newName);
-			#line 1079 "EcsParserGrammar.les"
+			#line 1078 "EcsParserGrammar.les"
 			return r.WithAttrs(attrs);
 			#line default
 		}
@@ -6339,16 +6519,16 @@ namespace Ecs.Parser
 			TokenType la0;
 			Match((int) TT.@using);
 			var nsName = ComplexNameDecl();
-			// Line 1084: (RestOfAlias | TT.Semicolon)
+			// Line 1083: (RestOfAlias | TT.Semicolon)
 			la0 = LA0;
 			if (la0 == TT.QuickBindSet || la0 == TT.Set) {
 				var r = RestOfAlias(startIndex, nsName);
-				#line 1085 "EcsParserGrammar.les"
+				#line 1084 "EcsParserGrammar.les"
 				return r.WithAttrs(attrs).PlusAttr(_filePrivate);
 				#line default
 			} else {
 				Match((int) TT.Semicolon);
-				#line 1087 "EcsParserGrammar.les"
+				#line 1086 "EcsParserGrammar.les"
 				return F.Call(S.Import, nsName);
 				#line default
 			}
@@ -6360,19 +6540,19 @@ namespace Ecs.Parser
 			var oldName = ComplexNameDecl();
 			var bases = BaseListOpt();
 			WhereClausesOpt(ref newName);
-			#line 1095 "EcsParserGrammar.les"
+			#line 1094 "EcsParserGrammar.les"
 			var name = F.Call(S.Assign, newName, oldName, newName.Range.StartIndex, oldName.Range.EndIndex);
 			#line default
-			// Line 1096: (TT.Semicolon | BracedBlock)
+			// Line 1095: (TT.Semicolon | BracedBlock)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				#line 1097 "EcsParserGrammar.les"
+				#line 1096 "EcsParserGrammar.les"
 				return F.Call(S.Alias, name, bases, startIndex, end.EndIndex);
 				#line default
 			} else {
 				var body = BracedBlock(CoreName(newName).Name);
-				#line 1099 "EcsParserGrammar.les"
+				#line 1098 "EcsParserGrammar.les"
 				return F.Call(S.Alias, name, bases, body, startIndex, body.Range.EndIndex);
 				#line default
 			}
@@ -6382,21 +6562,21 @@ namespace Ecs.Parser
 			TokenType la0;
 			var t = MatchAny();
 			var id = Match((int) TT.Id);
-			#line 1105 "EcsParserGrammar.les"
+			#line 1104 "EcsParserGrammar.les"
 			var name = IdNode(id);
 			#line default
 			var bases = BaseListOpt();
-			// Line 1107: (TT.Semicolon | TT.LBrace TT.RBrace)
+			// Line 1106: (TT.Semicolon | TT.LBrace TT.RBrace)
 			la0 = LA0;
 			if (la0 == TT.Semicolon) {
 				var end = MatchAny();
-				#line 1108 "EcsParserGrammar.les"
+				#line 1107 "EcsParserGrammar.les"
 				return F.Call(S.Enum, name, bases, startIndex, end.EndIndex).WithAttrs(attrs);
 				#line default
 			} else {
 				var lb = Match((int) TT.LBrace);
 				var rb = Match((int) TT.RBrace);
-				#line 1111 "EcsParserGrammar.les"
+				#line 1110 "EcsParserGrammar.les"
 				var list = ExprListInside(lb, true);
 				var body = F.Braces(list, lb.StartIndex, rb.EndIndex);
 				return F.Call(S.Enum, name, bases, body, startIndex, body.Range.EndIndex).WithAttrs(attrs);
@@ -6406,15 +6586,15 @@ namespace Ecs.Parser
 		LNode BaseListOpt()
 		{
 			TokenType la0;
-			// Line 1119: (TT.Colon DataType (TT.Comma DataType)* | )
+			// Line 1118: (TT.Colon DataType (TT.Comma DataType)* | )
 			la0 = LA0;
 			if (la0 == TT.Colon) {
-				#line 1119 "EcsParserGrammar.les"
+				#line 1118 "EcsParserGrammar.les"
 				var bases = new RVList<LNode>();
 				#line default
 				Skip();
 				bases.Add(DataType());
-				// Line 1121: (TT.Comma DataType)*
+				// Line 1120: (TT.Comma DataType)*
 				for (;;) {
 					la0 = LA0;
 					if (la0 == TT.Comma) {
@@ -6423,11 +6603,11 @@ namespace Ecs.Parser
 					} else
 						break;
 				}
-				#line 1122 "EcsParserGrammar.les"
+				#line 1121 "EcsParserGrammar.les"
 				return F.List(bases);
 				#line default
 			} else {
-				#line 1123 "EcsParserGrammar.les"
+				#line 1122 "EcsParserGrammar.les"
 				return F._Missing;
 				#line default
 			}
@@ -6435,10 +6615,10 @@ namespace Ecs.Parser
 		void WhereClausesOpt(ref LNode name)
 		{
 			TokenType la0;
-			#line 1142 "EcsParserGrammar.les"
+			#line 1141 "EcsParserGrammar.les"
 			var list = new BMultiMap<Symbol,LNode>();
 			#line default
-			// Line 1143: (WhereClause)*
+			// Line 1142: (WhereClause)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.ContextualKeyword)
@@ -6446,7 +6626,7 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			#line 1144 "EcsParserGrammar.les"
+			#line 1143 "EcsParserGrammar.les"
 			if ((list.Count != 0)) {
 				if ((!name.CallsMin(S.Of, 2)))
 					Error("'{0}' is not generic and cannot use 'where' clauses.", name.ToString());
@@ -6471,11 +6651,11 @@ namespace Ecs.Parser
 			var where = MatchAny();
 			var T = Match((int) TT.ContextualKeyword, (int) TT.Id);
 			Match((int) TT.Colon);
-			#line 1172 "EcsParserGrammar.les"
+			#line 1171 "EcsParserGrammar.les"
 			var constraints = RVList<LNode>.Empty;
 			#line default
 			constraints.Add(WhereConstraint());
-			// Line 1174: (TT.Comma WhereConstraint)*
+			// Line 1173: (TT.Comma WhereConstraint)*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == TT.Comma) {
@@ -6484,18 +6664,18 @@ namespace Ecs.Parser
 				} else
 					break;
 			}
-			#line 1175 "EcsParserGrammar.les"
+			#line 1174 "EcsParserGrammar.les"
 			return new KeyValuePair<Symbol,LNode>((Symbol) T.Value, F.Call(S.Where, constraints, where.StartIndex, constraints.Last.Range.EndIndex));
 			#line default
 		}
 		LNode WhereConstraint()
 		{
 			TokenType la0;
-			// Line 1179: ( (TT.@class|TT.@struct) | TT.@new &{LT($LI).Count == 0} TT.LParen TT.RParen | DataType )
+			// Line 1178: ( (TT.@class|TT.@struct) | TT.@new &{LT($LI).Count == 0} TT.LParen TT.RParen | DataType )
 			la0 = LA0;
 			if (la0 == TT.@class || la0 == TT.@struct) {
 				var t = MatchAny();
-				#line 1179 "EcsParserGrammar.les"
+				#line 1178 "EcsParserGrammar.les"
 				return IdNode(t);
 				#line default
 			} else if (la0 == TT.@new) {
@@ -6503,12 +6683,12 @@ namespace Ecs.Parser
 				Check(LT(0).Count == 0, "LT($LI).Count == 0");
 				var lp = Match((int) TT.LParen);
 				var rp = Match((int) TT.RParen);
-				#line 1181 "EcsParserGrammar.les"
+				#line 1180 "EcsParserGrammar.les"
 				return F.Call(S.New, n.StartIndex, rp.EndIndex);
 				#line default
 			} else {
 				var t = DataType();
-				#line 1182 "EcsParserGrammar.les"
+				#line 1181 "EcsParserGrammar.les"
 				return t;
 				#line default
 			}
@@ -6518,7 +6698,7 @@ namespace Ecs.Parser
 			Check(LT(0).Value == _assembly || LT(0).Value == _module, "LT($LI).Value == _assembly || LT($LI).Value == _module");
 			var t = Match((int) TT.ContextualKeyword);
 			Match((int) TT.Colon);
-			#line 1197 "EcsParserGrammar.les"
+			#line 1196 "EcsParserGrammar.les"
 			return t;
 			#line default
 		}
@@ -6542,15 +6722,15 @@ namespace Ecs.Parser
 			Check(Down(0) && Up(Try_Scan_AsmOrModLabel(0)), "Down($LI) && Up(Try_Scan_AsmOrModLabel(0))");
 			var lb = MatchAny();
 			var rb = Match((int) TT.RBrack);
-			#line 1203 "EcsParserGrammar.les"
+			#line 1202 "EcsParserGrammar.les"
 			Down(lb);
 			#line default
 			var kind = AsmOrModLabel();
-			#line 1205 "EcsParserGrammar.les"
+			#line 1204 "EcsParserGrammar.les"
 			var list = new RWList<LNode>();
 			#line default
 			ExprList(list);
-			#line 1208 "EcsParserGrammar.les"
+			#line 1207 "EcsParserGrammar.les"
 			Up();
 			var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), startIndex, rb.EndIndex);
 			return r.WithAttrs(attrs);
@@ -6559,93 +6739,75 @@ namespace Ecs.Parser
 		LNode MethodOrPropertyOrVar(int startIndex, RVList<LNode> attrs)
 		{
 			TokenType la0;
-			#line 1220 "EcsParserGrammar.les"
+			#line 1219 "EcsParserGrammar.les"
 			LNode r;
 			#line default
 			var type = DataType();
-			// Line 1223: (NameAndMaybeInit (TT.Comma NameAndMaybeInit)* TT.Semicolon / ComplexNameDecl (MethodArgListAndBody | WhereClausesOpt MethodBodyOrForward))
-			do {
-				la0 = LA0;
-				if (la0 == TT.ContextualKeyword || la0 == TT.Id) {
-					switch (LA(1)) {
-					case TT.Comma:
-					case TT.QuickBindSet:
-					case TT.Semicolon:
-					case TT.Set:
-						{
-							MaybeRecognizeVarAsKeyword(ref type);
-							var parts = new RVList<LNode> { 
-								type
-							};
-							parts.Add(NameAndMaybeInit(IsArrayType(type)));
-							// Line 1226: (TT.Comma NameAndMaybeInit)*
-							for (;;) {
-								la0 = LA0;
-								if (la0 == TT.Comma) {
-									Skip();
-									parts.Add(NameAndMaybeInit(IsArrayType(type)));
-								} else
-									break;
-							}
-							var end = Match((int) TT.Semicolon);
-							#line 1227 "EcsParserGrammar.les"
-							r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);
-							#line default
-						}
+			// Line 1223: (&(IdAtom (TT.Comma|TT.Semicolon|TT.Set)) NameAndMaybeInit (TT.Comma NameAndMaybeInit)* TT.Semicolon / ComplexNameDecl (MethodArgListAndBody | WhereClausesOpt MethodBodyOrForward))
+			if (Try_MethodOrPropertyOrVar_Test0(0)) {
+				MaybeRecognizeVarAsKeyword(ref type);
+				var parts = new RVList<LNode> { 
+					type
+				};
+				parts.Add(NameAndMaybeInit(IsArrayType(type)));
+				// Line 1227: (TT.Comma NameAndMaybeInit)*
+				for (;;) {
+					la0 = LA0;
+					if (la0 == TT.Comma) {
+						Skip();
+						parts.Add(NameAndMaybeInit(IsArrayType(type)));
+					} else
 						break;
-					default:
-						goto matchComplexNameDecl;
-					}
-				} else
-					goto matchComplexNameDecl;
-				break;
-			matchComplexNameDecl:
-				{
-					var name = ComplexNameDecl();
-					// Line 1230: (MethodArgListAndBody | WhereClausesOpt MethodBodyOrForward)
-					switch (LA0) {
-					case TT.LParen:
-						r = MethodArgListAndBody(startIndex, attrs, S.Fn, type, name);
-						break;
-					case TT.At:
-					case TT.ContextualKeyword:
-					case TT.Forward:
-					case TT.LambdaArrow:
-					case TT.LBrace:
-						{
-							WhereClausesOpt(ref name);
-							var body = MethodBodyOrForward();
-							#line 1234 "EcsParserGrammar.les"
-							r = F.Call(S.Property, type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);
-							#line default
-						}
-						break;
-					default:
-						{
-							ScanToEndOfStmt();
-							Error("Syntax error in method, property, or variable declaration");
-							r = F._Missing.PlusAttrs(attrs);
-						}
-						break;
-					}
 				}
-			} while (false);
-			#line 1240 "EcsParserGrammar.les"
+				var end = Match((int) TT.Semicolon);
+				#line 1228 "EcsParserGrammar.les"
+				r = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);
+				#line default
+			} else {
+				var name = ComplexNameDecl();
+				// Line 1231: (MethodArgListAndBody | WhereClausesOpt MethodBodyOrForward)
+				switch (LA0) {
+				case TT.LParen:
+					r = MethodArgListAndBody(startIndex, attrs, S.Fn, type, name);
+					break;
+				case TT.At:
+				case TT.ContextualKeyword:
+				case TT.Forward:
+				case TT.LambdaArrow:
+				case TT.LBrace:
+					{
+						WhereClausesOpt(ref name);
+						var body = MethodBodyOrForward();
+						#line 1235 "EcsParserGrammar.les"
+						r = F.Call(S.Property, type, name, body, type.Range.StartIndex, body.Range.EndIndex).PlusAttrs(attrs);
+						#line default
+					}
+					break;
+				default:
+					{
+						ScanToEndOfStmt();
+						Error("Syntax error in method, property, or variable declaration");
+						r = F._Missing.PlusAttrs(attrs);
+					}
+					break;
+				}
+			}
+			#line 1241 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
 		LNode OperatorCast(int startIndex, RVList<LNode> attrs)
 		{
-			#line 1244 "EcsParserGrammar.les"
+			#line 1245 "EcsParserGrammar.les"
 			LNode r;
 			#line default
 			var op = MatchAny();
 			var type = DataType();
-			#line 1246 "EcsParserGrammar.les"
+			#line 1247 "EcsParserGrammar.les"
 			var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));
 			#line default
 			r = MethodArgListAndBody(startIndex, attrs, S.Fn, type, name);
-			#line 1248 "EcsParserGrammar.les"
+			#line 1249 "EcsParserGrammar.les"
 			return r;
 			#line default
 		}
@@ -6655,23 +6817,23 @@ namespace Ecs.Parser
 			var lp = Match((int) TT.LParen);
 			var rp = Match((int) TT.RParen);
 			WhereClausesOpt(ref name);
-			#line 1254 "EcsParserGrammar.les"
+			#line 1255 "EcsParserGrammar.les"
 			LNode r, baseCall = null;
 			#line default
-			// Line 1255: (TT.Colon (@`.`(TT, noMacro(@base))|@`.`(TT, noMacro(@this))) TT.LParen TT.RParen)?
+			// Line 1256: (TT.Colon (@`.`(TT, noMacro(@base))|@`.`(TT, noMacro(@this))) TT.LParen TT.RParen)?
 			la0 = LA0;
 			if (la0 == TT.Colon) {
 				Skip();
 				var target = Match((int) TT.@base, (int) TT.@this);
 				var baselp = Match((int) TT.LParen);
 				var baserp = Match((int) TT.RParen);
-				#line 1257 "EcsParserGrammar.les"
+				#line 1258 "EcsParserGrammar.les"
 				baseCall = F.Call((Symbol) target.Value, ExprListInside(baselp), target.StartIndex, baserp.EndIndex);
 				if ((kind != S.Cons))
 					Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 				#line default
 			}
-			#line 1263 "EcsParserGrammar.les"
+			#line 1264 "EcsParserGrammar.les"
 			for (int i = 0; i < attrs.Count; i++) {
 				var attr = attrs[i];
 				if (IsNamedArg(attr) && attr.Args[0].IsIdNamed(S.Return)) {
@@ -6681,7 +6843,7 @@ namespace Ecs.Parser
 				}
 			}
 			#line default
-			// Line 1272: (default TT.Semicolon | MethodBodyOrForward)
+			// Line 1273: (default TT.Semicolon | MethodBodyOrForward)
 			do {
 				switch (LA0) {
 				case TT.Semicolon:
@@ -6692,12 +6854,12 @@ namespace Ecs.Parser
 				case TT.LBrace:
 					{
 						var body = MethodBodyOrForward();
-						#line 1284 "EcsParserGrammar.les"
+						#line 1285 "EcsParserGrammar.les"
 						if (kind == S.Delegate)
 							Error("A 'delegate' is not expected to have a method body.");
 						if (baseCall != null)
 							body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
-						#line 1287 "EcsParserGrammar.les"
+						#line 1288 "EcsParserGrammar.les"
 						var parts = new RVList<LNode> { 
 							type, name, ArgList(lp, rp), body
 						};
@@ -6712,7 +6874,7 @@ namespace Ecs.Parser
 			match1:
 				{
 					var end = Match((int) TT.Semicolon);
-					#line 1274 "EcsParserGrammar.les"
+					#line 1275 "EcsParserGrammar.les"
 					if (kind == S.Cons && baseCall != null) {
 						Error(baseCall, "A method body is required.");
 						var parts = new RVList<LNode> { 
@@ -6720,32 +6882,32 @@ namespace Ecs.Parser
 						};
 						return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
 					}
-					#line 1280 "EcsParserGrammar.les"
+					#line 1281 "EcsParserGrammar.les"
 					r = F.Call(kind, type, name, ArgList(lp, rp), startIndex, end.EndIndex);
 					#line default
 				}
 			} while (false);
-			#line 1291 "EcsParserGrammar.les"
+			#line 1292 "EcsParserGrammar.les"
 			return r.PlusAttrs(attrs);
 			#line default
 		}
 		LNode MethodBodyOrForward()
 		{
 			TokenType la0;
-			// Line 1295: ( TT.Forward ExprStart TT.Semicolon | TT.LambdaArrow ExprStart TT.Semicolon | TT.At TT.LBrack TT.RBrack TT.Semicolon | BracedBlock )
+			// Line 1296: ( TT.Forward ExprStart TT.Semicolon | TT.LambdaArrow ExprStart TT.Semicolon | TT.At TT.LBrack TT.RBrack TT.Semicolon | BracedBlock )
 			la0 = LA0;
 			if (la0 == TT.Forward) {
 				var op = MatchAny();
 				var e = ExprStart(false);
 				Match((int) TT.Semicolon);
-				#line 1295 "EcsParserGrammar.les"
+				#line 1296 "EcsParserGrammar.les"
 				return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);
 				#line default
 			} else if (la0 == TT.LambdaArrow) {
 				var op = MatchAny();
 				var e = ExprStart(false);
 				Match((int) TT.Semicolon);
-				#line 1296 "EcsParserGrammar.les"
+				#line 1297 "EcsParserGrammar.les"
 				return e;
 				#line default
 			} else if (la0 == TT.At) {
@@ -6753,12 +6915,12 @@ namespace Ecs.Parser
 				var lb = Match((int) TT.LBrack);
 				var rb = Match((int) TT.RBrack);
 				Match((int) TT.Semicolon);
-				#line 1297 "EcsParserGrammar.les"
+				#line 1298 "EcsParserGrammar.les"
 				return F.Literal(lb.Children, at.StartIndex, rb.EndIndex);
 				#line default
 			} else {
 				var body = BracedBlock(S.Fn);
-				#line 1298 "EcsParserGrammar.les"
+				#line 1299 "EcsParserGrammar.les"
 				return body;
 				#line default
 			}
@@ -6766,10 +6928,7 @@ namespace Ecs.Parser
 		LNode NameAndMaybeInit(bool isArray)
 		{
 			TokenType la0;
-			var name = Match((int) TT.ContextualKeyword, (int) TT.Id);
-			#line 1319 "EcsParserGrammar.les"
-			LNode r = F.Id((Symbol) name.Value, name.StartIndex, name.EndIndex);
-			#line default
+			var r = IdAtom();
 			// Line 1320: ((TT.QuickBindSet|TT.Set) (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart))?
 			la0 = LA0;
 			if (la0 == TT.QuickBindSet || la0 == TT.Set) {
@@ -6778,15 +6937,15 @@ namespace Ecs.Parser
 				do {
 					la0 = LA0;
 					if (la0 == TT.LBrace) {
-						if (isArray) {
-							if (Down(0) && Up(HasNoSemicolons())) {
+						if (Down(0) && Up(HasNoSemicolons())) {
+							if (isArray) {
 								var lb = MatchAny();
 								var rb = Match((int) TT.RBrace);
 								#line 1329 "EcsParserGrammar.les"
 								var initializers = InitializerListInside(lb).ToRVList();
 								var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
 								expr = SetBaseStyle(expr, NodeStyle.OldStyle);
-								r = F.Call(S.Assign, r, expr, name.StartIndex, rb.EndIndex);
+								r = F.Call(S.Assign, r, expr, r.Range.StartIndex, rb.EndIndex);
 								#line default
 							} else
 								goto matchExprStart;
@@ -6799,7 +6958,7 @@ namespace Ecs.Parser
 					{
 						var init = ExprStart(false);
 						#line 1335 "EcsParserGrammar.les"
-						r = F.Call(S.Assign, r, init, name.StartIndex, init.Range.EndIndex);
+						r = F.Call(S.Assign, r, init, r.Range.StartIndex, init.Range.EndIndex);
 						#line default
 					}
 				} while (false);
@@ -7652,7 +7811,7 @@ namespace Ecs.Parser
 		private bool WordAttributes_Test0()
 		{
 			TokenType la0;
-			// Line 906: ( DataType ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId) | (TT.@new|TT.AttrKeyword) | &{_spaceName != S.Fn} @`.`(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | @`.`(TT, noMacro(@default)) TT.Colon | TT.@using TT.LParen | (@`.`(TT, noMacro(@break))|@`.`(TT, noMacro(@continue))|@`.`(TT, noMacro(@return))|@`.`(TT, noMacro(@throw))|TT.@case|TT.@class|TT.@delegate|TT.@do|TT.@enum|TT.@event|TT.@fixed|TT.@for|TT.@foreach|TT.@goto|TT.@interface|TT.@lock|TT.@namespace|TT.@struct|TT.@switch|TT.@try|TT.@while) )
+			// Line 905: ( DataType ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId) | (TT.@new|TT.AttrKeyword) | &{_spaceName != S.Fn} @`.`(TT, noMacro(@this)) | TT.@checked TT.LBrace TT.RBrace | TT.@unchecked TT.LBrace TT.RBrace | @`.`(TT, noMacro(@default)) TT.Colon | TT.@using TT.LParen | (@`.`(TT, noMacro(@break))|@`.`(TT, noMacro(@continue))|@`.`(TT, noMacro(@return))|@`.`(TT, noMacro(@throw))|TT.@case|TT.@class|TT.@delegate|TT.@do|TT.@enum|TT.@event|TT.@fixed|TT.@for|TT.@foreach|TT.@goto|TT.@interface|TT.@lock|TT.@namespace|TT.@struct|TT.@switch|TT.@try|TT.@while) )
 			switch (LA0) {
 			case TT.@operator:
 			case TT.ContextualKeyword:
@@ -7662,7 +7821,7 @@ namespace Ecs.Parser
 				{
 					if (!Scan_DataType())
 						return false;
-					// Line 906: ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId)
+					// Line 905: ((TT.AttrKeyword|TT.Id|TT.TypeKeyword) | UnusualId)
 					la0 = LA0;
 					if (la0 == TT.AttrKeyword || la0 == TT.Id || la0 == TT.TypeKeyword)
 						{if (!TryMatch((int) TT.AttrKeyword, (int) TT.Id, (int) TT.TypeKeyword))
@@ -7740,6 +7899,19 @@ namespace Ecs.Parser
 			if (!Scan_ComplexNameDecl())
 				return false;
 			if (!TryMatch(Stmt_Test0_set0))
+				return false;
+			return true;
+		}
+		private bool Try_MethodOrPropertyOrVar_Test0(int lookaheadAmt)
+		{
+			using (new SavePosition(this, lookaheadAmt))
+				return MethodOrPropertyOrVar_Test0();
+		}
+		private bool MethodOrPropertyOrVar_Test0()
+		{
+			if (!Scan_IdAtom())
+				return false;
+			if (!TryMatch((int) TT.Comma, (int) TT.Semicolon, (int) TT.Set))
 				return false;
 			return true;
 		}

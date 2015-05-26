@@ -43,6 +43,7 @@ namespace Loyc.Syntax
 		{
 			base.Reset(source, eofToken, file, startIndex);
 		}
+		public new void Reset() { base.Reset(); }
 
 		/// <summary>Gets or sets an object that displays error messages. The 
 		/// default value of this property is null, in which case any error that

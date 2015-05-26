@@ -62,8 +62,13 @@ namespace Loyc.Syntax
 			EOF = EofToken.Type;
 			_list = list;
 			_sourceFile = file;
-			_inputPosition = startIndex;
+			InputPosition = startIndex;
 		}
+		protected void Reset()
+		{
+			Reset(TokenList, EofToken, SourceFile);
+		}
+
 
 		protected Token EofToken;
 

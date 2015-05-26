@@ -966,11 +966,11 @@ namespace Ecs
 				PrintType(a[0], context, allowPointer & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
-				var var = a[i];
+				var @var = a[i];
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
 
-				PrintExpr(var, EP.Assign.RightContext(context), Ambiguity.NoParenthesis);
+				PrintExpr(@var, EP.Assign.RightContext(context), Ambiguity.NoParenthesis);
 			}
 		}
 	}

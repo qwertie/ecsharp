@@ -141,9 +141,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseParser.cs" />
-    <Compile Include="BaseParserForList.cs" />
-    <Compile Include="BaseParserNoBacktracking.cs" />
+    <Compile Include="Parsing\BaseParser.cs" />
+    <Compile Include="Parsing\BaseParserForList.cs" />
+    <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IParsingService.cs" />
     <Compile Include="Les\LesLanguageService.cs" />
@@ -175,6 +175,11 @@
     <Compile Include="Lexing\ILexer.cs" />
     <Compile Include="Lexing\ILllpgApi.cs" />
     <Compile Include="Lexing\LexerSource.cs" />
+    <Compile Include="Lexing\LexerSourceTest.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LexerSourceTest.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Lexing\TokenListAsLexer.cs" />
     <Compile Include="Lexing\Token.cs" />
     <Compile Include="Lexing\TokenKind.cs" />
@@ -189,8 +194,13 @@
     <Compile Include="LNodes\NodeStyle.cs" />
     <Compile Include="LNodes\StdNodes.cs" />
     <Compile Include="OperatorShape.cs" />
-    <Compile Include="ParserSource.cs" />
-    <Compile Include="Precedence.cs" />
+    <Compile Include="Parsing\ParserSource.cs" />
+    <Compile Include="Parsing\ParserSourceTest.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ParserSourceTest.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="Parsing\Precedence.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceFiles\EmptySourceFile.cs" />
     <Compile Include="SourceFiles\IIndexPositionMapper.cs" />
@@ -253,7 +263,15 @@
       <LastGenOutput>LesParserGrammar.cs</LastGenOutput>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
     </None>
+    <None Include="Lexing\LexerSourceTest.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>
+    </None>
     <None Include="OpenSourceKey.snk" />
+    <None Include="Parsing\ParserSourceTest.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ParserSourceTest.out.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

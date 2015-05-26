@@ -502,6 +502,11 @@ namespace Ecs
 			Expr("~Foo()",               F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("@`~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("~Foo;",                F.Call(S.NotBits, Foo));
+			Stmt("$Foo $x;",             F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x)));
+			Stmt("$Foo $x = 1;",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
+			Stmt("$Foo<$2> $x = 1;",     F.Var(F.Of(F.Call(S.Substitute, Foo), F.Call(S.Substitute, two)), 
+			                                                              F.Call(S.Substitute, x), one));
+			Expr("$Foo $x = 1",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
 		}
 
 		[Test]
@@ -1077,6 +1082,9 @@ namespace Ecs
 								  Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
 				Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt);
 			}
+			Stmt("int Foo\n{\n  protected get;\n  private set;\n}",
+				F.Property(F.Int32, Foo, F.Braces(
+					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
 		}
 
 		[Test]

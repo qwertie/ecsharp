@@ -34,8 +34,8 @@ namespace Ecs.Parser
 	#rawText("\n\t#pragma warning disable 162, 642\n\t"); 
 
 	partial class EcsParser {
-	[LL(2)] [Verbosity(2)]
-	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int))
+	[LL(2), Verbosity(2)]
+	LLLPG parser(laType(TokenType), matchType(int), allowSwitch(@true), setType(HashSet!int), castLA(@false))
 	{
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
@@ -722,11 +722,10 @@ namespace Ecs.Parser
 		];
 
 		private rule VarDeclStart::Pair!(LNode, LNode) @[
-			{name::Token;}
 			e:=DataType
-			(name=TT.Id | name=UnusualId)
+			id:=IdAtom
 			{MaybeRecognizeVarAsKeyword(ref e);}
-			{return Pair.Create(e, IdNode(name));}
+			{return Pair.Create(e, id);}
 		];
 
 		static readonly _var::Symbol = GSymbol.Get("var");
@@ -1220,6 +1219,8 @@ namespace Ecs.Parser
 			{r::LNode;}
 			type:=DataType
 			(	// Variable declaration statement
+				// TODO: see if we can get rid of this &synpred
+				&(IdAtom ("="|","|";"))
 				{MaybeRecognizeVarAsKeyword(ref type);}
 				{var parts = (new RVList!LNode() { type });}
 				     parts+=NameAndMaybeInit(IsArrayType(type))
@@ -1315,8 +1316,7 @@ namespace Ecs.Parser
 		};
 
 		private rule NameAndMaybeInit(isArray::bool)::LNode @[
-			name:=(TT.Id|TT.ContextualKeyword)
-			{r::LNode = F.Id(name.Value -> Symbol, name.StartIndex, name.EndIndex);}
+			r:=IdAtom
 			(	("="|":=")
 				// The initializer for an array in C# can be a braced list of expressions.
 				// EC# also allows braced blocks as expressions, so I'll distinguish the
@@ -1329,10 +1329,10 @@ namespace Ecs.Parser
 						var initializers = InitializerListInside(lb).ToRVList();
 						var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
 						expr = SetBaseStyle(expr, NodeStyle.OldStyle);
-						r = F.Call(S.Assign, r, expr, name.StartIndex, rb.EndIndex);
+						r = F.Call(S.Assign, r, expr, r.Range.StartIndex, rb.EndIndex);
 					}
 				/	init:=ExprStart(false)
-					{r = F.Call(S.Assign, r, init, name.StartIndex, init.Range.EndIndex);}
+					{r = F.Call(S.Assign, r, init, r.Range.StartIndex, init.Range.EndIndex);}
 				)
 			)?
 			{return r;}

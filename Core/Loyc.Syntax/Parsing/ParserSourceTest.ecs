@@ -1,0 +1,145 @@
+﻿#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax.Lexing; // for LexerSource, ISimpleToken<int>
+using Loyc.Syntax;        // for ParserSource<Token>
+using Loyc.MiniTest;
+
+namespace Loyc.Syntax.Tests
+{
+	using TT = CalcTokenType;
+
+	[TestFixture]
+	public class ParserSourceTests_Calculator : Assert 
+	{
+		[Test]
+		public void SimpleTests()
+		{
+			AreEqual(2, Calculator.Calculate("2"));
+			AreEqual(25, Calculator.Calculate("25"));
+			AreEqual(2.5, Calculator.Calculate("2.5"));
+			AreEqual(.25, Calculator.Calculate(".25"));
+			AreEqual(5, Calculator.Calculate("x=5"));
+		}
+		[Test]
+		public void MoreTests()
+		{
+			AreEqual(5, Calculator.Calculate("2+3"));
+			AreEqual(5, Calculator.Calculate(" 2+3 "));
+			AreEqual(26, Calculator.Calculate("2*3 + 4*5"));
+			AreEqual(0.125, Calculator.Calculate("2/4 - 3/8"));
+			AreEqual(25, Calculator.Calculate("5 * ( 2 + 3 )"));
+			AreEqual(25, Calculator.Calculate("5(5)"));
+			AreEqual(25, Calculator.Calculate("5(2+3)"));
+			AreEqual(25, Calculator.Calculate("5(2+3)"));
+		}
+		[Test]
+		public void SumTest()
+		{
+			AreEqual(15, Calculator.Calculate("1;2;3;4;5 +"));
+			AreEqual(14, Calculator.Calculate("1*1; 2*2; 3*3 +"));
+			AreEqual(150, Calculator.Calculate("( 1;2;3;4 +)*( 1;2;3;4;5 +) +"));
+		}
+	}
+
+	public partial class Calculator
+	{
+		public Dictionary<string,double> Vars = new Dictionary<string,double>();
+		public ParserSource<Token> Src { get; set; } // LLLPG API
+
+		public static double Calculate(string input)
+		{
+			var lexer = new CalculatorLexer(input);
+			Token EOF = new Token((int) TT.EOF, input.Length, 0);
+			var parser = new Calculator() { 
+				Src = new ParserSource<Token>(lexer, EOF, lexer.Src.SourceFile)
+			};
+			
+			return parser.Expr();
+		}
+
+		static double Do(double left, Token op, double right)
+		{
+			switch ((TT)op.TypeInt) {
+				case TT.Add: return left + right;
+				case TT.Sub: return left - right;
+				case TT.Mul: return left * right;
+				case TT.Div: return left / right;
+				case TT.Semicolon:  return right;
+			}
+			return double.NaN; // unreachable
+		}
+		
+		// Now, here's the parser! This parser doesn't produce a syntax tree like 
+		// most parsers, it simply calculates the result of the input expression
+		// directly (it's what we call a "traditional" interpreter, as opposed to
+		// modern interpreters that create a syntax tree and interpret that. 
+		// (A modern interpreter avoids the cost of parsing the code repeatedly 
+		// when the code contains loops.)
+		LLLPG (parser(laType = TT, matchType = int, 
+		              inputSource = Src, inputClass = ParserSource<Token>));
+
+		alias(">>" = TT.Shr);
+		alias("<<" = TT.Shl);
+		alias("=" = TT.Assign);
+		alias(">" = TT.GT);
+		alias("<" = TT.LT);
+		alias("^" = TT.Exp);
+		alias("*" = TT.Mul);
+		alias("/" = TT.Div);
+		alias("+" = TT.Add);
+		alias("-" = TT.Sub);
+		alias(";" = TT.Semicolon);
+		alias("(" = TT.LParen);
+		alias(")" = TT.RParen);
+
+		private rule double Atom() @[
+			( t:=TT.Id  { $result = Vars[(string) t.Value]; }
+			| t:=TT.Num { $result = (double) t.Value; }
+			| "(" result=Expr ")"
+			| error     { $result = double.NaN; Src.Error(0, "Expected identifer, number, or (parens)"); }
+			)
+			greedy // see footnote below
+			[ "^" Atom { $result = System.Math.Pow(result, $Atom); } ]*
+		];
+		private rule double Term() @[
+			// Supports "mathy" expressions like 3(x-1)(x+1)
+			result:=Atom
+			[ rest:=Atom { result *= rest; } ]*
+			{ return result; }
+		];
+		rule double PrefixExpr() @
+			[ "-" r:=Term { return -r; }
+			| r:=Term     { return r; }
+			];
+		rule double MulExpr() @[ 
+			result:=PrefixExpr
+			(op:=("*"|"/") rhs:=PrefixExpr { result = Do(result, op, rhs); })*
+			{ return result; }
+		];
+		rule double AddExpr() @[
+			result:=MulExpr
+			(op:=("+"|"-") rhs:=MulExpr { result = Do(result, op, rhs); })*
+			{ return result; }
+		];
+		rule double AssignExpr() @[
+			// LLLPG recognizes $result as defining the method's return value
+			( t:=TT.Id "=" result:AssignExpr { Vars[t.Value.ToString()] = $result; }
+			| result:AddExpr )
+		];
+		rule double ExprSequence() @[
+			result:AssignExpr (";" result:AssignExpr)*
+		];
+		rule double Expr() @[
+			// One final trick to make the API work harder: use backtracking to 
+			// implement a postfix "+" that adds all preceding expressions
+			( &(ExprSequence "+") 
+			  result:AssignExpr (";" n:AssignExpr { $result += n; })* "+"
+			| result:ExprSequence )
+		];
+	}
+} // end namespace
