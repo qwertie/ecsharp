@@ -218,11 +218,11 @@ namespace Loyc.Syntax
 		#region Try-matching
 
 		/// <summary>A helper class used by LLLPG for backtracking.</summary>
-		protected struct SavePosition : IDisposable
+		public struct SavePosition : IDisposable
 		{
-			BaseParser<Token> _parser;
+			BaseParser<Token,MatchType> _parser;
 			int _oldPosition;
-			public SavePosition(BaseParser<Token> parser, int lookaheadAmt)
+			public SavePosition(BaseParser<Token,MatchType> parser, int lookaheadAmt)
 				{ _parser = parser; _oldPosition = parser.InputPosition; parser.InputPosition += lookaheadAmt; }
 			public void Dispose() { _parser.InputPosition = _oldPosition; }
 		}

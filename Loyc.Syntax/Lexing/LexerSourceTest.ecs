@@ -1,0 +1,130 @@
+﻿#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax.Lexing; // for LexerSource, ISimpleToken<int>
+using Loyc.Collections.Impl;
+using Loyc.MiniTest;
+
+namespace Loyc.Syntax.Tests
+{
+	using TT = CalcTokenType;
+
+	[TestFixture]
+	public class LexerSourceTests_Calculator : TestHelpers
+	{
+		static Token T(TT type, object value = null) {
+			return new Token((int)type, -1, 0, NodeStyle.Default, value); 
+		}
+		static IListSource<Token> Lex(string str) {
+			var b = new CalculatorLexer(str).Buffered();
+			var _ = b.Count; // force immediate lexing
+			return b;
+		}
+		
+		[Test]
+		public void SimpleTests()
+		{
+			ExpectList(Lex("2"),     T(TT.Num, 2d));
+			ExpectList(Lex("25"),    T(TT.Num, 25d));
+			ExpectList(Lex("2.5"),   T(TT.Num, 2.5));
+			ExpectList(Lex(".25"),   T(TT.Num, .25));
+			ExpectList(Lex("x"),     T(TT.Id, "x"));
+			ExpectList(Lex("Foo_7"), T(TT.Id, "Foo_7"));
+		}
+		[Test]
+		public void MoreTests()
+		{
+			ExpectList(Lex("x *+ y"), T(TT.Id, "x"), T(TT.Mul), T(TT.Add), T(TT.Id, "y"));
+			ExpectList(Lex(" 20 ; 40 - 5/0.25"), T(TT.Num, 20d), T(TT.Semicolon), 
+				T(TT.Num, 40d), T(TT.Sub), T(TT.Num, 5d), T(TT.Div), T(TT.Num, 0.25));
+			ExpectList(Lex("  (the end)  "), T(TT.LParen), T(TT.Id, "the"), T(TT.Id, "end"), T(TT.RParen));
+		}
+	}
+
+
+	replace (OPERATOR_TOKEN_LIST => (
+		(">>", Shr,       TokenKind.Operator + 1),
+		("<<", Shl,       TokenKind.Operator + 2),
+		("=",  Assign,    TokenKind.Assignment + 1),
+		(">",  GT,        TokenKind.Operator + 3),
+		("<",  LT,        TokenKind.Operator + 4),
+		("^",  Exp,       TokenKind.Operator + 5),
+		("*",  Mul,       TokenKind.Operator + 6),
+		("/",  Div,       TokenKind.Operator + 7),
+		("+",  Add,       TokenKind.Operator + 8),
+		("-",  Sub,       TokenKind.Operator + 9),
+		(";",  Semicolon, TokenKind.Operator + 10),
+		("(",  LParen,    TokenKind.Operator + 11),
+		(")",  RParen,    TokenKind.Operator + 12)));
+	
+	public enum CalcTokenType
+	{
+		EOF = TokenKind.Spaces, // If you use EOF = 0, default(Token) represents EOF
+		Id = TokenKind.Id,
+		Num = TokenKind.Number,
+		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST)
+		{
+			TOKEN_NAME = TOKEN_KIND; // inside 'unroll', must use ';' instead of ',' as separator
+		},
+		Unknown
+	}
+
+	//--------------------------------------------------------------------------
+	//-- LEXER -----------------------------------------------------------------
+	//--------------------------------------------------------------------------
+
+	partial class CalculatorLexer : EnumeratorBase<Token>
+	{
+		LLLPG (lexer(inputSource = Src, inputClass = LexerSource)) {
+		
+		public LexerSource Src { get; set; }
+
+		public CalculatorLexer(string text, string fileName = "") 
+			{ Src = (LexerSource)text; }
+		public CalculatorLexer(ICharSource text, string fileName = "") 
+			{ Src = new LexerSource(text); }
+
+		TT _tokenType;
+		int _startIndex;
+		object _value;
+
+		public override token bool MoveNext()
+		{
+			@[ (' '|'\t')* ];  // Skip spaces between tokens
+			_startIndex = Src.InputPosition;
+			_value = null;
+			@[ { _tokenType = TT.Num;    } Num
+			 | { _tokenType = TT.Id;     } Id
+			 | { _tokenType = TT.Num;    } ".nan" { _value = double.NaN; }
+			 | { _tokenType = TT.Num;    } ".inf" { _value = double.PositiveInfinity; }
+			 | any punctuation // matches any of the punctuation rules
+			 | error           // error branch - if input matches none of the above
+			   { _tokenType = TT.EOF; } (_ { _tokenType = TT.Unknown; })? 
+			 ];
+			Current = new Token((int)_tokenType, _startIndex, Src.InputPosition - _startIndex, _value);
+			return _tokenType != TT.EOF;
+		}
+		
+		private token Id() @[
+			('a'..'z'|'A'..'Z'|'_')
+			('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+			{ _value = Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString(); }
+		];
+		private token Num() @[
+			(dot:'.')?
+			'0'..'9'+
+			(&{dot == 0} '.' '0'..'9'+)?
+			{ _value = double.Parse(Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString()); }
+		];
+
+		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST) {
+			extern inline punctuation rule TOKEN_NAME() { 
+				@[ TEXT ]; _tokenType = TT.TOKEN_NAME;
+			}
+		}
+	}}
+}

@@ -113,6 +113,10 @@ namespace Loyc.Syntax.Lexing
 			else
 				_sourceFile = null;
 		}
+		protected void Reset()
+		{
+			Reset(CharSource, FileName, LA0, SourceFile != null);
+		}
 
 		protected int LA0 { get; private set; }
 		private CharSrc _source;

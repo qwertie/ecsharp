@@ -20,6 +20,7 @@ using Benchmark;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 using Loyc.LLParserGenerator;
+using Loyc.Syntax.Tests;
 
 namespace Loyc.Tests
 {
@@ -84,6 +85,8 @@ namespace Loyc.Tests
 			RunTests.Run(new LesPrinterTests());
 			RunTests.Run(new TokensToTreeTests());
 			RunTests.Run(new StreamCharSourceTests());
+			RunTests.Run(new LexerSourceTests_Calculator());
+			RunTests.Run(new ParserSourceTests_Calculator());
 
 			for(;;) {
 				ConsoleKeyInfo k;

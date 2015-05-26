@@ -149,6 +149,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
+    <Compile Include="Collections\BaseClasses\EnumeratorBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />
     <Compile Include="Collections\BaseClasses\ListSourceBase.cs" />
     <Compile Include="Collections\BaseClasses\ReadOnlyCollectionBase.cs" />
