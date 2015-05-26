@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>ICSharpCode.TextEditor.dll</id>
+    <version>4.0.2.6466</version>
+    <authors>ic#code</authors>
+    <owners>ic#code</owners>
+    <licenseUrl>http://opensource.org/licenses/lgpl-2.1.php</licenseUrl>
+    <projectUrl>http://www.codeproject.com/Articles/30936/Using-ICSharpCode-TextEditor</projectUrl>
+    <iconUrl>http://community.sharpdevelop.net/blogs/mattward/SharpDevelop.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A WinForms control for rendering and editing text</description>
+    <releaseNotes>version for mypad-winforms-texteditor.
+    Earlier the editor was a part of SharpDevelop 3.5 - .\SharpDevelop\src\Libraries\ICSharpCode.TextEditor\Project
+    Last known location - https://github.com/ArsenShnurkov/ICSharpCode.TextEditor
+    </releaseNotes>
+    <copyright>2000-2010 AlphaSierraPapa, 2015 - Arsen.Shnurkov@gmail.com</copyright>
+    <tags>winforms mono</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/ICSharpCode.TextEditor.dll" target="lib/net40/ICSharpCode.TextEditor.dll" />
+  </files>
+</package>

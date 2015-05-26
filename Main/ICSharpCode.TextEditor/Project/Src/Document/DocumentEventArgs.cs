@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 915 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -42,10 +42,6 @@ namespace ICSharpCode.TextEditor.Document
 			}
 		}
 		
-		/// <summary>DLP: Specifies the text that is being inserted, or null if text is
-		/// being removed. Typically either Text==null or Length==-1 depending on
-		/// whether text is being removed or inserted, but both members are used in
-		/// case of a Replace operation.</summary>
 		/// <returns>
 		/// null if no text was specified for this event
 		/// </returns>
@@ -55,10 +51,6 @@ namespace ICSharpCode.TextEditor.Document
 			}
 		}
 		
-		/// <summary>DLP: It seems that Length specifies the amount of text that is
-		/// being removed. If this object represents an insert operation then Length
-		/// is -1. There is one exception: if IDocument.TextContent is being set,
-		/// then Length is 0, Offset is 0, and Text is the new text.</summary>
 		/// <returns>
 		/// -1 if no length was specified for this event
 		/// </returns>

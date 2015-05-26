@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2659 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -83,15 +83,17 @@ namespace ICSharpCode.TextEditor.Document
 			int endOffset = offset + length - 1;
 			List<TextMarker> markers = new List<TextMarker>();
 			for (int i = 0; i < textMarker.Count; ++i) {
-				TextMarker marker = (TextMarker)textMarker[i];
+                TextMarker marker = (TextMarker)textMarker[i];
+                int markerOffset = marker.Offset;
+                int markerEndOffset = marker.EndOffset;
 				if (// start in marker region
-				    marker.Offset <= offset && offset <= marker.EndOffset ||
+                    markerOffset <= offset && offset <= markerEndOffset ||
 				    // end in marker region
-				    marker.Offset <= endOffset && endOffset <= marker.EndOffset ||
+                    markerOffset <= endOffset && endOffset <= markerEndOffset ||
 				    // marker start in region
-				    offset <= marker.Offset && marker.Offset <= endOffset ||
+                    offset <= markerOffset && markerOffset <= endOffset ||
 				    // marker end in region
-				    offset <= marker.EndOffset && marker.EndOffset <= endOffset
+                    offset <= markerEndOffset && markerEndOffset <= endOffset
 				   )
 				{
 					markers.Add(marker);

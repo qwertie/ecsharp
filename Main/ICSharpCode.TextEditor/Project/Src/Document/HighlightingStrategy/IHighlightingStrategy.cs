@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3037 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -16,7 +16,7 @@ namespace ICSharpCode.TextEditor.Document
 	public interface IHighlightingStrategy
 	{
 		/// <value>
-		/// The name of the highlighting strategy, must be unique (e.g. "C#")
+		/// The name of the highlighting strategy, must be unique
 		/// </value>
 		string Name {
 			get;
@@ -24,15 +24,12 @@ namespace ICSharpCode.TextEditor.Document
 		
 		/// <value>
 		/// The file extenstions on which this highlighting strategy gets
-		/// used, e.g. { ".cs" }
+		/// used
 		/// </value>
 		string[] Extensions {
 			get;
 		}
 		
-		/// <remarks>DLP: C# only has one entry, "LineComment" => "//". This entry
-		/// is accessed by the ToggleComment edit action. Also BlockCommentBegin and
-		/// BlockCommentEnd may be looked up.</remarks>
 		Dictionary<string, string> Properties {
 			get;
 		}

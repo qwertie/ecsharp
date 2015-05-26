@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -362,7 +362,11 @@ namespace ICSharpCode.TextEditor
 							clickedOnSelectedText = true;
 						}
 						
-						textArea.SelectionManager.SetSelection(new DefaultSelection(textArea.TextView.Document, new TextLocation(marker.StartColumn, marker.StartLine), new TextLocation(marker.EndColumn, marker.EndLine)));
+						TextLocation startLocation = new TextLocation(marker.StartColumn, marker.StartLine);
+						TextLocation endLocation = new TextLocation(marker.EndColumn, marker.EndLine);
+						textArea.SelectionManager.SetSelection(new DefaultSelection(textArea.TextView.Document, startLocation, endLocation));
+						textArea.Caret.Position = startLocation;
+						textArea.SetDesiredColumn();
 						textArea.Focus();
 						return;
 					}
@@ -450,6 +454,8 @@ namespace ICSharpCode.TextEditor
 		int FindWordEnd(IDocument document, int offset)
 		{
 			LineSegment line   = document.GetLineSegmentForOffset(offset);
+			if (line.Length == 0)
+				return offset;
 			int         endPos = line.Offset + line.Length;
 			offset = Math.Min(offset, endPos - 1);
 			

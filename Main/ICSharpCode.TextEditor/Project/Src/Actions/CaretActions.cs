@@ -1,11 +1,4 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2681 $</version>
-// </file>
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -154,7 +147,7 @@ namespace ICSharpCode.TextEditor.Actions
 			if (textArea.Caret.Column == 0) {
 				base.Execute(textArea);
 			} else {
-				LineSegment line   = textArea.Document.GetLineSegment(textArea.Caret.Position.Y);
+                /*LineSegment line =*/ textArea.Document.GetLineSegment(textArea.Caret.Position.Y);
 				
 				int prevWordStart = TextUtilities.FindPrevWordStart(textArea.Document, textArea.Caret.Offset);
 				

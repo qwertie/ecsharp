@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3078 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -217,9 +217,14 @@ namespace ICSharpCode.TextEditor
 			}
 		}
 		
-		public void AdjustScrollBars()
+		public void AdjustScrollBars ()
 		{
 			adjustScrollBarsOnNextUpdate = false;
+			// http://community.sharpdevelop.net/forums/p/8315/23394.aspx
+			if (textArea == null) {
+				adjustScrollBarsOnNextUpdate = true;
+				return;
+			}
 			vScrollBar.Minimum = 0;
 			// number of visible lines in document (folding!)
 			vScrollBar.Maximum = textArea.MaxVScrollValue;
@@ -417,7 +422,7 @@ namespace ICSharpCode.TextEditor
 		
 		public void JumpTo(int line)
 		{
-			line = Math.Min(line, Document.TotalNumberOfLines - 1);
+			line = Math.Max(0, Math.Min(line, Document.TotalNumberOfLines - 1));
 			string text = Document.GetText(Document.GetLineSegment(line));
 			JumpTo(line, text.Length - text.TrimStart().Length);
 		}

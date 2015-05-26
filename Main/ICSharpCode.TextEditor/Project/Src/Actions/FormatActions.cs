@@ -1,15 +1,8 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2640 $</version>
-// </file>
-
-using System;
+﻿using System;
 using System.Text;
 using ICSharpCode.TextEditor.Document;
 
-namespace ICSharpCode.TextEditor.Actions 
+namespace ICSharpCode.TextEditor.Actions
 {
 	public abstract class AbstractLineFormatAction : AbstractEditAction
 	{
@@ -18,6 +11,9 @@ namespace ICSharpCode.TextEditor.Actions
 		
 		public override void Execute(TextArea textArea)
 		{
+			if (textArea.SelectionManager.SelectionIsReadonly) {
+				return;
+			}
 			this.textArea = textArea;
 			textArea.BeginUpdate();
 			textArea.Document.UndoStack.StartUndoGroup();
@@ -42,6 +38,9 @@ namespace ICSharpCode.TextEditor.Actions
 		
 		public override void Execute(TextArea textArea)
 		{
+			if (textArea.SelectionManager.SelectionIsReadonly) {
+				return;
+			}
 			this.textArea = textArea;
 			textArea.BeginUpdate();
 			if (textArea.SelectionManager.HasSomethingSelected) {
@@ -59,7 +58,7 @@ namespace ICSharpCode.TextEditor.Actions
 	
 	public class RemoveLeadingWS : AbstractLineFormatAction
 	{
-		protected override void Convert(IDocument document, int y1, int y2) 
+		protected override void Convert(IDocument document, int y1, int y2)
 		{
 			for (int i = y1; i < y2; ++i) {
 				LineSegment line = document.GetLineSegment(i);
@@ -76,7 +75,7 @@ namespace ICSharpCode.TextEditor.Actions
 	
 	public class RemoveTrailingWS : AbstractLineFormatAction
 	{
-		protected override void Convert(IDocument document, int y1, int y2) 
+		protected override void Convert(IDocument document, int y1, int y2)
 		{
 			for (int i = y2 - 1; i >= y1; --i) {
 				LineSegment line = document.GetLineSegment(i);
@@ -162,7 +161,7 @@ namespace ICSharpCode.TextEditor.Actions
 	
 	public class ConvertLeadingTabsToSpaces : AbstractLineFormatAction
 	{
-		protected override void Convert(IDocument document, int y1, int y2) 
+		protected override void Convert(IDocument document, int y1, int y2)
 		{
 			for (int i = y2; i >= y1; --i) {
 				LineSegment line = document.GetLineSegment(i);
@@ -185,7 +184,7 @@ namespace ICSharpCode.TextEditor.Actions
 	
 	public class ConvertLeadingSpacesToTabs : AbstractLineFormatAction
 	{
-		protected override void Convert(IDocument document, int y1, int y2) 
+		protected override void Convert(IDocument document, int y1, int y2)
 		{
 			for (int i = y2; i >= y1; --i) {
 				LineSegment line = document.GetLineSegment(i);
@@ -203,7 +202,7 @@ namespace ICSharpCode.TextEditor.Actions
 	/// <summary>
 	/// This is a sample editaction plugin, it indents the selected area.
 	/// </summary>
-	public class FormatBuffer : AbstractLineFormatAction
+	public class IndentSelection : AbstractLineFormatAction
 	{
 		protected override void Convert(IDocument document, int startLine, int endLine)
 		{

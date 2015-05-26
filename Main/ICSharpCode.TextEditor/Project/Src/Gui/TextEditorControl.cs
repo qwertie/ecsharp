@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3078 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -179,7 +179,7 @@ namespace ICSharpCode.TextEditor
 			}
 		}
 		
-		public void SetHighlighting(string name)
+		public virtual void SetHighlighting(string name)
 		{
 			Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategy(name);
 		}

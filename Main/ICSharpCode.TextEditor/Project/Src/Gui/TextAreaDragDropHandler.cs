@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -78,7 +78,7 @@ namespace ICSharpCode.TextEditor
 		
 		protected void OnDragDrop(object sender, DragEventArgs e)
 		{
-			Point p = textArea.PointToClient(new Point(e.X, e.Y));
+			//Point p = textArea.PointToClient(new Point(e.X, e.Y));
 			
 			if (e.Data.GetDataPresent(typeof(string))) {
 				textArea.BeginUpdate();

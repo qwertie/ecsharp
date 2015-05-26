@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -23,7 +23,7 @@ namespace ICSharpCode.TextEditor
 		int          fontHeight;
 		//Hashtable    charWitdh           = new Hashtable();
 		//StringFormat measureStringFormat = (StringFormat)StringFormat.GenericTypographic.Clone();
-		BracketHighlight    highlight;
+		Highlight    highlight;
 		int          physicalColumn = 0; // used for calculating physical column during paint
 		
 		public void Dispose()
@@ -32,7 +32,7 @@ namespace ICSharpCode.TextEditor
 			//measureStringFormat.Dispose();
 		}
 		
-		public BracketHighlight Highlight {
+		public Highlight Highlight {
 			get {
 				return highlight;
 			}
@@ -163,7 +163,7 @@ namespace ICSharpCode.TextEditor
 				                                        fontHeight);
 				
 				if (rect.IntersectsWith(lineRectangle)) {
-					int fvl = textArea.Document.GetVisibleLine(FirstVisibleLine);
+					/*int fvl =*/ textArea.Document.GetVisibleLine(FirstVisibleLine);
 					int currentLine = textArea.Document.GetFirstLogicalLine(textArea.Document.GetVisibleLine(FirstVisibleLine) + y);
 					PaintDocumentLine(g, currentLine, lineRectangle);
 				}
@@ -359,9 +359,8 @@ namespace ICSharpCode.TextEditor
 		/// <param name="length">The length.</param>
 		/// <param name="markers">All markers that have been found.</param>
 		/// <returns>The Brush or null when no marker was found.</returns>
-		Brush GetMarkerBrushAt(int offset, int length, ref Color foreColor, out IList<TextMarker> markers)
+		Brush GetMarkerBrush(IList<TextMarker> markers, ref Color foreColor)
 		{
-			markers = Document.MarkerStrategy.GetMarkers(offset, length);
 			foreach (TextMarker marker in markers) {
 				if (marker.TextMarkerType == TextMarkerType.SolidBlock) {
 					if (marker.OverrideForeColor) {
@@ -412,7 +411,6 @@ namespace ICSharpCode.TextEditor
 				int currentWordEndOffset = currentWordOffset + currentWord.Length - 1;
 				TextWordType currentWordType = currentWord.Type;
 				
-				IList<TextMarker> markers;
 				Color wordForeColor;
 				if (currentWordType == TextWordType.Space)
 					wordForeColor = spaceMarkerColor.Color;
@@ -420,7 +418,9 @@ namespace ICSharpCode.TextEditor
 					wordForeColor = tabMarkerColor.Color;
 				else
 					wordForeColor = currentWord.Color;
-				Brush wordBackBrush = GetMarkerBrushAt(currentLine.Offset + currentWordOffset, currentWord.Length, ref wordForeColor, out markers);
+
+                IList<TextMarker> markers = Document.MarkerStrategy.GetMarkers(currentLine.Offset + currentWordOffset, currentWord.Length);
+				Brush wordBackBrush = GetMarkerBrush(markers, ref wordForeColor);
 				
 				// It is possible that we have to split the current word because a marker/the selection begins/ends inside it
 				if (currentWord.Length > 1) {
@@ -774,26 +774,35 @@ namespace ICSharpCode.TextEditor
 			
 			int result;
 			using (Graphics g = textArea.CreateGraphics()) {
-				do {
+				// call GetLogicalColumnInternal to skip over text,
+				// then skip over fold markers
+				// and repeat as necessary.
+				// The loop terminates once the correct logical column is reached in
+				// GetLogicalColumnInternal or inside a fold marker.
+				while (true) {
+					
 					LineSegment line = Document.GetLineSegment(lineNumber);
 					FoldMarker nextFolding = FindNextFoldedFoldingOnLineAfterColumn(lineNumber, start-1);
 					int end = nextFolding != null ? nextFolding.StartColumn : int.MaxValue;
 					result = GetLogicalColumnInternal(g, line, start, end, ref posX, visualPosX);
-					if (result < 0) {
-						// reached fold marker
-						lineNumber = nextFolding.EndLine;
-						start = nextFolding.EndColumn;
-						int newPosX = posX + 1 + MeasureStringWidth(g, nextFolding.FoldText, TextEditorProperties.FontContainer.RegularFont);
-						if (newPosX >= visualPosX) {
-							inFoldMarker = nextFolding;
-							if (IsNearerToAThanB(visualPosX, posX, newPosX))
-								return new TextLocation(nextFolding.StartColumn, nextFolding.StartLine);
-							else
-								return new TextLocation(nextFolding.EndColumn, nextFolding.EndLine);
-						}
-						posX = newPosX;
+					
+					// break when GetLogicalColumnInternal found the result column
+					if (result < end)
+						break;
+					
+					// reached fold marker
+					lineNumber = nextFolding.EndLine;
+					start = nextFolding.EndColumn;
+					int newPosX = posX + 1 + MeasureStringWidth(g, nextFolding.FoldText, TextEditorProperties.FontContainer.RegularFont);
+					if (newPosX >= visualPosX) {
+						inFoldMarker = nextFolding;
+						if (IsNearerToAThanB(visualPosX, posX, newPosX))
+							return new TextLocation(nextFolding.StartColumn, nextFolding.StartLine);
+						else
+							return new TextLocation(nextFolding.EndColumn, nextFolding.EndLine);
 					}
-				} while (result < 0);
+					posX = newPosX;
+				}
 			}
 			return new TextLocation(result, lineNumber);
 		}
@@ -801,7 +810,7 @@ namespace ICSharpCode.TextEditor
 		int GetLogicalColumnInternal(Graphics g, LineSegment line, int start, int end, ref int drawingPos, int targetVisualPosX)
 		{
 			if (start == end)
-				return -1;
+				return end;
 			Debug.Assert(start < end);
 			Debug.Assert(drawingPos < targetVisualPosX);
 			
@@ -824,7 +833,7 @@ namespace ICSharpCode.TextEditor
 			for (int i = 0; i < words.Count; i++) {
 				TextWord word = words[i];
 				if (wordOffset >= end) {
-					return -1;
+					return wordOffset;
 				}
 				if (wordOffset + word.Length >= start) {
 					int newDrawingPos;

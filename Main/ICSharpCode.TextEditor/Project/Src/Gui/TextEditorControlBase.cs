@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2932 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -115,10 +115,25 @@ namespace ICSharpCode.TextEditor
 		[Editor("System.ComponentModel.Design.MultilineStringEditor, System.Design, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(System.Drawing.Design.UITypeEditor))]
 		public override string Text {
 			get {
+				if (Document == null) 
+				{
+					return String.Empty;
+				}
 				return Document.TextContent;
 			}
 			set {
-				Document.TextContent = value;
+				if (Document != null) 
+				{
+                    BeginUpdate();
+                    try
+                    {
+					    Document.TextContent = value;
+                    }
+                    finally
+                    {
+                        EndUpdate();
+                    }
+				}
 			}
 		}
 		
@@ -658,10 +673,10 @@ namespace ICSharpCode.TextEditor
 			}
 			
 			this.FileName = fileName;
-			OptionsChanged();
 			Document.UpdateQueue.Clear();
 			EndUpdate();
 			
+			OptionsChanged();
 			Refresh();
 		}
 		

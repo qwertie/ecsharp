@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -28,7 +28,7 @@ namespace ICSharpCode.TextEditor.Document
 		/// </summary>
 		FullRow
 	}
-
+	
 	/// <summary>
 	/// Describes the indent style
 	/// </summary>
@@ -70,7 +70,7 @@ namespace ICSharpCode.TextEditor.Document
 		/// </summary>
 		AfterBracket
 	}
-
+	
 	/// <summary>
 	/// Describes the selection mode of the text area
 	/// </summary>

@@ -1,11 +1,4 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3205 $</version>
-// </file>
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
@@ -79,7 +72,7 @@ namespace ICSharpCode.TextEditor.Actions
 		/// <param name="textArea">The <see cref="ItextArea"/> which is used for callback purposes</param>
 		public override void Execute(TextArea textArea)
 		{
-			if (textArea.Document.ReadOnly) {
+			if (textArea.SelectionManager.SelectionIsReadonly) {
 				return;
 			}
 			textArea.Document.UndoStack.StartUndoGroup();
@@ -90,7 +83,6 @@ namespace ICSharpCode.TextEditor.Actions
 					if (startLine != endLine) {
 						textArea.BeginUpdate();
 						InsertTabs(textArea.Document, selection, startLine, endLine);
-						textArea.Document.UpdateQueue.Clear();
 						textArea.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.LinesBetween, startLine, endLine));
 						textArea.EndUpdate();
 					} else {
@@ -195,7 +187,7 @@ namespace ICSharpCode.TextEditor.Actions
 				// previous tab stop. It will stop at the beginning of the line. Also, the desired
 				// column is updated to that column.
 				LineSegment line = textArea.Document.GetLineSegmentForOffset(textArea.Caret.Offset);
-				string startOfLine = textArea.Document.GetText(line.Offset,textArea.Caret.Offset - line.Offset);
+				/*string startOfLine =*/ textArea.Document.GetText(line.Offset,textArea.Caret.Offset - line.Offset);
 				int tabIndent = textArea.Document.TextEditorProperties.IndentationSize;
 				int currentColumn = textArea.Caret.Column;
 				int remainder = currentColumn % tabIndent;
@@ -266,7 +258,7 @@ namespace ICSharpCode.TextEditor.Actions
 					continue;
 				}
 				
-				string lineText = document.GetText(line.Offset, line.Length);
+				/*string lineText =*/ document.GetText(line.Offset, line.Length);
 				document.Insert(line.Offset, comment);
 			}
 		}
@@ -542,30 +534,6 @@ namespace ICSharpCode.TextEditor.Actions
 		}
 	}
 	
-	public class IndentSelection : AbstractEditAction
-	{
-		/// <remarks>
-		/// Executes this edit action
-		/// </remarks>
-		/// <param name="textArea">The <see cref="ItextArea"/> which is used for callback purposes</param>
-		public override void Execute(TextArea textArea)
-		{
-			if (textArea.Document.ReadOnly) {
-				return;
-			}
-			textArea.BeginUpdate();
-			if (textArea.SelectionManager.HasSomethingSelected) {
-				foreach (ISelection selection in textArea.SelectionManager.SelectionCollection) {
-					textArea.Document.FormattingStrategy.IndentLines(textArea, selection.StartPosition.Y, selection.EndPosition.Y);
-				}
-			} else {
-				textArea.Document.FormattingStrategy.IndentLines(textArea, 0, textArea.Document.TotalNumberOfLines - 1);
-			}
-			textArea.EndUpdate();
-			textArea.Refresh();
-		}
-	}
-	
 	public class Backspace : AbstractEditAction
 	{
 		/// <remarks>
@@ -584,7 +552,7 @@ namespace ICSharpCode.TextEditor.Actions
 					
 					if (curLineOffset == textArea.Caret.Offset) {
 						LineSegment line = textArea.Document.GetLineSegment(curLineNr - 1);
-						bool lastLine = curLineNr == textArea.Document.TotalNumberOfLines;
+						// bool lastLine = curLineNr == textArea.Document.TotalNumberOfLines;
 						int lineEndOffset = line.Offset + line.Length;
 						int lineLength = line.Length;
 						textArea.Document.Remove(lineEndOffset, curLineOffset - lineEndOffset);
@@ -903,7 +871,7 @@ namespace ICSharpCode.TextEditor.Actions
 	{
 		public override void Execute(TextArea textArea)
 		{
-			BracketHighlight highlight = textArea.FindMatchingBracketHighlight();
+			Highlight highlight = textArea.FindMatchingBracketHighlight();
 			if (highlight != null) {
 				TextLocation p1 = new TextLocation(highlight.CloseBrace.X + 1, highlight.CloseBrace.Y);
 				TextLocation p2 = new TextLocation(highlight.OpenBrace.X + 1, highlight.OpenBrace.Y);

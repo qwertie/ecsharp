@@ -1,11 +1,4 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2659 $</version>
-// </file>
-
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace ICSharpCode.TextEditor.Document
 {

@@ -3,7 +3,7 @@
 <!-- Syntaxdefinition for VB.NET, v0.1 Rev 1 by Christian Holm -->
 <!-- Updated 2005 by Daniel Grunwald for VB.NET 2.0 -->
 
-<SyntaxDefinition name = "VBNET" extensions = ".vb">
+<SyntaxDefinition name = "VBNET" extensions = ".vb;.bas;.vbs">
 	
 	<Properties>
 		<Property name="LineComment" value="'"/>

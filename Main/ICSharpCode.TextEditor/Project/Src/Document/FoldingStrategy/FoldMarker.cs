@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2063 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -15,9 +15,42 @@ namespace ICSharpCode.TextEditor.Document
 		Region,
 		TypeBody
 	}
-	
-	public class FoldMarker : AbstractSegment, IComparable
-	{
+
+    public class FoldMarker : ISegment, IComparable
+    {
+        [CLSCompliant(false)]
+        protected int offset = -1;
+        [CLSCompliant(false)]
+        protected int length = -1;
+
+        #region ICSharpCode.TextEditor.Document.ISegment interface implementation
+        public int Offset
+        {
+            get { return offset; }
+            set
+            {
+                offset = value;
+                startLine = -1; endLine = -1;
+            }
+        }
+        public int Length
+        {
+            get { return length; }
+            set
+            {
+                length = value;
+                endLine = -1;
+            }
+        }
+        #endregion
+
+        public override string ToString()
+        {
+            return String.Format("[FoldMarker: Offset = {0}, Length = {1}]",
+                                 offset,
+                                 length);
+        }
+		
 		bool      isFolded = false;
 		string    foldText = "...";
 		FoldType  foldType = FoldType.Unspecified;
@@ -76,21 +109,6 @@ namespace ICSharpCode.TextEditor.Document
 					GetPointForOffset(document, offset + length, out endLine, out endColumn);
 				}
 				return endColumn;
-			}
-		}
-		
-		public override int Offset {
-			get { return base.Offset; }
-			set {
-				base.Offset = value;
-				startLine = -1; endLine = -1;
-			}
-		}
-		public override int Length {
-			get { return base.Length; }
-			set {
-				base.Length = value;
-				endLine = -1;
 			}
 		}
 		

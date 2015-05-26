@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2659 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -11,12 +11,12 @@ using ICSharpCode.TextEditor.Document;
 
 namespace ICSharpCode.TextEditor
 {
-	public class BracketHighlight
+	public class Highlight
 	{
 		public TextLocation OpenBrace { get; set; }
 		public TextLocation CloseBrace { get; set; }
 		
-		public BracketHighlight(TextLocation openBrace, TextLocation closeBrace)
+		public Highlight(TextLocation openBrace, TextLocation closeBrace)
 		{
 			this.OpenBrace = openBrace;
 			this.CloseBrace = closeBrace;
@@ -52,7 +52,7 @@ namespace ICSharpCode.TextEditor
 			this.closingtag = closingtag;
 		}
 		
-		public BracketHighlight GetHighlight(IDocument document, int offset)
+		public Highlight GetHighlight(IDocument document, int offset)
 		{
 			int searchOffset;
 			if (document.TextEditorProperties.BracketMatchingStyle == BracketMatchingStyle.After) {
@@ -68,7 +68,7 @@ namespace ICSharpCode.TextEditor
 					int bracketOffset = TextUtilities.SearchBracketForward(document, searchOffset + 1, opentag, closingtag);
 					if (bracketOffset >= 0) {
 						TextLocation p = document.OffsetToPosition(bracketOffset);
-						return new BracketHighlight(p, endP);
+						return new Highlight(p, endP);
 					}
 				}
 			} else if (word == closingtag) {
@@ -76,7 +76,7 @@ namespace ICSharpCode.TextEditor
 					int bracketOffset = TextUtilities.SearchBracketBackward(document, searchOffset - 1, opentag, closingtag);
 					if (bracketOffset >= 0) {
 						TextLocation p = document.OffsetToPosition(bracketOffset);
-						return new BracketHighlight(p, endP);
+						return new Highlight(p, endP);
 					}
 				}
 			}

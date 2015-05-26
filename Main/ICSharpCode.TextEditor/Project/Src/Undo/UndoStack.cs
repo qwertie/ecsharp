@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2827 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -27,6 +27,8 @@ namespace ICSharpCode.TextEditor.Undo
 		/// <summary>
 		/// </summary>
 		public event EventHandler ActionRedone;
+		
+		public event OperationEventHandler OperationPushed;
 		
 		/// <summary>
 		/// Gets/Sets if changes to the document are protocolled by the undo stack.
@@ -89,7 +91,11 @@ namespace ICSharpCode.TextEditor.Undo
 			undoGroupDepth--;
 			//Util.LoggingService.Debug("Close undo group (new depth=" + undoGroupDepth + ")");
 			if (undoGroupDepth == 0 && actionCountInUndoGroup > 1) {
-				undostack.Push(new UndoQueue(undostack, actionCountInUndoGroup));
+				UndoQueue op = new UndoQueue(undostack, actionCountInUndoGroup);
+				undostack.Push(op);
+				if (OperationPushed != null) {
+					OperationPushed(this, new OperationEventArgs(op));
+				}
 			}
 		}
 		
@@ -205,12 +211,32 @@ namespace ICSharpCode.TextEditor.Undo
 			{
 				redoPos = stack.TextEditorControl.ActiveTextAreaControl.Caret.Position;
 				stack.TextEditorControl.ActiveTextAreaControl.Caret.Position = pos;
+				stack.TextEditorControl.ActiveTextAreaControl.SelectionManager.ClearSelection();
 			}
 			
 			public void Redo()
 			{
 				stack.TextEditorControl.ActiveTextAreaControl.Caret.Position = redoPos;
+				stack.TextEditorControl.ActiveTextAreaControl.SelectionManager.ClearSelection();
 			}
 		}
 	}
+		
+	public class OperationEventArgs : EventArgs
+	{
+		public OperationEventArgs(IUndoableOperation op)
+		{
+			this.op = op;
+		}
+		
+		IUndoableOperation op;
+		
+		public IUndoableOperation Operation {
+			get {
+				return op;
+			}
+		}
+	}
+	
+	public delegate void OperationEventHandler(object sender, OperationEventArgs e);
 }

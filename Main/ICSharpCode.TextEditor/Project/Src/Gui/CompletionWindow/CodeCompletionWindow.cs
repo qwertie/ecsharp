@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3244 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -133,12 +133,24 @@ namespace ICSharpCode.TextEditor.Gui.CompletionWindow
 			Point pos;
 			// The declaration view window has better line break when used on
 			// the right side, so prefer the right side to the left.
-			if (rightSpace * 2 > leftSpace)
+			if (rightSpace * 2 > leftSpace) {
+				declarationViewWindow.FixedWidth = false;
 				pos = new Point(Bounds.Right, Bounds.Top);
-			else
-				pos = new Point(Bounds.Left - declarationViewWindow.Width, Bounds.Top);
-			if (declarationViewWindow.Location != pos) {
-				declarationViewWindow.Location = pos;
+				if (declarationViewWindow.Location != pos) {
+					declarationViewWindow.Location = pos;
+				}
+			} else {
+				declarationViewWindow.Width = declarationViewWindow.GetRequiredLeftHandSideWidth(new Point(Bounds.Left, Bounds.Top));
+				declarationViewWindow.FixedWidth = true;
+				if (Bounds.Left < declarationViewWindow.Width) {
+					pos = new Point(0, Bounds.Top);
+				} else {
+					pos = new Point(Bounds.Left - declarationViewWindow.Width, Bounds.Top);
+				}
+				if (declarationViewWindow.Location != pos) {
+					declarationViewWindow.Location = pos;
+				}
+				declarationViewWindow.Refresh();
 			}
 		}
 		

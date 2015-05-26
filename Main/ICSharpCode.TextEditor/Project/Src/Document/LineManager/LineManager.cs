@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3274 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -322,6 +322,9 @@ namespace ICSharpCode.TextEditor.Document
 								return delimiterSegment;
 							}
 						}
+						#if DATACONSISTENCYTEST
+						Debug.Assert(false, "Found lone \\r, data consistency problems?");
+						#endif
 						goto case '\n';
 					case '\n':
 						delimiterSegment.Offset = i;

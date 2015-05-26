@@ -2,13 +2,12 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using ICSharpCode.TextEditor.Document;
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ICSharpCode.TextEditor.Tests
 {

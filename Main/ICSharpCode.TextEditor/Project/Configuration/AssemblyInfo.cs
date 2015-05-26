@@ -1,11 +1,4 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 1618 $</version>
-// </file>
-
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 

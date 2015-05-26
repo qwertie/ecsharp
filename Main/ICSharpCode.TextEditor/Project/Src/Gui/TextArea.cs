@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3323 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -253,12 +253,12 @@ namespace ICSharpCode.TextEditor
 			}
 		}
 		
-		public BracketHighlight FindMatchingBracketHighlight()
+		public Highlight FindMatchingBracketHighlight()
 		{
 			if (Caret.Offset == 0)
 				return null;
 			foreach (BracketHighlightingSheme bracketsheme in bracketshemes) {
-				BracketHighlight highlight = bracketsheme.GetHighlight(Document, Caret.Offset - 1);
+				Highlight highlight = bracketsheme.GetHighlight(Document, Caret.Offset - 1);
 				if (highlight != null) {
 					return highlight;
 				}
@@ -353,6 +353,7 @@ namespace ICSharpCode.TextEditor
 					p.Y = (p.Y - cp.Y) + (lineNumber * this.TextView.FontHeight) - this.virtualTop.Y;
 				}
 				p.Offset(3, 3);
+				toolTip.Owner = this.FindForm();
 				toolTip.Location = p;
 				toolTip.Description = text;
 				toolTip.HideOnClick = true;

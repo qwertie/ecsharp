@@ -2,10 +2,11 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 3206 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace ICSharpCode.TextEditor.Document
@@ -21,8 +22,47 @@ namespace ICSharpCode.TextEditor.Document
 	/// <summary>
 	/// Marks a part of a document.
 	/// </summary>
-	public class TextMarker : AbstractSegment
-	{
+    public class TextMarker : ISegment
+    {
+        [CLSCompliant(false)]
+        protected int offset = -1;
+        [CLSCompliant(false)]
+        protected int length = -1;
+
+        #region ICSharpCode.TextEditor.Document.ISegment interface implementation
+        public int Offset
+        {
+            get
+            {
+                return offset;
+            }
+            set
+            {
+                offset = value;
+            }
+        }
+
+        public int Length
+        {
+            get
+            {
+                return length;
+            }
+            set
+            {
+                length = value;
+            }
+        }
+        #endregion
+        
+	    public override string ToString()
+        {
+            return String.Format("[TextMarker: Offset = {0}, Length = {1}, Type = {2}]",
+                                 offset,
+                                 length,
+                                 textMarkerType);
+        }
+		
 		TextMarkerType textMarkerType;
 		Color          color;
 		Color          foreColor;
@@ -72,7 +112,7 @@ namespace ICSharpCode.TextEditor.Document
 		/// </summary>
 		public int EndOffset {
 			get {
-				return Offset + Length - 1;
+                return offset + length - 1;
 			}
 		}
 		
@@ -99,5 +139,5 @@ namespace ICSharpCode.TextEditor.Document
 			this.foreColor       = foreColor;
 			this.overrideForeColor = true;
 		}
-	}
+    }
 }

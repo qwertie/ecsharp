@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!-- syntaxdefinition for C/C++ 2001 by Andrea Paatz and Mike Krueger -->
 
-<SyntaxDefinition name = "C++.NET" extensions = ".c;.h;.cc;.C;.cpp;.hpp">
+<SyntaxDefinition name = "C++.NET" extensions = ".c;.h;.cc;.cpp;.hpp;.rc;.idl">
 	
 	<Properties>
 		<Property name="LineComment" value="//"/>

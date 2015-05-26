@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3020 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -206,7 +206,7 @@ namespace ICSharpCode.TextEditor.Document
 		// next word
 		public static int FindNextWordStart(IDocument document, int offset)
 		{
-			int originalOffset = offset;
+			// int originalOffset = offset;
 			LineSegment line   = document.GetLineSegmentForOffset(offset);
 			int     endPos = line.Offset + line.Length;
 			// lets go to the end of the word, whitespace or operator
@@ -228,7 +228,7 @@ namespace ICSharpCode.TextEditor.Document
 		// to the start of the previous word
 		public static int FindPrevWordStart(IDocument document, int offset)
 		{
-			int originalOffset = offset;
+                        // int originalOffset = offset;
 			if (offset > 0) {
 				LineSegment line = document.GetLineSegmentForOffset(offset);
 				CharacterType t = GetCharacterType(document.GetCharAt(offset - 1));

@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="none" email=""/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -13,6 +13,12 @@ namespace ICSharpCode.TextEditor.Document
 {
 	public interface ITextEditorProperties
 	{
+		bool CaretLine
+		{
+			get;
+			set;
+		}
+
 		bool AutoInsertCurlyBracket { // is wrapped in text editor control
 			get;
 			set;

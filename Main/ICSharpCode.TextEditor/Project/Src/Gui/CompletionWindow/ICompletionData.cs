@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 2932 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -66,7 +66,7 @@ namespace ICSharpCode.TextEditor.Gui.CompletionWindow
 			}
 		}
 		
-		public string Description {
+		public virtual string Description {
 			get {
 				return description;
 			}
@@ -87,6 +87,12 @@ namespace ICSharpCode.TextEditor.Gui.CompletionWindow
 		{
 			textArea.InsertString(text);
 			return false;
+		}
+		
+		public DefaultCompletionData(string text, int imageIndex)
+		{
+			this.text        = text;
+			this.imageIndex  = imageIndex;
 		}
 		
 		public DefaultCompletionData(string text, string description, int imageIndex)

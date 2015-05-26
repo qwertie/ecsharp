@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 3272 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -63,11 +63,6 @@ namespace ICSharpCode.TextEditor.Document
 			internal set { totalLength = value; }
 		}
 		
-		
-		/// <summary>
-		/// DLP: Returns the length of the newline characters at end of line 
-		/// (1 for '\n', 2 for '\r\n'). May be zero if file is empty?
-		/// </summary>
 		public int DelimiterLength {
 			get { return delimiterLength; }
 			internal set { delimiterLength = value; }

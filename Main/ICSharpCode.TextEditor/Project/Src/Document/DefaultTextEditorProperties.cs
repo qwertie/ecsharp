@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="none" email=""/>
-//     <version>$Revision: 3205 $</version>
+//     <version>$Revision$</version>
 // </file>
 
 using System;
@@ -36,6 +36,8 @@ namespace ICSharpCode.TextEditor.Document
 		}
 		
 		bool        allowCaretBeyondEOL = false;
+
+		bool        caretLine           = false;
 		
 		bool        showMatchingBracket = true;
 		bool        showLineNumbers     = true;
@@ -72,7 +74,7 @@ namespace ICSharpCode.TextEditor.Document
 				tabIndent = value;
 			}
 		}
-		
+
 		public int IndentationSize {
 			get { return indentationSize; }
 			set { indentationSize = value; }
@@ -86,6 +88,18 @@ namespace ICSharpCode.TextEditor.Document
 				indentStyle = value;
 			}
 		}
+
+		public bool CaretLine {
+			get
+			{
+				return caretLine;
+			}
+			set
+			{
+				caretLine = value;
+			}
+		}
+
 		public DocumentSelectionMode DocumentSelectionMode {
 			get {
 				return documentSelectionMode;
