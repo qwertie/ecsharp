@@ -341,7 +341,6 @@
         </member>
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.LAType">
             <summary>Returns the data type of LA(k)</summary>
-            <returns>Default implementation returns @(int).</returns>
         </member>
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.GetRelativeCostForSwitch(Loyc.LLParserGenerator.IPGTerminalSet)">
             <summary>Used to help decide whether a "switch" or an if statement
@@ -361,6 +360,9 @@
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.ShouldGenerateSwitch(Loyc.LLParserGenerator.IPGTerminalSet[],Loyc.Collections.MSet{System.Int32},System.Boolean)">
             <summary>Decides whether to use a switch() and for which cases, using
             <see cref="P:Loyc.LLParserGenerator.CodeGenHelperBase.BaseCostForSwitch"/> and <see cref="M:Loyc.LLParserGenerator.CodeGenHelperBase.GetRelativeCostForSwitch(Loyc.LLParserGenerator.IPGTerminalSet)"/>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)">
+            <summary>See <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)"/> for more information.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.CodeGenHelperBase.ApiCall(Loyc.Symbol,Loyc.Syntax.LNode[])">
             <summary>Returns an LNode representing a call to the specified LLLPG API.
@@ -445,6 +447,12 @@
             When using this option, LaType should still be the enum type rather 
             than #int32.
             </remarks>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.GeneralCodeGenHelper.LA(System.Int32)">
+            <summary>Generates code to read LA(k).</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.GeneralCodeGenHelper.CastLA">
+            <summary>Whether to cast the result of LA0 and LA(i) to LaType (default: true)</summary>
         </member>
         <member name="T:Loyc.LLParserGenerator.PGNodeSet">
             <summary>An immutable set that implements <see cref="T:Loyc.LLParserGenerator.IPGTerminalSet"/> so
@@ -604,6 +612,9 @@
         <member name="F:Loyc.LLParserGenerator.LLParserGenerator.AddComments">
             <summary>Whether to insert Specifies the default maximum lookahead for rules that do
             not specify a lookahead value.</summary>
+        </member>
+        <member name="F:Loyc.LLParserGenerator.LLParserGenerator.AddCsLineDirectives">
+            <summary>Whether to add #line directives for C# before and after user actions.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.LLParserGenerator.Run(Loyc.Syntax.ISourceFile)">
              <summary>Generates a braced block of code {...} for the grammar 
@@ -1157,7 +1168,7 @@
             </ol>
             </remarks>
         </member>
-        <member name="M:Loyc.LLPG.Macros.LLLPG_lexer(Loyc.Syntax.LNode,Loyc.IMessageSink)">
+        <member name="M:Loyc.LLPG.Macros.LLLPG_lexer(Loyc.Syntax.LNode,LeMP.IMacroContext)">
             <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/> object.</summary>
         </member>
@@ -1166,7 +1177,7 @@
             or <c>option1 = v1, option2 = v2</c>. If the format of a given
             node is invalid, this function yields <c>(null, node)</c>.</summary>
         </member>
-        <member name="M:Loyc.LLPG.Macros.LLLPG_parser(Loyc.Syntax.LNode,Loyc.IMessageSink)">
+        <member name="M:Loyc.LLPG.Macros.LLLPG_parser(Loyc.Syntax.LNode,LeMP.IMacroContext)">
             <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> object.</summary>
         </member>
@@ -1419,9 +1430,6 @@
             default prototype is <c>void Rule();</c>, or if the rule is a 
             starting rule or token, <c>public void Rule();</c>.</summary>
             <remarks>The Basis is also used to provide an error location.</remarks>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.Rule.CreateTryWrapperForRecognizer">
-            <summary>See <see cref="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)"/> for more information.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.Rule.GetMethodSignature">
             <summary>Returns Basis if it's a method signature; otherwise constructs a default signature.</summary>

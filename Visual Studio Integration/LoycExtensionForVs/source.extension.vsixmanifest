@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
-  <Identifier Id="LesSyntaxForVs..37b07bc4-4736-4bc4-998f-1636c69dd5f8">
-    <Name>LesSyntaxForVs</Name>
+  <Identifier Id="LoycSyntaxForVs..37b07bc4-4736-4bc4-998f-1636c69dd5f8">
+    <Name>LoycSyntaxForVs</Name>
     <Author>David Piepgrass</Author>
     <Version>0.9</Version>
     <Description xml:space="preserve">Provides syntax highlighting for .les (Loyc Expression Syntax) files.</Description>

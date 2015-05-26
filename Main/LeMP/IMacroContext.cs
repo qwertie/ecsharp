@@ -54,7 +54,7 @@ namespace LeMP
 		/// <para/>
 		/// If the currently-running macro fails the result may be thrown away
 		/// and the effort of processing the children will have been wasted. If
-		/// the macro succeeds a its <see cref="SimpleMacro"/> attribute does not 
+		/// the macro succeeds a its <see cref="LexicalMacro"/> attribute does not 
 		/// include <c>Mode = MacroMode.NoReprocessing</c>, the children will 
 		/// (normally) be processed again after the macro returns.
 		/// </remarks>

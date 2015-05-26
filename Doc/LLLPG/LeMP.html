@@ -1,0 +1,466 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Untitled Document</title><style></style></head><body>
+<h1 id="avoid-tedious-coding-with-lemp-part-1">Avoid tedious coding with LeMP, Part 1</h1>
+<p>The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration &amp; Linux-compatible editor.</p>
+<h2 id="introduction">Introduction</h2>
+<p>LeMP is a tool that runs user-defined methods to transform syntax trees into other syntax trees.  Each method takes a syntax tree as input, and returns another one as output. LeMP has a bunch of macros built in, and I will only cover four of the most useful ones in this initial article. You can write your own macros too, but I'll save that for a future article.</p>
+<p><img src="LeMPInVS.png" alt="LeMP in Visual Studio"></p>
+<p>I've been working on this and related software for a couple of years, but it's only now that I think this thing is actually useful enough to present to a general audience. Let's get started!</p>
+<p>LeMP comes with a Visual Studio Syntax Highlighter, a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows &amp; Linux. All with complete source code.</p>
+<h2 id="three-really-useful-macros">Three really useful macros</h2>
+<p>C/C++ famously have lexical macros defined with the <code>#define</code> directive. These "macros" are not well-liked for several reasons:</p>
+<ol>
+<li><p>C/C++ macros work at the lexical level, basically pasting text. Since they do not understand the underlying language, you can have bugs like this one:</p>
+<pre><code> /// Input
+ #define SQUARE(x) x * x
+ const int one_hundred = SQUARE(5+5)
+ /// Output
+ const int one_hundred = 5+5 * 5+5;  // oops, that's 35
+</code></pre><p> In contrast, LeMP parses the entire source file, <em>then</em> manipulates the syntax tree. Converting the tree back to C# code is the very last step, and this step will do things like automatically inserting parentheses to prevent this kind of problem.</p>
+</li>
+<li><p>Spooky action at a distance: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with <code>#undef</code>. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like <code>replace</code> (the LeMP equivalent of <code>#define</code>) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently.</p>
+</li>
+<li><p>Limited ability: there just aren't that many things you can accomplish with C/C++ macros; With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article, and not super convenient yet).</p>
+</li>
+<li><p>Weird language: the C/C++ preprocessor has a different syntax from normal C/C++. In contrast, LeMP code simply looks like some kind of enhanced C#.</p>
+</li>
+</ol>
+<p>So let's start with <code>replace</code>, the LeMP equivalent of <code>#define</code>.</p>
+<h3 id="replace">Replace</h3>
+<p><code>replace() {...}</code> is a macro that finds things that match a given pattern and replaces all instances of the pattern with some other pattern. For example,</p>
+<pre><code>/// Input
+replace (MB =&gt; MessageBox.Show, 
+         FMT($fmt, $arg) =&gt; string.Format($fmt, $arg))
+{
+    MB(FMT("Hi, I'm {0}...", name));
+    MB(FMT("I am {0} years old!", name.Length));
+}
+
+/// Output
+MessageBox.Show(string.Format("Hi, I'm {0}...", name));
+MessageBox.Show(string.Format("I am {0} years old!", name.Length));
+</code></pre><p>The braces are optional. If the braces are present, replacement occurs only inside the braces; if you end with a semicolon instead of braces, replacement occurs on all remaining statements in the same block.</p>
+<p>This example requires <code>FMT</code> to take exactly two arguments called <code>$fmt</code> and <code>$arg</code>, but we could also capture any number of arguments or statements by adding the <code>params</code> keyword as shown here:</p>
+<pre><code>FMT($fmt, $(params args)) =&gt; string.Format($fmt, $args) // 1 or more args
+FMT($(params args)) =&gt; string.Format($args)             // 0 or more args
+</code></pre><p><code>replace</code> is more sophisticated tool than C's <code>#define</code> directive. Consider this example:</p>
+<pre><code>replace ({ 
+    foreach ($type $item in $obj.Where($w =&gt; $wpred))
+        $body;
+} =&gt; {
+    foreach ($type $w in $obj) {
+        if ($wpred) {
+            var $item = $w;
+            $body;
+        }
+    }
+})
+{
+    var numbers = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    Console.WriteLine("I wanna tell you about my digits!")
+    foreach (var even in numbers.Where(n =&gt; n % 2 == 0))
+        Console.WriteLine("{0} is even!", even);
+    foreach (var odd  in numbers.Where(n =&gt; n % 2 == 1))
+        Console.WriteLine("{0} is odd!", odd);
+}
+</code></pre><p>Here, <code>replace</code> searches for <code>foreach</code> loops that have a specific form, and replaces them with a more optimized form:</p>
+<pre><code>var numbers = new[] { 
+    1, 2, 3, 4, 5, 6, 7, 8, 9
+};
+Console.WriteLine("I wanna tell you about my digits!")
+foreach (var n in numbers) {
+    if (n % 2 == 0) {
+        var even = n;
+        Console.WriteLine("{0} is even!", even);
+    }
+}
+foreach (var n in numbers) {
+    if (n % 2 == 1) {
+        var odd = n;
+        Console.WriteLine("{0} is odd!", odd);
+    }
+}
+</code></pre><h3 id="unroll">Unroll</h3>
+<p><code>unroll..in</code> is a kind of compile-time <code>foreach</code> loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike <code>replace</code>, <code>unroll</code> can only match simple identifiers on the left side of <code>in</code>.</p>
+<pre><code>/// Input
+void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+{
+    unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
+        if (VAR != null) throw new ArgumentNullException(nameof(VAR));
+    }
+    ...
+}
+/// Output
+void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+{
+    if (firstName != null) 
+        throw new ArgumentNullException(nameof("firstName"));
+    if (lastName != null)
+        throw new ArgumentNullException(nameof("lastName"));
+    if (data != null)
+        throw new ArgumentNullException(nameof("data"));
+    if (phoneNumber != null)
+        throw new ArgumentNullException(nameof("phoneNumber"));
+    ...
+}
+</code></pre><p>This example also used the <code>nameof()</code> macro to convert each variable name to a string. It's one of the simplest macros; here's its implementation in <a href="https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/StandardMacros.cs"><code>StandardMacros.cs</code></a>:</p>
+<pre><code>    [LexicalMacro(@"nameof(id_or_expr)", "Converts an expression to a "
+               +"string (note: original formatting is not preserved)")]
+    public static LNode nameof(LNode nameof, IMacroContext context)
+    {
+        if (nameof.ArgCount != 1)
+            return null; // reject
+        return F.Literal(ParsingService.Current.Print(nameof.Args[0],
+                            context.Sink, ParsingService.Exprs));
+    }
+</code></pre><p>Sadly there's no way to view the documentation attached to the macro except by looking at the source code (hmm, maybe I could write a macro for this...?) </p>
+<p>Some developers have to implement the <code>INotifyPropertyChanged</code> interface a lot. Implementing this interface often involves a lot of boilerplate and code duplication, and it's error prone because the compiler won't tell you if the string you send to <code>PropertyChanged</code> is incorrect (Plus, I would personally question whether <code>INotifyPropertyChanged</code> is the right way to accomplish change notification, but that's a subject for another day). Using normal C#, you can avoid some code duplication by sharing common code in a common method, like this:</p>
+<pre><code>public class DemoCustomer : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    /// Common code shared between all the properties
+    private bool ChangeProperty&lt;T&gt;(ref T field, T newValue, 
+        string propertyName, IEqualityComparer&lt;T&gt; comparer = null)
+    {
+        comparer ??= EqualityComparer&lt;T&gt;.Default;
+        if (field == null ? newValue != null : !field.Equals(newValue))
+        {
+            field = newValue;
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+        return false;
+    }
+
+    private string _customerName = "";
+    public  string CustomerName
+    {
+        get { return _customerName; }
+        set { ChangeProperty(ref _customerName, value, "CustomerName"); }
+    }
+
+    private object _additionalData = null;
+    public  object AdditionalData
+    {
+        get { return _additionalData; }
+        set { ChangeProperty(ref _additionalData, value, "AdditionalData"); }
+    }
+
+    private string _companyName = "";
+    public  string CompanyName
+    {
+        get { return _companyName; }
+        set { ChangeProperty(ref _companyName, value, "AdditionalData"); }
+    }
+
+    private string _phoneNumber = "";
+    public  string PhoneNumber
+    {
+        get { return _phoneNumber; }
+        set { ChangeProperty(ref _phoneNumber, value, "PhoneNumber"); }
+    }
+}
+</code></pre><p>That's not bad, but with <code>unroll</code> we can define those four properties more quickly and without making the mistake I just made (did you spot the mistake?):</p>
+<pre><code>unroll ((TYPE, PROP_NAME) in (
+    (string, CustomerName), 
+    (object, AdditionalData), 
+    (string, CompanyName), 
+    (string, PhoneNumber)
+)) {
+    replace(FIELD_NAME =&gt; concat_id(_, PROP_NAME))
+    {
+        private TYPE FIELD_NAME = "";
+        public  TYPE PROP_NAME
+        {
+            get { return FIELD_NAME; }
+            set { ChangeProperty(ref FIELD_NAME, value, nameof(PROP_NAME)); }
+        }
+    }
+}
+</code></pre><p>This code produces four properties, and each additional property only requires one line of code! Here's the first output:</p>
+<pre><code>private string _CustomerName = "";
+public string CustomerName
+{
+    get {
+        return _CustomerName;
+    }
+    set {
+        ChangeProperty(ref _CustomerName, value, "CustomerName");
+    }
+}
+</code></pre><p>This code is using two extra tricks beyond just <code>unroll</code> and <code>replace</code>:</p>
+<ul>
+<li><code>nameof(PROP_NAME)</code> converts PROP_NAME to a string.</li>
+<li><code>concat_id(_, PROP_NAME)</code> concatenates two identifiers to produce a new identifier; in this case I'm just adding an underscore to the beginning of the <code>PROP_NAME</code>. A synonym for <code>concat_id</code> is <code>_`##`PROP_NAME</code>, which rembles the <code>##</code> operator in C/C++, and you can even write <code>##(_, PROP_NAME)</code>. Finally, you can use this to convert strings to identifiers (<code>concat_id("dog")</code>) or concatenate more than two things (<code>concat_id("dog", 'h&#39;, 0, use)</code>).</li>
+</ul>
+<p>Please note that the <code>replace</code> command is actually required in this example, because the parser understands that </p>
+<pre><code>private TYPE FIELD_NAME = "";
+</code></pre><p>is creating a variable, whereas</p>
+<pre><code>private TYPE concat_id(_, PROP_NAME) = "";
+</code></pre><p>would just confuse the parser: the code appears to be declaring a method called <code>concat_id</code> and assigning a value to it.</p>
+<p>Note: when using <code>replace</code> inside <code>unroll</code> one should generally include curly braces (i.e. <code>replace (...) {...}</code>) so that there are two sets of braces in total. The reason is that when <code>unroll</code> is done, the outer braces disappear, which means that if you didn't use braces with <code>replace</code>, your <code>replace</code> command applies to the <em>entire</em> rest of the block instead of the small bit of code you intended.</p>
+<h3 id="automagic-field-generation">Automagic field generation</h3>
+<p>I don't know about you, but I write a lot of "simple" classes and structs, particularly the kind known as "plain-old data" or POD, meaning, little groups of fields like this:</p>
+<pre><code>public class FullAddress
+{
+    public readonly string Address;
+    public readonly string City;
+    public readonly string Province;
+    public readonly string Country;
+    public readonly string PostalCode;
+    internal FullAddress(string address, string city, 
+                    string province, string country, 
+                    string postalCode, bool log = false)
+    {
+        Address = address;
+        City = city;
+        Province = province;
+        Country = country;
+        PostalCode = postalCode;
+        if (Address != null &amp;&amp; City == null)
+            throw new ArgumentException("Hey, you forgot the city!");
+        if (log)
+            Trace.WriteLine("OMG a new address was just created!!!");
+    }
+    ...
+}
+</code></pre><p>You don't have to write classes like this very many times before you start to get annoyed at having to repeat the same information over and over: each of "address", "city", "province", "country" and "postalCode" are repeated four times with varying case, "string" is repeated <strong>ten</strong> times, and "FullAddress" is repeated twice (three times if you add a default constructor).</p>
+<p>With LeMP and Enhanced C# you get the same effect with much shorter code:</p>
+<pre><code>public class FullAddress {
+    internal FullAddress(
+        public readonly string Address,
+        public readonly string City,
+           public readonly string Province,
+        public readonly string Country,
+        public readonly string PostalCode,
+        bool log = false) 
+    {
+        if (Address != null &amp;&amp; City == null)
+            throw new ArgumentException("Hey, you forgot the city!");
+        if (log)
+            Trace.WriteLine("OMG a new address was just created!!!");
+    }
+    ...
+}
+</code></pre><p>This code generates virtually identical output to the original class above. A macro notices attributes like <code>public</code> on the parameters of the constructor, generates matching fields, and then sets those fields in the body of the constructor. Currently you can't use properties as constructor parameters (but I'll probably add that later).</p>
+<p>A feature similar to this was being considered for C# 6, called "primary constructors". They looked like this:</p>
+<pre><code>struct Pair&lt;T&gt;(T first, T second)
+{
+    public T First { get; } = first;
+    public T Second { get; } = second;
+    ...
+}
+</code></pre><p>But primary constructors were limited:</p>
+<ol>
+<li>You couldn't easily validate the constructor parameters, as I have done in <code>FullAddress</code>.</li>
+<li>You couldn't take an action that wasn't related to assigning a constructor parameter to a field or property, as I have done with <code>log</code>.</li>
+<li>The constructor was forced to be <code>public</code> (<code>FullAddress</code> has an <code>internal</code> constructor). </li>
+</ol>
+<p>In contrast, the feature I'm showing you actually has <em>nothing to do with constructors</em>. True story, when I wrote the unit tests for this feature and I forgot to test it on constructors... so naturally it didn't work on constructors.</p>
+<p>This macro, also known as <a href="https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/SetOrCreateMemberMacro.cs"><code>SetOrCreateMember</code></a>, will work on any method, and you can use the <code>set</code> attribute to merely <em>change</em> a field instead of <em>creating</em> a field:</p>
+<pre><code>/// Input
+string _existingField;
+public float SetUpSquare(set string _existingField, 
+                         private int _createNewField,
+                         float num) { return num*num; }
+
+/// Output
+string _existingField;
+private int _createNewField;
+public float SetUpFields(string existingField, int createNewField, float num)
+{
+    _existingField = existingField;
+    _createNewField = createNewField;
+    return num * num;
+}
+</code></pre><h2 id="installing-lemp">Installing LeMP</h2>
+<p><img src="LeMPStandalone.png" alt="LeMP Standalone"></p>
+<p>If you like this tool, you'll want to run it. Simply download the link that came with this article to get LeMP version 1.3.0. Then you can either </p>
+<ol>
+<li>Run the built-in editor of LeMP.exe by double-clicking on it (LeMP.exe is mainly a command-line tool, so in addition to the editor you'll get a pesky terminal window, sorry about that).</li>
+<li>Install the Visual Studio extensions.</li>
+</ol>
+<p>For very esoteric reasons (long story short: blame Microsoft), it is distributed as two separate parts:</p>
+<ol>
+<li>The Single-File Generator, also known as a Custom Tool. To install, run <code>LoycFileGeneratorForVs.exe</code> (it'll start as Administrator) and click <em>Register (install)</em>. It supports all VS versions from to VS 2005 to VS 2013, including Express editions.</li>
+<li>The syntax highlighter for LES and EC#. To install, run <code>LoycSyntaxForVs2010.vsix</code>. It supports VS 2010, VS 2012, and VS2013, Professional Editions only (including Premium and Ultimate, of course)</li>
+</ol>
+<p>To use the custom tool, </p>
+<ol>
+<li>create an empty text file with a .ecs extension (e.g. hello.ecs)</li>
+<li>write something in it (e.g. <code>using System;</code>)</li>
+<li>Right-click your .ecs file in Solution Explorer and click Properties</li>
+<li>In the Properties panel, change the Custom Tool field to "LeMP" (it's not case sensitive). An output file should appear with an extension of <code>.out.cs</code>.</li>
+</ol>
+<p>Unfortunately, in the end, Visual Studio doesn't quite treat the two extensions as separate things: for some reason I don't understand, the LeMP Custom Tool doesn't use the Loyc DLLs in is own directory, instead it always uses the same DLLs as the syntax highlighter. <strong>If there is even the slightest version mismatch</strong> between the syntax highlighter and the LeMP Custom Tool, LeMP will not work and you'll get an error message like <code>MissingMethodException</code> or "unable to load Loyc.Collections.dll" or something like that. If you get this error, a workaround is to uninstall the syntax highlighter (go to Tools | Extension Manager, Click LoycSyntaxForVs, Uninstall, and Restart Now).</p>
+<p>I hope you don't get the dreaded "Cannot find custom tool 'LeMP' on this system." because that error has many different causes and I have worked very hard to try to avoid it.</p>
+<p>By the way, if you'd like me to write an article about how to write VS syntax highlighters, I can do that too... I already wrote one for <a href="http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator">Single file generators</a>, after all...</p>
+<h2 id="introducing-lllpg">Introducing LLLPG</h2>
+<p>There's one more macro I have to tell you about, and it's huge - literally, it comes in its own 353 KB assembly. That's pretty big for a macro.</p>
+<p>LLLPG, the Loyc LL(k) Parser Generator, generates parsers and lexers from LL(k) grammars. It's best illustrated by an example. Here's a function that parses integers:</p>
+<pre><code>/// Input
+#importMacros(Loyc.LLPG); /// this line is optional if Custom Tool="LLLPG"
+using Loyc.Syntax.Lexing;
+static class MyParser
+{
+    // Configure the parser generator to read data from 'src'
+    LLLPG(lexer(inputSource(src), inputClass(LexerSource)));
+
+    public static rule int ParseInt(string input) @[
+        {var src = (LexerSource)input;}
+        ' &#39;*
+        (neg:&#39;-&#39;)?
+        (d:&#39;0&#39;..&#39;9' {$result = $result * 10 + ($d - '0&#39;);})+ 
+        {if (neg == &#39;-&#39;) return -$result;}
+        // LLLPG returns $result automatically
+    ];
+}
+
+/// Output
+using Loyc.Syntax.Lexing;
+static class MyParser
+{
+    public static int ParseInt(string input)
+    {
+        int la0;
+        int d = 0;
+        int neg = 0;
+        int result = 0;
+        // line 10
+        var src = (LexerSource) input;
+        // Line 11: ([ ])*
+        for (;;) {
+            la0 = src.LA0;
+            if (la0 == ' &#39;)
+                src.Skip();
+            else
+                break;
+        }
+        // Line 12: ([\-])?
+        la0 = src.LA0;
+        if (la0 == &#39;-&#39;)
+            neg = src.MatchAny();
+        d = src.MatchRange(&#39;0&#39;, '9&#39;);
+        // line 13
+        result = result * 10 + (d - '0&#39;);
+        // Line 13: ([0-9])*
+        for (;;) {
+            la0 = src.LA0;
+            if (la0 &gt;= '0' &amp;&amp; la0 &lt;= '9&#39;) {
+                d = src.MatchAny();
+                // line 13
+                result = result * 10 + (d - '0&#39;);
+            } else
+                break;
+        }
+        if (neg == &#39;-&#39;)
+            return -result;
+        return result;
+    }
+}
+</code></pre><p>To use this macro you also need an implementation of the API functions that you see in the generated code, such as <code>LA0</code>, <code>Skip()</code>, etc. The recommended implementations of these APIs are the <code>LexerSource</code> and <code>ParserSource&lt;Token&gt;</code> classes in Loyc.Syntax.dll, but standalone (no-DLL) implementations of the LLLPG APIs are also bundled with LLLPG.</p>
+<p>Note: this example uses new features of LLLPG 1.3 which (as of May 25) are not published on CodeProject but are published on GitHub in the <a href="https://github.com/qwertie/Loyc">Loyc repo</a>.</p>
+<h2 id="introducing-enhanced-c-">Introducing Enhanced C#</h2>
+<p>Enhanced C# is normal C# with a bunch of extra syntax. This actually has nothing to do with LeMP, aside from the fact that a some of the new syntax exists simply to allow macros to make use of it. Unlike some other macro systems, LeMP and EC# <strong>do not</strong> allow you to define new syntax. EC# is a "fixed-function" parser, not a programmable one.</p>
+<p>A few bits of this syntax have been used in the article already:</p>
+<ul>
+<li>Macro blocks: there is a new statement of the form <code>identifier (args) {statements;}</code>. It is used to invoke macros, although there are also many macros that don't use this syntax. Macro blocks can also have the simpler form <code>identifier {statements;}</code>. Property getters and setters like <code>get {...}</code> and <code>set {...}</code> are actually parsed using this rule.</li>
+<li>Methods as binary operators: given a method like <code>Add(x, y)</code>, you are allowed to write <code>x `Add` y</code> instead. It means the same thing.</li>
+<li>Attributes on expressions: words like <code>public</code>, <code>static</code>, <code>override</code>, and <code>params</code> are "attribute keywords" that modify the meaning of whatever comes afterward. In normal C# you can only put these attributes on things like fields, methods, and classes; but enhanced C# allows you to put attributes on <em>any</em> expression, in case a macro might use the attribute. That explains why <code>Constructor(public readonly int Foo) {}</code> is a valid statement. It also explains why <code>$(params args)</code> is used in the <code>replace</code> macro: the <code>replace</code> macro is taking advantage of the fact that <code>params</code> is already defined as a C# attribute keyword!</li>
+<li>Word attributes: I observed that normal C# has something called "contextual keywords" like <code>yield</code> and <code>partial</code> that are normally <em>not</em> keywords, unless used in a specific context. I generalized this idea by allowing my parser to treat <em>any</em> identifier as a contextual keyword. Thus <code>set</code> is a contextual keyword in <code>set string _existingField</code> and <code>rule</code> is a contextual keyword in <code>public static rule int ParseInt(string input)</code>.</li>
+<li>Token trees: as I mentioned, EC# is a fixed language with a fixed syntax. However, one of the bits of syntax is called a token tree, which has the form <code>@[ list of tokens ]</code>. A token tree is a collection of tokens with parentheses, brackets and braces grouped together (e.g. <code>@[ } ]</code> is an invalid token tree because the closing brace isn't matched with an opening brace). Long after the file is parsed, the token tree can be reparsed by a macro (e.g. LLLPG) to give meaning to its contents.</li>
+</ul>
+<p>EC# includes many other adjustments to the syntax of C#, and I believe they are nearly 100% backward compatible with standard C#, although the parser may contain bugs and I welcome your bug reports.</p>
+<p>You might be wondering, "hey, didn't you have to do a lot of work to extend the C# parser to support all this extra syntax?" and the answer is: actually, no, not really; I mean it was a lot of work to parse C# from scratch, but I doubt my Enhanced C# parser is any more complex than the standard one. In many ways the syntax of EC# is more <em>regular</em> than standard C#; for instance a method's formal parameters are essentially just a list of expressions, so this method is parsed successfully:</p>
+<pre><code>public void Foo&lt;T&gt;(new T[] { "I don't think this belongs here" }) {}
+</code></pre><p>Effectively, I've shifted some of the burden of checking valid input to later stages of the compiler--stages which, incidentally, don't exist yet. This design has two advantages:</p>
+<ol>
+<li><p>Macros can take advantage of any strange syntax this allows. For example, remember the replace macro?</p>
+<pre><code> replace ($obj.ToString() =&gt; (string)$obj) {...}
+</code></pre><p> The expression <code>$obj.ToString() =&gt; (string)$obj</code> re-uses the lambda operator <code>=&gt;</code> for a new purpose it was never designed for. But in order for this to parse successfully, the parser has to be pretty forgiving in what it will accept.</p>
+</li>
+<li><p>The parser tends to be slightly <em>simpler</em> than a standard C# parser because, having made the language more regular, my parser doesn't have to include as many special cases.</p>
+</li>
+</ol>
+<h2 id="everything-is-an-expression">Everything is an expression</h2>
+<p>Enhanced C# is built on the concept of a "universal syntax tree" that I call the <a href="https://github.com/qwertie/LoycCore/wiki/Loyc-trees">Loyc tree</a>. Rather than parsing to a syntax tree designed specifically for C#, the EC# parser parses to this more general form. If you want to write your own macros, you'll probably have to deal with Loyc trees.</p>
+<p>If you've ever programmed in LISP, you know that there is no separate concept of "statements" and "expressions": <em>everything</em> is an expression. Arguably the most interesting thing about Enhanced C# is that it's also an expression-based language. Of course, the parser must make a clear distinction between statements and expressions: <code>X * Y;</code> is a pointer variable declaration, whereas <code>N = (X * Y);</code> is a multiplication. Statements end in semicolons, while expressions, er, don't.</p>
+<p>But EC# tries hard to transform C# into an expression-based language, and once parsing is complete, the distinction between statements and expressions disappears.</p>
+<p>For example, although no translation is implemented from this to plain C#, I hope this will work someday soon:</p>
+<pre><code>int digit = '0' + { 
+    switch(str)
+    {
+        case "one":   1
+        case "two":   2
+        case "three": 3
+    }
+}; // for now, outer braces are required
+</code></pre><p>There being no distinction between statements and expressions, it's no big surprise that this works:</p>
+<pre><code>/// Input
+string nums = string.Concat(
+    unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }, " [the end]"
+);
+/// Output
+string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
+</code></pre><p><code>unroll</code> doesn't know or care that it's located in an "expression context" instead of a "statement context".</p>
+<p>When the parser is parsing expressions (e.g. <code>1,2,3</code>) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore <code>nameof(N)</code> is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the <code>unroll</code> macro is done, it deletes itself along with the curly braces, leaving only a list of expressions <code>"1", "2", "3"</code>, etc. Because these are <em>printed</em> in a location where <em>expressions</em>, are expected, they are separated by commas and not semicolons.</p>
+<p>On the other hand if we simply write</p>
+<pre><code>unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }
+</code></pre><p>The output <em>is</em> separated by semicolons:</p>
+<pre><code>"1";
+"2";
+"3";
+"4";
+"5";
+"6";
+"7";
+</code></pre><p>This output, of course, isn't valid C#, but it is a perfectly valid syntax tree. Actually more of a list. Whatever.</p>
+<h3 id="welcome-to-bizarro-world">Welcome to Bizarro World</h3>
+<p>This concept of an expression-based language explains some otherwise puzzling things about EC#. For example, if I give EC# the following input:</p>
+<pre><code>[#static]
+@#fn(int, Square, #(#var(int, x)), @`{}`( #return(x*x) ));
+</code></pre><p>It spits out the following output:</p>
+<pre><code>static int Square(int x)
+{
+    return x * x;
+}
+</code></pre><p>What the hell happened? No, <code>@#fn</code> is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. <code>#fn</code> means "define a function". The <code>@</code> sign simply means "this is an identifier, not a preprocessor directive". It's only <em>required</em> for identifiers like <code>#if</code> that coincidentally are also preprocessor directives, and for identifiers that contain punctuation marks. </p>
+<p>That's right. In EC#, identifiers can contain punctuation marks.</p>
+<p>Anyway, the <code>#</code> sign is otherwise <em>not</em> special to the parser; <code>#</code> is treated as an identifier character, not unlike an underscore.</p>
+<p><code>#fn</code> takes four arguments (and an unlimited number of attributes): the return type (<code>int</code>), the method name (<code>Square</code>), the argument list (<code>#(#var(int, x))</code> is a list containing a single item; <code>#var(int, x)</code> declares a variable called <code>x</code>), and the method body. The rarely-used notation <code>@`{}` </code> is an identifier named <code>"{}"</code> that is being "called" with one parameter, the <code>#return</code> statement. Of course, the braces themselves are not a function, and when I say <code>@`{}` </code> is being "called", I simply mean that expressions, which we call "arguments", are being associated with an identifier named "{}".</p>
+<p>There's something called an "EC# node printer" whose job is to print C# code. When it sees a tree like</p>
+<pre><code>@#fn(#of(@`?`, double), Sqrt, #(#var(double, x)), 
+    { return @`?`(x &lt; 0, null, Math.Sqrt(x)); }
+);
+</code></pre><p>It recognizes this as a perfectly normal syntax tree for a function declaration, so it  prints</p>
+<pre><code>double? Sqrt(double x)
+{
+    return x &lt; 0 ? null : Math.Sqrt(x);
+}
+</code></pre><p>As you can see, you can rather freely mix "prefix notation" like <code>#var(double, x)</code> with ordinary notation like <code>Math.Sqrt(x)</code>. I recommend <em>not</em> using things like <code>#fn</code> or <code>#var</code> directly, since the actual syntax tree for a method or variable declaration is not what I'd call stable; I might reform these trees in the future. </p>
+<p>The nice thing about representing programming languages with a "Loyc tree" is that it provides a starting point for converting code between programming languages. In theory one could define some kind of "<a href="https://github.com/qwertie/Loyc/wiki/Standard-Imperative-Language">Standard Imperative Language</a>" as an intermediate representation, a go-between that would help convert any source language to any target language.</p>
+<p>The other nice thing about Loyc trees is that LeMP can operate on any Loyc tree, it doesn't matter what programming language it came from. Currently LeMP only works on two languages, EC# and a small language I designed called <a href="https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax">Loyc Expression Syntax (LES)</a>, but someday I hope it will support other languages like Java, ES6, Python, or whatever the community is willing to write parsers and printers for.</p>
+<p>You might find it fun to go in the reverse direction and see what kind of syntax tree your ordinary C# code is parsed as. Just write some normal C# code in your .ecs file:</p>
+<pre><code>using System.Collections.Generic;
+
+class MyList&lt;T&gt; : IList&lt;T&gt; {
+    int _count;
+    public int Count { get { return this._count; } }
+}
+</code></pre><p>Then change the Visual Studio Custom Tool to "LeMP_les" to see the output as an <a href="https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax">LES</a> syntax tree:</p>
+<pre><code>#import(System.Collections.Generic);
+#class(#of(MyList, T), #(#of(IList, T)), {
+    #var(#int32, _count);
+    [#public] #property(#int32, Count, {
+        get({
+            #return(#this._count);
+        });
+    });
+});
+</code></pre><p>Okay, that's enough bizzaro world for one day.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Final thought: if you could add features to C#, what would they be? If there's a way to treat that feature as a purely syntactic transformation ("syntactic sugar"), chances are good there's some way to accomplish it with LeMP.</p>
+<p>I have many more macros to show you, but those above are perhaps the most useful ones I've made, and depending on how much interest people show here, I'll publish it another article sooner or later.</p>
+
+</body></html>

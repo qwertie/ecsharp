@@ -15,6 +15,11 @@
         <member name="T:System.Collections.Generic.IReadOnlyCollection`1">
             <summary>Read-only interface defined in .NET 4.5 (just IEnumerable and Count).</summary>
         </member>
+        <member name="T:Loyc.Collections.EnumeratorBase`1">
+            <summary>Base class to help you implement the standard IEnumerator{T}
+            interface. All you have to do is override MoveNext() and, when successful,
+            set the Current property.</summary>
+        </member>
         <member name="T:Loyc.Collections.Impl.ListExBase`1">
             <summary>A base class for classes that wish to implement <see cref="T:Loyc.Collections.IListEx`1"/>.
             Provides default implementations for most of the methods.</summary>

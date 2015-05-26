@@ -43,9 +43,9 @@ namespace Loyc.LLParserGenerator
 		void Process(Rule rule)
 		{
 			// Create $result variable if it was used
-			bool usingResult = _data.OtherReferences.ContainsKey(_resultId);
+			bool usingResult = _data.OtherReferences.ContainsKey(_resultId) || _data.ProperLabels.TryGetValue(_result, false);
 			if (usingResult && rule.ReturnType != null) {
-				_data.ProperLabels.Add(_result);
+				_data.ProperLabels[_result] = true;
 				var type = rule.ReturnType;
 				_newVarInitializers[_result] = Pair.Create(type, F.Var(type, _result, DefaultOf(type)));
 			}
@@ -75,8 +75,8 @@ namespace Loyc.LLParserGenerator
 			// The integer counts the number of times that an unlabeled thing, that 
 			// was referenced by code block, appears in the grammar.
 			public Dictionary<LNode, int> OtherReferences = new Dictionary<LNode, int>();
-			// Labels encountered in predicates
-			public HashSet<Symbol> ProperLabels = new HashSet<Symbol>();
+			// Labels encountered in predicates; the bool indicates whether ':' was used
+			public Dictionary<Symbol, bool> ProperLabels = new Dictionary<Symbol, bool>();
 
 			#region Step 1: data gathering
 
@@ -90,7 +90,7 @@ namespace Loyc.LLParserGenerator
 				VisitCode(pred, pred.PreAction);
 				VisitCode(pred, pred.PostAction);
 				if (pred.VarLabel != null)
-					ProperLabels.Add(pred.VarLabel);
+					ProperLabels[pred.VarLabel] = ProperLabels.TryGetValue(pred.VarLabel, false) | pred.ResultSaver == null;
 			}
 			void VisitCode(Pred pred, LNode code)
 			{
@@ -129,7 +129,7 @@ namespace Loyc.LLParserGenerator
 					if (node.Calls(S.Substitute, 1)) { // found $subst_expr
 						var label = node.Args[0];
 						if (label.IsId) {
-							if (ProperLabels.Contains(label.Name))
+							if (ProperLabels.ContainsKey(label.Name))
 								return label;
 							else if (_rules.ContainsKey(label.Name))
 								return F.Id(PickVarNameForRuleName(label.Name));

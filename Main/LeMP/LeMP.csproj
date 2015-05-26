@@ -200,8 +200,14 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.TextEditor, Version=3.2.1.6466, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\ICSharpCode.TextEditor.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -214,13 +220,35 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler.cs" />
+    <Compile Include="DemoWindow\FindAndReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DemoWindow\FindAndReplaceForm.Designer.cs">
+      <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DemoWindow\Globals.cs" />
+    <Compile Include="DemoWindow\InputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DemoWindow\LempDemoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DemoWindow\LempDemoForm.Designer.cs">
+      <DependentUpon>LempDemoForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DemoWindow\LempDemoPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DemoWindow\LempDemoPanel.Designer.cs">
+      <DependentUpon>LempDemoPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="IMacroContext.cs" />
     <Compile Include="MacroProcessor.cs" />
     <Compile Include="MacroProcessorTask.cs" />
     <Compile Include="MacroProcessorTests.cs" />
     <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleMacro.cs" />
+    <Compile Include="MacroAttributes.cs" />
     <Compile Include="StandardMacros\AttrMacroRegistrar.cs" />
     <Compile Include="StandardMacros\BackingFieldMacro.cs" />
     <Compile Include="StandardMacros\CodeQuoteMacro.cs" />
@@ -261,6 +289,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DemoWindow\FindAndReplaceForm.resx">
+      <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DemoWindow\LempDemoForm.resx">
+      <DependentUpon>LempDemoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DemoWindow\LempDemoPanel.resx">
+      <DependentUpon>LempDemoPanel.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

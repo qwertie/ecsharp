@@ -163,10 +163,10 @@ namespace LeMP
 				}
 			}
 		}
-		SimpleMacro AsDelegate(MethodInfo method)
+		LexicalMacro AsDelegate(MethodInfo method)
 		{
 			try {
-				return (SimpleMacro)Delegate.CreateDelegate(typeof(SimpleMacro), method);
+				return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method);
 			} catch (Exception e) {
 				_sink.Write(Severity.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
 				return null;
@@ -235,7 +235,7 @@ namespace LeMP
 
 	internal class MacroInfo : IComparable<MacroInfo>
 	{
-		public MacroInfo(Symbol @namespace, Symbol name, SimpleMacro macro, MacroMode mode)
+		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, MacroMode mode)
 		{
 			Namespace = @namespace; Name = name; Macro = macro; Mode = mode;
 			if ((Mode & MacroMode.PriorityMask) == 0)
@@ -243,7 +243,7 @@ namespace LeMP
 		}
 		public Symbol Namespace;
 		public Symbol Name;
-		public SimpleMacro Macro;
+		public LexicalMacro Macro;
 		public MacroMode Mode;
 
 		public int CompareTo(MacroInfo other) // compare priorities

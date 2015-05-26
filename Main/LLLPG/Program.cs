@@ -10,6 +10,7 @@ using Loyc.Syntax.Les;
 using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Syntax;
+using Loyc.Syntax.Tests;
 using Ecs.Parser;
 
 namespace Loyc.LLParserGenerator
@@ -40,7 +41,7 @@ namespace Loyc.LLParserGenerator
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				LeMP.Compiler c = LeMP.Compiler.ProcessArguments(argList, options, filter, typeof(LeMP.Prelude.Les.Macros));
+				LeMP.Compiler c = LeMP.Compiler.ProcessArguments(options, filter, typeof(LeMP.Prelude.Les.Macros), argList);
 				LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 				if (c != null) {
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
@@ -96,6 +97,8 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
+			RunTests.Run(new LexerSourceTests_Calculator());
+			RunTests.Run(new ParserSourceTests_Calculator());
 			RunTests.Run(new LeMP.MacroProcessorTests());
 			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());

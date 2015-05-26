@@ -1,12 +1,16 @@
 Avoid tedious coding with LeMP, Part 1
 ======================================
-The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration!
+The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor.
 
 Introduction
 ------------
 LeMP is a tool that runs user-defined methods to transform syntax trees into other syntax trees.  Each method takes a syntax tree as input, and returns another one as output. LeMP has a bunch of macros built in, and I will only cover four of the most useful ones in this initial article. You can write your own macros too, but I'll save that for a future article.
 
+![LeMP in Visual Studio](LeMPInVS.png)
+
 I've been working on this and related software for a couple of years, but it's only now that I think this thing is actually useful enough to present to a general audience. Let's get started!
+
+LeMP comes with a Visual Studio Syntax Highlighter, a Visual Studio Custom Tool, command-line tools, and a standalone editor that works on Windows & Linux. All with complete source code.
 
 Three really useful macros
 --------------------------
@@ -25,7 +29,7 @@ C/C++ famously have lexical macros defined with the `#define` directive. These "
 
 2. Spooky action at a distance: C/C++ macros have global scope. If you define one inside a function, it continues to exist beyond the end of the function unless you explicitly get rid of it with `#undef`. Even worse, header files often define macros, which can sometimes accidentally interfere with the meaning of other header files or source files. In contrast, LeMP macros like `replace` (the LeMP equivalent of `#define`) only affect the current block (between braces). Also, one file cannot affect another file in any way, so many files can be processed concurrently.
 
-3. Limited ability: there just aren't that many things you can accomplish with C/C++ macros; With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article, and not very convenient yet).
+3. Limited ability: there just aren't that many things you can accomplish with C/C++ macros; With LeMP you can load user-defined macros that can do arbitrary transformations (although it's outside the scope of this article, and not super convenient yet).
 
 4. Weird language: the C/C++ preprocessor has a different syntax from normal C/C++. In contrast, LeMP code simply looks like some kind of enhanced C#.
 
@@ -323,7 +327,14 @@ This macro, also known as [`SetOrCreateMember`](https://github.com/qwertie/Loyc/
 Installing LeMP
 ---------------
 
-If you like this tool, no doubt you'll want to install it. Simply download the link that came with this article to get LeMP version... uh, let's call it 1.3.0 (I've actually been giving version numbers to LLLPG (see below) and neglected LeMP itself. For very esoteric reasons (long story short: blame Microsoft), it is distributed as two separate parts:
+![LeMP Standalone](LeMPStandalone.png)
+
+If you like this tool, you'll want to run it. Simply download the link that came with this article to get LeMP version 1.3.0. Then you can either 
+
+1. Run the built-in editor of LeMP.exe by double-clicking on it (LeMP.exe is mainly a command-line tool, so in addition to the editor you'll get a pesky terminal window, sorry about that).
+2. Install the Visual Studio extensions.
+
+For very esoteric reasons (long story short: blame Microsoft), it is distributed as two separate parts:
 
 1. The Single-File Generator, also known as a Custom Tool. To install, run `LoycFileGeneratorForVs.exe` (it'll start as Administrator) and click _Register (install)_. It supports all VS versions from to VS 2005 to VS 2013, including Express editions.
 2. The syntax highlighter for LES and EC#. To install, run `LoycSyntaxForVs2010.vsix`. It supports VS 2010, VS 2012, and VS2013, Professional Editions only (including Premium and Ultimate, of course)
@@ -337,9 +348,9 @@ To use the custom tool,
 
 Unfortunately, in the end, Visual Studio doesn't quite treat the two extensions as separate things: for some reason I don't understand, the LeMP Custom Tool doesn't use the Loyc DLLs in is own directory, instead it always uses the same DLLs as the syntax highlighter. **If there is even the slightest version mismatch** between the syntax highlighter and the LeMP Custom Tool, LeMP will not work and you'll get an error message like `MissingMethodException` or "unable to load Loyc.Collections.dll" or something like that. If you get this error, a workaround is to uninstall the syntax highlighter (go to Tools | Extension Manager, Click LoycSyntaxForVs, Uninstall, and Restart Now).
 
-I'm hoping you don't get the dreaded "Cannot find custom tool 'LeMP' on this system." because that error has many different causes and I have worked very hard to try to avoid it.
+I hope you don't get the dreaded "Cannot find custom tool 'LeMP' on this system." because that error has many different causes and I have worked very hard to try to avoid it.
 
-By the way, if you'd like me to write an article about how to write VS syntax highlighters, I can do that too... I already wrote one for [Single file generators](http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator).
+By the way, if you'd like me to write an article about how to write VS syntax highlighters, I can do that too... I already wrote one for [Single file generators](http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator), after all...
 
 Introducing LLLPG
 -----------------
@@ -362,6 +373,7 @@ LLLPG, the Loyc LL(k) Parser Generator, generates parsers and lexers from LL(k) 
 			(neg:'-')?
 			(d:'0'..'9' {$result = $result * 10 + ($d - '0');})+ 
 			{if (neg == '-') return -$result;}
+			// LLLPG returns $result automatically
 		];
 	}
 
@@ -415,8 +427,6 @@ Note: this example uses new features of LLLPG 1.3 which (as of May 25) are not p
 Introducing Enhanced C#
 -----------------------
 
-You might be wondering, "hey, didn't you have to do a lot of work to extend the C# parser to support all this extra syntax?" and the answer is: actually, no, not really; I doubt my Enhanced C# parser is any more complex than the standard one.
-
 Enhanced C# is normal C# with a bunch of extra syntax. This actually has nothing to do with LeMP, aside from the fact that a some of the new syntax exists simply to allow macros to make use of it. Unlike some other macro systems, LeMP and EC# **do not** allow you to define new syntax. EC# is a "fixed-function" parser, not a programmable one.
 
 A few bits of this syntax have been used in the article already:
@@ -428,6 +438,23 @@ A few bits of this syntax have been used in the article already:
 - Token trees: as I mentioned, EC# is a fixed language with a fixed syntax. However, one of the bits of syntax is called a token tree, which has the form `@[ list of tokens ]`. A token tree is a collection of tokens with parentheses, brackets and braces grouped together (e.g. `@[ } ]` is an invalid token tree because the closing brace isn't matched with an opening brace). Long after the file is parsed, the token tree can be reparsed by a macro (e.g. LLLPG) to give meaning to its contents.
 
 EC# includes many other adjustments to the syntax of C#, and I believe they are nearly 100% backward compatible with standard C#, although the parser may contain bugs and I welcome your bug reports.
+
+You might be wondering, "hey, didn't you have to do a lot of work to extend the C# parser to support all this extra syntax?" and the answer is: actually, no, not really; I mean it was a lot of work to parse C# from scratch, but I doubt my Enhanced C# parser is any more complex than the standard one. In many ways the syntax of EC# is more _regular_ than standard C#; for instance a method's formal parameters are essentially just a list of expressions, so this method is parsed successfully:
+
+	public void Foo<T>(new T[] { "I don't think this belongs here" }) {}
+
+Effectively, I've shifted some of the burden of checking valid input to later stages of the compiler--stages which, incidentally, don't exist yet. This design has two advantages:
+
+1. Macros can take advantage of any strange syntax this allows. For example, remember the replace macro?
+
+		replace ($obj.ToString() => (string)$obj) {...}
+
+    The expression `$obj.ToString() => (string)$obj` re-uses the lambda operator `=>` for a new purpose it was never designed for. But in order for this to parse successfully, the parser has to be pretty forgiving in what it will accept.
+
+2. The parser tends to be slightly _simpler_ than a standard C# parser because, having made the language more regular, my parser doesn't have to include as many special cases.
+
+Everything is an expression
+---------------------------
 
 Enhanced C# is built on the concept of a "universal syntax tree" that I call the [Loyc tree](https://github.com/qwertie/LoycCore/wiki/Loyc-trees). Rather than parsing to a syntax tree designed specifically for C#, the EC# parser parses to this more general form. If you want to write your own macros, you'll probably have to deal with Loyc trees.
 
@@ -446,7 +473,7 @@ For example, although no translation is implemented from this to plain C#, I hop
 		}
 	}; // for now, outer braces are required
 
-Since there's no distinction between statements and expressions, it's no big surprise that this works:
+There being no distinction between statements and expressions, it's no big surprise that this works:
 
 	/// Input
 	string nums = string.Concat(
@@ -454,6 +481,8 @@ Since there's no distinction between statements and expressions, it's no big sur
 	);
 	/// Output
 	string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
+
+`unroll` doesn't know or care that it's located in an "expression context" instead of a "statement context".
 
 When the parser is parsing expressions (e.g. `1,2,3`) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore `nameof(N)` is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the `unroll` macro is done, it deletes itself along with the curly braces, leaving only a list of expressions `"1", "2", "3"`, etc. Because these are _printed_ in a location where _expressions_, are expected, they are separated by commas and not semicolons.
 
@@ -542,4 +571,4 @@ Conclusion
 
 Final thought: if you could add features to C#, what would they be? If there's a way to treat that feature as a purely syntactic transformation ("syntactic sugar"), chances are good there's some way to accomplish it with LeMP.
 
-I have many more macros to introduce, and depending on how much interest people show here, I'll publish it another article sooner or later.
+I have many more macros to show you, but those above are perhaps the most useful ones I've made, and depending on how much interest people show here, I'll publish it another article sooner or later.

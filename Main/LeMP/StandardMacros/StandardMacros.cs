@@ -89,11 +89,11 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"nameof(id_or_expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
-		public static LNode @nameof(LNode @nameof, IMessageSink sink)
+		public static LNode nameof(LNode nameof, IMacroContext context)
 		{
-			if (@nameof.ArgCount != 1)
-				return null;
-			return F.Literal(ParsingService.Current.Print(@nameof.Args[0], sink, ParsingService.Exprs));
+			if (nameof.ArgCount != 1)
+				return null; // reject
+			return F.Literal(ParsingService.Current.Print(nameof.Args[0], context.Sink, ParsingService.Exprs));
 		}
 		
 		#endregion

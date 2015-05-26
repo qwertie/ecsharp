@@ -33,10 +33,10 @@ namespace LeMP
 	/// <see cref="LexicalMacroAttribute"/> on each macro in the class. The macros 
 	/// must be public static methods.
 	/// </remarks>
-	public delegate LNode SimpleMacro(LNode node, IMacroContext context);
+	public delegate LNode LexicalMacro(LNode node, IMacroContext context);
 
 	/// <summary>Marks a class to be searched for macros.</summary>
-	/// <remarks>The method signature of a macro must be <see cref="SimpleMacro"/> and
+	/// <remarks>The method signature of a macro must be <see cref="LexicalMacro"/> and
 	/// it must be marked with <see cref="LexicalMacroAttribute"/>.</remarks>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 	public class ContainsMacrosAttribute : Attribute
@@ -46,7 +46,7 @@ namespace LeMP
 	/// <summary>Marks a method as an LEL simple macro.</summary>
 	/// <remarks>
 	/// To be recognized as a macro, the method must be public and static and its 
-	/// signature must be <see cref="SimpleMacro"/>. A class will not be automatically
+	/// signature must be <see cref="LexicalMacro"/>. A class will not be automatically
 	/// searched for macros unless the class is marked with <see cref="ContainsMacrosAttribute"/>.</remarks>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
 	public class LexicalMacroAttribute : Attribute

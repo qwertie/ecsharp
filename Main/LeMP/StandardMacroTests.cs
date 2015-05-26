@@ -224,6 +224,8 @@ namespace LeMP
 					"string _name; public string Name { get { return _name; } set { _name = value; } }");
 			TestEcs("[[A] field] [B, C] public string Name { get; }",
 					"[A] string _name; [B, C] public string Name { get { return _name; } }");
+			TestEcs("public string Name { get; protected set; }",
+			        "public string Name { get; protected set; }");
 		}
 
 		[Test]
@@ -500,10 +502,12 @@ namespace LeMP
 			// Nested replacements
 			TestEcs(@"replace(X => Y, X($(params p)) => X($p)) { X = X(X, Y); }",
 			        @"Y = X(Y, Y);");
-			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a * $b) => Mul($a, $b)) { var y = 2*x*2 + 3*x + 4; }", 
+			// Note: $a * $b doesn't work because it is seen as a variable decl
+			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a`*`$b) => Mul($a, $b))
+			          { var y = 2*x*2 + 3*x + 4; }", 
 			        @"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
 
-			TestEcs(@"replace(TO=>DO) {}", @"");
+			//TestEcs(@"replace(TO=>DO) {}", @"");
 		}
 
 		[Test]

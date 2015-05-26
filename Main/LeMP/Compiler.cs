@@ -14,6 +14,7 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Threading;
 using LeMP.Prelude;
+using System.Threading;
 
 namespace LeMP
 {
@@ -39,6 +40,7 @@ namespace LeMP
 		public static Dictionary<char, string> ShortOptions = new Dictionary<char,string>()
 			{ {'o',"out"}, {'m',"macros"} };
 
+		[STAThread] // Required by ICSharpCode.TextEditor
 		public static void Main(string[] args)
 		{
 			BMultiMap<string,string> options = new BMultiMap<string,string>();
@@ -53,6 +55,13 @@ namespace LeMP
 				ShowHelp(KnownOptions.OrderBy(p => p.Key));
 				return;
 			}
+			if (options.ContainsKey("editor")) {
+				Console.WriteLine("Starting editor...");
+				System.Windows.Forms.Application.EnableVisualStyles();
+				System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+				System.Windows.Forms.Application.Run(new TextEditor.LempDemoForm());
+				return;
+			}
 
 			Severity minSeverity = Severity.Note;
 			#if DEBUG
@@ -60,15 +69,30 @@ namespace LeMP
 			#endif
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-			Compiler c = ProcessArguments(argList, options, filter, typeof(Macros));
+			Compiler c = ProcessArguments(options, filter, typeof(Macros), argList);
 			Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 			if (c != null) {
+				c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);
 				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 				using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
 					c.Run();
 			} else if (args.Length == 0) {
 				ShowHelp(KnownOptions.OrderBy(p => p.Key));
-				Console.WriteLine("Running unit tests...");
+
+				Console.WriteLine();
+				Console.WriteLine("LeMP started without arguments. Starting editor (--editor)");
+
+				var thread = new ThreadEx(() => {
+					System.Windows.Forms.Application.EnableVisualStyles();
+					System.Windows.Forms.Application.Run(new TextEditor.LempDemoForm());
+				});
+				thread.Thread.SetApartmentState(ApartmentState.STA);
+				thread.Start();
+
+				Console.WriteLine("Press Enter to run unit tests. Using the editor? Keep the terminal open.");
+				Console.ReadLine();
+
 				RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
@@ -84,34 +108,34 @@ namespace LeMP
 			RunTests.Run(new StandardMacroTests());
 		}
 
-		public static Compiler ProcessArguments(List<string> inputFiles, BMultiMap<string, string> options, SeverityMessageFilter sink, Type prelude)
+		public static Compiler ProcessArguments(BMultiMap<string, string> options, SeverityMessageFilter sink, Type prelude, List<string> inputFiles)
 		{
 			if (inputFiles.Count == 0)
 			{
 				sink.Write(Severity.Error, null, "No input provided, stopping.");
 				return null;
 			}
-
-			string value;
-			if (options.TryGetValue("verbose", out value) && value != "false")
-			{
-				try { // Enum.TryParse() does not exist before .NET 4 so use Enum.Parse
-					sink.MinSeverity = (Severity)Enum.Parse(typeof(Severity), value);
-				} catch (Exception) { // Docs say OverflowException, but that just sounds wrong
-					sink.MinSeverity = Severity.Verbose;
-				}
-			}
-
-			var c = new Compiler(sink, prelude, inputFiles);
+			Compiler c = new Compiler(sink, prelude);
+			c.Files = new List<InputOutput>(OpenSourceFiles(sink, inputFiles));
 			return ProcessArguments(c, options) ? c : null;
 		}
 		public static bool ProcessArguments(Compiler c, BMultiMap<string, string> options)
 		{
-			IMessageSink sink = c.Sink;
-			if (c.Files.Count == 0)
-				return false;
-
 			string value;
+			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.Note);
+			if (options.TryGetValue("verbose", out value))
+			{
+				if (value != "false") {
+					try { // Enum.TryParse() does not exist before .NET 4 so use Enum.Parse
+						filter.MinSeverity = (Severity)Enum.Parse(typeof(Severity), value);
+					} catch (Exception) { // Docs say OverflowException, but that just sounds wrong
+						filter.MinSeverity = Severity.Verbose;
+					}
+				}
+			}
+			
+			IMessageSink sink = c.Sink = filter;
+			
 			if (options.TryGetValue("max-expand", out value))
 				TryCatch("While parsing max-expand", sink, () => c.MaxExpansions = int.Parse(value));
 
@@ -214,19 +238,20 @@ namespace LeMP
 		};
 		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 
-		public static void ShowHelp(IEnumerable<KeyValuePair<string, Pair<string, string>>> knownOptions)
+		public static void ShowHelp(IEnumerable<KeyValuePair<string, Pair<string, string>>> knownOptions, TextWriter @out = null)
 		{
+			@out = @out ?? Console.Out;
 			var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
- 			Console.WriteLine("Usage: {0} <--options> <source-files>", asm.GetName().Name);
- 			Console.WriteLine("Options available:");
+			@out.WriteLine("Usage: {0} <--options> <source-files>", asm.GetName().Name);
+ 			@out.WriteLine("Options available:");
 			foreach (var kvp in knownOptions) {
 				string helpInfo = kvp.Value.B.Replace("\n","\n    ");
 				if (string.IsNullOrEmpty(kvp.Value.A))
-		 			Console.WriteLine("  --{0}: {1}", kvp.Key, helpInfo);
+		 			@out.WriteLine("  --{0}: {1}", kvp.Key, helpInfo);
 				else
-		 			Console.WriteLine("  --{0}={1}: {2}", kvp.Key, kvp.Value.A, helpInfo);
+		 			@out.WriteLine("  --{0}={1}: {2}", kvp.Key, kvp.Value.A, helpInfo);
 			}
-			Console.WriteLine("");
+			@out.WriteLine("");
 		}
 
 		#endregion
@@ -238,10 +263,6 @@ namespace LeMP
 		public Compiler(IMessageSink sink, Type prelude, IEnumerable<InputOutput> sourceFiles)
  			: this(sink, prelude) {
 			Files = new List<InputOutput>(sourceFiles);
-		}
-		public Compiler(IMessageSink sink, Type prelude, IEnumerable<string> sourceFiles)
- 			: this(sink, prelude) {
-			Files = new List<InputOutput>(OpenSourceFiles(sink, sourceFiles));
 		}
 
 		public IMessageSink Sink {
@@ -322,11 +343,12 @@ namespace LeMP
 			return fn.Length > ext.Length && fn[fn.Length - ext.Length - 1] == '.' && fn.EndsWith(ext, StringComparison.OrdinalIgnoreCase);
 		}
 		
-		private static List<InputOutput> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
+		public static List<InputOutput> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
 		{
 			var openFiles = new List<InputOutput>();
 			foreach (var filename in fileNames) {
 				try {
+					// TODO: switch to a streaming file reader
 					var text = File.ReadAllText(filename, Encoding.UTF8);
 					openFiles.Add(new InputOutput(new UString(text), filename));
 				} catch (Exception ex) {

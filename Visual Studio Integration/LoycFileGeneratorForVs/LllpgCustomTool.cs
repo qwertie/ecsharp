@@ -203,24 +203,17 @@ namespace Loyc.VisualStudio
 				// 
 				// A simple solution is to store the messages rather than reporting
 				// them immediately. I'll report the errors at the very end.
-				MessageHolder innerSink = new MessageHolder();
+				MessageHolder sink = new MessageHolder();
 				
-				// Block verbose messages when --verbose is not specified
-				Severity sev = Severity.Note;
-				string value;
-				if (options.TryGetValue("verbose", out value) && (value != "false")) {
-					if (!Enum.TryParse(value, out sev))
-						sev = Severity.Verbose;
-				}
-				var sink = new SeverityMessageFilter(innerSink, sev);
-
-				var sourceFile = new InputOutput((StringSlice)inputFileContents, Path.GetFileName(inputFilePath));
+				var sourceFile = new InputOutput((UString)inputFileContents, Path.GetFileName(inputFilePath));
 
 				var c = new Compiler(sink, sourceFile);
 				c.Parallel = false; // only one file, parallel doesn't help
 
-				if (LeMP.Compiler.ProcessArguments(c, options)) {
-					if (options.ContainsKey("no-out-header")) {
+				if (LeMP.Compiler.ProcessArguments(c, options))
+				{
+					if (options.ContainsKey("no-out-header"))
+					{
 						options.Remove("no-out-header", 1);
 						c.NoOutHeader = true;
 					}
@@ -233,7 +226,7 @@ namespace Loyc.VisualStudio
 						c.Run();
 
 						// Report errors
-						foreach (var msg in innerSink.List)
+						foreach (var msg in sink.List)
 							ReportErrorToVS(progressCallback, msg.Severity, msg.Context, msg.Format, msg.Args);
 
 						return Encoding.UTF8.GetBytes(c.Output.ToString());
@@ -259,6 +252,9 @@ namespace Loyc.VisualStudio
 			} else if (context is SourceRange) {
 				line = ((SourceRange)context).Start.Line;
 				col = ((SourceRange)context).Start.PosInLine;
+			} else if (context is Pred) {
+				line = ((Pred)context).Basis.Range.Start.Line;
+				col = ((Pred)context).Basis.Range.Start.PosInLine;
 			} else
 				message2 = MessageSink.LocationString(context) + ": " + message2;
 

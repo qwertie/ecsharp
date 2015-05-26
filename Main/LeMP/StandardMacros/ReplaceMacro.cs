@@ -31,6 +31,10 @@ namespace LeMP
 					var pair = args[i];
 					if (pair.Calls(S.Lambda, 2)) {
 						LNode pattern = pair[0], repl = pair[1];
+						if (pattern.Calls(S.Braces, 1) && repl.Calls(S.Braces)) {
+							pattern = pattern.Args[0];
+							repl = repl.WithTarget(S.Splice);
+						}
 						patterns[i] = Pair.Create(pattern, repl);
 					} else {
 						string msg = "Expected 'pattern => replacement'.";

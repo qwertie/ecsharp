@@ -397,9 +397,45 @@ namespace Loyc.LLParserGenerator
 		{
 			return rule.CreateMethod(methodBody);
 		}
+
+		static readonly Symbol SavePosition = GSymbol.Get("SavePosition");
+
+		/// <summary>See <see cref="IPGCodeGenHelper.CreateTryWrapperForRecognizer"/> for more information.</summary>
 		public LNode CreateTryWrapperForRecognizer(Rule rule)
 		{
-			return rule.CreateTryWrapperForRecognizer();
+			Debug.Assert(rule.TryWrapperName != null);
+
+			LNode method = rule.GetMethodSignature();
+			LNode retType = method.Args[0], name = method.Args[1], args = method.Args[2];
+			RVList<LNode> forwardedArgs = ForwardedArgList(args);
+			
+			LNode lookahead = F.Id("lookaheadAmt");
+			Debug.Assert(args.Calls(S.List));
+			args = args.WithArgs(args.Args.Insert(0, F.Var(F.Int32, lookahead)));
+
+			LNode savePosition = ApiType(F.Id(SavePosition));
+			LNode @this = InputSource ?? F.@this;
+			LNode body = F.Braces(
+				F.Call(S.UsingStmt, F.Call(S.New, F.Call(savePosition, @this, lookahead)), 
+					F.Call(S.Return, F.Call(name, forwardedArgs)))
+			);
+			return method.WithArgs(retType, rule.TryWrapperName, args, body);
+		}
+		static RVList<LNode> ForwardedArgList(LNode args)
+		{
+			// translates an argument list like (int x, string y) to { x, y }
+			return args.Args.SmartSelect(arg => VarName(arg) ?? arg);
+		}
+		static LNode VarName(LNode varStmt)
+		{
+			if (varStmt.Calls(S.Var, 2)) {
+				var nameAndInit = varStmt.Args[1];
+				if (nameAndInit.Calls(S.Assign, 2))
+					return nameAndInit.Args[0];
+				else
+					return nameAndInit;
+			}
+			return null;
 		}
 
 		public virtual LNode CallRule(RuleRef rref, bool recognizerMode)
@@ -461,6 +497,13 @@ namespace Loyc.LLParserGenerator
 					result = F.Call(apiName, args);
 			}
 			return result;
+		}
+		protected virtual LNode ApiType(LNode typeName)
+		{
+			if (InputClass != null) 
+				return F.Dot(InputClass, typeName);
+			else
+				return typeName;
 		}
 	}
 }

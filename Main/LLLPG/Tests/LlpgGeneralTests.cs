@@ -1711,6 +1711,7 @@ namespace Loyc.LLParserGenerator
 					}
 				");
 		}
+
 		[Test]
 		public void TestResultVariable()
 		{
@@ -1748,6 +1749,15 @@ namespace Loyc.LLParserGenerator
 					}
 					return result;
 				}", null, EcsLanguageService.Value);
+			Test(@"LLLPG (lexer()) {
+					rule Digit::int @[ result:'0'..'9' ];
+				}", @"
+					int Digit()
+					{
+						int result = 0;
+						result = MatchRange('0', '9');
+						return result;
+					}");
 		}
 
 		[Test]
