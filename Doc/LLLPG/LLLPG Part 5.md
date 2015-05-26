@@ -1,4 +1,5 @@
-# The Loyc LL(k) Parser Generator: Part 5
+The Loyc LL(k) Parser Generator: Part 5
+=======================================
 
 TODO: then again we should save some stuff -- e.g. regex dos, details on simplified workflow -- for a "relaunch" article.
 Frustrated that regular expressions are unintelligible, repetitive, hard to get right and don't recurse? Concerned about regex DOS attacks? Like Lightweight Language Parsers? Then LLLPG is for you!
@@ -6,12 +7,12 @@ Frustrated that regular expressions are unintelligible, repetitive, hard to get 
 Welcome to part 5
 -----------------
 
-I've finally decided to finish this article series and add a couple new features to make LLLPG more flexible and appealing, especially as a alternative to regexes (though I could probably do a better job, and I am open to suggestions).
+I've finally decided to finish this article series and to add a few new features to make LLLPG more flexible and appealing, especially as a alternative to regexes.
 
 To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language. The tool accepts normal C# code interspersed with LLLPG grammars or grammar fragments, and it outputs plain C#. Advantages of LLLPG over other tools:
 
 - LLLPG generates simple, relatively concise, fast code.
-- It works well for medium-size parsing tasks that are too big for a regex, but too small to complicate your workflow with [ANTLR](http://antlr.org).
+- As a Visual Studio Custom Tool, it is ideal for medium-size parsing tasks that are a bit too big for a regex. LLLPG is also sophisticated enough to parse complex languages like "enhanced C#", LLLPG's own input language.
 - You can add a parser to an existing class--ideal for writing `static Parse` methods.
 - You can avoid memory allocation during parsing (ideal for parsing short strings!)
 - No runtime library is required (although I suggest using LoycCore as your runtime library for maximum flexibility.) (TODO: update NuGet package AND standalone BaseLexer, rename it to LexerSource)
@@ -22,18 +23,91 @@ To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language.
 - Compared to ANTLR, LLLPG is designed for C# rather than Java, so naturally there's a Visual Studio plugin, and I don't [sell half of the documentation as a book](http://www.amazon.ca/The-Definitive-ANTLR-4-Reference/dp/1934356999). Syntax is comparable to ANTLR, but superficially different because unlike ANTLR rules, LLLPG rules resemble function declarations. Also, I recently tried ANTLR 4 and I was shocked at how inefficient the output code appears to be.
 - Bonus features from LeMP (more on that later)
 
-Parser Template
----------------
+And Introducing LeMP
+--------------------
 
-The standard example of 
+Today I'll give you a recipe for writing parsers for programming languages with LLLPG. But first I'd like to introduce a couple of other macros that come with LeMP, the macro processing engine that LLLPG runs on top of. 
 
-New features
-------------
+1. `replace` is a macro that replaces all instances of some pattern with some other pattern. For example,
 
-- "External API": in LLLPG 1.1 you had to write a class derived from `BaseLexer` or `BaseParser` that contained the LLLPG APIs such as `Match`, `LA0`, `Error`, etc. Now you can encapsulate that API in a field or a local variable. This means you can have a different base class, or you can implement a parser inside a value type (`struct`).
+		/// Input
+		replace (MB => MessageBox.Show, 
+			     FMT($fmt, $arg) => string.Format($fmt, $arg))
+		{
+			MB(FMT("Hi, I'm {0}...", name));
+			MB(FMT("I am {0} years old!", name.Length));
+		}
+
+		/// Output
+		MessageBox.Show(string.Format("Hi, I'm {0}...", name));
+		MessageBox.Show(string.Format("I am {0} years old!", name.Length));
+
+	The braces are optional. If the braces are present, replacement occurs only inside the braces; if you end with a semicolon instead of braces, replacement occurs on all remaining statements in the same block.
+	
+	This example requires `FMT` to take exactly two arguments called `$fmt` and `$arg`, but we could also capture any number of arguments or statements like this:
+	
+		FMT($fmt, $(params args)) => string.Format($fmt, $args) // 1 or more args
+		FMT($(params args)) => string.Format($args)             // 0 or more args
+
+2. `unroll..in` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike `replace`, `unroll` can only match simple identifiers on the left side of `in`.
+	
+		/// Input
+		void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+		{
+			unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
+				if (VAR != null) throw new ArgumentNullException(nameof(VAR));
+			}
+			...
+		}
+		/// Output
+		void SetInfo(string firstName, string lastName, object data, string phoneNumber)
+		{
+			if (firstName != null) 
+				throw new ArgumentNullException(nameof("firstName"));
+			if (lastName != null)
+				throw new ArgumentNullException(nameof("lastName"));
+			if (data != null)
+				throw new ArgumentNullException(nameof("data"));
+			if (phoneNumber != null)
+				throw new ArgumentNullException(nameof("phoneNumber"));
+			...
+		}
+	
+	This example also uses the `nameof()` macro to convert each variable name to a string.
+
+LeMP includes a number of other macros and you can also write your own, but these two macros can help shorten a large parser.
+
+
+..
+
+	
+And now for the recipe for writing a lexer and parser in EC#.
+
+	// A list of simple tokens to be represented literally (note: a slightly more
+	// sophisticated approach is needed for keywords, see LLLPG Part 5 article.)
+	replace (OPERATOR_TOKEN_LIST => (
+		(">>", Shr),    // Note: as a general rule, in your lexer you should list 
+		("<<", Shl),    // longer operators first. We will use this token list 
+		("=", Assign),  // in the lexer, so longer operators are listed first here.
+		(">",  GT),
+		("<",  LT),
+		("^",  Exp),
+		("*",  Mul),
+		("/",  Div),
+		("+",  Add),
+		("-",  Sub),
+		(";",  Semicolon),
+		("(",  LParen),
+		(")",  RParen)));
+
+
+New features of LLLPG 1.3
+-------------------------
+
+- "External API": in LLLPG 1.1 you had to write a class derived from `BaseLexer` or `BaseParser` which contained the LLLPG APIs such as `Match`, `LA0`, `Error`, etc. Now you can encapsulate that API in a field or a local variable. This means you can have a different base class, or you can put a lexer/parser inside a value type (`struct`) or a `static class`.
 - "Automatic Value Saver: in LLLPG 1.1, if you wanted to save the return value of a rule or token, you sometimes had to manually create an associated variable. In the new version, you can attach a "label" to any terminal or nonterminal, which will make LLLPG create a variable automatically. Even better, you can often get away with not attaching a label.
-
-Read on for more details.
+- Automatic return value: when you use `$result` or the `result:` label in a rule, LLLPG automatically creates a variable called `result` to hold the return value of the current rule, and it returns that value at the end of the method.
+- `any` command, `inline` rules, and implicit LLLPG blocks: Details below.
 
 Using LLLPG with an external API
 --------------------------------
