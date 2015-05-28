@@ -90,10 +90,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-attribs">Public fields</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected fields</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.Les.LesNodePrinter Class Reference</div>  </div>
@@ -103,10 +105,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree in LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) format. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/LES/LesNodePrinter.cs'>/Src/Loyc.Syntax/LES/LesNodePrinter.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/LES/LesNodePrinter.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Prints a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree in LES (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> Expression <a class="el" href="namespaceLoyc_1_1Syntax.html" title="Loyc.Syntax.dll: contains Loyc trees (Loyc.Syntax.LNode), lexing stuff, LLLPG base classes (BaseParse...">Syntax</a>) format.</p>
+<p>Unless otherwise noted, the default value of all options is false.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -114,6 +117,15 @@ Public Types</h2></td></tr>
 <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794afd6030d32f2d2e0de890eb5dbb0f4bcc">Mode.InParens</a> = 24
  }</td></tr>
 <tr class="separator:a66a7ae48a90617f822292e4fd957d794"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public fields</h2></td></tr>
+<tr class="memitem:a28303befa4678b44ce5d6ec3795da8b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28303befa4678b44ce5d6ec3795da8b0"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAroundInfixStopPrecedence</b> = LesPrecedence.Power.Lo</td></tr>
+<tr class="separator:a28303befa4678b44ce5d6ec3795da8b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bf482be6d3af10278ac7fa9115b82cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1bf482be6d3af10278ac7fa9115b82cf"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAfterPrefixStopPrecedence</b> = LesPrecedence.Prefix.Lo</td></tr>
+<tr class="separator:a1bf482be6d3af10278ac7fa9115b82cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
@@ -150,30 +162,39 @@ Properties</h2></td></tr>
 <tr class="memitem:a5d35fffdeeab47165c0d11650a28f15c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5d35fffdeeab47165c0d11650a28f15c">OmitComments</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a5d35fffdeeab47165c0d11650a28f15c"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, comment trivia attributes are ignored (e.g. CodeSymbols.TriviaSLCommentAfter). <a href="#a5d35fffdeeab47165c0d11650a28f15c">More...</a><br /></td></tr>
 <tr class="separator:a5d35fffdeeab47165c0d11650a28f15c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab723784e25df4f14adf8661c91396c5b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#ab723784e25df4f14adf8661c91396c5b">OmitRawText</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ab723784e25df4f14adf8661c91396c5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, raw text trivia attributes are ignored (e.g. CodeSymbols.TriviaRawTextBefore). <a href="#ab723784e25df4f14adf8661c91396c5b">More...</a><br /></td></tr>
-<tr class="separator:ab723784e25df4f14adf8661c91396c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c25febd2b6f590ab53672a25df27327"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a0c25febd2b6f590ab53672a25df27327">QuoteUnprintableLiterals</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a0c25febd2b6f590ab53672a25df27327"><td class="mdescLeft">&#160;</td><td class="mdescRight">When the printer encounters an unprintable literal, it calls Value.ToString(). When this flag is set, the string is placed in double quotes; when this flag is clear, it is printed as raw text. <a href="#a0c25febd2b6f590ab53672a25df27327">More...</a><br /></td></tr>
 <tr class="separator:a0c25febd2b6f590ab53672a25df27327"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2556ffa94dcb427a21fc7dd3e2e24bac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a2556ffa94dcb427a21fc7dd3e2e24bac">OmitUnknownTrivia</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a2556ffa94dcb427a21fc7dd3e2e24bac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output. <a href="#a2556ffa94dcb427a21fc7dd3e2e24bac">More...</a><br /></td></tr>
+<tr class="separator:a2556ffa94dcb427a21fc7dd3e2e24bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a832454e19ff751e338d94365376bb20e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a832454e19ff751e338d94365376bb20e">PrintExplicitTrivia</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a832454e19ff751e338d94365376bb20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses. <a href="#a832454e19ff751e338d94365376bb20e">More...</a><br /></td></tr>
+<tr class="separator:a832454e19ff751e338d94365376bb20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cb1e86133a4cd97acad6e50c44510e2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a3cb1e86133a4cd97acad6e50c44510e2">ObeyRawText</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a3cb1e86133a4cd97acad6e50c44510e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes raw text to be printed verbatim, as the EC# printer does. When this option is false, raw text trivia is printed as a normal attribute. <a href="#a3cb1e86133a4cd97acad6e50c44510e2">More...</a><br /></td></tr>
+<tr class="separator:a3cb1e86133a4cd97acad6e50c44510e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a9d7e7512939c0b3dde2d75716857ba38"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d7e7512939c0b3dde2d75716857ba38"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>LesNodePrinter</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a> target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors=null)</td></tr>
 <tr class="separator:a9d7e7512939c0b3dde2d75716857ba38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fe32f7beb75165aa301e7afec27adf9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9fe32f7beb75165aa301e7afec27adf9"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
+<tr class="separator:a9fe32f7beb75165aa301e7afec27adf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac40b00e9509ce53529a994e187ed0695"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac40b00e9509ce53529a994e187ed0695"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794">Mode</a> mode, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context)</td></tr>
 <tr class="separator:ac40b00e9509ce53529a994e187ed0695"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2bd70021d4d4440b39496570877a2b7e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2bd70021d4d4440b39496570877a2b7e"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html">LesNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (StringBuilder target, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="separator:a2bd70021d4d4440b39496570877a2b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ee2fde644e8f9f7798cd272df97e5fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ee2fde644e8f9f7798cd272df97e5fc"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html">LesNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (TextWriter target, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
-<tr class="separator:a4ee2fde644e8f9f7798cd272df97e5fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4491f363e4c6fd8df01d893a8e2fd9c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4491f363e4c6fd8df01d893a8e2fd9c0"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html">LesNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (StringBuilder target, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;, IMessageSink sink=null)</td></tr>
+<tr class="separator:a4491f363e4c6fd8df01d893a8e2fd9c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92855a2524bf7e11dd318d154856a36e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92855a2524bf7e11dd318d154856a36e"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html">LesNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (TextWriter target, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;, IMessageSink sink=null)</td></tr>
+<tr class="separator:a92855a2524bf7e11dd318d154856a36e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa00e11b81b442ea29e686062cf176ec1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa00e11b81b442ea29e686062cf176ec1"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode, string indentString, string lineSeparator)</td></tr>
 <tr class="separator:aa00e11b81b442ea29e686062cf176ec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,6 +207,12 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintLiteral
 <tr class="memitem:a652e2acb80f0db30a659ebfde10d17dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a652e2acb80f0db30a659ebfde10d17dd"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString</b> (string text, char quoteType, bool tripleQuoted)</td></tr>
 <tr class="separator:a652e2acb80f0db30a659ebfde10d17dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected fields</h2></td></tr>
+<tr class="memitem:ad2099435475e9445386a4a7a431d9263"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad2099435475e9445386a4a7a431d9263"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html">LesPrecedenceMap</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_prec</b> = LesPrecedenceMap.Default</td></tr>
+<tr class="separator:ad2099435475e9445386a4a7a431d9263"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
 <a class="anchor" id="a66a7ae48a90617f822292e4fd957d794"></a>
@@ -299,6 +326,28 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 
 </div>
 </div>
+<a class="anchor" id="a3cb1e86133a4cd97acad6e50c44510e2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.Syntax.Les.LesNodePrinter.ObeyRawText</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Causes raw text to be printed verbatim, as the EC# printer does. When this option is false, raw text trivia is printed as a normal attribute.</p>
+
+</div>
+</div>
 <a class="anchor" id="a5d35fffdeeab47165c0d11650a28f15c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -343,28 +392,6 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 
 </div>
 </div>
-<a class="anchor" id="ab723784e25df4f14adf8661c91396c5b"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Loyc.Syntax.Les.LesNodePrinter.OmitRawText</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>When this flag is set, raw text trivia attributes are ignored (e.g. CodeSymbols.TriviaRawTextBefore).</p>
-
-</div>
-</div>
 <a class="anchor" id="a7bdd6fd9cd655af0cbcfabe61111ffe0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -384,6 +411,50 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 </div><div class="memdoc">
 
 <p>When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter).</p>
+
+</div>
+</div>
+<a class="anchor" id="a2556ffa94dcb427a21fc7dd3e2e24bac"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.Syntax.Les.LesNodePrinter.OmitUnknownTrivia</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Causes unknown trivia (other than comments, spaces and raw text) to be dropped from the output.</p>
+
+</div>
+</div>
+<a class="anchor" id="a832454e19ff751e338d94365376bb20e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.Syntax.Les.LesNodePrinter.PrintExplicitTrivia</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Causes comments and spaces to be printed as attributes in order to ensure faithful round-trip parsing. By default, only "raw text" and unrecognized trivia is printed this way. Note: #trivia_inParens is always printed as parentheses.</p>
 
 </div>
 </div>
@@ -413,7 +484,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString<
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:03 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

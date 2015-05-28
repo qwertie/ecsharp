@@ -1,7 +1,6 @@
 var searchData=
 [
   ['managedthreadid',['ManagedThreadId',['../classLoyc_1_1Threading_1_1ThreadEx.html#a314507d2aaccf6f2c3501dbb48fbd002',1,'Loyc::Threading::ThreadEx']]],
-  ['match',['Match',['../classLoyc_1_1LLParserGenerator_1_1Gate.html#a74a15834ec248fd1b1fb1565f22bd526',1,'Loyc::LLParserGenerator::Gate']]],
   ['max',['Max',['../structLoyc_1_1Collections_1_1NegList_3_01T_01_4.html#aff1c216b768ed7f279a6d1b668beea9b',1,'Loyc.Collections.NegList&lt; T &gt;.Max()'],['../structLoyc_1_1Collections_1_1NegListSource_3_01T_01_4.html#a09b361836d91d7a7c36bc8ec1e978f59',1,'Loyc.Collections.NegListSource&lt; T &gt;.Max()'],['../interfaceLoyc_1_1Collections_1_1INegListSource_3_01T_01_4.html#ac61b28277f531bef9ba405bbceecb03a',1,'Loyc.Collections.INegListSource&lt; T &gt;.Max()']]],
   ['maxint',['MaxInt',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#ae9145dec0a18c807f4fba1e44e910079',1,'Loyc::Math::INumTraits&lt; T &gt;']]],
   ['maxintpowerof2',['MaxIntPowerOf2',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a341e0fdf4618d03104c9beaba1bd3317',1,'Loyc::Math::INumTraits&lt; T &gt;']]],

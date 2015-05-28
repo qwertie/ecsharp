@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A message sink that sends its messages to a list of other sinks. 
  <a href="classLoyc_1_1MessageSplitter.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/MessageSinks.cs'>/Src/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/MessageSinks.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.MessageSplitter:</div>
@@ -212,7 +212,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">type</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
-    <tr><td class="paramname">context</td><td>An object that represents the location that the message applies to, a string that indicates what the program was doing when the message was generated, or any other relevant context information. See also <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Returns ILocationString.LocationString if &#39;context&#39; implements that interface, null if context is nul...">MessageSink.LocationString</a>().</td></tr>
+    <tr><td class="paramname">context</td><td>An object that the message is related to, or that represents the location that the message applies to. The message sink may try to convert this object to a string and include it in its output. See also <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Gets the location information from the specified object, or converts the object to a string...">MessageSink.LocationString</a>().</td></tr>
     <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
   </table>
   </dd>
@@ -226,7 +226,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

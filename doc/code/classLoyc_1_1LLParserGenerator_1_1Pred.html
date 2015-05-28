@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents part of a grammar for the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a>. 
  <a href="classLoyc_1_1LLParserGenerator_1_1Pred.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/Predicates.cs'>/Src/LLLPG/RuleAndPreds/Predicates.cs</a></li>
+<li>D:/Dev/Loyc/Main/LLLPG/RuleAndPreds/Predicates.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.Pred:</div>
@@ -111,14 +111,15 @@ Inheritance diagram for Loyc.LLParserGenerator.Pred:</div>
   <img src="classLoyc_1_1LLParserGenerator_1_1Pred.png" usemap="#Loyc.LLParserGenerator.Pred_map" alt=""/>
   <map id="Loyc.LLParserGenerator.Pred_map" name="Loyc.LLParserGenerator.Pred_map">
 <area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="0,0,268,24"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (..." alt="Loyc.LLParserGenerator.Alts" shape="rect" coords="278,112,546,136"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1AndPred.html" title="Represents a zero-width assertion: either user-defined code to check a condition, or a predicate that..." alt="Loyc.LLParserGenerator.AndPred" shape="rect" coords="278,168,546,192"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html" title="A singleton to be used as the value of Alts.ErrorBranch, representing the default_error branch..." alt="Loyc.LLParserGenerator.DefaultErrorBranch" shape="rect" coords="278,224,546,248"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule." alt="Loyc.LLParserGenerator.EndOfRule" shape="rect" coords="278,280,546,304"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1Gate.html" title="Represents a "gate" (p => m), which is a mechanism to separate prediction from matching in the contex..." alt="Loyc.LLParserGenerator.Gate" shape="rect" coords="278,336,546,360"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule." alt="Loyc.LLParserGenerator.RuleRef" shape="rect" coords="278,392,546,416"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1Seq.html" title="Represents a sequence of predicates (Preds)." alt="Loyc.LLParserGenerator.Seq" shape="rect" coords="278,448,546,472"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html" title="Represents a terminal (which is a token or a character) or a set of possible terminals (e..." alt="Loyc.LLParserGenerator.TerminalPred" shape="rect" coords="278,504,546,528"/>
+<area href="interfaceLoyc_1_1ILocationString.html" title="This interface allows an object to declare its "location". It is used by MessageSink.LocationString, which helps convert the "context" of a message into a string." alt="Loyc.ILocationString" shape="rect" coords="278,0,546,24"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (..." alt="Loyc.LLParserGenerator.Alts" shape="rect" coords="417,112,685,136"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1AndPred.html" title="Represents a zero-width assertion: either user-defined code to check a condition, or a predicate that..." alt="Loyc.LLParserGenerator.AndPred" shape="rect" coords="417,168,685,192"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html" title="A singleton to be used as the value of Alts.ErrorBranch, representing the default_error branch..." alt="Loyc.LLParserGenerator.DefaultErrorBranch" shape="rect" coords="417,224,685,248"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule." alt="Loyc.LLParserGenerator.EndOfRule" shape="rect" coords="417,280,685,304"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1Gate.html" title="Represents a "gate" (p => m), which is a mechanism to separate prediction from matching in the contex..." alt="Loyc.LLParserGenerator.Gate" shape="rect" coords="417,336,685,360"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule." alt="Loyc.LLParserGenerator.RuleRef" shape="rect" coords="417,392,685,416"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1Seq.html" title="Represents a sequence of predicates (Preds)." alt="Loyc.LLParserGenerator.Seq" shape="rect" coords="417,448,685,472"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1TerminalPred.html" title="Represents a terminal (which is a token or a character) or a set of possible terminals (e..." alt="Loyc.LLParserGenerator.TerminalPred" shape="rect" coords="417,504,685,528"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -143,6 +144,12 @@ Public fields</h2></td></tr>
 <tr class="memitem:ab4103a18e0ebaefdb6a20240665709c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4103a18e0ebaefdb6a20240665709c6"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PostAction</b></td></tr>
 <tr class="separator:ab4103a18e0ebaefdb6a20240665709c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40e3ce486fced5d206814ea676554eb1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40e3ce486fced5d206814ea676554eb1"></a>
+<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VarLabel</b></td></tr>
+<tr class="separator:a40e3ce486fced5d206814ea676554eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2771b993b78f6dda090a86d1575dfaa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2771b993b78f6dda090a86d1575dfaa"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>VarIsList</b></td></tr>
+<tr class="separator:ae2771b993b78f6dda090a86d1575dfaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acca06b437865e35fc06fe0e698e14c67"><td class="memItemLeft" align="right" valign="top">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#acca06b437865e35fc06fe0e698e14c67">ResultSaver</a></td></tr>
 <tr class="memdesc:acca06b437865e35fc06fe0e698e14c67"><td class="mdescLeft">&#160;</td><td class="mdescRight">A function that saves the result produced by the matching code of this predicate (null if the result is not saved). For example, if the parser generator is given the predicate <code>@[ x='a'..'z' ]</code>, the default matching code will be @(Match('a', 'z')), and ResultSaver will be set to a function that receives this matching code and returns @(x = Match('a', 'z')) in response. <a href="#acca06b437865e35fc06fe0e698e14c67">More...</a><br /></td></tr>
 <tr class="separator:acca06b437865e35fc06fe0e698e14c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +162,13 @@ Properties</h2></td></tr>
 <tr class="memitem:a2584ecdf66c88916e0f49d3da327c6d3"><td class="memItemLeft" align="right" valign="top">abstract bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a2584ecdf66c88916e0f49d3da327c6d3">IsNullable</a><code> [get]</code></td></tr>
 <tr class="memdesc:a2584ecdf66c88916e0f49d3da327c6d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this predicate can match an empty input. <a href="#a2584ecdf66c88916e0f49d3da327c6d3">More...</a><br /></td></tr>
 <tr class="separator:a2584ecdf66c88916e0f49d3da327c6d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a23a967ede5b6a8bf64a1e790a0e6e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a23a967ede5b6a8bf64a1e790a0e6e7"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationString</b><code> [get]</code></td></tr>
+<tr class="separator:a8a23a967ede5b6a8bf64a1e790a0e6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1ILocationString"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1ILocationString')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1ILocationString.html">Loyc.ILocationString</a></td></tr>
+<tr class="memitem:a05159cb21a41292404d5dd2922780871 inherit properties_interfaceLoyc_1_1ILocationString"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05159cb21a41292404d5dd2922780871"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationString</b><code> [get]</code></td></tr>
+<tr class="separator:a05159cb21a41292404d5dd2922780871 inherit properties_interfaceLoyc_1_1ILocationString"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -173,6 +187,9 @@ abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:af80702d8509128ae9d0e0f2e626f879d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af80702d8509128ae9d0e0f2e626f879d"></a>
 string&#160;</td><td class="memItemRight" valign="bottom"><b>ToStringWithPosition</b> ()</td></tr>
 <tr class="separator:af80702d8509128ae9d0e0f2e626f879d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24d960b328eb51fa70ca9cf6a8f8d815"><td class="memItemLeft" align="right" valign="top">virtual string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a24d960b328eb51fa70ca9cf6a8f8d815">ChooseGotoLabel</a> ()</td></tr>
+<tr class="memdesc:a24d960b328eb51fa70ca9cf6a8f8d815"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional. If this predicate represents the matching code for a branch of an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a> and this code is reached through a goto statement, this method is used to select a label name. Supported by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule.">RuleRef</a>. <a href="#a24d960b328eb51fa70ca9cf6a8f8d815">More...</a><br /></td></tr>
+<tr class="separator:a24d960b328eb51fa70ca9cf6a8f8d815"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -271,6 +288,36 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 <tr class="separator:ad2396c90babfb0ff5fe7b64b3408d12b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a24d960b328eb51fa70ca9cf6a8f8d815"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual string Loyc.LLParserGenerator.Pred.ChooseGotoLabel </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Optional. If this predicate represents the matching code for a branch of an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (...">Alts</a> and this code is reached through a goto statement, this method is used to select a label name. Supported by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html" title="Represents a nonterminal, which is a reference to a rule.">RuleRef</a>.</p>
+<dl class="section return"><dt>Returns</dt><dd>A label name, or null if the predicate did not choose one.</dd></dl>
+
+<p>Reimplemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Seq.html#ad5bffd674117362db6f7792c75d5411f">Loyc.LLParserGenerator.Seq</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html#aedcf16eabf5af12c6778739ab8de8f3b">Loyc.LLParserGenerator.RuleRef</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Seq.html#ad5bffd674117362db6f7792c75d5411f">Loyc.LLParserGenerator.Seq.ChooseGotoLabel()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a4cf6508f14c947c295862db547b52070"></a>
 <div class="memitem">
 <div class="memproto">
@@ -342,7 +389,7 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

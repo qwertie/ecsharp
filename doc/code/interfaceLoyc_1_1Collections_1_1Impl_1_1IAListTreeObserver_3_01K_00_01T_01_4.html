@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>An interface that is called to notify observers when items or nodes in the tree of a class derived from AListBase{K,T} (e.g. AList or BList) are added or removed.  
  <a href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/IAListTreeObserver.cs'>/Src/Loyc.Collections/ALists/IAListTreeObserver.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/ALists/IAListTreeObserver.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;:</div>
@@ -129,7 +129,7 @@ Inheritance diagram for Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;:<
 </ul>
 <p>An observer object should be attached to only one list, because change notifications do not indicate which list is being changed. </p>
 <p>When an A-list is cloned, observers do are not included in the clone. </p>
-<p>IMPORTANT: unless otherwise noted, implementations of this interface must not throw exceptions because these methods are called during operations in progress. If you throw an exception, the tree can be left in an invalid state. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#afa78aa67a4893b601952cc8b14084fe3" title="Called when the observer is being attached to an AList.">Attach()</a> can safety throw, but the exception will propagate out of the AListBase.AddObserver method. </p>
+<p>IMPORTANT: unless otherwise noted, implementations of this interface must not throw exceptions because these methods are called during operations in progress. If you throw an exception, the tree can be left in an invalid state. <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#afa78aa67a4893b601952cc8b14084fe3" title="Called when the observer is being attached to an AList.">Attach()</a> can safety throw, but the exception will propagate out of the AListBase{K,T}.AddObserver method. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -288,12 +288,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Called when an item is added to a leaf node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the item is being transferred from another node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a8c35a45dc0efcea181fc6812b1901228">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
@@ -324,12 +319,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Called when an item is removed from a leaf node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the item is being transferred to another node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a7e20911c4161fa578df5b17f69306237">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
@@ -360,12 +350,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Called when a child node is added to an inner node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the node is being transferred from another inner node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a48fbe8c917f1192577b8822d94ebbab9">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
@@ -396,12 +381,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Called when a child node is removed from an inner node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the node is being transferred to another inner node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a485240c333c0246e5b2ebea9b672759a">Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;</a>.</p>
 
@@ -468,7 +448,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:33 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

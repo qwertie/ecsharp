@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Base class of all nodes that represent calls such as <code>f(x)</code>, operator calls such as <code>x + y</code>, braced blocks, and all other things that are not simple symbols and literals. 
  <a href="classLoyc_1_1Syntax_1_1CallNode.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Nodes/AbstractNodes.cs'>/Src/Loyc.Syntax/Nodes/AbstractNodes.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/LNodes/AbstractNodes.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.CallNode:</div>
@@ -109,7 +109,7 @@ Inheritance diagram for Loyc.Syntax.CallNode:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1CallNode.png" usemap="#Loyc.Syntax.CallNode_map" alt=""/>
   <map id="Loyc.Syntax.CallNode_map" name="Loyc.Syntax.CallNode_map">
-<area href="classLoyc_1_1Syntax_1_1LNode.html" alt="Loyc.Syntax.LNode" shape="rect" coords="253,56,412,80"/>
+<area href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class." alt="Loyc.Syntax.LNode" shape="rect" coords="253,56,412,80"/>
 <area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="0,0,159,24"/>
 <area href="interfaceLoyc_1_1ILocationString.html" title="This interface allows an object to declare its "location". It is used by MessageSink.LocationString, which helps convert the "context" of a message into a string." alt="Loyc.ILocationString" shape="rect" coords="338,0,497,24"/>
 </map>
@@ -119,9 +119,9 @@ Inheritance diagram for Loyc.Syntax.CallNode:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:acec8a4679c504a3e6f51d734b07e3ab7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acec8a4679c504a3e6f51d734b07e3ab7"></a>
-sealed override NodeKind&#160;</td><td class="memItemRight" valign="bottom"><b>Kind</b><code> [get]</code></td></tr>
-<tr class="separator:acec8a4679c504a3e6f51d734b07e3ab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7882017e7f4cd373ea2f34bd9cdc8b69"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7882017e7f4cd373ea2f34bd9cdc8b69"></a>
+sealed override LNodeKind&#160;</td><td class="memItemRight" valign="bottom"><b>Kind</b><code> [get]</code></td></tr>
+<tr class="separator:a7882017e7f4cd373ea2f34bd9cdc8b69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a344a5372765252c7e8b72354f58f06"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a344a5372765252c7e8b72354f58f06"></a>
 override <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Name</b><code> [get]</code></td></tr>
 <tr class="separator:a0a344a5372765252c7e8b72354f58f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,9 +156,9 @@ abstract override RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.ht
 <tr class="memitem:ad6ed01f8d42d56e9531d79589e72f610 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad6ed01f8d42d56e9531d79589e72f610">IsFrozen</a><code> [get]</code></td></tr>
 <tr class="memdesc:ad6ed01f8d42d56e9531d79589e72f610 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the node is immutable, and false if any part of it can be edited. Currently, mutable nodes are not implemented. <a href="#ad6ed01f8d42d56e9531d79589e72f610">More...</a><br /></td></tr>
 <tr class="separator:ad6ed01f8d42d56e9531d79589e72f610 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ac2cd8834551c21a13601fe4fdc37ae inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top">abstract NodeKind&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a0ac2cd8834551c21a13601fe4fdc37ae">Kind</a><code> [get]</code></td></tr>
-<tr class="memdesc:a0ac2cd8834551c21a13601fe4fdc37ae inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the NodeKind: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call. <a href="#a0ac2cd8834551c21a13601fe4fdc37ae">More...</a><br /></td></tr>
-<tr class="separator:a0ac2cd8834551c21a13601fe4fdc37ae inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfa09640d17b6dde094e2bb4839eb747 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top">abstract LNodeKind&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#adfa09640d17b6dde094e2bb4839eb747">Kind</a><code> [get]</code></td></tr>
+<tr class="memdesc:adfa09640d17b6dde094e2bb4839eb747 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the LNodeKind: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call. <a href="#adfa09640d17b6dde094e2bb4839eb747">More...</a><br /></td></tr>
+<tr class="separator:adfa09640d17b6dde094e2bb4839eb747 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad188b12f8f11841baf6b383f31a970c7 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad188b12f8f11841baf6b383f31a970c7"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsCall</b><code> [get]</code></td></tr>
 <tr class="separator:ad188b12f8f11841baf6b383f31a970c7 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -189,6 +189,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasValue</b><code> [g
 <tr class="memitem:a130548f4529a1da652da4e9cbd851ca8 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a130548f4529a1da652da4e9cbd851ca8">Printer</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a130548f4529a1da652da4e9cbd851ca8 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the default node printer on the current thread, which controls how nodes are serialized to text by default. <a href="#a130548f4529a1da652da4e9cbd851ca8">More...</a><br /></td></tr>
 <tr class="separator:a130548f4529a1da652da4e9cbd851ca8 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0b9160daf754be89525f86e7d683c42 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top">virtual object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa0b9160daf754be89525f86e7d683c42">TriviaValue</a><code> [get]</code></td></tr>
+<tr class="memdesc:aa0b9160daf754be89525f86e7d683c42 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value of <code>Args[0].Value</code>, if Args[0] exists; otherwise, returns NoValue.Value. <a href="#aa0b9160daf754be89525f86e7d683c42">More...</a><br /></td></tr>
+<tr class="separator:aa0b9160daf754be89525f86e7d683c42 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6d6bb500fe9dcd085ece0e610e57bc3 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6d6bb500fe9dcd085ece0e610e57bc3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasTokenValue</b><code> [get]</code></td></tr>
+<tr class="separator:ae6d6bb500fe9dcd085ece0e610e57bc3 inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac77f0c372e04f35d4bc2d6ce4555a08a inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac77f0c372e04f35d4bc2d6ce4555a08a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>ArgCount</b><code> [get]</code></td></tr>
 <tr class="separator:ac77f0c372e04f35d4bc2d6ce4555a08a inherit properties_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -253,20 +259,20 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (<
 <tr class="memitem:a6631db51103cf661bca67e213cf0364a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6631db51103cf661bca67e213cf0364a"></a>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
 <tr class="separator:a6631db51103cf661bca67e213cf0364a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5beb8ea5874807c4c0eae765f3b31ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad5beb8ea5874807c4c0eae765f3b31ad"></a>
-override bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasSimpleHead</b> ()</td></tr>
+<tr class="memitem:ad5beb8ea5874807c4c0eae765f3b31ad"><td class="memItemLeft" align="right" valign="top">override bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ad5beb8ea5874807c4c0eae765f3b31ad">HasSimpleHead</a> ()</td></tr>
+<tr class="memdesc:ad5beb8ea5874807c4c0eae765f3b31ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the Target is an Id or a Literal, and the Target has no attributes. <a href="#ad5beb8ea5874807c4c0eae765f3b31ad">More...</a><br /></td></tr>
 <tr class="separator:ad5beb8ea5874807c4c0eae765f3b31ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acda83c0c4d8f443aedd6c256357dd1d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acda83c0c4d8f443aedd6c256357dd1d3"></a>
-override bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasSimpleHeadWithoutPAttrs</b> ()</td></tr>
+<tr class="memitem:acda83c0c4d8f443aedd6c256357dd1d3"><td class="memItemLeft" align="right" valign="top">override bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#acda83c0c4d8f443aedd6c256357dd1d3">HasSimpleHeadWithoutPAttrs</a> ()</td></tr>
+<tr class="memdesc:acda83c0c4d8f443aedd6c256357dd1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes. <a href="#acda83c0c4d8f443aedd6c256357dd1d3">More...</a><br /></td></tr>
 <tr class="separator:acda83c0c4d8f443aedd6c256357dd1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08336021a848ab18a5263b69ea9b53b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a08336021a848ab18a5263b69ea9b53b2"></a>
-override <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithArgs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector)</td></tr>
-<tr class="separator:a08336021a848ab18a5263b69ea9b53b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b167f7be51e37fccb0e69d1f290b9fb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b167f7be51e37fccb0e69d1f290b9fb"></a>
+override <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithArgs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
+<tr class="separator:a7b167f7be51e37fccb0e69d1f290b9fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a352deaac38864bb5ad96a2908fc08f91"><td class="memItemLeft" align="right" valign="top">sealed override <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91">Select</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector)</td></tr>
-<tr class="memdesc:a352deaac38864bb5ad96a2908fc08f91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms the attributes, Target, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>. <a href="#a352deaac38864bb5ad96a2908fc08f91">More...</a><br /></td></tr>
+<tr class="memdesc:a352deaac38864bb5ad96a2908fc08f91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms the attributes, Target, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>. <a href="#a352deaac38864bb5ad96a2908fc08f91">More...</a><br /></td></tr>
 <tr class="separator:a352deaac38864bb5ad96a2908fc08f91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ad5cf1f21e5f01bb556d3ec23fa8381"><td class="memItemLeft" align="right" valign="top">override <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a8ad5cf1f21e5f01bb556d3ec23fa8381">ReplaceRecursive</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; matcher, bool replaceRoot=true)</td></tr>
-<tr class="memdesc:a8ad5cf1f21e5f01bb556d3ec23fa8381"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, Target, Args) using the specified selector. <a href="#a8ad5cf1f21e5f01bb556d3ec23fa8381">More...</a><br /></td></tr>
+<tr class="memdesc:a8ad5cf1f21e5f01bb556d3ec23fa8381"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, Target, Args) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null. <a href="#a8ad5cf1f21e5f01bb556d3ec23fa8381">More...</a><br /></td></tr>
 <tr class="separator:a8ad5cf1f21e5f01bb556d3ec23fa8381"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1Syntax_1_1LNode"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Syntax_1_1LNode')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">Loyc.Syntax.LNode</a></td></tr>
 <tr class="memitem:afa016fa89aff42c0ad70d08534ddb3e5 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa016fa89aff42c0ad70d08534ddb3e5"></a>
@@ -353,9 +359,9 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (
 <tr class="memitem:a9eed7098b0b4edf582d24daa038ec9f3 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9eed7098b0b4edf582d24daa038ec9f3"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasPAttrs</b> ()</td></tr>
 <tr class="separator:a9eed7098b0b4edf582d24daa038ec9f3 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62a61fde61fc6917d7df9d04bcfc520c inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62a61fde61fc6917d7df9d04bcfc520c"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector)</td></tr>
-<tr class="separator:a62a61fde61fc6917d7df9d04bcfc520c inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf090777711ce93e64005cf57f96f01b inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf090777711ce93e64005cf57f96f01b"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
+<tr class="separator:abf090777711ce93e64005cf57f96f01b inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4618163a86ff0ba59de93df9c043a59 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4618163a86ff0ba59de93df9c043a59"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdWithoutPAttrs</b> ()</td></tr>
 <tr class="separator:ab4618163a86ff0ba59de93df9c043a59 inherit pub_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -418,7 +424,7 @@ Protected Member Functions</h2></td></tr>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_static_attribs_classLoyc_1_1Syntax_1_1LNode"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classLoyc_1_1Syntax_1_1LNode')"><img src="closed.png" alt="-"/>&#160;Public static fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">Loyc.Syntax.LNode</a></td></tr>
 <tr class="memitem:acedf66c24bd7f1d22809ab9deb10c937 inherit pub_static_attribs_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acedf66c24bd7f1d22809ab9deb10c937"></a>
-static readonly <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SyntheticSource</b> = new <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>(&quot;&lt;SyntheticCode&gt;&quot;)</td></tr>
+static readonly <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SyntheticSource</b> = new <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>(&quot;&lt;Synthetic Code&gt;&quot;)</td></tr>
 <tr class="separator:acedf66c24bd7f1d22809ab9deb10c937 inherit pub_static_attribs_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4b2c33e3c0b733dc9664093608338e9 inherit pub_static_attribs_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4b2c33e3c0b733dc9664093608338e9"></a>
 static readonly <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Missing</b> = Id(CodeSymbols.Missing)</td></tr>
@@ -460,21 +466,24 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#1
 <tr class="memitem:a7c6a4d123536e6ef5dd2482376fdde6f inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c6a4d123536e6ef5dd2482376fdde6f"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:a7c6a4d123536e6ef5dd2482376fdde6f inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ac8fd8bc1578f4d20fab6be8004ddb1 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ac8fd8bc1578f4d20fab6be8004ddb1"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a7ac8fd8bc1578f4d20fab6be8004ddb1 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade43741b076b275771424b2bc18fd4a4 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade43741b076b275771424b2bc18fd4a4"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InParens</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
 <tr class="separator:ade43741b076b275771424b2bc18fd4a4 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac470c17f1cb0c85ca03c6b7f5d7619cd inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac470c17f1cb0c85ca03c6b7f5d7619cd"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
-<tr class="separator:ac470c17f1cb0c85ca03c6b7f5d7619cd inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae01c95ea5af0d8cd15d246f32ecbe2cf inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae01c95ea5af0d8cd15d246f32ecbe2cf"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
-<tr class="separator:ae01c95ea5af0d8cd15d246f32ecbe2cf inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4109d146c24dcaef2aec62e4c5b9513c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4109d146c24dcaef2aec62e4c5b9513c"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
-<tr class="separator:a4109d146c24dcaef2aec62e4c5b9513c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f03152dbdbeb01763db6b4cb3f44b0a inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f03152dbdbeb01763db6b4cb3f44b0a"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
-<tr class="separator:a4f03152dbdbeb01763db6b4cb3f44b0a inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8bf342e05ee9a433d4487e7648214b3 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8bf342e05ee9a433d4487e7648214b3"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:ab8bf342e05ee9a433d4487e7648214b3 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0451ccca04f152e63f299e3b2bc77932 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0451ccca04f152e63f299e3b2bc77932"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a0451ccca04f152e63f299e3b2bc77932 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20e5fac850db0a867a35d17c439487a9 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a20e5fac850db0a867a35d17c439487a9"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a20e5fac850db0a867a35d17c439487a9 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2305fa9c4b8bbe0743cd8f86d4909f0c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2305fa9c4b8bbe0743cd8f86d4909f0c"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a2305fa9c4b8bbe0743cd8f86d4909f0c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a491f2cc40e056ec07c3257612f18b746 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a491f2cc40e056ec07c3257612f18b746"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a491f2cc40e056ec07c3257612f18b746 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -499,6 +508,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#1
 <tr class="memitem:a15dc9af42d2d2b39366fdeb06e651594 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15dc9af42d2d2b39366fdeb06e651594"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a15dc9af42d2d2b39366fdeb06e651594 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ee9e4af4414bcbbb16d98119b653aee inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ee9e4af4414bcbbb16d98119b653aee"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a6ee9e4af4414bcbbb16d98119b653aee inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a313f5f9833fd8d14b64caade7167348c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a313f5f9833fd8d14b64caade7167348c"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InParens</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range)</td></tr>
 <tr class="separator:a313f5f9833fd8d14b64caade7167348c inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -538,6 +550,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#1
 <tr class="memitem:a0ceb1a6b219ef156a916f613899b1049 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ceb1a6b219ef156a916f613899b1049"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a0ceb1a6b219ef156a916f613899b1049 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8b15a152ec75b0e7654b04b955786f1 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8b15a152ec75b0e7654b04b955786f1"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:aa8b15a152ec75b0e7654b04b955786f1 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5a045ab48f949ce046bcffc142f4510 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5a045ab48f949ce046bcffc142f4510"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InParens</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
 <tr class="separator:af5a045ab48f949ce046bcffc142f4510 inherit pub_static_methods_classLoyc_1_1Syntax_1_1LNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -633,7 +648,61 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 
 <p>Implements <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a8e2b5e15d6e0b6e25e52d833f36c32eb">Loyc.Syntax.LNode</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f">Loyc.Syntax.LNode.Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a0ac2cd8834551c21a13601fe4fdc37ae">Loyc.Syntax.LNode.Kind</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688">Loyc.Syntax.LNode.Style</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f">Loyc.Syntax.LNode.Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#adfa09640d17b6dde094e2bb4839eb747">Loyc.Syntax.LNode.Kind</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688">Loyc.Syntax.LNode.Style</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad5beb8ea5874807c4c0eae765f3b31ad"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">override bool Loyc.Syntax.CallNode.HasSimpleHead </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</p>
+
+<p>Reimplemented from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abaffe6461fb891bfaed8f5c4aab40716">Loyc.Syntax.LNode</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="acda83c0c4d8f443aedd6c256357dd1d3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">override bool Loyc.Syntax.CallNode.HasSimpleHeadWithoutPAttrs </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</p>
+
+<p>Reimplemented from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4b5b4a0a72fb8cf469bf55afeb6d64e5">Loyc.Syntax.LNode</a>.</p>
 
 </div>
 </div>
@@ -669,7 +738,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 </table>
 </div><div class="memdoc">
 
-<p>Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, Target, Args) using the specified selector.</p>
+<p>Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, Target, Args) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">selector</td><td>The selector is called for each descendant, and optionally the root node. If the selector returns a node, the new node replaces the node that was passed to <code>selector</code> and the children of the new node are ignored. If the selector returns null, children of the child are scanned recursively.</td></tr>
@@ -704,7 +773,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 </table>
 </div><div class="memdoc">
 
-<p>Transforms the attributes, Target, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>.</p>
+<p>Transforms the attributes, Target, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>.</p>
 <p>The selector is not allowed to return null.</p>
 
 <p>Implements <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a47e1be6d75a8893c913552f0f4deb0d8">Loyc.Syntax.LNode</a>.</p>
@@ -768,7 +837,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 </div><div class="memdoc">
 
 <p>Creates a node with a new value for Name.</p>
-<p>If IsId, the Name is simply changed. If IsCall, this method returns the equivalent of <code>WithTarget(Target.WithName(name))</code> (which may be optimized for the particular call type). If IsLiteral, the Kind changes to NodeKind.Id in order to set the name.</p>
+<p>If IsId, the Name is simply changed. If IsCall, this method returns the equivalent of <code>WithTarget(Target.WithName(name))</code> (which may be optimized for the particular call type). If IsLiteral, the Kind changes to LNodeKind.Id in order to set the name.</p>
 
 <p>Reimplemented from <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a0cc7c19286f8d82e622127da8b806132">Loyc.Syntax.LNode</a>.</p>
 
@@ -812,7 +881,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:00 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

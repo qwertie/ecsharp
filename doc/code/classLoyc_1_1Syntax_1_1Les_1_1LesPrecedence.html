@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Contains <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> objects that represent the precedence levels of LES. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedence.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/LES/LesPrecedence.cs'>/Src/Loyc.Syntax/LES/LesPrecedence.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/LES/LesPrecedence.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> objects that represent the precedence levels of LES.</p>
@@ -107,9 +107,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>The LES precedence table is designed to be comparable with popular programming languages, with a couple of "corrections" that I felt were appropriate; for example, in LES, <code>x ^ 7 != 0</code> is parsed <code>(x ^ 7) != 0</code>, rather than <code>x ^ (7 != 0)</code> as in the C family of languages. Similarly, <code>x &gt;&gt; 1 + y</code> is parsed <code>(x &gt;&gt; 1) + y</code> rather than <code>x &gt;&gt; (1 + y)</code>. Shifting is often used as a substitute for multiplication and division, so it has the same precedence. </p>
 <p>As a nod to functional languages, the arrow operator "-&gt;" is right- associative and has a precedence below '*' so that <code>int * int -&gt; int</code> parses as <code>(int * int) -&gt; int</code> rather than <code>int * (int -&gt; int)</code> as in the C family of languages. </p>
 <p>An operator consists of a sequence of the following characters: </p><pre>
-   ~ ! % ^ &amp; * - + = | &lt; &gt; / ? : . $
-</pre><p> Or a backslash () followed by a sequence of the above characters and/or letters, numbers, underscores or #s. </p>
-<p>"@" is not considered an operator. It is used to mark a sequence of punctuation and/or non-punctuation characters as an identifier, a symbol, or a special literal. </p>
+   ~ ! % ^ &amp; * \ - + = | &lt; &gt; / ? : . $
+</pre><p> Or a backslash () followed by a sequence of the above characters and/or letters, numbers, underscores or #s. Or a string with <code>backtick quotes</code>. </p>
+<p>"@" is not considered an operator. It is used to mark a sequence of punctuation and/or non-punctuation characters as an identifier, a symbol, or a special literal. "#" is not an operator; like an underscore, it is considered to be an identifier character, and it's used to mark "keywords". </p>
 <p>"," and ";" are not considered operators; rather they are separators, and they cannot be combined with operators. For example, "?,!" is parsed as three separate tokens. </p>
 <p>The following table shows all the precedence levels and associativities of the "built-in" LES operators, except <code>backtick</code> and the arrow operators =&gt; and -&gt;, which are special. Each precedence level has a name, which corresponds to a static field of this class. All binary operators are left-associative unless otherwise specified. </p><ol>
 <li>
@@ -174,7 +174,9 @@ There were no prefix operators with low precedence, so I added ".." whose preced
 <p>The operators <code>++ &ndash;</code> also have two roles, but different roles: they can be either prefix or suffix operators, but not binary operators. For example, <code>-*-</code> is a suffix operator in <code>x -*- + y</code> and a prefix operator in <code>x + -*- y</code>. Please note that <code>x -*- y</code> is ambiguous (it could be parsed as either of two superexpressions, <code>(x -*-) (y)</code> or <code>(x) (-*- y)</code>) and it is illegal. </p>
 <p>Operators that end with $ can only be prefix operators (not binary or suffix). Operators that start and end with \ can only be suffix (not binary or prefix) operators. Having only a single role makes these operators unambiguous inside superexpressions. </p>
 <p>An operator cannot have all three roles (suffix, prefix and binary); that would be ambiguous. For example, if "-" could also be a suffix operator then <code>x - + y</code> could be parsed as <code>(x -) + y</code> as well as <code>x - (+ y)</code>. More subtly, LES does not define any operators that could take binary or suffix roles, because that would also be ambiguous. For example, suppose <code>|?|</code> is a binary or suffix operator, but not a prefix operator. Clearly <code>x |?| y</code> and <code>x |?| |?| y</code> are unambiguous, but <code>x |?| + y</code> is ambiguous: it could be parsed as <code>(x |?|) + y</code> or <code>x |?| (+ y)</code>. It turns out that a computer language can contain operators that serve as binary and prefix operators, OR it can contain operators that serve as binary and suffix operators, but a language is ambiguous if it has both kinds of operators at the same time. </p>
-<p>So, to determine the precedence of any given operator, first you must decide whether it is a prefix, binary, or suffix operator (remember, only operators derived from <code>++, &ndash;, \</code> can be suffix operators). If the operator starts with a single backslash (), discard it for the purpose of choosing precedence (if there are backquotes, discard them and replace escape sequences with the characters that they represent). Next, if the operator is only one character, simply find it in the above table. If the operator is two or more characters, take the first character A and the last character Z, and apply the following rules in order: </p><ol>
+<p>So, to determine the precedence of any given operator, first you must decide, mainly based on the context in which the operator appears, whether it is a prefix, binary, or suffix operator. Suffix operators can only be derived from the following operators: <code>++, &ndash;, \</code> </p>
+<p>If an operator starts with a backslash (), the backslash is not considered part of the operator name and it not used for the purpose of choosing precedence either (rather, it is used to allow letters and digits in the operator name). A <code>backquoted</code> operator always has precedence of Backtick and again, the backticks are not considered part of the operator name. </p>
+<p>Next, if the operator is only one character, simply find it in the above table. If the operator is two or more characters, take the first character A and the last character Z, and apply the following rules in order: </p><ol>
 <li>
 If the operator is binary and it is exactly equal to "&gt;=" or "&amp;lt;=" or "!=" or "==", the precedence is Compare. </li>
 <li>
@@ -202,9 +204,6 @@ For operators surrounded by <code>backquotes</code>, the backquotes are not part
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a9c41b9baa1d9eb4ea9464ca10b124d4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c41b9baa1d9eb4ea9464ca10b124d4c"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TightAttr</b> = Precedence.MaxValue</td></tr>
-<tr class="separator:a9c41b9baa1d9eb4ea9464ca10b124d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9bb5712f99ff67bd856e332d50f1d01"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9bb5712f99ff67bd856e332d50f1d01"></a>
 static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Substitute</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(102,103,103,102)</td></tr>
 <tr class="separator:aa9bb5712f99ff67bd856e332d50f1d01"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -288,7 +287,7 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:03 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

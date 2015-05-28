@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A forward range. Allows you to read the first element from the range or skip it. The forward range lays the foundation for IBRange{T} and IRange{T}. 
  <a href="interfaceLoyc_1_1Collections_1_1IFRange_3_01out_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/IRanges.cs'>/Src/Loyc.Essentials/Collections/Interfaces/IRanges.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Interfaces/IRanges.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.IFRange&lt; out T &gt;:</div>
@@ -170,7 +170,7 @@ A random-access range is a sequence that provides array-like access to a section
            d  e  f  g  h  i  j  k  l  m  n  o
     IRange                0  1  2  3  4  5  6  7
 </pre><p> The exact behavior of the range at this point is implementation-dependent. The <code>Count</code> property may remain at 8, or it may drop to 7; perhaps the range will return default(T) when you read index [7], or perhaps it will throw IndexOutOfRangeException. Because of this lack of predictability, you should avoid keeping a range that points to a list whose size is decreasing. If individual elements are modified but not the list size, the range is safe to use and will see the changes. If new elements are added to the end of the list, the range may or may not continue working as expected, depending on how the collection works and how the range works. In most cases the range will be unaffected, in contrast to common C++ containers such as <code>std::vector</code>, in which iterators are "invalidated" by any size change, and when an invalid iterator is accessed, it may return bad data or crash the program. </p>
-<p>Currently there are no interfaces in Loyc.Essentials that return forward or bidirectional ranges; the only notable method that returns a range is IListSource{T}.Slice, which returns a random-access range. Since a random-access range is also a bidirectional range, you can begin writing algorithms that accept forward and bidirectional ranges (for read access). Any collection that implements IListSource{T} can be treated as a range using the LCExt.AsRange() extension method, which is like calling <code>Slice(0)</code>. </p>
+<p>Currently there are no interfaces in Loyc.Essentials that return forward or bidirectional ranges; the only notable method that returns a range is IListSource{T}.Slice, which returns a random-access range. Since a random-access range is also a bidirectional range, you can begin writing algorithms that accept forward and bidirectional ranges (for read access). Any collection that implements IListSource{T} can be treated as a range using the ListExt.AsRange{T}(IListSource{T}) extension method, which is like calling <code>Slice(0)</code>. </p>
 <p>The design philosophy of Loyc.Essentials is that potentially useful interfaces should be included even if there are no implementations of the interface. That's why there are interfaces like IMFRange{T} that are not implemented by any classes. Why offer unused interfaces? Because this library is designed to be extended by third parties, who might want to implement the interface, e.g. if someone else creates mutable data structures such as the B+ tree, the doubly-linked list or the trie, they should offer implementations of IMBRange{T} and/or IMBinumerator{T}. </p>
 <p>Implementors note: IFRange{T} includes IEnumerable{T}, and you can use the following implementation of IEnumerable provided that your range type <code>R</code> implements ICloneable{R}: </p><div class="fragment"><div class="line">IEnumerator System.Collections.IEnumerable.GetEnumerator() { <span class="keywordflow">return</span> GetEnumerator(); }</div>
 <div class="line">IEnumerator&amp;lt;T&gt; IEnumerable&amp;lt;T&gt;.GetEnumerator() { <span class="keywordflow">return</span> GetEnumerator(); }</div>
@@ -218,7 +218,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <p>Removes the first item from the range and returns it.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fail</td><td>Receives the current value of IsEmpty.</td></tr>
+    <tr><td class="paramname">fail</td><td>Receives the current value of IIsEmpty.IsEmpty.</td></tr>
   </table>
   </dd>
 </dl>
@@ -226,7 +226,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <p>This method is a little unweildy in plain C#, but in EC# it will be a bit more convenient to use via extension methods like <code>PopFirst(ref this Range range, T defaultValue)</code> and <code>PopFirst(ref this Range range)</code>, which are illegal in plain C#. </p>
 <p>I wanted to give this method the signature "bool PopFirst(out T first)" but the generic parameter "T" is covariant, i.e. it is marked "out T" which, ironically, is not compatible with "out T" parameters, only with return values. </p>
 
-<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html#abda1358cd0551cc630b4552e6a04e75f">Loyc.Collections.Repeated&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html#a7b5b048d7bce3633cb666a04230496d8">Loyc.Collections.IntRange</a>, <a class="el" href="classLoyc_1_1Collections_1_1EmptyList_3_01T_01_4.html#a5c9a28c9ea7e5d91834267e09c98ce5b">Loyc.Collections.EmptyList&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ac70b407f60e9602304fc597188a1a7b2">Loyc.Collections.ListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ab3deda083a3f19999a1b19b6449a3c67">Loyc.Collections.StringSlice</a>, <a class="el" href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html#aef90608e2736caec7e8f2775dce8ddac">Loyc.Collections.Slice_&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html#a4dde4cbc8a664a6d66668bf08c320df9">Loyc.Collections.NegListSlice&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html#a7c2dba50c34b27f41b94a4b2f20ad648">Loyc.Collections.ArraySlice&lt; T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html#abda1358cd0551cc630b4552e6a04e75f">Loyc.Collections.Repeated&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html#a7b5b048d7bce3633cb666a04230496d8">Loyc.Collections.IntRange</a>, <a class="el" href="classLoyc_1_1Collections_1_1EmptyList_3_01T_01_4.html#a5c9a28c9ea7e5d91834267e09c98ce5b">Loyc.Collections.EmptyList&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ac70b407f60e9602304fc597188a1a7b2">Loyc.Collections.ListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html#aef90608e2736caec7e8f2775dce8ddac">Loyc.Collections.Slice_&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ab3deda083a3f19999a1b19b6449a3c67">Loyc.Collections.StringSlice</a>, <a class="el" href="structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html#a7c2dba50c34b27f41b94a4b2f20ad648">Loyc.Collections.ArraySlice&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html#a4dde4cbc8a664a6d66668bf08c320df9">Loyc.Collections.NegListSlice&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -265,7 +265,7 @@ T Front { get { return Range.PopFront(Clone()); } }
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:26 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

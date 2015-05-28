@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Exposes a stream as an ICharSource, as though it were an array of characters. The stream must support seeking, and if a text decoder is specified, it must meet certain constraints.  
  <a href="classLoyc_1_1Syntax_1_1StreamCharSource.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/SourceFiles/StreamCharSource.cs'>/Src/Loyc.Syntax/SourceFiles/StreamCharSource.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/SourceFiles/StreamCharSource.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.StreamCharSource:</div>
@@ -116,7 +116,6 @@ Inheritance diagram for Loyc.Syntax.StreamCharSource:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Exposes a stream as an ICharSource, as though it were an array of characters. The stream must support seeking, and if a text decoder is specified, it must meet certain constraints. </p>
-<p>TODO: test &amp; debug. This class has never been used yet! </p>
 <p>This class reads small blocks of bytes from a stream, reloading blocks from the stream when necessary. Data is cached with a pair of character buffers, and a third buffer is used to read from the stream. A Stream is required rather than a TextReader because TextReader doesn't support seeking. </p>
 <p>This class assumes the underlying stream never changes. </p>
 <p>The stream does not (and probably cannot, if I understand the System.Text.Decoder API correctly) save the decoder state at each block boundary. Consequently, only encodings that meet special constraints will work with <a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html" title="Exposes a stream as an ICharSource, as though it were an array of characters. The stream must support...">StreamCharSource</a>. These include Encoding.Unicode, Encoding.UTF8, and Encoding.UTF32, but not Encoding.UTF7. Using unsupported encodings will cause exceptions and/or or corrupted data output while reading from the <a class="el" href="classLoyc_1_1Syntax_1_1StreamCharSource.html" title="Exposes a stream as an ICharSource, as though it were an array of characters. The stream must support...">StreamCharSource</a>. </p>
@@ -158,9 +157,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a87134f95d3e9ed70129e31bb9caafaf9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a87134f95d3e9ed70129e31bb9caafaf9"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SwapBlks</b> ()</td></tr>
 <tr class="separator:a87134f95d3e9ed70129e31bb9caafaf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee6deff3726cb85817c89d526c5d4a50"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee6deff3726cb85817c89d526c5d4a50"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Access</b> (int charIndex)</td></tr>
-<tr class="separator:aee6deff3726cb85817c89d526c5d4a50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb4ae4b802c627e29adf03eaecde3ff8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb4ae4b802c627e29adf03eaecde3ff8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Access</b> (int charIndex)</td></tr>
+<tr class="separator:acb4ae4b802c627e29adf03eaecde3ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbbceff7cc01d51c1439b793d0976c5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abbbceff7cc01d51c1439b793d0976c5b"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReloadBlockOf</b> (int charIndex)</td></tr>
 <tr class="separator:abbbceff7cc01d51c1439b793d0976c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -403,7 +402,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>MaxSeqSize</b> =
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:03 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

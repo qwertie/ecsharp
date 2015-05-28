@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Additional extension methods for IEnumerable{T}, beyond what LINQ provides.  
  <a href="classLoyc_1_1Collections_1_1EnumerableExt.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/ExtensionMethods/EnumerableExt.cs'>/Src/Loyc.Essentials/Collections/ExtensionMethods/EnumerableExt.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/ExtensionMethods/EnumerableExt.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Additional extension methods for IEnumerable{T}, beyond what LINQ provides. </p>
@@ -165,6 +165,9 @@ static IEnumerable&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a5479ff0edf01453bd0d6eff097faa492"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5479ff0edf01453bd0d6eff097faa492"></a>
 static IEnumerable&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WhereNotNull&lt; T &gt;</b> (this IEnumerable&lt; T?&gt; list)</td></tr>
 <tr class="separator:a5479ff0edf01453bd0d6eff097faa492"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; Out &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a810c3ad3d92ffcc2e871422a9d67ddeb">SelectFilter&lt; T, Out &gt;</a> (this IEnumerable&lt; T &gt; list, Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; Out &gt;&gt; filter)</td></tr>
+<tr class="memdesc:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combines 'Select' and 'Where' in a single operation. <a href="#a810c3ad3d92ffcc2e871422a9d67ddeb">More...</a><br /></td></tr>
+<tr class="separator:a810c3ad3d92ffcc2e871422a9d67ddeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab12bb537a998412880799cbb353fda2"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#aab12bb537a998412880799cbb353fda2">MaxOrDefault&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list, Func&lt; T, int &gt; selector, T defaultValue=default(T))</td></tr>
 <tr class="memdesc:aab12bb537a998412880799cbb353fda2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <em>item</em> in the list that has the maximum value for some selector. <a href="#aab12bb537a998412880799cbb353fda2">More...</a><br /></td></tr>
 <tr class="separator:aab12bb537a998412880799cbb353fda2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -426,6 +429,49 @@ static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; 
 
 </div>
 </div>
+<a class="anchor" id="a810c3ad3d92ffcc2e871422a9d67ddeb"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;Out&gt; Loyc.Collections.EnumerableExt.SelectFilter&lt; T, Out &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; Out &gt;&gt;&#160;</td>
+          <td class="paramname"><em>filter</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Combines 'Select' and 'Where' in a single operation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filter</td><td>If this function returns Maybe{O}.Null then the element is suppressed from the output; otherwise the Maybe{T}.Value is sent to the output.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A sequence filtered and changed by <code>filter</code>.</dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="abc2a586f5222e8828b3651ccac71c7f5"></a>
 <div class="memitem">
 <div class="memproto">
@@ -491,7 +537,7 @@ static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

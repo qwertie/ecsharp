@@ -98,13 +98,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Contains helper methods for creating <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>s. An <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> holds a reference to the current source file (File) so that it does not need to be repeated every time you create a node.  
+<p>Contains helper methods for creating <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s. An <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> holds a reference to the current source file (File) so that it does not need to be repeated every time you create a node.  
  <a href="classLoyc_1_1Syntax_1_1LNodeFactory.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Nodes/LNodeFactory.cs'>/Src/Loyc.Syntax/Nodes/LNodeFactory.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/LNodes/LNodeFactory.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Contains helper methods for creating <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>s. An <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> holds a reference to the current source file (File) so that it does not need to be repeated every time you create a node. </p>
+<div class="textblock"><p>Contains helper methods for creating <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s. An <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> holds a reference to the current source file (File) so that it does not need to be repeated every time you create a node. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
@@ -246,9 +246,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6ca74866412ef71ea067a339b1a33d35"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ca74866412ef71ea067a339b1a33d35"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Braces</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a6ca74866412ef71ea067a339b1a33d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac632c80e8037b2eeae12ac5a9f531874"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac632c80e8037b2eeae12ac5a9f531874"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Set</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> lhs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> rhs, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:ac632c80e8037b2eeae12ac5a9f531874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a781d3149c8a37e00ef76fe2a45bf3aa5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a781d3149c8a37e00ef76fe2a45bf3aa5"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Assign</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> lhs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> rhs, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a781d3149c8a37e00ef76fe2a45bf3aa5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa75da32a1befc69156dafb0a3e73525"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa75da32a1befc69156dafb0a3e73525"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
 <tr class="separator:aaa75da32a1befc69156dafb0a3e73525"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -279,12 +279,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4641c95bcd922bf28b083776cf0c096e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4641c95bcd922bf28b083776cf0c096e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tuple</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; contents, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a4641c95bcd922bf28b083776cf0c096e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ca07fe1bd04e362494984467a61805d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1ca07fe1bd04e362494984467a61805d"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Def</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> argList, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body=null, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a1ca07fe1bd04e362494984467a61805d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c8cae19c0820588bb6bbeba23ec5f44"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5c8cae19c0820588bb6bbeba23ec5f44"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Def</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> argList, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body=null, int startIndex=-1, int endIndex=-1)</td></tr>
-<tr class="separator:a5c8cae19c0820588bb6bbeba23ec5f44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27544a0d89a66fb1b36549f434445450"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27544a0d89a66fb1b36549f434445450"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fn</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> argList, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body=null, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:a27544a0d89a66fb1b36549f434445450"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9e3121399d58483acdf7b3fe41ccca1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9e3121399d58483acdf7b3fe41ccca1"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fn</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> argList, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body=null, int startIndex=-1, int endIndex=-1)</td></tr>
+<tr class="separator:ad9e3121399d58483acdf7b3fe41ccca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a8686a848e2415b9ee4b5bbcce7f4aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a8686a848e2415b9ee4b5bbcce7f4aa"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Property</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body=null, int startIndex=-1, int endIndex=-1)</td></tr>
 <tr class="separator:a5a8686a848e2415b9ee4b5bbcce7f4aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -294,6 +294,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac689bc9c2882b2f528f2d434a6a48b65"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac689bc9c2882b2f528f2d434a6a48b65"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Var</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> initValue=null)</td></tr>
 <tr class="separator:ac689bc9c2882b2f528f2d434a6a48b65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad364780b7152e2c009b03425a51116eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad364780b7152e2c009b03425a51116eb"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Var</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> initValue=null)</td></tr>
+<tr class="separator:ad364780b7152e2c009b03425a51116eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54297aef652fe054e40ae6e36352dc2e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54297aef652fe054e40ae6e36352dc2e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Var</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name)</td></tr>
 <tr class="separator:a54297aef652fe054e40ae6e36352dc2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -320,7 +323,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:02 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

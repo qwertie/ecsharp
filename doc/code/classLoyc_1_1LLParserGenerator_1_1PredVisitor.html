@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Base class for implementing a visitor that examines a tree of <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icates. 
  <a href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/PredVisitor.cs'>/Src/LLLPG/RuleAndPreds/PredVisitor.cs</a></li>
+<li>D:/Dev/Loyc/Main/LLLPG/RuleAndPreds/PredVisitor.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.PredVisitor:</div>
@@ -111,7 +111,9 @@ Inheritance diagram for Loyc.LLParserGenerator.PredVisitor:</div>
 <area href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html" title="Directs code generation using the visitor pattern to visit the predicates in a rule. The process starts with Generate(Rule). " alt="Loyc.LLParserGenerator.LLParserGenerator.GenerateCodeVisitor" shape="rect" coords="421,56,832,80"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical.html" title="Computes the "canonical" interpretation of a position for prediction purposes, so that ConsolidateDup..." alt="Loyc.LLParserGenerator.LLParserGenerator.GetCanonical" shape="rect" coords="842,56,1253,80"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.html" title="Base class for implementing a visitor that examines a tree of LLLPG Predicates. The default implement..." alt="Loyc.LLParserGenerator.RecursivePredVisitor" shape="rect" coords="1263,56,1674,80"/>
-<area href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html" title="Performs prediction analysis using the visitor pattern to visit the predicates in a rule..." alt="Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor" shape="rect" coords="1263,112,1674,136"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1RecursiveReplacementPredVisitor.html" title="Base class for visitors that can replace predicates entirely." alt="Loyc.LLParserGenerator.RecursiveReplacementPredVisitor" shape="rect" coords="1684,56,2095,80"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1AutoValueSaverVisitor.html" title="Helper class invoked just after StageTwoParser. Its job is to create variables referenced by labels (..." alt="Loyc.LLParserGenerator.AutoValueSaverVisitor" shape="rect" coords="1052,112,1463,136"/>
+<area href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html" title="Performs prediction analysis using the visitor pattern to visit the predicates in a rule..." alt="Loyc.LLParserGenerator.LLParserGenerator.PredictionAnalysisVisitor" shape="rect" coords="1473,112,1884,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -135,7 +137,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Alts.html">Alts</a> alts)</td></tr>
 <tr class="separator:ab947e788881f347009e9086093fa323c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa35148a766adfc3a3aaf7fce17a382ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa35148a766adfc3a3aaf7fce17a382ac"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html">AndPred</a> <a class="el" href="structand.html">and</a>)</td></tr>
+virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1AndPred.html">AndPred</a> and)</td></tr>
 <tr class="separator:aa35148a766adfc3a3aaf7fce17a382ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2a644f59d8a2ca3b038261b2912e7c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2a644f59d8a2ca3b038261b2912e7c0"></a>
 virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Gate.html">Gate</a> gate)</td></tr>
@@ -163,7 +165,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,8 +1,9 @@
 var searchData=
 [
+  ['macrocontext',['MacroContext',['../classLeMP_1_1MacroContext.html',1,'LeMP']]],
   ['macroprocessor',['MacroProcessor',['../classLeMP_1_1MacroProcessor.html',1,'LeMP']]],
-  ['macros',['Macros',['../classLoyc_1_1LLParserGenerator_1_1Macros.html',1,'Loyc::LLParserGenerator']]],
   ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Macros.html',1,'LeMP::Prelude']]],
+  ['macros',['Macros',['../classLoyc_1_1LLPG_1_1Macros.html',1,'Loyc::LLPG']]],
   ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Les_1_1Macros.html',1,'LeMP::Prelude::Les']]],
   ['map_3c_20k_2c_20v_20_3e',['Map&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1Map_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
   ['mapormmap_3c_20k_2c_20v_20_3e',['MapOrMMap&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
@@ -25,6 +26,8 @@ var searchData=
   ['mathu16',['MathU16',['../structLoyc_1_1Math_1_1MathU16.html',1,'Loyc::Math']]],
   ['mathu8',['MathU8',['../structLoyc_1_1Math_1_1MathU8.html',1,'Loyc::Math']]],
   ['mathul',['MathUL',['../structLoyc_1_1Math_1_1MathUL.html',1,'Loyc::Math']]],
+  ['maybe',['Maybe',['../classLoyc_1_1Maybe.html',1,'Loyc']]],
+  ['maybe_3c_20t_20_3e',['Maybe&lt; T &gt;',['../structLoyc_1_1Maybe_3_01T_01_4.html',1,'Loyc']]],
   ['memoizedtypename',['MemoizedTypeName',['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc']]],
   ['memoizedtypename_3c_20t_20_3e',['MemoizedTypeName&lt; T &gt;',['../classLoyc_1_1MemoizedTypeName_3_01T_01_4.html',1,'Loyc']]],
   ['message',['Message',['../structLoyc_1_1MessageHolder_1_1Message.html',1,'Loyc::MessageHolder']]],

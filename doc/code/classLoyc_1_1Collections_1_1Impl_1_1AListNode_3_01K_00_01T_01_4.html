@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Internal implementation class. Base class for tree nodes in a list class derived from AListBase{T}. These nodes basically form an in-memory B+tree, not necessarily sorted, but structured like a B+tree. That means there are two node types: leaf and inner (internal) nodes.  
  <a href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/AListNode.cs'>/Src/Loyc.Collections/ALists/AListNode.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/ALists/AListNode.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.Impl.AListNode&lt; K, T &gt;:</div>
@@ -112,7 +112,7 @@ Inheritance diagram for Loyc.Collections.Impl.AListNode&lt; K, T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.png" usemap="#Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map" alt=""/>
   <map id="Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map" name="Loyc.Collections.Impl.AListNode&lt; K, T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared code of AList internal nodes." alt="Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;" shape="rect" coords="0,56,269,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared base class of internal nodes for AList{T}, SparseAList{T}, BList{T}, BMultiMap{K,V} and BDictionary{K,V}." alt="Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;" shape="rect" coords="0,56,269,80"/>
 <area href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html" title="Internal implementation class. Shared code of non-sparse AList leaf nodes." alt="Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;" shape="rect" coords="279,56,548,80"/>
 <area href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html" title="Internal implementation class. Leaf node of SparseAList{T}." alt="Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;" shape="rect" coords="558,56,827,80"/>
 <area href="classLoyc_1_1Collections_1_1Impl_1_1BListLeaf_3_01K_00_01T_01_4.html" title="Internal implementation class. Leaf node of BList{T} and BDictionary{K,V}." alt="Loyc.Collections.Impl.BListLeaf&lt; K, T &gt;" shape="rect" coords="279,112,548,136"/>
@@ -125,6 +125,7 @@ Inheritance diagram for Loyc.Collections.Impl.AListNode&lt; K, T &gt;:</div>
 index" that is subtracted from any index passed to the node. For example, if the root node has two leaf children, and the left one has 20 items, then the right child's base index is 20. When accessing item 23, the subindex 3 is passed to the right child. Note that the right child is not aware of its own base index (the parent node manages the base index); as far as each node is concerned, it manages a collection of items numbered 0 to TotalCount-1. </p>
 <p>Indexes are expressed with a uint so that nodes are capable of holding up to uint.MaxValue-1 elements. AList itself doesn't support sizes over int.MaxValue, since it assumes indexes are signed (some protected methods in AList take unsigned indexes, however). It should be possible to support oversize lists in 64-bit machines by writing a derived class based on "uint" or "long" indexes; 32-bit processes, however, don't have enough address space to even hold int.MaxValue bytes. </p>
 <p>Before calling any method that modifies a node, it is necessary to call <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a1d2b9e6c5bc98d045b1128c2ca8cceec" title="Checks whether &#39;node&#39; is frozen and if so, replaces it with an unfrozen copy.">AutoClone()</a> to check if the node is frozen and clone it if necessary. TakeFromRight and TakeFromLeft can be called when one or both nodes are frozen, but will have no effect. </p>
+<p>Philosophical note: the kinds of features I'd like to see in Enhanced C# would make it easier to create the AList series of data structures. Each kind of AList is similar yet different and many of the operations of an AList are similar yet different and C# doesn't, I think, provide enough flexibility to handle this variety without smooshing a bunch of different things clumsily into a single class hierarchy and without having to write methods that are in charge of several different operations (e.g. DoSingleOperation). Traits and D-style templates would help make the cod of the AList family of types cleaner and faster. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -179,9 +180,12 @@ abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:a3a3e1250388c01525d3efaf9c8406431"><td class="memItemLeft" align="right" valign="top">abstract AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a3a3e1250388c01525d3efaf9c8406431">CopySection</a> (uint index, uint count, AListBase&lt; K, T &gt; list)</td></tr>
 <tr class="memdesc:a3a3e1250388c01525d3efaf9c8406431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts and returns, as fast as possible, a subrange of the list that this node represents. <a href="#a3a3e1250388c01525d3efaf9c8406431">More...</a><br /></td></tr>
 <tr class="separator:a3a3e1250388c01525d3efaf9c8406431"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60a513589da5d056b1c8ca7d73468fa0"><td class="memItemLeft" align="right" valign="top">abstract int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a60a513589da5d056b1c8ca7d73468fa0">ImmutableCount</a> ()</td></tr>
-<tr class="memdesc:a60a513589da5d056b1c8ca7d73468fa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. See AListBase{K,T}.ImmutableCount. <a href="#a60a513589da5d056b1c8ca7d73468fa0">More...</a><br /></td></tr>
-<tr class="separator:a60a513589da5d056b1c8ca7d73468fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92fbc388482fdb1aefbc809f36fa25ec"><td class="memItemLeft" align="right" valign="top">abstract uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a92fbc388482fdb1aefbc809f36fa25ec">GetImmutableCount</a> (bool excludeSparse)</td></tr>
+<tr class="memdesc:a92fbc388482fdb1aefbc809f36fa25ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. See AListBase{K,T}.GetImmutableCount(). <a href="#a92fbc388482fdb1aefbc809f36fa25ec">More...</a><br /></td></tr>
+<tr class="separator:a92fbc388482fdb1aefbc809f36fa25ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d118c9bb03a6cd6208f2994107a36c1"><td class="memItemLeft" align="right" valign="top">virtual uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a0d118c9bb03a6cd6208f2994107a36c1">GetRealItemCount</a> ()</td></tr>
+<tr class="memdesc:a0d118c9bb03a6cd6208f2994107a36c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">For sparse lists: counts the number of non-sparse items. <a href="#a0d118c9bb03a6cd6208f2994107a36c1">More...</a><br /></td></tr>
+<tr class="separator:a0d118c9bb03a6cd6208f2994107a36c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -387,6 +391,40 @@ Protected fields</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a92fbc388482fdb1aefbc809f36fa25ec"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract uint Loyc.Collections.Impl.AListNode&lt; K, T &gt;.GetImmutableCount </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>excludeSparse</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Diagnostic method. See AListBase{K,T}.GetImmutableCount().</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">excludeSparse</td><td>Should be false for normal ALists. If true, the count is of real items only.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a119f3dd3e65165774e0325052f701381">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#a4df2805a6c19ba2a78c7859dcbab41ec">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html#a06d344a2889649e324e43e1c4bdacc85">Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a092056ac4b87554536876f292ab84c11"></a>
 <div class="memitem">
 <div class="memproto">
@@ -440,6 +478,33 @@ Protected fields</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a0d118c9bb03a6cd6208f2994107a36c1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual uint Loyc.Collections.Impl.AListNode&lt; K, T &gt;.GetRealItemCount </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>For sparse lists: counts the number of non-sparse items.</p>
+
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#a0ffbdf8b68f33f718d2efaa398e773ee">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a67d4aeddc04cdb8052e9e09eb3fd4b87"></a>
 <div class="memitem">
 <div class="memproto">
@@ -463,33 +528,6 @@ Protected fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allows derived classes of AListNode to fire the AListBase.ListChanging event.</p>
-
-</div>
-</div>
-<a class="anchor" id="a60a513589da5d056b1c8ca7d73468fa0"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">abstract int Loyc.Collections.Impl.AListNode&lt; K, T &gt;.ImmutableCount </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Diagnostic method. See AListBase{K,T}.ImmutableCount.</p>
-
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#ad90a79da74e77afb504eb668f58197cb">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html#aa220395e6a4d03c2952198556e401183">Loyc.Collections.Impl.SparseAListLeaf&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html#a27024b375005d7d32494ac48ffab7d7c">Loyc.Collections.Impl.AListLeaf&lt; K, T &gt;</a>.</p>
 
 </div>
 </div>
@@ -753,7 +791,7 @@ Protected fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Number of children, if this is an inner node.</p>
-<p>Since AListLeaf{T} uses DListInternal, a separate item count is not needed and this counter is always zero. This field logically belongs in AListInnerBase{T} but is defined here to ensure that inner nodes are not 4 bytes larger than necessary. This field is "free" if it is declared in the base class, since class sizes are rounded up to the nearest multiple of 4 bytes (8 bytes in 64-bit). The fact that this field is a byte, however, does limit inner node sizes to 255. </p>
+<p>Since AListLeaf{T} uses DListInternal, a separate item count is not needed and this counter is always zero. This field logically belongs in AListInnerBase{K,T} but is defined here to ensure that inner nodes are not 4 bytes larger than necessary. This field is "free" if it is declared in the base class, since class sizes are rounded up to the nearest multiple of 4 bytes (8 bytes in 64-bit). The fact that this field is a byte, however, does limit inner node sizes to 255. </p>
 
 </div>
 </div>
@@ -867,6 +905,8 @@ Protected fields</h2></td></tr>
 
 <p>Returns true if the node is undersized, meaning it would prefer to have more immediate children.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;.HandleUndersized()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a81a903ee7cc50a9bd6f253eb8418568f"></a>
@@ -935,13 +975,15 @@ Protected fields</h2></td></tr>
 
 <p>Gets the total number of (T) items in this node and all children</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a782f53c1b0884e1ba5ebc86b74fd6cf3">Loyc.Collections.Impl.AListInnerBase&lt; K, T &gt;.HandleUndersized()</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:32 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

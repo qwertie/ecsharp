@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['findandreplaceform',['FindAndReplaceForm',['../classTextEditor_1_1FindAndReplaceForm.html',1,'TextEditor']]],
   ['fpi16',['FPI16',['../structLoyc_1_1Math_1_1FPI16.html',1,'Loyc::Math']]],
   ['fpi23',['FPI23',['../structLoyc_1_1Math_1_1FPI23.html',1,'Loyc::Math']]],
   ['fpi8',['FPI8',['../structLoyc_1_1Math_1_1FPI8.html',1,'Loyc::Math']]],

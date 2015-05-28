@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents a read-only indexed list in which parts of the index space may be unused or "clear". 
  <a href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs'>/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Interfaces/ISparseList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.ISparseListSource&lt; T &gt;:</div>
@@ -107,11 +107,11 @@ Inheritance diagram for Loyc.Collections.ISparseListSource&lt; T &gt;:</div>
  <div class="center">
   <img src="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.png" usemap="#Loyc.Collections.ISparseListSource&lt; T &gt;_map" alt=""/>
   <map id="Loyc.Collections.ISparseListSource&lt; T &gt;_map" name="Loyc.Collections.ISparseListSource&lt; T &gt;_map">
-<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="266,56,522,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html" title="Represents a sparse list that allows insertion and removal of items and empty spaces. In a sparse list, some spaces can be "clear" meaning that they have no value." alt="Loyc.Collections.ISparseList&lt; T &gt;" shape="rect" coords="133,168,389,192"/>
-<area href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html" title="Adapter from IListSource{T} to ISparseListSource{T}." alt="Loyc.Collections.ListSourceAsSparse&lt; T &gt;" shape="rect" coords="399,168,655,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1ISparseListEx_3_01T_01_4.html" title="A sparse list that supports additional methods including InsertRange(ISparseListSource{T})." alt="Loyc.Collections.ISparseListEx&lt; T &gt;" shape="rect" coords="0,224,256,248"/>
-<area href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html" title="A sparse A-List that implements ISparseList{T}." alt="Loyc.Collections.SparseAList&lt; T &gt;" shape="rect" coords="266,224,522,248"/>
+<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="133,56,389,80"/>
+<area href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html" title="Represents a sparse list that allows insertion and removal of items and empty spaces. In a sparse list, some spaces can be "clear" meaning that they have no value." alt="Loyc.Collections.ISparseList&lt; T &gt;" shape="rect" coords="0,168,256,192"/>
+<area href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html" title="Adapter from IListSource{T} to ISparseListSource{T}." alt="Loyc.Collections.ListSourceAsSparse&lt; T &gt;" shape="rect" coords="266,168,522,192"/>
+<area href="interfaceLoyc_1_1Collections_1_1ISparseListEx_3_01T_01_4.html" title="A sparse list that supports additional methods including InsertRange(int, ISparseListSource{T})." alt="Loyc.Collections.ISparseListEx&lt; T &gt;" shape="rect" coords="0,224,256,248"/>
+<area href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html" title="A sparse A-List that implements ISparseList{T}." alt="Loyc.Collections.SparseAList&lt; T &gt;" shape="rect" coords="0,280,256,304"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -122,23 +122,23 @@ Inheritance diagram for Loyc.Collections.ISparseListSource&lt; T &gt;:</div>
 <li>
 <code>Count</code> returns <code>int.MaxValue</code>, </li>
 <li>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a47a84f07d6040fbc5055ff69b654f8ee" title="Gets the next higher index of a non-empty (cleared) element of the list, or null if there are no high...">NextHigher</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af870f9ba2d7f77f59c6ee957a8dfb795" title="Gets the next lower index of a non-empty (cleared) element of the list, or null if there are no lower...">NextLower</a> do a linear scan to find the next higher or lower key that exists. </li>
+<a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af364c65eb954e62096dc1fdfa121e07d" title="Increases index by at least one to reach the next index that is not classified as empty space...">NextHigherItem</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#ac4bd398e22eeebac504bbd5feb6b09b3" title="Decreases index by at least one to reach the next index that is not classified as empty space...">NextLowerItem</a> do a linear scan to find the next higher or lower key that exists. </li>
 <li>
 <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a729f3e987410a739101c05289a7ede31" title="Determines whether a value exists at the specified index.">IsSet(int)</a> returns the result of SortedDictionary{K,V}.ContainsKey, and </li>
 <li>
 IListSource{T}.TryGet(int, out bool) returns the value retrieved by SortedDictionary{K,V}.TryGetValue, setting 'fail' only if the index is negative. </li>
 </ul>
-<p><code>SortedDictionary</code> is not a very useful example in practise, though, because it does not provide a way for <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a47a84f07d6040fbc5055ff69b654f8ee" title="Gets the next higher index of a non-empty (cleared) element of the list, or null if there are no high...">NextHigher</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af870f9ba2d7f77f59c6ee957a8dfb795" title="Gets the next lower index of a non-empty (cleared) element of the list, or null if there are no lower...">NextLower</a> to work efficiently, and it cannot efficiently support the ISparseList{T} interface. A more useful example is SparseAList{T} in Loyc.Collections.dll, which efficiently implements this interface and ISparseList{T}. </p>
+<p><code>SortedDictionary</code> is not a very useful example in practise, though, because it does not provide a way for <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af364c65eb954e62096dc1fdfa121e07d" title="Increases index by at least one to reach the next index that is not classified as empty space...">NextHigherItem</a> and <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#ac4bd398e22eeebac504bbd5feb6b09b3" title="Decreases index by at least one to reach the next index that is not classified as empty space...">NextLowerItem</a> to work efficiently, and it cannot efficiently support the ISparseList{T} interface. A more useful example is SparseAList{T} in Loyc.Collections.dll, which efficiently implements this interface and ISparseList{T}. </p>
 <dl class="section see"><dt>See also</dt><dd>LCExt.AsSparse</dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a47a84f07d6040fbc5055ff69b654f8ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a47a84f07d6040fbc5055ff69b654f8ee">NextHigher</a> (int index)</td></tr>
-<tr class="memdesc:a47a84f07d6040fbc5055ff69b654f8ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next higher index of a non-empty (cleared) element of the list, or null if there are no higher indexes. <a href="#a47a84f07d6040fbc5055ff69b654f8ee">More...</a><br /></td></tr>
-<tr class="separator:a47a84f07d6040fbc5055ff69b654f8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af870f9ba2d7f77f59c6ee957a8dfb795"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af870f9ba2d7f77f59c6ee957a8dfb795">NextLower</a> (int index)</td></tr>
-<tr class="memdesc:af870f9ba2d7f77f59c6ee957a8dfb795"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next lower index of a non-empty (cleared) element of the list, or null if there are no lower indexes. <a href="#af870f9ba2d7f77f59c6ee957a8dfb795">More...</a><br /></td></tr>
-<tr class="separator:af870f9ba2d7f77f59c6ee957a8dfb795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af364c65eb954e62096dc1fdfa121e07d"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af364c65eb954e62096dc1fdfa121e07d">NextHigherItem</a> (ref int?index)</td></tr>
+<tr class="memdesc:af364c65eb954e62096dc1fdfa121e07d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index. <a href="#af364c65eb954e62096dc1fdfa121e07d">More...</a><br /></td></tr>
+<tr class="separator:af364c65eb954e62096dc1fdfa121e07d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4bd398e22eeebac504bbd5feb6b09b3"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#ac4bd398e22eeebac504bbd5feb6b09b3">NextLowerItem</a> (ref int?index)</td></tr>
+<tr class="memdesc:ac4bd398e22eeebac504bbd5feb6b09b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decreases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index. <a href="#ac4bd398e22eeebac504bbd5feb6b09b3">More...</a><br /></td></tr>
+<tr class="separator:ac4bd398e22eeebac504bbd5feb6b09b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a729f3e987410a739101c05289a7ede31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a729f3e987410a739101c05289a7ede31">IsSet</a> (int index)</td></tr>
 <tr class="memdesc:a729f3e987410a739101c05289a7ede31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether a value exists at the specified index. <a href="#a729f3e987410a739101c05289a7ede31">More...</a><br /></td></tr>
 <tr class="separator:a729f3e987410a739101c05289a7ede31"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,47 +178,57 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a47a84f07d6040fbc5055ff69b654f8ee"></a>
+<a class="anchor" id="af364c65eb954e62096dc1fdfa121e07d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int Loyc.Collections.ISparseListSource&lt; T &gt;.NextHigher </td>
+          <td class="memname">T Loyc.Collections.ISparseListSource&lt; T &gt;.NextHigherItem </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">ref int?&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the next higher index of a non-empty (cleared) element of the list, or null if there are no higher indexes.</p>
-<p>This method should skip over all indexes i for which <code>IsSet(i)</code> returns false, and return the next index for which <code>IsSet(i)</code> returns true. </p>
-<p>This method should accept any integer as input, including invalid indexes. For example, if the first existing index is 5, NextHigher(-10) returns 5. </p>
+<p>Increases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>This parameter is increased by at least one, and perhaps more than one so that it refers to an index where there is a value. If <code>index</code> is null upon entering this method, the first non-empty space in the list is found. If there are no values at higher indexes, if the list is empty or if <code>index + 1 &gt;= Count</code>, <code>index</code> is <code>null</code> when the method returns.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This method must skip over all indexes i for which <code>IsSet(i)</code> returns false, and return the next index for which <code>IsSet(i)</code> returns true. This method must accept any integer as input, including invalid indexes. </p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#adcfef0630270720b6fd03dcb41b6d65f">Loyc.Collections.SparseAList&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html#a1dc214df72fdd0b6ad4795d83db47d55">Loyc.Collections.ListSourceAsSparse&lt; T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#a53d5136adc659bf82fb56d11393fb8cf">Loyc.Collections.SparseAList&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html#ae3bc0efe0f52e1c8b6be24d66557f089">Loyc.Collections.ListSourceAsSparse&lt; T &gt;</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="af870f9ba2d7f77f59c6ee957a8dfb795"></a>
+<a class="anchor" id="ac4bd398e22eeebac504bbd5feb6b09b3"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int Loyc.Collections.ISparseListSource&lt; T &gt;.NextLower </td>
+          <td class="memname">T Loyc.Collections.ISparseListSource&lt; T &gt;.NextLowerItem </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">ref int?&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the next lower index of a non-empty (cleared) element of the list, or null if there are no lower indexes.</p>
-<p>This method should skip over all indexes i for which <code>IsSet(i)</code> returns false, and return the next lower index for which <code>IsSet(i)</code> returns true. </p>
-<p>This method should accept any integer as input, including invalid indexes. </p>
+<p>Decreases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>This parameter is increased by at least one, and perhaps more than one so that it refers to an index where there is a value. If <code>index</code> is null upon entering this method, the last non-empty space in the list is found. If there are no values at lower indexes, if the list is empty or if <code>index</code> is 0 or less, <code>index</code> is <code>null</code> when the method returns.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This method must skip over all indexes i for which <code>IsSet(i)</code> returns false, and return the next index for which <code>IsSet(i)</code> returns true. This method must accept any integer as input, including invalid indexes. </p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#ac083b21587b66807d4c5274a149906f8">Loyc.Collections.SparseAList&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html#a892dd2a13ea18926a93da5717241f314">Loyc.Collections.ListSourceAsSparse&lt; T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#adbc92ec481021329da0a565877a4f4e8">Loyc.Collections.SparseAList&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1ListSourceAsSparse_3_01T_01_4.html#ab16437b7e723776f196c26ace7f7348c">Loyc.Collections.ListSourceAsSparse&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -226,7 +236,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:28 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

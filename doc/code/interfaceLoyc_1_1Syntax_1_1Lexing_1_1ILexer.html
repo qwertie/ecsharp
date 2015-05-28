@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A standard interface for lexers.  
  <a href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Lexing/ILexer.cs'>/Src/Loyc.Syntax/Lexing/ILexer.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/Lexing/ILexer.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.Lexing.ILexer:</div>
@@ -108,13 +108,13 @@ Inheritance diagram for Loyc.Syntax.Lexing.ILexer:</div>
  <div class="center">
   <img src="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.png" usemap="#Loyc.Syntax.Lexing.ILexer_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.ILexer_map" name="Loyc.Syntax.Lexing.ILexer_map">
-<area href="classEcs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer)." alt="Ecs.Parser.EcsLexer" shape="rect" coords="0,112,208,136"/>
-<area href="classEcs_1_1Parser_1_1ListAsLexer.html" title="Adapter: converts IEnumerable(Token) to the ILexer interface." alt="Ecs.Parser.ListAsLexer" shape="rect" coords="218,112,426,136"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html" title="Lexer for EC# source code (see ILexer)." alt="Loyc.Syntax.Les.LesLexer" shape="rect" coords="436,112,644,136"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html" title="A base class for wrappers that modify lexer behavior. Implements the ILexer interface, except for the NextToken() method." alt="Loyc.Syntax.Lexing.LexerWrapper" shape="rect" coords="654,112,862,136"/>
-<area href="classEcs_1_1Parser_1_1CommentSaver.html" title="A helper class that removes comments from a token stream, saving them into a list. This class deletes whitespace, but adds tokens to a list." alt="Ecs.Parser.CommentSaver" shape="rect" coords="436,168,644,192"/>
-<area href="classEcs_1_1Parser_1_1EcsPreprocessor.html" title="Handles EC# processor directives." alt="Ecs.Parser.EcsPreprocessor" shape="rect" coords="654,168,862,192"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="Converts a token list into a token tree. Everything inside brackets, parens or braces is made a child..." alt="Loyc.Syntax.Lexing.TokensToTree" shape="rect" coords="872,168,1080,192"/>
+<area href="classEcs_1_1Parser_1_1EcsLexer.html" title="Lexer for EC# source code (see ILexer)." alt="Ecs.Parser.EcsLexer" shape="rect" coords="0,112,227,136"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html" title="Lexer for EC# source code (see ILexer)." alt="Loyc.Syntax.Les.LesLexer" shape="rect" coords="237,112,464,136"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html" title="A base class for wrappers that modify lexer behavior. Implements the ILexer interface, except for the NextToken() method." alt="Loyc.Syntax.Lexing.LexerWrapper" shape="rect" coords="474,112,701,136"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html" title="Adapter: converts IEnumerable(Token) to the ILexer interface." alt="Loyc.Syntax.Lexing.TokenListAsLexer" shape="rect" coords="711,112,938,136"/>
+<area href="classEcs_1_1Parser_1_1CommentSaver.html" title="A helper class that removes comments from a token stream, saving them into a list. This class deletes whitespace, but adds tokens to a list." alt="Ecs.Parser.CommentSaver" shape="rect" coords="237,168,464,192"/>
+<area href="classEcs_1_1Parser_1_1EcsPreprocessor.html" title="Handles EC# processor directives." alt="Ecs.Parser.EcsPreprocessor" shape="rect" coords="474,168,701,192"/>
+<area href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="Converts a token list into a token tree. Everything inside brackets, parens or braces is made a child..." alt="Loyc.Syntax.Lexing.TokensToTree" shape="rect" coords="711,168,938,192"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -161,7 +161,7 @@ Public Member Functions</h2></td></tr>
 <p>Scans the next token and returns information about it.</p>
 <dl class="section return"><dt>Returns</dt><dd>The next token, or null at the end of the source file.</dd></dl>
 
-<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1ListAsLexer.html#a12a252e9c1cd599a10c11d817d4b1972">Ecs.Parser.ListAsLexer</a>, <a class="el" href="classEcs_1_1Parser_1_1CommentSaver.html#a971855c4c6ccb81b1137eb35c8835297">Ecs.Parser.CommentSaver</a>, <a class="el" href="classEcs_1_1Parser_1_1EcsPreprocessor.html#a6a13ac74c6c4399375b57a9ff8c89c9f">Ecs.Parser.EcsPreprocessor</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#a4e701d36a4b5bdfa96dc5868082078b3">Loyc.Syntax.Les.LesLexer</a>, <a class="el" href="classEcs_1_1Parser_1_1EcsLexer.html#acab087209fc2ba98db60e0e43b003a4d">Ecs.Parser.EcsLexer</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html#a3bfde22d1c83de6a27d136c57ded9d17">Loyc.Syntax.Lexing.TokensToTree</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#af7681b7702e9e459853527149ec2c6d3">Loyc.Syntax.Lexing.LexerWrapper</a>.</p>
+<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1CommentSaver.html#a971855c4c6ccb81b1137eb35c8835297">Ecs.Parser.CommentSaver</a>, <a class="el" href="classEcs_1_1Parser_1_1EcsPreprocessor.html#a6a13ac74c6c4399375b57a9ff8c89c9f">Ecs.Parser.EcsPreprocessor</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#a4e701d36a4b5bdfa96dc5868082078b3">Loyc.Syntax.Les.LesLexer</a>, <a class="el" href="classEcs_1_1Parser_1_1EcsLexer.html#acab087209fc2ba98db60e0e43b003a4d">Ecs.Parser.EcsLexer</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html#a3bfde22d1c83de6a27d136c57ded9d17">Loyc.Syntax.Lexing.TokensToTree</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper.html#af7681b7702e9e459853527149ec2c6d3">Loyc.Syntax.Lexing.LexerWrapper</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html#a3967237e68d7dd5c35d0aea31039087d">Loyc.Syntax.Lexing.TokenListAsLexer</a>.</p>
 
 </div>
 </div>
@@ -280,7 +280,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:04 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

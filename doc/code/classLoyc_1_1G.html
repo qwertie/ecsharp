@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1G-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -101,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Contains global functions that don't belong in any specific class. 
  <a href="classLoyc_1_1G.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/G.cs'>/Src/Loyc.Essentials/G.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/G.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains global functions that don't belong in any specific class.</p>
@@ -120,6 +121,21 @@ Public Types</h2></td></tr>
 <tr class="memdesc:aca73b19d9bbc9032dcd639c20a3aff65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that can be used with the overload of TryParseAt() that parses unsigned integers. <a href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">More...</a><br /></td></tr>
 <tr class="separator:aca73b19d9bbc9032dcd639c20a3aff65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Public static fields</h2></td></tr>
+<tr class="memitem:a1df19485effa125b7a2fde8c4ac9b437"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1df19485effa125b7a2fde8c4ac9b437"></a>
+static readonly object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a1df19485effa125b7a2fde8c4ac9b437">BoxedFalse</a> = false</td></tr>
+<tr class="memdesc:a1df19485effa125b7a2fde8c4ac9b437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Singleton false cast to object. <br /></td></tr>
+<tr class="separator:a1df19485effa125b7a2fde8c4ac9b437"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9741fafb8aa1e28d5b19e3b5c06ff6a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9741fafb8aa1e28d5b19e3b5c06ff6a"></a>
+static readonly object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad9741fafb8aa1e28d5b19e3b5c06ff6a">BoxedTrue</a> = true</td></tr>
+<tr class="memdesc:ad9741fafb8aa1e28d5b19e3b5c06ff6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Singleton true cast to object. <br /></td></tr>
+<tr class="separator:ad9741fafb8aa1e28d5b19e3b5c06ff6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa11796c638519b8f6b3d6815fc3724e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa11796c638519b8f6b3d6815fc3724e5"></a>
+static readonly object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#aa11796c638519b8f6b3d6815fc3724e5">BoxedVoid</a> = new @<a class="el" href="structLoyc_1_1void.html">void</a>()</td></tr>
+<tr class="memdesc:aa11796c638519b8f6b3d6815fc3724e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Singleton void cast to object. <br /></td></tr>
+<tr class="separator:aa11796c638519b8f6b3d6815fc3724e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5026487dcc499e0485cc2e81fc983e94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5026487dcc499e0485cc2e81fc983e94"></a>
@@ -128,12 +144,21 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:ab9d9d90722d454664467ed0dc58a58fe"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab9d9d90722d454664467ed0dc58a58fe">ToComparison&lt; T &gt;</a> ()</td></tr>
 <tr class="memdesc:ab9d9d90722d454664467ed0dc58a58fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a Comparison{T} for the specified type. <a href="#ab9d9d90722d454664467ed0dc58a58fe">More...</a><br /></td></tr>
 <tr class="separator:ab9d9d90722d454664467ed0dc58a58fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae450674008c53149848e4db7a463199f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae450674008c53149848e4db7a463199f"></a>
+static Func&lt; T, T, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToComparisonFunc&lt; T &gt;</b> ()</td></tr>
+<tr class="separator:ae450674008c53149848e4db7a463199f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1691620ffff28c742698cfe81c8bf4a"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ac1691620ffff28c742698cfe81c8bf4a">ToComparison&lt; T &gt;</a> (IComparer&lt; T &gt; pred)</td></tr>
 <tr class="memdesc:ac1691620ffff28c742698cfe81c8bf4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer{T} to a Comparison{T}. <a href="#ac1691620ffff28c742698cfe81c8bf4a">More...</a><br /></td></tr>
 <tr class="separator:ac1691620ffff28c742698cfe81c8bf4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="memItemLeft" align="right" valign="top">static Func&lt; T, T, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4d579d8bd94f9f444052638d5c1f5ea0">ToComparisonFunc&lt; T &gt;</a> (IComparer&lt; T &gt; pred)</td></tr>
+<tr class="memdesc:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an IComparer{T} to a Func{T,T,int}. <a href="#a4d579d8bd94f9f444052638d5c1f5ea0">More...</a><br /></td></tr>
+<tr class="separator:a4d579d8bd94f9f444052638d5c1f5ea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc087cc7c55ddafb84276e7add77e34d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc087cc7c55ddafb84276e7add77e34d"></a>
 static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitCommandLineArguments</b> (string listString)</td></tr>
 <tr class="separator:adc087cc7c55ddafb84276e7add77e34d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dada93256dc937f5f387c075aad2e45"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4dada93256dc937f5f387c075aad2e45">MakeValidFileName</a> (string text, char?replacement= '_', bool fancy=true)</td></tr>
+<tr class="memdesc:a4dada93256dc937f5f387c075aad2e45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces characters in <code>text</code> that are not allowed in file names with the specified replacement character. <a href="#a4dada93256dc937f5f387c075aad2e45">More...</a><br /></td></tr>
+<tr class="separator:a4dada93256dc937f5f387c075aad2e45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefea007ba5b6fbeda3160dd75ac9b09e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefea007ba5b6fbeda3160dd75ac9b09e"></a>
 static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T1, T2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Pair&lt; T1, T2 &gt;</b> (T1 a, T2 b)</td></tr>
 <tr class="separator:aefea007ba5b6fbeda3160dd75ac9b09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,12 +168,6 @@ static Triplet&lt; T1, T2, T3 &gt;&#160;</td><td class="memItemRight" valign="bo
 <tr class="memitem:a4ce38fca60499fd9c5a5c4428fa12437"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4ce38fca60499fd9c5a5c4428fa12437">Verify</a> (bool condition)</td></tr>
 <tr class="memdesc:a4ce38fca60499fd9c5a5c4428fa12437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as Debug.Assert except that the argument is evaluated even in a Release build. <a href="#a4ce38fca60499fd9c5a5c4428fa12437">More...</a><br /></td></tr>
 <tr class="separator:a4ce38fca60499fd9c5a5c4428fa12437"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa22308d890909ed188464febe48aa1e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa22308d890909ed188464febe48aa1e5"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RequireArg</b> (bool condition)</td></tr>
-<tr class="separator:aa22308d890909ed188464febe48aa1e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae9d3a0fc36da8cfb27918c3d459be74"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae9d3a0fc36da8cfb27918c3d459be74"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RequireArg</b> (bool condition, string argName, object argValue)</td></tr>
-<tr class="separator:aae9d3a0fc36da8cfb27918c3d459be74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc2da6dc947caa02b460959f78b51872"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc2da6dc947caa02b460959f78b51872"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Require</b> (bool condition)</td></tr>
 <tr class="separator:afc2da6dc947caa02b460959f78b51872"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -227,6 +246,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 <tr class="memitem:a4c039bd1435cff8eb408465f28a60473"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4c039bd1435cff8eb408465f28a60473">SkipSpaces</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
 <tr class="memdesc:a4c039bd1435cff8eb408465f28a60473"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string with any spaces and tabs removed from the beginning. <a href="#a4c039bd1435cff8eb408465f28a60473">More...</a><br /></td></tr>
 <tr class="separator:a4c039bd1435cff8eb408465f28a60473"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad0d8e0cbc602e3f8a0f38500328e6078">BareHtmlEntityNameForAscii</a> (char c)</td></tr>
+<tr class="memdesc:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>.  <a href="#ad0d8e0cbc602e3f8a0f38500328e6078">More...</a><br /></td></tr>
+<tr class="separator:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
 <a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65"></a>
@@ -261,6 +283,84 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ad0d8e0cbc602e3f8a0f38500328e6078"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.G.BareHtmlEntityNameForAscii </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>. </p>
+<p>The complete entity name is <code>"&amp;" + GetHtmlEntityNameForAscii(c) + ";"</code>. Some HTML entities have multiple names; this function returns one of them. There is a name in this table for all ASCII punctuation characters. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4dada93256dc937f5f387c075aad2e45"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.G.MakeValidFileName </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char?&#160;</td>
+          <td class="paramname"><em>replacement</em> = <code>'_'</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>fancy</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replaces characters in <code>text</code> that are not allowed in file names with the specified replacement character.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>Text to make into a valid filename. The same string is returned if it is valid already.</td></tr>
+    <tr><td class="paramname">replacement</td><td>Replacement character, or null to simply remove bad characters.</td></tr>
+    <tr><td class="paramname">fancy</td><td>Whether to replace quotes and slashes with the non-ASCII characters ” and ⁄.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A string that can be used as a filename. If the output string would otherwise be empty, returns "_".</dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a8f141a2afffa9cd6acaba42333b40caf"></a>
 <div class="memitem">
 <div class="memproto">
@@ -426,6 +526,32 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 </div><div class="memdoc">
 
 <p>Converts an IComparer{T} to a Comparison{T}.</p>
+
+</div>
+</div>
+<a class="anchor" id="a4d579d8bd94f9f444052638d5c1f5ea0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Func&lt;T, T, int&gt; Loyc.G.ToComparisonFunc&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">IComparer&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>pred</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts an IComparer{T} to a Func{T,T,int}.</p>
 
 </div>
 </div>
@@ -776,7 +902,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
     <tr><td class="paramname">index</td><td>Location at which to start parsing</td></tr>
     <tr><td class="paramname">flags</td><td><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65" title="Flags that can be used with the overload of TryParseAt() that parses unsigned integers.">ParseFlag</a>s that affect parsing behavior.</td></tr>
     <tr><td class="paramname">skipSpaces</td><td>Whether to skip spaces before parsing. Only the ' ' and '' characters are treated as spaces. No space is allowed between '-' and the digits of a negative number, even with this flag.</td></tr>
-    <tr><td class="paramname">stopBeforeOverflow</td><td>Changes overflow handling behavior so that the result does not overflow, and the digit(s) at the end of the string, that would have caused overflow, are ignored. In this case, the return value is still false.</td></tr>
   </table>
   </dd>
 </dl>
@@ -943,7 +1068,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

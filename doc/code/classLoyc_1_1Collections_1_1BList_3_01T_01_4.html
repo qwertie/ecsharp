@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>An sorted in-memory list that is efficient for all operations and offers indexed access to its list.  
  <a href="classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/BList.cs'>/Src/Loyc.Collections/ALists/BList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/ALists/BList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.BList&lt; T &gt;:</div>
@@ -124,25 +124,26 @@ Inheritance diagram for Loyc.Collections.BList&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html" title="Encapsulates the ListChanging event that notifies listeners of dynamic changes to an indexed list..." alt="Loyc.Collections.INotifyListChanging&lt; T &gt;" shape="rect" coords="289,56,568,80"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="289,0,568,24"/>
 <area href="classLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4.html" title="An sorted dictionary that allows multiple values to be associated with a single key. Note: both keys and values must be comparable. " alt="Loyc.Collections.BMultiMap&lt; K, V &gt;" shape="rect" coords="867,336,1146,360"/>
-<area href="structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1Values.html" title="Represents the set of values associated with a particular key in a BMultiMap{K,V} collection..." alt="Loyc.Collections.BMultiMap&lt; K, V &gt;.Values" shape="rect" coords="722,392,1001,416"/>
-<area href="structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1Values.html" title="Represents the set of values associated with a particular key in a BMultiMap{K,V} collection..." alt="Loyc.Collections.BMultiMap&lt; K, V &gt;.Values" shape="rect" coords="1011,392,1290,416"/>
+<area href="structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1ValueList.html" title="Represents the set of values associated with a particular key in a BMultiMap{K,V} collection..." alt="Loyc.Collections.BMultiMap&lt; K, V &gt;.ValueList" shape="rect" coords="722,392,1001,416"/>
+<area href="structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1ValueList.html" title="Represents the set of values associated with a particular key in a BMultiMap{K,V} collection..." alt="Loyc.Collections.BMultiMap&lt; K, V &gt;.ValueList" shape="rect" coords="1011,392,1290,416"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An sorted in-memory list that is efficient for all operations and offers indexed access to its list. </p>
+<p>An <a href="http://core.loyc.net/collections/alists-part2.html">article</a> about the BList classes is available. </p>
 <p>When you need a sorted list of items, there's nothing quite like a BList. BList offers numerous features that none of the standard .NET collections can offer: </p><ul>
 <li>
 O(log N) efficiency for all standard list operations (Add, Remove, IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration. </li>
 <li>
-Changes can be observed through the ListChanging event. The performance penalty for this feature is lower than for the standard ObservableCollection{T} class. </li>
+Changes can be observed through the AListBase{K,T}.ListChanging event. The performance penalty for this feature is lower than for the standard ObservableCollection{T} class. </li>
 <li>
-Changes to the tree structure can be observed too (see MakeObserver). </li>
+Changes to the tree structure can be observed too (see IAListTreeObserver{K,T}). </li>
 <li>
-The list can be frozen with <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#aa239cb09ae589f3f5d90ce00df3f60ab" title="Prevents further changes to the list.">Freeze</a>, making it read-only. </li>
+The list can be frozen with AListBase{K,T}.Freeze, making it read-only. </li>
 <li>
 <a class="el" href="classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#a5a7efe516c803f13a693d237914faf1c" title="Finds the lowest index of an item that is equal to or greater than the specified item.">FindLowerBound</a> and <a class="el" href="classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#a905243c54f2dbf344a343e4dc215f567" title="Finds the index of the first item in the list that is greater than the specified item.">FindUpperBound</a> operations that find the nearest item equal to or greater than a specified item. </li>
 <li>
-A reversed view of the list is available through the Reversed property, and the list can be enumerated backwards, also in O(1) time per element.. </li>
+A reversed view of the list is available through the AListBase{K,T}.ReverseView property, and the list can be enumerated backwards, also in O(1) time per element.. </li>
 <li>
 A BList normally uses less memory than a SortedDictionary{K,V} or a hashtable such as HashSet{T} or Dictionary{K,V}. </li>
 <li>
@@ -282,6 +283,9 @@ Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</
 <tr class="memitem:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">Slice_&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#ab7118fd95df23f0c99ff63091285f9e3">Slice</a> (int start, int length)</td></tr>
 <tr class="memdesc:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#ab7118fd95df23f0c99ff63091285f9e3">More...</a><br /></td></tr>
 <tr class="separator:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a99ef6a10bbaed09b370ab6cf6ef11936">GetImmutableCount</a> ()</td></tr>
+<tr class="memdesc:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. Returns the number of elements of the list that are located in immutable nodes, which will be copied if modified. Used by the test suite. <a href="#a99ef6a10bbaed09b370ab6cf6ef11936">More...</a><br /></td></tr>
+<tr class="separator:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a3e7271f9f2a7f07752d53678353e5d68">AddObserver</a> (IAListTreeObserver&lt; K, T &gt; observer)</td></tr>
 <tr class="memdesc:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attaches a tree observer to this object. <a href="#a3e7271f9f2a7f07752d53678353e5d68">More...</a><br /></td></tr>
 <tr class="separator:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -316,10 +320,10 @@ override AListInnerBase&lt; T, T &gt;&#160;</td><td class="memItemRight" valign=
 &#160;</td><td class="memItemRight" valign="bottom"><b>AListBase</b> (int maxLeafSize, int maxInnerSize)</td></tr>
 <tr class="separator:a5f74d8332379f12c9cfbf8d459650499 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a018a4a7ca6d3344765e3caec3c892c7c">AListBase</a> (AListBase&lt; K, T &gt; items, bool keepListChangingHandlers)</td></tr>
-<tr class="memdesc:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cloning constructor. Does not duplicate the observer (AListNodeObserver{T}), if any, because it may not be cloneable. <a href="#a018a4a7ca6d3344765e3caec3c892c7c">More...</a><br /></td></tr>
+<tr class="memdesc:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cloning constructor. Does not duplicate the observer (IAListTreeObserver{K,T}), if any, because it may not be cloneable. <a href="#a018a4a7ca6d3344765e3caec3c892c7c">More...</a><br /></td></tr>
 <tr class="separator:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a0f6453eda7a0daace7453032bcb7f620">AListBase</a> (AListBase&lt; K, T &gt; original, AListNode&lt; K, T &gt; section)</td></tr>
-<tr class="memdesc:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the constructor that CopySection(), which can be defined by derived classes, should call to create a sublist of a list. Used in conjunction with <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d" title="Together with the AListBase(AListBase{T},AListNode{T}) constructor, this method helps implement the C...">CopySectionHelper()</a>.  <a href="#a0f6453eda7a0daace7453032bcb7f620">More...</a><br /></td></tr>
+<tr class="memdesc:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the constructor that CopySection(), which can be defined by derived classes, should call to create a sublist of a list. Used in conjunction with <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d" title="Together with the AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree.">CopySectionHelper()</a>.  <a href="#a0f6453eda7a0daace7453032bcb7f620">More...</a><br /></td></tr>
 <tr class="separator:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a798563c1c9085e763a72a394e5ce9872 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a798563c1c9085e763a72a394e5ce9872"></a>
 abstract AListInnerBase&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitRoot</b> (AListNode&lt; K, T &gt; left, AListNode&lt; K, T &gt; right)</td></tr>
@@ -346,7 +350,7 @@ virtual Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>NewEnum
 <tr class="memdesc:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the tree. <a href="#a01a3f8678d0ddb625b168714ca7ea8d4">More...</a><br /></td></tr>
 <tr class="separator:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d">CopySectionHelper</a> (int start, int subcount)</td></tr>
-<tr class="memdesc:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Together with the AListBase(AListBase{T},AListNode{T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree. <a href="#af8a80aef655d30dffd12f644167d838d">More...</a><br /></td></tr>
+<tr class="memdesc:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Together with the AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree. <a href="#af8a80aef655d30dffd12f644167d838d">More...</a><br /></td></tr>
 <tr class="separator:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2074f8f77698120ad4e6e56b64a2233 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2074f8f77698120ad4e6e56b64a2233"></a>
 AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>CopySectionHelper</b> (uint start, uint subcount)</td></tr>
@@ -395,9 +399,12 @@ const byte&#160;</td><td class="memItemRight" valign="bottom"><b>FrozenForConcur
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html">Loyc.Collections.AListBase&lt; K, T &gt;</a></td></tr>
-<tr class="memitem:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15ebf2137bf1a9240641647e6f1c56ae"></a>
-virtual ListChangingHandler&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ListChanging</b></td></tr>
+<tr class="memitem:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual ListChangingHandler&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a15ebf2137bf1a9240641647e6f1c56ae">ListChanging</a></td></tr>
+<tr class="memdesc:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event for learning about changes in progress on a list. <a href="#a15ebf2137bf1a9240641647e6f1c56ae">More...</a><br /></td></tr>
 <tr class="separator:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa16a86e3ad3e280d0296684ce99c497 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa16a86e3ad3e280d0296684ce99c497"></a>
+byte&#160;</td><td class="memItemRight" valign="bottom"><b>TreeHeight</b><code> [get]</code></td></tr>
+<tr class="separator:afa16a86e3ad3e280d0296684ce99c497 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adccfa11cf9c9a5874958ffc2d34737f1 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adccfa11cf9c9a5874958ffc2d34737f1"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:adccfa11cf9c9a5874958ffc2d34737f1 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -419,9 +426,6 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>First</b><code> [get]</c
 <tr class="memitem:a28aceab282e25c9eda58e7f921311e25 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28aceab282e25c9eda58e7f921311e25"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Last</b><code> [get]</code></td></tr>
 <tr class="separator:a28aceab282e25c9eda58e7f921311e25 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a787d66a289819c57b3beb37c2c400018">ImmutableCount</a><code> [get]</code></td></tr>
-<tr class="memdesc:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. Returns the number of elements of the list that are located in immutable nodes, which will be copied if modified. Used by the test suite. <a href="#a787d66a289819c57b3beb37c2c400018">More...</a><br /></td></tr>
-<tr class="separator:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#ada4081ed2d50384439b8e243ef042c1b">ObserverCount</a><code> [get]</code></td></tr>
 <tr class="memdesc:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of tree observers attached to this list. <a href="#ada4081ed2d50384439b8e243ef042c1b">More...</a><br /></td></tr>
 <tr class="separator:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -621,7 +625,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <p>Clones a BList.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">keepListChangingHandlers</td><td>If true, ListChanging handlers will be copied from the existing list of items to the new list. Note: if it exists, the NodeObserver is never copied. NodeObserver will be null in the new list.</td></tr>
+    <tr><td class="paramname">keepListChangingHandlers</td><td>If true, ListChanging handlers will be copied from the existing list of items to the new list. Note: if it exists, the NodeObserver is never copied. AListBase{K,T}.ObserverCount will be zero in the new list.</td></tr>
   </table>
   </dd>
 </dl>
@@ -803,11 +807,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">item</td><td>The item to find. If passed by reference, when this method returns, item is set to the next greater item than the item you searched for, or left unchanged if there is no greater item.</td></tr>
-    <tr><td class="paramname">index</td><td>The index of the next greater item that was found, or Count if the given item is greater than all items in the list.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The index of the next greater item that was found, or Count if the given item is greater than all items in the list.</dd></dl>
 
 </div>
 </div>
@@ -996,7 +999,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

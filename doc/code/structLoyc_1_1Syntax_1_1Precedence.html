@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents the precedence and miscibility of an operator. 
  <a href="structLoyc_1_1Syntax_1_1Precedence.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Precedence.cs'>/Src/Loyc.Syntax/Precedence.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/Parsing/Precedence.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.Precedence:</div>
@@ -127,7 +127,7 @@ Inheritance diagram for Loyc.Syntax.Precedence:</div>
 <p>The above explanation illustrates the meaning of Left and Right from the perspective of a parser, but an actual parser may or may not use the PF concept and PrecedenceRange objects. </p>
 <p>The printer (e.g. LesNodePrinter) has a different way of analyzing precedence. It starts with a known parse tree and then has to figure out how to output something that the parser will reconstruct into the original tree. Making this more difficult is the fact that in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees, parens are significant; therefore the printer cannot simply put expressions in parens "just to be safe"&ndash;extra parenthesis will change the syntax tree, so round- tripping will fail. </p>
 <p>Generally, the printer has two ways of printing any expression tree: (1) with operators (e.g. a+b), and (2) with prefix notation (e.g. #+(a, b)). The tree <code>#+(#*(a, b), c)</code> will be printed as "a*b+c" (unless prefix notation is specifically requested) because the precedence rules allow it, but <code>#*(#+(a, b), c)</code> will be printed as <code>#+(a, b)*c</code> because both "a+b*c" and "(a+b)*c" are different from the original tree. </p>
-<p>While a parser proceeds from left to right, a printer proceeds from parents to children. So the printer for #*(#+(a, b), c) starts at #* with no precedence restrictions, and roughly speaking will set the precedence floor to LesPrecedence.Multiply in order to print its two children. Since the precedence of #+ (Add) is below Multiply, the + operator is not allowed in that context and either prefix notation or extra parenthesis is used as a fallback (depending on the LesNodePrinter.AllowExtraParenthesis option that permits <code>(a+b)*c</code>). </p>
+<p>While a parser proceeds from left to right, a printer proceeds from parents to children. So the printer for #*(#+(a, b), c) starts at #* with no precedence restrictions, and roughly speaking will set the precedence floor to LesPrecedence.Multiply in order to print its two children. Since the precedence of #+ (Add) is below Multiply, the + operator is not allowed in that context and either prefix notation or extra parenthesis is used as a fallback (depending on the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a4d145df5580f529b86a120ce6795b9c6" title="Introduces extra parenthesis to express precedence, without using an empty attribute list @() to allo...">LesNodePrinter.AllowExtraParenthesis</a> option that permits <code>(a+b)*c</code>). </p>
 <p>Printing has numerous "gotchas"; the ones related to precedence are </p><ol>
 <li>
 Although LesPrecedence.Add has the "same" precedence on the Left and Right, <code>#-(#-(a, b), c)</code> can be printed <code>a - b - c</code> but <code>#-(a, #-(b, c))</code> would have to be printed <code>a - #-(b, c)</code> instead. Clearly, the left and right sides must be treated somehow differently. </li>
@@ -415,7 +415,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 <p>For use in printers. Auto-raises the precedence floor to prepare to print an expression on the right side of an operator.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">outerContext</td><td></td></tr>
+    <tr><td class="paramname">outerContext</td><td>Context in which this operator is being printed</td></tr>
   </table>
   </dd>
 </dl>
@@ -481,7 +481,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:02 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

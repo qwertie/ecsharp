@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees. 
  <a href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/IParsingService.cs'>/Src/Loyc.Syntax/IParsingService.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/IParsingService.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.IParsingService:</div>
@@ -340,6 +340,16 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Converts the specified syntax tree to a string.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">node</td><td>A syntax tree to print.</td></tr>
+    <tr><td class="paramname">msgs</td><td>If errors or warnings occur during printing, they are sent here.</td></tr>
+    <tr><td class="paramname">mode</td><td>Language-defined configuration. It is suggested that the printing service should accept <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a400fd681b3319ad6da636389297ccecd" title="Tells IParsingService.Parse to treat the input as a single expression or expression list (which...">ParsingService.Exprs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#af29026fa0925b638573f11459b81d83d" title="Tells IParsingService.Parse to treat the input as a list of statements. If the language makes a disti...">ParsingService.Stmts</a> and <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a205ca7d002b3a072e068955f5a609444" title="Tells IParsingService.Parse to treat the input as a complete source file (this should be the default...">ParsingService.File</a> as possible printing modes.</td></tr>
+    <tr><td class="paramname">indentString</td><td>Indent character for multi-line nodes</td></tr>
+    <tr><td class="paramname">lineSeparator</td><td>Newline string for multi-line nodes</td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsLanguageService.html#af2b4161db1dbbdb393399c2bacd10ed2">Ecs.Parser.EcsLanguageService</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html#aa0e388d5dc09e5ab64456b1f3713f607">Loyc.Syntax.Les.LesLanguageService</a>.</p>
 
@@ -378,10 +388,9 @@ Public Member Functions</h2></td></tr>
 <p>Returns a lexer that is configured to begin reading the specified file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">file</td><td>Text to be tokenized (e.g. StringSlice)</td></tr>
+    <tr><td class="paramname">file</td><td>Text to be tokenized (e.g. <a class="el" href="structLoyc_1_1UString.html" title="UString is a wrapper around string that provides a range of 21-bit UCS-4 characters. &quot;U&quot; stands for &quot;Unicode&quot;, as in UCS-4, as opposed to a normal string that is UTF-16.">UString</a>)</td></tr>
     <tr><td class="paramname">fileName</td><td>File name to be associated with any errors that occur.</td></tr>
     <tr><td class="paramname">msgs</td><td>Error messages are sent to this object.</td></tr>
-    <tr><td class="paramname">onComment</td><td>Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</td></tr>
   </table>
   </dd>
 </dl>
@@ -462,7 +471,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:01 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

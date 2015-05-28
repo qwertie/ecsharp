@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by Loyc trees.">IParsingService</a>. 
  <a href="classLoyc_1_1Syntax_1_1ParsingService.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/IParsingService.cs'>/Src/Loyc.Syntax/IParsingService.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/IParsingService.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by Loyc trees.">IParsingService</a>.</p>
@@ -151,8 +151,96 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:a4298f9786bba67950763294c20419b92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4298f9786bba67950763294c20419b92"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSingle</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> file, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
 <tr class="separator:a4298f9786bba67950763294c20419b92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2684a89b71350a2f57b894af9b1cf376"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2684a89b71350a2f57b894af9b1cf376"></a>
+static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Parse</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, Stream stream, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
+<tr class="separator:a2684a89b71350a2f57b894af9b1cf376"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84f0d406a7cba037ff58895fa2f43846"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a84f0d406a7cba037ff58895fa2f43846"></a>
+static <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Tokenize</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, Stream stream, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
+<tr class="separator:a84f0d406a7cba037ff58895fa2f43846"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbc3047df379dd3a61cb03051fa02ed5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbc3047df379dd3a61cb03051fa02ed5"></a>
+static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseFile</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
+<tr class="separator:afbc3047df379dd3a61cb03051fa02ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a010bd18ea7038a28769a9956155d121b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a010bd18ea7038a28769a9956155d121b"></a>
+static <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html">ILexer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TokenizeFile</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
+<tr class="separator:a010bd18ea7038a28769a9956155d121b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78958482f986427ff665991f6380c9e1"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a78958482f986427ff665991f6380c9e1">PrintMultiple</a> (this <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> printer, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; nodes, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs, object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
+<tr class="memdesc:a78958482f986427ff665991f6380c9e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a sequences of LNodes to strings, adding a newline after each. <a href="#a78958482f986427ff665991f6380c9e1">More...</a><br /></td></tr>
+<tr class="separator:a78958482f986427ff665991f6380c9e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2cf4b8fa204a5052afc042437cbfbdde"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cf4b8fa204a5052afc042437cbfbdde"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintMultiple</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> service, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; nodes, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs, object mode=null, string indentString=&quot;\t&quot;, string lineSeparator=&quot;\n&quot;)</td></tr>
+<tr class="separator:a2cf4b8fa204a5052afc042437cbfbdde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a78958482f986427ff665991f6380c9e1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.Syntax.ParsingService.PrintMultiple </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td>
+          <td class="paramname"><em>printer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramname"><em>nodes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td>
+          <td class="paramname"><em>msgs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">object&#160;</td>
+          <td class="paramname"><em>mode</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>indentString</em> = <code>&quot;\t&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>lineSeparator</em> = <code>&quot;\n&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts a sequences of LNodes to strings, adding a newline after each.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">printer</td><td>Printer for a single <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>.</td></tr>
+    <tr><td class="paramname">mode</td><td>A language-specific way of modifying printer behavior. The printer ignores the mode object if it does not not understand it.</td></tr>
+    <tr><td class="paramname">indentString</td><td>A string to print for each level of indentation, such as a tab or four spaces.</td></tr>
+    <tr><td class="paramname">lineSeparator</td><td>Line separator, typically "\n" or "\r\n".</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A string form of the nodes.</dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ad80d4b12a09ed5959e56bff1185b60bd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -182,7 +270,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
   </table>
   </dd>
 </dl>
-<p><code> <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> code; using (var old = <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#ad80d4b12a09ed5959e56bff1185b60bd" title="Sets the current language service, returning a value suitable for use in a C# using statement...">ParsingService.PushCurrent</a>(LesLanguageService.Value)) code = ParsingService.Current.ParseSingle("This is les code;"); </code></p>
+<p><code> <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> code; using (var old = <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#ad80d4b12a09ed5959e56bff1185b60bd" title="Sets the current language service, returning a value suitable for use in a C# using statement...">ParsingService.PushCurrent</a>(LesLanguageService.Value)) code = ParsingService.Current.ParseSingle("This is les code;"); </code></p>
 
 </div>
 </div>
@@ -282,7 +370,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:02 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

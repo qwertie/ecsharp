@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>FWList is the mutable variant of the FVList data structure.  
  <a href="classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/VLists/FWList.cs'>/Src/Loyc.Collections/VLists/FWList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/VLists/FWList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.FWList&lt; T &gt;:</div>
@@ -123,6 +123,7 @@ Inheritance diagram for Loyc.Collections.FWList&lt; T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>FWList is the mutable variant of the FVList data structure. </p>
+<p>An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a> is available online about the VList data types. </p>
 <p>See the remarks of VListBlock{T} for more information about VLists and WLists. It is most efficient to add items to the front of a FWList (at index 0) or the back of an RWList (at index Count-1).</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -201,6 +202,9 @@ FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b
 <tr class="memitem:a81290a18057d0699a6173624d9ba76c4"><td class="memItemLeft" align="right" valign="top">FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html#a81290a18057d0699a6173624d9ba76c4">Where</a> (Predicate&lt; T &gt; keep)</td></tr>
 <tr class="memdesc:a81290a18057d0699a6173624d9ba76c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a filter to a list, to exclude zero or more items. <a href="#a81290a18057d0699a6173624d9ba76c4">More...</a><br /></td></tr>
 <tr class="separator:a81290a18057d0699a6173624d9ba76c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7096ca1889e3c42f1632fc071980e6ed"><td class="memItemLeft" align="right" valign="top">FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html#a7096ca1889e3c42f1632fc071980e6ed">WhereSelect</a> (Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; filter)</td></tr>
+<tr class="memdesc:a7096ca1889e3c42f1632fc071980e6ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filters and maps a list with a user-defined function. <a href="#a7096ca1889e3c42f1632fc071980e6ed">More...</a><br /></td></tr>
+<tr class="separator:a7096ca1889e3c42f1632fc071980e6ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18a454f27817b7c30916d8f3ddac1c5a"><td class="memItemLeft" align="right" valign="top">FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html#a18a454f27817b7c30916d8f3ddac1c5a">SmartSelect</a> (Func&lt; T, T &gt; map)</td></tr>
 <tr class="memdesc:a18a454f27817b7c30916d8f3ddac1c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a list to another list of the same length. <a href="#a18a454f27817b7c30916d8f3ddac1c5a">More...</a><br /></td></tr>
 <tr class="separator:a18a454f27817b7c30916d8f3ddac1c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -300,9 +304,6 @@ override IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="botto
 <tr class="memitem:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a875043ff6608e7b6d6a787e51852b999">Add</a> (T item)</td></tr>
 <tr class="memdesc:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the "front" of the list, which is index 0 for FWList, or Count for RWList. <a href="#a875043ff6608e7b6d6a787e51852b999">More...</a><br /></td></tr>
 <tr class="separator:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fb9de0ff5f19ee01833d08386bffe23 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a8fb9de0ff5f19ee01833d08386bffe23">Clear</a> ()</td></tr>
-<tr class="memdesc:a8fb9de0ff5f19ee01833d08386bffe23 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the list and frees the memory it used. <a href="#a8fb9de0ff5f19ee01833d08386bffe23">More...</a><br /></td></tr>
-<tr class="separator:a8fb9de0ff5f19ee01833d08386bffe23 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3c166434ae43b414f5069d8a17d073a inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab3c166434ae43b414f5069d8a17d073a"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (int index, T item)</td></tr>
 <tr class="separator:ab3c166434ae43b414f5069d8a17d073a inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -691,6 +692,40 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
 
 </div>
 </div>
+<a class="anchor" id="a7096ca1889e3c42f1632fc071980e6ed"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FWList&lt;T&gt; Loyc.Collections.FWList&lt; T &gt;.WhereSelect </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt;&#160;</td>
+          <td class="paramname"><em>filter</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filters and maps a list with a user-defined function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filter</td><td>A function that chooses which items to include in a new list, and what to change them to.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The list after filtering has been applied. The original list structure is not modified.</dd></dl>
+<p>This is a smart function. If the filter does not modify the first N items it is passed (which are the last items in a FWList), those N items are typically not copied, but shared between the existing list and the new one. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="a75177aed79479689592214e3681578c8"></a>
 <div class="memitem">
@@ -740,7 +775,7 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

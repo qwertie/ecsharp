@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p><a class="el" href="structLoyc_1_1UString.html" title="UString is a wrapper around string that provides a range of 21-bit UCS-4 characters. &quot;U&quot; stands for &quot;Unicode&quot;, as in UCS-4, as opposed to a normal string that is UTF-16.">UString</a> is a wrapper around string that provides a range of 21-bit UCS-4 characters. "U" stands for "Unicode", as in UCS-4, as opposed to a normal string that is UTF-16. 
  <a href="structLoyc_1_1UString.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Strings/UString.cs'>/Src/Loyc.Essentials/Strings/UString.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Strings/UString.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.UString:</div>
@@ -151,8 +151,8 @@ static readonly <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
-<tr class="memitem:a5f8f71d145b910d09effe5002a0482af"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f8f71d145b910d09effe5002a0482af"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>InternalString</b><code> [get]</code></td></tr>
+<tr class="memitem:a5f8f71d145b910d09effe5002a0482af"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1UString.html#a5f8f71d145b910d09effe5002a0482af">InternalString</a><code> [get]</code></td></tr>
+<tr class="memdesc:a5f8f71d145b910d09effe5002a0482af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the original string. <a href="#a5f8f71d145b910d09effe5002a0482af">More...</a><br /></td></tr>
 <tr class="separator:a5f8f71d145b910d09effe5002a0482af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7264fbae083d74fcb48220b48fa72bd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab7264fbae083d74fcb48220b48fa72bd"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>InternalStart</b><code> [get]</code></td></tr>
@@ -231,6 +231,9 @@ RangeEnumerator&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>,
 <tr class="memitem:a6dd742be02e7fbff30e8d8332e8f3815"><td class="memItemLeft" align="right" valign="top">uchar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815">DecodeAt</a> (int index)</td></tr>
 <tr class="memdesc:a6dd742be02e7fbff30e8d8332e8f3815"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the UCS code point that starts at the specified index. <a href="#a6dd742be02e7fbff30e8d8332e8f3815">More...</a><br /></td></tr>
 <tr class="separator:a6dd742be02e7fbff30e8d8332e8f3815"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a11564f1852f90f55ce41e08c91e95f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a11564f1852f90f55ce41e08c91e95f"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ThrowIndexOutOfRange</b> (int i)</td></tr>
+<tr class="separator:a8a11564f1852f90f55ce41e08c91e95f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3a20c4d2369a4707affd67ed13763d7"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1UString.html#ab3a20c4d2369a4707affd67ed13763d7">TryGet</a> (int index, out bool fail)</td></tr>
 <tr class="memdesc:ab3a20c4d2369a4707affd67ed13763d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the item at the specified index, and does not throw an exception on failure. <a href="#ab3a20c4d2369a4707affd67ed13763d7">More...</a><br /></td></tr>
 <tr class="separator:ab3a20c4d2369a4707affd67ed13763d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -279,6 +282,18 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <tr class="memitem:a276556873bbb16f5977bf5e844d62b5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a276556873bbb16f5977bf5e844d62b5b"></a>
 <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReplaceOne</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> what, <a class="el" href="structLoyc_1_1UString.html">UString</a> replacement, bool ignoreCase=false)</td></tr>
 <tr class="separator:a276556873bbb16f5977bf5e844d62b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebf5da93cac32a561bb2aaba7af0015c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aebf5da93cac32a561bb2aaba7af0015c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (char find, bool ignoreCase=false)</td></tr>
+<tr class="separator:aebf5da93cac32a561bb2aaba7af0015c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42b64538ade4b82660f3d2eb3949640b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a42b64538ade4b82660f3d2eb3949640b"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> find, bool ignoreCase=false)</td></tr>
+<tr class="separator:a42b64538ade4b82660f3d2eb3949640b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62e29840be7adf0a97408245b64f0f88"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62e29840be7adf0a97408245b64f0f88"></a>
+<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitAt</b> (char delimiter, bool ignoreCase=false)</td></tr>
+<tr class="separator:a62e29840be7adf0a97408245b64f0f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa06d3ec0667c6660b25f173c3a31e042"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa06d3ec0667c6660b25f173c3a31e042"></a>
+<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="structLoyc_1_1UString.html">UString</a>, <a class="el" href="structLoyc_1_1UString.html">UString</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitAt</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> delimiter)</td></tr>
+<tr class="separator:aa06d3ec0667c6660b25f173c3a31e042"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -297,6 +312,9 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator U
 <tr class="memitem:a7033b3cbe0af0e60307d892326711062"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7033b3cbe0af0e60307d892326711062"></a>
 static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator UString</b> (<a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html">StringSlice</a> s)</td></tr>
 <tr class="separator:a7033b3cbe0af0e60307d892326711062"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61374c9791612313b59852db95a0f57b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61374c9791612313b59852db95a0f57b"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SubstringEqualHelper</b> (string _str, int _start, <a class="el" href="structLoyc_1_1UString.html">UString</a> what, bool ignoreCase=false)</td></tr>
+<tr class="separator:a61374c9791612313b59852db95a0f57b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a19b13b6171235bfa8b3d8ca12902eb89"></a>
@@ -794,7 +812,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 </div><div class="memdoc">
 
 <p>Returns the UCS code point that starts at the specified index.</p>
-<p>Works the same way as <a class="el" href="structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815" title="Returns the UCS code point that starts at the specified index.">DecodeAt()</a> except that if the index is invalid, this method returns -1 rather than throwing. </p>
+<p>Works the same way as <a class="el" href="structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815" title="Returns the UCS code point that starts at the specified index.">DecodeAt(int)</a> except that if the index is invalid, this method returns -1 rather than throwing. </p>
 
 <p>Referenced by <a class="el" href="structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815">Loyc.UString.DecodeAt()</a>.</p>
 
@@ -849,6 +867,29 @@ if (start + count) is above the original Length, the Count of the new slice is r
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="a5f8f71d145b910d09effe5002a0482af"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Loyc.UString.InternalString</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the original string.</p>
+<p>Ideally, keep the string private, there would be no way to access its contents beyond the boundaries of the slice. However, the reality in .NET today is that many methods accept "slices" in the form of a triple (string, start index, count). In order to call such an old-style API using a slice, one must be able to extract the internal string and start index values.</p>
+
+</div>
+</div>
 <a class="anchor" id="a9b79d1b5af451df2387a5b7bd98a0877"></a>
 <div class="memitem">
 <div class="memproto">
@@ -925,7 +966,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:40 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

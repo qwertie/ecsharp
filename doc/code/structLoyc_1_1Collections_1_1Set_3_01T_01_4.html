@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>An immutable set. 
  <a href="structLoyc_1_1Collections_1_1Set_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/Sets/Set.cs'>/Src/Loyc.Collections/Sets/Set.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/Sets/Set.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.Set&lt; T &gt;:</div>
@@ -123,7 +123,7 @@ Inheritance diagram for Loyc.Collections.Set&lt; T &gt;:</div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An immutable set.</p>
 <p>This is the immutable version of MSet{T}. It does not allow changes to the set, but it provides operators (&amp;, |, ^, -) for intersecting, merging, and subtracting sets, and it can be converted to a mutable MSet{T} in O(1) time. You can also add single items to the set using operators + and -. </p>
-<p>For more information, please read the documentation of Set{T} and InternalSet{T}. </p>
+<p>For more information, please read the documentation of Set{T} and Impl.InternalSet{T}. </p>
 <p>Performance warning: GetHashCode() XORs the hashcodes of all items in the set, while Equals() is a synonym for <a class="el" href="structLoyc_1_1Collections_1_1Set_3_01T_01_4.html#aaad54a7291e47d584dedfe740fb0e0f3">SetEquals()</a>. Be aware that these methods are very slow for large sets. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -368,7 +368,7 @@ MSet&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsMutable<
 <tr class="memdesc:a27762a0bd6a5f0d0953d8f08822896cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a new set that contains only items that match the specified predicate (i.e. for which the predicate returns true). <a href="#a27762a0bd6a5f0d0953d8f08822896cc">More...</a><br /></td></tr>
 <tr class="separator:a27762a0bd6a5f0d0953d8f08822896cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76470e1187cb9320b4358be7e9ee0139"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1Set_3_01T_01_4.html#a76470e1187cb9320b4358be7e9ee0139">CountMemory</a> (int sizeOfT)</td></tr>
-<tr class="memdesc:a76470e1187cb9320b4358be7e9ee0139"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measures the total size of all objects allocated to this collection, in bytes, including the size of this object itself; see InternalSet{T}.CountMemory. <a href="#a76470e1187cb9320b4358be7e9ee0139">More...</a><br /></td></tr>
+<tr class="memdesc:a76470e1187cb9320b4358be7e9ee0139"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measures the total size of all objects allocated to this collection, in bytes, including the size of this object itself; see Impl.InternalSet{T}.CountMemory. <a href="#a76470e1187cb9320b4358be7e9ee0139">More...</a><br /></td></tr>
 <tr class="separator:a76470e1187cb9320b4358be7e9ee0139"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ISetOperations_3_01in_01T_00_01in_01InSetT_00_01out_01OutSetT_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ISetOperations_3_01in_01T_00_01in_01InSetT_00_01out_01OutSetT_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ISetOperations_3_01in_01T_00_01in_01InSetT_00_01out_01OutSetT_01_4.html">Loyc.Collections.ISetOperations&lt; in T, in InSetT, out OutSetT &gt;</a></td></tr>
 <tr class="memitem:a67954d285390ef694dcbf50c333f4427 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISetOperations_3_01in_01T_00_01in_01InSetT_00_01out_01OutSetT_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67954d285390ef694dcbf50c333f4427"></a>
@@ -449,7 +449,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator MSet&lt; T
 </table>
 </div><div class="memdoc">
 
-<p>Measures the total size of all objects allocated to this collection, in bytes, including the size of this object itself; see InternalSet{T}.CountMemory.</p>
+<p>Measures the total size of all objects allocated to this collection, in bytes, including the size of this object itself; see Impl.InternalSet{T}.CountMemory.</p>
 
 </div>
 </div>
@@ -561,7 +561,7 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator MSet&lt; T
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:30 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

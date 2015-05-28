@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A dictionary class built on top of <code>InternalSet&lt;KeyValuePair&lt;K,V&gt;&gt;</code>.  
  <a href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/Sets/MMap.cs'>/Src/Loyc.Collections/Sets/MMap.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/Sets/MMap.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.MMap&lt; K, V &gt;:</div>
@@ -128,17 +128,17 @@ Inheritance diagram for Loyc.Collections.MMap&lt; K, V &gt;:</div>
 </dl>
 <p>Benchmarks show that this class is not as fast as the standard Dictionary{K,V} in most cases. however, it does have some advantages: </p><ul>
 <li>
-MMap allows null as a key (assuming it is based on the second version of InternalSet{T}). </li>
+MMap allows null as a key (assuming it is based on the second version of Impl.InternalSet{T}). </li>
 <li>
-TryGetValue and ContainsKey do not throw an incredibly annoying exception if you have the audacity to ask whether there is a null key in the collection. </li>
+MapOrMMap{K, V}.TryGetValue and MapOrMMap{K, V}.ContainsKey do not throw an incredibly annoying exception if you have the audacity to ask whether there is a null key in the collection. </li>
 <li>
 This class supports fast cloning in O(1) time. </li>
 <li>
-You can convert a mutable <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html" title="A dictionary class built on top of InternalSet<KeyValuePair<K,V>>. ">MMap&lt;K,V&gt;</a> into an immutable <a class="el" href="classLoyc_1_1Collections_1_1Map_3_01K_00_01V_01_4.html" title="An immutable dictionary. ">Map&lt;K,V&gt;</a>, a read-only dictionary that does not change when you change the original MMap. </li>
+You can convert a mutable MMap{K,V} into an immutable Map{K,V}, a read-only dictionary that does not change when you change the original MMap. </li>
 <li>
 This class has an <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a758ec7abaee387f62f1ab5b7415e0072" title="Merges the contents of the specified map into this map.">AddRange</a> method. </li>
 <li>
-This class has some bonus features: <a class="el" href="classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4.html#a52f4e2cc47e4cd8c26ccb327f0ba07f9" title="Synonym for this[key, defaultValue].">TryGetValue(K, V)</a> returns a default value if the key is not present; <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#adc95a3141ac7a5244ee650e857251b4f" title="Adds an item to the map if the key is not present. If the key is already present, this method has no ...">AddIfNotPresent</a> only adds a pair if the collection does not already contain the key; <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a22b3b56e3ebabad5b7284fe74c0e1c72" title="Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is...">AddOrFind</a> can retrieve the current value and change it to a new value at the same time; and <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a47e1b79b120c3b346f023da98a14be8f" title="Gets the value associated with the specified key, then removes the pair with that key from the dictio...">GetAndRemove</a> can get a value while it is being deleted. </li>
+This class has some bonus features: MapOrMMap{K, V}.TryGetValue(K, V) returns a default value if the key is not present; <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#adc95a3141ac7a5244ee650e857251b4f" title="Adds an item to the map if the key is not present. If the key is already present, this method has no ...">AddIfNotPresent</a> only adds a pair if the collection does not already contain the key; <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a22b3b56e3ebabad5b7284fe74c0e1c72" title="Adds a pair to the map if the key is not present, retrieves the existing key-value pair if the key is...">AddOrFind</a> can retrieve the current value and change it to a new value at the same time; and <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a47e1b79b120c3b346f023da98a14be8f" title="Gets the value associated with the specified key, then removes the pair with that key from the dictio...">GetAndRemove</a> can get a value while it is being deleted. </li>
 <li>
 The persistent map operations <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a3dda32d42d6c543e21468a00ad5346b4">Union</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a8dba7169b09ad61ef0a93fd569d8c000">Intersect</a>, <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#aae56f8a89a9044c396f2f20b6d8b528c">Except</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a19fe2e4387b54b492ec013e990d7f771">Xor</a> combine two dictionaries to create a new dictionary, without modifying either of the original dictionaries. Equally interesting, the methods <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#ae7fac7939769bf7d5b8fad5493b2dc97">With</a> and <a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a9969acb86d39d26725cdd767081ee0f2">Without</a> create a new dictionary with a single item added or removed. </li>
 </ul>
@@ -177,8 +177,7 @@ V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key]</b><code> [g
 <tr class="memitem:ae477f45a5a2b5458a1fd789a09666514 inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae477f45a5a2b5458a1fd789a09666514"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:ae477f45a5a2b5458a1fd789a09666514 inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfe6c229f27b0f539f524fb4b981f7f8 inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abfe6c229f27b0f539f524fb4b981f7f8"></a>
-IEnumerable&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Keys</b><code> [get]</code></td></tr>
+<tr class="memitem:abfe6c229f27b0f539f524fb4b981f7f8 inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4.html#abfe6c229f27b0f539f524fb4b981f7f8">Keys</a><code> [get]</code></td></tr>
 <tr class="separator:abfe6c229f27b0f539f524fb4b981f7f8 inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fdf0ee02833c2fbebb00f153afb65cc inherit properties_classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2fdf0ee02833c2fbebb00f153afb65cc"></a>
 IEnumerable&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Values</b><code> [get]</code></td></tr>
@@ -210,7 +209,7 @@ Public Member Functions</h2></td></tr>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (K key)</td></tr>
 <tr class="separator:af38df6c61f3d2585aa22489ccf87bda4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fe707b8a48dedc1048eb1e331e52bcb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fe707b8a48dedc1048eb1e331e52bcb"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Add</b> (KeyValuePair&lt; K, V &gt; item)</td></tr>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1MMap_3_01K_00_01V_01_4.html#a0fe707b8a48dedc1048eb1e331e52bcb">Add</a> (KeyValuePair&lt; K, V &gt; item)</td></tr>
 <tr class="separator:a0fe707b8a48dedc1048eb1e331e52bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b2e38d5533ac4978270cafd5fe3b8e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5b2e38d5533ac4978270cafd5fe3b8e9"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> ()</td></tr>
@@ -736,7 +735,7 @@ EqualityComparer&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:29 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:47 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

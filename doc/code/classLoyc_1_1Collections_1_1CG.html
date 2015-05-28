@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-static-attribs">Public static fields</a> &#124;
+<a href="#properties">Properties</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1Collections_1_1CG-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -100,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Contains global functions of <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource{T}, ranges, etc.), collection implementations (Loyc.Collections.DList{T}, Loyc.Collections.WeakValueDictionary{K,V}, etc.), extension methods (Loyc.Collections.LCExt, Loyc.Collections.EnumerableExt, etc.), helper classes (Loyc.Collections.EmptyList{T}, (Loyc.Collections.Repeated{T}, etc.), and adapter classes (Loyc.Collections.ListSlice{T}, Loyc.Collections.BufferedSequence{T}, etc.). ">Loyc.Collections</a> that don't belong in any specific class. 
  <a href="classLoyc_1_1Collections_1_1CG.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/CG.cs'>/Src/Loyc.Collections/CG.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/CG.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains global functions of <a class="el" href="namespaceLoyc_1_1Collections.html" title="Contains general-purpose interfaces (Loyc.Collections.IListSource{T}, ranges, etc.), collection implementations (Loyc.Collections.DList{T}, Loyc.Collections.WeakValueDictionary{K,V}, etc.), extension methods (Loyc.Collections.LCExt, Loyc.Collections.EnumerableExt, etc.), helper classes (Loyc.Collections.EmptyList{T}, (Loyc.Collections.Repeated{T}, etc.), and adapter classes (Loyc.Collections.ListSlice{T}, Loyc.Collections.BufferedSequence{T}, etc.). ">Loyc.Collections</a> that don't belong in any specific class.</p>
@@ -110,24 +111,307 @@ Public static fields</h2></td></tr>
 <tr class="memitem:aa04b5f289805a8f24063e9fd4969f864"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa04b5f289805a8f24063e9fd4969f864"></a>
 static SimpleCache&lt; object &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_objectCache</b></td></tr>
 <tr class="separator:aa04b5f289805a8f24063e9fd4969f864"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae89e8c433ec5f55d1f89987c7436f33a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae89e8c433ec5f55d1f89987c7436f33a"></a>
-static SimpleCache&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_stringCache</b></td></tr>
-<tr class="separator:ae89e8c433ec5f55d1f89987c7436f33a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
+Properties</h2></td></tr>
+<tr class="memitem:ae8b66458987172996d592a43fc89b936"><td class="memItemLeft" align="right" valign="top">static SimpleCache&lt; object &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#ae8b66458987172996d592a43fc89b936">ObjectCache</a><code> [get]</code></td></tr>
+<tr class="memdesc:ae8b66458987172996d592a43fc89b936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the cache used by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a49140c70f1884dfe70cc350e8d66ab58" title="Passes the object through a thread-static instance of SimpleCache{o}.">Cache(object)</a>. <a href="#ae8b66458987172996d592a43fc89b936">More...</a><br /></td></tr>
+<tr class="separator:ae8b66458987172996d592a43fc89b936"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:af97603209038fe010f507fb234189b03"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af97603209038fe010f507fb234189b03"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Cache</b> (string s)</td></tr>
-<tr class="separator:af97603209038fe010f507fb234189b03"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49140c70f1884dfe70cc350e8d66ab58"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a49140c70f1884dfe70cc350e8d66ab58"></a>
-static object&#160;</td><td class="memItemRight" valign="bottom"><b>Cache</b> (object o)</td></tr>
+<tr class="memitem:a49140c70f1884dfe70cc350e8d66ab58"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a49140c70f1884dfe70cc350e8d66ab58">Cache</a> (object o)</td></tr>
+<tr class="memdesc:a49140c70f1884dfe70cc350e8d66ab58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Passes the object through a thread-static instance of SimpleCache{o}. <a href="#a49140c70f1884dfe70cc350e8d66ab58">More...</a><br /></td></tr>
 <tr class="separator:a49140c70f1884dfe70cc350e8d66ab58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1dc58e054a799db375c19156249eea51"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a1dc58e054a799db375c19156249eea51">Cache</a> (int num)</td></tr>
+<tr class="memdesc:a1dc58e054a799db375c19156249eea51"><td class="mdescLeft">&#160;</td><td class="mdescRight">If the specified number is in the range -3 to 9 inclusive, an equivalent preallocated boxed integer is returned, otherwise the other overload, <code><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a49140c70f1884dfe70cc350e8d66ab58" title="Passes the object through a thread-static instance of SimpleCache{o}.">Cache(object)</a></code>, is invoked to handle the request. <a href="#a1dc58e054a799db375c19156249eea51">More...</a><br /></td></tr>
+<tr class="separator:a1dc58e054a799db375c19156249eea51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af729c0d07155334e95895ecd8ab1f420"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#af729c0d07155334e95895ecd8ab1f420">Cache</a> (char o)</td></tr>
+<tr class="memdesc:af729c0d07155334e95895ecd8ab1f420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Special overload to avoid treating argument as int32 in C#. <a href="#af729c0d07155334e95895ecd8ab1f420">More...</a><br /></td></tr>
+<tr class="separator:af729c0d07155334e95895ecd8ab1f420"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb04ce67dcb8eb994655b8abf23902d0"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#afb04ce67dcb8eb994655b8abf23902d0">Cache</a> (byte o)</td></tr>
+<tr class="memdesc:afb04ce67dcb8eb994655b8abf23902d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Special overload to avoid treating argument as int32 in C#. <a href="#afb04ce67dcb8eb994655b8abf23902d0">More...</a><br /></td></tr>
+<tr class="separator:afb04ce67dcb8eb994655b8abf23902d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e4d59dc311e89a7c0a45630ec3879b2"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a7e4d59dc311e89a7c0a45630ec3879b2">Cache</a> (sbyte o)</td></tr>
+<tr class="memdesc:a7e4d59dc311e89a7c0a45630ec3879b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Special overload to avoid treating argument as int32 in C#. <a href="#a7e4d59dc311e89a7c0a45630ec3879b2">More...</a><br /></td></tr>
+<tr class="separator:a7e4d59dc311e89a7c0a45630ec3879b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6839e7b308296563d9573b8db796ea0e"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a6839e7b308296563d9573b8db796ea0e">Cache</a> (short o)</td></tr>
+<tr class="memdesc:a6839e7b308296563d9573b8db796ea0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Special overload to avoid treating argument as int32 in C#. <a href="#a6839e7b308296563d9573b8db796ea0e">More...</a><br /></td></tr>
+<tr class="separator:a6839e7b308296563d9573b8db796ea0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29f494b76391d97881f0cc47f2c61709"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a29f494b76391d97881f0cc47f2c61709">Cache</a> (ushort o)</td></tr>
+<tr class="memdesc:a29f494b76391d97881f0cc47f2c61709"><td class="mdescLeft">&#160;</td><td class="mdescRight">Special overload to avoid treating argument as int32 in C#. <a href="#a29f494b76391d97881f0cc47f2c61709">More...</a><br /></td></tr>
+<tr class="separator:a29f494b76391d97881f0cc47f2c61709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3">Cache</a> (bool value)</td></tr>
+<tr class="memdesc:a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <a class="el" href="classLoyc_1_1G.html#ad9741fafb8aa1e28d5b19e3b5c06ff6a" title="Singleton true cast to object. ">G.BoxedTrue</a> or <a class="el" href="classLoyc_1_1G.html#a1df19485effa125b7a2fde8c4ac9b437" title="Singleton false cast to object. ">G.BoxedFalse</a> depending on the parameter. <a href="#a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3">More...</a><br /></td></tr>
+<tr class="separator:a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a49140c70f1884dfe70cc350e8d66ab58"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">object&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Passes the object through a thread-static instance of SimpleCache{o}.</p>
+<p>If o is a string, an alternative to Caching is interning (String.Intern("...")). The latter tends to be more dangerous because an interned string can never be garbage-collected. </p>
+<p>Note that SimpleCache{T} contains strong references to cached items, and the maximum cache size is 1024 items. The references are released when the current thread terminates or when you call <code>ObjectCache.Clear()</code>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1dc58e054a799db375c19156249eea51"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If the specified number is in the range -3 to 9 inclusive, an equivalent preallocated boxed integer is returned, otherwise the other overload, <code><a class="el" href="classLoyc_1_1Collections_1_1CG.html#a49140c70f1884dfe70cc350e8d66ab58" title="Passes the object through a thread-static instance of SimpleCache{o}.">Cache(object)</a></code>, is invoked to handle the request.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num</td><td>An integer you want to box.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="af729c0d07155334e95895ecd8ab1f420"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Special overload to avoid treating argument as int32 in C#.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1CG.html#af729c0d07155334e95895ecd8ab1f420">Loyc.Collections.CG.Cache()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#af729c0d07155334e95895ecd8ab1f420">Loyc.Collections.CG.Cache()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="afb04ce67dcb8eb994655b8abf23902d0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Special overload to avoid treating argument as int32 in C#.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1CG.html#afb04ce67dcb8eb994655b8abf23902d0">Loyc.Collections.CG.Cache()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#afb04ce67dcb8eb994655b8abf23902d0">Loyc.Collections.CG.Cache()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a7e4d59dc311e89a7c0a45630ec3879b2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">sbyte&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Special overload to avoid treating argument as int32 in C#.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a7e4d59dc311e89a7c0a45630ec3879b2">Loyc.Collections.CG.Cache()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a7e4d59dc311e89a7c0a45630ec3879b2">Loyc.Collections.CG.Cache()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6839e7b308296563d9573b8db796ea0e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">short&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Special overload to avoid treating argument as int32 in C#.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a6839e7b308296563d9573b8db796ea0e">Loyc.Collections.CG.Cache()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a6839e7b308296563d9573b8db796ea0e">Loyc.Collections.CG.Cache()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a29f494b76391d97881f0cc47f2c61709"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">ushort&#160;</td>
+          <td class="paramname"><em>o</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Special overload to avoid treating argument as int32 in C#.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a29f494b76391d97881f0cc47f2c61709">Loyc.Collections.CG.Cache()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a29f494b76391d97881f0cc47f2c61709">Loyc.Collections.CG.Cache()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6a7dcdf1e3d7aa861ad5ab2e7b3cf9a3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.Collections.CG.Cache </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns <a class="el" href="classLoyc_1_1G.html#ad9741fafb8aa1e28d5b19e3b5c06ff6a" title="Singleton true cast to object. ">G.BoxedTrue</a> or <a class="el" href="classLoyc_1_1G.html#a1df19485effa125b7a2fde8c4ac9b437" title="Singleton false cast to object. ">G.BoxedFalse</a> depending on the parameter.</p>
+
+<p>References <a class="el" href="classLoyc_1_1G.html#a1df19485effa125b7a2fde8c4ac9b437">Loyc.G.BoxedFalse</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="ae8b66458987172996d592a43fc89b936"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">SimpleCache&lt;object&gt; Loyc.Collections.CG.ObjectCache</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the cache used by <a class="el" href="classLoyc_1_1Collections_1_1CG.html#a49140c70f1884dfe70cc350e8d66ab58" title="Passes the object through a thread-static instance of SimpleCache{o}.">Cache(object)</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

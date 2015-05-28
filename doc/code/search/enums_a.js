@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['xfaction',['XfAction',['../namespaceLoyc_1_1Collections.html#af0ffc4d7615f186f5aa815a344723f35',1,'Loyc::Collections']]]
+  ['tokenkind',['TokenKind',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903',1,'Loyc::Syntax::Lexing']]]
 ];

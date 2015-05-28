@@ -106,7 +106,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), or a set of integers, used in the grammar of a parser. 
  <a href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CodeGenHelpers/PGIntSet.cs'>/Src/LLLPG/CodeGenHelpers/PGIntSet.cs</a></li>
+<li>D:/Dev/Loyc/Main/LLLPG/CodeGenHelpers/PGIntSet.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.PGIntSet:</div>
@@ -157,7 +157,7 @@ static new readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntS
 <tr class="separator:ab187755b89a1f922f6558f9aa6e05fb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet')"><img src="closed.png" alt="-"/>&#160;Public static fields inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">Loyc.LLParserGenerator.IntSet</a></td></tr>
 <tr class="memitem:a37d1cdec6667ba5c67109e28de3fe6e7 inherit pub_static_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37d1cdec6667ba5c67109e28de3fe6e7"></a>
-static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>All</b> = IntSet.Without(new int[0])</td></tr>
+static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>All</b> = IntSet.Without(EmptyArray&lt;int&gt;.Value)</td></tr>
 <tr class="separator:a37d1cdec6667ba5c67109e28de3fe6e7 inherit pub_static_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f32ca6a5e37c44d7b0569b6ee66670a inherit pub_static_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f32ca6a5e37c44d7b0569b6ee66670a"></a>
 static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Empty</b> = new <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>()</td></tr>
@@ -194,7 +194,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>ContainsEOF</b><code>
 long&#160;</td><td class="memItemRight" valign="bottom"><b>SizeIgnoringInversion</b><code> [get]</code></td></tr>
 <tr class="separator:a3822f384536bceee472a5b2ed980ffdb inherit properties_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cfea94e40c40e9b7e007d244705eb5a inherit properties_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3cfea94e40c40e9b7e007d244705eb5a"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
+<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
 <tr class="separator:a3cfea94e40c40e9b7e007d244705eb5a inherit properties_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b941fa75af61943c2aff704f15a4e7f inherit properties_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6b941fa75af61943c2aff704f15a4e7f"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
@@ -225,10 +225,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:ad7bf2bcc4b232b18b2e356933b677990"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9221c73430ca564e33bb0e6d3ba81d37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9221c73430ca564e33bb0e6d3ba81d37"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:a9221c73430ca564e33bb0e6d3ba81d37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a184d6c5ba792ee137c4f6732da96082b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a184d6c5ba792ee137c4f6732da96082b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>[] list)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>[] list)</td></tr>
 <tr class="separator:a184d6c5ba792ee137c4f6732da96082b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bbeb56bb349c5fb41e1cbe5efd653a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0bbeb56bb349c5fb41e1cbe5efd653a1"></a>
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html">PGIntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Union</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> other)</td></tr>
@@ -245,9 +245,6 @@ new <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html">PGIntSe
 <tr class="memitem:ad134b6f91cc193ced59467cff7ae4596"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad134b6f91cc193ced59467cff7ae4596"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> other)</td></tr>
 <tr class="separator:ad134b6f91cc193ced59467cff7ae4596"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a733ca61562b9df3aa7e1af525088bc6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a733ca61562b9df3aa7e1af525088bc6f"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GenerateSetDecl</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> setType, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> setName)</td></tr>
-<tr class="separator:a733ca61562b9df3aa7e1af525088bc6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a92d7d6d89c2598442d768e5376762a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html#a3a92d7d6d89c2598442d768e5376762a">ExprComplexity</a> ()</td></tr>
 <tr class="memdesc:a3a92d7d6d89c2598442d768e5376762a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "complexity" of the set. <a href="#a3a92d7d6d89c2598442d768e5376762a">More...</a><br /></td></tr>
 <tr class="separator:a3a92d7d6d89c2598442d768e5376762a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -265,10 +262,10 @@ Match&#160;</td><td class="memItemRight" valign="bottom"><b>ChooseMatchType</b> 
 &#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:af3ab51b58fb3e012899e51a9d9e6996b inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb366f17ec9ed0eb293a6284cf78c2a2 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb366f17ec9ed0eb293a6284cf78c2a2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:acb366f17ec9ed0eb293a6284cf78c2a2 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbf2b8fce0bcf4faec8ed272392f6cc7 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acbf2b8fce0bcf4faec8ed272392f6cc7"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>[] list)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>[] list)</td></tr>
 <tr class="separator:acbf2b8fce0bcf4faec8ed272392f6cc7 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a651c939d710e29d95b50cb3525f3908a inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a651c939d710e29d95b50cb3525f3908a"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (int ch)</td></tr>
@@ -296,13 +293,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (int ch)
 string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (bool charSet)</td></tr>
 <tr class="separator:a9d1b10ca692d308cdeb408110cd9099e inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3555876806e00c85ffb30dcca6a340c1 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3555876806e00c85ffb30dcca6a340c1"></a>
-IEnumerator&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
+IEnumerator&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
 <tr class="separator:a3555876806e00c85ffb30dcca6a340c1 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a074a1739a4245fda81a81c660bf5aa19 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a074a1739a4245fda81a81c660bf5aa19"></a>
-IEnumerator&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> (bool obeyInversion)</td></tr>
+IEnumerator&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> (bool obeyInversion)</td></tr>
 <tr class="separator:a074a1739a4245fda81a81c660bf5aa19 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4210371bef721dc155e35b3880af3981 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4210371bef721dc155e35b3880af3981"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
+<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:a4210371bef721dc155e35b3880af3981 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d4b320f241a718e3f4079819b9e05b3 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d4b320f241a718e3f4079819b9e05b3"></a>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (object obj)</td></tr>
@@ -317,11 +314,14 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> other, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> mode)</td></tr>
 <tr class="separator:a13b5cf3bed6ef232e89a00eb0ee9db1f inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1d91b53986009ed274d3bcd01577f57 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1d91b53986009ed274d3bcd01577f57"></a>
-<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Runs</b> ()</td></tr>
+<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Runs</b> ()</td></tr>
 <tr class="separator:ab1d91b53986009ed274d3bcd01577f57 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78d41bcfc0336fcdfa6bfaa278b45554 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78d41bcfc0336fcdfa6bfaa278b45554"></a>
-IEnumerable&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Integers</b> (bool obeyInversion)</td></tr>
-<tr class="separator:a78d41bcfc0336fcdfa6bfaa278b45554 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fa349611072262403a04433ab4e105a inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fa349611072262403a04433ab4e105a"></a>
+<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>InternalRangeList</b> ()</td></tr>
+<tr class="separator:a6fa349611072262403a04433ab4e105a inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4c97ab5fe8ca42bdf8a348fc2b5130a inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4c97ab5fe8ca42bdf8a348fc2b5130a"></a>
+IEnumerable&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>IntegerSequence</b> (bool obeyInversion)</td></tr>
+<tr class="separator:ad4c97ab5fe8ca42bdf8a348fc2b5130a inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae23eac1b116286334b68851dc22eb72b inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae23eac1b116286334b68851dc22eb72b"></a>
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Optimize</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> dontcare, bool mergeRuns=true)</td></tr>
 <tr class="separator:ae23eac1b116286334b68851dc22eb72b inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -366,7 +366,7 @@ static new <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PGIntSet.html">
 static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (int c)</td></tr>
 <tr class="separator:a66964b9848afa24f5755c0bf69f25886 inherit pub_static_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05e4daec3ba5c3432f24c05162e8ec37 inherit pub_static_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05e4daec3ba5c3432f24c05162e8ec37"></a>
-static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> r)</td></tr>
+static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> r)</td></tr>
 <tr class="separator:a05e4daec3ba5c3432f24c05162e8ec37 inherit pub_static_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b3ccb11bababc1f00bc6d3efd6a8cf1 inherit pub_static_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b3ccb11bababc1f00bc6d3efd6a8cf1"></a>
 static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>With</b> (params int[] members)</td></tr>
@@ -405,17 +405,17 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:ac34cb5fd77b9f477073db568becfc49a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac34cb5fd77b9f477073db568becfc49a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
 <tr class="separator:ac34cb5fd77b9f477073db568becfc49a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac00a92d208c6f376dacddd435b46f96e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac00a92d208c6f376dacddd435b46f96e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>PGIntSet</b> (bool isCharSet, bool inverted, bool ranges, params int[] list)</td></tr>
 <tr class="separator:ac00a92d208c6f376dacddd435b46f96e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a020cc14de2ed70142570accdc7e952e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a020cc14de2ed70142570accdc7e952e5"></a>
-override <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> basis, bool inverted, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt; ranges)</td></tr>
+override <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> basis, bool inverted, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt; ranges)</td></tr>
 <tr class="separator:a020cc14de2ed70142570accdc7e952e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1LLParserGenerator_1_1IntSet')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">Loyc.LLParserGenerator.IntSet</a></td></tr>
 <tr class="memitem:a8eade768f08583685ce13f6e140bd411 inherit pro_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8eade768f08583685ce13f6e140bd411"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
 <tr class="separator:a8eade768f08583685ce13f6e140bd411 inherit pro_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac14a442e55a23ccfd62d5caa4f1b8025 inherit pro_methods_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac14a442e55a23ccfd62d5caa4f1b8025"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, bool ranges, params int[] list)</td></tr>
@@ -430,7 +430,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html">LNodeFactor
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet')"><img src="closed.png" alt="-"/>&#160;Protected fields inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">Loyc.LLParserGenerator.IntSet</a></td></tr>
-<tr class="memitem:a7bd26f2d14847455b8ea25c94a1c7007 inherit pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#a7bd26f2d14847455b8ea25c94a1c7007">_ranges</a> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&gt;.Empty</td></tr>
+<tr class="memitem:a7bd26f2d14847455b8ea25c94a1c7007 inherit pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#a7bd26f2d14847455b8ea25c94a1c7007">_ranges</a> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&gt;.Empty</td></tr>
 <tr class="memdesc:a7bd26f2d14847455b8ea25c94a1c7007 inherit pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of non-overlapping character ranges, sorted by code point. EOF can be included in this list as character -1 (hence CharRange holds ints instead of chars). <a href="#a7bd26f2d14847455b8ea25c94a1c7007">More...</a><br /></td></tr>
 <tr class="separator:a7bd26f2d14847455b8ea25c94a1c7007 inherit pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0878b1d00896ed37972cef82579447a inherit pro_attribs_classLoyc_1_1LLParserGenerator_1_1IntSet"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa0878b1d00896ed37972cef82579447a"></a>
@@ -497,7 +497,7 @@ la0 == '\t'" inline using an expression, but large sets are stored in variables 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

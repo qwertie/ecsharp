@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Observes changes and builds a table of items in the tree. 
  <a href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/AListIndexer.cs'>/Src/Loyc.Collections/ALists/AListIndexer.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/ALists/AListIndexer.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;:</div>
@@ -118,7 +118,7 @@ Inheritance diagram for Loyc.Collections.Impl.AListIndexer&lt; K, T &gt;:</div>
 <p>The IndexedAList{T} class uses one of these objects to speed up methods that search for items in an AList{T} (IndexOf, Contains, and Remove). The amount of speedup is limited by the size of the nodes in the list being indexed; see <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1AListIndexer_3_01K_00_01T_01_4.html#a7e33aee6db7ab05844c7d15b0322c2b3" title="Returns an index at which the specified item can be found.">IndexOfAny</a>. </p>
 <p>It is wasteful to use an AListIndexer if the list is small. AListIndexer is designed to accelerate searches in very large lists, and it offers no performance benefit to small lists; to the contrary, it just wastes time and memory in small lists. </p>
 <p>It is recommended to use IndexedAList instead of instantiating this class directly. </p>
-<p>In general, AListIndexer requires more memory than the list that is being indexed. Specifically, if pointers use P bytes, then AListIndexer itself consumes moderately MORE than X+P*N bytes of memory, where X is the size of the list being indexed, and N is the number of items in the list. Thus, for example, an indexed list of AList{object} requires approximately three times as much memory as an AList that is not indexed. </p>
+<p>In general, AListIndexer requires more memory than the list that is being indexed. Specifically, if pointers use P bytes, then AListIndexer itself consumes moderately MORE than X+P*N bytes of memory, where X is the size of the list being indexed, and N is the number of items in the list. Thus, for example, an indexed list of AList{Object} requires approximately three times as much memory as an AList that is not indexed. </p>
 <p>Moreover, changing an indexed list takes at least twice as much time, since the indexer must be notified of each change and updates to the index take O(log N) time per update. Batch operations involving X items that take O(log N) time without an indexer (e.g. RemoveRange(i, X)) will take O(X log N) time instead, because the indexer must be notified about each item changed. </p>
 <p>Still, these costs are worthwhile in applications that frequently search for items in the list. </p>
 </div><table class="memberdecls">
@@ -393,12 +393,7 @@ T &gt;, AListInnerBase&lt; K, T &gt;<br class="typebreak" />
 </div><div class="memdoc">
 
 <p>Called when an item is added to a leaf node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the item is being transferred from another node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#a889821df29f744529c69e68a293769a6">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>.</p>
 
@@ -437,12 +432,7 @@ T &gt;, AListInnerBase&lt; K, T &gt;<br class="typebreak" />
 </div><div class="memdoc">
 
 <p>Called when an item is removed from a leaf node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the item is being transferred to another node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#a07b43c46bf7d79ae1ccdcba1773a1bf5">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>.</p>
 
@@ -481,12 +471,7 @@ T &gt;, AListInnerBase&lt; K, T &gt;<br class="typebreak" />
 </div><div class="memdoc">
 
 <p>Called when a child node is added to an inner node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the node is being transferred from another inner node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#a605c03aa32a7878e7453859022f61ebc">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>.</p>
 
@@ -525,12 +510,7 @@ T &gt;, AListInnerBase&lt; K, T &gt;<br class="typebreak" />
 </div><div class="memdoc">
 
 <p>Called when a child node is removed from an inner node.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">isMoving</td><td>true if the node is being transferred to another inner node.</td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Note: this may be called as part of a move operation (remove+add)</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Collections_1_1Impl_1_1IAListTreeObserver_3_01K_00_01T_01_4.html#a3efb469fbc2ccf1e5fad17b619887798">Loyc.Collections.Impl.IAListTreeObserver&lt; K, T &gt;</a>.</p>
 
@@ -682,7 +662,7 @@ T &gt;, AListInnerBase&lt; K, T &gt;<br class="typebreak" />
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:32 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

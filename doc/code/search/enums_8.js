@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['severity',['Severity',['../namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e',1,'Loyc']]],
-  ['spaceopt',['SpaceOpt',['../namespaceEcs.html#a2a06be7b18a785bc843cf1645d4c5909',1,'Ecs']]]
+  ['parseflag',['ParseFlag',['../classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65',1,'Loyc::G']]]
 ];

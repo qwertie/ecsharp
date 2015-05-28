@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> rule, which is a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icate plus a Name and optional attributes (e.g. token, private, etc.). 
  <a href="classLoyc_1_1LLParserGenerator_1_1Rule.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/RuleAndPreds/Rule.cs'>/Src/LLLPG/RuleAndPreds/Rule.cs</a></li>
+<li>D:/Dev/Loyc/Main/LLLPG/RuleAndPreds/Rule.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents an <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> rule, which is a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html" title="Represents part of a grammar for the LLParserGenerator.">Pred</a>icate plus a Name and optional attributes (e.g. token, private, etc.).</p>
@@ -110,8 +110,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a8686989cfa5779b9b70c117a890535d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1">Basis</a></td></tr>
-<tr class="memdesc:a8686989cfa5779b9b70c117a890535d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>. <a href="#a8686989cfa5779b9b70c117a890535d1">More...</a><br /></td></tr>
+<tr class="memdesc:a8686989cfa5779b9b70c117a890535d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#fn(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>. <a href="#a8686989cfa5779b9b70c117a890535d1">More...</a><br /></td></tr>
 <tr class="separator:a8686989cfa5779b9b70c117a890535d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a51e20cbf2d04ae379989eb52f65841"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a51e20cbf2d04ae379989eb52f65841"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReturnType</b></td></tr>
+<tr class="separator:a3a51e20cbf2d04ae379989eb52f65841"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acddd3f2c9cf525874f47b974a2b1adc3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acddd3f2c9cf525874f47b974a2b1adc3"></a>
 readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html">EndOfRule</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EndOfRule</b></td></tr>
 <tr class="separator:acddd3f2c9cf525874f47b974a2b1adc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,9 +169,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a867b7bc7b85602edf1a9a41eda233802"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a867b7bc7b85602edf1a9a41eda233802"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryWrapperNeeded</b> ()</td></tr>
 <tr class="separator:a867b7bc7b85602edf1a9a41eda233802"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4517e272ecbfea41ead325465f7cf8ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a4517e272ecbfea41ead325465f7cf8ef">CreateTryWrapperForRecognizer</a> ()</td></tr>
-<tr class="memdesc:a4517e272ecbfea41ead325465f7cf8ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">See <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#af03aa22d777a81d3eb5e467ebb0034ec" title="Generates the try-wrapper for a recognizer rule.">IPGCodeGenHelper.CreateTryWrapperForRecognizer</a> for more information. <a href="#a4517e272ecbfea41ead325465f7cf8ef">More...</a><br /></td></tr>
-<tr class="separator:a4517e272ecbfea41ead325465f7cf8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab08d47bc0be3be690e21a5c0276d4fb4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab08d47bc0be3be690e21a5c0276d4fb4"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:ab08d47bc0be3be690e21a5c0276d4fb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -176,7 +176,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <tr class="memdesc:a16d715f858f8036340c77d246a4e34f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns Basis if it's a method signature; otherwise constructs a default signature. <a href="#a16d715f858f8036340c77d246a4e34f3">More...</a><br /></td></tr>
 <tr class="separator:a16d715f858f8036340c77d246a4e34f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4be32a8a46fbb2e3ae09e4124fec11da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a4be32a8a46fbb2e3ae09e4124fec11da">CreateMethod</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; methodBody)</td></tr>
-<tr class="memdesc:a4be32a8a46fbb2e3ae09e4124fec11da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates the default method definition to wrap around the body of the rule, which has already been generated. Returns <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1" title="A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. #def(int, Rule, #(#var(int, arg))), which means int Rule(int arg)). This can be null, in which case the default prototype is void Rule();, or if the rule is a starting rule or token, public void Rule();.">Basis</a> with the specified new method body. If Basis is null, a simple default method signature is used, e.g. <code>public void R() {...}</code> where R is the rule name. <a href="#a4be32a8a46fbb2e3ae09e4124fec11da">More...</a><br /></td></tr>
+<tr class="memdesc:a4be32a8a46fbb2e3ae09e4124fec11da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates the default method definition to wrap around the body of the rule, which has already been generated. Returns <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1" title="A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. #fn(int, Rule, #(#var(int, arg))), which means int Rule(int arg)). This can be null, in which case the default prototype is void Rule();, or if the rule is a starting rule or token, public void Rule();.">Basis</a> with the specified new method body. If Basis is null, a simple default method signature is used, e.g. <code>public void R() {...}</code> where R is the rule name. <a href="#a4be32a8a46fbb2e3ae09e4124fec11da">More...</a><br /></td></tr>
 <tr class="separator:a4be32a8a46fbb2e3ae09e4124fec11da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -241,7 +241,7 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
 </table>
 </div><div class="memdoc">
 
-<p>Creates the default method definition to wrap around the body of the rule, which has already been generated. Returns <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1" title="A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. #def(int, Rule, #(#var(int, arg))), which means int Rule(int arg)). This can be null, in which case the default prototype is void Rule();, or if the rule is a starting rule or token, public void Rule();.">Basis</a> with the specified new method body. If Basis is null, a simple default method signature is used, e.g. <code>public void R() {...}</code> where R is the rule name.</p>
+<p>Creates the default method definition to wrap around the body of the rule, which has already been generated. Returns <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1" title="A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. #fn(int, Rule, #(#var(int, arg))), which means int Rule(int arg)). This can be null, in which case the default prototype is void Rule();, or if the rule is a starting rule or token, public void Rule();.">Basis</a> with the specified new method body. If Basis is null, a simple default method signature is used, e.g. <code>public void R() {...}</code> where R is the rule name.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">methodBody</td><td>The parsing code that was generated for this rule.</td></tr>
@@ -249,31 +249,6 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A method.</dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a4517e272ecbfea41ead325465f7cf8ef"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLParserGenerator.Rule.CreateTryWrapperForRecognizer </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>See <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#af03aa22d777a81d3eb5e467ebb0034ec" title="Generates the try-wrapper for a recognizer rule.">IPGCodeGenHelper.CreateTryWrapperForRecognizer</a> for more information.</p>
 
 </div>
 </div>
@@ -313,7 +288,7 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
       </table>
 </div><div class="memdoc">
 
-<p>A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#def(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>.</p>
+<p>A node that contains the original code of the rule, or, if the rule was created programmatically, the method prototype (e.g. <code>#fn(int, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html" title="Represents an LLLPG rule, which is a Predicate plus a Name and optional attributes (e...">Rule</a>, #(#var(int, arg)))</code>, which means <code>int Rule(int arg)</code>). This can be null, in which case the default prototype is <code>void Rule();</code>, or if the rule is a starting rule or token, <code>public void Rule();</code>.</p>
 <p>The Basis is also used to provide an error location.</p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>.</p>
@@ -324,7 +299,7 @@ static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator R
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

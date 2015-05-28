@@ -101,12 +101,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring milliseconds (TODO: increase similarity to <code>Stopwatch</code>)  
  <a href="structLoyc_1_1EzStopwatch.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/EzStopwatch.cs'>/Src/Loyc.Essentials/Utilities/EzStopwatch.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/EzStopwatch.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring milliseconds (TODO: increase similarity to <code>Stopwatch</code>) </p>
 <p><a class="el" href="structLoyc_1_1EzStopwatch.html" title="A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring mill...">EzStopwatch</a> is a wrapper around the normal Stopwatch that is less clumsy to use: you can get the elapsed time and restart the timer from zero with a single call to <a class="el" href="structLoyc_1_1EzStopwatch.html#a84826d48de2a0df89a78c6af8a713691" title="Restarts the timer from zero (unpausing it if it is paused), and returns the number of elapsed millis...">Restart()</a>. The Stopwatch class (prior to .NET 4, anyway) requires you to make three separate method calls to do the same thing: you have to call ElapsedMilliseconds, then <a class="el" href="structLoyc_1_1EzStopwatch.html#a11c15cf54be15fb8f2c737df2f7f918e" title="Resets the timer to 0 and pauses it there.">Reset()</a>, then Start(). </p>
-<p>Unlike SimpleTimer, this class does not start timing when it is created, which allows it to be a struct without a constructor. </p>
+<p>Unlike <a class="el" href="classLoyc_1_1Utilities_1_1SimpleTimer.html" title="A fast, simple timer class with a more convenient interface than System.Diagnostics.Stopwatch. Its resolution is typically 10-16 ms on desktop Windows systems. ">Loyc.Utilities.SimpleTimer</a>, this class does not start timing when it is created, which allows it to be a struct without a constructor. </p>
 <p><a class="el" href="structLoyc_1_1EzStopwatch.html" title="A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring mill...">EzStopwatch</a> behaves differently from Stopwatch when restarting, because I observed a problem using the timer to measure short time intervals. I ran trials of three operations in a loop, and the loop was programmed to run until the total elapsed time for one of the operations exceeded 100 ms. On each iteration I restarted the timer three times because there were three operations to measure, and when I replaced SimpleTimer with <a class="el" href="structLoyc_1_1EzStopwatch.html" title="A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring mill...">EzStopwatch</a> for greater accuracy, the loop ran forever! The problem was that (depending on the benchmark's input parameters) the operation could take less than 1 millisecond to complete, so <a class="el" href="structLoyc_1_1EzStopwatch.html#a85e82a5e3745fd78931ba1bad8fc844a" title="Gets or sets the current time on the clock.">Millisec</a> always returned zero, and the total never reached 100. </p>
 <p>To solve this problem, when you "&lt;see cref="Restart"/&gt;" the timer, it is not completely reset to zero, but rather the current value of Millisec is subtracted from the timer. This leaves a fractional amount of time less than 1 millisecond in the timer, so that if you take two measurements that each take 0.6 milliseconds, Millisec will return 0 the first time and 1 the second time, leaving 0.2 milliseconds on the clock. </p>
 <p>TODO: change interfaces of SimpleTimer and <a class="el" href="structLoyc_1_1EzStopwatch.html" title="A wrapper around Stopwatch with a more convenient interface, currently oriented around measuring mill...">EzStopwatch</a> to better resemble Stopwatch, even though the behavior of "Pause" and "Resume" is more obvious than "Stop" and "Start". </p>
@@ -116,9 +116,9 @@ Public fields</h2></td></tr>
 <tr class="memitem:acd30ab9684cc628b277d9e07ca7f82d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd30ab9684cc628b277d9e07ca7f82d6"></a>
 Stopwatch&#160;</td><td class="memItemRight" valign="bottom"><b>_timer</b></td></tr>
 <tr class="separator:acd30ab9684cc628b277d9e07ca7f82d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94933b52498d4e4357768a3e5e1523b9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94933b52498d4e4357768a3e5e1523b9"></a>
-long&#160;</td><td class="memItemRight" valign="bottom"><b>_base</b></td></tr>
-<tr class="separator:a94933b52498d4e4357768a3e5e1523b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa85afee9aee9765564304ddcc5c091"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="affa85afee9aee9765564304ddcc5c091"></a>
+long&#160;</td><td class="memItemRight" valign="bottom"><b>_offs</b></td></tr>
+<tr class="separator:affa85afee9aee9765564304ddcc5c091"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -271,7 +271,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

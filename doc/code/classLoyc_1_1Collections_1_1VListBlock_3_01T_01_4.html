@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>VListBlock implements the core functionality of FVList, RVList, FWList and RWList. It is not intended to be used directly.  
  <a href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/VLists/VListBlock.cs'>/Src/Loyc.Collections/VLists/VListBlock.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/VLists/VListBlock.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.VListBlock&lt; T &gt;:</div>
@@ -240,12 +240,15 @@ FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRa
 <tr class="memitem:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8058c3c6e74a5ddeb0de9a170cf3cc16">Front</a> (int localCount)</td></tr>
 <tr class="memdesc:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "front" item in a FVList/FWList associated with this block (or back item of a RVList) where localCount is the number of items in the FVList's first block.  <a href="#a8058c3c6e74a5ddeb0de9a170cf3cc16">More...</a><br /></td></tr>
 <tr class="separator:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a696d94f0349d8b2c39a98cc0283a21fd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a696d94f0349d8b2c39a98cc0283a21fd"></a>
-virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int _localCount, Predicate&lt; T &gt; keep, WListProtected&lt; T &gt; forWList)</td></tr>
-<tr class="separator:a696d94f0349d8b2c39a98cc0283a21fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d65ba48b36502b81d4273f6d291d44a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d65ba48b36502b81d4273f6d291d44a"></a>
+virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int _localCount, Predicate&lt; T &gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
+<tr class="separator:a5d65ba48b36502b81d4273f6d291d44a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af14bc17ad3c7666912d996616c12bacd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af14bc17ad3c7666912d996616c12bacd"></a>
 virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SmartSelect</b> (int _localCount, Func&lt; T, T &gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
 <tr class="separator:af14bc17ad3c7666912d996616c12bacd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9c9b13ab47aafacd53a7bb4e8b0b289"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9c9b13ab47aafacd53a7bb4e8b0b289"></a>
+virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WhereSelect</b> (int _localCount, Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
+<tr class="separator:af9c9b13ab47aafacd53a7bb4e8b0b289"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -330,6 +333,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ac5a3d92a31f38467cd3daa1d1abb17a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5a3d92a31f38467cd3daa1d1abb17a8"></a>
 abstract <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>BlockToArray</b> (T[] array, int arrayOffset, int localCount, bool isRList)</td></tr>
 <tr class="separator:ac5a3d92a31f38467cd3daa1d1abb17a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a326e6ed1962c60c1ac3560152f525f12"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a326e6ed1962c60c1ac3560152f525f12"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsSame</b> (T old, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt; @new)</td></tr>
+<tr class="separator:a326e6ed1962c60c1ac3560152f525f12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
@@ -1624,7 +1630,7 @@ list" exception is also possible. </p>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:31 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -1,4 +1,4 @@
-@REM How to setting up doxygen:
+@REM How to set up doxygen:
 @REM 0. Install Doxygen
 @REM 1. Run doxygen -g once (doxygen.exe, not this batch file) to create a default Doxyfile
 @REM 2. Spend some time to edit and configure the Doxyfile
@@ -7,8 +7,7 @@
 @REM    http://stackoverflow.com/questions/1862318/doxygen-with-c-sharp-internal-access-modifier
 @REM 5. Run Doxygen -l to create a layout file
 @REM 6. Rearrange the layout file to your liking
-@REM 7. Use sed to convert the original filenames to hyperlinks
-@REM 8. Run this batch file (Note: I assume the output folder HTML_OUTPUT = code) (/Q = no confirm prompt)
+@REM 7. Run this batch file (Note: I assume the output folder HTML_OUTPUT = code) (/Q = no confirm prompt)
 del /Q code\*.*
 doxygen.exe
 if errorlevel 1 pause

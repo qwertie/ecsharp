@@ -99,13 +99,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Holds the default message sink for this thread (Current), <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>s for the common message types, such as Warning and Error, and default instances of <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine, with hard-coded colors for Error, Warning...">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a> and <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>. 
+<p>Holds the default message sink for this thread (Current), <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>s for the common message types, such as Warning and Error, and default instances of <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail.">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a> and <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>. 
  <a href="classLoyc_1_1MessageSink.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/IMessageSink.cs'>/Src/Loyc.Essentials/Utilities/IMessageSink.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/IMessageSink.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Holds the default message sink for this thread (Current), <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>s for the common message types, such as Warning and Error, and default instances of <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine, with hard-coded colors for Error, Warning...">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a> and <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>.</p>
+<div class="textblock"><p>Holds the default message sink for this thread (Current), <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>s for the common message types, such as Warning and Error, and default instances of <a class="el" href="classLoyc_1_1ConsoleMessageSink.html" title="Sends all messages to System.Console.WriteLine(), with hard-coded colors for Error, Warning, Note, Verbose, and Detail.">ConsoleMessageSink</a>, <a class="el" href="classLoyc_1_1TraceMessageSink.html" title="Sends all messages to System.Diagnostics.Trace.WriteLine(string).">TraceMessageSink</a> and <a class="el" href="classLoyc_1_1NullMessageSink.html" title="Discards all messages. However, there is a Count property that increases by one with each message rec...">NullMessageSink</a>.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a></dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -138,14 +138,17 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a59c2f1932daf118d2b4f16ca7a0991a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to change the MessageSink.Current property temporarily. <a href="#a59c2f1932daf118d2b4f16ca7a0991a6">More...</a><br /></td></tr>
 <tr class="separator:a59c2f1932daf118d2b4f16ca7a0991a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92234e9bd908d05f3a75cc5845d35ce3"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3">LocationString</a> (object context)</td></tr>
-<tr class="memdesc:a92234e9bd908d05f3a75cc5845d35ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns ILocationString.LocationString if 'context' implements that interface, null if context is null, and object.ToString() otherwise. <a href="#a92234e9bd908d05f3a75cc5845d35ce3">More...</a><br /></td></tr>
+<tr class="memdesc:a92234e9bd908d05f3a75cc5845d35ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the location information from the specified object, or converts the object to a string. <a href="#a92234e9bd908d05f3a75cc5845d35ce3">More...</a><br /></td></tr>
 <tr class="separator:a92234e9bd908d05f3a75cc5845d35ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6886bb39ee9f90e985ccff23bd1c1ffc"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a6886bb39ee9f90e985ccff23bd1c1ffc">FromDelegate</a> (Action&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, object[]&gt; writer, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; isEnabled=null)</td></tr>
-<tr class="memdesc:a6886bb39ee9f90e985ccff23bd1c1ffc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends all messages to a user-defined method. <a href="#a6886bb39ee9f90e985ccff23bd1c1ffc">More...</a><br /></td></tr>
-<tr class="separator:a6886bb39ee9f90e985ccff23bd1c1ffc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc8aff67a735cac3ae92e0b89bdff453"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc8aff67a735cac3ae92e0b89bdff453"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatMessage</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
+<tr class="separator:afc8aff67a735cac3ae92e0b89bdff453"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a56c0dedc4cca2f845665f0cdd1ed0fbd">FromDelegate</a> (<a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a> writer, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; isEnabled=null)</td></tr>
+<tr class="memdesc:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends all messages to a user-defined method. <a href="#a56c0dedc4cca2f845665f0cdd1ed0fbd">More...</a><br /></td></tr>
+<tr class="separator:a56c0dedc4cca2f845665f0cdd1ed0fbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a6886bb39ee9f90e985ccff23bd1c1ffc"></a>
+<a class="anchor" id="a56c0dedc4cca2f845665f0cdd1ed0fbd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -155,7 +158,7 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">static <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html">MessageSinkFromDelegate</a> Loyc.MessageSink.FromDelegate </td>
           <td>(</td>
-          <td class="paramtype">Action&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, object[]&gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a>&#160;</td>
           <td class="paramname"><em>writer</em>, </td>
         </tr>
         <tr>
@@ -203,7 +206,16 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns ILocationString.LocationString if 'context' implements that interface, null if context is null, and object.ToString() otherwise.</p>
+<p>Gets the location information from the specified object, or converts the object to a string.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">context</td><td>A value whose string representation you want to get.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>If <code>context</code> implements <a class="el" href="interfaceLoyc_1_1ILocationString.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string.">ILocationString</a>, this function returns ILocationString.LocationString; if <code>context</code> is null, this method returns <code>null</code>; otherwise it returns <code>context.ToString()</code>. </dd></dl>
+<p>Message sinks are commonly used to display error and warning messages, and when you write a message with <code><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a></code>, the second parameter is a "context" argument which specifies the object to which the message is related (for example, when writing compiler output, the context might be a node in a syntax tree). Most message sinks display the message in text form (in a log file or terminal), and in that case the best option is to display the location information associated with the context object (e.g. Foo.cpp:45), rather than a string representation of the object itself. </p>
+<p>Therefore, message sinks that display a message in text form will call this method to convert the context object to a string, and if available, this method calls the ILocationString.LocationString property of the context object. </p>
 
 </div>
 </div>
@@ -305,7 +317,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -89,58 +89,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-attribs">Protected fields</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1SourceFile-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.SourceFile Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>A default implementation of <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit...">ISourceFile</a> based on <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html" title="Helper class for mapping from indexes to SourcePos and back. ">IndexPositionMapper</a>. 
- <a href="classLoyc_1_1Syntax_1_1SourceFile.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/SourceFiles/ISourceFile.cs'>/Src/Loyc.Syntax/SourceFiles/ISourceFile.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/SourceFiles/ISourceFile.cs</li>
 </ul>
-<div class="dynheader">
-Inheritance diagram for Loyc.Syntax.SourceFile:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="classLoyc_1_1Syntax_1_1SourceFile.png" usemap="#Loyc.Syntax.SourceFile_map" alt=""/>
-  <map id="Loyc.Syntax.SourceFile_map" name="Loyc.Syntax.SourceFile_map">
-<area href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html" title="Helper class for mapping from indexes to SourcePos and back. " alt="Loyc.Syntax.IndexPositionMapper" shape="rect" coords="0,112,221,136"/>
-<area href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit..." alt="Loyc.Syntax.ISourceFile" shape="rect" coords="231,112,452,136"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html" title="This interface is for classes that can convert indexes to SourcePos structures and back..." alt="Loyc.Syntax.IIndexPositionMapper" shape="rect" coords="0,56,221,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html" title="This interface is for classes that can convert indexes to SourcePos structures and back..." alt="Loyc.Syntax.IIndexPositionMapper" shape="rect" coords="231,56,452,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="0,0,221,24"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="231,0,452,24"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceFile.html" title="Adds the AfterNewline method to SourceFile." alt="Loyc.Syntax.Lexing.LexerSourceFile" shape="rect" coords="115,224,336,248"/>
-</map>
- </div></div>
-<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>A default implementation of <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit...">ISourceFile</a> based on <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html" title="Helper class for mapping from indexes to SourcePos and back. ">IndexPositionMapper</a>.</p>
-</div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
-Properties</h2></td></tr>
-<tr class="memitem:a3163da83f202faaa4e70a90693a43a5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3163da83f202faaa4e70a90693a43a5a"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Text</b><code> [get]</code></td></tr>
-<tr class="separator:a3163da83f202faaa4e70a90693a43a5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Syntax_1_1IndexPositionMapper')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html">Loyc.Syntax.IndexPositionMapper</a></td></tr>
-<tr class="memitem:a515707c07389092b3b5a4578a110229c inherit properties_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a515707c07389092b3b5a4578a110229c"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
-<tr class="separator:a515707c07389092b3b5a4578a110229c inherit properties_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23a14e75bde97b38161794220bf20e72 inherit properties_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23a14e75bde97b38161794220bf20e72"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>LineCount</b><code> [get]</code></td></tr>
-<tr class="separator:a23a14e75bde97b38161794220bf20e72 inherit properties_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1Syntax_1_1ISourceFile"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1Syntax_1_1ISourceFile')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">Loyc.Syntax.ISourceFile</a></td></tr>
-<tr class="memitem:a79d27ef20cdb585b9fcbf8072ec14c48 inherit properties_interfaceLoyc_1_1Syntax_1_1ISourceFile"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79d27ef20cdb585b9fcbf8072ec14c48"></a>
-<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Text</b><code> [get]</code></td></tr>
-<tr class="separator:a79d27ef20cdb585b9fcbf8072ec14c48 inherit properties_interfaceLoyc_1_1Syntax_1_1ISourceFile"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae30b13d6090f5334a8c71cffd48f18e5 inherit properties_interfaceLoyc_1_1Syntax_1_1ISourceFile"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae30b13d6090f5334a8c71cffd48f18e5"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
-<tr class="separator:ae30b13d6090f5334a8c71cffd48f18e5 inherit properties_interfaceLoyc_1_1Syntax_1_1ISourceFile"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
+<table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a5a3bd7420f2f05e4c021195790697c7a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a3bd7420f2f05e4c021195790697c7a"></a>
@@ -149,60 +107,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5ba442154932d4fe44d9b47332172cee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ba442154932d4fe44d9b47332172cee"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>SourceFile</b> (<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> source, string fileName)</td></tr>
 <tr class="separator:a5ba442154932d4fe44d9b47332172cee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html">Loyc.Syntax.IndexPositionMapper</a></td></tr>
-<tr class="memitem:a505d6abcc350ccb42c7da0c6cfd56956 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a505d6abcc350ccb42c7da0c6cfd56956">IndexPositionMapper</a> (IListSource&lt; char &gt; source, <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> startingPos=null)</td></tr>
-<tr class="memdesc:a505d6abcc350ccb42c7da0c6cfd56956 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes CharIndexPositionMapper. <a href="#a505d6abcc350ccb42c7da0c6cfd56956">More...</a><br /></td></tr>
-<tr class="separator:a505d6abcc350ccb42c7da0c6cfd56956 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa30232643d96e8b873babb17edf03d52 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa30232643d96e8b873babb17edf03d52"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IndexPositionMapper</b> (IListSource&lt; char &gt; source, string fileName)</td></tr>
-<tr class="separator:aa30232643d96e8b873babb17edf03d52 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ef0d2143ac8f79e5c26b37d618d1e30 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a2ef0d2143ac8f79e5c26b37d618d1e30">IndexToLine</a> (int index)</td></tr>
-<tr class="memdesc:a2ef0d2143ac8f79e5c26b37d618d1e30 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index. <a href="#a2ef0d2143ac8f79e5c26b37d618d1e30">More...</a><br /></td></tr>
-<tr class="separator:a2ef0d2143ac8f79e5c26b37d618d1e30 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad80cbff2e9c613ae2e23a3afd7d7fde3 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#ad80cbff2e9c613ae2e23a3afd7d7fde3">LineToIndex</a> (int lineNo)</td></tr>
-<tr class="memdesc:ad80cbff2e9c613ae2e23a3afd7d7fde3 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index in a source file of the beginning of the specified line, where the first line is number 1, not 0. <a href="#ad80cbff2e9c613ae2e23a3afd7d7fde3">More...</a><br /></td></tr>
-<tr class="separator:ad80cbff2e9c613ae2e23a3afd7d7fde3 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0df8d0d749b96abf976405b68efde90 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0df8d0d749b96abf976405b68efde90"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>LineToIndex</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LineAndPos.html">LineAndPos</a> pos)</td></tr>
-<tr class="separator:af0df8d0d749b96abf976405b68efde90 inherit pub_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected fields</h2></td></tr>
-<tr class="memitem:a15592b4e57e99e974f20700962e04c5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15592b4e57e99e974f20700962e04c5b"></a>
-new <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_source</b></td></tr>
-<tr class="separator:a15592b4e57e99e974f20700962e04c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper')"><img src="closed.png" alt="-"/>&#160;Protected fields inherited from <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html">Loyc.Syntax.IndexPositionMapper</a></td></tr>
-<tr class="memitem:a143cb23b3a907f0161a7999e9d515d14 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a143cb23b3a907f0161a7999e9d515d14"></a>
-IListSource&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_source</b></td></tr>
-<tr class="separator:a143cb23b3a907f0161a7999e9d515d14 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a405e342cc8d408576f84491ef0f7272b inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a405e342cc8d408576f84491ef0f7272b"></a>
-<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_lineOffsets</b> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;int&gt;.Empty</td></tr>
-<tr class="separator:a405e342cc8d408576f84491ef0f7272b inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2005ccbe5c89b806e413ff6185e07852 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2005ccbe5c89b806e413ff6185e07852"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_offsetsComplete</b> = false</td></tr>
-<tr class="separator:a2005ccbe5c89b806e413ff6185e07852 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae79893ad90fb5d1fab9aa4b7b5d1d435 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae79893ad90fb5d1fab9aa4b7b5d1d435"></a>
-readonly <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_startingPos</b> = null</td></tr>
-<tr class="separator:ae79893ad90fb5d1fab9aa4b7b5d1d435 inherit pro_attribs_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html">Loyc.Syntax.IndexPositionMapper</a></td></tr>
-<tr class="memitem:a4365220ceef86797918f522680fdda5e inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4365220ceef86797918f522680fdda5e"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NewSourcePos</b> (int Line, int PosInLine)</td></tr>
-<tr class="separator:a4365220ceef86797918f522680fdda5e inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adca2f4291fcc50369522b5d994a37f91 inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adca2f4291fcc50369522b5d994a37f91"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReadUntilAfter</b> (int toIndex)</td></tr>
-<tr class="separator:adca2f4291fcc50369522b5d994a37f91 inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a085db866411de572764bdcf1e8ea54df inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a085db866411de572764bdcf1e8ea54df"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AdvanceAfterNextNewline</b> (ref int index)</td></tr>
-<tr class="separator:a085db866411de572764bdcf1e8ea54df inherit pro_methods_classLoyc_1_1Syntax_1_1IndexPositionMapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:02 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

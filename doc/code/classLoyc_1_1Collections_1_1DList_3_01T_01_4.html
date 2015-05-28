@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A compact auto-enlarging list that efficiently supports supports insertions at the beginning or end of the list.  
  <a href="classLoyc_1_1Collections_1_1DList_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Implementations/DList.cs'>/Src/Loyc.Essentials/Collections/Implementations/DList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Implementations/DList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.DList&lt; T &gt;:</div>
@@ -135,6 +135,7 @@ Inheritance diagram for Loyc.Collections.DList&lt; T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A compact auto-enlarging list that efficiently supports supports insertions at the beginning or end of the list. </p>
+<p>An <a href="http://core.loyc.net/collections/dlist.html">article</a> about this class is available. </p>
 <dl class="section see"><dt>See also</dt><dd>InternalDList{T}, <a class="el" href="classLoyc_1_1Collections_1_1DList.html" title="This class is the same as DList{object} except that it also implements the IList interface. ">DList</a></dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -204,6 +205,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a31df3a4d233d21fce70e53fc8e489eb1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31df3a4d233d21fce70e53fc8e489eb1"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>DList</b> (IEnumerable&lt; T &gt; items)</td></tr>
 <tr class="separator:a31df3a4d233d21fce70e53fc8e489eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7fd603e2e6c42f67031423ac2715b53"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7fd603e2e6c42f67031423ac2715b53"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DList</b> (T[] items)</td></tr>
+<tr class="separator:ae7fd603e2e6c42f67031423ac2715b53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c09b37bcebad5e1b137ac1a261679f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c09b37bcebad5e1b137ac1a261679f8"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item)</td></tr>
 <tr class="separator:a3c09b37bcebad5e1b137ac1a261679f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -327,9 +331,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; K &gt
 <tr class="memitem:a6db68f64c63e38e8da861c615de9b732"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6db68f64c63e38e8da861c615de9b732"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Sort</b> (int index, int count, Comparison&lt; T &gt; comp)</td></tr>
 <tr class="separator:a6db68f64c63e38e8da861c615de9b732"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a1d6efc8347090752ebd8e625aa4521"><td class="memItemLeft" align="right" valign="top">Slice_&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DList_3_01T_01_4.html#a6a1d6efc8347090752ebd8e625aa4521">Slice</a> (int start, int count)</td></tr>
-<tr class="memdesc:a6a1d6efc8347090752ebd8e625aa4521"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a6a1d6efc8347090752ebd8e625aa4521">More...</a><br /></td></tr>
-<tr class="separator:a6a1d6efc8347090752ebd8e625aa4521"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a103fc587e0a7f5bc1489d23844645c"><td class="memItemLeft" align="right" valign="top">ListSlice&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DList_3_01T_01_4.html#a9a103fc587e0a7f5bc1489d23844645c">Slice</a> (int start, int count)</td></tr>
+<tr class="memdesc:a9a103fc587e0a7f5bc1489d23844645c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a9a103fc587e0a7f5bc1489d23844645c">More...</a><br /></td></tr>
+<tr class="separator:a9a103fc587e0a7f5bc1489d23844645c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
@@ -401,7 +405,7 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 
 </div>
 </div>
-<a class="anchor" id="a6a1d6efc8347090752ebd8e625aa4521"></a>
+<a class="anchor" id="a9a103fc587e0a7f5bc1489d23844645c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -409,7 +413,7 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Slice_&lt;T&gt; <a class="el" href="classLoyc_1_1Collections_1_1DList.html">Loyc.Collections.DList</a>&lt; T &gt;.Slice </td>
+          <td class="memname">ListSlice&lt;T&gt; <a class="el" href="classLoyc_1_1Collections_1_1DList.html">Loyc.Collections.DList</a>&lt; T &gt;.Slice </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>start</em>, </td>
@@ -514,7 +518,7 @@ public Slice_&lt;T&gt; Slice(int start, int count) { return new Slice_&lt;T&gt;(
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

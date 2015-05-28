@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Extension methods for exceptions. 
  <a href="classLoyc_1_1ExceptionExt.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/Extensions.cs'>/Src/Loyc.Essentials/Utilities/Extensions.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/Extensions.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Extension methods for exceptions.</p>
@@ -135,6 +135,9 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>ToDetailedSt
 <tr class="memitem:a2cbaadbc2c5113766d7a82ed99202f9d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cbaadbc2c5113766d7a82ed99202f9d"></a>
 static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>AppendDataList</b> (IDictionary dict, StringBuilder sb, string linePrefix, string keyValueSeparator, string newLine)</td></tr>
 <tr class="separator:a2cbaadbc2c5113766d7a82ed99202f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad240790e64f04a834a69d995a3ff6f9b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1ExceptionExt.html#ad240790e64f04a834a69d995a3ff6f9b">PreserveStackTrace</a> (this Exception exception)</td></tr>
+<tr class="memdesc:ad240790e64f04a834a69d995a3ff6f9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls an internal method of Exception that records an exception's stack trace so that the stack trace does not change if the exception is rethrown (e.g. on another thread). <a href="#ad240790e64f04a834a69d995a3ff6f9b">More...</a><br /></td></tr>
+<tr class="separator:ad240790e64f04a834a69d995a3ff6f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a0156c141548bbffc7271142e116c9390"></a>
@@ -345,6 +348,34 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 
 </div>
 </div>
+<a class="anchor" id="ad240790e64f04a834a69d995a3ff6f9b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.ExceptionExt.PreserveStackTrace </td>
+          <td>(</td>
+          <td class="paramtype">this Exception&#160;</td>
+          <td class="paramname"><em>exception</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calls an internal method of Exception that records an exception's stack trace so that the stack trace does not change if the exception is rethrown (e.g. on another thread).</p>
+<p>Exception ex = null; var thread = new ThreadEx(() =&gt; { try { SomethingThatMightThrowOrTakeForever(); } catch (Exception e) { ex = e; ex.PreserveStackTrace(); } }); thread.Start(); if (!thread.Join(timeout)) { thread.Abort(); thread.Join(timeout); } if (ex != null) throw ex; // includes stack trace from the other thread </p>
+<p>Note: when rethrowing an exception that was just caught, you should always use "catch;" instead of calling this method. </p>
+
+</div>
+</div>
 <a class="anchor" id="ab8547940b1585241ff04519de38a9564"></a>
 <div class="memitem">
 <div class="memproto">
@@ -380,7 +411,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:21 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:38 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

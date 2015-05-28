@@ -93,6 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-attribs">Public fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected fields</a> &#124;
 <a href="#pro-static-attribs">Protected static fields</a> &#124;
@@ -105,15 +106,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Encapsulates <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. 
  <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#details">More...</a></p>
 <hr/>Source files:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CoreEngine/AnalysisVisitors.cs'>/Src/LLLPG/CoreEngine/AnalysisVisitors.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CoreEngine/LLParserGenerator.cs'>/Src/LLLPG/CoreEngine/LLParserGenerator.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/LLLPG/CoreEngine/PredictionTree.cs'>/Src/LLLPG/CoreEngine/PredictionTree.cs</a></li>
+<li>D:/Dev/Loyc/Main/LLLPG/CoreEngine/AnalysisVisitors.cs</li>
+<li>D:/Dev/Loyc/Main/LLLPG/CoreEngine/LLParserGenerator.cs</li>
+<li>D:/Dev/Loyc/Main/LLLPG/CoreEngine/PredictionTree.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Encapsulates <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers.</p>
 <p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> is a new LL(k) parser generator under the umbrella of the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> project (<a href="http://loyc.net">http://loyc.net</a>). </p>
 <p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> generates recursive-descent parsers for LL(k) grammars. It is designed for parsing computer languages, not natural languages. It also it supports "syntactic predicates" which are zero-width syntactic assertions, and "semantic predicates" which are arbitrary expressions. </p>
-<p>The <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> class is the core engine. It generates parsers in the form of a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree, which can be printed out as C# code. </p>
+<p>The <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> class is the core engine. It generates parsers in the form of a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree, which can be printed out as C# code. Look at the documentation of the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12" title="Generates a braced block of code {...} for the grammar described by the rules that were previously ad...">Run()</a> method for an overview of how the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> engine works. </p>
 <p>Note: the input to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> is usually provided in the form of LES/EC# source code. In that case, there is no need to use this class directly. The source code of LLLPG.Main shows how to invoke <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> as a macro via the <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on a set of source files.">LeMP.Compiler</a>. </p>
 <p>For more information about how to use <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>, read these articles: <a href="http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp">http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp</a> <a href="http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2">http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2</a> <a href="http://loyc-etc.blogspot.ca/2013/11/lllpg-greedy-and-nongreedy.html">http://loyc-etc.blogspot.ca/2013/11/lllpg-greedy-and-nongreedy.html</a> <a href="http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html">http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html</a> </p>
 </div><table class="memberdecls">
@@ -158,6 +159,9 @@ Public fields</h2></td></tr>
 <tr class="memitem:acc72ef47f84486172275c361c995927f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#acc72ef47f84486172275c361c995927f">AddComments</a> = true</td></tr>
 <tr class="memdesc:acc72ef47f84486172275c361c995927f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to insert Specifies the default maximum lookahead for rules that do not specify a lookahead value. <a href="#acc72ef47f84486172275c361c995927f">More...</a><br /></td></tr>
 <tr class="separator:acc72ef47f84486172275c361c995927f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ae6465e3f7f9d5c47902f08b7198097"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a3ae6465e3f7f9d5c47902f08b7198097">AddCsLineDirectives</a> = true</td></tr>
+<tr class="memdesc:a3ae6465e3f7f9d5c47902f08b7198097"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to add #line directives for C# before and after user actions. <a href="#a3ae6465e3f7f9d5c47902f08b7198097">More...</a><br /></td></tr>
+<tr class="separator:a3ae6465e3f7f9d5c47902f08b7198097"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -185,6 +189,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2287db28b2b9044187ab4c62207bcd12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12">Run</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
 <tr class="memdesc:a2287db28b2b9044187ab4c62207bcd12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a braced block of code {...} for the grammar described by the rules that were previously added to this object with AddRule or AddRules(Rule[]). <a href="#a2287db28b2b9044187ab4c62207bcd12">More...</a><br /></td></tr>
 <tr class="separator:a2287db28b2b9044187ab4c62207bcd12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a90e92b4f9dc6988208e3917e7cee702d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a90e92b4f9dc6988208e3917e7cee702d"></a>
+static Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AddRulesToDict</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; rules, Dictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> &gt; dict=null)</td></tr>
+<tr class="separator:a90e92b4f9dc6988208e3917e7cee702d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -262,6 +272,7 @@ static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e"
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The generated parser class.</dd></dl>
+<p>[This may be outdated, TODO: review it] </p>
 <p>By far the greatest difficulty in this process is generating prediction code when the grammar branches: (<code>x | y | z</code>). Since this class creates LL(k) parsers without memoization or implicit backtracking, it relies on prediction trees to correctly decide <em>in advance</em> which branch to follow. </p>
 <p>The following kinds of grammar elements require prediction: </p>
 <ul>
@@ -385,7 +396,7 @@ static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e"
 </div><!-- fragment --><p> Here, the first character of both alternatives is always '(', so looking at LA(0) doesn't help choose which branch to take, and prediction skips ahead to LA(1).</p>
 <h3>And-predicates</h3>
 <p>An and-predicate specifies an extra condition on the input that must be checked. Here is a simple example: </p><div class="fragment"><div class="line">(&amp;amp;{flag} <span class="charliteral">&#39;0&#39;</span>..<span class="charliteral">&#39;9&#39;</span> | <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;z&#39;</span>)</div>
-</div><!-- fragment --><p> This example says that '0'..'9' is only allowed if the expression <code>flag</code> evaluates to true, otherwise 'a'..'z' is required. LLPG, however, gives and-predicates lower priority, and always inverts the order of the testing: it checks for '0'..'9' first, then checks <code>flag</code> afterward. I chose to make LLPG work this way because in general, and- predicates can be much more expensive to check than character sets; if one of the alternatives rarely runs, it would be wasteful to check an expensive and-predicate before checking if the input character could possibly match. Therefore, the generated code looks like this: </p><div class="fragment"><div class="line">la0 = LA(0);</div>
+</div><!-- fragment --><p> This example says that '0'..'9' is only allowed if the expression <code>flag</code> evaluates to true, otherwise 'a'..'z' is required. <a class="el" href="namespaceLoyc_1_1LLPG.html">LLPG</a>, however, gives and-predicates lower priority, and always inverts the order of the testing: it checks for '0'..'9' first, then checks <code>flag</code> afterward. I chose to make <a class="el" href="namespaceLoyc_1_1LLPG.html">LLPG</a> work this way because in general, and- predicates can be much more expensive to check than character sets; if one of the alternatives rarely runs, it would be wasteful to check an expensive and-predicate before checking if the input character could possibly match. Therefore, the generated code looks like this: </p><div class="fragment"><div class="line">la0 = LA(0);</div>
 <div class="line"><span class="keywordflow">if</span> (la0 &gt;= <span class="charliteral">&#39;0&#39;</span> &amp;amp;&amp;amp; la0 &amp;lt;= <span class="charliteral">&#39;9&#39;</span>) {</div>
 <div class="line">   Check(flag);</div>
 <div class="line">   Match();</div>
@@ -417,7 +428,7 @@ static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e"
 <div class="line">  }</div>
 <div class="line">} <span class="keywordflow">while</span> (<span class="keyword">false</span>);</div>
 </div><!-- fragment --><p> Here you can see the interleaving: first the parser checks LA(0), then it checks the and-predicate, then it checks LA(1). </p>
-<p>LLPG (let's call it 1.0) does not support any analysis of the <em>contents</em> of an and-predicate. Thus, without loss of generality, these examples use semantic predicates &amp;{...} instead of syntactic predicates &amp;(...); LLPG can't "see inside them" either way. </p>
+<p><a class="el" href="namespaceLoyc_1_1LLPG.html">LLPG</a> (let's call it 1.0) does not support any analysis of the <em>contents</em> of an and-predicate. Thus, without loss of generality, these examples use semantic predicates &amp;{...} instead of syntactic predicates &amp;(...); <a class="el" href="namespaceLoyc_1_1LLPG.html">LLPG</a> can't "see inside them" either way. </p>
 <p>Even without analyzing the contents of an and-predicate, they can still make prediction extremely complicated. Consider this example: </p><div class="fragment"><div class="line">(.&amp;amp;{a} (&amp;amp;{b} {B();} | &amp;amp;{c})</div>
 <div class="line">  &amp;amp;{d} [&amp;amp;{e} (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;E&#39;</span>)]?</div>
 <div class="line">  (&amp;amp;{f} (<span class="charliteral">&#39;f&#39;</span>|<span class="charliteral">&#39;t&#39;</span>) | <span class="charliteral">&#39;F&#39;</span>)</div>
@@ -442,6 +453,20 @@ static <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e"
 </div><div class="memdoc">
 
 <p>Whether to insert Specifies the default maximum lookahead for rules that do not specify a lookahead value.</p>
+
+</div>
+</div>
+<a class="anchor" id="a3ae6465e3f7f9d5c47902f08b7198097"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Loyc.LLParserGenerator.LLParserGenerator.AddCsLineDirectives = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether to add #line directives for C# before and after user actions.</p>
 
 </div>
 </div>
@@ -542,7 +567,7 @@ approximate" lookahead still has problems with certain cases involving nested al
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

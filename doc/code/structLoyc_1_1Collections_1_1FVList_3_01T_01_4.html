@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A reference to a FVList, a so-called persistent list data structure.  
  <a href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/VLists/FVList.cs'>/Src/Loyc.Collections/VLists/FVList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/VLists/FVList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.FVList&lt; T &gt;:</div>
@@ -120,6 +120,7 @@ Inheritance diagram for Loyc.Collections.FVList&lt; T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A reference to a FVList, a so-called persistent list data structure. </p>
+<p>An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a> is available online about the VList data types. </p>
 <p>See the remarks of VListBlock{T} for more information about VLists. Items are normally added to, and removed from, the front of a FVList or to the back of an RVList; adding, removing or changing items at any other position is inefficient. You can call <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a035d4ab58d67ad71619e61566eb92236" title="Returns this list as an RVList, which effectively reverses the order of the elements.">ToRVList()</a> to convert a FVList to its equivalent RVList, which is a reverse-order view of the same list that shares the same memory.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -281,18 +282,21 @@ System.Collections.IEnumerable.&#160;</td><td class="memItemRight" valign="botto
 <tr class="memitem:aff5a2a576a48f72daf41a13c65137ce3"><td class="memItemLeft" align="right" valign="top">IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#aff5a2a576a48f72daf41a13c65137ce3">Slice</a> (int start, int count)</td></tr>
 <tr class="memdesc:aff5a2a576a48f72daf41a13c65137ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#aff5a2a576a48f72daf41a13c65137ce3">More...</a><br /></td></tr>
 <tr class="separator:aff5a2a576a48f72daf41a13c65137ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63eb78a3a71f3eab190fd4630b9d6d60"><td class="memItemLeft" align="right" valign="top">Slice_&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a63eb78a3a71f3eab190fd4630b9d6d60">Slice</a> (int start, int count)</td></tr>
-<tr class="memdesc:a63eb78a3a71f3eab190fd4630b9d6d60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a63eb78a3a71f3eab190fd4630b9d6d60">More...</a><br /></td></tr>
-<tr class="separator:a63eb78a3a71f3eab190fd4630b9d6d60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca9d32de098b082a296ec36d857488b5"><td class="memItemLeft" align="right" valign="top">Slice_&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#aca9d32de098b082a296ec36d857488b5">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:aca9d32de098b082a296ec36d857488b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#aca9d32de098b082a296ec36d857488b5">More...</a><br /></td></tr>
+<tr class="separator:aca9d32de098b082a296ec36d857488b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace07bc34add9da293c4fb6427f61cf8f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace07bc34add9da293c4fb6427f61cf8f"></a>
 FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:ace07bc34add9da293c4fb6427f61cf8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2be2bf9506eb37cdd5205a82e47250fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2be2bf9506eb37cdd5205a82e47250fc"></a>
 object ICloneable.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a2be2bf9506eb37cdd5205a82e47250fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03c08383154c64c3b27b2c48ba2dfb83"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a03c08383154c64c3b27b2c48ba2dfb83">Where</a> (Predicate&lt; T &gt; keep)</td></tr>
-<tr class="memdesc:a03c08383154c64c3b27b2c48ba2dfb83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a filter to a list, to exclude zero or more items. <a href="#a03c08383154c64c3b27b2c48ba2dfb83">More...</a><br /></td></tr>
-<tr class="separator:a03c08383154c64c3b27b2c48ba2dfb83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a461e85a96247ea4922803a499e7a6a33"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a461e85a96247ea4922803a499e7a6a33">Where</a> (Predicate&lt; T &gt; filter)</td></tr>
+<tr class="memdesc:a461e85a96247ea4922803a499e7a6a33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a filter to a list, to exclude zero or more items. <a href="#a461e85a96247ea4922803a499e7a6a33">More...</a><br /></td></tr>
+<tr class="separator:a461e85a96247ea4922803a499e7a6a33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a1cddbf313a0c80e34e8d24d13ae14aaf">WhereSelect</a> (Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; filter)</td></tr>
+<tr class="memdesc:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filters and maps a list with a user-defined function. <a href="#a1cddbf313a0c80e34e8d24d13ae14aaf">More...</a><br /></td></tr>
+<tr class="separator:a1cddbf313a0c80e34e8d24d13ae14aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0f5fec404f3e8233235190ca6e42c44"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac0f5fec404f3e8233235190ca6e42c44">SmartSelect</a> (Func&lt; T, T &gt; map)</td></tr>
 <tr class="memdesc:ac0f5fec404f3e8233235190ca6e42c44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a list to another list of the same length. <a href="#ac0f5fec404f3e8233235190ca6e42c44">More...</a><br /></td></tr>
 <tr class="separator:ac0f5fec404f3e8233235190ca6e42c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -743,7 +747,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 
 </div>
 </div>
-<a class="anchor" id="a63eb78a3a71f3eab190fd4630b9d6d60"></a>
+<a class="anchor" id="aca9d32de098b082a296ec36d857488b5"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -760,7 +764,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramname"><em>count</em> = <code>int.MaxValue</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1081,7 +1085,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 
 </div>
 </div>
-<a class="anchor" id="a03c08383154c64c3b27b2c48ba2dfb83"></a>
+<a class="anchor" id="a461e85a96247ea4922803a499e7a6a33"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1092,7 +1096,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
           <td class="memname">FVList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.Where </td>
           <td>(</td>
           <td class="paramtype">Predicate&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>keep</em></td><td>)</td>
+          <td class="paramname"><em>filter</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1106,12 +1110,46 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 <p>Applies a filter to a list, to exclude zero or more items.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">keep</td><td>A function that chooses which items to include (exclude items by returning false).</td></tr>
+    <tr><td class="paramname">filter</td><td>A function that chooses which items to include (exclude items by returning false).</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The list after filtering has been applied. The original FVList structure is not modified.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The list after filtering has been applied. The original list structure is not modified.</dd></dl>
 <p>If the predicate keeps the first N items it is passed (which are the last items in a FVList), those N items are typically not copied, but shared between the existing list and the new one. </p>
+
+</div>
+</div>
+<a class="anchor" id="a1cddbf313a0c80e34e8d24d13ae14aaf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">FVList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.WhereSelect </td>
+          <td>(</td>
+          <td class="paramtype">Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt;&#160;</td>
+          <td class="paramname"><em>filter</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filters and maps a list with a user-defined function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filter</td><td>A function that chooses which items to include in a new list, and what to change them to.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The list after filtering has been applied. The original list structure is not modified.</dd></dl>
+<p>This is a smart function. If the filter does not modify the first N items it is passed (which are the last items in a FVList), those N items are typically not copied, but shared between the existing list and the new one. </p>
 
 </div>
 </div>
@@ -1211,7 +1249,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:25 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

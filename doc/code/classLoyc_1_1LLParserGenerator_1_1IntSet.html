@@ -105,7 +105,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), or a set of token IDs. 
  <a href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Utilities/IntSet.cs'>/Src/Loyc.Utilities/IntSet.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Utilities/IntSet.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.IntSet:</div>
@@ -118,7 +118,7 @@ Inheritance diagram for Loyc.LLParserGenerator.IntSet:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), or a set of token IDs.</p>
-<p>Now that BaseLexer no longer depends on this class, it could be moved to <a class="el" href="namespaceLoyc_1_1Utilities.html" title="Contains general-purpose classes that are not considered important enough to go directly into the Loy...">Loyc.Utilities</a>.</p>
+<p>This class was written for, and is used by, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>. In addition to set operations like union and Subtract, one of its main features is that it can convert a set of integers or characters to/from a string form like "[A-Z]" or "(65..90)".</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -129,7 +129,7 @@ Public fields</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a37d1cdec6667ba5c67109e28de3fe6e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37d1cdec6667ba5c67109e28de3fe6e7"></a>
-static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>All</b> = IntSet.Without(new int[0])</td></tr>
+static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>All</b> = IntSet.Without(EmptyArray&lt;int&gt;.Value)</td></tr>
 <tr class="separator:a37d1cdec6667ba5c67109e28de3fe6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f32ca6a5e37c44d7b0569b6ee66670a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f32ca6a5e37c44d7b0569b6ee66670a"></a>
 static readonly <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Empty</b> = new <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>()</td></tr>
@@ -162,7 +162,7 @@ Properties</h2></td></tr>
 long&#160;</td><td class="memItemRight" valign="bottom"><b>SizeIgnoringInversion</b><code> [get]</code></td></tr>
 <tr class="separator:a3822f384536bceee472a5b2ed980ffdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cfea94e40c40e9b7e007d244705eb5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3cfea94e40c40e9b7e007d244705eb5a"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
+<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code> [get]</code></td></tr>
 <tr class="separator:a3cfea94e40c40e9b7e007d244705eb5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b941fa75af61943c2aff704f15a4e7f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6b941fa75af61943c2aff704f15a4e7f"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
@@ -177,10 +177,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:af3ab51b58fb3e012899e51a9d9e6996b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb366f17ec9ed0eb293a6284cf78c2a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb366f17ec9ed0eb293a6284cf78c2a2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> r, bool isCharSet=false, bool inverted=false)</td></tr>
 <tr class="separator:acb366f17ec9ed0eb293a6284cf78c2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbf2b8fce0bcf4faec8ed272392f6cc7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acbf2b8fce0bcf4faec8ed272392f6cc7"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>[] list)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, params <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>[] list)</td></tr>
 <tr class="separator:acbf2b8fce0bcf4faec8ed272392f6cc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a651c939d710e29d95b50cb3525f3908a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a651c939d710e29d95b50cb3525f3908a"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (int ch)</td></tr>
@@ -208,13 +208,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Contains</b> (int ch)
 string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> (bool charSet)</td></tr>
 <tr class="separator:a9d1b10ca692d308cdeb408110cd9099e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3555876806e00c85ffb30dcca6a340c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3555876806e00c85ffb30dcca6a340c1"></a>
-IEnumerator&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
+IEnumerator&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
 <tr class="separator:a3555876806e00c85ffb30dcca6a340c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a074a1739a4245fda81a81c660bf5aa19"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a074a1739a4245fda81a81c660bf5aa19"></a>
-IEnumerator&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> (bool obeyInversion)</td></tr>
+IEnumerator&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> (bool obeyInversion)</td></tr>
 <tr class="separator:a074a1739a4245fda81a81c660bf5aa19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4210371bef721dc155e35b3880af3981"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4210371bef721dc155e35b3880af3981"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
+<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet</b> (int index, out bool fail)</td></tr>
 <tr class="separator:a4210371bef721dc155e35b3880af3981"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d4b320f241a718e3f4079819b9e05b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d4b320f241a718e3f4079819b9e05b3"></a>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (object obj)</td></tr>
@@ -229,11 +229,14 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> other, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> mode)</td></tr>
 <tr class="separator:a13b5cf3bed6ef232e89a00eb0ee9db1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1d91b53986009ed274d3bcd01577f57"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1d91b53986009ed274d3bcd01577f57"></a>
-<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Runs</b> ()</td></tr>
+<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Runs</b> ()</td></tr>
 <tr class="separator:ab1d91b53986009ed274d3bcd01577f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78d41bcfc0336fcdfa6bfaa278b45554"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78d41bcfc0336fcdfa6bfaa278b45554"></a>
-IEnumerable&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Integers</b> (bool obeyInversion)</td></tr>
-<tr class="separator:a78d41bcfc0336fcdfa6bfaa278b45554"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fa349611072262403a04433ab4e105a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fa349611072262403a04433ab4e105a"></a>
+<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>InternalRangeList</b> ()</td></tr>
+<tr class="separator:a6fa349611072262403a04433ab4e105a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4c97ab5fe8ca42bdf8a348fc2b5130a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4c97ab5fe8ca42bdf8a348fc2b5130a"></a>
+IEnumerable&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>IntegerSequence</b> (bool obeyInversion)</td></tr>
+<tr class="separator:ad4c97ab5fe8ca42bdf8a348fc2b5130a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae23eac1b116286334b68851dc22eb72b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae23eac1b116286334b68851dc22eb72b"></a>
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Optimize</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> dontcare, bool mergeRuns=true)</td></tr>
 <tr class="separator:ae23eac1b116286334b68851dc22eb72b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -244,7 +247,7 @@ Static Public Member Functions</h2></td></tr>
 static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (int c)</td></tr>
 <tr class="separator:a66964b9848afa24f5755c0bf69f25886"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05e4daec3ba5c3432f24c05162e8ec37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05e4daec3ba5c3432f24c05162e8ec37"></a>
-static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> r)</td></tr>
+static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator IntSet</b> (<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> r)</td></tr>
 <tr class="separator:a05e4daec3ba5c3432f24c05162e8ec37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b3ccb11bababc1f00bc6d3efd6a8cf1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b3ccb11bababc1f00bc6d3efd6a8cf1"></a>
 static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>With</b> (params int[] members)</td></tr>
@@ -283,18 +286,18 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a8eade768f08583685ce13f6e140bd411"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8eade768f08583685ce13f6e140bd411"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt; ranges, bool inverted, bool autoSimplify)</td></tr>
 <tr class="separator:a8eade768f08583685ce13f6e140bd411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac14a442e55a23ccfd62d5caa4f1b8025"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac14a442e55a23ccfd62d5caa4f1b8025"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>IntSet</b> (bool isCharSet, bool inverted, bool ranges, params int[] list)</td></tr>
 <tr class="separator:ac14a442e55a23ccfd62d5caa4f1b8025"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a16bb70af49545d9452ca23973c89a5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a16bb70af49545d9452ca23973c89a5"></a>
-virtual <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> basis, bool inverted, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt; ranges)</td></tr>
+virtual <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a>&#160;</td><td class="memItemRight" valign="bottom"><b>New</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html">IntSet</a> basis, bool inverted, <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt; ranges)</td></tr>
 <tr class="separator:a8a16bb70af49545d9452ca23973c89a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
-<tr class="memitem:a7bd26f2d14847455b8ea25c94a1c7007"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#a7bd26f2d14847455b8ea25c94a1c7007">_ranges</a> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&gt;.Empty</td></tr>
+<tr class="memitem:a7bd26f2d14847455b8ea25c94a1c7007"><td class="memItemLeft" align="right" valign="top">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; <a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntSet.html#a7bd26f2d14847455b8ea25c94a1c7007">_ranges</a> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&gt;.Empty</td></tr>
 <tr class="memdesc:a7bd26f2d14847455b8ea25c94a1c7007"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of non-overlapping character ranges, sorted by code point. EOF can be included in this list as character -1 (hence CharRange holds ints instead of chars). <a href="#a7bd26f2d14847455b8ea25c94a1c7007">More...</a><br /></td></tr>
 <tr class="separator:a7bd26f2d14847455b8ea25c94a1c7007"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0878b1d00896ed37972cef82579447a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa0878b1d00896ed37972cef82579447a"></a>
@@ -362,7 +365,7 @@ readonly bool&#160;</td><td class="memItemRight" valign="bottom"><b>_inverted</b
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&gt; Loyc.LLParserGenerator.IntSet._ranges = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a>&gt;.Empty</td>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&gt; Loyc.LLParserGenerator.IntSet._ranges = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;<a class="el" href="structLoyc_1_1LLParserGenerator_1_1IntRange.html">IntRange</a>&gt;.Empty</td>
         </tr>
       </table>
   </td>
@@ -483,7 +486,7 @@ readonly bool&#160;</td><td class="memItemRight" valign="bottom"><b>_inverted</b
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:36 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:54 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

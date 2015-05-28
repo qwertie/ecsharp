@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>A compact patricia trie that uses strings as keys. 
  <a href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/CPTrie/CPStringTrie.cs'>/Src/Loyc.Collections/CPTrie/CPStringTrie.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/CPTrie/CPStringTrie.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.CPStringTrie&lt; TValue &gt;:</div>
@@ -112,13 +112,14 @@ Inheritance diagram for Loyc.Collections.CPStringTrie&lt; TValue &gt;:</div>
 <area href="classLoyc_1_1Collections_1_1CPTrie_3_01T_01_4.html" title="Compact patricia tree class that stores keys as byte arrays. This class is intended to be use as a ba..." alt="Loyc.Collections.CPTrie&lt; T &gt;" shape="rect" coords="520,0,857,24"/>
 <area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1Enumerator.html" title="Enumerates key-value pairs in a CPStringTrie." alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.Enumerator" shape="rect" coords="0,112,337,136"/>
 <area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1Enumerator.html" title="Enumerates key-value pairs in a CPStringTrie." alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.Enumerator" shape="rect" coords="347,112,684,136"/>
-<area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyCollection.html" title="Return value of <see cref="CPStringTrie{T}.Keys"/.>" alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.KeyCollection" shape="rect" coords="694,112,1031,136"/>
+<area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyCollection.html" title="Return value of CPStringTrie{T}.Keys." alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.KeyCollection" shape="rect" coords="694,112,1031,136"/>
 <area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyEnumerator.html" title="Enumerates keys of a CPStringTrie." alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.KeyEnumerator" shape="rect" coords="1041,112,1378,136"/>
 <area href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyEnumerator.html" title="Enumerates keys of a CPStringTrie." alt="Loyc.Collections.CPStringTrie&lt; TValue &gt;.KeyEnumerator" shape="rect" coords="1388,112,1725,136"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A compact patricia trie that uses strings as keys.</p>
+<p>This data structure can be very space-efficient when asked to store a large numbers of keys with common prefixes; maximum efficiency is achieved when the associated values are all (or almost all) null.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">TValue</td><td>Type of value associated with each key.</td></tr>
@@ -132,7 +133,7 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumerates key-value pairs in a CPStringTrie. <a href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1Enumerator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyCollection.html">KeyCollection</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of &lt;see cref="CPStringTrie{T}.Keys"/.&gt; <a href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyCollection.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of CPStringTrie{T}.Keys. <a href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyCollection.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyEnumerator.html">KeyEnumerator</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumerates keys of a CPStringTrie. <a href="classLoyc_1_1Collections_1_1CPStringTrie_3_01TValue_01_4_1_1KeyEnumerator.html#details">More...</a><br /></td></tr>
@@ -347,7 +348,7 @@ static Comparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:24 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

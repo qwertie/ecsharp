@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classLoyc_1_1Symbol-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -101,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums. 
  <a href="classLoyc_1_1Symbol.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/Symbol.cs'>/Src/Loyc.Essentials/Utilities/Symbol.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/Symbol.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Symbol:</div>
@@ -150,6 +151,18 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (
 int&#160;</td><td class="memItemRight" valign="bottom"><b>CompareTo</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> other)</td></tr>
 <tr class="separator:a9d8ddeebbb4a38c49ddaa151a765a7b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ada40249835ec0db848fc6a6263bf9de1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada40249835ec0db848fc6a6263bf9de1"></a>
+static&#160;</td><td class="memItemRight" valign="bottom"><b>operator Symbol</b> (string s)</td></tr>
+<tr class="separator:ada40249835ec0db848fc6a6263bf9de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2a1db35da58d117c65538197289ef29"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2a1db35da58d117c65538197289ef29"></a>
+static&#160;</td><td class="memItemRight" valign="bottom"><b>operator string</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> s)</td></tr>
+<tr class="separator:ab2a1db35da58d117c65538197289ef29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2cf31d831892273afda6a55bed20981"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Symbol.html#aa2cf31d831892273afda6a55bed20981">For</a> (string s)</td></tr>
+<tr class="memdesc:aa2cf31d831892273afda6a55bed20981"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for GSymbol.Get(string). This function was introduced to match the equivalent ES6 API <code>Symbol.for("string")</code> <a href="#aa2cf31d831892273afda6a55bed20981">More...</a><br /></td></tr>
+<tr class="separator:aa2cf31d831892273afda6a55bed20981"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:aa39a2ebfdb0372328483ecb9f419e2d6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Symbol.html#aa39a2ebfdb0372328483ecb9f419e2d6">Symbol</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> prototype)</td></tr>
@@ -186,6 +199,33 @@ Protected Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="aa2cf31d831892273afda6a55bed20981"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Symbol.For </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Alias for GSymbol.Get(string). This function was introduced to match the equivalent ES6 API <code>Symbol.for("string")</code></p>
 
 </div>
 </div>
@@ -255,7 +295,7 @@ Protected Member Functions</h2></td></tr>
 
 <p>Gets the name of the <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html#ac8904266333da1b12018373522147fe2">Loyc.LLParserGenerator.Macros.LLLPG_lexer()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Macros.html#a7293bcb55b9d96968734651eb802dada">Loyc.LLParserGenerator.Macros.LLLPG_parser()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#a7e68a90fa13147ac16e72dfcbed282c5">Loyc.Syntax.Les.LesPrecedenceMap.IsSuffixOperatorName()</a>.</p>
 
 </div>
 </div>
@@ -285,7 +325,7 @@ Protected Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

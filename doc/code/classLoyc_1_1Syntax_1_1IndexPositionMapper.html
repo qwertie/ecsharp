@@ -89,201 +89,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-methods">Protected Member Functions</a> &#124;
-<a href="#pro-attribs">Protected fields</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1IndexPositionMapper-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.IndexPositionMapper Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Helper class for mapping from indexes to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> and back.  
+<p>Synonym for <code><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html" title="Synonym for IndexPositionMapper<IListSource<char>>.">IndexPositionMapper</a>&lt;IListSource&lt;char&gt;&gt;</code>. 
  <a href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/SourceFiles/IndexPositionMapper.cs'>/Src/Loyc.Syntax/SourceFiles/IndexPositionMapper.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/SourceFiles/IndexPositionMapper.cs</li>
 </ul>
-<div class="dynheader">
-Inheritance diagram for Loyc.Syntax.IndexPositionMapper:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="classLoyc_1_1Syntax_1_1IndexPositionMapper.png" usemap="#Loyc.Syntax.IndexPositionMapper_map" alt=""/>
-  <map id="Loyc.Syntax.IndexPositionMapper_map" name="Loyc.Syntax.IndexPositionMapper_map">
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html" title="This interface is for classes that can convert indexes to SourcePos structures and back..." alt="Loyc.Syntax.IIndexPositionMapper" shape="rect" coords="0,56,221,80"/>
-<area href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html" title="Contains IndexToLine method." alt="Loyc.Syntax.IIndexToLine" shape="rect" coords="0,0,221,24"/>
-<area href="classLoyc_1_1Syntax_1_1SourceFile.html" title="A default implementation of ISourceFile based on IndexPositionMapper." alt="Loyc.Syntax.SourceFile" shape="rect" coords="0,168,221,192"/>
-<area href="classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceFile.html" title="Adds the AfterNewline method to SourceFile." alt="Loyc.Syntax.Lexing.LexerSourceFile" shape="rect" coords="0,224,221,248"/>
-</map>
- </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Helper class for mapping from indexes to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> and back. </p>
-<p>This class's job is to keep track of the locations of line breaks in order to map from indices to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> objects or vice versa. Converting indexes to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> is commonly needed for error reporting; lexers, parsers and code analyzers typically use indexes (simple integers) internally, but must convert to <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> in order to communicate with the end user. Occasionally one may wish to convert in the reverse direction also (<a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> to index). </p>
-<p>Line breaks themselves are classified as being at the end of each line. So if the file is "Bob\nJoe", <code>IndexToLine(3).Line == 1</code>, not 2. </p>
-<p>The outputs are immutable and this class assumes the input file never changes. However, this class is not entirly multi-thread-safe until the entire input file or string has been scanned, since the list of line breaks is built on-demand, without locking. </p>
+<div class="textblock"><p>Synonym for <code><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html" title="Synonym for IndexPositionMapper<IListSource<char>>.">IndexPositionMapper</a>&lt;IListSource&lt;char&gt;&gt;</code>.</p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
-Properties</h2></td></tr>
-<tr class="memitem:a515707c07389092b3b5a4578a110229c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a515707c07389092b3b5a4578a110229c"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>FileName</b><code> [get]</code></td></tr>
-<tr class="separator:a515707c07389092b3b5a4578a110229c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23a14e75bde97b38161794220bf20e72"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23a14e75bde97b38161794220bf20e72"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>LineCount</b><code> [get]</code></td></tr>
-<tr class="separator:a23a14e75bde97b38161794220bf20e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a505d6abcc350ccb42c7da0c6cfd56956"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a505d6abcc350ccb42c7da0c6cfd56956">IndexPositionMapper</a> (IListSource&lt; char &gt; source, <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> startingPos=null)</td></tr>
-<tr class="memdesc:a505d6abcc350ccb42c7da0c6cfd56956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes CharIndexPositionMapper. <a href="#a505d6abcc350ccb42c7da0c6cfd56956">More...</a><br /></td></tr>
+<tr class="memitem:a505d6abcc350ccb42c7da0c6cfd56956"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a505d6abcc350ccb42c7da0c6cfd56956"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IndexPositionMapper</b> (IListSource&lt; char &gt; source, <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> startingPos=null)</td></tr>
 <tr class="separator:a505d6abcc350ccb42c7da0c6cfd56956"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa30232643d96e8b873babb17edf03d52"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa30232643d96e8b873babb17edf03d52"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>IndexPositionMapper</b> (IListSource&lt; char &gt; source, string fileName)</td></tr>
 <tr class="separator:aa30232643d96e8b873babb17edf03d52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ef0d2143ac8f79e5c26b37d618d1e30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a2ef0d2143ac8f79e5c26b37d618d1e30">IndexToLine</a> (int index)</td></tr>
-<tr class="memdesc:a2ef0d2143ac8f79e5c26b37d618d1e30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the position in a source file of the specified index. <a href="#a2ef0d2143ac8f79e5c26b37d618d1e30">More...</a><br /></td></tr>
-<tr class="separator:a2ef0d2143ac8f79e5c26b37d618d1e30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad80cbff2e9c613ae2e23a3afd7d7fde3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#ad80cbff2e9c613ae2e23a3afd7d7fde3">LineToIndex</a> (int lineNo)</td></tr>
-<tr class="memdesc:ad80cbff2e9c613ae2e23a3afd7d7fde3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index in a source file of the beginning of the specified line, where the first line is number 1, not 0. <a href="#ad80cbff2e9c613ae2e23a3afd7d7fde3">More...</a><br /></td></tr>
-<tr class="separator:ad80cbff2e9c613ae2e23a3afd7d7fde3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0df8d0d749b96abf976405b68efde90"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0df8d0d749b96abf976405b68efde90"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>LineToIndex</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LineAndPos.html">LineAndPos</a> pos)</td></tr>
-<tr class="separator:af0df8d0d749b96abf976405b68efde90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
-Protected Member Functions</h2></td></tr>
-<tr class="memitem:a4365220ceef86797918f522680fdda5e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4365220ceef86797918f522680fdda5e"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NewSourcePos</b> (int Line, int PosInLine)</td></tr>
-<tr class="separator:a4365220ceef86797918f522680fdda5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adca2f4291fcc50369522b5d994a37f91"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adca2f4291fcc50369522b5d994a37f91"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReadUntilAfter</b> (int toIndex)</td></tr>
-<tr class="separator:adca2f4291fcc50369522b5d994a37f91"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a085db866411de572764bdcf1e8ea54df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a085db866411de572764bdcf1e8ea54df"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AdvanceAfterNextNewline</b> (ref int index)</td></tr>
-<tr class="separator:a085db866411de572764bdcf1e8ea54df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected fields</h2></td></tr>
-<tr class="memitem:a143cb23b3a907f0161a7999e9d515d14"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a143cb23b3a907f0161a7999e9d515d14"></a>
-IListSource&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_source</b></td></tr>
-<tr class="separator:a143cb23b3a907f0161a7999e9d515d14"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a405e342cc8d408576f84491ef0f7272b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a405e342cc8d408576f84491ef0f7272b"></a>
-<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_lineOffsets</b> = <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;int&gt;.Empty</td></tr>
-<tr class="separator:a405e342cc8d408576f84491ef0f7272b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2005ccbe5c89b806e413ff6185e07852"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2005ccbe5c89b806e413ff6185e07852"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_offsetsComplete</b> = false</td></tr>
-<tr class="separator:a2005ccbe5c89b806e413ff6185e07852"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae79893ad90fb5d1fab9aa4b7b5d1d435"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae79893ad90fb5d1fab9aa4b7b5d1d435"></a>
-readonly <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_startingPos</b> = null</td></tr>
-<tr class="separator:ae79893ad90fb5d1fab9aa4b7b5d1d435"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a505d6abcc350ccb42c7da0c6cfd56956"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Loyc.Syntax.IndexPositionMapper.IndexPositionMapper </td>
-          <td>(</td>
-          <td class="paramtype">IListSource&lt; char &gt;&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a>&#160;</td>
-          <td class="paramname"><em>startingPos</em> = <code>null</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Initializes CharIndexPositionMapper.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">source</td><td>An immutable list of characters.</td></tr>
-    <tr><td class="paramname">startingPos</td><td>Optional. The first character of <code>source</code> will be considered to have the file name and line number specified by this object. If this is null, <a class="el" href="classLoyc_1_1Syntax_1_1IndexPositionMapper.html#a2ef0d2143ac8f79e5c26b37d618d1e30" title="Returns the position in a source file of the specified index.">IndexToLine()</a> will return a blank file name ("").</td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a2ef0d2143ac8f79e5c26b37d618d1e30"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html">SourcePos</a> Loyc.Syntax.IndexPositionMapper.IndexToLine </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the position in a source file of the specified index.</p>
-<p>If index is negative, this should return a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> where Line and PosInLine are zero (signifying an unknown location). If index is beyond the end of the file, this should retun the final position in the file.</p>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexToLine.html#ae22d4575baf857ef0c7cf5a5b15047b3">Loyc.Syntax.IIndexToLine</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ad80cbff2e9c613ae2e23a3afd7d7fde3"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int Loyc.Syntax.IndexPositionMapper.LineToIndex </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>lineNo</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the index in a source file of the beginning of the specified line, where the first line is number 1, not 0.</p>
-<p>If lineNo is zero, this method should return -1 (signifying an unknown location). If lineNo is larger than the largest line number, this method should return the index of end-of-file.</p>
-
-<p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html#a034f1c3d5de77b3d2110568059cdc4f9">Loyc.Syntax.IIndexPositionMapper</a>.</p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:01 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -97,10 +97,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit...">ISourceFile</a> object that represents the source file that the tokens came from. 
+<p>A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> object that represents the source file that the tokens came from. 
  <a href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Syntax/Lexing/Token.cs'>/Src/Loyc.Syntax/Lexing/Token.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Syntax/Lexing/Token.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Syntax.Lexing.TokenTree:</div>
@@ -108,11 +108,13 @@ Inheritance diagram for Loyc.Syntax.Lexing.TokenTree:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.png" usemap="#Loyc.Syntax.Lexing.TokenTree_map" alt=""/>
   <map id="Loyc.Syntax.Lexing.TokenTree_map" name="Loyc.Syntax.Lexing.TokenTree_map">
+<area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="788,0,975,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name, plus the data necessary to convert between line-column posit...">ISourceFile</a> object that represents the source file that the tokens came from.</p>
-<p>This class is called <code><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a></code> because certain kinds of tokens used by some parsers are formed into trees by using <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a> as the type of the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> of certain tokens. Specifically, the LES and EC# parsers expect open-bracket and open-brace tokens ('(', '[' and '{') to have a child <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a> that contains all the tokens within a pair of brackets or braces. Typically this tree is not created directly by the lexer, but by a helpe clas (<a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="Converts a token list into a token tree. Everything inside brackets, parens or braces is made a child...">TokensToTree</a>).</p>
+<div class="textblock"><p>A list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> structures along with the <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> object that represents the source file that the tokens came from.</p>
+<p>This class is called <code><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a></code> because certain kinds of tokens used by some parsers are formed into trees by using <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a> as the type of the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> of certain tokens. Specifically, the LES and EC# parsers expect open-bracket and open-brace tokens ('(', '[' and '{') to have a child <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html" title="A list of Token structures along with the ISourceFile object that represents the source file that the...">TokenTree</a> that contains all the tokens within a pair of brackets or braces. Typically this tree is not created directly by the lexer, but by a helper class (<a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html" title="Converts a token list into a token tree. Everything inside brackets, parens or braces is made a child...">TokensToTree</a>). </p>
+<p>Caution: this class is mutable, even though TokenTrees are sometimes stored in <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s which are supposed to be immutable. Please do not modify token trees that are stored inside LNodes. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
@@ -137,9 +139,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aae4b1182617796620b6051ece6c640ea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae4b1182617796620b6051ece6c640ea"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TokenTree</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, IEnumerable&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt; items)</td></tr>
 <tr class="separator:aae4b1182617796620b6051ece6c640ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6e72771b1f7acd8848b2c45dd779b58"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac6e72771b1f7acd8848b2c45dd779b58"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TokenTree</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file, <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>[] items)</td></tr>
+<tr class="separator:ac6e72771b1f7acd8848b2c45dd779b58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a319b0c934822ef6fab9ab40f530d7d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a319b0c934822ef6fab9ab40f530d7d"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TokenTree</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file)</td></tr>
 <tr class="separator:a9a319b0c934822ef6fab9ab40f530d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac33cdccffa4b934ce7c23114eb6f2ae"><td class="memItemLeft" align="right" valign="top">new <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html">TokenTree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Clone</a> ()</td></tr>
+<tr class="memdesc:aac33cdccffa4b934ce7c23114eb6f2ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a deep (recursive) clone of the token tree. <a href="#aac33cdccffa4b934ce7c23114eb6f2ae">More...</a><br /></td></tr>
+<tr class="separator:aac33cdccffa4b934ce7c23114eb6f2ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f96dd6aee8aa8d755b523caf67cf55a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f96dd6aee8aa8d755b523caf67cf55a"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html">TokenTree</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> (bool deep)</td></tr>
+<tr class="separator:a5f96dd6aee8aa8d755b523caf67cf55a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f380b6585fec85e50341596656096c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f380b6585fec85e50341596656096c9"></a>
 override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
 <tr class="separator:a8f380b6585fec85e50341596656096c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,8 +166,42 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (
 <tr class="memitem:a5c24022423e09771fe5abad526a0417f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5c24022423e09771fe5abad526a0417f"></a>
 override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</b> ()</td></tr>
 <tr class="separator:a5c24022423e09771fe5abad526a0417f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f77a51bfdf5de4213eb54faa8aff4bf"><td class="memItemLeft" align="right" valign="top">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#a2f77a51bfdf5de4213eb54faa8aff4bf">ToLNodes</a> ()</td></tr>
+<tr class="memdesc:a2f77a51bfdf5de4213eb54faa8aff4bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts this list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> to a list of <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. <a href="#a2f77a51bfdf5de4213eb54faa8aff4bf">More...</a><br /></td></tr>
+<tr class="separator:a2f77a51bfdf5de4213eb54faa8aff4bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="aac33cdccffa4b934ce7c23114eb6f2ae"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">new <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html">TokenTree</a> Loyc.Syntax.Lexing.TokenTree.Clone </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets a deep (recursive) clone of the token tree.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html">Loyc.ICloneable&lt; out T &gt;</a>.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html#aac33cdccffa4b934ce7c23114eb6f2ae">Loyc.Syntax.Lexing.TokenTree.Clone()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="aecbdec7eb29ad5419903511b11643cf7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -180,7 +225,33 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</
 </div><div class="memdoc">
 
 <p>Compares the elements of the token tree for equality.</p>
-<p>Because LNodes are compared by value and not by reference, and LNodes can contain TokenTrees, TokenTrees should also be compared by value.</p>
+<p>Because <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s are compared by value and not by reference, and LNodes can contain TokenTrees, TokenTrees should also be compared by value.</p>
+
+</div>
+</div>
+<a class="anchor" id="a2f77a51bfdf5de4213eb54faa8aff4bf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.Lexing.TokenTree.ToLNodes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts this list of <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> to a list of <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>.</p>
+<p>See <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af57697d0fcacb14f45fbff248d173bb8" title="Converts a Token to a LNode.">Token.ToLNode(ISourceFile)</a> for more information.</p>
 
 </div>
 </div>
@@ -188,7 +259,7 @@ override int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHashCode</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:43 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:10:05 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

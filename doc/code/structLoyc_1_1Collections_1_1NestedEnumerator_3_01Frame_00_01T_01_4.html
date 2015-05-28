@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Helper class. An enumerator that helps enumerate tree data structures. It maintains a virtual call stack that avoids the performance hit of using nested "yield return" statements in C#. 
  <a href="structLoyc_1_1Collections_1_1NestedEnumerator_3_01Frame_00_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/HelperClasses/NestedEnumerator.cs'>/Src/Loyc.Essentials/Collections/HelperClasses/NestedEnumerator.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/Other/NestedEnumerator.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.NestedEnumerator&lt; Frame, T &gt;:</div>
@@ -140,7 +140,7 @@ return" recursively (). </p>
 </div><!-- fragment --><p> As explained in <a href="http://stackoverflow.com/questions/3969963/when-not-to-use-yield-return">this web page</a>, this implementation will be slow, and it will get slower and slower as the tree gets deeper. </p>
 <p>NestedEnumerator helps to solve this problem using a "virtual stack". It keeps track of all the nested enumerators and always returns values from the current, deepest enumerator. The enumerator objects are called "frames", because they are "stack frames" on the virtual stack. </p>
 <p>Each enumerator implements IEnumeratorFrame{Frame,T} instead of just IEnumerator{T}. A normal enumerator can only do one of two actions on each call to MoveNext(): it can return a T value, or stop. But an <code>IEnumeratorFrame</code> can do one of three things: it can return a T value, it can stop, or it can return a new (child) stack frame. These actions are represented by <code>MoveNext</code> return values of 1, 0, and -1 respectively. </p>
-<p>You cannot use <code>yield return</code> with <code>NestedEnumerator</code> because it is not supported by the C# compiler, so using <code>NestedEnumerator</code> requires more developer effort. Here's how the GetEnumerator() method can be implemented using <code>NestedEnumerator</code>: </p><div class="fragment"><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> IEnumerator&amp;lt;<span class="keywordtype">string</span>&gt; GetEnumerator()</div>
+<p>You cannot use <code>yield return</code> with <code>NestedEnumerator</code> because it is not supported by the C# compiler, so using <code>NestedEnumerator</code> requires more developer effort. Here's how the GetEnumerator() method can be implemented using <code>NestedEnumerator</code>: </p><div class="fragment"><div class="line"><span class="keyword">public</span> IEnumerator&amp;lt;<span class="keywordtype">string</span>&gt; GetEnumerator()</div>
 <div class="line">{</div>
 <div class="line">    <span class="keywordflow">return</span> <span class="keyword">new</span> NestedEnumerator&amp;lt;Frame, <span class="keywordtype">string</span>&gt;(<span class="keyword">new</span> Frame(<span class="keyword">this</span>));</div>
 <div class="line">}</div>
@@ -214,7 +214,7 @@ System.Collections.IEnumerator.&#160;</td><td class="memItemRight" valign="botto
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:29 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:47 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

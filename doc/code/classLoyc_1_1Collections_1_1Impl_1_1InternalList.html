@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Contains static methods to help manage raw arrays with even less overhead than InternalList{T}.  
  <a href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Implementations/InternalList.cs'>/Src/Loyc.Essentials/Collections/Implementations/InternalList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Implementations/InternalList.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains static methods to help manage raw arrays with even less overhead than InternalList{T}. </p>
@@ -107,6 +107,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a81e3bc6b3affa8ac84dc135bdddca8c3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html#a81e3bc6b3affa8ac84dc135bdddca8c3">AsInternalList&lt; T &gt;</a> (this T[] array)</td></tr>
+<tr class="memdesc:a81e3bc6b3affa8ac84dc135bdddca8c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts an array to <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="Contains static methods to help manage raw arrays with even less overhead than InternalList{T}. ">InternalList</a> (exists to help infer type params) <a href="#a81e3bc6b3affa8ac84dc135bdddca8c3">More...</a><br /></td></tr>
+<tr class="separator:a81e3bc6b3affa8ac84dc135bdddca8c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac20a5441804605612161c4a53040780f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac20a5441804605612161c4a53040780f"></a>
+static <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsInternalList&lt; T &gt;</b> (this T[] array, int count)</td></tr>
+<tr class="separator:ac20a5441804605612161c4a53040780f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d266d22382c0f4d03180e8218510586"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6d266d22382c0f4d03180e8218510586"></a>
 static T[]&#160;</td><td class="memItemRight" valign="bottom"><b>CopyToNewArray&lt; T &gt;</b> (T[] _array, int _count, int newCapacity)</td></tr>
 <tr class="separator:a6d266d22382c0f4d03180e8218510586"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,6 +172,32 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>AllEqual&lt; T
 <tr class="separator:a3aa6d3d8ea701ddeceb37fef402104e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a81e3bc6b3affa8ac84dc135bdddca8c3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a>&lt;T&gt; Loyc.Collections.Impl.InternalList.AsInternalList&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T[]&#160;</td>
+          <td class="paramname"><em>array</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts an array to <a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="Contains static methods to help manage raw arrays with even less overhead than InternalList{T}. ">InternalList</a> (exists to help infer type params)</p>
+
+</div>
+</div>
 <a class="anchor" id="af532934af0a67a3b220dec9f408c2002"></a>
 <div class="memitem">
 <div class="memproto">
@@ -223,7 +255,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>AllEqual&lt; T
     <tr><td class="paramname">_count</td><td>Number of elements used in the array</td></tr>
     <tr><td class="paramname">k</td><td>A key to compare with elements of the array</td></tr>
     <tr><td class="paramname">compare</td><td>Lambda function that knows how to compare Ts with Ks (T and K can be the same). It is passed a series of elements from the array. It must return 0 if the element has the desired value, 1 if the supplied element is higher than desired, and -1 if it is lower than desired.</td></tr>
-    <tr><td class="paramname">lowerBound</td><td>Whether to find the "lower bound" in case there are duplicates in the list. If duplicates exist of the search key k exist, the lowest index of a matching duplicate is returned. This search mode may be slightly slower when a match exists.</td></tr>
+    <tr><td class="paramname">lowerBound</td><td>Whether to find the "lower bound" in case there are duplicates in the list. If duplicates exist of the search key k, the lowest index of a matching duplicate is returned. This search mode may be slightly slower when a match exists.</td></tr>
   </table>
   </dd>
 </dl>
@@ -479,7 +511,7 @@ capacityLimit is returned instead. If the return value would be slightly less th
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:33 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

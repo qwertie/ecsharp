@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>An sorted dictionary that is efficient for all operations and offers indexed access to its list of key-value pairs.  
  <a href="classLoyc_1_1Collections_1_1BDictionary_3_01K_00_01V_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/ALists/BDictionary.cs'>/Src/Loyc.Collections/ALists/BDictionary.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/ALists/BDictionary.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.BDictionary&lt; K, V &gt;:</div>
@@ -128,7 +128,9 @@ Inheritance diagram for Loyc.Collections.BDictionary&lt; K, V &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An sorted dictionary that is efficient for all operations and offers indexed access to its list of key-value pairs. </p>
-<p>This class offers the following additional features beyond what's offered by SortedDictionary{T}: indexed access, a find-nearest-key operation called <a class="el" href="classLoyc_1_1Collections_1_1BDictionary_3_01K_00_01V_01_4.html#ae3bf29909ffdae5d619d75bf9b19bccd" title="Finds the lowest index of an item with a key that is equal to or greater than the specified key...">FindLowerBound</a> (similar to lower_bound in C++), observability, fast cloning, freezability, fast cloning of an arbitrary range of items in a large collection, enumeration of part of the list (not just the entire list), and reverse enumeration, and a few compound operations. </p>
+<p>An <a href="http://core.loyc.net/collections/alists-part2.html">article</a> about the BList classes is available. </p>
+<p>The keys must be comparable (ordered); if the type does not implement <code>IComparable</code> or <code>IComparable(T)</code>, you must provide a Comparison(T) delegate to perform comparisons. </p>
+<p>This class offers the following additional features beyond what's offered by the standard SortedDictionary{T} class: indexed access, a find-nearest- key operation called <a class="el" href="classLoyc_1_1Collections_1_1BDictionary_3_01K_00_01V_01_4.html#ae3bf29909ffdae5d619d75bf9b19bccd" title="Finds the lowest index of an item with a key that is equal to or greater than the specified key...">FindLowerBound</a> (similar to lower_bound in C++), observability, fast cloning, freezability, fast cloning of an arbitrary range of items in a large collection, enumeration of part of the list (not just the entire list), and reverse enumeration, and a few compound operations. </p>
 <p>Duplicate keys are not allowed in a BDictionary. If you would like to be able to associate multiple values with a single key, use BMultiMap{K,V} instead. </p>
 <p>If you need to store only keys, not values, use BList{K} instead (but note that BList does allow duplicate keys). </p>
 </div><table class="memberdecls">
@@ -147,9 +149,12 @@ V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key]</b><code> [g
 V&#160;</td><td class="memItemRight" valign="bottom"><b>this[K key, V defaultValue]</b><code> [get]</code></td></tr>
 <tr class="separator:a788a5afcaef6244b4d62503edb6dfc54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html">Loyc.Collections.AListBase&lt; K, T &gt;</a></td></tr>
-<tr class="memitem:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15ebf2137bf1a9240641647e6f1c56ae"></a>
-virtual ListChangingHandler&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ListChanging</b></td></tr>
+<tr class="memitem:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual ListChangingHandler&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a15ebf2137bf1a9240641647e6f1c56ae">ListChanging</a></td></tr>
+<tr class="memdesc:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event for learning about changes in progress on a list. <a href="#a15ebf2137bf1a9240641647e6f1c56ae">More...</a><br /></td></tr>
 <tr class="separator:a15ebf2137bf1a9240641647e6f1c56ae inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa16a86e3ad3e280d0296684ce99c497 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa16a86e3ad3e280d0296684ce99c497"></a>
+byte&#160;</td><td class="memItemRight" valign="bottom"><b>TreeHeight</b><code> [get]</code></td></tr>
+<tr class="separator:afa16a86e3ad3e280d0296684ce99c497 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adccfa11cf9c9a5874958ffc2d34737f1 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adccfa11cf9c9a5874958ffc2d34737f1"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:adccfa11cf9c9a5874958ffc2d34737f1 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -171,9 +176,6 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>First</b><code> [get]</c
 <tr class="memitem:a28aceab282e25c9eda58e7f921311e25 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28aceab282e25c9eda58e7f921311e25"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Last</b><code> [get]</code></td></tr>
 <tr class="separator:a28aceab282e25c9eda58e7f921311e25 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a787d66a289819c57b3beb37c2c400018">ImmutableCount</a><code> [get]</code></td></tr>
-<tr class="memdesc:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. Returns the number of elements of the list that are located in immutable nodes, which will be copied if modified. Used by the test suite. <a href="#a787d66a289819c57b3beb37c2c400018">More...</a><br /></td></tr>
-<tr class="separator:a787d66a289819c57b3beb37c2c400018 inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#ada4081ed2d50384439b8e243ef042c1b">ObserverCount</a><code> [get]</code></td></tr>
 <tr class="memdesc:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of tree observers attached to this list. <a href="#ada4081ed2d50384439b8e243ef042c1b">More...</a><br /></td></tr>
 <tr class="separator:ada4081ed2d50384439b8e243ef042c1b inherit properties_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -344,6 +346,9 @@ Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</
 <tr class="memitem:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">Slice_&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#ab7118fd95df23f0c99ff63091285f9e3">Slice</a> (int start, int length)</td></tr>
 <tr class="memdesc:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#ab7118fd95df23f0c99ff63091285f9e3">More...</a><br /></td></tr>
 <tr class="separator:ab7118fd95df23f0c99ff63091285f9e3 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a99ef6a10bbaed09b370ab6cf6ef11936">GetImmutableCount</a> ()</td></tr>
+<tr class="memdesc:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Diagnostic method. Returns the number of elements of the list that are located in immutable nodes, which will be copied if modified. Used by the test suite. <a href="#a99ef6a10bbaed09b370ab6cf6ef11936">More...</a><br /></td></tr>
+<tr class="separator:a99ef6a10bbaed09b370ab6cf6ef11936 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a3e7271f9f2a7f07752d53678353e5d68">AddObserver</a> (IAListTreeObserver&lt; K, T &gt; observer)</td></tr>
 <tr class="memdesc:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attaches a tree observer to this object. <a href="#a3e7271f9f2a7f07752d53678353e5d68">More...</a><br /></td></tr>
 <tr class="separator:a3e7271f9f2a7f07752d53678353e5d68 inherit pub_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -397,10 +402,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>CompareToKey</b> (KeyV
 &#160;</td><td class="memItemRight" valign="bottom"><b>AListBase</b> (int maxLeafSize, int maxInnerSize)</td></tr>
 <tr class="separator:a5f74d8332379f12c9cfbf8d459650499 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a018a4a7ca6d3344765e3caec3c892c7c">AListBase</a> (AListBase&lt; K, T &gt; items, bool keepListChangingHandlers)</td></tr>
-<tr class="memdesc:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cloning constructor. Does not duplicate the observer (AListNodeObserver{T}), if any, because it may not be cloneable. <a href="#a018a4a7ca6d3344765e3caec3c892c7c">More...</a><br /></td></tr>
+<tr class="memdesc:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cloning constructor. Does not duplicate the observer (IAListTreeObserver{K,T}), if any, because it may not be cloneable. <a href="#a018a4a7ca6d3344765e3caec3c892c7c">More...</a><br /></td></tr>
 <tr class="separator:a018a4a7ca6d3344765e3caec3c892c7c inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#a0f6453eda7a0daace7453032bcb7f620">AListBase</a> (AListBase&lt; K, T &gt; original, AListNode&lt; K, T &gt; section)</td></tr>
-<tr class="memdesc:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the constructor that CopySection(), which can be defined by derived classes, should call to create a sublist of a list. Used in conjunction with <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d" title="Together with the AListBase(AListBase{T},AListNode{T}) constructor, this method helps implement the C...">CopySectionHelper()</a>.  <a href="#a0f6453eda7a0daace7453032bcb7f620">More...</a><br /></td></tr>
+<tr class="memdesc:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the constructor that CopySection(), which can be defined by derived classes, should call to create a sublist of a list. Used in conjunction with <a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d" title="Together with the AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree.">CopySectionHelper()</a>.  <a href="#a0f6453eda7a0daace7453032bcb7f620">More...</a><br /></td></tr>
 <tr class="separator:a0f6453eda7a0daace7453032bcb7f620 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a798563c1c9085e763a72a394e5ce9872 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a798563c1c9085e763a72a394e5ce9872"></a>
 abstract AListInnerBase&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SplitRoot</b> (AListNode&lt; K, T &gt; left, AListNode&lt; K, T &gt; right)</td></tr>
@@ -427,7 +432,7 @@ virtual Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>NewEnum
 <tr class="memdesc:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears the tree. <a href="#a01a3f8678d0ddb625b168714ca7ea8d4">More...</a><br /></td></tr>
 <tr class="separator:a01a3f8678d0ddb625b168714ca7ea8d4 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top">AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#af8a80aef655d30dffd12f644167d838d">CopySectionHelper</a> (int start, int subcount)</td></tr>
-<tr class="memdesc:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Together with the AListBase(AListBase{T},AListNode{T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree. <a href="#af8a80aef655d30dffd12f644167d838d">More...</a><br /></td></tr>
+<tr class="memdesc:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Together with the AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T}) constructor, this method helps implement the CopySection() method in derived classes, by cloning a section of the tree. <a href="#af8a80aef655d30dffd12f644167d838d">More...</a><br /></td></tr>
 <tr class="separator:af8a80aef655d30dffd12f644167d838d inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2074f8f77698120ad4e6e56b64a2233 inherit pro_methods_classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2074f8f77698120ad4e6e56b64a2233"></a>
 AListNode&lt; K, T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>CopySectionHelper</b> (uint start, uint subcount)</td></tr>
@@ -678,7 +683,7 @@ Additional Inherited Members</h2></td></tr>
 <p>Clones a BDictionary.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">keepListChangingHandlers</td><td>If true, ListChanging handlers will be copied from the existing list of items to the new collection. Note: if it exists, the NodeObserver is never copied. NodeObserver will be null in the new list.</td></tr>
+    <tr><td class="paramname">keepListChangingHandlers</td><td>If true, ListChanging handlers will be copied from the existing list of items to the new collection. Note: if it exists, the NodeObserver is never copied. AListBase{K,T}.ObserverCount will be 0 in the new list.</td></tr>
   </table>
   </dd>
 </dl>
@@ -745,12 +750,11 @@ Additional Inherited Members</h2></td></tr>
 <p>Finds the index of the first item in the list that is greater than the specified item.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">item</td><td>The item to find. If passed by reference, when this method returns, item is set to the next greater item than the item you searched for, or left unchanged if there is no greater item.</td></tr>
-    <tr><td class="paramname">index</td><td>The index of the next greater item that was found, or Count if the given item is greater than all items in the list.</td></tr>
+    <tr><td class="paramname">key</td><td>The item to find. If passed by reference, when this method returns, item is set to the next greater item than the item you searched for, or left unchanged if there is no greater item.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The index of the next greater item that was found, or Count if the given item is greater than all items in the list.</dd></dl>
 
 </div>
 </div>
@@ -847,7 +851,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:23 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

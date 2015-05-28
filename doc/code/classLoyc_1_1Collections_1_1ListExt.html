@@ -99,10 +99,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Extension methods and helper methods for List{T}, IList{T}, IReadOnlyList{T}, arrays, IListSource{T}, and for related mutable interfaces such as IArray{T}.  
  <a href="classLoyc_1_1Collections_1_1ListExt.html#details">More...</a></p>
 <hr/>Source files:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Adapters/ArraySlice.cs'>/Src/Loyc.Essentials/Collections/Adapters/ArraySlice.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/ExtensionMethods/ListExt.cs'>/Src/Loyc.Essentials/Collections/ExtensionMethods/ListExt.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Adapters/ReversedList.cs'>/Src/Loyc.Essentials/Collections/Adapters/ReversedList.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Adapters/Slice.cs'>/Src/Loyc.Essentials/Collections/Adapters/Slice.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Adapters/ArraySlice.cs</li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/ExtensionMethods/ListExt.cs</li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Adapters/ReversedList.cs</li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Adapters/Slice.cs</li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Extension methods and helper methods for List{T}, IList{T}, IReadOnlyList{T}, arrays, IListSource{T}, and for related mutable interfaces such as IArray{T}. </p>
@@ -132,24 +132,51 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt
 <tr class="memitem:a4807987dff32bd4b4f4100f019c8c0ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4807987dff32bd4b4f4100f019c8c0ad"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IList&lt; T &gt; list, T value, IComparer&lt; T &gt; pred)</td></tr>
 <tr class="separator:a4807987dff32bd4b4f4100f019c8c0ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae246f4eebd0790e4e32ce1f654bd3f0e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae246f4eebd0790e4e32ce1f654bd3f0e"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IList&lt; T &gt; list, T value, Comparison&lt; T &gt; pred)</td></tr>
-<tr class="separator:ae246f4eebd0790e4e32ce1f654bd3f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6122768992496ab6ab67ccf2e9ec1096"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6122768992496ab6ab67ccf2e9ec1096"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IList&lt; T &gt; list, T find, Comparison&lt; T &gt; compare)</td></tr>
+<tr class="separator:a6122768992496ab6ab67ccf2e9ec1096"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23a577afb95f1d4435e577d44622f936"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23a577afb95f1d4435e577d44622f936"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this IList&lt; T &gt; list, K find, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
+<tr class="separator:a23a577afb95f1d4435e577d44622f936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb9a1fc0630c98a2dab2b495533977d5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb9a1fc0630c98a2dab2b495533977d5"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, T value)</td></tr>
+<tr class="separator:acb9a1fc0630c98a2dab2b495533977d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79ae2dc720c1449d2663ef59ebe410e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79ae2dc720c1449d2663ef59ebe410e9"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, T value, IComparer&lt; T &gt; comparer)</td></tr>
+<tr class="separator:a79ae2dc720c1449d2663ef59ebe410e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d65f5c681be875a1f41e5011b45314c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d65f5c681be875a1f41e5011b45314c"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, T find, Comparison&lt; T &gt; compare)</td></tr>
+<tr class="separator:a3d65f5c681be875a1f41e5011b45314c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a413581011488285abaa6e21a164c3f0a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a413581011488285abaa6e21a164c3f0a"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this IReadOnlyList&lt; T &gt; list, K find, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
+<tr class="separator:a413581011488285abaa6e21a164c3f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa22ba8d4f0611480f05fd7752b655e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa22ba8d4f0611480f05fd7752b655e5"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value)</td></tr>
+<tr class="separator:afa22ba8d4f0611480f05fd7752b655e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e2f57be27c140b6a352d156efcfa676"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e2f57be27c140b6a352d156efcfa676"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value, IComparer&lt; T &gt; comparer)</td></tr>
+<tr class="separator:a5e2f57be27c140b6a352d156efcfa676"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a234feab9cddaf1b6220c7a84b0f343ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a234feab9cddaf1b6220c7a84b0f343ce"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, T value, Comparison&lt; T &gt; compare)</td></tr>
+<tr class="separator:a234feab9cddaf1b6220c7a84b0f343ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0c3da577757289aa913743de4b7f107"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0c3da577757289aa913743de4b7f107"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch2&lt; T, K &gt;</b> (this IListAndListSource&lt; T &gt; list, K value, Func&lt; T, K, int &gt; compare, bool lowerBound=true)</td></tr>
+<tr class="separator:ae0c3da577757289aa913743de4b7f107"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad598b0a74278dd7de052b5b28ce7f371"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad598b0a74278dd7de052b5b28ce7f371"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CopyTo&lt; T &gt;</b> (this IReadOnlyCollection&lt; T &gt; c, T[] array, int arrayIndex)</td></tr>
 <tr class="separator:ad598b0a74278dd7de052b5b28ce7f371"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef79adea9faea5d4b062b96c0bf96d16"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef79adea9faea5d4b062b96c0bf96d16"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this T[] list, int index, T defaultValue)</td></tr>
-<tr class="separator:aef79adea9faea5d4b062b96c0bf96d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afca972c6f72b9a3844a23ea3612b38f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afca972c6f72b9a3844a23ea3612b38f8"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this List&lt; T &gt; list, int index, T defaultValue)</td></tr>
-<tr class="separator:afca972c6f72b9a3844a23ea3612b38f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07ecd8f3b67f54a1d0a6a48b2746590e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a07ecd8f3b67f54a1d0a6a48b2746590e"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, T defaultValue)</td></tr>
-<tr class="separator:a07ecd8f3b67f54a1d0a6a48b2746590e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed17f663ab4ae38f4a4c1c85a14f2257"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed17f663ab4ae38f4a4c1c85a14f2257"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, int index, T defaultValue)</td></tr>
-<tr class="separator:aed17f663ab4ae38f4a4c1c85a14f2257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34da973d346081e90fb3dcdb8cbf2abb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a34da973d346081e90fb3dcdb8cbf2abb"></a>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this T[] list, int index, T defaultValue=default(T))</td></tr>
+<tr class="separator:a34da973d346081e90fb3dcdb8cbf2abb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1616228de3d7b8b1b45fa1d1acfa8a20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1616228de3d7b8b1b45fa1d1acfa8a20"></a>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this List&lt; T &gt; list, int index, T defaultValue=default(T))</td></tr>
+<tr class="separator:a1616228de3d7b8b1b45fa1d1acfa8a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40b0cf5b6764647daf2ed0ac154afa78"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40b0cf5b6764647daf2ed0ac154afa78"></a>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, T defaultValue=default(T))</td></tr>
+<tr class="separator:a40b0cf5b6764647daf2ed0ac154afa78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8322c15a85635255847e2e9fcbb16946"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8322c15a85635255847e2e9fcbb16946"></a>
+static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IListAndListSource&lt; T &gt; list, int index, T defaultValue=default(T))</td></tr>
+<tr class="separator:a8322c15a85635255847e2e9fcbb16946"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e41b63e568e0d11c5a4d93b9ae95598"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, int count)</td></tr>
 <tr class="separator:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1095,7 +1122,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:28 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

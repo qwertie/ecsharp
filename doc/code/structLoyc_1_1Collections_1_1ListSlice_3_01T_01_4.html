@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Public fields</a> &#124;
+<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4-members.html">List of all members</a>  </div>
@@ -101,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are returned from ListExt.Slice{T}  
  <a href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Adapters/ListSlice.cs'>/Src/Loyc.Essentials/Collections/Adapters/ListSlice.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Adapters/ListSlice.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.ListSlice&lt; T &gt;:</div>
@@ -144,6 +145,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_start</b></td></tr>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_count</b></td></tr>
 <tr class="separator:adc7538c602052218a516cde7ff390732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Public static fields</h2></td></tr>
+<tr class="memitem:a36040c17c94fbf89619e9deaed2faeac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36040c17c94fbf89619e9deaed2faeac"></a>
+static readonly <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Empty</b> = new <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt;T&gt;()</td></tr>
+<tr class="separator:a36040c17c94fbf89619e9deaed2faeac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ae68d445e75c5d8c1243fdd7bb6e05b66"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae68d445e75c5d8c1243fdd7bb6e05b66"></a>
@@ -164,6 +171,15 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code
 <tr class="memitem:ad93cb748de685bd0c84f5e8805e0d26a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad93cb748de685bd0c84f5e8805e0d26a"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaultValue]</b><code> [get]</code></td></tr>
 <tr class="separator:ad93cb748de685bd0c84f5e8805e0d26a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5cfde311f08ffefe73f8b2d7c0f25e4"><td class="memItemLeft" align="right" valign="top">IList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#af5cfde311f08ffefe73f8b2d7c0f25e4">InternalList</a><code> [get]</code></td></tr>
+<tr class="memdesc:af5cfde311f08ffefe73f8b2d7c0f25e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the original list. <a href="#af5cfde311f08ffefe73f8b2d7c0f25e4">More...</a><br /></td></tr>
+<tr class="separator:af5cfde311f08ffefe73f8b2d7c0f25e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca091648f34af4ee28e748eb91364ca8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca091648f34af4ee28e748eb91364ca8"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>InternalStart</b><code> [get]</code></td></tr>
+<tr class="separator:aca091648f34af4ee28e748eb91364ca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a771b4722b37bee6043ac1fea4f37a823"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a771b4722b37bee6043ac1fea4f37a823"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>InternalStop</b><code> [get]</code></td></tr>
+<tr class="separator:a771b4722b37bee6043ac1fea4f37a823"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac856f6f68aa203981b39f4c8bed72809"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac856f6f68aa203981b39f4c8bed72809"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b><code> [get]</code></td></tr>
 <tr class="separator:ac856f6f68aa203981b39f4c8bed72809"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +213,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae619542a0e3aa47b81ec4c5033495e87"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a> (IList&lt; T &gt; list, int start, int count)</td></tr>
 <tr class="memdesc:ae619542a0e3aa47b81ec4c5033495e87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a slice. <a href="#ae619542a0e3aa47b81ec4c5033495e87">More...</a><br /></td></tr>
 <tr class="separator:ae619542a0e3aa47b81ec4c5033495e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae61d3ea58ffdddd5ee4d80cec88633ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae61d3ea58ffdddd5ee4d80cec88633ab"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ListSlice</b> (IList&lt; T &gt; list)</td></tr>
+<tr class="separator:ae61d3ea58ffdddd5ee4d80cec88633ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac70b407f60e9602304fc597188a1a7b2"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ac70b407f60e9602304fc597188a1a7b2">PopFront</a> (out bool fail)</td></tr>
 <tr class="memdesc:ac70b407f60e9602304fc597188a1a7b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes the first item from the range and returns it. <a href="#ac70b407f60e9602304fc597188a1a7b2">More...</a><br /></td></tr>
 <tr class="separator:ac70b407f60e9602304fc597188a1a7b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,9 +234,10 @@ IBRange&lt; T &gt; ICloneable<br class="typebreak" />
 IRange&lt; T &gt; ICloneable&lt; IRange<br class="typebreak" />
 &lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <tr class="separator:a4ac5754f6617569823668e6056097a51"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd7a369338229097aabbb83644d015eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd7a369338229097aabbb83644d015eb"></a>
-<a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
-<tr class="separator:acd7a369338229097aabbb83644d015eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec39d3a1c70d092992e1be4fdaf64f59"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec39d3a1c70d092992e1be4fdaf64f59"></a>
+<a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt; ICloneable<br class="typebreak" />
+&lt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt; &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
+<tr class="separator:aec39d3a1c70d092992e1be4fdaf64f59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a107c67844722a8c08c83a58e45f1d7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a107c67844722a8c08c83a58e45f1d7"></a>
 IEnumerator&lt; T &gt; IEnumerable&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
 <tr class="separator:a4a107c67844722a8c08c83a58e45f1d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,9 +255,9 @@ RangeEnumerator&lt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3
 <tr class="memitem:acdb8f7b541c5940edc31742b09d854be"><td class="memItemLeft" align="right" valign="top">IRange&lt; T &gt; IListSource&lt; T &gt;.&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#acdb8f7b541c5940edc31742b09d854be">Slice</a> (int start, int count)</td></tr>
 <tr class="memdesc:acdb8f7b541c5940edc31742b09d854be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#acdb8f7b541c5940edc31742b09d854be">More...</a><br /></td></tr>
 <tr class="separator:acdb8f7b541c5940edc31742b09d854be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14ee99166fb1d8fb741908934368263b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#a14ee99166fb1d8fb741908934368263b">Slice</a> (int start, int count)</td></tr>
-<tr class="memdesc:a14ee99166fb1d8fb741908934368263b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#a14ee99166fb1d8fb741908934368263b">More...</a><br /></td></tr>
-<tr class="separator:a14ee99166fb1d8fb741908934368263b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa46b966f667a44019b1db644e3f14380"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ae619542a0e3aa47b81ec4c5033495e87">ListSlice</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#aa46b966f667a44019b1db644e3f14380">Slice</a> (int start, int count=int.MaxValue)</td></tr>
+<tr class="memdesc:aa46b966f667a44019b1db644e3f14380"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sub-range of this list. <a href="#aa46b966f667a44019b1db644e3f14380">More...</a><br /></td></tr>
+<tr class="separator:aa46b966f667a44019b1db644e3f14380"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaa4f991b734b34123ab6c9299cb8c68"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adaa4f991b734b34123ab6c9299cb8c68"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexOf</b> (T item)</td></tr>
 <tr class="separator:adaa4f991b734b34123ab6c9299cb8c68"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -392,7 +412,7 @@ if (start + count) is above the original Count, the Count of the new slice is re
 <p>Removes the first item from the range and returns it.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">fail</td><td>Receives the current value of IsEmpty.</td></tr>
+    <tr><td class="paramname">fail</td><td>Receives the current value of IIsEmpty.IsEmpty.</td></tr>
   </table>
   </dd>
 </dl>
@@ -504,7 +524,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlic
 
 </div>
 </div>
-<a class="anchor" id="a14ee99166fb1d8fb741908934368263b"></a>
+<a class="anchor" id="aa46b966f667a44019b1db644e3f14380"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -521,7 +541,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlic
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramname"><em>count</em> = <code>int.MaxValue</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -613,11 +633,35 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1ListSlic
 
 </div>
 </div>
+<h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="af5cfde311f08ffefe73f8b2d7c0f25e4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IList&lt;T&gt; Loyc.Collections.ListSlice&lt; T &gt;.<a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html">InternalList</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the original list.</p>
+<p>Ideally, to protect the list there would be no way to access its contents beyond the boundaries of the slice. However, the reality in .NET today is that many methods accept "slices" in the form of a triple (list, start index, count). In order to call such an old-style API using a slice, one must be able to extract the internal list and start index values.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:28 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

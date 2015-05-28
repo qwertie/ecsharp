@@ -5,6 +5,7 @@ var searchData=
   ['generalcodegenhelper',['GeneralCodeGenHelper',['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html',1,'Loyc::LLParserGenerator']]],
   ['generatecodevisitor',['GenerateCodeVisitor',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
   ['getcanonical',['GetCanonical',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
+  ['globals',['Globals',['../classTextEditor_1_1Globals.html',1,'TextEditor']]],
   ['goaliasattribute',['GoAliasAttribute',['../classLoyc_1_1Utilities_1_1GoAliasAttribute.html',1,'Loyc::Utilities']]],
   ['godecoratorfieldattribute',['GoDecoratorFieldAttribute',['../classLoyc_1_1Utilities_1_1GoDecoratorFieldAttribute.html',1,'Loyc::Utilities']]],
   ['gointerface',['GoInterface',['../classLoyc_1_1Utilities_1_1GoInterface.html',1,'Loyc::Utilities']]],

@@ -96,10 +96,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>A sparse list that supports additional methods including InsertRange(ISparseListSource{T}). 
+<p>A sparse list that supports additional methods including InsertRange(int, ISparseListSource{T}). 
  <a href="interfaceLoyc_1_1Collections_1_1ISparseListEx_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs'>/Src/Loyc.Essentials/Collections/Interfaces/ISparseList.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Collections/Interfaces/ISparseList.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.ISparseListEx&lt; T &gt;:</div>
@@ -109,16 +109,12 @@ Inheritance diagram for Loyc.Collections.ISparseListEx&lt; T &gt;:</div>
   <map id="Loyc.Collections.ISparseListEx&lt; T &gt;_map" name="Loyc.Collections.ISparseListEx&lt; T &gt;_map">
 <area href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html" title="Represents a sparse list that allows insertion and removal of items and empty spaces. In a sparse list, some spaces can be "clear" meaning that they have no value." alt="Loyc.Collections.ISparseList&lt; T &gt;" shape="rect" coords="144,280,423,304"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListEx_3_01T_01_4.html" title="This interface combines the original IList(T) interface with several IListSource(T), ISinkList(T), IArray(T) and several additional methods (e.g. RemoveAll, InsertRange). " alt="Loyc.Collections.IListEx&lt; T &gt;" shape="rect" coords="1734,280,2013,304"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4.html" title="An auto-sizing array is a list structure that allows you to modify the element at any index..." alt="Loyc.Collections.IAutoSizeArray&lt; T &gt;" shape="rect" coords="2890,280,3169,304"/>
 <area href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html" title="Represents a read-only indexed list in which parts of the index space may be unused or "clear"..." alt="Loyc.Collections.ISparseListSource&lt; T &gt;" shape="rect" coords="0,224,279,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListAndListSource_3_01T_01_4.html" title="This interface combines the original IList{T} interface with its "source" (read-only) component inter..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="289,224,568,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListAndListSource_3_01T_01_4.html" title="This interface combines the original IList{T} interface with its "source" (read-only) component inter..." alt="Loyc.Collections.IListAndListSource&lt; T &gt;" shape="rect" coords="867,224,1146,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1ICollectionEx_3_01T_01_4.html" title="This interface combines the original ICollection(T) interface with IReadOnlyCollection(T), ISinkCollection(T), and IAddRange(T), a convenient way to implement all three. " alt="Loyc.Collections.ICollectionEx&lt; T &gt;" shape="rect" coords="1445,224,1724,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1IArray_3_01T_01_4.html" title="This interface models the capabilities of an array: getting and setting elements by index..." alt="Loyc.Collections.IArray&lt; T &gt;" shape="rect" coords="2023,224,2302,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListRangeMethods_3_01T_01_4.html" title="An interface typically implemented alongside IList{T} for collection types that can add or remove mul..." alt="Loyc.Collections.IListRangeMethods&lt; T &gt;" shape="rect" coords="2601,224,2880,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1IArray_3_01T_01_4.html" title="This interface models the capabilities of an array: getting and setting elements by index..." alt="Loyc.Collections.IArray&lt; T &gt;" shape="rect" coords="2890,224,3169,248"/>
-<area href="interfaceLoyc_1_1Collections_1_1ISinkArray_3_01T_01_4.html" title="Represents a write-only array." alt="Loyc.Collections.ISinkArray&lt; T &gt;" shape="rect" coords="3179,168,3458,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="3179,112,3458,136"/>
 <area href="interfaceLoyc_1_1Collections_1_1IAddRange_3_01T_01_4.html" title="An interface typically implemented alongside ICollection{T}, for collection types that can add multip..." alt="Loyc.Collections.IAddRange&lt; T &gt;" shape="rect" coords="2601,168,2880,192"/>
 <area href="interfaceLoyc_1_1Collections_1_1ISinkArray_3_01T_01_4.html" title="Represents a write-only array." alt="Loyc.Collections.ISinkArray&lt; T &gt;" shape="rect" coords="2312,168,2591,192"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="2312,112,2591,136"/>
@@ -131,31 +127,32 @@ Inheritance diagram for Loyc.Collections.ISparseListEx&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly_3_01T_01_4.html" title="This interface combines the original ICollection{T} with IReadOnlyCollection{T}. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="578,168,857,192"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="578,112,857,136"/>
 <area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="0,168,279,192"/>
+<area href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html" title="A sparse A-List that implements ISparseList{T}." alt="Loyc.Collections.SparseAList&lt; T &gt;" shape="rect" coords="939,392,1218,416"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>A sparse list that supports additional methods including InsertRange(ISparseListSource{T}).</p>
+<div class="textblock"><p>A sparse list that supports additional methods including InsertRange(int, ISparseListSource{T}).</p>
 <dl class="section see"><dt>See also</dt><dd>ISparseList{T}</dd></dl>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a38052bbb622b006495908d281bf873ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListEx_3_01T_01_4.html#a38052bbb622b006495908d281bf873ac">InsertRange</a> (ISparseListSource&lt; T &gt; list)</td></tr>
-<tr class="memdesc:a38052bbb622b006495908d281bf873ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts another sparse list into this one. <a href="#a38052bbb622b006495908d281bf873ac">More...</a><br /></td></tr>
-<tr class="separator:a38052bbb622b006495908d281bf873ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b7c2541b4dc68331cb0dcdb4a11432c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListEx_3_01T_01_4.html#a1b7c2541b4dc68331cb0dcdb4a11432c">InsertRange</a> (int index, ISparseListSource&lt; T &gt; list)</td></tr>
+<tr class="memdesc:a1b7c2541b4dc68331cb0dcdb4a11432c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts another sparse list into this one. <a href="#a1b7c2541b4dc68331cb0dcdb4a11432c">More...</a><br /></td></tr>
+<tr class="separator:a1b7c2541b4dc68331cb0dcdb4a11432c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html">Loyc.Collections.ISparseList&lt; T &gt;</a></td></tr>
-<tr class="memitem:a171449bb3ba3c90ac573c1a009d73859 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a171449bb3ba3c90ac573c1a009d73859"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Clear</b> (int index, int count=1)</td></tr>
-<tr class="separator:a171449bb3ba3c90ac573c1a009d73859 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8de71a160b8af846f83c84dd5ce14f1 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8de71a160b8af846f83c84dd5ce14f1"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InsertSpace</b> (int index, int count=1)</td></tr>
+<tr class="memitem:a1cc7602d2b01718465030073eb50d0e4 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html#a1cc7602d2b01718465030073eb50d0e4">ClearSpace</a> (int index, int count=1)</td></tr>
+<tr class="memdesc:a1cc7602d2b01718465030073eb50d0e4 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unsets the range of indices <code>index</code> to <code>index+count-1</code> inclusive. If <code>index + count &gt; Count</code>, the sparse list shall enlarge <code>Count</code> to be equal to <code>index + count</code>. <a href="#a1cc7602d2b01718465030073eb50d0e4">More...</a><br /></td></tr>
+<tr class="separator:a1cc7602d2b01718465030073eb50d0e4 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8de71a160b8af846f83c84dd5ce14f1 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4.html#ac8de71a160b8af846f83c84dd5ce14f1">InsertSpace</a> (int index, int count=1)</td></tr>
+<tr class="memdesc:ac8de71a160b8af846f83c84dd5ce14f1 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts empty space starting at the specified index. <a href="#ac8de71a160b8af846f83c84dd5ce14f1">More...</a><br /></td></tr>
 <tr class="separator:ac8de71a160b8af846f83c84dd5ce14f1 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseList_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html">Loyc.Collections.ISparseListSource&lt; T &gt;</a></td></tr>
-<tr class="memitem:a47a84f07d6040fbc5055ff69b654f8ee inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a47a84f07d6040fbc5055ff69b654f8ee">NextHigher</a> (int index)</td></tr>
-<tr class="memdesc:a47a84f07d6040fbc5055ff69b654f8ee inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next higher index of a non-empty (cleared) element of the list, or null if there are no higher indexes. <a href="#a47a84f07d6040fbc5055ff69b654f8ee">More...</a><br /></td></tr>
-<tr class="separator:a47a84f07d6040fbc5055ff69b654f8ee inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af870f9ba2d7f77f59c6ee957a8dfb795 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af870f9ba2d7f77f59c6ee957a8dfb795">NextLower</a> (int index)</td></tr>
-<tr class="memdesc:af870f9ba2d7f77f59c6ee957a8dfb795 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the next lower index of a non-empty (cleared) element of the list, or null if there are no lower indexes. <a href="#af870f9ba2d7f77f59c6ee957a8dfb795">More...</a><br /></td></tr>
-<tr class="separator:af870f9ba2d7f77f59c6ee957a8dfb795 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af364c65eb954e62096dc1fdfa121e07d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#af364c65eb954e62096dc1fdfa121e07d">NextHigherItem</a> (ref int?index)</td></tr>
+<tr class="memdesc:af364c65eb954e62096dc1fdfa121e07d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index. <a href="#af364c65eb954e62096dc1fdfa121e07d">More...</a><br /></td></tr>
+<tr class="separator:af364c65eb954e62096dc1fdfa121e07d inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4bd398e22eeebac504bbd5feb6b09b3 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#ac4bd398e22eeebac504bbd5feb6b09b3">NextLowerItem</a> (ref int?index)</td></tr>
+<tr class="memdesc:ac4bd398e22eeebac504bbd5feb6b09b3 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decreases <code>index</code> by at least one to reach the next index that is not classified as empty space, and returns the item at that index. <a href="#ac4bd398e22eeebac504bbd5feb6b09b3">More...</a><br /></td></tr>
+<tr class="separator:ac4bd398e22eeebac504bbd5feb6b09b3 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a729f3e987410a739101c05289a7ede31 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4.html#a729f3e987410a739101c05289a7ede31">IsSet</a> (int index)</td></tr>
 <tr class="memdesc:a729f3e987410a739101c05289a7ede31 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether a value exists at the specified index. <a href="#a729f3e987410a739101c05289a7ede31">More...</a><br /></td></tr>
 <tr class="separator:a729f3e987410a739101c05289a7ede31 inherit pub_methods_interfaceLoyc_1_1Collections_1_1ISparseListSource_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -202,10 +199,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>TrySet</b> (int index
 <tr class="memitem:a2d28681d4c8a72746cd98bb9862a35ad inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListRangeMethods_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d28681d4c8a72746cd98bb9862a35ad"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRange</b> (int index, int amount)</td></tr>
 <tr class="separator:a2d28681d4c8a72746cd98bb9862a35ad inherit pub_methods_interfaceLoyc_1_1Collections_1_1IListRangeMethods_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4.html">Loyc.Collections.IAutoSizeArray&lt; T &gt;</a></td></tr>
-<tr class="memitem:a12be0020173584c1dfb7a39e11f0a8ea inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4.html#a12be0020173584c1dfb7a39e11f0a8ea">Optimize</a> ()</td></tr>
-<tr class="memdesc:a12be0020173584c1dfb7a39e11f0a8ea inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimizes the data structure to consume less memory or storage space. <a href="#a12be0020173584c1dfb7a39e11f0a8ea">More...</a><br /></td></tr>
-<tr class="separator:a12be0020173584c1dfb7a39e11f0a8ea inherit pub_methods_interfaceLoyc_1_1Collections_1_1IAutoSizeArray_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -227,21 +220,33 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code
 <tr class="separator:a0347836619003dc30f80ec9e3d7a9eaa inherit properties_interfaceLoyc_1_1Collections_1_1ISinkArray_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a38052bbb622b006495908d281bf873ac"></a>
+<a class="anchor" id="a1b7c2541b4dc68331cb0dcdb4a11432c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.ISparseListEx&lt; T &gt;.InsertRange </td>
           <td>(</td>
-          <td class="paramtype">ISparseListSource&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>list</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">ISparseListSource&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Inserts another sparse list into this one.</p>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#aea0f18a3e2d543c762a07a48e7e0b231">Loyc.Collections.SparseAList&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -249,7 +254,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index]</b><code
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:28 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>The tail of a VList contains only one or two items. To improve efficiency slightly, these two-item lists are represented by a VListBlockOfTwo, which is more compact than VListBlockArray. 
  <a href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Collections/VLists/VListBlockOfTwo.cs'>/Src/Loyc.Collections/VLists/VListBlockOfTwo.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Collections/VLists/VListBlockOfTwo.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.Collections.VListBlockOfTwo&lt; T &gt;:</div>
@@ -200,6 +200,9 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>RGet</b> (in
 <tr class="memitem:a1a3657c7e57f0673683847e6d7e70d4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a3657c7e57f0673683847e6d7e70d4c"></a>
 override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int localCount, Predicate&lt; T &gt; keep, WListProtected&lt; T &gt; forWList)</td></tr>
 <tr class="separator:a1a3657c7e57f0673683847e6d7e70d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e14f89413a11d18f2a88f64aeb1aea7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e14f89413a11d18f2a88f64aeb1aea7"></a>
+override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WhereSelect</b> (int _localCount, Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
+<tr class="separator:a4e14f89413a11d18f2a88f64aeb1aea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1747f948b4cf883f36f5ebfe3b4d963"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1747f948b4cf883f36f5ebfe3b4d963"></a>
 override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SmartSelect</b> (int _localCount, Func&lt; T, T &gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
 <tr class="separator:ab1747f948b4cf883f36f5ebfe3b4d963"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -226,6 +229,9 @@ override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:ad96c677619f18ac86c59e94b7dce64a2 inherit pro_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad96c677619f18ac86c59e94b7dce64a2"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MuAddEmpty2</b> (WListProtected&lt; T &gt; w, int count, int newBlockSizeLimit)</td></tr>
 <tr class="separator:ad96c677619f18ac86c59e94b7dce64a2 inherit pro_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a326e6ed1962c60c1ac3560152f525f12 inherit pro_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a326e6ed1962c60c1ac3560152f525f12"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsSame</b> (T old, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt; @new)</td></tr>
+<tr class="separator:a326e6ed1962c60c1ac3560152f525f12 inherit pro_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -598,7 +604,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:31 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

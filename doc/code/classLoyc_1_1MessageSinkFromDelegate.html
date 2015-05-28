@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>This helper class lets you implement <a class="el" href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information...">IMessageSink</a> with one or two delegates (a writer method, and an optional severity filter). 
  <a href="classLoyc_1_1MessageSinkFromDelegate.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Loyc.Essentials/Utilities/MessageSinks.cs'>/Src/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
+<li>D:/Dev/Loyc/Core/Loyc.Essentials/Utilities/MessageSinks.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.MessageSinkFromDelegate:</div>
@@ -115,9 +115,9 @@ Inheritance diagram for Loyc.MessageSinkFromDelegate:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a596e1c3f4cba1d5c8e3859d5af9f9756"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a596e1c3f4cba1d5c8e3859d5af9f9756">MessageSinkFromDelegate</a> (Action&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, object[]&gt; writer, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; isEnabled=null)</td></tr>
-<tr class="memdesc:a596e1c3f4cba1d5c8e3859d5af9f9756"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes this object. <a href="#a596e1c3f4cba1d5c8e3859d5af9f9756">More...</a><br /></td></tr>
-<tr class="separator:a596e1c3f4cba1d5c8e3859d5af9f9756"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4664a68a57730e778426c488001da302"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a4664a68a57730e778426c488001da302">MessageSinkFromDelegate</a> (<a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a> writer, Func&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, bool &gt; isEnabled=null)</td></tr>
+<tr class="memdesc:a4664a68a57730e778426c488001da302"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes this object. <a href="#a4664a68a57730e778426c488001da302">More...</a><br /></td></tr>
+<tr class="separator:a4664a68a57730e778426c488001da302"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a858d861e88ebc68093fa073a415f53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a6a858d861e88ebc68093fa073a415f53">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
 <tr class="memdesc:a6a858d861e88ebc68093fa073a415f53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a6a858d861e88ebc68093fa073a415f53">More...</a><br /></td></tr>
 <tr class="separator:a6a858d861e88ebc68093fa073a415f53"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -128,11 +128,11 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
 <tr class="separator:a15437990f1e1af26a9aa256b46ead491"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7833e803e6d5583c57811f5ad8bbb797"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a7833e803e6d5583c57811f5ad8bbb797">IsEnabled</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type)</td></tr>
-<tr class="memdesc:a7833e803e6d5583c57811f5ad8bbb797"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if messages of type 'type' will actually be printed, or false if Write(type, ...) is a no-op. <a href="#a7833e803e6d5583c57811f5ad8bbb797">More...</a><br /></td></tr>
+<tr class="memdesc:a7833e803e6d5583c57811f5ad8bbb797"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if messages of the specified type will actually be printed, or false if Write(type, ...) is a no-op. <a href="#a7833e803e6d5583c57811f5ad8bbb797">More...</a><br /></td></tr>
 <tr class="separator:a7833e803e6d5583c57811f5ad8bbb797"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a596e1c3f4cba1d5c8e3859d5af9f9756"></a>
+<a class="anchor" id="a4664a68a57730e778426c488001da302"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -142,7 +142,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">Loyc.MessageSinkFromDelegate.MessageSinkFromDelegate </td>
           <td>(</td>
-          <td class="paramtype">Action&lt; <a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>, object, string, object[]&gt;&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceLoyc.html#ab24c6dd4dc0e77e5891e63a6f257763f">WriteMessageFn</a>&#160;</td>
           <td class="paramname"><em>writer</em>, </td>
         </tr>
         <tr>
@@ -168,7 +168,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">writer</td><td>Required. A method that accepts output.</td></tr>
-    <tr><td class="paramname">isEnabled</td><td>Optional. A method that decides whether to output based on the message type. If this parameter is provided, then <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a6a858d861e88ebc68093fa073a415f53" title="Writes a message to the target that this object represents.">Write</a>() will not invoke the writer when isEnabled returns false. This delegate is also called by <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a7833e803e6d5583c57811f5ad8bbb797" title="Returns true if messages of type &#39;type&#39; will actually be printed, or false if Write(type, ...) is a no-op.">IsEnabled</a>().</td></tr>
+    <tr><td class="paramname">isEnabled</td><td>Optional. A method that decides whether to output based on the message type. If this parameter is provided, then <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a6a858d861e88ebc68093fa073a415f53" title="Writes a message to the target that this object represents.">Write</a>() will not invoke the writer when isEnabled returns false. This delegate is also called by <a class="el" href="classLoyc_1_1MessageSinkFromDelegate.html#a7833e803e6d5583c57811f5ad8bbb797" title="Returns true if messages of the specified type will actually be printed, or false if Write(type...">IsEnabled</a>().</td></tr>
   </table>
   </dd>
 </dl>
@@ -198,7 +198,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns true if messages of type 'type' will actually be printed, or false if Write(type, ...) is a no-op.</p>
+<p>Returns true if messages of the specified type will actually be printed, or false if Write(type, ...) is a no-op.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a77fa394b05a1f42adcd07a4d1fc89de5">Loyc.IMessageSink</a>.</p>
 
@@ -248,7 +248,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">type</td><td>Severity or importance of the message; widely-used types include Error, Warning, Note, Debug, and Verbose. The special type Detail is intended to provide more information about a previous message.</td></tr>
-    <tr><td class="paramname">context</td><td>An object that represents the location that the message applies to, a string that indicates what the program was doing when the message was generated, or any other relevant context information. See also <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Returns ILocationString.LocationString if &#39;context&#39; implements that interface, null if context is nul...">MessageSink.LocationString</a>().</td></tr>
+    <tr><td class="paramname">context</td><td>An object that the message is related to, or that represents the location that the message applies to. The message sink may try to convert this object to a string and include it in its output. See also <a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3" title="Gets the location information from the specified object, or converts the object to a string...">MessageSink.LocationString</a>().</td></tr>
     <tr><td class="paramname">format</td><td>A message to display. If there are additional arguments, placeholders such as {0} and {1} refer to these arguments.</td></tr>
   </table>
   </dd>
@@ -264,7 +264,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:22 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

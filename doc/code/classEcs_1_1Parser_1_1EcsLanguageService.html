@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>The Value property provides easy access to the lexer, parser and printer for Enhanced C#. 
  <a href="classEcs_1_1Parser_1_1EcsLanguageService.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/blob/master/Src/Ecs/Parser/EcsLanguageService.cs'>/Src/Ecs/Parser/EcsLanguageService.cs</a></li>
+<li>D:/Dev/Loyc/Main/Ecs/Parser/EcsLanguageService.cs</li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Ecs.Parser.EcsLanguageService:</div>
@@ -395,6 +395,16 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 </div><div class="memdoc">
 
 <p>Converts the specified syntax tree to a string.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">node</td><td>A syntax tree to print.</td></tr>
+    <tr><td class="paramname">msgs</td><td>If errors or warnings occur during printing, they are sent here.</td></tr>
+    <tr><td class="paramname">mode</td><td>Language-defined configuration. It is suggested that the printing service should accept ParsingService.Exprs, ParsingService.Stmts and ParsingService.File as possible printing modes.</td></tr>
+    <tr><td class="paramname">indentString</td><td>Indent character for multi-line nodes</td></tr>
+    <tr><td class="paramname">lineSeparator</td><td>Newline string for multi-line nodes</td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ad71681f960a3f5b818b6287b2444958a">Loyc.Syntax.IParsingService</a>.</p>
 
@@ -441,10 +451,9 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <p>Returns a lexer that is configured to begin reading the specified file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">file</td><td>Text to be tokenized (e.g. StringSlice)</td></tr>
+    <tr><td class="paramname">file</td><td>Text to be tokenized (e.g. UString)</td></tr>
     <tr><td class="paramname">fileName</td><td>File name to be associated with any errors that occur.</td></tr>
     <tr><td class="paramname">msgs</td><td>Error messages are sent to this object.</td></tr>
-    <tr><td class="paramname">onComment</td><td>Comments, and regions removed by the preprocessor (if any), are passed to this optional callback.</td></tr>
   </table>
   </dd>
 </dl>
@@ -458,7 +467,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 10 2014 15:33:20 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu May 28 2015 17:09:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
