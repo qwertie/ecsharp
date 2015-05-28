@@ -1,0 +1,13 @@
+# This tells git to use LFs, not CRLFs, when committing to the repo.
+* text=auto eol=lf encoding=UTF-8
+*.png binary
+*.jpeg binary
+*.jpg binary
+*.gif binary
+*.wav binary
+*.mp3 binary
+*.smc binary
+*.doc binary
+*.xls binary
+*.odt binary
+*.pdf binary
