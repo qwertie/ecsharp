@@ -50,6 +50,7 @@ Enlightening, right?! But what about all the "c"s everywhere? What is the meanin
 
 > As the input channel of `TwoWayTalk` and the output channel of `Average` have the same protocol, these two processes can be plugged together to make a compsite process `TwoAverage`. In line 34-37, `plug` command is used to plug `Average` to `TwoWayTalk` on channel `x`. Finally one runs the process `TwoAverage`.
 
+~~~
 1  -- protocol definition
 2  protocol Talk (a b) => $C =
 3         #response :: get a (put b $C) => $C
@@ -90,6 +91,7 @@ Enlightening, right?! But what about all the "c"s everywhere? What is the meanin
 38
 39 -- initializing command to start the execution of a MPL program
 40 run TwoAverage
+~~~
 
 Uh-huh. Now you might be able to figure out what this example is meant to do if you study it carefully for long enough. Even if you figure out how this works, though, you won't learn much about MPL. And I'm sure you don't have time to read the rest, so just take it from me, you're just not going to understand MPL from reading this thesis.
 
