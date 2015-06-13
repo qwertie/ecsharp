@@ -149,8 +149,8 @@ namespace Loyc
 		/// converts the object to a string.</summary>
 		/// <param name="context">A value whose string representation you want to get.</param>
 		/// <returns>
-		/// If <c>context</c> implements <see cref="ILocationString"/>,
-		/// this function returns <see cref="ILocationString.LocationString"/>; 
+		/// If <c>context</c> implements <see cref="IHasLocation"/>,
+		/// this function returns <see cref="IHasLocation.Location"/>; 
 		/// if <c>context</c> is null, this method returns <c>null</c>; otherwise 
 		/// it returns <c>context.ToString()</c>.
 		/// </returns>
@@ -166,14 +166,22 @@ namespace Loyc
 		/// <para/>
 		/// Therefore, message sinks that display a message in text form will call
 		/// this method to convert the context object to a string, and if available,
-		/// this method calls the <see cref="ILocationString.LocationString"/>
+		/// this method calls the <see cref="IHasLocation.Location"/>
 		/// property of the context object.
 		/// </remarks>
 		public static string LocationString(object context)
 		{
 			if (context == null) return null;
-			var ils = context as ILocationString;
-			return ils != null ? ils.LocationString : context.ToString();
+			var ils = context as IHasLocation;
+			return (ils != null ? ils.Location ?? context : context).ToString();
+		}
+		/// <summary>Returns context.Location if context implements 
+		/// <see cref="IHasLocation"/>; otherwise, returns context itself.</summary>
+		public static object LocationOf(object context)
+		{
+			var loc = context as IHasLocation;
+			if (loc == null) return context;
+			return loc.Location;
 		}
 
 		public static string FormatMessage(Severity type, object context, string format, params object[] args)
@@ -207,9 +215,9 @@ namespace Loyc
 	/// interface so that when a compiler error refers to a source code construct,
 	/// the error message contains the location of that source code rather than the
 	/// code itself.</remarks>
-	public interface ILocationString
+	public interface IHasLocation
 	{
-		string LocationString { get; }
+		object Location { get; }
 	}
 
 	/// <summary>This is the method signature of <c>IMessageSink.Write()</c>. You 

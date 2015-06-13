@@ -7,16 +7,16 @@ using Loyc.Utilities;
 
 namespace Loyc.Syntax.Lexing
 {
-	/// <summary>
-	/// A standard interface for lexers.
-	/// </summary>
-	public interface ILexer : IEnumerator<Token>
+	/// <summary>A standard interface for lexers.</summary>
+	/// <typeparam name="Token">Type of tokens produced by the lexer (usually
+	/// <see cref="Loyc.Syntax.Lexing.Token"/>).</typeparam>
+	public interface ILexer<Token> : IEnumerator<Token>
 	{
 		/// <summary>The file being lexed.</summary>
 		ISourceFile SourceFile { get; }
 		/// <summary>Scans the next token and returns information about it.</summary>
 		/// <returns>The next token, or null at the end of the source file.</returns>
-		Token? NextToken();
+		Maybe<Token> NextToken();
 		/// <summary>Event handler for errors.</summary>
 		IMessageSink ErrorSink { get; set; }
 		/// <summary>Indentation level of the current line. This is updated after 
@@ -31,14 +31,14 @@ namespace Loyc.Syntax.Lexing
 
 	/// <summary>A base class for wrappers that modify lexer behavior.
 	/// Implements the ILexer interface, except for the NextToken() method.</summary>
-	public abstract class LexerWrapper : ILexer
+	public abstract class LexerWrapper<Token> : ILexer<Token>
 	{
-		public LexerWrapper(ILexer source)
+		public LexerWrapper(ILexer<Token> source)
 			{ _source = source; }
 		
-		protected ILexer _source;
+		protected ILexer<Token> _source;
 
-		public abstract Token? NextToken();
+		public abstract Maybe<Token> NextToken();
 
 		public ISourceFile SourceFile
 		{
@@ -66,7 +66,7 @@ namespace Loyc.Syntax.Lexing
 			_source.Reset();
 		}
 
-		protected Token? _current;
+		protected Maybe<Token> _current;
 		void IDisposable.Dispose() {}
 		Token IEnumerator<Token>.Current { get { return _current.Value; } }
 		object System.Collections.IEnumerator.Current { get { return _current; } }

@@ -58,7 +58,7 @@ namespace Loyc.Syntax
 		public override bool IsIdNamed(Symbol name)             { return Name == name; }
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Just(selector(n))); }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Value(selector(n))); }
 		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
 		{
 			return replaceRoot ? selector(this) ?? this : this;
@@ -107,7 +107,7 @@ namespace Loyc.Syntax
 		}
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Just(selector(n))); }
+		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Value(selector(n))); }
 		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
 		{
 			return replaceRoot ? selector(this) ?? this : this;
@@ -190,7 +190,7 @@ namespace Loyc.Syntax
 		}
 		public sealed override LNode Select(Func<LNode, LNode> selector)
 		{
-			LNode result = WithAttrs(n => Maybe.Just(selector(n)));
+			LNode result = WithAttrs(n => Maybe.Value(selector(n)));
 			LNode target = selector(Target);
 			var args = Args.SmartSelect(selector);
 			return result.With(target, args);

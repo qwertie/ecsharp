@@ -39,7 +39,7 @@ namespace Loyc.Syntax.Les
 		{
 			get { return true; }
 		}
-		public ILexer Tokenize(ICharSource text, string fileName, IMessageSink msgs)
+		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
 			return new LesLexer(text, fileName, msgs);
 		}
@@ -48,7 +48,7 @@ namespace Loyc.Syntax.Les
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
-		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null)
 		{
 			var treeified = new TokensToTree(input, true);
 			return Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);

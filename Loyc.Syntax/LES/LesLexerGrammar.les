@@ -3,6 +3,7 @@ import System;
 import System.Collections.Generic;
 import System.Linq;
 import System.Text;
+import System.Diagnostics;
 import Loyc;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
@@ -16,28 +17,11 @@ namespace Loyc.Syntax.Les
 	{
 		// Whitespace & comments -------------------------------------------------
 
-		extern token Newline @[ '\r' '\n'? | '\n' ];
-		[#new] def Newline() {
-			base.Newline();
-			_value = WhitespaceTag.Value;
-		};
-		private token DotIndent {
-			@[	&{_startPosition == _lineStartAt}
-				('.' (' '|'\t')+)+ ];
-			_type = TT.Spaces;
-			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		};
-		private token Spaces {
-			@[ (' '|'\t')+ ];
-			if (_lineStartAt == _startPosition) 
-				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		};
-		private token UTF_BOM {
-			@[ '\uFEFF' ]; // Byte order mark, in case the Encoding didn't strip it out.
-			if (_lineStartAt == _startPosition) 
-				_lineStartAt = InputPosition;
+		extern token Spaces() @[ (' '|'\t')* ];
+
+		[#new] token Newline(ignoreIndent::bool = false) {
+			@[ '\r' '\n'? | '\n' ];
+			AfterNewline(ignoreIndent, true);
 			_value = WhitespaceTag.Value;
 		};
 		private token SLComment {
@@ -46,7 +30,7 @@ namespace Loyc.Syntax.Les
 		};
 		[k(3)]
 		private token MLComment {
-			@[ "/*" nongreedy(MLComment / Newline / _)* "*/" ];
+			@[ "/*" nongreedy(MLComment / Newline(true) / _)* "*/" ];
 			_value = WhitespaceTag.Value;
 		};
 		
@@ -110,9 +94,9 @@ namespace Loyc.Syntax.Les
 		private token TQString {
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate;
-			@[ '"' '"' '"' nongreedy(Newline / _)* '"' '"' '"' 
+			@[ '"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
 			 | {_style |= NodeStyle.Alternate2;}
-			   "'''"       nongreedy(Newline / _)* "'''" ];
+			   "'''"       nongreedy(Newline(true) / _)* "'''" ];
 			ParseStringValue(true);
 		};
 		
@@ -162,14 +146,20 @@ namespace Loyc.Syntax.Les
 		// Token -----------------------------------------------------------------
 
 		[k(3)]
-		private token Token @[
-			( &{InputPosition == 0} 
+		public override token NextToken::Maybe!Token {
+			Spaces();
+			_value = null;
+			_style = 0;
+			if LA0 == -1 { // EOF
+				return NoValue.Value;
+			};
+			_startPosition = InputPosition;
+			@[
+			  &{InputPosition == 0} 
 			  {_type = TT.Shebang;}   Shebang
 			/ {_type = TT.Symbol;}    Symbol
 			/ {_type = TT.Id;}        Id
-			/ {_type = TT.Spaces;}    Spaces
 			/ {_type = TT.Newline;}   Newline
-			/                         DotIndent
 			/ {_type = TT.SLComment;} SLComment
 			/ {_type = TT.MLComment;} MLComment
 			/ {_type = TT.Number;}    Number
@@ -188,25 +178,27 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.At;}        At
 			/                         BackslashOp
 			/                         Operator
-			/ {_type = TT.Spaces;}    UTF_BOM
 			/ {_type = TT.Colon;}     Colon
 			/ error { _value = @null; }
-			  ( EOF {_type = TT.EOF;}
-			  | _   {_type = TT.Unknown;} )
-			)
-		];
+				( EOF {_type = TT.EOF;}
+				| _   {_type = TT.Unknown;} )
+			];
+			Debug.Assert(InputPosition > _startPosition);
+			return (_current = new Token(_type -> int, _startPosition, InputPosition - _startPosition, _style, _value));
+		};
+
 		static readonly _Comma::Symbol = GSymbol.Get(",");
 		static readonly _Semicolon::Symbol = GSymbol.Get(";");
 		static readonly _Colon::Symbol = GSymbol.Get(":");
 
-		// Partial tokens used for syntax highlighting. A LES syntax highlighter
+		// Partial tokens used for syntax highlighting. An LES syntax highlighter
 		// can record the token continued in each line (''', """ or /*) call one
 		// of these rules to proces that token until it ends or the line ends.
 		
 		[k(3)]
-		public token TDQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | '"' '"' '"' {return true;}) ];
+		public token TDQStringLine::bool @[ nongreedy(_)* (Newline(true) {return false;} | '"' '"' '"' {return true;}) ];
 		[k(3)]
-		public token TSQStringLine::bool @[ nongreedy(_)* (Newline {return false;} | "'''" {return true;}) ];
+		public token TSQStringLine::bool @[ nongreedy(_)* (Newline(true) {return false;} | "'''" {return true;}) ];
 		public token MLCommentLine(ref nested::int)::bool @[ 
 			(greedy
 			  ( &{nested>0} "*/" {nested--;}
@@ -214,7 +206,7 @@ namespace Loyc.Syntax.Les
 			  / ~('\r'|'\n'|'*')
 			  / '*' (&!'/')
 			  ))*
-			(Newline {return false;} | "*/" {return true;})
+			(Newline(true) {return false;} | "*/" {return true;})
 		];
 	}}
 }

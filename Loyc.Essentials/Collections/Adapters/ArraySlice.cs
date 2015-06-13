@@ -18,7 +18,9 @@ namespace Loyc.Collections
 	{
 		T[] _list;
 		int _start, _count;
-		
+
+		public static implicit operator ArraySlice<T>(T[] array) { return new ArraySlice<T>(array); }
+
 		/// <summary>Initializes an array slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
 		/// <remarks>The (start, count) range is allowed to be invalid, as long
@@ -39,6 +41,12 @@ namespace Loyc.Collections
 			if (count < 0) throw new ArgumentException("The count was below zero.");
 			if (count > _list.Length - start)
 				_count = System.Math.Max(_list.Length - start, 0);
+		}
+		public ArraySlice(T[] list)
+		{
+			_list = list;
+			_start = 0;
+			_count = list.Length;
 		}
 
 		public int Count
@@ -81,10 +89,10 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
-		IFRange<T> ICloneable<IFRange<T>>.Clone() { return Clone(); }
-		IBRange<T> ICloneable<IBRange<T>>.Clone() { return Clone(); }
-		IRange<T> ICloneable<IRange<T>>.Clone() { return Clone(); }
-		public ArraySlice<T> Clone() { return this; }
+		IFRange<T> ICloneable<IFRange<T>>.Clone() { return this; }
+		IBRange<T> ICloneable<IBRange<T>>.Clone() { return this; }
+		IRange<T> ICloneable<IRange<T>>.Clone() { return this; }
+		ArraySlice<T> ICloneable<ArraySlice<T>>.Clone() { return this; }
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -103,7 +111,8 @@ namespace Loyc.Collections
 			set {
 				if ((uint)index < (uint)_count)
 					_list[_start + index] = value;
-				throw new IndexOutOfRangeException();
+				else
+					throw new IndexOutOfRangeException();
 			}
 		}
 		public T this[int index, T defaultValue]
@@ -124,7 +133,7 @@ namespace Loyc.Collections
 			return default(T);
 		}
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public ArraySlice<T> Slice(int start, int count)
+		public ArraySlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0)
 				throw new ArgumentException("The start index was below zero.");
@@ -135,7 +144,7 @@ namespace Loyc.Collections
 			slice._start = this._start + start;
 			slice._count = count;
 			if (slice._count > this._count - start)
-				slice._count = System.Math.Max(this._count - _start, 0);
+				slice._count = System.Math.Max(this._count - start, 0);
 			return slice;
 		}
 

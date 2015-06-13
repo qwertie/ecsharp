@@ -1,12 +1,14 @@
-// Generated from LesLexerGrammar.les by LLLPG custom tool. LLLPG version: 1.2.0.0
+// Generated from LesLexerGrammar.les by LeMP custom tool. LLLPG version: 1.3.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
-// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
-// --verbose             Allow verbose messages (shown as 'warnings')
 // --no-out-header       Suppress this message
+// --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
+// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
@@ -15,73 +17,23 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 	public partial class LesLexer
 	{
-		new void Newline()
-		{
-			base.Newline();
-			_value = WhitespaceTag.Value;
-		}
 		static readonly Symbol _Comma = GSymbol.Get(",");
 		static readonly Symbol _Semicolon = GSymbol.Get(";");
 		static readonly Symbol _Colon = GSymbol.Get(":");
-		void DotIndent()
-		{
-			int la0, la1;
-			Skip();
-			Skip();
-			// Line 26: ([\t ])*
-			 for (;;) {
-				la0 = LA0;
-				if (la0 == '\t' || la0 == ' ')
-					Skip();
-				else
-					break;
-			}
-			// Line 26: ([.] [\t ] ([\t ])*)*
-			 for (;;) {
-				la0 = LA0;
-				if (la0 == '.') {
-					la1 = LA(1);
-					if (la1 == '\t' || la1 == ' ') {
-						Skip();
-						Skip();
-						// Line 26: ([\t ])*
-						 for (;;) {
-							la0 = LA0;
-							if (la0 == '\t' || la0 == ' ')
-								Skip();
-							else
-								break;
-						}
-					} else
-						break;
-				} else
-					break;
-			}
-			_type = TT.Spaces;
-			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		}
-		void Spaces()
+		new void Newline(bool ignoreIndent = false)
 		{
 			int la0;
-			Skip();
-			// Line 32: ([\t ])*
-			 for (;;) {
+			// Line 23: ([\r] ([\n])? | [\n])
+			la0 = LA0;
+			if (la0 == '\r') {
+				Skip();
+				// Line 23: ([\n])?
 				la0 = LA0;
-				if (la0 == '\t' || la0 == ' ')
+				if (la0 == '\n')
 					Skip();
-				else
-					break;
-			}
-			if ((_lineStartAt == _startPosition))
-				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		}
-		void UTF_BOM()
-		{
-			Skip();
-			if ((_lineStartAt == _startPosition))
-				_lineStartAt = InputPosition;
+			} else
+				Match('\n');
+			AfterNewline(ignoreIndent, true);
 			_value = WhitespaceTag.Value;
 		}
 		void SLComment()
@@ -89,23 +41,25 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			Skip();
-			// Line 44: ([^\$\n\r])*
-			 for (;;) {
+			// Line 28: ([^\$\n\r])*
+			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
 					Skip();
 				else
 					break;
 			}
+			#line 29 "LesLexerGrammar.les"
 			_value = WhitespaceTag.Value;
+			#line default
 		}
 		void MLComment()
 		{
 			int la1;
 			Skip();
 			Skip();
-			// Line 49: nongreedy( MLComment / Newline / [^\$] )*
-			 for (;;) {
+			// Line 33: nongreedy( MLComment / Newline / [^\$] )*
+			for (;;) {
 				switch (LA0) {
 				case '*':
 					{
@@ -129,40 +83,42 @@ namespace Loyc.Syntax.Les
 					break;
 				case '\n':
 				case '\r':
-					Newline();
+					Newline(true);
 					break;
 				default:
 					Skip();
 					break;
 				}
 			}
-		 stop:;
+		stop:;
 			Match('*');
 			Match('/');
+			#line 34 "LesLexerGrammar.les"
 			_value = WhitespaceTag.Value;
+			#line default
 		}
 		void DecDigits()
 		{
 			int la0, la1;
 			MatchRange('0', '9');
-			// Line 55: ([0-9])*
-			 for (;;) {
+			// Line 39: ([0-9])*
+			for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
 					Skip();
 				else
 					break;
 			}
-			// Line 55: ([_] [0-9] ([0-9])*)*
-			 for (;;) {
+			// Line 39: ([_] [0-9] ([0-9])*)*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
 						Skip();
 						Skip();
-						// Line 55: ([0-9])*
-						 for (;;) {
+						// Line 39: ([0-9])*
+						for (;;) {
 							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9')
 								Skip();
@@ -190,24 +146,24 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			HexDigit();
-			// Line 57: greedy(HexDigit)*
-			 for (;;) {
+			// Line 41: greedy(HexDigit)*
+			for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
 					HexDigit();
 				else
 					break;
 			}
-			// Line 57: greedy([_] HexDigit (HexDigit)*)*
-			 for (;;) {
+			// Line 41: greedy([_] HexDigit (HexDigit)*)*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
 					if (HexDigit_set0.Contains(la1)) {
 						Skip();
 						HexDigit();
-						// Line 57: (HexDigit)*
-						 for (;;) {
+						// Line 41: (HexDigit)*
+						for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
 								HexDigit();
@@ -225,8 +181,8 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			if (!Scan_HexDigit())
 				return false;
-			// Line 57: greedy(HexDigit)*
-			 for (;;) {
+			// Line 41: greedy(HexDigit)*
+			for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
 					{if (!Scan_HexDigit())
@@ -234,8 +190,8 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 57: greedy([_] HexDigit (HexDigit)*)*
-			 for (;;) {
+			// Line 41: greedy([_] HexDigit (HexDigit)*)*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					la1 = LA(1);
@@ -244,8 +200,8 @@ namespace Loyc.Syntax.Les
 							return false;
 						if (!Scan_HexDigit())
 							return false;
-						// Line 57: (HexDigit)*
-						 for (;;) {
+						// Line 41: (HexDigit)*
+						for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
 								{if (!Scan_HexDigit())
@@ -264,22 +220,22 @@ namespace Loyc.Syntax.Les
 		{
 			int la0;
 			Match('0', '1');
-			// Line 58: ([01])*
-			 for (;;) {
+			// Line 42: ([01])*
+			for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '1')
 					Skip();
 				else
 					break;
 			}
-			// Line 58: ([_] [01] ([01])*)*
-			 for (;;) {
+			// Line 42: ([_] [01] ([01])*)*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '_') {
 					Skip();
 					Match('0', '1');
-					// Line 58: ([01])*
-					 for (;;) {
+					// Line 42: ([01])*
+					for (;;) {
 						la0 = LA0;
 						if (la0 >= '0' && la0 <= '1')
 							Skip();
@@ -293,34 +249,42 @@ namespace Loyc.Syntax.Les
 		void DecNumber()
 		{
 			int la0, la1;
+			#line 44 "LesLexerGrammar.les"
 			_numberBase = 10;
-			// Line 61: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			#line default
+			// Line 45: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
 				DecDigits();
+				#line 45 "LesLexerGrammar.les"
 				_isFloat = true;
+				#line default
 			} else {
 				DecDigits();
-				// Line 62: ([.] DecDigits)?
+				// Line 46: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
+						#line 46 "LesLexerGrammar.les"
 						_isFloat = true;
+						#line default
 						Skip();
 						DecDigits();
 					}
 				}
 			}
-			// Line 64: ([Ee] ([+\-])? DecDigits)?
+			// Line 48: ([Ee] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'E' || la0 == 'e') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
+					#line 48 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 					Skip();
-					// Line 64: ([+\-])?
+					// Line 48: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -333,31 +297,37 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			Skip();
 			Skip();
+			#line 51 "LesLexerGrammar.les"
 			_numberBase = 16;
-			// Line 68: (HexDigits)?
+			#line default
+			// Line 52: (HexDigits)?
 			la0 = LA0;
 			if (HexDigit_set0.Contains(la0))
 				HexDigits();
-			// Line 70: ([.] &(([0-9] / HexDigits [Pp] [+\-0-9])) HexDigits)?
+			// Line 54: ([.] &(([0-9] / HexDigits [Pp] [+\-0-9])) HexDigits)?
 			la0 = LA0;
 			if (la0 == '.') {
 				la1 = LA(1);
 				if (HexDigit_set0.Contains(la1)) {
 					if (Try_HexNumber_Test0(1)) {
 						Skip();
+						#line 55 "LesLexerGrammar.les"
 						_isFloat = true;
+						#line default
 						HexDigits();
 					}
 				}
 			}
-			// Line 72: ([Pp] ([+\-])? DecDigits)?
+			// Line 56: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
+					#line 56 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 					Skip();
-					// Line 72: ([+\-])?
+					// Line 56: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -370,34 +340,42 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			Skip();
 			Skip();
+			#line 59 "LesLexerGrammar.les"
 			_numberBase = 2;
-			// Line 76: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			#line default
+			// Line 60: ([.] DecDigits | DecDigits ([.] DecDigits)?)
 			la0 = LA0;
 			if (la0 == '.') {
 				Skip();
 				DecDigits();
+				#line 60 "LesLexerGrammar.les"
 				_isFloat = true;
+				#line default
 			} else {
 				DecDigits();
-				// Line 77: ([.] DecDigits)?
+				// Line 61: ([.] DecDigits)?
 				la0 = LA0;
 				if (la0 == '.') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
+						#line 61 "LesLexerGrammar.les"
 						_isFloat = true;
+						#line default
 						Skip();
 						DecDigits();
 					}
 				}
 			}
-			// Line 79: ([Pp] ([+\-])? DecDigits)?
+			// Line 63: ([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
+					#line 63 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 					Skip();
-					// Line 79: ([+\-])?
+					// Line 63: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -408,15 +386,20 @@ namespace Loyc.Syntax.Les
 		void Number()
 		{
 			int la0;
+			#line 66 "LesLexerGrammar.les"
 			_isFloat = _isNegative = false;
+			#line 66 "LesLexerGrammar.les"
 			_typeSuffix = null;
-			// Line 83: ([\-])?
+			#line default
+			// Line 67: ([\-])?
 			la0 = LA0;
 			if (la0 == '-') {
 				Skip();
+				#line 67 "LesLexerGrammar.les"
 				_isNegative = true;
+				#line default
 			}
-			// Line 84: ( HexNumber / BinNumber / DecNumber )
+			// Line 68: ( HexNumber / BinNumber / DecNumber )
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -434,42 +417,55 @@ namespace Loyc.Syntax.Les
 				}
 			} else
 				DecNumber();
-			// Line 85: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
-			 switch (LA0) {
+			// Line 69: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? )?
+			switch (LA0) {
 			case 'F':
 			case 'f':
 				{
 					Skip();
+					#line 69 "LesLexerGrammar.les"
 					_typeSuffix = _F;
+					#line 69 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 				}
 				break;
 			case 'D':
 			case 'd':
 				{
 					Skip();
+					#line 70 "LesLexerGrammar.les"
 					_typeSuffix = _D;
+					#line 70 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 				}
 				break;
 			case 'M':
 			case 'm':
 				{
 					Skip();
+					#line 71 "LesLexerGrammar.les"
 					_typeSuffix = _M;
+					#line 71 "LesLexerGrammar.les"
 					_isFloat = true;
+					#line default
 				}
 				break;
 			case 'L':
 			case 'l':
 				{
 					Skip();
+					#line 73 "LesLexerGrammar.les"
 					_typeSuffix = _L;
-					// Line 89: ([Uu])?
+					#line default
+					// Line 73: ([Uu])?
 					la0 = LA0;
 					if (la0 == 'U' || la0 == 'u') {
 						Skip();
+						#line 73 "LesLexerGrammar.les"
 						_typeSuffix = _UL;
+						#line default
 					}
 				}
 				break;
@@ -477,32 +473,42 @@ namespace Loyc.Syntax.Les
 			case 'u':
 				{
 					Skip();
+					#line 74 "LesLexerGrammar.les"
 					_typeSuffix = _U;
-					// Line 90: ([Ll])?
+					#line default
+					// Line 74: ([Ll])?
 					la0 = LA0;
 					if (la0 == 'L' || la0 == 'l') {
 						Skip();
+						#line 74 "LesLexerGrammar.les"
 						_typeSuffix = _UL;
+						#line default
 					}
 				}
 				break;
 			}
+			#line 76 "LesLexerGrammar.les"
 			ParseNumberValue();
+			#line default
 		}
 		void SQString()
 		{
 			int la0, la1;
+			#line 82 "LesLexerGrammar.les"
 			_parseNeeded = false;
+			#line default
 			Skip();
-			// Line 99: ([\\] [^\$] | [^\$\n\r'\\])*
-			 for (;;) {
+			// Line 83: ([\\] [^\$] | [^\$\n\r'\\])*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					la1 = LA(1);
 					if (la1 != -1) {
 						Skip();
 						Skip();
+						#line 83 "LesLexerGrammar.les"
 						_parseNeeded = true;
+						#line default
 					} else
 						break;
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '\''))
@@ -510,28 +516,37 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 100: (['] / )
+			// Line 84: (['] / )
 			la0 = LA0;
 			if (la0 == '\'')
 				Skip();
-			else
+			else {
+				#line 84 "LesLexerGrammar.les"
 				_parseNeeded = true;
+				#line default
+			}
+			#line 85 "LesLexerGrammar.les"
 			ParseSQStringValue();
+			#line default
 		}
 		void DQString()
 		{
 			int la0, la1;
+			#line 88 "LesLexerGrammar.les"
 			_parseNeeded = false;
+			#line default
 			Skip();
-			// Line 105: ([\\] [^\$] | [^\$\n\r"\\])*
-			 for (;;) {
+			// Line 89: ([\\] [^\$] | [^\$\n\r"\\])*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					la1 = LA(1);
 					if (la1 != -1) {
 						Skip();
 						Skip();
+						#line 89 "LesLexerGrammar.les"
 						_parseNeeded = true;
+						#line default
 					} else
 						break;
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '"'))
@@ -539,27 +554,32 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 106: (["] / )
+			// Line 90: (["] / )
 			la0 = LA0;
 			if (la0 == '"')
 				Skip();
-			else
+			else {
+				#line 90 "LesLexerGrammar.les"
 				_parseNeeded = true;
+				#line default
+			}
+			#line 91 "LesLexerGrammar.les"
 			ParseStringValue(false);
+			#line default
 		}
 		void TQString()
 		{
 			int la0, la1, la2;
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate;
-			// Line 113: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
+			// Line 97: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
 				Skip();
 				Match('"');
 				Match('"');
-				// Line 113: nongreedy(Newline / [^\$])*
-				 for (;;) {
+				// Line 97: nongreedy(Newline / [^\$])*
+				for (;;) {
 					switch (LA0) {
 					case '"':
 						{
@@ -580,24 +600,26 @@ namespace Loyc.Syntax.Les
 						goto stop;
 					case '\n':
 					case '\r':
-						Newline();
+						Newline(true);
 						break;
 					default:
 						Skip();
 						break;
 					}
 				}
-			 stop:;
+			stop:;
 				Match('"');
 				Match('"');
 				Match('"');
 			} else {
+				#line 98 "LesLexerGrammar.les"
 				_style |= NodeStyle.Alternate2;
+				#line default
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// Line 115: nongreedy(Newline / [^\$])*
-				 for (;;) {
+				// Line 99: nongreedy(Newline / [^\$])*
+				for (;;) {
 					switch (LA0) {
 					case '\'':
 						{
@@ -618,32 +640,38 @@ namespace Loyc.Syntax.Les
 						goto stop2;
 					case '\n':
 					case '\r':
-						Newline();
+						Newline(true);
 						break;
 					default:
 						Skip();
 						break;
 					}
 				}
-			 stop2:;
+			stop2:;
 				Match('\'');
 				Match('\'');
 				Match('\'');
 			}
+			#line 100 "LesLexerGrammar.les"
 			ParseStringValue(true);
+			#line default
 		}
 		void BQString2()
 		{
 			int la0;
+			#line 104 "LesLexerGrammar.les"
 			_parseNeeded = false;
+			#line default
 			Skip();
-			// Line 121: ([\\] [^\$] | [^\$\n\r\\`])*
-			 for (;;) {
+			// Line 105: ([\\] [^\$] | [^\$\n\r\\`])*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					Skip();
 					MatchExcept();
+					#line 105 "LesLexerGrammar.les"
 					_parseNeeded = true;
+					#line default
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '`'))
 					Skip();
 				else
@@ -654,7 +682,9 @@ namespace Loyc.Syntax.Les
 		void BQString()
 		{
 			BQString2();
+			#line 107 "LesLexerGrammar.les"
 			ParseBQStringValue();
+			#line default
 		}
 		void IdStartChar()
 		{
@@ -669,14 +699,14 @@ namespace Loyc.Syntax.Les
 		void NormalId()
 		{
 			int la0;
-			// Line 130: (IdStartChar | IdExtLetter)
+			// Line 114: (IdStartChar | IdExtLetter)
 			la0 = LA0;
 			if (NormalId_set0.Contains(la0))
 				IdStartChar();
 			else
 				IdExtLetter();
-			// Line 130: ( IdStartChar | [0-9] | ['] | IdExtLetter )*
-			 for (;;) {
+			// Line 114: ( IdStartChar | [0-9] | ['] | IdExtLetter )*
+			for (;;) {
 				la0 = LA0;
 				if (NormalId_set0.Contains(la0))
 					IdStartChar();
@@ -698,19 +728,19 @@ namespace Loyc.Syntax.Les
 		void FancyId()
 		{
 			int la0;
-			// Line 132: (BQString2 | (LettersOrPunc | IdExtLetter) (LettersOrPunc | IdExtLetter)*)
+			// Line 116: (BQString2 | (LettersOrPunc | IdExtLetter) (LettersOrPunc | IdExtLetter)*)
 			la0 = LA0;
 			if (la0 == '`')
 				BQString2();
 			else {
-				// Line 132: (LettersOrPunc | IdExtLetter)
+				// Line 116: (LettersOrPunc | IdExtLetter)
 				la0 = LA0;
 				if (FancyId_set0.Contains(la0))
 					LettersOrPunc();
 				else
 					IdExtLetter();
-				// Line 132: (LettersOrPunc | IdExtLetter)*
-				 for (;;) {
+				// Line 116: (LettersOrPunc | IdExtLetter)*
+				for (;;) {
 					la0 = LA0;
 					if (FancyId_set0.Contains(la0))
 						LettersOrPunc();
@@ -727,27 +757,37 @@ namespace Loyc.Syntax.Les
 		}
 		void Symbol()
 		{
+			#line 118 "LesLexerGrammar.les"
 			_parseNeeded = false;
+			#line default
 			Skip();
 			Skip();
 			FancyId();
+			#line 120 "LesLexerGrammar.les"
 			ParseSymbolValue();
+			#line default
 		}
 		static readonly HashSet<int> Id_set0 = NewSetOfRanges('#', '#', 'A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		void Id()
 		{
 			int la0;
+			#line 123 "LesLexerGrammar.les"
 			_parseNeeded = false;
-			// Line 140: (NormalId | [@] FancyId)
+			#line default
+			// Line 124: (NormalId | [@] FancyId)
 			la0 = LA0;
 			if (Id_set0.Contains(la0))
 				NormalId();
 			else {
 				Match('@');
 				FancyId();
+				#line 124 "LesLexerGrammar.les"
 				_parseNeeded = true;
+				#line default
 			}
+			#line 125 "LesLexerGrammar.les"
 			ParseIdValue();
+			#line default
 		}
 		void LettersOrPunc()
 		{
@@ -760,22 +800,30 @@ namespace Loyc.Syntax.Les
 		void Comma()
 		{
 			Skip();
+			#line 134 "LesLexerGrammar.les"
 			_value = _Comma;
+			#line default
 		}
 		void Semicolon()
 		{
 			Skip();
+			#line 135 "LesLexerGrammar.les"
 			_value = _Semicolon;
+			#line default
 		}
 		void Colon()
 		{
 			Match(':');
+			#line 136 "LesLexerGrammar.les"
 			_value = _Colon;
+			#line default
 		}
 		void At()
 		{
 			Skip();
+			#line 137 "LesLexerGrammar.les"
 			_value = GSymbol.Empty;
+			#line default
 		}
 		void CommentStart()
 		{
@@ -785,8 +833,8 @@ namespace Loyc.Syntax.Les
 		void Operator()
 		{
 			OpChar();
-			// Line 155: (OpChar)*
-			 for (;;) {
+			// Line 139: (OpChar)*
+			for (;;) {
 				switch (LA0) {
 				case '!':
 				case '$':
@@ -812,14 +860,16 @@ namespace Loyc.Syntax.Les
 					goto stop;
 				}
 			}
-		 stop:;
+		stop:;
+			#line 139 "LesLexerGrammar.les"
 			ParseNormalOp();
+			#line default
 		}
 		void BackslashOp()
 		{
 			int la0, la1;
 			Skip();
-			// Line 156: (FancyId)?
+			// Line 140: (FancyId)?
 			la0 = LA0;
 			if (la0 == '`') {
 				la1 = LA(1);
@@ -832,32 +882,42 @@ namespace Loyc.Syntax.Les
 				if (char.IsLetter((char) la0))
 					FancyId();
 			}
+			#line 140 "LesLexerGrammar.les"
 			ParseBackslashOp();
+			#line default
 		}
 		void Shebang()
 		{
 			int la0;
 			Skip();
 			Skip();
-			// Line 160: ([^\$\n\r])*
-			 for (;;) {
+			// Line 144: ([^\$\n\r])*
+			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
 					Skip();
 				else
 					break;
 			}
-			// Line 160: (Newline)?
+			// Line 144: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
-		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~');
-		void Token()
+		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~');
+		static readonly HashSet<int> NextToken_set1 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
+		public override Maybe<Token> NextToken()
 		{
 			int la0, la1, la2;
-			// Line 166: ( &{InputPosition == 0} Shebang / Symbol / Id / Spaces / Newline / DotIndent / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / UTF_BOM / Colon )
-			 do {
+			Spaces();
+			_value = null;
+			_style = 0;
+			if (LA0 == -1) {
+				return NoValue.Value;
+			}
+			_startPosition = InputPosition;
+			// Line 158: ( &{InputPosition == 0} Shebang / Symbol / Id / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / [(] / [)] / [[] / [\]] / [{] / [}] / At / BackslashOp / Operator / Colon )
+			do {
 				la0 = LA0;
 				switch (la0) {
 				case '#':
@@ -865,7 +925,9 @@ namespace Loyc.Syntax.Les
 						if (InputPosition == 0) {
 							la1 = LA(1);
 							if (la1 == '!') {
+								#line 159 "LesLexerGrammar.les"
 								_type = TT.Shebang;
+								#line default
 								Shebang();
 							} else
 								goto matchId;
@@ -878,7 +940,7 @@ namespace Loyc.Syntax.Les
 						la1 = LA(1);
 						if (la1 == '@') {
 							la2 = LA(2);
-							if (Token_set0.Contains(la2))
+							if (NextToken_set0.Contains(la2))
 								goto matchSymbol;
 							else if (la2 >= 128 && la2 <= 65532) {
 								la2 = LA(2);
@@ -905,114 +967,29 @@ namespace Loyc.Syntax.Les
 						} else
 							goto matchAt;
 					}
-				case 'A':
-				case 'B':
-				case 'C':
-				case 'D':
-				case 'E':
-				case 'F':
-				case 'G':
-				case 'H':
-				case 'I':
-				case 'J':
-				case 'K':
-				case 'L':
-				case 'M':
-				case 'N':
-				case 'O':
-				case 'P':
-				case 'Q':
-				case 'R':
-				case 'S':
-				case 'T':
-				case 'U':
-				case 'V':
-				case 'W':
-				case 'X':
-				case 'Y':
-				case 'Z':
-				case '_':
-				case 'a':
-				case 'b':
-				case 'c':
-				case 'd':
-				case 'e':
-				case 'f':
-				case 'g':
-				case 'h':
-				case 'i':
-				case 'j':
-				case 'k':
-				case 'l':
-				case 'm':
-				case 'n':
-				case 'o':
-				case 'p':
-				case 'q':
-				case 'r':
-				case 's':
-				case 't':
-				case 'u':
-				case 'v':
-				case 'w':
-				case 'x':
-				case 'y':
-				case 'z':
-					goto matchId;
-				case 65279:
-					{
-						la0 = LA0;
-						if (char.IsLetter((char) la0))
-							goto matchId;
-						else {
-							_type = TT.Spaces;
-							UTF_BOM();
-						}
-					}
-					break;
-				case '\t':
-				case ' ':
-					{
-						_type = TT.Spaces;
-						Spaces();
-					}
-					break;
 				case '\n':
 				case '\r':
 					{
+						#line 162 "LesLexerGrammar.les"
 						_type = TT.Newline;
+						#line default
 						Newline();
-					}
-					break;
-				case '.':
-					{
-						if (_startPosition == _lineStartAt) {
-							la1 = LA(1);
-							if (la1 == '\t' || la1 == ' ')
-								DotIndent();
-							else if (la1 >= '0' && la1 <= '9')
-								goto matchNumber;
-							else
-								Operator();
-						} else {
-							la1 = LA(1);
-							if (la1 >= '0' && la1 <= '9')
-								goto matchNumber;
-							else
-								Operator();
-						}
 					}
 					break;
 				case '/':
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
+							#line 163 "LesLexerGrammar.les"
 							_type = TT.SLComment;
+							#line default
 							SLComment();
 						} else if (la1 == '*') {
 							la2 = LA(2);
 							if (la2 != -1) {
+								#line 164 "LesLexerGrammar.les"
 								_type = TT.MLComment;
+								#line default
 								MLComment();
 							} else
 								Operator();
@@ -1038,6 +1015,16 @@ namespace Loyc.Syntax.Les
 					}
 					break;
 				case '0':
+					goto matchNumber;
+				case '.':
+					{
+						la1 = LA(1);
+						if (la1 >= '0' && la1 <= '9')
+							goto matchNumber;
+						else
+							Operator();
+					}
+					break;
 				case '1':
 				case '2':
 				case '3':
@@ -1074,55 +1061,73 @@ namespace Loyc.Syntax.Les
 					}
 				case '`':
 					{
+						#line 169 "LesLexerGrammar.les"
 						_type = TT.BQString;
+						#line default
 						BQString();
 					}
 					break;
 				case ',':
 					{
+						#line 170 "LesLexerGrammar.les"
 						_type = TT.Comma;
+						#line default
 						Comma();
 					}
 					break;
 				case ';':
 					{
+						#line 171 "LesLexerGrammar.les"
 						_type = TT.Semicolon;
+						#line default
 						Semicolon();
 					}
 					break;
 				case '(':
 					{
+						#line 172 "LesLexerGrammar.les"
 						_type = TT.LParen;
+						#line default
 						Skip();
 					}
 					break;
 				case ')':
 					{
+						#line 173 "LesLexerGrammar.les"
 						_type = TT.RParen;
+						#line default
 						Skip();
 					}
 					break;
 				case '[':
 					{
+						#line 174 "LesLexerGrammar.les"
 						_type = TT.LBrack;
+						#line default
 						Skip();
 					}
 					break;
 				case ']':
 					{
+						#line 175 "LesLexerGrammar.les"
 						_type = TT.RBrack;
+						#line default
 						Skip();
 					}
 					break;
 				case '{':
 					{
+						#line 176 "LesLexerGrammar.les"
 						_type = TT.LBrace;
+						#line default
 						Skip();
 					}
 					break;
 				case '}':
 					{
+						#line 177 "LesLexerGrammar.les"
 						_type = TT.RBrace;
+						#line default
 						Skip();
 					}
 					break;
@@ -1146,18 +1151,24 @@ namespace Loyc.Syntax.Les
 					Operator();
 					break;
 				default:
-					if (la0 >= 128 && la0 <= 65278 || la0 >= 65280 && la0 <= 65532)
+					if (NextToken_set1.Contains(la0))
 						goto matchId;
 					else {
+						#line 182 "LesLexerGrammar.les"
 						_value = null;
-						// Line 194: ([\$] | [^\$])
+						#line default
+						// Line 183: ([\$] | [^\$])
 						la0 = LA0;
 						if (la0 == -1) {
 							Skip();
+							#line 183 "LesLexerGrammar.les"
 							_type = TT.EOF;
+							#line default
 						} else {
 							Skip();
+							#line 184 "LesLexerGrammar.les"
 							_type = TT.Unknown;
+							#line default
 						}
 					}
 					break;
@@ -1165,52 +1176,68 @@ namespace Loyc.Syntax.Les
 				break;
 			matchSymbol:
 				{
+					#line 160 "LesLexerGrammar.les"
 					_type = TT.Symbol;
+					#line default
 					Symbol();
 				}
 				break;
 			matchId:
 				{
+					#line 161 "LesLexerGrammar.les"
 					_type = TT.Id;
+					#line default
 					Id();
 				}
 				break;
 			matchNumber:
 				{
+					#line 165 "LesLexerGrammar.les"
 					_type = TT.Number;
+					#line default
 					Number();
 				}
 				break;
 			matchTQString:
 				{
+					#line 166 "LesLexerGrammar.les"
 					_type = TT.String;
+					#line default
 					TQString();
 				}
 				break;
 			matchDQString:
 				{
+					#line 167 "LesLexerGrammar.les"
 					_type = TT.String;
+					#line default
 					DQString();
 				}
 				break;
 			matchSQString:
 				{
+					#line 168 "LesLexerGrammar.les"
 					_type = TT.SQString;
+					#line default
 					SQString();
 				}
 				break;
 			matchAt:
 				{
+					#line 178 "LesLexerGrammar.les"
 					_type = TT.At;
+					#line default
 					At();
 				}
 			} while (false);
+			Debug.Assert(InputPosition > _startPosition);
+			return (_current = new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, _value));
 		}
 		public bool TDQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 207: nongreedy([^\$])*
-			 for (;;) {
+			// Line 199: nongreedy([^\$])*
+			for (;;) {
 				switch (LA0) {
 				case '\n':
 				case '\r':
@@ -1237,24 +1264,28 @@ namespace Loyc.Syntax.Les
 					break;
 				}
 			}
-		 stop:;
-			// Line 207: (Newline | ["] ["] ["])
+		stop:;
+			// Line 199: (Newline | ["] ["] ["])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
-				Newline();
+				Newline(true);
+				#line 199 "LesLexerGrammar.les"
 				return false;
+				#line default
 			} else {
 				Match('"');
 				Match('"');
 				Match('"');
+				#line 199 "LesLexerGrammar.les"
 				return true;
+				#line default
 			}
 		}
 		public bool TSQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 209: nongreedy([^\$])*
-			 for (;;) {
+			// Line 201: nongreedy([^\$])*
+			for (;;) {
 				switch (LA0) {
 				case '\n':
 				case '\r':
@@ -1281,24 +1312,28 @@ namespace Loyc.Syntax.Les
 					break;
 				}
 			}
-		 stop:;
-			// Line 209: (Newline | ['] ['] ['])
+		stop:;
+			// Line 201: (Newline | ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
-				Newline();
+				Newline(true);
+				#line 201 "LesLexerGrammar.les"
 				return false;
+				#line default
 			} else {
 				Match('\'');
 				Match('\'');
 				Match('\'');
+				#line 201 "LesLexerGrammar.les"
 				return true;
+				#line default
 			}
 		}
 		public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
-			// Line 212: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
-			 for (;;) {
+			// Line 204: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
+			for (;;) {
 				la0 = LA0;
 				if (la0 == '*') {
 					if (nested > 0) {
@@ -1306,7 +1341,9 @@ namespace Loyc.Syntax.Les
 						if (la1 == '/') {
 							Skip();
 							Skip();
+							#line 204 "LesLexerGrammar.les"
 							nested--;
+							#line default
 						} else if (la1 != -1)
 							goto match4;
 						else
@@ -1330,7 +1367,9 @@ namespace Loyc.Syntax.Les
 					if (la1 == '*') {
 						Skip();
 						Skip();
+						#line 205 "LesLexerGrammar.les"
 						nested++;
+						#line default
 					} else
 						Skip();
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -1344,15 +1383,19 @@ namespace Loyc.Syntax.Les
 					Check(!Try_MLCommentLine_Test0(0), "!([/])");
 				}
 			}
-			// Line 217: (Newline | [*] [/])
+			// Line 209: (Newline | [*] [/])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
-				Newline();
+				Newline(true);
+				#line 209 "LesLexerGrammar.les"
 				return false;
+				#line default
 			} else {
 				Match('*');
 				Match('/');
+				#line 209 "LesLexerGrammar.les"
 				return true;
+				#line default
 			}
 		}
 		static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
@@ -1364,7 +1407,7 @@ namespace Loyc.Syntax.Les
 		private bool HexNumber_Test0()
 		{
 			int la0;
-			// Line 70: ([0-9] / HexDigits [Pp] [+\-0-9])
+			// Line 54: ([0-9] / HexDigits [Pp] [+\-0-9])
 			la0 = LA0;
 			if (la0 >= '0' && la0 <= '9')
 				{if (!TryMatchRange('0', '9'))

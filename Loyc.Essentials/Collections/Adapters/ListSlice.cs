@@ -68,6 +68,13 @@ namespace Loyc.Collections
 				_count = System.Math.Max(_list.Count - start, 0);
 		}
 
+		public ListSlice(IList<T> list)
+		{
+			_list = list;
+			_start = 0;
+			_count = list.Count;
+		}
+
 		public int Count
 		{
 			get { return _count; }
@@ -106,10 +113,10 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
-		IFRange<T>  ICloneable<IFRange<T>>.Clone() { return Clone(); }
-		IBRange<T>  ICloneable<IBRange<T>>.Clone() { return Clone(); }
-		IRange<T>   ICloneable<IRange<T>> .Clone() { return Clone(); }
-		public ListSlice<T> Clone() { return this; }
+		IFRange<T>  ICloneable<IFRange<T>>.Clone() { return this; }
+		IBRange<T>  ICloneable<IBRange<T>>.Clone() { return this; }
+		IRange<T>   ICloneable<IRange<T>> .Clone() { return this; }
+		ListSlice<T> ICloneable<ListSlice<T>>.Clone() { return this; }
 
 		IEnumerator<T> IEnumerable<T>.GetEnumerator() { return GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -128,13 +135,13 @@ namespace Loyc.Collections
 			set {
 				if ((uint)index < (uint)_count)
 					_list[_start + index] = value;
-				throw new ArgumentOutOfRangeException("index");
+				else
+					throw new ArgumentOutOfRangeException("index");
 			}
 		}
 		public T this[int index, T defaultValue]
 		{
-			get
-			{
+			get {
 				if ((uint)index < (uint)_count)
 					return _list[_start + index];
 				return defaultValue;
@@ -152,7 +159,7 @@ namespace Loyc.Collections
 		}
 
 		IRange<T> IListSource<T>.Slice(int start, int count) { return Slice(start, count); }
-		public ListSlice<T> Slice(int start, int count)
+		public ListSlice<T> Slice(int start, int count = int.MaxValue)
 		{
 			if (start < 0)
 				throw new ArgumentException("The start index was below zero.");
@@ -163,7 +170,7 @@ namespace Loyc.Collections
 			slice._start = this._start + start;
 			slice._count = count;
 			if (slice._count > this._count - start)
-				slice._count = Math.Max(this._count - _start, 0);
+				slice._count = System.Math.Max(this._count - start, 0);
 			return slice;
 		}
 

@@ -163,7 +163,7 @@ namespace Loyc
 	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
 	{
 		/// <summary>Holds an argument list of <see cref="IMessageSink.Write"/>.</summary>
-		public struct Message : ILocationString
+		public struct Message : IHasLocation
 		{
 			public Message(Severity type, object context, string format, object arg0, object arg1 = null)
 				: this (type, context, format, new object[2] { arg0, arg1 }) {}
@@ -189,9 +189,9 @@ namespace Loyc
 			{
 				return MessageSink.FormatMessage(Severity, Context, Format, _args);
 			}
-			public string LocationString
+			public object Location
 			{
-				get { return MessageSink.LocationString(Context); }
+				get { return MessageSink.LocationOf(Context); }
 			}
 			public void WriteTo(IMessageSink sink)
 			{

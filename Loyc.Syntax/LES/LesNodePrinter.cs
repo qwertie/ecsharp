@@ -306,7 +306,7 @@ namespace Loyc.Syntax.Les
 			bool wroteBrack = false, extraParen = false;
 			for (int i = 0; i < A.Count; i++) {
 				var a = A[i];
-				if (a.IsId && !ShouldPrintAttribute(a.Name))
+				if (a.ArgCount <= 1 && !ShouldPrintAttribute(a.Name))
 					continue;
 				if (!wroteBrack) {
 					wroteBrack = true;

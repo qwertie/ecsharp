@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 	/// <li>A <see cref="LiteralNode"/> is a literal constant, such as 123 or "hello"</li>
 	/// <li>A <see cref="CallNode"/> encompasses all other kinds of nodes, such as
 	/// normal function calls like <c>f(x)</c>, generic specifications like <c>f&lt;x></c>
-	/// (represented <c>#of(f, x)</c>), braced blocks of statements (represented 
+	/// (represented as <c>#of(f, x)</c>), braced blocks of statements (represented as
 	/// <c>@`{}`(stmt1, stmt2, ...)</c>), and so on. Also, parenthesized expressions
 	/// are represented as a call with one argument and <c>null</c> as the <see cref="Target"/>.</li>
 	/// </ul>
@@ -40,9 +40,8 @@ namespace Loyc.Syntax
 	/// in order to make this class easier to access from plain C#, and to avoid
 	/// unnecessary downcasting in some cases.
 	/// <para/>
-	/// Loyc nodes are typically immutable, except for the 8-bit <see cref="Style"/> 
-	/// property which normally affects printing only. If a node allows editing of 
-	/// any other properties, <see cref="IsFrozen"/> returns false.
+	/// Loyc nodes are always immutable, except for the 8-bit <see cref="Style"/> 
+	/// property which normally affects printing only.
 	/// <para/>
 	/// <h3>Background information</h3>
 	/// <para/>
@@ -65,7 +64,7 @@ namespace Loyc.Syntax
 	/// and this one class provides access to all the parts of a node. There are 
 	/// several reasons for this design:
 	/// <ul>
-	/// <li>Simplicity. Many projects have thousands of lines of code dedicated 
+	/// <li>Simplicity. Many compilers have thousands of lines of code dedicated 
 	///   to the AST (abstract syntax tree) data structure itself, because each 
 	///   kind of AST node has its own class.</li>
 	/// <li>Serializability. Loyc nodes can always be serialized to a plain text 
@@ -84,9 +83,8 @@ namespace Loyc.Syntax
 	///   a "+" operator with three arguments is always possible; this is denoted 
 	///   by #+(a, b, c) in EC# source code.</li>
 	/// </ul>
-	///   * Currently, the only supported syntax for plain-text Loyc trees is 
-	///     EC# syntax, either normal EC# or prefix-tree notation. As Loyc grows 
-	///     in popularity, a more universal syntax should be standardized.
+	///   * Currently, the only supported languages for plain-text Loyc trees are 
+	///     LES and EC# (either normal EC# or prefix-tree notation).
 	/// <para/>
 	/// Loyc trees are comparable to LISP trees, except that "attributes" and
 	/// position information are added to the tree, and the concept of a "list" 
@@ -517,7 +515,7 @@ namespace Loyc.Syntax
 	/// but only in debug builds, since null-checking is fairly expensive.
 	/// </remarks>
 	[DebuggerDisplay("{ToString()}")]
-	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, ILocationString, INegListSource<LNode>
+	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, IHasLocation, INegListSource<LNode>
 	{
 		#region Constructors and static node creator methods
 
@@ -662,9 +660,9 @@ namespace Loyc.Syntax
 
 		/// <summary>Gets Range.Begin.ToString().</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public string LocationString
+		object IHasLocation.Location
 		{
-			get { return Range.Start.ToString(); }
+			get { return Range.Start; }
 		}
 
 		/// <summary>Indicates the preferred style to use when printing the node to a text string.</summary>
@@ -687,6 +685,17 @@ namespace Loyc.Syntax
 		{
 			get { return RAS.Style & NodeStyle.BaseStyleMask; }
 			set { Style = (RAS.Style & ~NodeStyle.BaseStyleMask) | (value & NodeStyle.BaseStyleMask); }
+		}
+		
+		public LNode SetBaseStyle(NodeStyle s)
+		{
+			BaseStyle = s;
+			return this;
+		}
+		public LNode SetStyle(NodeStyle s)
+		{
+			Style = s;
+			return this;
 		}
 
 		/// <summary>Returns the attribute list for this node.</summary>

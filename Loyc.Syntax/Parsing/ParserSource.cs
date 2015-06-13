@@ -64,7 +64,7 @@ namespace Loyc.Syntax
 
 		public new List TokenList { get { return base.TokenList; } }
 		public new Token LT0 { [DebuggerStepThrough] get { return _lt0; } }
-		public     MatchType LA0 { get { return _lt0.Type; } }
+		public new MatchType LA0 { get { return base.LA0; } }
 		public new Token LT(int i) { return base.LT(i); }
 		public new MatchType LA(int i) { return base.LA(i); }
 		

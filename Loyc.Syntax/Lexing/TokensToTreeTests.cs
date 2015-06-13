@@ -42,7 +42,7 @@ namespace Loyc.Syntax.Lexing
 			Expect(list[4].Children[0].Children, A(TT.Number), 123);
 			
 			list = Lex("(x] + [123)", false);
-			Expect(list, A(TT.LParen, TT.RBrack, TT.Spaces, TT.NormalOp, TT.Spaces, TT.LBrack, TT.RParen));
+			Expect(list, A(TT.LParen, TT.RBrack, TT.NormalOp, TT.LBrack, TT.RParen));
 			Expect(list[0].Children, A(TT.Id), _("x"));
 			Expect(list[5].Children, A(TT.Number), 123);
 		}
@@ -137,8 +137,8 @@ namespace Loyc.Syntax.Lexing
 			var lexer = new LesLexer(input, MessageSink.Trace);
 			var lexer2 = new TokensToTree(lexer, skipWS);
 			var list = new List<Token>();
-			Token? token;
-			while ((token = lexer2.NextToken()) != null)
+			Maybe<Token> token;
+			while ((token = lexer2.NextToken()).HasValue)
 				list.Add(token.Value);
 			return list;
 		}

@@ -14,37 +14,38 @@ using Loyc.Utilities;
 namespace Loyc.Syntax.Lexing
 {
 	/// <summary>
-	/// Converts a token list into a token tree. Everything inside brackets, parens
-	/// or braces is made a child of the open bracket's Block.
+	/// A preprocessor usually inserted between the lexer and parser that converts 
+	/// a token list into a token tree. Everything inside brackets, parens or 
+	/// braces is made a child of the open bracket.
 	/// </summary>
-	public class TokensToTree : LexerWrapper
+	public class TokensToTree : LexerWrapper<Token>
 	{
-		public TokensToTree(ILexer source, bool skipWhitespace) : base(source)
+		public TokensToTree(ILexer<Token> source, bool skipWhitespace) : base(source)
 			{ _skipWhitespace = skipWhitespace; }
 
 		bool _skipWhitespace;
 		bool _closerMatched;
-		Token? _closer;
+		Maybe<Token> _closer;
 
-		Token? LLNextToken()
+		Maybe<Token> LLNextToken()
 		{
-			Token? t;
-			if (_closer != null) {
+			Maybe<Token> t;
+			if (_closer.HasValue) {
 				t = _closer;
-				_closer = null;
+				_closer = NoValue.Value;
 				return t;
 			}
 			do
 				t = _source.NextToken();
-			while (_skipWhitespace && t != null && t.Value.IsWhitespace);
+			while (_skipWhitespace && t.HasValue && t.Value.IsWhitespace);
 			return t;
 		}
 
-		public override Token? NextToken()
+		public override Maybe<Token> NextToken()
 		{
 			_current = LLNextToken();
-			if (_current == null)
-				return null;
+			if (!_current.HasValue)
+				return Maybe<Token>.NoValue;
 
 			TK tt = _current.Value.Kind;
 			if (Token.IsOpener(tt)) {
@@ -66,8 +67,8 @@ namespace Loyc.Syntax.Lexing
 			TokenTree children = new TokenTree(_source.SourceFile);
 
 			for (;;) {
-				Token? t = LLNextToken(); // handles LBrace, LParen, LBrack internally
-				if (t == null) {
+				Maybe<Token> t = LLNextToken(); // handles LBrace, LParen, LBrack internally
+				if (!t.HasValue) {
 					WriteError(openToken.StartIndex, "Reached end-of-file before '{0}' was closed", openToken);
 					break;
 				}
@@ -76,9 +77,9 @@ namespace Loyc.Syntax.Lexing
 					var v = t.Value;
 					GatherChildren(ref v);
 					children.Add(v);
-					if (_closer != null && _closerMatched) {
+					if (_closer.HasValue && _closerMatched) {
 						children.Add(_closer.Value);
-						_closer = null;
+						_closer = NoValue.Value;
 					}
 				} else if (Token.IsCloser(tt)) {
 					// indent must match dedent, '{' must match '}' (the parser 
