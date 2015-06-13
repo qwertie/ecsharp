@@ -45,7 +45,6 @@ namespace Loyc.Syntax.Tests
 		}
 	}
 
-
 	replace (OPERATOR_TOKEN_LIST => (
 		(">>", Shr,       TokenKind.Operator + 1),
 		("<<", Shl,       TokenKind.Operator + 2),
@@ -70,6 +69,7 @@ namespace Loyc.Syntax.Tests
 		{
 			TOKEN_NAME = TOKEN_KIND; // inside 'unroll', must use ';' instead of ',' as separator
 		},
+		LBrace, RBrace, // used by IndentTokenGeneratorTests
 		Unknown
 	}
 

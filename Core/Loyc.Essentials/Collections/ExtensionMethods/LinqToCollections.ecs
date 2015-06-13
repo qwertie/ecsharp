@@ -4,10 +4,9 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
-	/// <summary>Work in progress. This is a set of extension methods that is 
-	/// designed to supplant the normal extension methods designed for 
-	/// <see cref="IEnumerable{T}"/> with equivalent faster methods designed for 
-	/// <see cref="IList{T}"/> and other collection interfaces.
+	/// <summary>
+	/// Work in progress. This class will enhance LINQ-to-Objects with 
+	/// type-preserving and/or higher-performance extension methods.
 	/// </summary><remarks>
 	/// For example, the <see cref="Enumerable.Last(IEnumerable{T})"/> extension 
 	/// method scans the entire list before returning the last item, while 

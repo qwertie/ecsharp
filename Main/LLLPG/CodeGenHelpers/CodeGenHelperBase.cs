@@ -41,6 +41,7 @@ namespace Loyc.LLParserGenerator
 		protected static readonly Symbol _Error = GSymbol.Get("Error");
 		protected static readonly Symbol _underscore = GSymbol.Get("_");
 		protected static readonly Symbol _alias = GSymbol.Get("alias");
+		protected static readonly Symbol _T = GSymbol.Get("T");
 
 		protected int _setNameCounter = 0;
 		protected LNodeFactory F;
@@ -57,7 +58,38 @@ namespace Loyc.LLParserGenerator
 		public LNode InputClass { get; set; }
 		/// <summary>The type returned from Match() methods.</summary>
 		public LNode TerminalType { get; set; }
-		
+
+		/// <summary>Gets or sets the type of lists created with the +: operator 
+		/// (default: List&lt;T>). The identifier "T" should appear in the 
+		/// expression; it will be replaced with the type of items in the list.</summary>
+		public LNode ListType { get; set; }
+		/// <summary>Gets or sets the initializer expression for lists created with 
+		/// the +: operator (default: new List&lt;T>()). The identifier "T" should 
+		/// appear in the expression; it will be replaced with the type of items in 
+		/// the list.</summary>
+		public LNode ListInitializer { get; set; }
+		/// <summary>Sets ListType and/or ListInitializer based on an expression.
+		/// A statement like <c>Type x = expr</c> sets <c>ListType = Type</c> and <c>ListInitializer = expr</c>;
+		/// A statement like <c>Type x</c> just sets <c>ListType = Type</c>; and any other
+		/// expression <c>expr</c> sets <c>ListInitializer = expr</c>.</summary>
+		public void SetListInitializer(LNode varDecl)
+		{
+			if (varDecl.Calls(S.Var, 2)) {
+				ListType = varDecl.Args[0];
+				if (varDecl.Args[1].Calls(S.Assign, 2))
+					ListInitializer = varDecl.Args[1].Args[1];
+			} else {
+				ListInitializer = varDecl;
+			}
+		}
+
+		public CodeGenHelperBase()
+		{
+			F = new LNodeFactory(EmptySourceFile.Unknown);
+			ListType = F.Of(F.Id("List"), F.Id(_T));
+			ListInitializer = F.Call(S.New, F.Call(ListType));
+		}
+
 		protected Dictionary<LNode, LNode> _definedAliases = new Dictionary<LNode, LNode>();
 		protected LNode ResolveAlias(LNode expr)
 		{
@@ -504,6 +536,32 @@ namespace Loyc.LLParserGenerator
 				return F.Dot(InputClass, typeName);
 			else
 				return typeName;
+		}
+
+		public virtual LNode GetListType(LNode type)
+		{
+			return ReplaceT(ListType, type);
+		}
+		public virtual LNode MakeInitializedVarDecl(LNode type, bool wantList, Symbol varName)
+		{
+			var initialValue = DefaultOf(type, wantList);
+			return F.Var(wantList ? GetListType(type) : type, varName, initialValue);
+		}
+		protected virtual LNode DefaultOf(LNode type, bool wantList)
+		{
+			if (wantList) {
+				return ReplaceT(ListInitializer, type);
+			} else {
+				if (type.IsIdNamed(S.Int32))
+					return F.Literal(0);
+				return F.Call(S.Default, type);
+			}
+		}
+		static LNode id_T = LNode.Id(_T);
+		static LNode ReplaceT(LNode expr, LNode replacement)
+		{
+			int _;
+			return LeMP.StandardMacros.Replace(expr, new[] { Pair.Create(id_T, replacement) }, out _);
 		}
 	}
 }

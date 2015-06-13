@@ -64,11 +64,6 @@ namespace Loyc.Syntax.Lexing
 		}
 		public new void Reset() { base.Reset(); }
 
-		/// <summary>Gets or sets an object that displays error messages. The 
-		/// default value of this property is null, in which case any error that
-		/// occurs will be thrown as a <c>FormatException</c>.</summary>
-		public IMessageSink ErrorSink { get; set; }
-
 		public new int LA0 { get { return base.LA0; } }
 		public new CharSrc CharSource
 		{

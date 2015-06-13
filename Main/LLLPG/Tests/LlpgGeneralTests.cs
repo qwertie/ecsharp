@@ -1831,5 +1831,36 @@ namespace Loyc.LLParserGenerator
 					}
 				}", null, EcsLanguageService.Value);
 		}
+		[Test]
+		public void TestListInitializer()
+		{
+			Test(@"
+				LLLPG (lexer(terminalType: int, listInitializer: var _ = new RVList<T>()));
+				public rule int ParseInt() @[
+					' '* (digits+:'0'..'9')+
+					{return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));}
+				];", @"
+					public int ParseInt()
+					{
+						int la0;
+						var digits = new RVList<int>();
+						for (;;) {
+							la0 = LA0;
+							if (la0 == ' ')
+								Skip();
+							else
+								break;
+						}
+						digits.Add(MatchRange('0', '9'));
+						for (;;) {
+							la0 = LA0;
+							if (la0 >= '0' && la0 <= '9')
+								digits.Add(MatchAny());
+							else
+								break;
+						}
+						return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));
+					}", null, EcsLanguageService.Value);
+		}
 	}
 }

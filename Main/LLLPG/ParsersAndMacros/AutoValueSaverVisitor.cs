@@ -23,13 +23,13 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _result = GSymbol.Get("result");
 		static readonly LNode _resultId = LNode.Id(_result);
 
-		public static void Run(Rule rule, IMessageSink sink, IDictionary<Symbol, Rule> rules, LNode terminalType)
+		public static void Run(Rule rule, IMessageSink sink, IDictionary<Symbol, Rule> rules, IPGCodeGenHelper codeGen)
 		{
 			// 1. Scan for a list of code blocks that use $labels, and a list of rules referenced.
 			var data = new DataGatheringVisitor(rules, rule);
 			if (data.RulesReferenced.Count != 0 || data.OtherReferences.Count != 0 || data.ProperLabels.Count != 0)
 			{
-				var vsv = new AutoValueSaverVisitor(data, sink, rules, terminalType);
+				var vsv = new AutoValueSaverVisitor(data, sink, rules, codeGen);
 				// 2. Create $result variable if it was used
 				// 3. Scan for predicates with labels, and RuleRefs referenced by 
 				//    code blocks. For each such predicate, generate a variable at 
@@ -47,7 +47,7 @@ namespace Loyc.LLParserGenerator
 			if (usingResult && rule.ReturnType != null) {
 				_data.ProperLabels[_result] = true;
 				var type = rule.ReturnType;
-				_newVarInitializers[_result] = Pair.Create(type, F.Var(type, _result, DefaultOf(type)));
+				_newVarInitializers[_result] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(type, false, _result));
 			}
 
 			Visit(rule.Pred);
@@ -151,9 +151,10 @@ namespace Loyc.LLParserGenerator
 		IMessageSink _sink;
 		IDictionary<Symbol, Rule> _rules;
 		DataGatheringVisitor _data;
-		LNode _terminalType;
-		AutoValueSaverVisitor(DataGatheringVisitor data, IMessageSink sink, IDictionary<Symbol, Rule> rules, LNode terminalType)
-			{ _data = data; _sink = sink; _rules = rules; _terminalType = terminalType; }
+		IPGCodeGenHelper _codeGen;
+
+		AutoValueSaverVisitor(DataGatheringVisitor data, IMessageSink sink, IDictionary<Symbol, Rule> rules, IPGCodeGenHelper codeGen)
+			{ _data = data; _sink = sink; _rules = rules; _codeGen = codeGen; }
 
 		// A map from variable names to a Pair<variable type, initializer statement>
 		Dictionary<Symbol,Pair<LNode,LNode>> _newVarInitializers = new Dictionary<Symbol,Pair<LNode,LNode>>();
@@ -174,7 +175,7 @@ namespace Loyc.LLParserGenerator
 			LNode basis = pred.Basis;
 			if (pred.VarLabel != null) {
 				basis = null;
-				MaybeCreateVariableFor(pred, pred.VarLabel, _terminalType);
+				MaybeCreateVariableFor(pred, pred.VarLabel, _codeGen.TerminalType);
 			}
 			// If code blocks refer to this predicate's label or basis node, tally
 			// the reference and create a variable decl for it if we haven't yet.
@@ -183,7 +184,7 @@ namespace Loyc.LLParserGenerator
 			int predCounter;
 			if (_data.OtherReferences.TryGetValueSafe(basis, out predCounter)) {
 				_data.OtherReferences[pred.Basis] = predCounter + 1;
-				MaybeCreateVariableFor(pred, PickVarNameForLNode(basis), _terminalType);
+				MaybeCreateVariableFor(pred, PickVarNameForLNode(basis), _codeGen.TerminalType);
 			}
 		}
 		private void MaybeCreateVariableFor(Pred pred, Symbol varName, LNode primType)
@@ -196,21 +197,15 @@ namespace Loyc.LLParserGenerator
 			}
 			LNode type = primType, oldType;
 			if (pred.VarIsList)
-				type = F.Of(F.Id("List"), primType); // TODO: allow user-defined list type
+				type = _codeGen.GetListType(primType); // TODO: allow user-defined list type
 			if (!_newVarInitializers.ContainsKey(varName))
-				_newVarInitializers[varName] = Pair.Create(type, F.Var(type, varName, DefaultOf(type)));
+				_newVarInitializers[varName] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(primType, pred.VarIsList, varName));
 			else if (!(oldType = _newVarInitializers[varName].A).Equals(type))
 				_sink.Write(Severity.Error, pred, Localize.From(
 					"Type mismatch: Variable '{0}' was generated earlier with type {1}, but this predicate expects {2}.",
 					varName, oldType, type));
 			pred.ResultSaver = Pred.GetStandardResultSaver(F.Id(varName),
 				pred.VarIsList ? S.AddSet : S.Assign);
-		}
-		static LNode DefaultOf(LNode type)
-		{
-			if (type.IsIdNamed(S.Int32))
-				return F.Literal(0);
-			return F.Call(S.Default, type);
 		}
 
 		#endregion
@@ -231,12 +226,14 @@ namespace Loyc.LLParserGenerator
 				return LiteralToVarName(label.Value);
 			} else if (label.Calls(S.Dot, 2))
 				return GSymbol.Get("tok__" + label.Args[1].Name);
-			else
-				return null;
+			else if (label.Calls(S.DotDot, 2))
+				return GSymbol.Get(PickVarNameForLNode(label[0]).Name + "_" + PickVarNameForLNode(label[1]).Name);
+			else // can't return null
+				return GSymbol.Get(label.GetHashCode().ToString());
 		}
 		static Symbol LiteralToVarName(object literal)
 		{
-			string prefix = literal is char ? "ch_" : "lit_";
+			string prefix = literal is char ? "ch" : "lit";
 			return GSymbol.Get(prefix + LiteralToIdent(literal));
 		}
 		static string LiteralToIdent(object literal)

@@ -77,22 +77,13 @@ namespace LeMP
 	/// </remarks>
 	internal class MacroProcessorTask
 	{
-		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
-		static readonly Symbol _unimportMacros = GSymbol.Get("#unimportMacros");
-		static readonly Symbol _noLexicalMacros = GSymbol.Get("#noLexicalMacros");
-			
 		public MacroProcessorTask(MacroProcessor parent)
 		{
-			_macros = parent.Macros.Clone();
-			// Braces must be handled specially by ApplyMacros itself, but we need 
-			// a macro method in order to get the special treatment, because as an 
-			// optimization, we ignore all symbols that are not in the macro table.
-			MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Braces,         OnBraces, MacroMode.Normal | MacroMode.Passive));
-			MacroProcessor.AddMacro(_macros, new MacroInfo(null, S.Import,         OnImport, MacroMode.Normal | MacroMode.Passive));
-			MacroProcessor.AddMacro(_macros, new MacroInfo(null, _importMacros,    OnImportMacros, MacroMode.Normal));
-			MacroProcessor.AddMacro(_macros, new MacroInfo(null, _unimportMacros,  OnUnimportMacros, MacroMode.Normal | MacroMode.Passive));
-			MacroProcessor.AddMacro(_macros, new MacroInfo(null, _noLexicalMacros, NoLexicalMacros, MacroMode.NoReprocessing));
 			_parent = parent;
+			_macros = parent.Macros.Clone();
+			foreach (var mi in MacroProcessor.GetMacros(this.GetType(), null, _sink, this))
+				MacroProcessor.AddMacro(_macros, mi);
+			_macroNamespaces = new MSet<Symbol>(_macros.SelectMany(ms => ms.Value).Select(mi => mi.NamespaceSym).Where(ns => ns != null));
 		}
 
 		#region Fields
@@ -101,6 +92,7 @@ namespace LeMP
 		IMessageSink _sink { get { return _parent.Sink; } }
 		int MaxExpansions { get { return _parent.MaxExpansions; } }
 		MMap<Symbol, List<MacroInfo>> _macros;
+		MSet<Symbol> _macroNamespaces; // A list of namespaces that contain macros
 		
 		// Statistics
 		public int MacrosInvoked { get; set; }
@@ -313,6 +305,8 @@ namespace LeMP
 				return Sink.IsEnabled(type);
 			}
 
+			public IReadOnlyDictionary<Symbol, List<MacroInfo>> AllKnownMacros { get { return _task._macros; } }
+
 			#endregion
 		}
 
@@ -383,7 +377,7 @@ namespace LeMP
 			if (_macros.TryGetValue(name, out candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
-					if (openNamespaces.Contains(info.Namespace) || info.Namespace == null) {
+					if (openNamespaces.Contains(info.NamespaceSym) || info.NamespaceSym == null) {
 						count++;
 						found.Add(info);
 					}
@@ -398,7 +392,7 @@ namespace LeMP
 			if (_macros.TryGetValue(name, out candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
-					if (info.Namespace == @namespace) {
+					if (info.NamespaceSym == @namespace) {
 						count++;
 						found.Add(info);
 					}
@@ -416,18 +410,29 @@ namespace LeMP
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
+		[LexicalMacro("#importMacros(namespace);", "LeMP will look for macros in the specified namespace.", 
+			"#importMacros", Mode = MacroMode.Normal)]
 		public LNode OnImportMacros(LNode node, IMessageSink sink)
 		{
-			OnImport(node, sink);
+			OnImport(node, sink, true);
 			return F.Call(S.Splice);
 		}
-		public LNode OnImport(LNode node, IMessageSink sink)
+		[LexicalMacro("#import(namespace);", "LeMP will look for macros in the specified namespace.", 
+			"#import", Mode = MacroMode.Normal | MacroMode.Passive)]
+		public LNode OnImport(LNode node, IMessageSink sink) { return OnImport(node, sink, false); }
+		public LNode OnImport(LNode node, IMessageSink sink, bool expectMacros)
 		{
 			AutoInitScope().BeforeImport();
-			foreach (var arg in node.Args)
-				_curScope.OpenNamespaces.Add(NamespaceToSymbol(arg));
+			foreach (var arg in node.Args) {
+				var namespaceSym = NamespaceToSymbol(arg);
+				_curScope.OpenNamespaces.Add(namespaceSym);
+				if (expectMacros && !_macroNamespaces.Contains(namespaceSym))
+					sink.Write(Severity.Warning, node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
+			}
 			return null;
 		}
+		[LexicalMacro("#unimportMacros(namespace1, namespace2)", "Tells LeMP to stop looking for macros in the specified namespace(s).", 
+			"#unimportMacros", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public LNode OnUnimportMacros(LNode node, IMessageSink sink)
 		{
 			AutoInitScope().BeforeImport();
@@ -438,23 +443,24 @@ namespace LeMP
 			}
 			return null;
 		}
+		[LexicalMacro("#noLexicalMacros(expr)", "Suppresses macro invocations inside the specified expression. Note: #noLexicalMacros may not work when it is used within another macro.",
+			"#noLexicalMacros", Mode = MacroMode.NoReprocessing)]
 		public static LNode NoLexicalMacros(LNode node, IMessageSink sink)
 		{
 			if (!node.IsCall)
 				return null;
 			return node.WithTarget(S.Splice);
 		}
+		[LexicalMacro("{}", "Used internally by the macro processor.", 
+			"{}", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public LNode OnBraces(LNode node, IMessageSink sink)
 		{
 			// This no-op macro exists to ensure ApplyMacrosFound2() is called, 
-			return null; // since that function is in charge of creating scopes.
+			// since that function is in charge of creating scopes. (as an 
+			// optimization, we ignore all symbols that are not in the macro table.)
+			return null; 
 		}
 
-		//public LNode OnBraces(LNode node, IMessageSink sink)
-		//{
-		//	_scopes.Add(null);
-		//	return null; // ApplyMacros will take care of popping the scope
-		//}
 		private void PopScope()
 		{
 			_scopes.Pop();

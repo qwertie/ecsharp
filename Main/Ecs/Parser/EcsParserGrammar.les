@@ -8,8 +8,8 @@
 // EC# (e.g. "fixed (7) {...}"). Such invalid code is allowed by the parser in 
 // case a macro might transform it later into something that makes more sense.
 //
-// NOTE: preprocessor support is not yet implemented (and will be implemented in a 
-// separate preprocessor parser anyway)
+// NOTE: LINQ & await are not yet implemented, but "await x" can be accepted if 
+// you write "await(x)" instead.
 //
 import macros LeMP.Prelude.Les;
 import System;

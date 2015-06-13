@@ -12,7 +12,7 @@ namespace Loyc.Syntax.Lexing
 	/// <para/>
 	/// TODO: IndentLevel does not work.
 	/// </remarks>
-	public class TokenListAsLexer : ILexer
+	public class TokenListAsLexer : ILexer<Token>
 	{
 		public TokenListAsLexer(IEnumerable<Token> tokenList, ISourceFile sourceFile) : this(tokenList.GetEnumerator(), sourceFile) { }
 		public TokenListAsLexer(IEnumerator<Token> tokenList, ISourceFile sourceFile) { _e = tokenList; _sourceFile = sourceFile; }
@@ -25,12 +25,12 @@ namespace Loyc.Syntax.Lexing
 			get { return _sourceFile; }
 		}
 
-		public Token? NextToken()
+		public Maybe<Token> NextToken()
 		{
 			if (MoveNext())
 				return _current;
 			else
-				return null;
+				return Maybe<Token>.NoValue;
 		}
 
 		public Loyc.IMessageSink ErrorSink { get; set; }

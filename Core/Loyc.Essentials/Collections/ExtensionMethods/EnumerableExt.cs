@@ -265,7 +265,7 @@ namespace Loyc.Collections
 		}
 
 		/// <summary>Combines 'Select' and 'Where' in a single operation.</summary>
-		/// <param name="filter">If this function returns <see cref="Maybe{O}.Null"/> 
+		/// <param name="filter">If this function returns <see cref="Maybe{O}.NoValue"/> 
 		/// then the element is suppressed from the output; otherwise the 
 		/// <see cref="Maybe{T}.Value"/> is sent to the output.</param>
 		/// <returns>A sequence filtered and changed by <c>filter</c>.</returns>

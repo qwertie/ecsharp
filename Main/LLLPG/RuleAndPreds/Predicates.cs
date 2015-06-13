@@ -34,7 +34,7 @@ namespace Loyc.LLParserGenerator
 	/// sensitive state such as the <see cref="Next"/> field, which are used during grammar 
 	/// analysis. A Pred must be Clone()d if one wants to use it multiple times.
 	/// </remarks>
-	public abstract class Pred : ICloneable<Pred>, ILocationString
+	public abstract class Pred : ICloneable<Pred>, IHasLocation
 	{
 		public abstract void Call(PredVisitor visitor); // visitor pattern
 
@@ -201,9 +201,9 @@ namespace Loyc.LLParserGenerator
 			return null;
 		}
 
-		public string LocationString
+		public object Location
 		{
-			get { return Basis != LNode.Missing ? Basis.LocationString : ToString(); }
+			get { return Basis != LNode.Missing ? Basis.Range.Start : (object)this; }
 		}
 	}
 

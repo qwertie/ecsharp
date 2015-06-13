@@ -260,5 +260,13 @@ namespace Loyc.LLParserGenerator
 		/// <summary>Type of variables auto-declared when you use labels in your
 		/// grammar (e.g. x:Foo (list+:Bar)*)</summary>
 		LNode TerminalType { get; }
+
+		/// <summary>Gets the list type for elements of the specified type (e.g. List&lt;type>)</summary>
+		LNode GetListType(LNode type);
+
+		/// <summary>Gets a variable declaration for the specified type, e.g. if 
+		/// type is <c>Foo</c> and <c>wantList == true</c> and <c>varName.Name == "x"</c>, 
+		/// the statement returned might be <c>List&lt;Foo> x = new List&lt;Foo>();</c></summary>
+		LNode MakeInitializedVarDecl(LNode type, bool wantList, Symbol varName);
 	}
 }

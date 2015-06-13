@@ -86,7 +86,7 @@ namespace LeMP
 	{
 		IMessageSink _sink;
 		public IMessageSink Sink { get { return _sink; } set { _sink = value; } }
-		public int MaxExpansions = 0xFFFF;
+		public int MaxExpansions = 255;
 
 		[ThreadStatic]
 		internal static MacroProcessor _current;
@@ -112,7 +112,7 @@ namespace LeMP
 		{
 			var ns = GSymbol.Get(type.Namespace);
 			bool any = false;
-			foreach (var info in GetMacros(type, ns)) {
+			foreach (var info in GetMacros(type, ns, _sink)) {
 				any = true;
 				AddMacro(_macros, info);
 			}
@@ -148,27 +148,30 @@ namespace LeMP
 			}
 		}
 
-		private IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace)
+		internal static IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace, IMessageSink sink, object instance = null)
 		{
-			foreach(var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static)) {
+			var flags = BindingFlags.Public | BindingFlags.Static;
+			if (instance != null)
+				flags |= BindingFlags.Instance;
+			foreach(var method in type.GetMethods(flags)) {
 				foreach (LexicalMacroAttribute attr in method.GetCustomAttributes(typeof(LexicalMacroAttribute), false)) {
-					var @delegate = AsDelegate(method);
+					var @delegate = AsDelegate(method, sink, instance);
 					if (@delegate != null) {
 						if (attr.Names == null || attr.Names.Length == 0)
-							yield return new MacroInfo(@namespace, GSymbol.Get(method.Name), @delegate, attr.Mode);
+							yield return new MacroInfo(@namespace, GSymbol.Get(method.Name), @delegate, attr);
 						else
 							foreach (string name in attr.Names)
-								yield return new MacroInfo(@namespace, GSymbol.Get(name), @delegate, attr.Mode);
+								yield return new MacroInfo(@namespace, GSymbol.Get(name), @delegate, attr);
 					}
 				}
 			}
 		}
-		LexicalMacro AsDelegate(MethodInfo method)
+		static LexicalMacro AsDelegate(MethodInfo method, IMessageSink sink, object instance)
 		{
 			try {
-				return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method);
+				return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method);
 			} catch (Exception e) {
-				_sink.Write(Severity.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
+				sink.Write(Severity.Note, method.DeclaringType, "Macro '{0}' is uncallable: {1}", method.Name, e.Message);
 				return null;
 			}
 		}
@@ -233,20 +236,23 @@ namespace LeMP
 		#endregion
 	}
 
-	internal class MacroInfo : IComparable<MacroInfo>
+	public class MacroInfo : IComparable<MacroInfo>
 	{
-		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, MacroMode mode)
+		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, LexicalMacroAttribute info)
 		{
-			Namespace = @namespace; Name = name; Macro = macro; Mode = mode;
+			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
+			Mode = info.Mode;
 			if ((Mode & MacroMode.PriorityMask) == 0)
 				Mode |= MacroMode.NormalPriority;
 		}
-		public Symbol Namespace;
-		public Symbol Name;
-		public LexicalMacro Macro;
-		public MacroMode Mode;
+		public Symbol NamespaceSym { get; private set; }
+		public Symbol Name         { get; private set; }
+		public LexicalMacro Macro  { get; private set; }
+		public LexicalMacroAttribute Info { get; private set; }
+		public MacroMode Mode      { get; private set; }
 
-		public int CompareTo(MacroInfo other) // compare priorities
+		/// <summary>Compare priorities of two macros.</summary>
+		public int CompareTo(MacroInfo other)
 		{
 			return (Mode & MacroMode.PriorityMask).CompareTo(other.Mode & MacroMode.PriorityMask);
 		}

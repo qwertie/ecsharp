@@ -38,10 +38,10 @@ namespace LeMP
 			TestEcs("use_default_tuple_types();", "");
 			TestBoth("(1, a) + (2, a, b) + (3, a, b, c);",
 			         "(1, a) + (2, a, b) + (3, a, b, c);",
-			         "Pair.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
+			         "Tuple.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
 			TestBoth("x::#!(String, DateTime) = ('''''', DateTime.Now); y::#!(Y) = (new Y(),);",
 			         "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
-			         "Pair<String, DateTime> x = Pair.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
+			         "Tuple<String, DateTime> x = Tuple.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
 			TestEcs("set_tuple_type(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
 			TestEcs("set_tuple_type(Tuple); set_tuple_type(2, Pair, Pair.Create);"+

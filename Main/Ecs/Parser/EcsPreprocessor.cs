@@ -47,9 +47,9 @@ namespace Ecs.Parser
 	/// #pragma ... // ignored
 	/// </code>
 	/// </remarks>
-	public class EcsPreprocessor : LexerWrapper
+	public class EcsPreprocessor : LexerWrapper<Token>
 	{
-		public EcsPreprocessor(ILexer source, Action<Token> onComment = null)
+		public EcsPreprocessor(ILexer<Token> source, Action<Token> onComment = null)
 			: base(source) { _onComment = onComment; }
 
 		// Can't use ISet<T>: it is new in .NET 4, but HashSet is new in .NET 3.5
@@ -69,8 +69,8 @@ namespace Ecs.Parser
 		{
 			_rest.Clear();
 			for (;;) {
-				Token? t = _source.NextToken();
-				if (t == null || t.Value.Type() == TokenType.Newline)
+				Maybe<Token> t = _source.NextToken();
+				if (!t.HasValue || t.Value.Type() == TokenType.Newline)
 					break;
 				else if (!t.Value.IsWhitespace)
 					_rest.Add(t.Value);
@@ -80,12 +80,12 @@ namespace Ecs.Parser
 		Stack<Pair<Token,bool>> _ifRegions = new Stack<Pair<Token,bool>>();
 		Stack<Token> _regions = new Stack<Token>();
 
-		public override Token? NextToken()
+		public override Maybe<Token> NextToken()
 		{
 			do {
-				Token? t_ = _source.NextToken();
+				Maybe<Token> t_ = _source.NextToken();
 			redo:
-				if (t_ == null)
+				if (!t_.HasValue)
 					break;
 			    var t = t_.Value;
 			    if (t.IsWhitespace) {
@@ -188,7 +188,7 @@ namespace Ecs.Parser
 				ErrorSink.Write(Severity.Error, _ifRegions.Peek().A.ToSourceRange(SourceFile), "#if without matching #endif");
 			if (_regions.Count > 0)
 				ErrorSink.Write(Severity.Warning, _regions.Peek().ToSourceRange(SourceFile), "#region without matching #endregion");
-			return null;
+			return Maybe<Token>.NoValue;
 		}
 
 		private void AddComment(Token t)
@@ -204,7 +204,7 @@ namespace Ecs.Parser
 			ErrorSink.Write(Severity.Error, pptoken.ToSourceRange(SourceFile), message);
 		}
 
-		private Token? SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
+		private Maybe<Token> SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
 		{
 			_commentList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, _source.InputPosition));
 			if (!cond)
@@ -224,12 +224,12 @@ namespace Ecs.Parser
 		// Skips over a region that has is within a "false" #if/#elif/#else region.
 		// The region (not including the leading or trailing #if/#elif/#else/#endif)
 		// is added to _commentList as a single "token" of type TokenType.PPignored.
-		private Token? SkipIgnoredRegion()
+		private Maybe<Token> SkipIgnoredRegion()
 		{
 			int nestedIfs = 0;
 			int startIndex = _source.InputPosition;
-			Token? t_;
-			while ((t_ = _source.NextToken()) != null) {
+			Maybe<Token> t_;
+			while ((t_ = _source.NextToken()).HasValue) {
 				var t = t_.Value;
 				if (t.Type() == TokenType.PPif)
 					nestedIfs++;
@@ -238,7 +238,7 @@ namespace Ecs.Parser
 				else if ((t.Type() == TokenType.PPelif || t.Type() == TokenType.PPelse) && nestedIfs == 0)
 					break;
 			}
-			int stopIndex = t_ == null ? _source.InputPosition : t_.Value.StartIndex;
+			int stopIndex = t_.HasValue ? t_.Value.StartIndex : _source.InputPosition;
 			_commentList.Add(new Token((int)TokenType.PPignored, startIndex, stopIndex - startIndex));
 			return t_;
 		}
@@ -276,20 +276,20 @@ namespace Ecs.Parser
 
 	/// <summary>A helper class that removes comments from a token stream, saving 
 	/// them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
-	public class CommentSaver : LexerWrapper
+	public class CommentSaver : LexerWrapper<Token>
 	{
-		public CommentSaver(ILexer source, IList<Token> commentList = null)
+		public CommentSaver(ILexer<Token> source, IList<Token> commentList = null)
 			: base(source) { _commentList = commentList ?? new List<Token>(); }
 
 		IList<Token> _commentList;
 		public IList<Token> CommentList { get { return _commentList; } }
 	
-		public sealed override Token? NextToken()
+		public sealed override Maybe<Token> NextToken()
 		{
-			Token? t = _source.NextToken();
+			Maybe<Token> t = _source.NextToken();
 			for (;;) {
 				t = _source.NextToken();
-				if (t == null)
+				if (!t.HasValue)
 					break;
 				else if (t.Value.IsWhitespace) {
 					if (t.Value.Kind == TokenKind.Comment) {

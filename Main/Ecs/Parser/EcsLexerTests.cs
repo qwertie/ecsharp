@@ -256,7 +256,7 @@ namespace Ecs.Parser
 				}
 				index += token.Length;
 			}
-			Assert.That(lexer.NextToken() == null);
+			Assert.IsFalse(lexer.NextToken().HasValue);
 		}
 	}
 }

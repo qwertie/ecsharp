@@ -18,10 +18,10 @@ namespace Ecs.Parser
 {
 	using TT = TokenType;
 
-	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
+	/// <summary>Lexer for EC# source code (see <see cref="ILexer{Token}"/>).</summary>
 	/// <seealso cref="WhitespaceFilter"/>
 	/// <seealso cref="TokensToTree"/>
-	public partial class EcsLexer : BaseLexer, ILexer
+	public partial class EcsLexer : BaseLexer, ILexer<Token>
 	{
 		public EcsLexer(string text, IMessageSink sink) : base(new UString(text), "") { ErrorSink = sink; }
 		public EcsLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) { ErrorSink = sink; }
@@ -53,13 +53,13 @@ namespace Ecs.Parser
 		public int IndentLevel { get { return _indentLevel; } }
 		public int SpacesPerTab = 4;
 
-		public Token? NextToken()
+		public Maybe<Token> NextToken()
 		{
 			_startPosition = InputPosition;
 			_value = null;
 			_style = 0;
 			if (InputPosition >= CharSource.Count)
-				return null;
+				return Maybe<Token>.NoValue;
 			else {
 				Token();
 				Debug.Assert(InputPosition > _startPosition);
@@ -355,10 +355,28 @@ namespace Ecs.Parser
 
 		int MeasureIndent(UString indent)
 		{
-			return LesLexer.MeasureIndent(indent, SpacesPerTab);
+			return MeasureIndent(indent, SpacesPerTab);
+		}
+		public static int MeasureIndent(UString indent, int spacesPerTab)
+		{
+			int amount = 0;
+			for (int i = 0; i < indent.Length; i++)
+			{
+				char ch = indent[i];
+				if (ch == '\t') {
+					amount += spacesPerTab;
+					amount -= amount % spacesPerTab;
+				} else if (ch == '.' && i + 1 < indent.Length) {
+					amount += spacesPerTab;
+					amount -= amount % spacesPerTab;
+					i++;
+				} else
+					amount++;
+			}
+			return amount;
 		}
 
-		Token? _current;
+		Maybe<Token> _current;
 
 		void IDisposable.Dispose() {}
 		Token IEnumerator<Token>.Current { get { return _current.Value; } }

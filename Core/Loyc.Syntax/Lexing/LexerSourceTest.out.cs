@@ -46,7 +46,7 @@ namespace Loyc.Syntax.Tests
 	}
 	public enum CalcTokenType
 	{
-		EOF = TokenKind.Spaces, Id = TokenKind.Id, Num = TokenKind.Number, Shr = TokenKind.Operator + 1, Shl = TokenKind.Operator + 2, Assign = TokenKind.Assignment + 1, GT = TokenKind.Operator + 3, LT = TokenKind.Operator + 4, Exp = TokenKind.Operator + 5, Mul = TokenKind.Operator + 6, Div = TokenKind.Operator + 7, Add = TokenKind.Operator + 8, Sub = TokenKind.Operator + 9, Semicolon = TokenKind.Operator + 10, LParen = TokenKind.Operator + 11, RParen = TokenKind.Operator + 12, Unknown
+		EOF = TokenKind.Spaces, Id = TokenKind.Id, Num = TokenKind.Number, Shr = TokenKind.Operator + 1, Shl = TokenKind.Operator + 2, Assign = TokenKind.Assignment + 1, GT = TokenKind.Operator + 3, LT = TokenKind.Operator + 4, Exp = TokenKind.Operator + 5, Mul = TokenKind.Operator + 6, Div = TokenKind.Operator + 7, Add = TokenKind.Operator + 8, Sub = TokenKind.Operator + 9, Semicolon = TokenKind.Operator + 10, LParen = TokenKind.Operator + 11, RParen = TokenKind.Operator + 12, LBrace, RBrace, Unknown
 	}
 	partial class CalculatorLexer : EnumeratorBase<Token>
 	{

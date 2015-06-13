@@ -43,6 +43,8 @@ namespace Loyc
 	/// For example, this is used by the the <see cref="Loyc.Syntax.LNode.Value"/>
 	/// class, in which <c>NoValue</c> has a different meaning than both 
 	/// <c>null</c> and <c>void</c>.
+	/// <para/>
+	/// Also, this value converts implicitly to <see cref="Maybe{T}.NoValue"/>.
 	/// </remarks>
 	public class NoValue
 	{

@@ -278,7 +278,7 @@ namespace Loyc.LLParserGenerator
 				return;
 			foreach (var rule in _rules.Values) {
 				rule.Basis = rule.Basis.WithAttrs(a =>
-					any_in_HashLabels.Contains(a.Name) ? Maybe<LNode>.Null : a);
+					any_in_HashLabels.Contains(a.Name) ? Maybe<LNode>.NoValue : a);
 			}
 		}
 

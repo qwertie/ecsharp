@@ -56,6 +56,17 @@ namespace LeMP
 		[ThreadStatic]
 		static InternalList<Triplet<Symbol, LNode, int>> _tokenTreeRepls;
 
+		/// <summary>Searches a list of expressions/statements for one or more 
+		/// patterns, and performs replacements.</summary>
+		/// <param name="stmts">A list of expressions/statements in which to search.</param>
+		/// <param name="patterns">Each pair consists of (A) something to search 
+		/// for and (B) a replacement expression. Part A can use the substitution
+		/// operator with an identifier inside (e.g. $Foo) to "capture" any 
+		/// subexpression, and part B can use the same substitution (e.g. $Foo)
+		/// to insert the captured subexpression(s) into the output.</param>
+		/// <param name="replacementCount">Number of replacements that occurred.</param>
+		/// <returns>The result of applying the replacements.</returns>
+		/// <remarks><see cref="LNodeExt.MatchesPattern"/> is used for matching.</remarks>
 		public static RVList<LNode> Replace(RVList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			// This list is used to support simple token replacement in TokenTrees
@@ -74,6 +85,11 @@ namespace LeMP
 			}));
 			replacementCount = count;
 			return output;
+		}
+		public static LNode Replace(LNode stmt, Pair<LNode, LNode>[] patterns, out int replacementCount)
+		{
+			CheckParam.IsNotNull("stmt", stmt);
+			return Replace(new RVList<LNode>(stmt), patterns, out replacementCount)[0];
 		}
 
 		static LNode TryReplaceHere(LNode node, Pair<LNode, LNode>[] patterns, MMap<Symbol, LNode> temp)

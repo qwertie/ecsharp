@@ -57,7 +57,7 @@ namespace Ecs.Parser
 		{
 			get { return true; }
 		}
-		public ILexer Tokenize(ICharSource text, string fileName, IMessageSink msgs)
+		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
 			return new EcsLexer(text, fileName, msgs);
 		}
@@ -66,7 +66,7 @@ namespace Ecs.Parser
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
-		public IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null)
 		{
 			var preprocessed = new EcsPreprocessor(input);
 			var treeified = new TokensToTree(preprocessed, false);

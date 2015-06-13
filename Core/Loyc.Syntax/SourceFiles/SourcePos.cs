@@ -51,7 +51,7 @@ namespace Loyc.Syntax
 	/// Line and column numbering both start at one (1). Line=0 signifies nowhere 
 	/// in particular. Instances are immutable.
 	/// </remarks>
-	public class SourcePos : LineAndPos, ILocationString
+	public class SourcePos : LineAndPos
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)
@@ -66,10 +66,6 @@ namespace Loyc.Syntax
 				return "Nowhere";
 			else
 				return string.Format("{0}({1},{2})", FileName, Line, PosInLine);
-		}
-		string ILocationString.LocationString
-		{
-			get { return ToString(); }
 		}
 		public override bool Equals(object obj)
 		{

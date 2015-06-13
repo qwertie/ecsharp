@@ -85,15 +85,16 @@ namespace Loyc.LLPG
 			{
 				LNode value = option.Value;
 				string key = (option.Key ?? (Symbol)"??").Name;
-				switch (key)
+				switch (key.ToLowerInvariant())
 				{
-					case "inputSource":  helper.InputSource = value; break;
-					case "inputClass":   helper.InputClass = value; break;
-					case "terminalType": helper.TerminalType = value; break;
-					case "setType":      helper.SetType = value; break;
+					case "inputsource":     helper.InputSource = value; break;
+					case "inputclass":      helper.InputClass = value; break;
+					case "terminaltype":    helper.TerminalType = value; break;
+					case "settype":         helper.SetType = value; break;
+					case "listinitializer": helper.SetListInitializer(value); break;
 					default:
 						context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
-							"inputSource = var, inputClass = type, terminalType = type, setType = type", key);
+							"inputSource: var, inputClass: type, terminalType: type, setType: type, listInitializer: var _ = new List<T>()", key);
 						break;
 				}
 			}
@@ -162,9 +163,12 @@ namespace Loyc.LLPG
 							else
 								context.Write(Severity.Error, value, "CastLA: expected literal boolean argument.");
 							break;
+						case "listinitializer":
+							helper.SetListInitializer(value);
+							break;
 						default:
 							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
-								"inputSource = var, inputClass = type, terminalType = type, laType = type, matchCast = type, setType = type, allowSwitch = bool", key);
+								"inputSource: var, inputClass: type, terminalType: type, laType: type, matchCast: type, setType: type, allowSwitch: bool, listInitializer: var _ = new List<T>()", key);
 							break;
 					}
 				}

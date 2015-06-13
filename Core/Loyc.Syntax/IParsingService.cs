@@ -42,7 +42,7 @@ namespace Loyc.Syntax
 		/// should not remove comments, although it may skip spaces and perhaps
 		/// newlines. If there is a preprocessor, it should not run.
 		/// </remarks>
-		ILexer Tokenize(ICharSource file, string fileName, IMessageSink msgs);
+		ILexer<Token> Tokenize(ICharSource file, string fileName, IMessageSink msgs);
 
 		/// <summary>Parses a source file into one or more Loyc trees.</summary>
 		/// <param name="file">input file or string.</param>
@@ -67,7 +67,7 @@ namespace Loyc.Syntax
 		/// sends the results to the parser. If possible, the output is computed 
 		/// lazily.
 		/// </remarks>
-		IListSource<LNode> Parse(ILexer input, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null);
 
 		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
 		/// <remarks>
@@ -146,7 +146,7 @@ namespace Loyc.Syntax
 		{
 			return self.Print(node, MessageSink.Current);
 		}
-		public static ILexer Tokenize(this IParsingService parser, string input, IMessageSink msgs = null)
+		public static ILexer<Token> Tokenize(this IParsingService parser, string input, IMessageSink msgs = null)
 		{
 			return parser.Tokenize(new StringSlice(input), "", msgs ?? MessageSink.Current);
 		}
@@ -177,7 +177,7 @@ namespace Loyc.Syntax
 		{
 			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType);
 		}
-		public static ILexer Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
+		public static ILexer<Token> Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
 		{
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
@@ -186,7 +186,7 @@ namespace Loyc.Syntax
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Parse(parser, stream, fileName, msgs, inputType);
 		}
-		public static ILexer TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
+		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Tokenize(parser, stream, fileName, msgs);

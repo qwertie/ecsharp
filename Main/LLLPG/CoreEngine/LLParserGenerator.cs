@@ -729,7 +729,7 @@ namespace Loyc.LLParserGenerator
 			
 			// Generate variables for labeled Preds (e.g x:Foo y+:Bar Baz {$Baz;})
 			foreach (var rule in rulesAndExterns)
-				AutoValueSaverVisitor.Run(rule, _sink, _rules, _helper.TerminalType);
+				AutoValueSaverVisitor.Run(rule, _sink, _rules, _helper);
 
 			// Expand rules or rule references marked inline, if any
 			var inl = new ApplyInlines();

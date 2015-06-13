@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Globalization;
 using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
 using Loyc.Threading;
 using Loyc.Collections;
+using Loyc.Collections.Impl;
+using Loyc.Utilities;
 using uchar = System.Int32;
 
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
-	using System.Globalization;
-	using Loyc.Syntax.Lexing;
-	using Loyc.Collections.Impl;
-	using Loyc.Utilities;
 
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
 	/// <seealso cref="TokensToTree"/>
-	public partial class LesLexer : BaseLexer, ILexer, ICloneable<LesLexer>
+	public partial class LesLexer : BaseILexer<ICharSource, Token>, ILexer<Token>, ICloneable<LesLexer>
 	{
 		public LesLexer(string text, IMessageSink errorSink) : this(new UString(text), "", errorSink) { }
 		public LesLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
@@ -43,56 +43,29 @@ namespace Loyc.Syntax.Les
 		//now we use LexerSourceFile instead
 		//protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
 
-		public void Reset(ICharSource source, string fileName = "", int inputPosition = 0)
+		protected override void Reset(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
-			base.Reset(source, fileName, inputPosition, true);
+			base.Reset(source, fileName, inputPosition, newSourceFile);
+			InputPosition += IndentString.Length; // skip initial indent, if any
 		}
 
-		new public ISourceFile SourceFile { get { return base.SourceFile; } }
-
-		/// <summary>Error messages are given to the message sink.</summary>
-		/// <remarks>The context argument will have type SourcePos.</remarks>
-		public IMessageSink ErrorSink { get; set; }
-		
-		StringSlice _indent;
-		int _indentLevel;
-		public UString IndentString { get { return _indent; } }
-		public int IndentLevel { get { return _indentLevel; } }
-		public int SpacesPerTab = 4;
-
-		protected override void Error(int lookaheadIndex, string message)
+		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
-			int index = InputPosition + lookaheadIndex; 
 			_parseNeeded = true; // don't use the "fast" code path
-			ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), message);
+			base.Error(lookaheadIndex, message, args);
 		}
-
 		protected sealed override void AfterNewline()
 		{
 			base.AfterNewline();
-			//_lineIndexes.Add(InputPosition);
 		}
-
+		protected override bool SupportDotIndents() { return true; }
+		
 		public LesLexer Clone()
 		{
 			return (LesLexer)MemberwiseClone();
 		}
 
-		public Token? NextToken()
-		{
-			_startPosition = InputPosition;
-			_value = null;
-			_style = 0;
-			if (LA0 == -1) // EOF
-				return null;
-			else {
-				Token();
-				Debug.Assert(InputPosition > _startPosition);
-				return _current = new Token((int)_type, _startPosition, InputPosition - _startPosition, _style, _value);
-			}
-		}
-
-		#region Value parsers
+		#region Token value parsers
 		// After the generated lexer code determines the boundaries of the token, 
 		// one of these methods extracts the value of the token (e.g. "17L" => (long)17)
 		// There are value parsers for identifiers, numbers, and strings; certain
@@ -114,7 +87,7 @@ namespace Loyc.Syntax.Les
 				} else {
 					var sb = TempSB();
 					UString original = CharSource.Slice(_startPosition, len);
-					UnescapeQuotedString(ref original, Error, sb, _indent);
+					UnescapeQuotedString(ref original, Error, sb, IndentString);
 					Debug.Assert(original.IsEmpty);
 					if (sb.Length == 1)
 						c = sb[0];
@@ -151,7 +124,7 @@ namespace Loyc.Syntax.Les
 			string value;
 			if (_parseNeeded) {
 				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
-				value = UnescapeQuotedString(ref original, Error, _indent);
+				value = UnescapeQuotedString(ref original, Error, IndentString);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
@@ -688,81 +661,5 @@ namespace Loyc.Syntax.Les
 		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }
 
 		#endregion // Value parsers
-
-		// Due to the way generics are implemented, repeating the implementation 
-		// of this base-class method might improve performance (TODO: verify this idea)
-		new protected int LA(int i)
-		{
-			bool fail;
-			char result = CharSource.TryGet(InputPosition + i, out fail);
-			return fail ? -1 : result;
-		}
-
-		int MeasureIndent(UString indent)
-		{
-			return MeasureIndent(indent, SpacesPerTab);
-		}
-		public static int MeasureIndent(UString indent, int spacesPerTab)
-		{
-			int amount = 0;
-			for (int i = 0; i < indent.Length; i++)
-			{
-				char ch = indent[i];
-				if (ch == '\t') {
-					amount += spacesPerTab;
-					amount -= amount % spacesPerTab;
-				} else if (ch == '.' && i + 1 < indent.Length) {
-					amount += spacesPerTab;
-					amount -= amount % spacesPerTab;
-					i++;
-				} else
-					amount++;
-			}
-			return amount;
-		}
-
-		Token? _current;
-
-		void IDisposable.Dispose() {}
-		Token IEnumerator<Token>.Current { get { return _current.Value; } }
-		object System.Collections.IEnumerator.Current { get { return _current; } }
-		void System.Collections.IEnumerator.Reset() { Reset(CharSource, FileName, 0); }
-		bool System.Collections.IEnumerator.MoveNext()
-		{
-			_current = NextToken();
-			return _current.HasValue;
-		}
-
-		/*public SourcePos IndexToLine(int index)
-		{
-			var fn = SourceFile.FileName;
-			if (index < 0 || _lineIndexes.IsEmpty)
-				return new SourcePos(fn, 0, 0);
-			int lastIndex = _lineIndexes.Last;
-			if (index < lastIndex) {
-				int i = _lineIndexes.BinarySearch(index);
-				int line = i >= 0 ? i : ~i - 1;
-				int col = index - _lineIndexes[line];
-				return new SourcePos(fn, line + 1, col + 1);
-			} else {
-				if (index > InputPosition)
-					index = InputPosition;
-				return new SourcePos(fn, _lineIndexes.Count, index - lastIndex + 1);
-			}
-		}
-
-		public int LineToIndex(int lineNo)
-		{
-			--lineNo;
-			if (lineNo < 0) return -1;
-			if (lineNo >= _lineIndexes.Count)
-				return CharSource.Count;
-			return _lineIndexes[lineNo];
-		}
-
-		public int LineToIndex(SourcePos pos)
-		{
-			return LineToIndex(pos.Line) + pos.PosInLine - 1;
-		}*/
 	}
 }

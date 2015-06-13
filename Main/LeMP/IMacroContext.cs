@@ -106,6 +106,11 @@ namespace LeMP
 		RVList<LNode> PreProcess(RVList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
 		/// <inheritdoc cref="PreProcess(RVList{LNode}, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false);
+
+		/// <summary>Gets information about all macros registered with the macro 
+		/// processor, including macros whose namespace has not been opened with
+		/// <c>#importMacros</c>.</summary>
+		IReadOnlyDictionary<Symbol, List<MacroInfo>> AllKnownMacros { get; }
 	}
 
 	/// <summary>Standard extension methods for <see cref="IMacroContext"/>.</summary>

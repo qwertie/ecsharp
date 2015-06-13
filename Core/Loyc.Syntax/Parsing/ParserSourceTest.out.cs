@@ -28,15 +28,14 @@ namespace Loyc.Syntax.Tests
 		}
 		[Test] public void MoreTests()
 		{
-			AreEqual(5,  Calculator.Calculate("2+3"));
-			AreEqual(5,  Calculator.Calculate(" 2+3 "));
+			AreEqual(5, Calculator.Calculate("2+3"));
+			AreEqual(5, Calculator.Calculate(" 2+3 "));
 			AreEqual(26, Calculator.Calculate("2*3 + 4*5"));
 			AreEqual(0.125, Calculator.Calculate("2/4 - 3/8"));
 			AreEqual(25, Calculator.Calculate("5 * ( 2 + 3 )"));
 			AreEqual(25, Calculator.Calculate("5(5)"));
 			AreEqual(25, Calculator.Calculate("5(2+3)"));
-			AreEqual(6,  Calculator.Calculate("five=5; six=five+1"));
-			AreEqual(121, Calculator.Calculate("five=5; six=6; eleven=five+six; eleven*eleven"));
+			AreEqual(25, Calculator.Calculate("5(2+3)"));
 		}
 		[Test] public void SumTest()
 		{
@@ -83,16 +82,16 @@ namespace Loyc.Syntax.Tests
 			TT la0, la1;
 			double got_Atom = default(double);
 			double result = default(double);
-			// Line 101: ( TT.Id | TT.Num | TT.LParen Expr TT.RParen )
+			// Line 116: ( TT.Id | TT.Num | TT.LParen Expr TT.RParen )
 			la0 = (TT) Src.LA0;
 			if (la0 == TT.Id) {
 				var t = Src.MatchAny();
-				#line 101 "ParserSourceTest.ecs"
+				#line 116 "ParserSourceTest.ecs"
 				result = Vars[(string) t.Value];
 				#line default
 			} else if (la0 == TT.Num) {
 				var t = Src.MatchAny();
-				#line 102 "ParserSourceTest.ecs"
+				#line 117 "ParserSourceTest.ecs"
 				result = (double) t.Value;
 				#line default
 			} else if (la0 == TT.LParen) {
@@ -100,13 +99,13 @@ namespace Loyc.Syntax.Tests
 				result = Expr();
 				Src.Match((int) TT.RParen);
 			} else {
-				#line 104 "ParserSourceTest.ecs"
+				#line 119 "ParserSourceTest.ecs"
 				result = double.NaN;
-				#line 104 "ParserSourceTest.ecs"
+				#line 119 "ParserSourceTest.ecs"
 				Src.Error(0, "Expected identifer, number, or (parens)");
 				#line default
 			}
-			// Line 107: greedy(TT.Exp Atom)*
+			// Line 122: greedy(TT.Exp Atom)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Exp) {
@@ -114,7 +113,7 @@ namespace Loyc.Syntax.Tests
 					if (la1 == TT.Id || la1 == TT.LParen || la1 == TT.Num) {
 						Src.Skip();
 						got_Atom = Atom();
-						#line 107 "ParserSourceTest.ecs"
+						#line 122 "ParserSourceTest.ecs"
 						result = System.Math.Pow(result, got_Atom);
 						#line default
 					} else
@@ -127,7 +126,7 @@ namespace Loyc.Syntax.Tests
 		bool Scan_Atom()
 		{
 			TT la0, la1;
-			// Line 101: ( TT.Id | TT.Num | TT.LParen Expr TT.RParen )
+			// Line 116: ( TT.Id | TT.Num | TT.LParen Expr TT.RParen )
 			la0 = (TT) Src.LA0;
 			if (la0 == TT.Id)
 				{if (!Src.TryMatch((int) TT.Id))
@@ -144,7 +143,7 @@ namespace Loyc.Syntax.Tests
 					return false;
 			} else {
 			}
-			// Line 107: greedy(TT.Exp Atom)*
+			// Line 122: greedy(TT.Exp Atom)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Exp) {
@@ -165,18 +164,18 @@ namespace Loyc.Syntax.Tests
 		{
 			TT la0;
 			var result = Atom();
-			// Line 112: (Atom)*
+			// Line 127: (Atom)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Id || la0 == TT.LParen || la0 == TT.Num) {
 					var rest = Atom();
-					#line 112 "ParserSourceTest.ecs"
+					#line 127 "ParserSourceTest.ecs"
 					result *= rest;
 					#line default
 				} else
 					break;
 			}
-			#line 113 "ParserSourceTest.ecs"
+			#line 128 "ParserSourceTest.ecs"
 			return result;
 			#line default
 		}
@@ -185,7 +184,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			if (!Scan_Atom())
 				return false;
-			// Line 112: (Atom)*
+			// Line 127: (Atom)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Id || la0 == TT.LParen || la0 == TT.Num)
@@ -199,17 +198,17 @@ namespace Loyc.Syntax.Tests
 		double PrefixExpr()
 		{
 			TT la0;
-			// Line 116: (TT.Sub Term | Term)
+			// Line 131: (TT.Sub Term | Term)
 			la0 = (TT) Src.LA0;
 			if (la0 == TT.Sub) {
 				Src.Skip();
 				var r = Term();
-				#line 116 "ParserSourceTest.ecs"
+				#line 131 "ParserSourceTest.ecs"
 				return -r;
 				#line default
 			} else {
 				var r = Term();
-				#line 117 "ParserSourceTest.ecs"
+				#line 132 "ParserSourceTest.ecs"
 				return r;
 				#line default
 			}
@@ -217,7 +216,7 @@ namespace Loyc.Syntax.Tests
 		bool Scan_PrefixExpr()
 		{
 			TT la0;
-			// Line 116: (TT.Sub Term | Term)
+			// Line 131: (TT.Sub Term | Term)
 			la0 = (TT) Src.LA0;
 			if (la0 == TT.Sub) {
 				if (!Src.TryMatch((int) TT.Sub))
@@ -232,19 +231,19 @@ namespace Loyc.Syntax.Tests
 		{
 			TT la0;
 			var result = PrefixExpr();
-			// Line 121: ((TT.Div|TT.Mul) PrefixExpr)*
+			// Line 136: ((TT.Div|TT.Mul) PrefixExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Div || la0 == TT.Mul) {
 					var op = Src.MatchAny();
 					var rhs = PrefixExpr();
-					#line 121 "ParserSourceTest.ecs"
+					#line 136 "ParserSourceTest.ecs"
 					result = Do(result, op, rhs);
 					#line default
 				} else
 					break;
 			}
-			#line 122 "ParserSourceTest.ecs"
+			#line 137 "ParserSourceTest.ecs"
 			return result;
 			#line default
 		}
@@ -253,7 +252,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			if (!Scan_PrefixExpr())
 				return false;
-			// Line 121: ((TT.Div|TT.Mul) PrefixExpr)*
+			// Line 136: ((TT.Div|TT.Mul) PrefixExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Div || la0 == TT.Mul) {
@@ -270,7 +269,7 @@ namespace Loyc.Syntax.Tests
 		{
 			TT la0;
 			var result = MulExpr();
-			// Line 126: ((TT.Add|TT.Sub) MulExpr)*
+			// Line 141: ((TT.Add|TT.Sub) MulExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Add) {
@@ -291,13 +290,13 @@ namespace Loyc.Syntax.Tests
 				{
 					var op = Src.MatchAny();
 					var rhs = MulExpr();
-					#line 126 "ParserSourceTest.ecs"
+					#line 141 "ParserSourceTest.ecs"
 					result = Do(result, op, rhs);
 					#line default
 				}
 			}
 		stop:;
-			#line 127 "ParserSourceTest.ecs"
+			#line 142 "ParserSourceTest.ecs"
 			return result;
 			#line default
 		}
@@ -306,7 +305,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			if (!Scan_MulExpr())
 				return false;
-			// Line 126: ((TT.Add|TT.Sub) MulExpr)*
+			// Line 141: ((TT.Add|TT.Sub) MulExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Add) {
@@ -338,7 +337,7 @@ namespace Loyc.Syntax.Tests
 		{
 			TT la0, la1;
 			double result = default(double);
-			// Line 131: (TT.Id TT.Assign AssignExpr | AddExpr)
+			// Line 146: (TT.Id TT.Assign AssignExpr | AddExpr)
 			la0 = (TT) Src.LA0;
 			if (la0 == TT.Id) {
 				la1 = (TT) Src.LA(1);
@@ -346,7 +345,7 @@ namespace Loyc.Syntax.Tests
 					var t = Src.MatchAny();
 					Src.Skip();
 					result = AssignExpr();
-					#line 131 "ParserSourceTest.ecs"
+					#line 146 "ParserSourceTest.ecs"
 					Vars[t.Value.ToString()] = result;
 					#line default
 				} else
@@ -358,7 +357,7 @@ namespace Loyc.Syntax.Tests
 		bool Scan_AssignExpr()
 		{
 			TT la0, la1;
-			// Line 131: (TT.Id TT.Assign AssignExpr | AddExpr)
+			// Line 146: (TT.Id TT.Assign AssignExpr | AddExpr)
 			do {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Id) {
@@ -388,7 +387,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			double result = default(double);
 			result = AssignExpr();
-			// Line 135: (TT.Semicolon AssignExpr)*
+			// Line 150: (TT.Semicolon AssignExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Semicolon) {
@@ -404,7 +403,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			if (!Scan_AssignExpr())
 				return false;
-			// Line 135: (TT.Semicolon AssignExpr)*
+			// Line 150: (TT.Semicolon AssignExpr)*
 			for (;;) {
 				la0 = (TT) Src.LA0;
 				if (la0 == TT.Semicolon) {
@@ -422,7 +421,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			double n = default(double);
 			double result = default(double);
-			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
+			// Line 155: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
 			if (Try_Expr_Test0(0)) {
 				switch ((TT) Src.LA(1)) {
 				case TT.Add:
@@ -437,13 +436,13 @@ namespace Loyc.Syntax.Tests
 				case TT.Sub:
 					{
 						result = AssignExpr();
-						// Line 141: (TT.Semicolon AssignExpr)*
+						// Line 156: (TT.Semicolon AssignExpr)*
 						for (;;) {
 							la0 = (TT) Src.LA0;
 							if (la0 == TT.Semicolon) {
 								Src.Skip();
 								n = AssignExpr();
-								#line 141 "ParserSourceTest.ecs"
+								#line 156 "ParserSourceTest.ecs"
 								result += n;
 								#line default
 							} else
@@ -463,7 +462,7 @@ namespace Loyc.Syntax.Tests
 		bool Scan_Expr()
 		{
 			TT la0;
-			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
+			// Line 155: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
 			do {
 				if (Try_Expr_Test0(0)) {
 					switch ((TT) Src.LA(1)) {
@@ -480,7 +479,7 @@ namespace Loyc.Syntax.Tests
 						{
 							if (!Scan_AssignExpr())
 								return false;
-							// Line 141: (TT.Semicolon AssignExpr)*
+							// Line 156: (TT.Semicolon AssignExpr)*
 							for (;;) {
 								la0 = (TT) Src.LA0;
 								if (la0 == TT.Semicolon) {

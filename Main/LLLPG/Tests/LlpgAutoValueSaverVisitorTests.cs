@@ -30,7 +30,7 @@ namespace Loyc.LLParserGenerator
 					int CountHashes()
 					{
 						int la0;
-						List<int> h = default(List<int>);
+						List<int> h = new List<int>();
 						// Line 2: ([#])*
 						 for (;;) {
 							la0 = LA0;
@@ -132,9 +132,9 @@ namespace Loyc.LLParserGenerator
 					}
 					char? Percent()
 					{
-						int ch_x25 = 0;
-						ch_x25 = Match('%');
-						return (char) ch_x25;
+						int chx25 = 0;
+						chx25 = Match('%');
+						return (char) chx25;
 					}");
 		}
 		[Test] public void TestMisc()
@@ -147,7 +147,7 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0;
 						object a = default(object);
-						List<object> b = default(List<object>);
+						List<object> b = new List<object>();
 						object tok_B = default(object);
 						int x;
 						a = Match(A);
@@ -171,7 +171,7 @@ namespace Loyc.LLParserGenerator
 					void Foo()
 					{
 						int la0;
-						List<Token> c = default(List<Token>);
+						List<Token> c = new List<Token>();
 						Token tok_C = default(Token);
 						// Line 2: (A C | B (C)*)
 						la0 = (int)LA0;

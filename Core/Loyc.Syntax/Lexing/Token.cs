@@ -290,7 +290,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			return new SourceRange(sf, StartIndex, Length);
 		}
-		public SourceRange Range(ILexer l) { return Range(l.SourceFile); }
+		public SourceRange Range(ILexer<Token> l) { return Range(l.SourceFile); }
 
 		/// <summary>Gets the original source text for a token if available, under the 
 		/// assumption that the specified source file correctly specifies where the
@@ -301,7 +301,7 @@ namespace Loyc.Syntax.Lexing
 				return file.Slice(StartIndex, Length);
 			return UString.Null;
 		}
-		public UString SourceText(ILexer l) { return SourceText(l.SourceFile.Text); }
+		public UString SourceText(ILexer<Token> l) { return SourceText(l.SourceFile.Text); }
 
 		#region ToString, Equals, GetHashCode
 

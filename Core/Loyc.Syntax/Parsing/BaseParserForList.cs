@@ -95,6 +95,7 @@ namespace Loyc.Syntax
 		}
 
 		protected MatchType LA(int i) { return LT(i).Type; }
+		protected MatchType LA0 { get { return _lt0.Type; } }
 		
 		/// <summary>Returns a string representation of the specified token type.
 		/// These strings are used in error messages.</summary>

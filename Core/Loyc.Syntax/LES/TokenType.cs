@@ -12,7 +12,7 @@ namespace Loyc.Syntax.Les
 	public enum TokenType
 	{
 		EOF        = 0,
-		Spaces     = TokenKind.Spaces + 1,
+		//Spaces   = TokenKind.Spaces + 1, // Lexer simply skips spaces now
 		Newline    = TokenKind.Spaces + 2,
 		SLComment  = TokenKind.Comment,
 		MLComment  = TokenKind.Comment + 1,
@@ -69,7 +69,6 @@ namespace Loyc.Syntax.Les
 		{
 			StringBuilder sb = new StringBuilder();
 			switch (t.Type()) {
-				case TT.Spaces: return " ";
 				case TT.Newline: return "\n";
 				case TT.SLComment: return "//\n";
 				case TT.MLComment: return "/**/";

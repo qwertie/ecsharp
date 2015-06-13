@@ -1084,11 +1084,11 @@ namespace Loyc.Collections
 
 		public virtual FVList<T> Where(int _localCount, Predicate<T> map, WListProtected<T> forWList)
 		{
-			return WhereSelect(_localCount, t => map(t) ? Maybe.Just(t) : Maybe<T>.Null, forWList);
+			return WhereSelect(_localCount, t => map(t) ? Maybe.Value(t) : Maybe<T>.NoValue, forWList);
 		}
 		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
 		{
-			return WhereSelect(_localCount, t => Maybe.Just(map(t)), forWList);
+			return WhereSelect(_localCount, t => Maybe.Value(map(t)), forWList);
 		}
 		protected bool IsSame(T old, Maybe<T> @new)
 		{

@@ -14,11 +14,13 @@ namespace Loyc
 	/// installed. It is designed to make internationalization exceptionally easy
 	/// for developers. TODO: expand I18N features based on Mozilla's L20N.
 	/// </summary><remarks>
-	/// All Loyc code should call this hook in order to localize text. Use it like
+	/// All Loyc code should call this hook in order to localize text (although
+	/// as of June 2015, no one has made any translation tables). Use it like
 	/// this:
 	/// <code>
 	/// string result = Localize.From("Hello, {0}", userName);
-	/// </code>. If you use this facility frequently in a given class, you may want
+	/// </code>
+	/// If you use this facility frequently in a given class, you may want
 	/// to shorten your typing using a static variable:
 	/// <code>
 	/// protected static readonly FormatterDelegate L = Localize.From;
@@ -28,13 +30,13 @@ namespace Loyc
 	/// return a translation. If no translation to the end user's language is
 	/// available, an appropriate default translation should be returned: either the
 	/// original text, or a translation to some default language, e.g. English.
-	/// <p/>
+	/// <para/>
 	/// Alternately, assuming you have the ability to change the table of
 	/// translations, you can use a Symbol in your code and call the other overload
 	/// of From() to look up the text that should be shown to the end user:
 	/// <code>
-	/// string result = Localize.From(GSymbol.Get("MY_STRING"));
-	/// string result = Localize.From(:MY_STRING); // Loyc syntax
+	/// string result = Localize.From((Symbol)"MY_STRING"));
+	/// string result = Localize.From(@@MY_STRING); // EC# syntax
 	/// </code>
 	/// This is most useful for long strings or paragraphs of text, but I expect
 	/// that some projects, as a policy, will use symbols for all localizable text.
