@@ -31,7 +31,7 @@ namespace Loyc.Collections
 	/// <c>map.Inverse.Inverse == map</c>.
 	/// <para/>
 	/// This collection itself is not safe for multithreaded access, even if it is 
-	/// constructed out of two <see cref="ConcurrentDictionary{K,V}"/> objects.
+	/// constructed out of two ConcurrentDictionary{K,V} objects.
 	/// </remarks>
 	public class Bijection<K1,K2> : IDictionary<K1, K2>, IReadOnlyDictionary<K1, K2>
 	{

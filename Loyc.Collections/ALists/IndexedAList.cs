@@ -15,7 +15,7 @@ namespace Loyc.Collections
 	/// Contains(item) and Remove(item).
 	/// </summary>
 	/// <remarks>
-	/// The <see cref="IndexOf"/>, <see cref="AList{T}.Remove"/> and <see cref="AList{T}.Contains"/>
+	/// The <see cref="IndexOf"/>, <see cref="AListBase{T}.Remove"/> and <see cref="AListBase{T}.Contains"/>
 	/// methods are accelerated by the indexer, but please note that the indexer
 	/// is expensive in terms of memory usage and CPU time. In total, once the 
 	/// index has been built, IndexedAList typically uses about three times as

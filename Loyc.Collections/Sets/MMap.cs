@@ -18,16 +18,16 @@ namespace Loyc.Collections
 	/// advantages:
 	/// <ul>
 	/// <li>MMap allows null as a key (assuming it is based on the second version
-	/// of <see cref="InternalSet{T}"/>).</li>
-	/// <li><see cref="TryGetValue"/> and <see cref="ContainsKey"/> do not throw
+	/// of <see cref="Impl.InternalSet{T}"/>).</li>
+	/// <li><see cref="MapOrMMap{K, V}.TryGetValue"/> and <see cref="MapOrMMap{K, V}.ContainsKey"/> do not throw
 	/// an incredibly annoying exception if you have the audacity to ask whether 
 	/// there is a null key in the collection.</li>
 	/// <li>This class supports fast cloning in O(1) time.</li>
 	/// <li>You can convert a mutable <see cref="MMap{K,V}"/> into an immutable
-	/// <see cref="Map<K,V>"/>, a read-only dictionary that does not change when 
+	/// <see cref="Map{K,V}"/>, a read-only dictionary that does not change when 
 	/// you change the original MMap.</li>
 	/// <li>This class has an <see cref="AddRange"/> method.</li>
-	/// <li>This class has some bonus features: <see cref="TryGetValue(K, V)"/>
+	/// <li>This class has some bonus features: <see cref="MapOrMMap{K, V}.TryGetValue(K, V)"/>
 	/// returns a default value if the key is not present; <see cref="AddIfNotPresent"/>
 	/// only adds a pair if the collection does not already contain the key;
 	/// <see cref="AddOrFind"/> can retrieve the current value and change it to
@@ -91,6 +91,7 @@ namespace Loyc.Collections
 
 		#region ICollection<KeyValuePair<K,V>>
 
+		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public void Add(KeyValuePair<K, V> item)
 		{
 			if (_set.Add(ref item, Comparer, false)) {
