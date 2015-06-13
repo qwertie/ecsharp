@@ -12,6 +12,7 @@ using System.ComponentModel;
 
 namespace Loyc.Collections
 {
+	// NOTE: we have to use cref="Impl.InternalSet{T}" because the property InternalSet exists
 	/// <summary>A mutable set.</summary>
 	/// <remarks>
 	/// This class is based on <see cref="Impl.InternalSet{T}"/>; see its documentation 
@@ -43,10 +44,7 @@ namespace Loyc.Collections
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	[DebuggerDisplay("Count = {Count}")]
-	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>> // ICount
-		//#if DotNet4 || DotNet4_5
-		, ISet<T>
-		//#endif
+	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollection<T>, ICloneable<MSet<T>>, IReadOnlyCollection<T>, ISinkCollection<T>, IEquatable<MSet<T>>, ISet<T>
 	{
 		internal InternalSet<T> _set;
 		internal IEqualityComparer<T> _comparer;
@@ -128,7 +126,7 @@ namespace Loyc.Collections
 		/// <remarks>
 		/// Once the set is cloned, modifications to both sets take
 		/// longer because portions of the set must be duplicated. See 
-		/// <see cref="InternalSet{T}"/> for details about the fast-
+		/// <see cref="Impl.InternalSet{T}"/> for details about the fast-
 		/// cloning technique.</remarks>
 		public virtual MSet<T> Clone()
 		{
@@ -221,7 +219,7 @@ namespace Loyc.Collections
 		public int ExceptWith(MSet<T> other) { int r = _set.ExceptWith(other.InternalSet, _comparer); _count -= r; return r; }
 
 		void ISet<T>.IntersectWith(IEnumerable<T> other) { IntersectWith(other); }
-		/// <inheritdoc cref="InternalSet{T}.IntersectWith(IEnumerable{T}, IEqualityComparer{T})"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IntersectWith(IEnumerable{T}, IEqualityComparer{T})"/>
 		public int IntersectWith(IEnumerable<T> other)
 		{
 			var otherOSet = other as MSet<T>;
@@ -241,7 +239,7 @@ namespace Loyc.Collections
 		/// <summary>Modifies the current set to contain only elements that were
 		/// present either in this set or in the other collection, but not both.</summary>
 		public int SymmetricExceptWith(IEnumerable<T> other) { return SymmetricExceptWith(other, false); }
-		/// <inheritdoc cref="InternalSet{T}.SymmetricExceptWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.SymmetricExceptWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
 		public int SymmetricExceptWith(IEnumerable<T> other, bool xorDuplicates)
 		                                              { int d = _set.SymmetricExceptWith(other, _comparer, xorDuplicates); _count += d; return d; }
 		public int SymmetricExceptWith(Set<T> other)  { int d = _set.SymmetricExceptWith(other.InternalSet, _comparer); _count += d; return d; }
@@ -268,31 +266,31 @@ namespace Loyc.Collections
 		public bool Overlaps(Set<T> other)  { return _set.Overlaps(other.InternalSet, _comparer); }
 		public bool Overlaps(MSet<T> other)   { return _set.Overlaps(other.InternalSet, _comparer); }
 
-		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public bool IsProperSubsetOf(Set<T> other)  { return Count < other.Count && IsSubsetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public bool IsProperSubsetOf(MSet<T> other)   { return Count < other.Count && IsSubsetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public bool IsProperSubsetOf(ISet<T> other)        { return _set.IsProperSubsetOf(other, _count); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSubsetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSubsetOf(IEnumerable<T> other) { return _set.IsProperSubsetOf(other, _comparer, _count); }
 
-		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(Set<T> other)  { return Count > other.Count && IsSupersetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(MSet<T> other)   { return Count > other.Count && IsSupersetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(ISet<T> other)        { return _set.IsProperSupersetOf(other, _comparer, _count); }
-		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSupersetOf(IEnumerable{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(IEnumerable<T> other) { return _set.IsProperSupersetOf(other, _comparer, _count); }
 
-		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.SetEquals(ISet{T}, int)"/>
 		public bool SetEquals(Set<T> other) { return Count == other.Count && IsSubsetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.SetEquals(ISet{T}, int)"/>
 		public bool SetEquals(MSet<T> other)   { return Count == other.Count && IsSubsetOf(other); }
-		/// <inheritdoc cref="InternalSet{T}.SetEquals(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.SetEquals(ISet{T}, int)"/>
 		public bool SetEquals(ISet<T> other)        { return _set.SetEquals(other, _count); }
-		/// <inheritdoc cref="InternalSet{T}.SetEquals(IEnumerable{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.SetEquals(IEnumerable{T}, IEqualityComparer{T}, int)"/>
 		public bool SetEquals(IEnumerable<T> other) { return _set.SetEquals(other, _comparer, _count); }
 
 		#endregion
@@ -442,7 +440,7 @@ namespace Loyc.Collections
 
 		/// <summary>Measures the total size of all objects allocated to this 
 		/// collection, in bytes, including the size of this object itself; see
-		/// <see cref="InternalSet{T}.CountMemory"/>.</summary>
+		/// <see cref="Impl.InternalSet{T}.CountMemory"/>.</summary>
 		public long CountMemory(int sizeOfT)
 		{
 			return IntPtr.Size * 4 + _set.CountMemory(sizeOfT);

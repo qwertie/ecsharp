@@ -83,9 +83,9 @@ namespace Loyc.Collections
 	/// It's also a good choice when you're just too busy to think about 
 	/// performance, such as in a scripting environment.
 	/// <para/>
-	/// Plus, you can subscribe to the <see cref="ListChanging"/> event to
-	/// find out when the list changes. AList's observability is more lightweight 
-	/// than that of <see cref="ObservableCollection{T}"/>.
+	/// Plus, you can subscribe to the <see cref="AListBase{K,T}.ListChanging"/> 
+	/// event to find out when the list changes. AList's observability is more 
+	/// lightweight than that of ObservableCollection{T}.
 	/// <para/>
 	/// Although single insertions, deletions, and random access require O(log N)
 	/// time, you can get better performance using any overload of 

@@ -123,27 +123,27 @@ namespace Loyc.Collections
 		#region ISetImm<T, InvertibleSet<T>>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
 		// Remember to keep this code in sync with MSet<T> (the copies can be identical)
 
-		/// <summary>Returns true if all items in this set are present in the other set.</summary>
+		/// <summary>TODO NOT IMPLEMENTED Returns true if all items in this set are present in the other set.</summary>
 		public bool IsSubsetOf(InvertibleSet<T> other) 
 		{
 			throw new NotImplementedException();
 		}
-		/// <summary>Returns true if all items in the other set are present in this set.</summary>
+		/// <summary>TODO NOT IMPLEMENTED Returns true if all items in the other set are present in this set.</summary>
 		public bool IsSupersetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
-		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
+		/// <summary>TODO NOT IMPLEMENTED Returns true if this set contains at least one item from 'other'.</summary>
 		public bool Overlaps(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
-		/// <inheritdoc cref="InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSubsetOf(ISet{T}, int)"/>
 		public bool IsProperSubsetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();
 		}
-		/// <inheritdoc cref="InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
+		/// <inheritdoc cref="Impl.InternalSet{T}.IsProperSupersetOf(ISet{T}, IEqualityComparer{T}, int)"/>
 		public bool IsProperSupersetOf(InvertibleSet<T> other)
 		{
 			throw new NotImplementedException();

@@ -24,7 +24,7 @@
 	/// IndexOf, this[]) plus and O(1) fast cloning and O(1)-per-element enumeration.</li>
 	/// <li>Changes can be observed through the <see cref="AListBase{K,T}.ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
-	/// <see cref="ObservableCollection{T}"/> class.</li>
+	/// ObservableCollection{T} class.</li>
 	/// <li>Changes to the tree structure can be observed too (see <see cref="IAListTreeObserver{K,T}"/>).</li>
 	/// <li>The list can be frozen with <see cref="AListBase{K,T}.Freeze"/>, making it read-only.</li>
 	/// <li><see cref="FindLowerBound"/> and <see cref="FindUpperBound"/> operations
@@ -267,7 +267,7 @@
 		/// <param name="keepListChangingHandlers">If true, ListChanging handlers
 		/// will be copied from the existing list of items to the new list. Note: 
 		/// if it exists, the NodeObserver is never copied. 
-		/// <see cref="NodeObserver"/> will be null in the new list.</param>
+		/// <see cref="AListBase{K,T}.ObserverCount"/> will be zero in the new list.</param>
 		/// <remarks>
 		/// Cloning is performed in O(1) time by marking the tree root as frozen 
 		/// and sharing it between the two lists. However, the new list itself will 

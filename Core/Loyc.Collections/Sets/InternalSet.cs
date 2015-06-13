@@ -143,7 +143,7 @@ namespace Loyc.Collections.Impl
 	/// T values that have an immutable "key" part and a mutable "value" part.
 	/// Call <see cref="Find"/> to retrieve the value associated with a key, and
 	/// call <see cref="Add"/> with replaceIfPresent=true to change the "value" 
-	/// associated with a key. The <see cref="Map"/> and <see cref="MMap"/> 
+	/// associated with a key. The <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/> 
 	/// classes rely on this feature to implement a dictionary.
 	/// <para/>
 	/// <b>How it works</b>: I call this data structure a "hash-trie" because it
@@ -1683,7 +1683,7 @@ namespace Loyc.Collections.Impl
 		}
 	}
 
-	/// <summary>Statistics returned from <see cref="InternalSet{T}.CountMemory()"/>.</summary>
+	/// <summary>Statistics returned from <see cref="InternalSet{T}.CountMemory"/>.</summary>
 	public struct InternalSetStats
 	{
 		/// <summary>Total number of nodes.</summary>

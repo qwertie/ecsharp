@@ -23,7 +23,7 @@
 	/// main difference between them is that BList is sorted and AList is not. 
 	/// <see cref="DList{T}"/>, meanwhile, is a simpler data structure with a 
 	/// faster indexer and lower memory requirements. In fact, the leaf nodes
-	/// of this class are built upon <see cref="DListInternal{T}"/>.
+	/// of this class are built upon <see cref="InternalDList{T}"/>.
 	/// <para/>
 	/// Classes derived from AListBase typically have the following abilities:
 	/// <ul>
@@ -44,11 +44,10 @@
 	/// of persistence that A-lists support.</li>
 	/// <li>Changes can be observed through the <see cref="ListChanging"/> event.
 	/// The performance penalty for this feature is lower than for the standard
-	/// <see cref="ObservableCollection{T}"/> class.</li>
-	/// <li>Changes to the tree structure can be observed through the object 
-	/// returned by <see cref="MakeObserver"/>(). The performance penalty for this 
-	/// feature is significant, but can be largely avoided by not calling 
-	/// MakeObserver().</li>
+	/// ObservableCollection{T} class.</li>
+	/// <li>Changes to the tree structure can be observed by writing a class that
+	/// implements <see cref="IAListTreeObserver{K,T}"/> and calling 
+	/// <see cref="AddObserver"/>.</li>
 	/// <li>A section of the list can be cloned in O(log N) time, although there is 
 	/// no time savings when extracting a small section.</li>
 	/// <li>Removing a contiguous group of items takes O(log N + M) time, where M is
@@ -198,7 +197,7 @@
 		}
 
 		/// <summary>Cloning constructor. Does not duplicate the observer 
-		/// (<see cref="IAListTreeObserver{T}"/>), if any, because it may not be 
+		/// (<see cref="IAListTreeObserver{K,T}"/>), if any, because it may not be 
 		/// cloneable.</summary>
 		/// <param name="items">Original list</param>
 		/// <param name="keepListChangingHandlers">Whether to duplicate the 

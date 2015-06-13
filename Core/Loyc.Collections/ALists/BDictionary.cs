@@ -22,9 +22,9 @@
 	/// Comparison(T) delegate to perform comparisons.
 	/// <para/>
 	/// This class offers the following additional features beyond what's offered 
-	/// by <see cref="SortedDictionary{T}"/>: indexed access, a find-nearest-key
-	/// operation called <see cref="FindLowerBound"/> (similar to lower_bound in 
-	/// C++), observability, fast cloning, freezability, fast cloning of an 
+	/// by the standard SortedDictionary{T} class: indexed access, a find-nearest-
+	/// key operation called <see cref="FindLowerBound"/> (similar to lower_bound 
+	/// in C++), observability, fast cloning, freezability, fast cloning of an 
 	/// arbitrary range of items in a large collection, enumeration of part
 	/// of the list (not just the entire list), and reverse enumeration, and a 
 	/// few compound operations.

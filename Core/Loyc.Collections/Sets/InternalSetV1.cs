@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Loyc.Collections.Impl
+namespace Loyc.Collections.Impl.Old
 {
 // Replaced with second version (in InternalSet.cs), which is faster, and uses more 
 // memory for reference types but less memory for value types.

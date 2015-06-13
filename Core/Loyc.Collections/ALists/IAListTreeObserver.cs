@@ -72,19 +72,19 @@ namespace Loyc.Collections.Impl
 		void RootChanged(AListNode<K, T> newRoot, bool clear);
 		
 		/// <summary>Called when an item is added to a leaf node.</summary>
-		/// <param name="isMoving">true if the item is being transferred from another node.</param>
+		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
 		void ItemAdded(T item, AListLeaf<K, T> parent);
 		
 		/// <summary>Called when an item is removed from a leaf node.</summary>
-		/// <param name="isMoving">true if the item is being transferred to another node.</param>
+		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
 		void ItemRemoved(T item, AListLeaf<K, T> parent);
 		
 		/// <summary>Called when a child node is added to an inner node.</summary>
-		/// <param name="isMoving">true if the node is being transferred from another inner node.</param>
+		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
 		void NodeAdded(AListNode<K, T> child, AListInnerBase<K, T> parent);
 		
 		/// <summary>Called when a child node is removed from an inner node.</summary>
-		/// <param name="isMoving">true if the node is being transferred to another inner node.</param>
+		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
 		void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent);
 		
 		/// <summary>Called when all children are being removed from a node (leaf 
