@@ -56,9 +56,12 @@ namespace Loyc.Syntax.Tests
 		("/",  Div,       TokenKind.Operator + 7),
 		("+",  Add,       TokenKind.Operator + 8),
 		("-",  Sub,       TokenKind.Operator + 9),
-		(";",  Semicolon, TokenKind.Operator + 10),
-		("(",  LParen,    TokenKind.Operator + 11),
-		(")",  RParen,    TokenKind.Operator + 12)));
+		(";",  Semicolon, TokenKind.Separator),
+		("(",  LParen,    TokenKind.LParen),
+		(")",  RParen,    TokenKind.RParen),
+		(":",  Colon,     TokenKind.Separator+1), // used by IndentTokenGeneratorTests
+		("{",  LBrace,    TokenKind.LBrace),      // used by IndentTokenGeneratorTests
+		("}",  RBrace,    TokenKind.RBrace)));    // used by IndentTokenGeneratorTests
 	
 	public enum CalcTokenType
 	{
@@ -69,7 +72,6 @@ namespace Loyc.Syntax.Tests
 		{
 			TOKEN_NAME = TOKEN_KIND; // inside 'unroll', must use ';' instead of ',' as separator
 		},
-		LBrace, RBrace, // used by IndentTokenGeneratorTests
 		Unknown
 	}
 
@@ -77,25 +79,25 @@ namespace Loyc.Syntax.Tests
 	//-- LEXER -----------------------------------------------------------------
 	//--------------------------------------------------------------------------
 
-	partial class CalculatorLexer : EnumeratorBase<Token>
+	partial class CalculatorLexer : BaseILexer<ICharSource, Token>
 	{
-		LLLPG (lexer(inputSource = Src, inputClass = LexerSource)) {
-		
-		public LexerSource Src { get; set; }
+		LLLPG (lexer());
 
-		public CalculatorLexer(string text, string fileName = "") 
-			{ Src = (LexerSource)text; }
+		public CalculatorLexer(UString text, string fileName = "") 
+			: base(text, fileName) { }
 		public CalculatorLexer(ICharSource text, string fileName = "") 
-			{ Src = new LexerSource(text); }
+			: base(text, fileName) { }
 
 		TT _tokenType;
 		int _startIndex;
 		object _value;
 
-		public override token bool MoveNext()
+		extern token Newline() @[ '\n' | '\r' '\n'? ];
+
+		public override token Maybe<Token> NextToken()
 		{
-			@[ (' '|'\t')* ];  // Skip spaces between tokens
-			_startIndex = Src.InputPosition;
+			@[ (' '|'\t'|Newline)* ];  // Skip spaces between tokens
+			_startIndex = this.InputPosition;
 			_value = null;
 			@[ { _tokenType = TT.Num;    } Num
 			 | { _tokenType = TT.Id;     } Id
@@ -103,22 +105,22 @@ namespace Loyc.Syntax.Tests
 			 | { _tokenType = TT.Num;    } ".inf" { _value = double.PositiveInfinity; }
 			 | any punctuation // matches any of the punctuation rules
 			 | error           // error branch - if input matches none of the above
-			   { _tokenType = TT.EOF; } (_ { _tokenType = TT.Unknown; })? 
+			   (_ { _tokenType = TT.Unknown; } | { return NoValue.Value; }) 
 			 ];
-			Current = new Token((int)_tokenType, _startIndex, Src.InputPosition - _startIndex, _value);
-			return _tokenType != TT.EOF;
+			_current = new Token((int)_tokenType, _startIndex, this.InputPosition - _startIndex, _value);
+			return _current;
 		}
 		
 		private token Id() @[
 			('a'..'z'|'A'..'Z'|'_')
 			('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
-			{ _value = Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString(); }
+			{ _value = this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString(); }
 		];
 		private token Num() @[
 			(dot:'.')?
 			'0'..'9'+
 			(&{dot == 0} '.' '0'..'9'+)?
-			{ _value = double.Parse(Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString()); }
+			{ _value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString()); }
 		];
 
 		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST) {
@@ -126,5 +128,5 @@ namespace Loyc.Syntax.Tests
 				@[ TEXT ]; _tokenType = TT.TOKEN_NAME;
 			}
 		}
-	}}
+	}
 }

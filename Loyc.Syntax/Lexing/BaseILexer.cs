@@ -7,19 +7,19 @@ using Loyc.Collections;
 namespace Loyc.Syntax.Lexing
 {
 	/// <summary>A version of <see cref="BaseLexer{CharSrc}"/> that implements 
-	/// <see cref="ILexer"/>. You should use this base class if you want to wrap 
-	/// your lexer in a postprocessor such as <see cref="IndentTokenGenerator"/> or 
-	/// <see cref="TokensToTree"/>.
+	/// <see cref="ILexer{Token}"/>. You should use this base class if you want to 
+	/// wrap your lexer in a postprocessor such as <see cref="IndentTokenGenerator"/> 
+	/// or <see cref="TokensToTree"/>.
 	/// </summary>
 	/// <remarks>
 	/// Important: the derived class must call <see cref="AfterNewline()"/> after
 	/// encountering a newline (CR/LF/CRLF), in order to keep the properties 
-	/// <see cref="LineNumber"/>, <see cref="LineStartAt"/>,
+	/// <see cref="BaseLexer{C}.LineNumber"/>, <see cref="BaseLexer{C}.LineStartAt"/>,
 	/// <see cref="IndentString"/> and <see cref="IndentLevel"/> up-to-date.
 	/// See <see cref="NextToken()"/>.
 	/// <para/>
 	/// Alternately, your lexer can borrow the newline parser built into the base
-	/// class, which is called <see cref="Newline()"/> and will call 
+	/// class, which is called <see cref="BaseLexer{C}.Newline()"/> and will call 
 	/// <see cref="AfterNewline()"/> for you. It is possible to have LLLPG treat 
 	/// this method as a rule, and tell LLLPG the meaning of the rule like this:
 	/// <code>
@@ -87,10 +87,10 @@ namespace Loyc.Syntax.Lexing
 		/// <remarks>
 		/// The derived class must call <see cref="AfterNewline()"/> after it
 		/// advances past each newline (CR/LF/CRLF), in order to keep the 
-		/// properties <see cref="LineNumber"/>, <see cref="LineStartAt"/>,
+		/// properties <see cref="BaseLexer{C}.LineNumber"/>, <see cref="BaseLexer{C}.LineStartAt"/>,
 		/// <see cref="IndentString"/> and <see cref="IndentLevel"/> up-to-date.
 		/// This must be done even when the newline is encountered inside a comment
-		/// or multi-line string. Note that the <see cref="Newline"/> rule defined
+		/// or multi-line string. Note that the <see cref="BaseLexer{C}.Newline"/> rule 
 		/// in the base class will call <see cref="AfterNewline"/> for you.
 		/// <para/>
 		/// Also, while returning, the derived class should set the <c>_current</c> 
@@ -118,7 +118,7 @@ namespace Loyc.Syntax.Lexing
 		
 		/// <summary>The lexer must call this method exactly once after it advances 
 		/// past each newline, even inside comments and strings. This method keeps
-		/// the <see cref="LineNumber"/>, <see cref="LineStartAt"/>,
+		/// the <see cref="BaseLexer{C}.LineNumber"/>, <see cref="BaseLexer{C}.LineStartAt"/>,
 		/// <see cref="IndentString"/> and <see cref="IndentLevel"/> properties
 		/// updated.</summary>
 		protected override void AfterNewline()
@@ -133,9 +133,9 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="skipIndent">This method normally scans indentation after 
 		/// the newline character, in order to update the <see cref="IndentString"/> 
 		/// and <see cref="IndentLevel"/> properties. If this parameter is true,
-		/// the <see cref="InputPosition"/> will also be increased, skipping past
+		/// the <see cref="BaseLexer{C}.InputPosition"/> will also be increased, skipping past
 		/// those initial spaces. If <c>supportDotIndent</c> is also true, the
-		/// <see cref="InputPosition"/> will also skip past the dot indent, if any.</param>
+		/// <see cref="BaseLexer{C}.InputPosition"/> will also skip past the dot indent, if any.</param>
 		protected void AfterNewline(bool ignoreIndent, bool skipIndent)
 		{
 			base.AfterNewline();
@@ -147,7 +147,7 @@ namespace Loyc.Syntax.Lexing
 		/// <see cref="IndentLevel"/> and <see cref="IndentString"/> properties.
 		/// This function is called automatically by <see cref="AfterNewline()"/>,
 		/// but should be called manually on the very first line of the file.</summary>
-		/// <remarks>Parameters are documented at <see cref="AfterNewline(bool,bool,bool)"/></remarks>
+		/// <remarks>Parameters are documented at <see cref="AfterNewline(bool,bool)"/></remarks>
 		protected void ScanIndent(bool skipSpaces = true)
 		{
 			int li = 0, indentLevel = 0;
@@ -187,7 +187,7 @@ namespace Loyc.Syntax.Lexing
 		public new LexerSourceFile<CharSrc> SourceFile { get { return base.SourceFile; } }
 
 		void IDisposable.Dispose() {}
-		Token IEnumerator<Token>.Current { get { return _current.Or(default(Token)); } }
+		public Token Current { get { return _current.Or(default(Token)); } }
 		object System.Collections.IEnumerator.Current { get { return _current; } }
 		void System.Collections.IEnumerator.Reset() { Reset(CharSource, FileName, 0); }
 		bool System.Collections.IEnumerator.MoveNext()

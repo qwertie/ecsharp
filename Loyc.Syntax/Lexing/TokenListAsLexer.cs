@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Loyc.Syntax.Lexing
 {
-	/// <summary>Adapter: converts <c>IEnumerable(Token)</c> to the <see cref="ILexer"/> interface.</summary>
+	/// <summary>Adapter: converts <c>IEnumerable(Token)</c> to the <see cref="ILexer{Token}"/> interface.</summary>
 	/// <remarks>
 	/// The LineNumber property is computed on-demand by the <see cref="ISourceFile"/> provided.
 	/// <para/>
-	/// TODO: IndentLevel does not work.
+	/// TODO: IndentLevel, IndentString do not work.
 	/// </remarks>
 	public class TokenListAsLexer : ILexer<Token>
 	{
@@ -34,7 +34,13 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		public Loyc.IMessageSink ErrorSink { get; set; }
+
 		public int IndentLevel { get { return 0; } } // TODO
+		public UString IndentString
+		{
+			get { throw new NotImplementedException(); } // TODO
+		}
+
 		public int LineNumber
 		{
 			get { return _sourceFile.IndexToLine(_current.EndIndex).Line; }
@@ -59,5 +65,10 @@ namespace Loyc.Syntax.Lexing
 		}
 		void IDisposable.Dispose() { _e.Dispose(); }
 		void IEnumerator.Reset() { _e.Reset(); }
+
+		public SourcePos IndexToLine(int index)
+		{
+			return SourceFile.IndexToLine(index);
+		}
 	}
 }

@@ -36,7 +36,7 @@ namespace Loyc.Syntax.Lexing
 				return t;
 			}
 			do
-				t = _source.NextToken();
+				t = Lexer.NextToken();
 			while (_skipWhitespace && t.HasValue && t.Value.IsWhitespace);
 			return t;
 		}
@@ -63,8 +63,8 @@ namespace Loyc.Syntax.Lexing
 				return; // wtf, it's already a tree
 
 			TK ott = openToken.Kind;
-			int oldIndentLevel = _source.IndentLevel;
-			TokenTree children = new TokenTree(_source.SourceFile);
+			int oldIndentLevel = Lexer.IndentLevel;
+			TokenTree children = new TokenTree(Lexer.SourceFile);
 
 			for (;;) {
 				Maybe<Token> t = LLNextToken(); // handles LBrace, LParen, LBrack internally
