@@ -98,6 +98,7 @@ namespace Loyc.Syntax.Les
 			// Triple-quoted strings also support escape sequences: \\\, \\n, \\r, \\", \\'
 			Case(@"'''Three quotes: ''\'/!'''", A(TT.String), "Three quotes: '''!");
 			Case(@"'''Escapes: \r/\n/, \\/, \""/, \0/ and \'/'''.", A(TT.String, TT.Dot), "Escapes: \r\n, \\, \", \0 and '", _("."));
+			Case(@"'''Escaped: \\/r/\\/n/, \\/\/, \\/""/, and \\/'/'''.", A(TT.String, TT.Dot), @"Escaped: \r/\n/, \\/, \""/, and \'/", _("."));
 			Case(@"'''Unrecognized escapes: \//\o/'''", A(TT.String), @"Unrecognized escapes: \//\o/");
 		}
 

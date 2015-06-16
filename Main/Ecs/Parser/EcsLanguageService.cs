@@ -47,10 +47,10 @@ namespace Ecs.Parser
 		{
 			get { return _printer; }
 		}
-		public string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var sb = new StringBuilder();
-			EcsNodePrinter.Print(node, sb, msgs, mode, indentString, lineSeparator);
+			EcsNodePrinter.Print(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
 		public bool HasTokenizer

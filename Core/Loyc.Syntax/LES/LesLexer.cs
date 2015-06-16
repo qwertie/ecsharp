@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="TokensToTree"/>
 	public partial class LesLexer : BaseILexer<ICharSource, Token>, ILexer<Token>, ICloneable<LesLexer>
 	{
-		public LesLexer(string text, IMessageSink errorSink) : this(new UString(text), "", errorSink) { }
+		public LesLexer(UString text, IMessageSink errorSink) : this(text, "", errorSink) { }
 		public LesLexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) : base(text, fileName, startPosition) {
 			ErrorSink = sink;
 		}
@@ -213,6 +213,7 @@ namespace Loyc.Syntax.Les
 					// Inside triple-quoted string
 					int c;
 					if (sourceText[2, '\0'] == '/') {
+						// Detect escape sequence
 						c = G.UnescapeChar(ref sourceText);
 						if (sourceText.InternalStart > i0 + 1)
 							G.Verify(sourceText.PopFront(out fail) == '/');

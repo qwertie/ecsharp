@@ -12,9 +12,10 @@ namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
 	
-	public partial class LesLexer {
-	[FullLLk] LLLPG lexer
+	public partial class LesLexer
 	{
+		[FullLLk, AddCsLineDirectives(@false)] LLLPG lexer;
+
 		// Whitespace & comments -------------------------------------------------
 
 		extern token Spaces() @[ (' '|'\t')* ];
@@ -210,5 +211,5 @@ namespace Loyc.Syntax.Les
 			  ))*
 			(Newline(true) {return false;} | "*/" {return true;})
 		];
-	}}
+	}
 }

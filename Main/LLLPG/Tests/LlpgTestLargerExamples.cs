@@ -404,7 +404,7 @@ namespace Loyc.LLParserGenerator
 			string input = @"
 			import Loyc.LLParserGenerator;
 			public partial class Calculator(BaseParser!(Calculator.Token))
-			{
+			:{
 				_vars::Dictionary!(string,double) = new(Dictionary!(string,double)());
 				_tokens::List!Token = new List!Token();
 				_input::string;

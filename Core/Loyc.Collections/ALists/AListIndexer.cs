@@ -273,24 +273,31 @@ namespace Loyc.Collections.Impl
 					AddError(ref e, "Leaf {0:X} has no known parent but is not the root.", leaf.GetHashCode() & 0xFFFF);
 			}
 			
-			int totalChildren = 0;
-			foreach (var pair in _nodes)
-			{
-				var child = pair.Key;
-				var parent = pair.Value;
-				if (parent.IndexOf(child) <= -1)
-					AddError(ref e, "Outdated record: inner {0:X} no longer contains node {1:X}.", parent.GetHashCode() & 0xFFFF, child.GetHashCode() & 0xFFFF);
-				if (parent != _root && _nodes.IndexOfExact(parent) <= -1)
-					AddError(ref e, "Inner {0:X} has no known parent but is not the root.", parent.GetHashCode() & 0xFFFF);
-				var leaf = child as AListLeaf<K, T>;
-				if (leaf != null)
-					for (uint i = 0; i < leaf.LocalCount; i++)
-						if (_items.IndexOfExact(leaf[i]) <= -1)
-							AddError(ref e, "Leaf {0:X} contains non-indexed item '{1}'.", leaf.GetHashCode() & 0xFFFF, leaf[i]);
-				totalChildren += pair.Key.LocalCount;
+			if (_nodes == null) {
+				if (!_root.IsLeaf)
+					AddError(ref e, "AListIndexer is unaware that the AList is a tree");
+				if (_root.LocalCount != _items.Count)
+					AddError(ref e, "Count {0} != indexed count {1}.", _root.LocalCount, _items.Count);
+			} else {
+				int totalChildren = 0;
+				foreach (var pair in _nodes)
+				{
+					var child = pair.Key;
+					var parent = pair.Value;
+					if (parent.IndexOf(child) <= -1)
+						AddError(ref e, "Outdated record: inner {0:X} no longer contains node {1:X}.", parent.GetHashCode() & 0xFFFF, child.GetHashCode() & 0xFFFF);
+					if (parent != _root && _nodes.IndexOfExact(parent) <= -1)
+						AddError(ref e, "Inner {0:X} has no known parent but is not the root.", parent.GetHashCode() & 0xFFFF);
+					var leaf = child as AListLeaf<K, T>;
+					if (leaf != null)
+						for (uint i = 0; i < leaf.LocalCount; i++)
+							if (_items.IndexOfExact(leaf[i]) <= -1)
+								AddError(ref e, "Leaf {0:X} contains non-indexed item '{1}'.", leaf.GetHashCode() & 0xFFFF, leaf[i]);
+					totalChildren += pair.Key.LocalCount;
+				}
+				if (totalChildren + _root.LocalCount != _items.Count + _nodes.Count)
+					AddError(ref e, "Computed count {0}+{1} != indexed count {2}+{3}.", totalChildren, _root.LocalCount, _items.Count, _nodes.Count);
 			}
-			if (totalChildren + _root.LocalCount != _items.Count + _nodes.Count)
-				AddError(ref e, "Computed count {0}+{1} != indexed count {2}+{3}.", totalChildren, _root.LocalCount, _items.Count, _nodes.Count);
 			
 			if (e != null)
 				BadState(e.ToString());

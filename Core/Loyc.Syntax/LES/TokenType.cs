@@ -101,12 +101,12 @@ namespace Loyc.Syntax.Les
 				case TT.Comma:
 				case TT.Semicolon:
 				case TT.Not:
-					var name = t.Value.ToString();
+					var name = (t.Value ?? "(punc missing value)").ToString();
 					return name;
 				case TT.Indent:
-					return "'indent";
+					return "@indent";
 				case TT.Dedent:
-					return "'dedent";
+					return "@dedent";
 				default:
 					return "@unknown_token";
 			}

@@ -26,9 +26,11 @@ namespace Loyc.Syntax.Lexing
 	/// <para/>
 	/// Creation of indent, dedent, and end-of-line tokens can be suppressed inside 
 	/// brackets, i.e. () [] {}. To accomplish this, set the <see cref="OpenBrackets"/> 
-	/// and <see cref="CloseBrackets"/> properties. If <see cref="TokensToTree"/> is 
-	/// used in the pipeline before this class, this suppression occurs 
-	/// automatically.
+	/// and <see cref="CloseBrackets"/> properties.
+	/// <para/>
+	/// <see cref="TokensToTree"/> can be placed in the pipeline before or after 
+	/// this class; if it is placed afterward, anything between Indent and Dedent
+	/// tokens will be made a child of the Indent token.
 	/// <para/>
 	/// In addition to the normal indent triggers, which are recognized anywhere in
 	/// the token stream, you can set the <see cref="EolIndentTriggers"/> to a list
@@ -87,14 +89,16 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Returns a token to represent indentation, or null to suppress 
 		/// generating an indent-dedent pair at this point.</summary>
 		/// <param name="indentTrigger">The token that triggered this function call.</param>
+		/// <param name="tokenAfterward">The token after the indent trigger, or NoValue at EOF.</param>
+		/// <param name="newlineAfter">true if the next non-whitespace token after 
+		/// <c>indentTrigger</c> is on a different line, or if EOF comes afterward.</param>
 		protected abstract Maybe<Token> MakeIndentToken(Token indentTrigger, ref Maybe<Token> tokenAfterward, bool newlineAfter);
 		/// <summary>Returns token(s) to represent un-indentation.</summary>
 		/// <param name="tokenBeforeDedent">The last non-whitespace token before dedent</param>
 		/// <param name="tokenAfterDedent">The first non-whitespace un-indented 
-		/// token after the unindent, or the last token in the file if <c>atEof</c>. 
-		/// If not at EOF, the derived class is allowed to change this token (LES 
-		/// does this).</param>
-		/// <param name="atEof">If true, the end of the file has been reached.</param>
+		/// token after the unindent, or NoValue at the end of the file. The 
+		/// derived class is allowed to change this token, or delete it by 
+		/// changing it to NoValue (<see cref="LesIndentTokenGenerator"/> does this).</param>
 		/// <remarks>This class considers the indented block to be "over" even if 
 		/// this method returns no tokens.</remarks>
 		protected abstract IEnumerator<Token> MakeDedentToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline);
@@ -102,10 +106,11 @@ namespace Loyc.Syntax.Lexing
 		/// avoid generating such a token.</summary>
 		/// <param name="tokenBeforeNewline">Final non-whitespace token before the newline was encountered.</param>
 		/// <param name="tokenAfterNewline">First non-whitespace token after newline.</param>
-		/// <param name="deltaIndent">Change of indentation after the newline</param>
+		/// <param name="deltaIndent">Change of indentation after the newline, or 
+		/// null if a dedent token is about to be inserted after the newline.</param>
 		/// <remarks>This function is also called at end-of-file, unless there are 
 		/// no tokens in the file.</remarks>
-		protected abstract Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int deltaIndent);
+		protected abstract Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent);
 
 		/// <summary>A method that is called when the indent level changed without
 		/// a corresponding indent trigger.</summary>
@@ -114,10 +119,10 @@ namespace Loyc.Syntax.Lexing
 		/// Though it's a <see cref="Maybe{T}"/>, it always has a value, but this 
 		/// function can suppress its emission by setting it to NoValue.Value.</param>
 		/// <param name="deltaIndent">Amount of unexpected indentation (positive or 
-		/// negative). On return, this parameter holds the amount by which 
-		/// <see cref="CurrentIndent"/> should be changed; the default implementation 
-		/// leaves this value unchanged, which means that subsequent lines will be 
-		/// expected to be indented the same amount.</param>
+		/// negative). On return, this parameter holds the amount by which to change
+		/// the <see cref="CurrentIndent"/>; the default implementation leaves this
+		/// value unchanged, which means that subsequent lines will be expected to 
+		/// be indented by the same (unexpected) amount.</param>
 		/// <returns>true if <see cref="MakeEndOfLineToken"/> should be called as 
 		/// usual, or false to suppress EOL genertion. EOL can only be suppressed
 		/// in case of an unexpected indent (<c>deltaIndent>0</c>), not an unindent.</returns>
@@ -220,30 +225,30 @@ namespace Loyc.Syntax.Lexing
 				} else if (nextCat == TokenCategory.Whitespace)
 					return _current = next; // ignore whitespace, pass it through
 
-				int prevLine = _curLine;
-				bool newline = (_curLine = Lexer.LineNumber) != prevLine;
+				int nextLine = Lexer.LineNumber;
+				bool newline = nextLine != _curLine;
 				if (newline || _curCat == TokenCategory.IndentTrigger)
 				{
-					HandleNextToken(next, nextCat, newline);
-					nextVal = _pending.TryPopFirst().Or(nextVal);
+					HandleNextToken(ref next, ref nextCat, newline);
+					nextVal = next.Value;
 				}
 
 				_lastNonWS = nextVal;
 				_bracketDepth += (short)nextCat;
+				_curLine = nextLine;
 				_curCat = nextCat;
-				return _current = nextVal;
+				return _current = next;
 			} else {
 				if (!_eofHandledAlready) {
 					_eofHandledAlready = true;
-					HandleNextToken(Maybe<Token>.NoValue, TokenCategory.Other, true);
-					if (!_pending.IsEmpty)
-						next = _pending.TryPopFirst().Value;
+					TokenCategory nextCat = TokenCategory.Other;
+					HandleNextToken(ref next, ref nextCat, true);
 				}
 				return _current = next;
 			}
 		}
 
-		private void HandleNextToken(Maybe<Token> next, TokenCategory nextCat, bool newline)
+		private void HandleNextToken(ref Maybe<Token> next, ref TokenCategory nextCat, bool newline)
 		{
 			bool atEof = !next.HasValue;
 			bool indentTriggered = false;
@@ -254,6 +259,7 @@ namespace Loyc.Syntax.Lexing
 					_outerIndents.Add(_curIndent);
 					_pending.PushLast(insert.Value);
 				}
+				AutoNext(ref next, ref nextCat, atEof);
 			}
 
 			UString nextIndentString = Lexer.IndentString;
@@ -269,12 +275,17 @@ namespace Loyc.Syntax.Lexing
 				{
 					int delta = nextIndent - _curIndent;
 					emitEol = IndentChangedUnexpectedly(_lastNonWS, ref next, ref delta);
+					AutoNext(ref next, ref nextCat, atEof);
 					nextIndent = _curIndent + delta;
 				}
 
 				if (newline && !indentTriggered && emitEol)
 				{
-					var insert = MakeEndOfLineToken(_lastNonWS, ref next, nextIndent - _curIndent);
+					int? delta = nextIndent - _curIndent;
+					if (nextIndent <= _outerIndents.Last)
+						delta = null;
+					var insert = MakeEndOfLineToken(_lastNonWS, ref next, delta);
+					AutoNext(ref next, ref nextCat, atEof);
 					if (insert.HasValue)
 						_pending.PushLast(insert.Value);
 				}
@@ -289,6 +300,8 @@ namespace Loyc.Syntax.Lexing
 					outerIndent = oi;
 					_outerIndents.Pop();
 					AddPendingLast(MakeDedentToken(_lastNonWS, ref next));
+					AutoNext(ref next, ref nextCat, atEof);
+					if (!next.HasValue && !atEof) return; // advance to next token
 				}
 
 				// Detect partial dedent
@@ -296,6 +309,7 @@ namespace Loyc.Syntax.Lexing
 				{
 					int delta = nextIndent - _curIndent;
 					bool _ = IndentChangedUnexpectedly(_lastNonWS, ref next, ref delta);
+					AutoNext(ref next, ref nextCat, atEof);
 					nextIndent = _curIndent + delta;
 
 					if (_outerIndents.Count >= 2 && _outerIndents.Last == _outerIndents[_outerIndents.Count - 2])
@@ -308,16 +322,28 @@ namespace Loyc.Syntax.Lexing
 						// (Note: in Python you can't even write "if c1: if c2:")
 						_outerIndents.Pop();
 						AddPendingLast(MakeDedentToken(_lastNonWS, ref next));
+						AutoNext(ref next, ref nextCat, atEof);
 					}
 				}
 			}
 
-			if (!_pending.IsEmpty && next.HasValue)
-				_pending.PushLast(next.Value);
+			if (!_pending.IsEmpty) {
+				if (next.HasValue)
+					_pending.PushLast(next.Value);
+				next = _pending.TryPopFirst().Value;
+			}
 
 			if (newline) {
 				_curIndent = nextIndent;
 				_curIndentString = nextIndentString;
+			}
+		}
+
+		private void AutoNext(ref Maybe<Token> next, ref TokenCategory nextCat, bool atEof)
+		{
+			if (!next.HasValue && !atEof) {
+				next = Lexer.NextToken();
+				nextCat = next.HasValue ? GetTokenCategory(next.Value) : TokenCategory.Other;
 			}
 		}
 
@@ -471,8 +497,8 @@ namespace Loyc.Syntax.Lexing
 	/// 
 	/// <h3>Configuration for LES</h3>
 	/// 
-	/// LES's indent processing is quite different than Python's. See
-	/// <see cref="LesIndentTokenGenerator"/> for more information.
+	/// For more information about LES's indent processing, see
+	/// <see cref="LesIndentTokenGenerator"/> .
 	/// </remarks>
 	/// <seealso cref="IndentTokenGenerator{Token}"/>
 	public class IndentTokenGenerator : IndentTokenGenerator<Token>
@@ -574,7 +600,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			return Range.Single(DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex)).GetEnumerator();
 		}
-		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int deltaIndent)
+		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
 		{
 			if (!EolToken.HasValue)
 				return null;
