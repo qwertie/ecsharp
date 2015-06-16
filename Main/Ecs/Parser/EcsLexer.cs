@@ -19,7 +19,6 @@ namespace Ecs.Parser
 	using TT = TokenType;
 
 	/// <summary>Lexer for EC# source code (see <see cref="ILexer{Token}"/>).</summary>
-	/// <seealso cref="WhitespaceFilter"/>
 	/// <seealso cref="TokensToTree"/>
 	public partial class EcsLexer : BaseLexer, ILexer<Token>
 	{
@@ -46,11 +45,11 @@ namespace Ecs.Parser
 		}
 
 		public new ISourceFile SourceFile { get { return base.SourceFile; } }
-		public IMessageSink ErrorSink { get; set; }
 
 		int _indentLevel;
 		UString _indent;
 		public int IndentLevel { get { return _indentLevel; } }
+		public UString IndentString { get { return _indent; } }
 		public int SpacesPerTab = 4;
 
 		public Maybe<Token> NextToken()

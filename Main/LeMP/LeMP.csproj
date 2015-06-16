@@ -68,7 +68,7 @@
     <DefineConstants>TRACE;DotNet3</DefineConstants>
     <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\LEL.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -145,7 +145,7 @@
     <DefineConstants>TRACE;DotNet4</DefineConstants>
     <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -191,7 +191,7 @@
     <DefineConstants>TRACE;DotNet45</DefineConstants>
     <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>

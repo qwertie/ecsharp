@@ -31,7 +31,7 @@ namespace Ecs.Parser
 			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
 			_value = WhitespaceTag.Value;
 		};
-		private token Spaces {
+		[#new] private token Spaces {
 			@[ (' '|'\t')+ ];
 			if (_allowPPAt == _startPosition)
 				_allowPPAt = InputPosition;

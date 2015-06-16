@@ -29,7 +29,7 @@ namespace LeMP
 	/// is printed.
 	/// <para/>
 	/// When the macro processor scans an assembly looking for macros, it requires
-	/// <see cref="ContainsMacroAttribute"/> on the containing class, and 
+	/// <see cref="ContainsMacrosAttribute"/> on the containing class, and 
 	/// <see cref="LexicalMacroAttribute"/> on each macro in the class. The macros 
 	/// must be public static methods.
 	/// </remarks>

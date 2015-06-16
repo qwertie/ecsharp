@@ -215,8 +215,6 @@ namespace TextEditor
 
 		#endregion
 
-		bool _clearErrorsPending;
-		
 		/// <summary>Gets whether the file in the specified editor is modified.</summary>
 		/// <remarks>TextEditorControl doesn't maintain its own internal modified 
 		/// flag, so we use the '*' shown after the file name to represent the 

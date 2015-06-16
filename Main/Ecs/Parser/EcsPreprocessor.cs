@@ -69,7 +69,7 @@ namespace Ecs.Parser
 		{
 			_rest.Clear();
 			for (;;) {
-				Maybe<Token> t = _source.NextToken();
+				Maybe<Token> t = Lexer.NextToken();
 				if (!t.HasValue || t.Value.Type() == TokenType.Newline)
 					break;
 				else if (!t.Value.IsWhitespace)
@@ -83,7 +83,7 @@ namespace Ecs.Parser
 		public override Maybe<Token> NextToken()
 		{
 			do {
-				Maybe<Token> t_ = _source.NextToken();
+				Maybe<Token> t_ = Lexer.NextToken();
 			redo:
 				if (!t_.HasValue)
 					break;
@@ -168,13 +168,13 @@ namespace Ecs.Parser
 							_regions.Pop();
 						continue;
 					case TokenType.PPline:
-						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
+						_commentList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest = ReadRestAsTokenTree();
 						// TODO
 						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
 						continue;
 					case TokenType.PPpragma:
-						_commentList.Add(new Token(t.TypeInt, t.StartIndex, _source.InputPosition));
+						_commentList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest_ = ReadRestAsTokenTree();
 						// TODO
 						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
@@ -206,11 +206,11 @@ namespace Ecs.Parser
 
 		private Maybe<Token> SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
 		{
-			_commentList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, _source.InputPosition));
+			_commentList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, Lexer.InputPosition));
 			if (!cond)
 				return SkipIgnoredRegion();
 			else
-				return _source.NextToken();
+				return Lexer.NextToken();
 		}
 
 		private LNode ParseExpr(IListSource<Token> tree)
@@ -227,9 +227,9 @@ namespace Ecs.Parser
 		private Maybe<Token> SkipIgnoredRegion()
 		{
 			int nestedIfs = 0;
-			int startIndex = _source.InputPosition;
+			int startIndex = Lexer.InputPosition;
 			Maybe<Token> t_;
-			while ((t_ = _source.NextToken()).HasValue) {
+			while ((t_ = Lexer.NextToken()).HasValue) {
 				var t = t_.Value;
 				if (t.Type() == TokenType.PPif)
 					nestedIfs++;
@@ -238,7 +238,7 @@ namespace Ecs.Parser
 				else if ((t.Type() == TokenType.PPelif || t.Type() == TokenType.PPelse) && nestedIfs == 0)
 					break;
 			}
-			int stopIndex = t_.HasValue ? t_.Value.StartIndex : _source.InputPosition;
+			int stopIndex = t_.HasValue ? t_.Value.StartIndex : Lexer.InputPosition;
 			_commentList.Add(new Token((int)TokenType.PPignored, startIndex, stopIndex - startIndex));
 			return t_;
 		}
@@ -268,7 +268,7 @@ namespace Ecs.Parser
 		private IListSource<Token> ReadRestAsTokenTree()
 		{
 			ReadRest();
-			var restAsLexer = new TokenListAsLexer(_rest, _source.SourceFile);
+			var restAsLexer = new TokenListAsLexer(_rest, Lexer.SourceFile);
 			var treeLexer = new TokensToTree(restAsLexer, false);
 			return treeLexer.Buffered();
 		}
@@ -286,9 +286,9 @@ namespace Ecs.Parser
 	
 		public sealed override Maybe<Token> NextToken()
 		{
-			Maybe<Token> t = _source.NextToken();
+			Maybe<Token> t = Lexer.NextToken();
 			for (;;) {
-				t = _source.NextToken();
+				t = Lexer.NextToken();
 				if (!t.HasValue)
 					break;
 				else if (t.Value.IsWhitespace) {

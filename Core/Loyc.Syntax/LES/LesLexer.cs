@@ -16,7 +16,8 @@ namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
 
-	/// <summary>Lexer for EC# source code (see <see cref="ILexer"/>).</summary>
+	/// <summary>Lexer for EC# source code.</summary>
+	/// <seealso cref="ILexer{Token}"/>
 	/// <seealso cref="TokensToTree"/>
 	public partial class LesLexer : BaseILexer<ICharSource, Token>, ILexer<Token>, ICloneable<LesLexer>
 	{

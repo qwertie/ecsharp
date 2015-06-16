@@ -166,8 +166,8 @@ namespace Ecs
 		#region Configuration properties
 
 		/// <summary>Allows operators to be mixed that will cause the parser to 
-		/// produce a warning. An example is <c>x & @==(y, z)</c>: if you enable 
-		/// this option, it will be printed as <c>x & y == z</c>, which the parser
+		/// produce a warning. An example is <c>x &amp; @==(y, z)</c>: if you enable 
+		/// this option, it will be printed as <c>x &amp; y == z</c>, which the parser
 		/// will complain about because mixing those operators is deprecated.
 		/// </summary>
 		public bool MixImmiscibleOperators { get; set; }
@@ -407,8 +407,8 @@ namespace Ecs
 			AllowUnassignedVarDecl = 0x0001,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
-			/// operators: (Foo)-x, (Foo)+x, (Foo)&x, (Foo)*x, (Foo)~x, (Foo)++(x), 
-			/// (Foo)--(x) (the (Foo)++(x) case is parsed as a post-increment and a 
+			/// operators: <c>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), 
+			/// (Foo)--(x)</c> (the (Foo)++(x) case is parsed as a post-increment and a 
 			/// call).</summary>
 			CastRhs = 0x0002,
 			/// <summary>The expression is in a location where, if it is parenthesized
@@ -1462,7 +1462,7 @@ namespace Ecs
 		/// that the string can be used as a plain C# identifier, e.g. 
 		/// "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
 		/// <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
-		/// "_xyz" where xyz is an HTML entity name, e.g. '&' becomes "_amp",
+		/// "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
 		/// and all other characters become "Xxx" where xx is the hexadecimal 
 		/// representation of the code point. Designed for the Unicode BMP only.</remarks>
 		public static string SanitizeIdentifier(string id)

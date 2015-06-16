@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Tests
 			var lexer = new CalculatorLexer(input);
 			Token EOF = new Token((int) TT.EOF, input.Length, 0);
 			var parser = new Calculator() { 
-				Src = new ParserSource<Token>(lexer, EOF, lexer.Src.SourceFile)
+				Src = new ParserSource<Token>(lexer, EOF, lexer.SourceFile)
 			};
 			
 			return parser.Expr();

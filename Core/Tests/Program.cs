@@ -35,8 +35,6 @@ namespace Loyc.Tests
 			Console.WriteLine("Running tests on stable code...");
 			// Omitted: unit tests that throw & catch exceptions (those are below)
 
-			RunTests.Run(new StreamCharSourceTests());//TEMP
-
 			// Loyc.Essentials
 			RunTests.Run(new ListExtTests());
 			RunTests.Run(new MathExTests());
@@ -87,6 +85,7 @@ namespace Loyc.Tests
 			RunTests.Run(new StreamCharSourceTests());
 			RunTests.Run(new LexerSourceTests_Calculator());
 			RunTests.Run(new ParserSourceTests_Calculator());
+			RunTests.Run(new IndentTokenGeneratorTests());
 
 			for(;;) {
 				ConsoleKeyInfo k;

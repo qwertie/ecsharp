@@ -19,7 +19,7 @@ namespace Ecs
 	/// <br/>70+: Mult: * / %
 	/// <br/>60+: Add: + -     (Shift is 56 but ideally would be 70)
 	/// <br/>50+: Range: ..    (`custom operators` are 28 to 55)
-	/// <br/>40+: Compare: < > <= >= is as using == !=
+	/// <br/>40+: Compare: &lt; > <= >= is as using == !=
 	/// <br/>30+: Bitwise &^|  (Ideally would be 54..59)
 	/// <br/>20+: Conditional && || ^^
 	/// <br/>10+: Ternary

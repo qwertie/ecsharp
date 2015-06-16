@@ -46,68 +46,69 @@ namespace Loyc.Syntax.Tests
 	}
 	public enum CalcTokenType
 	{
-		EOF = TokenKind.Spaces, Id = TokenKind.Id, Num = TokenKind.Number, Shr = TokenKind.Operator + 1, Shl = TokenKind.Operator + 2, Assign = TokenKind.Assignment + 1, GT = TokenKind.Operator + 3, LT = TokenKind.Operator + 4, Exp = TokenKind.Operator + 5, Mul = TokenKind.Operator + 6, Div = TokenKind.Operator + 7, Add = TokenKind.Operator + 8, Sub = TokenKind.Operator + 9, Semicolon = TokenKind.Operator + 10, LParen = TokenKind.Operator + 11, RParen = TokenKind.Operator + 12, LBrace, RBrace, Unknown
+		EOF = TokenKind.Spaces, Id = TokenKind.Id, Num = TokenKind.Number, Shr = TokenKind.Operator + 1, Shl = TokenKind.Operator + 2, Assign = TokenKind.Assignment + 1, GT = TokenKind.Operator + 3, LT = TokenKind.Operator + 4, Exp = TokenKind.Operator + 5, Mul = TokenKind.Operator + 6, Div = TokenKind.Operator + 7, Add = TokenKind.Operator + 8, Sub = TokenKind.Operator + 9, Semicolon = TokenKind.Separator, LParen = TokenKind.LParen, RParen = TokenKind.RParen, Colon = TokenKind.Separator + 1, LBrace = TokenKind.LBrace, RBrace = TokenKind.RBrace, Unknown
 	}
-	partial class CalculatorLexer : EnumeratorBase<Token>
+	partial class CalculatorLexer : BaseILexer<ICharSource,Token>
 	{
-		public LexerSource Src
+		public CalculatorLexer(UString text, string fileName = "") : base(text, fileName)
 		{
-			get;
-			set;
 		}
-		public CalculatorLexer(string text, string fileName = "")
+		public CalculatorLexer(ICharSource text, string fileName = "") : base(text, fileName)
 		{
-			Src = (LexerSource) text;
-		}
-		public CalculatorLexer(ICharSource text, string fileName = "")
-		{
-			Src = new LexerSource(text);
 		}
 		TT _tokenType;
 		int _startIndex;
 		object _value;
-		public override bool MoveNext()
+		public override Maybe<Token> NextToken()
 		{
 			int la0, la1;
-			// Line 97: ([\t ])*
+			// Line 99: ([\t ] | Newline)*
 			for (;;) {
-				la0 = Src.LA0;
-				if (la0 == '\t' || la0 == ' ')
-					Src.Skip();
-				else
+				switch (LA0) {
+				case '\t':
+				case ' ':
+					Skip();
 					break;
+				case '\n':
+				case '\r':
+					Newline();
+					break;
+				default:
+					goto stop;
+				}
 			}
-			_startIndex = Src.InputPosition;
+		stop:;
+			_startIndex = this.InputPosition;
 			_value = null;
-			// Line 100: ( (Num | Id | [.] [n] [a] [n] | [.] [i] [n] [f]) | ([>] [>] / [<] [<] / [=] / [>] / [<] / [\^] / [*] / [/] / [+] / [\-] / [;] / [(] / [)]) )
+			// Line 102: ( (Num | Id | [.] [n] [a] [n] | [.] [i] [n] [f]) | ([>] [>] / [<] [<] / [=] / [>] / [<] / [\^] / [*] / [/] / [+] / [\-] / [;] / [(] / [)] / [:] / [{] / [}]) )
 			do {
-				la0 = Src.LA0;
+				la0 = LA0;
 				switch (la0) {
 				case '.':
 					{
-						la1 = Src.LA(1);
+						la1 = LA(1);
 						if (la1 >= '0' && la1 <= '9')
 							goto matchNum;
 						else if (la1 == 'n') {
-							#line 102 "LexerSourceTest.ecs"
+							#line 104 "LexerSourceTest.ecs"
 							_tokenType = TT.Num;
 							#line default
-							Src.Skip();
-							Src.Skip();
-							Src.Match('a');
-							Src.Match('n');
-							#line 102 "LexerSourceTest.ecs"
+							Skip();
+							Skip();
+							Match('a');
+							Match('n');
+							#line 104 "LexerSourceTest.ecs"
 							_value = double.NaN;
 							#line default
 						} else if (la1 == 'i') {
-							#line 103 "LexerSourceTest.ecs"
+							#line 105 "LexerSourceTest.ecs"
 							_tokenType = TT.Num;
 							#line default
-							Src.Skip();
-							Src.Skip();
-							Src.Match('n');
-							Src.Match('f');
-							#line 103 "LexerSourceTest.ecs"
+							Skip();
+							Skip();
+							Match('n');
+							Match('f');
+							#line 105 "LexerSourceTest.ecs"
 							_value = double.PositiveInfinity;
 							#line default
 						} else
@@ -127,16 +128,16 @@ namespace Loyc.Syntax.Tests
 					goto matchNum;
 				case '>':
 					{
-						la1 = Src.LA(1);
+						la1 = LA(1);
 						if (la1 == '>') {
-							Src.Skip();
-							Src.Skip();
-							#line 126 "LexerSourceTest.ecs"
+							Skip();
+							Skip();
+							#line 128 "LexerSourceTest.ecs"
 							_tokenType = TT.Shr;
 							#line default
 						} else {
-							Src.Skip();
-							#line 126 "LexerSourceTest.ecs"
+							Skip();
+							#line 128 "LexerSourceTest.ecs"
 							_tokenType = TT.GT;
 							#line default
 						}
@@ -144,16 +145,16 @@ namespace Loyc.Syntax.Tests
 					break;
 				case '<':
 					{
-						la1 = Src.LA(1);
+						la1 = LA(1);
 						if (la1 == '<') {
-							Src.Skip();
-							Src.Skip();
-							#line 126 "LexerSourceTest.ecs"
+							Skip();
+							Skip();
+							#line 128 "LexerSourceTest.ecs"
 							_tokenType = TT.Shl;
 							#line default
 						} else {
-							Src.Skip();
-							#line 126 "LexerSourceTest.ecs"
+							Skip();
+							#line 128 "LexerSourceTest.ecs"
 							_tokenType = TT.LT;
 							#line default
 						}
@@ -161,79 +162,103 @@ namespace Loyc.Syntax.Tests
 					break;
 				case '=':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Assign;
 						#line default
 					}
 					break;
 				case '^':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Exp;
 						#line default
 					}
 					break;
 				case '*':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Mul;
 						#line default
 					}
 					break;
 				case '/':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Div;
 						#line default
 					}
 					break;
 				case '+':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Add;
 						#line default
 					}
 					break;
 				case '-':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Sub;
 						#line default
 					}
 					break;
 				case ';':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.Semicolon;
 						#line default
 					}
 					break;
 				case '(':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.LParen;
 						#line default
 					}
 					break;
 				case ')':
 					{
-						Src.Skip();
-						#line 126 "LexerSourceTest.ecs"
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
 						_tokenType = TT.RParen;
+						#line default
+					}
+					break;
+				case ':':
+					{
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
+						_tokenType = TT.Colon;
+						#line default
+					}
+					break;
+				case '{':
+					{
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
+						_tokenType = TT.LBrace;
+						#line default
+					}
+					break;
+				case '}':
+					{
+						Skip();
+						#line 128 "LexerSourceTest.ecs"
+						_tokenType = TT.RBrace;
 						#line default
 					}
 					break;
 				default:
 					if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z') {
-						#line 101 "LexerSourceTest.ecs"
+						#line 103 "LexerSourceTest.ecs"
 						_tokenType = TT.Id;
 						#line default
 						Id();
@@ -244,7 +269,7 @@ namespace Loyc.Syntax.Tests
 				break;
 			matchNum:
 				{
-					#line 100 "LexerSourceTest.ecs"
+					#line 102 "LexerSourceTest.ecs"
 					_tokenType = TT.Num;
 					#line default
 					Num();
@@ -252,77 +277,78 @@ namespace Loyc.Syntax.Tests
 				break;
 			error:
 				{
-					#line 106 "LexerSourceTest.ecs"
-					_tokenType = TT.EOF;
-					#line default
-					// Line 106: ([^\$])?
-					la0 = Src.LA0;
+					// Line 108: ([^\$] | )
+					la0 = LA0;
 					if (la0 != -1) {
-						Src.Skip();
-						#line 106 "LexerSourceTest.ecs"
+						Skip();
+						#line 108 "LexerSourceTest.ecs"
 						_tokenType = TT.Unknown;
+						#line default
+					} else {
+						#line 108 "LexerSourceTest.ecs"
+						return NoValue.Value;
 						#line default
 					}
 				}
 			} while (false);
-			Current = new Token((int) _tokenType, _startIndex, Src.InputPosition - _startIndex, _value);
-			return _tokenType != TT.EOF;
+			_current = new Token((int) _tokenType, _startIndex, this.InputPosition - _startIndex, _value);
+			return _current;
 		}
-		static readonly HashSet<int> Id_set0 = LexerSource.NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
+		static readonly HashSet<int> Id_set0 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 		void Id()
 		{
 			int la0;
-			Src.Skip();
-			// Line 114: ([0-9A-Z_a-z])*
+			Skip();
+			// Line 116: ([0-9A-Z_a-z])*
 			for (;;) {
-				la0 = Src.LA0;
+				la0 = LA0;
 				if (Id_set0.Contains(la0))
-					Src.Skip();
+					Skip();
 				else
 					break;
 			}
-			#line 115 "LexerSourceTest.ecs"
-			_value = Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString();
+			#line 117 "LexerSourceTest.ecs"
+			_value = this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString();
 			#line default
 		}
 		void Num()
 		{
 			int la0, la1;
 			int dot = 0;
-			// Line 118: ([.])?
-			la0 = Src.LA0;
+			// Line 120: ([.])?
+			la0 = LA0;
 			if (la0 == '.')
-				dot = Src.MatchAny();
-			Src.MatchRange('0', '9');
-			// Line 119: ([0-9])*
+				dot = MatchAny();
+			MatchRange('0', '9');
+			// Line 121: ([0-9])*
 			for (;;) {
-				la0 = Src.LA0;
+				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
-					Src.Skip();
+					Skip();
 				else
 					break;
 			}
-			// Line 120: (&{dot == 0} [.] [0-9] ([0-9])*)?
-			la0 = Src.LA0;
+			// Line 122: (&{dot == 0} [.] [0-9] ([0-9])*)?
+			la0 = LA0;
 			if (la0 == '.') {
 				if (dot == 0) {
-					la1 = Src.LA(1);
+					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
-						Src.Skip();
-						Src.Skip();
-						// Line 120: ([0-9])*
+						Skip();
+						Skip();
+						// Line 122: ([0-9])*
 						for (;;) {
-							la0 = Src.LA0;
+							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9')
-								Src.Skip();
+								Skip();
 							else
 								break;
 						}
 					}
 				}
 			}
-			#line 121 "LexerSourceTest.ecs"
-			_value = double.Parse(Src.CharSource.Slice(_startIndex, Src.InputPosition - _startIndex).ToString());
+			#line 123 "LexerSourceTest.ecs"
+			_value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString());
 			#line default
 		}
 	}

@@ -12,8 +12,8 @@ namespace Loyc.Syntax.Lexing
 	/// <remarks>
 	/// If you are using the <c>inputSource</c> and <c>inputClass</c> options of,
 	/// LLLPG, use <see cref="LexerSource{CharSource}"/> instead. If you want to
-	/// write a lexer that implements <see cref="ILexer"/> (so it is compatible
-	/// with posprocessors), use <see cref="BaseILexer{CharSrc}"/> as your base 
+	/// write a lexer that implements <see cref="ILexer{Tok}"/> (so it is compatible
+	/// with posprocessors), use <see cref="BaseILexer{CharSrc,Tok}"/> as your base 
 	/// class instead.
 	/// <para/>
 	/// This class contains many methods required by LLLPG, such as 
@@ -46,7 +46,7 @@ namespace Loyc.Syntax.Lexing
 	/// By default, errors are handled by throwing <see cref="FormatException"/>.
 	/// The recommended way to alter this behavior is to change the 
 	/// <see cref="ErrorSink"/> property. For example, set it to 
-	/// <see cref="ConsoleMessageSink.Value"/> to send errors to the console, or
+	/// <see cref="MessageSink.Console"/> to send errors to the console, or
 	/// use <see cref="MessageSink.FromDelegate"/> to provide a custom handler.
 	/// </remarks>
 	/// <typeparam name="CharSrc">A class that implements <see cref="ICharSource"/>.
@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Lexing
 	/// is a wrapper around <c>System.String</c> that, among other things, 
 	/// implements <c>ICharSource</c>; please note that C# will implicitly convert 
 	/// normal strings to <see cref="UString"/> for you).</typeparam>
-	public abstract class BaseLexer<CharSrc>
+	public abstract class BaseLexer<CharSrc> : IIndexToLine
 		where CharSrc : ICharSource
 	{
 		protected static HashSet<int> NewSet(params int[] items) { return new HashSet<int>(items); }
@@ -591,12 +591,7 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="args">Arguments to insert into the error message.</param>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			int index = InputPosition + lookaheadIndex;
-			SourcePos pos;
-			if (SourceFile == null)
-				pos = new SourcePos(_fileName, LineNumber, index - _lineStartAt + 1);
-			else
-				pos = SourceFile.IndexToLine(index);
+			SourcePos pos = IndexToLine(InputPosition + lookaheadIndex);
 			ErrorSink.Write(Severity.Error, pos, format, args);
 		}
 
@@ -661,6 +656,14 @@ namespace Loyc.Syntax.Lexing
 				sb.Append('\'');
 			} else
 				sb.Append(c);
+		}
+
+		public SourcePos IndexToLine(int index)
+		{
+			if (SourceFile != null)
+				return new SourcePos(_fileName, LineNumber, index - _lineStartAt + 1);
+			else
+				return SourceFile.IndexToLine(index);
 		}
 	}
 
