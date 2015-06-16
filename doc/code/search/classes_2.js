@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['calculator',['Calculator',['../classLoyc_1_1Syntax_1_1Tests_1_1Calculator.html',1,'Loyc::Syntax::Tests']]],
-  ['calculatorlexer',['CalculatorLexer',['../classLoyc_1_1Syntax_1_1Tests_1_1CalculatorLexer.html',1,'Loyc::Syntax::Tests']]],
   ['callnode',['CallNode',['../classLoyc_1_1Syntax_1_1CallNode.html',1,'Loyc::Syntax']]],
   ['cg',['CG',['../classLoyc_1_1Collections_1_1CG.html',1,'Loyc::Collections']]],
   ['checkparam',['CheckParam',['../classLoyc_1_1CheckParam.html',1,'Loyc']]],

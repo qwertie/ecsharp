@@ -1,6 +1,7 @@
 var searchData=
 [
   ['basedictionary_3c_20tkey_2c_20tvalue_20_3e',['BaseDictionary&lt; TKey, TValue &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1BaseDictionary_3_01TKey_00_01TValue_01_4.html',1,'Loyc::Collections::Impl']]],
+  ['baseilexer_3c_20charsrc_2c_20token_20_3e',['BaseILexer&lt; CharSrc, Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer_3c_20charsrc_20_3e',['BaseLexer&lt; CharSrc &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['baseparser_3c_20token_20_3e',['BaseParser&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1BaseParser_3_01Token_01_4.html',1,'Loyc::Syntax']]],

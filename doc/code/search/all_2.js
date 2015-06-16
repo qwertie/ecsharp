@@ -5,6 +5,7 @@ var searchData=
   ['base',['Base',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#acf0b0606a0239be7b574c8df07d920ed',1,'Loyc::Syntax::CodeSymbols']]],
   ['basecostforswitch',['BaseCostForSwitch',['../classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a7323186133730fb8bc0914c1f475a176',1,'Loyc::LLParserGenerator::CodeGenHelperBase']]],
   ['basedictionary_3c_20tkey_2c_20tvalue_20_3e',['BaseDictionary&lt; TKey, TValue &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1BaseDictionary_3_01TKey_00_01TValue_01_4.html',1,'Loyc::Collections::Impl']]],
+  ['baseilexer_3c_20charsrc_2c_20token_20_3e',['BaseILexer&lt; CharSrc, Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#a11dd2a86be25ddbef49a36cf230fd9b5',1,'Loyc::Syntax::Lexing::BaseLexer&lt; CharSrc &gt;']]],
   ['baselexer_3c_20charsrc_20_3e',['BaseLexer&lt; CharSrc &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html',1,'Loyc::Syntax::Lexing']]],

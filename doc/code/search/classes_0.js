@@ -8,7 +8,6 @@ var searchData=
   ['alistleaf_3c_20k_2c_20t_20_3e',['AListLeaf&lt; K, T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1AListLeaf_3_01K_00_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['alistnode_3c_20k_2c_20t_20_3e',['AListNode&lt; K, T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['alistreverseview_3c_20k_2c_20t_20_3e',['AListReverseView&lt; K, T &gt;',['../structLoyc_1_1Collections_1_1AListReverseView_3_01K_00_01T_01_4.html',1,'Loyc::Collections']]],
-  ['alisttestbase_3c_20alist_2c_20t_20_3e',['AListTestBase&lt; AList, T &gt;',['../classLoyc_1_1Collections_1_1Tests_1_1AListTestBase_3_01AList_00_01T_01_4.html',1,'Loyc::Collections::Tests']]],
   ['alisttreeobserverext',['AListTreeObserverExt',['../classLoyc_1_1Collections_1_1Impl_1_1AListTreeObserverExt.html',1,'Loyc::Collections::Impl']]],
   ['alts',['Alts',['../classLoyc_1_1LLParserGenerator_1_1Alts.html',1,'Loyc::LLParserGenerator']]],
   ['andpred',['AndPred',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html',1,'Loyc::LLParserGenerator']]],

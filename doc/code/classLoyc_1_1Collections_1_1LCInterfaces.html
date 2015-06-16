@@ -119,9 +119,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afed0dbf9d83237665486f40518df4312"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#afed0dbf9d83237665486f40518df4312">TryGet&lt; T &gt;</a> (this IListSource&lt; T &gt; list, int index, ref T value)</td></tr>
 <tr class="memdesc:afed0dbf9d83237665486f40518df4312"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index. <a href="#afed0dbf9d83237665486f40518df4312">More...</a><br /></td></tr>
 <tr class="separator:afed0dbf9d83237665486f40518df4312"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af233ad45e2a09cde25b841d43c96a61d"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#af233ad45e2a09cde25b841d43c96a61d">TryGet&lt; T &gt;</a> (this IListSource&lt; T &gt; list, int index, T defaultValue=default(T))</td></tr>
-<tr class="memdesc:af233ad45e2a09cde25b841d43c96a61d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index. <a href="#af233ad45e2a09cde25b841d43c96a61d">More...</a><br /></td></tr>
-<tr class="separator:af233ad45e2a09cde25b841d43c96a61d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f23dda94c2ab586d596540648d8ad7f"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a8f23dda94c2ab586d596540648d8ad7f">TryGet&lt; T &gt;</a> (this IListSource&lt; T &gt; list, int index, T defaultValue)</td></tr>
+<tr class="memdesc:a8f23dda94c2ab586d596540648d8ad7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index. <a href="#a8f23dda94c2ab586d596540648d8ad7f">More...</a><br /></td></tr>
+<tr class="separator:a8f23dda94c2ab586d596540648d8ad7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a6b67c6fcee068af0599f830ae5efc5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#a9a6b67c6fcee068af0599f830ae5efc5">TryGet&lt; T &gt;</a> (this IListSource&lt; T &gt; list, int index)</td></tr>
+<tr class="memdesc:a9a6b67c6fcee068af0599f830ae5efc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to get a value from the list at the specified index. <a href="#a9a6b67c6fcee068af0599f830ae5efc5">More...</a><br /></td></tr>
+<tr class="separator:a9a6b67c6fcee068af0599f830ae5efc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef7ef2d58959125eb91108eb2378b3fa"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa">HasIndex&lt; T &gt;</a> (this IListSource&lt; T &gt; list, int index)</td></tr>
 <tr class="memdesc:aef7ef2d58959125eb91108eb2378b3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses list.TryGet(index) to find out if the specified index is valid. <a href="#aef7ef2d58959125eb91108eb2378b3fa">More...</a><br /></td></tr>
 <tr class="separator:aef7ef2d58959125eb91108eb2378b3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -204,42 +207,6 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekFirst&lt; T &
 <tr class="memitem:a13da6a14e0ee9c7aa890869e9c030ae7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a13da6a14e0ee9c7aa890869e9c030ae7"></a>
 static T&#160;</td><td class="memItemRight" valign="bottom"><b>PeekLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c)</td></tr>
 <tr class="separator:a13da6a14e0ee9c7aa890869e9c030ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a366be7c1d8d3eb099f70ab5d68718333"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a366be7c1d8d3eb099f70ab5d68718333"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c, out T value)</td></tr>
-<tr class="separator:a366be7c1d8d3eb099f70ab5d68718333"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d4e003e841c792e24ad114fc9353de6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d4e003e841c792e24ad114fc9353de6"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c, out T value)</td></tr>
-<tr class="separator:a3d4e003e841c792e24ad114fc9353de6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a723291d3dc0097ecf66359e7f60be17f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a723291d3dc0097ecf66359e7f60be17f"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c, out T value)</td></tr>
-<tr class="separator:a723291d3dc0097ecf66359e7f60be17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af597bccea73937672ee0c7b555d8c91e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af597bccea73937672ee0c7b555d8c91e"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c, out T value)</td></tr>
-<tr class="separator:af597bccea73937672ee0c7b555d8c91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af974eefe6ad121e964205feadd8954bd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af974eefe6ad121e964205feadd8954bd"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c)</td></tr>
-<tr class="separator:af974eefe6ad121e964205feadd8954bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3f31196d3c8fb054a46ceceb3e23765"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3f31196d3c8fb054a46ceceb3e23765"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c)</td></tr>
-<tr class="separator:ad3f31196d3c8fb054a46ceceb3e23765"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a4181832c4208c9106a223c604fc2b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2a4181832c4208c9106a223c604fc2b5"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c)</td></tr>
-<tr class="separator:a2a4181832c4208c9106a223c604fc2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3fd931f04fa0b1150ad3ef178508bd0d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3fd931f04fa0b1150ad3ef178508bd0d"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c)</td></tr>
-<tr class="separator:a3fd931f04fa0b1150ad3ef178508bd0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a795947074ff7ec7e63c2d3678aeebba0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a795947074ff7ec7e63c2d3678aeebba0"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c, T defaultValue)</td></tr>
-<tr class="separator:a795947074ff7ec7e63c2d3678aeebba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bf082b57c305ea29e7fc32f64919fa2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1bf082b57c305ea29e7fc32f64919fa2"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPopLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c, T defaultValue)</td></tr>
-<tr class="separator:a1bf082b57c305ea29e7fc32f64919fa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a084a7c7eded5abff062522871e6b54e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a084a7c7eded5abff062522871e6b54e5"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekFirst&lt; T &gt;</b> (this IDeque&lt; T &gt; c, T defaultValue)</td></tr>
-<tr class="separator:a084a7c7eded5abff062522871e6b54e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01f2c3feeeb73e2fd084bbe165e54c67"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01f2c3feeeb73e2fd084bbe165e54c67"></a>
-static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryPeekLast&lt; T &gt;</b> (this IDeque&lt; T &gt; c, T defaultValue)</td></tr>
-<tr class="separator:a01f2c3feeeb73e2fd084bbe165e54c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd50b0ca9852a6b7bb8fe6eef105c63e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd50b0ca9852a6b7bb8fe6eef105c63e"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Resize&lt; T &gt;</b> (this IListRangeMethods&lt; T &gt; list, int newSize)</td></tr>
 <tr class="separator:acd50b0ca9852a6b7bb8fe6eef105c63e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -733,7 +700,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 
 </div>
 </div>
-<a class="anchor" id="af233ad45e2a09cde25b841d43c96a61d"></a>
+<a class="anchor" id="a8f23dda94c2ab586d596540648d8ad7f"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -756,7 +723,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>defaultValue</em> = <code>default(T)</code>&#160;</td>
+          <td class="paramname"><em>defaultValue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -783,11 +750,54 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 
 </div>
 </div>
+<a class="anchor" id="a9a6b67c6fcee068af0599f830ae5efc5"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;T&gt; Loyc.Collections.LCInterfaces.TryGet&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IListSource&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tries to get a value from the list at the specified index.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>The index to access. Valid indexes are between 0 and Count-1.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The retrieved value wrapped in Maybe{T}, if any.</dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:36:01 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:27:03 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

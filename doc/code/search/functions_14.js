@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['value_3c_20t_20_3e',['Value&lt; T &gt;',['../classLoyc_1_1Maybe.html#aea70c611762aaf16a989033e4a6814e1',1,'Loyc::Maybe']]],
   ['vector',['Vector',['../classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e',1,'Loyc.Geometry.PointMath.Vector(this LineSegment seg)'],['../classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e',1,'Loyc.Geometry.PointMath.Vector(this LineSegment seg)'],['../classLoyc_1_1Geometry_1_1PointMath.html#ab667babb3bc95276641162195d68d39e',1,'Loyc.Geometry.PointMath.Vector(this LineSegment seg)']]],
   ['vector_3c_20t_20_3e',['Vector&lt; T &gt;',['../classLoyc_1_1Geometry_1_1PointMath.html#a16aaa088196ac8b78879a4f6ee80c407',1,'Loyc::Geometry::PointMath']]],
   ['verify',['Verify',['../classLoyc_1_1G.html#a4ce38fca60499fd9c5a5c4428fa12437',1,'Loyc.G.Verify()'],['../classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a90604f1a4068d2548486ad00220eca02',1,'Loyc.Collections.Impl.AListNode&lt; K, T &gt;.Verify()']]],

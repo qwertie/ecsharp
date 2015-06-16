@@ -135,6 +135,10 @@ Properties</h2></td></tr>
 <tr class="memitem:ada43164412ec526c6e8d081cbb43b5c1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1">DropRemainingNodes</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ada43164412ec526c6e8d081cbb43b5c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets a value that indicates whether to drop all remaining node after the current one when the current macro returns. This property has no effect if the macro rejects the input by returning null. <a href="#ada43164412ec526c6e8d081cbb43b5c1">More...</a><br /></td></tr>
 <tr class="separator:ada43164412ec526c6e8d081cbb43b5c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b238d762291f03e3249d022b40a5343"><td class="memItemLeft" align="right" valign="top">IReadOnlyDictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <br class="typebreak" />
+List&lt; <a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a0b238d762291f03e3249d022b40a5343">AllKnownMacros</a><code> [get]</code></td></tr>
+<tr class="memdesc:a0b238d762291f03e3249d022b40a5343"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets information about all macros registered with the macro processor, including macros whose namespace has not been opened with <code>#importMacros</code>. <a href="#a0b238d762291f03e3249d022b40a5343">More...</a><br /></td></tr>
+<tr class="separator:a0b238d762291f03e3249d022b40a5343"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -231,6 +235,28 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="a0b238d762291f03e3249d022b40a5343"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">IReadOnlyDictionary&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, List&lt;<a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a>&gt; &gt; LeMP.IMacroContext.AllKnownMacros</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets information about all macros registered with the macro processor, including macros whose namespace has not been opened with <code>#importMacros</code>.</p>
+
+</div>
+</div>
 <a class="anchor" id="abb6b2fbd85b1bb5fb33bf25f04aa890b"></a>
 <div class="memitem">
 <div class="memproto">
@@ -424,7 +450,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:35:52 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

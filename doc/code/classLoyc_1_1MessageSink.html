@@ -140,6 +140,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a92234e9bd908d05f3a75cc5845d35ce3"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a92234e9bd908d05f3a75cc5845d35ce3">LocationString</a> (object context)</td></tr>
 <tr class="memdesc:a92234e9bd908d05f3a75cc5845d35ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the location information from the specified object, or converts the object to a string. <a href="#a92234e9bd908d05f3a75cc5845d35ce3">More...</a><br /></td></tr>
 <tr class="separator:a92234e9bd908d05f3a75cc5845d35ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a749716030611a79449e91102fcb684fe"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe">LocationOf</a> (object context)</td></tr>
+<tr class="memdesc:a749716030611a79449e91102fcb684fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns context.Location if context implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string.">IHasLocation</a>; otherwise, returns context itself. <a href="#a749716030611a79449e91102fcb684fe">More...</a><br /></td></tr>
+<tr class="separator:a749716030611a79449e91102fcb684fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc8aff67a735cac3ae92e0b89bdff453"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc8aff67a735cac3ae92e0b89bdff453"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatMessage</b> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format, params object[] args)</td></tr>
 <tr class="separator:afc8aff67a735cac3ae92e0b89bdff453"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -184,6 +187,32 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatMessag
 
 </div>
 </div>
+<a class="anchor" id="a749716030611a79449e91102fcb684fe"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static object Loyc.MessageSink.LocationOf </td>
+          <td>(</td>
+          <td class="paramtype">object&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns context.Location if context implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string.">IHasLocation</a>; otherwise, returns context itself.</p>
+
+</div>
+</div>
 <a class="anchor" id="a92234e9bd908d05f3a75cc5845d35ce3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -213,9 +242,9 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatMessag
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>If <code>context</code> implements <a class="el" href="interfaceLoyc_1_1ILocationString.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string.">ILocationString</a>, this function returns ILocationString.LocationString; if <code>context</code> is null, this method returns <code>null</code>; otherwise it returns <code>context.ToString()</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>If <code>context</code> implements <a class="el" href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its &quot;location&quot;. It is used by MessageSink.LocationString, which helps convert the &quot;context&quot; of a message into a string.">IHasLocation</a>, this function returns IHasLocation.Location; if <code>context</code> is null, this method returns <code>null</code>; otherwise it returns <code>context.ToString()</code>. </dd></dl>
 <p>Message sinks are commonly used to display error and warning messages, and when you write a message with <code><a class="el" href="interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83" title="Writes a message to the target that this object represents.">IMessageSink.Write()</a></code>, the second parameter is a "context" argument which specifies the object to which the message is related (for example, when writing compiler output, the context might be a node in a syntax tree). Most message sinks display the message in text form (in a log file or terminal), and in that case the best option is to display the location information associated with the context object (e.g. Foo.cpp:45), rather than a string representation of the object itself. </p>
-<p>Therefore, message sinks that display a message in text form will call this method to convert the context object to a string, and if available, this method calls the ILocationString.LocationString property of the context object. </p>
+<p>Therefore, message sinks that display a message in text form will call this method to convert the context object to a string, and if available, this method calls the IHasLocation.Location property of the context object. </p>
 
 </div>
 </div>
@@ -317,7 +346,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>FormatMessag
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:35:53 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:27:00 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

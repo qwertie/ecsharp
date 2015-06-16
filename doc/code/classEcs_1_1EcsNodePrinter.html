@@ -256,7 +256,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <p>The expression can contain uninitialized variable declarations, e.g. because it is the subject of an assignment. In the tree "(x + y, int z) = (a, b)", this flag is passed down to "(x + y, int z)" and then down to "int y" and "x + y", but it doesn't propagate down to "x", "y" and "int".</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa1ae4f69bae69c68dbba947988e250186"></a>CastRhs&#160;</td><td class="fielddoc">
-<p>The expression is the right side of a traditional cast, so the printer must avoid ambiguity in case of the following prefix operators: (Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), (Foo)&ndash;(x) (the (Foo)++(x) case is parsed as a post-increment and a call).</p>
+<p>The expression is the right side of a traditional cast, so the printer must avoid ambiguity in case of the following prefix operators: <code>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), (Foo)&ndash;(x)</code> (the (Foo)++(x) case is parsed as a post-increment and a call).</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa3049892795d62eadfd05ad49720c6e86"></a>IsCallTarget&#160;</td><td class="fielddoc">
 <p>The expression is in a location where, if it is parenthesized and has the syntax of a data type inside, it will be treated as a cast. This occurs when a call that is printed with prefix notation has a parenthesized target node, e.g. (target)(arg). The target node can avoid the syntax of a data type by adding "[ ]" (an empty set of attributes) at the beginning of the expression.</p>
@@ -687,7 +687,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:35:51 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

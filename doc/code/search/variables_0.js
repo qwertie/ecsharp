@@ -7,6 +7,7 @@ var searchData=
   ['_5fchildren',['_children',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#ae49cc2cee7ea0fdd768eaba12f34d948',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['_5fcompareitems',['_compareItems',['../classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#ac2629e3f6b29ef2f45740312e7ebd9be',1,'Loyc::Collections::BList&lt; T &gt;']]],
   ['_5fconcat',['_Concat',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a465be0a2e14a65055642f763a52f6c49',1,'Loyc::Syntax::CodeSymbols']]],
+  ['_5fcurrent',['_current',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html#a382c2597490fbb6a1cbbda547747f6d8',1,'Loyc::Syntax::Lexing::BaseILexer&lt; CharSrc, Token &gt;']]],
   ['_5fdereference',['_Dereference',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a4e15223b75431ed276d0ad91eec79e2a',1,'Loyc::Syntax::CodeSymbols']]],
   ['_5fdestruct',['_Destruct',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a32097261ea9482607a3e47fbfc0772fe',1,'Loyc::Syntax::CodeSymbols']]],
   ['_5feofindex',['_eofIndex',['../classLoyc_1_1Syntax_1_1StreamCharSource.html#a51aa82d7a3c3f33a1b401f6701c5262d',1,'Loyc::Syntax::StreamCharSource']]],

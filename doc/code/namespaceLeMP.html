@@ -125,6 +125,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html">MacroContext</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>. <a href="classLeMP_1_1MacroContext.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html">MacroProcessor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates the <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> engine, a simple LISP-style macro processor, suitable for running LLLPG and other lexical macros.  <a href="classLeMP_1_1MacroProcessor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -270,7 +272,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A node to replace the original <code>node</code>, or null if this macro rejects the input node. Returning null can allow a different macro to accept the node instead.</dd></dl>
 <p>If there are multiple macros in scope with the same name, they are <em>all</em> called. Macro expansion succeeds if exactly one macro accepts the input. If no macros accept the input, the error message given by each macro is printed; if multiple macros accept the input, an ambiguity error is printed. </p>
-<p>When the macro processor scans an assembly looking for macros, it requires ContainsMacroAttribute on the containing class, and <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as an LEL simple macro.">LexicalMacroAttribute</a> on each macro in the class. The macros must be public static methods. </p>
+<p>When the macro processor scans an assembly looking for macros, it requires <a class="el" href="classLeMP_1_1ContainsMacrosAttribute.html" title="Marks a class to be searched for macros.">ContainsMacrosAttribute</a> on the containing class, and <a class="el" href="classLeMP_1_1LexicalMacroAttribute.html" title="Marks a method as an LEL simple macro.">LexicalMacroAttribute</a> on each macro in the class. The macros must be public static methods. </p>
 
 </div>
 </div>
@@ -278,7 +280,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:35:52 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -193,6 +193,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5a6a57412f373aa2177161c75bd701ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a5a6a57412f373aa2177161c75bd701ad">CallTryRecognizer</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1RuleRef.html">RuleRef</a> rref, int lookahead)</td></tr>
 <tr class="memdesc:a5a6a57412f373aa2177161c75bd701ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a call to the Try_Scan_*() function that wraps around a Scan_*() recognizer. Called while generating code for an and-pred. <a href="#a5a6a57412f373aa2177161c75bd701ad">More...</a><br /></td></tr>
 <tr class="separator:a5a6a57412f373aa2177161c75bd701ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a818edcee8a8fd5eaaa997c254e888f6c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a818edcee8a8fd5eaaa997c254e888f6c">GetListType</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type)</td></tr>
+<tr class="memdesc:a818edcee8a8fd5eaaa997c254e888f6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the list type for elements of the specified type (e.g. List&lt;type&gt;) <a href="#a818edcee8a8fd5eaaa997c254e888f6c">More...</a><br /></td></tr>
+<tr class="separator:a818edcee8a8fd5eaaa997c254e888f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63fee72b4fd50d6690111ecbf1775088"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a63fee72b4fd50d6690111ecbf1775088">MakeInitializedVarDecl</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, bool wantList, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> varName)</td></tr>
+<tr class="memdesc:a63fee72b4fd50d6690111ecbf1775088"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a variable declaration for the specified type, e.g. if type is <code>Foo</code> and <code>wantList == true</code> and <code>varName.Name == "x"</code>, the statement returned might be <code>List&lt;Foo&gt; x = new List&lt;Foo&gt;();</code> <a href="#a63fee72b4fd50d6690111ecbf1775088">More...</a><br /></td></tr>
+<tr class="separator:a63fee72b4fd50d6690111ecbf1775088"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a8d6aee837af47815c887ed41353fb00d"></a>
@@ -350,7 +356,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>If successful, a terminal predicate; otherwise null.</dd></dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#ae71ee5b79e5893b7f6f8083f4789bdc8">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac61ea15c0b83848aadcfe82a754bd7d0">Loyc.LLParserGenerator.CodeGenHelperBase</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a40711eba1cacc9bf92276ff21ee152ea">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac61ea15c0b83848aadcfe82a754bd7d0">Loyc.LLParserGenerator.CodeGenHelperBase</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#ae71ee5b79e5893b7f6f8083f4789bdc8">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a40711eba1cacc9bf92276ff21ee152ea">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -500,7 +506,7 @@ Public Member Functions</h2></td></tr>
 <p>Returns an example of an item in the set. If the example is a character, it should be surrounded by single quotes.</p>
 <p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a257b95f05cd94f9fb279a9033ab9d7d3">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#adbde0a8b9d6636b7bd14547a98763e08">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad4c27eb153d32cd0c8f00ccad7100eb1">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad4c27eb153d32cd0c8f00ccad7100eb1">Loyc.LLParserGenerator.CodeGenHelperBase</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a257b95f05cd94f9fb279a9033ab9d7d3">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#adbde0a8b9d6636b7bd14547a98763e08">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -521,7 +527,7 @@ Public Member Functions</h2></td></tr>
 <p>Returns an example of a character in the set, or null if this is not a set of characters or if EOF is the only member of the set.</p>
 <p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a0d59dd707630b0b72786ca78c2c89b3c">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4ccbb9268acf9bdae29e75e654fd2601">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4ccbb9268acf9bdae29e75e654fd2601">Loyc.LLParserGenerator.CodeGenHelperBase</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a0d59dd707630b0b72786ca78c2c89b3c">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -715,6 +721,26 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a818edcee8a8fd5eaaa997c254e888f6c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLParserGenerator.IPGCodeGenHelper.GetListType </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the list type for elements of the specified type (e.g. List&lt;type&gt;)</p>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#afaa44f2152a649f050b449f84b6e9f95">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a199c5f7591e35fe389701499a13482dc"></a>
 <div class="memitem">
 <div class="memproto">
@@ -753,6 +779,42 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>The default implementation returns @(int).</dd></dl>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad19c1601e968d59557343d89f258ab2d">Loyc.LLParserGenerator.CodeGenHelperBase</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#aa589f6fa590878d894063f1f3c4c7e12">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#ab2c3bf4bbd7ba5f18867853182fa41de">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a63fee72b4fd50d6690111ecbf1775088"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLParserGenerator.IPGCodeGenHelper.MakeInitializedVarDecl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>wantList</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>varName</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets a variable declaration for the specified type, e.g. if type is <code>Foo</code> and <code>wantList == true</code> and <code>varName.Name == "x"</code>, the statement returned might be <code>List&lt;Foo&gt; x = new List&lt;Foo&gt;();</code></p>
+
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a3649cc3ab110247dddb10dc4987ece04">Loyc.LLParserGenerator.CodeGenHelperBase</a>.</p>
 
 </div>
 </div>
@@ -943,7 +1005,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:36:11 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:27:07 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

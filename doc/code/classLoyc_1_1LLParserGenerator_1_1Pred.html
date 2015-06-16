@@ -111,7 +111,7 @@ Inheritance diagram for Loyc.LLParserGenerator.Pred:</div>
   <img src="classLoyc_1_1LLParserGenerator_1_1Pred.png" usemap="#Loyc.LLParserGenerator.Pred_map" alt=""/>
   <map id="Loyc.LLParserGenerator.Pred_map" name="Loyc.LLParserGenerator.Pred_map">
 <area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="0,0,268,24"/>
-<area href="interfaceLoyc_1_1ILocationString.html" title="This interface allows an object to declare its "location". It is used by MessageSink.LocationString, which helps convert the "context" of a message into a string." alt="Loyc.ILocationString" shape="rect" coords="278,0,546,24"/>
+<area href="interfaceLoyc_1_1IHasLocation.html" title="This interface allows an object to declare its "location". It is used by MessageSink.LocationString, which helps convert the "context" of a message into a string." alt="Loyc.IHasLocation" shape="rect" coords="278,0,546,24"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1Alts.html" title="Describes a series of alternatives (branches), a kleene star (*), or an optional element (..." alt="Loyc.LLParserGenerator.Alts" shape="rect" coords="417,112,685,136"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1AndPred.html" title="Represents a zero-width assertion: either user-defined code to check a condition, or a predicate that..." alt="Loyc.LLParserGenerator.AndPred" shape="rect" coords="417,168,685,192"/>
 <area href="classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html" title="A singleton to be used as the value of Alts.ErrorBranch, representing the default_error branch..." alt="Loyc.LLParserGenerator.DefaultErrorBranch" shape="rect" coords="417,224,685,248"/>
@@ -162,13 +162,13 @@ Properties</h2></td></tr>
 <tr class="memitem:a2584ecdf66c88916e0f49d3da327c6d3"><td class="memItemLeft" align="right" valign="top">abstract bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html#a2584ecdf66c88916e0f49d3da327c6d3">IsNullable</a><code> [get]</code></td></tr>
 <tr class="memdesc:a2584ecdf66c88916e0f49d3da327c6d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this predicate can match an empty input. <a href="#a2584ecdf66c88916e0f49d3da327c6d3">More...</a><br /></td></tr>
 <tr class="separator:a2584ecdf66c88916e0f49d3da327c6d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a23a967ede5b6a8bf64a1e790a0e6e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a23a967ede5b6a8bf64a1e790a0e6e7"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationString</b><code> [get]</code></td></tr>
-<tr class="separator:a8a23a967ede5b6a8bf64a1e790a0e6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header properties_interfaceLoyc_1_1ILocationString"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1ILocationString')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1ILocationString.html">Loyc.ILocationString</a></td></tr>
-<tr class="memitem:a05159cb21a41292404d5dd2922780871 inherit properties_interfaceLoyc_1_1ILocationString"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05159cb21a41292404d5dd2922780871"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>LocationString</b><code> [get]</code></td></tr>
-<tr class="separator:a05159cb21a41292404d5dd2922780871 inherit properties_interfaceLoyc_1_1ILocationString"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73d95be38184d69c2d2df01cd49e2aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad73d95be38184d69c2d2df01cd49e2aa"></a>
+object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
+<tr class="separator:ad73d95be38184d69c2d2df01cd49e2aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_interfaceLoyc_1_1IHasLocation"><td colspan="2" onclick="javascript:toggleInherit('properties_interfaceLoyc_1_1IHasLocation')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="interfaceLoyc_1_1IHasLocation.html">Loyc.IHasLocation</a></td></tr>
+<tr class="memitem:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97ffacc6ac52815c15c26212474f150d"></a>
+object&#160;</td><td class="memItemRight" valign="bottom"><b>Location</b><code> [get]</code></td></tr>
+<tr class="separator:a97ffacc6ac52815c15c26212474f150d inherit properties_interfaceLoyc_1_1IHasLocation"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -389,7 +389,7 @@ static <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu May 28 2015 18:36:12 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 16 2015 15:27:08 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -5,7 +5,6 @@ var searchData=
   ['parsersource_3c_20token_20_3e',['ParserSource&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1ParserSource_3_01Token_01_4.html',1,'Loyc::Syntax']]],
   ['parsersource_3c_20token_2c_20matchtype_20_3e',['ParserSource&lt; Token, MatchType &gt;',['../classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_01_4.html',1,'Loyc::Syntax']]],
   ['parsersource_3c_20token_2c_20matchtype_2c_20list_20_3e',['ParserSource&lt; Token, MatchType, List &gt;',['../classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html',1,'Loyc::Syntax']]],
-  ['parsersourcetests_5fcalculator',['ParserSourceTests_Calculator',['../classLoyc_1_1Syntax_1_1Tests_1_1ParserSourceTests__Calculator.html',1,'Loyc::Syntax::Tests']]],
   ['parsersourceworkaround_3c_20token_2c_20matchtype_2c_20list_20_3e',['ParserSourceWorkaround&lt; Token, MatchType, List &gt;',['../classLoyc_1_1Syntax_1_1ParserSourceWorkaround_3_01Token_00_01MatchType_00_01List_01_4.html',1,'Loyc::Syntax']]],
   ['parsingservice',['ParsingService',['../classLoyc_1_1Syntax_1_1ParsingService.html',1,'Loyc::Syntax']]],
   ['pgintset',['PGIntSet',['../classLoyc_1_1LLParserGenerator_1_1PGIntSet.html',1,'Loyc::LLParserGenerator']]],
