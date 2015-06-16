@@ -71,7 +71,7 @@ namespace Loyc.Syntax.Lexing
 		/// method also skips over the UTF BOM '\uFEFF', if present, and it measures
 		/// the indentation of the first line (without skipping over it).
 		/// </remarks>
-		protected override void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		public override void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
 			base.Reset(source, fileName, inputPosition, newSourceFile);
 			// Skip the UTF BOM, if present

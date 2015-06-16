@@ -4,7 +4,6 @@
 
 using System;
 using System.Text;
-using Loyc.MiniTest;
 using Loyc.Threading;
 
 namespace Loyc
@@ -275,14 +274,4 @@ namespace Loyc
 
 	public delegate string FormatterDelegate(string format, params object[] args);
 	public delegate string LocalizerDelegate(Symbol msgId, string msg);
-
-	[TestFixture]
-	public class LocalizeTests
-	{
-		[Test]
-		public void DefaultFormatter()
-		{
-			//Assert.AreEqual(Localize.EliminateNamedArgs(
-		}
-	}
 }

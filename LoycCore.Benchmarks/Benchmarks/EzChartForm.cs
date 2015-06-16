@@ -173,7 +173,7 @@ namespace Benchmark
 					var plotSeries = new ColumnSeries { Title = series.First().Series };
 					plotSeries.XAxisKey = cAxis.Key;
 					foreach (var dp in series)
-						plotSeries.Items.Add(new ColumnItem(dp.Value, cAxis.Labels.IndexOf(dp.Parameter)));
+						plotSeries.Items.Add(new ColumnItem(dp.Value, cAxis.Labels.IndexOf(dp.Parameter.ToString())));
 					model.Series.Add(plotSeries);
 				} else {
 					var plotSeries = new LineSeries { Title = series.First().Series };

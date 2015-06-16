@@ -147,6 +147,7 @@
     <Compile Include="Other\KeylessHashtable.cs" />
     <Compile Include="Other\NestedEnumerator.cs" />
     <Compile Include="Other\SimpleCache.cs" />
+    <Compile Include="Other\TestHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sets\InternalSet.cs" />
     <Compile Include="Sets\InternalSetV1.cs" />
@@ -155,19 +156,6 @@
     <Compile Include="Sets\MMap.cs" />
     <Compile Include="Sets\MSet.cs" />
     <Compile Include="Sets\Set.cs" />
-    <Compile Include="Tests\AListTestBase.cs" />
-    <Compile Include="Tests\AListTests.cs" />
-    <Compile Include="Tests\BDictionaryTests.cs" />
-    <Compile Include="Tests\BListTests.cs" />
-    <Compile Include="Tests\DequeTests.cs" />
-    <Compile Include="Tests\DictionaryTests.cs" />
-    <Compile Include="Tests\ListCollectionTests.cs" />
-    <Compile Include="Tests\ListRangeTests.cs" />
-    <Compile Include="Tests\ListTests.cs" />
-    <Compile Include="Tests\MapTests.cs" />
-    <Compile Include="Tests\SetTests.cs" />
-    <Compile Include="Tests\SparseAListTests.cs" />
-    <Compile Include="Tests\TestHelpers.cs" />
     <Compile Include="VLists\FVList.cs" />
     <Compile Include="VLists\FWList.cs" />
     <Compile Include="VLists\RVList.cs" />
