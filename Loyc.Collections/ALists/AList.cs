@@ -895,30 +895,34 @@ namespace Loyc.Collections
 			Insert(Count, item);
 		}
 
-		T IDeque<T>.TryPopFirst(out bool isEmpty)
+		Maybe<T> IDeque<T>.TryPopFirst()
 		{
+			bool isEmpty;
 			var result = TryGet(0, out isEmpty);
-			if (!isEmpty)
-				RemoveAt(0);
+			if (isEmpty)
+				return Maybe<T>.NoValue;
+			RemoveAt(0);
 			return result;
 		}
 
-		T IDeque<T>.TryPeekFirst(out bool isEmpty)
+		Maybe<T> IDeque<T>.TryPeekFirst()
 		{
-			return TryGet(0, out isEmpty);
+			return this.TryGet(0);
 		}
 
-		T IDeque<T>.TryPopLast(out bool isEmpty)
+		Maybe<T> IDeque<T>.TryPopLast()
 		{
+			bool isEmpty;
 			var result = TryGet(Count - 1, out isEmpty);
-			if (!isEmpty)
-				RemoveAt(Count-1);
+			if (isEmpty)
+				return Maybe<T>.NoValue;
+			RemoveAt(Count-1);
 			return result;
 		}
 
-		T IDeque<T>.TryPeekLast(out bool isEmpty)
+		Maybe<T> IDeque<T>.TryPeekLast()
 		{
-			return TryGet(Count-1, out isEmpty);
+			return this.TryGet(Count-1);
 		}
 		
 		#endregion

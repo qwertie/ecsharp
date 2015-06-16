@@ -162,7 +162,7 @@ namespace Loyc.Syntax.Les
 	/// operator name). A `backquoted` operator always has precedence of 
 	/// <see cref="Backtick"/> and again, the backticks are not considered part
 	/// of the operator name.
-	/// <para/></remarks>
+	/// <para/>
 	/// Next, if the operator is only one character, simply find it 
 	/// in the above table. If the operator is two or more characters, take the 
 	/// first character A and the last character Z, and apply the following rules 

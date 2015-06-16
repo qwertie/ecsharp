@@ -85,7 +85,7 @@
     <DefineConstants>TRACE;DotNet3</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET3\Loyc.Syntax.xml</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>..\Bin\Release.NET3\Loyc.Syntax.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -114,7 +114,7 @@
     <DefineConstants>TRACE;LOYC</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Syntax.xml</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -141,8 +141,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Les\LesIndentTokenGenerator.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
+    <Compile Include="Lexing\IndentTokenGeneratorTests.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />

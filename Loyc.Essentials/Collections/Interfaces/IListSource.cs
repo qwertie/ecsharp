@@ -124,7 +124,7 @@ namespace Loyc.Collections
 		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
 		/// <param name="defaultValue">A value to return if the index is not valid.</param>
 		/// <returns>The retrieved value, or defaultValue if the index provided was not valid.</returns>
-		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue = default(T))
+		public static T TryGet<T>(this IListSource<T> list, int index, T defaultValue)
 		{
 			bool fail;
 			T result = list.TryGet(index, out fail);
@@ -132,6 +132,18 @@ namespace Loyc.Collections
 				return defaultValue;
 			else
 				return result;
+		}
+
+		/// <summary>Tries to get a value from the list at the specified index.</summary>
+		/// <param name="index">The index to access. Valid indexes are between 0 and Count-1.</param>
+		/// <returns>The retrieved value wrapped in <see cref="Maybe{T}"/>, if any.</returns>
+		public static Maybe<T> TryGet<T>(this IListSource<T> list, int index)
+		{
+			bool fail;
+			T result = list.TryGet(index, out fail);
+			if (fail)
+				return Maybe<T>.NoValue;
+			return new Maybe<T>(result);
 		}
 
 		/// <summary>Uses list.TryGet(index) to find out if the specified index is valid.</summary>

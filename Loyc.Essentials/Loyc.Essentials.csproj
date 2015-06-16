@@ -98,7 +98,7 @@
     <DocumentationFile>..\Bin\Release.NET3\Loyc.Essentials.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>..\Bin\Release.NET4\Loyc.Essentials.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -127,7 +127,7 @@
     <DefineConstants>TRACE;DotNet45,CSharp4</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Essentials.xml</DocumentationFile>
     <FileAlignment>4096</FileAlignment>
-    <NoWarn>1591, 1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -265,7 +265,7 @@
     <Compile Include="Utilities\Symbol.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
-    <Compile Include="Utilities\WeakReference.cs" />
+    <Compile Include="Compatibility\WeakReference.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
     <Compile Include="void.cs" />
   </ItemGroup>

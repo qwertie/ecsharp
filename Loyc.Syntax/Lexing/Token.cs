@@ -381,11 +381,12 @@ namespace Loyc.Syntax.Lexing
 		public Token WithType(int type) { return new Token(type, StartIndex, _length, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		object ISimpleToken<int>.Value { get { return Value; } }
+		object IHasValue<object>.Value { get { return Value; } }
 		IToken<int> IToken<int>.WithValue(object value) { return WithValue(value); }
 		public Token WithValue(object value) { return new Token(TypeInt, StartIndex, _length, value); }
 
 		public Token WithRange(int startIndex, int endIndex) { return new Token(TypeInt, startIndex, endIndex - startIndex, Value); }
+		public Token WithStartIndex(int startIndex)          { return new Token(TypeInt, startIndex, _length, Value); }
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken<int>> IToken<int>.Children
@@ -404,11 +405,11 @@ namespace Loyc.Syntax.Lexing
 
 		public static bool IsOpener(TokenKind tt)
 		{
-			return tt >= TokenKind.LParen && ((int)tt & 0x0100) == 0 && tt <= TokenKind.LOther;
+			return IsOpenerOrCloser(tt) && ((int)tt & 0x0100) == 0;
 		}
 		public static bool IsCloser(TokenKind tt)
 		{
-			return tt >= TokenKind.RParen && ((int)tt & 0x0100) != 0 && tt <= TokenKind.ROther;
+			return IsOpenerOrCloser(tt) && ((int)tt & 0x0100) != 0;
 		}
 		public static bool IsOpenerOrCloser(TokenKind tt)
 		{
@@ -453,7 +454,7 @@ namespace Loyc.Syntax.Lexing
 			Symbol id;
 			if (kind != TokenKind.Id) {
 				int k = (int)kind >> TokenKindShift;
-				kSym = _kindAttrTable.TryGet(k);
+				kSym = _kindAttrTable.TryGet(k, null);
 			}
 
 			var r = new SourceRange(file, StartIndex, Length);
@@ -540,18 +541,20 @@ namespace Loyc.Syntax.Lexing
 	/// a token <see cref="Type"/>, which is the type of a "word" in the program 
 	/// (string, identifier, plus sign, etc.), a value (e.g. the name of an 
 	/// identifier), and an index where the token starts in the source file.</summary>
-	public interface ISimpleToken<TokenType>
+	public interface ISimpleToken<TokenType> : IHasValue<object>
 	{
 		/// <summary>The category of the token (integer, keyword, etc.) used as
 		/// the primary value for identifying the token in a parser.</summary>
 		TokenType Type { get; }
 		/// <summary>Character index where the token starts in the source file.</summary>
 		int StartIndex { get; }
+		#if false // inherited
 		/// <summary>Value of the token. The meaning of this property is defined
 		/// by the particular implementation of this interface, but typically this 
 		/// property contains a parsed form of the token (e.g. if the token came 
 		/// from the text "3.14", its value might be <c>(double)3.14</c>.</summary>
 		object Value { get; }
+		#endif
 	}
 	
 	/// <summary>Alias for ISimpleToken{int}.</summary>

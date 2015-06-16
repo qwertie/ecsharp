@@ -57,6 +57,7 @@ namespace Loyc
 	/// <para/>
 	/// TODO: add Right, Normalize, EndsWith, FindLast, ReplaceAll, etc.
 	/// </remarks>
+	[DebuggerDisplay("{ToString()} (Length = {Count})")]
 	public struct UString : IListSource<char>, ICharSource, IBRange<uchar>, ICloneable<UString>, IEquatable<UString>
 	{
 		public static readonly UString Null = default(UString);
@@ -105,7 +106,7 @@ namespace Loyc
 			_str = str;
 			_start = start;
 			_count = count;
-			Debug.Assert(start >= 0 && count >= 0 && start + count <= _str.Length);
+			Debug.Assert(start >= 0 && count >= 0 && start + count <= (_str == null ? 0 : _str.Length));
 		}
 		/// <summary>Returns the original string.</summary>
 		/// <remarks>Ideally, keep the string private, there would be no way to 
@@ -299,14 +300,11 @@ namespace Loyc
 		{
 			return (obj is UString) && Equals((UString)obj);
 		}
-		public bool Equals(UString other)
+		public bool Equals(UString other) { return Equals(other, false); }
+		public bool Equals(UString other, bool ignoreCase)
 		{
 			if (other._count != _count) return false;
-			for (int i = _start, j = other._start, e = i + _count; i < e; i++, j++) {
-				if (_str[i] != other._str[j])
-					return false;
-			}
-			return true;
+			return SubstringEqualHelper(_str, _start, other, ignoreCase);
 		}
 		public override string ToString()
 		{
@@ -328,7 +326,7 @@ namespace Loyc
 				throw new ArgumentException("The start index was below zero.");
 			if (count < 0)
 				count = 0;
-			Debug.Assert(_start <= _str.Length);
+			Debug.Assert(_start <= (_str != null ? _str.Length : 0));
 			if (start > _count)
 				start = _count;
 			if (count > _count - start)

@@ -34,4 +34,10 @@ namespace Loyc
 	/// comparison. <see cref="Symbol"/> implements this interface.
 	/// </remarks>
 	public interface IReferenceComparable { }
+
+	/// <summary>Interface for things that have a Value property.</summary>
+	public interface IHasValue<T>
+	{
+		T Value { get; }
+	}
 }

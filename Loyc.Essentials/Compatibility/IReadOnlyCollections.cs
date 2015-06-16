@@ -5,7 +5,7 @@ using System.Text;
 
 namespace System.Collections.Generic
 {
-	#if DotNet4
+	#if DotNet4 && !DotNet45
 
 	/// <summary>Read-only interface defined in .NET 4.5 (just IEnumerable and Count).</summary>
 	#if DotNet2 || DotNet3
