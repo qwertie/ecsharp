@@ -9,21 +9,10 @@ namespace Loyc.Syntax.Les
 {
 	/// <summary>Indent postprocessor for Loyc Expression Syntax</summary>
 	/// <remarks>
-	/// Although I refer to LES's "Python mode", its rules are substantially 
-	/// different from Python. For one thing, I want the parser to be able to parse
-	/// input such as 
-	/// <code>
-	/// if foo: if bar: print(foo + bar);
-	///     print(foo only);
-	/// </code>
-	/// as equivalent to
-	/// <code>
-	/// if foo { if bar { print(foo + bar);
-	///     print(foo only); }; };
-	/// </code>
-	/// Also, I want LES with Python mode to be able to parse <i>most</i> of the 
-	/// code that was designed for LES without Python mode. For example, in LES 
-	/// (without indentation processing) you could write a statement like
+	/// LES's "Python mode" is comparable to Python's rules, but I want LES with 
+	/// Python mode to be able to parse <i>most</i> of the code that was designed 
+	/// for LES without Python mode. For example, in LES (without indentation 
+	/// processing) you could write a statement like
 	/// <code>
 	/// if foo "foo "
 	///     + "detected " +
@@ -34,12 +23,7 @@ namespace Loyc.Syntax.Les
 	/// will allow unexpected indentation and treat it as a way of continuing 
 	/// the previous statement.
 	/// <para/>
-	/// Also, I'd like to avoid modifying the LES parser to support Python mode--
-	/// this postprocessor will strip out colons and insert semicolons in the right
-	/// places so that the output looks like the original LES without Python mode.
-	/// <para/>
-	/// For dedents, <see cref="MakeDedentToken"/> is overridden, so that code
-	/// like
+	/// Code like
 	/// <code>
 	///   if condition:
 	///      then();
@@ -47,58 +31,128 @@ namespace Loyc.Syntax.Les
 	///      then();
 	///   :else:
 	///      otherwise();
+	///   foo
+	///   : bar;
 	/// </code>
-	/// is translated to
+	/// is translated to this (where [ and ] represent Indent and Dedent):
 	/// <code>
-	///   if condition {
+	///   if condition: [
 	///      then(); };
-	///   if condition {
+	///   ] ;
+	///   if condition: [
 	///      then();
-	///   } else {
-	///      otherwise(); };
+	///   ] else [
+	///      otherwise(); 
+	///   ] ;
+	///   foo bar;
 	/// </code>
-	/// Notice that the colons are suppressed, including the one before <c>else</c> 
-	/// (which is suppressed and then <i>not</i> treated as an indent trigger.)
+	/// Notice that dedents are normally followed by semicolons, and that colons 
+	/// are suppressed if they appear at the beginning of a line AND block the 
+	/// generation of a semicolon. A colon is not suppressed if it does not have
+	/// this effect; forexample
+	/// <code>
+	/// :
+	///     hi();
+	///     : Foo;
+	/// </code>
+	/// means
+	/// <code>
+	/// {
+	///     hi();
+	///     `:` Foo;
+	/// };
+	/// </code>
+	/// <para/>
+	/// Note: originally I allowed code such as
+	/// <code>
+	/// if foo: if bar: print(foo + bar);
+	///     print(foo only);
+	/// </code>
+	/// as equivalent to
+	/// <code>
+	/// if foo { if bar { print(foo + bar);
+	///     print(foo only); }; };
+	/// </code>
+	/// But I decided it would be better to treat code such as
+	/// <code>
+	/// x = a:b;
+	/// </code>
+	/// as a simple statement instead. This means, however, that
+	/// <code>
+	/// if Foo: x = 5;
+	/// </code>
+	/// does not have the meaning you would expect! You must use braces for this:
+	/// <code>
+	/// if Foo { x = 5; };
+	/// </code>
 	/// </remarks>
-	public class LesIndentTokenGenerator : IndentTokenGenerator
+	class LesIndentTokenGenerator : IndentTokenGenerator<Token>
 	{
-		readonly static int[] IndentTrigger  = new int[] { (int)TokenType.Colon };
+		public LesIndentTokenGenerator(ILexer<Token> lexer) : base(lexer) { }
 
-		public LesIndentTokenGenerator(ILexer<Token> lexer) 
-			: base(lexer, IndentTrigger, 
-			       new Token((int)TokenType.Semicolon, 0, 0, CodeSymbols.Semicolon),
-			       new Token((int)TokenType.LBrace, 0, 0, null),
-			       new Token((int)TokenType.RBrace, 0, 0, null)) { }
+		public override TokenCategory GetTokenCategory(Token token)
+		{
+			TokenType t = token.Type();
+			if (Token.IsOpenerOrCloser((TokenKind)t))
+				return Token.IsOpener((TokenKind)t) ? TokenCategory.OpenBracket : TokenCategory.CloseBracket;
+			if (t == TokenType.Colon)
+				return TokenCategory.IndentTrigger;
+			if (token.Value == WhitespaceTag.Value)
+				return TokenCategory.Whitespace;
+			return TokenCategory.Other;
+		}
 
+		protected override Maybe<Token> MakeIndentToken(Token indentTrigger, ref Maybe<Token> tokenAfterward, bool newlineAfter)
+		{
+			if (newlineAfter)
+				return new Token((int)TokenType.Indent, indentTrigger.EndIndex, 0, null);
+			else
+				return Maybe<Token>.NoValue;
+		}
 		protected override IEnumerator<Token> MakeDedentToken(Token tokenBeforeDedent, ref Maybe<Token> tokenAfterDedent)
 		{
-			if (!EolToken.HasValue)
-				return base.MakeDedentToken(tokenBeforeDedent, ref tokenAfterDedent);
 			var next = tokenAfterDedent.Or(default(Token));
-			if ((TokenType)next.TypeInt == TokenType.Colon) {
-				tokenAfterDedent = new Token(DedentToken.TypeInt, next.StartIndex, next.Length, next.Style, null);
-				return EmptyEnumerator<Token>.Value;
+			if (next.Type() == TokenType.Colon) {
+				// Note: we shouldn't delete the colon by setting tokenAfterDedent=NoValue. Consider:
+				//   line1:
+				//     line2:
+				//       line3()
+				//   :line4
+				// Here, two dedents are generated. If the first dedent deletes 
+				// the colon, the second one will not see the colon and will not
+				// be aware that it should suppress a semicolon.
+				return Range.Single(new Token((int)TokenType.Dedent, next.StartIndex, 0, 0, null)).GetEnumerator();
 			} else {
 				return ((IEnumerable<Token>)new Token[] { 
-					DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex),
-					EolToken.Value.WithStartIndex(tokenBeforeDedent.EndIndex), 
+					new Token((int)TokenType.Dedent,    next.StartIndex, 0, 0, null),
+					new Token((int)TokenType.Semicolon, next.StartIndex, 0, 0, CodeSymbols.Semicolon),
 				}).GetEnumerator();
 			}
 		}
+
 		protected override bool IndentChangedUnexpectedly(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, ref int deltaIndent)
 		{
-			return false;
-		}
-		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int deltaIndent)
-		{
-			if (!EolToken.HasValue)
-				return Maybe<Token>.NoValue;
-			if (tokenBeforeNewline.TypeInt == EolToken.Value.TypeInt || tokenAfterNewline.Or(default(Token)).TypeInt == (int)TokenType.Colon)
-				return Maybe<Token>.NoValue;
-			else {
-				ErrorSink.Write(Severity.Warning, tokenBeforeNewline, "Expected ';' here. Proceeding as if the semicolon were present.");
-				return EolToken.Value.WithStartIndex(tokenBeforeNewline.EndIndex);
+			if (deltaIndent > 0) { // indent means "continue current statement on next line"
+				deltaIndent = 0;   // avoid changing official indentation level
+				return false;      // avoid generating a semicolon
 			}
+			base.IndentChangedUnexpectedly(tokenBeforeNewline, ref tokenAfterNewline, ref deltaIndent);
+			return true;
+		}
+		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
+		{
+			if (tokenBeforeNewline.Type() != TokenType.Semicolon &&
+				deltaIndent <= 0 && tokenAfterNewline.HasValue)
+			{
+				if (tokenAfterNewline.Value.Type() == TokenType.Colon)
+					tokenAfterNewline = Maybe<Token>.NoValue;
+				else {
+					ErrorSink.Write(Severity.Warning, Lexer.IndexToLine(tokenBeforeNewline.EndIndex),
+						"Possibly missing semicolon. Proceeding as if the ';' were present.");
+					return new Token((int)TokenType.Semicolon, tokenBeforeNewline.EndIndex, 0, CodeSymbols.Semicolon);
+				}
+			}
+			return Maybe<Token>.NoValue;
 		}
 	}
 }

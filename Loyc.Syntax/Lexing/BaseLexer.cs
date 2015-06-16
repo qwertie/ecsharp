@@ -660,7 +660,7 @@ namespace Loyc.Syntax.Lexing
 
 		public SourcePos IndexToLine(int index)
 		{
-			if (SourceFile != null)
+			if (SourceFile == null)
 				return new SourcePos(_fileName, LineNumber, index - _lineStartAt + 1);
 			else
 				return SourceFile.IndexToLine(index);

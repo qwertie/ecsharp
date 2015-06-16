@@ -29,10 +29,10 @@ namespace Loyc.Syntax.Les
 		{
 			get { return LesNodePrinter.Printer; }
 		}
-		public string Print(LNode node, IMessageSink msgs, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var sb = new StringBuilder();
-			Printer(node, sb, msgs, mode, indentString, lineSeparator);
+			Printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
 			return sb.ToString();
 		}
 		public bool HasTokenizer
@@ -41,7 +41,8 @@ namespace Loyc.Syntax.Les
 		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			return new LesLexer(text, fileName, msgs);
+			var lexer = new LesLexer(text, fileName, msgs);
+			return new LesIndentTokenGenerator(lexer);
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
 		{
