@@ -278,21 +278,21 @@
 
 		#region IDeque<T>
 
-		public T TryPopFirst(out bool isEmpty)
+		public Maybe<T> TryPopFirst()
 		{
-			return _dlist.TryPopFirst(out isEmpty);
+			return _dlist.TryPopFirst();
 		}
-		public T TryPeekFirst(out bool isEmpty)
+		public Maybe<T> TryPeekFirst()
 		{
-			return _dlist.TryPeekFirst(out isEmpty);
+			return _dlist.TryPeekFirst();
 		}
-		public T TryPopLast(out bool isEmpty)
+		public Maybe<T> TryPopLast()
 		{
-			return _dlist.TryPopLast(out isEmpty);
+			return _dlist.TryPopLast();
 		}
-		public T TryPeekLast(out bool isEmpty)
+		public Maybe<T> TryPeekLast()
 		{
-			return _dlist.TryPeekLast(out isEmpty);
+			return _dlist.TryPeekLast();
 		}
 
 		public T First

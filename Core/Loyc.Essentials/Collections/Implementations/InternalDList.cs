@@ -821,30 +821,32 @@ namespace Loyc.Collections.Impl
 
 		#region IDeque<T>
 
-		public T TryPopFirst(out bool isEmpty)
+		public Maybe<T> TryPopFirst()
 		{
-			T value = TryPeekFirst(out isEmpty);
-			if (!isEmpty)
-				PopFirst(1);
+			if (_count == 0)
+				return Maybe<T>.NoValue;
+			var value = First;
+			PopFirst(1);
 			return value;
 		}
-		public T TryPeekFirst(out bool isEmpty)
+		public Maybe<T> TryPeekFirst()
 		{
-			if (isEmpty = (_count == 0))
-				return default(T);
+			if (_count == 0)
+				return Maybe<T>.NoValue;
 			return First;
 		}
-		public T TryPopLast(out bool isEmpty)
+		public Maybe<T> TryPopLast()
 		{
-			T value = TryPeekLast(out isEmpty);
-			if (!isEmpty)
-				PopLast(1);
+			if (_count == 0)
+				return Maybe<T>.NoValue;
+			var value = Last;
+			PopLast(1);
 			return value;
 		}
-		public T TryPeekLast(out bool isEmpty)
+		public Maybe<T> TryPeekLast()
 		{
-			if ((isEmpty = (_count == 0)))
-				return default(T);
+			if (_count == 0)
+				return Maybe<T>.NoValue;
 			return Last;
 		}
 

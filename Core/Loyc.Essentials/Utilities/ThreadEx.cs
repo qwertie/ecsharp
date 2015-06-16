@@ -649,7 +649,7 @@ namespace Loyc.Threading
 	/// ScratchBuffer, but FWIW [ThreadStatic] is not available on the .NET
 	/// Compact Framework.
 	/// </remarks>
-	public struct ScratchBuffer<T> where T : class
+	public struct ScratchBuffer<T> : IHasValue<T> where T : class
 	{
 		volatile int _threadID;
 		volatile T _buffer;

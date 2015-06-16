@@ -26,13 +26,6 @@ namespace Loyc.Collections.Tests
 		public void TestPushPeekFirst()
 		{
 			ListT list = _newDeque();
-			bool isEmpty;
-			int value;
-			// Try the extension methods too
-			Assert.That(list.TryPeekFirst(out isEmpty) == 0 && isEmpty);
-			Assert.That(!list.TryPeekFirst(out value) && value == 0);
-			Assert.AreEqual(-5, list.TryPeekFirst(-5));
-			Assert.AreEqual(0, list.TryPeekFirst());
 
 			for (int i = 1; i <= Iterations; i++)
 			{
@@ -40,10 +33,9 @@ namespace Loyc.Collections.Tests
 
 				Assert.AreEqual(i, list.Count);
 				Assert.AreEqual(i, list.First);
-				Assert.AreEqual(i, list.TryPeekFirst());
-				Assert.AreEqual(i, list.TryPeekFirst(-5));
-				Assert.That(list.TryPeekFirst(out isEmpty) == i && !isEmpty);
-				Assert.That(list.TryPeekFirst(out value) && value == i);
+				Assert.AreEqual(i, list.PeekFirst());
+				Assert.AreEqual(i, list.TryPeekFirst().Value);
+				Assert.AreEqual(i, list.TryPeekFirst().Or(-5));
 			}
 		}
 
@@ -51,13 +43,9 @@ namespace Loyc.Collections.Tests
 		public void TestPushPeekLast()
 		{
 			ListT list = _newDeque();
-			bool isEmpty;
-			int value;
 			// Try the extension methods too
-			Assert.That(list.TryPeekLast(out isEmpty) == 0 && isEmpty);
-			Assert.That(!list.TryPeekLast(out value) && value == 0);
-			Assert.AreEqual(-5, list.TryPeekLast(-5));
-			Assert.AreEqual(0, list.TryPeekLast());
+			Assert.IsFalse(list.TryPeekLast().HasValue);
+			Assert.AreEqual(-5, list.TryPeekLast().Or(-5));
 
 			for (int i = 1; i <= Iterations; i++)
 			{
@@ -65,10 +53,8 @@ namespace Loyc.Collections.Tests
 
 				Assert.AreEqual(i, list.Count);
 				Assert.AreEqual(i, list.Last);
-				Assert.AreEqual(i, list.TryPeekLast());
-				Assert.AreEqual(i, list.TryPeekLast(-5));
-				Assert.That(list.TryPeekLast(out isEmpty) == i && !isEmpty);
-				Assert.That(list.TryPeekLast(out value) && value == i);
+				Assert.That(list.TryPeekLast().HasValue);
+				Assert.AreEqual(i, list.TryPeekLast().Value);
 			}
 		}
 
@@ -76,28 +62,14 @@ namespace Loyc.Collections.Tests
 		public void TestPushPopLast()
 		{
 			ListT list = _newDeque();
-			bool isEmpty;
-			int value;
 			// Try the extension methods too
-			Assert.That(list.TryPopLast(out isEmpty) == 0 && isEmpty);
-			Assert.That(!list.TryPopLast(out value) && value == 0);
-			Assert.AreEqual(-5, list.TryPopLast(-5));
-			Assert.AreEqual(0, list.TryPopLast());
+			Assert.IsFalse(list.TryPopLast().HasValue);
 
 			for (int i = 1; i <= Iterations; i++)
 			{
 				list.PushLast(i);
-
 				if ((i & 1) != 0)
-				{
-					Assert.AreEqual(i, list.TryPopLast());
-					list.PushLast(i);
-					Assert.AreEqual(i, list.TryPopLast(-5));
-					list.PushLast(i);
-					Assert.That(list.TryPopLast(out isEmpty) == i && !isEmpty);
-					list.PushLast(i);
-					Assert.That(list.TryPopLast(out value) && value == i);
-				}
+					Assert.AreEqual(i, list.TryPopLast().Value);
 				Assert.AreEqual(i >> 1, list.Count);
 			}
 			while (list.Count > 0)
@@ -108,28 +80,14 @@ namespace Loyc.Collections.Tests
 		public void TestPushPopFirst()
 		{
 			ListT list = _newDeque();
-			bool isEmpty;
-			int value;
 			// Try the extension methods too
-			Assert.That(list.TryPopFirst(out isEmpty) == 0 && isEmpty);
-			Assert.That(!list.TryPopFirst(out value) && value == 0);
-			Assert.AreEqual(-5, list.TryPopFirst(-5));
-			Assert.AreEqual(0, list.TryPopFirst());
+			Assert.IsFalse(list.TryPopFirst().HasValue);
 
 			for (int i = 1; i <= Iterations; i++)
 			{
 				list.PushFirst(i);
-
 				if ((i & 1) != 0)
-				{
-					Assert.AreEqual(i, list.TryPopFirst());
-					list.PushFirst(i);
-					Assert.AreEqual(i, list.TryPopFirst(-5));
-					list.PushFirst(i);
-					Assert.That(list.TryPopFirst(out isEmpty) == i && !isEmpty);
-					list.PushFirst(i);
-					Assert.That(list.TryPopFirst(out value) && value == i);
-				}
+					Assert.AreEqual(i, list.TryPopFirst().Or(-5));
 				Assert.AreEqual(i >> 1, list.Count);
 			}
 			while (list.Count > 0)

@@ -62,7 +62,7 @@
     <DefineConstants>TRACE;DotNet3</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET3\Loyc.Collections.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>..\Bin\Release\Loyc.Collections.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -89,7 +89,7 @@
     <DefineConstants>TRACE;DotNet4</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Collections.XML</DocumentationFile>
     <Optimize>true</Optimize>
-    <NoWarn>1591,1573</NoWarn>
+    <NoWarn>1591, 1573, 0419</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -17,6 +18,7 @@ namespace Loyc
 		public static Maybe<T> AsMaybe<T>(this T val) where T : class
 			{ return val != null ? val : Maybe<T>.NoValue; }
 	}
+
 	/// <summary>Same as <see cref="Nullable{T}"/> except that it behaves like a
 	/// normal type, i.e. (1) T is allowed to be a reference type and (2) you can
 	/// nest them, as in <c>Maybe{Maybe{int}}</c>.</summary>
@@ -28,8 +30,11 @@ namespace Loyc
 	/// Since C# doesn't allow us to define conversions to/from <c>T?</c>, these
 	/// conversions can be accomplished with the extension methods <see cref="Maybe.AsNullable"/>
 	/// and <see cref="Maybe.AsMaybe"/>.
+	/// <para/>
+	/// The <see cref="Or"/> method replicates the C# <c>??</c> operator.
 	/// </remarks>
-	public struct Maybe<T>
+	[DebuggerDisplay("{HasValue ? (object)Value : Loyc.NoValue.Value}")]
+	public struct Maybe<T> : IHasValue<T>
 	{
 		public static Maybe<T> NoValue { get { return new Maybe<T>(); } }
 		public Maybe(T value) { _value = value; _hasValue = true; }
@@ -53,5 +58,9 @@ namespace Loyc
 		/// <remarks>This is equivalent to the <c>??</c> operator of <c>T?</c>.</remarks>
 		public T Or(T defaultValue) 
 			{ return _hasValue ? _value : defaultValue; }
+		
+		public void Then(Action<T> then) { if (_hasValue) then(_value); }
+		public R Then<R>(Func<T, R> then, Func<R> @else)  { return _hasValue ? then(_value) : @else(); }
+		public R Then<R>(Func<T, R> then, R defaultValue) { return _hasValue ? then(_value) : defaultValue; }
 	}
 }

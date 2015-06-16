@@ -51,7 +51,7 @@ namespace Loyc.Syntax.Les
 
 		private void DoPrinterTest(LNode node, StringBuilder sb)
 		{
-			sb.Clear();
+			sb.Length = 0;
 			_messages.List.Clear();
 			var p = LesNodePrinter.New(sb, "\t", "\n", _messages);
 			p.Print(node);

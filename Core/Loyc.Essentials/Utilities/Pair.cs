@@ -38,7 +38,7 @@ namespace Loyc
 	/// </remarks>
 	[Serializable]
 	[DebuggerDisplay("A = {A}, B = {B}")]
-	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>
+	public struct Pair<T1, T2> : IComparable, IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>>, IHasValue<T2>
 	{
 		public Pair(T1 a, T2 b) { A = a; B = b; }
 		public T1 A;
@@ -159,7 +159,7 @@ namespace Loyc
 	/// box a structure in C#, you lose access to the members of that structure.
 	/// This class, in contrast, provides access to the "boxed" value.
 	/// </remarks>
-	public class Holder<T> : WrapperBase<T>
+	public class Holder<T> : WrapperBase<T>, IHasValue<T>
 	{
 		public Holder(T value) : base(value) { }
 		public Holder() : base(default(T)) { }
