@@ -7,7 +7,7 @@ exclude: [Src, Lib, Visual Studio Integration]
 # Jekyll settings
 markdown: redcarpet
 encoding: UTF-8
-highlighter: rouge                    # `rouge` now causes "Page build failure" on GitHub
+highlighter: pygments                    # `rouge` now causes "Page build failure" on GitHub
 paginate: 8
 paginate_path: "blog/page:num"
 permalink: /:categories/:year/:title.html
