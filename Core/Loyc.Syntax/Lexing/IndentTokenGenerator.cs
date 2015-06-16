@@ -18,31 +18,28 @@ namespace Loyc.Syntax.Lexing
 	/// <remarks>This class will not work correctly if the lexer does not implement 
 	/// <see cref="ILexer{T}.IndentLevel"/> properly.
 	/// <para/>
-	/// This class is abstract because it doesn't know how to create new tokens.
-	/// The derived class must implement <see cref="MakeEndOfLineToken"/>,
-	/// <see cref="MakeIndentToken"/> and <see cref="MakeDedentToken"/>. 
-	/// <see cref="IndentTokenGenerator"/> is non-abstract version of this class 
-	/// that creates <see cref="Loyc.Syntax.Lexing.Token"/> structures.
+	/// This class is abstract because it doesn't know how to classify or create 
+	/// tokens. The derived class must implement <see cref="GetTokenCategory"/>,
+	/// <see cref="MakeEndOfLineToken"/>, <see cref="MakeIndentToken"/> and 
+	/// <see cref="MakeDedentToken"/>. <see cref="IndentTokenGenerator"/> is a 
+	/// non-abstract version of this class based on <see cref="Loyc.Syntax.Lexing.Token"/> 
+	/// structures, with several properties that can be customized.
 	/// <para/>
 	/// Creation of indent, dedent, and end-of-line tokens can be suppressed inside 
-	/// brackets, i.e. () [] {}. To accomplish this, set the <see cref="OpenBrackets"/> 
-	/// and <see cref="CloseBrackets"/> properties.
+	/// brackets, i.e. () [] {}. This is accomplished by recognizing brackets inside
+	/// your implementation of <see cref="GetTokenCategory"/>.
 	/// <para/>
 	/// <see cref="TokensToTree"/> can be placed in the pipeline before or after 
 	/// this class; if it is placed afterward, anything between Indent and Dedent
 	/// tokens will be made a child of the Indent token.
 	/// <para/>
-	/// In addition to the normal indent triggers, which are recognized anywhere in
-	/// the token stream, you can set the <see cref="EolIndentTriggers"/> to a list
-	/// of triggers that only take work at the end of a line.
+	/// Note: whitespace tokens (<see cref="TokenCategory.Whitespace"/>) are passed 
+	/// through and otherwise unprocessed.
 	/// <para/>
-	/// Note: whitespace tokens (those that have Value = <see cref="WhitespaceTag.Value"/>) 
-	/// are passed through and otherwise unprocessed.
-	/// <para/>
-	/// Note: EOL tokens are not generated for empty lines, and are not generated 
-	/// after a generated indent token, although they could be generated after a 
-	/// pre-existing indent token that was already in the token stream, assuming
-	/// said token is not in the list of <see cref="OpenBrackets"/>.
+	/// Note: EOL tokens are not generated for empty or comment lines, and are not 
+	/// generated after a generated indent token, although they could be generated 
+	/// after a pre-existing indent token that was already in the token stream, 
+	/// unless that token is categorized as <see cref="TokenCategory.OpenBracket"/>.
 	/// <para/>
 	/// Partial dedents and unexpected indents, as in
 	/// <code>
@@ -53,8 +50,8 @@ namespace Loyc.Syntax.Lexing
 	///       print("Goodbye")
 	///         print("Goodbye again")
 	/// </code>
-	/// will cause an error message to be written to the <see cref="ErrorSink"/> of
-	/// the original lexer.
+	/// will cause an error message to be written to the <see cref="ILexer{Tok}.ErrorSink"/> 
+	/// of the original lexer.
 	/// <para/>
 	/// Please see <see cref="IndentTokenGenerator"/> for additional remarks and examples.
 	/// </remarks>
@@ -94,8 +91,8 @@ namespace Loyc.Syntax.Lexing
 		/// <c>indentTrigger</c> is on a different line, or if EOF comes afterward.</param>
 		protected abstract Maybe<Token> MakeIndentToken(Token indentTrigger, ref Maybe<Token> tokenAfterward, bool newlineAfter);
 		/// <summary>Returns token(s) to represent un-indentation.</summary>
-		/// <param name="tokenBeforeDedent">The last non-whitespace token before dedent</param>
-		/// <param name="tokenAfterDedent">The first non-whitespace un-indented 
+		/// <param name="tokenBeforeNewline">The last non-whitespace token before dedent</param>
+		/// <param name="tokenAfterNewline">The first non-whitespace un-indented 
 		/// token after the unindent, or NoValue at the end of the file. The 
 		/// derived class is allowed to change this token, or delete it by 
 		/// changing it to NoValue (<see cref="LesIndentTokenGenerator"/> does this).</param>

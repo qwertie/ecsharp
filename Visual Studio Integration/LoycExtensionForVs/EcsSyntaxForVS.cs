@@ -51,7 +51,7 @@ namespace Loyc.VisualStudio
 
 		#region SyntaxClassifierForVS overrides (lexical analysis)
 
-		protected override ILexer PrepareLexer(ILexer lexer, ICharSource file, int position)
+		protected override ILexer<Token> PrepareLexer(ILexer<Token> lexer, ICharSource file, int position)
 		{
 			if (lexer == null)
 				return new EcsLexer(file, "?", MessageSink.Trace, position);

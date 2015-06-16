@@ -10,7 +10,7 @@ using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections.Impl;
 using Loyc.Geometry;
-using Tests.Resources;
+using Benchmark.Resources;
 using PointD = Loyc.Geometry.Point<double>;
 
 namespace Benchmark

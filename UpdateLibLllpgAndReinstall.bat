@@ -11,9 +11,9 @@ copy "Visual Studio Integration\LoycFileGeneratorForVs\bin\Debug\LoycFileGenerat
 @IF ERRORLEVEL 1 GOTO ERROR
 "Lib\LLLPG\LoycFileGeneratorForVs.exe"
 @IF ERRORLEVEL 1 GOTO ERROR
-copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsix" "Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs2010.vsix"
+copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsix" "Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs.vsix"
 @IF ERRORLEVEL 1 GOTO ERROR
-"Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs2010.vsix"
+"Visual Studio Integration\LoycExtensionForVs\LoycSyntaxForVs.vsix"
 pause
 GOTO STOP
 :ERROR

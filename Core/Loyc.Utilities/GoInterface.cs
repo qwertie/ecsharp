@@ -1,5 +1,8 @@
 ﻿//
 // GoInterface library v1.01: Copyright 2010, David Piepgrass
+// 
+// A library for "dynamic interfaces" in any .NET language:
+// http://www.codeproject.com/Articles/87991/Dynamic-interfaces-in-any-NET-language
 //
 // GoInterface is self-contained: it does not depend on other Loyc classes.
 //

@@ -266,6 +266,10 @@
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.csproj">
+      <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
+      <Name>LoycCore.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ecs\Ecs.csproj">
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
       <Name>Ecs</Name>

@@ -6,7 +6,8 @@ Commercial uses of Loyc are welcome, and, as the license explains (in
 a rather muddy way), you do not have to release any source code of 
 any products that merely use and depend on Loyc code. However, 
 changes to Loyc DLLs themselves require you to provide source code 
-of the changes to your users.
+of the changes to your users. Of course, the easiest way to do that
+is to fork on GitHub and, optionally, send me pull requests.
 
 
                   GNU LESSER GENERAL PUBLIC LICENSE

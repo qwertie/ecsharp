@@ -44,7 +44,7 @@ namespace Loyc.Syntax.Les
 		//now we use LexerSourceFile instead
 		//protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
 
-		protected override void Reset(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		public override void Reset(ICharSource source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
 			base.Reset(source, fileName, inputPosition, newSourceFile);
 			InputPosition += IndentString.Length; // skip initial indent, if any

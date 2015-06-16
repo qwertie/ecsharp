@@ -153,14 +153,12 @@
       <DependentUpon>BoundingBoxMathTT.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry\LineMath.cs" />
-    <Compile Include="Geometry\LineMathTests.cs" />
     <Compile Include="Geometry\LineMathTT.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LineMathTT.tt</DependentUpon>
     </Compile>
     <Compile Include="Geometry\PointMath.cs" />
-    <Compile Include="Geometry\PointMathTests.cs" />
     <Compile Include="Geometry\PointMathTT.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -172,11 +170,7 @@
       <DependentUpon>PolygonMathTT.tt</DependentUpon>
     </Compile>
     <Compile Include="GoInterface.cs" />
-    <Compile Include="GoInterfaceTests.cs" />
     <Compile Include="IntSet.cs" />
-    <Compile Include="IntSetTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Math\PointExt.cs" />
     <Compile Include="SimpleTimer.cs" />
     <Compile Include="Statistic.cs" />

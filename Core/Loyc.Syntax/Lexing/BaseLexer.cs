@@ -99,7 +99,7 @@ namespace Loyc.Syntax.Lexing
 		/// This method can be used to avoid memory allocations when you
 		/// need to parse many small strings in a row. If that's your goal, you 
 		/// should set the <c>newSourceFile</c> parameter to false if possible.</remarks>
-		protected virtual void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		public virtual void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
 			CheckParam.IsNotNull("source", source);
 			_source = source;

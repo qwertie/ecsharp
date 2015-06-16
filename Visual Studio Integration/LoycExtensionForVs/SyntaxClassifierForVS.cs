@@ -75,7 +75,7 @@ namespace Loyc.VisualStudio
 
 		protected SparseAList<EditorToken> _tokens = new SparseAList<EditorToken>();
 		protected SparseAList<EditorToken> _nestedTokens = new SparseAList<EditorToken>();
-		ILexer _lexer;
+		ILexer<Token> _lexer;
 		protected int _lookahead = 3;
 		protected IMessageSink _lexerMessageSink;
 		LexerMessage _lexerError; // assigned when _lexerMessageSink receives an error
@@ -112,7 +112,7 @@ namespace Loyc.VisualStudio
 			return _tokens.Clone();
 		}
 
-		protected abstract ILexer PrepareLexer(ILexer oldLexer, ICharSource file, int position);
+		protected abstract ILexer<Token> PrepareLexer(ILexer<Token> oldLexer, ICharSource file, int position);
 
 		protected internal void EnsureLexed(ITextSnapshot snapshot, int stopAt)
 		{
@@ -133,7 +133,7 @@ namespace Loyc.VisualStudio
 				int startAt = _lexer.InputPosition;
 				_tokens.ClearSpace(startAt, stopAt - startAt);
 				_nestedTokens.ClearSpace(startAt, stopAt - startAt);
-				for (Token? t_; _lexer.InputPosition < stopAt && (t_ = _lexer.NextToken()) != null; )
+				for (Maybe<Token> t_; _lexer.InputPosition < stopAt && (t_ = _lexer.NextToken()).HasValue; )
 				{
 					Token t = t_.Value;
 					if (t.EndIndex > stopAt) {

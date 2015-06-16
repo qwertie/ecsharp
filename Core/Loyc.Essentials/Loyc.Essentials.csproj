@@ -163,7 +163,6 @@
       <DependentUpon>LinqToCollections.ecs</DependentUpon>
     </Compile>
     <Compile Include="Collections\ExtensionMethods\ListExt.cs" />
-    <Compile Include="Collections\ExtensionMethods\ListExtTests.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsSparse.cs" />
     <Compile Include="Collections\ExtensionMethods\Range.cs" />
     <Compile Include="Collections\Adapters\ArraySlice.cs" />
@@ -240,7 +239,6 @@
     </Compile>
     <Compile Include="Math\Math128.cs" />
     <Compile Include="Math\MathsT.cs" />
-    <Compile Include="Utilities\ExtensionsTests.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Math\Interfaces.cs" />
     <Compile Include="Math\MathEx.cs" />
