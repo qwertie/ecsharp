@@ -200,8 +200,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bootstrap\LesLexerGenerator.cs" />
-    <Compile Include="Bootstrap\LesParserGenerator.cs" />
     <Compile Include="CodeGenHelpers\CodeGenHelperBase.cs" />
     <Compile Include="CodeGenHelpers\GeneralCodeGenHelper.cs" />
     <Compile Include="CodeGenHelpers\IntStreamCodeGenHelper.cs" />

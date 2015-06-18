@@ -105,56 +105,6 @@ namespace Loyc.LLParserGenerator
 			RunTests.Run(new LlpgAutoValueSaverVisitorTests());
 			RunTests.Run(new LlpgTestLargerExamples());
 			RunTests.Run(new LlpgBugsAndSlugs());
-
-			Console.WriteLine("******************************");
-			Console.WriteLine("**** Generating LES lexer ****");
-			string code = new LesLexerGenerator().GenerateLexerCode().Print();
-			code = string.Format(@"using System;
-				using System.Collections.Generic;
-				using System.Linq;
-				using System.Text;
-				using Loyc;
-				using Loyc.LLParserGenerator;
-				using Loyc.Syntax;
-				using Loyc.Syntax.Lexing;
-
-				namespace Loyc.Syntax.Les
-				{{
-					using TT = TokenType;
-
-					{0}
-				}}".Replace("\t\t\t\t", ""),
-				code.Replace("\n","\r\n\t"));
-			File.WriteAllText("LesLexerGenerated.cs", code, Encoding.UTF8);
-			Console.WriteLine("**** Done.                ****");
-			Console.WriteLine("******************************");
-
-			Console.WriteLine("******************************");
-			Console.WriteLine("**** Generating LES parser ***");
-			code = new LesParserGenerator().GenerateParserCode().Print();
-			code = string.Format(@"using System;
-				using System.Collections.Generic;
-				using System.Linq;
-				using System.Text;
-				using Loyc;
-				using Loyc.LLParserGenerator;
-				using Loyc.Collections;
-				using Loyc.Syntax;
-				using Loyc.Syntax.Lexing;
-
-				namespace Loyc.Syntax.Les
-				{{
-					using TT = TokenType;
-					using S = CodeSymbols;
-					using P = LesPrecedence;
-
-					{0}
-				}}".Replace("\t\t\t\t", ""),
-				code.Replace("\n","\r\n\t"));
-			File.WriteAllText("LesParserGenerated.cs", code, Encoding.UTF8);
-			Console.WriteLine("**** Done.                ****");
-			Console.WriteLine("******************************");
-
 			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
 			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 		}
