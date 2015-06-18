@@ -1,14 +1,14 @@
 The Loyc LL(k) Parser Generator: Part 5
 =======================================
 
-Frustrated that regular expressions are unintelligible, repetitive, hard to get right and don't recurse? Want another way to write a fast parser? Try LLLPG!
+Frustrated that regular expressions are unintelligible, repetitive, hard to get right and don't recurse? Read part 5, possibly the most useful part yet!
 
 Welcome to part 5
 -----------------
 
-_New to LLLPG? Read [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)_.
+_New to LLLPG? You could start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)_.
 
-I've finally decided to finish this article series, and to give LLLPG a few new features to make it more flexible and appealing, especially as a alternative to regexes. In fact, this article is mainly about the new features!
+I've finally decided to finish this article series, and to give LLLPG a few new features to make it more flexible and appealing, especially as a alternative to regexes. Half of this article is devoted just to the new features, and the other half is devoted to advanced parsing tips.
 
 To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language. The tool accepts normal C# code interspersed with LLLPG grammars or grammar fragments, and it outputs plain C#. Advantages of LLLPG over other tools:
 
@@ -51,7 +51,7 @@ Loyc.Syntax.dll (included with LLLPG 1.3) has `LexerSource` and `LexerSource<C>`
       }
       LexerSource src;
       LLLPG (lexer(inputSource(src), inputClass(LexerSource))) {
-        public rule MyToken Token() @[ Id | Spaces | Newline ];
+        public rule Token()         @[ Id  | Spaces | Newline ];
         private rule Id             @[ IdStartChar (IdStartChar|'0'..'9'|'\'')* ];
         private rule IdStartChar    @[ 'a'..'z'|'A'..'Z'|'_' ];
         private rule Spaces         @[ (' '|'\t')+ ];
@@ -61,7 +61,7 @@ Loyc.Syntax.dll (included with LLLPG 1.3) has `LexerSource` and `LexerSource<C>`
       }
     }
 
-`LexerSource` accepts any implementation of `ICharSource`; `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. `UString` is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
+`LexerSource` accepts any implementation of `ICharSource`; `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. `UString` is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
 
 Automatic Value Saver
 ---------------------
@@ -232,8 +232,8 @@ The `SumWords` rule could be written equivalently as
 
     rule int SumWords @[ ((x+:One / x+:Two / x+:Ten) ' ')* {return x.Sum();} ];
 
-Final topics
-============
+Advanced parsing topics
+=======================
 
 With all those new features finally out of the way, let's talk about 
 
@@ -242,6 +242,7 @@ With all those new features finally out of the way, let's talk about
 - Collapsing precedence levels into a single rule
 - Parsing with token trees
 - How to parse indentation-sensitive languages, like Python
+- Shortening your code with LeMP
 
 How to avoid memory allocation in a lexer
 -----------------------------------------
@@ -339,6 +340,7 @@ You can solve the second problem by using a gate (`=>`) or zero-width predicate 
     private token IdOrKeyword @
         [ "first_keyword"  (EndId => {/* custom action for this keyword */})
         / "second_keyword" (EndId => {/* custom action for this keyword */})
+        / "third_keyword"  (EndId => {/* custom action for this keyword */})
         / Identifier // normal identifier
         ];
      
@@ -361,7 +363,7 @@ Actually there is a third problem. Due to limitations of LLLPG, if you have a la
         { return t; }
     ];
 
-The gate `Id => t:IdOrKeyword` simplifies analysis by saying "if it looks like an identifier, call `IdOrKeyword()` - ignore all the differences between all those branches inside `IdOrKeyword()`".
+The gate `Id => t:IdOrKeyword` simplifies analysis by saying "if it looks like an identifier, call `IdOrKeyword()` - ignore all the differences between the various branches inside `IdOrKeyword()`".
 
 Collapsing precedence levels into a single rule
 -----------------------------------------------
@@ -540,9 +542,11 @@ and then I use a "lexer wrapper" called [`TokensToTree`](http://loyc.net/doc/cod
                |               |
                +--- x  +  y    +---  -  1
 
+A token's children are stored in the Value property as type [TokenTree](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.loyc.net/collections/dlist.html) and returned by the [Children](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
+
 Why would you want to do this? There are a couple of reasons:
 
-1. It allows the parser to "instantly" skip past the contents of an expression in parenthesis, to see what comes afterward. Consider the C# expression `(List<T> L) => L.Count`: this is parsed in a completely different way than `(List < T > L) + L.Count`! Due to cases like this, I felt that preprocessing into an expression tree was worthwhile in my [EC# parser](https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les).
+1. It allows the parser to "instantly" skip past the contents of an expression in parenthesis, to see what comes afterward. Consider the C# expression `(List<T> L) => L.Count`: this is parsed in a completely different way than `(List < T > L) + L.Count`! To avoid the need for unlimited lookahead, I felt that preprocessing into an expression tree was worthwhile in my [EC# parser](https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les).
 2. Some have found it useful for implementing a [macro system that allows syntax extensions](http://disnetdev.com/papers/sweetjs.pdf).
 
 The preprocessing step itself is simple; you can either use the existing [`TokensToTree`](https://github.com/qwertie/Loyc/blob/master/Core/Loyc.Syntax/Lexing/TokensToTree.cs) class (if your lexer implements [ILexer](http://loyc.net/doc/code/interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html) and produces [Token](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html) structures), or copy and modify the existing code. (In hindsight I think it would have been better to make the closing bracket a child of the opening bracket, because currently LLLPG tends to give error messages about "EOF" when it's not really EOF, it's just the end of a stream of child tokens.)
@@ -552,11 +556,11 @@ So how do you use LLLPG with a token tree? Well, LLLPG doesn't directly support 
     var input = (UString)"{ w = (x + y) * z >> (-1); };";
     var errOut = new ConsoleMessageSink();
     var lexer = new LesLexer(input, "", errOut);
-    var tree = new TokensToTree(lexer, true);
+    var tree = new TokensToTree(lexer, true); // <= Convert tokens to tree!
     var parser = new LesParser(tree.Buffered(), lexer.SourceFile, errOut);
     var results = parser.ParseStmtsLazy().Buffered();
 
-Initially the `LesParser` starts at the "top level" of the token tree, and in this example, it sees just two braces. In my parser I use two helper functions to navigate into (`Down`) and out of (`Up`) the child trees:
+Initially the `LesParser` starts at the "top level" of the token tree, and in this example, it sees just two tokens, two braces. In my parser I use two helper functions to navigate into (`Down`) and out of (`Up`) the child trees:
 
     Stack<Pair<IListSource<Token>, int>> _parents = new 
      Stack<Pair<IListSource<Token>, int>>();
@@ -622,21 +626,49 @@ If you don't use brackets, Python 3 doesn't try to figure out if you "really" me
     s = "this is a pretty long string that I'd like " + 
         " to continue writing on the next line"
 
-And inside brackets, indentation is ignored:
+And inside brackets, indentation is ignored, so this is allowed:
 
     if foo:
         s = ("this is a pretty long string that I'd like "
     + " to continue writing on the next line")
         print(s)
 
-The easiest way to handle this kind of language is to insert a preprocessor step after the lexer and before the parser. Loyc.Syntax.dll includes just such a preprocessor, called `IndentTokenGenerator`
+By far the easiest way to handle this kind of language is to insert a preprocessor (postprocessor?) step, after the lexer and before the parser. Loyc.Syntax.dll includes a preprocessor for this purpose, called `IndentTokenGenerator`. Here's how to use it:
 
-Bonus features with LeMP
-------------------------
+1. Use `BaseILexer<CharSrc, Token>` as the base class of your lexer instead of `BaseLexer<CharSrc>` or `BaseLexer`. This will implement the `ILexer<Token>` interface for you, which is required by `IndentTokenGenerator`. As with `BaseLexer`, you're required to call `AfterNewline()` after reading each newline from the file (see [BaseILexer's documentation](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) for details)
+2. If you use the standard `Token` type (`Loyc.Syntax.Lexing.Token`), you can wrap your lexer in an `IndentTokenGenerator`, like this:
 
+        /// given class YourLexerClass : BaseILexer<ICharSource,Token> { ... }
+        var lexer = new YourLexerClass(input);
+        /// IndentTokenGenerator needs a list of tokens that trigger indent tokens 
+        /// to be generated, e.g. Colon in Python-like languages.
+        var triggers = new[] { (int)YourTokenType.Colon };
+        var wrapr = new IndentTokenGenerator(lexer, triggers, 
+            new Token((int)YourTokenType.Semicolon, 0, 0, null))
+        {
+            /// This property specifies triggers that only have an effect when
+            /// they appear at the end of a line (they are ignored elsewhere)
+            EolIndentTriggers = triggers, 
+            /// Tokens that represent indentation and unindent
+            IndentToken = new Token((int)YourTokenType.Indent, 0, 0, null),
+            DedentToken = new Token((int)YourTokenType.Dedent, 0, 0, null),
+        };
+        /// Buffered is an extension method in 
+        List<Token> tokens = wrapr.Buffered().ToList();
+        var parser = new YourParserClass(tokens);
+    
+    See the [documentation of IndentTokenGenerator](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
 
+    If you're not using the standard `Token` type, you can use [IndentTokenGenerator<Tok>](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
+
+Shortening your code with LeMP
+------------------------------
+
+In LLLPG 1.3 I've finally completed a bunch of basic macro functionality so you can do a bunch of stuff that has nothing to do with parsing. See my new article "[Avoid Tedious Coding With LeMP](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)" to learn more.
+
+The new `unroll` and `replace` macros, in particular, are useful for eliminating some of the boilerplate from an LLLPG parser. I plan to talk more about that in a future article series.
 
 The End
 -------
 
-I hope you will use LLLPG for your parsing needs. As always, I'll be notified of, and will respond to, any comments posted on this article.
+I hope you enjoyed this article and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback. As always, I'll be notified of, and will respond to, any comments posted on this article.

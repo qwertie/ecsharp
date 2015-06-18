@@ -101,7 +101,7 @@ namespace Loyc.Syntax.Lexing
 		/// should set the <c>newSourceFile</c> parameter to false if possible.</remarks>
 		public virtual void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
-			CheckParam.IsNotNull("source", source);
+			CheckParam.IsNotNull<object>("source", source);
 			_source = source;
 			_fileName = fileName;
 			_block = UString.Empty;
@@ -161,7 +161,9 @@ namespace Loyc.Syntax.Lexing
 			protected set
 			{
 				_inputPosition = value;
-				if ((LA0 = _block[value - _blockStart, -1]) == -1)
+				bool fail;
+				LA0 = _block.TryGet(value - _blockStart, out fail);
+				if (fail)
 					ReadBlock();
 			}
 		}
@@ -176,7 +178,10 @@ namespace Loyc.Syntax.Lexing
 		{
 			_block = _source.Slice(_inputPosition, CachedBlockSize);
 			_blockStart = _inputPosition;
-			LA0 = _block[0, -1];
+			bool fail;
+			LA0 = _block.TryGet(0, out fail);
+			if (fail)
+				LA0 = -1;
 		}
 
 		LexerSourceFile<CharSrc> _sourceFile;
@@ -187,8 +192,9 @@ namespace Loyc.Syntax.Lexing
 
 		protected int LA(int i)
 		{
-			int result = _block[_inputPosition + i - _blockStart, -1];
-			return result != -1 ? result : LA_slow(i);
+			bool fail;
+			int result = _block.TryGet(_inputPosition + i - _blockStart, out fail);
+			return fail ? LA_slow(i) : result;
 		}
 		int LA_slow(int i)
 		{

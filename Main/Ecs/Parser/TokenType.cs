@@ -154,7 +154,7 @@ namespace Ecs.Parser
 		[DebuggerStepThrough]
 		public static TokenType Type(this Token t) { return (TokenType)t.TypeInt; }
 
-		/// <summary>Expresses an LES token as a string.</summary>
+		/// <summary>Expresses an EC# token as a string.</summary>
 		/// <remarks>Note that some Tokens do not contain enough information to
 		/// reconstruct a useful token string, e.g. comment tokens do not store the 
 		/// comment but merely contain the location of the comment in the source code.

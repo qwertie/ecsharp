@@ -20,7 +20,7 @@ GOTO STOP
 @echo **********************
 @echo *** ERROR OCCURRED ***
 @echo **********************
-if exist vsbuild.log more vsbuild.log
+@if exist vsbuild.log more vsbuild.log
 pause
 :STOP
 if exist vsbuild.log del vsbuild.log

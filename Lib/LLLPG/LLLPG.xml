@@ -945,9 +945,6 @@
         <member name="T:Loyc.LLParserGenerator.DefaultErrorBranch">
             <summary>A singleton to be used as the value of <see cref="F:Loyc.LLParserGenerator.Alts.ErrorBranch"/>, representing the <c>default_error</c> branch.</summary>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesParserGenerator">
-            <summary>Bootstrapper. Generates source code for the LES parser.</summary>
-        </member>
         <member name="T:Loyc.LLParserGenerator.Rule">
             <summary>Represents an LLLPG rule, which is a <see cref="F:Loyc.LLParserGenerator.Rule.Pred"/>icate plus
             a <see cref="F:Loyc.LLParserGenerator.Rule.Name"/> and optional attributes (e.g. token, private, etc.).</summary>
@@ -1482,9 +1479,6 @@
             la0 == '\t'" inline using an expression, but large sets are stored in 
             variables and tested by calling a method. Complexity() is used to 
             decide which approach is more appropriate.</remarks>
-        </member>
-        <member name="T:Loyc.LLParserGenerator.LesLexerGenerator">
-            <summary>Bootstrapper. Generates source code for the EC# lexer.</summary>
         </member>
         <member name="T:Loyc.LLParserGenerator.LlpgParserTests">
             <summary>Tests the stage 1 parser and the stage 2 parser.</summary>

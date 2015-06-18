@@ -832,7 +832,7 @@
             or a default value if the specified index was out of range.</summary>
         </member>
         <member name="P:Loyc.UString.Item(System.Int32,System.Int32)">
-            <summary>Returns the code unit (16-bit value) at the specified index,
+            <summary>Returns the code point (21-bit value) at the specified index,
             or a default value if the specified index was out of range.</summary>
         </member>
         <member name="T:Loyc.Collections.EnumeratorBase`1">

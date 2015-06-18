@@ -50,20 +50,23 @@ namespace Loyc
 	/// when an argument value is not acceptable.</summary>
 	public static class CheckParam
 	{
-		public static void IsNotNull(string paramName, object arg)
+		public static T IsNotNull<T>(string paramName, T arg) where T : class
 		{
 			if (arg == null)
 				ThrowArgumentNull(paramName);
+			return arg;
 		}
-		public static void IsNotNegative(string argName, int value)
+		public static int IsNotNegative(string argName, int value)
 		{
 			if (value < 0)
 				throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' should not be negative.", argName, value));
+			return value;
 		}
-		public static void IsInRange(string paramName, int value, int min, int max)
+		public static int IsInRange(string paramName, int value, int min, int max)
 		{
 			if (value < min || value > max)
 				ThrowOutOfRange(paramName, value, min, max);
+			return value;
 		}
 		public static void ThrowOutOfRange(string argName)
 		{

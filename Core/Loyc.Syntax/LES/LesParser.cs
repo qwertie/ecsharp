@@ -23,83 +23,43 @@ namespace Loyc.Syntax.Les
 	/// This class expects to receive tokens from <see cref="LesLexer"/> that have been 
 	/// preprocessed by <see cref="TokensToTree"/>, with whitespace tokens filtered out.
 	/// </remarks>
-	public partial class LesParser : BaseParser<Token>
+	public partial class LesParser : BaseParserForList<Token, int>
 	{
-		protected IMessageSink _messages;
 		protected LNodeFactory F;
-		protected IListSource<Token> _tokensRoot;
-		protected IListSource<Token> _tokens;
-		// index into source text of the first token at the current depth (inside 
-		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
-		protected int _startTextIndex = 0;
 		protected LNode _missingExpr = null; // used by MissingExpr
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
-		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
+		protected IList<Token> _tokensRoot;
+		public IList<Token> TokenTree { get { return _tokensRoot; } }
 
-		static readonly Severity _Error = Severity.Error;
+		new const TT EOF = TT.EOF;
 
-		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
+		public LesParser(IListAndListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this((IList<Token>)tokens, file, messageSink) {}
+		public LesParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : this(tokens.AsList(), file, messageSink) {}
+		public LesParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
+			: base(tokens, default(Token), file, startIndex)
 		{
-			MessageSink = messageSink;
-			Reset(tokens, file);
+			ErrorSink = messageSink;
 		}
 
-		public virtual void Reset(IListSource<Token> tokens, ISourceFile file)
+		public void Reset(IList<Token> list, ISourceFile file, int startIndex = 0)
 		{
-			_tokensRoot = _tokens = tokens;
-			_sourceFile = file;
+			Reset(list, default(Token), file, startIndex);
+		}
+		protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+		{
+			CheckParam.IsNotNull("file", file);
+			base.Reset(list, eofToken, file, startIndex);
+			_tokensRoot = TokenList;
 			F = new LNodeFactory(file);
-			InputPosition = 0; // reads LT(0)
 			_missingExpr = null;
 		}
 
-		public IMessageSink MessageSink
-		{
-			get { return _messages; } 
-			set { _messages = value ?? Loyc.MessageSink.Current; }
-		}
-
-		#region Methods required by base class and by LLLPG
-
-		protected sealed override int EofInt() { return 0; }
-		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
-		protected sealed override Token LT(int i)
-		{
-			bool fail;
-			return _tokens.TryGet(InputPosition + i, out fail);
-		}
-		protected override void Error(int li, string message)
-		{
-			int iPos = GetTextPosition(InputPosition + li);
-			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(_Error, pos, message);
-		}
-		protected int GetTextPosition(int tokenPosition)
-		{
-			bool fail;
-			var token = _tokens.TryGet(tokenPosition, out fail);
-			if (!fail)
-				return token.StartIndex;
-			else if (_tokens.Count == 0 || tokenPosition < 0)
-				return _startTextIndex;
-			else
-				return _tokens[_tokens.Count - 1].EndIndex;
-		}
+		// Method required by base class for error messages
 		protected override string ToString(int type_)
 		{
 			var type = (TokenType)type_;
 			return type.ToString();
 		}
-
-		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
-		protected TT LA(int i)
-		{
-			bool fail;
-			return _tokens.TryGet(InputPosition + i, out fail).Type();
-		}
-		new const TokenType EOF = TT.EOF;
-		
-		#endregion
 		
 		#region Down & Up
 		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
@@ -107,17 +67,17 @@ namespace Loyc.Syntax.Les
 		// So the parser calls something like Down(lparen) to begin parsing inside,
 		// then it calls Up() to return to the parent tree.
 
-		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
+		Stack<Pair<IList<Token>, int>> _parents = new Stack<Pair<IList<Token>, int>>();
 
 		protected bool Down(int li)
 		{
 			return Down(LT(li).Children);
 		}
-		protected bool Down(IListSource<Token> children)
+		protected bool Down(IList<Token> children)
 		{
 			if (children != null) {
-				_parents.Push(Pair.Create(_tokens, InputPosition));
-				_tokens = children;
+				_parents.Push(Pair.Create(TokenList, InputPosition));
+				TokenList = children;
 				InputPosition = 0;
 				return true;
 			}
@@ -132,7 +92,7 @@ namespace Loyc.Syntax.Les
 		{
 			Debug.Assert(_parents.Count > 0);
 			var pair = _parents.Pop();
-			_tokens = pair.A;
+			TokenList = pair.A;
 			InputPosition = pair.B;
 		}
 
@@ -249,7 +209,7 @@ namespace Loyc.Syntax.Les
 			TT la0;
 			var next = SuperExprOptUntil(TT.Semicolon);
 			for (;;) {
-				la0 = LA0;
+				la0 = (TT) LA0;
 				if (la0 == TT.Semicolon) {
 					yield return next;
 					Skip();

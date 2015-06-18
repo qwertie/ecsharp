@@ -1,4 +1,4 @@
-// Generated from ParserSourceTest.ecs by LeMP custom tool. LLLPG version: 1.3.0.0
+// Generated from ParserSourceTest.ecs by LeMP custom tool. LLLPG version: 1.3.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -421,7 +421,7 @@ namespace Loyc.Syntax.Tests
 			TT la0;
 			double n = default(double);
 			double result = default(double);
-			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
+			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add / ExprSequence)
 			if (Try_Expr_Test0(0)) {
 				switch ((TT) Src.LA(1)) {
 				case TT.Add:
@@ -462,7 +462,7 @@ namespace Loyc.Syntax.Tests
 		bool Scan_Expr()
 		{
 			TT la0;
-			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add | ExprSequence)
+			// Line 140: (&(ExprSequence TT.Add) AssignExpr (TT.Semicolon AssignExpr)* TT.Add / ExprSequence)
 			do {
 				if (Try_Expr_Test0(0)) {
 					switch ((TT) Src.LA(1)) {

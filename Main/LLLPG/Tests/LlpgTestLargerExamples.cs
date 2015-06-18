@@ -625,5 +625,340 @@ namespace Loyc.LLParserGenerator
 		}
 
 		#endregion
+
+		[Test]
+		public void ScannerlessExpressionParser()
+		{
+			string input = @"
+				#importMacros(Loyc.LLPG);
+				using Loyc;
+				using Loyc.Syntax;
+				using Loyc.Syntax.Lexing;
+
+				struct StringToken : ISimpleToken<string>
+				{
+					public string Type { get; set; }
+					public object Value { get { return Type; } }
+					public int StartIndex { get; set; }
+				}
+
+				class ExprParser : BaseParserForList<StringToken, string>
+				{
+					public ExprParser(string input) 
+						: this(input.Split(' ').Select(word => 
+								new StringToken { Type=word }).ToList()) {}
+					public ExprParser(IList<StringToken> tokens, ISourceFile file = null) 
+						: base(tokens, default(StringToken), file ?? EmptySourceFile.Unknown) 
+						{ F = new LNodeFactory(SourceFile); }
+	
+					protected override string ToString(string tokenType) { return tokenType; }
+
+					LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
+					LNode Op(LNode lhs, StringToken op, LNode rhs) { 
+						return F.Call((Symbol)op.Type, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
+					}
+
+					LLLPG(parser(laType: string, terminalType: StringToken));
+
+					public rule LNode Expr(int prec = 0) @[
+						( '''-''' r:=Expr(50) { $result = F.Call((Symbol)'''-''', r, 
+														$'''-'''.StartIndex, r.Range.EndIndex); }
+						/ result:Atom )
+						greedy // to suppress ambiguity warning
+						(   // Remember to add [Local] when your predicate uses a local variable
+							&{[Local] prec <= 10}
+							'''=''' r:=Expr(10)
+							{ $result = Op($result, $'''=''', r); }
+						|   &{[Local] prec < 20}
+							op:=('''&&'''|'''||''') r:=Expr(20)
+							{ $result = Op($result, op, r); }
+						|   &{[Local] prec < 30}
+							op:=('''>'''|'''<'''|'''>='''|'''<='''|'''=='''|'''!=''') r:=Expr(30)
+							{ $result = Op($result, op, r); }
+						|   &{[Local] prec < 40}
+							op:=('''+'''|'''-''') r:=Expr(40)
+							{ $result = Op($result, op, r); }
+						|   &{[Local] prec < 50}
+							op:=('''*'''|'''/'''|'''>>'''|'''<<''') r:=Expr(50)
+							{ $result = Op($result, op, r); }
+						|   '''(''' Expr ''')''' 
+							{ $result = F.Call($result, $Expr, $result.Range.StartIndex); }
+						|   '''.''' rhs:Atom 
+							{ $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
+						)*
+					];
+					rule LNode PrefixExpr() @[
+						( '''-''' r:=PrefixExpr { $result = F.Call((Symbol)'''-''', r, 
+														$'''-'''.StartIndex, r.Range.EndIndex); }
+						/ result:PrimaryExpr )
+					];
+					rule LNode PrimaryExpr() @[
+						result:Atom
+						(	'''(''' Expr ''')''' { $result = F.Call($result, $Expr, $result.Range.StartIndex); }
+						|	'''.''' rhs:Atom { $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
+						)*
+					];
+					rule LNode Atom() @[
+						'''(''' result:Expr ''')''' { $result = F.InParens($result); }
+					/	_ { 
+							double n; 
+							$result = double.TryParse($_.Type, out n) 
+									? F.Literal(n) : F.Id($_.Type);
+						}
+					];
+				}";
+			string expectedOutput = @"
+				using Loyc;
+				using Loyc.Syntax;
+				using Loyc.Syntax.Lexing;
+
+				struct StringToken : ISimpleToken<string>
+				{
+					public string Type { get; set; }
+					public object Value { get { return Type; } }
+					public int StartIndex { get; set; }
+				}
+				
+				class ExprParser : BaseParserForList<StringToken,string>
+				{
+					public ExprParser(string input) : this(input.Split(' ').Select(word => new StringToken { 
+							Type = word
+						}).ToList())
+					{
+					}
+					public ExprParser(IList<StringToken> tokens, ISourceFile file = null) : base(tokens, default(StringToken), file ?? EmptySourceFile.Unknown)
+					{
+						F = new LNodeFactory(SourceFile);
+					}
+					protected override string ToString(string tokenType)
+					{
+						return tokenType;
+					}
+					LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
+					LNode Op(LNode lhs, StringToken op, LNode rhs)
+					{
+						return F.Call((Symbol) op.Type, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
+					}
+					public LNode Expr(int prec = 0)
+					{
+						string la0, la1;
+						LNode got_Expr = default(LNode);
+						StringToken lit_dash = default(StringToken);
+						StringToken litx3D = default(StringToken);
+						LNode result = default(LNode);
+						LNode rhs = default(LNode);
+						// Line 37: (""-"" Expr / Atom)
+						la0 = (string) LA0;
+						if (la0 == @""-"") {
+							la1 = (string) LA(1);
+							if (la1 != EOF) {
+								lit_dash = MatchAny();
+								var r = Expr(50);
+								// line 37
+								result = F.Call((Symbol) ""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
+							} else
+								result = Atom();
+						} else
+							result = Atom();
+						// Line 42: greedy( &{prec <= 10} @""="" Expr | &{prec < 20} (@""&&""|@""||"") Expr | &{prec < 30} (@""!=""|@""<""|@""<=""|@""==""|@"">""|@"">="") Expr | &{prec < 40} (@""-""|@""+"") Expr | &{prec < 50} (@""*""|@""/""|@""<<""|@"">>"") Expr | @""("" Expr @"")"" | @""."" Atom )*
+						for (;;) {
+							switch ((string) LA0) {
+							case @""="":
+								{
+									if (prec <= 10) {
+										la1 = (string) LA(1);
+										if (la1 != EOF) {
+											litx3D = MatchAny();
+											var r = Expr(10);
+											// line 44
+											result = Op(result, litx3D, r);
+										} else
+											goto stop;
+									} else
+										goto stop;
+								}
+								break;
+							case @""&&"":
+							case @""||"":
+								{
+									if (prec < 20) {
+										la1 = (string) LA(1);
+										if (la1 != EOF) {
+											var op = MatchAny();
+											var r = Expr(20);
+											// line 47
+											result = Op(result, op, r);
+										} else
+											goto stop;
+									} else
+										goto stop;
+								}
+								break;
+							case @""!="":
+							case @""<"":
+							case @""<="":
+							case @""=="":
+							case @"">"":
+							case @"">="":
+								{
+									if (prec < 30) {
+										la1 = (string) LA(1);
+										if (la1 != EOF) {
+											var op = MatchAny();
+											var r = Expr(30);
+											// line 50
+											result = Op(result, op, r);
+										} else
+											goto stop;
+									} else
+										goto stop;
+								}
+								break;
+							case @""-"":
+							case @""+"":
+								{
+									if (prec < 40) {
+										la1 = (string) LA(1);
+										if (la1 != EOF) {
+											var op = MatchAny();
+											var r = Expr(40);
+											// line 53
+											result = Op(result, op, r);
+										} else
+											goto stop;
+									} else
+										goto stop;
+								}
+								break;
+							case @""*"":
+							case @""/"":
+							case @""<<"":
+							case @"">>"":
+								{
+									if (prec < 50) {
+										la1 = (string) LA(1);
+										if (la1 != EOF) {
+											var op = MatchAny();
+											var r = Expr(50);
+											// line 56
+											result = Op(result, op, r);
+										} else
+											goto stop;
+									} else
+										goto stop;
+								}
+								break;
+							case @""("":
+								{
+									la1 = (string) LA(1);
+									if (la1 != EOF) {
+										Skip();
+										got_Expr = Expr();
+										Match(@"")"");
+										// line 58
+										result = F.Call(result, got_Expr, result.Range.StartIndex);
+									} else
+										goto stop;
+								}
+								break;
+							case @""."":
+								{
+									la1 = (string) LA(1);
+									if (la1 != EOF) {
+										Skip();
+										rhs = Atom();
+										// line 60
+										result = F.Dot(result, rhs, result.Range.StartIndex);
+									} else
+										goto stop;
+								}
+								break;
+							default:
+								goto stop;
+							}
+						}
+					stop:;
+						return result;
+					}
+					LNode PrefixExpr()
+					{
+						string la0, la1;
+						StringToken lit_dash = default(StringToken);
+						LNode result = default(LNode);
+						// Line 64: (@""-"" PrefixExpr / PrimaryExpr)
+						la0 = (string) LA0;
+						if (la0 == @""-"") {
+							la1 = (string) LA(1);
+							if (la1 != EOF) {
+								lit_dash = MatchAny();
+								var r = PrefixExpr();
+								// line 64
+								result = F.Call((Symbol) ""-"", r, lit_dash.StartIndex, r.Range.EndIndex);
+							} else
+								result = PrimaryExpr();
+						} else
+							result = PrimaryExpr();
+						return result;
+					}
+					LNode PrimaryExpr()
+					{
+						string la0;
+						LNode got_Expr = default(LNode);
+						LNode result = default(LNode);
+						LNode rhs = default(LNode);
+						result = Atom();
+						// Line 70: (@""("" Expr @"")"" | @""."" Atom)*
+						for (;;) {
+							la0 = (string) LA0;
+							if (la0 == @""("") {
+								Skip();
+								got_Expr = Expr();
+								Match(@"")"");
+								// line 70
+								result = F.Call(result, got_Expr, result.Range.StartIndex);
+							} else if (la0 == @""."") {
+								Skip();
+								rhs = Atom();
+								// line 71
+								result = F.Dot(result, rhs, result.Range.StartIndex);
+							} else
+								break;
+						}
+						return result;
+					}
+					LNode Atom()
+					{
+						string la0, la1;
+						LNode result = default(LNode);
+						StringToken tok__ = default(StringToken);
+						// Line 75: (@""("" Expr @"")"" / ~(EOF))
+						do {
+							la0 = (string) LA0;
+							if (la0 == @""("") {
+								la1 = (string) LA(1);
+								if (la1 != EOF) {
+									Skip();
+									result = Expr();
+									Match(@"")"");
+									// line 75
+									result = F.InParens(result);
+								} else
+									goto match2;
+							} else
+								goto match2;
+							break;
+						match2:
+							{
+								tok__ = MatchExcept();
+								// line 77
+								double n;
+								result = double.TryParse(tok__.Type, out n) ? F.Literal(n) : F.Id(tok__.Type);
+							}
+						} while (false);
+						return result;
+					}
+				}";
+			Test(input, expectedOutput, null, EcsLanguageService.Value);
+		}
 	}
 }

@@ -10,7 +10,6 @@ using Loyc.Collections.Impl;
 using Loyc.Threading;
 using Loyc.Utilities;
 using Loyc.Syntax;
-using Loyc.LLParserGenerator;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 
@@ -83,34 +82,6 @@ namespace Ecs.Parser
 			_indentLevel = 0;
 			_lineNumber = 0;
 			_allowPPAt = _lineStartAt = 0;
-		}
-
-		internal static readonly HashSet<Symbol> CsKeywords = EcsNodePrinter.CsKeywords;
-		internal static readonly HashSet<Symbol> PreprocessorIdentifiers = EcsNodePrinter.SymbolSet(
-			"if", "else", "elif", "endif", "define", "undef", "line", 
-			"region", "endregion", "warning", "error", "note");
-
-		// This is the set of keywords that act only as attributes on statements.
-		// This list does not include "new" and "out", which are only allowed as 
-		// attributes on variable declarations and other specific statements.
-		static readonly HashSet<Symbol> AttrKeywords = EcsNodePrinter.SymbolSet(
-			"abstract", "const", "explicit", "extern", "implicit", "internal", //"new",
-			"override", "params", "private", "protected", "public", "readonly", "ref",
-			"sealed", "static", "unsafe", "virtual", "volatile");
-
-		static readonly HashSet<Symbol> TypeKeywords = EcsNodePrinter.SymbolSet(
-			"bool", "byte", "char", "decimal", "double", "float", "int", "long",
-			"object", "sbyte", "short", "string", "uint", "ulong", "ushort", "void");
-
-		// contains non-trivial mappings like int => #int32. If the string is not in 
-		// this map, we simply add "#" on the front to form the token's Value.
-		static readonly Dictionary<string, Symbol> TokenNameMap = InverseMap(EcsNodePrinter.TypeKeywords);
-		private static Dictionary<K,V> InverseMap<K,V>(IEnumerable<KeyValuePair<V,K>> list)
-		{
-			var d = new Dictionary<K, V>();
-			foreach (var pair in list)
-				d.Add(pair.Value, pair.Key);
-			return d;
 		}
 
 		#region Value parsers

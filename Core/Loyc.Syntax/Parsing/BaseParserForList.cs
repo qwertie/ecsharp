@@ -11,18 +11,24 @@ namespace Loyc.Syntax
 	/// <summary>
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
 	/// Generator) and receive tokens from any <see cref="IEnumerator{Token}"/>.
+	/// (Potentially also useful for parsers written by hand.)
 	/// </summary>
 	/// <remarks>
-	/// This version of BaseParserForList has TokenList as a generic parameter. 
-	/// Compared to using IList{Token} directly, this can increase performance in 
-	/// case the list is a value type (e.g. <c>InternalList&lt;Token></c>).
+	/// The compiler will ensure that you use this base class correctly. All you 
+	/// have to do is call the base class constructor and override the abstract 
+	/// method <see cref="ToString(MatchType)"/>.
+	/// <para/>
+	/// This version of BaseParserForList has <c>List</c> (a token list) as a 
+	/// generic parameter. Compared to using <c>IList{Token}</c> directly, this 
+	/// can increase performance in case the <c>List</c> is a value type (e.g. 
+	/// <c>InternalList&lt;Token></c>).
 	/// </remarks>
 	/// <typeparam name="Token">Data type of complete tokens in the token list. A 
 	/// token contains the type of a "word" in the program (string, identifier, plus 
 	/// sign, etc.), a value (e.g. the name of an identifier), and a range of 
 	/// characters in the source file. See <see cref="ISimpleToken{MatchType}"/>.
-	/// Note: Token is usually a small struct; this class does not expect that it
-	/// will ever be null.</typeparam>
+	/// Note: Token is usually a small struct; this class assumes that it will 
+	/// never be null.</typeparam>
 	/// <typeparam name="MatchType">A data type, usually int, that represents a 
 	/// token type (identifier, operator, etc.) and implements <see cref="IEquatable{T}"/>
 	/// so it can be compared for equality with other token types; this is also the 
@@ -38,26 +44,35 @@ namespace Loyc.Syntax
 		/// <summary>Initializes this object to begin parsing the specified tokens.</summary>
 		/// <param name="list">A list of tokens that the derived class will parse.</param>
 		/// <param name="eofToken">A token value to return when the input position 
-		/// reaches the end of the token list. If possible this EOF token should 
-		/// contain the position of EOF, but if you have arranged to use zero as 
-		/// your EOF token type, default</param>
+		/// reaches the end of the token list. Ideally <c>eofToken.StartIndex</c>
+		/// should contain the position of EOF, but the base class method
+		/// <see cref="BaseParser{Tok,MT}.LaIndexToCharIndex"/> does not trust this
+		/// value, and will ensure that the character index returned for EOF is at 
+		/// least as large as the character index of the last token in the file. 
+		/// This means that it is safe to set <c>ISimpleToken{MatchType}.StartIndex</c> 
+		/// to 0 in the EOF token, because when an error message involves EOF, the
+		/// base class will find a more accurate EOF position.</param>
 		/// <param name="file">A source file object that will be returned by the 
 		/// <see cref="SourceFile"/> property. By default, this object is used to 
 		/// get the file name, line number and column number shown in parser errors. 
 		/// If you are using <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
 		/// you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
 		/// property. The <see cref="SourceFile"/> property (in this class) will 
-		/// return this value. It can be null, which will cause default error 
-		/// messages to show the character index instead of the file, line number 
-		/// and column number.</param>
+		/// return this value. If this parameter is null, then by default, error 
+		/// messages will only show the character index instead of the file, line 
+		/// number and column number.</param>
 		/// <param name="startIndex">The initial index from which to start reading
 		/// tokens from the list (normally 0).</param>
 		protected BaseParserForList(List list, Token eofToken, ISourceFile file, int startIndex = 0) : base(file, startIndex)
 		{
-			Reset(list, eofToken, file);
+			Reset(list, eofToken, file, startIndex);
 		}
-		protected void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0)
+
+		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
+		/// <remarks>See the constructor for documentation of the parameters.</remarks>
+		protected virtual void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
+			CheckParam.IsNotNull("file", file);
 			EofToken = eofToken;
 			EOF = EofToken.Type;
 			_list = list;
@@ -69,11 +84,12 @@ namespace Loyc.Syntax
 			Reset(TokenList, EofToken, SourceFile);
 		}
 
-
 		protected Token EofToken;
 
 		/// <summary>The IList{Token} that was provided to the constructor, if any.</summary>
-		protected List TokenList { get { return _list; } }
+		/// <remarks>Note: if you are starting to parse a new source file, you should call 
+		/// <see cref="Reset"/> instead of setting this property.</remarks>
+		protected List TokenList { get { return _list; } set { _list = value; } }
 		private   List _list;
 		// cached list size to avoid frequently calling the virtual Count property.
 		// (don't worry, it's updated automatically by LT() if the list size changes)
@@ -119,16 +135,20 @@ namespace Loyc.Syntax
 	/// <remarks>
 	/// This base class for LLLPG parsers reads tokens from <see cref="IList{Token}"/>,
 	/// but you can also pass an <see cref="IEnumerable{Token}"/> or 
-	/// <see cref="IEnumerator{Token}"/> to the constructor and it will use
-	/// <see cref="BufferedSequence{T}"/> to convert the sequence to a list.
+	/// <see cref="IEnumerator{Token}"/> to the constructor and it will 
+	/// convert it to a list, lazily, using <see cref="BufferedSequence{T}"/>.
 	/// </remarks>
 	public abstract class BaseParserForList<Token, MatchType> : BaseParserForList<Token, MatchType, IList<Token>>
 		where Token : ISimpleToken<MatchType>
 		where MatchType : IEquatable<MatchType>
 	{
 		/// <inheridoc/>
-		protected BaseParserForList(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0) 
+		protected BaseParserForList(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
 			: base(list, eofToken, file, startIndex) { }
+		protected BaseParserForList(IListAndListSource<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+			: base(list, eofToken, file, startIndex) { }
+		protected BaseParserForList(IListSource<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+			: base(list.AsList(), eofToken, file, startIndex) { }
 		/// <inheridoc/>
 		protected BaseParserForList(IEnumerable<Token> list, Token eofToken, ISourceFile file, int startIndex = 0) 
 			: this(list.Buffered(), eofToken, file, startIndex) { }

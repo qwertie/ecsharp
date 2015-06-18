@@ -22,7 +22,7 @@
             <summary>Converts <c>t.TypeInt</c> to <see cref="T:Ecs.Parser.TokenType"/>.</summary>
         </member>
         <member name="M:Ecs.Parser.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
-            <summary>Expresses an LES token as a string.</summary>
+            <summary>Expresses an EC# token as a string.</summary>
             <remarks>Note that some Tokens do not contain enough information to
             reconstruct a useful token string, e.g. comment tokens do not store the 
             comment but merely contain the location of the comment in the source code.

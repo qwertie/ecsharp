@@ -168,7 +168,7 @@ namespace Loyc.LLPG
 							break;
 						default:
 							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
-								"inputSource: var, inputClass: type, terminalType: type, laType: type, matchCast: type, setType: type, allowSwitch: bool, listInitializer: var _ = new List<T>()", key);
+								"inputSource: variable, inputClass: type, terminalType: type, laType: type, matchCast: type, setType: type, allowSwitch: bool, castLa: bool, listInitializer: var _ = new List<T>()", key);
 							break;
 					}
 				}
