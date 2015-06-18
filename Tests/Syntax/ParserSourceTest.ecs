@@ -139,7 +139,7 @@ namespace Loyc.Syntax.Tests
 			// implement a postfix "+" that adds all preceding expressions
 			( &(ExprSequence "+") 
 			  result:AssignExpr (";" n:AssignExpr { $result += n; })* "+"
-			| result:ExprSequence )
+			/ result:ExprSequence )
 		];
 	}
 } // end namespace

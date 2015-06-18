@@ -62,8 +62,8 @@ namespace Loyc
 		public static readonly UString Null = default(UString);
 		public static readonly UString Empty = new UString("");
 
-		readonly string _str;
-		int _start, _count;
+		private readonly string _str;
+		private int _start, _count;
 		
 		/// <summary>Initializes a UString slice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
@@ -257,14 +257,15 @@ namespace Loyc
 				return defaultValue;
 			}
 		}
-		/// <summary>Returns the code unit (16-bit value) at the specified index,
+		/// <summary>Returns the code point (21-bit value) at the specified index,
 		/// or a default value if the specified index was out of range.</summary>
 		public int this[int index, int defaultValue]
 		{
-			get { 
-				if ((uint)index < (uint)_count)
-					return _str[_start + index];
-				return defaultValue;
+			get {
+				int c = TryDecodeAt(index);
+				if (c == -1)
+					return defaultValue;
+				return c;
 			}
 		}
 		public char TryGet(int index, out bool fail)

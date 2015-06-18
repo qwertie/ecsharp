@@ -24,6 +24,27 @@ namespace Loyc.Syntax
 			_inputPosition = startIndex;
 		}
 
+		/// <summary>Throws FormatException when it receives an error. Non-errors
+		/// are sent to <see cref="MessageSink.Current"/>.</summary>
+		public static readonly IMessageSink FormatExceptionErrorSink = MessageSink.FromDelegate(
+			(sev, location, fmt, args) =>
+			{
+				if (sev >= Severity.Error)
+					throw new FormatException(MessageSink.LocationString(location) + ": " + Localize.From(fmt, args));
+				else
+					MessageSink.Current.Write(sev, location, fmt, args);
+			});
+
+		private IMessageSink _errorSink;
+		/// <summary>Gets or sets the object to which error messages are sent. The
+		/// default object is <see cref="FormatExceptionErrorSink"/>, which throws
+		/// <see cref="FormatException"/> if an error occurs.</summary>
+		public IMessageSink ErrorSink
+		{
+			get { return _errorSink ?? FormatExceptionErrorSink; }
+			set { _errorSink = value; }
+		}
+
 		/// <summary>The <see cref="ISourceFile"/> object that was provided to the constructor, if any.</summary>
 		protected ISourceFile SourceFile { get { return _sourceFile; } }
 		protected ISourceFile _sourceFile;
@@ -57,25 +78,51 @@ namespace Loyc.Syntax
 		protected abstract string ToString(MatchType tokenType);
 
 		/// <summary>Converts a lookahead token index to a character index (used 
-		/// for error reporting). Returns -1 if unsuccessful.</summary>
-		protected virtual int LaIndexToSourcePos(int lookaheadIndex)
+		/// for error reporting).</summary>
+		/// <remarks>
+		/// The default implementation does this by trying to cast 
+		/// <c>LT(lookaheadIndex)</c> to <c>ISimpleToken{MatchType}</c>. Returns -1
+		/// on failure.
+		/// <para/>
+		/// The <c>StartIndex</c> reported by an EOF token is assumed not 
+		/// to be trustworthy: this method will ensure that the character index 
+		/// returned for EOF is at least as large as <c>SourceFile.Text.Count</c>
+		/// if a <see cref="SourceFile"/> was provided, or, otherwise, at least as 
+		/// large as the last token in the file, by scanning backward to find the 
+		/// last token in the file.
+		/// </remarks>
+		protected virtual int LaIndexToCharIndex(int lookaheadIndex)
 		{
 			var token = LT(lookaheadIndex) as ISimpleToken<MatchType>;
 			if (token == null)
 				return -1;
 			int charIdx = token.StartIndex;
 			if (token.Type.Equals(EOF)) {
-				// Our EOF token may not contain the correct character position,
-				// so scan backward and look for the final token...
-				for (int li = lookaheadIndex; li > lookaheadIndex-100;  li--) {
-					var token2 = LT(li) as ISimpleToken<MatchType>;
-					if (!token2.Type.Equals(EOF)) {
-						charIdx = System.Math.Max(charIdx, token2.StartIndex + 1);
-						break;
+				if (SourceFile != null)
+					charIdx = System.Math.Max(SourceFile.Text.Count, charIdx);
+				else 
+					for (int li = lookaheadIndex; li > lookaheadIndex-100;  li--) {
+						var token2 = LT(li) as ISimpleToken<MatchType>;
+						if (!token2.Type.Equals(EOF)) {
+							charIdx = System.Math.Max(charIdx, token2.StartIndex);
+							break;
+						}
 					}
-				}
 			}
 			return charIdx;
+		}
+
+		/// <summary>Converts a lookahead token index to a <see cref="SourcePos"/>
+		/// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
+		/// <remarks>If the derived class initialized <c>SourceFile</c> to null, 
+		/// returns "At index {0}" where {0} is the character index.</remarks>
+		protected virtual object LaIndexToSourcePos(int lookaheadIndex)
+		{
+			int charIdx = LaIndexToCharIndex(lookaheadIndex);
+			if (SourceFile == null)
+				return Localize.From("At index {0}", charIdx);
+			else
+				return SourceFile.IndexToLine(charIdx);
 		}
 
 		/// <summary>Records an error or throws an exception.</summary>
@@ -92,16 +139,12 @@ namespace Loyc.Syntax
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			var charIdx = LaIndexToSourcePos(lookaheadIndex);
-			if (SourceFile == null)
-				throw new FormatException(string.Format("at [{0}]: {1}", charIdx, message));
-			else
-				throw new FormatException(SourceFile.IndexToLine(charIdx) + ": " + message);
+			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), message);
 		}
+		/// <inheritdoc cref="Error(int,string)">
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			string msg = Localize.From(format, args);
-			Error(lookaheadIndex, msg);
+			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), format, args);
 		}
 
 		protected void Skip()

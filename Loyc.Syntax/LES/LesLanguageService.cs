@@ -75,8 +75,8 @@ namespace Loyc.Syntax.Les
 				if (parser == null)
 					_parser = parser = new LesParser(input, file, msgs);
 				else {
-					parser.MessageSink = msgs;
-					parser.Reset(input, file);
+					parser.ErrorSink = msgs;
+					parser.Reset(input.AsList(), file);
 				}
 				if (inputType == ParsingService.Exprs)
 					return parser.ParseExprs();

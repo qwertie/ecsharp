@@ -125,6 +125,7 @@ namespace Loyc.Syntax
 	/// can be safely re-used within different source files or multiple versions 
 	/// of one source file in an IDE's "intellisense" or "code completion" engine.
 	///
+	/// <!-- screws up doxygen
 	/// <h3>Loyc and EC#</h3>
 	/// 
 	/// Now let's talk about EC# syntax and how it relates to this class.
@@ -347,6 +348,7 @@ namespace Loyc.Syntax
 	/// The above code is a bit confusing because of how it is written; EC# is 
 	/// meant for mature people who have enough sense not to write confusing code 
 	/// like this.
+	/// -->
 	/// 
 	/// <h3>The reimplementation</h3>
 	/// 

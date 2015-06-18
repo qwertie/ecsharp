@@ -27,7 +27,7 @@ namespace Loyc.Syntax
 	/// <typeparam name="List">Data type of the list that contains the tokens (one 
 	/// often uses IList{Token}, but one could use <see cref="Loyc.Collections.Impl.InternalList{T}"/> 
 	/// for potentially higher performance.)</typeparam>
-	public class ParserSource<Token,MatchType,List> : ParserSourceWorkaround<Token,MatchType,List>, ILllpgApi<Token, MatchType, MatchType>
+	public class ParserSource<Token,MatchType,List> : BaseParserForList<Token,MatchType,List>, ILllpgApi<Token, MatchType, MatchType>
 		where Token : ISimpleToken<MatchType>
 		where MatchType : IEquatable<MatchType>
 		where List : IList<Token>
@@ -44,11 +44,6 @@ namespace Loyc.Syntax
 			base.Reset(source, eofToken, file, startIndex);
 		}
 		public new void Reset() { base.Reset(); }
-
-		/// <summary>Gets or sets an object that displays error messages. The 
-		/// default value of this property is null, in which case any error that
-		/// occurs will be thrown as a <c>FormatException</c>.</summary>
-		public IMessageSink ErrorSink { get; set; }
 
 		/// <summary>Converts from MatchType (usually integer) to string (used in 
 		/// error messages).</summary>
@@ -120,53 +115,11 @@ namespace Loyc.Syntax
 
 		public new virtual void Check(bool expectation, string expectedDescr = "") { base.Check(expectation, expectedDescr); }
 
-		protected override void Error_Renamed(int lookaheadIndex, string format, params object[] args)
-			{ Error(lookaheadIndex, format, args); }
-		protected override void Error_Renamed(int lookaheadIndex, string format)
-			{ Error(lookaheadIndex, format); }
-		public new virtual void Error(int lookaheadIndex, string format)
-			{ Error(lookaheadIndex, format, (object[])null); }
+		void ILllpgApi<Token, MatchType, MatchType>.Error(int li, string fmt) { base.Error(li, fmt); }
 		public new virtual void Error(int lookaheadIndex, string format, params object[] args) 
 		{
-			int iPos = base.LaIndexToSourcePos(lookaheadIndex);
-			SourcePos pos;
-			if (SourceFile == null)
-				pos = new SourcePos("", 0, iPos);
-			else
-				pos = SourceFile.IndexToLine(iPos);
-
-			if (ErrorSink != null) {
-				if (args != null)
-					ErrorSink.Write(Severity.Error, pos, format, args);
-				else
-					ErrorSink.Write(Severity.Error, pos, format);
-			} else {
-				string msg;
-				if (args != null)
-					msg = Localize.From(format, args);
-				else
-					msg = Localize.From(format);
-				throw new FormatException(pos + ": " + msg);
-			}
+			base.Error(lookaheadIndex, format, args);
 		}
-	}
-
-	/// <summary>This class only exists to work around a limitation of the C# language:
-	/// "cannot change access modifiers when overriding 'protected' inherited member Error(...)".</summary>
-	public abstract class ParserSourceWorkaround<Token,MatchType,List> : BaseParserForList<Token,MatchType,List>
-		where Token : ISimpleToken<MatchType>
-		where MatchType : IEquatable<MatchType>
-		where List : IList<Token>
-	{
-		protected ParserSourceWorkaround(List list, Token eofToken, ISourceFile file, int startIndex = 0) 
-			: base(list, eofToken, file, startIndex) { }
-
-		protected abstract void Error_Renamed(int lookaheadIndex, string format);
-		protected override void Error(int lookaheadIndex, string format)
-			{ Error_Renamed(lookaheadIndex, format); }
-		protected abstract void Error_Renamed(int lookaheadIndex, string format, params object[] args);
-		protected override void Error(int lookaheadIndex, string format, params object[] args)
-			{ Error_Renamed(lookaheadIndex, format, args); }
 	}
 	
 	/// <summary>Alias for ParserSource{Token, int, IList{Token}}.</summary>

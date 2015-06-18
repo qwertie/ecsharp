@@ -19,8 +19,8 @@ namespace Loyc.Collections
 	{
 		public static StringSlice Empty = new StringSlice("");
 
-		string _str;
-		int _start, _count;
+		private string _str;
+		private int _start, _count;
 
 		/// <summary>Initializes a StringSlice.</summary>
 		/// <exception cref="ArgumentException">The start index was below zero.</exception>
