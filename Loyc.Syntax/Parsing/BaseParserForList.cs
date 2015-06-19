@@ -72,10 +72,10 @@ namespace Loyc.Syntax
 		/// <remarks>See the constructor for documentation of the parameters.</remarks>
 		protected virtual void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
-			CheckParam.IsNotNull("file", file);
+			CheckParam.IsNotNull<object>("list", list);
 			EofToken = eofToken;
 			EOF = EofToken.Type;
-			_list = list;
+			_tokenList = list;
 			_sourceFile = file;
 			InputPosition = startIndex;
 		}
@@ -89,8 +89,8 @@ namespace Loyc.Syntax
 		/// <summary>The IList{Token} that was provided to the constructor, if any.</summary>
 		/// <remarks>Note: if you are starting to parse a new source file, you should call 
 		/// <see cref="Reset"/> instead of setting this property.</remarks>
-		protected List TokenList { get { return _list; } set { _list = value; } }
-		private   List _list;
+		protected List TokenList { get { return _tokenList; } }
+		protected List _tokenList;
 		// cached list size to avoid frequently calling the virtual Count property.
 		// (don't worry, it's updated automatically by LT() if the list size changes)
 		private int _listCount;
@@ -100,11 +100,11 @@ namespace Loyc.Syntax
 		protected sealed override Token LT(int i)
 		{
 			i += InputPosition;
-			if ((uint)i < (uint)_listCount || (uint)i < (uint)(_listCount = _list.Count)) {
+			if ((uint)i < (uint)_listCount || (uint)i < (uint)(_listCount = _tokenList.Count)) {
 				try {
-					return _list[i];
+					return _tokenList[i];
 				} catch {
-					_listCount = _list.Count;
+					_listCount = _tokenList.Count;
 				}
 			}
 			return EofToken;
@@ -126,6 +126,50 @@ namespace Loyc.Syntax
 				_lt0 = LT(0);
 			}
 		}
+
+		#region Down & Up
+		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
+		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
+		// So the parser calls something like Down(lparen) to begin parsing inside,
+		// then it calls Up() to return to the parent tree.
+
+		private Stack<KeyValuePair<List, int>> _parents;
+
+		/// <summary>Switches to parsing the specified token list at position zero
+		/// (typically the value of <see cref="Token.Children"/> in a token tree 
+		/// produced by <see cref="TokensToTree"/>.) The original token list and
+		/// the original <see cref="InputPosition"/> are placed on a stack, so you
+		/// can restore the old list by calling <see cref="Up()"/>.</summary>
+		/// <returns>True if successful, false if <c>children</c> is null.</returns>
+		protected bool Down(List children)
+		{
+			if (children != null)
+			{
+				if (_parents == null)
+					_parents = new Stack<KeyValuePair<List, int>>();
+				_parents.Push(new KeyValuePair<List,int>(_tokenList, InputPosition));
+				_tokenList = children;
+				InputPosition = 0;
+				return true;
+			}
+			return false;
+		}
+		/// <summary>Returns to the old token list saved by <see cref="Down"/>.</summary>
+		protected void Up()
+		{
+			Debug.Assert(_parents.Count > 0);
+			var pair = _parents.Pop();
+			_tokenList = pair.Key;
+			InputPosition = pair.Value;
+		}
+		/// <summary>Calls <see cref="Up()"/> and returns <c>value</c>.</summary>
+		protected T Up<T>(T value)
+		{
+			Up();
+			return value;
+		}
+
+		#endregion
 	}
 	
 	/// <summary>

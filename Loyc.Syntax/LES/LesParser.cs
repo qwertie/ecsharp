@@ -61,42 +61,10 @@ namespace Loyc.Syntax.Les
 			return type.ToString();
 		}
 		
-		#region Down & Up
-		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
-		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
-		// So the parser calls something like Down(lparen) to begin parsing inside,
-		// then it calls Up() to return to the parent tree.
-
-		Stack<Pair<IList<Token>, int>> _parents = new Stack<Pair<IList<Token>, int>>();
-
 		protected bool Down(int li)
 		{
 			return Down(LT(li).Children);
 		}
-		protected bool Down(IList<Token> children)
-		{
-			if (children != null) {
-				_parents.Push(Pair.Create(TokenList, InputPosition));
-				TokenList = children;
-				InputPosition = 0;
-				return true;
-			}
-			return false;
-		}
-		protected T Up<T>(T value)
-		{
-			Up();
-			return value;
-		}
-		protected void Up()
-		{
-			Debug.Assert(_parents.Count > 0);
-			var pair = _parents.Pop();
-			TokenList = pair.A;
-			InputPosition = pair.B;
-		}
-
-		#endregion
 
 		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
 

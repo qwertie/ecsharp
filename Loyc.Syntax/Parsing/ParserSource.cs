@@ -57,7 +57,7 @@ namespace Loyc.Syntax
 				return TokenTypeToString(tokenType);
 		}
 
-		public new List TokenList { get { return base.TokenList; } }
+		public new List TokenList { get { return base._tokenList; } }
 		public new Token LT0 { [DebuggerStepThrough] get { return _lt0; } }
 		public new MatchType LA0 { get { return base.LA0; } }
 		public new Token LT(int i) { return base.LT(i); }
