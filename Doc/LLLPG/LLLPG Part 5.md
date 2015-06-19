@@ -24,23 +24,23 @@ To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language.
 - Compared to ANTLR, LLLPG is designed for C# rather than Java, so naturally there's a Visual Studio plugin, and I don't [sell half of the documentation as a book](http://www.amazon.ca/The-Definitive-ANTLR-4-Reference/dp/1934356999). Syntax is comparable to ANTLR, but superficially different because unlike ANTLR rules, LLLPG rules resemble function declarations. Also, I recently tried ANTLR 4 and I was shocked at how inefficient the output code appears to be.
 - Bonus features from LeMP (more on that later)
 
-New features of LLLPG 1.3
-=========================
+New features of LLLPG 1.3.2
+===========================
 
 - "External API": in LLLPG 1.1 you had to write a class derived from `BaseLexer` or `BaseParser` which contained the LLLPG APIs such as `Match`, `LA0`, `Error`, etc. Now you can encapsulate that API in a field or a local variable. This means you can have a different base class, or you can put a lexer/parser inside a value type (`struct`) or a `static class`.
-- "Automatic Value Saver: in LLLPG 1.1, if you wanted to save the return value of a rule or token, you sometimes had to manually create an associated variable. In the new version, you can attach a "label" to any terminal or nonterminal, which will make LLLPG create a variable automatically. Even better, you can often get away with not attaching a label.
+- "Automatic Value Saver: in LLLPG 1.1, if you wanted to save the return value of a rule or token, you (sometimes) had to manually create an associated variable. In the new version, you can attach a "label" to any terminal or nonterminal, which will make LLLPG create a variable automatically at the beginning of the method. Even better, you can often get away with not attaching a label.
 - Automatic return value: when you use `$result` or the `result:` label in a rule, LLLPG automatically creates a variable called `result` to hold the return value of the current rule, and it adds a `return result` statement at the end of the method.
 - implicit LLLPG blocks: instead of writing `LLLPG(lexer) { /* rules */ }`, with braces around the rules, you are now allowed to write `LLLPG(lexer); /* rules */`, so  you won't be pressured to indent the rules so much.
 - `any` command and `inline` rules: Details below.
-- The new base class `BaseParserForList<Token,int>` is easier to use than the old base class `BaseParser<Token>`.
-- LLLPG will now insert `#line` directives in the code for grammar actions. While useful for compiler errors, this feature turned out to be disorienting when debugging; to convert the `#line` directives into comments, attach an `[AddCsLineDirectives(false)]` attribute to the `LLLPG` command.
+- The new base class [`BaseParserForList<Token,int>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) is easier to use than the old base class `BaseParser<Token>`.
+- LLLPG will now insert `#line` directives in the code for grammar actions. While useful for compiler errors, this feature turned out to be disorienting when debugging; to convert the `#line` directives into comments, attach the following attribute before the `LLLPG` command: `[AddCsLineDirectives(false)]`.
 
 Using LLLPG with an "external" API
 ----------------------------------
 
 You can use the `inputSource` and `inputClass` options to designate an object to which LLLPG should send all its API calls. `inputClass` should be the data type of the object that `inputSource` refers to. For example, if you specify `inputSource(src)`, LLLPG will translate a grammar fragment like `'+'|'-'` into code like `src.Match('+','-')`. Without the `inputSource` option, this would have just been `Match('+','-')`.
 
-Loyc.Syntax.dll (included with LLLPG 1.3) has `LexerSource` and `LexerSource<C>` types, which are derived from `BaseLexer` and provide the LLLPG Lexer API. When using these options, a lexer will look something like this:
+Loyc.Syntax.dll (included with LLLPG 1.3) has [`LexerSource`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html) and [`LexerSource<C>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource_3_01CharSrc_01_4.html) types, which are derived from [`BaseLexer`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) and provide the LLLPG Lexer API. When using these options, a lexer will look something like this:
 
     using Loyc;
     using Loyc.Syntax.Lexing;
@@ -50,6 +50,7 @@ Loyc.Syntax.dll (included with LLLPG 1.3) has `LexerSource` and `LexerSource<C>`
         src = new LexerSource((UString)input, fileName);
       }
       LexerSource src;
+      
       LLLPG (lexer(inputSource(src), inputClass(LexerSource))) {
         public rule Token()         @[ Id  | Spaces | Newline ];
         private rule Id             @[ IdStartChar (IdStartChar|'0'..'9'|'\'')* ];
@@ -61,7 +62,7 @@ Loyc.Syntax.dll (included with LLLPG 1.3) has `LexerSource` and `LexerSource<C>`
       }
     }
 
-`LexerSource` accepts any implementation of `ICharSource`; `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. `UString` is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
+`LexerSource` accepts any implementation of (`ICharSource`](http://loyc.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html); `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. [`UString`](http://loyc.net/doc/code/structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89) is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
 
 Automatic Value Saver
 ---------------------
@@ -441,6 +442,7 @@ Notice that in the middle of the parser there's a series of `Expr` rules: `Expr1
         result:PrefixExpr
         greedy // to suppress ambiguity warning
         (   // Remember to add [Local] when your predicate uses a local variable
+            // (Someday I'll make [Local] the default; use [Hoist] for non-local)
             &{[Local] prec <= 10}
             "=" r:=Expr(10)
             { $result = Op($result, $"=", r); }
@@ -528,7 +530,7 @@ To make this example compile, add the following code above `ExprParser` and ensu
 Tree parsing
 ------------
 
-In virtually all programming languages, it is possible to insert an intermediate stage between the lexer and parser that groups parenthesis, square brackets and braces together, to produce a "token tree". The way I've been doing it is to write a normal lexer that translates code like `{ w = (x + y) * z >> (-1); }` into a sequence of token objects
+In virtually all programming languages, it is possible to insert an intermediate stage between the lexer and parser that groups parentheses, square brackets and curly braces together, to produce a "token tree". The way I've been doing it is to write a normal lexer that translates code like `{ w = (x + y) * z >> (-1); }` into a sequence of token objects
 
     {  w  =  (  x  +  y  )  *  z  >>  (  -  1  )  ;  }
 
@@ -562,14 +564,15 @@ So how do you use LLLPG with a token tree? Well, LLLPG doesn't directly support 
 
 Initially the `LesParser` starts at the "top level" of the token tree, and in this example, it sees just two tokens, two braces. In my parser I use two helper functions to navigate into (`Down`) and out of (`Up`) the child trees:
 
-    Stack<Pair<IListSource<Token>, int>> _parents = new 
-     Stack<Pair<IListSource<Token>, int>>();
+    Stack<Pair<IList<Token>, int>> _parents;
 
-    protected bool Down(IListSource<Token> children)
+    protected bool Down(IList<Token> children)
     {
         if (children != null) {
-            _parents.Push(Pair.Create(_tokens, InputPosition));
-            _tokens = children;
+            if (_parents == null)
+                _parents = new Stack<Pair<IList<Token>, int>>();
+            _parents.Push(Pair.Create(TokenList, InputPosition));
+            _tokenList = children;
             InputPosition = 0;
             return true;
         }
@@ -579,9 +582,11 @@ Initially the `LesParser` starts at the "top level" of the token tree, and in th
     {
         Debug.Assert(_parents.Count > 0);
         var pair = _parents.Pop();
-        _tokens = pair.A;
+        _tokenList = pair.A;
         InputPosition = pair.B;
     }
+
+(After writing this, I decided to add these methods to [`BaseParserForList`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html) so that you call them from your own parsers if you want.)
 
 In the grammar, parenthesis and braces are handled like this:
 
@@ -666,9 +671,9 @@ Shortening your code with LeMP
 
 In LLLPG 1.3 I've finally completed a bunch of basic macro functionality so you can do a bunch of stuff that has nothing to do with parsing. See my new article "[Avoid Tedious Coding With LeMP](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)" to learn more.
 
-The new `unroll` and `replace` macros, in particular, are useful for eliminating some of the boilerplate from an LLLPG parser. I plan to talk more about that in a future article series.
+The new `unroll` and `replace` macros, in particular, are useful for eliminating some of the boilerplate from an LLLPG parser. You'll see these macros in action in the samples for LLLPG 1.3
 
 The End
 -------
 
-I hope you enjoyed this article and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback. As always, I'll be notified of, and will respond to, any comments posted on this article.
+I hope you enjoyed this article and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback, and a job on the C# compiler team. As always, I'll be notified of, and will respond to, any comments posted on this article.

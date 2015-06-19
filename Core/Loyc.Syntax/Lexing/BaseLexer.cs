@@ -13,8 +13,9 @@ namespace Loyc.Syntax.Lexing
 	/// If you are using the <c>inputSource</c> and <c>inputClass</c> options of,
 	/// LLLPG, use <see cref="LexerSource{CharSource}"/> instead. If you want to
 	/// write a lexer that implements <see cref="ILexer{Tok}"/> (so it is compatible
-	/// with posprocessors), use <see cref="BaseILexer{CharSrc,Tok}"/> as your base 
-	/// class instead.
+	/// with postprocessors like <see cref="IndentTokenGenerator"/> and 
+	/// <see cref="TokensToTree"/>), use <see cref="BaseILexer{CharSrc,Tok}"/> as 
+	/// your base class instead.
 	/// <para/>
 	/// This class contains many methods required by LLLPG, such as 
 	/// <see cref="NewSet"/>, <see cref="LA(int)"/>, <see cref="LA0"/>, 
@@ -87,9 +88,9 @@ namespace Loyc.Syntax.Lexing
 		/// object will still keep track of the current <see cref="LineNumber"/> 
 		/// and <see cref="LineStartAt"/> (the index where the current line started) 
 		/// when this parameter is false.</param>
-		public BaseLexer(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		public BaseLexer(CharSrc chars, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
-			Reset(source, fileName, inputPosition, newSourceFile);
+			Reset(chars, fileName, inputPosition, newSourceFile);
 		}
 
 		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
@@ -99,23 +100,23 @@ namespace Loyc.Syntax.Lexing
 		/// This method can be used to avoid memory allocations when you
 		/// need to parse many small strings in a row. If that's your goal, you 
 		/// should set the <c>newSourceFile</c> parameter to false if possible.</remarks>
-		public virtual void Reset(CharSrc source, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
+		public virtual void Reset(CharSrc chars, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
-			CheckParam.IsNotNull<object>("source", source);
-			_source = source;
+			CheckParam.IsNotNull<object>("source", chars);
+			_charSource = chars;
 			_fileName = fileName;
 			_block = UString.Empty;
 			InputPosition = inputPosition;
 			_lineNumber = 1;
 			_lineStartAt = inputPosition;
 			if (newSourceFile)
-				_sourceFile = new LexerSourceFile<CharSrc>(source, fileName);
+				_sourceFile = new LexerSourceFile<CharSrc>(chars, fileName);
 			else
 				_sourceFile = null;
 		}
 		protected void Reset()
 		{
-			Reset(CharSource, FileName, LA0, SourceFile != null);
+			Reset(CharSource, FileName, 0, SourceFile != null);
 		}
 
 		/// <summary>Throws FormatException when it receives an error. Non-errors
@@ -139,10 +140,10 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		protected int LA0 { get; private set; }
-		private CharSrc _source;
+		private CharSrc _charSource;
 		protected CharSrc CharSource
 		{
-			get { return _source; }
+			get { return _charSource; }
 		}
 
 		private string _fileName;
@@ -176,7 +177,7 @@ namespace Loyc.Syntax.Lexing
 
 		private void ReadBlock()
 		{
-			_block = _source.Slice(_inputPosition, CachedBlockSize);
+			_block = _charSource.Slice(_inputPosition, CachedBlockSize);
 			_blockStart = _inputPosition;
 			bool fail;
 			LA0 = _block.TryGet(0, out fail);
@@ -199,7 +200,7 @@ namespace Loyc.Syntax.Lexing
 		int LA_slow(int i)
 		{
 			bool fail;
-			int result = _source.TryGet(_inputPosition + i, out fail);
+			int result = _charSource.TryGet(_inputPosition + i, out fail);
 			return fail ? -1 : result;
 		}
 
@@ -210,7 +211,7 @@ namespace Loyc.Syntax.Lexing
 		#endif
 		protected void Skip()
 		{
-			Debug.Assert(_inputPosition <= _source.Count);
+			Debug.Assert(_inputPosition <= _charSource.Count);
 			InputPosition++;
 		}
 
@@ -617,13 +618,13 @@ namespace Loyc.Syntax.Lexing
 		}
 		protected virtual void Error(bool inverted, HashSet<int> set)
 		{
-			var array = set.ToArray();
+			var array = set.ToList();
 			array.Sort();
 			var list = new List<int>();
 			int i, j;
-			for (i = 0; i < array.Length; i++)
+			for (i = 0; i < array.Count; i++)
 			{
-				for (j = i + 1; j < array.Length && array[j] == array[i] + 1; j++) { }
+				for (j = i + 1; j < array.Count && array[j] == array[i] + 1; j++) { }
 				list.Add(i);
 				list.Add(j - 1);
 			}

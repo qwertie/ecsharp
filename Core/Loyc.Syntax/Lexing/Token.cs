@@ -126,9 +126,9 @@ namespace Loyc.Syntax.Lexing
 		}
 	}
 
-	/// <summary><see cref="WhitespaceTag.Value"/> is used in <see cref="Token.Value"/>
-	/// to represent whitespace and comments, which allows them to be quickly 
-	/// filtered out.</summary>
+	/// <summary><see cref="WhitespaceTag.Value"/> can be used as the
+	/// <see cref="Token.Value"/> of whitespace tokens, to make whitespace
+	/// easy to filter out.</summary>
 	public class WhitespaceTag
 	{
 		protected WhitespaceTag() { }

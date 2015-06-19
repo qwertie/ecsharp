@@ -11,7 +11,7 @@ namespace Loyc.Syntax
 	/// <summary>
 	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
 	/// Generator). Note: this is the old (harder to use) base class design. You 
-	/// should use <see cref="BaseParserForList{Token, LaType}"/> instead.
+	/// should use <see cref="BaseParserForList{Token,MatchType}"/> instead.
 	/// </summary>
 	public abstract class BaseParser<Token, MatchType> 
 		where MatchType : IEquatable<MatchType>

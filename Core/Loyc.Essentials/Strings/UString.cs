@@ -10,15 +10,16 @@ using uchar = System.Int32;
 
 namespace Loyc
 {
-	/// <summary>UString is a wrapper around string that provides a range of 21-bit 
-	/// UCS-4 characters. "U" stands for "Unicode", as in UCS-4, as opposed to a 
-	/// normal string that is UTF-16.</summary>
+	/// <summary>UString is a slice of a string. It is a wrapper around string that 
+	/// provides a <see cref="IBRange{T}"/> of 21-bit UCS-4 characters. "U" stands for 
+	/// "Unicode", as in UCS-4, as opposed to a normal string that is UTF-16.</summary>
 	/// <remarks>
-	/// .NET strings are converted implicitly to UString.
+	/// UString is a slice type: it represents either an entire string, or a region
+	/// of characters in a string. .NET strings are converted implicitly to UString.
 	/// <para/>
 	/// It has been suggested that Java and .NET's reliance on 16-bit "unicode" 
 	/// characters was a mistake, because it turned out that 16 bits was not enough 
-	/// to represent all the world's characters. And I agree.
+	/// to represent all the world's characters.
 	/// <para/>
 	/// Instead it has been suggested that we should use <a href="http://www.utf8everywhere.org/">
 	/// UTF-8 everywhere</a>. To scan UTF-8 data instead of UTF-16 while still 
@@ -38,7 +39,7 @@ namespace Loyc
 	/// The difference between StringSlice and UString is that StringSlice is a
 	/// random-access range of char, while UString is a bidirectional range of
 	/// uchar (int). Since UString implements <see cref="IListSource{Char}"/>,
-	/// it requires StringSlice in order to support the Slice method.
+	/// it requires <see cref="StringSlice"/> in order to support the Slice method.
 	/// <para/>
 	/// UString has a <see cref="DecodeAt(int)"/> method that tries to decode
 	/// a UTF character to UCS at a particular index.

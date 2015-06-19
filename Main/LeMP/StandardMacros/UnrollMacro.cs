@@ -50,7 +50,7 @@ namespace LeMP
 						
 						// Check for duplicate names
 						for (int j = 0; j < i; j++)
-							if (replacements[i].A == replacements[j].A)
+							if (replacements[i].A == replacements[j].A && replacements[i].A.Name != "_")
 								sink.Write(Severity.Error, vars[i], "unroll: duplicate name in the left-hand tuple"); // non-fatal
 					}
 				} else
@@ -82,8 +82,8 @@ namespace LeMP
 			}
 
 			foreach (var r in replacements)
-				if (r.C == 0)
-					sink.Write(Severity.Warning, r.B, "Replacement variable '{0}' was never used", r.A);
+				if (r.C == 0 && !r.A.Name.StartsWith("_"))
+					sink.Write(Severity.Warning, var, "Replacement variable '{0}' was never used", r.A);
 			
 			return body.With(S.Splice, output.ToRVList());
 		}
@@ -124,14 +124,16 @@ namespace LeMP
 					for (int r = 0; r < Replacements.Count; r++) {
 						var repl = Replacements[r];
 						if (id == repl.A) {
-							if (repl.B.IsId)
+							if (repl.B.IsId) {
 								ReplaceAt(ref modified, ref tokens, i, token.WithValue(repl.B.Name));
-							else if (repl.B.IsLiteral) {
+							} else if (repl.B.IsLiteral) {
 								ReplaceAt(ref modified, ref tokens, i, new Token(
 									(int)Token.GetLiteralKind(repl.B.Value),
 									token.StartIndex, token.Length, token.Style,
 									repl.B.Value));
 							}
+							if (!repl.B.IsCall)
+								Replacements.InternalArray[r].C++; // prevent 'never used' warning
 						}
 					}
 				} else if ((children = token.Children) != null) {

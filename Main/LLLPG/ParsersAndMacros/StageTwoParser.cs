@@ -64,6 +64,7 @@ namespace Loyc.LLParserGenerator
 		static readonly Symbol _Error = GSymbol.Get("error");
 		static readonly Symbol _DefaultError = GSymbol.Get("default_error");
 		static readonly Symbol _Local = GSymbol.Get("Local");
+		static readonly Symbol _Hoist = GSymbol.Get("Hoist");
 		static readonly Symbol _Any = GSymbol.Get("any");
 		
 		enum Context { Rule, GateLeft, GateRight, And };
@@ -130,11 +131,15 @@ namespace Loyc.LLParserGenerator
 				{
 					expr = expr.Args[0];
 					var subpred = AutoNodeToPred(expr, Context.And);
-					LNode subexpr = subpred as LNode;
+					LNode subexpr = subpred as LNode, subexpr0 = subexpr;
 					bool local = false;
-					if (subexpr != null && (subpred = subexpr.WithoutAttrNamed(_Local)) != subexpr)
-						local = true;
-					return new AndPred(expr, subpred, not, local);
+					if (subexpr != null) {
+						if ((subexpr = subexpr.WithoutAttrNamed(_Local)) != subexpr0)
+							local = true;
+						// we should default to [Local] eventually, so recognize [Hoist] too
+						subexpr = subexpr.WithoutAttrNamed(_Hoist);
+					}
+					return new AndPred(expr, subexpr ?? subpred, not, local);
 				}
 				else if (expr.Calls(S.NotBits, 1))
 				{
