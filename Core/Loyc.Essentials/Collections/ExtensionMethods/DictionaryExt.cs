@@ -29,6 +29,17 @@ namespace Loyc.Collections
 			return value;
 		}
 		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
+		/// not throw an exception when <c>key==null</c> (it simply returns NoValue),
+		/// and it returns the result as <see cref="Maybe{V}"/> instead of storing
+		/// the result in an "out" parameter.</summary>
+		public static Maybe<V> TryGetValue<K, V>(this IDictionary<K, V> dict, K key)
+		{
+			V value;
+			if (key == null || !dict.TryGetValue(key, out value))
+				return Maybe<V>.NoValue;
+			return value;
+		}
+		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
 		/// not throw an exception when <c>key==null</c> (it simply returns false).</summary>
 		public static bool TryGetValueSafe<K, V>(this IDictionary<K, V> dict, K key, out V value)
 		{

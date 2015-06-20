@@ -1,10 +1,5 @@
 ﻿/*
- * Created by SharpDevelop.
- * User: Pook
- * Date: 4/10/2011
- * Time: 9:27 AM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
+ * Created: 4/10/2011
  */
 using System;
 using System.Collections.Generic;

@@ -32,7 +32,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\LeMP\Debug.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.Net35\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -64,9 +64,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <OutputPath>..\..\Bin\LeMP\Release.Net35\</OutputPath>
+    <OutputPath>..\..\Bin\Release.Net35\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
-    <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -102,7 +102,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug.NET4|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\LeMP\Debug.NET4\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.NET4\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -141,9 +141,9 @@
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU'">
-    <OutputPath>..\..\Bin\LeMP\Release.NET4\</OutputPath>
+    <OutputPath>..\..\Bin\Release.NET4\</OutputPath>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
-    <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -155,6 +155,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -167,7 +169,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\LeMP\Debug.NET45\</OutputPath>
+    <OutputPath>..\..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -187,9 +189,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
-    <OutputPath>..\..\Bin\LeMP\Release.NET45\</OutputPath>
+    <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;DotNet45</DefineConstants>
-    <DocumentationFile>..\..\Bin\LeMP\Release.NET4\LeMP.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\LeMP.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573,0419</NoWarn>
     <DebugType>pdbonly</DebugType>

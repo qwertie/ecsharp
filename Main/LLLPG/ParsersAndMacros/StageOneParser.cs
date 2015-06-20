@@ -136,14 +136,7 @@ namespace Loyc.LLParserGenerator
 		// index into source text of the first token at the current depth (inside 
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
-		protected IMessageSink _messages;
 		protected IParsingService _hostLanguage;
-
-		public IMessageSink ErrorSink
-		{
-			get { return _messages; } 
-			set { _messages = value ?? Loyc.MessageSink.Current; }
-		}
 		
 		#region Methods required by BaseLexer & LLLPG
 		
@@ -276,7 +269,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var ch = group.Children;
 			if (ch != null)
-				return new RVList<LNode>(_hostLanguage.Parse(ch, ch.File, _messages, ParsingService.Exprs));
+				return new RVList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
 			else
 				return RVList<LNode>.Empty;
 		}
@@ -301,7 +294,7 @@ namespace Loyc.LLParserGenerator
 			else {
 				var mode = singleExpr ? ParsingService.Exprs : ParsingService.Stmts;
 				return F.Braces(
-					_hostLanguage.Parse(ch, ch.File, _messages, mode), 
+					_hostLanguage.Parse(ch, ch.File, ErrorSink, mode), 
 					p.StartIndex, endIndex);
 			}
 		}

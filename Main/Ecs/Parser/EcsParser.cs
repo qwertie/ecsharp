@@ -26,7 +26,6 @@ namespace Ecs.Parser
 	/// </remarks>
 	public partial class EcsParser : BaseParser<Token>
 	{
-		protected IMessageSink _messages;
 		protected LNodeFactory F;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
@@ -34,11 +33,6 @@ namespace Ecs.Parser
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 
-		public IMessageSink ErrorSink
-		{
-			get { return _messages; } 
-			set { _messages = value ?? Loyc.MessageSink.Current; }
-		}
 		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
 
 		static readonly Severity _Error = Severity.Error;
@@ -49,7 +43,7 @@ namespace Ecs.Parser
 		protected LNode _triviaForwardedProperty;
 		protected LNode _filePrivate;
 
-		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink)
+		public EcsParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink) : base(file)
 		{
 			ErrorSink = messageSink;
 			Reset(tokens, file);
@@ -102,7 +96,7 @@ namespace Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
+			ErrorSink.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
 		#region Methods required by base class and by LLLPG
@@ -123,11 +117,11 @@ namespace Ecs.Parser
 		}
 		protected void Error(LNode node, string message, params object[] args)
 		{
-			_messages.Write(_Error, node, message, args);
+			ErrorSink.Write(_Error, node, message, args);
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			_messages.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
+			ErrorSink.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
 		}
 		protected override void Error(int lookaheadIndex, string message)
 		{
@@ -137,7 +131,7 @@ namespace Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			_messages.Write(_Error, pos, message, args);
+			ErrorSink.Write(_Error, pos, message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{

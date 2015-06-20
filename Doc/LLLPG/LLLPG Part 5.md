@@ -6,14 +6,14 @@ Frustrated that regular expressions are unintelligible, repetitive, hard to get 
 Welcome to part 5
 -----------------
 
-_New to LLLPG? You could start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)_.
+_New to LLLPG? You could start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), but if you've parsed things before, feel free to start here._
 
 I've finally decided to finish this article series, and to give LLLPG a few new features to make it more flexible and appealing, especially as a alternative to regexes. Half of this article is devoted just to the new features, and the other half is devoted to advanced parsing tips.
 
 To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language. The tool accepts normal C# code interspersed with LLLPG grammars or grammar fragments, and it outputs plain C#. Advantages of LLLPG over other tools:
 
 - LLLPG generates simple, relatively concise, fast code.
-- As a Visual Studio Custom Tool, it is ideal for medium-size parsing tasks that are a bit too big for a regex. LLLPG is also sophisticated enough to parse complex languages like "enhanced C#", LLLPG's usual input language.
+- As a Visual Studio Custom Tool, it is ideal for medium-size parsing tasks that are a bit too large for a regex. LLLPG is also sophisticated enough to parse complex languages like "enhanced C#", LLLPG's usual input language.
 - You can add a parser to an existing class--ideal for writing `static Parse` methods.
 - You can avoid memory allocation during parsing (ideal for parsing short strings!)
 - No runtime library is required (although I suggest using Loyc.Syntax.dll as your runtime library for maximum flexibility, along with its dependencies Loyc.Collections.dll and Loyc.Essentials.dll.) (TODO: update NuGet package AND standalone BaseLexer, rename it to LexerSource)

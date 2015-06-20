@@ -25,7 +25,7 @@ import Loyc.Collections;
 import Loyc.Collections.Impl;
 
 namespace Ecs.Parser
-{
+:{
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
@@ -1436,7 +1436,7 @@ namespace Ecs.Parser
 					{	// Not using braces? Could be a missing semicolon...
 						if (ColumnOf(block.Range.StartIndex) <= ColumnOf(id.StartIndex)
 							|| !char.IsLower(id.Value.ToString().FirstOrDefault()))
-							_messages.Write(_Warning, block, "Probable missing semicolon before this statement.");
+							ErrorSink.Write(_Warning, block, "Probable missing semicolon before this statement.");
 					}
 				)
 			|	fwd:="==>" e:=ExprStart(true) ";"
