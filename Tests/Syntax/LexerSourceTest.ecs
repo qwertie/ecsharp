@@ -2,6 +2,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Loyc;
 using Loyc.Collections;
@@ -120,7 +121,7 @@ namespace Loyc.Syntax.Tests
 			(dot:'.')?
 			'0'..'9'+
 			(&{dot == 0} '.' '0'..'9'+)?
-			{ _value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString()); }
+			{ _value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString(), CultureInfo.InvariantCulture); }
 		];
 
 		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST) {
