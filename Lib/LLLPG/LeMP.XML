@@ -4,6 +4,176 @@
         <name>LeMP</name>
     </assembly>
     <members>
+        <member name="T:LeMP.Compiler">
+            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
+            set of source files.</summary>
+            <remarks>
+            Helps you process command-line options (e.g. --outext=cs), complete 
+            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see 
+            cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
+            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
+            </remarks>
+        </member>
+        <member name="F:LeMP.Compiler.Languages">
+            <summary>A list of available syntaxes.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
+            <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
+            based on the command-line options.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
+            <summary>Finds a language service in ExtensionToLanguage() for the 
+            specified file extension, or null if there is no match.</summary>
+        </member>
+        <member name="P:LeMP.IMacroContext.Sink">
+            <summary>Returns the message sink, used for writing warnings and errors.</summary>
+            <remarks>For backward compatibility, IMacroContext itself implements 
+            IMessageSink, but if I were starting from scratch you'd have to write 
+            output through this property.</remarks>
+        </member>
+        <member name="P:LeMP.IMacroContext.ScopedProperties">
+            <summary>Returns a table of "properties" (arbitrary key-value pairs)
+            that exist in the current scope. This dictionary is "persistent" in the
+            computer science sense; any changes to these properties affect only the
+            current scope and child scopes. When the current scope ends, the set of 
+            properties that existed in the parent scope are restored.</summary>
+            <remarks>
+            Scopes are bounded by curly brace nodes (Call nodes named "{}").
+            </remarks>
+        </member>
+        <member name="P:LeMP.IMacroContext.Ancestors">
+            <summary>Returns a list of ancestors of the current node being 
+            processed. Normally Ancestors[0] is a #splice node that contains a list 
+            of all top-level statements in the file, and Parents.Last() is the
+            current node.</summary>
+            <remarks>You would expect that Ancestors[N] would contain Ancestors[N+1]
+            as part of the attributes, target or arguments, but this is not always
+            true. The ancestor list contains original versions of each node; when a
+            child node is changed by a macro, the parent is not updated in this 
+            list, but macro processing continues for the descendants of that child,
+            so the ancestor list may occasionally seem incoherent.</remarks>
+        </member>
+        <member name="P:LeMP.IMacroContext.Parent">
+            <summary>Gets the logical parent of the current node, which is 
+            <c>Ancestors[Ancestors.Count - 2]</c>, or null if the current node
+            is the root node.</summary>
+            <remarks>Please note that the current node may not actually exist in 
+            the parent node due to changes made earlier to the current node by 
+            other macros (or even the same macro); the Parent property still 
+            returns the old version of the parent node.</remarks>
+        </member>
+        <member name="M:LeMP.IMacroContext.PreProcessChildren">
+            <summary>Applies all available macros to the current node's children 
+            and returns the result.</summary>
+            <remarks>
+            This method only processes children once. If this method is called 
+            again for the same node, it returns a cached result.
+            <para/>
+            If the currently-running macro fails the result may be thrown away
+            and the effort of processing the children will have been wasted. If
+            the macro succeeds a its <see cref="T:LeMP.LexicalMacro"/> attribute does not 
+            include <c>Mode = MacroMode.NoReprocessing</c>, the children will 
+            (normally) be processed again after the macro returns.
+            </remarks>
+        </member>
+        <member name="P:LeMP.IMacroContext.RemainingNodes">
+            <summary>Gets a list of the remaining nodes (arguments/statements or 
+            attributes) after this point in the code stream.</summary>
+            <remarks>
+            The list is null when processing a target node.
+            <para/>
+            For example, if your macro is called "macro" and it appears in the
+            following context:
+            <code>{
+              a();
+              macro(b());
+              c();
+              d();
+            }</code>
+            Then this list will contain two items, c() and d(). Similarly, if
+            the context is <c>[a, b, macro(c), d, e]</c> then the list will contain
+            the items d and e.
+            </remarks>
+        </member>
+        <member name="P:LeMP.IMacroContext.IsAttribute">
+            <summary>Returns true if the current node is in the attribute list of 
+            its immediate parent.</summary>
+        </member>
+        <member name="P:LeMP.IMacroContext.IsTarget">
+            <summary>Returns true if the current node is the target of its parent
+            call node.</summary>
+        </member>
+        <member name="P:LeMP.IMacroContext.DropRemainingNodes">
+            <summary>Gets or sets a value that indicates whether to drop all 
+            remaining node after the current one when the current macro returns.
+            This property has no effect if the macro rejects the input by returning 
+            null.</summary>
+            <remarks>See remarks at <see cref="M:LeMP.MacroContext.GetArgsAndBody(LeMP.IMacroContext,System.Boolean)"/>.</remarks>
+        </member>
+        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)">
+            <summary>Runs the macro processor on the specified node(s).</summary>
+            <param name="input">The node or node list to process.</param>
+            <param name="asRoot">If false, the nodes are treated as children of the 
+            current node (using the current list of ancestors as a basis), otherwise
+            the nodes are processed alone as if they were a separate file.</param>
+            <param name="resetOpenNamespaces">If false, the set of open namespaces
+            stays the same; if true it is cleared to the set of pre-opened 
+            namespaces (<see cref="F:LeMP.MacroProcessor.PreOpenedNamespaces"/>).</param>
+            <remarks>The node(s)</remarks>
+        </member>
+        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Syntax.LNode,System.Boolean,System.Boolean,System.Boolean)">
+            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)"/>
+        </member>
+        <member name="P:LeMP.IMacroContext.AllKnownMacros">
+            <summary>Gets information about all macros registered with the macro 
+            processor, including macros whose namespace has not been opened with
+            <c>#importMacros</c>.</summary>
+        </member>
+        <member name="T:LeMP.MacroContext">
+            <summary>Standard extension methods for <see cref="T:LeMP.IMacroContext"/>.</summary>
+        </member>
+        <member name="M:LeMP.MacroContext.GetArgsAndBody(LeMP.IMacroContext,System.Boolean)">
+            <summary>Splits the current node into a pair of "argument" and "body" 
+            lists, potentially treating ctx.RemainingNodes as the "body" list.</summary>
+            <param name="ctx">Context of the current macro.</param>
+            <param name="orRemainingNodes">Whether to use ctx.RemainingNodes as
+            the second list if there is no {braces node} at the end of 
+            ctx.CurrentNode().Args.</param>
+            <returns>A pair where the first item is "arguments" and the second is 
+            the "body". If no body was detected then the second list is empty and
+            the first list is simply ctx.CurrentNode().Args.</returns>
+            <remarks>
+            EC# supports a syntax specially designed for macro calls: 
+            <code>macroName(args) { stmts; }</code>
+            This is stored as a call node with a body, in braces, as its final parameter,
+            i.e. it is equivalent to
+            <code>macroName(args, { stmts; });</code>
+            A similar, but more general feature called "superexpressions" exists in LES.
+            <para/>
+            Some macros would additionally like to apply themselves to all remaining
+            nodes in the current list of statements or expressions, i.e.
+            <code>macroName(args); stmts;</code>
+            LeMP supports this through the <see cref="P:LeMP.IMacroContext.DropRemainingNodes"/>
+            and <see cref="P:LeMP.IMacroContext.RemainingNodes"/> APIs. If your macro wants
+            to apply itself to all remaining statements or expressions in the 
+            current sequence of nodes, it can set the DropRemainingNodes property 
+            to true and then simply incorporate RemainingNodes into its own output
+            (if you need to return multiple statements from your macro, use 
+            <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a RVList{LNode} to an 
+            LNode.)
+            <para/>
+            This extension method helps you by detecting whether the current node
+            has a body in braces or not. If the braces are present, the returned
+            pair consists of the args shortened by one (i.e.
+            <c>ctx.CurrentNode().Args.WithoutLast(1)</c>) and the Args of the "{}"
+            braces node. Otherwise, <c>ctx.CurrentNode().Args</c> is the first item
+            in the pair.
+            <para/>
+            In the latter case, if <c>orRemainingNodes</c> then this method sets
+            <c>ctx.DropRemainingNodes</c> to true and uses <c>ctx.RemainingNodes</c>
+            as the second list. Otherwise the second list is left blank.
+            </remarks>
+        </member>
         <member name="T:LeMP.InputOutput">
             <summary>
             For LeMP: an input file plus per-file options (input and output language) and output code.
@@ -51,6 +221,9 @@
             TODO: add method for processing an LNode instead of a list of source files.
             </remarks>
         </member>
+        <member name="P:LeMP.MacroProcessor.Current">
+            <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+        </member>
         <member name="M:LeMP.MacroProcessor.ProcessSynchronously(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files one at a time (may be easier for debugging).</summary>
         </member>
@@ -61,102 +234,8 @@
         <member name="M:LeMP.MacroProcessor.ProcessAsync(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
         </member>
-        <member name="P:LeMP.MacroProcessor.Current">
-            <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
-        </member>
         <member name="M:LeMP.MacroInfo.CompareTo(LeMP.MacroInfo)">
             <summary>Compare priorities of two macros.</summary>
-        </member>
-        <member name="T:LeMP.StandardMacros">
-            <summary>
-            Standard macros, such as unroll() and replace() that can work in all Loyc languages.
-            Also includes macros designed to convert EC# feature to C# (e.g. tuples).
-            </summary>
-        </member>
-        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
-            <summary>Searches a list of expressions/statements for one or more 
-            patterns, and performs replacements.</summary>
-            <param name="stmts">A list of expressions/statements in which to search.</param>
-            <param name="patterns">Each pair consists of (A) something to search 
-            for and (B) a replacement expression. Part A can use the substitution
-            operator with an identifier inside (e.g. $Foo) to "capture" any 
-            subexpression, and part B can use the same substitution (e.g. $Foo)
-            to insert the captured subexpression(s) into the output.</param>
-            <param name="replacementCount">Number of replacements that occurred.</param>
-            <returns>The result of applying the replacements.</returns>
-            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.RVList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
-        </member>
-        <member name="M:LeMP.StandardMacros.ReplaceInTokenTree(Loyc.Syntax.Lexing.TokenTree@,Loyc.Collections.Impl.InternalList{Loyc.Triplet{Loyc.Symbol,Loyc.Syntax.LNode,System.Int32}})">
-            <summary>Replaces Ids with Ids or Literals in token trees.</summary>
-        </member>
-        <member name="M:LeMP.StandardMacros.FindStaticReadOnlies``1(System.Type,System.Predicate{System.Reflection.FieldInfo})">
-            <summary>Helper function that finds the static readonly fields of a given 
-            type in a given class, and creates a table from the _values_ of those 
-            fields to the _names_ of those fields.</summary>
-        </member>
-        <member name="T:LeMP.Prelude.Macros">
-            <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
-            <c>import macros your.namespace.name</c> as an alias for 
-            <c>#importMacros(your.namespace.name)</c>.
-            </summary>
-        </member>
-        <member name="T:LeMP.Prelude.Les.Macros">
-            <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.IsModified">
-            <summary>Gets whether the file in the specified editor is modified.</summary>
-            <remarks>TextEditorControl doesn't maintain its own internal modified 
-            flag, so we use the '*' shown after the file name to represent the 
-            modified state.</remarks>
-        </member>
-        <member name="F:TextEditor.LempDemoPanel.components">
-            <summary> 
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.Dispose(System.Boolean)">
-            <summary> 
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.InitializeComponent">
-            <summary> 
-            Required method for Designer support - do not modify 
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="P:TextEditor.LempDemoPanel.EditorSettings">
-            <summary>This variable holds the editor settings (whether to show line 
-            numbers, etc.) that all editor controls share.</summary>
-        </member>
-        <member name="T:LeMP.Compiler">
-            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
-            set of source files.</summary>
-            <remarks>
-            Helps you process command-line options (e.g. --outext=cs), complete 
-            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
-            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
-            </remarks>
-        </member>
-        <member name="F:LeMP.Compiler.Languages">
-            <summary>A list of available syntaxes.</summary>
-        </member>
-        <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
-            <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
-            based on the command-line options.</summary>
-        </member>
-        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
-            <summary>Finds a language service in ExtensionToLanguage() for the 
-            specified file extension, or null if there is no match.</summary>
-        </member>
-        <member name="T:LeMP.TestCompiler">
-            <summary>A simple version of Compiler that takes a single input and produces 
-            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
-        </member>
-        <member name="M:LeMP.TestCompiler.StripExtraWhitespace(System.String,System.String[])">
-            <summary>Strips whitespace and single-line comments from a string.
-            Helps test whether two blocks of code are "sufficiently equal".</summary>
         </member>
         <member name="T:LeMP.MacroProcessorTask">
             <summary>Holds the transient state of the macro processor. Since one
@@ -172,29 +251,29 @@
                 Process   // initializes _s, _ancestorStack, root scope, etc.
                    |      
                    v      
-            +-&gt;ApplyMacrosToList // uses _s implicitly                     
+            +->ApplyMacrosToList // uses _s implicitly                     
             |      |                                                       
             |      |  +----------------------------------------------------------+
             |      |  |                                                          |
             |      v  v                                                          |
-            |  ApplyMacros----1-----&gt;GetApplicableMacros                         |
+            |  ApplyMacros----1----->GetApplicableMacros                         |
             |      |    |                                                        |
             |      |*OR*|                                                        |
-            |      |    +-----2-----&gt;ApplyMacrosFound                            |
+            |      |    +-----2----->ApplyMacrosFound                            |
             |      |     (macro(s)          |                                    |
             |      |      found)            v                                    |
             |      |                 ApplyMacrosFound2                           |
             |      |                         |                                   |
             |      |                         v                                   |
-            |      |                 ApplyMacrosFound3---1----&gt;invoke macro(s)   |
+            |      |                 ApplyMacrosFound3---1---->invoke macro(s)   |
             |      |                         |    |  |         (SimpleMacro fn)  |
-            |      |                         3    3  +---2----&gt;PrintMessages     |
+            |      |                         3    3  +---2---->PrintMessages     |
             |      |                         |    |                              |
             |      |                         |*OR*|  Process same node again     |
             |      |                  Process|    +------------------------------+
             |      |(no macros       Children|    (if a macro was applied here)
             |      | applicable)             |                                 
-            |      +--------2-------&gt;ApplyMacrosToChildrenOf                   
+            |      +--------2------->ApplyMacrosToChildrenOf                   
             |                                +                                 
             |  Attrs and Args of child node  |                                 
             +--------------------------------+                                 
@@ -214,7 +293,8 @@
             usually the object called <c>_s</c> is re-used for all the different nodes, 
             but sometimes a macro will ask for its child nodes to be processed, in 
             which case a second <see cref="T:LeMP.MacroProcessorTask.CurNodeState"/> must be introduced to
-            avoid destroying the original state. Some of the fields of <see cref="T:LeMP.MacroProcessorTask.CurNodeState"/> would have just been local variables, if not for the 
+            avoid destroying the original state. Some of the fields of <see cref=
+            "T:LeMP.MacroProcessorTask.CurNodeState"/> would have just been local variables, if not for the 
             fact that <see cref="T:LeMP.IMacroContext"/> allows a currently-running macro to 
             view or even modify some of this information.
             </remarks>
@@ -234,109 +314,22 @@
             true if the remainder of the nodes in the current list of nodes
             should be dropped.</returns>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcessChildren">
-            <summary>Applies all available macros to the current node's children 
-            and returns the result.</summary>
-            <remarks>
-            This method only processes children once. If this method is called 
-            again for the same node, it returns a cached result.
-            <para/>
-            If the currently-running macro fails the result may be thrown away
-            and the effort of processing the children will have been wasted. If
-            the macro succeeds a its <see cref="T:LeMP.LexicalMacro"/> attribute does not 
-            include <c>Mode = MacroMode.NoReprocessing</c>, the children will 
-            (normally) be processed again after the macro returns.
-            </remarks>
+        <member name="T:LeMP.TestCompiler">
+            <summary>A simple version of Compiler that takes a single input and produces 
+            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)">
-            <summary>Runs the macro processor on the specified node(s).</summary>
-            <param name="input">The node or node list to process.</param>
-            <param name="asRoot">If false, the nodes are treated as children of the 
-            current node (using the current list of ancestors as a basis), otherwise
-            the nodes are processed alone as if they were a separate file.</param>
-            <param name="resetOpenNamespaces">If false, the set of open namespaces
-            stays the same; if true it is cleared to the set of pre-opened 
-            namespaces (<see cref="F:LeMP.MacroProcessor.PreOpenedNamespaces"/>).</param>
-            <remarks>The node(s)</remarks>
+        <member name="M:LeMP.TestCompiler.StripExtraWhitespace(System.String,System.String[])">
+            <summary>Strips whitespace and single-line comments from a string.
+            Helps test whether two blocks of code are "sufficiently equal".</summary>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Syntax.LNode,System.Boolean,System.Boolean,System.Boolean)">
-            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)"/>
+        <member name="T:LeMP.Prelude.Macros">
+            <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
+            <c>import macros your.namespace.name</c> as an alias for 
+            <c>#importMacros(your.namespace.name)</c>.
+            </summary>
         </member>
-        <member name="P:LeMP.IMacroContext.Sink">
-            <summary>Returns the message sink, used for writing warnings and errors.</summary>
-            <remarks>For backward compatibility, IMacroContext itself implements 
-            IMessageSink, but if I were starting from scratch you'd have to write 
-            output through this property.</remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.ScopedProperties">
-            <summary>Returns a table of "properties" (arbitrary key-value pairs)
-            that exist in the current scope. This dictionary is "persistent" in the
-            computer science sense; any changes to these properties affect only the
-            current scope and child scopes. When the current scope ends, the set of 
-            properties that existed in the parent scope are restored.</summary>
-            <remarks>
-            Scopes are bounded by curly brace nodes (Call nodes named "{}").
-            </remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.Ancestors">
-            <summary>Returns a list of ancestors of the current node being 
-            processed. Normally Ancestors[0] is a #splice node that contains a list 
-            of all top-level statements in the file, and Parents.Last() is the
-            current node.</summary>
-            <remarks>You would expect that Ancestors[N] would contain Ancestors[N+1]
-            as part of the attributes, target or arguments, but this is not always
-            true. The ancestor list contains original versions of each node; when a
-            child node is changed by a macro, the parent is not updated in this 
-            list, but macro processing continues for the descendants of that child,
-            so the ancestor list may occasionally seem incoherent.</remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.Parent">
-            <summary>Gets the logical parent of the current node, which is 
-            <c>Ancestors[Ancestors.Count - 2]</c>, or null if the current node
-            is the root node.</summary>
-            <remarks>Please note that the current node may not actually exist in 
-            the parent node due to changes made earlier to the current node by 
-            other macros (or even the same macro); the Parent property still 
-            returns the old version of the parent node.</remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.RemainingNodes">
-            <summary>Gets a list of the remaining nodes (arguments/statements or 
-            attributes) after this point in the code stream.</summary>
-            <remarks>
-            The list is null when processing a target node.
-            <para/>
-            For example, if your macro is called "macro" and it appears in the
-            following context:
-            <code>{
-              a();
-              macro(b());
-              c();
-              d();
-            }</code>
-            Then this list will contain two items, c() and d(). Similarly, if
-            the context is <c>[a, b, macro(c), d, e]</c> then the list will contain
-            the items d and e.
-            </remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.IsAttribute">
-            <summary>Returns true if the current node is in the attribute list of 
-            its immediate parent.</summary>
-        </member>
-        <member name="P:LeMP.IMacroContext.IsTarget">
-            <summary>Returns true if the current node is the target of its parent
-            call node.</summary>
-        </member>
-        <member name="P:LeMP.IMacroContext.DropRemainingNodes">
-            <summary>Gets or sets a value that indicates whether to drop all 
-            remaining node after the current one when the current macro returns.
-            This property has no effect if the macro rejects the input by returning 
-            null.</summary>
-            <remarks>See remarks at <see cref="M:LeMP.MacroContext.GetArgsAndBody(LeMP.IMacroContext,System.Boolean)"/>.</remarks>
-        </member>
-        <member name="P:LeMP.IMacroContext.AllKnownMacros">
-            <summary>Gets information about all macros registered with the macro 
-            processor, including macros whose namespace has not been opened with
-            <c>#importMacros</c>.</summary>
+        <member name="T:LeMP.Prelude.Les.Macros">
+            <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
         </member>
         <member name="T:LeMP.LexicalMacro">
             <summary>Method signature of an LEL simple macro.</summary>
@@ -422,6 +415,33 @@
         <member name="F:LeMP.MacroMode.PriorityMask">
             <summary>For internal use to isolate the priority of a macro.</summary>
         </member>
+        <member name="T:LeMP.StandardMacros">
+            <summary>
+            Standard macros, such as unroll() and replace() that can work in all Loyc languages.
+            Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+            </summary>
+        </member>
+        <member name="M:LeMP.StandardMacros.FindStaticReadOnlies``1(System.Type,System.Predicate{System.Reflection.FieldInfo})">
+            <summary>Helper function that finds the static readonly fields of a given 
+            type in a given class, and creates a table from the _values_ of those 
+            fields to the _names_ of those fields.</summary>
+        </member>
+        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
+            <summary>Searches a list of expressions/statements for one or more 
+            patterns, and performs replacements.</summary>
+            <param name="stmts">A list of expressions/statements in which to search.</param>
+            <param name="patterns">Each pair consists of (A) something to search 
+            for and (B) a replacement expression. Part A can use the substitution
+            operator with an identifier inside (e.g. $Foo) to "capture" any 
+            subexpression, and part B can use the same substitution (e.g. $Foo)
+            to insert the captured subexpression(s) into the output.</param>
+            <param name="replacementCount">Number of replacements that occurred.</param>
+            <returns>The result of applying the replacements.</returns>
+            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.RVList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
+        </member>
+        <member name="M:LeMP.StandardMacros.ReplaceInTokenTree(Loyc.Syntax.Lexing.TokenTree@,Loyc.Collections.Impl.InternalList{Loyc.Triplet{Loyc.Symbol,Loyc.Syntax.LNode,System.Int32}})">
+            <summary>Replaces Ids with Ids or Literals in token trees.</summary>
+        </member>
         <member name="F:TextEditor.FindAndReplaceForm.components">
             <summary>
             Required designer variable.
@@ -451,6 +471,12 @@
             <summary>Sets the region to search. The region is updated 
             automatically as the document changes.</summary>
         </member>
+        <member name="P:TextEditor.TextEditorSearcher.BeginOffset">
+            <summary>Begins the start offset for searching</summary>
+        </member>
+        <member name="P:TextEditor.TextEditorSearcher.EndOffset">
+            <summary>Begins the end offset for searching</summary>
+        </member>
         <member name="M:TextEditor.TextEditorSearcher.FindNext(System.Int32,System.Boolean,System.Boolean@)">
             <summary>Finds next instance of LookFor, according to the search rules 
             (MatchCase, MatchWholeWordOnly).</summary>
@@ -458,81 +484,13 @@
             <remarks>If there is a match at beginAtOffset precisely, it will be returned.</remarks>
             <returns>Region of document that matches the search string</returns>
         </member>
-        <member name="P:TextEditor.TextEditorSearcher.BeginOffset">
-            <summary>Begins the start offset for searching</summary>
-        </member>
-        <member name="P:TextEditor.TextEditorSearcher.EndOffset">
-            <summary>Begins the end offset for searching</summary>
-        </member>
         <member name="T:TextEditor.HighlightGroup">
             <summary>Bundles a group of markers together so that they can be cleared 
             together.</summary>
         </member>
-        <member name="T:LeMP.MacroContext">
-            <summary>Standard extension methods for <see cref="T:LeMP.IMacroContext"/>.</summary>
-        </member>
-        <member name="M:LeMP.MacroContext.GetArgsAndBody(LeMP.IMacroContext,System.Boolean)">
-            <summary>Splits the current node into a pair of "argument" and "body" 
-            lists, potentially treating ctx.RemainingNodes as the "body" list.</summary>
-            <param name="ctx">Context of the current macro.</param>
-            <param name="orRemainingNodes">Whether to use ctx.RemainingNodes as
-            the second list if there is no {braces node} at the end of 
-            ctx.CurrentNode().Args.</param>
-            <returns>A pair where the first item is "arguments" and the second is 
-            the "body". If no body was detected then the second list is empty and
-            the first list is simply ctx.CurrentNode().Args.</returns>
-            <remarks>
-            EC# supports a syntax specially designed for macro calls: 
-            <code>macroName(args) { stmts; }</code>
-            This is stored as a call node with a body, in braces, as its final parameter,
-            i.e. it is equivalent to
-            <code>macroName(args, { stmts; });</code>
-            A similar, but more general feature called "superexpressions" exists in LES.
-            <para/>
-            Some macros would additionally like to apply themselves to all remaining
-            nodes in the current list of statements or expressions, i.e.
-            <code>macroName(args); stmts;</code>
-            LeMP supports this through the <see cref="P:LeMP.IMacroContext.DropRemainingNodes"/>
-            and <see cref="P:LeMP.IMacroContext.RemainingNodes"/> APIs. If your macro wants
-            to apply itself to all remaining statements or expressions in the 
-            current sequence of nodes, it can set the DropRemainingNodes property 
-            to true and then simply incorporate RemainingNodes into its own output
-            (if you need to return multiple statements from your macro, use 
-            <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a RVList{LNode} to an 
-            LNode.)
-            <para/>
-            This extension method helps you by detecting whether the current node
-            has a body in braces or not. If the braces are present, the returned
-            pair consists of the args shortened by one (i.e.
-            <c>ctx.CurrentNode().Args.WithoutLast(1)</c>) and the Args of the "{}"
-            braces node. Otherwise, <c>ctx.CurrentNode().Args</c> is the first item
-            in the pair.
-            <para/>
-            In the latter case, if <c>orRemainingNodes</c> then this method sets
-            <c>ctx.DropRemainingNodes</c> to true and uses <c>ctx.RemainingNodes</c>
-            as the second list. Otherwise the second list is left blank.
-            </remarks>
-        </member>
         <member name="T:TextEditor.LempDemoForm">
             <summary>Main form for a multi-file text editor based on 
             ICSharpCode.TextEditor.TextEditorControl.</summary>
-        </member>
-        <member name="F:TextEditor.LempDemoForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
         </member>
         <member name="F:TextEditor.LempDemoForm._editorSettings">
             <summary>This variable holds the editor settings (whether to show line 
@@ -565,6 +523,12 @@
             <remarks>We don't have to sync settings between the editors because 
             they all share the same DefaultTextEditorProperties object.</remarks>
         </member>
+        <member name="P:TextEditor.LempDemoForm.AllEditors">
+            <summary>Returns a list of all editor controls</summary>
+        </member>
+        <member name="P:TextEditor.LempDemoForm.ActivePage">
+            <summary>Returns the currently displayed editor page, or null if none are open</summary>
+        </member>
         <member name="M:TextEditor.LempDemoForm.IsModified(ICSharpCode.TextEditor.TextEditorControl)">
             <summary>Gets whether the file in the specified editor is modified.</summary>
             <remarks>TextEditorControl doesn't maintain its own internal modified 
@@ -574,11 +538,63 @@
         <member name="M:TextEditor.LempDemoForm.TextEditorForm_DragEnter(System.Object,System.Windows.Forms.DragEventArgs)">
             <summary>We handle DragEnter and DragDrop so users can drop files on the editor.</summary>
         </member>
-        <member name="P:TextEditor.LempDemoForm.AllEditors">
-            <summary>Returns a list of all editor controls</summary>
+        <member name="F:TextEditor.LempDemoForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
         </member>
-        <member name="P:TextEditor.LempDemoForm.ActivePage">
-            <summary>Returns the currently displayed editor page, or null if none are open</summary>
+        <member name="M:TextEditor.LempDemoForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:TextEditor.LempDemoForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:TextEditor.RegionFoldingStrategy">
+            <summary>
+            The class to generate the foldings, it implements ICSharpCode.TextEditor.Document.IFoldingStrategy
+            </summary>
+        </member>
+        <member name="M:TextEditor.RegionFoldingStrategy.GenerateFoldMarkers(ICSharpCode.TextEditor.Document.IDocument,System.String,System.Object)">
+            <summary>
+            Generates the foldings for our document.
+            </summary>
+            <param name="document">The current document.</param>
+            <param name="fileName">The filename of the document.</param>
+            <param name="parseInformation">Extra parse information, not used in this sample.</param>
+            <returns>A list of FoldMarkers.</returns>
+        </member>
+        <member name="P:TextEditor.LempDemoPanel.EditorSettings">
+            <summary>This variable holds the editor settings (whether to show line 
+            numbers, etc.) that all editor controls share.</summary>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.IsModified">
+            <summary>Gets whether the file in the specified editor is modified.</summary>
+            <remarks>TextEditorControl doesn't maintain its own internal modified 
+            flag, so we use the '*' shown after the file name to represent the 
+            modified state.</remarks>
+        </member>
+        <member name="F:TextEditor.LempDemoPanel.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
         </member>
         <member name="T:System.Windows.Forms.InputBoxDialog">
             <summary>
@@ -598,20 +614,6 @@
             The Show() method returns null if the user clicks Cancel, and non-null
             if the user clicks OK.
             </summary>
-        </member>
-        <member name="T:TextEditor.RegionFoldingStrategy">
-            <summary>
-            The class to generate the foldings, it implements ICSharpCode.TextEditor.Document.IFoldingStrategy
-            </summary>
-        </member>
-        <member name="M:TextEditor.RegionFoldingStrategy.GenerateFoldMarkers(ICSharpCode.TextEditor.Document.IDocument,System.String,System.Object)">
-            <summary>
-            Generates the foldings for our document.
-            </summary>
-            <param name="document">The current document.</param>
-            <param name="fileName">The filename of the document.</param>
-            <param name="parseInformation">Extra parse information, not used in this sample.</param>
-            <returns>A list of FoldMarkers.</returns>
         </member>
     </members>
 </doc>

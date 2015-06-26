@@ -328,7 +328,7 @@ Suppose that we have a language with keywords like `for`, `foreach`, `while`, `i
         { return t; }
     ];
 
-This example uses [k(9)] to increase the lookahead to 9 (longer than any of the keywords) only inside this rule. Unfortunately, this won't quite work the way you want it to. There are two problems with this example:
+This example uses `[k(9)]` to increase the lookahead to 9 (longer than any of the keywords) only inside this rule. Unfortunately, this won't quite work the way you want it to. There are two problems with this example:
 
 1. The `foreach` branch is unreachable, since it will be detected as the keyword `for` followed by `each`.
 2. Words like "form", "ifone", and "functionality" will be parsed as a keyword followed by an `Identifier`.
@@ -544,7 +544,7 @@ and then I use a "lexer wrapper" called [`TokensToTree`](http://loyc.net/doc/cod
                |               |
                +--- x  +  y    +---  -  1
 
-A token's children are stored in the Value property as type [TokenTree](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.loyc.net/collections/dlist.html) and returned by the [Children](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
+A token's children are stored in the Value property as type [TokenTree](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.loyc.net/collections/dlist.html) and returned by the [`Children`](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
 
 Why would you want to do this? There are a couple of reasons:
 
@@ -658,7 +658,9 @@ By far the easiest way to handle this kind of language is to insert a preprocess
             IndentToken = new Token((int)YourTokenType.Indent, 0, 0, null),
             DedentToken = new Token((int)YourTokenType.Dedent, 0, 0, null),
         };
-        /// Buffered is an extension method in 
+        /// LCExt.Buffered() is an extension method that lazily converts an 
+        /// IEnumerator<T> or IEnumerator<T> to a list (I've used it because
+        /// BaseILexer is an enumerator, so ToList() can't be used directly)
         List<Token> tokens = wrapr.Buffered().ToList();
         var parser = new YourParserClass(tokens);
     

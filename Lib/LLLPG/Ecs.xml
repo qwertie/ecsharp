@@ -4,350 +4,6 @@
         <name>Ecs</name>
     </assembly>
     <members>
-        <member name="T:Ecs.Parser.EcsParser">
-            <summary>Parses Enhanced C# code into a sequence of Loyc trees 
-            (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
-            <remarks>
-            You can use <see cref="F:Ecs.Parser.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Symbol)"/>
-            to easily parse a text string (holding zero or more EC# statements) into a 
-            Loyc tree. One does not normally use this class directly.
-            </remarks>
-        </member>
-        <member name="T:Ecs.Parser.TokenExt">
-            <summary>Provides the <c>Type()</c> extension method required by 
-            <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an EC# token
-            as a string, for tokens that contain sufficient information to do so.</summary>
-        </member>
-        <member name="M:Ecs.Parser.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
-            <summary>Converts <c>t.TypeInt</c> to <see cref="T:Ecs.Parser.TokenType"/>.</summary>
-        </member>
-        <member name="M:Ecs.Parser.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
-            <summary>Expresses an EC# token as a string.</summary>
-            <remarks>Note that some Tokens do not contain enough information to
-            reconstruct a useful token string, e.g. comment tokens do not store the 
-            comment but merely contain the location of the comment in the source code.
-            For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
-            to its source file, so this method cannot return the original string.
-            <para/>
-            The results are undefined if the token was not produced by <see cref="T:Ecs.Parser.EcsLexer"/>.
-            </remarks>
-        </member>
-        <member name="T:Ecs.EcsNodePrinter">
-            <summary>Prints a Loyc tree to EC# source code.</summary>
-            <remarks>
-            This class is designed to faithfully represent Loyc trees by default; any
-            Loyc tree that can be represented as EC# source code will be represented 
-            properly by this class, so that it is possible to parse the output text 
-            back into a Loyc tree equivalent to the one that was printed. In other 
-            words, EcsNodePrinter is designed to support round-tripping. For round-
-            tripping to work, there are a couple of restrictions on the input tree:
-            <ol>
-            <li>The Value property must only be used in <see cref="T:Loyc.Syntax.LiteralNode"/>s,
-                and only literals that can exist in C# source code are allowed. For 
-                example, Values of type int, string, and double are acceptable, but
-                Values of type Regex or int[] are not, because single tokens cannot
-                represent these types in C# source code. The printer ignores Values of 
-                non-literal nodes, and non-representable literals are printed out
-                using ToString().</li>
-            <li>Names must come from the global symbol pool (<see cref="F:Loyc.GSymbol.Pool"/>).
-                The printer will happily print Symbols from other pools, but there is
-                no way to indicate the pool in source code, so the parser always 
-                recreates symbols in the global pool. Non-global symbols are used
-                after semantic analysis, so there is no way to faithfully represent
-                the results of semantic analysis.</li>
-            </ol>
-            Only the attributes, head (<see cref="P:Loyc.Syntax.LiteralNode.Value"/>, 
-            <see cref="P:Loyc.Syntax.IdNode.Name"/> or <see cref="P:Loyc.Syntax.CallNode.Target"/>), and arguments 
-            of nodes are round-trippable. Superficial properties such as original 
-            source code locations and the <see cref="P:Loyc.Syntax.LNode.Style"/> are, in 
-            general, lost, although the printer can faithfully reproduce some (not 
-            all) <see cref="T:Loyc.Syntax.NodeStyle"/>s. Also, any attribute whose Name starts with 
-            "#trivia_" will be dropped, because these attributes are considered 
-            extensions of the NodeStyle. However, the style indicated by the 
-            #trivia_* attribute will be used if the printer recognizes it.
-            <para/>
-            Because EC# is based on C# which has some tricky ambiguities, there is a
-            lot of code in this class dedicated to special cases and ambiguities. Even 
-            so, it is likely that some cases have been missed--that some unusual trees 
-            will not round-trip properly. Any failure to round-trip is a bug, and your 
-            bug reports are welcome. If this class uses prefix notation (with 
-            #specialNames) unnecessarily, that's also a bug, but it has low priority 
-            unless it affects plain C# output (where #specialNames are illegal.)
-            <para/>
-            This class contains some configuration options that will defeat round-
-            tripping but will make the output look better. For example,
-            <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/> will print a tree such as <c>@*(a + b, c)</c> 
-            as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
-            even though parenthesis make the Loyc tree slightly different.
-            <para/>
-            To avoid printing EC# syntax that does not exist in C#, you can call
-            <see cref="M:Ecs.EcsNodePrinter.SetPlainCSharpMode"/>, but this only works if the syntax tree
-            does not contain invalid structure or EC#-specific code such as "==&gt;", 
-            "alias", and template arguments ($T).
-            </remarks>
-        </member>
-        <member name="M:Ecs.EcsNodePrinter.KeyNameComponentOf(Loyc.Syntax.LNode)">
-            <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
-            this method identifies the base name component, which in this example 
-            is Bar. This is used, for example, to identify the expected name for
-            a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
-            <remarks>It is not verified that name is a complex identifier. There
-            is no error detection but in some cases an empty name may be returned, 
-            e.g. for input like <c>Foo."Hello"</c>.</remarks>
-        </member>
-        <member name="M:Ecs.EcsNodePrinter.SetPlainCSharpMode">
-            <summary>Sets <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/>, <see cref="P:Ecs.EcsNodePrinter.PreferOldStyleCasts"/> 
-            and <see cref="P:Ecs.EcsNodePrinter.DropNonDeclarationAttributes"/> to true.</summary>
-            <returns>this.</returns>
-        </member>
-        <member name="M:Ecs.EcsNodePrinter.IsPrintableTypeParam(Loyc.Syntax.LNode)">
-            <summary>Checks if 'n' is a legal type parameter definition.</summary>
-            <remarks>A type parameter definition must be a simple symbol with at 
-            most one #in or #out attribute, and at most one #where attribute with
-            an argument list consisting of complex identifiers.</remarks>
-        </member>
-        <member name="M:Ecs.EcsNodePrinter.SanitizeIdentifier(System.String)">
-            <summary>Eliminates punctuation and special characters from a string so
-            that the string can be used as a plain C# identifier, e.g. 
-            "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
-            <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
-            "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
-            and all other characters become "Xxx" where xx is the hexadecimal 
-            representation of the code point. Designed for the Unicode BMP only.</remarks>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.StartStmt">
-            <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.StartExpr">
-            <summary>Context: beginning of expression (#var must have initial value)</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.ContinueExpr">
-            <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.Errors">
-            <summary>Any error that occurs during printing is printed to this object.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.MixImmiscibleOperators">
-            <summary>Allows operators to be mixed that will cause the parser to 
-            produce a warning. An example is <c>x &amp; @==(y, z)</c>: if you enable 
-            this option, it will be printed as <c>x &amp; y == z</c>, which the parser
-            will complain about because mixing those operators is deprecated.
-            </summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.AllowChangeParenthesis">
-            <summary>Permits extra parenthesis to express precedence, instead of
-            resorting to prefix notation (defaults to true). Also permits removal
-            of parenthesis if necessary to print special constructs.</summary>
-            <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
-            <c>x * (a + b)</c>. Originally, the second tree had a significantly 
-            different structure from the first, as parenthesis were represented
-            by a call to the empty symbol @``. This was annoyingly restrictive, so 
-            I reconsidered the design; now, parenthesis will be represented only by 
-            a trivia attribute #trivia_inParens, so adding new parenthesis no longer
-            changes the Loyc tree in an important way, so the default has changed
-            from false to true (except in the test suite).
-            </remarks>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.AllowExtraBraceForIfElseAmbig">
-            <summary>Solve if-else ambiguity by adding braces rather than reverting 
-            to prefix notation.</summary>
-            <remarks>
-            For example, the tree <c>#if(c1, #if(c2, x++), y++)</c> will be parsed 
-            incorrectly if it is printed <c>if (c1) if (c2) x++; else y++;</c>. This
-            problem can be resolved either by adding braces around <c>if (c2) x++;</c>,
-            or by printing <c>#if(c2, x++)</c> in prefix notation.
-            </remarks>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.PreferOldStyleCasts">
-            <summary>Prefers plain C# syntax for cast operators even when the 
-            syntax tree requests the new cast style, e.g. x(->int) becomes (int) x.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.DropNonDeclarationAttributes">
-            <summary>Suppresses printing of all attributes that are not on 
-            declaration or definition statements (such as classes, methods and 
-            variable declarations at statement level). Also, avoids prefix notation 
-            when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
-            can be printed "a+b" instead.</summary>
-            <remarks>This also affects the validation methods such as <see cref="M:Ecs.EcsNodePrinter.IsVariableDecl(System.Boolean,System.Boolean)"/>. With this flag, validation methods will ignore
-            attributes in locations where they don't belong instead of returning
-            false.</remarks>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.OmitMissingArguments">
-            <summary>When an argument to a method or macro has an empty name (@``),
-            it will be omitted completely if this flag is set.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.OmitSpaceTrivia">
-            <summary>When this flag is set, space trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
-            <remarks>Note: since EcsNodePrinter inserts its own spaces 
-            automatically, space trivia (if any) may be redundant unless you set 
-            <see cref="P:Ecs.EcsNodePrinter.SpaceOptions"/> and/or <see cref="P:Ecs.EcsNodePrinter.NewlineOptions"/> to zero.</remarks>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.OmitComments">
-            <summary>When this flag is set, comment trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.OmitRawText">
-            <summary>When this flag is set, raw text trivia attributes are ignored
-            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>).</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.QuoteUnprintableLiterals">
-            <summary>When the printer encounters an unprintable literal, it calls
-            Value.ToString(). When this flag is set, the string is placed in double
-            quotes; when this flag is clear, it is printed as raw text.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.AllowConstructorAmbiguity">
-            <summary>Causes the ambiguity between constructors and method calls to
-            be ignored; see <see cref="!:EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.AvoidMacroSyntax">
-            <summary>Prints statements like "foo (...) bar()" in the equivalent form
-            "foo (..., bar())" instead. Does not affect foo {...} because property
-            and event definitions require this syntax (get {...}, set {...}).</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.SpaceOptions">
-            <summary>Controls the locations where spaces should be emitted.</summary>
-        </member>
-        <member name="P:Ecs.EcsNodePrinter.NewlineOptions">
-            <summary>Controls the locations where newlines should be emitted.</summary>
-        </member>
-        <member name="T:Ecs.EcsNodePrinter.Ambiguity">
-            <summary>Internal enum (marked public for an obscure technical reason). 
-            These are flags that represent special situations in EC# syntax.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowUnassignedVarDecl">
-            <summary>The expression can contain uninitialized variable 
-            declarations, e.g. because it is the subject of an assignment.
-            In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
-            "(x + y, int z)" and then down to "int y" and "x + y", but it 
-            doesn't propagate down to "x", "y" and "int".</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.CastRhs">
-            <summary>The expression is the right side of a traditional cast, so 
-            the printer must avoid ambiguity in case of the following prefix 
-            operators: <c>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), 
-            (Foo)--(x)</c> (the (Foo)++(x) case is parsed as a post-increment and a 
-            call).</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.IsCallTarget">
-            <summary>The expression is in a location where, if it is parenthesized
-            and has the syntax of a data type inside, it will be treated as a cast.
-            This occurs when a call that is printed with prefix notation has a 
-            parenthesized target node, e.g. (target)(arg). The target node can avoid 
-            the syntax of a data type by adding "[ ]" (an empty set of 
-            attributes) at the beginning of the expression.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoBracedBlock">
-            <summary>No braced block permitted directly here (inside "if" clause)</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.FinalStmt">
-            <summary>The current statement is the last one in the enclosing 
-            block, so #result can be represented by omitting a semicolon.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.TypeContext">
-            <summary>An expression is being printed in a context where a type
-            is expected (its syntax has been verified in advance.)</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.InDefinitionName">
-            <summary>The expression being printed is a complex identifier that
-            may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.InOf">
-            <summary>Inside angle brackets or (of ...).</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowPointer">
-            <summary>Allow pointer notation (when combined with TypeContext). 
-            Also, a pointer is always allowed at the beginning of a statement,
-            which is detected by the precedence context (StartStmt).</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.UseBacktick">
-            <summary>Used to communicate to the operator printers that a binary 
-            call should be expressed with the backtick operator.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.DropAttributes">
-            <summary>Drop attributes only on the immediate expression being 
-            printed. Used when printing the return type on a method, whose 
-            attributes were already described by <c>[return: ...]</c>.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.ForEachInitializer">
-            <summary>Forces a variable declaration to be allowed as the 
-            initializer of a foreach loop.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.ElseClause">
-            <summary>After 'else', valid 'if' statements are not indented.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.RecursivePrefixNotation">
-            <summary>Use prefix notation recursively.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowThisAsCallTarget">
-            <summary>Print #this(...) as this(...) inside a method</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoIfWithoutElse">
-            <summary>This location is the 'true' side of an if-else statement.
-            At this location, no 'if' without 'else' is allowed because the
-            outer else would, upon parsing, be associated with the inner 'if'.</summary>
-        </member>
-        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoParenthesis">
-            <summary>Avoids printing illegal opening paren at statement level</summary>
-        </member>
-        <member name="T:Ecs.ICI">
-            <summary>Flags for <see cref="M:Ecs.EcsNodePrinter.IsComplexIdentifier(Loyc.Syntax.LNode,Ecs.ICI)"/>.</summary>
-        </member>
-        <member name="T:Ecs.SpaceOpt">
-            <summary>Controls the locations where spaces appear as <see cref="T:Ecs.EcsNodePrinter"/> 
-            is printing.</summary>
-            <remarks>
-            Note: Spaces around prefix and infix operators are controlled by 
-            <see cref="P:Ecs.EcsNodePrinter.SpaceAroundInfixStopPrecedence"/> and
-            <see cref="P:Ecs.EcsNodePrinter.SpaceAfterPrefixStopPrecedence"/>.
-            </remarks>
-        </member>
-        <member name="T:Ecs.Program">
-            <summary>Entry point: runs the EC# test suite and related tests.</summary>
-        </member>
-        <member name="T:Ecs.Parser.EcsLexer">
-            <summary>Lexer for EC# source code (see <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>).</summary>
-            <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
-        </member>
-        <member name="T:Ecs.Parser.EcsPreprocessor">
-            <summary>Handles EC# processor directives.</summary>
-            <remarks>This class not only preprocesses C# source code, it saves 
-            preprocessor directives and comments so that any code excluded by the 
-            preprocessor can be added back in later, if and when the parsed code is 
-            printed out. For example, given input like this:
-            <code>
-               void foo // see below
-               #if false
-               invalid code!
-               #endif
-               () { Console.WriteLine("foo()!"); }
-            </code>
-            EcsPreprocessor removes the #if...#endif region of tokens, creates a 
-            single Token of type TokenType.PPFalseBlock to represent that region, and
-            saves it, after the "see below" comment token, in a list.
-            <para/>
-            C# has the following preprocessor directives:
-            <code>
-            #define Id
-            #undef Id
-            #if expr
-            #elif expr
-            #else
-            #endif
-            #warning {arbitrary text}
-            #error {arbitrary text}
-            #region {arbitrary text}
-            #endregion
-            #line 123 "filename"
-            #pragma warning ...
-            #pragma ... // ignored
-            </code>
-            </remarks>
-        </member>
-        <member name="T:Ecs.Parser.CommentSaver">
-            <summary>A helper class that removes comments from a token stream, saving 
-            them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
-        </member>
         <member name="M:Ecs.EcsPrinterAndParserTests.ConstructorAmbiguities">
             <summary>Tests handling of the constructor ambiguity</summary>
             <remarks>
@@ -428,15 +84,360 @@
             <summary>EC# parser tests</summary>
         </member>
         <!-- Badly formed XML comment ignored for member "T:Ecs.EcsPrecedence" -->
-        <member name="T:Ecs.EcsNodePrinterWriter">
-            <summary>Helper class of <see cref="T:Ecs.EcsNodePrinter"/></summary>
-        </member>
         <member name="T:Ecs.Parser.EcsLanguageService">
             <summary>The <see cref="F:Ecs.Parser.EcsLanguageService.Value"/> property provides easy access to the lexer, 
             parser and printer for Enhanced C#.</summary>
             <remarks>
             EC# overview: https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Ecs
             </remarks>
+        </member>
+        <member name="T:Ecs.Parser.EcsLexer">
+            <summary>Lexer for EC# source code (see <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>).</summary>
+            <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
+        </member>
+        <member name="T:Ecs.Parser.EcsParser">
+            <summary>Parses Enhanced C# code into a sequence of Loyc trees 
+            (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
+            <remarks>
+            You can use <see cref="F:Ecs.Parser.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Symbol)"/>
+            to easily parse a text string (holding zero or more EC# statements) into a 
+            Loyc tree. One does not normally use this class directly.
+            </remarks>
+        </member>
+        <member name="T:Ecs.Parser.EcsPreprocessor">
+            <summary>Handles EC# processor directives.</summary>
+            <remarks>This class not only preprocesses C# source code, it saves 
+            preprocessor directives and comments so that any code excluded by the 
+            preprocessor can be added back in later, if and when the parsed code is 
+            printed out. For example, given input like this:
+            <code>
+               void foo // see below
+               #if false
+               invalid code!
+               #endif
+               () { Console.WriteLine("foo()!"); }
+            </code>
+            EcsPreprocessor removes the #if...#endif region of tokens, creates a 
+            single Token of type TokenType.PPFalseBlock to represent that region, and
+            saves it, after the "see below" comment token, in a list.
+            <para/>
+            C# has the following preprocessor directives:
+            <code>
+            #define Id
+            #undef Id
+            #if expr
+            #elif expr
+            #else
+            #endif
+            #warning {arbitrary text}
+            #error {arbitrary text}
+            #region {arbitrary text}
+            #endregion
+            #line 123 "filename"
+            #pragma warning ...
+            #pragma ... // ignored
+            </code>
+            </remarks>
+        </member>
+        <member name="T:Ecs.Parser.CommentSaver">
+            <summary>A helper class that removes comments from a token stream, saving 
+            them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
+        </member>
+        <member name="T:Ecs.Parser.TokenExt">
+            <summary>Provides the <c>Type()</c> extension method required by 
+            <see cref="T:Loyc.Syntax.Lexing.Token"/> and the ToString(Token) method to express an EC# token
+            as a string, for tokens that contain sufficient information to do so.</summary>
+        </member>
+        <member name="M:Ecs.Parser.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
+            <summary>Converts <c>t.TypeInt</c> to <see cref="T:Ecs.Parser.TokenType"/>.</summary>
+        </member>
+        <member name="M:Ecs.Parser.TokenExt.ToString(Loyc.Syntax.Lexing.Token)">
+            <summary>Expresses an EC# token as a string.</summary>
+            <remarks>Note that some Tokens do not contain enough information to
+            reconstruct a useful token string, e.g. comment tokens do not store the 
+            comment but merely contain the location of the comment in the source code.
+            For performance reasons, a <see cref="T:Loyc.Syntax.Lexing.Token"/> does not have a reference 
+            to its source file, so this method cannot return the original string.
+            <para/>
+            The results are undefined if the token was not produced by <see cref="T:Ecs.Parser.EcsLexer"/>.
+            </remarks>
+        </member>
+        <member name="T:Ecs.EcsNodePrinter">
+            <summary>Prints a Loyc tree to EC# source code.</summary>
+            <remarks>
+            This class is designed to faithfully represent Loyc trees by default; any
+            Loyc tree that can be represented as EC# source code will be represented 
+            properly by this class, so that it is possible to parse the output text 
+            back into a Loyc tree equivalent to the one that was printed. In other 
+            words, EcsNodePrinter is designed to support round-tripping. For round-
+            tripping to work, there are a couple of restrictions on the input tree:
+            <ol>
+            <li>The Value property must only be used in <see cref="T:Loyc.Syntax.LiteralNode"/>s,
+                and only literals that can exist in C# source code are allowed. For 
+                example, Values of type int, string, and double are acceptable, but
+                Values of type Regex or int[] are not, because single tokens cannot
+                represent these types in C# source code. The printer ignores Values of 
+                non-literal nodes, and non-representable literals are printed out
+                using ToString().</li>
+            <li>Names must come from the global symbol pool (<see cref="F:Loyc.GSymbol.Pool"/>).
+                The printer will happily print Symbols from other pools, but there is
+                no way to indicate the pool in source code, so the parser always 
+                recreates symbols in the global pool. Non-global symbols are used
+                after semantic analysis, so there is no way to faithfully represent
+                the results of semantic analysis.</li>
+            </ol>
+            Only the attributes, head (<see cref="P:Loyc.Syntax.LiteralNode.Value"/>, 
+            <see cref="P:Loyc.Syntax.IdNode.Name"/> or <see cref="P:Loyc.Syntax.CallNode.Target"/>), and arguments 
+            of nodes are round-trippable. Superficial properties such as original 
+            source code locations and the <see cref="P:Loyc.Syntax.LNode.Style"/> are, in 
+            general, lost, although the printer can faithfully reproduce some (not 
+            all) <see cref="T:Loyc.Syntax.NodeStyle"/>s. Also, any attribute whose Name starts with 
+            "#trivia_" will be dropped, because these attributes are considered 
+            extensions of the NodeStyle. However, the style indicated by the 
+            #trivia_* attribute will be used if the printer recognizes it.
+            <para/>
+            Because EC# is based on C# which has some tricky ambiguities, there is a
+            lot of code in this class dedicated to special cases and ambiguities. Even 
+            so, it is likely that some cases have been missed--that some unusual trees 
+            will not round-trip properly. Any failure to round-trip is a bug, and your 
+            bug reports are welcome. If this class uses prefix notation (with 
+            #specialNames) unnecessarily, that's also a bug, but it has low priority 
+            unless it affects plain C# output (where #specialNames are illegal.)
+            <para/>
+            This class contains some configuration options that will defeat round-
+            tripping but will make the output look better. For example,
+            <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/> will print a tree such as <c>@*(a + b, c)</c> 
+            as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
+            even though parenthesis make the Loyc tree slightly different.
+            <para/>
+            To avoid printing EC# syntax that does not exist in C#, you can call
+            <see cref="M:Ecs.EcsNodePrinter.SetPlainCSharpMode"/>, but this only works if the syntax tree
+            does not contain invalid structure or EC#-specific code such as "==>", 
+            "alias", and template arguments ($T).
+            </remarks>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.StartStmt">
+            <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.StartExpr">
+            <summary>Context: beginning of expression (#var must have initial value)</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.ContinueExpr">
+            <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
+        </member>
+        <member name="M:Ecs.EcsNodePrinter.KeyNameComponentOf(Loyc.Syntax.LNode)">
+            <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
+            this method identifies the base name component, which in this example 
+            is Bar. This is used, for example, to identify the expected name for
+            a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
+            <remarks>It is not verified that name is a complex identifier. There
+            is no error detection but in some cases an empty name may be returned, 
+            e.g. for input like <c>Foo."Hello"</c>.</remarks>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.Errors">
+            <summary>Any error that occurs during printing is printed to this object.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.MixImmiscibleOperators">
+            <summary>Allows operators to be mixed that will cause the parser to 
+            produce a warning. An example is <c>x &amp; @==(y, z)</c>: if you enable 
+            this option, it will be printed as <c>x &amp; y == z</c>, which the parser
+            will complain about because mixing those operators is deprecated.
+            </summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.AllowChangeParenthesis">
+            <summary>Permits extra parenthesis to express precedence, instead of
+            resorting to prefix notation (defaults to true). Also permits removal
+            of parenthesis if necessary to print special constructs.</summary>
+            <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
+            <c>x * (a + b)</c>. Originally, the second tree had a significantly 
+            different structure from the first, as parenthesis were represented
+            by a call to the empty symbol @``. This was annoyingly restrictive, so 
+            I reconsidered the design; now, parenthesis will be represented only by 
+            a trivia attribute #trivia_inParens, so adding new parenthesis no longer
+            changes the Loyc tree in an important way, so the default has changed
+            from false to true (except in the test suite).
+            </remarks>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.AllowExtraBraceForIfElseAmbig">
+            <summary>Solve if-else ambiguity by adding braces rather than reverting 
+            to prefix notation.</summary>
+            <remarks>
+            For example, the tree <c>#if(c1, #if(c2, x++), y++)</c> will be parsed 
+            incorrectly if it is printed <c>if (c1) if (c2) x++; else y++;</c>. This
+            problem can be resolved either by adding braces around <c>if (c2) x++;</c>,
+            or by printing <c>#if(c2, x++)</c> in prefix notation.
+            </remarks>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.PreferOldStyleCasts">
+            <summary>Prefers plain C# syntax for cast operators even when the 
+            syntax tree requests the new cast style, e.g. x(->int) becomes (int) x.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.DropNonDeclarationAttributes">
+            <summary>Suppresses printing of all attributes that are not on 
+            declaration or definition statements (such as classes, methods and 
+            variable declarations at statement level). Also, avoids prefix notation 
+            when the attributes would have required it, e.g. <c>@+([Foo] a, b)</c> 
+            can be printed "a+b" instead.</summary>
+            <remarks>This also affects the validation methods such as <see 
+            cref="M:Ecs.EcsNodePrinter.IsVariableDecl(System.Boolean,System.Boolean)"/>. With this flag, validation methods will ignore
+            attributes in locations where they don't belong instead of returning
+            false.</remarks>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.OmitMissingArguments">
+            <summary>When an argument to a method or macro has an empty name (@``),
+            it will be omitted completely if this flag is set.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.OmitSpaceTrivia">
+            <summary>When this flag is set, space trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSpaceAfter"/>).</summary>
+            <remarks>Note: since EcsNodePrinter inserts its own spaces 
+            automatically, space trivia (if any) may be redundant unless you set 
+            <see cref="P:Ecs.EcsNodePrinter.SpaceOptions"/> and/or <see cref="P:Ecs.EcsNodePrinter.NewlineOptions"/> to zero.</remarks>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.OmitComments">
+            <summary>When this flag is set, comment trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaSLCommentAfter"/>).</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.OmitRawText">
+            <summary>When this flag is set, raw text trivia attributes are ignored
+            (e.g. <see cref="F:Loyc.Syntax.CodeSymbols.TriviaRawTextBefore"/>).</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.QuoteUnprintableLiterals">
+            <summary>When the printer encounters an unprintable literal, it calls
+            Value.ToString(). When this flag is set, the string is placed in double
+            quotes; when this flag is clear, it is printed as raw text.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.AllowConstructorAmbiguity">
+            <summary>Causes the ambiguity between constructors and method calls to
+            be ignored; see <see cref="!:EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.AvoidMacroSyntax">
+            <summary>Prints statements like "foo (...) bar()" in the equivalent form
+            "foo (..., bar())" instead. Does not affect foo {...} because property
+            and event definitions require this syntax (get {...}, set {...}).</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.SpaceOptions">
+            <summary>Controls the locations where spaces should be emitted.</summary>
+        </member>
+        <member name="P:Ecs.EcsNodePrinter.NewlineOptions">
+            <summary>Controls the locations where newlines should be emitted.</summary>
+        </member>
+        <member name="M:Ecs.EcsNodePrinter.SetPlainCSharpMode">
+            <summary>Sets <see cref="P:Ecs.EcsNodePrinter.AllowChangeParenthesis"/>, <see cref="P:Ecs.EcsNodePrinter.PreferOldStyleCasts"/> 
+            and <see cref="P:Ecs.EcsNodePrinter.DropNonDeclarationAttributes"/> to true.</summary>
+            <returns>this.</returns>
+        </member>
+        <member name="T:Ecs.EcsNodePrinter.Ambiguity">
+            <summary>Internal enum (marked public for an obscure technical reason). 
+            These are flags that represent special situations in EC# syntax.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowUnassignedVarDecl">
+            <summary>The expression can contain uninitialized variable 
+            declarations, e.g. because it is the subject of an assignment.
+            In the tree "(x + y, int z) = (a, b)", this flag is passed down to 
+            "(x + y, int z)" and then down to "int y" and "x + y", but it 
+            doesn't propagate down to "x", "y" and "int".</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.CastRhs">
+            <summary>The expression is the right side of a traditional cast, so 
+            the printer must avoid ambiguity in case of the following prefix 
+            operators: <c>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), 
+            (Foo)--(x)</c> (the (Foo)++(x) case is parsed as a post-increment and a 
+            call).</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.IsCallTarget">
+            <summary>The expression is in a location where, if it is parenthesized
+            and has the syntax of a data type inside, it will be treated as a cast.
+            This occurs when a call that is printed with prefix notation has a 
+            parenthesized target node, e.g. (target)(arg). The target node can avoid 
+            the syntax of a data type by adding "[ ]" (an empty set of 
+            attributes) at the beginning of the expression.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoBracedBlock">
+            <summary>No braced block permitted directly here (inside "if" clause)</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.FinalStmt">
+            <summary>The current statement is the last one in the enclosing 
+            block, so #result can be represented by omitting a semicolon.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.TypeContext">
+            <summary>An expression is being printed in a context where a type
+            is expected (its syntax has been verified in advance.)</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.InDefinitionName">
+            <summary>The expression being printed is a complex identifier that
+            may contain special attributes, e.g. <c>Foo&lt;out T></c>.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.InOf">
+            <summary>Inside angle brackets or (of ...).</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowPointer">
+            <summary>Allow pointer notation (when combined with TypeContext). 
+            Also, a pointer is always allowed at the beginning of a statement,
+            which is detected by the precedence context (StartStmt).</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.UseBacktick">
+            <summary>Used to communicate to the operator printers that a binary 
+            call should be expressed with the backtick operator.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.DropAttributes">
+            <summary>Drop attributes only on the immediate expression being 
+            printed. Used when printing the return type on a method, whose 
+            attributes were already described by <c>[return: ...]</c>.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.ForEachInitializer">
+            <summary>Forces a variable declaration to be allowed as the 
+            initializer of a foreach loop.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.ElseClause">
+            <summary>After 'else', valid 'if' statements are not indented.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.RecursivePrefixNotation">
+            <summary>Use prefix notation recursively.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.AllowThisAsCallTarget">
+            <summary>Print #this(...) as this(...) inside a method</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoIfWithoutElse">
+            <summary>This location is the 'true' side of an if-else statement.
+            At this location, no 'if' without 'else' is allowed because the
+            outer else would, upon parsing, be associated with the inner 'if'.</summary>
+        </member>
+        <member name="F:Ecs.EcsNodePrinter.Ambiguity.NoParenthesis">
+            <summary>Avoids printing illegal opening paren at statement level</summary>
+        </member>
+        <member name="M:Ecs.EcsNodePrinter.IsPrintableTypeParam(Loyc.Syntax.LNode)">
+            <summary>Checks if 'n' is a legal type parameter definition.</summary>
+            <remarks>A type parameter definition must be a simple symbol with at 
+            most one #in or #out attribute, and at most one #where attribute with
+            an argument list consisting of complex identifiers.</remarks>
+        </member>
+        <member name="M:Ecs.EcsNodePrinter.SanitizeIdentifier(System.String)">
+            <summary>Eliminates punctuation and special characters from a string so
+            that the string can be used as a plain C# identifier, e.g. 
+            "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
+            <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
+            "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
+            and all other characters become "Xxx" where xx is the hexadecimal 
+            representation of the code point. Designed for the Unicode BMP only.</remarks>
+        </member>
+        <member name="T:Ecs.ICI">
+            <summary>Flags for <see cref="M:Ecs.EcsNodePrinter.IsComplexIdentifier(Loyc.Syntax.LNode,Ecs.ICI)"/>.</summary>
+        </member>
+        <member name="T:Ecs.SpaceOpt">
+            <summary>Controls the locations where spaces appear as <see cref="T:Ecs.EcsNodePrinter"/> 
+            is printing.</summary>
+            <remarks>
+            Note: Spaces around prefix and infix operators are controlled by 
+            <see cref="P:Ecs.EcsNodePrinter.SpaceAroundInfixStopPrecedence"/> and
+            <see cref="P:Ecs.EcsNodePrinter.SpaceAfterPrefixStopPrecedence"/>.
+            </remarks>
+        </member>
+        <member name="T:Ecs.EcsNodePrinterWriter">
+            <summary>Helper class of <see cref="T:Ecs.EcsNodePrinter"/></summary>
+        </member>
+        <member name="T:Ecs.Program">
+            <summary>Entry point: runs the EC# test suite and related tests.</summary>
         </member>
     </members>
 </doc>
