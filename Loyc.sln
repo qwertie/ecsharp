@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests", "Core\Tests\LoycCore.Tests.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Essentials", "Core\Loyc.Essentials\Loyc.Essentials.csproj", "{DF642FB7-25EB-424D-8E92-6C046F42D4A9}"

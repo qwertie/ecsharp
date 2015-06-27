@@ -9,7 +9,7 @@ import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
-{
+:{
 	using TT = TokenType;
 	
 	public partial class LesLexer

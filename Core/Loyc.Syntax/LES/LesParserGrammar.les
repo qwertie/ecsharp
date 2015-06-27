@@ -15,7 +15,7 @@ import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
-{
+:{
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
@@ -122,11 +122,13 @@ namespace Loyc.Syntax.Les
 				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex);}
 				{e.BaseStyle = NodeStyle.Operator;}
 				{if (t.Type() == TT.PreSufOp) primary = @null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
-			|	// Method call
+			|	// call(function)
 				&{[Local] e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
 				p:=TT.LParen rp:=TT.RParen
 				{e = primary = ParseCall(e, p, rp.EndIndex);}
-				{e.BaseStyle = NodeStyle.PrefixNotation;}
+			|	// call @{ with brace syntax; }
+				TT.At p:=TT.LBrace rp:=TT.RBrace
+				{e = primary = ParseCallBraces(e, p, rp.EndIndex);}
 			|	// Indexer / square brackets
 				&{[Local] context.CanParse(P.Primary)}
 				t:=TT.LBrack rb:=TT.RBrack

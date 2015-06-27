@@ -71,9 +71,13 @@ namespace Loyc.Syntax.Les
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 
-		protected virtual RWList<LNode> ParseAttributes(Token group, RWList<LNode> list)
+		protected RWList<LNode> AddStmtsInside(Token group, RWList<LNode> list = null)
 		{
-			return AppendExprsInside(group, list);
+			if (Down(group.Children)) {
+				StmtList(ref list);
+				return Up(list);
+			}
+			return list;
 		}
 		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
 		{
@@ -89,12 +93,13 @@ namespace Loyc.Syntax.Les
 		}
 		protected virtual LNode ParseBraces(Token t, int endIndex)
 		{
-			RWList<LNode> list = new RWList<LNode>();
-			if (Down(t.Children)) {
-				StmtList(ref list);
-				Up();
-			}
-			return F.Braces(list.ToRVList(), t.StartIndex, endIndex);
+			RWList<LNode> list = AddStmtsInside(t);
+			return F.Braces(list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
+		}
+		protected virtual LNode ParseCallBraces(LNode target, Token t, int endIndex)
+		{
+			RWList<LNode> list = AddStmtsInside(t);
+			return F.Call(target, list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
 		}
 		protected virtual LNode ParseParens(Token t, int endIndex)
 		{
@@ -108,11 +113,13 @@ namespace Loyc.Syntax.Les
 		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
 		{
 			Debug.Assert(target.Type() == TT.Id);
-			return F.Call((Symbol)target.Value, ExprListInside(paren).ToRVList(), target.StartIndex, endIndex);
+			RVList<LNode> list = ExprListInside(paren).ToRVList();
+			return F.Call((Symbol)target.Value, list, target.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
 		}
 		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
 		{
-			return F.Call(target, ExprListInside(paren).ToRVList(), target.Range.StartIndex, endIndex);
+			RVList<LNode> list = ExprListInside(paren).ToRVList();
+			return F.Call(target, list, target.Range.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
 		}
 		
 		private Symbol ToSuffixOpName(object symbol)

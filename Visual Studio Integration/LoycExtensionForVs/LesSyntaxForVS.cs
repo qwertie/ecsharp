@@ -76,6 +76,7 @@ namespace Loyc.VisualStudio
 
 		static IClassificationType _preSufOpType;
 
+		// A list of words to be highlighted in dark blue
 		HashSet<Symbol> CommonKeywords = new HashSet<Symbol>(new[] {
 			// C# keywords
 			"abstract",  "event",     "new",        "struct", 

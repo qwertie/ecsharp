@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.Text;
 
 namespace Loyc.VisualStudio
 {
+	/// <summary>Converts a Visual Studio ITextSnapshot to Loyc's ISourceFile interface 
+	/// (and ICharSource, the value of the ISourceFile.Text property).</summary>
 	public class TextSnapshotAsSourceFile : ICharSource, ISourceFile
 	{
 		public TextSnapshotAsSourceFile(ITextSnapshot ss) { TextSnapshot = ss; }
