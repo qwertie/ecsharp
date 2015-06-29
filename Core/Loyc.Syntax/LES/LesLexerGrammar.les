@@ -124,6 +124,8 @@ namespace Loyc.Syntax.Les
 			_parseNeeded = false;
 			@[ NormalId | '@' FancyId {_parseNeeded=true;} ];
 			ParseIdValue();
+			//if (LA0 == ' ' || LA0 == '\t' || LA0 == '\r' || LA0 == '\n')
+			//	_type = TT.IdSpace;
 		};
 		private token LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
@@ -132,7 +134,7 @@ namespace Loyc.Syntax.Les
 		
 		private token OpChar @[
 			 '~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
-		private token NotOpChar @[
+		extern  token NotOpChar @[
 		  ~( '~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ) ];
 		private token Comma     @[ ',' { _value = _Comma; } ];
 		private token Semicolon @[ ';' { _value = _Semicolon; } ];
@@ -179,8 +181,8 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.LBrace;}    '{'
 			/ {_type = TT.RBrace;}    '}'
 			/ {_type = TT.At;}        At
-			/                         BackslashOp
 			/ {_type = TT.Colon;}     (Colon NotOpChar => Colon)
+			/                         BackslashOp
 			/                         Operator
 			/ error { _value = @null; }
 				( EOF {_type = TT.EOF;}

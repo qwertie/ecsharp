@@ -36,16 +36,18 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// "@" is not considered an operator. It is used to mark a sequence of 
 	/// punctuation and/or non-punctuation characters as an identifier, a symbol,
-	/// or a special literal. "#" is not an operator; like an underscore, it is 
-	/// considered to be an identifier character, and it's used to mark "keywords".
+	/// or a special literal. "#" is not an operator; like an underscore, the 
+	/// hash sign is considered to be an identifier character, and while it is 
+	/// conventionally used to mark "keywords", the parser does not assign any 
+	/// special meaning to it.
 	/// <para/>
 	/// "," and ";" are not considered operators; rather they are separators, and
 	/// they cannot be combined with operators. For example, "?,!" is parsed as 
 	/// three separate tokens.
 	/// <para/>
 	/// The following table shows all the precedence levels and associativities
-	/// of the "built-in" LES operators, except `backtick` and the arrow operators 
-	/// => and ->, which are special. Each precedence level has a name, which 
+	/// of the "built-in" LES operators, except `backtick` and the "lambda" 
+	/// operator =>, which is special. Each precedence level has a name, which 
 	/// corresponds to a static field of this class. All binary operators are 
 	/// left-associative unless otherwise specified.
 	/// <ol>
@@ -104,8 +106,8 @@ namespace Loyc.Syntax.Les
 	/// added the !! operator to "fill in the gap".</li>
 	/// <li>There were no prefix operators with low precedence, so I added ".." 
 	/// whose precedence is just above binary "..", and "|" which has a precedence 
-	/// lower than anything except attributes (note that this "operator" is used 
-	/// for pattern matching and variants in Nemerle.)</li>
+	/// lower than anything except attributes (this "operator" is inspired by
+	/// Nemerle, which uses "|" in pattern matching and variants.)</li>
 	/// </ul>
 	/// I also wanted to have a little "room to grow"--to defer the precedence 
 	/// decision to a future time for some operators. So the precedence of the 
@@ -137,8 +139,8 @@ namespace Loyc.Syntax.Les
 	/// binary or prefix) operators. Having only a single role makes these 
 	/// operators unambiguous inside superexpressions.
 	/// <para/>
-	/// An operator cannot have all three roles (suffix, prefix and binary); 
-	/// that would be ambiguous. For example, if "-" could also be a suffix 
+	/// An operator cannot have all three roles (suffix, prefix and binary); that 
+	/// would be overly ambiguous. For example, if "-" could also be a suffix 
 	/// operator then <c>x - + y</c> could be parsed as <c>(x -) + y</c> as well 
 	/// as <c>x - (+ y)</c>. More subtly, LES does not define any operators that
 	/// could take binary or suffix roles, because that would also be ambiguous. 
@@ -150,11 +152,16 @@ namespace Loyc.Syntax.Les
 	/// OR it can contain operators that serve as binary and suffix operators, 
 	/// but a language is ambiguous if it has both kinds of operators at the 
 	/// same time.
-	/// <para/>
-	/// So, to determine the precedence of any given operator, first you must
-	/// decide, mainly based on the context in which the operator appears, whether 
-	/// it is a prefix, binary, or suffix operator. Suffix operators can only be
-	/// derived from the following operators: <c>++, --, \\</c>
+	///
+	/// <h3>How to detect an operator's precedence</h3>
+	/// 
+	/// To determine the precedence of any given operator, first you must
+	/// decide, mainly based on the context in which the operator appears and the
+	/// text of the operator, whether it is a prefix, binary, or suffix operator. 
+	/// Suffix operators can only be derived from the operators <c>++, --, \\</c>
+	/// ("derived" means that you can add additional operator characters in the 
+	/// middle, e.g. <c>+++</c> and <c>-%-</c> are can be prefix or suffix 
+	/// operators.)
 	/// <para/>
 	/// If an operator starts with a backslash (\), the backslash is not considered 
 	/// part of the operator name and it not used for the purpose of choosing 
@@ -169,8 +176,9 @@ namespace Loyc.Syntax.Les
 	/// in order:
 	/// <ol>
 	/// <li>If the operator is binary and it is exactly equal to ">=" or "&lt;=" 
-	/// or "!=" or "==", the precedence is Compare.</li>
-	/// <li>If the operator is binary and Z is '=', the precedence is Assign.</li>
+	/// or "!=", the precedence is Compare.</li>
+	/// <li>If the operator is binary, A is NOT '=', and Z is '=', then the 
+	/// precedence is Assign.</li>
 	/// <li>Look for an operator named AZ. If it is defined, the operator 
 	/// will have the same precedence. For example, binary "=|>" has the same 
 	/// precedence as binary "=>".</li>

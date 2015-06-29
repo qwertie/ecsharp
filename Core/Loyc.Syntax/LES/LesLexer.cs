@@ -565,13 +565,12 @@ namespace Loyc.Syntax.Les
 			_parseNeeded = false;
 			ParseOp(false);
 		}
-
-		static Symbol _Backslash = GSymbol.Get(@"\");
-
 		void ParseBackslashOp()
 		{
 			ParseOp(true);
 		}
+
+		static Symbol _Backslash = GSymbol.Get(@"\");
 
 		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
 		void ParseOp(bool backslashOp)
@@ -590,7 +589,7 @@ namespace Loyc.Syntax.Les
 				if (backslashOp)
 				{
 					if (original.Length == 1)
-					{	
+					{
 						// Just a single backslash is the "\" operator
 						_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
 						_value = sym.A;

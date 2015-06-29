@@ -135,10 +135,10 @@ namespace Loyc.Syntax.Les
 
 			string sym = symbol.ToString();
 			if (sym == "") return prec; // yikes!
+			// Note: all one-character operators should have been found in the table
 			char first = sym[0], last = sym[sym.Length - 1];
-			// All one-character operators should be found in the table
 
-			if (table == this[OperatorShape.Infix].A && last == '=')
+			if (last == '=' && first != '=' && table == this[OperatorShape.Infix].A)
 				return table[symbol] = table[S.Assign];
 			
 			var twoCharOp = GSymbol.Get(first.ToString() + last);
