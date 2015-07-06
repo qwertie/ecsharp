@@ -209,6 +209,7 @@ namespace Loyc.Syntax.Lexing
 			return input;
 		}
 
+		// Python mode was deprecated after these LES tests were written
 		[Test]
 		public void LesTests()
 		{
@@ -226,22 +227,22 @@ namespace Loyc.Syntax.Lexing
 					here;
 				etc",
 				"legal\n indent\n here;\n etc");
-			TestLes(@"
-				legal with 
-					warning
-				etc",
-				"legal with\n warning\n ; etc", 1, Severity.Warning);
-			TestLes(@"
-				while a {
-					b
-				}
-				warning here;",
-				"while a {\n b\n }\n ; warning here;", 1, Severity.Warning);
-			TestLes(@"
-				a()
-				if c
-					(b)
-				Foo()", "a()\n; if c\n (b)\n; Foo()", 2, Severity.Warning);
+			//TestLes(@"
+			//	legal with 
+			//		warning
+			//	etc",
+			//	"legal with\n warning\n ; etc", 1, Severity.Warning);
+			//TestLes(@"
+			//	while a {
+			//		b
+			//	}
+			//	warning here;",
+			//	"while a {\n b\n }\n ; warning here;", 1, Severity.Warning);
+			//TestLes(@"
+			//	a()
+			//	if c
+			//		(b)
+			//	Foo()", "a()\n; if c\n (b)\n; Foo()", 2, Severity.Warning);
 			TestLes(@"
 				if a():
 					b()
@@ -257,12 +258,12 @@ namespace Loyc.Syntax.Lexing
 					z;
 				}",
 				"if x {\n y\n } else {\n z;\n }");
-			TestLes(@"
-				if x
-					y
-				:else
-					z;",
-				"if x\n y\n else\n z;");
+			//TestLes(@"
+			//	if x
+			//		y
+			//	:else
+			//		z;",
+			//	"if x\n y\n else\n z;");
 			TestLes(/* partial dedent */ @"
 				if x > 0:
 				    positive = true;

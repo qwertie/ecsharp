@@ -141,7 +141,7 @@ namespace Loyc.Syntax.Les
 		}
 		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
 		{
-			if (tokenBeforeNewline.Type() != TokenType.Semicolon &&
+			/*if (tokenBeforeNewline.Type() != TokenType.Semicolon &&
 				deltaIndent <= 0 && tokenAfterNewline.HasValue)
 			{
 				if (tokenAfterNewline.Value.Type() == TokenType.Colon)
@@ -151,7 +151,7 @@ namespace Loyc.Syntax.Les
 						"Possibly missing semicolon. Proceeding as if the ';' were present.");
 					return new Token((int)TokenType.Semicolon, tokenBeforeNewline.EndIndex, 0, CodeSymbols.Semicolon);
 				}
-			}
+			}*/
 			return Maybe<Token>.NoValue;
 		}
 	}

@@ -38,7 +38,7 @@ namespace Loyc.Syntax.Lexing
 			Expect(list[0].Children, A(TT.Id, TT.LParen, TT.RParen), _("b"));
 			Expect(list[0].Children[1].Children, A(TT.Id), _("c"));
 			Expect(list[2].Children, A(TT.LBrack, TT.RBrack));
-			Expect(list[4].Children, A(TT.LBrace, TT.RBrace, TT.PreSufOp));
+			Expect(list[4].Children, A(TT.LBrace, TT.RBrace, TT.PreOrSufOp));
 			Expect(list[4].Children[0].Children, A(TT.Number), 123);
 			
 			list = Lex("(x] + [123)", false);

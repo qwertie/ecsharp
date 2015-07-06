@@ -25,188 +25,202 @@ namespace Loyc.Syntax.Les
 
 	public partial class LesParser
 	{
-		[FullLLk, AddCsLineDirectives(@false)]
-		LLLPG parser(laType(TT), matchType(int), allowSwitch(@true));
+		[FullLLk, LL(1), AddCsLineDirectives(@false)]
+		LLLPG(parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));
 		
 		alias("@" = TT.At);
 		alias(":" = TT.Colon);
 		alias(";" = TT.Semicolon);
 		alias("," = TT.Comma);
 		alias("!" = TT.Not);
+		//alias(" (" = TT.SpaceLParen);
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
 		alias("[" = TT.LBrack);
 		alias("]" = TT.RBrack);
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
-		
+
+		public rule StmtList()::RVList!LNode @[
+			{endMarker := TT.Semicolon;}
+			result:ExprList(ref endMarker)
+		];
+		public fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
+			endMarker := default(TT);
+			return (ExprList(ref endMarker, list));
+		};
+
+		// A sequence of expressions separated by commas OR semicolons.
+		// The `ref endMarker` parameter tells the caller if semicolons were used.
+		public rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
+			// `(/X)` is the same as `[X]?` except that in the first version, X is 
+			// the default branch, which simplifies the output code in this case.
+			(/ e:ExprStart)
+			[	end:(","|";")
+				{list.Add(e ?? MissingExpr());}
+				{CheckEndMarker(ref endMarker, ref end);}
+				({$e = null;} / e:ExprStart)
+			]*
+			{if ($e != null || end.Type() == TT.Comma) list.Add(e ?? MissingExpr());}
+			{return list;}
+		];
+		public rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
+			(/ e:ExprStart)
+			[	end:(","|";")
+				{#rawText("yield"); return e ?? MissingExpr();}
+				{CheckEndMarker(ref endMarker.Value, ref end);}
+				({$e = null;} / e:ExprStart)
+			]*
+			{if ($e != null || end.Type() == TT.Comma) {#rawText("yield"); return e ?? MissingExpr();}}
+		];
+		fn CheckEndMarker(ref endMarker::TokenType, ref end::Token)
+		{
+			if (endMarker != end.Type()) {
+				if (endMarker == default(TT)) {
+					endMarker = end.Type();
+				} else {
+					Error(-1, "Unexpected separator: {0} should be {1}",
+						ToString(end.TypeInt), ToString(endMarker->int));
+				};
+			};
+		};
+
+		protected rule ExprStart()::LNode @[
+			// Use a gate to simplify the decision about whether to call this rule
+			[	// [Attributes]
+				t:"[" attrs:ExprList "]"
+			]?
+			e:Expr(StartStmt)
+			{
+				if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };
+				return e.PlusAttrs(attrs);
+			}
+		];
+
+		// Types of expressions:
+		// - atoms (parenthesized), {braced}, ids, literals
+		// - ++prefix_operators
+		// - infix + operators
+		// - suffix_operators++
+		// - juxtaposition expressions
+		// - Special primary expressions:
+		//   method_calls(with arguments), indexers[with indexes], generic!arguments
+		token Expr(context::Precedence)::LNode @[
+			{prec::Precedence;}
+			e:PrefixExpr(context)
+			greedy
+			[	// Infix operator
+				&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
+				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{[Local] LA($LI+1) != TT.Indent->int} t:":")
+				rhs:=Expr(prec)
+				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
+			/	// Method_calls(with arguments), indexers[with indexes], generic!arguments
+				&{[Local] context.CanParse(P.Primary)}
+				e=FinishPrimaryExpr(e)
+			/	// Suffix operator
+				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
+				t:TT.PreOrSufOp
+				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetBaseStyle(NodeStyle.Operator);}
+			/	// Juxtaposition
+				&{[Local] context.CanParse(P.Juxtaposition)}
+				{hasArgsAlready := e.BaseStyle == NodeStyle.PrefixNotation;}
+				{args := hasArgsAlready ? e.Args : RVList!LNode.Empty;}
+				greedy( args+=Atom(true) )+
+				{
+					if (hasArgsAlready) {
+						e = e.WithArgs(args).WithRange(e.Range.StartIndex, args.Last.Range.EndIndex);
+					} else {
+						e = F.Call(e, args, e.Range.StartIndex, args.Last.Range.EndIndex);
+					};
+				}
+			]*
+			{return e;}
+		];
+
+		// Helper rule that parses one of the syntactically special primary expressions
+		private rule FinishPrimaryExpr(e::LNode)::LNode @[
+			(	// call(function)
+				"(" list:ExprList c:=")"
+				{e = F.Call(e, list, e.Range.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.PrefixNotation);}
+			|	// ! operator (generic #of)
+				"!"
+				{args := (new(RVList!LNode) { e }); endIndex::int;}
+				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
+				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
+				)
+				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetBaseStyle(NodeStyle.Operator);}
+			|	// Indexer / square brackets
+				{args := (new(RVList!LNode) { e });}
+				"[" args=ExprList(args) c:="]"
+				{e = F.Call(S.Bracks, args, e.Range.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.Operator);}
+			)
+			{return e;}
+		];
+
+		private rule PrefixExpr(context::Precedence)::LNode @
+			[	result:Atom
+			|	// Prefix operator
+				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
+				e:Expr(PrefixPrecedenceOf(t))
+				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
+			|	error
+				{$result = MissingExpr(); Error(0, "Expected an expression here");}
+			];
+
 		// An Atom is:
+		// - an (expression) in parenthesis or a tuple
 		// - a literal or simple identifier
 		//   - simple calls are also handled here, as a space optimization
 		// - a token literal @[ ... ]
 		// - a prefix operator followed by an Expr
-		// - [Attributes] followed by an Atom
-		// - an (expression) in parenthesis
 		// - a { block } in braces
-		private rule Atom(context::Precedence, ref attrs::RWList!LNode)::LNode @[
-			{e::LNode = MissingExpr; _::LNode;}
-			(	// identifier or identifier(call)
-				t:=TT.Id
-				(	&{[Local] t.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
-					p:="(" rp:=")"
-					{e = ParseCall(t, p, rp.EndIndex);}
-				/	{e = F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);}
-				)
-			|	// literal
-				t:=(TT.Number|TT.String|TT.SQString|TT.Symbol|TT.OtherLit) 
-				{e = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
+		private rule Atom(juxtaposition::bool = false)::LNode @[
+			(	id:=TT.Id // identifier
+				{$result = F.Id(id);}
+			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
+				{$result = F.Literal(lit);}
 			|	// @[Token literal]
-				"@" t:="[" rb:="]"
-				{e = F.Literal(t.Children, t.StartIndex, rb.EndIndex);}
-			|	// Prefix operator (non-infix)
-				t:=(TT.PrefixOp | TT.PreSufOp)
-				e = Expr(PrefixPrecedenceOf(t), out _)
-				{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-			|	// colon indent
-				":" t:=TT.Indent rb:=TT.Dedent greedy[":"]? 
-				{e = ParseBraces(t, rb.EndIndex);}
-			/	// Prefix operator (infix in other contexts)
-				&{[Local] context != P.SuperExpr}
-				t:=(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment)
-				e=Expr(PrefixPrecedenceOf(t), out _) 
-				{e = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-			|	// [Attributes]
-				t:="[" "]"
-				{attrs = AppendExprsInside(t, attrs);}
-				e=Atom(context, ref attrs)
-			|	// (parens)
-				t:="(" rp:=")" {e = ParseParens(t, rp.EndIndex);}
+				o:="@" "[" tree:TokenTree c:="]"
+				{$result = F.Literal(tree, o.StartIndex, c.EndIndex);}
+			|	// colon indent (outside spec. LesIndentTokenGenerator inserts ";" after Dedent, unless user adds ":")
+				o:=":" TT.Indent list:=StmtList c:=TT.Dedent greedy[":"]? 
+				{$result = F.Braces(list, o.StartIndex, c.EndIndex);}
 			|	// {braces}
-				t:="{" rb:="}" {e = ParseBraces(t, rb.EndIndex);}
-			|	error {
-					e = F.Id(S.Missing, LT0.StartIndex, LT0.StartIndex);
-					Error(0, "Expected an expression here");
-				}
-			)
-			{return e;}
-		];
-			
-		// Types of expressions:
-		// - Atoms (includes attributes and prefix operators)
-		// - infix + operators
-		// - generic!arguments
-		// - suffix_operators++
-		// - method_calls(with arguments)
-		// - indexers[with indexes]
-		token Expr(context::Precedence, out primary::LNode)::LNode @[
-			{e::LNode; _::LNode; prec::Precedence; attrs::RWList!LNode = @null;}
-			e=Atom(context, ref attrs) 
-			{primary = e;}
-			greedy
-			(	// Infix operator
-				&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
-				//{if (!context.CanParse(prec = InfixPrecedenceOf(LT(0)))) { goto end; };}
-				t:=(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment|":")
-				rhs:=Expr(prec, out primary)
-				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-				{if (!prec.CanParse(P.NullDot)) primary = e;}
-			|	// ! operator (generics)
-				&{[Local] context.CanParse(P.Primary)}
-				"!"
-				rhs:=Expr(P.Primary, out primary)
+				o:="{" list:=StmtList c:="}" 
+				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.Statement);}
+			|	// (parens) - possibly a tuple
 				{
-					args::RVList!LNode;
-					if (rhs.Calls(S.Tuple)) {
-						args = (new RVList!LNode(e)).AddRange(rhs.Args);
-					} else {
-						i::int = rhs.Attrs.IndexWithName(S.TriviaInParens);
-						if (i > -1) rhs = rhs.WithAttrs(rhs.Attrs.RemoveAt(i));
-						args = (new RVList!LNode(e, rhs));
+					if (juxtaposition) {
+						Error(0, "'(' is not permitted here. Did you forget a ';' (or ',') at the end of the previous expression?");
 					};
-					e = primary = F.Call(S.Of, args, e.Range.StartIndex, rhs.Range.EndIndex);
-					e.BaseStyle = NodeStyle.Operator;
+					endMarker := default(TT);
 				}
-			|	// Suffix operator
-				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
-				t:=(TT.PreSufOp|TT.SuffixOp)
-				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-				{if (t.Type() == TT.PreSufOp) primary = @null;} // disallow superexpression after suffix (prefix/suffix ambiguity)
-			|	// call(function)
-				&{[Local] e.Range.EndIndex == LT($LI).StartIndex && context.CanParse(P.Primary)}
-				p:="(" rp:=")"
-				{e = primary = ParseCall(e, p, rp.EndIndex);}
-			|	// call @{ with brace syntax; }
-				"@" p:="{" rp:="}"
-				{e = primary = ParseCallBraces(e, p, rp.EndIndex);}
-			|	// Indexer / square brackets
-				&{[Local] context.CanParse(P.Primary)}
-				t:="[" rb:="]"
-				{
-					var args = (new RWList!LNode { e });
-					AppendExprsInside(t, args);
-					e = primary = F.Call(S.Bracks, args.ToRVList(), e.Range.StartIndex, rb.EndIndex);
-					e.BaseStyle = NodeStyle.Expression;
+				o:="(" {hasAttrList := LA0->TT == TT.LBrack;}
+				list:=ExprList(ref endMarker)
+				c:=")" {
+					if (endMarker == TT.Semicolon || list.Count != 1) {
+						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
+						if (endMarker == TT.Comma) {
+							ErrorSink.Write(Severity.Error, list[0].Range.End, "Tuples require ';' as a separator.");
+						};
+					} else {
+						$result = hasAttrList ? list[0] : F.InParens(list[0], o.StartIndex, c.EndIndex);
+					};
 				}
-			/	// Juxtaposition / superexpression
-				// A loop is not strictly needed here; we could add each expr
-				// one at a time, but that would be less efficient in the 
-				// majority of cases.
-				&{[Local] context.CanParse(P.SuperExpr)}
-				{var rhs = RVList!LNode.Empty;}
-				greedy(rhs += Expr(P.SuperExpr, out _))+
-				{e = MakeSuperExpr(e, ref primary, rhs);}
-			)*
-			{return attrs == @null ? e : e.WithAttrs(attrs.ToRVList());}
-		];
-		
-		// A superexpression is a sequence of expressions with no separator 
-		// between them. The first expression is treated specially; e.g.
-		// the super expression a+b c*d e=f, which consists of three
-		// expressions a+b, c*d and e=f, is parsed (a + b(c * d, e = f)).
-		protected rule SuperExpr()::LNode @[
-			{_::LNode;}
-			e:=Expr(StartStmt, out _)
-			{return e;}
-		];
-
-		protected rule SuperExprOpt()::LNode @[
-			(e:=SuperExpr {return e;} | {return MissingExpr;})
-		];
-		// A sequence of expressions separated by commas
-		protected rule ExprList(ref exprs::RWList!LNode) @[
-			{exprs = exprs ?? (new RWList!LNode());}
-			(	exprs+=SuperExpr
-				("," exprs+=SuperExprOpt)*
-			|	{exprs.Add(MissingExpr);}
-				("," exprs+=SuperExprOpt)+
-			)?
-		];
-
-		token SuperExprOptUntil(terminator::TokenType)::LNode @[
-			{var e::LNode = MissingExpr;}
-			e=SuperExpr?
-			{var error::bool = @false;}
-			(	(";"|",") =>
-				greedy(
-					&{[Local] $LA!=terminator} 
-					{	if (!error) {
-							error = @true;
-							Error(0, "Expected " + terminator.ToString());
-						}
-					}
-					_ 
-				)*
+			|	error {Error(0, "Subexpression expected here");} _
+				{$result = MissingExpr();}
 			)
-			{return e;}
 		];
-		public rule StmtList(ref exprs::RWList!LNode) @[
-			{exprs = exprs ?? new RWList!LNode();}
-			next:=SuperExprOptUntil(TT.Semicolon)
-			(	{exprs.Add(next);}
-				";"
-				next=SuperExprOptUntil(TT.Semicolon)
+
+		rule TokenTree::TokenTree @[
+			{$result = `new` TokenTree(SourceFile);}
+			nongreedy(
+				open:=("("|"["|"{"|TT.Indent)
+				TokenTree
+				{$result.Add(open.WithValue($TokenTree));}
+				result+=(")"|"]"|"}"|TT.Dedent)
+			/	result+=_
 			)*
-			{if (next != MissingExpr->object) exprs.Add(next);}
 		];
-	}
-}
+	};
+};

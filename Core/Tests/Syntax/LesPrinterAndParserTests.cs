@@ -70,17 +70,17 @@ namespace Loyc.Syntax.Les
 			Expr("a |-| b+c",     F.Call("|-|", a, F.Call(S.Add, b, c)));
 			Expr("a.b!!!c .?. 1", F.Call(".?.", F.Call("!!!", F.Dot(a, b), c), one));
 			Expr("a /+ b+*c",     F.Call("/+", a, F.Call("+*", b, c)));
-			Expr(@"a \Foo b",     F.Call("Foo", a, b));
+			//Expr(@"a \Foo b",     F.Call("Foo", a, b));
 		}
 
 		[Test]
 		public void Tuples()
 		{
 			Expr("(a)", F.InParens(a));
-			Expr("(a,)", F.Tuple(a));
-			Expr("(a, @``)", F.Tuple(a, _("")));
-			Expr("(a, b)", F.Tuple(a, b));
-			Expr("(a, b, c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
+			Expr("(a;)", F.Tuple(a));
+			Expr("(a; @``)", F.Tuple(a, _("")));
+			Expr("(a; b)", F.Tuple(a, b));
+			Expr("(a; b; c + x)", F.Tuple(a, b, F.Call(S.Add, c, x)));
 		}
 
 		[Test]
@@ -100,20 +100,20 @@ namespace Loyc.Syntax.Les
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a ** b \foo\;", F.Call(@"foo\", F.Call(S.Exp, a, b)));
-			Stmt(@"a + b \foo\;", F.Call(S.Add, a, F.Call(@"foo\", b)));
+			Stmt(@"a.b --;", F.Call(@"suf--", F.Call(S.Dot, a, b)));
+			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"suf-<>-", b)));
 		}
 
 		[Test]
 		public void NamedOps()
 		{
 			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
-			Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
-			Stmt(@"(a `is` b) \is bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
+			//Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
+			Stmt(@"(a `is` b) `is` bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
 			Stmt(@"a `=` b && c", F.Call(_("&&"), F.Call(_("="), a, b), c));
 			// Currently \* is equivalent to plain * (the backslash just indicates that the operator may contain letters)
-			Stmt(@"Foo * a \* b * c", F.Call(_("*"), F.Call(_("*"), F.Call(_("*"), Foo, a), b), c));
-			Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
+			Stmt(@"Foo * a `*` b * c", F.Call(_("*"), F.Call(_("*"), F.Call(_("*"), Foo, a), b), c));
+			//Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}
 
 		protected static LNode AsOperator(LNode node) { return AsStyle(NodeStyle.Operator, node); }
@@ -136,15 +136,16 @@ namespace Loyc.Syntax.Les
 		public void SuperExprs()
 		{
 			Expr("a b c", F.Call(a, b, c));
-			Expr("a (b c)", F.Call(a, F.InParens(F.Call(b, c))));
-			Stmt("if a > b { c(); };",   F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
-			Stmt("if (a) > b { c(); };", F.Call("if", F.Call(S.GT, F.InParens(a), b), F.Braces(F.Call(c))));
+			Expr("a (b c)", F.Call(a, F.Call(b, c)));
+			//Stmt("if a > b { c(); };", F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
+			Stmt("if (a > b) { c(); };", F.Call("if", F.Call(S.GT, a, b), F.Braces(F.Call(c))));
 			Stmt("if(a) > b { c(); };",  F.Call(S.GT, F.Call("if", a), F.Call(b, F.Braces(F.Call(c)))));
 			Expr("a + b c", F.Call(S.Add, a, F.Call(b, c)));
 			Expr("a.b c", F.Call(F.Dot(a, b), c));
 			Expr("a + b.c {} Foo", F.Call(S.Add, a, F.Call(F.Dot(b, c), F.Braces(), Foo)));
 			Expr("a(b) c", F.Call(a, b, c));
 			Expr("a.Foo(b) c", F.Call(F.Dot(a, Foo), b, c));
+			Expr("a b + if (c) {a;} else {b;}", F.Call(S.Add, F.Call(a, b), F.Call(_("if"), c, F.Braces(a), _("else"), F.Braces(b))));
 		}
 
 		[Test]
@@ -157,7 +158,7 @@ namespace Loyc.Syntax.Les
 			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
 			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));
 			Expr("a.b!(Foo(x))", F.Of(F.Dot(a, b), F.Call(Foo, x)));
-			// This last one may seem meaningless, but LES does not judge
+			// This last one is meaningless in most programming languages, but LES does not judge
 			Stmt("Foo = a.b!c!x;", F.Call(S.Assign, Foo, F.Of(F.Of(F.Dot(a, b), c), x)));
 		}
 
@@ -167,7 +168,7 @@ namespace Loyc.Syntax.Les
 			Expr("[Foo] a();", F.Attr(Foo, F.Call(a)));
 			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
 			Expr("[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
-			Test(false, 0, "a = [Foo] b + c;", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Test(false, 0, "a = ([Foo] b + c);", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
 		}
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = -1)

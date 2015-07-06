@@ -42,7 +42,7 @@ namespace Loyc.Syntax.Les
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
 			var lexer = new LesLexer(text, fileName, msgs);
-			return new LesIndentTokenGenerator(lexer);
+			return new LesIndentTokenGenerator(new WhitespaceFilter(lexer));
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
 		{
@@ -51,8 +51,7 @@ namespace Loyc.Syntax.Les
 		}
 		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null)
 		{
-			var treeified = new TokensToTree(input, true);
-			return Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);
+			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
 		}
 
 		[ThreadStatic]
@@ -79,12 +78,12 @@ namespace Loyc.Syntax.Les
 					parser.Reset(input.AsList(), file);
 				}
 				if (inputType == ParsingService.Exprs)
-					return parser.ParseExprs();
+					return parser.ExprList();
 				else
-					return parser.ParseStmtsGreedy();
+					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {
 				var parser = new LesParser(input, file, msgs);
-				return parser.ParseStmtsLazy().Buffered();
+				return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			}
 		}
 	}

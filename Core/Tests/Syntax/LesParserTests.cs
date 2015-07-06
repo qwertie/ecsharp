@@ -14,9 +14,12 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void ParseErrors()
 		{
-			Test(false, 1, "a, 5 c b; x();", a, F.Call(x));
-			Test(false, 1, @"a ** b \foo;", F.Call(S.Exp, a, b));
-			Test(false, 1, "a = ) b c 5", a); // again, interpretation is a bit weird, but ok
+			// Expected ';'
+			Test(false, 1, "a, b", a, b);
+			Test(false, 1, "a, 5 c b; x();", a, F.Call(F.Literal(5), c, b), F.Call(x));
+			Test(false, 2, "a = ) b c 1", F.Call(S.Assign, a, F._Missing));
+			// Missing subexpression
+			Test(false, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F._Missing));
 		}
 
 		[Test]
@@ -48,21 +51,18 @@ namespace Loyc.Syntax.Les
 					F.Braces(F.Call(S.Assign, c, F.Call(b)), F.Call("while", Foo, F.Braces(F.Call(c))))),
 				F.Call("return", F.Braces(Foo)));
 			Test(false, 2, @"
-				a()
+				a();
 				if c
 					(b)
-				Foo()", F.Call(a), F.Call("if", c, F.InParens(b)), F.Call(Foo));
+				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), Foo, F.Tuple()));
 		}
 
 		protected override void Test(bool exprMode, int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
+			var results = LesLanguageService.Value.Parse(str, messages, exprMode ? ParsingService.Exprs : ParsingService.Stmts).ToList();
 			for (int i = 0; i < expected.Length; i++)
-			{
-				var result = results[i]; // this is when parsing actually occurs
-				AreEqual(expected[i], result);
-			}
+				AreEqual(expected[i], results[i]);
 			AreEqual(expected.Length, results.Count);
 			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
 			{

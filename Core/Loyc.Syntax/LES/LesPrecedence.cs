@@ -239,7 +239,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence Substitute  = new Precedence(102,103,103,102);
 		public static readonly Precedence Primary     = new Precedence(100,101,100);
 		public static readonly Precedence NullDot     = new Precedence(98,  99, 98);
-		public static readonly Precedence DoubleBang  = new Precedence(96,  97, 97,96);
+		public static readonly Precedence DoubleBang  = new Precedence(96, 97, 97, 96);
+		public static readonly Precedence Juxtaposition = new Precedence(94, 95, 94);
 		public static readonly Precedence Prefix      = new Precedence(90,  91, 91,90);
 		public static readonly Precedence Power       = new Precedence(80,  81, 80);
 		public static readonly Precedence Suffix2     = new Precedence(78,  79, 78);
@@ -257,10 +258,8 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence And         = new Precedence(22,  23, 22);
 		public static readonly Precedence Or          = new Precedence(18,  19, 18);
 		public static readonly Precedence IfElse      = new Precedence(10,  11, 11,10);
-		public static readonly Precedence BackslashWord = new Precedence(4, 5, 4);
 		public static readonly Precedence Assign      = new Precedence( 0,   1, 1, 0);
 		public static readonly Precedence Lambda      = new Precedence(-2,  -1, 75,-1);
 		public static readonly Precedence PrefixOr    = new Precedence(-10, -9, -9,-10);
-		public static readonly Precedence SuperExpr   = new Precedence(-20, -19, -20);
 	}
 }

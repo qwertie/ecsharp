@@ -179,15 +179,15 @@ namespace Loyc.Syntax.Les
 		
 		private void WriteOpName(Symbol op, Precedence prec)
 		{
-			if (prec == LesPrecedence.Backtick)
+			if (prec == LesPrecedence.Backtick || !LesPrecedenceMap.IsNaturalOperator(op))
 				PrintStringCore('`', false, op.Name);
-			else if (LesPrecedenceMap.IsNaturalOperator(op))
+			else
 				_out.Write(op.Name, true);
-			else {
-				_out.Write('\\', false);
-				_out.Write(op.Name, true);
-				_out.Space(); // lest the next char to be printed be treated as part of the operator name
-			}
+			//else {
+			//	_out.Write('\\', false);
+			//	_out.Write(op.Name, true);
+			//	_out.Space(); // lest the next char to be printed be treated as part of the operator name
+			//}
 		}
 
 		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
@@ -207,9 +207,11 @@ namespace Loyc.Syntax.Les
 			{
 				var bs = node.BaseStyle;
 				var op = node.Name;
-				if (bs == NodeStyle.Operator || (LesPrecedenceMap.IsNaturalOperator(op) && bs != NodeStyle.PrefixNotation)) {
+				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op);
+				if (bs == NodeStyle.Operator || (naturalOp && bs != NodeStyle.PrefixNotation))
+				{
 					var result = _prec.Find(shape, op);
-					if (bs == NodeStyle.Operator && LesPrecedenceMap.RequiresBackticks(op))
+					if (bs == NodeStyle.Operator && !naturalOp)
 						result = LesPrecedence.Backtick;
 					else if (!result.CanAppearIn(context))
 						result = LesPrecedence.Backtick;

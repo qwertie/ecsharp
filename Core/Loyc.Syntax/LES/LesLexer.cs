@@ -563,17 +563,13 @@ namespace Loyc.Syntax.Les
 		void ParseNormalOp()
 		{
 			_parseNeeded = false;
-			ParseOp(false);
-		}
-		void ParseBackslashOp()
-		{
-			ParseOp(true);
+			ParseOp();
 		}
 
 		static Symbol _Backslash = GSymbol.Get(@"\");
 
 		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
-		void ParseOp(bool backslashOp)
+		void ParseOp()
 		{
 			UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 
@@ -582,36 +578,36 @@ namespace Loyc.Syntax.Les
 				_value = sym.A;
 				_type = sym.B;
 			} else {
-				Debug.Assert(backslashOp == (original[0] == '\\'));
+				//Debug.Assert(backslashOp == (original[0] == '\\'));
 				// op will be the operator text without the initial backslash, if any:
 				// && => &&, \foo => foo, \`foo` => foo, \`@`\ => @\
 				UString op = original;
-				if (backslashOp)
-				{
-					if (original.Length == 1)
-					{
-						// Just a single backslash is the "\" operator
-						_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
-						_value = sym.A;
-						_type = sym.B;
-						return;
-					}
-					op = original.Substring(1);
-					if (_parseNeeded)
-					{
-						var sb = TempSB();
-						bool _;
-						var quoted = original;
-						if (quoted[0] != '`')
-							sb.Append((char)quoted.PopFront(out _));
-						UnescapeQuotedString(ref quoted, Error, sb);
-						op = sb.ToString();
-					}
-				}
+				//if (backslashOp)
+				//{
+				//	if (original.Length == 1)
+				//	{
+				//		// Just a single backslash is the "\" operator
+				//		_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
+				//		_value = sym.A;
+				//		_type = sym.B;
+				//		return;
+				//	}
+				//	op = original.Substring(1);
+				//	if (_parseNeeded)
+				//	{
+				//		var sb = TempSB();
+				//		bool _;
+				//		var quoted = original;
+				//		if (quoted[0] != '`')
+				//			sb.Append((char)quoted.PopFront(out _));
+				//		UnescapeQuotedString(ref quoted, Error, sb);
+				//		op = sb.ToString();
+				//	}
+				//}
 
 				string opStr = op.ToString();
 				_type = GetOpType(opStr);
-				_opCache[opStr] = sym = Pair.Create(GSymbol.Get(opStr), _type);
+				_opCache[op] = sym = Pair.Create(GSymbol.Get(opStr), _type);
 				_value = sym.A;
 			}
 		}
@@ -625,9 +621,9 @@ namespace Loyc.Syntax.Les
 				return TT.Not;
 			char last = op[op.Length - 1], first = op[0];
 			if (op.Length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
-				return TT.PreSufOp;
-			if (last == '\\')
-				return TT.SuffixOp;
+				return TT.PreOrSufOp;
+			//if (last == '\\')
+			//	return TT.SuffixOp;
 			if (last == '$')
 				return TT.PrefixOp;
 			if (last == '.' && (op.Length == 1 || first != '.'))
@@ -651,10 +647,10 @@ namespace Loyc.Syntax.Les
 		}
 
 		static readonly HashSet<int> SpecialIdSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'', '#', '#', 
-			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '\\', '\\', '?','?', ':',':', '.','.', '@','@', '$','$');
+			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '?','?', ':',':', '.','.', '@','@', '$','$', '\\', '\\');
 		static readonly HashSet<int> IdContSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'');
 		static readonly HashSet<int> OpContSet = NewSetOfRanges(
-			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '\\', '\\', '?','?', ':',':', '.','.', '@','@', '$','$');
+			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '?','?', ':',':', '.','.', '@','@', '$','$');
 
 		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c == '#' || c >= 0x80 && char.IsLetter((char)c); }
 		public static bool IsIdContChar(uchar c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }

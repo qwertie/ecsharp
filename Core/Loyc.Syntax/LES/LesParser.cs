@@ -26,10 +26,7 @@ namespace Loyc.Syntax.Les
 	public partial class LesParser : BaseParserForList<Token, int>
 	{
 		protected LNodeFactory F;
-		protected LNode _missingExpr = null; // used by MissingExpr
 		protected LesPrecedenceMap _prec = LesPrecedenceMap.Default;
-		protected IList<Token> _tokensRoot;
-		public IList<Token> TokenTree { get { return _tokensRoot; } }
 
 		new const TT EOF = TT.EOF;
 
@@ -40,7 +37,7 @@ namespace Loyc.Syntax.Les
 		{
 			ErrorSink = messageSink;
 		}
-
+		
 		public void Reset(IList<Token> list, ISourceFile file, int startIndex = 0)
 		{
 			Reset(list, default(Token), file, startIndex);
@@ -49,29 +46,33 @@ namespace Loyc.Syntax.Les
 		{
 			CheckParam.IsNotNull("file", file);
 			base.Reset(list, eofToken, file, startIndex);
-			_tokensRoot = TokenList;
 			F = new LNodeFactory(file);
-			_missingExpr = null;
 		}
 
 		// Method required by base class for error messages
-		protected override string ToString(int type_)
+		protected override string ToString(int type)
 		{
-			var type = (TokenType)type_;
-			return type.ToString();
+			switch ((TokenType)type) {
+				case TT.LParen: return "'('";
+				case TT.RParen: return "')'";
+				case TT.LBrack: return "'['";
+				case TT.RBrack: return "']'";
+				case TT.LBrace: return "'{'";
+				case TT.RBrace: return "'}'";
+				case TT.Colon:  return "':'";
+				case TT.Comma:  return "','";
+				case TT.Semicolon: return "';'";
+			}
+			return ((TokenType)type).ToString();
 		}
 		
-		protected bool Down(int li)
-		{
-			return Down(LT(li).Children);
-		}
-
-		protected LNode MissingExpr { get { return _missingExpr = _missingExpr ?? F.Id(S.Missing); } }
+		protected LNode MissingExpr() { return F.Id(S.Missing, InputPosition, InputPosition).SetStyle(NodeStyle.Alternate2); }
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
 
-		protected RWList<LNode> AddStmtsInside(Token group, RWList<LNode> list = null)
+		/*
+		protected RVList<LNode> ParseStmtsInside(Token group, RVList<LNode> list = null)
 		{
 			if (Down(group.Children)) {
 				StmtList(ref list);
@@ -79,7 +80,7 @@ namespace Loyc.Syntax.Les
 			}
 			return list;
 		}
-		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list)
+		protected RVList<LNode> ParseExprsInside(Token group, RVList<LNode> list = default(RVList<LNode>))
 		{
 			if (Down(group.Children)) {
 				ExprList(ref list);
@@ -87,23 +88,19 @@ namespace Loyc.Syntax.Les
 			}
 			return list;
 		}
-		protected RWList<LNode> ExprListInside(Token t)
-		{
-			return AppendExprsInside(t, new RWList<LNode>());
-		}
 		protected virtual LNode ParseBraces(Token t, int endIndex)
 		{
-			RWList<LNode> list = AddStmtsInside(t);
+			RWList<LNode> list = ParseStmtsInside(t);
 			return F.Braces(list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
 		}
 		protected virtual LNode ParseCallBraces(LNode target, Token t, int endIndex)
 		{
-			RWList<LNode> list = AddStmtsInside(t);
+			RWList<LNode> list = ParseStmtsInside(t);
 			return F.Call(target, list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
 		}
 		protected virtual LNode ParseParens(Token t, int endIndex)
 		{
-			var list = ExprListInside(t);
+			var list = ParseExprsInside(t);
 			if (list.Count == 1)
 				return F.InParens(list[0], t.StartIndex, endIndex);
 			if (list.Count == 2 && (object)list[1] == MissingExpr)
@@ -113,14 +110,14 @@ namespace Loyc.Syntax.Les
 		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
 		{
 			Debug.Assert(target.Type() == TT.Id);
-			RVList<LNode> list = ExprListInside(paren).ToRVList();
+			RVList<LNode> list = ParseExprsInside(paren).ToRVList();
 			return F.Call((Symbol)target.Value, list, target.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
 		}
 		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
 		{
-			RVList<LNode> list = ExprListInside(paren).ToRVList();
+			RVList<LNode> list = ParseExprsInside(paren).ToRVList();
 			return F.Call(target, list, target.Range.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
-		}
+		}*/
 		
 		private Symbol ToSuffixOpName(object symbol)
 			{ return _prec.ToSuffixOpName(symbol); }
@@ -142,9 +139,10 @@ namespace Loyc.Syntax.Les
 		}
 
 		// This is virtual so that a syntax highlighter can easily override and colorize it
-		protected virtual void MarkSpecial(LNode primary)
+		protected virtual LNode MarkSpecial(LNode primary)
 		{
 			primary.BaseStyle = NodeStyle.Special;
+			return primary;
 		}
 
 		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
@@ -160,6 +158,7 @@ namespace Loyc.Syntax.Les
 				MarkSpecial(primary);
 				return primary;
 			} else {
+				// This situation is no longer officially supported
 				Debug.Assert(lhs != null && lhs.IsCall && lhs.ArgCount > 0);
 				Debug.Assert(lhs.BaseStyle != NodeStyle.Special);
 				int c = lhs.ArgCount-1;
@@ -167,32 +166,37 @@ namespace Loyc.Syntax.Les
 				return lhs.WithArgChanged(c, ce);
 			}
 		}
-		public IListAndListSource<LNode> ParseExprs()
+
+		/// <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
+		public IEnumerable<LNode> Start(Holder<TokenType> separator)
 		{
-			var list = new RWList<LNode>();
-			ExprList(ref list);
-			return list;
+			foreach (var stmt in ExprListLazy(separator))
+				yield return stmt;
+			if (LA0 != (int)EOF)
+				Error(0, "Expected {0}", ToString((int)separator.Value));
 		}
-		public IListSource<LNode> ParseStmtsGreedy()
+
+		protected override void Error(bool inverted, IEnumerable<int> expected_)
 		{
-			var list = ParseStmtsLazy().Buffered();
-			var _ = list.Count; // force greedy parse
-			return list;
-		}
-		public IEnumerator<LNode> ParseStmtsLazy()
-		{
-			TT la0;
-			var next = SuperExprOptUntil(TT.Semicolon);
-			for (;;) {
-				la0 = (TT) LA0;
-				if (la0 == TT.Semicolon) {
-					yield return next;
+			base.Error(inverted, expected_);
+			
+			// If a closer was expected...
+			int expected = expected_.First();
+			if (Token.IsCloser((TokenKind)expected)) {
+				// Skip forward until reaching the expected closer, or a closing brace
+				while (LA0 != (int)TT.EOF && LA0 != expected && LA0 != (int)TT.RBrace && LA0 != (int)TT.Dedent) {
+					if (Token.IsOpener((TokenKind)LA0)) {
+						int depth = 1;
+						do {
+							Skip();
+							if (Token.IsCloser((TokenKind)LA0))
+								depth--;
+						} while (depth > 0);
+					}
 					Skip();
-					next = SuperExprOptUntil(TT.Semicolon);
-				} else
-					break;
-			}
-			if (next != (object)MissingExpr) yield return next;
+				}
+			} else
+				Skip(); // in general, skip to avoid a potential infinite loop
 		}
 	}
 }

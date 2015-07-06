@@ -20,22 +20,22 @@ namespace Loyc.Syntax.Les
 		Id         = TokenKind.Id,
 		Number     = TokenKind.Number,
 		String     = TokenKind.String,
-		SQString   = TokenKind.String + 1,
-		Symbol     = TokenKind.OtherLit,
-		OtherLit   = TokenKind.OtherLit + 1, // true, false, null
+		OtherLit   = TokenKind.OtherLit, // true, false, null, @@sym
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
-		PreSufOp   = TokenKind.Operator + 1,  // ++, --
-		SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
+		PreOrSufOp = TokenKind.Operator + 1,  // ++, --
+		//SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
 		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
 		Colon      = TokenKind.Operator + 4,
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
 		BQString   = TokenKind.Operator + 7,
+		Backslash  = TokenKind.Operator + 8,
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
 		LParen     = TokenKind.LParen,
+		//SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,
 		LBrack     = TokenKind.LBrack,
 		RBrack     = TokenKind.RBrack,
@@ -74,8 +74,6 @@ namespace Loyc.Syntax.Les
 				case TT.MLComment: return "/**/";
 				case TT.Number: 
 				case TT.String:
-				case TT.SQString:
-				case TT.Symbol:
 				case TT.OtherLit: 
 					return LesNodePrinter.PrintLiteral(t.Value, t.Style);
 				case TT.BQString: 
@@ -93,9 +91,9 @@ namespace Loyc.Syntax.Les
 				case TT.Dot:
 				case TT.Assignment:
 				case TT.NormalOp:
-				case TT.PreSufOp:
+				case TT.PreOrSufOp:
 				case TT.PrefixOp:
-				case TT.SuffixOp:
+				//case TT.SuffixOp:
 				case TT.Colon:
 				case TT.At:
 				case TT.Comma:
