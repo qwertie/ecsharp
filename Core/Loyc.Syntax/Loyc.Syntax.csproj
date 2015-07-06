@@ -99,7 +99,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;LOYC</DefineConstants>
@@ -111,7 +112,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;LOYC</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Syntax.xml</DocumentationFile>
@@ -146,6 +148,7 @@
     <Compile Include="Les\LesIndentTokenGenerator.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
+    <Compile Include="Lexing\WhitespaceFilter.cs" />
     <Compile Include="Parsing\BaseParser.cs" />
     <Compile Include="Parsing\BaseParserForList.cs" />
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />

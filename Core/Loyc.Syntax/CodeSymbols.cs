@@ -151,6 +151,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Import = GSymbol.Get("#import");     //!< e.g. using System; <=> #import(System);
 		//!< #import is used instead of #using because the using(...) {...} statement already uses #using
 		public static readonly Symbol Partial = GSymbol.Get("#partial");
+		public static readonly Symbol Yield = GSymbol.Get("#yield");       //!< e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
 		public static readonly Symbol ArrayInit = GSymbol.Get("#arrayInit"); //!< C# e.g. int[] x = {1,2} <=> int[] x = #arrayInit(1, 2)
 
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)

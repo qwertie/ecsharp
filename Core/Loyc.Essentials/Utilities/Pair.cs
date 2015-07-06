@@ -159,12 +159,28 @@ namespace Loyc
 	/// box a structure in C#, you lose access to the members of that structure.
 	/// This class, in contrast, provides access to the "boxed" value.
 	/// </remarks>
-	public class Holder<T> : WrapperBase<T>, IHasValue<T>
+	public class Holder<T> : IHasValue<T>
 	{
-		public Holder(T value) : base(value) { }
-		public Holder() : base(default(T)) { }
+		public Holder(T value) { Value = value; }
+		public Holder() { }
 
 		/// <summary>Any value of type T.</summary>
-		public T Value { get { return _obj; } set { _obj = value; } }
+		public T Value;
+		T IHasValue<T>.Value { get { return Value; } }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is Holder<T>)
+				obj = ((Holder<T>)obj).Value;
+			return Value == null ? obj == null : Value.Equals(obj);
+		}
+		public override int GetHashCode()
+		{
+			return Value == null ? 0 : Value.GetHashCode();
+		}
+		public override string ToString()
+		{
+			return Value == null ? null : Value.ToString();
+		}
 	}
 }

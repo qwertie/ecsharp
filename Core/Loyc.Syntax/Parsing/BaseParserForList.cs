@@ -76,6 +76,7 @@ namespace Loyc.Syntax
 			EofToken = eofToken;
 			EOF = EofToken.Type;
 			_tokenList = list;
+			_listCount = list.Count; // to avoid 1st-chance exceptions
 			_sourceFile = file;
 			InputPosition = startIndex;
 		}

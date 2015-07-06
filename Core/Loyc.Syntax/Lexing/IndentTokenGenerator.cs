@@ -60,9 +60,7 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Initializes the indent detector.</summary>
 		/// <param name="lexer">Original lexer (either a raw lexer or an instance of another preprocessor such as <see cref="TokensToTree"/>.)</param>
 		public IndentTokenGenerator(ILexer<Token> lexer) : base(lexer)
-		{
-			InitState();
-		}
+			{ InitState(); }
 
 		public enum TokenCategory { 
 			/// <summary>An open bracket, inside of which indent triggers should be ignored.</summary>

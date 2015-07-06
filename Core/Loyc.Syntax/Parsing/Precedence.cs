@@ -197,6 +197,9 @@ namespace Loyc.Syntax
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{
+		public static Precedence MinValue = new Precedence(sbyte.MinValue);
+		public static Precedence MaxValue = new Precedence(sbyte.MaxValue);
+
 		public Precedence(int actual) : this(actual, actual, actual, actual) { }
 		public Precedence(int lo, int hi, int actual) : this(lo, hi, actual, actual) { }
 		public Precedence(int lo, int hi, int left, int right)
@@ -276,7 +279,5 @@ namespace Loyc.Syntax
 		public override bool Equals(object obj) { return (obj is Precedence) && this == ((Precedence)obj); }
 		public bool Equals(Precedence other) { return this == other; }
 		public override int  GetHashCode() { return Lo ^ (Hi << 4); }
-		public static readonly Precedence MinValue = new Precedence(sbyte.MinValue, sbyte.MinValue, sbyte.MinValue);
-		public static readonly Precedence MaxValue = new Precedence(sbyte.MaxValue, sbyte.MaxValue, sbyte.MaxValue);
 	}
 }

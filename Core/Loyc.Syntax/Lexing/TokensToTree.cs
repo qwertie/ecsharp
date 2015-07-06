@@ -18,6 +18,9 @@ namespace Loyc.Syntax.Lexing
 	/// a token list into a token tree. Everything inside brackets, parens or 
 	/// braces is made a child of the open bracket.
 	/// </summary>
+	/// <remarks>
+	/// The close bracketis not treated as one of the children of the opening bracket.
+	/// </remarks>
 	public class TokensToTree : LexerWrapper<Token>
 	{
 		public TokensToTree(ILexer<Token> source, bool skipWhitespace) : base(source)
@@ -45,7 +48,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			_current = LLNextToken();
 			if (!_current.HasValue)
-				return Maybe<Token>.NoValue;
+				return _current;
 
 			TK tt = _current.Value.Kind;
 			if (Token.IsOpener(tt)) {

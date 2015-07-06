@@ -83,7 +83,8 @@ namespace Loyc.Syntax
 		}
 		public LNode Id(Token t)
 		{
-			return new StdIdNode((Symbol)t.Value, new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+			return new StdIdNode(t.Value as Symbol ?? GSymbol.Get(t.Value.ToString()),
+				new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 		public LNode Literal(object value, int startIndex = -1, int endIndex = -1)
 		{
