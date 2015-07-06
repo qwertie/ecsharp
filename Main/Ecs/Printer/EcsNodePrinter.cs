@@ -1078,7 +1078,7 @@ namespace Ecs
 						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
 							continue;
 						_out.Write(text, true);
-					} else if (!dropAttrs) {
+					} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
 						Debug.Assert(a.HasSpecialName);
 						if (a.IsTrivia)
 							continue;
