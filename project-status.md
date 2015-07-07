@@ -6,35 +6,9 @@ stripes: true
 ---
 Help wanted!
 
-## Loyc .NET core libraries
+## Loyc .NET core libraries, Loyc trees, and LES
 
-This project includes Loyc.Essentials, Loyc.Collections, Loyc.Syntax and Loyc.Utilities.
-
-- Status: In fairly good shape
-- TODO: Add more 3D point math
-- TODO: Add N-dimensional points and integrate them nicely with 2- and 3-dimensional points
-- TODO: Add matrix math. Affine and perspective transforms, matrix inverse, etc.
-- TODO: any other important functionality you think .NET framework should have but doesn't
-
-## Loyc trees: in-memory LISP-inspired syntax trees
-
-- Done: LNode class (Src/Loyc.Syntax/Nodes/LNode.cs) and derived classes
-
-## LES: a compact representation of Loyc trees as plain text
-
-- Parser: supports the basics. Line breaks are always ignored, contrary to spec.
-    - TODO: Python mode, recognize line breaks
-    - TODO: consider supporting additional literal types, e.g. BigInteger
-- Printer: 
-    - VERY basic, pure prefix notation only
-    - TODO: good-looking output
-- Syntax highlighting:
-    - Visual Studio: supports token highlighting only using actual LES lexer, does not highlight superexpression "keywords".
-        - TODO: rewrite the highlighter using LES lexer and parser. I already wrote the `SparseAList<T>` class for the specific purpose of storing token boundaries in the syntax highlighting engine.
-    - Notepad++ UDL: exists in GitHub repo at 
-        Visual Studio Integration\notepad++userDefinedLang_les.xml 
-      with a second version for black background: notepad++userDefinedLang_les_dark.xml
-      The UDL file cannot fully support LES (e.g. no nested comments) but it works pretty well.
+See [status at core.loyc.net](http://core.loyc.net/project-status.html).
 
 ## Enhanced C#: the project to add numerous features to C#  
 
