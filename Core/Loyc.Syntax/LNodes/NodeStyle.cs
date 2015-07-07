@@ -29,29 +29,30 @@ namespace Loyc.Syntax
 		/// <summary>No style category is specified; the printer should choose a 
 		/// style automatically.</summary>
 		Default = 0,
-		/// <summary>The node(s) should be printed as a normal expression, rather
-		/// than using a special or statement notation.</summary>
-		Expression = 1,
-		/// <summary>The node, or its immediate children, should be printed in
-		/// statement notation, if possible in the context in which it is located.</summary>
+		/// <summary>The node should be printed with operator notation (infix, prefix, 
+		/// suffix) instead of prefix notation if applicable (can be used to request 
+		/// `backquote notation` in LES and EC#).</summary>
+		Operator = 1,
+		/// <summary>The node's immediate children (and/or the node itself) should be 
+		/// printed in statement notation, if possible in the context in which it is 
+		/// located.</summary>
 		Statement = 2,
-		/// <summary>The node should be printed with infix or suffix notation
-		/// instead of prefix notation if applicable (requests `backquote notation` 
-		/// in LES and EC#).</summary>
-		Operator = 3,
+		/// <summary>A language-specific special notation should be used for this
+		/// node. In LES, this marker requests that the arguments to a call be
+		/// broken out into separate expressions, forming a "superexpression", e.g.
+		/// in "if c {a();} else {b();}", which actually means "if(c,{a();},else,{b();})",
+		/// the "if(...)" node will have this style.</summary>
+		Special = 3,
 		/// <summary>The node should be printed in prefix notation, e.g. <c>@.(X, Y)</c>
 		/// instead of <c>X.Y</c>.</summary>
 		PrefixNotation = 4,
+		/// <summary>The node(s) should be printed as a normal expression, rather
+		/// than using a special or statement notation.</summary>
+		Expression = 5,
 		/// <summary>The node should be printed like a data type, if the type 
 		/// notation is somehow different from expression notation. (Note: in 
 		/// general, one cannot expect data types to have this style).</summary>
-		DataType = 5,
-		/// <summary>A language-specific special notation should be used for this
-		/// node. In LES, this marker requests that the arguments to a call be
-		/// broken out into separate expressions, forming a superexpression, e.g.
-		/// in "x = if c a else b", which actually means "x = if(c, a, else, b)",
-		/// the "if(...)" node will have this style.</summary>
-		Special = 6,
+		DataType = 6,
 		/// <summary>Use an older or backward-compatible notation.</summary>
 		OldStyle = 7,
 		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 

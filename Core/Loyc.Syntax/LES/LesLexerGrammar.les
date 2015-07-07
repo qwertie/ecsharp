@@ -126,7 +126,7 @@ namespace Loyc.Syntax.Les
 			ParseIdValue();
 		};
 		private token LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
-			|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$'|'\\' ];
+			|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
 
 		// Punctuation & operators -----------------------------------------------
 		
@@ -142,8 +142,8 @@ namespace Loyc.Syntax.Les
 		private token Operator  @[ OpChar+ {ParseNormalOp();} ];
 		//private token BackslashOp @[ '\\' FancyId? {ParseBackslashOp();} ];
 		private token LParen    {
-			//var prev = LA(-1);
-			//_type = prev == ' ' || prev == '\t' ? TT.SpaceLParen : TT.LParen;
+			var prev = LA(-1);
+			_type = prev == ' ' || prev == '\t' ? TT.SpaceLParen : TT.LParen;
 			@[ '(' ]
 		};
 

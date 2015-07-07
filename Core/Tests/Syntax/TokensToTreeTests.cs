@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Lexing
 			Expect(list[2].Children, A());
 			Expect(list[4].Children, A());
 			list = Lex("a (b ) c { d } e [123 f] ..");
-			Expect(list, A(TT.Id, TT.LParen, TT.RParen, TT.Id, TT.LBrace, TT.RBrace, TT.Id, TT.LBrack, TT.RBrack, TT.NormalOp), _("a"));
+			Expect(list, A(TT.Id, TT.SpaceLParen, TT.RParen, TT.Id, TT.LBrace, TT.RBrace, TT.Id, TT.LBrack, TT.RBrack, TT.NormalOp), _("a"));
 			Expect(list[1].Children, A(TT.Id), _("b"));
 			Expect(list[4].Children, A(TT.Id), _("d"));
 			Expect(list[7].Children, A(TT.Number, TT.Id), 123, _("f"));
@@ -34,8 +34,8 @@ namespace Loyc.Syntax.Lexing
 		public void Test2()
 		{
 			var list = Lex("{b (c)} ([]) [{123}++]");
-			Expect(list, A(TT.LBrace, TT.RBrace, TT.LParen, TT.RParen, TT.LBrack, TT.RBrack));
-			Expect(list[0].Children, A(TT.Id, TT.LParen, TT.RParen), _("b"));
+			Expect(list, A(TT.LBrace, TT.RBrace, TT.SpaceLParen, TT.RParen, TT.LBrack, TT.RBrack));
+			Expect(list[0].Children, A(TT.Id, TT.SpaceLParen, TT.RParen), _("b"));
 			Expect(list[0].Children[1].Children, A(TT.Id), _("c"));
 			Expect(list[2].Children, A(TT.LBrack, TT.RBrack));
 			Expect(list[4].Children, A(TT.LBrace, TT.RBrace, TT.PreOrSufOp));
@@ -68,7 +68,7 @@ namespace Loyc.Syntax.Lexing
 				}
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace), _("namespace"));
-			Expect(list[1].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.LParen, TT.RParen), _("bar"));
+			Expect(list[1].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.SpaceLParen, TT.RParen), _("bar"));
 			Expect(list[1].Children[1].Children, A(TT.Id, TT.LParen), _("foo"));
 			
 			list = Lex(@"
@@ -79,7 +79,7 @@ namespace Loyc.Syntax.Lexing
 				}
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace), _("namespace"));
-			Expect(list[1].Children, A(TT.LParen, TT.RParen));
+			Expect(list[1].Children, A(TT.SpaceLParen, TT.RParen));
 			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace), _("bar"));
 			Expect(list[1].Children[0].Children[1].Children, A(TT.Id), _("foo"));
 		}
@@ -95,7 +95,7 @@ namespace Loyc.Syntax.Lexing
 				} // matches 'namespace {' due to indentation
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace), _("namespace"));
-			Expect(list[1].Children, A(TT.LParen));
+			Expect(list[1].Children, A(TT.SpaceLParen));
 			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Number), _("a"));
 
 			list = Lex(@"
@@ -106,7 +106,7 @@ namespace Loyc.Syntax.Lexing
 					} // matches '(' due to indentation level
 			");
 			Expect(list, A(TT.Id, TT.LBrace), _("namespace"));
-			Expect(list[1].Children, A(TT.LParen, TT.RBrace));
+			Expect(list[1].Children, A(TT.SpaceLParen, TT.RBrace));
 			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Number), _("a"));
 
 			list = Lex(@"

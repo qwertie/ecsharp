@@ -53,6 +53,7 @@ namespace Loyc.Syntax.Les
 		protected override string ToString(int type)
 		{
 			switch ((TokenType)type) {
+				case TT.SpaceLParen: return "' ('";
 				case TT.LParen: return "'('";
 				case TT.RParen: return "')'";
 				case TT.LBrack: return "'['";
@@ -69,7 +70,7 @@ namespace Loyc.Syntax.Les
 		protected LNode MissingExpr() { return F.Id(S.Missing, InputPosition, InputPosition).SetStyle(NodeStyle.Alternate2); }
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
-		public static readonly Precedence StartStmt = new Precedence(MinPrec, MinPrec, MinPrec);
+		public static readonly Precedence StartStmt = Precedence.MinValue;
 
 		/*
 		protected RVList<LNode> ParseStmtsInside(Token group, RVList<LNode> list = null)
@@ -172,19 +173,22 @@ namespace Loyc.Syntax.Les
 		{
 			foreach (var stmt in ExprListLazy(separator))
 				yield return stmt;
-			if (LA0 != (int)EOF)
-				Error(0, "Expected {0}", ToString((int)separator.Value));
+			Match((int) EOF, (int) separator.Value);
 		}
 
 		protected override void Error(bool inverted, IEnumerable<int> expected_)
 		{
-			base.Error(inverted, expected_);
+			TT expected = (TT)expected_.First();
+			bool expEnder = expected == TT.Semicolon || expected == TT.Comma || expected == TT.EOF;
+			if (expEnder && LA0 == (int)TT.SpaceLParen)
+				Error(0, "Syntax error. If a function call was intended, remove the space(s) before '('.");
+			else
+				base.Error(inverted, expected_);
 			
-			// If a closer was expected...
-			int expected = expected_.First();
-			if (Token.IsCloser((TokenKind)expected)) {
+			// If an ender or closer was expected...
+			if (expEnder || Token.IsCloser((TokenKind)expected)) {
 				// Skip forward until reaching the expected closer, or a closing brace
-				while (LA0 != (int)TT.EOF && LA0 != expected && LA0 != (int)TT.RBrace && LA0 != (int)TT.Dedent) {
+				while ((TT)LA0 != TT.EOF && (TT)LA0 != expected && (TT)LA0 != TT.RBrace && (TT)LA0 != TT.Dedent) {
 					if (Token.IsOpener((TokenKind)LA0)) {
 						int depth = 1;
 						do {
@@ -195,8 +199,9 @@ namespace Loyc.Syntax.Les
 					}
 					Skip();
 				}
-			} else
-				Skip(); // in general, skip to avoid a potential infinite loop
+				if ((TT)LA0 == expected)
+					Skip();
+			}
 		}
 	}
 }

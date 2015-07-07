@@ -70,7 +70,6 @@ namespace Loyc.Syntax.Les
 				{ S.DotDot,      P.PrefixDots  }, // ..
 				{ S.OrBits,      P.PrefixOr    }, // |
 				{ S.Div,         P.Reserved    }, // /
-				{ S.Backslash,   P.Reserved    }, // \
 				{ S.LT,          P.Reserved    }, // <
 				{ S.GT,          P.Reserved    }, // >
 				{ S.QuestionMark,P.Reserved    }, // ?
@@ -95,9 +94,9 @@ namespace Loyc.Syntax.Les
 				{ S.Mul,         P.Multiply   }, // *
 				{ S.Div,         P.Multiply   }, // /
 				{ S.Mod,         P.Multiply   }, // %
-				{ S.Backslash,   P.Multiply   }, // \
-				{ S.Shr,         P.Multiply   }, // >>
-				{ S.Shl,         P.Multiply   }, // <<
+				//{ S.Backslash,   P.Multiply   }, // \  (no longer supported)
+				{ S.Shr,         P.Shift      }, // >>
+				{ S.Shl,         P.Shift      }, // <<
 				{ S.Add,         P.Add        }, // +
 				{ S.Sub,         P.Add        }, // -
 				{ S._RightArrow, P.Arrow      }, // ->

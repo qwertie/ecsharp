@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.MiniTest;
+using Loyc.Collections;
 
 namespace Loyc.Syntax.Les
 {
@@ -14,12 +15,49 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void ParseErrors()
 		{
+			MessageHolder msgs;
 			// Expected ';'
-			Test(false, 1, "a, b", a, b);
-			Test(false, 1, "a, 5 c b; x();", a, F.Call(F.Literal(5), c, b), F.Call(x));
-			Test(false, 2, "a = ) b c 1", F.Call(S.Assign, a, F._Missing));
+			msgs = Test(Mode.Expr, 0, "a, b", a, b);
+			msgs = Test(Mode.Stmt, 1, "a, b", a, b);
+			ExpectMessageContains(msgs, "';'", "','");
+			msgs = Test(Mode.Stmt, 2, "a = ) b c 1", F.Call(S.Assign, a, F._Missing));
+			ExpectMessageContains(msgs, "';'");
 			// Missing subexpression
-			Test(false, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F._Missing));
+			msgs = Test(Mode.Stmt, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F._Missing));
+			ExpectMessageContains(msgs, "expected an atom");
+			// Invalid call
+			msgs = Test(Mode.Stmt, 1, "x = Foo ();", F.Call(S.Assign, x, Foo));
+			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
+			msgs = Test(Mode.Stmt, 1, "5 (x);", F.Literal(5));
+			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
+			// Invalid superexpressions
+			msgs = Test(Mode.Stmt, 1, "a; 5 c b; x();", a, F.Literal(5));
+			ExpectMessageContains(msgs, "';'");
+			msgs = Test(Mode.Stmt, 1, "get Foo { x } = 0;", F.Call(S.get, Foo, F.Braces(x)));
+			ExpectMessageContains(msgs, "Assignment", "';'");
+			msgs = Test(Mode.Stmt, 1, "if(a) > b { c(); };", F.Call(S.GT, F.Call("if", a), b));
+			ExpectMessageContains(msgs, "'{'", "';'");
+			msgs = Test(Mode.Stmt, 1, "{ a + b c }; Foo();", F.Braces(F.Call(S.Add, a, b)), F.Call(Foo));
+			ExpectMessageContains(msgs, "Id", "'}'");
+			msgs = Test(Mode.Stmt, 1, "a.b c", F.Dot(a, b));
+			msgs = Test(Mode.Stmt, 1, "a + b.c {} Foo", F.Call(S.Add, a, F.Dot(b, c)));
+			msgs = Test(Mode.Stmt, 1, "a(b) c", F.Call(a, b));
+			msgs = Test(Mode.Stmt, 1, "a.Foo(b) c", F.Call(F.Dot(a, Foo), b));
+		}
+
+		[Test]
+		public void MiscibilityErrors()
+		{
+			var msgs = Test(Mode.Expr, 1, "x & Foo == 0",   F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
+			ExpectMessageContains(msgs, "'==' is not allowed in this context");
+			Test(Mode.Expr, 0, "x >> 1 == a",    F.Call(S.Eq, F.Call(S.Shr, x, one), a));
+			Test(Mode.Expr, 1, "x >> a + 1",     F.Call(S.Shr, x, F.Call(S.Add, a, one)));
+			Test(Mode.Expr, 0, "x >> a**1",      F.Call(S.Shr, x, F.Call(S.Exp, a, one)));
+			Test(Mode.Expr, 1, "x `Foo` a .. b", F.Call(Foo, x, F.Call(S.DotDot, a, b)));
+			Test(Mode.Expr, 1, "x `Foo` a*b",    F.Call(Foo, x, F.Call(S.Mul, a, b)));
+			Test(Mode.Stmt, 0, "x `Foo` a**b;",  F.Call(Foo, x, F.Call(S.Exp, a, b)));
+			Test(Mode.Expr, 0, "x `Foo` 1 == a", F.Call(S.Eq, F.Call(Foo, x, one), a));
+			Test(Mode.Expr, 1, "Foo * a `*` b * c", F.Call(S.Mul, F.Call(S.Mul, Foo, a), F.Call(S.Mul, b, c)));
 		}
 
 		[Test]
@@ -38,7 +76,7 @@ namespace Loyc.Syntax.Les
 				F.Call("try", F.Braces(_("eat")),
 					 _("catch"), F.Braces(_("crumbs")),
 					 _("finally"), F.Braces(F.Call("hunger", _("satisfied")))));
-			Test(false, 0, @"
+			Test(Mode.Stmt, 0, @"
 				if a:
 					a();
 				:else if b:
@@ -50,17 +88,18 @@ namespace Loyc.Syntax.Les
 				F.Call("if", a, F.Braces(F.Call(a)), _("else"), _("if"), b,
 					F.Braces(F.Call(S.Assign, c, F.Call(b)), F.Call("while", Foo, F.Braces(F.Call(c))))),
 				F.Call("return", F.Braces(Foo)));
-			Test(false, 2, @"
+			// TODO: implement a warning for this
+			Test(Mode.Stmt, 0, @"
 				a();
 				if c
 					(b)
-				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), Foo, F.Tuple()));
+				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), F.Call(Foo)));
 		}
 
-		protected override void Test(bool exprMode, int errorsExpected, string str, params LNode[] expected)
+		protected override MessageHolder Test(Mode mode, int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages, exprMode ? ParsingService.Exprs : ParsingService.Stmts).ToList();
+			var results = LesLanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingService.Exprs : ParsingService.Stmts).ToList();
 			for (int i = 0; i < expected.Length; i++)
 				AreEqual(expected[i], results[i]);
 			AreEqual(expected.Length, results.Count);
@@ -69,6 +108,7 @@ namespace Loyc.Syntax.Les
 				messages.WriteListTo(MessageSink.Console);
 				AreEqual(errorsExpected, messages.List.Count); // fail
 			}
+			return messages;
 		}
 	}
 }

@@ -139,11 +139,11 @@ namespace Ecs
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		/// <summary>Context: beginning of statement (#namedArg not supported, allow multiple #var decl)</summary>
-		internal static readonly Precedence StartStmt      = new Precedence(MinPrec, MinPrec, MinPrec);
+		internal static readonly Precedence StartStmt      = new Precedence(MinPrec);
 		/// <summary>Context: beginning of expression (#var must have initial value)</summary>
-		internal static readonly Precedence StartExpr      = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
+		internal static readonly Precedence StartExpr      = new Precedence(MinPrec+1);
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
-		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
+		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
 		public void PrintExpr()
 		{

@@ -236,30 +236,31 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
 	{
-		public static readonly Precedence Substitute  = new Precedence(102,103,103,102);
-		public static readonly Precedence Primary     = new Precedence(100,101,100);
-		public static readonly Precedence NullDot     = new Precedence(98,  99, 98);
-		public static readonly Precedence DoubleBang  = new Precedence(96, 97, 97, 96);
-		public static readonly Precedence Juxtaposition = new Precedence(94, 95, 94);
-		public static readonly Precedence Prefix      = new Precedence(90,  91, 91,90);
-		public static readonly Precedence Power       = new Precedence(80,  81, 80);
-		public static readonly Precedence Suffix2     = new Precedence(78,  79, 78);
-		public static readonly Precedence Multiply    = new Precedence(70,  71, 70);
-		public static readonly Precedence Arrow       = new Precedence(64,  65, 64);
-		public static readonly Precedence Add         = new Precedence(60,  61, 60);
-		public static readonly Precedence AndBits     = new Precedence(56,  57, 56);
-		public static readonly Precedence OrBits      = new Precedence(54,  55, 54);
-		public static readonly Precedence OrIfNull    = new Precedence(52,  53, 52);
-		public static readonly Precedence PrefixDots  = new Precedence(52,  53, 53,52);
-		public static readonly Precedence Range       = new Precedence(50,  51, 50);
-		public static readonly Precedence Backtick    = new Precedence(45,  79, 46,78);
-		public static readonly Precedence Reserved    = new Precedence(45,  97, 45,97);
-		public static readonly Precedence Compare     = new Precedence(40,  41, 40);
-		public static readonly Precedence And         = new Precedence(22,  23, 22);
-		public static readonly Precedence Or          = new Precedence(18,  19, 18);
-		public static readonly Precedence IfElse      = new Precedence(10,  11, 11,10);
-		public static readonly Precedence Assign      = new Precedence( 0,   1, 1, 0);
-		public static readonly Precedence Lambda      = new Precedence(-2,  -1, 75,-1);
-		public static readonly Precedence PrefixOr    = new Precedence(-10, -9, -9,-10);
+		public static readonly Precedence Substitute = new Precedence(106, 105); // special prefix ops $ . :
+		public static readonly Precedence Primary     = new Precedence(100);
+		public static readonly Precedence NullDot     = new Precedence(95);
+		public static readonly Precedence DoubleBang  = new Precedence(91, 90);
+		public static readonly Precedence Prefix      = new Precedence(85);      // most prefix/suffix ops
+		public static readonly Precedence Power       = new Precedence(80);
+		public static readonly Precedence Suffix2     = new Precedence(75);      // no longer used
+		public static readonly Precedence Multiply    = new Precedence(70);
+		public static readonly Precedence Arrow       = new Precedence(65);
+		public static readonly Precedence Add         = new Precedence(60);
+		public static readonly Precedence Shift       = new Precedence(55, 55, 55, 70);
+		public static readonly Precedence PrefixDots  = new Precedence(50);      // prefix ..
+		public static readonly Precedence Range       = new Precedence(45);
+		public static readonly Precedence OrIfNull    = new Precedence(40, 40, 40, 76);
+		public static readonly Precedence Backtick    = new Precedence(40, 40, 40, 75);
+		public static readonly Precedence Reserved    = new Precedence(40, 40, 40, 90);
+		public static readonly Precedence Compare     = new Precedence(35);
+		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 50);
+		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50);
+		public static readonly Precedence And         = new Precedence(20);
+		public static readonly Precedence Or          = new Precedence(15);
+		public static readonly Precedence IfElse      = new Precedence(11, 10);
+		public static readonly Precedence Assign      = new Precedence(6, 5);
+		public static readonly Precedence Lambda      = new Precedence(77, 0, -1, -1);
+		public static readonly Precedence PrefixOr    = new Precedence(0);       // prefix
+		public static readonly Precedence SuperExpr   = new Precedence(-5);
 	}
 }

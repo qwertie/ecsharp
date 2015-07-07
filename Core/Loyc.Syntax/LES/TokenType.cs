@@ -35,7 +35,7 @@ namespace Loyc.Syntax.Les
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
 		LParen     = TokenKind.LParen,
-		//SpaceLParen= TokenKind.LParen + 1,
+		SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,
 		LBrack     = TokenKind.LBrack,
 		RBrack     = TokenKind.RBrack,

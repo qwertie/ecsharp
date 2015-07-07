@@ -8,20 +8,13 @@ using Loyc.Syntax.Les; // for doc comments
 
 namespace Loyc.Syntax
 {
-	/// <summary>Represents the precedence and miscibility of an operator.</summary>
+	/// <summary>A four-byte tuple that represents the precedence and miscibility 
+	/// of an operator.</summary>
 	/// <remarks>
-	/// This class contains four numbers. The first two, Lo and Hi, are a 
-	/// precedence range that describes how the operator can be mixed with other 
-	/// operators. If one operator's range overlaps another AND the ranges are not 
-	/// equal, then the two operators are immiscible. For example, == and != have 
-	/// the same precedence in EC#, 38..39, so they can be mixed with each other, 
-	/// but they cannot be mixed with &amp; which has the overlapping range 32..45 
-	/// (this will be explained below.)
-	/// <para/>
-	/// The "actual" precedence is encoded in the other two numbers, 
-	/// <see cref="Left"/> and <see cref="Right"/>. These numbers encode the 
-	/// knowledge that, for example, <c>x &amp; y == z</c> will be parsed as 
-	/// <c>x &amp; (y == z)</c>. Normally, Left and Right are the same. However, some
+	/// An operator's precedence is encoded in the two numbers, <see cref="Left"/> 
+	/// and <see cref="Right"/>. These numbers encode the knowledge that, for example, 
+	/// <c>x &amp; y == z</c> will be parsed as <c>x &amp; (y == z)</c>. For normal 
+	/// left-associative operators, Left and Right are the same. However, some 
 	/// operators have different precedence on the left than on the right, a prime
 	/// example being the => operator: <c>x = a => y = a</c> is parsed 
 	/// <c>x = (a => (y = a))</c>; it has very high precedence on the left, but
@@ -87,28 +80,32 @@ namespace Loyc.Syntax
 	/// <para/>
 	/// The above explanation illustrates the meaning of Left and Right from the
 	/// perspective of a parser, but an actual parser may or may not use the PF 
-	/// concept and PrecedenceRange objects.
+	/// concept and <c>Precedence</c> objects.
 	/// <para/>
-	/// The printer (e.g. <see cref="LesNodePrinter"/>) has a different way of analyzing
+	/// This struct contains two other numbers, <see cref="Lo"/> and <see cref="Hi"/>,
+	/// which are a precedence range that determines whether and how the operator 
+	/// can be mixed with other operators, as explained below.
+	/// <para/>
+	/// A printer (e.g. <see cref="LesNodePrinter"/>) has a different way of analyzing
 	/// precedence. It starts with a known parse tree and then has to figure out 
 	/// how to output something that the parser will reconstruct into the original
-	/// tree. Making this more difficult is the fact that in Loyc trees, parens are
-	/// significant; therefore the printer cannot simply put expressions in parens
-	/// "just to be safe"--extra parenthesis will change the syntax tree, so round-
-	/// tripping will fail.
+	/// tree. This is more difficult if perfect round-tripping is required: parentheses
+	/// are encoded in the Loyc tree as a #trivia_inParens attribute, so if perfect
+	/// round-tripping is desired, the printer cannot simply put everything in parens 
+	/// "just to be safe".
 	/// <para/>
 	/// Generally, the printer has two ways of printing any expression tree: (1) 
-	/// with operators (e.g. a+b), and (2) with prefix notation (e.g. #+(a, b)).
-	/// The tree <c>#+(#*(a, b), c)</c> will be printed as "a*b+c" (unless prefix
+	/// with operators (e.g. a+b), and (2) with prefix notation (e.g. @+(a, b)).
+	/// The tree <c>@+(@*(a, b), c)</c> will be printed as "a*b+c" (unless prefix
 	/// notation is specifically requested) because the precedence rules allow it,
-	/// but <c>#*(#+(a, b), c)</c> will be printed as <c>#+(a, b)*c</c> because 
+	/// but <c>@*(@+(a, b), c)</c> will be printed as <c>@+(a, b)*c</c> because 
 	/// both "a+b*c" and "(a+b)*c" are different from the original tree.
 	/// <para/>
 	/// While a parser proceeds from left to right, a printer proceeds from parents
-	/// to children. So the printer for #*(#+(a, b), c) starts at #* with no 
+	/// to children. So the printer for @*(@+(a, b), c) starts at @* with no 
 	/// precedence restrictions, and roughly speaking will set the precedence floor
 	/// to <see cref="LesPrecedence"/>.Multiply in order to print its two children.
-	/// Since the precedence of #+ (Add) is below Multiply, the + operator is not
+	/// Since the precedence of @+ (Add) is below Multiply, the + operator is not
 	/// allowed in that context and either prefix notation or extra parenthesis
 	/// is used as a fallback (depending on the <see cref="LesNodePrinter.AllowExtraParenthesis"/> 
 	/// option that permits <c>(a+b)*c</c>).
@@ -116,26 +113,26 @@ namespace Loyc.Syntax
 	/// Printing has numerous "gotchas"; the ones related to precedence are
 	/// <ol>
 	/// <li>Although <see cref="LesPrecedence"/>.Add has the "same" precedence on the
-	///     Left and Right, <c>#-(#-(a, b), c)</c> can be printed <c>a - b - c</c> but
-	///     <c>#-(a, #-(b, c))</c> would have to be printed <c>a - #-(b, c)</c> 
+	///     Left and Right, <c>@-(@-(a, b), c)</c> can be printed <c>a - b - c</c> but
+	///     <c>@-(a, @-(b, c))</c> would have to be printed <c>a - @-(b, c)</c> 
 	///     instead. Clearly, the left and right sides must be treated somehow
 	///     differently.</li>
 	/// <li>Similarly, the different arguments in <c>a?b:c</c> and <c>a=>b</c> must
 	///     be treated differently. And careful handling is needed for the dot 
-	///     operator in particular due to its high precedence; e.g. <c>#.(a(b))</c> 
-	///     cannot be printed <c>.a(b)</c> because that would mean <c>#.(a)(b)</c>.</li>
+	///     operator in particular due to its high precedence; e.g. <c>@.(a(b))</c> 
+	///     cannot be printed <c>.a(b)</c> because that would mean <c>@.(a)(b)</c>.</li>
 	/// <li>The LES parser, at least, allows a prefix operator to appear on the 
 	///     right-hand side of any infix or prefix operator, regardless of the 
 	///     precedence of the two operators; "$ ++x" is permitted even though ++ has
 	///     lower precedence than $. Another example is that <c>a.-b.c</c> can be 
-	///     parsed with the interpretation <c>a.(-b).c</c>, even though #- has 
-	///     lower precedence than #$. Ideally the printer would replicate this 
+	///     parsed with the interpretation <c>a.(-b).c</c>, even though @- has 
+	///     lower precedence than @$. Ideally the printer would replicate this 
 	///     rule, but whether it does ot not, it also must take care that 
-	///     <c>#.(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
-	///     similar expression <c>#*(a, #-(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
+	///     <c>@.(a, -b.c)</c> is not printed as <c>a.-b.c</c> even though the 
+	///     similar expression <c>@*(a, @-(b.c))</c> can be printed as <c>a*-b.c</c>.</li>
 	/// <li>Prefix notation is needed when an operator's arguments have attributes;
-	///     <c>#+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
-	///     that would mean <c>[Foo] #+(a, b)</c>.</li>
+	///     <c>@+([Foo] a, b)</c> cannot be printed <c>[Foo] a + b</c> because
+	///     that would mean <c>[Foo] @+(a, b)</c>.</li>
 	/// </ol>
 	/// 
 	/// <h3>Printing and parsing are different</h3>
@@ -158,7 +155,7 @@ namespace Loyc.Syntax
 	/// the right-hand operator was "*" instead of "??", the following printout 
 	/// would be wrong:
 	/// <code>
-	///     a = b + c * d   // actual syntax tree: a = #+(b, c) * d
+	///     a = b + c * d   // actual syntax tree: a = @+(b, c) * d
 	/// </code>
 	/// The same reasoning applies to the left-hand side (imagine if "=" was 
 	/// "*" instead.)
@@ -175,6 +172,22 @@ namespace Loyc.Syntax
 	/// 
 	/// <h3>Miscibility (mixability)</h3>
 	/// 
+	/// <see cref="Lo"/> and <see cref="Hi"/> don't affect how operators are
+	/// parsed into a tree, but are used to request a warning or error if operators
+	/// are mixed improperly way. If one operator's range overlaps another AND (the 
+	/// ranges are not equal OR <c>Lo > Hi</c>), then the two operators are 
+	/// immiscible. For example, == and != have the same precedence in EC#, 38..39, 
+	/// so they can be mixed with each other, but they cannot be mixed with &amp; 
+	/// which has the overlapping range 32..45 (this will be explained below.)
+	/// Normally Lo and Hi are set to <c>Min(Left,Right)</c> and <c>Max(Left,Right)</c>
+	/// respectively, but this is not required--in particular, any pair where
+	/// <c>Lo > Hi</c> is used to indicate that the operator cannot be mixed with 
+	/// other operators of the same precedence, even though it can (perhaps) be 
+	/// mixed with others of different precedence. This is called non-associativity. 
+	/// For example, in PHP are not allowed to write an expression such as 
+	/// <c>x > y >= z</c>; to represent this, operators <c>></c> and <c>>=</c> 
+	/// should make <c>Lo > Hi</c>.
+	/// <para/>
 	/// Certain operators should not be mixed because their precedence was originally 
 	/// chosen incorrectly, e.g. x &amp; 3 == 1 should be parsed (x &amp; 3) == 1 but is 
 	/// actually parsed x &amp; (3 == 1). To allow the precedence to be repaired 
@@ -184,7 +197,7 @@ namespace Loyc.Syntax
 	/// before, two operators are immiscible if their ranges overlap but are not 
 	/// identical.
 	/// <para/>
-	/// In LES, the precedence range feature (a.k.a. immiscibility) is used to 
+	/// In LES, the precedence range feature (a.k.a. immiscibility) is also used to 
 	/// indicate that a specific precedence has not been chosen for an operator. 
 	/// If a precedence is chosen in the future, it will be somewhere within the 
 	/// range.
@@ -192,23 +205,30 @@ namespace Loyc.Syntax
 	/// <h3>Overall Range</h3>
 	/// 
 	/// By convention, precedence scales range from 0 to 100 (or slightly higher).
-	/// The precedence numbers are stored in this structure as <c>sbyte</c>s, so the 
-	/// standard range cannot be exceeded by much.
+	/// The precedence numbers are stored in this structure as <c>sbyte</c>s, so 
+	/// <c>Left</c>, <c>Right</c>, <c>Lo</c>, and <c>Hi</c> must be between -128 
+	/// and 127.
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{
 		public static Precedence MinValue = new Precedence(sbyte.MinValue);
 		public static Precedence MaxValue = new Precedence(sbyte.MaxValue);
 
+		/// <summary>Initializes a left-associative operator with the specified precedence.</summary>
 		public Precedence(int actual) : this(actual, actual, actual, actual) { }
-		public Precedence(int lo, int hi, int actual) : this(lo, hi, actual, actual) { }
-		public Precedence(int lo, int hi, int left, int right)
+		/// <summary>Initializes an operator with different precedence on the left 
+		/// and right sides. For a right associative operator, conventionally 
+		/// <c>right = left-1</c>.</summary>
+		public Precedence(int left, int right) : this(left, right, System.Math.Min(left, right), System.Math.Max(left, right)) { }
+		/// <summary>Initializes an operator with the given precedence on the
+		/// left and right sides, and the given immiscibility range (see 
+		/// documentation of this type).</summary>
+		public Precedence(int left, int right, int lo, int hi)
 		{
-			Debug.Assert(MathEx.IsInRange(left, lo, hi) || MathEx.IsInRange(right, lo, hi));
 			Lo = checked((sbyte)lo); Hi = checked((sbyte)hi); 
 			Left = checked((sbyte)left); Right = checked((sbyte)right);
 		}
-		public Precedence(sbyte lo, sbyte hi, sbyte left, sbyte right)
+		public Precedence(sbyte left, sbyte right, sbyte lo, sbyte hi)
 		{
 			Lo = lo; Hi = hi; Left = left; Right = right;
 		}
@@ -225,14 +245,14 @@ namespace Loyc.Syntax
 		/// <param name="outerContext"></param>
 		/// <returns></returns>
 		public Precedence LeftContext(Precedence outerContext) {
-			return new Precedence(this.Lo, this.Hi, outerContext.Left, this.Left);
+			return new Precedence(outerContext.Left, this.Left, this.Lo, this.Hi);
 		}
 		/// <summary>For use in printers. Auto-raises the precedence floor to 
 		/// prepare to print an expression on the right side of an operator.</summary>
 		/// <param name="outerContext">Context in which this operator is being printed</param>
 		/// <returns></returns>
 		public Precedence RightContext(Precedence outerContext) {
-			return new Precedence(this.Lo, this.Hi, this.Right, outerContext.Right);
+			return new Precedence(this.Right, outerContext.Right, this.Lo, this.Hi);
 		}
 
 		/// <summary>Returns true if this object represents a right-associative 
@@ -248,7 +268,7 @@ namespace Loyc.Syntax
 		}
 		/// <summary>For use in printers. Returns true if a prefix operator with 
 		/// this precedence can appear in the specified context's right-hand 
-		/// precedence floor.</summary>
+		/// precedence floor (ignoring miscibility).</summary>
 		/// <remarks>It is assumed that the left side of a prefix operator has 
 		/// "infinite" precedence so only the right side is checked. This rule is 
 		/// used by the EC# printer but may not be needed or allowed in all 
@@ -262,7 +282,13 @@ namespace Loyc.Syntax
 		/// <remarks><see cref="CanAppearIn(Precedence)"/> is for parsability, 
 		/// this method is to detect a deprecated or undefined mixing of operators.
 		/// </remarks>
-		public bool CanMixWith(Precedence context) { return this.Lo > context.Hi || this.Hi < context.Lo || RangeEquals(context); }
+		public bool CanMixWith(Precedence context) { 
+			if (RangeEquals(context))
+				return Lo <= Hi;
+			int c_lo = context.Lo, c_hi = context.Hi;
+			MathEx.SortPair(ref c_lo, ref c_hi);
+			return (Lo > c_hi && Hi > c_hi) || (Hi < c_lo && Lo < c_lo);
+		}
 
 		/// <summary>For use in parsers. Returns true if 'rightOp', an operator
 		/// on the right, has higher precedence than the current operator 'this'.</summary>

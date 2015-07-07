@@ -55,7 +55,7 @@ namespace Ecs.Parser
 			return node;
 		}
 		int count;
-		public static readonly Precedence ContinueExpr = new Precedence(-100, -100, -100);
+		public static readonly Precedence ContinueExpr = new Precedence(-100);
 		LNode TypeInside(Token args)
 		{
 			if ((!Down(args)))

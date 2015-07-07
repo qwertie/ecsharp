@@ -25,7 +25,7 @@ namespace Loyc.Syntax.Les
 
 	public partial class LesParser
 	{
-		[FullLLk, LL(1), AddCsLineDirectives(@false)]
+		[FullLLk, LL(2), AddCsLineDirectives(@false)]
 		LLLPG(parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));
 		
 		alias("@" = TT.At);
@@ -33,7 +33,7 @@ namespace Loyc.Syntax.Les
 		alias(";" = TT.Semicolon);
 		alias("," = TT.Comma);
 		alias("!" = TT.Not);
-		//alias(" (" = TT.SpaceLParen);
+		alias(" (" = TT.SpaceLParen);
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
 		alias("[" = TT.LBrack);
@@ -55,21 +55,21 @@ namespace Loyc.Syntax.Les
 		public rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
-			(/ e:ExprStart)
+			(/ e:TopExpr)
 			[	end:(","|";")
 				{list.Add(e ?? MissingExpr());}
 				{CheckEndMarker(ref endMarker, ref end);}
-				({$e = null;} / e:ExprStart)
+				({$e = null;} / e:TopExpr)
 			]*
 			{if ($e != null || end.Type() == TT.Comma) list.Add(e ?? MissingExpr());}
 			{return list;}
 		];
 		public rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
-			(/ e:ExprStart)
+			(/ e:TopExpr)
 			[	end:(","|";")
 				{#rawText("yield"); return e ?? MissingExpr();}
 				{CheckEndMarker(ref endMarker.Value, ref end);}
-				({$e = null;} / e:ExprStart)
+				({$e = null;} / e:TopExpr)
 			]*
 			{if ($e != null || end.Type() == TT.Comma) {#rawText("yield"); return e ?? MissingExpr();}}
 		];
@@ -85,54 +85,53 @@ namespace Loyc.Syntax.Les
 			};
 		};
 
-		protected rule ExprStart()::LNode @[
+		protected rule TopExpr()::LNode @[
 			// Use a gate to simplify the decision about whether to call this rule
 			[	// [Attributes]
 				t:"[" attrs:ExprList "]"
 			]?
-			e:Expr(StartStmt)
-			{
-				if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };
-				return e.PlusAttrs(attrs);
-			}
+			(	e:Expr(StartStmt)
+			/	// Superexpression: an identifier followed by another expression
+				// and a series of atoms. After encountering a braced block {...}, 
+				// each subexpression afterward must be an Id atom, {braced block}, 
+				// or (parens).
+				id:=TT.Id // identifier
+				{args := RVList!LNode.Empty;}
+				args+=Expr(P.SuperExpr)
+				[ ("("|"{"|TT.Id) => args+=Atom ]*
+				{e = F.Call(id.Value->Symbol, args, id.StartIndex, args.Last.Range.EndIndex);}
+			)
+			{if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };}
+			{return e.PlusAttrs(attrs);}
 		];
 
-		// Types of expressions:
-		// - atoms (parenthesized), {braced}, ids, literals
+		// Types of (normal) expressions:
+		// - atoms: ids, literals, (parenthesized), {braced}
 		// - ++prefix_operators
 		// - infix + operators
 		// - suffix_operators++
-		// - juxtaposition expressions
 		// - Special primary expressions:
 		//   method_calls(with arguments), indexers[with indexes], generic!arguments
+		[LL(1)]
 		token Expr(context::Precedence)::LNode @[
 			{prec::Precedence;}
 			e:PrefixExpr(context)
 			greedy
 			[	// Infix operator
 				&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
-				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{[Local] LA($LI+1) != TT.Indent->int} t:":")
+				{if (!prec.CanMixWith(context)) {
+					Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value); 
+				};}
+				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{[Hoist] LA($LI+1) != TT.Indent->int} t:":")
 				rhs:=Expr(prec)
-				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-			/	// Method_calls(with arguments), indexers[with indexes], generic!arguments
+				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
-			/	// Suffix operator
+			|	// Suffix operator
 				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
-				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-			/	// Juxtaposition
-				&{[Local] context.CanParse(P.Juxtaposition)}
-				{hasArgsAlready := e.BaseStyle == NodeStyle.PrefixNotation;}
-				{args := hasArgsAlready ? e.Args : RVList!LNode.Empty;}
-				greedy( args+=Atom(true) )+
-				{
-					if (hasArgsAlready) {
-						e = e.WithArgs(args).WithRange(e.Range.StartIndex, args.Last.Range.EndIndex);
-					} else {
-						e = F.Call(e, args, e.Range.StartIndex, args.Last.Range.EndIndex);
-					};
-				}
+				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetStyle(NodeStyle.Operator);}
 			]*
 			{return e;}
 		];
@@ -140,31 +139,33 @@ namespace Loyc.Syntax.Les
 		// Helper rule that parses one of the syntactically special primary expressions
 		private rule FinishPrimaryExpr(e::LNode)::LNode @[
 			(	// call(function)
-				"(" list:ExprList c:=")"
-				{e = F.Call(e, list, e.Range.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.PrefixNotation);}
+				{endMarker := default(TokenType);}
+				"(" list:ExprList(ref endMarker) c:=")"
+				{
+					e = F.Call(e, list, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.PrefixNotation);
+					if (endMarker == TT.Semicolon) e.Style = NodeStyle.Statement | NodeStyle.Alternate;
+				}
 			|	// ! operator (generic #of)
 				"!"
 				{args := (new(RVList!LNode) { e }); endIndex::int;}
 				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
 				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
-				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetBaseStyle(NodeStyle.Operator);}
+				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);}
 			|	// Indexer / square brackets
 				{args := (new(RVList!LNode) { e });}
 				"[" args=ExprList(args) c:="]"
-				{e = F.Call(S.Bracks, args, e.Range.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.Operator);}
+				{e = F.Call(S.Bracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
 			)
 			{return e;}
 		];
 
 		private rule PrefixExpr(context::Precedence)::LNode @
-			[	result:Atom
-			|	// Prefix operator
+			[	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
-				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetBaseStyle(NodeStyle.Operator);}
-			|	error
-				{$result = MissingExpr(); Error(0, "Expected an expression here");}
+				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+			|	result:Atom
 			];
 
 		// An Atom is:
@@ -174,11 +175,11 @@ namespace Loyc.Syntax.Les
 		// - a token literal @[ ... ]
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
-		private rule Atom(juxtaposition::bool = false)::LNode @[
+		private rule Atom()::LNode @[
 			(	id:=TT.Id // identifier
-				{$result = F.Id(id);}
+				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
-				{$result = F.Literal(lit);}
+				{$result = F.Literal(lit).SetStyle(lit.Style);}
 			|	// @[Token literal]
 				o:="@" "[" tree:TokenTree c:="]"
 				{$result = F.Literal(tree, o.StartIndex, c.EndIndex);}
@@ -186,36 +187,40 @@ namespace Loyc.Syntax.Les
 				o:=":" TT.Indent list:=StmtList c:=TT.Dedent greedy[":"]? 
 				{$result = F.Braces(list, o.StartIndex, c.EndIndex);}
 			|	// {braces}
-				o:="{" list:=StmtList c:="}" 
-				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetBaseStyle(NodeStyle.Statement);}
+				result:BracedBlock
 			|	// (parens) - possibly a tuple
-				{
-					if (juxtaposition) {
-						Error(0, "'(' is not permitted here. Did you forget a ';' (or ',') at the end of the previous expression?");
-					};
-					endMarker := default(TT);
-				}
-				o:="(" {hasAttrList := LA0->TT == TT.LBrack;}
+				{endMarker := default(TT);}
+				o:=("("|" (") {hasAttrList := LA0->TT == TT.LBrack;}
 				list:=ExprList(ref endMarker)
 				c:=")" {
 					if (endMarker == TT.Semicolon || list.Count != 1) {
 						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
 						if (endMarker == TT.Comma) {
-							ErrorSink.Write(Severity.Error, list[0].Range.End, "Tuples require ';' as a separator.");
+							var msg = "Tuples require ';' as a separator.";
+							if (o.Type() == TT.SpaceLParen)
+								msg += " If a function call was intended, remove the space(s) before '('.";
+							ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
 						};
 					} else {
 						$result = hasAttrList ? list[0] : F.InParens(list[0], o.StartIndex, c.EndIndex);
 					};
 				}
-			|	error {Error(0, "Subexpression expected here");} _
-				{$result = MissingExpr();}
+			|	error {
+					Error(0, "Expected an atom (id, literal, {braces} or (parens)).");
+					$result = MissingExpr();
+				}
 			)
+		];
+
+		private rule BracedBlock()::LNode @[
+			o:="{" list:=StmtList c:="}" 
+			{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
 		];
 
 		rule TokenTree::TokenTree @[
 			{$result = `new` TokenTree(SourceFile);}
 			nongreedy(
-				open:=("("|"["|"{"|TT.Indent)
+				open:=("("|" ("|"["|"{"|TT.Indent)
 				TokenTree
 				{$result.Add(open.WithValue($TokenTree));}
 				result+=(")"|"]"|"}"|TT.Dedent)

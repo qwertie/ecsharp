@@ -21,14 +21,13 @@ namespace Loyc.Syntax.Les
 		public IMessageSink Errors { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		/// <summary>Introduces extra parenthesis to express precedence, without
-		/// using an empty attribute list @() to allow perfect round-tripping.</summary>
-		/// <remarks>For example, the Loyc tree <c>x * #+(a, b)</c> will be printed 
-		/// <c>x * (a + b)</c>, which is a different tree (due to the parenthesis, 
-		/// <c>a + b</c> is nested in a call to the empty identifier \\``, which
-		/// represents parenthesis.)</remarks>
+		/// using an empty attribute list [] to allow perfect round-tripping.</summary>
+		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
+		/// <c>x * (a + b)</c>, which is a slightly different tree (the parenthesis
+		/// add the trivia attribute #trivia_inParens.)</remarks>
 		public bool AllowExtraParenthesis { get; set; }
 
-		/// <summary>When an argument to a method or macro has the value #missing,
+		/// <summary>When an argument to a method or macro has the value <c>@``</c>,
 		/// it will be omitted completely if this flag is set.</summary>
 		public bool OmitMissingArguments { get; set; }
 
@@ -116,6 +115,7 @@ namespace Loyc.Syntax.Les
 		}
 		public void Print(LNode node, Mode mode, Precedence context)
 		{
+			bool needSemicolon = context == StartStmt;
 			int parenCount = PrintPrefixTrivia(node);
 			if (parenCount != 0)
 				context = StartExpr;
@@ -137,7 +137,7 @@ namespace Loyc.Syntax.Les
 				PrintPrefixNotation(node, mode, context);
 			} while (false);
 			
-			PrintSuffixTrivia(node, parenCount, context == StartStmt);
+			PrintSuffixTrivia(node, parenCount, needSemicolon);
 		}
 
 		#region Infix, prefix and suffix operators
@@ -215,7 +215,7 @@ namespace Loyc.Syntax.Les
 						result = LesPrecedence.Backtick;
 					else if (!result.CanAppearIn(context))
 						result = LesPrecedence.Backtick;
-					if (!result.CanAppearIn(context))
+					if (!result.CanAppearIn(context) || !result.CanMixWith(context))
 						return null;
 					return result;
 				}
@@ -258,11 +258,11 @@ namespace Loyc.Syntax.Les
 
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		/// <summary>Context: beginning of statement (';' printed at the end)</summary>
-		public static readonly Precedence StartStmt      = new Precedence(MinPrec, MinPrec, MinPrec);
+		public static readonly Precedence StartStmt      = Precedence.MinValue;
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
-		public static readonly Precedence StartExpr      = new Precedence(MinPrec+1, MinPrec+1, MinPrec+1);
+		public static readonly Precedence StartExpr      = new Precedence(MinPrec+1);
 		/// <summary>Context: second, third, etc. expression in a superexpression.</summary>
-		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2, MinPrec+2, MinPrec+2);
+		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
 		void PrintPrefixNotation(LNode node, Mode mode, Precedence context)
 		{

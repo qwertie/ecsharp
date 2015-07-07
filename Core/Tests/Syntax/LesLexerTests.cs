@@ -49,7 +49,7 @@ namespace Loyc.Syntax.Les
 			Case("#error.",      A(TT.Id, TT.Dot),                   _("#error"), _("."));
 			Case("@#food:@yum",  A(TT.Id, TT.Id),                    _("#food:"), _("yum"));
 			Case(@"#()/",        A(TT.Id, TT.LParen, TT.RParen, TT.NormalOp), _("#"), null, null, _(@"/"));
-			Case(@"@\@$@==>@??.",A(TT.Id, TT.Id, TT.Id, TT.Id),      _(@"\"), _("$"), _("==>"), _("??."));
+			Case(@"@/*@$@==>@??.",A(TT.Id, TT.Id, TT.Id, TT.Id),     _(@"/*"), _("$"), _("==>"), _("??."));
 			Case("@>>@>>=@<<",   A(TT.Id, TT.Id, TT.Id),             _(">>"), _(">>="), _("<<"));
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
 			Case("won't prime'", A(TT.Id, TT.Id),         _("won't"), _("prime'"));
