@@ -44,6 +44,12 @@ namespace Loyc.Syntax.Les
 		}
 		protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
+			if (list is TokenTree) {
+				// Token trees can come from token literals, and the user of a
+				// token tree expects to be able to parse that tree, but this parser
+				// expects a flat token list, so we need to flatten the tree again.
+				list = ((TokenTree)list).Flatten();
+			}
 			CheckParam.IsNotNull("file", file);
 			base.Reset(list, eofToken, file, startIndex);
 			F = new LNodeFactory(file);
@@ -72,54 +78,6 @@ namespace Loyc.Syntax.Les
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = Precedence.MinValue;
 
-		/*
-		protected RVList<LNode> ParseStmtsInside(Token group, RVList<LNode> list = null)
-		{
-			if (Down(group.Children)) {
-				StmtList(ref list);
-				return Up(list);
-			}
-			return list;
-		}
-		protected RVList<LNode> ParseExprsInside(Token group, RVList<LNode> list = default(RVList<LNode>))
-		{
-			if (Down(group.Children)) {
-				ExprList(ref list);
-				return Up(list);
-			}
-			return list;
-		}
-		protected virtual LNode ParseBraces(Token t, int endIndex)
-		{
-			RWList<LNode> list = ParseStmtsInside(t);
-			return F.Braces(list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
-		}
-		protected virtual LNode ParseCallBraces(LNode target, Token t, int endIndex)
-		{
-			RWList<LNode> list = ParseStmtsInside(t);
-			return F.Call(target, list.ToRVList(), t.StartIndex, endIndex).SetStyle(NodeStyle.Statement);
-		}
-		protected virtual LNode ParseParens(Token t, int endIndex)
-		{
-			var list = ParseExprsInside(t);
-			if (list.Count == 1)
-				return F.InParens(list[0], t.StartIndex, endIndex);
-			if (list.Count == 2 && (object)list[1] == MissingExpr)
-				return F.Call(S.Tuple, list[0], t.StartIndex, endIndex);
-			return F.Call(S.Tuple, list.ToRVList(), t.StartIndex, endIndex);
-		}
-		protected virtual LNode ParseCall(Token target, Token paren, int endIndex)
-		{
-			Debug.Assert(target.Type() == TT.Id);
-			RVList<LNode> list = ParseExprsInside(paren).ToRVList();
-			return F.Call((Symbol)target.Value, list, target.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
-		}
-		protected virtual LNode ParseCall(LNode target, Token paren, int endIndex)
-		{
-			RVList<LNode> list = ParseExprsInside(paren).ToRVList();
-			return F.Call(target, list, target.Range.StartIndex, endIndex).SetStyle(NodeStyle.PrefixNotation);
-		}*/
-		
 		private Symbol ToSuffixOpName(object symbol)
 			{ return _prec.ToSuffixOpName(symbol); }
 		private Precedence PrefixPrecedenceOf(Token t)
@@ -140,33 +98,16 @@ namespace Loyc.Syntax.Les
 		}
 
 		// This is virtual so that a syntax highlighter can easily override and colorize it
-		protected virtual LNode MarkSpecial(LNode primary)
+		protected virtual LNode MarkSpecial(LNode n)
 		{
-			primary.BaseStyle = NodeStyle.Special;
-			return primary;
+			return n.SetBaseStyle(NodeStyle.Special);
+		}
+		// This is virtual so that a syntax highlighter can easily override and colorize it
+		protected virtual LNode MarkCall(LNode n)
+		{
+			return n.SetBaseStyle(NodeStyle.PrefixNotation);
 		}
 
-		protected virtual LNode MakeSuperExpr(LNode lhs, ref LNode primary, RVList<LNode> rhs)
-		{
-			if (primary == null)
-				return lhs; // an error should have been printed already
-
-			if (lhs == primary) {
-				if (primary.BaseStyle == NodeStyle.Operator)
-					primary = F.Call(primary, rhs);
-				else
-					primary = lhs.WithArgs(lhs.Args.AddRange(rhs));
-				MarkSpecial(primary);
-				return primary;
-			} else {
-				// This situation is no longer officially supported
-				Debug.Assert(lhs != null && lhs.IsCall && lhs.ArgCount > 0);
-				Debug.Assert(lhs.BaseStyle != NodeStyle.Special);
-				int c = lhs.ArgCount-1;
-				LNode ce = MakeSuperExpr(lhs.Args[c], ref primary, rhs);
-				return lhs.WithArgChanged(c, ce);
-			}
-		}
 
 		/// <summary>Top-level rule: expects a sequence of statements followed by EOF</summary>
 		public IEnumerable<LNode> Start(Holder<TokenType> separator)

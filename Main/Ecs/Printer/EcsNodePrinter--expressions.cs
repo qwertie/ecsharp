@@ -169,7 +169,7 @@ namespace Ecs
 			}
 
 			NodeStyle style = _n.BaseStyle;
-			if (style == NodeStyle.PrefixNotation)
+			if (style == NodeStyle.PrefixNotation && !PreferPlainCSharp)
 				PrintPrefixNotation(context, true, flags, false);
 			else {
 				bool isVarDecl = IsVariableDecl(false, (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0);
@@ -383,7 +383,7 @@ namespace Ecs
 			// There is an extra rule for (X)Y casts: X must be a complex (or 
 			// simple) identifier, since anything else won't be parsed as a cast.
 			Symbol name = _n.Name;
-			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferOldStyleCasts;
+			bool alternate = (_n.Style & NodeStyle.Alternate) != 0 && !PreferPlainCSharp;
 			LNode subject = _n.Args[0], target = _n.Args[1];
 			if (HasPAttrs(subject))
 				return false;
@@ -404,7 +404,7 @@ namespace Ecs
 					return false;
 			}
 
-			if (alternate && PreferOldStyleCasts)
+			if (alternate && PreferPlainCSharp)
 				return false; // old-style cast is impossible here
 
 			if (WriteOpenParen(ParenFor.Grouping, needParens))
@@ -867,10 +867,6 @@ namespace Ecs
 				PrintExpr(context, flags | Ambiguity.TypeContext);
 		}
 
-		public void PrintPrefixNotation(Ambiguity flags = Ambiguity.RecursivePrefixNotation, bool purePrefixNotation = false)
-		{
-			PrintPrefixNotation(StartExpr, purePrefixNotation, flags);
-		}
 		internal void PrintPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
 		{
 			Debug.Assert(EP.Primary.CanAppearIn(context) || _n.IsParenthesizedExpr());
@@ -894,23 +890,18 @@ namespace Ecs
 				var f = Ambiguity.IsCallTarget;
 				if (_spaceName == S.Fn || context != StartStmt)
 					f |= Ambiguity.AllowThisAsCallTarget;
-				if (!purePrefixNotation && IsComplexIdentifier(target, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround)) {
-					PrintExpr(target, EP.Primary.LeftContext(context), f);
-				} else {
-					PrintExprOrPrefixNotation(target, EP.Primary.LeftContext(context), purePrefixNotation, f | (flags & Ambiguity.RecursivePrefixNotation));
-				}
+				PrintExpr(target, EP.Primary.LeftContext(context), f);
 
 				// Print argument list
 				WriteOpenParen(ParenFor.MethodCall);
 
-				var innerFlags = flags & Ambiguity.RecursivePrefixNotation;
 				bool first = true;
 				foreach (var arg in _n.Args) {
 					if (OmitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && _n.ArgCount > 1) {
 						if (!first) WriteThenSpace(',', SpaceOpt.MissingAfterComma);
 					} else {
 						if (!first) WriteThenSpace(',', SpaceOpt.AfterComma);
-						PrintExprOrPrefixNotation(arg, StartExpr, purePrefixNotation, innerFlags);
+						PrintExpr(arg, StartExpr);
 					}
 					first = false;
 				}
@@ -939,18 +930,6 @@ namespace Ecs
 				_out.Write(GetRawText(_n), true);
 			else
 				PrintSimpleIdent(_n.Name, flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
-		}
-		internal void PrintExprOrPrefixNotation(LNode expr, Precedence context, bool purePrefixNotation, Ambiguity flags = 0)
-		{
-			using (With(expr))
-				PrintExprOrPrefixNotation(context, purePrefixNotation, flags);
-		}
-		internal void PrintExprOrPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags)
-		{
-			if ((flags & Ambiguity.RecursivePrefixNotation) != 0)
-				PrintPrefixNotation(context, purePrefixNotation, flags);
-			else
-				PrintExpr(context, flags);
 		}
 
 		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity allowPointer)

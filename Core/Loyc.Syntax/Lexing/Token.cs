@@ -124,6 +124,28 @@ namespace Loyc.Syntax.Lexing
 				list.Add(item.ToLNode(File));
 			return list;
 		}
+
+		/// <summary>Converts a token tree back to a plain list.</summary>
+		public DList<Token> Flatten()
+		{
+			var output = new DList<Token>();
+			bool hasChildren = false;
+			Flatten(this, output, ref hasChildren);
+			return hasChildren ? output : this;
+		}
+		internal static void Flatten(DList<Token> input, DList<Token> output, ref bool hasChildren)
+		{
+			foreach (var token in input)
+			{
+				output.Add(token);
+				var c = token.Children;
+				if (c != null && c.Count != 0)
+				{
+					hasChildren = true;
+					Flatten(c, output, ref hasChildren);
+				}
+			}
+		}
 	}
 
 	/// <summary><see cref="WhitespaceTag.Value"/> can be used as the

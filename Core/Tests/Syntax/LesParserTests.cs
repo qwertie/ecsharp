@@ -17,14 +17,11 @@ namespace Loyc.Syntax.Les
 		{
 			MessageHolder msgs;
 			// Expected ';'
-			msgs = Test(Mode.Expr, 0, "a, b", a, b);
-			msgs = Test(Mode.Stmt, 1, "a, b", a, b);
-			ExpectMessageContains(msgs, "';'", "','");
 			msgs = Test(Mode.Stmt, 2, "a = ) b c 1", F.Call(S.Assign, a, F._Missing));
 			ExpectMessageContains(msgs, "';'");
 			// Missing subexpression
 			msgs = Test(Mode.Stmt, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F._Missing));
-			ExpectMessageContains(msgs, "expected an atom");
+			ExpectMessageContains(msgs, "expected a particle");
 			// Invalid call
 			msgs = Test(Mode.Stmt, 1, "x = Foo ();", F.Call(S.Assign, x, Foo));
 			ExpectMessageContains(msgs, "call was intended", "space(s) before '('");
@@ -43,6 +40,27 @@ namespace Loyc.Syntax.Les
 			msgs = Test(Mode.Stmt, 1, "a + b.c {} Foo", F.Call(S.Add, a, F.Dot(b, c)));
 			msgs = Test(Mode.Stmt, 1, "a(b) c", F.Call(a, b));
 			msgs = Test(Mode.Stmt, 1, "a.Foo(b) c", F.Call(F.Dot(a, Foo), b));
+			msgs = Test(Mode.Stmt, 1, @"a(); if c (b)
+				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), Foo, F.Tuple()));
+			ExpectMessageContains(msgs, "expected a space before '('");
+		}
+
+		[Test]
+		public void SemicolonCommaErrors()
+		{
+			MessageHolder msgs;
+			msgs = Test(Mode.Expr, 0, "a, b", a, b);
+			msgs = Test(Mode.Stmt, 1, "a, b", a, b);
+			ExpectMessageContains(msgs, "';'", "','");
+			msgs = Test(Mode.Stmt, 1, "(a, b)", F.Tuple(a, b));
+			ExpectMessageContains(msgs, "';'");
+			msgs = Test(Mode.Stmt, 1, "{a, b}", F.Braces(a, b));
+			ExpectMessageContains(msgs, "';'");
+			Test(Mode.Stmt, 0, "Foo(a; b)", F.Call(Foo, a, b));
+			Test(Mode.Stmt, 0, "Foo!(a, b)", F.Of(Foo, a, b));
+			Test(Mode.Stmt, 0, "Foo!(a; b)", F.Of(Foo, a, b));
+			Test(Mode.Stmt, 2, "Foo(a; b, c, 0)", F.Call(Foo, a, b, c, zero));
+			Test(Mode.Stmt, 3, "Foo!(a, b; c; 0;)", F.Of(Foo, a, b, c, zero));
 		}
 
 		[Test]
@@ -88,12 +106,6 @@ namespace Loyc.Syntax.Les
 				F.Call("if", a, F.Braces(F.Call(a)), _("else"), _("if"), b,
 					F.Braces(F.Call(S.Assign, c, F.Call(b)), F.Call("while", Foo, F.Braces(F.Call(c))))),
 				F.Call("return", F.Braces(Foo)));
-			// TODO: implement a warning for this
-			Test(Mode.Stmt, 0, @"
-				a();
-				if c
-					(b)
-				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), F.Call(Foo)));
 		}
 
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string str, params LNode[] expected)

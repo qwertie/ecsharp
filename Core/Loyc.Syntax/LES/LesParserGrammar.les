@@ -4,7 +4,7 @@
 
 	OK, the goal: WRITE THE GRAMMAR OF LES IN LES.
 */
-import macros LeMP.Prelude.Les;
+#importMacros LeMP.Prelude.Les;
 import System;
 import System.Collections.Generic;
 import System.Linq;
@@ -14,8 +14,7 @@ import Loyc.Collections;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
 
-namespace Loyc.Syntax.Les
-:{
+namespace Loyc.Syntax.Les {
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
@@ -41,18 +40,18 @@ namespace Loyc.Syntax.Les
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
 
-		public rule StmtList()::RVList!LNode @[
+		[pub] rule StmtList()::RVList!LNode @[
 			{endMarker := TT.Semicolon;}
 			result:ExprList(ref endMarker)
 		];
-		public fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
+		[pub] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
 			endMarker := default(TT);
 			return (ExprList(ref endMarker, list));
 		};
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		public rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
+		[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			(/ e:TopExpr)
@@ -61,10 +60,10 @@ namespace Loyc.Syntax.Les
 				{CheckEndMarker(ref endMarker, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
-			{if ($e != null || end.Type() == TT.Comma) list.Add(e ?? MissingExpr());}
+			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); };}
 			{return list;}
 		];
-		public rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
+		[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{#rawText("yield"); return e ?? MissingExpr();}
@@ -85,28 +84,32 @@ namespace Loyc.Syntax.Les
 			};
 		};
 
-		protected rule TopExpr()::LNode @[
+		[prot] rule TopExpr()::LNode @[
 			// Use a gate to simplify the decision about whether to call this rule
 			[	// [Attributes]
 				t:"[" attrs:ExprList "]"
 			]?
 			(	e:Expr(StartStmt)
-			/	// Superexpression: an identifier followed by another expression
-				// and a series of atoms. After encountering a braced block {...}, 
-				// each subexpression afterward must be an Id atom, {braced block}, 
-				// or (parens).
+			/	// Superexpression
 				id:=TT.Id // identifier
 				{args := RVList!LNode.Empty;}
 				args+=Expr(P.SuperExpr)
-				[ ("("|"{"|TT.Id) => args+=Atom ]*
-				{e = F.Call(id.Value->Symbol, args, id.StartIndex, args.Last.Range.EndIndex);}
+				[	{
+						if (LA0->TT == TT.LParen) {
+							var loc = args[args.Count - 2, args.Last].Range.End;
+							Error(0, "Expected a space before '(' (possibly missing ';' or ',' at {0})", loc);
+						};
+					}
+					args+=Particle
+				]*
+				{e = MarkSpecial(F.Call(id.Value->Symbol, args, id.StartIndex, args.Last.Range.EndIndex));}
 			)
 			{if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };}
 			{return e.PlusAttrs(attrs);}
 		];
 
 		// Types of (normal) expressions:
-		// - atoms: ids, literals, (parenthesized), {braced}
+		// - particles: ids, literals, (parenthesized), {braced}
 		// - ++prefix_operators
 		// - infix + operators
 		// - suffix_operators++
@@ -137,45 +140,45 @@ namespace Loyc.Syntax.Les
 		];
 
 		// Helper rule that parses one of the syntactically special primary expressions
-		private rule FinishPrimaryExpr(e::LNode)::LNode @[
+		[priv] rule FinishPrimaryExpr(e::LNode)::LNode @[
 			(	// call(function)
 				{endMarker := default(TokenType);}
 				"(" list:ExprList(ref endMarker) c:=")"
 				{
-					e = F.Call(e, list, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.PrefixNotation);
-					if (endMarker == TT.Semicolon) e.Style = NodeStyle.Statement | NodeStyle.Alternate;
+					e = MarkCall(F.Call(e, list, e.Range.StartIndex, c.EndIndex));
+					if (endMarker == TT.Semicolon) { e.Style = NodeStyle.Statement | NodeStyle.Alternate; };
 				}
 			|	// ! operator (generic #of)
 				"!"
-				{args := (new(RVList!LNode) { e }); endIndex::int;}
+				{args := (new RVList!LNode { e }); endIndex::int;}
 				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
 				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);}
 			|	// Indexer / square brackets
-				{args := (new(RVList!LNode) { e });}
+				{args := (new RVList!LNode { e });}
 				"[" args=ExprList(args) c:="]"
 				{e = F.Call(S.Bracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
 			)
 			{return e;}
 		];
 
-		private rule PrefixExpr(context::Precedence)::LNode @
+		[priv] rule PrefixExpr(context::Precedence)::LNode @
 			[	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
 				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
-			|	result:Atom
+			|	result:Particle
 			];
 
-		// An Atom is:
+		// An Particle is:
 		// - an (expression) in parenthesis or a tuple
 		// - a literal or simple identifier
 		//   - simple calls are also handled here, as a space optimization
 		// - a token literal @[ ... ]
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
-		private rule Atom()::LNode @[
+		[priv] rule Particle()::LNode @[
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
@@ -197,8 +200,9 @@ namespace Loyc.Syntax.Les
 						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
 						if (endMarker == TT.Comma) {
 							var msg = "Tuples require ';' as a separator.";
-							if (o.Type() == TT.SpaceLParen)
+							if (o.Type() == TT.SpaceLParen) {
 								msg += " If a function call was intended, remove the space(s) before '('.";
+							};
 							ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
 						};
 					} else {
@@ -206,13 +210,13 @@ namespace Loyc.Syntax.Les
 					};
 				}
 			|	error {
-					Error(0, "Expected an atom (id, literal, {braces} or (parens)).");
+					Error(0, "Expected a particle (id, literal, {braces} or (parens)).");
 					$result = MissingExpr();
 				}
 			)
 		];
 
-		private rule BracedBlock()::LNode @[
+		[priv] rule BracedBlock()::LNode @[
 			o:="{" list:=StmtList c:="}" 
 			{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
 		];

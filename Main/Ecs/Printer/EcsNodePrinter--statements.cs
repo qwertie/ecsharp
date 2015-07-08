@@ -102,23 +102,26 @@ namespace Ecs
 			if ((flags & Ambiguity.ElseClause) == 0)
 				_out.BeginStatement();
 
-			var style = _n.BaseStyle;
-			if (style != NodeStyle.Expression && style != NodeStyle.PrefixNotation && 
-				style != NodeStyle.PrefixNotation && (AllowChangeParenthesis || !_n.IsParenthesizedExpr()))
+			if (AllowChangeParenthesis || !_n.IsParenthesizedExpr())
 			{
+				var style = _n.BaseStyle;
 				StatementPrinter printer;
 				var name = _n.Name;
 				if (StatementPrinters.TryGetValue(name, out printer) && HasSimpleHeadWPA(_n))
 				{
-					var result = printer(this, flags | Ambiguity.NoParenthesis);
-					if (result != SPResult.Fail) {
-						if (result != SPResult.Complete)
-							PrintSuffixTrivia(result == SPResult.NeedSemicolon);
-						return;
+					if (PreferPlainCSharp || name == S.RawText ||
+						(style != NodeStyle.Expression && style != NodeStyle.PrefixNotation))
+					{
+						var result = printer(this, flags | Ambiguity.NoParenthesis);
+						if (result != SPResult.Fail) {
+							if (result != SPResult.Complete)
+								PrintSuffixTrivia(result == SPResult.NeedSemicolon);
+							return;
+						}
 					}
 				}
 
-				if (_n.BaseStyle == NodeStyle.Special && AutoPrintMacroBlockCall(flags | Ambiguity.NoParenthesis))
+				if (style == NodeStyle.Special && AutoPrintMacroBlockCall(flags | Ambiguity.NoParenthesis))
 					return;
 
 				var attrs = _n.Attrs;
@@ -575,7 +578,7 @@ namespace Ecs
 					PrintExpr(body.Args[0], EP.Forward.RightContext(StartExpr));
 					return SPResult.NeedSemicolon;
 				}
-				else if (body.Name == S.Braces && body.BaseStyle != NodeStyle.PrefixNotation)
+				else if (body.Name == S.Braces && (PreferPlainCSharp || body.BaseStyle != NodeStyle.PrefixNotation))
 				{
 					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Fn);
 					return SPResult.NeedSuffixTrivia;

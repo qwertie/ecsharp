@@ -539,8 +539,8 @@ namespace Ecs
 		{
 			// MixImmiscibleOperators is tested elsewhere
 			Option(Mode.PrintBothParseFirst, @"b(->Foo)(x);", @"((Foo) b)(x);", F.Call(F.Call(S.Cast, b, Foo), x), p => p.SetPlainCSharpMode());
-			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferOldStyleCasts = true);
-			Option(Mode.Both,       @"yield return x", @"yield return x;",  Attr(_(S.Yield), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
+			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferPlainCSharp = true);
+			Option(Mode.Both,       @"yield return x", @"yield return x;", Attr(Attr(F.Id(S.TriviaWordAttribute), _(S.Yield)), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
 			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
 			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);

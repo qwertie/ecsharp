@@ -116,7 +116,7 @@ namespace Ecs
 			var p = new EcsNodePrinter(node, new EcsNodePrinterWriter(target, indentString, lineSeparator));
 			p.Errors = errors;
 			p.SetPlainCSharpMode();
-			PrintWithMode(node, p, mode);
+			p.PrintWithMode(node, mode);
 		}
 		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
@@ -129,24 +129,23 @@ namespace Ecs
 
 			p.Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			p.Errors = errors;
-
-			PrintWithMode(node, p, mode);
+			p.PrintWithMode(node, mode);
 
 			p._n = null;
 			p._out = null;
 			p.Errors = null;
 		}
-		static void PrintWithMode(LNode node, EcsNodePrinter p, object mode)
+		void PrintWithMode(LNode node, object mode)
 		{
-			p.Node = node;
+			this.Node = node;
 			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
 			if (mode == ParsingService.Exprs)
 				style = NodeStyle.Expression;
 
 			switch (style & NodeStyle.BaseStyleMask) {
-				case NodeStyle.Expression: p.PrintExpr(); break;
-				case NodeStyle.PrefixNotation: p.PrintPrefixNotation(StartExpr, true, 0); break;
-				default: p.PrintStmt(); break;
+				case NodeStyle.Expression: this.PrintExpr(); break;
+				case NodeStyle.PrefixNotation: this.PrintPrefixNotation(StartExpr, true, 0); break;
+				default: this.PrintStmt(); break;
 			}
 		}
 
@@ -196,10 +195,6 @@ namespace Ecs
 		/// </remarks>
 		public bool AllowExtraBraceForIfElseAmbig { get; set; }
 
-		/// <summary>Prefers plain C# syntax for cast operators even when the 
-		/// syntax tree requests the new cast style, e.g. x(->int) becomes (int) x.</summary>
-		public bool PreferOldStyleCasts { get; set; }
-
 		/// <summary>Suppresses printing of all attributes that are not on 
 		/// declaration or definition statements (such as classes, methods and 
 		/// variable declarations at statement level). Also, avoids prefix notation 
@@ -244,6 +239,11 @@ namespace Ecs
 		/// and event definitions require this syntax (get {...}, set {...}).</summary>
 		public bool AvoidMacroSyntax { get; set; }
 
+		/// <summary>Prefers plain C# syntax for certain other things (not covered
+		/// by the other options), even when the syntax tree requests a different 
+		/// style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.</summary>
+		public bool PreferPlainCSharp { get; set; }
+
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
@@ -252,17 +252,17 @@ namespace Ecs
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
-		/// <summary>Sets <see cref="AllowChangeParenthesis"/>, <see cref="PreferOldStyleCasts"/> 
+		/// <summary>Sets <see cref="AllowChangeParenthesis"/>, <see cref="PreferPlainCSharp"/> 
 		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
 		public EcsNodePrinter SetPlainCSharpMode()
 		{
 			AllowChangeParenthesis = true;
 			AllowExtraBraceForIfElseAmbig = true;
-			PreferOldStyleCasts = true;
 			DropNonDeclarationAttributes = true;
 			AllowConstructorAmbiguity = true;
 			AvoidMacroSyntax = true;
+			PreferPlainCSharp = true;
 			return this;
 		}
 		
@@ -447,8 +447,6 @@ namespace Ecs
 			ForEachInitializer = 0x1000,
 			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
 			ElseClause = 0x2000,
-			/// <summary>Use prefix notation recursively.</summary>
-			RecursivePrefixNotation = 0x4000,
 			/// <summary>Print #this(...) as this(...) inside a method</summary>
 			AllowThisAsCallTarget = 0x8000,
 			/// <summary>This location is the 'true' side of an if-else statement.

@@ -27,7 +27,7 @@ namespace Loyc.LLParserGenerator
 				var argList = args.ToList();
 				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
 				if (!options.ContainsKey("nologo"))
-					Console.WriteLine("LLLPG/LeMP macro compiler (alpha)");
+					Console.WriteLine("LLLPG/LeMP macro compiler");
 
 				string _;
 				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _) || args.Length == 0) {
@@ -48,8 +48,7 @@ namespace Loyc.LLParserGenerator
 					c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 					c.AddMacros(Assembly.GetExecutingAssembly());
 					c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
-					using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
-						c.Run();
+					c.Run();
 				}
 			} else {
 				LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));

@@ -19,7 +19,7 @@ namespace Loyc.Syntax.Les
 
 		public override string ToString()
 		{
-			return "Loyc Expression Syntax (alpha)";
+			return "Loyc Expression Syntax";
 		}
 
 		static readonly string[] _fileExtensions = new[] { "les" };

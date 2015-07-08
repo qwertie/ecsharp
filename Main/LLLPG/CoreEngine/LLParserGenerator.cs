@@ -34,11 +34,8 @@ namespace Loyc.LLParserGenerator
 	/// <see cref="LLLPG.Main"/> shows how to invoke LLLPG as a macro via the 
 	/// <see cref="LeMP.Compiler"/>.
 	/// <para/>
-	/// For more information about how to use LLLPG, read these articles:
+	/// For more information about how to use LLLPG, read
 	/// http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp
-	/// http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
-	/// http://loyc-etc.blogspot.ca/2013/11/lllpg-greedy-and-nongreedy.html
-	/// http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 	/// </remarks>
 	public partial class LLParserGenerator
 	{
