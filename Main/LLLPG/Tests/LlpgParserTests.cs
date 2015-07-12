@@ -123,28 +123,28 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "az",     "'a'..'z'", "[a-z]");
 			TestStage2(true, "azAZ",   "('a'..'z')|('A'..'Z')", "[A-Za-z]");
 			TestStage2(true, "NotAZ",  "~('A'..'Z')", @"[^\$A-Z]");
-			TestStage2(true, "Seq",    "('-', '0'..'9')", @"[\-] [0-9]");
-			TestStage2(true, "Hi0-9",  @"(""Hi"", '0'..'9')", "[H] [i] [0-9]");
+			TestStage2(true, "Seq",    "('-'; '0'..'9')", @"[\-] [0-9]");
+			TestStage2(true, "Hi0-9",  @"(""Hi""; '0'..'9')", "[H] [i] [0-9]");
 			TestStage2(true, "Or1",    @"""ETX"" | 3", "([E] [T] [X] | (3))");
-			TestStage2(true, "Or2",    @"(~10, {code;}) | '\n'", @"(~(-1, 10) | [\n])"); // code blocks not printed
+			TestStage2(true, "Or2",    @"(~10; {code;}) | '\n'", @"(~(-1, 10) | [\n])"); // code blocks not printed
 			TestStage2(true, "Star",   @"@`suf*`('0'..'9')", "([0-9])*");
 			TestStage2(true, "Plus",   @"@`suf+`('0'..'9')", "[0-9] ([0-9])*");
-			TestStage2(true, "Opt",    @"@`suf?`(('a','b'))", "([a] [b])?");
-			TestStage2(true, "Greedy", @"@`suf*`(greedy(('a','b')))", "greedy([a] [b])*");
-			TestStage2(true, "Nongreedy", @"@`suf*`(nongreedy(('a','b')))", "nongreedy([a] [b])*");
+			TestStage2(true, "Opt",    @"@`suf?`(('a';'b'))", "([a] [b])?");
+			TestStage2(true, "Greedy", @"@`suf*`(greedy(('a';'b')))", "greedy([a] [b])*");
+			TestStage2(true, "Nongreedy", @"@`suf*`(nongreedy(('a';'b')))", "nongreedy([a] [b])*");
 			TestStage2(true, "Default1",  @"('a'|""bee""|default('b'))", "( [a] | [b] [e] [e] | default [b] )");
 			TestStage2(true, "Default2",  @"@`suf*`('a'|default('b')|'c')", "( [a] | default [b] | [c] )*");
 			TestStage2(true, Tuple.Create("RuleRef", @"'.' | Digit", "([.] | Digit)"),
-			                 Tuple.Create("Digit", "'0'..'9'", "[0-9]"));
+			                 Tuple.Create("Digit",    "'0'..'9'",    "[0-9]"));
 			TestStage2(true, "aeiou",     @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
-			TestStage2(true, "PrefixGate", "(=> ('a', 'b')) / 'c'", "( => [a] [b] / [c])");
+			TestStage2(true, "PrefixGate", "(=> ('a'; 'b')) / 'c'", "( => [a] [b] / [c])");
 			TestStage2(false, "AB+orCD",  @"@`suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
-			TestStage2(true,  "EOF1",     "('a', 'b', 'c', -1)", @"[a] [b] [c] (-1)");
-			TestStage2(false, "EOF2",     "('a', 'b', 'c', EOF)", @"'a' 'b' 'c' EOF");
-			TestStage2(false, "Slashes1", "(a3,{}) | ((a4,{}) | a5) / a6", "( a3 | ((a4 | a5) / a6) )");
-			TestStage2(false, "Slashes2", "((a8,{}) | a9) / ((a10,{}) | (a11,{}) / a12)", "( (a8 | a9) / (a10 | (a11 / a12)) )");
-			TestStage2(false, "Slashes3", "@`suf*`( ((a0,{}) / a1 / a2) / " +
-				"((a3,{}) | ((a4,{}) | a5) / a6) | a7 / (((a8,{}) | a9) / ((a10,{}) | (a11,{}) / a12)) )",
+			TestStage2(true,  "EOF1",     "('a'; 'b'; 'c'; -1)", @"[a] [b] [c] (-1)");
+			TestStage2(false, "EOF2",     "('a'; 'b'; 'c'; EOF)", @"'a' 'b' 'c' EOF");
+			TestStage2(false, "Slashes1", "(a3;{}) | ((a4;{}) | a5) / a6", "( a3 | ((a4 | a5) / a6) )");
+			TestStage2(false, "Slashes2", "((a8;{}) | a9) / ((a10;{}) | (a11;{}) / a12)", "( (a8 | a9) / (a10 | (a11 / a12)) )");
+			TestStage2(false, "Slashes3", "@`suf*`( ((a0;{}) / a1 / a2) / " +
+				"((a3;{}) | ((a4;{}) | a5) / a6) | a7 / (((a8;{}) | a9) / ((a10;{}) | (a11;{}) / a12)) )",
 				"( ((a0 / a1 / a2) / (a3 | ((a4 | a5) / a6))) | (a7 / ((a8 | a9) / (a10 | (a11 / a12)))) )*");
 		}
 
@@ -153,7 +153,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// can randomly switch between zero|one and one|zero due to hashtable representation in PGNodeSet
 			// (I'm not sure why it can change every time the program runs, though!)
-			TestStage2(false, Tuple.Create("RuleRef", @"""NaN"" | (Digit, _)", @"(""NaN"" | Digit ~(EOF))"),
+			TestStage2(false, Tuple.Create("RuleRef", @"""NaN"" | (Digit; _)", @"(""NaN"" | Digit ~(EOF))"),
 			                  Tuple.Create("Digit", "zero|one", "(one|zero)"));
 			// can randomly switch between a|b and b|a due to hashtable representation
 			TestStage2(false, "AorB", @"a | b", "(a|b)");

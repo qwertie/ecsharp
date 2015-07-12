@@ -23,8 +23,10 @@ namespace LeMP
 			var args_body = context.GetArgsAndBody(true);
 			var args = args_body.A;
 			var body = args_body.B;
+			if (args.Count == 1 && args[0].Calls(S.Tuple)) args = args[0].Args; // LESv2
 			if (args.Count >= 1)
 			{
+				
 				var patterns = new Pair<LNode, LNode>[args.Count];
 				for (int i = 0; i < patterns.Length; i++)
 				{

@@ -268,5 +268,9 @@ namespace Loyc.LLParserGenerator
 		/// type is <c>Foo</c> and <c>wantList == true</c> and <c>varName.Name == "x"</c>, 
 		/// the statement returned might be <c>List&lt;Foo> x = new List&lt;Foo>();</c></summary>
 		LNode MakeInitializedVarDecl(LNode type, bool wantList, Symbol varName);
+
+		/// <summary>Returns the node for an alias. If the specified node is not an 
+		/// alias, returns the same node unchanged.</summary>
+		LNode ResolveAlias(LNode node);
 	}
 }

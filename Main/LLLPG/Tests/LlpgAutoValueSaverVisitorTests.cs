@@ -116,7 +116,7 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Implicit rule reference and implicit terminal reference
 			Test(@"LLLPG (lexer) {
-					rule Main @[ Percent? {if ($Percent != null) Yay();} ];
+					rule Main @[ Percent? {if ($Percent != null) {Yay();}} ];
 					rule Percent()::opt!char @[ '%' {return $'%' -> char;} ];
 				};", @"
 					void Main()
@@ -127,8 +127,9 @@ namespace Loyc.LLParserGenerator
 						la0 = LA0;
 						if (la0 == '%')
 							got_Percent = Percent();
-						if ((got_Percent != null))
+						if ((got_Percent != null)) {
 							Yay();
+						}
 					}
 					char? Percent()
 					{
@@ -201,6 +202,26 @@ namespace Loyc.LLParserGenerator
 						object c = default(object);
 						c = Match(C);
 						Dollar($B, $C);
+					}");
+		}
+
+		[Test] public void TestWithAliases()
+		{
+			Test(@"LLLPG (parser) {
+					alias('!' = TT.Excl);
+					rule Foo() @{ '!' (&{$'!'.Value == '!'} '!' {tt = $'!'})? };
+				};", @"
+					void Foo()
+					{
+						int la0;
+						int tok__Excl = 0;
+						tok__Excl = Match(TT.Excl);
+						la0 = LA0;
+						if (la0 == TT.Excl) {
+							Check(tok__Excl.Value == '$', ""tok__Excl.Value == '$'"");
+							Skip();
+							tt = tok__Excl;
+						}
 					}");
 		}
 	}

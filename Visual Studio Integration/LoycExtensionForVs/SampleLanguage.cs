@@ -48,6 +48,12 @@ namespace Loyc.VisualStudio
 		}
 	}
 
+	/// <summary>
+	/// A sample language that synchronously recognizes single-line comments 
+	/// starting with # or //, and asynchronously tags nested parentheses. The
+	/// asynchronous tagger shows how to tag errors by making an error tag for
+	/// every backslash.
+	/// </summary>
 	internal class SampleLanguageForVS : IClassifier,
 		ITagger<ClassificationTag>,
 		ITagger<ErrorTag>,

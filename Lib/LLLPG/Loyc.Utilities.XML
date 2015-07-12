@@ -4,290 +4,264 @@
         <name>Loyc.Utilities</name>
     </assembly>
     <members>
-        <member name="T:Loyc.Geometry.BoundingBoxMath">
-            <summary>Math and extension methods for <see cref="T:Loyc.Geometry.BoundingBox`1"/>.</summary>
-            <remarks>This contains many methods that could be considered "core" methods.
-            they are implemented as extension methods instead for performance reasons,
-            because as a generic class, <see cref="T:Loyc.Geometry.BoundingBox`1"/> cannot do 
-            arithmetic quickly.</remarks>
+        <member name="T:Loyc.Geometry.PolygonMath">
+            <summary>
+            Contains useful basic polygon algorithms: hit testing, area calculation,
+            orientation detection.
+            </summary>
+            <summary>
+            Contains useful basic polygon algorithms: hit testing, area calculation,
+            orientation detection.
+            </summary>
+            <summary>
+            Contains useful basic polygon algorithms: hit testing, area calculation,
+            orientation detection.
+            </summary>
+            <summary>
+            Contains useful basic polygon algorithms: hit testing, area calculation,
+            orientation detection.
+            </summary>
+            <summary>
+            Contains useful basic polygon algorithms: hit testing, area calculation,
+            orientation detection.
+            </summary>
         </member>
-        <member name="T:Loyc.Geometry.LineMath">
-            <summary>Contains algorithms that operate on lines.</summary>
+        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
+            <summary>Computes the area of a polygon.</summary>
+            <returns>The area. The result is positive if the polygon is clockwise 
+            (assuming a coordinate system in which increasing Y goes upward), or 
+            negative if the polygon is counterclockwise.</returns>
+            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)">
-            <summary>Simplifies a polyline using the Douglas-Peucker line 
-            simplification algorithm. This algorithm removes points that are 
-            deemed unimportant; the output is a subset of the input.</summary>
-            <typeparam name="List">Original unsimplified polyline</typeparam>
-            <param name="output">The output polyline is added in order to this collection</param>
-            <param name="tolerance">The distance between the input polyline and the 
-            output polyline will never exceed this distance. Increase this value to 
-            simplify more aggressively.</param>
-            <returns>The number of output points.</returns>
+        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
+            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
+            and increasing Y goes upward.</summary>
+            <remarks>A common approach to this problem is to look at the topmost
+            point and the two points on either side. However, if one is not careful,
+            this technique may be unable to detect the orientation in case the 
+            polygon has duplicate points, horizontal lines on top, or a degenerate
+            top in which the top part of the polygon is zero-width (these problems
+            can occur even if the polygon's lines do not cross one another.) That's
+            why I chose to compute orientation based on area instead.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
+            <summary>Finds out if a point is inside the polygon using a winding 
+            test.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
+            <summary>Counts the number of times the polygon winds around a test 
+            point, using a rightward raycasting test.</summary>
+            <returns>Returns the winding number: the number of times that the
+            polygon winds around the point. Positive means clockwise (assuming a 
+            coordinate system in which increasing Y goes upward), negative means
+            counterclockwise. Always returns -1, 0 or +1 when the polygon does
+            not self-intersect. Returns 0 for a degenerate polygon.</returns>
             <remarks>
-            The average time complexity of this algorithm is O(N log N). 
-            The worst-case time complexity is O(N^2).
+            The test point is considered to be within the polygon if it lies
+            on a top or left edge, but not on a bottom or right edge (within
+            the precision limits of 'double' arithmetic). The test point will 
+            never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Double}},System.Double)">
-            <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
+        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
+            <summary>Computes the area of a polygon.</summary>
+            <returns>The area. The result is positive if the polygon is clockwise 
+            (assuming a coordinate system in which increasing Y goes upward), or 
+            negative if the polygon is counterclockwise.</returns>
+            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Performs projection, which finds the point on a line segment 
-            or infinite line that is nearest to a specified point.</summary>
-            <param name="seg">The line segment</param>
-            <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
-            <param name="end">Set to 0 if the point is on the line segment (including
-            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
-            <returns>The projected point.</returns>
+        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
+            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
+            and increasing Y goes upward.</summary>
+            <remarks>A common approach to this problem is to look at the topmost
+            point and the two points on either side. However, if one is not careful,
+            this technique may be unable to detect the orientation in case the 
+            polygon has duplicate points, horizontal lines on top, or a degenerate
+            top in which the top part of the polygon is zero-width (these problems
+            can occur even if the polygon's lines do not cross one another.) That's
+            why I chose to compute orientation based on area instead.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
+            <summary>Finds out if a point is inside the polygon using a winding 
+            test.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
+            <summary>Counts the number of times the polygon winds around a test 
+            point, using a rightward raycasting test.</summary>
+            <returns>Returns the winding number: the number of times that the
+            polygon winds around the point. Positive means clockwise (assuming a 
+            coordinate system in which increasing Y goes upward), negative means
+            counterclockwise. Always returns -1, 0 or +1 when the polygon does
+            not self-intersect. Returns 0 for a degenerate polygon.</returns>
             <remarks>
-            This algorithm is fast and accurate, and can be easily adapted to 3D.
-            A special advantage of this approach is that it runs fastest when the 
-            point is projected onto one of the endpoints (when infiniteLine is 
-            false).
-            <para/>
-            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-            See section "Distance of a Point to a Ray or Segment"
+            The test point is considered to be within the polygon if it lies
+            on a top or left edge, but not on a bottom or right edge (within
+            the precision limits of 'double' arithmetic). The test point will 
+            never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Gets the projection of a point onto a line, expressed as a 
-            fraction where 0 represents the start of the line and 1 represents the 
-            end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
-            (0, 1) if the projection is outside the line segment. If this is false,
-            the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
-            <returns>The fraction of p along seg, as explained already. If seg is
-            zero-length, the result is always 0.</returns>
-            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
+            <summary>Computes the area of a polygon.</summary>
+            <returns>The area. The result is positive if the polygon is clockwise 
+            (assuming a coordinate system in which increasing Y goes upward), or 
+            negative if the polygon is counterclockwise.</returns>
+            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Single},System.Single)">
-            <summary>Given a fraction between zero and one, calculates a point 
-            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
-            <remarks>If you just want the midpoint, call Midpoint() which 
-            is faster. If the fraction is outside the range [0,1], the result
-            will be along the infinite extension of the line. If the two points
-            are the same, this method always returns the same point as long as
-            the math doesn't overflow, possibly with slight deviations caused 
-            by floating-point rounding.</remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
+            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
+            and increasing Y goes upward.</summary>
+            <remarks>A common approach to this problem is to look at the topmost
+            point and the two points on either side. However, if one is not careful,
+            this technique may be unable to detect the orientation in case the 
+            polygon has duplicate points, horizontal lines on top, or a degenerate
+            top in which the top part of the polygon is zero-width (these problems
+            can occur even if the polygon's lines do not cross one another.) That's
+            why I chose to compute orientation based on area instead.</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Single})">
-            <summary>Returns the midpoint, (A + B) >> 1.</summary>
+        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
+            <summary>Finds out if a point is inside the polygon using a winding 
+            test.</summary>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@)">
-            <summary>Computes the location that lines, rays or line segments 
-            intersect, expressed as a fraction of the distance along each 
-            LineSegment.</summary>
-            <param name="P">First line segment</param>
-            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
-            <param name="pFrac">Fraction along P of the intersection point. If this
-            method returns false, pFrac is still computed. If the hypothetical
-            intersection point of the infinite extension of P and Q is beyond the 
-            P.A side of the line, pFrac is set to an appropriate negative value if 
-            pType is Infinite and 0 otherwise. If the hypothetical intersection
-            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
-            and a value above 1 otherwise.</param>
-            <param name="Q">Second line segment</param>
-            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
-            <param name="qFrac">Fraction along Q of the intersection point. If this
-            method returns false, qFrac may be <c>NaN</c> if the analysis of line
-            P already determined that pFrac is beyond the range of line P. In other 
-            words, if Q is assumed to be an infinite line and P still does not 
-            intersect with Q, qFrac is set to NaN because the method aborts 
-            analysis to avoid wasting CPU time. On the other hand, if this method 
-            determines that P might intersect with Q, but a full analysis shows 
-            that it does not, the method returns false and sets qFrac to a real 
-            number. qFrac is set to 0 if the intersection point of the infinite 
-            extension of Q is on the Q.A side of the line, and 1 if the 
-            intersection point is on the Q.B side of the line.</param>
-            <returns>True if the lines intersect, false otherwise.</returns>
+        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
+            <summary>Counts the number of times the polygon winds around a test 
+            point, using a rightward raycasting test.</summary>
+            <returns>Returns the winding number: the number of times that the
+            polygon winds around the point. Positive means clockwise (assuming a 
+            coordinate system in which increasing Y goes upward), negative means
+            counterclockwise. Always returns -1, 0 or +1 when the polygon does
+            not self-intersect. Returns 0 for a degenerate polygon.</returns>
             <remarks>
-            This method does not do a bounding-box check. If you are doing 
-            calculations with line segments and you expect the majority of your
-            intersection calculations to return false, you may save time by 
-            testing whether the bounding boxes of the lines overlap before calling 
-            this method.
-            <para/>
-            If the input segments contain NaNs, the result is false and pFrac/qFrac
-            will be NaN.
-            <para/>
-            If the either of the line segments are degenerate (single points), 
-            overlap can still be detected and the LineType of the degenerate line
-            has no effect; the degenerate line is always treated as a point.
-            If both lines are points, the method will return true iff they are the
-            same point, and if true is returned, pFrac will be 0.5f
-            <para/>
-            The output fractions pFrac and qFrac will be infinite if the magnitude 
-            of the result overflows.
-            <para/>
-            If the two line segments are parallel but do not overlap, this method
-            returns false; pFrac and qFrac are both set to NaN. If the two lines 
-            are parallel and overlap, a region of overlap is detected and pFrac
-            and qFrac refer to the center of this region of overlap. If, in this
-            case, P and/or Q are rays or infinite lines, this method behaves as
-            though P and/or Q are extended to cover each other. For instance, 
-            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
-            Q.A.X=10, Q.B.X=16:
-            <pre>
-                   P.A---------------P.B         Q.B---------------------Q.A
-            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-            </pre>
-            If P and Q are both line segments, there is no overlap and this method 
-            will return false. However, if Q is a Ray or an infinite line, it 
-            extends toward negative infinity and the minimum overlap between the 
-            lines is 0..6. In this case, the region of overlap is considered to be 
-            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
-            line. If P is a line segment, the midpoint is 3, and pFrac will be set
-            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
-            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
-            qFrac will be 1.333.
+            The test point is considered to be within the polygon if it lies
+            on a top or left edge, but not on a bottom or right edge (within
+            the precision limits of 'double' arithmetic). The test point will 
+            never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
-            <summary>Computes the intersection point between two lines, rays or 
-            line segments.</summary>
-            <remarks>This method is implemented based on the other overload,
-            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
-            </remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
+            <summary>Computes the area of a polygon.</summary>
+            <returns>The area. The result is positive if the polygon is clockwise 
+            (assuming a coordinate system in which increasing Y goes upward), or 
+            negative if the polygon is counterclockwise.</returns>
+            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.BoundingBox{System.Single})">
-            <summary>Quickly clips a line to a bounding box.</summary>
-            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
-            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
+            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
+            and increasing Y goes upward.</summary>
+            <remarks>A common approach to this problem is to look at the topmost
+            point and the two points on either side. However, if one is not careful,
+            this technique may be unable to detect the orientation in case the 
+            polygon has duplicate points, horizontal lines on top, or a degenerate
+            top in which the top part of the polygon is zero-width (these problems
+            can occur even if the polygon's lines do not cross one another.) That's
+            why I chose to compute orientation based on area instead.</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Performs projection, which finds the point on a line segment 
-            or infinite line that is nearest to a specified point.</summary>
-            <param name="seg">The line segment</param>
-            <param name="p">The test point to be projected</param>
-            <param name="infiniteLine">Whether to extend the line infinitely.</param>
-            <param name="end">Set to 0 if the point is on the line segment (including
-            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
-            <returns>The projected point.</returns>
+        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
+            <summary>Finds out if a point is inside the polygon using a winding 
+            test.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
+            <summary>Counts the number of times the polygon winds around a test 
+            point, using a rightward raycasting test.</summary>
+            <returns>Returns the winding number: the number of times that the
+            polygon winds around the point. Positive means clockwise (assuming a 
+            coordinate system in which increasing Y goes upward), negative means
+            counterclockwise. Always returns -1, 0 or +1 when the polygon does
+            not self-intersect. Returns 0 for a degenerate polygon.</returns>
             <remarks>
-            This algorithm is fast and accurate, and can be easily adapted to 3D.
-            A special advantage of this approach is that it runs fastest when the 
-            point is projected onto one of the endpoints (when infiniteLine is 
-            false).
-            <para/>
-            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-            See section "Distance of a Point to a Ray or Segment"
+            The test point is considered to be within the polygon if it lies
+            on a top or left edge, but not on a bottom or right edge (within
+            the precision limits of 'double' arithmetic). The test point will 
+            never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Gets the projection of a point onto a line, expressed as a 
-            fraction where 0 represents the start of the line and 1 represents the 
-            end of the line.</summary>
-            <param name="infiniteLine">Whether to return numbers outside the range
-            (0, 1) if the projection is outside the line segment. If this is false,
-            the result is clamped to (0, 1)</param>
-            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
-            <returns>The fraction of p along seg, as explained already. If seg is
-            zero-length, the result is always 0.</returns>
-            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
+            <summary>Computes the area of a polygon.</summary>
+            <returns>The area. The result is positive if the polygon is clockwise 
+            (assuming a coordinate system in which increasing Y goes upward), or 
+            negative if the polygon is counterclockwise.</returns>
+            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Double},System.Double)">
-            <summary>Given a fraction between zero and one, calculates a point 
-            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
-            <remarks>If you just want the midpoint, call Midpoint() which 
-            is faster. If the fraction is outside the range [0,1], the result
-            will be along the infinite extension of the line. If the two points
-            are the same, this method always returns the same point as long as
-            the math doesn't overflow, possibly with slight deviations caused 
-            by floating-point rounding.</remarks>
+        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
+            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
+            and increasing Y goes upward.</summary>
+            <remarks>A common approach to this problem is to look at the topmost
+            point and the two points on either side. However, if one is not careful,
+            this technique may be unable to detect the orientation in case the 
+            polygon has duplicate points, horizontal lines on top, or a degenerate
+            top in which the top part of the polygon is zero-width (these problems
+            can occur even if the polygon's lines do not cross one another.) That's
+            why I chose to compute orientation based on area instead.</remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Double})">
-            <summary>Returns the midpoint, (A + B) >> 1.</summary>
+        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
+            <summary>Finds out if a point is inside the polygon using a winding 
+            test.</summary>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@)">
-            <summary>Computes the location that lines, rays or line segments 
-            intersect, expressed as a fraction of the distance along each 
-            LineSegment.</summary>
-            <param name="P">First line segment</param>
-            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
-            <param name="pFrac">Fraction along P of the intersection point. If this
-            method returns false, pFrac is still computed. If the hypothetical
-            intersection point of the infinite extension of P and Q is beyond the 
-            P.A side of the line, pFrac is set to an appropriate negative value if 
-            pType is Infinite and 0 otherwise. If the hypothetical intersection
-            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
-            and a value above 1 otherwise.</param>
-            <param name="Q">Second line segment</param>
-            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
-            <param name="qFrac">Fraction along Q of the intersection point. If this
-            method returns false, qFrac may be <c>NaN</c> if the analysis of line
-            P already determined that pFrac is beyond the range of line P. In other 
-            words, if Q is assumed to be an infinite line and P still does not 
-            intersect with Q, qFrac is set to NaN because the method aborts 
-            analysis to avoid wasting CPU time. On the other hand, if this method 
-            determines that P might intersect with Q, but a full analysis shows 
-            that it does not, the method returns false and sets qFrac to a real 
-            number. qFrac is set to 0 if the intersection point of the infinite 
-            extension of Q is on the Q.A side of the line, and 1 if the 
-            intersection point is on the Q.B side of the line.</param>
-            <returns>True if the lines intersect, false otherwise.</returns>
+        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
+            <summary>Counts the number of times the polygon winds around a test 
+            point, using a rightward raycasting test.</summary>
+            <returns>Returns the winding number: the number of times that the
+            polygon winds around the point. Positive means clockwise (assuming a 
+            coordinate system in which increasing Y goes upward), negative means
+            counterclockwise. Always returns -1, 0 or +1 when the polygon does
+            not self-intersect. Returns 0 for a degenerate polygon.</returns>
             <remarks>
-            This method does not do a bounding-box check. If you are doing 
-            calculations with line segments and you expect the majority of your
-            intersection calculations to return false, you may save time by 
-            testing whether the bounding boxes of the lines overlap before calling 
-            this method.
-            <para/>
-            If the input segments contain NaNs, the result is false and pFrac/qFrac
-            will be NaN.
-            <para/>
-            If the either of the line segments are degenerate (single points), 
-            overlap can still be detected and the LineType of the degenerate line
-            has no effect; the degenerate line is always treated as a point.
-            If both lines are points, the method will return true iff they are the
-            same point, and if true is returned, pFrac will be 0.5f
-            <para/>
-            The output fractions pFrac and qFrac will be infinite if the magnitude 
-            of the result overflows.
-            <para/>
-            If the two line segments are parallel but do not overlap, this method
-            returns false; pFrac and qFrac are both set to NaN. If the two lines 
-            are parallel and overlap, a region of overlap is detected and pFrac
-            and qFrac refer to the center of this region of overlap. If, in this
-            case, P and/or Q are rays or infinite lines, this method behaves as
-            though P and/or Q are extended to cover each other. For instance, 
-            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
-            Q.A.X=10, Q.B.X=16:
-            <pre>
-                   P.A---------------P.B         Q.B---------------------Q.A
-            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-            </pre>
-            If P and Q are both line segments, there is no overlap and this method 
-            will return false. However, if Q is a Ray or an infinite line, it 
-            extends toward negative infinity and the minimum overlap between the 
-            lines is 0..6. In this case, the region of overlap is considered to be 
-            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
-            line. If P is a line segment, the midpoint is 3, and pFrac will be set
-            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
-            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
-            qFrac will be 1.333.
+            The test point is considered to be within the polygon if it lies
+            on a top or left edge, but not on a bottom or right edge (within
+            the precision limits of 'double' arithmetic). The test point will 
+            never be considered inside a degenerate (zero-width) area.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
-            <summary>Computes the intersection point between two lines, rays or 
-            line segments.</summary>
-            <remarks>This method is implemented based on the other overload,
-            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+        <member name="T:Loyc.Geometry.PointExt">
+            <summary>Contains methods for manipulating points in generic code.</summary>
+            <remarks>Using <see cref="T:Loyc.Geometry.PointMath"/> extension methods is easier. These
+            methods may be faster but they require a "math" structure (see <see cref="T:Loyc.Math.Maths`1"/>).</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Add``3(``2,``0,``0)">
+            <summary>Returns the sum of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Subtract``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Returns the difference between two points or vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Multiply``2(``1,Loyc.Geometry.IPoint{``0},``0)">
+            <summary>Returns a point or vector multiplied by a scaling factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Divide``2(``1,Loyc.Geometry.IPoint{``0},``0)">
+            <summary>Returns a point or vector divided by a scaling factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.ShiftLeft``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
+            <summary>Returns a point or vector scaled up by a power of two.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.ShiftRight``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
+            <summary>Returns a point or vector scaled down by a power of two.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.MulDiv``2(``1,Loyc.Geometry.IPoint{``0},``0,``0)">
+            <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Dot``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the dot product of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Cross``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the cross product of two vectors.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Rot90``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Returns a vector rotated 90 degrees.</summary>
+            <remarks>
+            Rotatation is clockwise if increasing Y goes downward, counter-
+            clockwise if increasing Y goes upward.
             </remarks>
         </member>
-        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.BoundingBox{System.Double})">
-            <summary>Quickly clips a line to a bounding box.</summary>
-            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
-            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
+        <member name="M:Loyc.Geometry.PointExt.Negate``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Returns a vector with its direction reversed.</summary>
         </member>
-        <member name="T:Loyc.Geometry.LineType">
-            <summary>Indicates how a <see cref="T:Loyc.Geometry.LineSegment`1"/> should be treated in
-            a math algorithm: as a segment (the default), as a ray originating at A 
-            (extending B infinitely), or as an line that is infinite in both directions.</summary>
+        <member name="M:Loyc.Geometry.PointExt.Quadrance``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the square of the length of a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Length``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the length of a vector.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.PointExt.Angle``2(``1,Loyc.Geometry.IPoint{``0})">
+            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
+            angle 0 and (0,1) has angle PI/2.</summary>
         </member>
         <member name="T:Loyc.Geometry.PointMath">
             <summary>Math and extension methods for <see cref="T:Loyc.Geometry.Point`1"/>.</summary>
@@ -574,264 +548,171 @@
             coordinate system (counterclockwise in a Y-down coordinate system).</summary>
             <remarks>Uses the Monotone Chain algorithm, a.k.a. Andrew's Algorithm.</remarks>
         </member>
-        <member name="T:Loyc.Geometry.PolygonMath">
+        <member name="T:Loyc.Utilities.Statistic">
             <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
-            </summary>
-            <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
-            </summary>
-            <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
-            </summary>
-            <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
-            </summary>
-            <summary>
-            Contains useful basic polygon algorithms: hit testing, area calculation,
-            orientation detection.
+            A lightweight class to help you compute the minimum, maximum, average
+            and standard deviation of a set of values. Call Clear(), then Add(each
+            value); you can compute the average and standard deviation at any time by 
+            calling Avg() and StdDeviation().
             </summary>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
+        <member name="T:Loyc.LLParserGenerator.IntSet">
+            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
+            or a set of token IDs.</summary>
+            <remarks>This class was written for, and is used by, LLLPG. In addition to
+            set operations like union and Subtract, one of its main features is that it 
+            can convert a set of integers or characters to/from a string form like 
+            "[A-Z]" or "(65..90)".</remarks>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
+        <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
+            <summary>A list of non-overlapping character ranges, sorted by code 
+            point. EOF can be included in this list as character -1 (hence CharRange 
+            holds ints instead of chars).</summary>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
+        <member name="F:Loyc.LLParserGenerator.IntSet.IsCharSet">
+            <summary>Controls the default stringization mode. When IsCharSet, the
+            set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
+            </summary>
         </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Int32}},Loyc.Geometry.Point{System.Int32})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
+        <member name="M:Loyc.LLParserGenerator.IntSet.EquivalentInverted">
+            <summary>Computes the equivalent inverted set, e.g. if the set is 
+            <c>'b'..'y'</c>, the equivalent inverted set is 
+            <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IntSet.ToString">
+            <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
+            means "EOF or a to z", [^\n\r] means "not \n or \r". Use 
+            ToString(false) if this is an integer set.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.IsInverted">
+            <summary>When Inverted is true, the set behaves as if it contains the
+            opposite set of items. That is, membership tests that succeeded when
+            Inverted was false will fail, and vice versa.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.IsEmptySet">
+            <summary>Returns true iff the set is empty. When the set is inverted 
+            and contains the set of all integers, that also counts as empty.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.ContainsEverything">
+            <summary>Returns true iff the set covers all integers. This includes 
+            the common scenario that the set is empty but inverted.</summary>
+        </member>
+        <member name="P:Loyc.LLParserGenerator.IntSet.Size">
+            <summary>Gets the number of integers whose membership test would 
+            succeed (the maximum possible value is 0x100000000L).</summary>
+        </member>
+        <member name="T:Loyc.LLParserGenerator.IntRange">
+            <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
+        </member>
+        <member name="M:Loyc.LLParserGenerator.IntRange.CompareTo(Loyc.LLParserGenerator.IntRange)">
+            <summary>Compares only the <see cref="F:Loyc.LLParserGenerator.IntRange.Lo"/> values of two ranges.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.UG">
+            <summary>Contains global functions of Loyc.Utilities that don't belong in any specific class.</summary>
+        </member>
+        <member name="M:Loyc.Utilities.UG.ProcessCommandLineArguments(System.Collections.Generic.IList{System.String},System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.String,System.Collections.Generic.IDictionary{System.Char,System.String},Loyc.Collections.InvertibleSet{System.String},System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Expands environment variables (e.g. %TEMP%) and @files in a list of
+            command-line arguments, and adds any options of the form "--opt" or
+            "--opt=value" to a dictionary.
+            </summary>
+            <param name="args">The original arguments to process.</param>
+            <param name="options">Any long options (arguments that start with "--") 
+            will be added to this dictionary, and removed from <c>args</c>. This 
+            parameter cannot be null. 
+              By default, long options are not case sensitive. In that case, the 
+            user's option name is converted to lower case.
+            <para/>
+            Long options are expected to have the form --ID or --ID=value, where ID 
+            matches the regex "[a-zA-Z_0-9-]+". If there is no "=" or ":", that's 
+            okay too. For example, --Id{foo} is equivalent to --Id={foo}; both yield
+            in the name-value pair ("id", "{foo}"). If there is no value (no equals
+            or colon), the value associated with the option is null.</param>
+            <param name="atFolder">If a parameter has the form @filename, the folder
+            specified by atFolder will be searched for an options text file with the
+            user-specified filename, and the contents of the file will be expanded 
+            into the list of arguments (split using SplitCommandLineArguments). The
+            expanded list can contain new @filenames, which are also processed. To
+            search in the current directory, use "". The @filename may use an absolute
+            path, which overrides this folder. To disable @filename expansion, set 
+            this parameter to null. Whether the feature is enabled or disabled, 
+            @filenames are <i>not</i> removed from <c>args</c>, in case you want to 
+            be aware of the filenames afterward.</param>
+            <param name="shortOptions">A map from one-letter options that start with 
+            "-" rather than "--", to the name of the corresponding long option (this
+            option can be null to ignore all short options.) For example, if this 
+            contains (<c>'a', "all"</c>), and the input <c>args</c> contains "-a:foo",
+            the pair ("all", "foo") will be added to <c>options</c>. If a value in 
+            this map is null, the key itself is used. Short options can be combined; 
+            for example <c>-abc:foo</c> is equivalent to <c>-a -b -c:foo</c>. Short 
+            options are always case-sensitive; to define an option that is not case 
+            sensitive, place two entries in the dictionary e.g. ('a', "all") and 
+            ('A', "all"). If the user specifies a short option letter that is not 
+            recognized, the entire command will be ignored and left in args. For 
+            example, if <c>shortOptions</c> contains only ('a', "all") but <c>args</c>
+            contains "-ab=foo", the command is ignored and left in <c>args</c>. 
+            Rationale: -ab=foo might be a filename.
+            <para/>
+            On the other hand, if -a is a valid option then <c>-a123</c> is also 
+            valid even when there is no option called '1'; the number "123" is 
+            treated as an argument to -a. Now, if '1' is a registered short option 
+            but '2' is not, then <c>-a123</c> is equivalent to <c>-a -1=23</c>.
+            </param>
+            <param name="twoArgOptions">A set of options in which the argument can
+            be separated by a space from the option. For example, if the input is 
+            "--out foo.txt" and you want to recognize "foo.txt" as the argument to
+            "--out", add the string "out" to this set. If you want to treat <i>all</i>
+            options this way, use <c>InvertibleSet{string}.All</c>. Note: 
+            If the input is "--out:foo bar", "foo" is recognized as the argument to
+            "--out" and "bar" is left alone, i.e. it is treated as unrelated.
+              Short options participate automatically. For example if "-f" means 
+            "--foo", and twoArgOptions contains "foo", then "-f arg" is interpreted 
+            like "--foo=arg".
+            <para/>
+            The argument will not be treated as an argument if it starts with a 
+            dash, e.g. in <c>--foo -*</c>, <c>-*</c> will not be treated as an 
+            argument to <c>--foo</c>, even if <c>-*</c> is not a registered option.
+            </param>
+            <param name="argLimit">A limit placed on the number of arguments when
+            expanding @files. Such a file may refer to itself, and this is the only
+            protection provided against infinite recursive expansion.</param>
+            <param name="expandEnvVars">If true, environment variable references
+            such as <c>%TEMP%</c> are expanded by calling the standard method
+            <see cref="M:System.Environment.ExpandEnvironmentVariables(System.String)"/>.</param>
+            <param name="caseSensitiveLongOpts">If true, long options are case-
+            sensitive. By default, long options are not case sensitive.</param>
             <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
+            Two types of options are recognized, short (-s) and long (--long), and
+            only one argument is supported per option. The documentation is above.
+            <para/>
+            You can choose whether to permit duplicate options or not. If you use
+            a standard <see cref="T:System.Collections.Generic.Dictionary`2"/> to hold the options, an 
+            exception will occur when this method calls Add() to add the duplicate. 
+            The exception is caught, the first ocurrance is kept, and a warning 
+            message is printed to <see cref="P:Loyc.MessageSink.Current"/>.
+            <para/>
+            To allow duplicates, store options in a different data structure such as 
+            <c>List(KeyValuePair(string, string))</c> or <c>BMultiMap(string,string)</c>.
+            <para/>
+            DOS-style slash-options like /foo are not supported. Since Windows
+            recognizes the forward slash as a path separator, forward-slash options
+            can be recognized as paths. If you want to recognize them as options 
+            instead, you can preprocess the argument list, replacing every command 
+            that starts with "/" with a "--" command:
+            <code>
+              for (int i = 0; args.Count &gt; i; i++)
+                if (args[i].StartsWith("/")) 
+                  args[i] = "--" + args[i].Substring(1);
+            </code>
+            <para/>
+            Globs (e.g. *.txt) are not recognized or expanded, but environment 
+            variables are expanded when <c>expandEnvVars</c> is true.
+            <para/>
+            Quote marks are not processed. An argument of <c>"--a"</c>, with quote 
+            marks, is not recognized as an option (these quote marks should be 
+            removed before calling this method, e.g. 
+            <see cref="M:Loyc.G.SplitCommandLineArguments(System.String)"/> handles this.)
             </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Single}},Loyc.Geometry.Point{System.Single})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{System.Double}},Loyc.Geometry.Point{System.Double})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI8}},Loyc.Geometry.Point{Loyc.Math.FPI8})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.PolygonArea(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
-            <summary>Computes the area of a polygon.</summary>
-            <returns>The area. The result is positive if the polygon is clockwise 
-            (assuming a coordinate system in which increasing Y goes upward), or 
-            negative if the polygon is counterclockwise.</returns>
-            <remarks>http://www.codeproject.com/Tips/601272/Calculating-the-area-of-a-polygon</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.Orientation(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}})">
-            <summary>Returns Math.Sign(PolygonArea(poly)): positive when clockwise 
-            and increasing Y goes upward.</summary>
-            <remarks>A common approach to this problem is to look at the topmost
-            point and the two points on either side. However, if one is not careful,
-            this technique may be unable to detect the orientation in case the 
-            polygon has duplicate points, horizontal lines on top, or a degenerate
-            top in which the top part of the polygon is zero-width (these problems
-            can occur even if the polygon's lines do not cross one another.) That's
-            why I chose to compute orientation based on area instead.</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.IsPointInPolygon(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
-            <summary>Finds out if a point is inside the polygon using a winding 
-            test.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PolygonMath.GetWindingNumber(System.Collections.Generic.IEnumerable{Loyc.Geometry.Point{Loyc.Math.FPI16}},Loyc.Geometry.Point{Loyc.Math.FPI16})">
-            <summary>Counts the number of times the polygon winds around a test 
-            point, using a rightward raycasting test.</summary>
-            <returns>Returns the winding number: the number of times that the
-            polygon winds around the point. Positive means clockwise (assuming a 
-            coordinate system in which increasing Y goes upward), negative means
-            counterclockwise. Always returns -1, 0 or +1 when the polygon does
-            not self-intersect. Returns 0 for a degenerate polygon.</returns>
-            <remarks>
-            The test point is considered to be within the polygon if it lies
-            on a top or left edge, but not on a bottom or right edge (within
-            the precision limits of 'double' arithmetic). The test point will 
-            never be considered inside a degenerate (zero-width) area.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Geometry.PointExt">
-            <summary>Contains methods for manipulating points in generic code.</summary>
-            <remarks>Using <see cref="T:Loyc.Geometry.PointMath"/> extension methods is easier. These
-            methods may be faster but they require a "math" structure (see <see cref="T:Loyc.Math.Maths`1"/>).</remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Add``3(``2,``0,``0)">
-            <summary>Returns the sum of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Subtract``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Returns the difference between two points or vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Multiply``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector multiplied by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Divide``2(``1,Loyc.Geometry.IPoint{``0},``0)">
-            <summary>Returns a point or vector divided by a scaling factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftLeft``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled up by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.ShiftRight``2(``1,Loyc.Geometry.IPoint{``0},System.Int32)">
-            <summary>Returns a point or vector scaled down by a power of two.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.MulDiv``2(``1,Loyc.Geometry.IPoint{``0},``0,``0)">
-            <summary>Returns a point or vector by a factor, then divides by another factor.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Dot``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the dot product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Cross``2(``1,Loyc.Geometry.IPoint{``0},Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the cross product of two vectors.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Rot90``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector rotated 90 degrees.</summary>
-            <remarks>
-            Rotatation is clockwise if increasing Y goes downward, counter-
-            clockwise if increasing Y goes upward.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Negate``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Returns a vector with its direction reversed.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Quadrance``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the square of the length of a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Length``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the length of a vector.</summary>
-        </member>
-        <member name="M:Loyc.Geometry.PointExt.Angle``2(``1,Loyc.Geometry.IPoint{``0})">
-            <summary>Gets the angle from 0 to 2*PI of the vector, where (1,0) has 
-            angle 0 and (0,1) has angle PI/2.</summary>
         </member>
         <member name="T:Loyc.Utilities.GoInterface">
             <summary>Mainly for internal use by the other GoInterface classes.</summary>
@@ -1069,7 +950,7 @@
             interface when it turns out that they implement that interface.</summary>
         </member>
         <member name="T:Loyc.Utilities.GoInterface`2">
-            <summary>GoInterface&lt;Interface,T> creates a wrapper that implements 
+            <summary>GoInterface&lt;Interface,T&gt; creates a wrapper that implements 
             the specified Interface, forwarding calls to methods in T. It is inspired 
             by the duck-typed interfaces in the Go programming language.</summary>
             <remarks>
@@ -1097,8 +978,8 @@
         <member name="M:Loyc.Utilities.GoInterface`2.From(`1)">
             <summary>Creates a wrapper if the interface matches T well.</summary>
             <exception cref="T:System.InvalidCastException">T does not match the Interface 
-            very well. Specifically, NumberOfUnmatchedMethods>0, 
-            NumberOfMethodsMissingParameters>0 or NumberOfMethodsWithRefMismatch>0.</exception>
+            very well. Specifically, NumberOfUnmatchedMethods&gt;0, 
+            NumberOfMethodsMissingParameters&gt;0 or NumberOfMethodsWithRefMismatch&gt;0.</exception>
             <returns>A pointer to a wrapper that implements the Interface.</returns>
         </member>
         <member name="M:Loyc.Utilities.GoInterface`2.From(`1,Loyc.Utilities.CastOptions)">
@@ -1106,34 +987,6 @@
             specified CastOptions.</summary>
             <returns>A pointer to a wrapper that implements the Interface.</returns>
             <remarks>See CastOptions for more information.</remarks>
-        </member>
-        <member name="P:Loyc.Utilities.GoInterface`2.IsValidInterface">
-            <summary>If this value is false, Interface is not valid and ForceFrom 
-            will throw InvalidOperationException if called. In that case, the other 
-            values such as NumberOfUnmatchedMethods are zero, but have no meaning.</summary>
-            <remarks>Calling this property or any of the "int" properties forces 
-            the wrapper class to be generated, during which the relationship 
-            between Interface and T is analyzed.</remarks>
-        </member>
-        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfUnmatchedMethods">
-            <summary>The number of methods in the interface for which a matching 
-            method in T could not be found.</summary>
-        </member>
-        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfAmbiguousMethods">
-            <summary>The number of methods in the interface for which a matching 
-            method in T could not be found because T contained more than one 
-            equally suitable match.</summary>
-        </member>
-        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfMethodsMissingParameters">
-            <summary>The number of methods in the interface that were matched to 
-            a method in T with one or more parameters dropped. For instance, if a
-            method in the interface takes two ints but T's method only takes one
-            int, the second int of </summary>
-        </member>
-        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfMethodsWithRefMismatch">
-            <summary>The number of methods in the interface that were matched to a 
-            method in T, in which there was a mismatch that one parameter was 
-            passed by reference ("ref") and the other was passed by value.</summary>
         </member>
         <member name="M:Loyc.Utilities.GoInterface`2.DefineCustomWrapperCreator(Loyc.Utilities.GoInterface{`0,`1}.GoWrapperCreator,Loyc.Utilities.GoInterface{`0,`1}.GoWrapperCreator)">
             <summary>Defines a custom wrapper class for the type pair (Interface, 
@@ -1151,14 +1004,6 @@
             before. Make sure you call this method as soon as possible, before 
             anybody calls From() or ForceFrom().
             </remarks>
-        </member>
-        <member name="T:Loyc.Utilities.GoInterface`2.Factory">
-            <summary>This helper class allows GoInterface&lt;Interface> to cache 
-            access to the static methods in GoInterface&lt;Interface, T>, so that 
-            it only needs to use reflection once.</summary>
-        </member>
-        <member name="T:Loyc.Utilities.GoInterface`2.MethodAndParams">
-            <summary>A MethodInfo with cached parameter information.</summary>
         </member>
         <member name="M:Loyc.Utilities.GoInterface`2.ContainsIdenticalMethod(System.Reflection.MethodInfo,System.Collections.Generic.List{Loyc.Utilities.GoInterface{`0,`1}.MethodAndParams})">
             <summary>Returns true if 'otherMethods' contains a method identical to
@@ -1231,6 +1076,42 @@
             also tells you if the type is unsigned; note that IntPtr and 
             UIntPtr are not handled.</summary>
             <returns>The size of type t, or 0 for unhandled types.</returns>
+        </member>
+        <member name="P:Loyc.Utilities.GoInterface`2.IsValidInterface">
+            <summary>If this value is false, Interface is not valid and ForceFrom 
+            will throw InvalidOperationException if called. In that case, the other 
+            values such as NumberOfUnmatchedMethods are zero, but have no meaning.</summary>
+            <remarks>Calling this property or any of the "int" properties forces 
+            the wrapper class to be generated, during which the relationship 
+            between Interface and T is analyzed.</remarks>
+        </member>
+        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfUnmatchedMethods">
+            <summary>The number of methods in the interface for which a matching 
+            method in T could not be found.</summary>
+        </member>
+        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfAmbiguousMethods">
+            <summary>The number of methods in the interface for which a matching 
+            method in T could not be found because T contained more than one 
+            equally suitable match.</summary>
+        </member>
+        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfMethodsMissingParameters">
+            <summary>The number of methods in the interface that were matched to 
+            a method in T with one or more parameters dropped. For instance, if a
+            method in the interface takes two ints but T's method only takes one
+            int, the second int of </summary>
+        </member>
+        <member name="P:Loyc.Utilities.GoInterface`2.NumberOfMethodsWithRefMismatch">
+            <summary>The number of methods in the interface that were matched to a 
+            method in T, in which there was a mismatch that one parameter was 
+            passed by reference ("ref") and the other was passed by value.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.GoInterface`2.Factory">
+            <summary>This helper class allows GoInterface&lt;Interface> to cache 
+            access to the static methods in GoInterface&lt;Interface, T>, so that 
+            it only needs to use reflection once.</summary>
+        </member>
+        <member name="T:Loyc.Utilities.GoInterface`2.MethodAndParams">
+            <summary>A MethodInfo with cached parameter information.</summary>
         </member>
         <member name="T:Loyc.Utilities.GoAliasAttribute">
             <summary>This attribute is applied to a method of an interface to specify 
@@ -1355,6 +1236,284 @@
             }
             </example>
         </member>
+        <member name="T:Loyc.Geometry.LineMath">
+            <summary>Contains algorithms that operate on lines.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)">
+            <summary>Simplifies a polyline using the Douglas-Peucker line 
+            simplification algorithm. This algorithm removes points that are 
+            deemed unimportant; the output is a subset of the input.</summary>
+            <typeparam name="List">Original unsimplified polyline</typeparam>
+            <param name="output">The output polyline is added in order to this collection</param>
+            <param name="tolerance">The distance between the input polyline and the 
+            output polyline will never exceed this distance. Increase this value to 
+            simplify more aggressively.</param>
+            <returns>The number of output points.</returns>
+            <remarks>
+            The average time complexity of this algorithm is O(N log N). 
+            The worst-case time complexity is O(N^2).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Double}},System.Double)">
+            <inheritdoc cref="M:Loyc.Geometry.LineMath.SimplifyPolyline``1(``0,System.Collections.Generic.ICollection{Loyc.Geometry.Point{System.Single}},System.Single)"/>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
+            <summary>Performs projection, which finds the point on a line segment 
+            or infinite line that is nearest to a specified point.</summary>
+            <param name="seg">The line segment</param>
+            <param name="p">The test point to be projected</param>
+            <param name="infiniteLine">Whether to extend the line infinitely.</param>
+            <param name="end">Set to 0 if the point is on the line segment (including
+            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+            <returns>The projected point.</returns>
+            <remarks>
+            This algorithm is fast and accurate, and can be easily adapted to 3D.
+            A special advantage of this approach is that it runs fastest when the 
+            point is projected onto one of the endpoints (when infiniteLine is 
+            false).
+            <para/>
+            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
+            See section "Distance of a Point to a Ray or Segment"
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
+            <summary>Gets the projection of a point onto a line, expressed as a 
+            fraction where 0 represents the start of the line and 1 represents the 
+            end of the line.</summary>
+            <param name="infiniteLine">Whether to return numbers outside the range
+            (0, 1) if the projection is outside the line segment. If this is false,
+            the result is clamped to (0, 1)</param>
+            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
+            <returns>The fraction of p along seg, as explained already. If seg is
+            zero-length, the result is always 0.</returns>
+            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Single},System.Single)">
+            <summary>Given a fraction between zero and one, calculates a point 
+            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
+            <remarks>If you just want the midpoint, call Midpoint() which 
+            is faster. If the fraction is outside the range [0,1], the result
+            will be along the infinite extension of the line. If the two points
+            are the same, this method always returns the same point as long as
+            the math doesn't overflow, possibly with slight deviations caused 
+            by floating-point rounding.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Single})">
+            <summary>Returns the midpoint, (A + B) >> 1.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@)">
+            <summary>Computes the location that lines, rays or line segments 
+            intersect, expressed as a fraction of the distance along each 
+            LineSegment.</summary>
+            <param name="P">First line segment</param>
+            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
+            <param name="pFrac">Fraction along P of the intersection point. If this
+            method returns false, pFrac is still computed. If the hypothetical
+            intersection point of the infinite extension of P and Q is beyond the 
+            P.A side of the line, pFrac is set to an appropriate negative value if 
+            pType is Infinite and 0 otherwise. If the hypothetical intersection
+            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
+            and a value above 1 otherwise.</param>
+            <param name="Q">Second line segment</param>
+            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
+            <param name="qFrac">Fraction along Q of the intersection point. If this
+            method returns false, qFrac may be <c>NaN</c> if the analysis of line
+            P already determined that pFrac is beyond the range of line P. In other 
+            words, if Q is assumed to be an infinite line and P still does not 
+            intersect with Q, qFrac is set to NaN because the method aborts 
+            analysis to avoid wasting CPU time. On the other hand, if this method 
+            determines that P might intersect with Q, but a full analysis shows 
+            that it does not, the method returns false and sets qFrac to a real 
+            number. qFrac is set to 0 if the intersection point of the infinite 
+            extension of Q is on the Q.A side of the line, and 1 if the 
+            intersection point is on the Q.B side of the line.</param>
+            <returns>True if the lines intersect, false otherwise.</returns>
+            <remarks>
+            This method does not do a bounding-box check. If you are doing 
+            calculations with line segments and you expect the majority of your
+            intersection calculations to return false, you may save time by 
+            testing whether the bounding boxes of the lines overlap before calling 
+            this method.
+            <para/>
+            If the input segments contain NaNs, the result is false and pFrac/qFrac
+            will be NaN.
+            <para/>
+            If the either of the line segments are degenerate (single points), 
+            overlap can still be detected and the LineType of the degenerate line
+            has no effect; the degenerate line is always treated as a point.
+            If both lines are points, the method will return true iff they are the
+            same point, and if true is returned, pFrac will be 0.5f
+            <para/>
+            The output fractions pFrac and qFrac will be infinite if the magnitude 
+            of the result overflows.
+            <para/>
+            If the two line segments are parallel but do not overlap, this method
+            returns false; pFrac and qFrac are both set to NaN. If the two lines 
+            are parallel and overlap, a region of overlap is detected and pFrac
+            and qFrac refer to the center of this region of overlap. If, in this
+            case, P and/or Q are rays or infinite lines, this method behaves as
+            though P and/or Q are extended to cover each other. For instance, 
+            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
+            Q.A.X=10, Q.B.X=16:
+            <pre>
+                   P.A---------------P.B         Q.B---------------------Q.A
+            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+            </pre>
+            If P and Q are both line segments, there is no overlap and this method 
+            will return false. However, if Q is a Ray or an infinite line, it 
+            extends toward negative infinity and the minimum overlap between the 
+            lines is 0..6. In this case, the region of overlap is considered to be 
+            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
+            line. If P is a line segment, the midpoint is 3, and pFrac will be set
+            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
+            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
+            qFrac will be 1.333.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)">
+            <summary>Computes the intersection point between two lines, rays or 
+            line segments.</summary>
+            <remarks>This method is implemented based on the other overload,
+            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.BoundingBox{System.Single})">
+            <summary>Quickly clips a line to a bounding box.</summary>
+            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
+            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
+            <summary>Performs projection, which finds the point on a line segment 
+            or infinite line that is nearest to a specified point.</summary>
+            <param name="seg">The line segment</param>
+            <param name="p">The test point to be projected</param>
+            <param name="infiniteLine">Whether to extend the line infinitely.</param>
+            <param name="end">Set to 0 if the point is on the line segment (including
+            one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+            after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+            <returns>The projected point.</returns>
+            <remarks>
+            This algorithm is fast and accurate, and can be easily adapted to 3D.
+            A special advantage of this approach is that it runs fastest when the 
+            point is projected onto one of the endpoints (when infiniteLine is 
+            false).
+            <para/>
+            Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
+            See section "Distance of a Point to a Ray or Segment"
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.GetFractionAlong(Loyc.Geometry.Point{System.Double},Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
+            <summary>Gets the projection of a point onto a line, expressed as a 
+            fraction where 0 represents the start of the line and 1 represents the 
+            end of the line.</summary>
+            <param name="infiniteLine">Whether to return numbers outside the range
+            (0, 1) if the projection is outside the line segment. If this is false,
+            the result is clamped to (0, 1)</param>
+            <param name="end">Same as for <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</param>
+            <returns>The fraction of p along seg, as explained already. If seg is
+            zero-length, the result is always 0.</returns>
+            <remarks>This method uses the same technique as <see cref="M:Loyc.Geometry.LineMath.ProjectOnto(Loyc.Geometry.Point{System.Single},Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType)"/>.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.PointAlong(Loyc.Geometry.LineSegment{System.Double},System.Double)">
+            <summary>Given a fraction between zero and one, calculates a point 
+            between two points (0=point A, 1=point B, 0.5=midpoint).</summary>
+            <remarks>If you just want the midpoint, call Midpoint() which 
+            is faster. If the fraction is outside the range [0,1], the result
+            will be along the infinite extension of the line. If the two points
+            are the same, this method always returns the same point as long as
+            the math doesn't overflow, possibly with slight deviations caused 
+            by floating-point rounding.</remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.Midpoint(Loyc.Geometry.LineSegment{System.Double})">
+            <summary>Returns the midpoint, (A + B) >> 1.</summary>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@)">
+            <summary>Computes the location that lines, rays or line segments 
+            intersect, expressed as a fraction of the distance along each 
+            LineSegment.</summary>
+            <param name="P">First line segment</param>
+            <param name="pType">Type of line P (Segment, Ray, Infinite)</param>
+            <param name="pFrac">Fraction along P of the intersection point. If this
+            method returns false, pFrac is still computed. If the hypothetical
+            intersection point of the infinite extension of P and Q is beyond the 
+            P.A side of the line, pFrac is set to an appropriate negative value if 
+            pType is Infinite and 0 otherwise. If the hypothetical intersection
+            is on the P.B side of the line, pFrac is set to 1 if pType is Segment
+            and a value above 1 otherwise.</param>
+            <param name="Q">Second line segment</param>
+            <param name="qType">Type of line Q (Segment, Ray, Infinite)</param>
+            <param name="qFrac">Fraction along Q of the intersection point. If this
+            method returns false, qFrac may be <c>NaN</c> if the analysis of line
+            P already determined that pFrac is beyond the range of line P. In other 
+            words, if Q is assumed to be an infinite line and P still does not 
+            intersect with Q, qFrac is set to NaN because the method aborts 
+            analysis to avoid wasting CPU time. On the other hand, if this method 
+            determines that P might intersect with Q, but a full analysis shows 
+            that it does not, the method returns false and sets qFrac to a real 
+            number. qFrac is set to 0 if the intersection point of the infinite 
+            extension of Q is on the Q.A side of the line, and 1 if the 
+            intersection point is on the Q.B side of the line.</param>
+            <returns>True if the lines intersect, false otherwise.</returns>
+            <remarks>
+            This method does not do a bounding-box check. If you are doing 
+            calculations with line segments and you expect the majority of your
+            intersection calculations to return false, you may save time by 
+            testing whether the bounding boxes of the lines overlap before calling 
+            this method.
+            <para/>
+            If the input segments contain NaNs, the result is false and pFrac/qFrac
+            will be NaN.
+            <para/>
+            If the either of the line segments are degenerate (single points), 
+            overlap can still be detected and the LineType of the degenerate line
+            has no effect; the degenerate line is always treated as a point.
+            If both lines are points, the method will return true iff they are the
+            same point, and if true is returned, pFrac will be 0.5f
+            <para/>
+            The output fractions pFrac and qFrac will be infinite if the magnitude 
+            of the result overflows.
+            <para/>
+            If the two line segments are parallel but do not overlap, this method
+            returns false; pFrac and qFrac are both set to NaN. If the two lines 
+            are parallel and overlap, a region of overlap is detected and pFrac
+            and qFrac refer to the center of this region of overlap. If, in this
+            case, P and/or Q are rays or infinite lines, this method behaves as
+            though P and/or Q are extended to cover each other. For instance, 
+            suppose that P and Q are lines on the X axis, P.A.X=0, P.B.X=6, 
+            Q.A.X=10, Q.B.X=16:
+            <pre>
+                   P.A---------------P.B         Q.B---------------------Q.A
+            -2  -1  0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+            </pre>
+            If P and Q are both line segments, there is no overlap and this method 
+            will return false. However, if Q is a Ray or an infinite line, it 
+            extends toward negative infinity and the minimum overlap between the 
+            lines is 0..6. In this case, the region of overlap is considered to be 
+            0..6 if P is a line segment, and 0..16 if P is a ray or an infinite 
+            line. If P is a line segment, the midpoint is 3, and pFrac will be set
+            to 0.5, halfway along the line, while qFrac will be 2.333. If P is a 
+            ray or an infinite line, the midpoint is 8, pFrac will be 1.333, and
+            qFrac will be 1.333.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType)">
+            <summary>Computes the intersection point between two lines, rays or 
+            line segments.</summary>
+            <remarks>This method is implemented based on the other overload,
+            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.BoundingBox{System.Double})">
+            <summary>Quickly clips a line to a bounding box.</summary>
+            <returns>A clipped line, or null if the line was outside the bounding box.</returns>
+            <remarks>If the bounding box is not normalized (min > max), the result is undefined.</remarks>
+        </member>
+        <member name="T:Loyc.Geometry.LineType">
+            <summary>Indicates how a <see cref="T:Loyc.Geometry.LineSegment`1"/> should be treated in
+            a math algorithm: as a segment (the default), as a ray originating at A 
+            (extending B infinitely), or as an line that is infinite in both directions.</summary>
+        </member>
         <member name="T:Loyc.Utilities.SimpleTimer">
             <summary>
             A fast, simple timer class with a more convenient interface than 
@@ -1373,13 +1532,6 @@
             become negative.
             </remarks>
         </member>
-        <member name="P:Loyc.Utilities.SimpleTimer.Millisec">
-            <summary>
-            The getter returns the number of milliseconds since the timer was 
-            started; the resolution of this property depends on the system timer.
-            The setter changes the value of the timer.
-            </summary>
-        </member>
         <member name="M:Loyc.Utilities.SimpleTimer.Restart">
             <summary>Restarts the timer from zero (unpausing it if it is paused), 
             and returns the number of elapsed milliseconds prior to the reset.</summary>
@@ -1393,12 +1545,11 @@
             <remarks>If this method resets a paused timer, it remains paused but 
             Millisec is set to zero.</remarks>
         </member>
-        <member name="T:Loyc.Utilities.Statistic">
+        <member name="P:Loyc.Utilities.SimpleTimer.Millisec">
             <summary>
-            A lightweight class to help you compute the minimum, maximum, average
-            and standard deviation of a set of values. Call Clear(), then Add(each
-            value); you can compute the average and standard deviation at any time by 
-            calling Avg() and StdDeviation().
+            The getter returns the number of milliseconds since the timer was 
+            started; the resolution of this property depends on the system timer.
+            The setter changes the value of the timer.
             </summary>
         </member>
         <member name="T:Loyc.Utilities.TagsInWList`1">
@@ -1412,163 +1563,12 @@
             ensures tags can be accessed quickly by code that only uses a single tag.
             </remarks>
         </member>
-        <member name="T:Loyc.Utilities.UG">
-            <summary>Contains global functions of Loyc.Utilities that don't belong in any specific class.</summary>
-        </member>
-        <member name="M:Loyc.Utilities.UG.ProcessCommandLineArguments(System.Collections.Generic.IList{System.String},System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.String,System.Collections.Generic.IDictionary{System.Char,System.String},Loyc.Collections.InvertibleSet{System.String},System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Expands environment variables (e.g. %TEMP%) and @files in a list of
-            command-line arguments, and adds any options of the form "--opt" or
-            "--opt=value" to a dictionary.
-            </summary>
-            <param name="args">The original arguments to process.</param>
-            <param name="options">Any long options (arguments that start with "--") 
-            will be added to this dictionary, and removed from <c>args</c>. This 
-            parameter cannot be null. 
-              By default, long options are not case sensitive. In that case, the 
-            user's option name is converted to lower case.
-            <para/>
-            Long options are expected to have the form --ID or --ID=value, where ID 
-            matches the regex "[a-zA-Z_0-9-]+". If there is no "=" or ":", that's 
-            okay too. For example, --Id{foo} is equivalent to --Id={foo}; both yield
-            in the name-value pair ("id", "{foo}"). If there is no value (no equals
-            or colon), the value associated with the option is null.</param>
-            <param name="atFolder">If a parameter has the form @filename, the folder
-            specified by atFolder will be searched for an options text file with the
-            user-specified filename, and the contents of the file will be expanded 
-            into the list of arguments (split using SplitCommandLineArguments). The
-            expanded list can contain new @filenames, which are also processed. To
-            search in the current directory, use "". The @filename may use an absolute
-            path, which overrides this folder. To disable @filename expansion, set 
-            this parameter to null. Whether the feature is enabled or disabled, 
-            @filenames are <i>not</i> removed from <c>args</c>, in case you want to 
-            be aware of the filenames afterward.</param>
-            <param name="shortOptions">A map from one-letter options that start with 
-            "-" rather than "--", to the name of the corresponding long option (this
-            option can be null to ignore all short options.) For example, if this 
-            contains (<c>'a', "all"</c>), and the input <c>args</c> contains "-a:foo",
-            the pair ("all", "foo") will be added to <c>options</c>. If a value in 
-            this map is null, the key itself is used. Short options can be combined; 
-            for example <c>-abc:foo</c> is equivalent to <c>-a -b -c:foo</c>. Short 
-            options are always case-sensitive; to define an option that is not case 
-            sensitive, place two entries in the dictionary e.g. ('a', "all") and 
-            ('A', "all"). If the user specifies a short option letter that is not 
-            recognized, the entire command will be ignored and left in args. For 
-            example, if <c>shortOptions</c> contains only ('a', "all") but <c>args</c>
-            contains "-ab=foo", the command is ignored and left in <c>args</c>. 
-            Rationale: -ab=foo might be a filename.
-            <para/>
-            On the other hand, if -a is a valid option then <c>-a123</c> is also 
-            valid even when there is no option called '1'; the number "123" is 
-            treated as an argument to -a. Now, if '1' is a registered short option 
-            but '2' is not, then <c>-a123</c> is equivalent to <c>-a -1=23</c>.
-            </param>
-            <param name="twoArgOptions">A set of options in which the argument can
-            be separated by a space from the option. For example, if the input is 
-            "--out foo.txt" and you want to recognize "foo.txt" as the argument to
-            "--out", add the string "out" to this set. If you want to treat <i>all</i>
-            options this way, use <c>InvertibleSet{string}.All</c>. Note: 
-            If the input is "--out:foo bar", "foo" is recognized as the argument to
-            "--out" and "bar" is left alone, i.e. it is treated as unrelated.
-              Short options participate automatically. For example if "-f" means 
-            "--foo", and twoArgOptions contains "foo", then "-f arg" is interpreted 
-            like "--foo=arg".
-            <para/>
-            The argument will not be treated as an argument if it starts with a 
-            dash, e.g. in <c>--foo -*</c>, <c>-*</c> will not be treated as an 
-            argument to <c>--foo</c>, even if <c>-*</c> is not a registered option.
-            </param>
-            <param name="argLimit">A limit placed on the number of arguments when
-            expanding @files. Such a file may refer to itself, and this is the only
-            protection provided against infinite recursive expansion.</param>
-            <param name="expandEnvVars">If true, environment variable references
-            such as <c>%TEMP%</c> are expanded by calling the standard method
-            <see cref="M:System.Environment.ExpandEnvironmentVariables(System.String)"/>.</param>
-            <param name="caseSensitiveLongOpts">If true, long options are case-
-            sensitive. By default, long options are not case sensitive.</param>
-            <remarks>
-            Two types of options are recognized, short (-s) and long (--long), and
-            only one argument is supported per option. The documentation is above.
-            <para/>
-            You can choose whether to permit duplicate options or not. If you use
-            a standard <see cref="T:System.Collections.Generic.Dictionary`2"/> to hold the options, an 
-            exception will occur when this method calls Add() to add the duplicate. 
-            The exception is caught, the first ocurrance is kept, and a warning 
-            message is printed to <see cref="P:Loyc.MessageSink.Current"/>.
-            <para/>
-            To allow duplicates, store options in a different data structure such as 
-            <c>List(KeyValuePair(string, string))</c> or <c>BMultiMap(string,string)</c>.
-            <para/>
-            DOS-style slash-options like /foo are not supported. Since Windows
-            recognizes the forward slash as a path separator, forward-slash options
-            can be recognized as paths. If you want to recognize them as options 
-            instead, you can preprocess the argument list, replacing every command 
-            that starts with "/" with a "--" command:
-            <code>
-              for (int i = 0; args.Count > i; i++)
-                if (args[i].StartsWith("/")) 
-                  args[i] = "--" + args[i].Substring(1);
-            </code>
-            <para/>
-            Globs (e.g. *.txt) are not recognized or expanded, but environment 
-            variables are expanded when <c>expandEnvVars</c> is true.
-            <para/>
-            Quote marks are not processed. An argument of <c>"--a"</c>, with quote 
-            marks, is not recognized as an option (these quote marks should be 
-            removed before calling this method, e.g. 
-            <see cref="M:Loyc.G.SplitCommandLineArguments(System.String)"/> handles this.)
-            </remarks>
-        </member>
-        <member name="T:Loyc.LLParserGenerator.IntSet">
-            <summary>Represents a set of characters (e.g. 'A'..'Z' | 'a'..'z' | '_'), 
-            or a set of token IDs.</summary>
-            <remarks>This class was written for, and is used by, LLLPG. In addition to
-            set operations like union and Subtract, one of its main features is that it 
-            can convert a set of integers or characters to/from a string form like 
-            "[A-Z]" or "(65..90)".</remarks>
-        </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet._ranges">
-            <summary>A list of non-overlapping character ranges, sorted by code 
-            point. EOF can be included in this list as character -1 (hence CharRange 
-            holds ints instead of chars).</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsInverted">
-            <summary>When Inverted is true, the set behaves as if it contains the
-            opposite set of items. That is, membership tests that succeeded when
-            Inverted was false will fail, and vice versa.</summary>
-        </member>
-        <member name="F:Loyc.LLParserGenerator.IntSet.IsCharSet">
-            <summary>Controls the default stringization mode. When IsCharSet, the
-            set "(36, 65..90, 126)" prints as "[$A-Z~]". IsCharSet is false by default.
-            </summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.IsEmptySet">
-            <summary>Returns true iff the set is empty. When the set is inverted 
-            and contains the set of all integers, that also counts as empty.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.ContainsEverything">
-            <summary>Returns true iff the set covers all integers. This includes 
-            the common scenario that the set is empty but inverted.</summary>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.EquivalentInverted">
-            <summary>Computes the equivalent inverted set, e.g. if the set is 
-            <c>'b'..'y'</c>, the equivalent inverted set is 
-            <c>~(int.MinValue..'a' | 'z'..int.MaxValue)</c>.</summary>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.IntSet.ToString">
-            <summary>Prints the character set using regex syntax, e.g. [\$a-z] 
-            means "EOF or a to z", [^\n\r] means "not \n or \r". Use 
-            ToString(false) if this is an integer set.</summary>
-        </member>
-        <member name="P:Loyc.LLParserGenerator.IntSet.Size">
-            <summary>Gets the number of integers whose membership test would 
-            succeed (the maximum possible value is 0x100000000L).</summary>
-        </member>
-        <member name="T:Loyc.LLParserGenerator.IntRange">
-            <summary>Represents a range of single characters (e.g. 'A'..'Z').</summary>
-        </member>
-        <member name="M:Loyc.LLParserGenerator.IntRange.CompareTo(Loyc.LLParserGenerator.IntRange)">
-            <summary>Compares only the <see cref="F:Loyc.LLParserGenerator.IntRange.Lo"/> values of two ranges.</summary>
+        <member name="T:Loyc.Geometry.BoundingBoxMath">
+            <summary>Math and extension methods for <see cref="T:Loyc.Geometry.BoundingBox`1"/>.</summary>
+            <remarks>This contains many methods that could be considered "core" methods.
+            they are implemented as extension methods instead for performance reasons,
+            because as a generic class, <see cref="T:Loyc.Geometry.BoundingBox`1"/> cannot do 
+            arithmetic quickly.</remarks>
         </member>
     </members>
 </doc>

@@ -54,6 +54,7 @@ namespace Loyc.Syntax.Les {
 		[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
+			{if (LA0->TT == TT.String) { endMarker = TT.EOF; };} // possible JSON
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{list.Add(e ?? MissingExpr());}
@@ -64,6 +65,7 @@ namespace Loyc.Syntax.Les {
 			{return list;}
 		];
 		[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
+			{if (LA0->TT == TT.String) { endMarker.Value = TT.EOF; };} // possible JSON
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{#rawText("yield"); return e ?? MissingExpr();}
@@ -86,8 +88,8 @@ namespace Loyc.Syntax.Les {
 
 		[prot] rule TopExpr()::LNode @[
 			// Use a gate to simplify the decision about whether to call this rule
-			[	// [Attributes]
-				t:"[" attrs:ExprList "]"
+			greedy[	// @[Attributes] - @ sign temporarily optional during transition to JSON superset
+				"@"? t:"[" attrs:ExprList "]"
 			]?
 			(	e:Expr(StartStmt)
 			/	// Superexpression
@@ -158,7 +160,7 @@ namespace Loyc.Syntax.Les {
 			|	// Indexer / square brackets
 				{args := (new RVList!LNode { e });}
 				"[" args=ExprList(args) c:="]"
-				{e = F.Call(S.Bracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
 			)
 			{return e;}
 		];
@@ -178,24 +180,30 @@ namespace Loyc.Syntax.Les {
 		// - a token literal @[ ... ]
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
+		// - a [ list  ] in square brackets
 		[priv] rule Particle()::LNode @[
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
 				{$result = F.Literal(lit).SetStyle(lit.Style);}
-			|	// @[Token literal]
-				o:="@" "[" tree:TokenTree c:="]"
+			|	// @{Token literal}
+				o:"@" 
+				( "[" tree:TokenTree c:"]"
+				| "{" tree:TokenTree c:"}" )
 				{$result = F.Literal(tree, o.StartIndex, c.EndIndex);}
 			|	// colon indent (outside spec. LesIndentTokenGenerator inserts ";" after Dedent, unless user adds ":")
-				o:=":" TT.Indent list:=StmtList c:=TT.Dedent greedy[":"]? 
+				o:":" TT.Indent list:=StmtList c:TT.Dedent greedy[":"]? 
 				{$result = F.Braces(list, o.StartIndex, c.EndIndex);}
 			|	// {braces}
-				result:BracedBlock
+				o:"{" list:=StmtList c:"}" 
+				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
+			|	o:"[" list:=ExprList c:"]"
+				{$result = F.Call(S.Array, list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Expression);}
 			|	// (parens) - possibly a tuple
-				{endMarker := default(TT);}
-				o:=("("|" (") {hasAttrList := LA0->TT == TT.LBrack;}
+				{var endMarker = default(TT);}
+				o:("("|" (") {hasAttrList := LA0->TT == TT.LBrack || LA0->TT == TT.At;}
 				list:=ExprList(ref endMarker)
-				c:=")" {
+				c:")" {
 					if (endMarker == TT.Semicolon || list.Count != 1) {
 						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
 						if (endMarker == TT.Comma) {
@@ -214,11 +222,6 @@ namespace Loyc.Syntax.Les {
 					$result = MissingExpr();
 				}
 			)
-		];
-
-		[priv] rule BracedBlock()::LNode @[
-			o:="{" list:=StmtList c:="}" 
-			{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
 		];
 
 		rule TokenTree::TokenTree @[

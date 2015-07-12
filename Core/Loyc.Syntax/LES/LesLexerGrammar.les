@@ -28,10 +28,10 @@ namespace Loyc.Syntax.Les {
 			@[ "//" (~('\r'|'\n'))* ];
 			_value = WhitespaceTag.Value;
 		};
-		[k(3), priv] token MLComment {
-			@[ "/*" nongreedy(MLComment / Newline(true) / _)* "*/" ];
-			_value = WhitespaceTag.Value;
-		};
+		[k(3), priv] token MLComment @[
+			"/*" nongreedy(MLComment / Newline(true) / _)* "*/"
+			{_value = WhitespaceTag.Value;}
+		];
 		
 		// Numbers ---------------------------------------------------------------
 		
@@ -77,26 +77,26 @@ namespace Loyc.Syntax.Les {
 		
 		// Strings ---------------------------------------------------------------
 		
-		[priv] token SQString {
-			_parseNeeded = false;
-			@[ '\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* 
-			  ('\'' / {_parseNeeded = true;}) ];
-			ParseSQStringValue();
-		};
-		[priv] token DQString {
-			_parseNeeded = false;
-			@[ '"' ('\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n'))* 
-			  ('"' / {_parseNeeded = true;}) ];
-			ParseStringValue(false);
-		};
-		[k(4), priv] token TQString {
-			_parseNeeded = true;
-			_style = NodeStyle.Alternate;
-			@[ '"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
-			 | {_style |= NodeStyle.Alternate2;}
-			   "'''"       nongreedy(Newline(true) / _)* "'''" ];
-			ParseStringValue(true);
-		};
+		[priv] token SQString @[
+			{_parseNeeded = false;}
+			( '\'' ['\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')]* 
+			  ('\'' / {_parseNeeded = true;}) )
+			{ParseSQStringValue();}
+		];
+		[priv] token DQString @[
+			{_parseNeeded = false;}
+			(	'"' [ '\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
+				('"' / {_parseNeeded = true;}) )
+			{ParseStringValue(false);}
+		];
+		[k(4), priv] token TQString @[
+			{_parseNeeded = true;}
+			{_style = NodeStyle.Alternate;}
+			(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
+				| {_style |= NodeStyle.Alternate2;}
+				  "'''"       nongreedy(Newline(true) / _)* "'''" )
+			{ParseStringValue(true);}
+		];
 		
 		[priv] token BQString2 @[
 			{_parseNeeded = false;}
@@ -112,16 +112,16 @@ namespace Loyc.Syntax.Les {
 			(IdStartChar|IdExtLetter) (IdStartChar|'0'..'9'|'\''|IdExtLetter)*
 		];
 		[priv] token FancyId @[ BQString2 | (LettersOrPunc | IdExtLetter)+ ];
-		[priv] token Symbol {
-			_parseNeeded = false;
-			@[ '@' '@' FancyId ];
-			ParseSymbolValue();
-		};
-		[priv] token Id {
-			_parseNeeded = false;
-			@[ NormalId | '@' FancyId {_parseNeeded=true;} ];
-			ParseIdValue();
-		};
+		[priv] token Symbol @[
+			{_parseNeeded = false;}
+			'@' '@' FancyId
+			{ParseSymbolValue();}
+		];
+		[priv] token Id @[
+			{_parseNeeded = false;}
+			( NormalId | '@' FancyId {_parseNeeded=true;} )
+			{ParseIdValue();}
+		];
 		[priv] token LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
 
@@ -138,11 +138,11 @@ namespace Loyc.Syntax.Les {
 		[priv] token CommentStart @[ '/' ('/'|'*') ];
 		[priv] token Operator  @[ OpChar+ {ParseNormalOp();} ];
 		//[priv] token BackslashOp @[ '\\' FancyId? {ParseBackslashOp();} ];
-		[priv] token LParen    {
-			var prev = LA(-1);
-			_type = prev == ' ' || prev == '\t' ? TT.SpaceLParen : TT.LParen;
-			@[ '(' ]
-		};
+		[priv] token LParen    @[
+			{var prev = LA(-1);}
+			{_type = prev == ' ' || prev == '\t' ? TT.SpaceLParen : TT.LParen;}
+			'('
+		];
 
 		// Shebang ---------------------------------------------------------------
 
@@ -151,16 +151,16 @@ namespace Loyc.Syntax.Les {
 		// Token -----------------------------------------------------------------
 
 		[k(3), pub, #override]
-		token NextToken::Maybe!Token {
-			Spaces();
-			_value = null;
-			_style = 0;
-			if LA0 == -1 { // EOF
-				return NoValue.Value;
-			};
-			_startPosition = InputPosition;
-			@[
-			  &{InputPosition == 0} 
+		token NextToken::Maybe!Token @[
+			{	Spaces();
+				_value = null;
+				_style = 0;
+				if LA0 == -1 { // EOF
+					return NoValue.Value;
+				};
+				_startPosition = InputPosition;
+			}
+			( &{InputPosition == 0} 
 			  {_type = TT.Shebang;}   Shebang
 			/ {_type = TT.OtherLit;}  Symbol
 			/ {_type = TT.Id;}        Id
@@ -186,10 +186,11 @@ namespace Loyc.Syntax.Les {
 			/ error { _value = @null; }
 				( EOF {_type = TT.EOF;}
 				| _   {_type = TT.Unknown;} )
-			];
-			Debug.Assert(InputPosition > _startPosition);
-			return _current = (new Token(_type -> int, _startPosition, InputPosition - _startPosition, _style, _value));
-		};
+			)
+			{	Debug.Assert(InputPosition > _startPosition);
+				return _current = (new Token(_type -> int, _startPosition, InputPosition - _startPosition, _style, _value));
+			}
+		];
 
 		[#static, #readonly] _Comma::Symbol = GSymbol.Get(",");
 		[#static, #readonly] _Semicolon::Symbol = GSymbol.Get(";");

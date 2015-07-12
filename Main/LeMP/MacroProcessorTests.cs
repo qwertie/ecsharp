@@ -57,7 +57,7 @@ namespace LeMP
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF)
 		{
-			using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer)) {
+			using (LNode.PushPrinter(new Ecs.EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
@@ -106,8 +106,8 @@ namespace LeMP
 		[Test]
 		public void TrivialTest()
 		{
-			Test("no.macros apply.here;",  // LES input
-				"no.macros(apply.here);"); // C# output
+			Test("no macros.apply here;",  // LES input
+				"no(macros.apply, here);"); // C# output
 			Test("while (@true) {};",      // LES input
 				"while ((true)) {}");      // C# output
 		}
@@ -119,14 +119,14 @@ namespace LeMP
 				"{ Foo x; int y; }", 2);
 			Test("{ x::Foo; y::int; }",
 				"{ Foo x; @int y; }", 1);
-			Test("public static def Main()::void {}",
-				"public @static (@def, Main()::@void) {}", 1);
-			Test("public static def Main()::void {}",
-				"public static @def (Main()::@void) {}", 2);
-			Test("public static def Main()::void {}",
-				"public static @void Main() {}", 3);
-			Test("public static def Main()::void {}",
-				"public static void Main() {}", 4);
+			Test("[static] def Main()::void { var x::int = `default` int; }",
+				"[@static] @void Main() { @var(x::@int = @default(@int)); }", 1);
+			Test("[static] def Main()::void { var x::int = `default` int; }",
+				"static void Main() { @int x = @default(@int); }", 2);
+			Test("[static] def Main()::void { var x::int = `default` int; }",
+				"static void Main() { int x = default(@int); }", 3);
+			Test("[static] def Main()::void { var x::int = `default` int; }",
+				"static void Main() { int x = default(int); }", 4);
 		}
 
 		[Test]
@@ -146,7 +146,7 @@ namespace LeMP
 		[Test]
 		public void ImportsTest()
 		{
-			Test("import macros LeMP.Test; x();",
+			Test("import_macros LeMP.Test; x();",
 				"x();");
 			Test("import x.y;",
 				"using x.y;");
@@ -159,33 +159,31 @@ namespace LeMP
 		[Test]
 		public void CorePreludeExecutableStatements()
 		{
-			Test("for(x = 0, x < 100, x++) { }",
-			     "for(x = 0; x < 100; x++) { }");
-			Test("for (x = 0, x < 100, x++) { }",
+			Test("for (x = 0; x < 100; x++) { };",
 			     "for (x = 0; x < 100; x++) { }");
-			Test(@"foreach(item \in list) { }",
-			     "foreach(var item in list) { }");
-			Test("while Foo Bar();",
-			     "while (Foo) Bar();");
-			Test("do x++ while(x < 100);",
-			     "do x++; while(x < 100);");
-			Test("do x++ while x < 100;",
-			     "do x++; while(x < 100);");
+			Test(@"foreach (item `in` list) { };",
+			     "foreach (var item in list) { }");
+			Test("while Foo { Bar(); };",
+			     "while (Foo) { Bar(); }");
+			Test("do x++ while (x < 100);",
+			     "do x++; while((x < 100));");
 			Test("if x > 10 { WriteLine(\"Too many!!!\"); };",
 			     "if (x > 10) { WriteLine(\"Too many!!!\"); }");
-			Test("if x < 0 Negative() else (if x > 0 Positive() else Zero());",
-			     "if (x < 0) Negative(); else if (x > 0) Positive(); else Zero();");
-			Test("unless input.IsLowPriority Process(input);",
-			     "if (!input.IsLowPriority) Process(input);");
+			Test("if  x < 0  { Negative(); } else { NonNeg(); };",
+				 "if (x < 0) { Negative(); } else { NonNeg(); }");
+			Test("if  x < 0  { Negative(); } else if (x > 0) { Positive(); } else { Zero(); };",
+				 "if (x < 0) { Negative(); } else if((x > 0)){ Positive(); } else { Zero(); }");
+			Test("unless input.IsLowPriority { Process(input); };",
+			     "if  (!input.IsLowPriority) { Process(input); }");
+			Test("if  input.IsLowPriority  { WhoCares(); } else while (!input.EOF)  { input.Read(); };",
+				 "if (input.IsLowPriority) { WhoCares(); } else while((!input.EOF)) { input.Read(); }");
 			Test("switch  x  { case 0; break; default; break; }",
 			     "switch (x) { case 0: break; default: break; }");
 			Test("switch  x  { case 0 { break; }; default { continue; }; }",
 			     "switch (x) { case 0: { break; } default: { continue; } }");
 			Test("lock x {}",
 			     "lock (x) {}");
-			Test("try { Blah; Blah; Blah; } catch ex::Exception { throw; };",
-			     "try { Blah; Blah; Blah; } catch (Exception ex) { throw; }");
-			Test("try { Blah; Blah; Blah; } catch(ex::Exception) { throw; };",
+			Test("try { Blah; Blah; Blah; } catch (ex::Exception) { throw; };",
 			     "try { Blah; Blah; Blah; } catch (Exception ex) { throw; }");
 			Test("try { Blah; Blah; Blah; } finally { Cleanup(); };",
 			     "try { Blah; Blah; Blah; } finally { Cleanup(); }");
@@ -202,13 +200,13 @@ namespace LeMP
 		[Test]
 		public void DataTypes()
 		{
-			Test("var a::byte b::sbyte c::short d::ushort;",
+			Test("var(a::byte, b::sbyte, c::short, d::ushort);",
 			     "byte a; sbyte b; short c; ushort d;");
-			Test("var a::int b::uint c::long d::ulong;",
+			Test("var(a::int, b::uint, c::long, d::ulong);",
 			     "int a; uint b; long c; ulong d;");
-			Test("var a::float b::double c::char d::string;",
+			Test("var(a::float, b::double, c::char, d::string);",
 			     "float a; double b; char c; string d;");
-			Test("var a::object=@null b::decimal c::bool d::void;",
+			Test("var(a::object=@null, b::decimal, c::bool, d::void);",
 			     "object a = null; decimal b; bool c; void d;");
 			Test("x::int = default(int);",
 			     "int x = default(int);");
@@ -231,7 +229,7 @@ namespace LeMP
 		{
 			Test("static x := (new List!int(100));",
 			     "static var x = new List<int>(100);");
-			Test(@"x = y \cast int; x = y \as string;",
+			Test(@"x = y `cast` int; x = y `as` string;",
 			     "x = (int)y; x = y as string;");
 			Test(@"var zero = default(int);",
 			     "var zero = default(int);");
@@ -244,7 +242,7 @@ namespace LeMP
 		[Test]
 		public void CorePreludeDeclarations()
 		{
-			Test("partial class Foo(System.Object) {};",
+			Test("[partial] class Foo(System.Object) {};",
 				 "partial class Foo : System.Object {}");
 			Test("struct Foo(IEnumerable, ICloneable) {};",
 				 "struct Foo : IEnumerable, ICloneable {}");
@@ -252,37 +250,39 @@ namespace LeMP
 				 "public int Foo = 0;");
 			Test("public Foo::int = 0;",
 				 "public int Foo = 0;");
-			Test("public struct Point!T { public X::T; public Y::T; };",
-				 "public struct Point<T> { public T X; public T Y; }");
-			Test("private enum Letters(byte) { A='a'; B='b'; };",
-				 "private enum Letters : byte { A='a', B='b' }");
-			Test("private trait Foo { };",
-				 "private trait Foo { }");
-			Test("protected alias A = B.C;",
-				 "protected alias A = B.C;");
-			Test("protected alias A(IA) = B.C { };",
-				 "protected alias A = B.C : IA { }");
-			Test("internal namespace Foo.Etc { Bar::string; };",
-				 "internal namespace Foo.Etc { string Bar; }");
-			Test("extern def NoOp(x::int);",
-				 "extern void NoOp(int x);");
-			Test("static def Name(Arg1, Arg2)::RetType {};",
-				 "static RetType Name(Arg1, Arg2) {}");
-			Test("def Spit(times::int = 1) {};",
+			Test("[public] struct Point!T { public X::T; public Y::T; };",
+				 " public  struct Point<T> { public T X; public T Y; }");
+			Test("[private] enum Letters(byte) { A='a'; B='b'; };",
+				 " private  enum Letters : byte { A='a', B='b' }");
+			Test("[private] trait Foo { };",
+				 " private  trait Foo { }");
+			Test("[protected] alias A = B.C;",
+				 " protected  alias A = B.C;");
+			Test("[protected] alias A(IA) = B.C { };",
+				 " protected  alias A = B.C : IA { }");
+			Test("[internal] namespace Foo.Etc { Bar::string; };",
+				 " internal  namespace Foo.Etc { string Bar; }");
+			Test("[extern] fn NoOp(x::int);",
+				 " extern  void NoOp(int x);");
+			Test("[static] fn Name(Arg1, Arg2)::RetType {};",
+				 " static RetType Name(Arg1, Arg2) {}");
+			Test("fn Spit(times::int = 1) {};",
 				 "void Spit(int times = 1) {}");
-			Test("protected prop X::int { get; set; };",
-				 "protected int X { get; set; }");
+			Test("[protected] prop X::int { get; set; };",
+				 " protected  int X { get; set; }");
 			Test("prop X::int { get { return _x; }; };",
 				 "int X { get { return _x; } }");
-			Test("protected internal var X=0 Y=0;",
-			     "protected internal var X = 0, Y = 0;");
+			Test("[protected] var(X=0, Y=0);",
+				 "protected var X = 0, Y = 0;");
+			Test("[protected] internal X::int = 0;",
+				 "protected internal int X = 0;");
 			// In EC#, this(...) prints as #this(...) if not inside a method
-			Test("def Foo() { this(@false); base(@true); }",
+			Test("fn Foo() { this(@false); base(@true); }",
 				 "void Foo() { this(false); base(true); }");
-			Test("internal cons Foo() { base(17); return; }",
-			     "internal Foo() : base(17) { return; }");
-			Test("public cons Foo() { this(@null); return; }",
-			     "public Foo() : this(null) { return; }");
+			Test("[internal] cons Foo() { base(17); return; }",
+			     " internal Foo() : base(17) { return; }");
+			Test("[public] cons Foo() { this(@null); return; }",
+			     " public Foo() : this(null) { return; }");
 		}
 		
 		[Test]
@@ -293,8 +293,8 @@ namespace LeMP
 				 "namespace Foo { using  System; namespace Etc { string Bar; } }");
 			Test("{ import System; namespace Etc; Bar::string;   }; Baz();",
 				 "{ using  System; namespace Etc { string Bar; } }  Baz();");
-			Test("internal namespace Foo.Etc; Bar::string; public fn Baz() {};",
-				 "internal namespace Foo.Etc { string Bar; public void Baz() {} }");
+			Test("[internal] namespace Foo.Etc; Bar::string; [public] fn Baz() {};",
+				 " internal  namespace Foo.Etc { string Bar; public void Baz() {} }");
 		}
 
 		[Test]

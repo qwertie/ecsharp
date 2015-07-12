@@ -316,7 +316,7 @@ namespace Loyc.Syntax.Les
 						extraParen = true;
 						_out.Write('(', true);
 					}
-					_out.Write('[', true);
+					_out.Write("@[", true);
 				} else {
 					_out.Write(',', true);
 					_out.Space();
@@ -568,9 +568,9 @@ namespace Loyc.Syntax.Les
 			}),
 			P<Symbol> ((np, value, style) => np.PrintIdOrSymbol((Symbol)value, true)),
 			P<TokenTree> ((np, value, style) => {
-				np._out.Write("@[", true);
+				np._out.Write("@{ ", true);
 				np._out.Write(((TokenTree)value).ToString(TokenExt.ToString), true);
-				np._out.Write(" ]", true);
+				np._out.Write(" }", true);
 			}));
 
 		private void PrintShortInteger(object value, NodeStyle style, string type)

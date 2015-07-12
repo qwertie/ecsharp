@@ -36,28 +36,7 @@ namespace Loyc.LLParserGenerator
 				//    the beginning of the rule and set the ResultSaver.
 				vsv.Process(rule);
 				// 4. Replace recognized $substitutions in code blocks
-				data.ReplaceSubstitutionsInCodeBlocks();
-			}
-		}
-
-		void Process(Rule rule)
-		{
-			// Create $result variable if it was used
-			bool usingResult = _data.OtherReferences.ContainsKey(_resultId) || _data.ProperLabels.TryGetValue(_result, false);
-			if (usingResult && rule.ReturnType != null) {
-				_data.ProperLabels[_result] = true;
-				var type = rule.ReturnType;
-				_newVarInitializers[_result] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(type, false, _result));
-			}
-
-			Visit(rule.Pred);
-
-			if (_newVarInitializers.Count != 0) {
-				var decls = _newVarInitializers.OrderBy(p => p.Key.Name).Select(p => p.Value.B);
-				LNode decls2 = F.Call(S.Splice, decls);
-				rule.Pred.PreAction = Pred.MergeActions(decls2, rule.Pred.PreAction);
-				if (usingResult)
-					rule.Pred.PostAction = Pred.MergeActions(rule.Pred.PostAction, F.Call(S.Return, _resultId));
+				vsv.ReplaceSubstitutionsInCodeBlocks();
 			}
 		}
 
@@ -109,41 +88,6 @@ namespace Loyc.LLParserGenerator
 			}
 
 			#endregion
-
-			#region Step 3: perform code substitutions 
-
-			internal void ReplaceSubstitutionsInCodeBlocks()
-			{
-				foreach (var pred in PredsUsingSubstitution) {
-					pred.PreAction = ReplaceSubstitutionsIn(pred.PreAction);
-					pred.PostAction = ReplaceSubstitutionsIn(pred.PostAction);
-					var and = pred as AndPred;
-					if (and != null && and.Pred is LNode)
-						and.Pred = ReplaceSubstitutionsIn((LNode)and.Pred);
-				}
-			}
-			LNode ReplaceSubstitutionsIn(LNode code)
-			{
-				if (code == null) return null;
-				return code.ReplaceRecursive(node => {
-					if (node.Calls(S.Substitute, 1)) { // found $subst_expr
-						var label = node.Args[0];
-						if (label.IsId) {
-							if (ProperLabels.ContainsKey(label.Name))
-								return label;
-							else if (_rules.ContainsKey(label.Name))
-								return F.Id(PickVarNameForRuleName(label.Name));
-						}
-						if (OtherReferences.TryGetValue(label, -1) > 0)
-							return F.Id(PickVarNameForLNode(label));
-						// Do not change the code in other cases (e.g. the code 
-						// block might contain $LI/$LA, which is handled later)
-					}
-					return null;
-				});
-			}
-			
-			#endregion
 		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LLLPG $substitution analyzer"));
@@ -183,7 +127,7 @@ namespace Loyc.LLParserGenerator
 			//       Should we change default definition of LNode equality?
 			int predCounter;
 			if (_data.OtherReferences.TryGetValueSafe(basis, out predCounter)) {
-				_data.OtherReferences[pred.Basis] = predCounter + 1;
+				_data.OtherReferences[basis] = predCounter + 1;
 				MaybeCreateVariableFor(pred, PickVarNameForLNode(basis), _codeGen.TerminalType);
 			}
 		}
@@ -197,7 +141,7 @@ namespace Loyc.LLParserGenerator
 			}
 			LNode type = primType, oldType;
 			if (pred.VarIsList)
-				type = _codeGen.GetListType(primType); // TODO: allow user-defined list type
+				type = _codeGen.GetListType(primType);
 			if (!_newVarInitializers.ContainsKey(varName))
 				_newVarInitializers[varName] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(primType, pred.VarIsList, varName));
 			else if (!(oldType = _newVarInitializers[varName].A).Equals(type))
@@ -240,5 +184,70 @@ namespace Loyc.LLParserGenerator
 		{
 			return Ecs.EcsNodePrinter.SanitizeIdentifier((literal ?? "null").ToString());
 		}
+
+		// Step 3
+		void Process(Rule rule)
+		{
+			// Create $result variable if it was used
+			bool usingResult = _data.OtherReferences.ContainsKey(_resultId) || _data.ProperLabels.TryGetValue(_result, false);
+			if (usingResult && rule.ReturnType != null)
+			{
+				_data.ProperLabels[_result] = true;
+				var type = rule.ReturnType;
+				_newVarInitializers[_result] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(type, false, _result));
+			}
+
+			Visit(rule.Pred);
+
+			if (_newVarInitializers.Count != 0)
+			{
+				var decls = _newVarInitializers.OrderBy(p => p.Key.Name).Select(p => p.Value.B);
+				LNode decls2 = F.Call(S.Splice, decls);
+				rule.Pred.PreAction = Pred.MergeActions(decls2, rule.Pred.PreAction);
+				if (usingResult)
+					rule.Pred.PostAction = Pred.MergeActions(rule.Pred.PostAction, F.Call(S.Return, _resultId));
+			}
+		}
+
+		#region Step 4: perform code substitutions
+
+		internal void ReplaceSubstitutionsInCodeBlocks()
+		{
+			foreach (var pred in _data.PredsUsingSubstitution)
+			{
+				pred.PreAction = ReplaceSubstitutionsIn(pred.PreAction);
+				pred.PostAction = ReplaceSubstitutionsIn(pred.PostAction);
+				var and = pred as AndPred;
+				if (and != null && and.Pred is LNode)
+					and.Pred = ReplaceSubstitutionsIn((LNode)and.Pred);
+			}
+		}
+		LNode ReplaceSubstitutionsIn(LNode code)
+		{
+			if (code == null) return null;
+			return code.ReplaceRecursive(node =>
+			{
+				if (node.Calls(S.Substitute, 1))
+				{ // found $subst_expr
+					var label = node.Args[0];
+					if (label.IsId)
+					{
+						if (_data.ProperLabels.ContainsKey(label.Name))
+							return label;
+						else if (_rules.ContainsKey(label.Name))
+							return F.Id(PickVarNameForRuleName(label.Name));
+					}
+					if (_data.OtherReferences.TryGetValue(label, -1) > 0)
+					{
+						return F.Id(PickVarNameForLNode(label));
+					}
+					// Do not change the code in other cases (e.g. the code 
+					// block might contain $LI/$LA, handled in a later stage)
+				}
+				return null;
+			});
+		}
+
+		#endregion
 	}
 }

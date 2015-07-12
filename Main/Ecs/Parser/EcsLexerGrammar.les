@@ -1,4 +1,4 @@
-import macros LeMP.Prelude.Les;
+#importMacros LeMP.Prelude.Les;
 import System;
 import System.Collections.Generic;
 import System.Linq;
@@ -13,7 +13,7 @@ namespace Ecs.Parser
 	using TT = TokenType;
 	using S = CodeSymbols;
 
-	public partial class EcsLexer {
+	[#public, #partial] class EcsLexer {
 	[FullLLk] LLLPG lexer
 	{
 		// Whitespace & comments -------------------------------------------------
@@ -24,52 +24,58 @@ namespace Ecs.Parser
 			_allowPPAt = InputPosition;
 			_value = WhitespaceTag.Value;
 		};
-		private token DotIndent {
-			@[	&{_startPosition == _lineStartAt}
-				('.' (' '|'\t')+)+ ];
-			// CHANGE
-			_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		};
-		[#new] private token Spaces {
-			@[ (' '|'\t')+ ];
-			if (_allowPPAt == _startPosition)
-				_allowPPAt = InputPosition;
-			if (_lineStartAt == _startPosition)
-				// CHANGE
+		[priv] token DotIndent @[
+			&{_startPosition == _lineStartAt}
+			('.' (' '|'\t')+)+
+			{	// CHANGE
 				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-			_value = WhitespaceTag.Value;
-		};
-		private token UTF_BOM {
-			@[ '\uFEFF' ]; // Byte order mark, in case the Encoding didn't strip it out.
-			if (_lineStartAt == _startPosition) 
-				_lineStartAt = InputPosition;
-			_value = WhitespaceTag.Value;
-		};
-		private token SLComment {
-			@[ "//" (~('\r'|'\n'))* ];
-			_value = WhitespaceTag.Value;
-		};
-		[k(3)]
-		private token MLComment {
-			@[ "/*" nongreedy(&{AllowNestedComments} MLComment / Newline / _)* "*/" ];
-			_value = WhitespaceTag.Value;
-		};
+				_value = WhitespaceTag.Value;
+			}
+		];
+		[#new, priv] token Spaces @[
+			(' '|'\t')+
+			{
+				if (_allowPPAt == _startPosition) {
+					_allowPPAt = InputPosition;
+				};
+				if (_lineStartAt == _startPosition) {
+					// CHANGE
+					_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
+				};
+				_value = WhitespaceTag.Value;
+			}
+		];
+		[priv] token UTF_BOM @[
+			'\uFEFF' // Byte order mark, in case the Encoding didn't strip it out.
+			{	if (_lineStartAt == _startPosition) { 
+					_lineStartAt = InputPosition;
+				};
+				_value = WhitespaceTag.Value;
+			}
+		];
+		[priv] token SLComment @[
+			"//" (~('\r'|'\n'))*
+			{_value = WhitespaceTag.Value;}
+		];
+		[k(3), priv] token MLComment @[
+			"/*" nongreedy(&{AllowNestedComments} MLComment / Newline / _)* "*/"
+			{_value = WhitespaceTag.Value;}
+		];
 		
 		// Numbers ---------------------------------------------------------------
 
-		private rule DecDigits() @[ '0'..'9'+ ('_' '0'..'9'+)* ];
-		private rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
-		private rule HexDigits() @[ greedy(HexDigit)+ greedy('_' HexDigit+)* ];
-		private rule BinDigits() @[ '0'..'1'+ ('_' '0'..'1'+)* ];
-		private rule DecNumber() @[
+		[priv] rule DecDigits() @[ '0'..'9'+ ('_' '0'..'9'+)* ];
+		[priv] rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+		[priv] rule HexDigits() @[ greedy(HexDigit)+ greedy('_' HexDigit+)* ];
+		[priv] rule BinDigits() @[ '0'..'1'+ ('_' '0'..'1'+)* ];
+		[priv] rule DecNumber() @[
 			{_numberBase=10;}
 			( '.' DecDigits   {_isFloat=true;}
 			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
 			)
 			( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
 		];
-		private rule HexNumber() @[
+		[priv] rule HexNumber() @[
 		   '0' ('x'|'X') {_numberBase=16;}
 			HexDigits?
 			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
@@ -77,14 +83,14 @@ namespace Ecs.Parser
 				{_isFloat=true;} HexDigits )?
 			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		];
-		private rule BinNumber() @[
+		[priv] rule BinNumber() @[
 			'0' ('b'|'B')     {_numberBase=2;}
 			( '.' DecDigits   {_isFloat=true;}
 			| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
 			)
 			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		];
-		private token Number() @[
+		[priv] token Number() @[
 		    { _isFloat = false; _typeSuffix = null; }
 		    (HexNumber / BinNumber / DecNumber)
 		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
@@ -99,94 +105,90 @@ namespace Ecs.Parser
 		
 		// Strings ---------------------------------------------------------------
 		
-		private token SQString {
-			_parseNeeded = false;
-			_verbatim = false;
-			@[ '\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* '\'' ];
-			ParseSQStringValue();
-		};
-		private token DQString {
-			_parseNeeded = false;
-			@[ {_verbatim = false;} 
-			   '"' ('\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n'))* '"'
-			 | {_verbatim = true; _style = NodeStyle.Alternate;}
-			   '@' '"' ( '"' '"' {_parseNeeded = true;} / ~'"' )* '"' ];
-			ParseStringValue();
-		};
-		[k(4)]
-		private token TQString {
-			_parseNeeded = true;
-			_style = NodeStyle.Alternate2;
-			@[ '"' '"' '"' nongreedy(_)* '"' '"' '"' 
-			 | "'''"       nongreedy(_)* "'''" 
-			   {_style = NodeStyle.Alternate | NodeStyle.Alternate2;}];
-			ParseStringValue();
-		};
-		//private rule BQStringV @[ {_verbatim=true;}
+		[priv] token SQString @[
+			{_parseNeeded = false;}
+			{_verbatim = false;}
+			( '\'' ['\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n')]* '\'' )
+			{ParseSQStringValue();}
+		];
+		[priv] token DQString @[
+			{_parseNeeded = false;}
+			{_verbatim = false;} 
+			(   '"' ['\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n')]* '"'
+			   | {_verbatim = true; _style = NodeStyle.Alternate;}
+			     '@' '"' [ '"' '"' {_parseNeeded = true;} / ~'"' ]* '"' )
+			{ParseStringValue();}
+		];
+		[k(4), priv] token TQString @[
+			{_parseNeeded = true;}
+			{_style = NodeStyle.Alternate2;}
+			( '"' '"' '"' nongreedy(_)* '"' '"' '"' 
+			| "'''"       nongreedy(_)* "'''" {_style = NodeStyle.Alternate | NodeStyle.Alternate2;}
+			);
+			{ParseStringValue();}
+		];
+		//[priv] rule BQStringV @[ {_verbatim=true;}
 		//	'`' ("``" {_parseNeeded = true;} | ~('`'|'\r'|'\n'))* '`'
 		//];
-		private rule BQStringN @[ {_verbatim=false;}
+		[priv] rule BQStringN @[ {_verbatim=false;}
 			'`' ('\\' {_parseNeeded = true;} _ | ~('`'|'\\'|'\r'|'\n'))* '`'
 		];
-		private token BQString {
-			_parseNeeded = false;
-			@[ BQStringN ];
-			ParseBQStringValue();
-		};
+		[priv] token BQString @[
+			{_parseNeeded = false;}
+			BQStringN
+			{ParseBQStringValue();}
+		];
 
 		// Identifiers and Symbols -----------------------------------------------
 
-		private rule IdStartChar @[ '_'|'a'..'z'|'A'..'Z' ];
-		[k(9)]
-		private rule IdUniLetter @
+		[priv] rule IdStartChar @[ '_'|'a'..'z'|'A'..'Z' ];
+		[k(9), priv] rule IdUniLetter @
 		[	&{char.IsLetter(LA0 -> char)} 0x80..0xFFFC
 		|	"\\u" HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		|	"\\U" HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit { _parseNeeded = true; }
 		];
-		[k(9)]
-		private rule IdContChars @[ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* ];
-		private rule NormalId @[ (IdStartChar|IdUniLetter) IdContChars ];
-		private rule HashId   @[ '#'                       IdContChars ];
+		[k(9), priv] rule IdContChars @[ ('0'..'9'|'\''|'#'|IdStartChar|IdUniLetter)* ];
+		[priv] rule NormalId @[ (IdStartChar|IdUniLetter) IdContChars ];
+		[priv] rule HashId   @[ '#'                       IdContChars ];
 		
-		private rule CommentStart @[ '/' ('/'|'*') ];
-		[k(9)]
-		private rule FancyId::bool @[ 
+		[priv] rule CommentStart @[ '/' ('/'|'*') ];
+		[k(9), priv] rule FancyId::bool @[ 
 			(	BQStringN                      {return true;} 
 			|	(IdUniLetter / LettersOrPunc)+ {return false;})
 		];
 		
-		private token Symbol {
-			_parseNeeded = _verbatim = false;
-			isBQ::bool = false;
-			@[ '@' '@' (NormalId / isBQ=FancyId) ];
-			ParseSymbolValue(isBQ);
-		};
-		[k(7)] // detect completeness of \uABCD
-		private token Id {
-			_parseNeeded = _verbatim = false;
-			isBQ::bool = false;
-			skipAt::int = 0;
-			@[ default NormalId | HashId 
-			 | '@' (NormalId / isBQ=FancyId) {skipAt=1;} ];
-			ParseIdValue(skipAt, isBQ);
-		};
+		[priv] token Symbol @[
+			{_parseNeeded = _verbatim = false;}
+			{isBQ::bool = false;}
+			'@' '@' (NormalId / isBQ=FancyId)
+			{ParseSymbolValue(isBQ);}
+		];
+		[k(7), // detect completeness of \uABCD
+		 priv] token Id @[
+			{_parseNeeded = _verbatim = false;}
+			{isBQ::bool = false;}
+			{skipAt::int = 0;}
+			(	default NormalId 
+			|	HashId 
+			|	'@' (NormalId / isBQ=FancyId) {skipAt=1;} )
+			{ParseIdValue(skipAt, isBQ);}
+		];
 		def OtherContextualKeyword()
 		{
 			_parseNeeded = _verbatim = false;
 			_type = TT.ContextualKeyword;
 			ParseIdValue(0, false);
 		};
-		private rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
+		[priv] rule LettersOrPunc @[ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'\\'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ];
 			
 		// Punctuation & operators -----------------------------------------------
 
-		private token Comma     @[ ',' { _type = TT.Comma; _value = _Comma; } ];
-		private token Semicolon @[ ';' { _type = TT.Semicolon; _value = _Semicolon; } ];
-		private token At        @[ '@' { _type = TT.At;    _value = _At; } ];
+		[priv] token Comma     @[ ',' { _type = TT.Comma; _value = _Comma; } ];
+		[priv] token Semicolon @[ ';' { _type = TT.Semicolon; _value = _Semicolon; } ];
+		[priv] token At        @[ '@' { _type = TT.At;    _value = _At; } ];
 
-		[k(3)]
-		private token Operator  @[
+		[k(3), priv] token Operator  @[
 		( ".."  { _type = TT.DotDot; _value = _DotDot; }
 		/ "."   { _type = TT.Dot; _value = _Dot; }
 		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
@@ -238,69 +240,69 @@ namespace Ecs.Parser
 		| "\\"  { _type = TT.Backslash; _value = _Backslash; }
 		)];
 
-		static readonly _Comma::Symbol = GSymbol.Get(",");
-		static readonly _Semicolon::Symbol = GSymbol.Get(";");
-		static readonly _At::Symbol = GSymbol.Get("@");
-		static readonly _DotDot::Symbol = GSymbol.Get("..");
-		static readonly _Dot::Symbol = GSymbol.Get(".");
-		static readonly _ShrSet::Symbol = GSymbol.Get(">>=");
-		static readonly _GE::Symbol = GSymbol.Get(">=");
-		static readonly _GT::Symbol = GSymbol.Get(">");
-		static readonly _ShlSet::Symbol = GSymbol.Get("<<=");
-		static readonly _LE::Symbol = GSymbol.Get("<=");
-		static readonly _LT::Symbol = GSymbol.Get("<");
-		static readonly _And::Symbol = GSymbol.Get("&&");
-		static readonly _AndBitsSet::Symbol = GSymbol.Get("&=");
-		static readonly _AndBits::Symbol = GSymbol.Get("&");
-		static readonly _Or::Symbol = GSymbol.Get("||");
-		static readonly _OrBitsSet::Symbol = GSymbol.Get("|=");
-		static readonly _OrBits::Symbol = GSymbol.Get("|");
-		static readonly _Xor::Symbol = GSymbol.Get("^^");
-		static readonly _XorBitsSet::Symbol = GSymbol.Get("^=");
-		static readonly _XorBits::Symbol = GSymbol.Get("^");
-		static readonly _QuickBindSet::Symbol = GSymbol.Get(":=");
-		static readonly _QuickBind::Symbol = GSymbol.Get("=:");
-		static readonly _ColonColon::Symbol = GSymbol.Get("::");
-		static readonly _Forward::Symbol = GSymbol.Get("==>");
-		static readonly _Eq::Symbol = GSymbol.Get("==");
-		static readonly _LambdaArrow::Symbol = GSymbol.Get("=>");
-		static readonly _Set::Symbol = GSymbol.Get("=");
-		static readonly _Neq::Symbol = GSymbol.Get("!=");
-		static readonly _Not::Symbol = GSymbol.Get("!");
-		static readonly _NotBits::Symbol = GSymbol.Get("~");
-		static readonly _ExpSet::Symbol = GSymbol.Get("**=");
-		static readonly _Exp::Symbol = GSymbol.Get("**");
-		static readonly _MulSet::Symbol = GSymbol.Get("*=");
-		static readonly _Mul::Symbol = GSymbol.Get("*");
-		static readonly _DivSet::Symbol = GSymbol.Get("/=");
-		static readonly _Div::Symbol = GSymbol.Get("/");
-		static readonly _ModSet::Symbol = GSymbol.Get("%=");
-		static readonly _Mod::Symbol = GSymbol.Get("%");
-		static readonly _AddSet::Symbol = GSymbol.Get("+=");
-		static readonly _Inc::Symbol = GSymbol.Get("++");
-		static readonly _Add::Symbol = GSymbol.Get("+");
-		static readonly _SubSet::Symbol = GSymbol.Get("-=");
-		static readonly _Dec::Symbol = GSymbol.Get("--");
-		static readonly _Sub::Symbol = GSymbol.Get("-");
-		static readonly _NullCoalesceSet::Symbol = GSymbol.Get("??=");
-		static readonly _NullCoalesce::Symbol = GSymbol.Get("??");
-		static readonly _NullDot::Symbol = GSymbol.Get("?.");
-		static readonly _QuestionMark::Symbol = GSymbol.Get("?");
-		static readonly _Substitute::Symbol = GSymbol.Get("$");
-		static readonly _Backslash::Symbol = GSymbol.Get("\\");
-		static readonly _Colon::Symbol = GSymbol.Get(":");
-		static readonly _PtrArrow::Symbol = GSymbol.Get("->");
+		[#static, #readonly] _Comma::Symbol = GSymbol.Get(",");
+		[#static, #readonly] _Semicolon::Symbol = GSymbol.Get(";");
+		[#static, #readonly] _At::Symbol = GSymbol.Get("@");
+		[#static, #readonly] _DotDot::Symbol = GSymbol.Get("..");
+		[#static, #readonly] _Dot::Symbol = GSymbol.Get(".");
+		[#static, #readonly] _ShrSet::Symbol = GSymbol.Get(">>=");
+		[#static, #readonly] _GE::Symbol = GSymbol.Get(">=");
+		[#static, #readonly] _GT::Symbol = GSymbol.Get(">");
+		[#static, #readonly] _ShlSet::Symbol = GSymbol.Get("<<=");
+		[#static, #readonly] _LE::Symbol = GSymbol.Get("<=");
+		[#static, #readonly] _LT::Symbol = GSymbol.Get("<");
+		[#static, #readonly] _And::Symbol = GSymbol.Get("&&");
+		[#static, #readonly] _AndBitsSet::Symbol = GSymbol.Get("&=");
+		[#static, #readonly] _AndBits::Symbol = GSymbol.Get("&");
+		[#static, #readonly] _Or::Symbol = GSymbol.Get("||");
+		[#static, #readonly] _OrBitsSet::Symbol = GSymbol.Get("|=");
+		[#static, #readonly] _OrBits::Symbol = GSymbol.Get("|");
+		[#static, #readonly] _Xor::Symbol = GSymbol.Get("^^");
+		[#static, #readonly] _XorBitsSet::Symbol = GSymbol.Get("^=");
+		[#static, #readonly] _XorBits::Symbol = GSymbol.Get("^");
+		[#static, #readonly] _QuickBindSet::Symbol = GSymbol.Get(":=");
+		[#static, #readonly] _QuickBind::Symbol = GSymbol.Get("=:");
+		[#static, #readonly] _ColonColon::Symbol = GSymbol.Get("::");
+		[#static, #readonly] _Forward::Symbol = GSymbol.Get("==>");
+		[#static, #readonly] _Eq::Symbol = GSymbol.Get("==");
+		[#static, #readonly] _LambdaArrow::Symbol = GSymbol.Get("=>");
+		[#static, #readonly] _Set::Symbol = GSymbol.Get("=");
+		[#static, #readonly] _Neq::Symbol = GSymbol.Get("!=");
+		[#static, #readonly] _Not::Symbol = GSymbol.Get("!");
+		[#static, #readonly] _NotBits::Symbol = GSymbol.Get("~");
+		[#static, #readonly] _ExpSet::Symbol = GSymbol.Get("**=");
+		[#static, #readonly] _Exp::Symbol = GSymbol.Get("**");
+		[#static, #readonly] _MulSet::Symbol = GSymbol.Get("*=");
+		[#static, #readonly] _Mul::Symbol = GSymbol.Get("*");
+		[#static, #readonly] _DivSet::Symbol = GSymbol.Get("/=");
+		[#static, #readonly] _Div::Symbol = GSymbol.Get("/");
+		[#static, #readonly] _ModSet::Symbol = GSymbol.Get("%=");
+		[#static, #readonly] _Mod::Symbol = GSymbol.Get("%");
+		[#static, #readonly] _AddSet::Symbol = GSymbol.Get("+=");
+		[#static, #readonly] _Inc::Symbol = GSymbol.Get("++");
+		[#static, #readonly] _Add::Symbol = GSymbol.Get("+");
+		[#static, #readonly] _SubSet::Symbol = GSymbol.Get("-=");
+		[#static, #readonly] _Dec::Symbol = GSymbol.Get("--");
+		[#static, #readonly] _Sub::Symbol = GSymbol.Get("-");
+		[#static, #readonly] _NullCoalesceSet::Symbol = GSymbol.Get("??=");
+		[#static, #readonly] _NullCoalesce::Symbol = GSymbol.Get("??");
+		[#static, #readonly] _NullDot::Symbol = GSymbol.Get("?.");
+		[#static, #readonly] _QuestionMark::Symbol = GSymbol.Get("?");
+		[#static, #readonly] _Substitute::Symbol = GSymbol.Get("$");
+		[#static, #readonly] _Backslash::Symbol = GSymbol.Get("\\");
+		[#static, #readonly] _Colon::Symbol = GSymbol.Get(":");
+		[#static, #readonly] _PtrArrow::Symbol = GSymbol.Get("->");
 
 		// Shebang ---------------------------------------------------------------
 
-		private token Shebang @[ "#!" ~('\r'|'\n')* Newline? ];
+		[priv] token Shebang @[ "#!" ~('\r'|'\n')* Newline? ];
 
 		// Keywords --------------------------------------------------------------
 
 		prop AllowPP::bool { get { return _startPosition == _allowPPAt; } };
 
-		[k(12)]
-		private token IdOrKeyword @
+		[k(12),
+		 priv] token IdOrKeyword @
 			[ "abstract"   (EndId=>{_type=TT.AttrKeyword; _value = S.Abstract;})
 			/ "as"         (EndId=>{_type=TT.@as;         _value = S.As;})
 			/ "base"       (EndId=>{_type=TT.(noMacro(@base)); _value = S.Base;})
@@ -413,29 +415,29 @@ namespace Ecs.Parser
 			/ "await"                 (EndId=>{_type=TT.ContextualKeyword; _value = _await;})
 			/ Id ];
 
-		static readonly _var::Symbol = GSymbol.Get("var");
-		static readonly _dynamic::Symbol = GSymbol.Get("dynamic");
-		static readonly _trait::Symbol = GSymbol.Get("trait");
-		static readonly _alias::Symbol = GSymbol.Get("alias");
-		static readonly _assembly::Symbol = GSymbol.Get("assembly");
-		static readonly _module::Symbol = GSymbol.Get("module");
-		static readonly _await::Symbol = GSymbol.Get("await");
+		[#static, #readonly] _var::Symbol = GSymbol.Get("var");
+		[#static, #readonly] _dynamic::Symbol = GSymbol.Get("dynamic");
+		[#static, #readonly] _trait::Symbol = GSymbol.Get("trait");
+		[#static, #readonly] _alias::Symbol = GSymbol.Get("alias");
+		[#static, #readonly] _assembly::Symbol = GSymbol.Get("assembly");
+		[#static, #readonly] _module::Symbol = GSymbol.Get("module");
+		[#static, #readonly] _await::Symbol = GSymbol.Get("await");
 		
-		static readonly _where::Symbol = GSymbol.Get("where");
-		static readonly _select::Symbol = GSymbol.Get("select");
-		static readonly _from::Symbol = GSymbol.Get("from");
-		static readonly _join::Symbol = GSymbol.Get("join");
-		static readonly _on::Symbol = GSymbol.Get("on");
-		static readonly _equals::Symbol = GSymbol.Get("equals");
-		static readonly _into::Symbol = GSymbol.Get("into");
-		static readonly _let::Symbol = GSymbol.Get("let");
-		static readonly _orderby::Symbol = GSymbol.Get("orderby");
-		static readonly _ascending::Symbol = GSymbol.Get("ascending");
-		static readonly _descending::Symbol = GSymbol.Get("descending");
-		static readonly _group::Symbol = GSymbol.Get("group");
-		static readonly _by::Symbol = GSymbol.Get("by");
+		[#static, #readonly] _where::Symbol = GSymbol.Get("where");
+		[#static, #readonly] _select::Symbol = GSymbol.Get("select");
+		[#static, #readonly] _from::Symbol = GSymbol.Get("from");
+		[#static, #readonly] _join::Symbol = GSymbol.Get("join");
+		[#static, #readonly] _on::Symbol = GSymbol.Get("on");
+		[#static, #readonly] _equals::Symbol = GSymbol.Get("equals");
+		[#static, #readonly] _into::Symbol = GSymbol.Get("into");
+		[#static, #readonly] _let::Symbol = GSymbol.Get("let");
+		[#static, #readonly] _orderby::Symbol = GSymbol.Get("orderby");
+		[#static, #readonly] _ascending::Symbol = GSymbol.Get("ascending");
+		[#static, #readonly] _descending::Symbol = GSymbol.Get("descending");
+		[#static, #readonly] _group::Symbol = GSymbol.Get("group");
+		[#static, #readonly] _by::Symbol = GSymbol.Get("by");
 		// This is used by EcsParser
-		internal static readonly LinqKeywords::HashSet!object = (new HashSet!object { 
+		[#internal, #static, #readonly] LinqKeywords::HashSet!object = (new HashSet!object { 
 			_where; _select; _from; _join; _on; _equals; _into; _let; _orderby; _ascending; _descending; _group; _by
 		});
 
@@ -446,14 +448,13 @@ namespace Ecs.Parser
 		];
 		
 		// This is a "fake" rule used by IdOrKeyword for prediction (rule body is not generated)
-		extern token EndId @[
+		[#extern] token EndId @[
 			~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF
 		];
 
 		// Token -----------------------------------------------------------------
 
-		[k(3)]
-		private token Token @[
+		[k(3), priv] token Token @[
 			( {_type = TT.Newline;}    Newline
 			| {_type = TT.Spaces;}     Spaces
 			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .

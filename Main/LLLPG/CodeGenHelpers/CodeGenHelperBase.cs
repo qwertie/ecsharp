@@ -91,7 +91,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		protected Dictionary<LNode, LNode> _definedAliases = new Dictionary<LNode, LNode>();
-		protected LNode ResolveAlias(LNode expr)
+		public LNode ResolveAlias(LNode expr)
 		{
 			LNode replacement;
 			if (_definedAliases.TryGetValue(expr, out replacement))

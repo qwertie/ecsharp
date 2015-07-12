@@ -515,7 +515,7 @@ namespace Loyc.Syntax.Lexing
 			if (k == TokenKind.LParen && k2 == TokenKind.RParen)
 				both = Parens;
 			else if (k == TokenKind.LBrack && k2 == TokenKind.RBrack)
-				both = CodeSymbols.Bracks;
+				both = CodeSymbols._Bracks;
 			else if (k == TokenKind.LBrace && k2 == TokenKind.RBrace)
 				both = CodeSymbols.Braces;
 			else if (k == TokenKind.Indent && k2 == TokenKind.Dedent)

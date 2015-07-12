@@ -108,7 +108,7 @@ namespace Ecs
 		
 		[ThreadStatic]
 		static EcsNodePrinter _printer;
-		public static readonly LNodePrinter Printer = Print;
+		public static readonly LNodePrinter Printer = PrintECSharp;
 		static bool _isDebugging = System.Diagnostics.Debugger.IsAttached;
 
 		public static void PrintPlainCSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
@@ -118,7 +118,7 @@ namespace Ecs
 			p.SetPlainCSharpMode();
 			p.PrintWithMode(node, mode);
 		}
-		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		static void PrintECSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var p = _printer;
 			// When debugging the node printer itself, calling LNode.ToString() 
@@ -127,13 +127,16 @@ namespace Ecs
 			if (p == null || _isDebugging)
 				_printer = p = new EcsNodePrinter(null, null);
 
-			p.Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
-			p.Errors = errors;
-			p.PrintWithMode(node, mode);
-
+			p.Print(node, target, errors, mode, indentString, lineSeparator);
 			p._n = null;
 			p._out = null;
 			p.Errors = null;
+		}
+		public void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		{
+			Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
+			Errors = errors;
+			PrintWithMode(node, mode);
 		}
 		void PrintWithMode(LNode node, object mode)
 		{
@@ -1088,8 +1091,6 @@ namespace Ecs
 								continue;
 							}
 						} else {
-							if (dropAttrs)
-								continue;
 							if (a.Name == S.This) // special case: avoid printing "@this"
 								_out.Write("this", true);
 							else

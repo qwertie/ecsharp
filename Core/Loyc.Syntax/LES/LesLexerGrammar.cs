@@ -842,6 +842,7 @@ namespace Loyc.Syntax.Les
 		public override Maybe<Token> NextToken()
 		{
 			int la0, la1, la2;
+			// line 155
 			Spaces();
 			_value = null;
 			_style = 0;
@@ -1147,13 +1148,14 @@ namespace Loyc.Syntax.Les
 					At();
 				}
 			} while (false);
+			// line 190
 			Debug.Assert(InputPosition > _startPosition);
 			return _current = new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, _value);
 		}
 		public bool TDQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 203: nongreedy([^\$])*
+			// Line 204: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -1182,24 +1184,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 203: (Newline | ["] ["] ["])
+			// Line 204: (Newline | ["] ["] ["])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 203
+				// line 204
 				return false;
 			} else {
 				Match('"');
 				Match('"');
 				Match('"');
-				// line 203
+				// line 204
 				return true;
 			}
 		}
 		public bool TSQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 205: nongreedy([^\$])*
+			// Line 206: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -1228,24 +1230,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 205: (Newline | ['] ['] ['])
+			// Line 206: (Newline | ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 205
+				// line 206
 				return false;
 			} else {
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// line 205
+				// line 206
 				return true;
 			}
 		}
 		public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
-			// Line 209: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
+			// Line 210: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '*') {
@@ -1254,7 +1256,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == '/') {
 							Skip();
 							Skip();
-							// line 209
+							// line 210
 							nested--;
 						} else if (la1 != -1)
 							goto match4;
@@ -1279,7 +1281,7 @@ namespace Loyc.Syntax.Les
 					if (la1 == '*') {
 						Skip();
 						Skip();
-						// line 210
+						// line 211
 						nested++;
 					} else
 						Skip();
@@ -1294,16 +1296,16 @@ namespace Loyc.Syntax.Les
 					Check(!Try_MLCommentLine_Test0(0), "!([/])");
 				}
 			}
-			// Line 214: (Newline | [*] [/])
+			// Line 215: (Newline | [*] [/])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 214
+				// line 215
 				return false;
 			} else {
 				Match('*');
 				Match('/');
-				// line 214
+				// line 215
 				return true;
 			}
 		}

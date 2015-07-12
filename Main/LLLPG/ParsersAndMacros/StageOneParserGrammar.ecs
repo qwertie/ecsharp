@@ -51,7 +51,22 @@ namespace Loyc.LLParserGenerator
 
 			public rule LNode Parse @[ e:=Expr EOF {return e;} ];
 			
-			// Top-level expression: a | b | ...
+			/*
+			LLLPG(lexer(...)) @{
+				Spaces: (' '|'\t')*;
+				SLComment:
+					"//" (~('\r'|'\n'))*
+					{_value = WhitespaceTag.Value;};
+			};
+			rule Rule() @{
+				(	lb:="[" rb:="]" {return ParseBraces(lb, rb.EndIndex, true);} )?
+				ids+:TT.Id ":" Expr ";"
+			};
+			*/
+			
+			////////////////////////////////////////////////////////////////////
+
+			// Top-level rule body expression: a | b | ...
 			private rule LNode Expr() @[
 				a:=SlashExpr
 				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*

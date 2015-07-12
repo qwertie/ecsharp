@@ -188,7 +188,7 @@ namespace Ecs
 			Stmt("Foo a;",   F.Vars(Foo, a));
 			Stmt("Foo.x a;", F.Vars(F.Dot(Foo, x), a));
 			Stmt("int a;",   F.Vars(F.Int32, a));
-			Stmt("int[] a;", F.Vars(F.Of(S.Bracks, S.Int32), a));
+			Stmt("int[] a;", F.Vars(F.Of(S.Array, S.Int32), a));
 			Stmt("var a;",   F.Vars(_(S.Missing), a));
 			Stmt("@var a;",  F.Vars(_("var"), a));
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));
@@ -361,11 +361,11 @@ namespace Ecs
 		public void SpecialOperators()
 		{
 			Expr("c ? Foo(x) : a + b", F.Call(S.QuestionMark, c, F.Call(Foo, x), F.Call(S.Add, a, b)));
-			Expr("Foo[x]",           F.Call(S.Bracks, Foo, x));
-			Expr("Foo[a, b]",        F.Call(S.Bracks, Foo, a, b));
-			Expr("Foo[a - 1]",       F.Call(S.Bracks, Foo, F.Call(S.Sub, a, one)));
-			Expr("Foo[]",            F.Call(S.Bracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
-			Expr("@`[]`()",          F.Call(S.Bracks));
+			Expr("Foo[x]",           F.Call(S.IndexBracks, Foo, x));
+			Expr("Foo[a, b]",        F.Call(S.IndexBracks, Foo, a, b));
+			Expr("Foo[a - 1]",       F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)));
+			Expr("Foo[]",            F.Call(S.IndexBracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
+			Expr("@`_[]`()",         F.Call(S.IndexBracks));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)",         Alternate(F.Call(S.Cast, x, Foo)));
 			// TODO
@@ -393,8 +393,8 @@ namespace Ecs
 			// operator have attributes.
 			Expr("@`+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
 			Expr("@`+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
-			Expr("@`[]`([Foo] a, b)", F.Call(S.Bracks, Attr(Foo, a), b));
-			Expr("a[[Foo] b]",         F.Call(S.Bracks, a, Attr(Foo, b)));
+			Expr("@`_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
+			Expr("a[[Foo] b]",          F.Call(S.IndexBracks, a, Attr(Foo, b)));
 			Expr("@`?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
 			Expr("@`?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
 			Expr("@`?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
@@ -415,7 +415,7 @@ namespace Ecs
 			var stmt1 = F.Call(S.QuickBind, F.Dot(Foo, x), a);
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
 			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
-			Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
+			//Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
 			Expr("b + {\n  Foo.x=:a;\n  @`*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
 			Expr("b + @`{}`(Foo.x=:a, a * a + a)", F.Call(S.Add, b, AsStyle(NodeStyle.PrefixNotation, F.Braces(stmt1, stmt2))));
 		}
@@ -513,8 +513,8 @@ namespace Ecs
 		public void TypeContext()
 		{
 			// Certain syntax trees can print differently in a "type context" than elsewhere.
-			var FooBracks = F.Call(S.Bracks, Foo);
-			var FooArray = F.Of(_(S.Bracks), Foo);
+			var FooBracks = F.Call(S.IndexBracks, Foo);
+			var FooArray = F.Of(_(S.Array), Foo);
 			var FooNullable = F.Of(_(S.QuestionMark), Foo);
 			var FooPointer = F.Of(_(S._Pointer), Foo);
 			Expr("Foo[]",             FooBracks);
@@ -540,7 +540,7 @@ namespace Ecs
 			// MixImmiscibleOperators is tested elsewhere
 			Option(Mode.PrintBothParseFirst, @"b(->Foo)(x);", @"((Foo) b)(x);", F.Call(F.Call(S.Cast, b, Foo), x), p => p.SetPlainCSharpMode());
 			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferPlainCSharp = true);
-			Option(Mode.Both,       @"yield return x", @"yield return x;", Attr(Attr(F.Id(S.TriviaWordAttribute), _(S.Yield)), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
+			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(Attr(F.Id(S.TriviaWordAttribute), _(S.Yield)), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
 			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
 			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
@@ -548,23 +548,23 @@ namespace Ecs
 			
 			// Put attributes in various locations and watch them all disappear
 			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
-			Option(Mode.PrintBothParseFirst, @"[Foo] a + b;",           @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.Bracks, x, Attr(Foo, a)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`[]`(static x, a);",   @"x[a];",      F.Call(S.Bracks, Attr(@static, x), a), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"[Foo] a + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"public a(x);",          @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",          @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",           @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`_[]`(static x, a);",  @"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`++`([Foo] x);",         @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`++`([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"@`suf++`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",       @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",   @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",      @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",  @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",  @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo<a>, [#foo] b, c = 1);",@"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Assign(c, one)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo!(static a), b);", @"Foo<a> b;",             F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);", @"Foo<a> b;",         F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(Foo!(static a), b);",      @"Foo<a> b;",        F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);",  @"Foo<a> b;",        F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
 			if (this is EcsNodePrinterTests)
 				Option(Mode.PrintBothParseFirst, @"([Foo] a)(x);",        @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
 		}
@@ -689,11 +689,11 @@ namespace Ecs
 			Expr("typeof(Foo<int>)",      F.Call(S.Typeof, F.Call(S.Of, Foo, F.Int32)));
 			Expr("sizeof(Foo<int>)",      F.Call(S.Sizeof, F.Call(S.Of, Foo, F.Int32)));
 			
-			Expr("default(int[])",        F.Call(S.Default,   F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("typeof(int[])",         F.Call(S.Typeof,    F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("sizeof(int[])",         F.Call(S.Sizeof,    F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("checked(@`[]`<int>)",  F.Call(S.Checked,   F.Call(S.Of, _(S.Bracks), F.Int32)));
-			Expr("unchecked(@`[]`<int>)",F.Call(S.Unchecked, F.Call(S.Of, _(S.Bracks), F.Int32)));
+			Expr("default(int[])",        F.Call(S.Default,   F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("typeof(int[])",         F.Call(S.Typeof,    F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("sizeof(int[])",         F.Call(S.Sizeof,    F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("checked(@`[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("unchecked(@`[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
 		}
 
 		[Test]
@@ -714,16 +714,16 @@ namespace Ecs
 			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
 			Expr("#new(Foo)",             F.Call(S.New, Foo));
 			Expr("new @`+`(a, b)",          F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
-			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Bracks, S.Int32)), a, b));
-			Expr("new[] { a, b }",        F.Call(S.New, F.Call(S.Bracks), a, b));
-			Expr("new[] { }",             F.Call(S.New, F.Call(S.Bracks)));
+			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Array, S.Int32)), a, b));
+			Expr("new[] { a, b }",        F.Call(S.New, F.Call(S.Array), a, b));
+			Expr("new[] { }",             F.Call(S.New, F.Call(S.Array)));
 			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
-			Expr("new int[][,] { a }",    F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.Int32))), a));
+			Expr("new int[][,] { a }",    F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32))), a));
 			// This expression is illegal since it requires an initializer list, but it's parsable so should print ok
-			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))));
-			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
-			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), x, x)));
-			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S._Array, S.Int32)), Attr(Foo, x), x)));
+			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))));
+			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
+			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), x, x)));
+			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), Attr(Foo, x), x)));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
 			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];", 
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
@@ -740,18 +740,18 @@ namespace Ecs
 		public void DataTypes()
 		{
 			Stmt("double x;",            F.Vars(F.Double, x));
-			Stmt("int[] x;",             F.Vars(F.Of(S._Array, S.Int32), x));
+			Stmt("int[] x;",             F.Vars(F.Of(S.Array, S.Int32), x));
 			Stmt("long* x;",             F.Vars(F.Of(S._Pointer, S.Int64), x));
-			Stmt("string[][,] x;",       F.Vars(F.Of(_(S._Array), F.Of(S.TwoDimensionalArray, S.String)), x));
+			Stmt("string[][,] x;",       F.Vars(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.String)), x));
 			Stmt("typeof(float*);",      F.Call(S.Typeof, F.Of(S._Pointer, S.Single)));
 			Stmt("decimal[,,,] x;",      F.Vars(F.Of(S.GetArrayKeyword(4), S.Decimal), x));
 			Stmt("double? x;",           F.Vars(F.Of(S.QuestionMark, S.Double), x));
 			Stmt("Foo<a.b.c>? x;",       F.Vars(F.Of(_(S.QuestionMark), F.Of(Foo, F.Dot(a, b, c))), x));
-			Stmt("Foo<a?,b.c[,]>[] x;",  F.Vars(F.Of(_(S._Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
+			Stmt("Foo<a?,b.c[,]>[] x;",  F.Vars(F.Of(_(S.Array), F.Of(Foo, F.Of(_(S.QuestionMark), a), F.Of(_(S.TwoDimensionalArray), F.Dot(b, c)))), x));
 			// Sure, why not
-			Stmt("int<decimal[]> x;",    F.Vars(F.Of(_(S.Int32), F.Of(S._Array, S.Decimal)), x));
+			Stmt("int<decimal[]> x;",    F.Vars(F.Of(_(S.Int32), F.Of(S.Array, S.Decimal)), x));
 			// Very weird case. Consider printing as "`[,]`<float>?[] x;" instead
-			Stmt("float[,]?[] x;",       F.Vars(F.Of(_(S._Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
+			Stmt("float[,]?[] x;",       F.Vars(F.Of(_(S.Array), F.Of(_(S.QuestionMark), F.Of(S.TwoDimensionalArray, S.Single))), x));
 		}
 
 		[Test]
@@ -780,7 +780,8 @@ namespace Ecs
 		public void BlocksOfStmts()
 		{
 			Stmt("{\n  a();\n  b = c;\n}",        F.Braces(F.Call(a), F.Assign(b, c)));
-			Stmt("#@{\n  Foo(x);\n  b **= 2\n};", F.List(F.Call(Foo, x), F.Result(F.Call(S.ExpSet, b, two))), Mode.ParseOnly);
+			// TODO
+			//Stmt("#@{\n  Foo(x);\n  b **= 2\n};", F.List(F.Call(Foo, x), F.Result(F.Call(S.ExpSet, b, two))), Mode.ParseOnly);
 		}
 
 		[Test]
@@ -1138,7 +1139,8 @@ namespace Ecs
 			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, F.Call(a), c));
 			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));
 			Stmt("do {\n  a\n} while (c);",             F.Call(S.DoWhile, F.Braces(F.Result(a)), c));
-			Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
+			//TODO
+			//Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
 			
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
@@ -1282,7 +1284,7 @@ namespace Ecs
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
 					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
 					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
-			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S._Array, S.Int32),
+			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S.Array, S.Int32),
 				F.Call(S.Assign, Foo, AsStyle(NodeStyle.OldStyle, F.Call(S.ArrayInit, zero, one, two)))));
 			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit,
@@ -1505,7 +1507,7 @@ namespace Ecs
 			CheckIsComplexIdentifier(true, F.Dot(a, b, c));                // a.b.c       == #.(#.(a, b), c)   ==> true
 			CheckIsComplexIdentifier(null, F.Dot(a, F.Dot(b, c)));         // #.(a, b.c)
 			CheckIsComplexIdentifier(true, F.Of(a, b));                    // a<b>        == #of(a,b)          ==> true
-			CheckIsComplexIdentifier(true, F.Of(_(S.Bracks), b));          // a[]         == #of(@`[]`,a)      ==> true
+			CheckIsComplexIdentifier(true, F.Of(_(S.Array), a));           // a[]         == #of(@`[]`,a)      ==> true
 			CheckIsComplexIdentifier(true, F.Of(F.Dot(a,b),F.Dot(c,x)));   // a.b<c.x>    == #of(@.(a,b),@.(c,x)) ==> true
 			CheckIsComplexIdentifier(null, F.Call(a, x));                  // a(x)                             ==> true for target
 			CheckIsComplexIdentifier(null, F.Call(F.Dot(a,b), x));         // a.b(x)      == @.(a,b)(x)        ==> true for target
@@ -1591,7 +1593,7 @@ namespace Ecs
 			// This method is for testing miscellaneous valid inputs that the printer never prints
 
 			// Trailing commas
-			Stmt("int[] Foo = { 0, 1, 2, };", F.Call(S.Var, F.Of(S._Array, S.Int32), 
+			Stmt("int[] Foo = { 0, 1, 2, };", F.Call(S.Var, F.Of(S.Array, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, zero, one, two))));
 			Stmt("int[,] Foo = { { 0 }, { 1, 2, }, };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, F.Braces(zero), F.Braces(one, two)))));
@@ -1599,7 +1601,7 @@ namespace Ecs
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 
 			// 2015-05-20: parsed incorrectly
-			Expr("Foo[a-1]",         F.Call(S.Bracks, Foo, F.Call(S.Sub, a, one)), Mode.ParseOnly);
+			Expr("Foo[a-1]",         F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)), Mode.ParseOnly);
 		}
 	}
 }

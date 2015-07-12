@@ -35,13 +35,11 @@ namespace LeMP.Prelude
 		static readonly Symbol _macros = GSymbol.Get("macros");
 		static readonly Symbol _importMacros = GSymbol.Get("#importMacros");
 
-		[LexicalMacro("import macros Namespace",
+		[LexicalMacro("import_macros Namespace",
 			"Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.")]
-		public static LNode import(LNode node, IMessageSink sink)
+		public static LNode import_macros(LNode node, IMessageSink sink)
 		{
-			if (node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
-				return node.With(_importMacros, node.Args.RemoveAt(0));
-			return null;
+			return node.With(_importMacros, node.Args);
 		}
 
 		[LexicalMacro("#printKnownMacros;", "Prints a table of all macros known to LeMP, as (invalid) C# code.",
@@ -87,6 +85,11 @@ namespace LeMP.Prelude
 		static LNode Reject(IMessageSink error, LNode at, string msg)
 		{
 			error.Write(Severity.Note, at, msg);
+			return null;
+		}
+		static LNode Reject(IMessageSink error, LNode at, string msg, params object[] args)
+		{
+			error.Write(Severity.Note, at, msg, args);
 			return null;
 		}
 
@@ -479,35 +482,39 @@ namespace LeMP.Prelude
 		static readonly Symbol _while = GSymbol.Get("while");
 
 		static readonly Symbol _else = GSymbol.Get("else");
+		static readonly Symbol _unless = GSymbol.Get("unless");
+		static readonly Symbol _if = GSymbol.Get("if");
+
 		[LexicalMacro("if Condition {Then...}; if Condition {Then...} else {Else...}",
 			"If 'Condition' is true, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @if(LNode node, IMessageSink sink)
 		{
-			var args = node.Args;
-			LNode cond = args.TryGet(0, null), then = args.TryGet(1, null), @else = args.TryGet(3, null);
-			if (node.ArgCount != 2 && (node.ArgCount != 4 || !args.TryGet(2, null).IsIdNamed(_else)))
-				if (node.ArgCount > 2)
-					return Reject(sink, node, "An if-statement must have the form «if(Cond, expr)» or «if(Cond, ThenClause, else, ElseClause)»");
-				else
-					return null;
-			if (@else == null)
-				return node.With(S.If, cond, then);
-			else
-				return node.With(S.If, cond, then, @else);
+			return IfUnless(node, false, sink);
 		}
-
 		[LexicalMacro("unless Condition {Then...}; unless Condition {Then...} else {Else...}",
 			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
 		public static LNode @unless(LNode node, IMessageSink sink)
 		{
+			return IfUnless(node, true, sink);
+		}
+		public static LNode IfUnless(LNode node, bool isUnless, IMessageSink sink)
+		{
 			var args = node.Args;
-			LNode cond = args.TryGet(0, null), then = args.TryGet(1, null), @else = args.TryGet(3, null);
-			if (node.ArgCount != 2 && (node.ArgCount != 4 || !args.TryGet(2, null).IsIdNamed(_else)))
-				return Reject(sink, node, "An unless-statement must have the form «unless(Cond, expr)» or «unless(Cond, ThenClause, else, ElseClause)»");
-			if (@else == null)
-				return node.With(S.If, F.Call(S.Not, cond), then);
-			else
-				return node.With(S.If, F.Call(S.Not, cond), then, @else);
+			LNode cond = args.TryGet(0, null), then = args.TryGet(1, null),
+				elseKW = args.TryGet(2, null), @else = args.TryGet(3, null);
+			if (cond == null)
+				return null;
+			if (then == null)
+				return Reject(sink, cond, "'{0}' statement ended early", isUnless ? "unless" : "if");
+			if (isUnless)
+				cond = F.Call(S.Not, cond);
+			if (elseKW == null)
+				return node.With(S.If, cond, then);
+			if (!elseKW.IsIdNamed(_else))
+				return Reject(sink, elseKW, "'{0}': expected else clause or end-of-statement marker", isUnless ? "unless" : "if");
+			if (@else.IsId && args.Count > 4)
+				@else = LNode.Call(@else.Name, new RVList<LNode>(args.Slice(4)), node);
+			return node.With(S.If, cond, then, @else);
 		}
 
 		[LexicalMacro("switch Value { case ConstExpr1; Handler1; break; case ConstExpr2; Handler2; break; default; DefaultHandler; }",
@@ -619,7 +626,7 @@ namespace LeMP.Prelude
 					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {
 					// This is a normal catch clause
-					clauses.Insert(0, F.Call(S.Catch, p, parts[i+1]));
+					clauses.Insert(0, F.Call(S.Catch, AutoRemoveParens(p), parts[i+1]));
 					i--;
 				} else {
 					return Reject(sink, p, "Expected «catch» or «finally» clause here. Clause is missing or malformed.");
@@ -635,6 +642,14 @@ namespace LeMP.Prelude
 				clauses.Add(F.Call(S.Finally, finallyCode));
 			clauses.Insert(0, node.Args[0]);
 			return node.With(S.Try, clauses.ToRVList());
+		}
+		
+		public static LNode AutoRemoveParens(LNode node)
+		{
+			int i = node.Attrs.IndexWithName(S.TriviaInParens);
+			if (i > -1)
+				return node.WithAttrs(node.Attrs.RemoveAt(i));
+			return node;
 		}
 
 		[LexicalMacro("return; return Expr", "Returns to the caller of the current method or lambda function.")]
@@ -742,7 +757,7 @@ namespace LeMP.Prelude
 		{
 			LNode kind;
 			if (node.ArgCount == 2 && (kind = node.Args[0]).IsId) {
-				if (kind.IsIdNamed(_array)) return node.WithArgChanged(0, kind.WithName(S._Array));
+				if (kind.IsIdNamed(_array)) return node.WithArgChanged(0, kind.WithName(S.Array));
 				if (kind.IsIdNamed(_opt))   return node.WithArgChanged(0, kind.WithName(S.QuestionMark));
 				if (kind.IsIdNamed(_ptr))   return node.WithArgChanged(0, kind.WithName(S._Pointer));
 			} else if (node.ArgCount == 3 && (kind = node.Args[0]).IsIdNamed(_array) && node.Args[1].IsLiteral) {
@@ -755,71 +770,70 @@ namespace LeMP.Prelude
 
 		#region Attributes & data types
 
-		private static LNode TranslateId(LNode node, Symbol symbol)
+		private static LNode TranslateId(LNode node, Symbol symbol, IMacroContext checkIsAttr = null)
 		{
 			if (!node.IsId) return null;
+			if (checkIsAttr != null && !checkIsAttr.IsAttribute) return null;
 			return node.WithName(symbol);
 		}
-		static LNode TranslateWordAttr(LNode node, IMessageSink sink, Symbol attr)
+		static LNode TranslateWordAttr(LNode node, IMacroContext ctx, Symbol attr)
 		{
-			//LNode result = TranslateId(node, attr);
-			//if (result == null && node.ArgCount >= 1) {
-			if (node.ArgCount < 1) 
+			if (node.ArgCount == 0) {
+				if (node.IsId && ctx.IsAttribute)
+					return node.WithName(attr);
 				return null;
-			else {
-				if (node.ArgCount > 1)
+			} else {
+				if (node.ArgCount == 1)
+					return node.Args[0].PlusAttrs(node.Attrs.Add(F.Id(attr)));
+				else // designed for LESv1; this branch is not very useful in LESv2
 					return node.PlusAttr(F.Id(attr)).With(node.Args[0], node.Args.RemoveAt(0));
-				else
-					return node.Args[0].PlusAttr(F.Id(attr));
 			}
 		}
 
-		static LNode TranslateVarAttr(LNode node, IMessageSink sink, Symbol kind)
+		static LNode TranslateVarAttr(LNode node, IMacroContext sink, Symbol kind)
 		{
 			// This first part is used to interpret declarations like "readonly x = 5"
 			// or "static x = 5" as variable declarations (e.g. [#static] var x = 5)
 			var x = @var(node, MessageSink.Null);
 			if (x != null)
 				return x.PlusAttr(F.Id(kind));
-			
-			x = TranslateWordAttr(node, sink, kind);
-			return x;
+			return TranslateWordAttr(node, sink, kind);
 		}
 
 		[LexicalMacro("[pub]", "Used as an attribute to indicate that a type, method or field is publicly accessible.")]
-		public static LNode pub(LNode node, IMessageSink sink) { return TranslateId(node, S.Public); }
+		public static LNode pub(LNode node, IMacroContext ctx) { return TranslateId(node, S.Public, ctx); }
 		[LexicalMacro("[priv]", "Used as an attribute to indicate that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
-		public static LNode priv(LNode node, IMessageSink sink) { return TranslateId(node, S.Private); }
+		public static LNode priv(LNode node, IMacroContext ctx) { return TranslateId(node, S.Private, ctx); }
 		[LexicalMacro("[prot]", "Used as an attribute to indicate that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
-		public static LNode prot(LNode node, IMessageSink sink) { return TranslateId(node, S.Protected); }
+		public static LNode prot(LNode node, IMacroContext ctx) { return TranslateId(node, S.Protected, ctx); }
 		[LexicalMacro("[virt]", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
-		public static LNode virt(LNode node, IMessageSink sink) { return TranslateId(node, S.Virtual); }
+		public static LNode virt(LNode node, IMacroContext ctx) { return TranslateId(node, S.Virtual, ctx); }
 		[LexicalMacro("public <declaration>", "Indicates that a type, method or field is publicly accessible.")]
-		public static LNode @public(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Public); }
+		public static LNode @public(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Public); }
 		[LexicalMacro("private <declaration>", "Indicates that a method, field or inner type is private, meaning it is inaccessible outside the scope in which it is defined.")]
-		public static LNode @private(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Private); }
+		public static LNode @private(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Private); }
 		[LexicalMacro("protected <declaration>", "Indicates that a method, field or inner type has protected accessibility, meaning it only accessible in the current scope and in the scope of derived classes.")]
-		public static LNode @protected(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Protected); }
+		public static LNode @protected(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Protected); }
 		[LexicalMacro("internal <declaration>", "Indicates that a type, method or field is accessible only inside the same assembly. When combined with prot, it is also accessible to derived classes in different assemblies.")]
-		public static LNode @internal(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Internal); }
+		public static LNode @internal(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Internal); }
 
 		[LexicalMacro("virtual <declaration>", "Indicates that a method is 'virtual', which means that calls to it can potentially go to a derived class that 'overrides' the method.")]
-		public static LNode @virtual(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Virtual); }
+		public static LNode @virtual(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Virtual); }
 		[LexicalMacro("override <declaration>", "Indicates that a method overrides a virtual method in the base class.")]
-		public static LNode @override(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Override); }
+		public static LNode @override(LNode node, IMacroContext context) { return TranslateWordAttr(node, context, S.Override); }
 		[LexicalMacro("extern <declaration>", "Indicates that the definition is supplies elsewhere.")]
-		public static LNode @extern(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Extern); }
+		public static LNode @extern(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Extern); }
 		[LexicalMacro("static <declaration>", "Applies the #static attribute to a declaration.")]
-		public static LNode @static(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Static); }
+		public static LNode @static(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Static); }
 		[LexicalMacro("unsafe <declaration>", "Indicates that the definition may use 'unsafe' parts of C#, such as pointers")]
-		public static LNode @unsafe(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Unsafe); }
+		public static LNode @unsafe(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Unsafe); }
 
 		[LexicalMacro("partial <declaration>", "Indicates that the declared thing may be formed by combining multiple separate parts. When you see this, look for other things with the same name.")]
-		public static LNode @partial(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Partial); }
+		public static LNode @partial(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Partial); }
 		[LexicalMacro("readonly Name::Type; readonly Name::Type = Value; readonly Name = Value", "Indicates that a variable cannot be changed after it is initialized.")]
-		public static LNode @readonly(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Readonly); }
+		public static LNode @readonly(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Readonly); }
 		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
-		public static LNode @const(LNode node, IMessageSink sink) { return TranslateVarAttr(node, sink, S.Const); }
+		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
 		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::")]
 		public static LNode ColonColon(LNode node, IMessageSink sink)
@@ -863,9 +877,9 @@ namespace LeMP.Prelude
 		}
 		
 		[LexicalMacro("[ref]", "Used as an attribute on a method parameter to indicate that it is passed by reference. This means the caller must pass a variable (not a value), and that the caller can see changes to the variable.")]
-		public static LNode @ref(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Ref); }
+		public static LNode @ref(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Ref); }
 		[LexicalMacro("[out]", "Used as an attribute on a method parameter to indicate that it is passed by reference. In addition, the called method must assign a value to the variable, and it cannot receive input through the variable.")]
-		public static LNode @out(LNode node, IMessageSink sink) { return TranslateWordAttr(node, sink, S.Out); }
+		public static LNode @out(LNode node, IMacroContext sink) { return TranslateWordAttr(node, sink, S.Out); }
 
 		[LexicalMacro("sbyte", "A signed 8-bit data type")]
 		public static LNode @sbyte(LNode node, IMessageSink sink) { return TranslateId(node, S.Int8); }

@@ -79,7 +79,7 @@ namespace Ecs
 			// Operators that need special treatment (neither prefix nor infix nor casts)
 			// ?  []  suf++  suf--  #of  .  #isLegal  #new
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
-			P(S.Bracks,      EP.Primary), // a[]
+			P(S.IndexBracks, EP.Primary), // a[]
 			P(S.PostInc,     EP.Primary), // x++
 			P(S.PostDec,     EP.Primary), // x--
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
@@ -776,7 +776,7 @@ namespace Ecs
 			// Verify that the special operator can appear at this precedence 
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.Args[0];
-			if (name == S.Bracks) {
+			if (name == S.IndexBracks) {
 				// Careful: a[] means #of(@`[]`, a) in a type context, @`[]`(a) otherwise
 				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
@@ -793,7 +793,7 @@ namespace Ecs
 			// Print the thing!
 			WriteOpenParen(ParenFor.Grouping, needParens);
 
-			if (name == S.Bracks)
+			if (name == S.IndexBracks)
 			{
 				PrintExpr(first, precedence.LeftContext(context));
 				Space(SpaceOpt.BeforeMethodCall);

@@ -165,36 +165,24 @@ namespace Loyc.VisualStudio
 				_results = results;
 			}
 
-			protected override void MarkSpecial(LNode primary)
+			protected override LNode MarkSpecial(LNode expr)
 			{
-				base.MarkSpecial(primary);
-				var range = primary.Range;
+				var range = expr.Target.Range;
 				AddTag(range.StartIndex, range.Length, _keywordTag);
+				return base.MarkSpecial(expr);
 			}
-			protected override LNode ParseCall(Token target, Token paren, int endIndex)
+			protected override LNode MarkCall(LNode call)
 			{
-				AddTag(target.StartIndex, target.Length, _callTargetTag);
-				return base.ParseCall(target, paren, endIndex);
-			}
-			protected override LNode ParseCall(LNode target, Token paren, int endIndex)
-			{
-				AddCallTag(target);
-				return base.ParseCall(target, paren, endIndex);
-			}
-			void AddCallTag(LNode target)
-			{
-				if (!target.IsCall)
-				{
-					var range = target.Range;
-					AddTag(range.StartIndex, range.Length, _callTargetTag);
-				}
-				else
-				{
+				var target = call.Target;
+				if (target.IsCall && target.BaseStyle == NodeStyle.Operator) {
+					if (target.CallsMin(S.Of, 1))
+						target = target.Args[0];
 					if (target.CallsMin(S.Dot, 1))
-						AddCallTag(target.Args.Last);
-					else if (target.CallsMin(S.Of, 1))
-						AddCallTag(target.Args.Last);
+						target = target.Args.Last;
 				}
+				if (!target.IsCall)
+					AddTag(target.Range.StartIndex, target.Range.Length, _callTargetTag);
+				return base.MarkCall(call);
 			}
 
 			void AddTag(int startIndex, int length, ClassificationTag tag)
@@ -209,12 +197,9 @@ namespace Loyc.VisualStudio
 		{
 			var sourceFile = new TextSnapshotAsSourceFile(snapshot);
 			var tokens = ToNormalTokens(eTokens);
-			var tokensAsLexer = new TokenListAsLexer(tokens, sourceFile);
-			var tokensTree = new TokensToTree(new TokenListAsLexer(tokens, sourceFile), true) 
-			                                 { ErrorSink = MessageSink.Trace };
 			var results = new DList<ITagSpan<ClassificationTag>>();
-			var parser = new MyLesParser(tokensTree.Buffered(), sourceFile, MessageSink.Trace, results);
-			parser.ParseStmtsGreedy();
+			var parser = new MyLesParser(tokens, sourceFile, MessageSink.Trace, results);
+			var _ = parser.StmtList();
 			results.Sort((t1, t2) => t1.Span.Start.Position.CompareTo(t2.Span.Start.Position));
 			return results;
 		}

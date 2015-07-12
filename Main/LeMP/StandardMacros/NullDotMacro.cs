@@ -33,7 +33,7 @@ namespace LeMP
 		static readonly HashSet<Symbol> PrefixOps = new HashSet<Symbol>(new[] 
 			{ S._UnaryPlus, S._Negate, S.NotBits, S.PreInc, S.PreDec, S.New });
 		static readonly HashSet<Symbol> OtherOps = new HashSet<Symbol>(new[] 
-			{ S.Dot, S.Of, S.Bracks, S.ColonColon, S.QuickBind, S.Cast, S.PostInc, S.PostDec, S.NullDot });
+			{ S.Dot, S.Of, S.IndexBracks, S.ColonColon, S.QuickBind, S.Cast, S.PostInc, S.PostDec, S.NullDot });
 
 		static LNode ConvertToNormalDot(LNode prefix, LNode suffix)
 		{

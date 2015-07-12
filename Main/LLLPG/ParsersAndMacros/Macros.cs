@@ -455,8 +455,8 @@ namespace Loyc.LLPG
 							if (sig.Calls(S.Braces, 1))
 								sig = sig.Args[0];
 							// TODO: we need a way to invoke all applicable macros at a particular location
-							//       e.g. "public Foo()::bool;" is not supported by def() alone.
-							sig = LeMP.Prelude.Les.Macros.def(sig, sink) ?? sig;
+							//       e.g. "public fn Foo()::bool;" is not supported by def() alone.
+							sig = LeMP.Prelude.Les.Macros.fn(sig, sink) ?? sig;
 						}
 						if (sig != null && sig.CallsMin(S.Fn, 3))
 							rule.MakeRecognizerVersion(sig).TryWrapperNeeded();

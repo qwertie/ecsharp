@@ -151,6 +151,7 @@ namespace Loyc.Syntax.Les
 			Expr("a!b", F.Of(a, b));
 			Expr("a!(b)", F.Of(a, b));
 			Expr("a!(b, c)", F.Of(a, b, c));
+			Expr("a!()", F.Of(a));
 			Expr("a.b!((x))", F.Of(F.Dot(a, b), F.InParens(x)));
 			Expr("a.b!Foo(x)", F.Call(F.Of(F.Dot(a, b), Foo), x));
 			Expr("a.b!(Foo.Foo)(x)", F.Call(F.Of(F.Dot(a, b), F.Dot(Foo, Foo)), x));

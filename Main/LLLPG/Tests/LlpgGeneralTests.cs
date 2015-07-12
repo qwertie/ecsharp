@@ -309,7 +309,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void DifferentDefault3()
 		{
-			string input = @"LLLPG(lexer)
+			string input = @"LLLPG (lexer)
 				{
 					rule VowelOrNot() @[ 
 						('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
@@ -412,8 +412,8 @@ namespace Loyc.LLParserGenerator
 			Test(@"LLLPG {
 				rule Foo {
 					Blah0; Blah1;
-					@[ 'x' ];
-					@[ { Blah2; Blah3; } 'y' ];
+					@{ 'x' };
+					@{ { Blah2; Blah3; } 'y' };
 					Blah5; Blah6;
 				};
 			}", @"
@@ -499,11 +499,11 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"
 			LLLPG lexer {
-				rule Digit(x::int) @[ '0'..'9' ];
-				[recognizer { protected def IsOddDigit(y::float); }]
-				rule OddDigit(x::int) @[ '1'|'3'|'5'|'7'|'9' ];
-				rule NonDigit @[ &!Digit(7) _ ];
-				rule EvenDigit @[ &!OddDigit _ ];
+				rule Digit(x::int) @{ '0'..'9' };
+				@[recognizer { [prot] def IsOddDigit(y::float); }]
+				rule OddDigit(x::int) @{ '1'|'3'|'5'|'7'|'9' };
+				rule NonDigit @{ &!Digit(7) _ };
+				rule EvenDigit @{ &!OddDigit _ };
 			};", @"
 				void Digit(int x)
 				{
@@ -604,7 +604,7 @@ namespace Loyc.LLParserGenerator
 		{
 			string input = @"
 			LLLPG lexer {
-				extern rule DecDigits() @[ '0'..'9'+ ];
+				[extern] rule DecDigits() @[ '0'..'9'+ ];
 				rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
 				rule HexDigits() @[ { Hex(); } HexDigit+ ('_' HexDigit+)* ];
 				token HexNumber() @[
@@ -753,9 +753,9 @@ namespace Loyc.LLParserGenerator
 			// IsToken=true on all "mini-recognizers" (HexNumber_Test0 in this case).
 			Test(@"
 			LLLPG lexer {
-				private rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
-				private rule HexDigits() @[ HexDigit+ ];
-				private rule HexNumber() @[
+				[private] rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
+				[private] rule HexDigits() @[ HexDigit+ ];
+				[private] rule HexNumber() @[
 					'0' ('x'|'X')
 					HexDigits?
 					// Avoid ambiguity with 0x5.Equals(): a dot is not enough
@@ -858,11 +858,10 @@ namespace Loyc.LLParserGenerator
 			// To shorten output, SQString & TQString are suppressed with "extern".
 			Test(@"[DefaultK(3)] 
 			LLLPG lexer {
-				extern token SQString @[
+				[extern] token SQString @[
 					'\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* '\''
 				];
-				[k(4)]
-				extern token TQString @[
+				[k(4), extern] token TQString @[
 					""'''"" nongreedy(_)* ""'''""
 				];
 				token Token0 @[ // No error branch
@@ -1182,7 +1181,7 @@ namespace Loyc.LLParserGenerator
 		public void ExplicitEof()
 		{
 			Test(@"LLLPG parser(CastLA(@false)) {
-				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
+				[extern] rule Atom() @[ Id | Number | '(' Expr ')' ];
 				rule Expr() @[ Atom (('+'|'-'|'*'|'/') Atom | error { Error(); })* ];
 				rule Start() @[ Expr EOF ];
 			}", @"
@@ -1223,7 +1222,7 @@ namespace Loyc.LLParserGenerator
 		public void SetTypeCast()
 		{
 			Test(@"LLLPG parser(laType(TokenType), castLA(@false), matchType(int), allowSwitch(@false)) {
-				extern rule Atom() @[ Id | Number | '(' Expr ')' ];
+				[extern] rule Atom() @[ Id | Number | '(' Expr ')' ];
 				rule Expr() @[ Atom (('+'|'-'|'*'|'/'|'%'|'^') Atom)* ];
 			}", @"
 				static readonly HashSet<int> Expr_set0 = NewSet((int) '%', (int) '*', (int) '/', (int) '-', (int) '^', (int) '+');
@@ -1426,14 +1425,14 @@ namespace Loyc.LLParserGenerator
 			// follow set, so the test &(TParams (~TT.Id | EOF)) had no effect.
 			Test(@"LLLPG parser(laType(string), castLA(@false), allowSwitch(@false), setType(HashSet!string))
 				{
-					extern rule IdAtom @[
+					[extern] rule IdAtom @[
 						(TT.Id|TT.TypeKeyword)
 					];
-					extern rule TParams() @[ // type parameters
+					[extern] rule TParams() @[ // type parameters
 						( ""<"" (IdAtom ("","" IdAtom)*)? "">"" )
 					];			
 		
-					private rule PrimaryExpr @[
+					[private] rule PrimaryExpr @[
 						TT.Id
 						greedy(
 							&(TParams (~TT.Id | EOF)) ""<"" greedy(_)* => TParams()
@@ -1441,9 +1440,9 @@ namespace Loyc.LLParserGenerator
 					];
 
 					// An intermediate rule was needed to trigger the bug
-					private rule PrefixExpr @[ PrimaryExpr ];
+					[private] rule PrefixExpr @[ PrimaryExpr ];
 
-					private rule Expr() @[
+					[private] rule Expr() @[
 						e:=PrefixExpr
 						greedy
 						(	// Infix operator
@@ -1524,7 +1523,7 @@ namespace Loyc.LLParserGenerator
 		public void ChangedEofClass()
 		{
 			Test(@"[NoDefaultArm] 
-			LLLPG(parser(inputSource(inp), inputClass(ParserClass))) {
+			LLLPG (parser(inputSource(inp), inputClass(ParserClass))) {
 				rule AllBs @[ 'B'* ];
 			};", @"
 				void AllBs()
@@ -1555,11 +1554,11 @@ namespace Loyc.LLParserGenerator
 			//   IdStartChar, but later makes normal method call to Letter() when
 			//   it inlines IdContChar.
 			// - (side node) and-preds still aren't handled the way I'd like
-			Test(@"LLLPG(lexer) {
-					[inline] rule Letter      @[ 'a'..'z' | 'A'..'Z' | _x:128..65534 &{_x > 128 && char.IsLetter(_x)} ];
-					extern rule IdStartChar   @[ Letter | '_' ];
-					public token Id            @[ inline:IdStartChar inline:IdContChar+ ];
-					[inline] extern rule IdContChar @[ '0'..'9' | '_' | Letter ];
+			Test(@"LLLPG (lexer) {
+					[inline] rule Letter         @[ 'a'..'z' | 'A'..'Z' | _x:128..65534 &{_x > 128 && char.IsLetter(_x)} ];
+					[extern] rule IdStartChar    @[ Letter | '_' ];
+					[public] token Id            @[ inline:IdStartChar inline:IdContChar+ ];
+					[inline, extern] rule IdContChar @[ '0'..'9' | '_' | Letter ];
 				};", @"
 					void Letter()
 					{
@@ -1716,7 +1715,7 @@ namespace Loyc.LLParserGenerator
 		public void TestResultVariable()
 		{
 			Test(@"LLLPG (lexer()) {
-					rule DigitList::List!int @[ {$result = new List!int();} result+:'0'..'9' ];
+					rule DigitList::List!int @[ {$result = `new` List!int();} result+:'0'..'9' ];
 				}", @"
 					List<int> DigitList()
 					{

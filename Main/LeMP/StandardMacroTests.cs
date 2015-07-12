@@ -36,10 +36,10 @@ namespace LeMP
 		public void TestTuples()
 		{
 			TestEcs("use_default_tuple_types();", "");
-			TestBoth("(1, a) + (2, a, b) + (3, a, b, c);",
+			TestBoth("(1; a) + (2; a; b) + (3; a; b; c);",
 			         "(1, a) + (2, a, b) + (3, a, b, c);",
 			         "Tuple.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
-			TestBoth("x::#!(String, DateTime) = ('''''', DateTime.Now); y::#!(Y) = (new Y(),);",
+			TestBoth("x::#!(String; DateTime) = (\"\"; DateTime.Now); y::#!(Y) = (new Y(););",
 			         "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
 			         "Tuple<String, DateTime> x = Tuple.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
 			TestEcs("set_tuple_type(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
@@ -48,7 +48,7 @@ namespace LeMP
 			        "a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Tuple.Create(1) + Pair.Create(1, 2) + Tuple.Create(1, 2, 3, 4, 5);");
 			
-			TestBoth("(a, b, c) = foo;", "(a, b, c) = foo;",
+			TestBoth("(a; b; c) = foo;", "(a, b, c) = foo;",
 			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
 			int n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b.c.d) = Foo;",
@@ -410,9 +410,9 @@ namespace LeMP
 		[Test]
 		public void TestUnroll()
 		{
-			TestLes(@"unroll X \in (X, Y) { sum += X; }",
+			TestLes(@"unroll X `in` (X; Y) { sum += X; }",
 			          "sum += X; sum += Y;");
-			TestBoth(@"unroll X \in (X, Y) { sum += X; }",
+			TestBoth(@"unroll X `in` (X; Y) { sum += X; }",
 			          "unroll (X in (X, Y)) { sum += X; }",
 			          "sum += X; sum += Y;");
 			TestEcs("unroll (X in (X, Y)) { sum += X; Console.WriteLine(sum); }",
@@ -433,26 +433,24 @@ namespace LeMP
 		public void TestReplace_basics()
 		{
 			// Simple cases
-			TestLes(@"replace(nothing => nobody) {nowhere;}", "nowhere;");
-			TestLes(@"replace(a => b) {a;}", "b;");
-			TestLes(@"replace(7 => seven) {x = 7;}", "x = seven;");
-			TestLes(@"replace(7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
-			TestLes(@"replace(a => b) {[Hello] a; a(a);}", "[Hello] b; b(b);");
-			TestLes("replace(MS => MessageSink, C => Current, W => Write, S => Severity, B => \"Bam!\")\n"+
+			TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
+			TestLes(@"replace (a => b) {a;}", "b;");
+			TestLes(@"replace (7 => seven) {x = 7;}", "x = seven;");
+			TestLes(@"replace (7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
+			TestLes(@"replace (a => b) {[Hello] a; a(a);}", "[Hello] b; b(b);");
+			TestLes("replace (MS => MessageSink; C => Current; W => Write; S => Severity; B => \"Bam!\")\n"+
 			        "    { MS.C.W(S.Error, @null, B); }",
 			        @"MessageSink.Current.Write(Severity.Error, @null, ""Bam!"");");
-			TestLes(@"replace(Write => Store, Console.Write => Console.Write)"+
+			TestLes(@"replace (Write => Store; Console.Write => Console.Write) "+
 			        @"{ Write(x); Console.Write(x); }", "Store(x); Console.Write(x);");
 			
 			// Swap
-			TestLes("replace(foo => bar, bar => foo) {foo() = bar;}", "bar() = foo;");
-			TestLes("replace(a => 'a', 'a' => A, A => a) {'a' = A - a;}", "A = a - 'a';");
-
-			// replace(Foo => Bar, System.Foo => System.Foo)
+			TestLes("replace (foo => bar; bar => foo) {foo() = bar;}", "bar() = foo;");
+			TestLes("replace (a => 'a'; 'a' => A; A => a) {'a' = A - a;}", "A = a - 'a';");
 
 			// Captures
-			TestBoth("replace(input($capture) => output($capture)) { var i = 21; input(i * 2); };",
-			         "replace(input($capture) => output($capture)) { var i = 21; input(i * 2); }",
+			TestBoth("replace (input($capture) => output($capture)) { var i = 21; input(i * 2); };",
+			         "replace (input($capture) => output($capture)) { var i = 21; input(i * 2); }",
 			         "var i = 21; output(i * 2);");
 		}
 
@@ -464,11 +462,11 @@ namespace LeMP
 			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
 			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
 			
-			TestLes("replace($($format, $([#params] args)) => String.Format($format, $args) )\n"+
-			        @"   { MessageBox.Show($(""I hate {0}"", noun)); }",
+			TestLes("replace ($($format; $([#params] args)) => String.Format($format, $args))\n"+
+			        @"   { MessageBox.Show($(""I hate {0}""; noun)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
-			TestLes("replace($($format, $([#params] args)) => String.Format($format, $args) )\n"+
-			        @"   { MessageBox.Show($(""I hate {0}ing {1}s"", verb, noun), $(""FYI"",)); }",
+			TestLes("replace ($($format; $([#params] args)) => String.Format($format, $args))\n"+
+			        @"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}
 
@@ -487,13 +485,13 @@ namespace LeMP
 		[Test]
 		public void TestReplaceInTokenTree()
 		{
-			TestLes("replace(foo => bar, bar => foo) { foo(@[ foo(*****) ]); }", "bar(@[ bar(*****) ]);");
-			TestLes("replace(foo => bar, bar => foo) { foo(@[ foo(%bar%) ]); }", "bar(@[ bar(%foo%) ]);");
-			TestLes("replace(foo => bar, bar => foo) { foo(@[ ***(%bar%) ]); }", "bar(@[ ***(%foo%) ]);");
-			TestLes(@"unroll((A, B) `in` ((Eh, Bee), ('a', ""b""), (1, 2d))) { foo(B - A, @[A + B]); }",
-				@"foo(Bee - Eh,  @[Eh + Bee]);
-				  foo(""b"" - 'a', @['a' + ""b""]);
-				  foo(2d - 1, @[1 + 2d]);");
+			TestLes("replace (foo => bar; bar => foo) { foo(@{ foo(*****) }); }", "bar(@{ bar(*****) });");
+			TestLes("replace (foo => bar; bar => foo) { foo(@{ foo(%bar%) }); }", "bar(@{ bar(%foo%) });");
+			TestLes("replace (foo => bar; bar => foo) { foo(@{ ***(%bar%) }); }", "bar(@{ ***(%foo%) });");
+			TestLes(@"unroll ((A; B) `in` ((Eh; Bee); ('a'; ""b""); (1; 2d))) { foo(B - A, @{A + B}); }",
+				@"foo(Bee - Eh,  @{Eh + Bee});
+				  foo(""b"" - 'a', @{'a' + ""b""});
+				  foo(2d - 1, @{1 + 2d});");
 		}
 
 		[Test]

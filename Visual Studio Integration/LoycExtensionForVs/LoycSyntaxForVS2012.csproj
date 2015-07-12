@@ -12,7 +12,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Loyc.VisualStudio</RootNamespace>
     <AssemblyName>LoycSyntaxForVs</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
@@ -21,7 +21,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,27 +45,23 @@
   <ItemGroup>
     <Reference Include="Ecs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\Ecs.exe</HintPath>
+      <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
     </Reference>
-    <Reference Include="LEL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Collections, Version=1.3.5667.15924, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\LEL.exe</HintPath>
+      <HintPath>..\..\Lib\LLLPG\Loyc.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Collections, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Essentials, Version=1.3.5667.15916, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Collections.dll</HintPath>
+      <HintPath>..\..\Lib\LLLPG\Loyc.Essentials.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Essentials, Version=1.0.5316.14859, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Syntax, Version=1.3.5667.15929, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Essentials.dll</HintPath>
+      <HintPath>..\..\Lib\LLLPG\Loyc.Syntax.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Syntax, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Utilities, Version=1.3.5667.15933, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Syntax.dll</HintPath>
-    </Reference>
-    <Reference Include="Loyc.Utilities, Version=1.0.5316.18914, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\LeMP\Release.NET45\Loyc.Utilities.dll</HintPath>
+      <HintPath>..\..\Lib\LLLPG\Loyc.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility">
       <Private>False</Private>

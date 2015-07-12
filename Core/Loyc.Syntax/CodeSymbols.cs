@@ -49,9 +49,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol XorBits = GSymbol.Get("^");    //!< "^" Bitwise exclusive-or operator
 		
 		public static readonly Symbol Braces = GSymbol.Get("{}"); //!< "{}" Creates a scope.
-		public static readonly Symbol Bracks = GSymbol.Get("[]"); //!< "[]" indexing operator and array type (use _Attr for attributes)
+		public static readonly Symbol IndexBracks = GSymbol.Get("_[]"); //!< "_[]" indexing operator
 		                                                          //!< foo[1] <=> @`[]`(foo, 1) and int[] <=> #of(@`[]`, int)
-		public static readonly Symbol _Array = GSymbol.Get("[]"); //!< Alias for Bracks.
+		public static readonly Symbol Array = GSymbol.Get("[]");  //!< Used for list/array literals. Not used for attributes.
+		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`[]`)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("[,]"); //!< "[,]" int[,] <=> #of(@`[,]`, int)
 
 		/// <summary># is used for lists of things in definition constructs, e.g. 
@@ -340,7 +341,7 @@ namespace Loyc.Syntax
 		public static Symbol GetArrayKeyword(int dims)
 		{
 			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
-			if (dims == 1) return Bracks;
+			if (dims == 1) return Array;
 			if (dims == 2) return TwoDimensionalArray;
 			return GSymbol.Get("[" + new string(',', dims-1) + "]");
 		}

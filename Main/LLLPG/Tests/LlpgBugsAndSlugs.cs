@@ -16,13 +16,13 @@ namespace Loyc.LLParserGenerator
 			// complex, ambiguous grammars could make LLLPG run very slowly, but 
 			// this was the first SMALL grammar I could find that would make LLLPG 
 			// run very slowly (25 seconds to analyze 'Start' with k=2!).
-			Test(@"[DefaultK(2)] [FullLLk(false)]
+			Test(@"[DefaultK(2), FullLLk(false)]
 			LLLPG lexer {
-				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
+				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
+				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
 				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' ];
-				rule Start @[ (WeirdDigit / PositiveDigit)* ];
+				       | &{h} '8' | &{i} '9' };
+				rule Start @{ (WeirdDigit / PositiveDigit)* };
 			}",
 				@"void PositiveDigit()
 				{
@@ -75,14 +75,14 @@ namespace Loyc.LLParserGenerator
 			// FullLLk(false) is required to cause the slug; with FullLLk(true),
 			// processing time drops dramatically but the output is nearly seven
 			// times larger.
-			Test(@"[DefaultK(2)] [FullLLk(false)] //[Verbosity(3)]
+			Test(@"[DefaultK(2), FullLLk(false)] //[Verbosity(3)]
 			LLLPG lexer {
-				rule PositiveDigit @[ '1'..'9' {""Think positive!""} ];
-				rule WeirdDigit @[ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
+				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
+				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
 				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' ];
-				rule Start @[ WeirdDigit+ / PositiveDigit+ ];
-			}",
+				       | &{h} '8' | &{i} '9' };
+				rule Start @{ WeirdDigit+ / PositiveDigit+ };
+			};",
 				@"void PositiveDigit()
 				{
 					MatchRange('1', '9');
