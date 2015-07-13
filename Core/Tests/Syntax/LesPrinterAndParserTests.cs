@@ -163,12 +163,21 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void Attributes()
 		{
-			Expr("[Foo] a();", F.Attr(Foo, F.Call(a)));
-			Expr("[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
-			Expr("[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
-			Stmt("a = (      b + c);", F.Call(S.Assign, a,  F.InParens(F.Call(S.Add, b, c))));
-			Stmt("a = ([]    b + c);", F.Call(S.Assign, a,             F.Call(S.Add, b, c)));
-			Stmt("a = ([Foo] b + c);", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Exact("@[Foo] a();", F.Attr(Foo, F.Call(a)));
+			Exact("@[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
+			Exact("@[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
+			Stmt("a = (       b + c);", F.Call(S.Assign, a,  F.InParens(F.Call(S.Add, b, c))));
+			Stmt("a = (@[]    b + c);", F.Call(S.Assign, a,             F.Call(S.Add, b, c)));
+			Stmt("a = (@[Foo] b + c);", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+		}
+
+		[Test]
+		public void Lists()
+		{
+			//Exact("[x];", F.Call(S.Array, x));
+			Exact("++[x];", F.Call(S.PreInc, F.Call(S.Array, x)));
+			Exact("Foo = [a, b, c];", F.Call(S.Assign, Foo, F.Call(S.Array, a, b, c)));
+			Exact("Foo = [a, b, c] + [x];", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(S.Array, a, b, c), F.Call(S.Array, x))));
 		}
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)

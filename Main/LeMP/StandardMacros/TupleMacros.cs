@@ -71,7 +71,7 @@ namespace LeMP
 		public static LNode TupleType(LNode node, IMacroContext context)
 		{
 			var stem = node.Args[0, F._Missing];
-			if (stem.IsId && (stem.Name == S.List || stem.Name == S.Tuple)) {
+			if (stem.IsId && (stem.Name == S.AltList || stem.Name == S.Tuple)) {
 				var tupleMakers = MaybeInitTupleMakers(context.ScopedProperties);
 				
 				var bareType = tupleMakers.TryGet(node.Args.Count - 1, new Pair<LNode, LNode>()).A;

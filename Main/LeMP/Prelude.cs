@@ -184,7 +184,7 @@ namespace LeMP.Prelude
 				bases = F.List();
 			} else {
 				name = nameEtc.Target ?? nameEtc;
-				bases = nameEtc.WithTarget(S.List);
+				bases = nameEtc.WithTarget(S.AltList);
 			}
 
 			if (isNamespace) {
@@ -309,7 +309,7 @@ namespace LeMP.Prelude
 			var name = sig.Target ?? sig;
 			if (!IsTargetDefinitionId(sig, true))
 				return Reject(sink, sig.Target, "Invalid method name");
-			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.List) : F.List();
+			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.AltList) : F.List();
 
 			if (retVal == null)
 				retVal = isCons ? F._Missing : F.Void;

@@ -62,7 +62,7 @@ namespace Loyc.Syntax
 		/// accidentally match one of these lists. So I decided to dedicate # 
 		/// for use inside special constructs; its meaning depends on context.
 		/// </summary>
-		public static readonly Symbol List = GSymbol.Get("#");
+		public static readonly Symbol AltList = GSymbol.Get("#");
 
 		public static readonly Symbol QuestionMark = GSymbol.Get("?");     //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
 		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>

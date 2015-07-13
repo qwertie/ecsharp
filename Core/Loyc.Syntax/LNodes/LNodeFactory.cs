@@ -202,39 +202,59 @@ namespace Loyc.Syntax
 			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 
-		public LNode Call(string target, IEnumerable<LNode> args, int startIndex = -1, int endIndex = -1)
+		public LNode Call(Token target, IEnumerable<LNode> args, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, new RVList<LNode>(args), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Call(Token target, RVList<LNode> args, int startIndex = -1, int endIndex = -1)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, args, new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Call(Token target, int startIndex = -1, int endIndex = -1)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, RVList<LNode>.Empty, new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Call(Token target, LNode _1, int startIndex = -1, int endIndex = -1)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, new RVList<LNode>(_1), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Call(Token target, LNode _1, LNode _2, int startIndex = -1, int endIndex = -1)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, new RVList<LNode>(_1, _2), new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+
+
+		public LNode Call(string target, IEnumerable<LNode> args, int startIndex = -1, int endIndex = -1)
+		{
 			return Call(GSymbol.Get(target), args, startIndex, endIndex);
 		}
 		public LNode Call(string target, RVList<LNode> args, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), args, startIndex, endIndex);
 		}
 		public LNode Call(string target, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), startIndex, endIndex);
 		}
 		public LNode Call(string target, LNode _1, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), _1, startIndex, endIndex);
 		}
 		public LNode Call(string target, LNode _1, LNode _2, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), _1, _2, startIndex, endIndex);
 		}
 		public LNode Call(string target, LNode _1, LNode _2, LNode _3, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), _1, _2, _3, startIndex, endIndex);
 		}
 		public LNode Call(string target, LNode _1, LNode _2, LNode _3, LNode _4, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), _1, _2, _3, _4, startIndex, endIndex);
 		}
 		public LNode Call(string target, params LNode[] args)
@@ -243,7 +263,6 @@ namespace Loyc.Syntax
 		}
 		public LNode Call(string target, LNode[] args, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(GSymbol.Get(target), args, startIndex, endIndex);
 		}
 
@@ -333,7 +352,7 @@ namespace Loyc.Syntax
 		public LNode List()
 		{
 			if (_emptyList == null) 
-				_emptyList = Call(S.List);
+				_emptyList = Call(S.AltList);
 			return _emptyList;
 		}
 		public LNode List(params LNode[] contents)
@@ -343,17 +362,17 @@ namespace Loyc.Syntax
 		public LNode List(LNode[] contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.List, new RVList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.AltList, new RVList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode List(RVList<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.List, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
+			return new StdSimpleCallNode(S.AltList, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		public LNode List(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return Call(S.List, contents, startIndex, endIndex);
+			return Call(S.AltList, contents, startIndex, endIndex);
 		}
 
 		public LNode Tuple()
@@ -390,7 +409,7 @@ namespace Loyc.Syntax
 		public LNode Fn(LNode retType, LNode name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			CheckParam.Arg("argList", argList.Name == S.List || argList.Name == S.Missing);
+			CheckParam.Arg("argList", argList.Name == S.AltList || argList.Name == S.Missing);
 			LNode[] list = body == null 
 				? new[] { retType, name, argList }
 				: new[] { retType, name, argList, body };

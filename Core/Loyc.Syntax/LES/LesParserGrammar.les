@@ -22,10 +22,10 @@ namespace Loyc.Syntax.Les {
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 	#rawText("#pragma warning disable 162, 642");
 
-	public partial class LesParser
+	@[public, partial] class LesParser
 	{
-		[FullLLk, LL(2), AddCsLineDirectives(@false)]
-		LLLPG(parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));
+		@[FullLLk, LL(2), AddCsLineDirectives(@false)]
+		LLLPG (parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(@true)));
 		
 		alias("@" = TT.At);
 		alias(":" = TT.Colon);
@@ -40,18 +40,18 @@ namespace Loyc.Syntax.Les {
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
 
-		[pub] rule StmtList()::RVList!LNode @[
+		@[pub] rule StmtList()::RVList!LNode @{
 			{endMarker := TT.Semicolon;}
 			result:ExprList(ref endMarker)
-		];
-		[pub] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
+		};
+		@[pub] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
 			endMarker := default(TT);
 			return (ExprList(ref endMarker, list));
 		};
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @[
+		@[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			{if (LA0->TT == TT.String) { endMarker = TT.EOF; };} // possible JSON
@@ -63,8 +63,8 @@ namespace Loyc.Syntax.Les {
 			]*
 			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); };}
 			{return list;}
-		];
-		[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @[
+		};
+		@[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
 			{if (LA0->TT == TT.String) { endMarker.Value = TT.EOF; };} // possible JSON
 			(/ e:TopExpr)
 			[	end:(","|";")
@@ -73,7 +73,7 @@ namespace Loyc.Syntax.Les {
 				({$e = null;} / e:TopExpr)
 			]*
 			{if ($e != null || end.Type() == TT.Comma) {#rawText("yield"); return e ?? MissingExpr();}}
-		];
+		};
 		fn CheckEndMarker(ref endMarker::TokenType, ref end::Token)
 		{
 			if (endMarker != end.Type()) {
@@ -86,10 +86,12 @@ namespace Loyc.Syntax.Les {
 			};
 		};
 
-		[prot] rule TopExpr()::LNode @[
+		@[prot] rule TopExpr()::LNode @{
 			// Use a gate to simplify the decision about whether to call this rule
 			greedy[	// @[Attributes] - @ sign temporarily optional during transition to JSON superset
-				"@"? t:"[" attrs:ExprList "]"
+				at:"@"? 
+				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")};} 
+				t:"[" attrs:ExprList "]"
 			]?
 			(	e:Expr(StartStmt)
 			/	// Superexpression
@@ -104,11 +106,11 @@ namespace Loyc.Syntax.Les {
 					}
 					args+=Particle
 				]*
-				{e = MarkSpecial(F.Call(id.Value->Symbol, args, id.StartIndex, args.Last.Range.EndIndex));}
+				{e = MarkSpecial(F.Call(id, args, id.StartIndex, args.Last.Range.EndIndex));}
 			)
 			{if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };}
 			{return e.PlusAttrs(attrs);}
-		];
+		};
 
 		// Types of (normal) expressions:
 		// - particles: ids, literals, (parenthesized), {braced}
@@ -117,32 +119,32 @@ namespace Loyc.Syntax.Les {
 		// - suffix_operators++
 		// - Special primary expressions:
 		//   method_calls(with arguments), indexers[with indexes], generic!arguments
-		[LL(1)]
-		token Expr(context::Precedence)::LNode @[
+		@[LL(1)]
+		token Expr(context::Precedence)::LNode @{
 			{prec::Precedence;}
 			e:PrefixExpr(context)
 			greedy
 			[	// Infix operator
-				&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
+				&{@[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
 				{if (!prec.CanMixWith(context)) {
 					Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value); 
 				};}
-				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{[Hoist] LA($LI+1) != TT.Indent->int} t:":")
+				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{@[Hoist] LA($LI+1) != TT.Indent->int} t:":")
 				rhs:=Expr(prec)
 				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
-				&{[Local] context.CanParse(P.Primary)}
+				&{@[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
 			|	// Suffix operator
-				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
+				&{@[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
 				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetStyle(NodeStyle.Operator);}
 			]*
 			{return e;}
-		];
+		};
 
 		// Helper rule that parses one of the syntactically special primary expressions
-		[priv] rule FinishPrimaryExpr(e::LNode)::LNode @[
+		@[priv] rule FinishPrimaryExpr(e::LNode)::LNode @{
 			(	// call(function)
 				{endMarker := default(TokenType);}
 				"(" list:ExprList(ref endMarker) c:=")"
@@ -163,25 +165,25 @@ namespace Loyc.Syntax.Les {
 				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
 			)
 			{return e;}
-		];
+		};
 
-		[priv] rule PrefixExpr(context::Precedence)::LNode @
-			[	// Prefix operator
+		@[priv] rule PrefixExpr(context::Precedence)::LNode @
+			{	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
 				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	result:Particle
-			];
+			};
 
 		// An Particle is:
 		// - an (expression) in parenthesis or a tuple
 		// - a literal or simple identifier
 		//   - simple calls are also handled here, as a space optimization
-		// - a token literal @[ ... ]
+		// - a token literal @{ ... }
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
 		// - a [ list  ] in square brackets
-		[priv] rule Particle()::LNode @[
+		@[priv] rule Particle()::LNode @{
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
@@ -222,9 +224,9 @@ namespace Loyc.Syntax.Les {
 					$result = MissingExpr();
 				}
 			)
-		];
+		};
 
-		rule TokenTree::TokenTree @[
+		rule TokenTree::TokenTree @{
 			{$result = `new` TokenTree(SourceFile);}
 			nongreedy(
 				open:=("("|" ("|"["|"{"|TT.Indent)
@@ -233,6 +235,6 @@ namespace Loyc.Syntax.Les {
 				result+=(")"|"]"|"}"|TT.Dedent)
 			/	result+=_
 			)*
-		];
+		};
 	};
 };

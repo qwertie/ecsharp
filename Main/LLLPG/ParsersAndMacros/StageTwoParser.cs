@@ -175,7 +175,7 @@ namespace Loyc.LLParserGenerator
 			}
 
 			string errorMsg = null;
-			Pred terminal = _helper.CodeToPred(expr, ref errorMsg);
+			Pred terminal = _helper.CodeToTerminalPred(expr, ref errorMsg);
 			if (terminal == null) {
 				errorMsg = errorMsg ?? "LLLPG: unrecognized expression";
 				terminal = new TerminalPred(expr, _helper.EmptySet);

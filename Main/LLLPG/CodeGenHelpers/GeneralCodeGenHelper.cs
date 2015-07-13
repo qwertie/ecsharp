@@ -90,19 +90,21 @@ namespace Loyc.LLParserGenerator
 			get { return PGNodeSet.Empty; }
 		}
 
-		public override Pred CodeToPred(LNode expr, ref string errorMsg)
+		public override Pred CodeToTerminalPred(LNode expr, ref string errorMsg)
 		{
 			Debug.Assert(!expr.IsIdNamed(EOF.Name) || expr.Equals(EOF));
 			if (expr.IsCall && expr.Name != S.Dot && expr.Name != S.Of)
 				errorMsg = "Unrecognized expression. Treating this as a terminal: " + expr.ToString(); // warning
 
-			expr = ResolveAlias(expr);
+			var expr2 = ResolveAlias(expr);
 
 			PGNodeSet set;
-			if (expr.IsIdNamed(_underscore))
+			if (expr2.IsIdNamed(_underscore))
 				set = PGNodeSet.AllExceptEOF;
 			else
-				set = new PGNodeSet(expr);
+				set = new PGNodeSet(expr2);
+			// bug fix 2015-07: must use expr, not expr2, as TerminalPred's Basis 
+			// (wrong Basis breaks error locations, and $A in code blocks if A is an alias)
 			return new TerminalPred(expr, set, true);
 		}
 

@@ -270,7 +270,7 @@ namespace Ecs
 			_out.Space();
 			PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
 
-			if (bases.CallsMin(S.List, 1))
+			if (bases.CallsMin(S.AltList, 1))
 			{
 				Space(SpaceOpt.BeforeBaseListColon);
 				WriteThenSpace(':', SpaceOpt.AfterColon);

@@ -26,7 +26,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"
 			LLLPG lexer {
-				[pub] rule Foo @[ 'x' '0'..'9' '0'..'9' ];
+				@[pub] rule Foo @{ 'x' '0'..'9' '0'..'9' };
 			}", @"
 				public void Foo()
 				{
@@ -41,15 +41,15 @@ namespace Loyc.LLParserGenerator
 		{
 			DualLanguageTest(@"
 			LLLPG lexer {
-				[pub] rule a @[ 'A'|'a' ];
-				[pub] rule b @[ 'B'|'b' ];
-				[pub] rule Foo @[ (a | b? 'c')* ];
+				@[pub] rule a @{ 'A'|'a' };
+				@[pub] rule b @{ 'B'|'b' };
+				@[pub] rule Foo @{ (a | b? 'c')* };
 			}", @"
 			LLLPG(lexer) {
 				// Verify that three different rule syntaxes all work
-				public rule a @[ 'A'|'a' ];
-				public rule b() @[ 'B'|'b' ];
-				public rule void Foo() @[ (a | b? 'c')* ];
+				public rule a @{ 'A'|'a' };
+				public rule b() @{ 'B'|'b' };
+				public rule void Foo() @{ (a | b? 'c')* };
 			}", @"
 				public void a()
 				{
@@ -93,10 +93,10 @@ namespace Loyc.LLParserGenerator
 			// ? or * for optional items.
 			DualLanguageTest(@"
 			LLLPG parser {
-				[pub] rule Foo @[ [A]? [B]* ];
+				@[pub] rule Foo @{ [A]? [B]* };
 			}", @"
 			LLLPG(parser) {
-				public rule void Foo @[ [A]? [B]* ];
+				public rule void Foo @{ [A]? [B]* };
 			}", @"
 				public void Foo()
 				{
@@ -118,8 +118,8 @@ namespace Loyc.LLParserGenerator
 		public void MatchInvertedSet()
 		{
 			Test(@"LLLPG lexer {
-				[pub] rule Except @[ ~'a' ~('a'..'z') ];
-				[pub] rule String @[ '""' ~('""'|'\n')* '""' ];
+				@[pub] rule Except @{ ~'a' ~('a'..'z') };
+				@[pub] rule String @{ '""' ~('""'|'\n')* '""' };
 			}", @"
 				public void Except()
 				{
@@ -146,11 +146,11 @@ namespace Loyc.LLParserGenerator
 		public void BigInvertedSets()
 		{
 			DualLanguageTest(@"LLLPG lexer {
-				[pub] rule DisOrDat @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' ];
-				[pub] rule Dis      @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') ];
+				@[pub] rule DisOrDat @{ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' };
+				@[pub] rule Dis      @{ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') };
 			}", @"LLLPG (lexer) {
-				public rule DisOrDat @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' ];
-				public rule Dis      @[ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') ];
+				public rule DisOrDat @{ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | {Lowercase();} 'a'..'z' };
+				public rule Dis      @{ ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') };
 			}", @"
 				static readonly HashSet<int> DisOrDat_set0 = NewSetOfRanges(-1, -1, '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				public void DisOrDat()
@@ -169,8 +169,8 @@ namespace Loyc.LLParserGenerator
 					MatchExcept(DisOrDat_set0);
 				}");
 			Test(@"LLLPG parser {
-				[pub] rule DisOrDat @[ ~('a'|'b'|'c'|'d'|1|2|3|4) | 'a' 1 ];
-				[pub] rule Dis      @[ ~('a'|'b'|'c'|'d'|1|2|3|4) ];
+				@[pub] rule DisOrDat @{ ~('a'|'b'|'c'|'d'|1|2|3|4) | 'a' 1 };
+				@[pub] rule Dis      @{ ~('a'|'b'|'c'|'d'|1|2|3|4) };
 			}", @"
 				static readonly HashSet<int> DisOrDat_set0 = NewSet(1, 2, 3, 4, 'a', 'b', 'c', 'd', EOF);
 				public void DisOrDat()
@@ -193,11 +193,13 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void FullLL2()
 		{
-			string lesAndEcs = @"
+			DualLanguageTest(@"
+			@[FullLLk] LLLPG (lexer) {
+				@[public] rule FullLL2 @{ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' };
+			};", @"
 			[FullLLk] LLLPG (lexer) {
-				public rule FullLL2 @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
-			}";
-			DualLanguageTest(lesAndEcs, lesAndEcs, @"
+				public rule FullLL2 @{ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' };
+			}", @"
 				public void FullLL2()
 				{
 					int la0, la1;
@@ -254,9 +256,9 @@ namespace Loyc.LLParserGenerator
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			Test(@"LLLPG lexer {
-				[pub] rule Id() @[ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* ];
-				[pub] rule Twin() @[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
-				[pub] token Token() @[ Twin / Id ];
+				@[pub] rule Id() @{ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* };
+				@[pub] rule Twin() @{ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' };
+				@[pub] token Token() @{ Twin / Id };
 			}", @"
 				public void Id()
 				{
@@ -500,7 +502,7 @@ namespace Loyc.LLParserGenerator
 			Test(@"
 			LLLPG lexer {
 				rule Digit(x::int) @{ '0'..'9' };
-				@[recognizer { [prot] def IsOddDigit(y::float); }]
+				@[recognizer { @[prot] def IsOddDigit(y::float); }]
 				rule OddDigit(x::int) @{ '1'|'3'|'5'|'7'|'9' };
 				rule NonDigit @{ &!Digit(7) _ };
 				rule EvenDigit @{ &!OddDigit _ };
@@ -604,16 +606,16 @@ namespace Loyc.LLParserGenerator
 		{
 			string input = @"
 			LLLPG lexer {
-				[extern] rule DecDigits() @[ '0'..'9'+ ];
-				rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
-				rule HexDigits() @[ { Hex(); } HexDigit+ ('_' HexDigit+)* ];
-				token HexNumber() @[
+				@[extern] rule DecDigits() @{ '0'..'9'+ };
+				rule HexDigit()  @{ '0'..'9' | 'a'..'f' | 'A'..'F' };
+				rule HexDigits() @{ { Hex(); } HexDigit+ ('_' HexDigit+)* };
+				token HexNumber() @{
 					'0' ('x'|'X')
 					HexDigits?
 					// Avoid ambiguity with 0x5.Equals(): a dot is not enough
 					(	'.' &(HexDigits ('p'|'P') ('+'|'-'|'0'..'9')) HexDigits )?
 					( ('p'|'P') ('+'|'-')? DecDigits )?
-				];
+				};
 			}";
 			string expect = @"
 				static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
@@ -753,16 +755,16 @@ namespace Loyc.LLParserGenerator
 			// IsToken=true on all "mini-recognizers" (HexNumber_Test0 in this case).
 			Test(@"
 			LLLPG lexer {
-				[private] rule HexDigit()  @[ '0'..'9' | 'a'..'f' | 'A'..'F' ];
-				[private] rule HexDigits() @[ HexDigit+ ];
-				[private] rule HexNumber() @[
+				@[private] rule HexDigit()  @{ '0'..'9' | 'a'..'f' | 'A'..'F' };
+				@[private] rule HexDigits() @{ HexDigit+ };
+				@[private] rule HexNumber() @{
 					'0' ('x'|'X')
 					HexDigits?
 					// Avoid ambiguity with 0x5.Equals(): a dot is not enough
 					(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 
 						HexDigits )?
 					//( ('p'|'P') ('+'|'-')? '0'..'9'+ )?
-				];
+				};
 			}",
 			@"static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
 			void HexDigit()
@@ -856,31 +858,31 @@ namespace Loyc.LLParserGenerator
 			// be changed, I just haven't decided how it should work instead.
 			//
 			// To shorten output, SQString & TQString are suppressed with "extern".
-			Test(@"[DefaultK(3)] 
+			Test(@"@[DefaultK(3)] 
 			LLLPG lexer {
-				[extern] token SQString @[
+				@[extern] token SQString @{
 					'\'' ('\\' _ {_parseNeeded = true;} | ~('\''|'\\'|'\r'|'\n'))* '\''
-				];
-				[k(4), extern] token TQString @[
+				};
+				@[k(4), extern] token TQString @{
 					""'''"" nongreedy(_)* ""'''""
-				];
-				token Token0 @[ // No error branch
+				};
+				token Token0 @{ // No error branch
 					( TQString
 					/ SQString 
 					| ' '
-					)];
-				token Token1 @[
+					)};
+				token Token1 @{
 					( TQString 
 					/ SQString
 					| ' '
 					| error { Error(); }
 					  ( EOF | _ )
-					)];
-				token Token2 @[
+					)};
+				token Token2 @{
 					( SQString
 					| error { Error(); }
 					  ( EOF | _ )
-					)];
+					)};
 			};",
 			@"
 				void Token0()
@@ -983,18 +985,18 @@ namespace Loyc.LLParserGenerator
 			// had trouble with this version, so that's what I'm testing.
 			Test(@"
 			LLLPG lexer {
-				[extern] token Id @[
+				@[extern] token Id @{
 					('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
-				];
-				token Not_IdContChar @[
+				};
+				token Not_IdContChar @{
 					~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF
-				];
-				[k(12)]
+				};
+				@[k(12)]
 				token IdOrKeyword @
-					[ ""case""  &Not_IdContChar
+					{ ""case""  &Not_IdContChar
 					/ ""catch"" &Not_IdContChar
 					/ ""char""  &Not_IdContChar
-					/ Id ];
+					/ Id };
 			}", @"
 				static readonly HashSet<int> Not_IdContChar_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
 				void Not_IdContChar()
@@ -1080,10 +1082,10 @@ namespace Loyc.LLParserGenerator
 			// LLLPG can truncate arguments when generating a recognizer. In this
 			// example, the call Foo(2, -2) becomes RecognizeFoo(2)
 			Test(@"LLLPG parser(CastLA(@false)) {
-				[recognizer(def RecognizeFoo(z::int))]
-				rule Foo(x::int, y::int) @[ 'F''u' ];
-				rule Foo2 @[ Foo(2, -2) '2' ];
-				rule Main @[ Foo2 (&Foo2 _)? ];
+				@[recognizer(def RecognizeFoo(z::int))]
+				rule Foo(x::int, y::int) @{ 'F''u' };
+				rule Foo2 @{ Foo(2, -2) '2' };
+				rule Main @{ Foo2 (&Foo2 _)? };
 			};", @"
 				void Foo(int x, int y)
 				{
@@ -1139,7 +1141,7 @@ namespace Loyc.LLParserGenerator
 			Test(@"LLLPG lexer {
 				alias Quote = '\'';
 				alias Bang = '!';
-				rule QuoteBang @[ Bang | Quote QuoteBang Quote ];
+				rule QuoteBang @{ Bang | Quote QuoteBang Quote };
 			}", @"
 				void QuoteBang()
 				{
@@ -1161,7 +1163,7 @@ namespace Loyc.LLParserGenerator
 			Test(@"LLLPG parser(CastLA(@false)) {
 				alias('\'' = TokenType.Quote);
 				alias(Bang = TokenType.ExclamationMark);
-				rule QuoteBang @[ Bang | '\'' QuoteBang '\'' ];
+				rule QuoteBang @{ Bang | '\'' QuoteBang '\'' };
 			}", @"
 				void QuoteBang()
 				{
@@ -1181,9 +1183,9 @@ namespace Loyc.LLParserGenerator
 		public void ExplicitEof()
 		{
 			Test(@"LLLPG parser(CastLA(@false)) {
-				[extern] rule Atom() @[ Id | Number | '(' Expr ')' ];
-				rule Expr() @[ Atom (('+'|'-'|'*'|'/') Atom | error { Error(); })* ];
-				rule Start() @[ Expr EOF ];
+				@[extern] rule Atom() @{ Id | Number | '(' Expr ')' };
+				rule Expr() @{ Atom (('+'|'-'|'*'|'/') Atom | error { Error(); })* };
+				rule Start() @{ Expr EOF };
 			}", @"
 				void Expr()
 				{
@@ -1222,8 +1224,8 @@ namespace Loyc.LLParserGenerator
 		public void SetTypeCast()
 		{
 			Test(@"LLLPG parser(laType(TokenType), castLA(@false), matchType(int), allowSwitch(@false)) {
-				[extern] rule Atom() @[ Id | Number | '(' Expr ')' ];
-				rule Expr() @[ Atom (('+'|'-'|'*'|'/'|'%'|'^') Atom)* ];
+				@[extern] rule Atom() @{ Id | Number | '(' Expr ')' };
+				rule Expr() @{ Atom (('+'|'-'|'*'|'/'|'%'|'^') Atom)* };
 			}", @"
 				static readonly HashSet<int> Expr_set0 = NewSet((int) '%', (int) '*', (int) '/', (int) '-', (int) '^', (int) '+');
 				void Expr()
@@ -1341,7 +1343,7 @@ namespace Loyc.LLParserGenerator
 			// Local flag blocks hoisting to caller
 			Test(@"LLLPG lexer {
 				rule A @[ BC? 'a' ];
-				rule BC @[ &{[Local] $LA + 1 == LA($LI+1)} 'a'..'y' 'b'..'z' ];
+				rule BC @[ &{@[Local] $LA + 1 == LA($LI+1)} 'a'..'y' 'b'..'z' ];
 			}", @"
 				void A()
 				{
@@ -1371,7 +1373,7 @@ namespace Loyc.LLParserGenerator
 					result:=(Id|Number)
 					greedy(
 						// Infix operator with order-of-operations detection
-						&{[Local] context.CanParse(prec = GetInfixPrecedence(LA($LI)))}
+						&{@[Local] context.CanParse(prec = GetInfixPrecedence(LA($LI)))}
 						op:=(""+""|""-""|""*""|""/""|"">""|""<""|""==""|""="")
 						rhs:=Expr(prec)
 						{result = NewOperatorNode(result, op, rhs);}
@@ -1425,31 +1427,31 @@ namespace Loyc.LLParserGenerator
 			// follow set, so the test &(TParams (~TT.Id | EOF)) had no effect.
 			Test(@"LLLPG parser(laType(string), castLA(@false), allowSwitch(@false), setType(HashSet!string))
 				{
-					[extern] rule IdAtom @[
+					@[extern] rule IdAtom @{
 						(TT.Id|TT.TypeKeyword)
-					];
-					[extern] rule TParams() @[ // type parameters
+					};
+					@[extern] rule TParams() @{ // type parameters
 						( ""<"" (IdAtom ("","" IdAtom)*)? "">"" )
-					];			
+					};
 		
-					[private] rule PrimaryExpr @[
+					@[private] rule PrimaryExpr @{
 						TT.Id
 						greedy(
 							&(TParams (~TT.Id | EOF)) ""<"" greedy(_)* => TParams()
 						)*
-					];
+					};
 
 					// An intermediate rule was needed to trigger the bug
-					[private] rule PrefixExpr @[ PrimaryExpr ];
+					@[private] rule PrefixExpr @{ PrimaryExpr };
 
-					[private] rule Expr() @[
+					@[private] rule Expr() @{
 						e:=PrefixExpr
 						greedy
 						(	// Infix operator
 							( ""*""|""/""|""+""|""-""|""<""|"">""|""<=,>=""|""==,!="" )
 							Expr()
 						)*
-					];
+					};
 				}",
 				@"void PrimaryExpr()
 				{
@@ -1509,7 +1511,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"
 			LLLPG lexer(inputSource(b)) {
-				[pub] rule Foo(b::Bar) @[ 'x' '0'..'9' '0'..'9' ];
+				@[pub] rule Foo(b::Bar) @{ 'x' '0'..'9' '0'..'9' };
 			}", @"
 				public void Foo(Bar b)
 				{
@@ -1522,7 +1524,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ChangedEofClass()
 		{
-			Test(@"[NoDefaultArm] 
+			Test(@"@[NoDefaultArm] 
 			LLLPG (parser(inputSource(inp), inputClass(ParserClass))) {
 				rule AllBs @[ 'B'* ];
 			};", @"
@@ -1555,10 +1557,10 @@ namespace Loyc.LLParserGenerator
 			//   it inlines IdContChar.
 			// - (side node) and-preds still aren't handled the way I'd like
 			Test(@"LLLPG (lexer) {
-					[inline] rule Letter         @[ 'a'..'z' | 'A'..'Z' | _x:128..65534 &{_x > 128 && char.IsLetter(_x)} ];
-					[extern] rule IdStartChar    @[ Letter | '_' ];
-					[public] token Id            @[ inline:IdStartChar inline:IdContChar+ ];
-					[inline, extern] rule IdContChar @[ '0'..'9' | '_' | Letter ];
+					@[inline] rule Letter         @{ 'a'..'z' | 'A'..'Z' | _x:128..65534 &{_x > 128 && char.IsLetter(_x)} };
+					@[extern] rule IdStartChar    @{ Letter | '_' };
+					@[public] token Id            @{ inline:IdStartChar inline:IdContChar+ };
+					@[inline, extern] rule IdContChar @{ '0'..'9' | '_' | Letter };
 				};", @"
 					void Letter()
 					{
@@ -1618,10 +1620,10 @@ namespace Loyc.LLParserGenerator
 		public void TestAnyIn()
 		{
 			Test(@"LLLPG (lexer()) {
-					rule Words @[ (any fruit ' ')* ];
-					[#fruit] rule A @[ ""apple"" ];
-					[#fruit] rule G @[ ""grape"" ];
-					[#fruit] rule L @[ ""lemon"" ];
+					rule Words @{ (any fruit ' ')* };
+					@[#fruit] rule A @{ ""apple"" };
+					@[#fruit] rule G @{ ""grape"" };
+					@[#fruit] rule L @{ ""lemon"" };
 				}", @"
 					void Words()
 					{
@@ -1658,9 +1660,9 @@ namespace Loyc.LLParserGenerator
 				");
 			Test(@"LLLPG (lexer()) {
 					rule SumWords::int @[ {var x=0;} (any Literal in (x+=Literal) ' ')* {return x;} ];
-					[Literal] rule One::int @[ ""one"" {return 1;}  ];
-					[Literal] rule Two::int @[ ""two"" {return 2;}  ];
-					[Literal] rule Ten::int @[ ""ten"" {return 10;} ];
+					@[Literal] rule One::int @[ ""one"" {return 1;}  ];
+					@[Literal] rule Two::int @[ ""two"" {return 2;}  ];
+					@[Literal] rule Ten::int @[ ""ten"" {return 10;} ];
 				}", @"
 					int SumWords()
 					{

@@ -169,11 +169,11 @@ namespace Loyc.LLParserGenerator
 
 				class Lexer(BaseLexer!UString)
 				{
-					[public] cons Lexer(source::UString)
+					@[public] cons Lexer(source::UString)
 					{
 						base(source);
 					};
-					[protected, override] fn Error(li::int, message::string)
+					@[protected, override] fn Error(li::int, message::string)
 					{
 						Console.WriteLine(""At index {0}: {1}"", InputPosition+li, message);
 					};
@@ -184,7 +184,7 @@ namespace Loyc.LLParserGenerator
 
 					LLLPG lexer
 					{
-						[pub] token NextToken()::Token {
+						@[pub] token NextToken()::Token {
 							_start = InputPosition;
 							_value = null;
 							@{ { _type = num; } Num
@@ -200,12 +200,12 @@ namespace Loyc.LLParserGenerator
 							   { _type = EOF; } (_ { _type = unknown; })? };
 							return (new Token() { Type = _type; Value = _value; StartIndex = _start; });
 						};
-						[priv] token Id() @{
+						@[priv] token Id() @{
 							('a'..'z'|'A'..'Z'|'_')
 							('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
 							{ _value = CharSource.Substring(_startIndex, InputPosition - _startIndex); }
 						};
-						[priv] token Num() @{
+						@[priv] token Num() @{
 							{dot::bool = @false;}
 							('.' {dot = @true;})?
 							'0'..'9'+
@@ -403,13 +403,13 @@ namespace Loyc.LLParserGenerator
 		{
 			string input = @"
 			import Loyc.LLParserGenerator;
-			[public, partial] class Calculator(BaseParser!(Calculator.Token))
+			@[public, partial] class Calculator(BaseParser!(Calculator.Token))
 			{
 				_vars::Dictionary!(string,double) = (new Dictionary!(string,double)());
 				_tokens::List!Token = `new` List!Token();
 				_input::string;
 				
-				[public] fn Calculate(input::UString)::double
+				@[public] fn Calculate(input::UString)::double
 				{
 					_input = input;
 					_lexer = `new` Lexer(input);
@@ -423,9 +423,9 @@ namespace Loyc.LLParserGenerator
 
 				const EOF::int = -1;
 				
-				[protected, override] fn EofInt()::int { return EOF; };
-				[protected, override] fn LA0Int()::int { return LT0.Type; };
-				[protected, override] fn LT(i::int)::Token
+				@[protected, override] fn EofInt()::int { return EOF; };
+				@[protected, override] fn LA0Int()::int { return LT0.Type; };
+				@[protected, override] fn LT(i::int)::Token
 				{
 					if i < _tokens.Count { 
 						return _tokens[i]; 
@@ -433,7 +433,7 @@ namespace Loyc.LLParserGenerator
 						return (new Token { Type = EOF });
 					};
 				};
-				[protected, override] fn Error(li::int, message::string)
+				@[protected, override] fn Error(li::int, message::string)
 				{
 					index::int = _input.Length;
 					if InputPosition + li < _tokens.Count {
@@ -441,7 +441,7 @@ namespace Loyc.LLParserGenerator
 					};
 					Console.WriteLine(""Error at index {0}: {1}"", index, message);
 				};
-				[protected, override] fn ToString(int `#var` tokenType)::string
+				@[protected, override] fn ToString(int `#var` tokenType)::string
 				{
 					switch tokenType {
 						case id; return ""identifier"";

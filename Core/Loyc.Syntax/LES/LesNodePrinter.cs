@@ -7,6 +7,7 @@ using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using System.Diagnostics;
 using Loyc.Syntax.Lexing;
+using Loyc.Collections;
 
 namespace Loyc.Syntax.Les
 {
@@ -82,9 +83,9 @@ namespace Loyc.Syntax.Les
 			p.Errors = errors;
 
 			if (object.Equals(mode, NodeStyle.Expression) || mode == ParsingService.Exprs)
-				p.Print(node, 0, StartExpr);
+				p.Print(node, 0, StartStmt, "");
 			else
-				p.Print(node, 0, StartStmt);
+				p.Print(node, 0, StartStmt, ";");
 
 			p.Writer = null;
 			p.Errors = null;
@@ -111,14 +112,13 @@ namespace Loyc.Syntax.Les
 
 		public void Print(LNode node)
 		{
-			Print(node, 0, StartStmt);
+			Print(node, 0, StartStmt, ";");
 		}
-		public void Print(LNode node, Mode mode, Precedence context)
+		public void Print(LNode node, Mode mode, Precedence context, string terminator = null)
 		{
-			bool needSemicolon = context == StartStmt;
 			int parenCount = PrintPrefixTrivia(node);
 			if (parenCount != 0)
-				context = StartExpr;
+				context = StartStmt;
 			if (WriteAttrs(node, context)) {
 				Debug.Assert(parenCount == 0);
 				parenCount++;
@@ -127,17 +127,19 @@ namespace Loyc.Syntax.Les
 			if (node.BaseStyle == NodeStyle.PrefixNotation)
 				PrintPrefixNotation(node, mode, context);
 			else do {
-				if (AutoPrintBraces(node, mode))
-					break;
-				int args = node.ArgCount;
-				if (args == 1 && AutoPrintPrefixOrSuffixOp(node, mode, context))
-					break;
-				if (args == 2 && AutoPrintInfixOp(node, mode, context))
-					break;
+				if (node.IsCall) {
+					if (AutoPrintBracesOrBracks(node, mode))
+						break;
+					int args = node.ArgCount;
+					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, mode, context))
+						break;
+					if (args == 2 && AutoPrintInfixOp(node, mode, context))
+						break;
+				}
 				PrintPrefixNotation(node, mode, context);
 			} while (false);
 			
-			PrintSuffixTrivia(node, parenCount, needSemicolon);
+			PrintSuffixTrivia(node, parenCount, terminator);
 		}
 
 		#region Infix, prefix and suffix operators
@@ -233,36 +235,40 @@ namespace Loyc.Syntax.Les
 		
 		#endregion
 
-		#region Other stuff: braces, TODO: superexpressions, indexing, generics
+		#region Other stuff: braces, TODO: superexpressions, indexing, generics, tuples
 
-		private bool AutoPrintBraces(LNode node, Mode mode)
+		private bool AutoPrintBracesOrBracks(LNode node, Mode mode)
 		{
-			if (node.Calls(S.Braces)) {
-				if (node.ArgCount == 0)
-					_out.Write("{ }", true);
-				else {
-					_out.Write('{', true);
-					_out.Indent();
-					_out.Newline();
-					foreach (var stmt in node.Args)
-						Print(stmt, Mode.Wsa, StartStmt);
-					_out.Dedent();
-					_out.Write('}', true);
-				}
-				return true;
-			}
-			return false;
+			var name = node.Name;
+			if (name == S.Array && node.IsCall)
+				PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '[', ']');
+			else if (name == S.Braces && node.IsCall)
+				PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '{', '}');
+			else
+				return false;
+			return true;
 		}
-		
+
+		private void PrintArgList(RVList<LNode> args, bool stmtMode, char leftDelim, char rightDelim)
+		{
+			_out.Write(leftDelim, true);
+			if (stmtMode) {
+				_out.Indent();
+				_out.Newline();
+				foreach (var stmt in args)
+					Print(stmt, Mode.Wsa, StartStmt, ";");
+				_out.Dedent();
+			} else {
+				for (int i = 0; i < args.Count; )
+					Print(args[i], Mode.Wsa, StartStmt, ++i == args.Count ? "" : ", ");
+			}
+			_out.Write(rightDelim, true);
+		}
+
 		#endregion
 
-		static readonly int MinPrec = Precedence.MinValue.Lo;
-		/// <summary>Context: beginning of statement (';' printed at the end)</summary>
-		public static readonly Precedence StartStmt      = Precedence.MinValue;
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
-		public static readonly Precedence StartExpr      = new Precedence(MinPrec+1);
-		/// <summary>Context: second, third, etc. expression in a superexpression.</summary>
-		public static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
+		public static readonly Precedence StartStmt      = Precedence.MinValue;
 
 		void PrintPrefixNotation(LNode node, Mode mode, Precedence context)
 		{
@@ -272,18 +278,8 @@ namespace Loyc.Syntax.Les
 				case LNodeKind.Literal:
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
-					Print(node.Target, mode, LesPrecedence.Primary.LeftContext(context));
-					_out.Write('(', true);
-					var a = node.Args;
-					if (a.Count != 0)
-						for (int i = 0;;) {
-							Print(a[i], mode, StartExpr);
-							if (++i >= a.Count)
-								break;
-							_out.Write(',', true);
-							_out.Space();
-						}
-					_out.Write(')', true);
+					Print(node.Target, mode, LesPrecedence.Primary.LeftContext(context), null);
+					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '(', ')');
 					break;
 			}
 		}
@@ -312,7 +308,7 @@ namespace Loyc.Syntax.Les
 					continue;
 				if (!wroteBrack) {
 					wroteBrack = true;
-					if (!ContinueExpr.CanAppearIn(context)) {
+					if (context != StartStmt) {
 						extraParen = true;
 						_out.Write('(', true);
 					}
@@ -321,7 +317,7 @@ namespace Loyc.Syntax.Les
 					_out.Write(',', true);
 					_out.Space();
 				}
-				Print(A[i], Mode.InParens, StartExpr);
+				Print(A[i], Mode.InParens, StartStmt);
 			}
 			if (wroteBrack)
 				_out.Write("] ", true);
@@ -360,13 +356,14 @@ namespace Loyc.Syntax.Les
 			return parenCount;
 		}
 
-		private void PrintSuffixTrivia(LNode _n, int parenCount, bool needSemicolon)
+		private void PrintSuffixTrivia(LNode _n, int parenCount, string terminator)
 		{
 			while (parenCount-- > 0)
 				_out.Write(')', true);
-			if (needSemicolon) {
-				_out.Write(';', true);
-				_out.Newline(true);
+			if (terminator != null) {
+				_out.Write(terminator, true);
+				if (terminator == ";")
+					_out.Newline(true);
 			}
 
 			bool spaces = false;

@@ -16,7 +16,7 @@ namespace Loyc.LLParserGenerator
 			// complex, ambiguous grammars could make LLLPG run very slowly, but 
 			// this was the first SMALL grammar I could find that would make LLLPG 
 			// run very slowly (25 seconds to analyze 'Start' with k=2!).
-			Test(@"[DefaultK(2), FullLLk(false)]
+			Test(@"@[DefaultK(2), FullLLk(false)]
 			LLLPG lexer {
 				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
 				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
@@ -75,7 +75,7 @@ namespace Loyc.LLParserGenerator
 			// FullLLk(false) is required to cause the slug; with FullLLk(true),
 			// processing time drops dramatically but the output is nearly seven
 			// times larger.
-			Test(@"[DefaultK(2), FullLLk(false)] //[Verbosity(3)]
+			Test(@"@[DefaultK(2), FullLLk(false)] //@[Verbosity(3)]
 			LLLPG lexer {
 				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
 				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
@@ -168,7 +168,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// 2013-12-01: Regression test: $LI and $LA were not replaced inside call targets or attributes
 			Test(@"LLLPG parser { 
-				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{[Foo($LA)] $LI} _ ];
+				rule Foo() @[ &!{LA($LI) == $LI} &{$LI() && Bar($LA())} &{@[Foo($LA)] $LI} _ ];
 			}", @"void Foo()
 				{
 					Check(!(LA(0) == 0), ""!(LA($LI) == $LI)"");

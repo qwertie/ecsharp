@@ -22,6 +22,12 @@ namespace Loyc.Syntax
 			_startIndex = beginIndex;
 			_length = length;
 		}
+		public SourceRange(ISourceFile source, Lexing.Token token)
+		{
+			_source = source;
+			_startIndex = token.StartIndex;
+			_length = token.Length;
+		}
 
 		private ISourceFile _source;
 		private int _startIndex;

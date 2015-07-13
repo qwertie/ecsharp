@@ -208,7 +208,7 @@
         </member>
         <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.#ctor(`0,System.String,System.Int32,System.Boolean)">
             <summary>Initializes BaseLexer.</summary>
-            <param name="source">A source of characters, e.g. <see cref="T:Loyc.UString"/>.</param>
+            <param name="chars">A source of characters, e.g. <see cref="T:Loyc.UString"/>.</param>
             <param name="fileName">A file name associated with the characters, 
             which will be used for error reporting.</param>
             <param name="inputPosition">A location to start lexing (normally 0).
@@ -942,7 +942,9 @@
             this class, and <c>Token</c> implements <see cref="T:Loyc.Syntax.Lexing.ISimpleToken"/>.
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.Syntax.BaseParser`2.Error(System.Int32,System.String,System.Object[])" -->
+        <member name="M:Loyc.Syntax.BaseParser`2.Error(System.Int32,System.String,System.Object[])">
+            <inheritdoc cref="M:Loyc.Syntax.BaseParser`2.Error(System.Int32,System.String)"/>
+        </member>
         <member name="P:Loyc.Syntax.BaseParser`2.ErrorSink">
             <summary>Gets or sets the object to which error messages are sent. The
             default object is <see cref="F:Loyc.Syntax.BaseParser`2.FormatExceptionErrorSink"/>, which throws
@@ -997,10 +999,10 @@
         </member>
         <member name="M:Loyc.Syntax.BaseParserForList`3.Down(`2)">
             <summary>Switches to parsing the specified token list at position zero
-            (typically the value of <see cref="!:Token.Children"/> in a token tree 
-            produced by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>.) The original token list and
-            the original <see cref="P:Loyc.Syntax.BaseParserForList`3.InputPosition"/> are placed on a stack, so you
-            can restore the old list by calling <see cref="M:Loyc.Syntax.BaseParserForList`3.Up"/>.</summary>
+            (typically the value of <see cref="P:Loyc.Syntax.Lexing.Token.Children"/> 
+            in a token tree produced by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>.) The original 
+            token list and the original <see cref="P:Loyc.Syntax.BaseParserForList`3.InputPosition"/> are placed on a 
+            stack, so you can restore the old list by calling <see cref="M:Loyc.Syntax.BaseParserForList`3.Up"/>.</summary>
             <returns>True if successful, false if <c>children</c> is null.</returns>
         </member>
         <member name="M:Loyc.Syntax.BaseParserForList`3.Up">
@@ -2257,7 +2259,7 @@
             operators, built-in data types, keywords, trivia, etc.
             </summary>
         </member>
-        <member name="F:Loyc.Syntax.CodeSymbols.List">
+        <member name="F:Loyc.Syntax.CodeSymbols.AltList">
             <summary># is used for lists of things in definition constructs, e.g. 
                 <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
             For a time, #tuple was used for this purpose; the problem is that a
@@ -2347,6 +2349,20 @@
             use <see cref="T:Loyc.Syntax.BaseParserForList`2"/> instead. This class is
             now an alias for BaseParser{Token,int}.
             </summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.WhitespaceFilter`1">
+            <summary>Filters out tokens whose <c>Value</c> is <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.LexerWrapper`1">
+            <summary>A base class for wrappers that modify lexer behavior.
+            Implements the ILexer interface, except for the NextToken() method.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.Lexing.LexerWrapper`1.NextToken">
+            <summary>Returns the next (postprocessed) token. This method should set
+            the <c>_current</c> field to the returned value.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.Lexing.WhitespaceFilter">
+            <summary>Alias for <c>WhitespaceFilter{Token}</c></summary>
         </member>
         <member name="T:Loyc.Syntax.Precedence">
             <summary>A four-byte tuple that represents the precedence and miscibility 
@@ -2702,14 +2718,6 @@
             The close bracketis not treated as one of the children of the opening bracket.
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.Lexing.LexerWrapper`1">
-            <summary>A base class for wrappers that modify lexer behavior.
-            Implements the ILexer interface, except for the NextToken() method.</summary>
-        </member>
-        <member name="M:Loyc.Syntax.Lexing.LexerWrapper`1.NextToken">
-            <summary>Returns the next (postprocessed) token. This method should set
-            the <c>_current</c> field to the returned value.</summary>
-        </member>
         <member name="T:Loyc.Syntax.Les.LesPrecedence">
              <summary>Contains <see cref="T:Loyc.Syntax.Precedence"/> objects that represent the 
              precedence levels of LES.</summary>
@@ -2981,13 +2989,7 @@
             <remarks>Unless otherwise noted, the default value of all options is false.</remarks>
         </member>
         <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartStmt">
-            <summary>Context: beginning of statement (';' printed at the end)</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.StartExpr">
             <summary>Context: beginning of main expression (potential superexpression)</summary>
-        </member>
-        <member name="F:Loyc.Syntax.Les.LesNodePrinter.ContinueExpr">
-            <summary>Context: second, third, etc. expression in a superexpression.</summary>
         </member>
         <member name="P:Loyc.Syntax.Les.LesNodePrinter.AllowExtraParenthesis">
             <summary>Introduces extra parenthesis to express precedence, without
@@ -3586,12 +3588,6 @@
             <remarks>
             LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
             </remarks>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.WhitespaceFilter`1">
-            <summary>Filters out tokens whose <c>Value</c> is <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/>.</summary>
-        </member>
-        <member name="T:Loyc.Syntax.Lexing.WhitespaceFilter">
-            <summary>Alias for <c>WhitespaceFilter{Token}</c></summary>
         </member>
     </members>
 </doc>

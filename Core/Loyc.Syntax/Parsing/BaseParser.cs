@@ -141,7 +141,7 @@ namespace Loyc.Syntax
 		{
 			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), message);
 		}
-		/// <inheritdoc cref="Error(int,string)">
+		/// <inheritdoc cref="Error(int,string)"/>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
 			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), format, args);

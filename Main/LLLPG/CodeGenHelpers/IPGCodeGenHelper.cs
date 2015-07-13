@@ -35,7 +35,7 @@ namespace Loyc.LLParserGenerator
 		/// do nothing.</returns>
 		LNode VisitInput(LNode stmt, IMessageSink sink);
 
-		/// <summary>Creates a terminal or sequence predicate from a code expression.</summary>
+		/// <summary>Creates a terminal predicate from a code expression.</summary>
 		/// <param name="expr">A expression provided by the user, such as <c>"a string"</c>,
 		/// a <c>Token.Type</c>, or a <c>value..range</c>. <c>expr</c> will not be
 		/// a call to the inversion operator #~ (that's handled internally using 
@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 		/// returns null, the LLLPG macro shows this as an error; if this method does 
 		/// not return null, the message (if provided) is shown as a warning.</param>
 		/// <returns>If successful, a terminal predicate; otherwise null.</returns>
-		Pred CodeToPred(LNode expr, ref string errorMsg);
+		Pred CodeToTerminalPred(LNode expr, ref string errorMsg);
 
 		/// <summary>Simplifies the specified set, if possible, so that GenerateTest() 
 		/// can generate simpler code for an if-else chain in a prediction tree.</summary>

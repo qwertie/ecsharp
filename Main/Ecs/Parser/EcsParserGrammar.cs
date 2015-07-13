@@ -152,7 +152,7 @@ namespace Ecs.Parser
 		{
 			Check(!(_insideLinqExpr && LinqKeywords.Contains(LT(0).Value)), "!(_insideLinqExpr && LinqKeywords.Contains(LT($LI).Value))");
 			var t = Match((int) TT.ContextualKeyword);
-			#line 104 "EcsParserGrammar.les"
+			#line 105 "EcsParserGrammar.les"
 			return t;
 			#line default
 		}
@@ -6972,8 +6972,8 @@ namespace Ecs.Parser
 				do {
 					la0 = LA0;
 					if (la0 == TT.LBrace) {
-						if (Down(0) && Up(HasNoSemicolons())) {
-							if (isArray) {
+						if (isArray) {
+							if (Down(0) && Up(HasNoSemicolons())) {
 								var lb = MatchAny();
 								var rb = Match((int) TT.RBrace);
 								#line 1352 "EcsParserGrammar.les"

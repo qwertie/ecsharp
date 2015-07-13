@@ -119,7 +119,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		public abstract IPGTerminalSet EmptySet { get; }
-		public abstract Pred CodeToPred(LNode expr, ref string errorMsg);
+		public abstract Pred CodeToTerminalPred(LNode expr, ref string errorMsg);
 		public virtual IPGTerminalSet Optimize(IPGTerminalSet set, IPGTerminalSet dontcare) { return set.Subtract(dontcare); }
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }
 		public abstract string Example(IPGTerminalSet set);
@@ -442,7 +442,7 @@ namespace Loyc.LLParserGenerator
 			RVList<LNode> forwardedArgs = ForwardedArgList(args);
 			
 			LNode lookahead = F.Id("lookaheadAmt");
-			Debug.Assert(args.Calls(S.List));
+			Debug.Assert(args.Calls(S.AltList));
 			args = args.WithArgs(args.Args.Insert(0, F.Var(F.Int32, lookahead)));
 
 			LNode savePosition = ApiType(F.Id(SavePosition));

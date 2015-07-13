@@ -234,7 +234,7 @@ namespace Ecs
 		public bool QuoteUnprintableLiterals { get; set; }
 
 		/// <summary>Causes the ambiguity between constructors and method calls to
-		/// be ignored; see <see cref="EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
+		/// be ignored; see <see cref="EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
 		public bool AllowConstructorAmbiguity { get; set; }
 
 		/// <summary>Prints statements like "foo (...) bar()" in the equivalent form
@@ -629,7 +629,7 @@ namespace Ecs
 				}
 				if (bases == null) return true;
 				if (HasPAttrs(bases)) return false;
-				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.List))
+				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.AltList))
 				{
 					if (body == null) return true;
 					if (HasPAttrs(body)) return false;
@@ -652,7 +652,7 @@ namespace Ecs
 				return false;
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
-			if (!CallsWPAIH(args, S.List))
+			if (!CallsWPAIH(args, S.AltList))
 				return false;
 			if (def == S.Cons && (body != null && !CallsWPAIH(body, S.Braces) && !CallsWPAIH(body, S.Forward, 1)))
 				return false;
@@ -1160,7 +1160,7 @@ namespace Ecs
 			bool spaces = false;
 			foreach (var attr in _n.Attrs) {
 				var name = attr.Name;
-				if (name.Name[0] == '#') {
+				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
 						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
 						spaces = true;

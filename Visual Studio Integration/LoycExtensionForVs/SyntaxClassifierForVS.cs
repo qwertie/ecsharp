@@ -314,7 +314,8 @@ namespace Loyc.VisualStudio
 			for (;;) {
 				EditorToken eTok = eTokens.NextHigherItem(ref index);
 				if (index == null) break;
-				output.Add(eTok.ToToken(index.Value));
+				if (eTok.Value != WhitespaceTag.Value)
+					output.Add(eTok.ToToken(index.Value));
 			}
 			return output;
 		}

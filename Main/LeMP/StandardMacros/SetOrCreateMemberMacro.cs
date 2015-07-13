@@ -23,7 +23,7 @@ namespace LeMP
 		public static LNode SetOrCreateMember(LNode fn, IMessageSink sink)
 		{
 			// Expecting #fn(Type, Name, #(args), {body})
-			if (fn.ArgCount < 3 || !fn.Args[2].Calls(S.List))
+			if (fn.ArgCount < 3 || !fn.Args[2].Calls(S.AltList))
 				return null;
 			var args = fn.Args[2].Args;
 			LNode body = null;

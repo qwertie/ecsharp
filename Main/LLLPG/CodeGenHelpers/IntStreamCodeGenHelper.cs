@@ -36,7 +36,7 @@ namespace Loyc.LLParserGenerator
 			get { return PGIntSet.Empty; }
 		}
 
-		public override Pred CodeToPred(LNode expr, ref string errorMsg)
+		public override Pred CodeToTerminalPred(LNode expr, ref string errorMsg)
 		{
 			bool isInt = false;
 			PGIntSet set;

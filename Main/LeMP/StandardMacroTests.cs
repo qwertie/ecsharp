@@ -437,7 +437,7 @@ namespace LeMP
 			TestLes(@"replace (a => b) {a;}", "b;");
 			TestLes(@"replace (7 => seven) {x = 7;}", "x = seven;");
 			TestLes(@"replace (7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
-			TestLes(@"replace (a => b) {[Hello] a; a(a);}", "[Hello] b; b(b);");
+			TestLes(@"replace (a => b) {@[Hello] a; a(a);}", "@[Hello] b; b(b);");
 			TestLes("replace (MS => MessageSink; C => Current; W => Write; S => Severity; B => \"Bam!\")\n"+
 			        "    { MS.C.W(S.Error, @null, B); }",
 			        @"MessageSink.Current.Write(Severity.Error, @null, ""Bam!"");");
@@ -462,10 +462,10 @@ namespace LeMP
 			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
 			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
 			
-			TestLes("replace ($($format; $([#params] args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(@[#params] args)) => String.Format($format, $args))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}""; noun)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
-			TestLes("replace ($($format; $([#params] args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(@[#params] args)) => String.Format($format, $args))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}

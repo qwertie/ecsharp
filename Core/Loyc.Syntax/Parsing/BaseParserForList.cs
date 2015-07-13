@@ -137,10 +137,10 @@ namespace Loyc.Syntax
 		private Stack<KeyValuePair<List, int>> _parents;
 
 		/// <summary>Switches to parsing the specified token list at position zero
-		/// (typically the value of <see cref="Token.Children"/> in a token tree 
-		/// produced by <see cref="TokensToTree"/>.) The original token list and
-		/// the original <see cref="InputPosition"/> are placed on a stack, so you
-		/// can restore the old list by calling <see cref="Up()"/>.</summary>
+		/// (typically the value of <see cref="Loyc.Syntax.Lexing.Token.Children"/> 
+		/// in a token tree produced by <see cref="TokensToTree"/>.) The original 
+		/// token list and the original <see cref="InputPosition"/> are placed on a 
+		/// stack, so you can restore the old list by calling <see cref="Up()"/>.</summary>
 		/// <returns>True if successful, false if <c>children</c> is null.</returns>
 		protected bool Down(List children)
 		{

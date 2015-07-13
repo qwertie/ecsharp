@@ -207,20 +207,20 @@ namespace Loyc.LLParserGenerator
 
 		[Test] public void TestWithAliases()
 		{
-			Test(@"LLLPG (parser) {
+			Test(@"LLLPG (parser(terminalType(Token))) {
 					alias('!' = TT.Excl);
 					rule Foo() @{ '!' (&{$'!'.Value == '!'} '!' {tt = $'!'})? };
 				};", @"
 					void Foo()
 					{
 						int la0;
-						int tok__Excl = 0;
-						tok__Excl = Match(TT.Excl);
-						la0 = LA0;
+						Token ch_excl = default(Token);
+						ch_excl = Match(TT.Excl);
+						la0 = (int) LA0;
 						if (la0 == TT.Excl) {
-							Check(tok__Excl.Value == '$', ""tok__Excl.Value == '$'"");
-							Skip();
-							tt = tok__Excl;
+							Check(ch_excl.Value == '!', ""ch_excl.Value == '!'"");
+							ch_excl = MatchAny();
+							tt = ch_excl;
 						}
 					}");
 		}

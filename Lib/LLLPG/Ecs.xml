@@ -194,7 +194,7 @@
         </member>
         <member name="P:Ecs.EcsNodePrinter.AllowConstructorAmbiguity">
             <summary>Causes the ambiguity between constructors and method calls to
-            be ignored; see <see cref="!:EcsNodePrinterTests.ConstructorAmbiguities()"/>.</summary>
+            be ignored; see <see cref="M:Ecs.EcsPrinterAndParserTests.ConstructorAmbiguities"/>.</summary>
         </member>
         <member name="P:Ecs.EcsNodePrinter.AvoidMacroSyntax">
             <summary>Prints statements like "foo (...) bar()" in the equivalent form

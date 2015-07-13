@@ -19,7 +19,7 @@ namespace LeMP
 		public static LNode ForwardMethod(LNode fn, IMessageSink sink)
 		{
 			LNode args, fwd, body;
-			if (fn.ArgCount != 4 || !(fwd = fn.Args[3]).Calls(S.Forward, 1) || !(args = fn.Args[2]).Calls(S.List))
+			if (fn.ArgCount != 4 || !(fwd = fn.Args[3]).Calls(S.Forward, 1) || !(args = fn.Args[2]).Calls(S.AltList))
 				return null;
 			
 			RVList<LNode> formalArgs = args.Args;

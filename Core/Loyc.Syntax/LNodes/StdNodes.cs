@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc.Utilities;
+using Loyc.Math;
 
 namespace Loyc.Syntax
 {
@@ -176,9 +177,17 @@ namespace Loyc.Syntax
 	{
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, LNode ras)
 			: base(args, ras) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
-
+		public StdSimpleCallNode(Symbol name, RVList<LNode> args, StdSimpleCallNode ras)
+			: base(args, ras) { _name = name ?? GSymbol.Empty; _targetOffs = ras._targetOffs; _targetLen = ras._targetLen; }
 		public StdSimpleCallNode(Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(args, range, style) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
+		public StdSimpleCallNode(Loyc.Syntax.Lexing.Token targetToken, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+			: base(args, range, style)
+		{
+			_name = (Symbol)(targetToken.Value ?? GSymbol.Empty); 
+			_targetOffs = ClipUShort(targetToken.StartIndex - RAS.StartIndex);
+			_targetLen = ClipUShort(targetToken.Length);
+		}
 		
 		protected Symbol _name;
 		public override Symbol Name { get { return _name; } }
@@ -199,20 +208,19 @@ namespace Loyc.Syntax
 					_targetLen = (ushort)System.Math.Max(0, Range.Length - 2);
 				} else if ((r0 = _args[0].Range).Source == RAS.Source && r0.StartIndex >= RAS.StartIndex) {
 					int endIndex = RAS.EndIndex;
-					if (RAS.StartIndex < r0.StartIndex &&
-						c > 1 ? (r1 = _args[1].Range).Source == RAS.Source && (endIndex = r1.StartIndex) > r0.EndIndex
-						      : endIndex > r0.EndIndex) {
+					if (RAS.StartIndex < r0.StartIndex || c > 1 && r0.EndIndex >= (r1 = _args[1].Range).StartIndex) {
+						// assume this is a normal call, Target is at beginning
+						_targetLen = ClipUShort(r0.StartIndex - RAS.StartIndex);
+					} else {
 						// assume this is an operator, e.g. for x + y, use _targetOffs=1, _targetLen=3
 						_targetOffs = ClipUShort(r0.EndIndex);
 						_targetLen = ClipUShort(endIndex - r0.EndIndex);
-					} else
-						// assume this is a normal call, Target is at beginning
-						_targetLen = ClipUShort(r0.StartIndex - RAS.StartIndex);
+					}
 				} else
 					_targetLen = 0;
 			}
 		}
-		ushort ClipUShort(int x) { return (ushort)System.Math.Min(x, ushort.MaxValue); }
+		ushort ClipUShort(int x) { return (ushort)MathEx.InRange(x, 0, ushort.MaxValue); }
 
 		public override LNode Target
 		{
@@ -242,8 +250,12 @@ namespace Loyc.Syntax
 		protected RVList<LNode> _attrs;
 		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, LNode ras) 
 			: base(name, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
+		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, StdSimpleCallNode ras)
+			: base(name, args, ras) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Symbol name, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(name, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
+		public StdSimpleCallNodeWithAttrs(RVList<LNode> attrs, Loyc.Syntax.Lexing.Token targetToken, RVList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
+			: base(targetToken, args, range, style) { _attrs = attrs; NoNulls(attrs, "Attrs"); }
 
 		public override StdSimpleCallNode cov_Clone() { return new StdSimpleCallNodeWithAttrs(_attrs, _name, _args, this); }
 

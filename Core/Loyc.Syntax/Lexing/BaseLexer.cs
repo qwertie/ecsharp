@@ -71,7 +71,7 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		/// <summary>Initializes BaseLexer.</summary>
-		/// <param name="source">A source of characters, e.g. <see cref="UString"/>.</param>
+		/// <param name="chars">A source of characters, e.g. <see cref="UString"/>.</param>
 		/// <param name="fileName">A file name associated with the characters, 
 		/// which will be used for error reporting.</param>
 		/// <param name="inputPosition">A location to start lexing (normally 0).
