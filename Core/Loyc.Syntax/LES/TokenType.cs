@@ -18,9 +18,7 @@ namespace Loyc.Syntax.Les
 		MLComment  = TokenKind.Comment + 1,
 		Shebang    = TokenKind.Comment + 2,
 		Id         = TokenKind.Id,
-		Number     = TokenKind.Number,
-		String     = TokenKind.String,
-		OtherLit   = TokenKind.OtherLit, // true, false, null, @@sym
+		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
@@ -41,7 +39,6 @@ namespace Loyc.Syntax.Les
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
 		RBrace     = TokenKind.RBrace,
-		//OpenOf     = TokenKind.OtherGroup + 1,
 		Indent     = TokenKind.LBrace + 1,
 		Dedent     = TokenKind.RBrace + 1,
 		Unknown    = TokenKind.Other,
@@ -72,9 +69,7 @@ namespace Loyc.Syntax.Les
 				case TT.Newline: return "\n";
 				case TT.SLComment: return "//\n";
 				case TT.MLComment: return "/**/";
-				case TT.Number: 
-				case TT.String:
-				case TT.OtherLit: 
+				case TT.Literal:
 					return LesNodePrinter.PrintLiteral(t.Value, t.Style);
 				case TT.BQString: 
 					return LesNodePrinter.PrintString((t.Value ?? "").ToString(), '`', false);

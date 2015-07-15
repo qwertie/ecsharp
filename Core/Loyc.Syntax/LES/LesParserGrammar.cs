@@ -48,7 +48,7 @@ namespace Loyc.Syntax.Les
 			LNode e = default(LNode);
 			Token end = default(Token);
 			// line 57
-			if (((TT) LA0 == TT.String)) {
+			if ((LT0.Value is string)) {
 				endMarker = TT.EOF;
 			}
 			// Line 1: ( / TopExpr)
@@ -104,8 +104,8 @@ namespace Loyc.Syntax.Les
 			LNode e = default(LNode);
 			Token end = default(Token);
 			// line 68
-			if (((TT) LA0 == TT.String)) {
-				endMarker.Value = TT.EOF;
+			if ((LT0.Value is string)) {
+				endMarker = TT.EOF;
 			}
 			// Line 1: ( / TopExpr)
 			la0 = (TT) LA0;
@@ -162,17 +162,15 @@ namespace Loyc.Syntax.Les
 					case TT.Id:
 					case TT.LBrace:
 					case TT.LBrack:
+					case TT.Literal:
 					case TT.LParen:
 					case TT.NormalOp:
 					case TT.Not:
-					case TT.Number:
-					case TT.OtherLit:
 					case TT.PrefixOp:
 					case TT.PreOrSufOp:
 					case TT.RBrack:
 					case TT.Semicolon:
 					case TT.SpaceLParen:
-					case TT.String:
 						goto match1;
 					}
 				}
@@ -258,11 +256,9 @@ namespace Loyc.Syntax.Les
 						case TT.Id:
 						case TT.LBrace:
 						case TT.LBrack:
+						case TT.Literal:
 						case TT.LParen:
-						case TT.Number:
-						case TT.OtherLit:
 						case TT.SpaceLParen:
-						case TT.String:
 							{
 								// line 102
 								if (((TT) LA0 == TT.LParen)) {
@@ -458,7 +454,7 @@ namespace Loyc.Syntax.Les
 			Token o = default(Token);
 			LNode result = default(LNode);
 			TokenTree tree = default(TokenTree);
-			// Line 187: ( TT.Id | (TT.Number|TT.OtherLit|TT.String) | TT.At (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace) | TT.Colon TT.Indent StmtList TT.Dedent greedy(TT.Colon)? | TT.LBrace StmtList TT.RBrace | TT.LBrack ExprList TT.RBrack | (TT.LParen|TT.SpaceLParen) ExprList TT.RParen )
+			// Line 187: ( TT.Id | TT.Literal | TT.At (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace) | TT.Colon TT.Indent StmtList TT.Dedent greedy(TT.Colon)? | TT.LBrace StmtList TT.RBrace | TT.LBrack ExprList TT.RBrack | (TT.LParen|TT.SpaceLParen) ExprList TT.RParen )
 			switch ((TT) LA0) {
 			case TT.Id:
 				{
@@ -467,9 +463,7 @@ namespace Loyc.Syntax.Les
 					result = F.Id(id).SetStyle(id.Style);
 				}
 				break;
-			case TT.Number:
-			case TT.OtherLit:
-			case TT.String:
+			case TT.Literal:
 				{
 					var lit = MatchAny();
 					// line 190

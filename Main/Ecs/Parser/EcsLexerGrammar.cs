@@ -2704,7 +2704,7 @@ namespace Ecs.Parser
 											Skip();
 											Skip();
 											#line 336 "EcsLexerGrammar.les"
-											_type = TT.OtherLit;
+											_type = TT.Literal;
 											#line 336 "EcsLexerGrammar.les"
 											_value = G.BoxedFalse;
 											#line default
@@ -3261,7 +3261,7 @@ namespace Ecs.Parser
 									Skip();
 									Skip();
 									#line 354 "EcsLexerGrammar.les"
-									_type = TT.OtherLit;
+									_type = TT.Literal;
 									#line 354 "EcsLexerGrammar.les"
 									_value = null;
 									#line default
@@ -4114,7 +4114,7 @@ namespace Ecs.Parser
 									Skip();
 									Skip();
 									#line 377 "EcsLexerGrammar.les"
-									_type = TT.OtherLit;
+									_type = TT.Literal;
 									#line 377 "EcsLexerGrammar.les"
 									_value = G.BoxedTrue;
 									#line default
@@ -5462,7 +5462,7 @@ namespace Ecs.Parser
 			matchNumber:
 				{
 					#line 470 "EcsLexerGrammar.les"
-					_type = TT.Number;
+					_type = TT.Literal;
 					#line default
 					Number();
 				}
@@ -5478,7 +5478,7 @@ namespace Ecs.Parser
 			matchTQString:
 				{
 					#line 476 "EcsLexerGrammar.les"
-					_type = TT.String;
+					_type = TT.Literal;
 					#line default
 					TQString();
 				}
@@ -5486,7 +5486,7 @@ namespace Ecs.Parser
 			matchSQString:
 				{
 					#line 477 "EcsLexerGrammar.les"
-					_type = TT.SQString;
+					_type = TT.Literal;
 					#line default
 					SQString();
 				}
@@ -5494,7 +5494,7 @@ namespace Ecs.Parser
 			matchDQString:
 				{
 					#line 478 "EcsLexerGrammar.les"
-					_type = TT.String;
+					_type = TT.Literal;
 					#line default
 					DQString();
 				}
@@ -5502,7 +5502,7 @@ namespace Ecs.Parser
 			matchSymbol:
 				{
 					#line 480 "EcsLexerGrammar.les"
-					_type = TT.Symbol;
+					_type = TT.Literal;
 					#line default
 					Symbol();
 				}

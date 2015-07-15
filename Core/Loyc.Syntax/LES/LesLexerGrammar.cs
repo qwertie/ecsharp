@@ -1102,7 +1102,7 @@ namespace Loyc.Syntax.Les
 			matchSymbol:
 				{
 					// line 167
-					_type = TT.OtherLit;
+					_type = TT.Literal;
 					Symbol();
 				}
 				break;
@@ -1116,28 +1116,28 @@ namespace Loyc.Syntax.Les
 			matchNumber:
 				{
 					// line 172
-					_type = TT.Number;
+					_type = TT.Literal;
 					Number();
 				}
 				break;
 			matchTQString:
 				{
 					// line 173
-					_type = TT.String;
+					_type = TT.Literal;
 					TQString();
 				}
 				break;
 			matchDQString:
 				{
 					// line 174
-					_type = TT.String;
+					_type = TT.Literal;
 					DQString();
 				}
 				break;
 			matchSQString:
 				{
 					// line 175
-					_type = TT.String;
+					_type = TT.Literal;
 					SQString();
 				}
 				break;

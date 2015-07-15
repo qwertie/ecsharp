@@ -25,9 +25,7 @@ namespace Loyc.LLParserGenerator
 		Spaces      = TokenKind.Spaces,
 		Comment     = TokenKind.Comment,
 		Id          = TokenKind.Id,
-		Number      = TokenKind.Number,
-		String      = TokenKind.String,
-		OtherLit    = TokenKind.OtherLit,
+		Literal     = TokenKind.Literal,
 		Dot         = TokenKind.Dot,
 		Assignment  = TokenKind.Assignment, // = += := $=
 		
@@ -223,8 +221,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Token token = list[i++];
 			var newType = (TT)token.Kind;
-			if (token.Kind != TokenKind.String &&
-				token.Kind != TokenKind.OtherLit &&
+			if (token.Kind != TokenKind.Literal &&
 				token.Value != null) do
 			{
 				TT newType_;

@@ -436,22 +436,6 @@ namespace Loyc.Syntax.Lexing
 			return tt >= TokenKind.LParen && tt < (TokenKind)((int)TokenKind.ROther + (1 << TokenKindShift));
 		}
 
-		public static TokenKind GetLiteralKind(object value)
-		{
-			if (value == null)
-				return TokenKind.OtherLit;
-			if (value == NoValue.Value)
-				return TokenKind.Other;
-			if (value is String || value is StringBuilder)
-				return TokenKind.String;
-			else if (value is Int32 || value is Int64 || value is Int16 || value is SByte ||
-					 value is UInt32 || value is UInt64 || value is UInt16 || value is Byte ||
-					 value is Single || value is Double || value is System.Numerics.BigInteger)
-				return TokenKind.Number;
-			else
-				return TokenKind.OtherLit;
-		}
-
 		#region ToLNode()
 
 		/// <summary>Converts a <see cref="Token"/> to a <see cref="LNode"/>.</summary>

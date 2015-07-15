@@ -28,14 +28,14 @@ namespace Ecs.Parser
 				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.Not), 
 				_("hello"), _(","), WS, _("world"), _("!"));
 			Case(@"this is""just""1 lexer test '!'",
-				A(TT.@this, TT.Spaces, TT.@is, TT.String, TT.Number, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.SQString),
+				A(TT.@this, TT.Spaces, TT.@is, TT.Literal, TT.Literal, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.Literal),
 				S.This, WS, S.Is, "just", 1, WS, _("lexer"), WS, _("test"), WS, '!');
-			Case(@"12:30", A(TT.Number, TT.Colon, TT.Number), 12, _(":"), 30);
-			Case(@"c+='0'", A(TT.Id, TT.CompoundSet, TT.SQString), _("c"), _("+="), '0');
+			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, _(":"), 30);
+			Case(@"c+='0'", A(TT.Id, TT.CompoundSet, TT.Literal), _("c"), _("+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
-			Case(@"finally@@{`boom!` @@bam;}", A(TT.@finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Symbol, TT.Semicolon, TT.RBrace),
+			Case(@"finally@@{`boom!` @@bam;}", A(TT.@finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Literal, TT.Semicolon, TT.RBrace),
 				S.Finally, _("@"), _("@"), null, _("boom!"), WS, _("bam"), _(";"), null);
 		}
 
@@ -62,24 +62,24 @@ namespace Ecs.Parser
 		[Test]
 		public void TestOperators()
 		{
-			Case("3 - 2",     A(TT.Number, TT.Spaces, TT.Sub, TT.Spaces, TT.Number), 3, WS, _("-"), WS, 2);
+			Case("3 - 2",     A(TT.Literal, TT.Spaces, TT.Sub, TT.Spaces, TT.Literal), 3, WS, _("-"), WS, 2);
 			Case("a-b",       A(TT.Id, TT.Sub, TT.Id),            _("a"), _("-"), _("b"));
 			Case("a`blah`b",  A(TT.Id, TT.BQString, TT.Id),   _("a"), _("blah"), _("b"));
 			Case(@"a`_\`_`b", A(TT.Id, TT.BQString, TT.Id),   _("a"), _("_`_"), _("b"));
 			Case(@">><<",     A(TT.GT, TT.GT, TT.LT, TT.LT),  _(">"), _(">"), _("<"), _("<"));
 			Case(@">>===>",   A(TT.CompoundSet, TT.Forward),  _(">>="), _("==>"));
-			Case("3**2 % 10", A(TT.Number, TT.Power, TT.Number, TT.Spaces, TT.DivMod, TT.Spaces, TT.Number), 3, _("**"), 2, WS, _("%"), WS, 10);
+			Case("3**2 % 10", A(TT.Literal, TT.Power, TT.Literal, TT.Spaces, TT.DivMod, TT.Spaces, TT.Literal), 3, _("**"), 2, WS, _("%"), WS, 10);
 		}
 
 		[Test]
 		public void TestStrings()
 		{
-			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.SQString), _("Testing"), "Testing", '!');
-			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.String, TT.SQString),
+			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.Literal, TT.Literal), _("Testing"), "Testing", '!');
+			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.Literal, TT.Literal),
 				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
-			Case(@"'''Triple-quoted!'''", A(TT.String), "Triple-quoted!");
-			Case(@"""""""Triple\n/-quoted!""""""", A(TT.String), "Triple\n-quoted!");
-			Case("@\"\n\"", A(TT.String), "\n");
+			Case(@"'''Triple-quoted!'''", A(TT.Literal), "Triple-quoted!");
+			Case(@"""""""Triple\n/-quoted!""""""", A(TT.Literal), "Triple\n-quoted!");
+			Case("@\"\n\"", A(TT.Literal), "\n");
 		}
 
 		[Test]
@@ -95,74 +95,74 @@ namespace Ecs.Parser
 		[Test]
 		public void TestIntegers()
 		{
-			Case("9", A(TT.Number), 9);
-			Case("1337", A(TT.Number), 1337);
-			Case("-1", A(TT.Sub, TT.Number), _("-"), 1);
-			Case("9111222U", A(TT.Number), 9111222U);
-			Case("0L", A(TT.Number), 0L);
-			Case("-9111222L", A(TT.Sub, TT.Number), _("-"), 9111222L);
-			Case("-1U", A(TT.Sub, TT.Number), _("-"), 1U);
-			Case("9_111_222", A(TT.Number), 9111222);
-			Case("9_111_222_333", A(TT.Number), 9111222333);
-			Case("4_111_222_333", A(TT.Number), 4111222333);
-			Case("4_111_222_333U", A(TT.Number), 4111222333U);
-			Case("9_111_222_333_444_555", A(TT.Number), 9111222333444555);
-			Case("9_111_222_333_444_555L", A(TT.Number), 9111222333444555L);
-			Case("9_111_222_333_444_555UL", A(TT.Number), 9111222333444555UL);
-			Case("0x9+0x0A=0x0000_0000_13", A(TT.Number, TT.Add, TT.Number, TT.Set, TT.Number), 0x9, _("+"), 0x0A, _("="), 0x13);
-			Case("0x5.Equals()", A(TT.Number, TT.Dot, TT.Id, TT.LParen, TT.RParen), 0x5, _("."), _("Equals"), null, null);
-			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Number, TT.EqNeq, TT.Number), 0x8081FF, _("=="), 0x8081FF);
-			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Number, TT.Number), 3L, 0x808192FFU);
-			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Number), 0x0F808192FF);
+			Case("9", A(TT.Literal), 9);
+			Case("1337", A(TT.Literal), 1337);
+			Case("-1", A(TT.Sub, TT.Literal), _("-"), 1);
+			Case("9111222U", A(TT.Literal), 9111222U);
+			Case("0L", A(TT.Literal), 0L);
+			Case("-9111222L", A(TT.Sub, TT.Literal), _("-"), 9111222L);
+			Case("-1U", A(TT.Sub, TT.Literal), _("-"), 1U);
+			Case("9_111_222", A(TT.Literal), 9111222);
+			Case("9_111_222_333", A(TT.Literal), 9111222333);
+			Case("4_111_222_333", A(TT.Literal), 4111222333);
+			Case("4_111_222_333U", A(TT.Literal), 4111222333U);
+			Case("9_111_222_333_444_555", A(TT.Literal), 9111222333444555);
+			Case("9_111_222_333_444_555L", A(TT.Literal), 9111222333444555L);
+			Case("9_111_222_333_444_555UL", A(TT.Literal), 9111222333444555UL);
+			Case("0x9+0x0A=0x0000_0000_13", A(TT.Literal, TT.Add, TT.Literal, TT.Set, TT.Literal), 0x9, _("+"), 0x0A, _("="), 0x13);
+			Case("0x5.Equals()", A(TT.Literal, TT.Dot, TT.Id, TT.LParen, TT.RParen), 0x5, _("."), _("Equals"), null, null);
+			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.EqNeq, TT.Literal), 0x8081FF, _("=="), 0x8081FF);
+			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
+			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Literal), 0x0F808192FF);
 		}
 
 		[Test]
 		public void TestFloats()
 		{
-			Case("0.0", A(TT.Number), 0.0);
-			Case("0.1", A(TT.Number), 0.1);
-            Case("25d25f25m", A(TT.Number, TT.Number, TT.Number), 25d,25f,25m);
-			Case("0.25d", A(TT.Number), 0.25d);
-			Case("0.25f", A(TT.Number), 0.25f);
-			Case("0.25m", A(TT.Number), 0.25m);
-			Case("0.25e2", A(TT.Number), 0.25e2);
-			Case("10e-20", A(TT.Number), 10e-20);
-			Case("0.3e+2d", A(TT.Number), 0.3e+2d);
-			Case("0.3e+2f", A(TT.Number), 0.3e+2f);
-			Case("0.3e+2m", A(TT.Number), 0.3e+2m);
-			Case("1234567890123456789012345678901234567890d", A(TT.Number), 1234567890123456789012345678901234567890d);
-			Case("123456789012345678901234567890.1234567890123456789012345678901234567890f", A(TT.Number), 
+			Case("0.0", A(TT.Literal), 0.0);
+			Case("0.1", A(TT.Literal), 0.1);
+            Case("25d25f25m", A(TT.Literal, TT.Literal, TT.Literal), 25d,25f,25m);
+			Case("0.25d", A(TT.Literal), 0.25d);
+			Case("0.25f", A(TT.Literal), 0.25f);
+			Case("0.25m", A(TT.Literal), 0.25m);
+			Case("0.25e2", A(TT.Literal), 0.25e2);
+			Case("10e-20", A(TT.Literal), 10e-20);
+			Case("0.3e+2d", A(TT.Literal), 0.3e+2d);
+			Case("0.3e+2f", A(TT.Literal), 0.3e+2f);
+			Case("0.3e+2m", A(TT.Literal), 0.3e+2m);
+			Case("1234567890123456789012345678901234567890d", A(TT.Literal), 1234567890123456789012345678901234567890d);
+			Case("123456789012345678901234567890.1234567890123456789012345678901234567890f", A(TT.Literal), 
 			      123456789012345678901234567890.1234567890123456789012345678901234567890f);
-			Case(".5e+2.5e+2f.5m", A(TT.Number, TT.Number, TT.Number), .5e+2, .5e+2f, .5m);
-			Case("Y.5", A(TT.Id, TT.Number), _("Y"), .5);
-			Case("0.1.5", A(TT.Number, TT.Number), 0.1, .5);
-			Case("5.ToString", A(TT.Number, TT.Dot, TT.Id), 5, _("."), _("ToString"));
+			Case(".5e+2.5e+2f.5m", A(TT.Literal, TT.Literal, TT.Literal), .5e+2, .5e+2f, .5m);
+			Case("Y.5", A(TT.Id, TT.Literal), _("Y"), .5);
+			Case("0.1.5", A(TT.Literal, TT.Literal), 0.1, .5);
+			Case("5.ToString", A(TT.Literal, TT.Dot, TT.Id), 5, _("."), _("ToString"));
 		}
 		[Test]
 		public void TestHexAndBinFloats()
 		{
-			Case("0x0.C", A(TT.Number, TT.Dot, TT.Id), 0, _("."), _("C")); // this is not a float
-			Case("0x0.8", A(TT.Number), 0.5); // I changed my mind, this IS a single float
-			Case("0x0.8p", A(TT.Number, TT.Id), 0.5, _("p"));
-			Case("0x0.0p0", A(TT.Number), 0.0);
-			Case("0xF.8p0", A(TT.Number), 15.5);
-			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31.0, _(";"), 31.0);
-			Case("0xA.8p-1", A(TT.Number), 5.25);
-			Case("0b101.01", A(TT.Number), 5.25);
-			Case("0b101.01p0f", A(TT.Number), 5.25f);
-			Case("0b101.01p2", A(TT.Number), 21.0);
-			Case("0b1111_1111.1111_1111p+8", A(TT.Number), (double)0xFFFF);
-			Case("0b.1p-2", A(TT.Number), 0.125);
-			Case("0b.1p-2f", A(TT.Number), 0.125f);
+			Case("0x0.C", A(TT.Literal, TT.Dot, TT.Id), 0, _("."), _("C")); // this is not a float
+			Case("0x0.8", A(TT.Literal), 0.5); // I changed my mind, this IS a single float
+			Case("0x0.8p", A(TT.Literal, TT.Id), 0.5, _("p"));
+			Case("0x0.0p0", A(TT.Literal), 0.0);
+			Case("0xF.8p0", A(TT.Literal), 15.5);
+			Case("0xF.8p+1;0xF.8p1", A(TT.Literal, TT.Semicolon, TT.Literal), 31.0, _(";"), 31.0);
+			Case("0xA.8p-1", A(TT.Literal), 5.25);
+			Case("0b101.01", A(TT.Literal), 5.25);
+			Case("0b101.01p0f", A(TT.Literal), 5.25f);
+			Case("0b101.01p2", A(TT.Literal), 21.0);
+			Case("0b1111_1111.1111_1111p+8", A(TT.Literal), (double)0xFFFF);
+			Case("0b.1p-2", A(TT.Literal), 0.125);
+			Case("0b.1p-2f", A(TT.Literal), 0.125f);
 		}
 
 		[Test]
 		public void TestSymbols()
 		{
 			Case(@"@@public@@is@@A@@`common\\word`@@around",
-				A(TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol, TT.Symbol),
+				A(TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				_("public"), _("is"), _("A"), _(@"common\word"), _("around"));
-			Case(@"@@her\u0065", A(TT.Symbol), _("here"));
+			Case(@"@@her\u0065", A(TT.Literal), _("here"));
 		}
 
 		[Test]
@@ -201,9 +201,9 @@ namespace Ecs.Parser
 			Case(@"`", A(TT.BQString), ERROR);
 			Case(@"\", A(TT.Backslash), _(@"\"));
 			Case(@"@", A(TT.At), _("@"));
-			Case(@"2.0e+", A(TT.Number), ERROR);
-			Case("'''fin", A(TT.String), ERROR);
-			Case(@"""""""", A(TT.String), ERROR);
+			Case(@"2.0e+", A(TT.Literal), ERROR);
+			Case("'''fin", A(TT.Literal), ERROR);
+			Case(@"""""""", A(TT.Literal), ERROR);
 		}
 
 		[Test]
@@ -211,15 +211,15 @@ namespace Ecs.Parser
 		{
 			//Case("\0",              A(TT.Error), ERROR);
 			//Case("\x07",            A(TT.Error), ERROR);
-			Case("x=\"Hello\n",     A(TT.Id, TT.Set, TT.String, TT.Newline), _("x"), _("="), ERROR, WS);
-			Case("'\n'o''pq\n?''",  A(TT.Unknown, TT.Newline, TT.SQString, TT.SQString, TT.Newline, TT.QuestionMark, TT.SQString),
+			Case("x=\"Hello\n",     A(TT.Id, TT.Set, TT.Literal, TT.Newline), _("x"), _("="), ERROR, WS);
+			Case("'\n'o''pq\n?''",  A(TT.Unknown, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.QuestionMark, TT.Literal),
 			                        ERROR, WS, 'o', ERROR, WS, _("?"), ERROR);
-			Case("'abc'",           A(TT.SQString), ERROR);
-			Case("0x!0b",           A(TT.Number, TT.Not, TT.Number), ERROR, _("!"), ERROR);
+			Case("'abc'",           A(TT.Literal), ERROR);
+			Case("0x!0b",           A(TT.Literal, TT.Not, TT.Literal), ERROR, _("!"), ERROR);
 			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, WS, _("newline"));
-			Case("0xFF_0000_0000U", A(TT.Number), ERROR);
-			Case("0xFFFF_FFFF_0000_0000L", A(TT.Number), ERROR);
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Number), ERROR);
+			Case("0xFF_0000_0000U", A(TT.Literal), ERROR);
+			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), ERROR);
+			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), ERROR);
 		}
 
 		[Test]
@@ -229,7 +229,7 @@ namespace Ecs.Parser
 				A(TT.AttrKeyword, TT.Spaces, TT.AttrKeyword, TT.Spaces, TT.TypeKeyword, TT.Spaces, TT.Id, TT.Set, TT.@default, TT.LParen, TT.@stackalloc, TT.RParen, TT.@as, TT.Spaces, TT.@this),
 				S.Public, WS, S.Static, WS, S.Int32, WS, _("default"), _("="), S.Default, null, S.StackAlloc, null, S.As, WS, S.This);
 			Case("case'\0':return'x';",
-				A(TT.@case, TT.SQString, TT.Colon, TT.@return, TT.SQString, TT.Semicolon),
+				A(TT.@case, TT.Literal, TT.Colon, TT.@return, TT.Literal, TT.Semicolon),
 				S.Case, '\0', _(":"), S.Return, 'x', _(";"));
 		}
 

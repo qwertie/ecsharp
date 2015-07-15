@@ -54,12 +54,8 @@ namespace Loyc.Syntax.Lexing
 		Comment      = 0x0100,
 		/// <summary>Simple identifiers</summary>
 		Id           = 0x0200,
-		/// <summary>Integers, floats</summary>
-		Number       = 0x0300,
-		/// <summary>e.g. single-quoted, double-quoted, triple-quoted</summary>
-		String       = 0x0400,
-		/// <summary>Literals other than numbers and strings</summary>
-		OtherLit     = 0x0500,
+		/// <summary>Literals, such as numbers and strings.</summary>
+		Literal      = 0x0300,
 		/// <summary>Scope operator (dot and dot-like ops such as :: in C++) </summary>
 		Dot          = 0x0600,
 		/// <summary>Simple or compound assignment</summary>

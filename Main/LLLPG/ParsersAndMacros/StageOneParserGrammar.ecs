@@ -159,7 +159,7 @@ namespace Loyc.LLParserGenerator
 				{LNode e;}
 				(	t:=(TT.Id|TT.In)
 					{e = F.Id(t);}
-				|	t:=(TT.Number | TT.String | TT.OtherLit)
+				|	t:=TT.Literal
 					{e = F.Literal(t);}
 				|	lp:="(" rp:=")"     {e = ParseParens(lp, rp.EndIndex);}
 				|	lb:="{" rb:="}"     {e = ParseBraces(lb, rb.EndIndex, false);}

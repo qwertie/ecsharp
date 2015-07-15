@@ -164,15 +164,15 @@ namespace Loyc.Syntax.Les
 			}
 			( &{InputPosition == 0} 
 			  {_type = TT.Shebang;}   Shebang
-			/ {_type = TT.OtherLit;}  Symbol
+			/ {_type = TT.Literal;}   Symbol
 			/ {_type = TT.Id;}        Id
 			/ {_type = TT.Newline;}   Newline
 			/ {_type = TT.SLComment;} SLComment
 			/ {_type = TT.MLComment;} MLComment
-			/ {_type = TT.Number;}    Number
-			/ {_type = TT.String;}    TQString
-			/ {_type = TT.String;}    DQString
-			/ {_type = TT.String;}    SQString
+			/ {_type = TT.Literal;}   Number
+			/ {_type = TT.Literal;}   TQString
+			/ {_type = TT.Literal;}   DQString
+			/ {_type = TT.Literal;}   SQString
 			/ {_type = TT.BQString;}  BQString
 			/ {_type = TT.Comma;}     Comma
 			/ {_type = TT.Semicolon;} Semicolon

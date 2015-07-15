@@ -28,16 +28,16 @@ namespace Loyc.Syntax.Les
 				A(TT.Id, TT.Comma, TT.Id, TT.Not), 
 				_("hello"), _(","), _("world"), _("!"));
 			Case(@"this is""just""1 lexer test '!'",
-				A(TT.Id, TT.Id, TT.String, TT.Number, TT.Id, TT.Id, TT.String),
+				A(TT.Id, TT.Id, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
 				_("this"), _("is"), "just", 1, _("lexer"), _("test"), '!');
-			Case(@"12:30", A(TT.Number, TT.Colon, TT.Number), 12, _(":"), 30);
-			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.String), _("c"), _("+="), '0');
+			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, _(":"), 30);
+			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.Literal), _("c"), _("+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen), null, null, null, null, null, null);
 			Case(@"finally@@{`boom!` ;}", A(TT.Id, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Semicolon, TT.RBrace),
 				_("finally"), _(""), _(""), null, _("boom!"), _(";"), null);
-			Case(@"a""b""", A(TT.Id, TT.String), _("a"), "b");
+			Case(@"a""b""", A(TT.Id, TT.Literal), _("a"), "b");
 		}
 
 		[Test]
@@ -60,8 +60,8 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void IdLikeLiterals()
 		{
-			Case("@null",           A(TT.OtherLit),               new object[] {null});
-			Case("@true@false",     A(TT.OtherLit, TT.OtherLit),  true, false);
+			Case("@null",           A(TT.Literal),               new object[] {null});
+			Case("@true@false",     A(TT.Literal, TT.Literal),  true, false);
 			Case("@foo",            A(TT.Id),                     _("foo"));
 			Case("@`true`@`false`", A(TT.Id, TT.Id),              _("true"), _("false"));
 		}
@@ -69,37 +69,37 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestNormalStrings()
 		{
-			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.String, TT.String), _("Testing"), "Testing", '!');
-			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.String, TT.String),
+			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.Literal, TT.Literal), _("Testing"), "Testing", '!');
+			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.Literal, TT.Literal),
 				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
 			// There are no C#-style 'verbatim' strings in LES, use triple-quoted strings instead.
-			Case(@"#""\n"" @""\\""", A(TT.Id, TT.String, TT.At, TT.String), _("#"), "\n", _(""), "\\");
+			Case(@"#""\n"" @""\\""", A(TT.Id, TT.Literal, TT.At, TT.Literal), _("#"), "\n", _(""), "\\");
 		}
 
 		[Test]
 		public void TestTQStrings()
 		{
-			Case("\"\"\"Hello'''', quotes!\"\"\".", A(TT.String, TT.Dot), "Hello'''', quotes!", _("."));
-			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.String, TT.Dot), "Hello\"\"\"\", quotes!", _("."));
-			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.String, TT.Dot), "Hello\"\"\"\", quotes!", _("."));
+			Case("\"\"\"Hello'''', quotes!\"\"\".", A(TT.Literal, TT.Dot), "Hello'''', quotes!", _("."));
+			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.Literal, TT.Dot), "Hello\"\"\"\", quotes!", _("."));
+			Case("'''Hello\"\"\"\", quotes!'''.", A(TT.Literal, TT.Dot), "Hello\"\"\"\", quotes!", _("."));
 			
 			// Triple-quoted strings always use \n as the line separator, 
 			// and ignore indentation insofar as it matches the first line.
-			Case("  '''One\n  Two'''",    A(TT.String), "One\nTwo");
-			Case("  '''One\r  Two'''",    A(TT.String), "One\nTwo");
-			Case("  '''One\r\n  Two'''",  A(TT.String), "One\nTwo");
-			Case("\t\t'''One\n\t\tTwo'''",A(TT.String), "One\nTwo");
-			Case(" '''One\r  Two'''",     A(TT.String), "One\n Two");
-			Case("\t '''One\r\tTwo'''",   A(TT.String), "One\nTwo");
-			Case("  '''One\r\tTwo'''",    A(TT.String), "One\n\tTwo");
-			Case(" \t '''One\r \t  \tTwo'''", A(TT.String), "One\n \tTwo");
-			Case("  '''One\nTwo\n   Three'''", A(TT.String), "One\nTwo\n Three");
+			Case("  '''One\n  Two'''",    A(TT.Literal), "One\nTwo");
+			Case("  '''One\r  Two'''",    A(TT.Literal), "One\nTwo");
+			Case("  '''One\r\n  Two'''",  A(TT.Literal), "One\nTwo");
+			Case("\t\t'''One\n\t\tTwo'''",A(TT.Literal), "One\nTwo");
+			Case(" '''One\r  Two'''",     A(TT.Literal), "One\n Two");
+			Case("\t '''One\r\tTwo'''",   A(TT.Literal), "One\nTwo");
+			Case("  '''One\r\tTwo'''",    A(TT.Literal), "One\n\tTwo");
+			Case(" \t '''One\r \t  \tTwo'''", A(TT.Literal), "One\n \tTwo");
+			Case("  '''One\nTwo\n   Three'''", A(TT.Literal), "One\nTwo\n Three");
 			
 			// Triple-quoted strings also support escape sequences: \\\, \\n, \\r, \\", \\'
-			Case(@"'''Three quotes: ''\'/!'''", A(TT.String), "Three quotes: '''!");
-			Case(@"'''Escapes: \r/\n/, \\/, \""/, \0/ and \'/'''.", A(TT.String, TT.Dot), "Escapes: \r\n, \\, \", \0 and '", _("."));
-			Case(@"'''Escaped: \\/r/\\/n/, \\/\/, \\/""/, and \\/'/'''.", A(TT.String, TT.Dot), @"Escaped: \r/\n/, \\/, \""/, and \'/", _("."));
-			Case(@"'''Unrecognized escapes: \//\o/'''", A(TT.String), @"Unrecognized escapes: \//\o/");
+			Case(@"'''Three quotes: ''\'/!'''", A(TT.Literal), "Three quotes: '''!");
+			Case(@"'''Escapes: \r/\n/, \\/, \""/, \0/ and \'/'''.", A(TT.Literal, TT.Dot), "Escapes: \r\n, \\, \", \0 and '", _("."));
+			Case(@"'''Escaped: \\/r/\\/n/, \\/\/, \\/""/, and \\/'/'''.", A(TT.Literal, TT.Dot), @"Escaped: \r/\n/, \\/, \""/, and \'/", _("."));
+			Case(@"'''Unrecognized escapes: \//\o/'''", A(TT.Literal), @"Unrecognized escapes: \//\o/");
 		}
 
 		[Test]
@@ -127,15 +127,15 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestSimpleLiterals()
 		{
-			Case("1 1.0f 1.0 0x1 0b1", A(TT.Number, TT.Number, TT.Number, TT.Number, TT.Number),
+			Case("1 1.0f 1.0 0x1 0b1", A(TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				1, 1.0f, 1d, 0x1, 1);
-			Case("1L2UL3u4f5d6m", A(TT.Number, TT.Number, TT.Number, TT.Number, TT.Number, TT.Number),
+			Case("1L2UL3u4f5d6m", A(TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				1L, 2UL, 3u, 4f, 5d, 6m);
 			Case("@true @false @null @void", 
-				A(TT.OtherLit, TT.OtherLit, TT.OtherLit, TT.OtherLit),
+				A(TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				true, false, null, @void.Value);
-			Case("@@symbol \"string\"", A(TT.OtherLit, TT.String), GSymbol.Get("symbol"), "string");
-			Case(@"'\'''!'", A(TT.String, TT.String), '\'', '!');
+			Case("@@symbol \"string\"", A(TT.Literal, TT.Literal), GSymbol.Get("symbol"), "string");
+			Case(@"'\'''!'", A(TT.Literal, TT.Literal), '\'', '!');
 		}
 
 		[Test]
@@ -149,80 +149,80 @@ namespace Loyc.Syntax.Les
 			//Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("$"), _("x"), _(@"y\"), _("bq"), _(@"\"));
 			Case(@"~!%^&*-+=|<>/?:.$_", A(TT.PrefixOp, TT.Id), _("~!%^&*-+=|<>/?:.$"), _("_"));
 			Case(@"~!%^&*-+=|<>_/?:.$", A(TT.NormalOp, TT.Id, TT.PrefixOp), _("~!%^&*-+=|<>"), _("_"), _("/?:.$"));
-			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.OtherLit), _("~!%^&*-+=|<>"), _("/?:.$"));
+			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.Literal), _("~!%^&*-+=|<>"), _("/?:.$"));
 			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _(""), _(","), _("!"), _(";"), _(":"), _(@":^="));
 		}
 
 		[Test]
 		public void TestIntegers()
 		{
-			Case("9", A(TT.Number), 9);
-			Case("1337", A(TT.Number), 1337);
-			Case("-1", A(TT.Number), -1);
-			Case("9111222U", A(TT.Number), 9111222U);
-			Case("0L", A(TT.Number), 0L);
-			Case("-9111222L", A(TT.Number), -9111222L);
-			Case("-1U", A(TT.NormalOp, TT.Number), _("-"), 1U);
-			Case("9_111_222", A(TT.Number), 9111222);
-			Case("9_111_222_333", A(TT.Number), 9111222333);
-			Case("4_111_222_333", A(TT.Number), 4111222333);
-			Case("4_111_222_333U", A(TT.Number), 4111222333U);
-			Case("9_111_222_333_444_555", A(TT.Number), 9111222333444555);
-			Case("9_111_222_333_444_555L", A(TT.Number), 9111222333444555L);
-			Case("9_111_222_333_444_555UL", A(TT.Number), 9111222333444555UL);
-			Case("0x9+0x0A=0x0000_0000_13", A(TT.Number, TT.NormalOp, TT.Number, TT.Assignment, TT.Number), 0x9, _("+"), 0x0A, _("="), 0x13);
-			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Number, TT.NormalOp, TT.Number), 0x8081FF, _("=="), 0x8081FF);
-			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Number, TT.Number), 3L, 0x808192FFU);
-			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Number), 0x0F808192FF);
+			Case("9", A(TT.Literal), 9);
+			Case("1337", A(TT.Literal), 1337);
+			Case("-1", A(TT.Literal), -1);
+			Case("9111222U", A(TT.Literal), 9111222U);
+			Case("0L", A(TT.Literal), 0L);
+			Case("-9111222L", A(TT.Literal), -9111222L);
+			Case("-1U", A(TT.NormalOp, TT.Literal), _("-"), 1U);
+			Case("9_111_222", A(TT.Literal), 9111222);
+			Case("9_111_222_333", A(TT.Literal), 9111222333);
+			Case("4_111_222_333", A(TT.Literal), 4111222333);
+			Case("4_111_222_333U", A(TT.Literal), 4111222333U);
+			Case("9_111_222_333_444_555", A(TT.Literal), 9111222333444555);
+			Case("9_111_222_333_444_555L", A(TT.Literal), 9111222333444555L);
+			Case("9_111_222_333_444_555UL", A(TT.Literal), 9111222333444555UL);
+			Case("0x9+0x0A=0x0000_0000_13", A(TT.Literal, TT.NormalOp, TT.Literal, TT.Assignment, TT.Literal), 0x9, _("+"), 0x0A, _("="), 0x13);
+			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.NormalOp, TT.Literal), 0x8081FF, _("=="), 0x8081FF);
+			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
+			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Literal), 0x0F808192FF);
 		}
 
 		[Test]
 		public void TestFloats()
 		{
-			Case("0.0", A(TT.Number), 0.0);
-			Case("0.1", A(TT.Number), 0.1);
-            Case("25d25f25m", A(TT.Number, TT.Number, TT.Number), 25d,25f,25m);
-			Case("0.25d", A(TT.Number), 0.25d);
-			Case("0.25f", A(TT.Number), 0.25f);
-			Case("0.25m", A(TT.Number), 0.25m);
-			Case("0.25e2", A(TT.Number), 0.25e2);
-			Case("10e-20", A(TT.Number), 10e-20);
-			Case("0.3e+2d", A(TT.Number), 0.3e+2d);
-			Case("0.3e+2f", A(TT.Number), 0.3e+2f);
-			Case("0.3e+2m", A(TT.Number), 0.3e+2m);
-			Case("1234567890123456789012345678901234567890d", A(TT.Number), 1234567890123456789012345678901234567890d);
-			Case("123456789012345678901234567890.1234567890123456789012345678901234567890f", A(TT.Number), 
+			Case("0.0", A(TT.Literal), 0.0);
+			Case("0.1", A(TT.Literal), 0.1);
+            Case("25d25f25m", A(TT.Literal, TT.Literal, TT.Literal), 25d,25f,25m);
+			Case("0.25d", A(TT.Literal), 0.25d);
+			Case("0.25f", A(TT.Literal), 0.25f);
+			Case("0.25m", A(TT.Literal), 0.25m);
+			Case("0.25e2", A(TT.Literal), 0.25e2);
+			Case("10e-20", A(TT.Literal), 10e-20);
+			Case("0.3e+2d", A(TT.Literal), 0.3e+2d);
+			Case("0.3e+2f", A(TT.Literal), 0.3e+2f);
+			Case("0.3e+2m", A(TT.Literal), 0.3e+2m);
+			Case("1234567890123456789012345678901234567890d", A(TT.Literal), 1234567890123456789012345678901234567890d);
+			Case("123456789012345678901234567890.1234567890123456789012345678901234567890f", A(TT.Literal), 
 			      123456789012345678901234567890.1234567890123456789012345678901234567890f);
-			Case(".5e+2.5e+2f.5m", A(TT.Number, TT.Number, TT.Number), .5e+2, .5e+2f, .5m);
-			Case("Y.5", A(TT.Id, TT.Number), _("Y"), .5);
-			Case("0.1.5", A(TT.Number, TT.Number), 0.1, .5);
-			Case("5.ToString", A(TT.Number, TT.Dot, TT.Id), 5, _("."), _("ToString"));
+			Case(".5e+2.5e+2f.5m", A(TT.Literal, TT.Literal, TT.Literal), .5e+2, .5e+2f, .5m);
+			Case("Y.5", A(TT.Id, TT.Literal), _("Y"), .5);
+			Case("0.1.5", A(TT.Literal, TT.Literal), 0.1, .5);
+			Case("5.ToString", A(TT.Literal, TT.Dot, TT.Id), 5, _("."), _("ToString"));
 		}
 		[Test]
 		public void TestHexAndBinFloats()
 		{
-			Case("0x0.0p1234", A(TT.Number), 0.0);
-			Case("0x0.0", A(TT.Number), 0.0);
-			Case("0xF.8", A(TT.Number), 15.5);
-			Case("0xF.8p+1;0xF.8p1", A(TT.Number, TT.Semicolon, TT.Number), 31.0, _(";"), 31.0);
-			Case("0xA.8p-1", A(TT.Number), 5.25);
-			Case("0b101.01", A(TT.Number), 5.25);
-			Case("0b101.01p0f", A(TT.Number), 5.25f);
-			Case("0b101.01p2", A(TT.Number), 21.0);
-			Case("0b1111_1111.1111_1111p+8", A(TT.Number), (double)0xFFFF);
-			Case("0b.1p-2", A(TT.Number), 0.125);
-			Case("0b.1p-2f", A(TT.Number), 0.125f);
+			Case("0x0.0p1234", A(TT.Literal), 0.0);
+			Case("0x0.0", A(TT.Literal), 0.0);
+			Case("0xF.8", A(TT.Literal), 15.5);
+			Case("0xF.8p+1;0xF.8p1", A(TT.Literal, TT.Semicolon, TT.Literal), 31.0, _(";"), 31.0);
+			Case("0xA.8p-1", A(TT.Literal), 5.25);
+			Case("0b101.01", A(TT.Literal), 5.25);
+			Case("0b101.01p0f", A(TT.Literal), 5.25f);
+			Case("0b101.01p2", A(TT.Literal), 21.0);
+			Case("0b1111_1111.1111_1111p+8", A(TT.Literal), (double)0xFFFF);
+			Case("0b.1p-2", A(TT.Literal), 0.125);
+			Case("0b.1p-2f", A(TT.Literal), 0.125f);
 		}
 
 		[Test]
 		public void TestSymbols()
 		{
 			Case(@"@@public@@is@@A@@`common\\word`@@around@@here",
-				A(TT.OtherLit, TT.OtherLit, TT.OtherLit, TT.OtherLit, TT.OtherLit, TT.OtherLit),
+				A(TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal, TT.Literal),
 				_("public"), _("is"), _("A"), _(@"common\word"), _("around"), _("here"));
-			Case(@"@@+-*/", A(TT.OtherLit), _("+-*/"));
-			Case(@"@@+- //x", A(TT.OtherLit, TT.SLComment), _("+-"), WS);
-			Case(@"@@+-//x", A(TT.OtherLit), _("+-//x"));
+			Case(@"@@+-*/", A(TT.Literal), _("+-*/"));
+			Case(@"@@+- //x", A(TT.Literal, TT.SLComment), _("+-"), WS);
+			Case(@"@@+-//x", A(TT.Literal), _("+-//x"));
 		}
 
 		const string ERROR = "ERROR";
@@ -230,13 +230,13 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void EofInToken()
 		{
-			Case(@"""", A(TT.String), ERROR);
-			Case(@"'", A(TT.String), ERROR);
+			Case(@"""", A(TT.Literal), ERROR);
+			Case(@"'", A(TT.Literal), ERROR);
 			Case(@"`", A(TT.BQString), ERROR);
 			//Case(@"\\", A(TT.SuffixOp), _(@"\"));
 			Case(@"@", A(TT.At), _(@""));
 			Case(@"@@", A(TT.At, TT.At));
-			Case(@"2.0e+", A(TT.Number), ERROR);
+			Case(@"2.0e+", A(TT.Literal), ERROR);
 		}
 
 		[Test]
@@ -244,15 +244,15 @@ namespace Loyc.Syntax.Les
 		{
 			//Case("\0",              A(TT.Error), ERROR);
 			//Case("\x07",            A(TT.Error), ERROR);
-			Case("x=\"Hello\n",     A(TT.Id, TT.Assignment, TT.String, TT.Newline), _("x"), _("="), ERROR, WS);
-			Case("'\n'o''pq\n?''",  A(TT.String, TT.Newline, TT.String, TT.String, TT.Newline, TT.NormalOp, TT.String),
+			Case("x=\"Hello\n",     A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("="), ERROR, WS);
+			Case("'\n'o''pq\n?''",  A(TT.Literal, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp, TT.Literal),
 			                        ERROR, WS, 'o', ERROR, WS, _("?"), ERROR);
-			Case("'abc'",           A(TT.String), ERROR);
-			Case("0x!0b",           A(TT.Number, TT.Not, TT.Number), ERROR, _("!"), ERROR);
+			Case("'abc'",           A(TT.Literal), ERROR);
+			Case("0x!0b",           A(TT.Literal, TT.Not, TT.Literal), ERROR, _("!"), ERROR);
 			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, WS, _("newline"));
-			Case("0xFF_0000_0000U", A(TT.Number), ERROR);
-			Case("0xFFFF_FFFF_0000_0000L", A(TT.Number), ERROR);
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Number), ERROR);
+			Case("0xFF_0000_0000U", A(TT.Literal), ERROR);
+			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), ERROR);
+			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), ERROR);
 		}
 
 		[Test]

@@ -240,8 +240,7 @@ namespace Ecs.Parser
 				//       x as Foo?[y]        // Parsed OK
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Number
-				                               | TT.String | TT.SQString | TT.OtherLit | TT.Symbol | "(" | "{" 
+				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Literal | "(" | "{" 
 				                               | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
 				                               | "$" | "@" | UnusualId))
 				       {e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex); result=true;}
@@ -386,7 +385,7 @@ namespace Ecs.Parser
 				{r = IdNode(t);}
 			|	t:=UnusualId
 				{r = IdNode(t);}
-			|	t:=(TT.Number | TT.String | TT.SQString | TT.OtherLit | TT.Symbol)
+			|	t:=TT.Literal
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParensAuto  // (...)
 			|	r=BracedBlock       // {...}

@@ -20,6 +20,7 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 	internal partial class StageOneParser
 	{
+		static readonly TT EOF = TT.EOF;
 		void Infix(ref LNode a, Symbol op, LNode b)
 		{
 			a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
@@ -117,12 +118,10 @@ namespace Loyc.LLParserGenerator
 				case TT.InvertSet:
 				case TT.LBrace:
 				case TT.LBrack:
+				case TT.Literal:
 				case TT.LParen:
 				case TT.Minus:
 				case TT.Nongreedy:
-				case TT.Number:
-				case TT.OtherLit:
-				case TT.String:
 					{
 						seq.Add(LoopExpr());
 						// Line 93: (TT.Separator)?
@@ -311,11 +310,9 @@ namespace Loyc.LLParserGenerator
 						case TT.In:
 						case TT.LBrace:
 						case TT.LBrack:
+						case TT.Literal:
 						case TT.LParen:
 						case TT.Minus:
-						case TT.Number:
-						case TT.OtherLit:
-						case TT.String:
 							{
 								Skip();
 								e = PrimaryExpr();
@@ -373,7 +370,7 @@ namespace Loyc.LLParserGenerator
 			#line 159 "StageOneParserGrammar.ecs"
 			LNode e;
 			#line default
-			// Line 160: ( (TT.Id|TT.In) | (TT.Number|TT.OtherLit|TT.String) | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
+			// Line 160: ( (TT.Id|TT.In) | TT.Literal | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
 			switch ((TT) LA0) {
 			case TT.Id:
 			case TT.In:
@@ -384,9 +381,7 @@ namespace Loyc.LLParserGenerator
 					#line default
 				}
 				break;
-			case TT.Number:
-			case TT.OtherLit:
-			case TT.String:
+			case TT.Literal:
 				{
 					var t = MatchAny();
 					#line 163 "StageOneParserGrammar.ecs"

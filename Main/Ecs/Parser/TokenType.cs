@@ -24,11 +24,7 @@ namespace Ecs.Parser
 		ContextualKeyword = TokenKind.Id + 1,
 		@base     = TokenKind.Id + 2,
 		@this     = TokenKind.Id + 3,
-		Number    = TokenKind.Number,
-		String    = TokenKind.String,
-		SQString  = TokenKind.String + 1,
-		OtherLit  = TokenKind.OtherLit,
-		Symbol    = TokenKind.OtherLit + 1,
+		Literal   = TokenKind.Literal,
 		Comma     = TokenKind.Separator,
 		Semicolon = TokenKind.Separator + 1,
 		LParen    = TokenKind.LParen,
@@ -185,11 +181,7 @@ namespace Ecs.Parser
 					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
 				case TT.@base: return "base";
 				case TT.@this: return "this";
-				case TT.Number:
-				case TT.String:
-				case TT.SQString:
-				case TT.Symbol:
-				case TT.OtherLit:
+				case TT.Literal:
 					return EcsNodePrinter.PrintLiteral(t.Value, t.Style);
 				case TT.Comma: return ",";
 				case TT.Semicolon: return ";";

@@ -274,19 +274,19 @@ namespace Loyc.Syntax.Les
 				if (checkForNamedLiteral) {
 					if (id == TrueString) {
 						_value = BoxedTrue;
-						_type = TT.OtherLit;
+						_type = TT.Literal;
 						return;
 					} else if (id == FalseString) {
 						_value = BoxedFalse;
-						_type = TT.OtherLit;
+						_type = TT.Literal;
 						return;
 					} else if (id == NullString) {
 						_value = null;
-						_type = TT.OtherLit;
+						_type = TT.Literal;
 						return;
 					} else if (id == VoidString) {
 						_value = BoxedVoid;
-						_type = TT.OtherLit;
+						_type = TT.Literal;
 						return;
 					}
 				}

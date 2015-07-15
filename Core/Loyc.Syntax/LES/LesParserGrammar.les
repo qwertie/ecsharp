@@ -54,7 +54,7 @@ namespace Loyc.Syntax.Les {
 		@[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
-			{if (LA0->TT == TT.String) { endMarker = TT.EOF; };} // possible JSON
+			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{list.Add(e ?? MissingExpr());}
@@ -65,7 +65,7 @@ namespace Loyc.Syntax.Les {
 			{return list;}
 		};
 		@[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
-			{if (LA0->TT == TT.String) { endMarker.Value = TT.EOF; };} // possible JSON
+			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
 				{#rawText("yield"); return e ?? MissingExpr();}
@@ -186,7 +186,7 @@ namespace Loyc.Syntax.Les {
 		@[priv] rule Particle()::LNode @{
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
-			|	lit:=(TT.Number|TT.String|TT.OtherLit) // literal
+			|	lit:=TT.Literal // literal
 				{$result = F.Literal(lit).SetStyle(lit.Style);}
 			|	// @{Token literal}
 				o:"@" 

@@ -15,9 +15,9 @@ namespace Loyc.Syntax.Lexing
 		{
 			var file = EmptySourceFile.Unknown;
 			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
-				P(new Token((int)TokenKind.String,   3, 7, 0, "hello!"), @"String(""hello!"")"),
-				P(new Token((int)TokenKind.Number,   3, 7, 0, 12345),    @"Number(12345)"),
-				P(new Token((int)TokenKind.OtherLit, 3, 7, 0, GSymbol.Get("foo")),  @"OtherLit(@@foo)"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, "hello!"), @"String(""hello!"")"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, 12345),    @"Literal(12345)"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, GSymbol.Get("foo")),  @"OtherLit(@@foo)"),
 			});
 		}
 
@@ -56,17 +56,6 @@ namespace Loyc.Syntax.Lexing
 				P(new Token((int)TokenKind.Dedent, 7, 1, 0, null),  @"Dedent()"),
 				P(new Token((int)TokenKind.LOther, 5, 1, 0, child), @"LOther(x)"),
 				P(new Token((int)TokenKind.ROther, 7, 1, 0, null),  @"ROther()"),
-			});
-		}
-
-		[Test]
-		void LiteralToLNodeTests()
-		{
-			var file = EmptySourceFile.Unknown;
-			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
-				P(new Token((int)TokenKind.String,   3, 7, 0, "hello!"), @"[String] ""hello""!"),
-				P(new Token((int)TokenKind.Number,   3, 7, 0, 12345),    @"[Number] 12345"),
-				P(new Token((int)TokenKind.OtherLit, 3, 7, 0, GSymbol.Get("foo")),  @"[OtherLit] @@foo"),
 			});
 		}
 

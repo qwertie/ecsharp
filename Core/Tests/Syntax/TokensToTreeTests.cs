@@ -27,7 +27,7 @@ namespace Loyc.Syntax.Lexing
 			Expect(list, A(TT.Id, TT.SpaceLParen, TT.RParen, TT.Id, TT.LBrace, TT.RBrace, TT.Id, TT.LBrack, TT.RBrack, TT.NormalOp), _("a"));
 			Expect(list[1].Children, A(TT.Id), _("b"));
 			Expect(list[4].Children, A(TT.Id), _("d"));
-			Expect(list[7].Children, A(TT.Number, TT.Id), 123, _("f"));
+			Expect(list[7].Children, A(TT.Literal, TT.Id), 123, _("f"));
 		}
 
 		[Test]
@@ -39,12 +39,12 @@ namespace Loyc.Syntax.Lexing
 			Expect(list[0].Children[1].Children, A(TT.Id), _("c"));
 			Expect(list[2].Children, A(TT.LBrack, TT.RBrack));
 			Expect(list[4].Children, A(TT.LBrace, TT.RBrace, TT.PreOrSufOp));
-			Expect(list[4].Children[0].Children, A(TT.Number), 123);
+			Expect(list[4].Children[0].Children, A(TT.Literal), 123);
 			
 			list = Lex("(x] + [123)", false);
 			Expect(list, A(TT.LParen, TT.RBrack, TT.NormalOp, TT.LBrack, TT.RParen));
 			Expect(list[0].Children, A(TT.Id), _("x"));
-			Expect(list[3].Children, A(TT.Number), 123);
+			Expect(list[3].Children, A(TT.Literal), 123);
 		}
 
 		[Test]
@@ -56,7 +56,7 @@ namespace Loyc.Syntax.Lexing
 				} // matched with 'namespace {'
 				""Fin""
 			");
-			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace, TT.String), _("namespace"));
+			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace, TT.Literal), _("namespace"));
 			Expect(list[1].Children, A(TT.Id, TT.LBrace, TT.RBrack), _("foo"));
 
 			list = Lex(@"
@@ -96,7 +96,7 @@ namespace Loyc.Syntax.Lexing
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace), _("namespace"));
 			Expect(list[1].Children, A(TT.SpaceLParen));
-			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Number), _("a"));
+			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Literal), _("a"));
 
 			list = Lex(@"
 				namespace {
@@ -107,7 +107,7 @@ namespace Loyc.Syntax.Lexing
 			");
 			Expect(list, A(TT.Id, TT.LBrace), _("namespace"));
 			Expect(list[1].Children, A(TT.SpaceLParen, TT.RBrace));
-			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Number), _("a"));
+			Expect(list[1].Children[0].Children, A(TT.Id, TT.LBrace, TT.RBrace, TT.Literal), _("a"));
 
 			list = Lex(@"
 				a {

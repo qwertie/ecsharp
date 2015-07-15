@@ -128,7 +128,7 @@ namespace LeMP
 								ReplaceAt(ref modified, ref tokens, i, token.WithValue(repl.B.Name));
 							} else if (repl.B.IsLiteral) {
 								ReplaceAt(ref modified, ref tokens, i, new Token(
-									(int)Token.GetLiteralKind(repl.B.Value),
+									(int)TokenKind.Literal,
 									token.StartIndex, token.Length, token.Style,
 									repl.B.Value));
 							}

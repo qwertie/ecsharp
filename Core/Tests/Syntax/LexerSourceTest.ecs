@@ -68,7 +68,7 @@ namespace Loyc.Syntax.Tests
 	{
 		EOF = TokenKind.Spaces, // If you use EOF = 0, default(Token) represents EOF
 		Id = TokenKind.Id,
-		Num = TokenKind.Number,
+		Num = TokenKind.Literal,
 		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST)
 		{
 			TOKEN_NAME = TOKEN_KIND; // inside 'unroll', must use ';' instead of ',' as separator

@@ -182,5 +182,6 @@ namespace Loyc
 		{
 			return Value == null ? null : Value.ToString();
 		}
+		public static implicit operator Holder<T>(T value) { return new Holder<T>(value); }
 	}
 }

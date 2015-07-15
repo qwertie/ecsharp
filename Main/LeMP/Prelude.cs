@@ -722,11 +722,19 @@ namespace LeMP.Prelude
 			return null;
 		}
 
-		[LexicalMacro(@"Expr \as Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
+		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
 		public static LNode @as(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
 				return node.WithTarget(S.As);
+			return null;
+		}
+
+		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).")]
+		public static LNode @is(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithTarget(S.Is);
 			return null;
 		}
 
