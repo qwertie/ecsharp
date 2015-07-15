@@ -11,7 +11,7 @@ namespace Loyc.LLParserGenerator
 		[Test] public void TestExplicitLabels()
 		{
 			// Two explicit labels
-			Test(@"LLLPG (parser(terminalType = Symbol)) {
+			Test(@"LLLPG (parser(terminalType: Symbol)) {
 					rule Foo() @[ a:A a2:A {Checkpoint($a); Checkpoint($a2);} ];
 				};", @"
 					void Foo()
@@ -60,7 +60,7 @@ namespace Loyc.LLParserGenerator
 						return x;
 					}");
 			// Implicit rule references
-			Test(@"LLLPG (parser(terminalType = Token)) {
+			Test(@"LLLPG (parser(terminalType: Token)) {
 					rule Foo() @[ (A C | B C) {Blah($B, $C);} ];
 				};", @"
 					void Foo()
@@ -83,7 +83,7 @@ namespace Loyc.LLParserGenerator
 		[Test] public void TestImplicitTerminalRefs()
 		{
 			// Implicit terminal reference in semantic predicate
-			Test(@"LLLPG (parser(terminalType = char)) {
+			Test(@"LLLPG (parser(terminalType: char)) {
 					token Foo() @[ Op (&{$Op == '$'} '$')? ];
 				};", @"
 					void Foo()
@@ -141,7 +141,7 @@ namespace Loyc.LLParserGenerator
 		[Test] public void TestMisc()
 		{
 			// Implicit $B should be a separate variable from explicit $b.
-			Test(@"LLLPG (parser(terminalType = object)) {
+			Test(@"LLLPG (parser(terminalType: object)) {
 					rule Foo() @[ {x::int;} a:A (b+:B)* C B x=B {Blah(a, b, $B);} ];
 				};", @"
 					void Foo()
@@ -165,7 +165,7 @@ namespace Loyc.LLParserGenerator
 						Blah(a, b, tok_B);
 					}");
 			// c+:C* should be parsed as (c+:C)*
-			Test(@"LLLPG (parser(terminalType = Token)) {
+			Test(@"LLLPG (parser(terminalType: Token)) {
 					rule Foo() @[ A C      {FunWith($C);}
 					            | B c+:C*  {FunWith($c);} ];
 				};", @"
@@ -194,7 +194,7 @@ namespace Loyc.LLParserGenerator
 						}
 					}");
 			// Unused labels should be unsubstituted
-			Test(@"LLLPG (parser(terminalType = object)) {
+			Test(@"LLLPG (parser(terminalType: object)) {
 					rule Foo() @[ c:C {Dollar($B, $C);} ];
 				};", @"
 					void Foo()

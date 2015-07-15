@@ -264,6 +264,7 @@
     <Compile Include="StandardMacros\StandardMacros.cs" />
     <Compile Include="StandardMacros\TupleMacros.cs" />
     <Compile Include="StandardMacros\UnrollMacro.cs" />
+    <Compile Include="StandardMacros\UseSymbolsMacro.cs" />
     <Compile Include="StandardMacros\WithMacro.cs" />
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>

@@ -8,7 +8,7 @@ using Loyc.Syntax;
 
 namespace LeMP
 {
-	/// <summary>Method signature of an LEL simple macro.</summary>
+	/// <summary>Method signature of an LeMP macro.</summary>
 	/// <param name="node">The node that caused the macro to be invoked (includes 
 	/// the name of the macro itself, and any attributes applied to the macro)</param>
 	/// <param name="context">This is a dual-purpose object. Firstly, this object

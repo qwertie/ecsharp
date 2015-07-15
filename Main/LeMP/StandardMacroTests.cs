@@ -50,6 +50,8 @@ namespace LeMP
 			
 			TestBoth("(a; b; c) = foo;", "(a, b, c) = foo;",
 			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
+			TestEcs("(var a, var b, c) = foo;",
+			        "var a = foo.Item1; var b = foo.Item2; c = foo.Item3;");
 			int n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b.c.d) = Foo;",
 			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2;");
@@ -101,6 +103,23 @@ namespace LeMP
 				   @"q = F.Call(CodeSymbols.Assign, dict[key], F.Literal(1));");
 			TestEcs("q = quote(hello + $x);",
 				   @"q = F.Call(CodeSymbols.Add, F.Id(""hello""), x);");
+		}
+
+		[Test]
+		public void TestUseSymbols()
+		{
+			TestLes("@[Attr] use_symbols; @@foo;",
+				@"@[Attr, #static, #readonly] #var(Symbol, sy_foo = #cast(""foo"", Symbol)); sy_foo;");
+			TestEcs("[Attr] use_symbols; Symbol status = @@OK;",
+				@"[Attr] static readonly Symbol sy_OK = (Symbol) ""OK""; Symbol status = sy_OK;");
+			TestEcs("[Attr] use_symbols(prefix(_), inherit(@@OK)); Symbol status = @@OK;",
+				@"Symbol status = _OK;");
+			TestEcs(@"public use_symbols(prefix: S_, inherit: (@@Good, @@Bad)); 
+				Symbol status = @@OK ?? @@Good;
+				Symbol Err() { return @@Bad ?? @@Error; }",
+				@"public static readonly Symbol S_OK = (Symbol) ""OK"", S_Error = (Symbol) ""Error"";
+				Symbol status = S_OK ?? S_Good;
+				Symbol Err() { return S_Bad ?? S_Error; }");
 		}
 
 		[Test]
@@ -381,10 +400,12 @@ namespace LeMP
 		}
 
 		[Test]
-		public void TestNameOf()
+		public void TestNameOfAndStringify()
 		{
-			TestBoth(@"s = nameof(hello);", @"s = nameof(hello);", @"s = ""hello"";");
-			TestBoth(@"s = nameof(f(x, 'y'));", @"s = nameof(f(x, 'y'));", @"s = ""f(x, 'y')"";");
+			TestBoth(@"s = nameof(hello);",    @"s = nameof(hello);",     @"s = ""hello"";");
+			TestBoth(@"s = stringify(hello);", @"s = stringify(hello);",  @"s = ""hello"";");
+			TestBoth(@"s = nameof(A.B!C(D));", @"s = nameof(A.B<C>(D));", @"s = ""B"";");
+			TestEcs (@"s = stringify(A.B<C>(D));",                        @"s = ""A.B<C>(D)"";");
 		}
 
 		[Test]
@@ -531,14 +552,17 @@ namespace LeMP
 		private void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
 		{
 			var lemp = NewLemp(maxExpand);
-			var inputCode = new RVList<LNode>(inLang.Parse(input, _sink));
-			var results = lemp.ProcessSynchronously(inputCode);
-			var expectCode = outLang.Parse(expected, _sink);
-			if (!results.SequenceEqual(expectCode))
-			{	// TEST FAILED, print error
-				string resultStr = results.Select(n => outLang.Print(n, _sink)).Join("\n");
-				Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected), 
-				                TestCompiler.StripExtraWhitespace(resultStr));
+			using (ParsingService.PushCurrent(inLang))
+			{
+				var inputCode = new RVList<LNode>(inLang.Parse(input, _sink));
+				var results = lemp.ProcessSynchronously(inputCode);
+				var expectCode = outLang.Parse(expected, _sink);
+				if (!results.SequenceEqual(expectCode))
+				{	// TEST FAILED, print error
+					string resultStr = results.Select(n => outLang.Print(n, _sink)).Join("\n");
+					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
+									TestCompiler.StripExtraWhitespace(resultStr));
+				}
 			}
 		}
 		MacroProcessor NewLemp(int maxExpand)

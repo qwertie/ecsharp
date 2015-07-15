@@ -31,12 +31,13 @@ namespace Ecs.Parser
 	using EP = EcsPrecedence;
 
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
-	#rawText("\n\t#pragma warning disable 162, 642\n\t"); 
+	#rawText "\n\t#pragma warning disable 162, 642\n\t"; 
 
 	@[partial] class EcsParser
 	{
 		@[LL(2), Verbosity(2)]
-		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), allowSwitch(@true), setType(HashSet!int), castLA(@false));
+		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
+		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
 
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);

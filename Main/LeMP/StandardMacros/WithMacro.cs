@@ -26,7 +26,7 @@ namespace LeMP
 			LNode tmp = F.Id(NextTempName());
 			RWList<LNode> stmts = braces.Args.ToRWList();
 			stmts = stmts.SmartSelect(stmt => 
-				stmt.FindAndReplace(expr => {
+				stmt.ReplaceRecursive(expr => {
 					if (expr.Calls(S.Dot, 1))
 						return expr.WithArgs(new RVList<LNode>(tmp, expr.Args.Last));
 					return null;

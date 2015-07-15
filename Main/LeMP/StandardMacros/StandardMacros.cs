@@ -88,8 +88,35 @@ namespace LeMP
 			return result.WithAttrs(attrs);
 		}
 
-		[LexicalMacro(@"nameof(id_or_expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
-		public static LNode nameof(LNode nameof, IMacroContext context)
+		[LexicalMacro(@"nameof(id_or_expr)", @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
+		public static LNode @nameof(LNode nameof, IMacroContext context)
+		{
+			if (nameof.ArgCount != 1)
+				return null;
+			var expr = KeyNameComponentOf(nameof.Args[0]);
+			return F.Literal(ParsingService.Current.Print(expr, context.Sink, ParsingService.Exprs));
+		}
+		
+		/// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
+		/// <remarks>
+		/// The key name component of <c>global::Foo!int.Bar!T(x)</c> (which is 
+		/// is structured <c>((((global::Foo)!int).Bar)!T)(x)</c>) is <c>Bar</c>. 
+		/// </remarks>
+		public static LNode KeyNameComponentOf(LNode name)
+		{
+			// So if #of, get first arg (which cannot itself be #of), then if @`.`, get second arg.
+			// If it's a call, note that we have to check for #of and @`.` BEFORE stripping off the args.
+			if (name.CallsMin(S.Of, 1))
+				name = name.Args[0];
+			if (name.CallsMin(S.Dot, 1))
+				name = name.Args.Last;
+			if (name.IsCall)
+				return KeyNameComponentOf(name.Target);
+			return name;
+		}
+
+		[LexicalMacro(@"stringify(expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
+		public static LNode stringify(LNode nameof, IMacroContext context)
 		{
 			if (nameof.ArgCount != 1)
 				return null; // reject

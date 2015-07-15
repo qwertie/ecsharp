@@ -81,7 +81,7 @@ namespace Loyc.LLPG
 
 			// Scan options in lexer(...) node
 			var helper = new IntStreamCodeGenHelper();
-			foreach (var option in DecodeOptions(lexerCfg.Args))
+			foreach (var option in MacroContext.GetOptions(lexerCfg.Args))
 			{
 				LNode value = option.Value;
 				string key = (option.Key ?? (Symbol)"??").Name;
@@ -102,26 +102,6 @@ namespace Loyc.LLPG
 			return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
 		}
 
-		/// <summary>Decodes options in the format <c>option1(v1), option2(v2)</c> 
-		/// or <c>option1 = v1, option2 = v2</c>. If the format of a given
-		/// node is invalid, this function yields <c>(null, node)</c>.</summary>
-		static IEnumerable<KeyValuePair<Symbol, LNode>> DecodeOptions(RVList<LNode> optionList)
-		{
-			foreach (var option in optionList) {
-				Symbol key;
-				LNode value;
-				if (option.ArgCount == 1 || option.Calls(S.NamedArg, 2) || option.Calls(S.Assign, 2)) {
-					value = option.Args.Last;
-					if (option.ArgCount == 1)
-						key = option.Name;
-					else
-						key = option.Args[0].Name;
-					yield return new KeyValuePair<Symbol, LNode>(key, value);
-				} else
-					yield return new KeyValuePair<Symbol, LNode>(null, option);
-			}
-		}
-
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
 		/// into a <see cref="GeneralCodeGenHelper"/> object.</summary>
 		[LexicalMacro("LLLPG {Body...}; LLLPG parser {Body...}; LLLPG parser(option(value), ...) {Body...}", "Runs LLLPG in general-purpose mode (via GeneralCodeGenHelper)", "LLLPG",
@@ -140,7 +120,7 @@ namespace Loyc.LLPG
 			// Scan options in parser(...) node
 			var helper = new GeneralCodeGenHelper();
 			if (parserCfg != null) {
-				foreach (var option in DecodeOptions(parserCfg.Args)) {
+				foreach (var option in MacroContext.GetOptions(parserCfg.Args)) {
 					LNode value = option.Value;
 					string key = (option.Key ?? (Symbol)"??").Name;
 					switch (key.ToLowerInvariant()) {

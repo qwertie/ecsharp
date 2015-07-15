@@ -1217,6 +1217,10 @@ namespace Loyc.Syntax
 		/// the new node are ignored. If the selector returns null, children of the 
 		/// child are scanned recursively.</param>
 		/// <param name="replaceRoot">Whether to call <c>selector(this)</c>.</param>
+		/// <returns>The new node produced after all replacements have occurred.</returns>
+		/// <remarks>If <c>replaceFunc</c> always returns null (or if <c>replaceRoot</c>
+		/// is false and the root has no children), <c>ReplaceRecursive</c> returns 
+		/// <c>this</c>.</remarks>
 		public abstract LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true);
 	}
 }

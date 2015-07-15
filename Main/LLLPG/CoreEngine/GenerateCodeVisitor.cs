@@ -579,7 +579,7 @@ namespace Loyc.LLParserGenerator
 					LNode code = (LNode)pred.Pred;
 
 					// replace $LI and $LA
-					return code.FindAndReplace(arg => {
+					return code.ReplaceRecursive(arg => {
 						if (arg.Equals(AndPred.SubstituteLA)) // $LA
 							return (LNode)laVar;
 						if (arg.Equals(AndPred.SubstituteLI)) // $LI

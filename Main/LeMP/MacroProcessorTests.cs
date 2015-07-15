@@ -106,10 +106,10 @@ namespace LeMP
 		[Test]
 		public void TrivialTest()
 		{
-			Test("no macros.apply here;",  // LES input
+			Test("no macros.apply here;",   // LES input
 				"no(macros.apply, here);"); // C# output
-			Test("while (@true) {};",      // LES input
-				"while ((true)) {}");      // C# output
+			Test("while (@true) {};",       // LES input
+				"while ((true)) {}");       // C# output
 		}
 
 		[Test]

@@ -112,14 +112,22 @@ namespace LeMP
 				var stmts = new RWList<LNode>();
 				var tuple = a[0].Args;
 				var rhs = a[1];
-				bool needTemp = rhs.IsCall || !char.IsLower(rhs.Name.Name.TryGet(0, '\0'));
+				
+				// Avoid evaluating rhs more than once, if it doesn't look like a simple variable
+				bool needTemp = rhs.IsCall || char.IsUpper(rhs.Name.Name.TryGet(0, '\0'));
 				if (needTemp) {
 					LNode tmp = F.Id(NextTempName());
 					stmts.Add(F.Var(F._Missing, tmp.Name, rhs));
 					rhs = tmp;
 				}
-				for (int i = 0; i < tuple.Count; i++)
-					stmts.Add(F.Call(S.Assign, tuple[i], F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))))));
+
+				for (int i = 0; i < tuple.Count; i++) {
+					var itemi = F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))));
+					if (tuple[i].Calls(S.Var, 2))
+						stmts.Add(F.Var(tuple[i].Args[0], tuple[i].Args[1], itemi));
+					else
+						stmts.Add(F.Call(S.Assign, tuple[i], itemi));
+				}
 				return F.Call(S.Splice, stmts.ToRVList());
 			}
 			return null;

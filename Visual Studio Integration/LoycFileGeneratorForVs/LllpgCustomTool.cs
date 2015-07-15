@@ -154,6 +154,7 @@ namespace Loyc.VisualStudio
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
 						+ "// --no-out-header       Suppress this message{0}"
 						+ "// --verbose             Allow verbose messages (shown by VS as 'warnings'){0}"
+						+ "// --timeout=X           Abort processing thread after X seconds (default: 10){0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
 						+ "// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);{0}", NewlineString, 
 						Path.GetFileName(io.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
@@ -207,8 +208,10 @@ namespace Loyc.VisualStudio
 				
 				var sourceFile = new InputOutput((UString)inputFileContents, Path.GetFileName(inputFilePath));
 
-				var c = new Compiler(sink, sourceFile);
-				c.Parallel = false; // only one file, parallel doesn't help
+				var c = new Compiler(sink, sourceFile) { 
+					AbortTimeout = TimeSpan.FromSeconds(10),
+					Parallel = false // only one file, parallel doesn't help
+				};
 
 				if (LeMP.Compiler.ProcessArguments(c, options))
 				{

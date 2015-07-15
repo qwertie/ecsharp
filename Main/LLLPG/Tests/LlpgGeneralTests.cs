@@ -1776,11 +1776,11 @@ namespace Loyc.LLParserGenerator
 					}
 				}");
 			DualLanguageTest(@"
-				LLLPG parser(laType = Symbol, allowSwitch = @false);
+				LLLPG parser(laType: Symbol, allowSwitch: @false);
 				public rule Number @[ @@Number ];
 				public rule Numbers @[ Number* ];
 			", @"
-				LLLPG (parser(laType = Symbol, allowSwitch = false));
+				LLLPG (parser(laType: Symbol, allowSwitch: false));
 				public rule Number @[ @@Number ];
 				public rule Numbers @[ Number* ];
 			", @"

@@ -173,5 +173,29 @@ namespace LeMP
 			}
 			return Pair.Create(args, body);
 		}
+
+		/// <summary>Transforms an option list in the format <c>option1(v1), option2(v2)</c> 
+		/// or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
+		/// If the format of a given node is invalid, this function yields <c>(null, node)</c>.</summary>
+		/// <remarks>
+		/// <c>option1: v1, option2: v2</c> is parsed into <c>#namedArg(option1, v1), 
+		/// #namedArg(option2, v2)</c> in EC# or <c>@:(option1, v1), @:(option2, v2)</c> in LES.
+		/// This function recognizes both forms.
+		/// </remarks>
+		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(RVList<LNode> optionList)
+		{
+			foreach (var option in optionList) {
+				if ((option.Calls(CodeSymbols.NamedArg, 2) || option.Calls(CodeSymbols.Colon, 2)) && option.Args[0].IsId)
+				{
+					Symbol key = option.Args[0].Name;
+					LNode value = option.Args.Last;
+					yield return new KeyValuePair<Symbol, LNode>(key, value);
+				}
+				else if (option.Args.Count == 1 && option.Target.IsId)
+					yield return new KeyValuePair<Symbol, LNode>(option.Target.Name, option.Args[0]);
+				else
+					yield return new KeyValuePair<Symbol, LNode>(null, option);
+			}
+		}
 	}
 }

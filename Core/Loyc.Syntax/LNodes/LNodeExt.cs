@@ -112,31 +112,6 @@ namespace Loyc.Syntax
 			return null;
 		}
 
-		/// <summary>Recursively runs a replacement function on a Loyc tree.</summary>
-		/// <param name="root">A node to scan recursively (depth-first, starting 
-		/// at the top level).</param>
-		/// <param name="replaceFunc">A user-defined method that returns either 
-		/// (1) null, to do no replacement and request that child nodes be processed,
-		/// or (2) non-null, to replace the input node with an output node. When
-		/// replaceFunc returns a node, <c>FindAndReplace</c> does not recursively
-		/// call replaceFunc again on that node or its children.</param>
-		/// <param name="replaceRoot">If true, <c>replaceFunc</c> is called on the 
-		/// root node. If false, <c>replaceFunc</c> is not called on the root node.</param>
-		/// <returns>The new node produced after all replacements have occurred.</returns>
-		/// <remarks>If <c>replaceFunc</c> always returns null (or if <c>replaceRoot</c>
-		/// is false and the root has no children), <c>FindAndReplace</c> returns 
-		/// <c>root</c>.</remarks>
-		public static LNode FindAndReplace(this LNode root, Func<LNode, LNode> replaceFunc, bool replaceRoot = true)
-		{
-			Func<LNode, LNode> replaceRecursive = null; replaceRecursive = node =>
-			{
-				LNode @new = replaceFunc(node);
-				return @new ?? node.Select(replaceRecursive);
-			};
-			LNode newRoot = replaceRoot ? replaceFunc(root) : null;
-			return newRoot ?? root.Select(replaceRecursive);
-		}
-
 		#region MatchesPattern() and helper methods // Used by replace() macro
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LNodeExt.cs"));
