@@ -60,7 +60,7 @@ namespace Loyc
 	/// performance advantage in comparing identifiers by reference rather than
 	/// character-by-character.
 	/// </remarks>
-	public class Symbol : IReferenceComparable, IComparable<Symbol>
+	public class Symbol : IReferenceComparable, IComparable<Symbol>, IEquatable<Symbol>
 	{
 		#region Public instance members
 
@@ -85,6 +85,7 @@ namespace Loyc
 
 		public override int GetHashCode() { return 5432 + _id ^ (_pool.PoolId << 16); }
 		public override bool Equals(object b) { return ReferenceEquals(this, b); }
+		public          bool Equals(Symbol b) { return this == b; }
 		
 		public int CompareTo(Symbol other)
 		{

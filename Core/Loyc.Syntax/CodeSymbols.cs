@@ -115,7 +115,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Throw = GSymbol.Get("#throw");         //!< e.g. #throw(expr);  <=> throw expr;
 		public static readonly Symbol Checked = GSymbol.Get("#checked");     //!< e.g. #checked({ stmt; }); <=> checked { stmt; }
 		public static readonly Symbol Unchecked = GSymbol.Get("#unchecked"); //!< e.g. #unchecked({ stmt; }); <=> unchecked { stmt; }
-		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x(&y)), stmt); <=> fixed(int* x = &y) stmt;
+		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x = &y), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
 		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
@@ -286,7 +286,7 @@ namespace Loyc.Syntax
 		// Tokens
 		public static readonly Symbol Colon = GSymbol.Get(":");          //!< ":" token value for colon
 		public static readonly Symbol Semicolon = GSymbol.Get(";");      //!< ";" token value for semicolon
-		public static readonly Symbol Do = GSymbol.Get("#do");           //!< "#do" token value for do keyword
+		public static readonly Symbol Do = GSymbol.Get("#do");           //!< "#do" token value for do keyword, not to be confused with #doWhile
 		public static readonly Symbol Else = GSymbol.Get("#else");       //!< "#else" token value for else keyword
 		public static readonly Symbol Comma = GSymbol.Get(",");          //!< "," token value for comma
 			// (C comma operator: all arguments are evaluated and the result of the expression is the value of the last argument. This is equivalent to the way we tentatively define #)

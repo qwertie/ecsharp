@@ -102,6 +102,12 @@ namespace LeMP
 			return null;
 		}
 
+		static LNode TempVarDecl(LNode value, out LNode tmpId)
+		{
+			tmpId = F.Id(NextTempName());
+			return F.Var(F._Missing, tmpId, value);
+		}
+
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
 		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=")]
@@ -116,8 +122,8 @@ namespace LeMP
 				// Avoid evaluating rhs more than once, if it doesn't look like a simple variable
 				bool needTemp = rhs.IsCall || char.IsUpper(rhs.Name.Name.TryGet(0, '\0'));
 				if (needTemp) {
-					LNode tmp = F.Id(NextTempName());
-					stmts.Add(F.Var(F._Missing, tmp.Name, rhs));
+					LNode tmp;
+					stmts.Add(TempVarDecl(rhs, out tmp));
 					rhs = tmp;
 				}
 

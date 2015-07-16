@@ -87,7 +87,6 @@ namespace Loyc.Syntax.Les {
 		};
 
 		@[prot] rule TopExpr()::LNode @{
-			// Use a gate to simplify the decision about whether to call this rule
 			greedy[	// @[Attributes] - @ sign temporarily optional during transition to JSON superset
 				at:"@"? 
 				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")};} 

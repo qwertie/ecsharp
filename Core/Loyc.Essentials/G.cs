@@ -25,6 +25,20 @@ namespace Loyc
 			b = tmp;
 		}
 
+		public static bool IsOneOf<T>(this T value, params T[] set) where T : IEquatable<T>
+		{
+			if (value == null) {
+				for (int i = 0; i < set.Length; i++)
+					if (set[i] == null)
+						return true;
+			} else {
+				for (int i = 0; i < set.Length; i++)
+					if (value.Equals(set[i]))
+						return true;
+			}
+			return false;
+		}
+
 		public static readonly object BoxedFalse = false;      //!< Singleton false cast to object.
 		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
 		public static readonly object BoxedVoid = new @void(); //!< Singleton void cast to object.
