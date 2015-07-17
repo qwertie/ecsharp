@@ -7,7 +7,8 @@ commentIssueId: 10
 
 I'd like to make a "universal" programming language that takes the best features of all the new languages, and either (1) directly supports those features, somehow, or (2) provides lower-level primitives out of which those features can be built, with features provided by the standard library.
 
-![](../blog/GiantRobot.jpg) <br/>_If I have seen further, it is by having built a giant robot to stand on._
+_If I have seen further, it is by having built a giant robot to stand on._
+![](../blog/GiantRobot.jpg)
 
 Goals
 -----
@@ -18,7 +19,7 @@ Goals
 - To be friendly to autocompletion
 - To be friendly to analysis tools (e.g. dependency graph generator)
 - To be amenible to next-gen text editors (e.g. embedding diagrams in source code)
-- To be useful as a "master language" for automatic conversions to other programming languages. To achieve this while still being a powerful language, the standard library designs should rely a lot on features such as macros that don't require support in target language. However, this goal is not exclusionary: the language can certainly _support_ features that cannot translate to some (or any) other languages. Often, features can be converted to most target languages with some loss of performance (e.g. union and intersection types) and/or loss of code clarity (e.g. alias types).
+- To be useful as a "master language" for automatic conversions to other programming languages. To achieve this while still being a powerful language, the standard library designs should rely a lot on features, such as a macro system, that don't require support in the target language. However, this goal is not exclusionary: the language can certainly _allow_ features that cannot be translated to some (or any) other languages. Often, features can be converted to most target languages with some loss of performance (e.g. union and intersection types) and/or loss of code clarity (e.g. alias types).
 - To use the [MLSL](http://loyc.net/2014/design-elements-of-mlsl.html) as the "basic" standard library.
 - To _eventually_ support C-like performance for D-like code. In other words, the generated code should be fast even when the code was convenient to write, in contrast to languages like C# where, for example, LINQ-to-objects has a performance penalty over plain-old `for` loops. However, in the interest of Rapid Application Development, performance cannot be a priority in the beginning, especially since I expect to start from my existing C# tools.
 - To be as simple as possible under the above constraints.
@@ -38,7 +39,7 @@ Step 1 is to gather a list of the features we'd like to support. This post is st
 - Algebraic Data Types (and GADTs)
 - Pattern matching / deconstruction
 - (Tuples, [and, lists])
-- "Everything is an expression"; `()` as a first-class type
+- "Everything is an expression"; `void`/`()` as a first-class type
 - Equivalence between "functions" and "operators"
 - Other features that make functional programming convenient (immutability by default, higher-order functions, etc.)
 
@@ -54,7 +55,11 @@ Step 1 is to gather a list of the features we'd like to support. This post is st
 
 - Coroutines/generators (async/await & iterators)
 - Properties
-- Run-time code generation
+
+**.NET**:
+
+- Run-time custom code generation (e.g. dynamic methods, [RunSharp](https://code.google.com/p/runsharp/))
+- Reified generics combined with dynamic linking, e.g. `List<T>` in the standard library is dynamically linked, but can be specialized at runtime for a value type defined later in user code.
 
 **LISP languages**:
 
