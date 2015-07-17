@@ -1,5 +1,5 @@
 ---
-title: TODO: The ultimate programming language
+title: TODO - The ultimate programming language
 layout: post
 toc: true
 commentIssueId: 10
@@ -7,7 +7,7 @@ commentIssueId: 10
 
 I'd like to make a "universal" programming language that takes the best features of all the new languages, and either (1) directly supports those features, somehow, or (2) provides lower-level primitives out of which those features can be built, with features provided by the standard library.
 
-![](../blog/GiantRobot.jpg)
+![](../blog/GiantRobot.jpg)<br/>
 _If I have seen further, it is by having built a giant robot to stand on._
 
 Goals
@@ -32,6 +32,7 @@ The wishlist
 Step 1 is to gather a list of the features we'd like to support. This post is step 1.
 
 **Functional languages**
+
 - Garbage collection
 - Closures ("delegate" = function pointer with environment)
 - Generics (preferably proven correct for all possible instances, unlike C++/D templates)
@@ -43,6 +44,7 @@ Step 1 is to gather a list of the features we'd like to support. This post is st
 - Other features that make functional programming convenient (immutability by default, higher-order functions, etc.)
 
 **Object-oriented languages**
+
 - Dot notation for convenient invocation
 - Encapsulation & data hiding
 - Exceptions (throw/try/catch/finally; nearly zero runtime cost when exceptions don't occur)
@@ -50,24 +52,30 @@ Step 1 is to gather a list of the features we'd like to support. This post is st
 - Interfaces (= type classes + existential quantification in Haskell)
 
 **C# (among others)**:
+
 - Coroutines/generators (async/await & iterators)
 - Properties
 - Run-time code generation
 
 **LISP languages**:
+
 - Lexical macros
 
 **[sweet.js](http://sweetjs.org) (among others)**
+
 - Lexical macros with custom syntax
 
 **[Nemerle](http://www.nemerle.org/About)**:
+
 - Semantic macros (type system available)
 
 **[Ceylon](http://ceylon-lang.org)**:
+
 - Union and intersection types
 - Solves the null reference problem that other OO languages have
 
 **[D2](http://dlang.org/)**:
+
 - Slices & ranges
 - `scope(exit)` and friends (already supported in LeMP as [on_finally, etc.](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/OnFinallyReturnCatch.cs))
 - compile-time code execution ("CTFE" in D circles)
@@ -77,27 +85,33 @@ Step 1 is to gather a list of the features we'd like to support. This post is st
 - `with` statement
 
 **[Go](https://golang.org/)**:
+
 - Ad-hoc/implicit interfaces (fat pointer technique), known as [Dynamic Interfaces](http://www.codeproject.com/Articles/87991/Dynamic-interfaces-in-any-NET-language) in Visual Basic
 - goroutines (making threading convenient)
 
 **[Rust](http://www.rust-lang.org/)**:
+
 - Zero-cost abstractions: unique boxes, borrowing, moving
 - [Associated types](https://doc.rust-lang.org/book/associated-types.html)
 
-**[Julia](http://julialang.org)**
+**[Julia](http://julialang.org)**:
+
 - Effective use of multiple dispatch (e.g. very interesting library-based type promotion system)
 - High-performance dynamic typing (albeit with high memory usage)
 
-**[Fortress](https://en.wikipedia.org/wiki/Fortress_(programming_language) (dead language)**:
+**[Fortress](https://en.wikipedia.org/wiki/Fortress_(programming_language)) (dead language)**:
+
 - Traits: Composable Units of Behavior
 - Unit inference
 
 **[Plaid](http://www.cs.cmu.edu/~aldrich/plaid/)**:
+
 - Typestate
 - "Concurrency-by-default"
 - Integrated nominal and structural subtyping
 
-**Other ideas**
+**Other ideas**:
+
 - Alias types (see below)
 - Quick-bind operator `expr::var`, e.g. `if (File.ReadAllText(filename)::s.Length > 0 && !s.StartsWith("//")) ...`
 - Custom literals and token trees (DSLs, metaprogramming)
@@ -111,7 +125,7 @@ Note: many of the above features implicitly enable other useful features that so
 ### TODO: Learn more about ###
 - [Plaid](http://www.cs.cmu.edu/~aldrich/plaid/)
 - [Bidirectional transformations](https://en.wikipedia.org/wiki/Bidirectional_transformation) / [Lenses](http://www.cis.upenn.edu/~bcpierce/papers/lenses-etapsslides.pdf)
-- Same-language [GPU programming](http://www.ncbray.com/pystream)
+- [Same-language GPU programming](http://www.ncbray.com/pystream)
 - [Functional reactive programming](https://en.wikipedia.org/wiki/Functional_reactive_programming): Find out whether techniques to efficiently and automatically synchronize UI state with an underlying model require, or benefit from, explicit support in the programming language. Also, figure out what FRP is good for other than GUIs.
 - [Dependent types](https://en.wikipedia.org/wiki/Dependent_type)
 
