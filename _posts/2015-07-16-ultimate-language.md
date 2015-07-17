@@ -1,14 +1,13 @@
 ---
 title: TODO - The ultimate programming language
 layout: post
-toc: true
+toc: false
 commentIssueId: 10
 ---
 
 I'd like to make a "universal" programming language that takes the best features of all the new languages, and either (1) directly supports those features, somehow, or (2) provides lower-level primitives out of which those features can be built, with features provided by the standard library.
 
-![](../blog/GiantRobot.jpg)<br/>
-_If I have seen further, it is by having built a giant robot to stand on._
+![](../blog/GiantRobot.jpg) <br/>_If I have seen further, it is by having built a giant robot to stand on._
 
 Goals
 -----
