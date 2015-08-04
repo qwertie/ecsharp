@@ -410,9 +410,8 @@ namespace Ecs
 			AllowUnassignedVarDecl = 0x0001,
 			/// <summary>The expression is the right side of a traditional cast, so 
 			/// the printer must avoid ambiguity in case of the following prefix 
-			/// operators: <c>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), 
-			/// (Foo)--(x)</c> (the (Foo)++(x) case is parsed as a post-increment and a 
-			/// call).</summary>
+			/// operators: <c>(Foo)&amp;x, (Foo)*x, (Foo)++(x), (Foo)--(x)</c> 
+			/// (the (Foo)++(x) case is parsed as a post-increment and a call).</summary>
 			CastRhs = 0x0002,
 			/// <summary>The expression is in a location where, if it is parenthesized
 			/// and has the syntax of a data type inside, it will be treated as a cast.
@@ -1355,7 +1354,7 @@ namespace Ecs
 		}
 
 		static Pair<RuntimeTypeHandle,Action<EcsNodePrinter>> P<T>(Action<EcsNodePrinter> value) 
-			{ return G.Pair(typeof(T).TypeHandle, value); }
+			{ return Pair.Create(typeof(T).TypeHandle, value); }
 		static Dictionary<RuntimeTypeHandle,Action<EcsNodePrinter>> LiteralPrinters = Dictionary(
 			P<int>    (np => np.PrintIntegerToString("")),
 			P<long>   (np => np.PrintIntegerToString("L")),

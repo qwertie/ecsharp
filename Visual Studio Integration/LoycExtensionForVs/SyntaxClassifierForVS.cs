@@ -275,9 +275,14 @@ namespace Loyc.VisualStudio
 			{
 				case TokenKind.Comment: return _commentType;
 				case TokenKind.Id: return IsSpecialIdentifier(t.Value) ? _specialNameType : _identifierType;
-				case TokenKind.Number: return _numberType;
-				case TokenKind.String: return _stringType;
-				case TokenKind.OtherLit: return _literalType;
+				case TokenKind.Literal: 
+					if (t.Value is string)
+						return _stringType;
+					if (t.Value is int || t.Value is uint || t.Value is sbyte || t.Value is byte
+						|| t.Value is short || t.Value is ushort || t.Value is long || t.Value is ulong
+						|| t.Value is float || t.Value is double || t.Value is decimal)
+						return _numberType;
+					return _literalType;
 				case TokenKind.Dot:
 				case TokenKind.Assignment:
 				case TokenKind.Operator: return _operatorType;

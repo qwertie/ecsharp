@@ -107,6 +107,18 @@ namespace LeMP
 			tmpId = F.Id(NextTempName());
 			return F.Var(F._Missing, tmpId, value);
 		}
+		// Used to avoid evaluating `value` more than once by creating a 
+		// temporary variable to hold the value. If `value` looks like a 
+		// simple variable, this fn returns value and leaves output unchanged.
+		static LNode MaybeAddTempVarDecl(LNode value, RWList<LNode> output)
+		{
+			if (value.IsCall || char.IsUpper(value.Name.Name.TryGet(0, '\0'))) {
+				LNode tmpId;
+				output.Add(TempVarDecl(value, out tmpId));
+				return tmpId;
+			}
+			return value;
+		}
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
@@ -115,26 +127,21 @@ namespace LeMP
 		{
 			var a = node.Args;
 			if (a.Count == 2 && a[0].CallsMin(S.Tuple, 1)) {
-				var stmts = new RWList<LNode>();
+				var output = new RWList<LNode>();
 				var tuple = a[0].Args;
 				var rhs = a[1];
 				
 				// Avoid evaluating rhs more than once, if it doesn't look like a simple variable
-				bool needTemp = rhs.IsCall || char.IsUpper(rhs.Name.Name.TryGet(0, '\0'));
-				if (needTemp) {
-					LNode tmp;
-					stmts.Add(TempVarDecl(rhs, out tmp));
-					rhs = tmp;
-				}
+				rhs = MaybeAddTempVarDecl(rhs, output);
 
 				for (int i = 0; i < tuple.Count; i++) {
 					var itemi = F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))));
 					if (tuple[i].Calls(S.Var, 2))
-						stmts.Add(F.Var(tuple[i].Args[0], tuple[i].Args[1], itemi));
+						output.Add(F.Var(tuple[i].Args[0], tuple[i].Args[1], itemi));
 					else
-						stmts.Add(F.Call(S.Assign, tuple[i], itemi));
+						output.Add(F.Call(S.Assign, tuple[i], itemi));
 				}
-				return F.Call(S.Splice, stmts.ToRVList());
+				return F.Call(S.Splice, output.ToRVList());
 			}
 			return null;
 		}

@@ -268,7 +268,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintPrefixUnaryOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			if (!IsPrefixOperator(_n, false))
+			if (!IsPrefixOperator(_n, (flags & Ambiguity.CastRhs) != 0))
 				return false;
 			var name = _n.Name;
 			var arg = _n.Args[0];
@@ -276,11 +276,10 @@ namespace Ecs
 			bool needParens;
 			if (CanAppearIn(precedence, context, out needParens, true))
 			{
-				// Check for the ambiguous case of (Foo)-x, (Foo)*x, etc.
+				// Check for the ambiguous case of (Foo)-x, (Foo)+x, (Foo) .x; (Foo)*x and (Foo)&x are OK
 				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && (
-					name == S._Dereference || name == S.PreInc || name == S.PreDec || 
-					name == S._UnaryPlus || name == S._Negate || name == S.NotBits ||
-					name == S._AddressOf) && !_n.IsParenthesizedExpr())
+					name == S.Dot || name == S.PreInc || name == S.PreDec || 
+					name == S._UnaryPlus || name == S._Negate) && !_n.IsParenthesizedExpr())
 				{
 					if (AllowChangeParenthesis)
 						needParens = true; // Resolve ambiguity with extra parens
@@ -568,7 +567,8 @@ namespace Ecs
 						return false;
 					if (afterDot.IsCall && afterDot.Name != S.Substitute)
 						return false;
-				}
+				} else if ((flags & Ambiguity.CastRhs) != 0)
+					return false; // cannot print (Foo) @`.`(x) as (Foo) .x
 			} else if (name == S.Of) {
 				var ici = ICI.Default | ICI.AllowAttrs;
 				if ((flags & Ambiguity.InDefinitionName) != 0)

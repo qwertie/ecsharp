@@ -63,6 +63,7 @@ namespace Loyc.Syntax
 		/// for use inside special constructs; its meaning depends on context.
 		/// </summary>
 		public static readonly Symbol AltList = GSymbol.Get("#");
+		public static readonly Symbol _HashMark = GSymbol.Get("#");
 
 		public static readonly Symbol QuestionMark = GSymbol.Get("?");     //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
 		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>
@@ -133,7 +134,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Namespace = GSymbol.Get("#namespace"); //!< e.g. #namespace(NS, @``, { });  <=> namespace NS { }
 
 		// Other definitions
-		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x(0), y(1), z). #var(@``, x = 0) <=> var x = 0;
+		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       //!< e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
 		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, #tuple()); <=> delegate int Foo();
 		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, { get; }) <=> int Foo { get; }
@@ -195,7 +196,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)
-		public static readonly Symbol Fn = GSymbol.Get("#fn");          //!< e.g. #fn(F, #([required] #var(#of(List, int), list)), #void, {return;})
+		public static readonly Symbol Fn = GSymbol.Get("#fn");           //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
 		public static readonly Symbol Cons = GSymbol.Get("#cons");       //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
 		public static readonly Symbol Forward = GSymbol.Get("==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)

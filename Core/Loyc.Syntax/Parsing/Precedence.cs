@@ -174,7 +174,7 @@ namespace Loyc.Syntax
 	/// 
 	/// <see cref="Lo"/> and <see cref="Hi"/> don't affect how operators are
 	/// parsed into a tree, but are used to request a warning or error if operators
-	/// are mixed improperly way. If one operator's range overlaps another AND (the 
+	/// are mixed improperly. If one operator's range overlaps another AND (the 
 	/// ranges are not equal OR <c>Lo > Hi</c>), then the two operators are 
 	/// immiscible. For example, == and != have the same precedence in EC#, 38..39, 
 	/// so they can be mixed with each other, but they cannot be mixed with &amp; 

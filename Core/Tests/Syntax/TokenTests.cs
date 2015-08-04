@@ -15,9 +15,9 @@ namespace Loyc.Syntax.Lexing
 		{
 			var file = EmptySourceFile.Unknown;
 			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
-				P(new Token((int)TokenKind.Literal, 3, 7, 0, "hello!"), @"String(""hello!"")"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, "hello!"), @"Literal(""hello!"")"),
 				P(new Token((int)TokenKind.Literal, 3, 7, 0, 12345),    @"Literal(12345)"),
-				P(new Token((int)TokenKind.Literal, 3, 7, 0, GSymbol.Get("foo")),  @"OtherLit(@@foo)"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, GSymbol.Get("foo")),  @"Literal(@@foo)"),
 			});
 		}
 
@@ -60,7 +60,7 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		static Pair<K, V> P<K, V>(K key, V value)
-		{ return G.Pair(key, value); }
+			{ return G.Pair(key, value); }
 		private void TestToLNode(ISourceFile file, IList<Pair<Token, string>> pairs)
 		{
 			for (int i = 0; i < pairs.Count; i++)

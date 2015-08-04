@@ -90,6 +90,11 @@ namespace Loyc.Syntax
 			removedAttr = null;
 			return self;
 		}
+		public static LNode WithoutOuterParens(this LNode self)
+		{
+			return WithoutAttrNamed(self, S.TriviaInParens);
+		}
+
 		public static LNode ArgNamed(this LNode self, Symbol name)
 		{
 			return self.Args.NodeNamed(name);

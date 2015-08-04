@@ -570,12 +570,12 @@ namespace Ecs.Parser
 
 		@[k(3), private] // to distinguish (cast) expr from (parens)
 		rule PrefixExpr::LNode @{
-			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|"==>") e:=PrefixExpr
+			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
 				{return SetOperatorStyle(F.Call(op.Value -> Symbol, e, op.StartIndex, e.Range.EndIndex));}
 			|	// C-style cast
 				&{@[Hoist] Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 				lp:="(" ")"
-				(&!("+"|"-"|("++,--" "(")))
+				(&!("+"|"-"|"."|TT.BQString|("++,--" "(")))
 				e:=PrefixExpr
 				{Down(lp); return SetOperatorStyle(F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex));}
 			/	op:="**"
@@ -665,13 +665,13 @@ namespace Ecs.Parser
 		// as an operator, would (Foo ? x = z : y) be a conditional expression
 		// or a variable declaration that uses the ":" operator on the right side?
 		// So instead, ":" is only allowed for specifying named arguments. 
-		@[public] rule ExprStart(allowUnassignedVarDecl::bool)::LNode @{
+		@[public] rule ExprStart(allowUnassignedVarDecl::bool, isCaseStmt::bool = false)::LNode @{
 			{	
 				e::LNode;
 				argName::Token = default(Token);
 				attrs::RWList!LNode = null;
 			}
-			[(argName=TT.Id|argName=UnusualId) ":"]?
+			greedy[&{!isCaseStmt} (argName=TT.Id|argName=UnusualId) ":"]?
 			NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
 			wc:=WordAttributes(ref attrs)
@@ -1151,6 +1151,9 @@ namespace Ecs.Parser
 				(return CoreName(complexId.Args[0]));
 			if complexId.CallsMin(S.Dot, 1)
 				(return complexId.Args.Last);
+			if complexId.CallsMin(S.Substitute, 1)
+				// this is not a complex identifier, but it can appear where one is expected
+				(return complexId);
 			Debug.Fail("Not a complex identifier");
 			return complexId.Target;
 		};
@@ -1433,8 +1436,8 @@ namespace Ecs.Parser
 
 		rule CaseStmt(startIndex::int)::LNode @{
 			{var cases = RVList!LNode.Empty;}
-			kw:=TT.@case cases+=ExprStart(false) 
-			        ("," cases+=ExprStart(false))* end:=":"
+			kw:=TT.@case cases+=ExprStart(false, true) 
+			        ("," cases+=ExprStart(false, true))* end:=":"
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
 		};
 

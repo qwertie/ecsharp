@@ -115,7 +115,7 @@ namespace Ecs
 			Expr("**a",    F.Call(S._Dereference, F.Call(S._Dereference, a)));
 			Expr(".(-a)",  F.Call(S.Dot, F.Call(S._Negate, a)));
 		}
-		
+
 		[Test]
 		public void MiscOperators()
 		{
@@ -265,6 +265,33 @@ namespace Ecs
 				"Foo(out a, ref b, public static c, [#partial] x);", "Foo(out a, ref b, c, x);",  
 				F.Call(Foo, Attr(@out, a), Attr(@ref, b), Attr(@public, @static, c), Attr(@partial, x)),
 				p => p.DropNonDeclarationAttributes = true);
+		}
+
+		[Test]
+		public void CastAmbiguity()
+		{
+			// Bug 2015/08: (Foo).x was parsed as #cast(Foo, .x)
+			Stmt("(Foo).x;", F.Dot(F.InParens(Foo), x));
+			Stmt("(Foo) - x;", F.Call(S.Sub, F.InParens(Foo), x));
+			Stmt("(Foo) + x;", F.Call(S.Add, F.InParens(Foo), x));
+			Stmt("(Foo) *x;", F.Call(S.Cast, F.Call(S._Dereference, x), Foo));
+			Stmt("(Foo) &x;", F.Call(S.Cast, F.Call(S._AddressOf, x), Foo));
+			Stmt("(Foo) ~x;", F.Call(S.Cast, F.Call(S.NotBits, x), Foo));
+			Stmt("(Foo) x(a);", F.Call(S.Cast, F.Call(x, a).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) `x` a;", F.Call(x, F.InParens(Foo), a).SetStyle(NodeStyle.Operator));
+			Stmt("(Foo) @`.`(x);", F.Call(S.Cast, F.Call(S.Dot, x).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) a.b;",     F.Call(S.Cast, F.Dot(a, b).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) @`-`(x);", F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParenthesis = true, false, Mode.PrintOnly);
+			Stmt("(Foo) @`--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
+		}
+
+		[Test(Fails = "Printer doesn't handle these cases")]
+		public void CastAmbiguityBug()
+		{
+			Expr("@`*`((Foo), x)", F.Call(S.Mul, F.InParens(Foo), x));
+			Expr("@`&`((Foo), x)", F.Call(S.AndBits, F.InParens(Foo), x));
+			Expr("@`~`((Foo), x)", F.Call(S.NotBits, F.InParens(Foo), x));
 		}
 
 		static LNode Alternate(LNode node)
@@ -1204,6 +1231,10 @@ namespace Ecs
 				"case 1:\ncase 2:\n  goto case 3;\n"+
 				"case 3, 4:\n  break;\n"+
 				"default:\n  break;\n}", stmt);
+			stmt = F.Braces(
+				F.Call(S.Case, Foo),
+				F.Call(Foo));
+			Stmt("{\ncase Foo:\n  Foo();\n}", stmt);
 		}
 
 		[Test]
@@ -1426,6 +1457,13 @@ namespace Ecs
 			Stmt("Foo Foo.a() => @[ x ];", F.Fn(Foo, F.Dot(Foo, a), F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			// Currently supported. Not sure if it'll stay that way.
 			Stmt("void Foo() @[ x ];", def, Mode.ParseOnly);
+		}
+
+		[Test]
+		public void Misc()
+		{
+			Expr("@`.`()", F.Call(S.Dot));
+			Expr("@`*`()", F.Call(S.Mul));
 		}
 
 		// Stuff that is intentionally left broken for the time being

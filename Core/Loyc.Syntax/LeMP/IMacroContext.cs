@@ -7,11 +7,13 @@ using Loyc.Syntax;
 
 namespace LeMP
 {
+	/// <summary>This interface provides services offered by the lexical macro processor (LeMP).</summary>
+	/// <remarks>Macros receive this as their second argument (see <see cref="LexicalMacro"/>)</remarks>
 	public interface IMacroContext : IMessageSink
 	{
 		/// <summary>Returns the message sink, used for writing warnings and errors.</summary>
 		/// <remarks>For backward compatibility, IMacroContext itself implements 
-		/// IMessageSink, but if I were starting from scratch you'd have to write 
+		/// IMessageSink, but if we were starting from scratch you'd have to write 
 		/// output through this property.</remarks>
 		IMessageSink Sink { get; }
 
@@ -196,6 +198,29 @@ namespace LeMP
 				else
 					yield return new KeyValuePair<Symbol, LNode>(null, option);
 			}
+		}
+	}
+
+	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
+	public class MacroInfo : IComparable<MacroInfo>
+	{
+		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, LexicalMacroAttribute info)
+		{
+			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
+			Mode = info.Mode;
+			if ((Mode & MacroMode.PriorityMask) == 0)
+				Mode |= MacroMode.NormalPriority;
+		}
+		public Symbol NamespaceSym { get; private set; }
+		public Symbol Name { get; private set; }
+		public LexicalMacro Macro { get; private set; }
+		public LexicalMacroAttribute Info { get; private set; }
+		public MacroMode Mode { get; private set; }
+
+		/// <summary>Compare priorities of two macros.</summary>
+		public int CompareTo(MacroInfo other)
+		{
+			return (Mode & MacroMode.PriorityMask).CompareTo(other.Mode & MacroMode.PriorityMask);
 		}
 	}
 }

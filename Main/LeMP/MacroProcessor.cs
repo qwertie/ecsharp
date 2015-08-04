@@ -235,27 +235,4 @@ namespace LeMP
 
 		#endregion
 	}
-
-	public class MacroInfo : IComparable<MacroInfo>
-	{
-		public MacroInfo(Symbol @namespace, Symbol name, LexicalMacro macro, LexicalMacroAttribute info)
-		{
-			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
-			Mode = info.Mode;
-			if ((Mode & MacroMode.PriorityMask) == 0)
-				Mode |= MacroMode.NormalPriority;
-		}
-		public Symbol NamespaceSym { get; private set; }
-		public Symbol Name         { get; private set; }
-		public LexicalMacro Macro  { get; private set; }
-		public LexicalMacroAttribute Info { get; private set; }
-		public MacroMode Mode      { get; private set; }
-
-		/// <summary>Compare priorities of two macros.</summary>
-		public int CompareTo(MacroInfo other)
-		{
-			return (Mode & MacroMode.PriorityMask).CompareTo(other.Mode & MacroMode.PriorityMask);
-		}
-	}
-
 }

@@ -86,23 +86,29 @@ namespace LeMP
 		public void TestCodeQuote()
 		{
 			TestEcs("quote { F(); }",
-				   @"F.Call(""F"");");
+				   @"LNode.Call((Symbol)""F"");");
 			TestEcs("quote(F(x, 0));",
-				   @"F.Call(""F"", F.Id(""x""), F.Literal(0));");
+				   @"LNode.Call((Symbol)""F"", LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(0)));");
 			TestEcs("quote { x = x + 1; }",
-				   @"F.Call(CodeSymbols.Assign, F.Id(""x""), F.Call(CodeSymbols.Add, F.Id(""x""), F.Literal(1)));");
+				   @"LNode.Call(CodeSymbols.Assign, LNode.List(LNode.Id((Symbol) ""x""), LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(1)))));");
 			TestEcs("quote { Console.WriteLine(\"Hello\"); }",
-				   @"F.Call(F.Dot(F.Id(""Console""), F.Id(""WriteLine"")), F.Literal(""Hello""));");
+				   @"LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) ""Console""), LNode.Id((Symbol) ""WriteLine""))), LNode.List(LNode.Literal(""Hello"")));");
 			TestEcs("q = quote({ while (Foo<T>) Yay(); });",
-				   @"q = F.Call(CodeSymbols.While, F.Of(F.Id(""Foo""), F.Id(""T"")), F.Call(""Yay""));");
+				   @"q = LNode.Call(CodeSymbols.While, LNode.List(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) ""Foo""), LNode.Id((Symbol) ""T""))), LNode.Call((Symbol) ""Yay"")));");
 			TestEcs("q = quote({ if (true) { Yay(); } });",
-				   @"q = F.Call(CodeSymbols.If, F.Literal(true), F.Braces(F.Call(""Yay"")));");
+				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay"")))));");
 			TestEcs("q = quote({ Yay(); break; });",
-				   @"q = F.Braces(F.Call(""Yay""), F.Call(CodeSymbols.Break));");
+				   @"q = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break)));");
 			TestEcs("q = quote({ $(dict[key]) = 1; });",
-				   @"q = F.Call(CodeSymbols.Assign, dict[key], F.Literal(1));");
+				   @"q = LNode.Call(CodeSymbols.Assign, LNode.List(dict[key], LNode.Literal(1)));");
 			TestEcs("q = quote(hello + $x);",
-				   @"q = F.Call(CodeSymbols.Add, F.Id(""hello""), x);");
+				   @"q = LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""hello""), x));");
+			TestEcs("quote { (x); }",
+				   @"LNode.Id(LNode.List(LNode.InParensTrivia), (Symbol) ""x"");");
+			TestEcs("rawQuote { Func($Foo); }",
+					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
+			TestEcs("quote(Foo($first, $(..rest)));",
+				   @"LNode.Call((Symbol) ""Foo"", new RVList<LNode>().Add(first).AddRange(rest));");
 		}
 
 		[Test]
@@ -120,6 +126,168 @@ namespace LeMP
 				@"public static readonly Symbol S_OK = (Symbol) ""OK"", S_Error = (Symbol) ""Error"";
 				Symbol status = S_OK ?? S_Good;
 				Symbol Err() { return S_Bad ?? S_Error; }");
+		}
+
+		[Test]
+		public void TestMatchCode()
+		{
+			TestLes(@"matchCode var { 777 => Yay(); 666 => Boo(); $_ => @Huh?(); }",
+				@"#if(777.Equals(var.Value), Yay(), 
+					#if(666.Equals(var.Value), Boo(), @Huh?()));");
+			int n = StandardMacros.NextTempCounter;
+			TestEcs(@"matchCode(code) {
+					case { '2' + 2; }: Weird();
+				}", @"
+					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && 2.Equals(code.Args[1].Value))
+						Weird();");
+			TestEcs(@"matchCode(Get.Var) {
+					case Do($stuff): Do(stuff);
+				}", @"{
+						var tmp_"+n+@" = Get.Var;
+						LNode stuff;
+						if (tmp_"+n+@".Calls((Symbol) ""Do"", 1) && (stuff = tmp_5.Args[0]) != null)
+							Do(stuff);
+					}");
+			TestEcs(@"matchCode(code) { 
+					$(lit(#.IsLiteral)) => Literal(); 
+					$(id(#.IsId)) => Id(); 
+					$_ => Call();
+				}",
+				@"{
+					LNode id, lit;
+					if ((lit = code) != null && lit.IsLiteral)
+						Literal();
+					else if ((id = code) != null && id.IsId)
+						Id();
+					else
+						Call();
+				}");
+			TestEcs(@"matchCode(code) { 
+					case foo, FOO:  Foo(); 
+					case 1, 1.0:    One(); 
+					case $whatever: Whatever();
+				}", @"{
+					LNode whatever;
+					if (code.IsIdNamed((Symbol) ""foo"") || code.IsIdNamed((Symbol) ""FOO""))
+						Foo();
+					else if (1.Equals(code.Value) || 1d.Equals(code.Value))
+						One();
+					else if ((whatever = code) != null)
+						Whatever();
+				}");
+			TestEcs(@"matchCode(code) { 
+					case 1, one: One();
+				}", @"
+					if (1.Equals(code.Value) || code.IsIdNamed((Symbol) ""one""))
+						One();
+				");
+			TestEcs(@"matchCode(code) { 
+					case $binOp($_, $_): BinOp(binOp);
+				}", @"{
+					LNode binOp;
+					if (code.Args.Count == 2 && (binOp = code.Target) != null)
+						BinOp(binOp);
+				}");
+			TestEcs(@"matchCode(code) { 
+					case ($a, $b, $(..args), $c):                Three(a, b, c);
+					case (null, $(..args)), ($first, $(..args)): Tuple(first, args);
+					case ($(..args), $last):                     Unreachable();
+					case ($(..args),):                           Tuple(args);
+				}", @"{
+					LNode a, b, c, first = null, last;
+					RVList<LNode> args;
+					if (code.CallsMin(CodeSymbols.Tuple, 3) && (a = code.Args[0]) != null && (b = code.Args[1]) != null && (c = code.Args[code.Args.Count - 1]) != null) {
+						args = new RVList<LNode>(code.Args.Slice(2, code.Args.Count - 3));
+						Three(a, b, c);
+					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new RVList<LNode>(code.Args.Slice(1))).IsEmpty | true 
+						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new RVList<LNode>(code.Args.Slice(1))).IsEmpty | true)
+						Tuple(first, args);
+					else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
+						args = code.Args.WithoutLast(1);
+						Unreachable();
+					} else if (code.Calls(CodeSymbols.Tuple)) {
+						args = code.Args;
+						Tuple(args);
+					}
+				}");
+			n = StandardMacros.NextTempCounter;
+			TestEcs(@"matchCode(code) { 
+					case $x = $y:
+						Assign(x, y);
+					case [$(..attrs)] $x = $(x_(#.Equals(x))) + 1, 
+					     [$(..attrs)] $op($x, $y):
+						Handle(attrs);
+						Handle(x, y);
+					default:
+						Other();
+				}", @"{
+					LNode op          = null, tmp_"+n+@" = null, x, x_ = null, y = null;
+					RVList<LNode> attrs;
+					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
+						Assign(x, y);
+					else if ( 
+						(attrs = code.Attrs).IsEmpty | true && code.Calls(CodeSymbols.Assign, 2) && 
+						(x = code.Args[0]) != null && (tmp_"+n+@" = code.Args[1]) != null && tmp_"+n+@".Calls(CodeSymbols.Add, 2) && 
+						(x_ = tmp_"+n+@".Args[0]) != null && x_.Equals(x) && 1.Equals(tmp_"+n+ @".Args[1].Value) || 
+						(attrs = code.Attrs).IsEmpty | true && code.Args.Count == 2 && (op = code.Target) != null && 
+						(x = code.Args[0]) != null && (y = code.Args[1]) != null) {
+						Handle(attrs);
+						Handle(x, y);
+					} else
+						Other();
+				}");
+			// Ideally this generated code would use a tmp_n variable, but I'll accept the current output
+			n = StandardMacros.NextTempCounter;
+			TestEcs(@"
+				matchCode(classDecl) {
+				case {
+						[$(..attrs)] 
+						class $typeName : $(..baseTypes) { $(..body); }
+					}:
+						Handler();
+				}", @"{
+					LNode typeName;
+					RVList<LNode> attrs, baseTypes, body;
+					if ((attrs = classDecl.Attrs).IsEmpty | true && classDecl.Calls(CodeSymbols.Class, 3) && 
+						(typeName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && 
+						classDecl.Args[2].Calls(CodeSymbols.Braces))
+					{
+						baseTypes = classDecl.Args[1].Args;
+						body = classDecl.Args[2].Args;
+						Handler();
+					}
+				}");
+		}
+
+		[Test]
+		public void TestAlgebraicDataTypeDecls()
+		{
+			TestEcs(@"
+				[A] public alt class BinaryTree<T> : BaseClass {
+					[N] alt Node(BinaryTree<T> Left, BinaryTree<T> Right);
+					[L] alt Leaf(T Value) { stuff; }
+					common_stuff;
+				};
+			", @"
+				[A] public class BinaryTree<T> : BaseClass { common_stuff; };
+				[N] class Node<T> : BinaryTree<T>
+				{
+					public Node(public readonly BinaryTree<T> Left, public readonly BinaryTree<T> Right) {}
+				}
+				[L] class Leaf<T> : BinaryTree<T>
+				{
+					public Leaf(public readonly T Value) {}
+					stuff;
+				}
+				[N] static partial class Node
+				{
+					public static Node<T> New<T>(BinaryTree<T> Left, BinaryTree<T> Right) { return new Node<T>(Left, Right); }
+				}
+				[L] static partial class Leaf
+				{
+					public static Leaf<T> New<T>(T Value) { return new Leaf<T>(Value); }
+				}
+			");
 		}
 
 		[Test]
@@ -298,7 +466,7 @@ namespace LeMP
 			TestEcs("[requires(t != null)]"+
 			       @"public void Wait(Task<T> t) { t.Wait(); }",
 			       @"public void Wait(Task<T> t) { "+
-			       @"  Contract.Requires<ArgumentNullException>(t != null, ""Wait() requires t != null""); t.Wait(); }");
+			       @"  Contract.Requires<ArgumentException>(t != null, ""Wait() requires t != null""); t.Wait(); }");
 			TestEcs("public void Wait([requires(# != null)] Task<T> t) { t.Wait(); }",
 			       @"public void Wait(Task<T> t) { "+
 			       @"  Contract.Requires(t != null, ""Wait() requires t != null""); t.Wait(); }");

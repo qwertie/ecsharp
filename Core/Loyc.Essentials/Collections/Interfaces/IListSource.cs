@@ -7,49 +7,49 @@ namespace Loyc.Collections
 {
 	/// <summary>A read-only list indexed by an integer.</summary>
 	/// <remarks>
-	/// The .NET collection classes have a very simple and coarse interface.
-	/// <para/>
 	/// Member list:
 	/// <code>
-	/// public T this[int index] { get; }
-	/// public T TryGet(int index, ref bool fail);
-	/// public Iterator&lt;T> GetIterator();
-	/// public int Count { get; }
-	/// public IEnumerator&lt;T> GetEnumerator();
+	/// public IEnumerator&lt;T> GetEnumerator(); // inherited
 	/// System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+	/// public T this[int index] { get; }         // inherited
+	/// public int Count { get; }                 // inherited
+	/// public T TryGet(int index, out bool fail);
+	/// IRange&lt;T> Slice(int start, int count = int.MaxValue);
 	/// </code>
 	/// The term "source" means a read-only collection, as opposed to a "sink" which
-	/// is a write-only collection. The purpose of IListSource is to make it easier
-	/// to implement a read-only list, by lifting IList's requirement to write 
-	/// implementations for Add(), Remove(), etc. A secondary purpose is, of course,
-	/// to guarantee users don't mistakenly call those methods on a read-only
-	/// collection.
+	/// is a write-only collection. The purpose of IListSource is to support slices,
+	/// eliminate the need to call <c>Count</c> before reading from the list, and to
+	/// make it easier to implement a read-only list, by lifting IList's requirement 
+	/// to write implementations for Add(), Remove(), etc. A secondary purpose is, 
+	/// of course, to guarantee users don't mistakenly call those methods on a 
+	/// read-only collection.
 	/// <para/>
 	/// I have often wanted to access the "next" or "previous" item in a list, e.g.
 	/// during parsing, but it inconvenient if you have to worry about whether the 
 	/// the current item is the first or last. In that case you must check whether
 	/// the array index is valid, which is both inconvenient and wasteful, because
-	/// the list class will check the array index again, and then the .NET runtime
-	/// will check the index a third time when reading the internal array. To make
-	/// this more efficient, IListSource has a TryGet() method that does not throw
-	/// on failure, but returns default(T).
+	/// the list class itself will check the array index a second time, and then the 
+	/// .NET runtime will check the index a third time when reading the internal 
+	/// array. The <c>TryGet(index, defaultValue)</c> extension method can be used 
+	/// to return a default value if the index is not valid, using only one 
+	/// interface call.
 	/// <para/>
-	/// As IListSource is supposed to be a simpler alternative to IList, I didn't
-	/// want to require implementers to implement more than two indexers. There are
-	/// two additional TryGet extension methods, though:
+	/// Design footnote: I would have preferred to define <c>TryGet</c> with one of 
+	/// these signatures:
 	/// <code>
-	///     bool TryGet(int index, ref T value);
-	///     T TryGet(int, T defaultValue);
+	///     bool TryGet(int index, out T value);
+	///     T? TryGet(int index);
+	///     Maybe&lt;T> TryGet(int index);
 	/// </code>
-	/// If T is defined as "out" (covariant) in C# 4, these methods are not allowed 
-	/// in IListSource anyway and MUST be extension methods.
-	/// <para/>
-	/// Note that "value" is a "ref" rather than an "out" parameter, unlike
-	/// Microsoft's own TryGetValue() implementations. Using ref parameter allows
-	/// the caller to choose his own default value in case TryGet() returns false.
+	/// However, these signatures don't allow T to be covariant (<c>out T</c>). 
+	/// The first signature doesn't work because the .NET runtime doesn't distinguish
+	/// between <c>ref</c> and <c>out</c>, so T could not be covariant. The second
+	/// signature doesn't work if <c>T</c> is not a value type. The third signature
+	/// doesn't work because, as a struct, <c>Maybe&lt;T></c> is not allowed to be
+	/// covariant (even though the JIT could, theoretically, treat it covariantly).
 	/// <para/>
 	/// Using <see cref="Impl.ListSourceBase{T}"/> as your base class can help you
-	/// implement this interface faster.
+	/// implement this interface more quickly.
 	/// </remarks>
 	#if !DotNet2 && !DotNet3
 	public interface IListSource<out T> : IReadOnlyList<T>

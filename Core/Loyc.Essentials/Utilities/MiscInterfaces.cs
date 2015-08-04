@@ -36,7 +36,7 @@ namespace Loyc
 	public interface IReferenceComparable { }
 
 	/// <summary>Interface for things that have a Value property.</summary>
-	public interface IHasValue<T>
+	public interface IHasValue<out T>
 	{
 		T Value { get; }
 	}

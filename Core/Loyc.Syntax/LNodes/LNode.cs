@@ -13,7 +13,7 @@ namespace Loyc.Syntax
 	public enum LNodeKind { Id, Literal, Call }
 
 	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
-	/// programming language will have one.</summary>
+	/// programming language will have one (when complete).</summary>
 	/// <param name="node">Node to print</param>
 	/// <param name="target">Output buffer</param>
 	/// <param name="mode">A language-specific way of modifying printer behavior.
@@ -579,7 +579,14 @@ namespace Loyc.Syntax
 		public static CallNode Call(RVList<LNode> attrs, Symbol name, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file, position, width), style); }
 		public static CallNode Call(RVList<LNode> attrs, LNode target, RVList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
 		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file, position, width), style); }
+		
 		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
+		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);
+
+		public static RVList<LNode> List() { return new RVList<LNode>(); }
+		public static RVList<LNode> List(LNode a) { return new RVList<LNode>(a); }
+		public static RVList<LNode> List(LNode a, LNode b) { return new RVList<LNode>(a, b); }
+		public static RVList<LNode> List(params LNode[] list) { return new RVList<LNode>(list); }
 
 		// It's difficult to enforce "nulls not allowed" with high performance.
 		// Compromise: only check in debug builds. This is called by node types
@@ -1046,6 +1053,12 @@ namespace Loyc.Syntax
 					return true;
 			return false;
 		}
+
+		public RVList<LNode> PAttrs()
+		{
+			return Attrs.Where(a => !a.IsTrivia);
+		}
+
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool IsTrivia
 		{
@@ -1113,6 +1126,25 @@ namespace Loyc.Syntax
 			else
 				return LNode.Call(listName, new RVList<LNode>(node1, node2));
 		}
+
+		/// <summary>Combines two nodes using a binary operator or function.</summary>
+		/// <param name="node1">First node, list, or null.</param>
+		/// <param name="node2">Second node, list, or null.</param>
+		/// <param name="binaryOpName">Binary operator to use when the nodes are not null.</param>
+		/// <returns>If either node1 or node2 is null, this method returns the other node
+		/// (node1 ?? node2), otherwise the nodes are joined with the specified operator.</returns>
+		public static LNode MergeBinary(LNode node1, LNode node2, Symbol binaryOpName)
+		{
+			if (node1 == null) return node2;
+			if (node2 == null) return node1;
+			SourceRange r1 = node1.Range, r2 = node2.Range;
+			if (r2.Source == r1.Source) {
+				int start = System.Math.Min(r1.StartIndex, r2.StartIndex);
+				r1 = new SourceRange(r1.Source, start, System.Math.Max(r1.EndIndex, r2.EndIndex) - start);
+			}
+			return Call(binaryOpName, new RVList<LNode>(node1, node2), r1);
+		}
+
 		public CallNode WithSplicedArgs(int index, LNode from, Symbol listName)
 		{
 			return WithArgs(LNodeExt.WithSpliced(Args, index, from, listName));

@@ -44,27 +44,23 @@ namespace LeMP
 			else
 				return QuoteOne(code, substitutions);
 		}
-		static LNode QuoteCore(LNode node)
-		{
-			if (node.ArgCount == 1)
-				return QuoteOne(node.Args[0]);
-			else {
-				var quoteds = node.Args.SmartSelect(n => QuoteOne(n));
-				return F.Call(F_Call, quoteds.Insert(0, CodeSymbols_Splice)); 
-			}
-		}
 		static LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("CodeQuoteMacro.cs"));
-		static LNode Id_F = F_.Id("F");
+		static LNode Id_LNode = F_.Id("LNode");
 		static LNode Id_WithAttrs = F_.Id("WithAttrs");
 		static LNode _CodeSymbols = F_.Id("CodeSymbols");
 		static LNode CodeSymbols_Splice = F_.Dot(_CodeSymbols, F_.Id("Splice"));
-		static LNode F_Literal = F_.Dot(Id_F, F_.Id("Literal"));
-		static LNode F_Id       = F_.Dot(Id_F, F_.Id("Id"));
-		static LNode F_Call     = F_.Dot(Id_F, F_.Id("Call"));
-		static LNode F_Dot      = F_.Dot(Id_F, F_.Id("Dot"));
-		static LNode F_Of       = F_.Dot(Id_F, F_.Id("Of"));
-		static LNode F_Braces   = F_.Dot(Id_F, F_.Id("Braces"));
-		public static LNode QuoteIdHelper(Symbol name)
+		static LNode LNode_List     = F_.Dot(Id_LNode, F_.Id("List"));
+		static LNode LNode_Literal  = F_.Dot(Id_LNode, F_.Id("Literal"));
+		static LNode LNode_Id       = F_.Dot(Id_LNode, F_.Id("Id"));
+		static LNode LNode_Call     = F_.Dot(Id_LNode, F_.Id("Call"));
+		static LNode LNode_Dot      = F_.Dot(Id_LNode, F_.Id("Dot"));
+		static LNode LNode_Of       = F_.Dot(Id_LNode, F_.Id("Of"));
+		static LNode LNode_Braces   = F_.Dot(Id_LNode, F_.Id("Braces"));
+		static LNode LNode_InParens = F_.Dot(Id_LNode, F_.Id("InParens"));
+		static LNode LNode_InParensTrivia = F_.Dot(Id_LNode, F_.Id("InParensTrivia"));
+		static LNode LNode_Missing = F_.Dot(Id_LNode, F_.Id("Missing"));
+
+		public static LNode QuoteSymbol(Symbol name)
 		{
 			if (CodeSymbolTable == null)
 				CodeSymbolTable = FindStaticReadOnlies<Symbol>(typeof(CodeSymbols), fInfo => !fInfo.Name.StartsWith("_"));
@@ -72,51 +68,85 @@ namespace LeMP
 			if (CodeSymbolTable.TryGetValue(name, out field))
 				return F.Dot(_CodeSymbols, F.Id(field));
 			else
-				return F.Literal(name.Name);
+				return F.Call(S.Cast, F.Literal(name.Name), F.Id("Symbol"));
 		}
-		public static LNode QuoteOne(LNode node, bool substitutions = true)
+
+		public static LNode QuoteOne(LNode node, bool substitutions)
 		{
+			if (node.Equals(LNode.InParensTrivia))
+				return LNode_InParensTrivia;
+			if (node.Equals(LNode.Missing))
+				return LNode_Missing;
+
+			RVList<LNode> creationArgs = new RVList<LNode>();
+
+			// Translate attributes (if any)
+			RVList<LNode> outAttrs = new RVList<LNode>();
+			foreach (LNode attr in node.Attrs)
+				if (!attr.IsTrivia || attr.Name == S.TriviaInParens)
+					outAttrs.Add(QuoteOne(attr, substitutions));
+			if (outAttrs.Count > 0)
+				creationArgs.Add(F.Call(LNode_List, outAttrs));
+
 			LNode result;
 			switch (node.Kind) {
 			case LNodeKind.Literal: // => F.Literal(value)
-				result = F.Call(F_Literal, node.WithoutAttrs());
+				creationArgs.Add(node.WithoutAttrs());
+				result = F.Call(LNode_Literal, creationArgs);
 				break;
 			case LNodeKind.Id: // => F.Id(string), F.Id(CodeSymbols.Name)
-				result = F.Call(F_Id, QuoteIdHelper(node.Name));
+				creationArgs.Add(QuoteSymbol(node.Name));
+				result = F.Call(LNode_Id, creationArgs);
 				break;
 			default: // NodeKind.Call => F.Dot(...), F.Of(...), F.Call(...), F.Braces(...)
-				if (substitutions && node.Calls(S.Substitute, 1))
+				if (substitutions && node.Calls(S.Substitute, 1)) {
 					result = node.Args[0];
-				else if (node.Calls(S.Braces)) // F.Braces(...)
-					result = F.Call(F_Braces, node.Args.SmartSelect(arg => QuoteOne(arg)));
+					if (!outAttrs.IsEmpty) {
+						if (result.IsCall)
+							result = LNode.InParens(result);
+						result = F.Call(F.Dot(result, Id_WithAttrs), outAttrs);
+					}
+				} /*else if (node.Calls(S.Braces)) // F.Braces(...)
+					result = F.Call(LNode_Braces, node.Args.SmartSelect(arg => QuoteOne(arg, substitutions)));
 				else if (node.Calls(S.Dot) && node.ArgCount.IsInRange(1, 2))
-					result = F.Call(F_Dot, node.Args.SmartSelect(arg => QuoteOne(arg)));
+					result = F.Call(LNode_Dot, node.Args.SmartSelect(arg => QuoteOne(arg, substitutions)));
 				else if (node.Calls(S.Of))
-					result = F.Call(F_Of, node.Args.SmartSelect(arg => QuoteOne(arg)));
+					result = F.Call(LNode_Of, node.Args.SmartSelect(arg => QuoteOne(arg, substitutions)));*/
 				else { // General case: F.Call(<Target>, <Args>)
-					LNode outTarget;
 					if (node.Target.IsId)
-						outTarget = QuoteIdHelper(node.Name);
+						creationArgs.Add(QuoteSymbol(node.Name));
 					else
-						outTarget = QuoteOne(node.Target);
-					RVList<LNode> outArgs = new RVList<LNode>(outTarget);
-					foreach (LNode arg in node.Args)
-						outArgs.Add(QuoteOne(arg));
-					result = F.Call(F_Call, outArgs);
+						creationArgs.Add(QuoteOne(node.Target, substitutions));
+
+					// If you write something like quote(Foo($x, $(..y), $z)), a special
+					// output style is used to accommodate the variable argument list.
+					if (substitutions && node.Args.Any(a => VarArgExpr(a) != null))
+					{
+						LNode argList = F.Call(S.New, F.Call(F.Of(F.Id("RVList"), F.Id("LNode"))));
+						foreach (LNode arg in node.Args) {
+							var vae = VarArgExpr(arg);
+							if (vae != null)
+								argList = F.Call(F.Dot(argList, F.Id("AddRange")), vae);
+							else
+								argList = F.Call(F.Dot(argList, F.Id("Add")), QuoteOne(arg, substitutions));
+						}
+						creationArgs.Add(argList);
+					}
+					else if (node.Args.Count > 0)
+						creationArgs.Add(F.Call(LNode_List, node.Args.Select(arg => QuoteOne(arg, substitutions))));
+					result = F.Call(LNode_Call, creationArgs);
 				}
 				break;
 			}
-			// Translate attributes too (if any)
-			RWList<LNode> outAttrs = null;
-			foreach (LNode attr in node.Attrs)
-				if (!attr.IsTrivia) {
-					outAttrs = outAttrs ?? new RWList<LNode>();
-					outAttrs.Add(QuoteOne(attr));
-				}
-			if (outAttrs != null)
-				result = F.Call(F.Dot(result, Id_WithAttrs), outAttrs.ToRVList());
-
 			return result;
+		}
+
+		private static LNode VarArgExpr(LNode arg)
+		{
+			LNode subj;
+			if (arg.Calls(S.Substitute, 1) && (subj = arg.Args[0]).Calls(S.DotDot, 1))
+				return subj.Args[0];
+			return null;
 		}
 
 		/// <summary>Helper function that finds the static readonly fields of a given 
