@@ -90,25 +90,27 @@ namespace LeMP
 			TestEcs("quote(F(x, 0));",
 				   @"LNode.Call((Symbol)""F"", LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(0)));");
 			TestEcs("quote { x = x + 1; }",
-				   @"LNode.Call(CodeSymbols.Assign, LNode.List(LNode.Id((Symbol) ""x""), LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(1)))));");
+				   @"LNode.Call(CodeSymbols.Assign, LNode.List(LNode.Id((Symbol) ""x""), LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(1))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator);");
 			TestEcs("quote { Console.WriteLine(\"Hello\"); }",
 				   @"LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) ""Console""), LNode.Id((Symbol) ""WriteLine""))), LNode.List(LNode.Literal(""Hello"")));");
 			TestEcs("q = quote({ while (Foo<T>) Yay(); });",
 				   @"q = LNode.Call(CodeSymbols.While, LNode.List(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) ""Foo""), LNode.Id((Symbol) ""T""))), LNode.Call((Symbol) ""Yay"")));");
 			TestEcs("q = quote({ if (true) { Yay(); } });",
-				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay"")))));");
+				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""))).SetStyle(NodeStyle.Statement)));");
 			TestEcs("q = quote({ Yay(); break; });",
-				   @"q = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break)));");
+				   @"q = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break))).SetStyle(NodeStyle.Statement);");
 			TestEcs("q = quote({ $(dict[key]) = 1; });",
-				   @"q = LNode.Call(CodeSymbols.Assign, LNode.List(dict[key], LNode.Literal(1)));");
+				   @"q = LNode.Call(CodeSymbols.Assign, LNode.List(dict[key], LNode.Literal(1))).SetStyle(NodeStyle.Operator);");
 			TestEcs("q = quote(hello + $x);",
-				   @"q = LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""hello""), x));");
+				   @"q = LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""hello""), x)).SetStyle(NodeStyle.Operator);");
 			TestEcs("quote { (x); }",
 				   @"LNode.Id(LNode.List(LNode.InParensTrivia), (Symbol) ""x"");");
 			TestEcs("rawQuote { Func($Foo); }",
 					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
 			TestEcs("quote(Foo($first, $(..rest)));",
 				   @"LNode.Call((Symbol) ""Foo"", new RVList<LNode>().Add(first).AddRange(rest));");
+			TestEcs("quote { [$(..attrs)] public X; }",
+				   @"LNode.Id(new RVList<LNode>().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
 		}
 
 		[Test]
@@ -150,7 +152,7 @@ namespace LeMP
 					}");
 			TestEcs(@"matchCode(code) { 
 					$(lit(#.IsLiteral)) => Literal(); 
-					$(id(#.IsId)) => Id(); 
+					$(id[#.IsId]) => Id(); 
 					$_ => Call();
 				}",
 				@"{
@@ -263,31 +265,60 @@ namespace LeMP
 		public void TestAlgebraicDataTypeDecls()
 		{
 			TestEcs(@"
+				public alt class SExpr {
+					public alt Atom(object Value);
+					public alt List(params object[] Items);
+				}", @"
+					public class SExpr { }
+					public class Atom : SExpr
+					{
+						public readonly object Value;
+						public Atom(object value) { Value = value; }
+						[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+						public object Item0 { get { return Value; } }
+					}
+					public class List : SExpr
+					{
+						public readonly object[] Items;
+						public List(params object[] items) { Items = items; }
+						[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+						public object[] Item0 { get { return Items; } }
+					}");
+			TestEcs(@"
 				[A] public alt class BinaryTree<T> : BaseClass {
 					[N] alt Node(BinaryTree<T> Left, BinaryTree<T> Right);
 					[L] alt Leaf(T Value) { stuff; }
 					common_stuff;
 				};
 			", @"
-				[A] public class BinaryTree<T> : BaseClass { common_stuff; };
+				[A] public class BinaryTree<T> : BaseClass { common_stuff; }
 				[N] class Node<T> : BinaryTree<T>
 				{
-					public Node(public readonly BinaryTree<T> Left, public readonly BinaryTree<T> Right) {}
-				}
-				[L] class Leaf<T> : BinaryTree<T>
-				{
-					public Leaf(public readonly T Value) {}
-					stuff;
+					public readonly BinaryTree<T> Left;
+					public readonly BinaryTree<T> Right;
+					public Node(BinaryTree<T> left, BinaryTree<T> right) { Left = left; Right = right; }
+					[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+					public BinaryTree<T> Item0 { get { return Left; } }
+					[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+					public BinaryTree<T> Item1 { get { return Right; } }
 				}
 				[N] static partial class Node
 				{
-					public static Node<T> New<T>(BinaryTree<T> Left, BinaryTree<T> Right) { return new Node<T>(Left, Right); }
+					public static Node<T> New<T>(BinaryTree<T> Left, BinaryTree<T> Right)
+						{ return new Node<T>(Left, Right); }
+				}
+				[L] class Leaf<T> : BinaryTree<T>
+				{
+					public readonly T Value;
+					public Leaf(T value) { Value = value; }
+					[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+					public T Item0 { get { return Value; } }
 				}
 				[L] static partial class Leaf
 				{
-					public static Leaf<T> New<T>(T Value) { return new Leaf<T>(Value); }
-				}
-			");
+					public static Leaf<T> New<T>(T Value) 
+						{ return new Leaf<T>(Value); }
+				}");
 		}
 
 		[Test]
@@ -297,7 +328,7 @@ namespace LeMP
 		}
 
 		[Test]
-		public void SetMemberTest()
+		public void SetOrCreateMemberTest()
 		{
 			var old = _sink;
 			_sink = MessageSink.Trace;
@@ -348,6 +379,8 @@ namespace LeMP
 				public Point(int x, int y) { X = x; Y = y; }
 				public this(int x, int y) { X = x; Y = y; }
 			}");
+			TestEcs("void Set(public params string[] Strs) {}",
+				"public string[] Strs; void Set(params string[] strs) { Strs = strs; }");
 		}
 		
 		[Test]

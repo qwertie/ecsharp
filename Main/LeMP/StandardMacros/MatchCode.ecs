@@ -274,7 +274,7 @@ namespace LeMP
 				bool isParams;
 				Symbol listVar;
 				var pAttrs = pattern.PAttrs();
-				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams)) != null) {
+				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams)) != null && isParams) {
 					if (listVar != __ || condition != null) {
 						AddVar(listVar, true, errAt: pattern);
 						Tests.Add(quote(($(F.Id(listVar)) = $candidate.Attrs).IsEmpty | true));
@@ -365,7 +365,7 @@ namespace LeMP
 						id = id.Args[0];
 					}
 
-					if (id.Calls(S.Of, 2)) {
+					if (id.Calls(S.IndexBracks, 2)) {
 						condition = id.Args[1];
 						id = id.Args[0];
 					} else if (id.ArgCount == 1) {

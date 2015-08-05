@@ -27,6 +27,7 @@ namespace LeMP
 				return null;
 			var args = fn.Args[2].Args;
 			LNode body = null;
+
 			RVList<LNode> createStmts = RVList<LNode>.Empty;
 			RVList<LNode> setStmts = RVList<LNode>.Empty;
 			for (int i = 0; i < args.Count; i++) {
@@ -59,13 +60,21 @@ namespace LeMP
 									if (a == _set) {
 										plainArg = F.Var(type, paramName, defaultValue).WithAttrs(arg.Attrs.RemoveAt(a_i));
 									} else {
+										// in case of something like "[A] public params T arg = value", 
+										// assume that "= value" represents a default value, not a field 
+										// initializer, that [A] belongs on the field, except `params` 
+										// which stays on the argument.
 										plainArg = F.Var(type, paramName, defaultValue);
 										createStmt = arg;
-										// in case of something like "public T arg = value", assume that
-										// "= value" represents a default value, not a field initializer.
 										if (arg.Args[1].Calls(S.Assign, 2))
 											createStmt = arg.WithArgChanged(1,
 												arg.Args[1].Args[0]);
+										int i_params = arg.Attrs.IndexWithName(S.Params);
+										if (i_params > -1)
+										{
+											plainArg = plainArg.PlusAttr(arg.Attrs[i_params]);
+											createStmt = createStmt.WithAttrs(createStmt.Attrs.RemoveAt(i_params));
+										}
 									}
 									break;
 								}

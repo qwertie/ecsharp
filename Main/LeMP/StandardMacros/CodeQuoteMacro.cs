@@ -46,7 +46,7 @@ namespace LeMP
 		}
 		static LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("CodeQuoteMacro.cs"));
 		static LNode Id_LNode = F_.Id("LNode");
-		static LNode Id_WithAttrs = F_.Id("WithAttrs");
+		static LNode Id_PlusAttrs = F_.Id("PlusAttrs");
 		static LNode _CodeSymbols = F_.Id("CodeSymbols");
 		static LNode CodeSymbols_Splice = F_.Dot(_CodeSymbols, F_.Id("Splice"));
 		static LNode LNode_List     = F_.Dot(Id_LNode, F_.Id("List"));
@@ -81,12 +81,9 @@ namespace LeMP
 			RVList<LNode> creationArgs = new RVList<LNode>();
 
 			// Translate attributes (if any)
-			RVList<LNode> outAttrs = new RVList<LNode>();
-			foreach (LNode attr in node.Attrs)
-				if (!attr.IsTrivia || attr.Name == S.TriviaInParens)
-					outAttrs.Add(QuoteOne(attr, substitutions));
-			if (outAttrs.Count > 0)
-				creationArgs.Add(F.Call(LNode_List, outAttrs));
+			var attrList = MaybeQuoteList(node.Attrs, substitutions);
+			if (attrList != null)
+				creationArgs.Add(attrList);
 
 			LNode result;
 			switch (node.Kind) {
@@ -101,10 +98,10 @@ namespace LeMP
 			default: // NodeKind.Call => F.Dot(...), F.Of(...), F.Call(...), F.Braces(...)
 				if (substitutions && node.Calls(S.Substitute, 1)) {
 					result = node.Args[0];
-					if (!outAttrs.IsEmpty) {
+					if (attrList != null) {
 						if (result.IsCall)
 							result = LNode.InParens(result);
-						result = F.Call(F.Dot(result, Id_WithAttrs), outAttrs);
+						result = F.Call(F.Dot(result, Id_PlusAttrs), attrList);
 					}
 				} /*else if (node.Calls(S.Braces)) // F.Braces(...)
 					result = F.Call(LNode_Braces, node.Args.SmartSelect(arg => QuoteOne(arg, substitutions)));
@@ -118,27 +115,41 @@ namespace LeMP
 					else
 						creationArgs.Add(QuoteOne(node.Target, substitutions));
 
-					// If you write something like quote(Foo($x, $(..y), $z)), a special
-					// output style is used to accommodate the variable argument list.
-					if (substitutions && node.Args.Any(a => VarArgExpr(a) != null))
-					{
-						LNode argList = F.Call(S.New, F.Call(F.Of(F.Id("RVList"), F.Id("LNode"))));
-						foreach (LNode arg in node.Args) {
-							var vae = VarArgExpr(arg);
-							if (vae != null)
-								argList = F.Call(F.Dot(argList, F.Id("AddRange")), vae);
-							else
-								argList = F.Call(F.Dot(argList, F.Id("Add")), QuoteOne(arg, substitutions));
-						}
+					var argList = MaybeQuoteList(node.Args, substitutions);
+					if (argList != null)
 						creationArgs.Add(argList);
-					}
-					else if (node.Args.Count > 0)
-						creationArgs.Add(F.Call(LNode_List, node.Args.Select(arg => QuoteOne(arg, substitutions))));
 					result = F.Call(LNode_Call, creationArgs);
 				}
+				// Note: don't preserve prefix notation because if $op is +, 
+				// we want $op(x, y) to generate code for x + y (there is no 
+				// way to express this with infix notation.)
+				if (node.BaseStyle != NodeStyle.Default && node.BaseStyle != NodeStyle.PrefixNotation)
+					result = F.Call(F.Dot(result, F.Id("SetStyle")), F.Dot(F.Id("NodeStyle"), F.Id(node.BaseStyle.ToString())));
 				break;
 			}
 			return result;
+		}
+
+		static LNode MaybeQuoteList(RVList<LNode> list, bool substitutions)
+		{
+			if (list.IsEmpty)
+				return null;
+			else if (substitutions && list.Any(a => VarArgExpr(a) != null))
+			{
+				// If you write something like quote(Foo($x, $(..y), $z)), a special
+				// output style is used to accommodate the variable argument list.
+				LNode argList = F.Call(S.New, F.Call(F.Of(F.Id("RVList"), F.Id("LNode"))));
+				foreach (LNode arg in list) {
+					var vae = VarArgExpr(arg);
+					if (vae != null)
+						argList = F.Call(F.Dot(argList, F.Id("AddRange")), vae);
+					else
+						argList = F.Call(F.Dot(argList, F.Id("Add")), QuoteOne(arg, substitutions));
+				}
+				return argList;
+			}
+			else
+				return F.Call(LNode_List, list.Select(item => QuoteOne(item, substitutions)));
 		}
 
 		private static LNode VarArgExpr(LNode arg)

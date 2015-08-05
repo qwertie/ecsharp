@@ -1138,7 +1138,7 @@ namespace Ecs.Parser
 				":" bases+=DataType
 				("," bases+=DataType)*
 				{return F.List(bases);}
-			|	{return F._Missing;}
+			|	{return F.List();}
 			)
 		};
 
