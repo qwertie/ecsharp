@@ -138,7 +138,8 @@ namespace LeMP
 			return F.Literal(G.BoxedTrue);
 		}
 
-		[LexicalMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", Mode = MacroMode.Passive)]
+		[LexicalMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", 
+			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode StaticIf(LNode @if, IMessageSink sink)
 		{
 			LNode @static;
@@ -147,7 +148,8 @@ namespace LeMP
 			return static_if(@if, sink);
 		}
 		
-		[LexicalMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now", Mode = MacroMode.Passive)]
+		[LexicalMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now",
+			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode static_if(LNode @if, IMessageSink sink)
 		{
 			if (!MathEx.IsInRange(@if.ArgCount, 2, 3))

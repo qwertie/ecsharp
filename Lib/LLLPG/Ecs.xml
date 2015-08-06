@@ -226,9 +226,8 @@
         <member name="F:Ecs.EcsNodePrinter.Ambiguity.CastRhs">
             <summary>The expression is the right side of a traditional cast, so 
             the printer must avoid ambiguity in case of the following prefix 
-            operators: <c>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), 
-            (Foo)--(x)</c> (the (Foo)++(x) case is parsed as a post-increment and a 
-            call).</summary>
+            operators: <c>(Foo)&amp;x, (Foo)*x, (Foo)++(x), (Foo)--(x)</c> 
+            (the (Foo)++(x) case is parsed as a post-increment and a call).</summary>
         </member>
         <member name="F:Ecs.EcsNodePrinter.Ambiguity.IsCallTarget">
             <summary>The expression is in a location where, if it is parenthesized

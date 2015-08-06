@@ -23,11 +23,11 @@ namespace Ecs
 		static readonly Dictionary<Symbol,Precedence> PrefixOperators = Dictionary( 
 			// This is a list of unary prefix operators only. Does not include the
 			// binary prefix operator "#cast" or the unary suffix operators ++ and --.
-			// Although #. can be a prefix operator, it is not included in this list
+			// Although @`.` can be a prefix operator, it is not included in this list
 			// because it needs special treatment because its precedence is higher
 			// than EP.Primary (i.e. above prefix notation). Therefore, it's printed
-			// as an identifier if possible (e.g. #.(a)(x) is printed ".a(x)") and
-			// uses prefix notation if not (e.g. #.(a(x)) must be in prefix form.)
+			// as an identifier if possible (e.g. @`.`(a)(x) is printed ".a(x)") and
+			// uses prefix notation if not (e.g. @`.`(a(x)) must be in prefix form.)
 			//
 			// The substitute operator $ also has higher precedence than Primary, 
 			// but its special treatment is in the parser: the parser produces the
@@ -39,13 +39,13 @@ namespace Ecs
 			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
 			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
-			P(S.Substitute, EP.Substitute)
+			P(S.DotDot,     EP.Prefix), P(S.Substitute, EP.Substitute)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
 			// This is a list of infix binary opertors only. Does not include the
-			// conditional operator #? or non-infix binary operators such as a[i].
-			// #, is not an operator at all and generally should not occur. 
+			// conditional operator `?` or non-infix binary operators such as a[i].
+			// Comma is not an operator at all and generally should not occur. 
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
@@ -531,7 +531,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintComplexIdentOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles #of and #., including array types
+			// Handles #of and @`.`, including array types
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			Debug.Assert((name == S.Of || name == S.Dot) && _n.IsCall);

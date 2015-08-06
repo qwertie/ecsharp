@@ -19,7 +19,7 @@ namespace LeMP
 			"field with an initial value set by calling the method. This macro is "+
 			"activated by attaching one of the following attributes to a method "+
 			"parameter: set, public, internal, protected, private, #protectedIn, static, partial.", 
-			"#fn", "#cons", Mode = MacroMode.Passive)]
+			"#fn", "#cons", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode SetOrCreateMember(LNode fn, IMessageSink sink)
 		{
 			// Expecting #fn(Type, Name, #(args), {body})

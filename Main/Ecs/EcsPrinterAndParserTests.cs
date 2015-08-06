@@ -1053,6 +1053,10 @@ namespace Ecs
 			Stmt("class Foo\n{\n  [#partial] Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                      Attr(@partial,  F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces())))));
 			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("this()\n{\n  x;\n  partial this(x)\n  {\n  }\n}",
+				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x,
+					Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
 		}
 
 		LNode AddWords(LNode stmt, bool partialIsWA = true) { return stmt.PlusAttrs(@public, @new, partialIsWA ? partialWA : partial, @static); }

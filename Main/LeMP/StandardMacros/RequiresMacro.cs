@@ -12,7 +12,8 @@ namespace LeMP
 		// Hmm, our macro processor makes this hard o implement.
 		// TODO: more features in macro processor?
 		[LexicalMacro(@"[requires(expr)] T method(...) {...}; T method([requires(expr)] ArgType arg) {...}",
-			"Generates a Contract.Requires(expr) statement at the beginning of the method.", Mode = MacroMode.Passive)]
+			"Generates a Contract.Requires(expr) statement at the beginning of the method.", 
+			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode requires(LNode node, IMessageSink sink)
 		{
 			return null;

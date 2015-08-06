@@ -74,7 +74,7 @@ namespace LeMP
 				output.Add(F.Call(S.Var, Range.Single(F.Id("LNode")).Concat(cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
 			if (cmc.ListVars.Count > 0) {
 				LNode type = LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "RVList"), LNode.Id((Symbol) "LNode")));
-				output.Add(F.Call(S.Var, Range.Single(type).Concat(cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))) : F.Id(kvp.Key)))));
+				output.Add(F.Call(S.Var, Range.Single(type).Concat(cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
 			}
 			if (output.Count == 0)
 				return ifStmt;
@@ -154,18 +154,19 @@ namespace LeMP
 				varArgSym = null;
 				varArgCond = null;
 				LNode condition;
-				bool isParams;
-				var nodeVar = GetSubstitutionVar(pattern, out condition, out isParams);
+				bool isParams, refExistingVar;
+				var nodeVar = GetSubstitutionVar(pattern, out condition, out isParams, out refExistingVar);
 				int predictedTests = pattern.Attrs.Count + (nodeVar != null ? 0 : pattern.Args.Count) + (!pattern.HasSimpleHeadWithoutPAttrs() ? 1 : 0);
 				if (predictedTests > 1)
 					candidate = MaybePutCandidateInTempVar(candidate.IsCall, candidate);
 				MatchAttributes(pattern, candidate);
 				if (nodeVar != null) {
 					if (nodeVar != __ || condition != null) {
-						AddVar(nodeVar, isParams, errAt: pattern);
+						if (!refExistingVar)
+							AddVar(nodeVar, isParams, errAt: pattern);
 						if (!isParams) {
-							var assignment = LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(nodeVar), candidate));
-							Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(assignment.WithAttrs(LNode.InParensTrivia), LNode.Literal(null))));
+							var assignment = LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(nodeVar), candidate)).SetStyle(NodeStyle.Operator);
+							Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(assignment.PlusAttrs(LNode.List(LNode.InParensTrivia)), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 							Tests.Add(condition);
 						}
 					}
@@ -175,10 +176,10 @@ namespace LeMP
 						return;
 					}
 				} else if (pattern.IsId) {
-					Tests.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "IsIdNamed"))), LNode.List(LNode.Call(CodeSymbols.Cast, LNode.List(F.Literal(pattern.Name.Name), LNode.Id((Symbol) "Symbol"))))));
+					Tests.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "IsIdNamed"))), LNode.List(LNode.Call(CodeSymbols.Cast, LNode.List(F.Literal(pattern.Name.Name), LNode.Id((Symbol) "Symbol"))).SetStyle(NodeStyle.Operator))));
 				} else if (pattern.IsLiteral) {
 					if (pattern.Value == null)
-						Tests.Add(LNode.Call(CodeSymbols.Eq, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Value"))), LNode.Literal(null))));
+						Tests.Add(LNode.Call(CodeSymbols.Eq, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Value"))), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 					else
 						Tests.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(pattern, LNode.Id((Symbol) "Equals"))), LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Value"))))));
 				} else {
@@ -199,7 +200,7 @@ namespace LeMP
 						if (fixedArgC == 0) {
 							Tests.Add(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "IsCall"))));
 							if (!varArgAt.HasValue)
-								Tests.Add(LNode.Call(CodeSymbols.Eq, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), LNode.Literal(0))));
+								Tests.Add(LNode.Call(CodeSymbols.Eq, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), LNode.Literal(0))).SetStyle(NodeStyle.Operator));
 						} else {
 							var op = varArgAt.HasValue ? S.GE : S.Eq;
 							Tests.Add(LNode.Call(op, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), F.Literal(fixedArgC))));
@@ -216,7 +217,7 @@ namespace LeMP
 					var targetTmp = NextTempName();
 					var targetTmpId = F.Id(targetTmp);
 					AddVar(targetTmp, false, errAt: candidate);
-					Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(targetTmpId, candidate)), LNode.Literal(null))));
+					Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(targetTmpId, candidate)).SetStyle(NodeStyle.Operator), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
 					return targetTmpId;
 				} else {
 					return candidate;
@@ -234,13 +235,14 @@ namespace LeMP
 			private void MatchAttributes(LNode pattern, LNode candidate)
 			{
 				LNode condition;
-				bool isParams;
+				bool isParams, refExistingVar;
 				Symbol listVar;
 				var pAttrs = pattern.PAttrs();
-				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams)) != null && isParams) {
+				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams, out refExistingVar)) != null && isParams) {
 					if (listVar != __ || condition != null) {
-						AddVar(listVar, true, errAt: pattern);
-						Tests.Add(LNode.Call(CodeSymbols.OrBits, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(F.Id(listVar), LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Attrs"))))), LNode.Id((Symbol) "IsEmpty"))), LNode.Literal(true))));
+						if (!refExistingVar)
+							AddVar(listVar, true, errAt: pattern);
+						Tests.Add(LNode.Call(CodeSymbols.OrBits, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(F.Id(listVar), LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Attrs"))))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol) "IsEmpty"))), LNode.Literal(true))).SetStyle(NodeStyle.Operator));
 						if (condition != null)
 							Tests.Add(condition);
 					}
@@ -253,8 +255,8 @@ namespace LeMP
 				int argc = 0;
 				for (int i = 0; i < patternArgs.Count; i++) {
 					LNode condition;
-					bool isParams;
-					var nodeVar = GetSubstitutionVar(patternArgs[i], out condition, out isParams);
+					bool isParams, _;
+					var nodeVar = GetSubstitutionVar(patternArgs[i], out condition, out isParams, out _);
 					if (isParams)
 						varArgAt = i;
 					else
@@ -276,40 +278,41 @@ namespace LeMP
 				for (int left = patternArgs.Count - i2; i2 < patternArgs.Count; i2++) {
 					Symbol varArgSym2 = null;
 					LNode varArgCond2 = null;
-					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), F.Literal(left))))), out varArgSym2, out varArgCond2);
+					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), F.Literal(left))).SetStyle(NodeStyle.Operator))), out varArgSym2, out varArgCond2);
 					if (varArgSym2 != null) {
 						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(..varargs) variable is not supported in a single argument list.");
 						break;
 					}
 					left--;
 				}
-				if (varArgSym != null) {
+				if (varArgSym != null && (varArgSym != __ || varArgCond != null)) {
 					LNode varArgSymId = F.Id(varArgSym);
 					LNode grabVarArgs;
 					if (i == 0 && patternArgs.Count == 1) {
-						grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args")))));
+						grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))))).SetStyle(NodeStyle.Operator);
 					} else if (i == 0 && patternArgs.Count > 1) {
 						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
-						grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "WithoutLast"))), LNode.List(fixedArgsLit))));
+						grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "WithoutLast"))), LNode.List(fixedArgsLit)))).SetStyle(NodeStyle.Operator);
 					} else {
 						var varArgStartLit = F.Literal(i);
 						var fixedArgsLit = F.Literal(patternArgs.Count - 1);
 						if (i + 1 == patternArgs.Count)
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "RVList"), LNode.Id((Symbol) "LNode"))), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Slice"))), LNode.List(varArgStartLit))))))));
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "RVList"), LNode.Id((Symbol) "LNode"))), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Slice"))), LNode.List(varArgStartLit)))))))).SetStyle(NodeStyle.Operator);
 						else
-							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "RVList"), LNode.Id((Symbol) "LNode"))), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Slice"))), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), fixedArgsLit))))))))));
+							grabVarArgs = LNode.Call(CodeSymbols.Assign, LNode.List(varArgSymId, LNode.Call(CodeSymbols.New, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "RVList"), LNode.Id((Symbol) "LNode"))), LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Slice"))), LNode.List(varArgStartLit, LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), fixedArgsLit)).SetStyle(NodeStyle.Operator))))))))).SetStyle(NodeStyle.Operator);
 					}
 					if (varArgCond != null || IsMultiCase) {
-						Tests.Add(LNode.Call(CodeSymbols.OrBits, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(grabVarArgs.WithAttrs(LNode.InParensTrivia), LNode.Id((Symbol) "IsEmpty"))), LNode.Literal(true))));
+						Tests.Add(LNode.Call(CodeSymbols.OrBits, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(grabVarArgs.PlusAttrs(LNode.List(LNode.InParensTrivia)), LNode.Id((Symbol) "IsEmpty"))), LNode.Literal(true))).SetStyle(NodeStyle.Operator));
 						Tests.Add(varArgCond);
 					} else
 						ThenClause.Add(grabVarArgs);
 				}
 			}
-			internal static Symbol GetSubstitutionVar(LNode expr, out LNode condition, out bool isParams)
+			internal static Symbol GetSubstitutionVar(LNode expr, out LNode condition, out bool isParams, out bool refExistingVar)
 			{
 				condition = null;
 				isParams = false;
+				refExistingVar = false;
 				if (expr.Calls(S.Substitute, 1)) {
 					LNode id = expr.Args[0];
 					if (id.AttrNamed(S.Params) != null)
@@ -318,6 +321,8 @@ namespace LeMP
 						isParams = true;
 						id = id.Args[0];
 					}
+					if (id.AttrNamed(S.Ref) != null)
+						refExistingVar = true;
 					if (id.Calls(S.IndexBracks, 2)) {
 						condition = id.Args[1];
 						id = id.Args[0];

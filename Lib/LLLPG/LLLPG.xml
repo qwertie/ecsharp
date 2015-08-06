@@ -52,11 +52,6 @@
             <summary>Helper macro that translates <c>lexer</c> in <c>LLLPG(lexer, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.IntStreamCodeGenHelper"/> object.</summary>
         </member>
-        <member name="M:Loyc.LLPG.Macros.DecodeOptions(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
-            <summary>Decodes options in the format <c>option1(v1), option2(v2)</c> 
-            or <c>option1 = v1, option2 = v2</c>. If the format of a given
-            node is invalid, this function yields <c>(null, node)</c>.</summary>
-        </member>
         <member name="M:Loyc.LLPG.Macros.LLLPG_parser(Loyc.Syntax.LNode,LeMP.IMacroContext)">
             <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> object.</summary>

@@ -923,7 +923,7 @@ namespace Ecs.Parser
 					// non-keyword attributes located prior to any of those.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
 				|	(TT.AttrKeyword | TT.@new)
-				|	&{@[Hoist]_spaceName!=S.Fn} TT.(noMacro(this))
+				|	TT.(noMacro(this))
 				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
 				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
 					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
@@ -1375,7 +1375,7 @@ namespace Ecs.Parser
 			(	&{_spaceName == LT($LI).Value}
 				n=(TT.Id|TT.ContextualKeyword)
 				&("(" ")" ("{" | ";"))
-			/	&{_spaceName != S.Fn}
+			/	&{_spaceName != S.Fn || LA($LI+3) == TT.LBrace}
 				n=TT.(noMacro(@this))
 				&("(" ")" ("{" | ";"))
 			/	n=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@this)))

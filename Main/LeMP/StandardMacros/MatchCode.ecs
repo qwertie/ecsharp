@@ -174,8 +174,8 @@ namespace LeMP
 
 				// is this a $substitutionVar?
 				LNode condition;
-				bool isParams;
-				var nodeVar = GetSubstitutionVar(pattern, out condition, out isParams);
+				bool isParams, refExistingVar;
+				var nodeVar = GetSubstitutionVar(pattern, out condition, out isParams, out refExistingVar);
 
 				// Unless the candidate is a simple variable name, avoid repeating 
 				// it by creating a temporary variable to hold its value
@@ -190,7 +190,8 @@ namespace LeMP
 				// case $_
 				if (nodeVar != null) {
 					if (nodeVar != __ || condition != null) {
-						AddVar(nodeVar, isParams, errAt: pattern);
+						if (!refExistingVar)
+							AddVar(nodeVar, isParams, errAt: pattern);
 						if (!isParams) {
 							var assignment = quote($(F.Id(nodeVar)) = $candidate);
 							Tests.Add(quote(($assignment) != null));
@@ -271,12 +272,13 @@ namespace LeMP
 			private void MatchAttributes(LNode pattern, LNode candidate)
 			{
 				LNode condition;
-				bool isParams;
+				bool isParams, refExistingVar;
 				Symbol listVar;
 				var pAttrs = pattern.PAttrs();
-				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams)) != null && isParams) {
+				if (pAttrs.Count == 1 && (listVar = GetSubstitutionVar(pAttrs[0], out condition, out isParams, out refExistingVar)) != null && isParams) {
 					if (listVar != __ || condition != null) {
-						AddVar(listVar, true, errAt: pattern);
+						if (!refExistingVar)
+							AddVar(listVar, true, errAt: pattern);
 						Tests.Add(quote(($(F.Id(listVar)) = $candidate.Attrs).IsEmpty | true));
 						if (condition != null)
 							Tests.Add(quote($condition));
@@ -291,8 +293,8 @@ namespace LeMP
 				int argc = 0;
 				for (int i = 0; i < patternArgs.Count; i++) {
 					LNode condition;
-					bool isParams;
-					var nodeVar = GetSubstitutionVar(patternArgs[i], out condition, out isParams);
+					bool isParams, _;
+					var nodeVar = GetSubstitutionVar(patternArgs[i], out condition, out isParams, out _);
 					if (isParams)
 						varArgAt = i;
 					else
@@ -324,7 +326,7 @@ namespace LeMP
 					}
 					left--;
 				}
-				if (varArgSym != null) {
+				if (varArgSym != null && (varArgSym != __ || varArgCond != null)) {
 					// Extract variable arg list
 					LNode varArgSymId = F.Id(varArgSym);
 					LNode grabVarArgs;
@@ -351,10 +353,11 @@ namespace LeMP
 				}
 			}
 
-			internal static Symbol GetSubstitutionVar(LNode expr, out LNode condition, out bool isParams)
+			internal static Symbol GetSubstitutionVar(LNode expr, out LNode condition, out bool isParams, out bool refExistingVar)
 			{
 				condition = null;
 				isParams = false;
+				refExistingVar = false;
 				if (expr.Calls(S.Substitute, 1))
 				{
 					LNode id = expr.Args[0];
@@ -364,6 +367,9 @@ namespace LeMP
 						isParams = true;
 						id = id.Args[0];
 					}
+
+					if (id.AttrNamed(S.Ref) != null)
+						refExistingVar = true;
 
 					if (id.Calls(S.IndexBracks, 2)) {
 						condition = id.Args[1];

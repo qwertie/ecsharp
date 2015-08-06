@@ -141,7 +141,7 @@ namespace Loyc.VisualStudio
 				new SnapshotSpan(Buffer.CurrentSnapshot, new Span(t.StartIndex, t.Length)),
 				new ErrorTag(errorType, str.ToString()));
 		}
-		protected void AppendMessage(StringBuilder str, MessageHolder.Message mhmsg)
+		protected void AppendMessage(StringBuilder str, LogMessage mhmsg)
 		{
 			str.Append(Localize.From(mhmsg.Severity.ToString()));
 			str.Append(": ");

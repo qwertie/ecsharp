@@ -561,7 +561,7 @@ namespace LeMP
 		{
 			LNode input = s.Input;
 			Debug.Assert(s.Results.IsEmpty && s.MessageHolder.List.Count == 0);
-			IList<MessageHolder.Message> messageList = s.MessageHolder.List;
+			IList<LogMessage> messageList = s.MessageHolder.List;
 
 			int accepted = 0, acceptedIndex = -1;
 			for (int i = 0; i < foundMacros.Count; i++)
@@ -577,6 +577,7 @@ namespace LeMP
 				try {
 					Scope scope = AutoInitScope();
 					MacrosInvoked++;
+					// CALL THE MACRO!
 					output = macro.Macro(macroInput, scope);
 					if (output != null) { accepted++; acceptedIndex = i; }
 				} catch (ThreadAbortException e) {
@@ -585,6 +586,8 @@ namespace LeMP
 					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodes));
 					PrintMessages(s.Results, input, accepted, Severity.Error);
 					throw;
+				} catch (LogException e) {
+					e.Msg.WriteTo(s.MessageHolder);
 				} catch (Exception e) {
 					s.MessageHolder.Write(Severity.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
 					s.MessageHolder.Write(Severity.Detail, input, e.StackTrace);
@@ -646,17 +649,17 @@ namespace LeMP
 
 		struct MacroResult
 		{
-			public MacroResult(MacroInfo macro, LNode newNode, ListSlice<MessageHolder.Message> msgs, bool dropRemaining)
+			public MacroResult(MacroInfo macro, LNode newNode, ListSlice<LogMessage> msgs, bool dropRemaining)
 			{
 				Macro = macro; NewNode = newNode; Msgs = msgs; DropRemainingNodes = dropRemaining;
 			}
 			public MacroResult(LNode lNode)
 			{
-				Macro = null; NewNode = lNode; Msgs = ListSlice<MessageHolder.Message>.Empty; DropRemainingNodes = false;
+				Macro = null; NewNode = lNode; Msgs = ListSlice<LogMessage>.Empty; DropRemainingNodes = false;
 			}
 			public MacroInfo Macro; 
 			public LNode NewNode;
-			public ListSlice<MessageHolder.Message> Msgs;
+			public ListSlice<LogMessage> Msgs;
 			public bool DropRemainingNodes; // delete rest of nodes in current Args/Attrs list
 
 			public MacroResult MaybeWith(LNode newNode)
@@ -774,7 +777,7 @@ namespace LeMP
 							|| msg.Severity >= Severity.Warning
 							|| macroStyleCall))
 						{
-							var msg2 = new MessageHolder.Message(msg.Severity, msg.Context,
+							var msg2 = new LogMessage(msg.Severity, msg.Context,
 								QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
 							msg2.WriteTo(_sink);
 							printedLast = true;

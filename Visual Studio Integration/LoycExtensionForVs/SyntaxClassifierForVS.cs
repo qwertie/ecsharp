@@ -86,7 +86,7 @@ namespace Loyc.VisualStudio
 		public class LexerMessage // Error/warning message stored in a token
 		{
 			public object OriginalValue;
-			public MessageHolder.Message Msg;
+			public LogMessage Msg;
 		}
 
 		protected SyntaxClassifierForVS(VSBuffer ctx)
@@ -99,7 +99,7 @@ namespace Loyc.VisualStudio
 				if (severity >= Severity.Note)
 					_lexerError = new LexerMessage {
 						OriginalValue = _lexerError, 
-						Msg = new MessageHolder.Message(severity, context, fmt, args)
+						Msg = new LogMessage(severity, context, fmt, args)
 					};
 			});
 

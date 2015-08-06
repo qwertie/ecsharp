@@ -249,9 +249,17 @@
     <Compile Include="MacroProcessorTests.cs" />
     <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StandardMacros\AlgebraicDataType.cs" />
+    <Compile Include="StandardMacros\AlgebraicDataType.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
+    </Compile>
     <Compile Include="StandardMacros\AttrMacroRegistrar.cs" />
     <Compile Include="StandardMacros\BackingFieldMacro.cs" />
+    <None Include="StandardMacros\AlgebraicDataType.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
+    </None>
     <None Include="StandardMacros\MatchCode.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>

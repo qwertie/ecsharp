@@ -15,7 +15,8 @@ namespace LeMP
 	{
 		static readonly Symbol _hash = GSymbol.Get("#");
 
-		[LexicalMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", "#fn", Mode = MacroMode.Passive)]
+		[LexicalMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", 
+			"#fn", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode ForwardMethod(LNode fn, IMessageSink sink)
 		{
 			LNode args, fwd, body;
@@ -45,7 +46,8 @@ namespace LeMP
 			return fn.WithArgChanged(3, body);
 		}
 
-		[LexicalMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }", "Forward property getter and/or setter", "#property", Mode = MacroMode.Passive)]
+		[LexicalMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }", "Forward property getter and/or setter", 
+			"#property", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode ForwardProperty(LNode prop, IMessageSink sink)
 		{
 			LNode name, fwd, body;
