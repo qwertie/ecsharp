@@ -159,71 +159,79 @@ namespace Loyc
 		}
 	}
 
-	/// <summary>A message sink that stores all messages it receives.</summary>
-	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
+	/// <summary>Holds an argument list compatible with <see cref="IMessageSink.Write"/>.
+	/// Typically used with <see cref="MessageHolder"/>.</summary>
+	public struct LogMessage : IHasLocation
 	{
-		/// <summary>Holds an argument list of <see cref="IMessageSink.Write"/>.</summary>
-		public struct Message : IHasLocation
+		public LogMessage(Severity type, object context, string format, object arg0, object arg1 = null)
+			: this (type, context, format, new object[2] { arg0, arg1 }) {}
+		public LogMessage(Severity type, object context, string format)
+			: this (type, context, format, EmptyArray<object>.Value) {}
+		public LogMessage(Severity type, object context, string format, params object[] args)
 		{
-			public Message(Severity type, object context, string format, object arg0, object arg1 = null)
-				: this (type, context, format, new object[2] { arg0, arg1 }) {}
-			public Message(Severity type, object context, string format)
-				: this (type, context, format, EmptyArray<object>.Value) {}
-			public Message(Severity type, object context, string format, params object[] args)
-			{
-				Severity = type;
-				Context = context;
-				Format = format;
-				_args = args;
-			}
-			public readonly Severity Severity;
-			public readonly object Context;
-			public readonly string Format;
-			readonly object[] _args;
-			public object[] Args { get { return _args; } }
-			public string Formatted
-			{
-				get { return Localize.From(Format, _args); }
-			}
-			public override string ToString()
-			{
-				return MessageSink.FormatMessage(Severity, Context, Format, _args);
-			}
-			public object Location
-			{
-				get { return MessageSink.LocationOf(Context); }
-			}
-			public void WriteTo(IMessageSink sink)
-			{
-				if (_args.Length == 0)
-					sink.Write(Severity, Context, Format);
-				else
-					sink.Write(Severity, Context, Format, _args);
+			Severity = type;
+			Context = context;
+			Format = format;
+			_args = args;
+		}
+		public readonly Severity Severity;
+		public readonly object Context;
+		public readonly string Format;
+		readonly object[] _args;
+		public object[] Args { get { return _args; } }
+		public string Formatted
+		{
+			get {
+				try {
+					return Localize.From(Format, _args);
+				} catch {
+					return Format;
+				}
 			}
 		}
-		List<Message> _messages;
-
-		public IList<Message> List
+		public override string ToString()
 		{
-			get { return _messages = _messages ?? new List<Message>(); }
+			return MessageSink.FormatMessage(Severity, Context, Format, _args);
+		}
+		public object Location
+		{
+			get { return MessageSink.LocationOf(Context); }
+		}
+		public void WriteTo(IMessageSink sink)
+		{
+			if (_args.Length == 0)
+				sink.Write(Severity, Context, Format);
+			else
+				sink.Write(Severity, Context, Format, _args);
+		}
+	}
+
+	/// <summary>A message sink that puts the messages it receives in a list.</summary>
+	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
+	{
+		List<LogMessage> _messages;
+
+		public IList<LogMessage> List
+		{
+			get { return _messages = _messages ?? new List<LogMessage>(); }
 		}
 		public void WriteListTo(IMessageSink sink)
 		{
-			foreach (Message msg in List)
+			foreach (LogMessage msg in List)
 				msg.WriteTo(sink);
 		}
 
 		public void Write(Severity type, object context, string format)
 		{
-			List.Add(new Message(type, context, format));
+			List.Add(new LogMessage(type, context, format));
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
-			List.Add(new Message(type, context, format, arg0, arg1));
+			List.Add(new LogMessage(type, context, format, arg0, arg1));
 		}
 		public void Write(Severity type, object context, string format, params object[] args)
 		{
-			List.Add(new Message(type, context, format, args));
+			List.Add(new LogMessage(type, context, format, args));
 		}
 		/// <summary>Always returns true.</summary>
 		public bool IsEnabled(Severity type)
@@ -235,7 +243,7 @@ namespace Loyc
 		{
 			var copy = new MessageHolder();
 			if (_messages != null)
-				copy._messages = new List<Message>(_messages);
+				copy._messages = new List<LogMessage>(_messages);
 			return copy;
 		}
 	}

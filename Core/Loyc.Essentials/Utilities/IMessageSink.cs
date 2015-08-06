@@ -236,4 +236,22 @@ namespace Loyc
 	/// <param name="args">Optional arguments to fill in placeholders in the format 
 	/// string.</param>
 	public delegate void WriteMessageFn(Severity type, object context, string format, params object[] args);
+
+	/// <summary>An exception that includes a "context" object as part of a
+	/// <see cref="LogMessage"/> structure, typically used to indicate where an 
+	/// error occurred.</summary>
+	public class LogException : Exception
+	{
+		public LogException(object context, string format, params object[] args) : this(Severity.Error, context, format, args) {}
+		public LogException(Severity severity, object context, string format, params object[] args) : this(new LogMessage(severity, context, format, args)) {}
+		public LogException(LogMessage msg) { Msg = msg; }
+		
+		/// <summary>Contains additional information about the error that occurred.</summary>
+		public LogMessage Msg { get; private set; }
+
+		public override string Message
+		{
+			get { return Msg.Formatted; }
+		}
+	}
 }

@@ -71,6 +71,10 @@ namespace Loyc.Collections
 			_localCount = 0;
 			AddRange(list);
 		}
+		public RVList(RVList<T> list)
+		{
+			this = list;
+		}
 
 		#endregion
 
