@@ -130,6 +130,8 @@ namespace LeMP
 				@"public static readonly Symbol S_OK = (Symbol) ""OK"", S_Error = (Symbol) ""Error"";
 				Symbol status = S_OK ?? S_Good;
 				Symbol Err() { return S_Bad ?? S_Error; }");
+			TestLes("@[Attr] use_symbols; @@`->`;",
+				@"@[Attr, #static, #readonly] #var(Symbol, sy__dash_gt = #cast(""->"", Symbol)); sy__dash_gt;");
 		}
 
 		[Test]
