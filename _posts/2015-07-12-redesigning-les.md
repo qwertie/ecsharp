@@ -7,9 +7,9 @@ I proposed Loyc Expression Syntax [version 1](https://github.com/qwertie/LoycCor
 
 First of all, I've realized now that I did too much alone: I tried to specify _eveything_ about the language, with too many minor features, from day one, before LES gained any popularity. I realized that I needed some simplifications so that others would be able to understand LES. No one would support a language they did not understand, even if the parser didn't have that many lines of code.
 
-Second, I needed to address those concerns - minimize whitespace sensitivity, minimize problems with semicolons, and avoid rocking the boat too much by improving precedence rules.
+Secondly, I needed to address those concerns - minimize whitespace sensitivity, minimize problems with semicolons, and avoid rocking the boat too much by improving precedence rules.
 
-First, here are a couple of things that I decided against. My first plan was described in [issue 3](https://github.com/qwertie/LoycCore/issues/3). It involved having expressions end upon reaching the first `{braced block}`, unless the braced block is followed by comma or semicolon...
+Here are a couple of things that I decided against. My first plan was described in [issue 3](https://github.com/qwertie/LoycCore/issues/3). It involved having expressions end upon reaching the first `{braced block}`, unless the braced block is followed by comma or semicolon...
 
     if (x > 0) {...}: else {...}
 

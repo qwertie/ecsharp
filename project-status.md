@@ -2,7 +2,6 @@
 layout: page
 title: "Project Status & Task List"
 commentIssueId: 3
-stripes: true
 ---
 Help wanted!
 

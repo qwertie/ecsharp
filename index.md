@@ -20,14 +20,14 @@ Loyc is about finding ways to bring the world's programming languages closer tog
 
 # About Loyc
 
-The Language of Your Choice (Loyc) project is a group of projects related to cross-language interoperability:
+Language of Your Choice (Loyc) is a group of projects related to cross-language interoperability:
 
 - Transforming source code between different languages
 - Writing libraries (or entire programs) in multiple programming languages
 - Code analysis and transformation
 - IDEs (syntax highlighting, intellisense)
 
-Loyc is in its infancy, and probably will remain so until I attract either (A) volunteers to work on its components, or (B) a major corporate sponsor. Current and potential Loyc projects include:
+Loyc is in its infancy, and probably will remain so until I attract either (A) volunteers to work on its components, or (B) a major sponsor. Current and potential Loyc projects include:
 
 - [Enhanced C#](https://github.com/qwertie/Loyc/wiki/Enhanced-C%23): a starting point for the Loyc framework, EC# will add new operators and many other new features to C#, starting with a LISP-inspired macro system (LeMP).
 - [LeMP](https://github.com/qwertie/Loyc/wiki/LeMP) (Lexical Macro Processor): a LISP-style macro preprocessor that operates on Loyc trees
@@ -40,4 +40,4 @@ Loyc is in its infancy, and probably will remain so until I attract either (A) v
 
 At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.loyc.net](http://core.loyc.net).
 
-This is a huge project with many parts and I am looking feverishly for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.
+Loyc is a concept with many parts and potential parts, and I am looking feverishly for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.

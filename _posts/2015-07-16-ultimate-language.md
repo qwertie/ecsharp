@@ -134,18 +134,21 @@ Note: many of the above features implicitly enable other useful features that so
 - [Dependent types](https://en.wikipedia.org/wiki/Dependent_type)
 
 **Notes**:
+
 - Markdown is probably best for doc comments
 - The compiler should be a toolkit, not a black box, with the syntax tree and semantic analysis stuff usable by the outside world.
+- I do not have global type inference as a goal, although the ultimate language should certainly support _simple_ inference after the manner of C++ (`auto`), C# (`var`), etc. My concern with type inference is that it may require sacrificing other features in order to remain feasible. I would rather make a language with very little type inference, and then at the end, after all other features have stabilized, investigate what kind, or to what extent, type inference is possible in the final language.
+- That said, Rust does not allow function overloading, possibly because it interferes with type inference. It will be interesting to see the techniques they use to avoid creating a proliferation of suffixes (`method_v1`, `method_v2`, etc.) in a language that lacks function overloading... the ultimate language could take cues from that.
 
 Type system ideas
 -----------------
 
 I'm thinking of having several levels of typing:
 
-- Physical (structural) types: a minimum level of typing needed for memory safety (ignoring, for instance, the distinction between a signed and unsigned 32-bit integer). It's unclear what the exact definition should be, but the general idea is that physical types should allow casting between two unrelated nominal types if the have the same physical structure. A physical type system could potentially include a subtyping relation; for example, an integer could be considered a subtype of a pointer, since a conversion from pointer to integer is memory-safe, but the reverse conversion is dangerous.
+- Physical (structural) types: a minimum level of typing needed for memory safety (ignoring, for instance, the distinction between a signed and unsigned 32-bit integer). It's unclear what the exact definition should be, but the general idea is that physical types should allow casting between two unrelated nominal types if the have the same physical structure. A physical type system could include a directed graph of safe "transmutations"; for example, an integer could be considered a subtype of a pointer, since a conversion from pointer to integer is memory-safe, but the reverse conversion is dangerous.
 - Nominal types: corresponds to the usual concept of types in most programming languages: a type name with an associated list of components (or a primitive type), arranged in memory in a particular way, with an associated set of operations.
 - Alias type: associates a new name, and optionally a new interface (set of associated operations) to an existing type, while keeping the same physical structure and some degree of compatibility with the original type. An alias type could perhaps also be a represent a proof that a particular value fulfills some kind of constraint (e.g. a string is UTF-8, a tree has a particular structure.) Alias types are important for interoperability and programming language conversion.
-- Typestate: a kind of type information that changes implicitly as an object is used, e.g. an object `file` may have typestate `Closed`, which changes to `Open` after calling `file.Open("filename.txt")`. Typestates would notably help with type-safe concurrency: channel types that implement "protocols".
+- Typestate: a kind of type information that changes implicitly as an object is used, e.g. an object `file` may have typestate `Closed`, which changes to `Open` after calling `file.Open("filename.txt")`. Typestates would notably help with type-safe concurrency: channel types that implement "protocols" change typestate after every operation.
 - Proof types: associates some additional information with a value at compile-time, without changing the interface or behavior of the type. For example, unit inference could be done in this manner. If a type scheme does not affect program behavior, semantic analysis can be done in parallel with code generation (and execution, for that matter).
 
-Details are yet to be worked out, but the most important goal should be to find some reasonable and easy-to-use form of type-system extensibility, so that interesting type-system features can be added as "libraries", in such a way that multiple orthogonal typing concepts can apply to a value at the same time.
+Details have not been worked out, but the most important goal should be to find some reasonable and easy-to-use form of type-system extensibility, so that interesting type-system features can be added as "libraries", in such a way that multiple orthogonal typing concepts can apply to a value at the same time.
