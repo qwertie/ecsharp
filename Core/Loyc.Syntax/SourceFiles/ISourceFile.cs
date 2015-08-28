@@ -33,6 +33,11 @@ namespace Loyc.Syntax
 		{
 			get { return Text; }
 		}
+
+        protected override SourcePos NewSourcePos(int Line, int PosInLine)
+        {
+            return new SourcePosAndFile(this, base.NewSourcePos(Line, PosInLine));
+        }
 	}
 
 	[Obsolete("Please use SourceFile<ICharSource> instead.")]
