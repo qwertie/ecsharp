@@ -112,17 +112,37 @@ namespace Loyc.Syntax
 			return charIdx;
 		}
 
-		/// <summary>Converts a lookahead token index to a <see cref="SourcePos"/>
+        /// <summary>Converts a lookeahead token index to a <see cref="SourceRange"/>
+        /// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
+        protected virtual SourceRange LaIndexToSourceRange(int lookaheadIndex)
+        {
+            var startIndex = LaIndexToCharIndex(lookaheadIndex);
+            var endIndex = LaIndexToCharIndex(lookaheadIndex + 1);
+
+            if (startIndex < 0)
+	        {
+		        return new SourceRange(SourceFile);
+	        }
+            else if (endIndex < 0)
+            {
+                return new SourceRange(SourceFile, startIndex, 1);
+            }
+            else
+            {
+                return new SourceRange(SourceFile, startIndex, endIndex - startIndex);
+            }
+        }
+
+        /// <summary>Converts a lookahead token index to a <see cref="SourceRange"/>
 		/// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
 		/// <remarks>If the derived class initialized <c>SourceFile</c> to null, 
 		/// returns "At index {0}" where {0} is the character index.</remarks>
-		protected virtual object LaIndexToSourcePos(int lookaheadIndex)
+		protected virtual object LaIndexToContext(int lookaheadIndex)
 		{
-			int charIdx = LaIndexToCharIndex(lookaheadIndex);
-			if (SourceFile == null)
-				return Localize.From("At index {0}", charIdx);
+            if (SourceFile == null)
+                return Localize.From("At index {0}", LaIndexToCharIndex(lookaheadIndex));
 			else
-				return SourceFile.IndexToLine(charIdx);
+				return LaIndexToSourceRange(lookaheadIndex);
 		}
 
 		/// <summary>Records an error or throws an exception.</summary>
@@ -139,12 +159,12 @@ namespace Loyc.Syntax
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), message);
+			ErrorSink.Write(Severity.Error, LaIndexToContext(lookaheadIndex), message);
 		}
 		/// <inheritdoc cref="Error(int,string)"/>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), format, args);
+			ErrorSink.Write(Severity.Error, LaIndexToContext(lookaheadIndex), format, args);
 		}
 
 		protected void Skip()

@@ -121,7 +121,7 @@ namespace Ecs.Parser
 		}
 		protected void Error(Token token, string message, params object[] args)
 		{
-			ErrorSink.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
+			ErrorSink.Write(_Error, token.Range(_sourceFile), message, args);
 		}
 		protected override void Error(int lookaheadIndex, string message)
 		{
@@ -129,9 +129,7 @@ namespace Ecs.Parser
 		}
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
-			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
-			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			ErrorSink.Write(_Error, pos, message, args);
+            Error(LT(lookaheadIndex), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
