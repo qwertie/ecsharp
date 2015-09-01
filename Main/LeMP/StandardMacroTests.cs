@@ -642,11 +642,11 @@ namespace LeMP
 			TestEcs("[field] public string Name { get; }",
 			        "string _name; public string Name { get { return _name; } }");
 			TestEcs("[[A] field _lives = 3] [B] public int LivesLeft { internal get; set; }",
-					"[A] int _lives = 3; [B] public int LivesLeft { internal get { return _lives; } set { _lives = value; } }");
+			        "[A] int _lives = 3; [B] public int LivesLeft { internal get { return _lives; } set { _lives = value; } }");
 			TestEcs("[field] public string Name { get; set { _name = value; } }",
-					"string _name; public string Name { get { return _name; } set { _name = value; } }");
+			        "string _name; public string Name { get { return _name; } set { _name = value; } }");
 			TestEcs("[[A] field] [B, C] public string Name { get; }",
-					"[A] string _name; [B, C] public string Name { get { return _name; } }");
+			        "[A] string _name; [B, C] public string Name { get { return _name; } }");
 			TestEcs("public string Name { get; protected set; }",
 			        "public string Name { get; protected set; }");
 		}
