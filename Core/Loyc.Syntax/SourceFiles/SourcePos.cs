@@ -89,21 +89,4 @@ namespace Loyc.Syntax
 			: base(FileName, Line, PosInLine) { OriginalIndex = originalIndex; }
 		public int OriginalIndex { get; private set; }
 	}
-
-    /// <summary>A <see cref="SourcePos"/> that also includes the source file 
-    /// object from which the source identifier was derived.</summary>
-    public class SourcePosAndFile : SourcePos
-    {
-        public SourcePosAndFile(ISourceFile Source, int Line, int PosInLine)
-            : base(Source.FileName, Line, PosInLine)
-        {
-            this.Source = Source;
-        }
-        public SourcePosAndFile(ISourceFile Source, LineAndPos Position)
-            : this(Source, Position.Line, Position.PosInLine)
-        { }
-
-        /// <summary>Gets the source file this source position is associated with.</summary>
-        public ISourceFile Source { get; private set; }
-    }
 }

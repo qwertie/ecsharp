@@ -74,7 +74,7 @@ namespace Loyc.Syntax
 			get { return _startingPos == null ? null : _startingPos.FileName; }
 		}
 
-		protected virtual SourcePos NewSourcePos(int Line, int PosInLine)
+		protected SourcePos NewSourcePos(int Line, int PosInLine)
 		{
 			if (_startingPos == null)
 				return new SourcePos(string.Empty, Line, PosInLine);
