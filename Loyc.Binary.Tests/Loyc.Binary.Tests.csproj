@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LesComparisonBenchmark.cs" />
     <Compile Include="RoundTripTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,6 +69,14 @@
     <ProjectReference Include="..\Loyc.Binary\Loyc.Binary.csproj">
       <Project>{a6aaf4c0-8df2-4cee-ae9f-572771891d58}</Project>
       <Name>Loyc.Binary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Ecs\Ecs.csproj">
+      <Project>{e49944db-0330-45c6-9ec5-bdbe1102ae07}</Project>
+      <Name>Ecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\LeMP\LeMP.csproj">
+      <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
+      <Name>LeMP</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

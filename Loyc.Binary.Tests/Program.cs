@@ -22,6 +22,8 @@ namespace Loyc.Binary.Tests
 
             // Round-trip fuzz tests
             RunTests.Run(new RoundTripTests());
+            // LES comparison benchmark
+            RunTests.Run(new LesComparisonBenchmark());
 
             Console.WriteLine("Job's done.");
         }
