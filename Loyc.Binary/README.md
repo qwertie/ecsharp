@@ -33,22 +33,22 @@ Calls to id nodes tend to occur a lot, so BLT special-cases the constructs and p
 template definition with the id node's symbol.
 The resulting file will look more or less like this (example in a textual format for readability. The actual file uses a binary encoding):
 
- BLT
- Symbol table (3 items):
-  * $0: `"+"`
-  * $1: `"x"`
-  * $2: `"y"`
- Template table (2 items):
-  * #0: IdCall: `$0(Int32, Int32)`
-  * #1: IdCall: `$0(TemplatedNode, Id)`
- 1 node:
-  * TemplatedNode - #1 (`@+(@+(@+(1, 2), x), y)`)
-     * #1 (`@+(@+(1, 2), x)`)
-       * #0 (`@+(1, 2)`)
-         * 1
-         * 2
-       * $1 (`"x"`)
-     * $2 (`"y"`)
+ `BLT`  
+ `Symbol table (3 items):`  
+  * `$0: "+"`
+  * `$1: "x"`
+  * `$2: "y"`  
+ `Template table (2 items):`  
+  * `#0: IdCall: $0(Int32, Int32)`
+  * `#1: IdCall:$0(TemplatedNode, Id)`  
+ `Top-level node list (1 item):`
+  * `TemplatedNode - #1 (@+(@+(@+(1, 2), x), y))`
+     * `#1 (@+(@+(1, 2), x))`
+       * `#0 (@+(1, 2))`
+         * `1`
+         * `2`
+       * `$1 ("x")`
+     * `$2 ("y")`
 
 
 ## File layout
