@@ -96,6 +96,24 @@ namespace Loyc.Binary
         #region Helpers
 
         /// <summary>
+        /// Writes a LEB128 variable-length unsigned integer to the output stream.
+        /// </summary>
+        /// <param name="Value"></param>
+        public void WriteULeb128(uint Value)
+        {
+            // C# translation of code borrowed from Wikipedia article:
+            // https://en.wikipedia.org/wiki/LEB128
+            do 
+            {
+                byte b = (byte)(Value & 0x7F);
+                Value >>= 7;
+                if (Value != 0) /* more bytes to come */
+                    b |= 0x80;
+                Writer.Write(b);
+            } while (Value != 0);
+        }
+
+        /// <summary>
         /// Writes the given list of items to the output stream.
         /// The resulting data is length-prefixed.
         /// </summary>
@@ -104,7 +122,7 @@ namespace Loyc.Binary
         /// <param name="WriteItem"></param>
         public void WriteList<T>(IReadOnlyList<T> Items, Action<T> WriteItem)
         {
-            Writer.Write(Items.Count);
+            WriteULeb128((uint)Items.Count);
             WriteListContents(Items, WriteItem);
         }
 
@@ -148,7 +166,7 @@ namespace Loyc.Binary
         /// <param name="Value"></param>
         public void WriteReference(WriterState State, Symbol Value)
         {
-            Writer.Write(State.GetIndex(Value));
+            WriteULeb128((uint)State.GetIndex(Value));
         }
 
         /// <summary>
@@ -158,7 +176,7 @@ namespace Loyc.Binary
         /// <param name="Value"></param>
         public void WriteReference(WriterState State, string Value)
         {
-            Writer.Write(State.GetIndex(Value));
+            WriteULeb128((uint)State.GetIndex(Value));
         }
 
         /// <summary>
@@ -168,7 +186,7 @@ namespace Loyc.Binary
         /// <param name="Value"></param>
         public void WriteReference(WriterState State, NodeTemplate Value)
         {
-            Writer.Write(State.GetIndex(Value));
+            WriteULeb128((uint)State.GetIndex(Value));
         }
 
         #endregion
@@ -223,12 +241,23 @@ namespace Loyc.Binary
         #region Header Writing
 
         /// <summary>
+        /// Writes a symbol to the output stream.
+        /// </summary>
+        /// <returns></returns>
+        public void WriteSymbol(string Symbol)
+        {
+            byte[] data = UTF8Encoding.UTF8.GetBytes(Symbol);
+            WriteULeb128((uint)data.Length);
+            Writer.Write(data);
+        }
+
+        /// <summary>
         /// Writes the given string table to the output stream.
         /// </summary>
         /// <param name="Table"></param>
-        public void WriteStringTable(IReadOnlyList<string> Table)
+        public void WriteSymbolTable(IReadOnlyList<string> Table)
         {
-            WriteList(Table, Writer.Write);
+            WriteList(Table, WriteSymbol);
         }
 
         /// <summary>
@@ -257,7 +286,7 @@ namespace Loyc.Binary
         /// <param name="Header"></param>
         public void WriteHeader(WriterState Header)
         {
-            WriteStringTable(Header.Symbols);
+            WriteSymbolTable(Header.Symbols);
             WriteTemplateTable(Header.Templates);
         }
 

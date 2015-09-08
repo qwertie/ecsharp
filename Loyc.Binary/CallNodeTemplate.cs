@@ -70,10 +70,10 @@ namespace Loyc.Binary
 
         public override int GetHashCode()
         {
-            int result = TemplateType.GetHashCode();
+            int result = (int)TemplateType;
             foreach (var item in ArgumentTypes)
 	        {
-                result = (result << 1) ^ item.GetHashCode();
+                result = (result << 1) ^ (int)item;
 	        }
             return result;
         }

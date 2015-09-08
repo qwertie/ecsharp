@@ -151,6 +151,27 @@ namespace Loyc.Binary
         #region Helpers
 
         /// <summary>
+        /// Reads a LEB128 variable-length unsigned integer from the input stream.
+        /// </summary>
+        /// <param name="Value"></param>
+        public uint ReadULeb128()
+        {
+            // C# translation of code borrowed from Wikipedia article:
+            // https://en.wikipedia.org/wiki/LEB128
+            uint result = 0;
+            int shift = 0;
+            while (true) 
+            {
+                byte b = Reader.ReadByte();
+                result |= (uint)((b & 0x7F) << shift);
+                if ((b & 0x80) == 0)
+                    break;
+                shift += 7;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Reads an encoding type from the stream.
         /// </summary>
         /// <returns></returns>
@@ -167,7 +188,7 @@ namespace Loyc.Binary
         /// <returns></returns>
         public IReadOnlyList<T> ReadList<T>(Func<T> ReadItem)
         {
-            int count = Reader.ReadInt32();
+            int count = (int)ReadULeb128();
             return ReadListContents(ReadItem, count);
         }
 
@@ -193,12 +214,23 @@ namespace Loyc.Binary
         #region Header Parsing
 
         /// <summary>
+        /// Reads a symbol as defined in the symbol table.
+        /// </summary>
+        /// <returns></returns>
+        public string ReadSymbol()
+        {
+            int length = (int)ReadULeb128();
+            byte[] data = Reader.ReadBytes(length);
+            return UTF8Encoding.UTF8.GetString(data);
+        }
+
+        /// <summary>
         /// Reads the symbol table.
         /// </summary>
         /// <returns></returns>
         public IReadOnlyList<string> ReadSymbolTable()
         {
-            return ReadList(Reader.ReadString);
+            return ReadList(ReadSymbol);
         }
 
         /// <summary>
@@ -257,7 +289,7 @@ namespace Loyc.Binary
         /// <returns></returns>
         public string ReadStringReference(ReaderState State)
         {
-            int index = Reader.ReadInt32();
+            int index = (int)ReadULeb128();
 
             if (index >= State.SymbolTable.Count)
             {
@@ -274,7 +306,7 @@ namespace Loyc.Binary
         /// <returns></returns>
         public NodeTemplate ReadTemplateReference(ReaderState State)
         {
-            int index = Reader.ReadInt32();
+            int index = (int)ReadULeb128();
 
             if (index >= State.TemplateTable.Count)
             {

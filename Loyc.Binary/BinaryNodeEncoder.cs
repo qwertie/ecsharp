@@ -69,7 +69,7 @@ namespace Loyc.Binary
         public static BinaryNodeEncoder CreateLiteralEncoder<T>(NodeEncodingType Encoding, Action<LoycBinaryWriter, WriterState, T> ValueEncoder)
         {
             return new BinaryNodeEncoder(Encoding,
-                node => node.IsLiteral && !node.HasAttrs && node.Value is T,
+                node => node.IsLiteral && node.Value is T,
                 (writer, state, node) => ValueEncoder(writer, state, (T)node.Value));
         }
 
@@ -81,7 +81,7 @@ namespace Loyc.Binary
             get
             {
                 return new BinaryNodeEncoder(NodeEncodingType.IdNode,
-                    node => node.IsId && !node.HasAttrs,
+                    node => node.IsId,
                     (writer, state, node) => writer.WriteReference(state, node.Name));
             }
         }
@@ -94,7 +94,7 @@ namespace Loyc.Binary
             get
             {
                 return new BinaryNodeEncoder(NodeEncodingType.Null,
-                    node => node.IsLiteral && !node.HasAttrs && node.Value == null,
+                    node => node.IsLiteral && node.Value == null,
                     (writer, state, node) => { });
             }
         }
@@ -127,7 +127,7 @@ namespace Loyc.Binary
             get
             {
                 return new BinaryNodeEncoder(NodeEncodingType.TemplatedNode,
-                    node => !node.HasAttrs && node.IsCall && (!node.Target.IsId || node.Target.HasAttrs),
+                    node => node.IsCall && (!node.Target.IsId || node.Target.HasAttrs),
                     (writer, state, node) =>
                     {
                         var nodeList = new LNode[] { node.Target }.Concat(node.Args);
@@ -147,7 +147,7 @@ namespace Loyc.Binary
             get
             {
                 return new BinaryNodeEncoder(NodeEncodingType.TemplatedNode,
-                    node => !node.HasAttrs && node.IsCall && node.Target.IsId && !node.Target.HasAttrs,
+                    node => node.IsCall && node.Target.IsId && !node.Target.HasAttrs,
                     (writer, state, node) =>
                     {
                         int nodeTarget = state.GetIndex(node.Target.Name);
