@@ -57,7 +57,7 @@ The format has the following layout:
  * Header
    * Symbol table (prefixed list of symbol definitions)
    * Template table (prefixed list of template definitions)
- * Nodes (prefixed list of encoding-prefixed nodes)
+ * Top-level nodes (prefixed list of encoding-prefixed nodes)
  
 ## Data types
  * **Unprefixed list** - A generic list of items that is stored sequentially. Such a list does not have a length prefix.
