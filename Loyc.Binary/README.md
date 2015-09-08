@@ -33,15 +33,15 @@ Calls to id nodes tend to occur a lot, so BLT special-cases the constructs and p
 template definition with the id node's symbol.
 The resulting file will look more or less like this (example in a textual format for readability. The actual file uses a binary encoding):
 
- `BLT`  
- `Symbol table (3 items):`  
+`BLT`  
+`Symbol table (3 items):`  
   * `$0: "+"`
   * `$1: "x"`
   * `$2: "y"`  
- `Template table (2 items):`  
+`Template table (2 items):`  
   * `#0: IdCall: $0(Int32, Int32)`
   * `#1: IdCall:$0(TemplatedNode, Id)`  
- `Top-level node list (1 item):`
+`Top-level node list (1 item):`
   * `TemplatedNode - #1 (@+(@+(@+(1, 2), x), y))`
      * `#1 (@+(@+(1, 2), x))`
        * `#0 (@+(1, 2))`
@@ -73,6 +73,23 @@ The format has the following layout:
  * **Encoding-prefixed node** - An encoding type followed by an unprefixed node.
  
 ## Encoding types
+An encoding type can be one of the following values:
  * **Templated node = 0** - A templated node, which is encoded as an ULEB128 template index and an unprefixed list of unprefixed nodes. 
    Call nodes and attribute nodes are encoded as templates nodes.
- * **Id node = 1** - An id node, which is encoded as an index in the symbol table.
+ * **Id node = 1** - An id node, which is encoded as an ULEB128 index in the symbol table.
+ * **String = 2** - A string literal, which is encoded as an ULEB128 index in the symbol table.
+ * **Int8 = 3** - An 8-bit signed integer literal, encoded as such.
+ * **Int16 = 4** - A 16-bit signed integer literal, encoded as such.
+ * **Int32 = 5** - A 32-bit signed integer literal, encoded as such.
+ * **Int64 = 6** - A 64-bit signed integer literal, encoded as such.
+ * **UInt8 = 7** - An 8-bit unsigned integer literal, encoded as such.
+ * **UInt16 = 8** - A 16-bit unsigned integer literal, encoded as such.
+ * **UInt32 = 9** - A 32-bit unsigned integer literal, encoded as such.
+ * **UInt64 = 10** - A 64-bit unsigned integer literal, encoded as such.
+ * **Float32 = 11** - A 32-bit single-precision IEEE floating-point literal.
+ * **Float64 = 12** - A 64-bit double-precision IEEE floating-point literal.
+ * **Char = 13** - A character literal.
+ * **Boolean = 14** - A boolean literal.
+ * **Void = 15** - The void singleton value.
+ * **Null = 16** - The null singleton value.
+ * **Decimal = 17** - A .NET System.Decimal value.
