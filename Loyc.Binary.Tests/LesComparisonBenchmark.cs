@@ -167,6 +167,11 @@ namespace Loyc.Binary.Tests
             return Tuple.Create(Nodes, lesPerf, bltPerf);
         }
 
+        /// <summary>
+        /// Benchmarks and compares LES/BLT performance.
+        /// Loyc.Binary is parsed by the EC# parser, and then
+        /// a LES and a BLT round-trip are performed.
+        /// </summary>
         [Test]
         public void BenchmarkBltPerformance()
         {
