@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
-using Loyc.Collections;
 
 namespace Loyc.Utilities
 {
@@ -50,7 +49,7 @@ namespace Loyc.Utilities
 	/// }
 	/// public IEnumerator&lt;Co&lt;string>> CoGetEnumerator()
 	/// {
-	///		yield return LeftChild.All();
+	/// 	yield return LeftChild.All();
 	/// 	yield return Value;
 	/// 	yield return RightChild.All();
 	/// }
@@ -67,8 +66,8 @@ namespace Loyc.Utilities
 	/// the exception; it will be thrown directly into whatever foreach loop (or
 	/// other code) that is enumerating the sequence.
 	/// <para/>
-	/// This class solves the same problem as <see cref="NestedEnumerator{F,T}"/> in
-	/// a way that is very easy to use. You should use <see cref="NestedEnumerator{F,T}"/>
+	/// This class solves the same problem as <see cref="Loyc.Collections.NestedEnumerator{F,T}"/> in
+	/// a way that is very easy to use. You should use <see cref="Loyc.Collections.NestedEnumerator{F,T}"/>
 	/// instead if you need the highest possible performance.
 	/// </remarks>
 	/// <typeparam name="T">Type of item being enumerated.</typeparam>
@@ -85,7 +84,7 @@ namespace Loyc.Utilities
 		{
 			if (_e != null) {
 				var top = _e;
-				for (InternalList<IEnumerator<Co<T>>> stack = InternalList<IEnumerator<Co<T>>>.Empty; ; ) {
+				for (InternalList<IEnumerator<Co<T>>> stack = InternalList<IEnumerator<Co<T>>>.Empty; ; stack.Pop()) {
 					while (top.MoveNext()) {
 						var next = top.Current;
 						if (next._e != null) {
@@ -98,7 +97,6 @@ namespace Loyc.Utilities
 					if (stack.IsEmpty)
 						break;
 					top = stack.Last;
-					stack.Pop();
 				}
 			} else
 				yield return _value;

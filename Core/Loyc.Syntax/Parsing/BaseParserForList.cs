@@ -32,7 +32,8 @@ namespace Loyc.Syntax
 	/// <typeparam name="MatchType">A data type, usually int, that represents a 
 	/// token type (identifier, operator, etc.) and implements <see cref="IEquatable{T}"/>
 	/// so it can be compared for equality with other token types; this is also the 
-	/// type of the <see cref="ISimpleToken{Matchtype}.Type"/> property.</typeparam>
+	/// type of the <see cref="ISimpleToken{Matchtype}.Type"/> property. <c>MatchType</c>
+	/// cannot be an enum because an enum does not implement <see cref="IEquatable{T}"/>.</typeparam>
 	/// <typeparam name="List">Data type of the list that contains the tokens (one 
 	/// often uses IList{Token}, but one could use <see cref="Loyc.Collections.Impl.InternalList{T}"/> 
 	/// for potentially higher performance.)</typeparam>
@@ -129,10 +130,11 @@ namespace Loyc.Syntax
 		}
 
 		#region Down & Up
-		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
-		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
-		// So the parser calls something like Down(lparen) to begin parsing inside,
-		// then it calls Up() to return to the parent tree.
+		// These are used to traverse into token subtrees if you are using the
+		// TokensToTree preprocessor, e.g. given w=(x+y)*z, the outer token list is 
+		// w=()*z, and the 3 tokens x+y are children of '('.
+		// So the parser calls something like Down(lparen) to begin parsing inside 
+		// the parentheses, then it calls Up() to return to the parent tree.
 
 		private Stack<KeyValuePair<List, int>> _parents;
 
