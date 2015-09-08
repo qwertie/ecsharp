@@ -1,4 +1,4 @@
-# Binary Loyc tree format
+# Binary Loyc Tree format
 The binary loyc tree (BLT) file format is a succinct binary representation of loyc trees.
 Its goal is to serve as an efficient format for program-to-program loyc tree transfer.
 BLT optimizes for relatively large files, such as entire assemblies, and emphasizes read times and
@@ -60,12 +60,10 @@ The format has the following layout:
  * Nodes (prefixed list of encoding-prefixed nodes)
  
 ## Data types
- * **Unprefixed list** - A generic list of items that is stored sequentially.
-   Such a list does not have a length prefix.
+ * **Unprefixed list** - A generic list of items that is stored sequentially. Such a list does not have a length prefix.
  * **ULEB128** - An unsigned LEB128 variable-length integer.
  * **Prefixed list** - An ULEB128 length prefix followed by an unprefixed list whose length equals the length prefix.
- * **Symbol definition** - An ULEB128 integer that identifies the length of the string's data, in bytes, 
-   followed by the string's data, encoded as UTF-8.
+ * **Symbol definition** - An ULEB128 integer that identifies the length of the string's data, in bytes, followed by the string's data, encoded as UTF-8.
  * **Encoding type** - A byte that identifies how a node is encoded.
  * **Template type** - A byte prefix that identifies the kind of template that is encoded.
  * **Template definition** - A template type followed by a prefixed list of encoding types.
@@ -74,8 +72,7 @@ The format has the following layout:
  
 ## Encoding types
 An encoding type can be one of the following values:
- * **Templated node = 0** - A templated node, which is encoded as an ULEB128 template index and an unprefixed list of unprefixed nodes. 
-   Call nodes and attribute nodes are encoded as templates nodes.
+ * **Templated node = 0** - A templated node, which is encoded as an ULEB128 template index and an unprefixed list of unprefixed nodes. Call nodes and attribute nodes are encoded as templates nodes.
  * **Id node = 1** - An id node, which is encoded as an ULEB128 index in the symbol table.
  * **String = 2** - A string literal, which is encoded as an ULEB128 index in the symbol table.
  * **Int8 = 3** - An 8-bit signed integer literal, encoded as such.
@@ -93,3 +90,9 @@ An encoding type can be one of the following values:
  * **Void = 15** - The void singleton value.
  * **Null = 16** - The null singleton value.
  * **Decimal = 17** - A .NET System.Decimal value.
+
+## Template types
+A template type can be one of the following:
+ * **Call = 0** - A generic call node. This definition kind is encoded as a prefixed list of encoding types, the first of which is the target's encoding type. The remainder of the list are the call node's argument encoding types.
+ * **CallId = 1** - A call node whose target is an id node. The id node's symbol is mapped to an ULEB128 index into the symbol table, followed by a prefixed list of encoding types for the call node's arguments.
+ * **Attributes = 2** - A node that has a list of attributes. Such a template definition is is encoded as a prefixed list of encoding types, the first of which is the inner node's encoding type. The remainder of the list are the attributes' encoding types.
