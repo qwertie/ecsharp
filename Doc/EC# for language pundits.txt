@@ -6,13 +6,11 @@ Enhanced C# (EC#) is a new statically-typed programming language that combines C
 
 This article is a quick introduction to Enhanced C# for programming language wonks, the kind of people who fantasize about using continuations to model higher-order polymorphic multimethod monads to conjure the spirit of Robin Milner, or something.
 
-I'm not that kind of guy, though. Computer science is wonderful, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one professor in my university ever taught type theory or Prolog (I took Computer Engineering, so I guess that's the difference between Computer Engineering and Computer Science!), and I read about monads at least 10 times before I "got" it.
+I'm not that kind of guy, though. Computer science is wonderful, but my main concern in life is creating useful tools for the real world. Frankly, I don't know the first thing about automated theorem provers, not one course in my university teaches type theory or Prolog, and I had to read about monads at least 10 times before I "got" it.
 
-I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable, as long as we're at version 0.1; someone suggested I should call it "C Major", for example. But Enhanced C# and its abbreviation are Google-friendly, an important feature.
+I'll discuss EC# briefly, but my main goal here is to explain the grand ideas behind it, and perhaps recruit some bright people to work on it with me as volunteers. EC# rules are currently tentative and subject to change. Even the name is debatable; someone suggested I should call it "C Major", for example. But Enhanced C# and its abbreviation are Google-friendly, an important feature.
 
-EC# is the first language of the Language of Your Choice (Loyc) project. If it becomes popular, Loyc will be a platform for building programming languages, analyzing code and transforming syntax trees. I want Loyc to be the foundation of all kinds of programming language tools: compilers, IDEs, language conversion tools, analysis tools, graphical code editors, domain-specific languages, things that Bret Victor might invent*, anything you can think of. Thus, EC# is merely an instance of a "Loyc language", much like C# is an instance of a ".NET language". The fact that EC# and Loyc are built on .NET is just an implementation detail--a very important detail today, but perhaps not that important in the grand scheme of things.
-
-	* EC# was invented on principle.
+My real goal is to unify the computer industry and move it forward. I want to be able to use powerful programming languages that let me do things I couldn't easily do before; but I don't want to throw away my old code - I want to interoperate with it as easily and seamlessly as possible. Enhanced C# (and its components, such as Loyc trees and LeMP) are part of a collection of projects called Loyc; Loyc (Language Of Your Choice) is itself a nebulous idea with themes of interoperability and metaprogramming, and the goal of unifying the computer industry around powerful tools.
 
 Quite frankly I think my goals are loftier than my abilities, but I can do a better job than most because I've been thinking about making a language for over ten years. I assume that the people who are most qualified to create something like Loyc are either (A) hashing out some aspect of type theory at a university, writing papers that no one outside their niche can understand, published in journals inaccessible to the public, or (B) making big bucks on proprietary tools like Resharper or the DMS Software Reengineering Toolkit. Nevertheless, EC# is my itch, so I'm scratching it.
 
@@ -35,48 +33,41 @@ EC# is mainly a compile-time metaprogramming system built on top of C#, but it a
 
 Here are some quick highlights. First, EC# offers some syntactic shortcuts compared to C#. Many shortcuts are offered by macros; others are built-in syntactic sugar.
 
-NOTE: THIS DOCUMENT, AND THE CODE, ARE OUT OF DATE.
-
 	public struct MyPoint
 	{
 		// Simultaneously declares two fields "X" and "Y" and a constructor for them.
-		// In general, EC# allows new() as a quicker syntax for writing constructors;
-		// The syntax [[...]] is a built-in syntactic sugar that means "call this 
-		// macro on the statement that follows"; thus, set() is simply a method in 
-		// the EC# standard library that creates and initializes X and Y for you.
-		[[set]]
+		// In general, EC# allows this() as a quicker syntax for writing constructors.
+		// This feature is provided by a macro that watches all constructors (and 
+		// methods) looking for parameters that have an attribute like "public".
 		public this(public int X, public int Y);
 
 		// You could make a test() macro for writing unit tests easily, and use it 
-		// with syntax like this:
+		// with syntax like this (where parentheses denote an assertion to check):
 		test {
 			var p = new Point(2, 3);
-			check(p.X == 2 && p.Y == 3);
+			(p.X == 2 && p.Y == 3);
 			var q = p;
 			q.X = 5;
-			check(p.X == 2);
+			(p.X == 2);
 		}
 	}
 
-	// The field() macro creates a property with a backing field of the same type.
-	[[field(protected _foo)]]
+	// Attaching a "field" attribute creates a property with a backing field of the
+	// same type, although this has been largely superceded by a feature of C# 6.
+	[protected field _foo]
 	public int Foo { get; set; }
 
-	// String interpolation (the $ prefix avoids breaking C# compatibility):
-	string name = "Dave";
-	MessageBox.Show($"I can't let you do that, $(name).");
-
-	// Method forwarding:
-	int Min(int x, int y) ==> Math.Min;
-	int two = Min(12, 2);
+	// Method forwarding ("#" means "the thing with the same name", i.e. Min):
+	int Min(int x, int y) ==> Math.#;
+	static readonly int two = Min(12, 2);
 
 	// Quick variable binding (creates a variable called "r" to hold the result)
-	if (Database.TryRunQuery()=:r != null)
+	if (Database.TryRunQuery()::r != null)
 		Console.WriteLine("Found {0} results", r.Count);
-	
-You can think of EC# syntax as "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, and macros are required to convert code that EC# would not understand into code that has a well-defined meaning. In addition, the parser accepts some things like [[foo]] and `foo` that don't even look like C#.
 
-Compile-time code execution will "just work". The const() pseudo-function forces compile-time evaluation, and it is implied in any context where a constant is required:
+You can think of EC# syntax as "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, and macros are required to convert code that EC# would not understand into code that has a well-defined meaning. In addition, the parser accepts a few things like ``a `plus` b`` and `obj(->string)` that don't look like traditional C#.
+
+Compile-time code execution will "just work". The const() pseudo-function will force compile-time evaluation, and it is implied in any context where a constant is required:
 
 	const double TripleWhammy = new[] { Math.PI, Math.E, Math.Sqrt(2) }.Sum();
 
@@ -101,7 +92,7 @@ Not long ago I discovered a practical alternative, D version 2, which I like to 
 
 However, it also has a lot of rough edges that make me uncomfortable, and since its compiler is written in C++, I am not interested in hacking on it myself. Besides compiler bugs and a general beta feel, it also can't target Android, doesn't really support dynamic loading of DLLs, doesn't have a runtime reflection system (though I'm sure the compile-time reflection is really nice if you can figure out how to use it), and has a rather basic garbage collector.
 
-I also really want an extensible language, and I have a clear impression that D's creator, Walter Bright, does not.
+Perhaps all this will be solved in time, but I also really want an "extensible" language, and I have a clear impression that D's creator, Walter Bright, does not.
 
 My need for an extensible language crystalized after I wrote an extension for the boo programming language that provided unit inference. You'd write x = y / 2`hr` in one place, and x = 160`km/hr` elsewhere, and hey presto, the compiler would infer that the variable y has units of `km`. If you then pass this to a function that expects `mph`, you get a compiler scolding. But when I anounced this creation on boo's mailing list, no one acknowledged it. Apparently it didn't matter to anyone there. Plus, it required a tweak to boo's syntax, but boo's creator or one of the developers (I forget) told me that there was no willingness to change the parser. Disappointed, I stopped working on the inference engine, and that was that.
 
@@ -130,29 +121,29 @@ But it's not just that, either. There are two other problems with these powerful
 
 The goal of EC# is to be as powerful as LISP (not to mention D2), without having these two problems.
 
-The "communication gap" is the gulf between the terminology and mindset teachers use to describe "far-out" languages, compared with the terminology and mindset that seasoned programmers already understand. It also refers to the way that some PFLs "abstract away the computer" so that one can no longer understand how a program works in terms of the physical machine (I am thinking of Haskell and Prolog here, not so much LISP); Thus, the better you understand a computer as a machine rather than as a mathematical tool, the more difficulty you have learning the PFL.
+The **"communication gap"** is the gulf between the terminology and mindset teachers use to describe "far-out" languages, compared with the terminology and mindset that seasoned programmers already understand. It also refers to the way that some PFLs "abstract away the computer" so that one can no longer understand how a program works in terms of the physical machine (I am thinking of Haskell and Prolog here, not so much LISP); Thus, the better you understand a computer as a machine rather than as a mathematical tool, the more difficulty you have learning the PFL.
 
 Whenever I went out to the web to learn about Haskell, the tutorials I found tended to treat me like a programming novice with a degree in mathematics, which, of course, is exactly backwards. From what I've see, tutorials about Haskell do not mention the memory model of the computer, or how an executable program is a sequence of little instructions that fetch data from memory and manipulate it, or pointers are combined with little objects on the "heap" to construct complex data structures. And why should they? Haskell is a "powerful" language that abstracts away these details far more than C, C++, Java, or even LISP. So instead they talk about how you can write math-like equations that describe the relationship between input and output; they talk about currying and partial application and recursion and higher-order functions and monads.
 
 Reading about Haskell can be interesting, overwhelming and/or exhausting, and yet I walk away disappointed, unsure if I have really learned anything. Indeed, after several unsuccessful attempts to understand what a "monad" was, I finally found an read an article about them and thought: "oh, I see, yeah, I think I get it now". A month later I realized that I had completely forgotten what I had learned.
 
-I have never seen a Haskell tutorial that talked about how a Haskell program is actually executed, how memory is managed, how to scale it to many processors or whether that is even possible, how to use hashtables in Haskell, or how the concept of typeclasses compares with the familiar concepts of classes, inheritance, and virtual function tables. See the communication gap? Haskell programmers speak a different language than seasoned "real-world" devs. This gap is especially wide for me: most of the programs I've written have needed high performance and low memory usage; for me it's maddening that I am unable to even guess the computational complexity of a piece of Haskell, let alone guess its wall-clock time. Ditto for memory usage. Even the cost of basic properties like lazy evaluation is unknown to me.
+I have never seen a Haskell tutorial that talked about how a Haskell program is actually executed, how memory is managed, how to scale it to many processors or whether that is even possible, how to use hashtables in Haskell, or how the concept of typeclasses compares with the familiar concepts of classes, inheritance, and virtual function tables. See the communication gap? Haskell programmers speak a different language than seasoned "real-world" devs. This gap is especially wide for me: most of the programs I've written have needed high performance and low memory usage, and when I write Haskell, I have little confidence in my ability to achieve those things. Even the cost of basic properties like lazy evaluation is unknown to me. Plus, I have little confidence that algorithms based on arrays and hashtables can remain fast in Haskell.
 
 The LISP family of languages, meanwhile, is (at least in some incarnations) closer to familiar imperative languages in terms of semantics, but its syntax is even more unusual than Haskell. And again, usually tutorials are written as if for programming novices, without relating LISP to popular languages whose names start with "J" or "C". Some LISP programmers even continue to use functions like "car" and "cdr" which are utterly meaningless outside the LISP world, the automotive world, and the optical media world. You could make similar complaints about C functions like "strstr" and "atoi", of course; the difference is that C can get away with a lot of stupid crap because it's already popular.
 
 Indeed, the very fact that LISP continues to persist using s-expression syntax when perfectly good alternatives exist (e.g. sweet expressions) makes it obvious why LISP has not taken off. LISPers insist on communicating in their own special way, and it puts people off.
 
-One of LISP's main advantages is its macro system, which allows you to easily manipulate syntax trees at compile-time. This allows you to automate the task of writing sequences of code that are similar, but not similar in a way that allows the similar sequences to be combined into a single function or a C++ template. A simple example of this would be if you have a series of 3-dimensional (X, Y, Z) points. Suppose that sometimes you need to manipulate the X axis, sometimes the Y axis, sometimes the Z axis, and sometimes all three (a k-d tree works this way, for example); in a conventional language, the only practical alternative is to use an array instead of naming each coordinate; but in many languages this is inefficient because the array is stored in a separate heap object from the "Point" object and then requires a bounds check on every access. In situations like this, I always give up and write separate, nearly identical, copies of the necessary code. LISP macros, though, solve this kind of problem easily via macros, with zero runtime cost.
+One of LISP's main advantages is its macro system, which allows you to easily manipulate syntax trees at compile-time. This allows you to automate the task of writing sequences of code that are similar, but not similar in a way that allows the similar sequences to be combined into a single function or a C++ template. A simple example of this would be if you have a series of 3-dimensional (X, Y, Z) points. Suppose that sometimes you need to manipulate the X axis, sometimes the Y axis, sometimes the Z axis, and sometimes all three (a k-d tree works this way, for example); in a conventional language, the only practical alternative is to use an array instead of naming each coordinate; but in many languages this is inefficient because the array is stored in a separate heap object from the "Point" object and then requires a bounds check on every access. In situations like this, I always give up and write separate, nearly identical, copies of the necessary code. LISP, though, solves this kind of problem easily via macros, with zero runtime cost.
 
 Anyway, I find it ironic that while LISP has an unparalleled ability to manipulate syntax trees, making new forms of automation possible, it has no standard ability to manipulate syntax itself, forcing LISP programmers to "think like the machine" in a way that other languages don't. When it comes to creating a program, LISP says: doing a dull, repetitive task? No, no, let the computer handle that for you! But they still ask you to perform the dull, repetitive mental task of parsing LISP. Of course, humans are made for parsing, so I'm sure we could get used to LISP--someday. But while waiting for someday to come, LISP-based languages languish in obscurity.
 
-Now sure, you could go to some extra effort to install a special LISP reader that supports infix syntax. But when you go read a LISP tutorial, that won't be the syntax they use to teach it. When you go to a LISP mailing list, that won't be the syntax of all the code there. When you download a large LISP program, same thing. In theory you can transform LISP to any syntax you want, but as a student this fact doesn't help at all.
+Now, sure, you could go to some extra effort to install a special LISP reader that supports infix syntax. But when you go read a LISP tutorial, that won't be the syntax they use to teach it. When you go to a LISP mailing list, that won't be the syntax of all the code there. When you download a large LISP program, same thing. In theory you can transform LISP to any syntax you want, but as a student this fact doesn't help at all.
 
-Finally, I think I should take a moment to unfairly criticize Microsoft's own F#, too. I tried to learn it, but I found its syntax very confusing; for instance I couldn't understand why there were such strikingly different syntaxes for defining functions that do the same thing ("static member inc(x) = x+1", "let inc x = x+1", "fun x -> x+1"), I couldn't figure out what parts were the "core" language and what parts were syntactic sugar, and so on. Since F# is impure and based on the .NET type system which I already grok, the problems I faced were purely matters of communication; the web-based tutorials I read simply didn't tell me what I wanted to know (if you get that vibe from EC#, by the way, let me know what to clarify!)
+Finally, I think I should take a moment to unfairly criticize Microsoft's own F#, too. I tried to learn it--twice--but I found its syntax very confusing; for instance I couldn't understand why there were such strikingly different syntaxes for defining functions that do the same thing ("static member inc(x) = x+1", "let inc x = x+1", "fun x -> x+1"), I couldn't figure out what parts were the "core" language and what parts were syntactic sugar, and I had a had a hell of a time trying to write a constructor that would compile without syntax errors. Since F# is impure and based on the .NET type system which I already grok, the problems I faced were purely matters of communication; the web-based tutorials I read simply didn't tell me what I wanted to know (if you get that vibe from EC#, by the way, let me know what to clarify!)
 
 EC# solves the communication gap by providing LISP-like macros and other new features on top of the familiar syntax of C#. And by converting the code to plain C#, you can see the effect of any macro or syntactic sugar.
 
-The "integration gap" is just as important: it refers to the difficulty of combining PFLs into existing systems and code bases.
+The **"integration gap"** is just as important: it refers to the difficulty of combining PFLs into existing systems and code bases.
 
 The problem is that you can't just mash up LISP with Haskell or Haskell with Ruby or the language of your choice. I mean, I've already got a nice personal toolbox of C++ code and C# code. Some of it was written by me, some of it by third parties. Wherever it came from, I want to be able to simply use that existing code, without any hassles, from my PFL program. And I can't. Equally important, even if I'd like to write a brand new code library or program with no dependencies on existing code, the reverse problem appears: I can't take my new library or parts of that program and import it into one of the popular languages.
  
@@ -161,13 +152,9 @@ EC# solves the integration gap by
 1. being backward compatible with C# and by
 2. being callable from all other .NET languages.
 
-Not only that, the foundation of EC#, which I call Loyc (Language of your choice), is an idea for a general tool of syntactic manipulation and transformation, so
+And hopefully someday, other projects in the [Loyc](http://loyc.net) (Language of your choice) ecosystem will tackle the integration gap in other ways.
 
-1. Someday it may be possible to integrate EC# code seamlessly with languages like C++, D or maybe even dynamic languages like Javascript.
-2. By writing new parsers, other people could shoehorn existing languages into the Loyc system, which then allows code written in multiple languages to be combined seamlessly into a single assembly (DLL or executable file), possibly with circular dependencies between languages (not that you should, but it's possible in principle.)
-3. EC# can solve the integration gap not only for itself, but for other experimental languages too. For instance, if you want to experiment with a new type system, why would you write an experimental compiler that produces native code or even LLVM bitcode? If you build your language to produce Loyc syntax trees instead, you can arrange to allow method calls and complex type sharing between code in your new language and EC# or .NET code. Because of that, your language is usable for real work and is easier to "sell" to your engineer friends. You could also borrow EC# syntax for your language, which saves you the trouble of writing a parser.
-
-In summary, I am trying to create not just a programming language, but the most useful programming tool in the world. EC# is not based on C# because I love C# (although it is my second-favorite language after D). EC# is based on C# because I believe it is the best way to build an ecosystem of users and tools.
+EC# is not based on C# because I love C# (although it is my second-favorite language after D - then again, Swift just came out, and I admit I haven't learned it properly yet). EC# is based on C# because I believe it is the best way to build an ecosystem of users and tools.
 
 Please don't get the impression that I don't like Haskell, by the way, or LISP for that matter. No, Haskell are really neat, but there's a gap that needs to be bridged. In fact, I hope that Loyc will evolve into a system in which most code is functional code. However, I think that the functional language should be built on top of an imperative language. I imagine a set of macro libraries that transform functional code back into imperative code, e.g. replacing tail-recursion with looping, and copying with in-place modification where possible, with intermediate code that the programmer can readily see and understand. If he is unhappy with the performance of the functional code, he can change the functional code until the imperative equivalent works as desired; he could even replace the functional code with imperative equivalent and hand-optimize it.
 
@@ -179,12 +166,12 @@ And now, let us pause for a moment of code examples.
 	if (x in (2, 3, 5, 7))
 		Console.WriteLine("Congratulations, it's a prime! One digit, even! or odd!");
 
-	// Tuples and tuple unpacking
-	(var x, var y) = (a * b, a + b);
+	// Tuples and tuple unpacking: x is an existing variable, y is a new one.
+	(x, double y) = (a * b, a + b);
 
-	// Safe navigation operator (textBox??.Text means textBox==null?null:textBox.Text):
-	assert(textBox??.Text == model.Value.ToString());
-	var firstPart = orderNo??.Substring(0, orderNo.IndexOf("-"));
+	// Safe navigation operator (textBox?.Text means textBox==null?null:textBox.Text):
+	assert(textBox?.Text == model.Value.ToString());
+	var firstPart = orderNo?.Substring(0, orderNo.IndexOf("-"));
 
 	// Switch without braking, er, breaking:
 	switch (choice) {
@@ -193,7 +180,7 @@ And now, let us pause for a moment of code examples.
 		default:       Console.WriteLine("What you say!!");
 	}
 
-	// Statements as expressions (some restrictions apply):
+	// Statements as expressions (not yet implemented):
 	Console.WriteLine(
 		switch (choice) {
 			case "y", "Y": "Yes!!"
@@ -211,20 +198,65 @@ And now, let us pause for a moment of code examples.
 	// Symbols (a kind of extensible enum)
 	var sym = @@ThisIsASymbol;
 
-	// This is a macro definition.
-	[SimpleMacro("static_assert")]
-	Node StaticAssert(Node condition, IMessageSink msgs)
+  // Pattern matching EC# or LES code files
+  double Eval(LNode code) {
+    matchCode(node) {
+      case $x + $y:  return Eval(x) + Eval(y);
+      case $x * $y:  return Eval(x) * Eval(y);
+      case -$x:      return -Eval(x);
+      case $x == $y: return Eval(x) == Eval(y) ? 1.0 : 0.0;
+      case $x >= $y: return Eval(x) >= Eval(y) ? 1.0 : 0.0;
+      case $x >  $y: return Eval(x) >  Eval(y) ? 1.0 : 0.0;
+      case $x = $y:            // TODO: assignment operator
+      case { while ($cond) $body; }: // match while loop
+        while(Eval(cond) != 0)
+          Eval(body);
+      case { { $(..body } }:         // match braces
+        double result = double.NaN;
+        for (var stmt in body)
+          result = Eval(stmt);
+        return result;
+      default:
+        if (node.IsLiteral)
+          return Convert.ToDouble(node.Value);
+        else
+          // TODO
+    }
+  }
+
+TODO: move discussion about macros elsewhere & revise it
+
+	// This is a macro definition (a more compact way to write macros may come later).
+	[LexicalMacro("static_assert(condition);", 
+	 "Shows an error message at compile time if the specified condition is false.")]
+	public static LNode static_assert(LNode call, IMacroContext ctx)
 	{
-		return s_quote {
-			static_if(!$condition) {
-				@#error("Static assertion failed: {0}", quote($condition)));
-			}
-		};
+    matchCode (call) {
+      case $_($condition):
+        return quote {
+          static_if(!$condition) {
+            @#error("Static assertion failed: " + stringify($condition));
+          }
+        };
+    }
+    return null; // reject the input (in this case, without giving a reason)
 	}
 
-Here, we create a static_assert macro that can check a condition at compile-time. StaticAssert() is an ordinary method (available at compile-time and run-time), but the [Macro] attribute tells the compiler to also treat it as a macro, in this case giving it the name "static_assert".
+A LISP-style macro is a function that takes a syntax tree as input, and returns another syntax tree as output. Early in the compilation process, before semantic analysis, the compiler scans the code for macro calls, invokes them, and replaces each macro call with its output.
 
-The argument "condition" is passed to the method as a syntax tree. s_quote {...} quotes a block of code and requests substitution; within the quoted block, the dollar sign $ operator expands the value of "condition". When this method is called as a macro (using the name static_assert instead of StaticAssert), the compiler passes its argument as a syntax tree, and then expands the return value. So 
+In this case, an input like
+
+    static_assert (Math.PI > 3);
+
+is replaced by
+
+    static_if(!(Math.PI > 3)) {
+        @#error("Static assertion failed: " + stringify(Math.PI > 3));
+    }
+
+At the moment, a macro is defined as an ordinary method with a [LexicalMacro] attribute that allows it to also be treated as a macro. You must currently compile your macros as a separate step (normally in a separate assembly) before you can call those macros. You then add the macro assembly as a compile-time reference and use the macros in another assembly (TODO: add details)
+
+The argument `call` is the entire syntax tree of the macro and its arguments, including the `static_assert` identifier itself, so `matchCode` is used to extract the `condition` (simply writing `LNode condition = call.Args[0]` would also work). `quote {...}` creates a syntax tree for a block of code, and it looks for the `$` operator which is used for substitution. So in this case the `condition` expression is substituted into the output.
 
 	static_assert(Math.PI > 3);
     
@@ -286,7 +318,7 @@ In my opinion, this is the most important problem .NET solves; there is just one
 
 Java has the same appeal, but it was always designed for a single language, Java, which is an unusually limited language. It lacks several important features that .NET has, especially value types, reified generics, pass-by-reference, delegates, and "unsafe" pointers. It doesn't matter if you switch to a different JVM language, those limitations have a significant cost even if the language hides them.
 
-And C# is likeable. It's not an incredibly powerful language, but it's carefully designed and it's more powerful and more efficient than Java. Similarly for the .NET CLR: yeah, it has some significant limitations. For example, it has no concept of slices or Go-style interfaces. And the BCL is impoverished in places--its networking libraries are badly designed, its newest libraries are horribly bloated, and lots of important stuff is still missing from the BCL. Even so, in my opinion .NET is the best platform available.
+And C# is likeable. It's not an incredibly powerful language, but it's carefully designed and it's more powerful and more efficient than Java. Similarly for the .NET CLR: yeah, it has some significant limitations. For example, it has no concept of slices or Go-style interfaces. And the BCL is impoverished in places--its networking libraries are badly designed, its newest libraries are horribly bloated, and lots of important stuff is still missing from the BCL. Even so, in my opinion .NET is currently the best platform available.
 
 
 ## Welcome to EC# 2.0

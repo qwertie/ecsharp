@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3469CDB4-B419-4A58-B7C6-750E1DD4FAB4}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.Binary.Tests</RootNamespace>
+    <AssemblyName>Loyc.Binary.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="LesComparisonBenchmark.cs" />
+    <Compile Include="RoundTripTests.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Loyc.Collections\Loyc.Collections.csproj">
+      <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
+      <Name>Loyc.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Loyc.Essentials\Loyc.Essentials.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Loyc.Syntax\Loyc.Syntax.csproj">
+      <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
+      <Name>Loyc.Syntax</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\MiniTestRunner\MiniTestRunner.csproj">
+      <Project>{3c58d462-4b0d-49e3-a851-195ee3ad05b0}</Project>
+      <Name>MiniTestRunner</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.Binary\Loyc.Binary.csproj">
+      <Project>{a6aaf4c0-8df2-4cee-ae9f-572771891d58}</Project>
+      <Name>Loyc.Binary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\Ecs\Ecs.csproj">
+      <Project>{e49944db-0330-45c6-9ec5-bdbe1102ae07}</Project>
+      <Name>Ecs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Main\LeMP\LeMP.csproj">
+      <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
+      <Name>LeMP</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

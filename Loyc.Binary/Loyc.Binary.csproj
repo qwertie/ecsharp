@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A6AAF4C0-8DF2-4CEE-AE9F-572771891D58}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Loyc.Binary</RootNamespace>
+    <AssemblyName>Loyc.Binary</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AttributeNodeTemplate.cs" />
+    <Compile Include="BinaryNodeEncoder.cs" />
+    <Compile Include="CallIdNodeTemplate.cs" />
+    <Compile Include="CallNodeTemplate.cs" />
+    <Compile Include="LoycBinaryHelpers.cs" />
+    <Compile Include="LoycBinaryReader.cs" />
+    <Compile Include="LoycBinaryWriter.cs" />
+    <Compile Include="NodeEncodingType.cs" />
+    <Compile Include="NodeTemplate.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NodeTemplateType.cs" />
+    <Compile Include="ReaderState.cs" />
+    <Compile Include="WriterState.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Loyc.Collections\Loyc.Collections.csproj">
+      <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
+      <Name>Loyc.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Loyc.Essentials\Loyc.Essentials.csproj">
+      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Name>Loyc.Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Loyc.Syntax\Loyc.Syntax.csproj">
+      <Project>{55ef5fd4-a4eb-46d2-92ca-b3fa317f4c38}</Project>
+      <Name>Loyc.Syntax</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
