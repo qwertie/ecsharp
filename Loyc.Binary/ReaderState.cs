@@ -33,7 +33,7 @@ namespace Loyc.Binary
         public LNodeFactory NodeFactory { get; private set; }
 
         /// <summary>
-        /// Gets the reader's symbol table.
+        /// Gets the reader's symbol pool.
         /// </summary>
         public SymbolPool SymbolPool { get; private set; }
 

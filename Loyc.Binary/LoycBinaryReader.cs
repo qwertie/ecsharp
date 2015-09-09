@@ -131,7 +131,7 @@ namespace Loyc.Binary
         }
 
         /// <summary>
-        /// Gets 
+        /// Gets the default template parser dictionary.
         /// </summary>
         public static IReadOnlyDictionary<NodeTemplateType, Func<LoycBinaryReader, NodeTemplate>> DefaultTemplateParsers
         {
@@ -279,7 +279,7 @@ namespace Loyc.Binary
         /// <returns></returns>
         public Symbol ReadSymbolReference(ReaderState State)
         {
-            return State.SymbolPool.Get(ReadStringReference(State));
+            return State.SymbolPool.GetGlobalOrCreateHere(ReadStringReference(State));
         }
 
         /// <summary>
