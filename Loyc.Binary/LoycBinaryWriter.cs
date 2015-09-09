@@ -15,16 +15,16 @@ namespace Loyc.Binary
     {
         #region Constructors
 
-        public LoycBinaryWriter(BinaryWriter writer, IEnumerable<BinaryNodeEncoder> encoders)
+        public LoycBinaryWriter(BinaryWriter writer, IReadOnlyDictionary<Type, BinaryNodeEncoder> encoders)
         {
             Writer = writer;
-            Encoders = encoders;
+            LiteralEncoders = encoders;
         }
-        public LoycBinaryWriter(Stream outputStream, IEnumerable<BinaryNodeEncoder> encoders)
+        public LoycBinaryWriter(Stream outputStream, IReadOnlyDictionary<Type, BinaryNodeEncoder> encoders)
             : this(new BinaryWriter(outputStream), encoders)
         { }
         public LoycBinaryWriter(BinaryWriter writer, LoycBinaryWriter other)
-            : this(writer, other.Encoders)
+            : this(writer, other.LiteralEncoders)
         { }
         public LoycBinaryWriter(Stream outputStream, LoycBinaryWriter other)
             : this(new BinaryWriter(outputStream), other)
@@ -46,9 +46,9 @@ namespace Loyc.Binary
         public BinaryWriter Writer { get; private set; }
 
         /// <summary>
-        /// Gets the set of node encoders this writer uses.
+        /// Gets the set of literal node encoders this writer uses.
         /// </summary>
-        public IEnumerable<BinaryNodeEncoder> Encoders { get; private set; }
+        public IReadOnlyDictionary<Type, BinaryNodeEncoder> LiteralEncoders { get; private set; }
 
         #endregion
 
@@ -57,36 +57,30 @@ namespace Loyc.Binary
         /// <summary>
         /// Gets the default set of encoders.
         /// </summary>
-        public static IEnumerable<BinaryNodeEncoder> DefaultEncoders
+        public static IReadOnlyDictionary<Type, BinaryNodeEncoder> DefaultEncoders
         {
             get
             {
-                return new BinaryNodeEncoder[]
+                return new Dictionary<Type, BinaryNodeEncoder>()
                 {
-                    BinaryNodeEncoder.AttributeEncoder,
-                    BinaryNodeEncoder.CallIdEncoder,
-                    BinaryNodeEncoder.IdEncoder,
-                    BinaryNodeEncoder.CallEncoder,
+                    { typeof(sbyte), BinaryNodeEncoder.CreateLiteralEncoder<sbyte>(NodeEncodingType.Int8, writer => writer.Write) },
+                    { typeof(short), BinaryNodeEncoder.CreateLiteralEncoder<short>(NodeEncodingType.Int16, writer => writer.Write) },
+                    { typeof(int), BinaryNodeEncoder.CreateLiteralEncoder<int>(NodeEncodingType.Int32, writer => writer.Write) },
+                    { typeof(long), BinaryNodeEncoder.CreateLiteralEncoder<long>(NodeEncodingType.Int64, writer => writer.Write) },
 
-                    BinaryNodeEncoder.CreateLiteralEncoder<sbyte>(NodeEncodingType.Int8, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<short>(NodeEncodingType.Int16, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<int>(NodeEncodingType.Int32, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<long>(NodeEncodingType.Int64, writer => writer.Write),
+                    { typeof(byte), BinaryNodeEncoder.CreateLiteralEncoder<byte>(NodeEncodingType.UInt8, writer => writer.Write) },
+                    { typeof(ushort), BinaryNodeEncoder.CreateLiteralEncoder<ushort>(NodeEncodingType.UInt16, writer => writer.Write) },
+                    { typeof(uint), BinaryNodeEncoder.CreateLiteralEncoder<uint>(NodeEncodingType.UInt32, writer => writer.Write) },
+                    { typeof(ulong), BinaryNodeEncoder.CreateLiteralEncoder<ulong>(NodeEncodingType.UInt64, writer => writer.Write) },
 
-                    BinaryNodeEncoder.CreateLiteralEncoder<byte>(NodeEncodingType.UInt8, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<ushort>(NodeEncodingType.UInt16, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<uint>(NodeEncodingType.UInt32, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<ulong>(NodeEncodingType.UInt64, writer => writer.Write),
+                    { typeof(float), BinaryNodeEncoder.CreateLiteralEncoder<float>(NodeEncodingType.Float32, writer => writer.Write) },
+                    { typeof(double), BinaryNodeEncoder.CreateLiteralEncoder<double>(NodeEncodingType.Float64, writer => writer.Write) },
+                    { typeof(decimal), BinaryNodeEncoder.CreateLiteralEncoder<decimal>(NodeEncodingType.Decimal, writer => writer.Write) },
 
-                    BinaryNodeEncoder.CreateLiteralEncoder<float>(NodeEncodingType.Float32, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<double>(NodeEncodingType.Float64, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<decimal>(NodeEncodingType.Decimal, writer => writer.Write),
-
-                    BinaryNodeEncoder.CreateLiteralEncoder<char>(NodeEncodingType.Char, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<bool>(NodeEncodingType.Boolean, writer => writer.Write),
-                    BinaryNodeEncoder.CreateLiteralEncoder<string>(NodeEncodingType.String, (writer, state, value) => writer.WriteReference(state, value)),
-                    BinaryNodeEncoder.CreateLiteralEncoder<@void>(NodeEncodingType.Void, (writer, value) => { }),
-                    BinaryNodeEncoder.NullEncoder
+                    { typeof(char), BinaryNodeEncoder.CreateLiteralEncoder<char>(NodeEncodingType.Char, writer => writer.Write) },
+                    { typeof(bool), BinaryNodeEncoder.CreateLiteralEncoder<bool>(NodeEncodingType.Boolean, writer => writer.Write) },
+                    { typeof(string), BinaryNodeEncoder.CreateLiteralEncoder<string>(NodeEncodingType.String, (writer, state, value) => writer.WriteReference(state, value)) },
+                    { typeof(@void), BinaryNodeEncoder.CreateLiteralEncoder<@void>(NodeEncodingType.Void, (writer, value) => { }) }
                 };
             }
         }
@@ -103,7 +97,7 @@ namespace Loyc.Binary
         {
             // C# translation of code borrowed from Wikipedia article:
             // https://en.wikipedia.org/wiki/LEB128
-            do 
+            do
             {
                 byte b = (byte)(Value & 0x7F);
                 Value >>= 7;
@@ -200,14 +194,45 @@ namespace Loyc.Binary
         /// <returns></returns>
         public BinaryNodeEncoder GetEncoder(LNode Node)
         {
-            foreach (var item in Encoders)
+            if (Node.HasAttrs)
             {
-                if (item.CanEncode(Node))
+                return BinaryNodeEncoder.AttributeEncoder;
+            }
+            else if (Node.IsCall)
+            {
+                if (Node.Target.IsId && !Node.Target.HasAttrs)
                 {
-                    return item;
+                    return BinaryNodeEncoder.CallIdEncoder;
+                }
+                else
+                {
+                    return BinaryNodeEncoder.CallEncoder;
                 }
             }
-            throw new NotSupportedException("Node '" + Node.Print() + "' could not be encoded by any of the writer's known encoders.");
+            else if (Node.IsId)
+            {
+                return BinaryNodeEncoder.IdEncoder;
+            }
+            else
+            {
+                object nodeVal = Node.Value;
+                if (nodeVal == null)
+                {
+                    return BinaryNodeEncoder.NullEncoder;
+                }
+                else
+                {
+                    BinaryNodeEncoder result;
+                    if (LiteralEncoders.TryGetValue(nodeVal.GetType(), out result))
+                    {
+                        return result;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Node '" + Node.Print() + "' could not be encoded by any of the writer's known encoders.");
+                    }
+                }
+            }
         }
 
         /// <summary>
