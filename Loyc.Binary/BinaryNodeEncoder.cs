@@ -38,19 +38,7 @@ namespace Loyc.Binary
         /// <returns></returns>
         public static BinaryNodeEncoder CreateLiteralEncoder<T>(NodeEncodingType Encoding, Action<BinaryWriter, T> ValueEncoder)
         {
-            return CreateLiteralEncoder<T>(Encoding, (writer, state, value) => ValueEncoder(writer.Writer, value));
-        }
-
-        /// <summary>
-        /// Creates a binary node encoder that encodes literals of a specific type.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="Encoding"></param>
-        /// <param name="ValueEncoder"></param>
-        /// <returns></returns>
-        public static BinaryNodeEncoder CreateLiteralEncoder<T>(NodeEncodingType Encoding, Func<BinaryWriter, Action<T>> ValueEncoder)
-        {
-            return CreateLiteralEncoder<T>(Encoding, (writer, state, value) => ValueEncoder(writer.Writer)(value));
+            return new BinaryNodeEncoder(Encoding, (writer, state, node) => ValueEncoder(writer.Writer, (T)node.Value));
         }
 
         /// <summary>
@@ -62,11 +50,8 @@ namespace Loyc.Binary
         /// <returns></returns>
         public static BinaryNodeEncoder CreateLiteralEncoder<T>(NodeEncodingType Encoding, Action<LoycBinaryWriter, WriterState, T> ValueEncoder)
         {
-            return new BinaryNodeEncoder(Encoding,
-                (writer, state, node) => ValueEncoder(writer, state, (T)node.Value));
+            return new BinaryNodeEncoder(Encoding, (writer, state, node) => ValueEncoder(writer, state, (T)node.Value));
         }
-
-
 
         /// <summary>
         /// Gets the binary node encoder for id nodes.

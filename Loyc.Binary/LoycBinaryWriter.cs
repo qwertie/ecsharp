@@ -63,24 +63,24 @@ namespace Loyc.Binary
             {
                 return new Dictionary<Type, BinaryNodeEncoder>()
                 {
-                    { typeof(sbyte), BinaryNodeEncoder.CreateLiteralEncoder<sbyte>(NodeEncodingType.Int8, writer => writer.Write) },
-                    { typeof(short), BinaryNodeEncoder.CreateLiteralEncoder<short>(NodeEncodingType.Int16, writer => writer.Write) },
-                    { typeof(int), BinaryNodeEncoder.CreateLiteralEncoder<int>(NodeEncodingType.Int32, writer => writer.Write) },
-                    { typeof(long), BinaryNodeEncoder.CreateLiteralEncoder<long>(NodeEncodingType.Int64, writer => writer.Write) },
+                    { typeof(sbyte), BinaryNodeEncoder.CreateLiteralEncoder<sbyte>(NodeEncodingType.Int8, (writer, value) => writer.Write(value)) },
+                    { typeof(short), BinaryNodeEncoder.CreateLiteralEncoder<short>(NodeEncodingType.Int16, (writer, value) => writer.Write(value)) },
+                    { typeof(int), BinaryNodeEncoder.CreateLiteralEncoder<int>(NodeEncodingType.Int32, (writer, value) => writer.Write(value)) },
+                    { typeof(long), BinaryNodeEncoder.CreateLiteralEncoder<long>(NodeEncodingType.Int64, (writer, value) => writer.Write(value)) },
 
-                    { typeof(byte), BinaryNodeEncoder.CreateLiteralEncoder<byte>(NodeEncodingType.UInt8, writer => writer.Write) },
-                    { typeof(ushort), BinaryNodeEncoder.CreateLiteralEncoder<ushort>(NodeEncodingType.UInt16, writer => writer.Write) },
-                    { typeof(uint), BinaryNodeEncoder.CreateLiteralEncoder<uint>(NodeEncodingType.UInt32, writer => writer.Write) },
-                    { typeof(ulong), BinaryNodeEncoder.CreateLiteralEncoder<ulong>(NodeEncodingType.UInt64, writer => writer.Write) },
+                    { typeof(byte), BinaryNodeEncoder.CreateLiteralEncoder<byte>(NodeEncodingType.UInt8, (writer, value) => writer.Write(value)) },
+                    { typeof(ushort), BinaryNodeEncoder.CreateLiteralEncoder<ushort>(NodeEncodingType.UInt16, (writer, value) => writer.Write(value)) },
+                    { typeof(uint), BinaryNodeEncoder.CreateLiteralEncoder<uint>(NodeEncodingType.UInt32, (writer, value) => writer.Write(value)) },
+                    { typeof(ulong), BinaryNodeEncoder.CreateLiteralEncoder<ulong>(NodeEncodingType.UInt64, (writer, value) => writer.Write(value)) },
 
-                    { typeof(float), BinaryNodeEncoder.CreateLiteralEncoder<float>(NodeEncodingType.Float32, writer => writer.Write) },
-                    { typeof(double), BinaryNodeEncoder.CreateLiteralEncoder<double>(NodeEncodingType.Float64, writer => writer.Write) },
-                    { typeof(decimal), BinaryNodeEncoder.CreateLiteralEncoder<decimal>(NodeEncodingType.Decimal, writer => writer.Write) },
+                    { typeof(float), BinaryNodeEncoder.CreateLiteralEncoder<float>(NodeEncodingType.Float32, (writer, value) => writer.Write(value)) },
+                    { typeof(double), BinaryNodeEncoder.CreateLiteralEncoder<double>(NodeEncodingType.Float64, (writer, value) => writer.Write(value)) },
+                    { typeof(decimal), BinaryNodeEncoder.CreateLiteralEncoder<decimal>(NodeEncodingType.Decimal, (writer, value) => writer.Write(value)) },
 
-                    { typeof(char), BinaryNodeEncoder.CreateLiteralEncoder<char>(NodeEncodingType.Char, writer => writer.Write) },
-                    { typeof(bool), BinaryNodeEncoder.CreateLiteralEncoder<bool>(NodeEncodingType.Boolean, writer => writer.Write) },
+                    { typeof(char), BinaryNodeEncoder.CreateLiteralEncoder<char>(NodeEncodingType.Char, (writer, value) => writer.Write(value)) },
+                    { typeof(bool), BinaryNodeEncoder.CreateLiteralEncoder<bool>(NodeEncodingType.Boolean, (writer, value) => writer.Write(value)) },
                     { typeof(string), BinaryNodeEncoder.CreateLiteralEncoder<string>(NodeEncodingType.String, (writer, state, value) => writer.WriteReference(state, value)) },
-                    { typeof(@void), BinaryNodeEncoder.CreateLiteralEncoder<@void>(NodeEncodingType.Void, (writer, value) => { }) }
+                    { typeof(@void), new BinaryNodeEncoder(NodeEncodingType.Void, (writer, state, node) => { }) }
                 };
             }
         }
