@@ -20,14 +20,14 @@ namespace Loyc.Binary
         /// binary reader and set of decoders and template parsers.
         /// </summary>
         /// <param name="reader"></param>
-        /// <param name="encodings"></param>
+        /// <param name="encodings">A mapping of literal node encodings to decoders.</param>
         /// <param name="templateParsers"></param>
         public LoycBinaryReader(BinaryReader reader,
-            IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> encodings,
+            IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> literalEncoding,
             IReadOnlyDictionary<NodeTemplateType, Func<LoycBinaryReader, NodeTemplate>> templateParsers)
         {
             Reader = reader;
-            Encodings = encodings;
+            LiteralEncodings = literalEncoding;
             TemplateParsers = templateParsers;
         }
 
@@ -36,12 +36,12 @@ namespace Loyc.Binary
         /// input stream and set of decoders and template parsers.
         /// </summary>
         /// <param name="inputStream"></param>
-        /// <param name="encodings"></param>
+        /// <param name="encodings">A mapping of literal node encodings to decoders.</param>
         /// <param name="templateParsers"></param>
         public LoycBinaryReader(Stream inputStream,
-            IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> encodings,
+            IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> literalEncoding,
             IReadOnlyDictionary<NodeTemplateType, Func<LoycBinaryReader, NodeTemplate>> templateParsers)
-            : this(new BinaryReader(inputStream), encodings, templateParsers)
+            : this(new BinaryReader(inputStream), literalEncoding, templateParsers)
         {
         }
 
@@ -75,9 +75,10 @@ namespace Loyc.Binary
         public BinaryReader Reader { get; private set; }
 
         /// <summary>
-        /// Gets the mapping of encodings to decoders that this binary reader uses.
+        /// Gets the mapping of literal encodings to decoders that this binary reader uses.
+        /// Templated nodes and id nodes are treated as special cases, and are not part of this dictionary.
         /// </summary>
-        public IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> Encodings { get; private set; }
+        public IReadOnlyDictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>> LiteralEncodings { get; private set; }
 
         /// <summary>
         /// Gtes the mapping of node template types to node template parsers that this binary reader uses.
@@ -97,8 +98,6 @@ namespace Loyc.Binary
             {
                 return new Dictionary<NodeEncodingType, Func<LoycBinaryReader, ReaderState, LNode>>()
                 {
-                    { NodeEncodingType.TemplatedNode, (reader, state) => reader.ReadTemplatedNode(state) },
-                    { NodeEncodingType.IdNode, (reader, state) => state.NodeFactory.Id(reader.ReadSymbolReference(state)) },
                     { NodeEncodingType.String, (reader, state) => state.NodeFactory.Literal(reader.ReadStringReference(state)) },
                     { NodeEncodingType.Int8, CreateLiteralNodeReader(reader => reader.ReadSByte()) },
                     { NodeEncodingType.Int16, CreateLiteralNodeReader(reader => reader.ReadInt16()) },
@@ -317,11 +316,11 @@ namespace Loyc.Binary
         }
 
         /// <summary>
-        /// Reads a templated node.
+        /// Reads a template-prefixed templated node.
         /// </summary>
         /// <param name="State"></param>
         /// <returns></returns>
-        private LNode ReadTemplatedNode(ReaderState State)
+        public LNode ReadTemplatedNode(ReaderState State)
         {
             var template = ReadTemplateReference(State);
             var args = template.ArgumentTypes.Select(type => ReadNode(State, type)).ToArray();
@@ -336,12 +335,25 @@ namespace Loyc.Binary
         /// <returns></returns>
         public LNode ReadNode(ReaderState State, NodeEncodingType Encoding)
         {
-            if (!Encodings.ContainsKey(Encoding))
+            if (Encoding == NodeEncodingType.TemplatedNode)
             {
-                throw new InvalidDataException("Unknown node encoding.");
+                return ReadTemplatedNode(State);
+            }
+            else if (Encoding == NodeEncodingType.IdNode)
+            {
+                return State.NodeFactory.Id(ReadSymbolReference(State));
             }
 
-            return Encodings[Encoding](this, State);
+            Func<LoycBinaryReader, ReaderState, LNode> parser;
+
+            if (LiteralEncodings.TryGetValue(Encoding, out parser))
+            {
+                return parser(this, State);
+            }
+            else
+            {
+                throw new InvalidDataException("Unknown node encoding: '" + Encoding + "'.");
+            }
         }
 
         #endregion

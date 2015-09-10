@@ -39,9 +39,9 @@ namespace Loyc.Binary.Tests
     [TestFixture]
     public class LesComparisonBenchmark
     {
-        public string[] GrabEcsFiles()
+        public string[] GrabCsFiles(string Path)
         {
-            return Directory.GetFiles("..\\..\\..\\Loyc.Binary\\", "*.cs");
+            return Directory.GetFiles(Path, "*.cs", SearchOption.AllDirectories);
         }
 
         /// <summary>
@@ -129,11 +129,11 @@ namespace Loyc.Binary.Tests
             Console.WriteLine(" * LES size: " + LesResults.Size + " characters");
             Console.WriteLine(" * BLT size: " + BltResults.Size + " bytes");
             Console.WriteLine(" * LES/BLT size: " + ((double)LesResults.Size / (double)BltResults.Size));
-            Console.WriteLine(" * LES read time: " + LesResults.ReadPerformance.Milliseconds + "ms");
-            Console.WriteLine(" * BLT read time: " + BltResults.ReadPerformance.Milliseconds + "ms");
+            Console.WriteLine(" * LES read time: " + LesResults.ReadPerformance.TotalMilliseconds + "ms");
+            Console.WriteLine(" * BLT read time: " + BltResults.ReadPerformance.TotalMilliseconds + "ms");
             Console.WriteLine(" * LES/BLT read time: " + ((double)LesResults.ReadPerformance.Ticks / (double)BltResults.ReadPerformance.Ticks));
-            Console.WriteLine(" * LES write time: " + LesResults.WritePerformance.Milliseconds + "ms");
-            Console.WriteLine(" * BLT write time: " + BltResults.WritePerformance.Milliseconds + "ms");
+            Console.WriteLine(" * LES write time: " + LesResults.WritePerformance.TotalMilliseconds + "ms");
+            Console.WriteLine(" * BLT write time: " + BltResults.WritePerformance.TotalMilliseconds + "ms");
             Console.WriteLine(" * LES/BLT write time: " + ((double)LesResults.WritePerformance.Ticks / (double)BltResults.WritePerformance.Ticks));
             Console.WriteLine();
         }
@@ -167,29 +167,44 @@ namespace Loyc.Binary.Tests
             return Tuple.Create(Nodes, lesPerf, bltPerf);
         }
 
+        public void BenchmarkBltPerformance(string InputDirectory)
+        {
+            Console.WriteLine("Note: the following benchmarks are LES/BLT round-trips that have been performed 200 times.");
+            Console.WriteLine();
+
+            string[] allFiles = GrabCsFiles(InputDirectory);
+
+            BenchmarkBltPerformance(allFiles[0], false);
+
+            var aggregate = allFiles.Select(item => BenchmarkBltPerformance(item, false))
+                                    .Aggregate(Tuple.Create(Enumerable.Empty<LNode>(), new RoundTripPerformance(), new RoundTripPerformance()),
+                                               (aggr, item) => Tuple.Create(aggr.Item1.Concat(item.Item1), aggr.Item2 + item.Item2, aggr.Item3 + item.Item3));
+
+            Console.WriteLine("Sum of individual read/writes:");
+            PublishComparison(aggregate.Item2, aggregate.Item3);
+            BenchmarkBltPerformance(aggregate.Item1.ToArray(), "Read/write of all nodes stitched together:", true);
+        }
+
         /// <summary>
         /// Benchmarks and compares LES/BLT performance.
         /// Loyc.Binary is parsed by the EC# parser, and then
         /// a LES and a BLT round-trip are performed.
         /// </summary>
         [Test]
-        public void BenchmarkBltPerformance()
+        public void BenchmarkBltPerformanceLoycBinary()
         {
-            string[] allFiles = GrabEcsFiles();
+            BenchmarkBltPerformance("..\\..\\..\\Loyc.Binary\\");
+        }
 
-            BenchmarkBltPerformance(allFiles[0], false);
-
-            Console.WriteLine("Note: the following benchmarks are LES/BLT round-trips that have been performed 200 times.");
-            Console.WriteLine();
-
-            var aggregate = allFiles.Select(item => BenchmarkBltPerformance(item, true))
-                                    .Aggregate(Tuple.Create(Enumerable.Empty<LNode>(), new RoundTripPerformance(), new RoundTripPerformance()),
-                                               (aggr, item) => Tuple.Create(aggr.Item1.Concat(item.Item1), aggr.Item2 + item.Item2, aggr.Item3 + item.Item3));
-
-            Console.WriteLine("Sum of individual read/writes:");
-            PublishComparison(aggregate.Item2, aggregate.Item3);
-
-            BenchmarkBltPerformance(aggregate.Item1.ToArray(), "Read/write of all nodes stitched together:", true);
+        /// <summary>
+        /// Benchmarks and compares LES/BLT performance.
+        /// Loyc.Collections is parsed by the EC# parser, and then
+        /// a LES and a BLT round-trip are performed.
+        /// </summary>
+        [Test]
+        public void BenchmarkBltPerformanceLoycCollections()
+        {
+            BenchmarkBltPerformance("..\\..\\..\\Loyc.Collections\\");
         }
     }
 }
