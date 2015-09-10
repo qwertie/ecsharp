@@ -29,6 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Binary", "Core\Loyc.Bi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Binary.Tests", "Core\Loyc.Binary.Tests\Loyc.Binary.Tests.csproj", "{3469CDB4-B419-4A58-B7C6-750E1DD4FAB4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bltc", "Main\Bltc\Bltc.csproj", "{5D18BA77-BEB3-46EC-82A6-E61B9BAF7042}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
