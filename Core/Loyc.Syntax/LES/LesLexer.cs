@@ -28,10 +28,10 @@ namespace Loyc.Syntax.Les
 
 		public bool AllowNestedComments = true;
 		/// <summary>Used for syntax highlighting, which doesn't care about token values.
-		/// This option causes the Token.Value to be set to a default, like '\0' for 
+		/// This option causes the Token.Value to be set to a default, like '\0' for
 		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
 		public bool SkipValueParsing = false;
-		private bool _isFloat, _parseNeeded, _isNegative;
+		private bool _isFloat, _parseNeeded, _isNegative, _isNan, _isInf;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
 		private NodeStyle _style;
@@ -60,14 +60,14 @@ namespace Loyc.Syntax.Les
 			base.AfterNewline();
 		}
 		protected override bool SupportDotIndents() { return true; }
-		
+
 		public LesLexer Clone()
 		{
 			return (LesLexer)MemberwiseClone();
 		}
 
 		#region Token value parsers
-		// After the generated lexer code determines the boundaries of the token, 
+		// After the generated lexer code determines the boundaries of the token,
 		// one of these methods extracts the value of the token (e.g. "17L" => (long)17)
 		// There are value parsers for identifiers, numbers, and strings; certain
 		// parser cores are also accessible as public static methods.
@@ -81,7 +81,7 @@ namespace Loyc.Syntax.Les
 			int c = -1;
 			if (SkipValueParsing)
 				c = '\0';
-			else { 
+			else {
 				int len = InputPosition - _startPosition;
 				if (!_parseNeeded && len == 3) {
 					c = CharSource[_startPosition + 1];
@@ -137,27 +137,27 @@ namespace Loyc.Syntax.Les
 			return value;
 		}
 
-		/// <summary>Parses a normal or triple-quoted string that still includes 
+		/// <summary>Parses a normal or triple-quoted string that still includes
 		/// the quotes. Supports quote types '\'', '"' and '`'.</summary>
 		/// <param name="sourceText">input text</param>
 		/// <param name="onError">Called in case of parsing error (unknown escape sequence or missing end quotes)</param>
 		/// <param name="indentation">Inside a triple-quoted string, any text
-		/// following a newline is ignored as long as it matches this string. 
+		/// following a newline is ignored as long as it matches this string.
 		/// For example, if the text following a newline is "\t\t Foo" and this
 		/// string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
 		/// <returns>The decoded string</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.
-		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These 
-		/// strings enjoy special newline handling: the newline is always 
-		/// interpreted as \n regardless of the actual kind of newline (\r and 
+		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These
+		/// strings enjoy special newline handling: the newline is always
+		/// interpreted as \n regardless of the actual kind of newline (\r and
 		/// \r\n newlines come out as \n), and indentation following the newline
 		/// can be stripped out. Triple-quoted strings can have escape sequences
 		/// that use both kinds of slash, like so: <c>\n/ \r/ \'/ \"/ \0/</c>.
 		/// However, there are no unicode escapes (\u1234/ is NOT supported).
 		/// <para/>
-		/// Secondly, it recognizes normal strings (' " `). These strings stop 
-		/// parsing (with an error) at a newline, and can contain C-style escape 
-		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
+		/// Secondly, it recognizes normal strings (' " `). These strings stop
+		/// parsing (with an error) at a newline, and can contain C-style escape
+		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are
 		/// NOT supported.
 		/// </remarks>
 		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString))
@@ -166,9 +166,9 @@ namespace Loyc.Syntax.Les
 			UnescapeQuotedString(ref sourceText, onError, sb, indentation);
 			return sb.ToString();
 		}
-		
-		/// <summary>Parses a normal or triple-quoted string that still includes 
-		/// the quotes (see documentation of the first overload) into a 
+
+		/// <summary>Parses a normal or triple-quoted string that still includes
+		/// the quotes (see documentation of the first overload) into a
 		/// StringBuilder.</summary>
 		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString))
 		{
@@ -182,10 +182,10 @@ namespace Loyc.Syntax.Les
 			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation))
 				onError(sourceText.InternalStart, Localize.From("String literal did not end properly"));
 		}
-		
-		/// <summary>Parses a normal or triple-quoted string whose starting quotes 
-		/// have been stripped out. If triple-quote parsing was requested, stops 
-		/// parsing at three quote marks; otherwise, stops parsing at a single 
+
+		/// <summary>Parses a normal or triple-quoted string whose starting quotes
+		/// have been stripped out. If triple-quote parsing was requested, stops
+		/// parsing at three quote marks; otherwise, stops parsing at a single
 		/// end-quote or newline.</summary>
 		/// <returns>true if parsing stopped at one or three quote marks, or false
 		/// if parsing stopped at the end of the input string or at a newline (in
@@ -230,7 +230,7 @@ namespace Loyc.Syntax.Les
 							}
 						}
 						if (c == '\r' || c == '\n') {
-							// To ensure platform independency of source code, CR and 
+							// To ensure platform independency of source code, CR and
 							// CR-LF become LF.
 							if (c == '\r') {
 								c = '\n';
@@ -238,14 +238,14 @@ namespace Loyc.Syntax.Les
 								if (sourceText.PopFront(out fail) != '\n')
 									sourceText = copy;
 							}
-							// Inside a triple-quoted string, the indentation following a newline 
+							// Inside a triple-quoted string, the indentation following a newline
 							// is ignored, as long as it matches the indentation of the first line.
 							UString src = sourceText.Clone(), ind = indentation;
 							while (src.PopFront(out fail) == ind.PopFront(out fail) && !fail)
 								sourceText = src;
 						}
 					}
-					
+
 					sb.Append((char)c);
 				}
 			}
@@ -326,15 +326,15 @@ namespace Loyc.Syntax.Les
 			return sym;
 		}
 
-		/// <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
+		/// <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>,
 		/// <c>@`foo`</c> or <c>@--punctuation--</c>. Also recognizes <c>#`foo`</c>.
 		/// </summary>
-		/// <param name="source">Text to parse. On return, the range has been 
+		/// <param name="source">Text to parse. On return, the range has been
 		/// decreased by the length of the token; this method also stops if this
 		/// range becomes empty.</param>
 		/// <param name="onError">A method to call on error</param>
-		/// <param name="checkForNamedLiteral">This is set to true when the input 
-		/// starts with @ but is a normal identifier, which could indicate that 
+		/// <param name="checkForNamedLiteral">This is set to true when the input
+		/// starts with @ but is a normal identifier, which could indicate that
 		/// it is an LES named literal such as @false or @null.</param>
 		/// <returns>The parsed version of the identifier.</returns>
 		public static string ParseIdentifier(ref UString source, Action<int, string> onError, out bool checkForNamedLiteral)
@@ -412,8 +412,8 @@ namespace Loyc.Syntax.Les
 
 			UString digits = CharSource.Slice(start, stop - start);
 			string error;
-			if ((_value = ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
-				_value = 0;
+            if ((_value = ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
+                _value = 0;
 			else if (_value == CodeSymbols.Sub) {
 				InputPosition = _startPosition + 1;
 				_type = TT.NormalOp;
@@ -422,6 +422,23 @@ namespace Loyc.Syntax.Les
 				Error(_startPosition, error);
 		}
 
+        void ParseNamedNumberValue()
+        {
+            int start = _startPosition;
+            int stop = InputPosition;
+            UString digits = CharSource.Slice(start, stop - start);
+            string error;
+            if ((_value = ParseNamedFloatValue(digits, _isNegative, _isNan, _isInf, _typeSuffix, out error)) == null)
+                _value = 0;
+            else if (_value == CodeSymbols.Sub)
+            {
+                InputPosition = _startPosition + 1;
+                _type = TT.NormalOp;
+            }
+            if (error != null)
+                Error(_startPosition, error);
+        }
+
 		/// <summary>Parses the digits of a literal (integer or floating-point),
 		/// not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.)</summary>
 		/// <param name="source">Digits of the number (not including radix prefix or type suffix)</param>
@@ -429,9 +446,9 @@ namespace Loyc.Syntax.Les
 		/// <param name="numberBase">Radix. Must be 2 (binary), 10 (decimal) or 16 (hexadecimal).</param>
 		/// <param name="typeSuffix">Type suffix: F, D, M, U, L, UL, or null.</param>
 		/// <param name="error">Set to an error message in case of error.</param>
-		/// <returns>Boxed value of the literal, null if total failure (result 
+		/// <returns>Boxed value of the literal, null if total failure (result
 		/// is not null in case of overflow), or <see cref="CodeSymbols.Sub"/> (-)
-		/// if isNegative is true but the type suffix is unsigned or the number 
+		/// if isNegative is true but the type suffix is unsigned or the number
 		/// is larger than long.MaxValue.</returns>
 		public static object ParseNumberCore(UString source, bool isNegative, int numberBase, bool isFloat, Symbol typeSuffix, out string error)
 		{
@@ -471,12 +488,12 @@ namespace Loyc.Syntax.Les
 			}
 
 			if (isNegative && (suffix == _U || suffix == _UL)) {
-				// Oops, an unsigned number can't be negative, so treat 
+				// Oops, an unsigned number can't be negative, so treat
 				// '-' as a separate token and let the number be reparsed.
 				return CodeSymbols.Sub;
 			}
 
-			// Create boxed integer of the appropriate type 
+			// Create boxed integer of the appropriate type
 			object value;
 			if (suffix == _UL)
 				value = unsigned;
@@ -520,6 +537,50 @@ namespace Loyc.Syntax.Les
 			error = Localize.From("Syntax error in float literal");
 			return null;
 		}
+
+        private static object ParseNamedFloatValue(UString source, bool isNegative, bool isNan, bool isInf, Symbol typeSuffix, out string error)
+        {
+            if (isNan && isInf)
+            {
+                error = "Float literal '" + source + "' cannot both be infinity and not-a-number.";
+                return null;
+            }
+            else if (typeSuffix == _M)
+            {
+                error = "Illegal decimal literal '" + source + "': decimals cannot be infinity or not-a-number.";
+                return null;
+            }
+            else if (isNan)
+            {
+                if (isNegative)
+                    error = "Negative not-a-number literal '" + source + "' makes no sense.";
+                else
+                    error = null;
+
+                if (typeSuffix == _F)
+                    return float.NaN;
+                else
+                    return double.NaN;
+            }
+            else
+            {
+                error = null;
+                if (typeSuffix == _F)
+                {
+                    if (isNegative)
+                        return float.NegativeInfinity;
+                    else
+                        return float.PositiveInfinity;
+                }
+                else
+                {
+                    if (isNegative)
+                        return double.NegativeInfinity;
+                    else
+                        return double.PositiveInfinity;
+                }
+            }
+        }
 
 		private static object ParseSpecialFloatValue(UString source, bool isNegative, int radix, Symbol typeSuffix, ref string error)
 		{
@@ -646,7 +707,7 @@ namespace Loyc.Syntax.Les
 			return sb;
 		}
 
-		static readonly HashSet<int> SpecialIdSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'', '#', '#', 
+		static readonly HashSet<int> SpecialIdSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'', '#', '#',
 			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '?','?', ':',':', '.','.', '@','@', '$','$', '\\', '\\');
 		static readonly HashSet<int> IdContSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'');
 		static readonly HashSet<int> OpContSet = NewSetOfRanges(

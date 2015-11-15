@@ -553,8 +553,8 @@ namespace Loyc.Syntax.Les
 			P<ushort> ((np, value, style) => np.PrintShortInteger(value, style, "UInt16")), // Unnatural. Not produced by parser.
 			P<sbyte>  ((np, value, style) => np.PrintShortInteger(value, style, "Int8")), // Unnatural. Not produced by parser.
 			P<byte>   ((np, value, style) => np.PrintShortInteger(value, style, "UInt8")), // Unnatural. Not produced by parser.
-			P<double> ((np, value, style) => np.PrintValueToString(value, "d")),
-			P<float>  ((np, value, style) => np.PrintValueToString(value, "f")),
+			P<double> ((np, value, style) => np.PrintDoubleToString((double)value)),
+			P<float>  ((np, value, style) => np.PrintFloatToString((float)value)),
 			P<decimal>((np, value, style) => np.PrintValueToString(value, "m")),
 			P<bool>   ((np, value, style) => np._out.Write((bool)value? "@true" : "@false", true)),
 			P<@void>  ((np, value, style) => np._out.Write("@void", true)),
@@ -597,6 +597,51 @@ namespace Loyc.Syntax.Les
 				_out.Write(suffix, true);
 			}
 		}
+
+        const string NaNPrefix = "@nan_";
+        const string PositiveInfinityPrefix = "@inf_";
+        const string NegativeInfinityPrefix = "-@inf_";
+
+        void PrintFloatToString(float value)
+        {
+            if (float.IsNaN(value))
+            {
+                _out.Write(NaNPrefix, false);
+            }
+            else if (float.IsPositiveInfinity(value))
+            {
+                _out.Write(PositiveInfinityPrefix, false);
+            }
+            else if (float.IsNegativeInfinity(value))
+            {
+                _out.Write(NegativeInfinityPrefix, false);
+            }
+            else
+            {
+                _out.Write(value.ToString(), false);
+            }
+            _out.Write("f", true);
+        }
+        void PrintDoubleToString(double value)
+        {
+            if (double.IsNaN(value))
+            {
+                _out.Write(NaNPrefix, false);
+            }
+            else if (double.IsPositiveInfinity(value))
+            {
+                _out.Write(PositiveInfinityPrefix, false);
+            }
+            else if (double.IsNegativeInfinity(value))
+            {
+                _out.Write(NegativeInfinityPrefix, false);
+            }
+            else
+            {
+                _out.Write(value.ToString(), false);
+            }
+            _out.Write("d", true);
+        }
 
 		private void PrintLiteral(LNode node)
 		{
