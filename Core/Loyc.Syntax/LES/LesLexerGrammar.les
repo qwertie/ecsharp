@@ -64,7 +64,7 @@ namespace Loyc.Syntax.Les
 			( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		};
 		@[private] token Number() @{
-		    { _isFloat = _isNegative = _isNan = _isInf = false; _typeSuffix = null; }
+		    { _isFloat = _isNegative = false; _typeSuffix = null; }
 		    ('-' {_isNegative = true;})?
 			(HexNumber / BinNumber / DecNumber)
 		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
@@ -77,9 +77,9 @@ namespace Loyc.Syntax.Les
 		    {ParseNumberValue();}
 		};
 		@[private] token NamedNumber() @{
-			{ _isFloat = true; _isNegative = _isNan = _isInf = false; _typeSuffix = null; }
+			{ _isNegative = false; _typeSuffix = null; }
 			('-' {_isNegative = true;})?
-			( "@inf_" {_isInf=true;}
+			( "@inf_" {_isNan=false;}
 			| "@nan_" {_isNan=true;}
 			)
 			( ('f'|'F') {_typeSuffix=_F;}

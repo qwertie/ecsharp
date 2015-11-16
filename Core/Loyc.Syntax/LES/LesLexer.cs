@@ -31,7 +31,7 @@ namespace Loyc.Syntax.Les
 		/// This option causes the Token.Value to be set to a default, like '\0' for
 		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
 		public bool SkipValueParsing = false;
-		private bool _isFloat, _parseNeeded, _isNegative, _isNan, _isInf;
+		private bool _isFloat, _parseNeeded, _isNegative, _isNan;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
 		private NodeStyle _style;
@@ -428,7 +428,7 @@ namespace Loyc.Syntax.Les
             int stop = InputPosition;
             UString digits = CharSource.Slice(start, stop - start);
             string error;
-            if ((_value = ParseNamedFloatValue(digits, _isNegative, _isNan, _isInf, _typeSuffix, out error)) == null)
+            if ((_value = ParseNamedFloatValue(digits, _isNegative, _isNan, _typeSuffix, out error)) == null)
                 _value = 0;
             else if (_value == CodeSymbols.Sub)
             {
@@ -538,14 +538,9 @@ namespace Loyc.Syntax.Les
 			return null;
 		}
 
-        private static object ParseNamedFloatValue(UString source, bool isNegative, bool isNan, bool isInf, Symbol typeSuffix, out string error)
+        private static object ParseNamedFloatValue(UString source, bool isNegative, bool isNan, Symbol typeSuffix, out string error)
         {
-            if (isNan && isInf)
-            {
-                error = "Float literal '" + source + "' cannot both be infinity and not-a-number.";
-                return null;
-            }
-            else if (typeSuffix == _M)
+            if (typeSuffix == _M)
             {
                 error = "Illegal decimal literal '" + source + "': decimals cannot be infinity or not-a-number.";
                 return null;

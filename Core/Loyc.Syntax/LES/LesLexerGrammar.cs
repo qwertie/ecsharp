@@ -368,7 +368,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0;
 			// line 67
-			_isFloat = _isNegative = _isNan = _isInf = false;
+			_isFloat = _isNegative = false;
 			_typeSuffix = null;
 			// Line 68: ([\-])?
 			la0 = LA0;
@@ -462,8 +462,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			// line 80
-			_isFloat = true;
-			_isNegative = _isNan = _isInf = false;
+			_isNegative = false;
 			_typeSuffix = null;
 			// Line 81: ([\-])?
 			la0 = LA0;
@@ -481,7 +480,7 @@ namespace Loyc.Syntax.Les
 				Match('f');
 				Match('_');
 				// line 82
-				_isInf = true;
+				_isNan = false;
 			} else {
 				Match('@');
 				Match('n');
