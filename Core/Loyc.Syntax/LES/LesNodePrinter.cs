@@ -8,6 +8,7 @@ using S = Loyc.Syntax.CodeSymbols;
 using System.Diagnostics;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
+using System.Globalization;
 
 namespace Loyc.Syntax.Les
 {
@@ -618,7 +619,9 @@ namespace Loyc.Syntax.Les
             }
             else
             {
-                _out.Write(value.ToString(), false);
+                // The "R" round-trip specifier makes sure that no precision is lost, and
+                // that parsing a printed version of float.MaxValue is possible.
+                _out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
             }
             _out.Write("f", true);
         }
@@ -638,7 +641,9 @@ namespace Loyc.Syntax.Les
             }
             else
             {
-                _out.Write(value.ToString(), false);
+                // The "R" round-trip specifier makes sure that no precision is lost, and
+                // that parsing a printed version of double.MaxValue is possible.
+                _out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
             }
             _out.Write("d", true);
         }
