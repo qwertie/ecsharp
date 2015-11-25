@@ -601,7 +601,7 @@ namespace Loyc.Syntax.Les
 
         const string NaNPrefix = "@nan_";
         const string PositiveInfinityPrefix = "@inf_";
-        const string NegativeInfinityPrefix = "-@inf_";
+        const string NegativeInfinityPrefix = "@-inf_";
 
         void PrintFloatToString(float value)
         {

@@ -253,10 +253,21 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		#region Identifier & Symbol parsing (includes @true, @false, @null) (including public ParseIdentifier())
+		#region Identifier & Symbol parsing (includes @true, @false, @null, named floats) (including public ParseIdentifier())
 
-		UString TrueString = "true", FalseString = "false", NullString = "null", VoidString = "void";
-		object BoxedTrue = true, BoxedFalse = false, BoxedVoid = new @void();
+        Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+        {
+            { "true", true },
+            { "false", false },
+            { "null", null },
+            { "void", new @void() },
+            { "nan_f", float.NaN },
+            { "nan_d", double.NaN },
+            { "inf_f", float.PositiveInfinity },
+            { "inf_d", double.PositiveInfinity },
+            { "-inf_f", float.NegativeInfinity },
+            { "-inf_d", double.NegativeInfinity }
+        };
 
 		void ParseIdValue()
 		{
@@ -272,23 +283,12 @@ namespace Loyc.Syntax.Les
 				id = ParseIdentifier(ref original, Error, out checkForNamedLiteral);
 				Debug.Assert(original.IsEmpty);
 				if (checkForNamedLiteral) {
-					if (id == TrueString) {
-						_value = BoxedTrue;
+                    object namedValue;
+                    if (NamedLiterals.TryGetValue(id, out namedValue)) {
+                        _value = namedValue;
 						_type = TT.Literal;
 						return;
-					} else if (id == FalseString) {
-						_value = BoxedFalse;
-						_type = TT.Literal;
-						return;
-					} else if (id == NullString) {
-						_value = null;
-						_type = TT.Literal;
-						return;
-					} else if (id == VoidString) {
-						_value = BoxedVoid;
-						_type = TT.Literal;
-						return;
-					}
+                    }
 				}
 			} else // normal identifier
 				id = CharSource.Slice(_startPosition, InputPosition - _startPosition);
