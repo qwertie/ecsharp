@@ -51,13 +51,31 @@ namespace Loyc.Syntax.Les
 			Stmt ("-2d;",  F.Literal(-2.0));
 			Exact("-2f;",   F.Literal(-2.0f));
 			Stmt ("-2.0f;", F.Literal(-2.0f));
-            Exact("-@inf_f;", F.Literal(float.NegativeInfinity));
+		}
+
+        [Test]
+        public void NamedFloatLiteral()
+        {
+            // Test if named float literals are implemented.
+            Exact("@-inf_f;", F.Literal(float.NegativeInfinity));
             Exact("@inf_f;", F.Literal(float.PositiveInfinity));
             Exact("@nan_f;", F.Literal(float.NaN));
-            Exact("-@inf_d;", F.Literal(double.NegativeInfinity));
+            Exact("@-inf_d;", F.Literal(double.NegativeInfinity));
             Exact("@inf_d;", F.Literal(double.PositiveInfinity));
             Exact("@nan_d;", F.Literal(double.NaN));
-		}
+
+            // Make sure that round-tripping identifiers that
+            // overlap with named float literals is safe.
+            Exact("@`-inf_f`;", F.Id("-inf_f"));
+            Exact("@`-inf_d`;", F.Id("-inf_d"));
+
+            // Also check that we don't overreact and enclose
+            // everything with backquotes.
+            Exact("inf_f;", F.Id("inf_f"));
+            Exact("nan_f;", F.Id("nan_f"));
+            Exact("inf_d;", F.Id("inf_d"));
+            Exact("nan_d;", F.Id("nan_d"));
+        }
 
 		[Test]
 		public void BinaryOps()

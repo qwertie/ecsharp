@@ -500,6 +500,12 @@ namespace Loyc.Syntax.Les
 				first = false;
 			}
 
+            // Watch out for the these identifiers, because they
+            // will be interpreted as named literals if we don't
+            // backquote them.
+            if (special && !backquote && (name.Name == "-inf_d" || name.Name == "-inf_f"))
+                backquote = true;
+
 			if (special || backquote)
 				_out.Write(isSymbol ? "@@" : "@", false);
 			if (backquote)
@@ -601,7 +607,7 @@ namespace Loyc.Syntax.Les
 
         const string NaNPrefix = "@nan_";
         const string PositiveInfinityPrefix = "@inf_";
-        const string NegativeInfinityPrefix = "-@inf_";
+        const string NegativeInfinityPrefix = "@-inf_";
 
         void PrintFloatToString(float value)
         {
