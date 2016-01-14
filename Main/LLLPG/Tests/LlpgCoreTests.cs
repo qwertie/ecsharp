@@ -1653,11 +1653,11 @@ namespace Loyc.LLParserGenerator
 						la0 = LA0;
 						if (la0 == Comma || la0 == Semicolon)
 							Skip();
-						else if (!(la0 == Comma || la0 == EOF || la0 == Semicolon)) {
+						else if (!(la0 == Comma || la0 == (Symbol)EOF || la0 == Semicolon)) {
 							Skip();
 							for (;;) {
 								la0 = LA0;
-								if (!(la0 == Comma || la0 == EOF || la0 == Semicolon))
+								if (!(la0 == Comma || la0 == (Symbol)EOF || la0 == Semicolon))
 									Skip();
 								else
 									break;

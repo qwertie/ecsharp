@@ -146,8 +146,12 @@ namespace Loyc.LLParserGenerator
 				// Note: sort the set so that the unit tests are deterministic
 				foreach (LNode item in set.BaseSet.OrderBy(s => s.ToString())) {
 					var item2 = item;
-					if (item == PGNodeSet.EOF_node && InputClass != null)
-						item2 = F.Dot(InputClass, item);
+					if (item == PGNodeSet.EOF_node) {
+						if (InputClass != null)
+							item2 = F.Dot(InputClass, item);
+						if (LaType != null)
+							item2 = F.Call(S.Cast, item2, LaType);
+					}
 					test = F.Call(S.Eq, subject, item2);
 					if (result == null)
 						result = test;
