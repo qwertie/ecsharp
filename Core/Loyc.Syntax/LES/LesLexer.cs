@@ -255,19 +255,19 @@ namespace Loyc.Syntax.Les
 
 		#region Identifier & Symbol parsing (includes @true, @false, @null, named floats) (including public ParseIdentifier())
 
-        Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
-        {
-            { "true", true },
-            { "false", false },
-            { "null", null },
-            { "void", new @void() },
-            { "nan_f", float.NaN },
-            { "nan_d", double.NaN },
-            { "inf_f", float.PositiveInfinity },
-            { "inf_d", double.PositiveInfinity },
-            { "-inf_f", float.NegativeInfinity },
-            { "-inf_d", double.NegativeInfinity }
-        };
+		Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+		{
+			{ "true", true },
+			{ "false", false },
+			{ "null", null },
+			{ "void", new @void() },
+			{ "nan_f", float.NaN },
+			{ "nan_d", double.NaN },
+			{ "inf_f", float.PositiveInfinity },
+			{ "inf_d", double.PositiveInfinity },
+			{ "-inf_f", float.NegativeInfinity },
+			{ "-inf_d", double.NegativeInfinity }
+		};
 
 		void ParseIdValue()
 		{
@@ -283,12 +283,12 @@ namespace Loyc.Syntax.Les
 				id = ParseIdentifier(ref original, Error, out checkForNamedLiteral);
 				Debug.Assert(original.IsEmpty);
 				if (checkForNamedLiteral) {
-                    object namedValue;
-                    if (NamedLiterals.TryGetValue(id, out namedValue)) {
-                        _value = namedValue;
+					object namedValue;
+					if (NamedLiterals.TryGetValue(id, out namedValue)) {
+						_value = namedValue;
 						_type = TT.Literal;
 						return;
-                    }
+					}
 				}
 			} else // normal identifier
 				id = CharSource.Slice(_startPosition, InputPosition - _startPosition);
@@ -327,14 +327,14 @@ namespace Loyc.Syntax.Les
 		}
 
 		/// <summary>Parses an LES-style identifier such as <c>foo</c>, <c>@foo</c>, 
-		/// <c>@`foo`</c> or <c>@--punctuation--</c>. Also recognizes <c>#`foo`</c>.
+		/// <c>@`foo`</c> or <c>@--punctuation--</c>.
 		/// </summary>
 		/// <param name="source">Text to parse. On return, the range has been 
 		/// decreased by the length of the token; this method also stops if this
 		/// range becomes empty.</param>
 		/// <param name="onError">A method to call on error</param>
 		/// <param name="checkForNamedLiteral">This is set to true when the input 
-		/// starts with @ but is a normal identifier, which could indicate that 
+		/// starts with @ but doesn't use backquotes, which could indicate that 
 		/// it is an LES named literal such as @false or @null.</param>
 		/// <returns>The parsed version of the identifier.</returns>
 		public static string ParseIdentifier(ref UString source, Action<int, string> onError, out bool checkForNamedLiteral)
@@ -357,19 +357,13 @@ namespace Loyc.Syntax.Les
 					}
 					checkForNamedLiteral = true;
 				}
-			} else {
-				if (c == '#' && source[0, '\0'] == '`') {
-					parsed.Append('#');
-					source.PopFront(out fail);
-					UnescapeString(ref source, '`', false, onError, parsed);
-				} else if (IsIdStartChar(c)) {
-					parsed.Append(c);
-					for (;;) {
-						c = source.PopFront(out fail);
-						if (!IsIdContChar(c))
-							break;
-						parsed.Append((char)c);
-					}
+			} else if (IsIdStartChar(c)) {
+				parsed.Append(c);
+				for (;;) {
+					c = source.PopFront(out fail);
+					if (!IsIdContChar(c))
+						break;
+					parsed.Append((char)c);
 				}
 			}
 			return parsed.ToString();
