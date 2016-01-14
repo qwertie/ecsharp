@@ -310,7 +310,7 @@ namespace Loyc.Syntax.Lexing
 		protected int Match(int a, int b)
 		{
 			int la = LA0;
-			if (la == a || la == b)
+            if (la != a && la != b)
 				Error(false, a, a, b, b);
 			else
 				InputPosition++;
