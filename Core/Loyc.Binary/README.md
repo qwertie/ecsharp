@@ -18,7 +18,7 @@ seek operations.
 ## Some relevant notions
 ### Symbol table
 All symbols and strings in the BLT format are encoded as a variable-length index into a single symbol table, 
-which promotes string interning.
+which promotes string interning. The symbol table itself is a simple length-prefixed list of length-prefixed strings.
 
 ### Node templates
 Loyc nodes tend to be similar in structure. 
