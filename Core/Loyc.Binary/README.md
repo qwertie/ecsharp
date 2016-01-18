@@ -57,13 +57,15 @@ The resulting file will look more or less like this (example in a textual format
   * `#1: IdCall: $0(TemplatedNode, Id)`  
 
 `Top-level node list (1 item):`
-  * `TemplatedNode - #1 (@+(@+(@+(1, 2), x), y))`
-     * `#1 (@+(@+(1, 2), x))`
-       * `#0 (@+(1, 2))`
+  * `TemplatedNode - #1 (@+(TemplatedNode, Id))`
+     * `#1 (@+(TemplatedNode, Id))`
+       * `#0 (@+(Int32, Int32))`
          * `1`
          * `2`
        * `$1 ("x")`
      * `$2 ("y")`
+
+where `$i` represents an index in the symbol table, and `#i` represents an index in the template table.
  
 ## Data types
  * **Unprefixed list** - A generic list of items that is stored sequentially. Such a list does not have a length prefix.
