@@ -4,19 +4,32 @@ Its goal is to serve as an efficient format for program-to-program loyc tree tra
 BLT optimizes for relatively large files, such as entire assemblies, and emphasizes read times and
 on-disk size.
 
+## File layout
+The format has the following layout:
+ * Magic string ("BLT")
+ * Header
+   * Symbol table (length-prefixed list of symbol definitions, which are really just character strings)
+   * Template table (length-prefixed list of template definitions)
+ * Top-level nodes (length-prefixed list of encoding-prefixed nodes)
+
+This layout was chosen because it makes it easy to read BLT files from start to end, without any
+seek operations.
+
 ## Some relevant notions
 ### Symbol table
 All symbols and strings in the BLT format are encoded as a variable-length index into a single symbol table, 
-which avoids making redundant copies.
+which promotes string interning.
 
 ### Node templates
 Loyc nodes tend to be similar in structure. 
 For example, a node such as `#if(<call>, <call>, <call>)` will likely occur more than once in an assembly,
-or even a single source file. BLT optimizes for recurring constructs such as this by encoding call or attribute nodes
-as "template instantiations". A template is essentially a description of what a binary encoded loyc node looks like.
+or even a single source file. BLT optimizes recurring constructs such as this by encoding call nodes, id nodes and nodes
+with attributes as "template instantiations". A template is essentially a description of a binary encoded loyc node's 
+memory layout.
 All templates are stored in a single template table, and individual nodes instantiate a template by referring to the
 template's index and then providing an unprefixed list of nodes, which are then parsed in accordance with the 
-template's definition. These templates work quite well: only top-level nodes need to have their encoding specified on BLT.
+template's definition. Only top-level nodes need an encoding prefix in the BLT format: child node encodings are embedded
+in the top-level nodes' templates.
 
 Here's a quick example:
 
@@ -38,9 +51,11 @@ The resulting file will look more or less like this (example in a textual format
   * `$0: "+"`
   * `$1: "x"`
   * `$2: "y"`  
+
 `Template table (2 items):`  
   * `#0: IdCall: $0(Int32, Int32)`
-  * `#1: IdCall:$0(TemplatedNode, Id)`  
+  * `#1: IdCall: $0(TemplatedNode, Id)`  
+
 `Top-level node list (1 item):`
   * `TemplatedNode - #1 (@+(@+(@+(1, 2), x), y))`
      * `#1 (@+(@+(1, 2), x))`
@@ -49,19 +64,10 @@ The resulting file will look more or less like this (example in a textual format
          * `2`
        * `$1 ("x")`
      * `$2 ("y")`
-
-
-## File layout
-The format has the following layout:
- * Magic string ("BLT")
- * Header
-   * Symbol table (prefixed list of symbol definitions)
-   * Template table (prefixed list of template definitions)
- * Top-level nodes (prefixed list of encoding-prefixed nodes)
  
 ## Data types
  * **Unprefixed list** - A generic list of items that is stored sequentially. Such a list does not have a length prefix.
- * **ULEB128** - An unsigned LEB128 variable-length integer.
+ * **ULEB128** - An unsigned LEB128 variable-length integer. These integers are used as table indices, to conserve space.
  * **Prefixed list** - An ULEB128 length prefix followed by an unprefixed list whose length equals the length prefix.
  * **Symbol definition** - An ULEB128 integer that identifies the length of the string's data, in bytes, followed by the string's data, encoded as UTF-8.
  * **Encoding type** - A byte that identifies how a node is encoded.
