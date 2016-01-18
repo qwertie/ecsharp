@@ -108,7 +108,7 @@ namespace Ecs.Parser
 		@[#internal, #static, #readonly] LinqKeywords::HashSet!object = EcsLexer.LinqKeywords;
 		
 		// ---------------------------------------------------------------------
-		// -- Complex identifiers and type names -------------------------------
+		// -- Type names and complex identifiers -------------------------------
 		// ---------------------------------------------------------------------
 
 		// The complex identifier in EC# is a subset of the language of expressions,
@@ -205,7 +205,7 @@ namespace Ecs.Parser
 		count::int; // hack allows Scan_TypeSuffixOpt() to compile
 
 		@[recognizer(def Scan_TypeSuffixOpt(afterAsOrIs::bool))]
-		rule TypeSuffixOpt(afterAsOrIs::bool, out dimensionBrack::opt!Token, ref e::LNode)::bool
+		token TypeSuffixOpt(afterAsOrIs::bool, out dimensionBrack::opt!Token, ref e::LNode)::bool
 		@{
 			{count::int; result::bool = false;}
 			{dimensionBrack = null;}
@@ -399,12 +399,14 @@ namespace Ecs.Parser
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
+			|	t:=TT.@is dt:=DataType
+				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex);}
 			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
 				/*hack, avoid long analysis time*/ (_ =>{})
 			) {return r;}
 		};
 
-		token AnyOperator::Token @{
+		token AnyOperator::Token @{ // operators allowed after the "operator" keyword
 			op:=
 			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"     
 			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--" 
@@ -514,6 +516,14 @@ namespace Ecs.Parser
 
 		@[private] rule PrimaryExpr()::LNode @{
 			e:=Atom
+			FinishPrimaryExpr(ref e)
+			(
+				"?." rhs:=PrimaryExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
+			)?
+			{return e;}
+		};
+
+		@[private] rule FinishPrimaryExpr(ref e::LNode) @{
 			greedy
 			(	op:=("."|"->"|"::"|"=:")
 				rhs:=Atom       {e = F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
@@ -534,7 +544,6 @@ namespace Ecs.Parser
 					};
 				}
 			)*
-			{return e;}
 		};
 
 		@[private] rule PrimaryExpr_NewStyleCast(e::LNode)::LNode @{
@@ -560,14 +569,6 @@ namespace Ecs.Parser
 			)
 		};
 
-		@[private] rule NullDotExpr::LNode @{
-			e:=PrimaryExpr
-			(
-				"?." rhs:=NullDotExpr {e = F.Call(S.NullDot, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex);}
-			)?
-			{return e;}
-		};
-
 		@[k(3), private] // to distinguish (cast) expr from (parens)
 		rule PrefixExpr::LNode @{
 			(	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
@@ -584,7 +585,7 @@ namespace Ecs.Parser
 						SetOperatorStyle(F.Call(S._Dereference, e, 
 						op.StartIndex+1, e.Range.EndIndex)), 
 						op.StartIndex, e.Range.EndIndex));}
-			/	e:=NullDotExpr
+			/	e:=PrimaryExpr
 				{return e;}
 			)
 		};
@@ -642,6 +643,7 @@ namespace Ecs.Parser
 				rhs:=DataType(true)
 				{var opSym = op.Type() == TT.@using ? S.UsingCast : (op.Value -> Symbol);}
 				{e = SetOperatorStyle(F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
+				FinishPrimaryExpr(ref e)
 			|	// Shift operators (two LT or GT in a row)
 				&{@[Local] context.CanParse(EP.Shift)}
 				&{LT($LI).EndIndex == LT($LI+1).StartIndex}
@@ -665,13 +667,19 @@ namespace Ecs.Parser
 		// as an operator, would (Foo ? x = z : y) be a conditional expression
 		// or a variable declaration that uses the ":" operator on the right side?
 		// So instead, ":" is only allowed for specifying named arguments. 
-		@[public] rule ExprStart(allowUnassignedVarDecl::bool, isCaseStmt::bool = false)::LNode @{
-			{	
+		@[FullLLk, public] rule ExprStart(allowUnassignedVarDecl::bool)::LNode @{
+			// Detect "keyword argument" expression
+			{argName::Token = default(Token);}
+			(argName=TT.Id|argName=UnusualId) ":"
+			result:ExprStart2(allowUnassignedVarDecl)
+			{result = SetOperatorStyle(F.Call(S.NamedArg, IdNode(argName), result, argName.StartIndex, result.Range.EndIndex));}
+		|	result:ExprStart2(allowUnassignedVarDecl)
+		};
+		@[public] rule ExprStart2(allowUnassignedVarDecl::bool)::LNode @{
+			{
 				e::LNode;
-				argName::Token = default(Token);
 				attrs::RWList!LNode = null;
 			}
-			greedy[&{!isCaseStmt} (argName=TT.Id|argName=UnusualId) ":"]?
 			NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
 			wc:=WordAttributes(ref attrs)
@@ -683,9 +691,6 @@ namespace Ecs.Parser
 			{
 				if (attrs != null) {
 					e = e.PlusAttrs(attrs.ToRVList());
-				};
-				if (argName.Value != null) {
-					e = SetOperatorStyle(F.Call(S.NamedArg, IdNode(argName), e, argName.StartIndex, e.Range.EndIndex));
 				};
 				return e;
 			}
@@ -701,7 +706,7 @@ namespace Ecs.Parser
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
 		@[private] rule DetectVarDecl(allowUnassigned::bool) @{
-			VarDeclStart (("="|":=") NoUnmatchedColon / &{allowUnassigned} (","|EOF))
+			VarDeclStart (("="|":=") NoUnmatchedColon / &{@[Local] allowUnassigned} (","|EOF))
 		};
 		@[private] rule NoUnmatchedColon @{
 			// There's currently no way to run actions inside a recognizer, which 
@@ -1319,7 +1324,7 @@ namespace Ecs.Parser
 		};
 
 		@[private] rule MethodBodyOrForward::LNode @{
-			(	op:="==>" e:=ExprStart(false) ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
+			(	op:="==>" e:=ExprStart(true)  ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
 			|	op:="=>"  e:=ExprStart(false) ";" {return e;}
 			|	e:=TokenLiteral ";"               {return e;}
 			|	body:=BracedBlock(S.Fn)           {return body;} )
@@ -1436,8 +1441,8 @@ namespace Ecs.Parser
 
 		rule CaseStmt(startIndex::int)::LNode @{
 			{var cases = RVList!LNode.Empty;}
-			kw:=TT.@case cases+=ExprStart(false, true) 
-			        ("," cases+=ExprStart(false, true))* end:=":"
+			kw:=TT.@case cases+=ExprStart2(true) 
+			        ("," cases+=ExprStart2(true))* end:=":"
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
 		};
 

@@ -755,7 +755,7 @@ namespace Loyc.LLParserGenerator
 						la0 = (string) LA0;
 						if (la0 == @""-"") {
 							la1 = (string) LA(1);
-							if (la1 != EOF) {
+							if (la1 != (string)EOF) {
 								lit_dash = MatchAny();
 								var r = Expr(50);
 								// line 37
@@ -771,7 +771,7 @@ namespace Loyc.LLParserGenerator
 								{
 									if (prec <= 10) {
 										la1 = (string) LA(1);
-										if (la1 != EOF) {
+										if (la1 != (string)EOF) {
 											litx3D = MatchAny();
 											var r = Expr(10);
 											// line 44
@@ -787,7 +787,7 @@ namespace Loyc.LLParserGenerator
 								{
 									if (prec < 20) {
 										la1 = (string) LA(1);
-										if (la1 != EOF) {
+										if (la1 != (string)EOF) {
 											var op = MatchAny();
 											var r = Expr(20);
 											// line 47
@@ -807,7 +807,7 @@ namespace Loyc.LLParserGenerator
 								{
 									if (prec < 30) {
 										la1 = (string) LA(1);
-										if (la1 != EOF) {
+										if (la1 != (string)EOF) {
 											var op = MatchAny();
 											var r = Expr(30);
 											// line 50
@@ -823,7 +823,7 @@ namespace Loyc.LLParserGenerator
 								{
 									if (prec < 40) {
 										la1 = (string) LA(1);
-										if (la1 != EOF) {
+										if (la1 != (string)EOF) {
 											var op = MatchAny();
 											var r = Expr(40);
 											// line 53
@@ -841,7 +841,7 @@ namespace Loyc.LLParserGenerator
 								{
 									if (prec < 50) {
 										la1 = (string) LA(1);
-										if (la1 != EOF) {
+										if (la1 != (string)EOF) {
 											var op = MatchAny();
 											var r = Expr(50);
 											// line 56
@@ -855,7 +855,7 @@ namespace Loyc.LLParserGenerator
 							case @""("":
 								{
 									la1 = (string) LA(1);
-									if (la1 != EOF) {
+									if (la1 != (string)EOF) {
 										Skip();
 										got_Expr = Expr();
 										Match(@"")"");
@@ -868,7 +868,7 @@ namespace Loyc.LLParserGenerator
 							case @""."":
 								{
 									la1 = (string) LA(1);
-									if (la1 != EOF) {
+									if (la1 != (string)EOF) {
 										Skip();
 										rhs = Atom();
 										// line 60
@@ -893,7 +893,7 @@ namespace Loyc.LLParserGenerator
 						la0 = (string) LA0;
 						if (la0 == @""-"") {
 							la1 = (string) LA(1);
-							if (la1 != EOF) {
+							if (la1 != (string)EOF) {
 								lit_dash = MatchAny();
 								var r = PrefixExpr();
 								// line 64
@@ -940,7 +940,7 @@ namespace Loyc.LLParserGenerator
 							la0 = (string) LA0;
 							if (la0 == @""("") {
 								la1 = (string) LA(1);
-								if (la1 != EOF) {
+								if (la1 != (string)EOF) {
 									Skip();
 									result = Expr();
 									Match(@"")"");

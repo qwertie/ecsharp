@@ -500,11 +500,11 @@ namespace Loyc.Syntax.Les
 				first = false;
 			}
 
-            // Watch out for the these identifiers, because they
-            // will be interpreted as named literals if we don't
-            // backquote them.
-            if (special && !backquote && (name.Name == "-inf_d" || name.Name == "-inf_f"))
-                backquote = true;
+			// Watch out for the these identifiers, because they
+			// will be interpreted as named literals if we don't
+			// backquote them.
+			if (special && !backquote && (name.Name == "-inf_d" || name.Name == "-inf_f"))
+				backquote = true;
 
 			if (special || backquote)
 				_out.Write(isSymbol ? "@@" : "@", false);
@@ -605,54 +605,42 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-        const string NaNPrefix = "@nan_";
-        const string PositiveInfinityPrefix = "@inf_";
-        const string NegativeInfinityPrefix = "@-inf_";
+		const string NaNPrefix = "@nan_";
+		const string PositiveInfinityPrefix = "@inf_";
+		const string NegativeInfinityPrefix = "@-inf_";
 
-        void PrintFloatToString(float value)
-        {
-            if (float.IsNaN(value))
-            {
-                _out.Write(NaNPrefix, false);
-            }
-            else if (float.IsPositiveInfinity(value))
-            {
-                _out.Write(PositiveInfinityPrefix, false);
-            }
-            else if (float.IsNegativeInfinity(value))
-            {
-                _out.Write(NegativeInfinityPrefix, false);
-            }
-            else
-            {
-                // The "R" round-trip specifier makes sure that no precision is lost, and
-                // that parsing a printed version of float.MaxValue is possible.
-                _out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
-            }
-            _out.Write("f", true);
-        }
-        void PrintDoubleToString(double value)
-        {
-            if (double.IsNaN(value))
-            {
-                _out.Write(NaNPrefix, false);
-            }
-            else if (double.IsPositiveInfinity(value))
-            {
-                _out.Write(PositiveInfinityPrefix, false);
-            }
-            else if (double.IsNegativeInfinity(value))
-            {
-                _out.Write(NegativeInfinityPrefix, false);
-            }
-            else
-            {
-                // The "R" round-trip specifier makes sure that no precision is lost, and
-                // that parsing a printed version of double.MaxValue is possible.
-                _out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
-            }
-            _out.Write("d", true);
-        }
+		void PrintFloatToString(float value)
+		{
+			if (float.IsNaN(value))
+				_out.Write(NaNPrefix, false);
+			else if (float.IsPositiveInfinity(value))
+				_out.Write(PositiveInfinityPrefix, false);
+			else if (float.IsNegativeInfinity(value))
+				_out.Write(NegativeInfinityPrefix, false);
+			else
+			{
+				// The "R" round-trip specifier makes sure that no precision is lost, and
+				// that parsing a printed version of float.MaxValue is possible.
+				_out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
+			}
+			_out.Write("f", true);
+		}
+		void PrintDoubleToString(double value)
+		{
+			if (double.IsNaN(value))
+				_out.Write(NaNPrefix, false);
+			else if (double.IsPositiveInfinity(value))
+				_out.Write(PositiveInfinityPrefix, false);
+			else if (double.IsNegativeInfinity(value))
+				_out.Write(NegativeInfinityPrefix, false);
+			else
+			{
+				// The "R" round-trip specifier makes sure that no precision is lost, and
+				// that parsing a printed version of double.MaxValue is possible.
+				_out.Write(value.ToString("R", CultureInfo.InvariantCulture), false);
+			}
+			_out.Write("d", true);
+		}
 
 		private void PrintLiteral(LNode node)
 		{

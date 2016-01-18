@@ -40,18 +40,18 @@ namespace Loyc.Syntax.Les {
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
 
-		@[pub] rule StmtList()::RVList!LNode @{
+		@[public] rule StmtList()::RVList!LNode @{
 			{endMarker := TT.Semicolon;}
 			result:ExprList(ref endMarker)
 		};
-		@[pub] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
+		@[public] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
 			endMarker := default(TT);
 			return (ExprList(ref endMarker, list));
 		};
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		@[pub] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @{
+		@[public] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
@@ -64,7 +64,7 @@ namespace Loyc.Syntax.Les {
 			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); };}
 			{return list;}
 		};
-		@[pub] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
+		@[public] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
@@ -72,7 +72,7 @@ namespace Loyc.Syntax.Les {
 				{CheckEndMarker(ref endMarker.Value, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
-			{if ($e != null || end.Type() == TT.Comma) {#rawText("yield"); return e ?? MissingExpr();}}
+			{if ($e != null || end.Type() == TT.Comma) {@[#yield] return e ?? MissingExpr();}}
 		};
 		fn CheckEndMarker(ref endMarker::TokenType, ref end::Token)
 		{
@@ -86,7 +86,7 @@ namespace Loyc.Syntax.Les {
 			};
 		};
 
-		@[prot] rule TopExpr()::LNode @{
+		@[protected] rule TopExpr()::LNode @{
 			greedy[	// @[Attributes] - @ sign temporarily optional during transition to JSON superset
 				at:"@"? 
 				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")};} 
@@ -143,7 +143,7 @@ namespace Loyc.Syntax.Les {
 		};
 
 		// Helper rule that parses one of the syntactically special primary expressions
-		@[priv] rule FinishPrimaryExpr(e::LNode)::LNode @{
+		@[private] rule FinishPrimaryExpr(e::LNode)::LNode @{
 			(	// call(function)
 				{endMarker := default(TokenType);}
 				"(" list:ExprList(ref endMarker) c:=")"
@@ -166,7 +166,7 @@ namespace Loyc.Syntax.Les {
 			{return e;}
 		};
 
-		@[priv] rule PrefixExpr(context::Precedence)::LNode @
+		@[private] rule PrefixExpr(context::Precedence)::LNode @
 			{	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
@@ -182,7 +182,7 @@ namespace Loyc.Syntax.Les {
 		// - a prefix operator followed by an Expr
 		// - a { block } in braces
 		// - a [ list  ] in square brackets
-		@[priv] rule Particle()::LNode @{
+		@[private] rule Particle()::LNode @{
 			(	id:=TT.Id // identifier
 				{$result = F.Id(id).SetStyle(id.Style);}
 			|	lit:=TT.Literal // literal

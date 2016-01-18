@@ -34,9 +34,11 @@ namespace Loyc.MiniTest
 				object testAttr = IsTest(method);
 				if (testAttr != null)
 				{
+					object fails = testAttr is TestAttribute ? ((TestAttribute)testAttr).Fails : null;
 					any = true;
 					try {
-						Console.WriteLine("{0}.{1}", o.GetType().NameWithGenericArgs(), method.Name);
+						Console.Write("{0}.{1}", o.GetType().NameWithGenericArgs(), method.Name);
+						Console.WriteLine(fails != null ? " (Fails: "+fails+")" :  "");
 						if (setup != null)
 							setup.Invoke(o, null);
 						method.Invoke(o, null);
@@ -57,10 +59,7 @@ namespace Loyc.MiniTest
 
 						if (!match) {
 							var old = Console.ForegroundColor;
-							if (testAttr is TestAttribute && ((TestAttribute)testAttr).Fails != null)
-								Console.ForegroundColor = ConsoleColor.DarkGray;
-							else
-								Console.ForegroundColor = ConsoleColor.Red;
+							Console.ForegroundColor = fails != null ? ConsoleColor.DarkGray : ConsoleColor.Red;
 							Console.WriteLine("{0} while running {1}.{2}:",
 								exc.GetType().Name, o.GetType().Name, method.Name);
 							Console.WriteLine(exc.Message);

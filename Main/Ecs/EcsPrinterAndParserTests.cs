@@ -286,7 +286,6 @@ namespace Ecs
 			Stmt("(Foo) @`--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
 		}
 
-		[Test(Fails = "Printer doesn't handle these cases")]
 		public void CastAmbiguityBug()
 		{
 			Expr("@`*`((Foo), x)", F.Call(S.Mul, F.InParens(Foo), x));
@@ -376,12 +375,13 @@ namespace Ecs
 			Stmt("(a, b) = (x, 1);",      F.Assign(F.Tuple(a, b), x_1));
 			Stmt("(a,) = (x,);",          F.Assign(F.Tuple(a), F.Tuple(x)));
 			Stmt("(a, Foo b) = (x, 1);",  F.Assign(F.Tuple(a, F.Vars(Foo, b)), x_1));
-			// TODO: drop support for this syntax in the printer.
-			// The parser doesn't get it, and that's okay.
-			//Stmt("(a, (Foo b)) = (x, 1);",F.Set(F.Tuple(a, F.InParens(F.Vars(Foo, b))), x_1));
 			Stmt("(Foo a, b) = (x, 1);",  F.Assign(F.Tuple(F.Vars(Foo, a), b), x_1));
 			Stmt("(#var(Foo, a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
 			Stmt("(Foo a,) = (x,);",      F.Assign(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
+			
+			// TODO: drop support for this syntax in the printer.
+			// The parser doesn't get it, and that's okay.
+			//Stmt("(a, (Foo b)) = (x, 1);", F.Call(S.Assign, F.Tuple(a, F.InParens(F.Vars(Foo, b))), x_1));
 		}
 
 		[Test]
@@ -499,6 +499,19 @@ namespace Ecs
 		}
 
 		[Test]
+		public void IsAsChallenges()
+		{
+			Expr("x / a as Foo / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
+			Expr("x / a as Foo? / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			Expr("x / a is Foo? / b", F.Call(S.Div, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			// The printer prints x(as Foo)(a, b), which is a bit hard to fix, so don't test the printer here
+			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b).SetBaseStyle(NodeStyle.OldStyle), Mode.ParseOnly);
+			Expr("x / a as Foo < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
+			Expr("x / a as Foo? < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+			Expr("x / a is Foo? < b", F.Call(S.LT, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+		}
+
+		[Test]
 		public void SpecialEcsChallenges()
 		{
 			Expr("Foo x = a",            F.Var(Foo, x.Name, a));
@@ -533,7 +546,7 @@ namespace Ecs
 			Stmt("$Foo $x = 1;",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
 			Stmt("$Foo<$2> $x = 1;",     F.Var(F.Of(F.Call(S.Substitute, Foo), F.Call(S.Substitute, two)), 
 			                                                              F.Call(S.Substitute, x), one));
-			Expr("$Foo $x = 1",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
+			Expr("$Foo $x = 1",          F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
 		}
 
 		[Test]
@@ -594,12 +607,6 @@ namespace Ecs
 			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);",  @"Foo<a> b;",        F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
 			if (this is EcsNodePrinterTests)
 				Option(Mode.PrintBothParseFirst, @"([Foo] a)(x);",        @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
-		}
-
-		[Test]
-		public void ExprSpacingTests()
-		{
-			// TODO
 		}
 
 		[Test]
@@ -1327,7 +1334,7 @@ namespace Ecs
 					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
 		}
 
-		[Test(Fails = true)] // Parser does not yet preserve comments
+		[Test(Fails = "Parser does not yet preserve comments")]
 		public void CommentTrivia()
 		{
 			var stmt = Attr(F.Trivia(S.TriviaMLCommentBefore, "bx"), F.Trivia(S.TriviaMLCommentAfter, "ax"), x);
@@ -1470,8 +1477,7 @@ namespace Ecs
 			Expr("@`*`()", F.Call(S.Mul));
 		}
 
-		// Stuff that is intentionally left broken for the time being
-		[Test(Fails = true)]
+		[Test(Fails = "Stuff that is intentionally left broken for the time being")]
 		public void TODO()
 		{
 			Stmt("var a = (Foo ? b = c as Foo? : 0);", 

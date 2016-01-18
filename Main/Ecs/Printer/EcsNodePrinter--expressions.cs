@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using System.Reflection;
 using System.ComponentModel;
 using Loyc;
-using Loyc.Utilities;
 using Loyc.Math;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
@@ -61,15 +58,16 @@ namespace Ecs
 			P(S.XorBitsSet, EP.Assign), P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign),
 			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
-			P(S.Is, EP.Compare),        P(S.As, EP.Compare),    P(S.UsingCast, EP.Compare),
+			P(S.Is, EP.IsAsUsing),        P(S.As, EP.IsAsUsing),    P(S.UsingCast, EP.IsAsUsing),
 			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary),
 			P(S.NotBits, EP.Add)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> CastOperators = Dictionary(
-			P(S.Cast, EP.Prefix),      // (Foo)x      (preferred form)
-			P(S.As, EP.Compare),       // x as Foo    (preferred form)
-			P(S.UsingCast, EP.Compare) // x using Foo (preferred form)
+			P(S.Cast, EP.Prefix),         // (Foo)x      (preferred form)
+			P(S.As, EP.IsAsUsing),        // x as Foo    (preferred form)
+			P(S.UsingCast, EP.IsAsUsing), // x using Foo (preferred form)
+			P(S.Is, EP.IsAsUsing)         // x is Foo (not a cast op, but we'd like to use the same printer)
 		);
 
 		static readonly HashSet<Symbol> ListOperators = new HashSet<Symbol>(new[] {
@@ -392,7 +390,7 @@ namespace Ecs
 			bool needParens;
 			if (alternate)
 				precedence = EP.Primary;
-			if (!CanAppearIn(precedence, context, out needParens)) {
+			if (!CanAppearIn(precedence, context, out needParens) && name != S.Is) {
 				// There are two different precedences for cast operators; we prefer 
 				// the traditional forms (T)x, x as T, x using T which have lower 
 				// precedence, but they don't work in this context so consider using 
@@ -438,6 +436,7 @@ namespace Ecs
 		{
 			if (name == S.UsingCast) return "using";
 			if (name == S.As) return "as";
+			if (name == S.Is) return "is";
 			return "->";
 		}
 

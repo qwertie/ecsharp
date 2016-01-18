@@ -1128,7 +1128,7 @@ namespace Loyc.LLParserGenerator
 					int la0;
 					Foo2();
 					la0 = LA0;
-					if (la0 != EOF) {
+					if (la0 != (int) EOF) {
 						Check(Try_Scan_Foo2(0), ""Foo2"");
 						Skip();
 					}
@@ -1535,7 +1535,7 @@ namespace Loyc.LLParserGenerator
 						la0 = (int)inp.LA0;
 						if (la0 == 'B')
 							inp.Skip();
-						else if (la0 == ParserClass.EOF)
+						else if (la0 == (int) ParserClass.EOF)
 							break;
 						else
 							inp.Error(0, ""In rule 'AllBs', expected one of: ('B'|EOF)"");
