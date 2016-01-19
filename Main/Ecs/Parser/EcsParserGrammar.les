@@ -2,13 +2,13 @@
 // Enhanced C# parser: this is designed to accept a superset of C# (Enhanced C#).
 // If this spews an error when given a valid C# file, it's a bug. File a bug report.
 //
-// EC# is more permisive than plain C#; it not only adds new syntax, but it 
-// liberalizes the existing syntax rules (e.g. "try Foo(); catch Bar();" is 
-// accepted in EC#) and it also accepts a lot of code that is not directly valid in 
-// EC# (e.g. "fixed (7) {...}"). Such invalid code is allowed by the parser in 
+// EC# is more permisive than plain C#; it not only adds new syntax, but it
+// liberalizes the existing syntax rules (e.g. "try Foo(); catch Bar();" is
+// accepted in EC#) and it also accepts a lot of code that is not directly valid in
+// EC# (e.g. "fixed (7) {...}"). Such invalid code is allowed by the parser in
 // case a macro might transform it later into something that makes more sense.
 //
-// NOTE: LINQ & await are not yet implemented, but "await x" can be accepted if 
+// NOTE: LINQ & await are not yet implemented, but "await x" can be accepted if
 // you write "await(x)" instead.
 //
 #importMacros LeMP.Prelude.Les;
@@ -31,12 +31,12 @@ namespace Ecs.Parser
 	using EP = EcsPrecedence;
 
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
-	#rawText "\n\t#pragma warning disable 162, 642\n\t"; 
+	#rawText "\n\t#pragma warning disable 162, 642\n\t";
 
 	@[partial] class EcsParser
 	{
 		@[LL(2), Verbosity(2)]
-		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
+		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int),
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
 
 		alias("(" = TT.LParen);
@@ -82,7 +82,7 @@ namespace Ecs.Parser
 		alias("=>" = TT.LambdaArrow);
 		alias("," = TT.Comma);
 		alias(";" = TT.Semicolon);
-		
+
 		@[#static, #readonly] _trait::Symbol = GSymbol.Get("trait");
 		@[#static, #readonly] _alias::Symbol = GSymbol.Get("alias");
 		@[#static, #readonly] _where::Symbol = GSymbol.Get("where");
@@ -95,7 +95,7 @@ namespace Ecs.Parser
 		// constructor declaration or a method call. _spaceName is the name of the
 		// current space, or #fn (S.Fn) when inside a method or constructor.
 		_spaceName::Symbol;
-		
+
 		// Inside a LINQ expression, certain ContextualKeywords are to be treated
 		// as actual keywords. This flag enables that behavior.
 		_insideLinqExpr::bool;
@@ -106,7 +106,7 @@ namespace Ecs.Parser
 			{return t;}
 		};
 		@[#internal, #static, #readonly] LinqKeywords::HashSet!object = EcsLexer.LinqKeywords;
-		
+
 		// ---------------------------------------------------------------------
 		// -- Type names and complex identifiers -------------------------------
 		// ---------------------------------------------------------------------
@@ -122,8 +122,8 @@ namespace Ecs.Parser
 		// - Methods declarations: int[] f(Foo<T>[,][] x);
 		// - Certain pseudo-functions: typeof(Foo<T[]>)
 		// Note that complex identifiers can contain substitution expressions,
-		// which, in turn, can contain expressions of any complexity, e.g. 
-		// Foo<$(x*y(++z))>. Of course, complex identifiers also appear within 
+		// which, in turn, can contain expressions of any complexity, e.g.
+		// Foo<$(x*y(++z))>. Of course, complex identifiers also appear within
 		// normal expressions, but the expression grammar doesn't use the
 		// main "ComplexId" rule, instead it's handled somewhat separately.
 
@@ -147,9 +147,9 @@ namespace Ecs.Parser
 
 		@[FullLLk] // http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
 		token ComplexId::LNode @{
-			e:=IdAtom 
+			e:=IdAtom
 			// There can be only a single "externAlias::" prefix in a complex Id.
-			(	"::" e2:=IdAtom 
+			(	"::" e2:=IdAtom
 				{e = F.Call(S.ColonColon, e, e2, e.Range.StartIndex, e2.Range.EndIndex);}
 			)?
 			TParams(ref e)?
@@ -158,7 +158,7 @@ namespace Ecs.Parser
 			)*
 			{return e;}
 		};
-		
+
 		def IdNode(t::Token)::LNode
 		{
 			return F.Id(t.Value -> Symbol, t.StartIndex, t.EndIndex);
@@ -210,19 +210,19 @@ namespace Ecs.Parser
 			{count::int; result::bool = false;}
 			{dimensionBrack = null;}
 			greedy
-			(	// in "x as Foo ? ..." it could be challenging to figure out whether 
-				// "?" is part of type Foo or not. Some tests with the standard C# 
+			(	// in "x as Foo ? ..." it could be challenging to figure out whether
+				// "?" is part of type Foo or not. Some tests with the standard C#
 				// compiler seem to suggest that checking the next token will suffice,
-				// because standard C# rejects potentially valid code such as 
+				// because standard C# rejects potentially valid code such as
 				// "x as Foo? - y", saying "Syntax error, ':' expected" at the end.
 				// This seems not to be a precedence issue; although "/" has higher
 				// precedence than "as", the C# compiler can parse "x as Foo? / y"
-				// (meaning (x as Foo?) / y) or "x as Foo + y" but fails to parse 
-				// "x as Foo? + y". I believe this is because "+" can be a prefix 
-				// operator. It also fails to parse "x as Foo?*" with a syntax error, 
-				// not a semantic error, and for "x as Foo? * x" it again says 
+				// (meaning (x as Foo?) / y) or "x as Foo + y" but fails to parse
+				// "x as Foo? + y". I believe this is because "+" can be a prefix
+				// operator. It also fails to parse "x as Foo?*" with a syntax error,
+				// not a semantic error, and for "x as Foo? * x" it again says
 				// "':' expected".
-				// 
+				//
 				// Examples (usually there is more than one syntax error, but the message
 				// "':' expected" indicates how the parser sees the situation):
 				//       x as Foo ? y        // Syntax error, ':' expected
@@ -240,11 +240,11 @@ namespace Ecs.Parser
 				//       x as Foo?[y]        // Parsed OK
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
-				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Literal | "(" | "{" 
-				                               | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
+				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Literal | "(" | "{"
+				                               | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--"
 				                               | "$" | "@" | UnusualId))
 				       {e = F.Of(F.Id(S.QuestionMark), e, e.Range.StartIndex, t.EndIndex); result=true;}
-			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
+			|	// Standard C# fails to parse "x as Foo * y", which suggests I can
 				// unconditionally accept "*" as a pointer marker.
 				t:="*" {e = F.Of(F.Id(S._Pointer),     e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// int[][,] means "array of (two-dimensional array of int)", so we
@@ -267,13 +267,13 @@ namespace Ecs.Parser
 		};
 
 		// This is the same as ComplexId except that it is used in declaration locations.
-		// The difference is that the type parameters can have [normal attributes] and 
+		// The difference is that the type parameters can have [normal attributes] and
 		// in/out variance attrbutes.
 		@[FullLLk]
 		token ComplexNameDecl::LNode @{
 			e:=IdAtom
 			// There can be only a single "externAlias::" prefix in a complex Id.
-			(	"::" e2:=IdAtom 
+			(	"::" e2:=IdAtom
 				{e = F.Call(S.ColonColon, e, e2, e.Range.StartIndex, e2.Range.EndIndex);}
 			)?
 			TParamsDecl(ref e)?
@@ -308,14 +308,14 @@ namespace Ecs.Parser
 				return node;
 			}
 		};
-			
+
 		// ---------------------------------------------------------------------
 		// -- Expressions ------------------------------------------------------
 		// ---------------------------------------------------------------------
 
-		// Parsing EC# expressions is very tricky. Here are some of the things 
+		// Parsing EC# expressions is very tricky. Here are some of the things
 		// that make it difficult, especially in an LL(k) parser:
-		//    
+		//
 		// 1. Parenthesis: is it a cast or a normal expression?
 		//    (A<B,C>)y      is a cast
 		//    (A<B,C>)-y     is NOT a cast
@@ -349,7 +349,7 @@ namespace Ecs.Parser
 		// 5. Does "?" make a nullable type or a conditional operator?
 		//    Foo<B> ? x = null;     // nullable type
 		//    Foo<B> ? x = null : y; // conditional operator
-		
+
 		/// Context: middle of expression, top level (#var and #namedArg not supported)
 		@[#public, #static, #readonly] ContinueExpr::Precedence = (new Precedence(-100));
 
@@ -372,7 +372,7 @@ namespace Ecs.Parser
 		// - #{ code in braces; old scope }
 		// - delegate(...) {...}
 		// - from x in expr... (LINQ)
-		
+
 		// Atom is: Id, TypeKeyword, $Atom, .Atom, new ..., (ExprStart), {Stmts},
 		@[k(3)]
 		rule Atom::LNode @{
@@ -401,16 +401,16 @@ namespace Ecs.Parser
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
 			|	t:=TT.@is dt:=DataType
 				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex);}
-			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
+			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))*
 				/*hack, avoid long analysis time*/ (_ =>{})
 			) {return r;}
 		};
 
 		token AnyOperator::Token @{ // operators allowed after the "operator" keyword
 			op:=
-			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"     
-			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--" 
-			|	"&&" | "||,^^" | "!"     | "&"   | "^"  | "|"   | "~"  | "==,!=" 
+			(	"."  | "->"    | "::"    | "?."  | "="  | "??=" | ":"  | "@"
+			|	"``" | "\\"    | "*"     | "/,%" | "**" | "+"   | "-"  | "++,--"
+			|	"&&" | "||,^^" | "!"     | "&"   | "^"  | "|"   | "~"  | "==,!="
 			|	"<"  | ">"     | "<=,>=" | ".."  | "?"  | "??"  | "=:" | ":="
 			|	"$"  | "=>"    | "==>" )
 			{return op;}
@@ -419,13 +419,13 @@ namespace Ecs.Parser
 		token NewExpr::LNode @{
 			{
 				majorDimension::opt!Token = null;
-				endIndex::int; 
+				endIndex::int;
 				var list = (new RWList!LNode());
 			}
 			op:=TT.@new
 			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
-				lb:="[" rb:="]" 
+				lb:="[" rb:="]"
 				{var type = F.Id(S.GetArrayKeyword(count), lb.StartIndex, rb.EndIndex);}
 				lb="{" rb="}"
 				{
@@ -536,7 +536,7 @@ namespace Ecs.Parser
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
 				&(TParams (~(TT.Id|TT.ContextualKeyword)|EOF)) ("<"|"!"|"." "[") => TParams(ref e)
-			|	bb:=BracedBlock 
+			|	bb:=BracedBlock
 				{	if (!e.IsCall || e.BaseStyle == NodeStyle.Operator) {
 						e = F.Call(e, bb, e.Range.StartIndex, bb.Range.EndIndex)
 					} else {
@@ -553,7 +553,7 @@ namespace Ecs.Parser
 				{Down(lp);}
 				{kind::Symbol;}
 				{attrs::RWList!LNode = null;}
-				( "->"      {kind = S.Cast;} 
+				( "->"      {kind = S.Cast;}
 				| TT.@as    {kind = S.As;}
 				| TT.@using {kind = S.UsingCast;})
 				NormalAttributes(ref attrs)
@@ -581,9 +581,9 @@ namespace Ecs.Parser
 				{Down(lp); return SetOperatorStyle(F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex));}
 			/	op:="**"
 				e:=PrefixExpr
-				{return SetOperatorStyle(F.Call(S._Dereference, 
-						SetOperatorStyle(F.Call(S._Dereference, e, 
-						op.StartIndex+1, e.Range.EndIndex)), 
+				{return SetOperatorStyle(F.Call(S._Dereference,
+						SetOperatorStyle(F.Call(S._Dereference, e,
+						op.StartIndex+1, e.Range.EndIndex)),
 						op.StartIndex, e.Range.EndIndex));}
 			/	e:=PrimaryExpr
 				{return e;}
@@ -606,25 +606,25 @@ namespace Ecs.Parser
 		};
 
 		// This rule handles all lower precedence levels, from ** down to assignment
-		// (=). This rule uses the "precedence floor" concept, documented in 
-		// Loyc.Syntax.Precedence, to handle different precedence levels. The 
+		// (=). This rule uses the "precedence floor" concept, documented in
+		// Loyc.Syntax.Precedence, to handle different precedence levels. The
 		// traditional approach is to define a separate rule for every precedence
 		// level. By collapsing many precedence levels into a single rule, there are
-		// two benefits: 
+		// two benefits:
 		// (1) shorter code.
 		// (2) potentially better performance: using a separate rule per precedence
-		//     level causes a new stack frame and prediction step to be created for 
-		//     each level, regardless of the operators present in the actual 
-		//     expression being parsed. For example, to parse the simple expression 
-		//     "Hello" the traditional way requires 20 rules and therefore 20 stack 
-		//     frames if there are 20 precedence levels. On the other hand, the 
-		//     "precedence floor" approach requires an extra precedence check, so 
-		//     it may be slower when there are few levels. Note: EC# has 22 
+		//     level causes a new stack frame and prediction step to be created for
+		//     each level, regardless of the operators present in the actual
+		//     expression being parsed. For example, to parse the simple expression
+		//     "Hello" the traditional way requires 20 rules and therefore 20 stack
+		//     frames if there are 20 precedence levels. On the other hand, the
+		//     "precedence floor" approach requires an extra precedence check, so
+		//     it may be slower when there are few levels. Note: EC# has 22
 		//     precedence levels, and this method handles the lower 18 of them.
 		//
 		// The higher levels of the EC# expression parser do not use this trick
-		// because the higher precedence levels have some complications, such as 
-		// C-style casts and <type arguments>, that I prefer to deal with 
+		// because the higher precedence levels have some complications, such as
+		// C-style casts and <type arguments>, that I prefer to deal with
 		// separately.
 		@[private] rule Expr(context::Precedence)::LNode @{
 			{Debug.Assert(context.CanParse(EP.Prefix));}
@@ -659,14 +659,14 @@ namespace Ecs.Parser
 			)*
 			{return e;}
 		};
-		
-		// An expression that can start with attributes [...], attribute keywords 
-		// (out, ref, public, etc.), a named argument (a: expr) and/or a variable 
-		// declaration (Foo? x = null). Note that we can't treat ":" as a normal 
-		// binary operator due to the nullable-type ambiguity. If ":" were treated 
+
+		// An expression that can start with attributes [...], attribute keywords
+		// (out, ref, public, etc.), a named argument (a: expr) and/or a variable
+		// declaration (Foo? x = null). Note that we can't treat ":" as a normal
+		// binary operator due to the nullable-type ambiguity. If ":" were treated
 		// as an operator, would (Foo ? x = z : y) be a conditional expression
 		// or a variable declaration that uses the ":" operator on the right side?
-		// So instead, ":" is only allowed for specifying named arguments. 
+		// So instead, ":" is only allowed for specifying named arguments.
 		@[FullLLk, public] rule ExprStart(allowUnassignedVarDecl::bool)::LNode @{
 			// Detect "keyword argument" expression
 			{argName::Token = default(Token);}
@@ -695,7 +695,7 @@ namespace Ecs.Parser
 				return e;
 			}
 		};
-		
+
 		fn NonKeywordAttrError(attrs::IList!LNode, stmtType::string)
 		{
 			var attr = attrs.FirstOrDefault(a => a.AttrNamed(S.TriviaWordAttribute) != null);
@@ -709,7 +709,7 @@ namespace Ecs.Parser
 			VarDeclStart (("="|":=") NoUnmatchedColon / &{@[Local] allowUnassigned} (","|EOF))
 		};
 		@[private] rule NoUnmatchedColon @{
-			// There's currently no way to run actions inside a recognizer, which 
+			// There's currently no way to run actions inside a recognizer, which
 			// makes it difficult to share information between rules. Therefore I will
 			// just assume that VarDeclStart may have contained a nullable type (Foo?)
 			// and that means we have to guard against the conditional operator ambiguity,
@@ -735,7 +735,7 @@ namespace Ecs.Parser
 			pair:=VarDeclStart
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
 			(	("="|":=") init:=Expr(ContinueExpr)
-				{return F.Call(S.Var, type, 
+				{return F.Call(S.Var, type,
 					F.Call(S.Assign, name, init, name.Range.StartIndex, init.Range.EndIndex),
 					type.Range.StartIndex, init.Range.EndIndex);}
 			)?
@@ -751,7 +751,7 @@ namespace Ecs.Parser
 
 		@[#static, #readonly] _var::Symbol = GSymbol.Get("var");
 		@[#static, #readonly] _dynamic::Symbol = GSymbol.Get("dynamic");
-		
+
 		@[private] fn MaybeRecognizeVarAsKeyword(ref type::LNode)
 		{
 			// Recognize "var" and "dynamic" (but not @var and @dynamic) as contextual keywords.
@@ -760,7 +760,7 @@ namespace Ecs.Parser
 			if (name == _var || name == _dynamic) && type.IsId
 				&& (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@' {
 				type = type.WithName(name == _var ? S.Missing : S.Dynamic);
-			}; 
+			};
 		};
 
 		@[private] rule ExprInParens(allowUnassignedVarDecl::bool)::LNode
@@ -803,11 +803,11 @@ namespace Ecs.Parser
 		// ---------------------------------------------------------------------
 		// -- Attributes -------------------------------------------------------
 		// ---------------------------------------------------------------------
-		
+
 		@[recognizer(fn Scan_NormalAttributes())]
 		token NormalAttributes(ref attrs::RWList!LNode) @{
 			(	&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))}
-				t:="[" "]" 
+				t:="[" "]"
 				{
 					if (Down(t)) {
 						AttributeContents(ref attrs);
@@ -829,7 +829,7 @@ namespace Ecs.Parser
 					for (i::int = 0; i < attrs.Count; i++) {
 						var attr = attrs[i];
 						if (!IsNamedArg(attr)) {
-							attrs[i] = SetOperatorStyle(F.Call(S.NamedArg, attrTargetNode, 
+							attrs[i] = SetOperatorStyle(F.Call(S.NamedArg, attrTargetNode,
 								attr, attrTarget.StartIndex, attr.Range.EndIndex))
 						} else {
 							attrTargetNode = attrs[i].Args[1];
@@ -843,7 +843,7 @@ namespace Ecs.Parser
 		fn IsNamedArg(node::LNode)::bool { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; };
 
 		token AttributeKeywords(ref attrs::RWList!LNode) @{
-			(	t:=TT.AttrKeyword 
+			(	t:=TT.AttrKeyword
 				{(attrs = attrs ?? `new` RWList!LNode()).Add(IdNode(t));}
 			)*
 		};
@@ -853,33 +853,33 @@ namespace Ecs.Parser
 				{(attrs = attrs ?? `new` RWList!LNode()).Add(IdNode(t));}
 			)*
 		};
-			
+
 		// "word attributes" are a messy feature of EC#. C# has a few non-
 		// keyword attributes that appear at the beginning of a statement, such
-		// as "partial", "yield" and "async". EC# generalizes this concept to 
+		// as "partial", "yield" and "async". EC# generalizes this concept to
 		// "word attributes", which can be any normal identifier.
 		//
-		// BTW: "word attributes" are not really "contextual keywords" in the C# 
+		// BTW: "word attributes" are not really "contextual keywords" in the C#
 		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "dynamic", "module" 
-		// and "assembly" ("var" and "dynamic" are not contextual keywords in C# 
-		// in the same way; in EC#, "var" is identified as a keyword by the 
+		// only true contextual keywords in EC# are "var", "dynamic", "module"
+		// and "assembly" ("var" and "dynamic" are not contextual keywords in C#
+		// in the same way; in EC#, "var" is identified as a keyword by the
 		// parser, but in C# it is identified during semantic analysis.)
 		//
 		// Since they're not keywords, word attributes are difficult because:
-		// 1. Lots of statements start with words that are not word attributes, 
+		// 1. Lots of statements start with words that are not word attributes,
 		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
 		//    Somehow we have to figure out which words are attributes.
-		// 2. Not all statements accept word attributes. But the attributes 
+		// 2. Not all statements accept word attributes. But the attributes
 		//    appear before the statement, so how can we tell if we should
 		//    be expecting word attributes or not?
 		//
 		// Using an LL(k) parser generator is quite limiting in this situation;
-		// normal lookahead is strictly limited and we can't backtrack except 
-		// via "and" predicates or custom code. On the other hand, I still think 
-		// LL(k) is the best way to parse, precisely because it minimizes 
+		// normal lookahead is strictly limited and we can't backtrack except
+		// via "and" predicates or custom code. On the other hand, I still think
+		// LL(k) is the best way to parse, precisely because it minimizes
 		// backtracking.
-		// 
+		//
 		// There are lots of "keyword-based" statements that accept word
 		// attributes (think "partial class" and "yield return"), which are easy
 		// to handle. Our main difficulty is the non-keyword statements:
@@ -896,21 +896,21 @@ namespace Ecs.Parser
 		//    - word this();         // except inside methods
 		//    - word this<x>();      // except inside methods
 		//    - word label:
-		// 2. statements that can start with an identifier, and do not accept 
+		// 2. statements that can start with an identifier, and do not accept
 		//    word attributes:
 		//    - foo();     // method call OR constructor
 		//    - foo<x>();
 		//    - foo = 0;
 		//    - foo - bar;
-		// Notice that if a word is followed by an operator of any kind, it 
+		// Notice that if a word is followed by an operator of any kind, it
 		// can't be an attribute; but if it is followed by another word, it's
 		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
 		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
 		// but in "A B<x>()" it is a return type. The same difficulty exists
 		// in case of alternate generics specifiers such as "A B!(x)" and types
 		// with suffixes, like "A int?*".
-		// 
-		// My strategy here is to use lookahead with &(...) to decide if a word 
+		//
+		// My strategy here is to use lookahead with &(...) to decide if a word
 		// (or the "new" keyword) is an attribute or not.
 
 		token WordAttributes(ref attrs::RWList!LNode)::int
@@ -918,20 +918,20 @@ namespace Ecs.Parser
 			{	// Optimize the common case (non-exhaustive short circuit)
 				LA1::TokenType;
 				nonKeywords::int = 0;
-				if LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot) 
+				if LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot)
 					(return 0);
 				t::Token;
 			}
 			(	t=TT.AttrKeyword {attrs.Add(IdNode(t));}
 			|	(t=(TT.Id|TT.(noMacro(@this))|TT.@new) | t=UnusualId)
-				&(	// This branch matches var decls, alias decls, trait decls and 
+				&(	// This branch matches var decls, alias decls, trait decls and
 					// non-keyword attributes located prior to any of those.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
 				|	(TT.AttrKeyword | TT.@new)
 				|	TT.(noMacro(this))
 				|	TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
-				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
+				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum
+					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do
 					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
 					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@while )
 				)
@@ -949,7 +949,7 @@ namespace Ecs.Parser
 			)*
 			{return nonKeywords;}
 		};
-		
+
 		// ---------------------------------------------------------------------
 		// LINQ ----------------------------------------------------------------
 		// ---------------------------------------------------------------------
@@ -957,12 +957,12 @@ namespace Ecs.Parser
 		[pub] rule QueryExpression::LNode @{
 			LinqFrom QueryBody {return null;}
 		};
-		
+
 		@[private] rule LinqFrom::LNode @{
 			&{@[Hoist] Is($LI, _from)} t:=TT.ContextualKeyword var:=VarIn e:=ExprStart(false)
 			{return null;}
 		};
-		
+
 		@[private] rule QueryBody::LNode @{
 			QueryBodyClause* SelectOrGroupClause QueryContinuation?
 			{return null;}
@@ -989,7 +989,7 @@ namespace Ecs.Parser
 		// ---------------------------------------------------------------------
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------
-		
+
 		_stmtAttrs::RWList!LNode = (new RWList!LNode());
 
 		@[k(3), pub] rule Stmt::LNode @{
@@ -999,7 +999,7 @@ namespace Ecs.Parser
 			AttributeKeywords(ref _stmtAttrs)
 			wc:=WordAttributes(ref _stmtAttrs)
 			{var attrs = _stmtAttrs.ToRVList();}
-			
+
 			{r::LNode;}
 				// Declaration-level statements
 			(	r=UsingDirective(startIndex, attrs)
@@ -1013,12 +1013,12 @@ namespace Ecs.Parser
 			/	&(DataType ComplexNameDecl ("("|"{"|"="|":="|","|";"|"==>"|"=>"|"@"))
 				r=MethodOrPropertyOrVar(startIndex, attrs)
 			/	r=OperatorCast(startIndex, attrs)
-			/	r=Constructor(startIndex, attrs) 
+			/	r=Constructor(startIndex, attrs)
 				{if (wc != 0 && !r.Args[1, F._Missing].IsIdNamed(S.This)) {
 					NonKeywordAttrError(attrs, "constructor");};}
-			/	r=Destructor(startIndex, attrs)  
+			/	r=Destructor(startIndex, attrs)
 				{if (wc != 0) { NonKeywordAttrError(attrs, "destructor"); };}
-				
+
 				// Executable statements
 			/	r=BracedBlock()                         {r = r.PlusAttrs(attrs);}
 				{if (wc != 0) { NonKeywordAttrError(attrs, "braced-block statement"); };}
@@ -1053,13 +1053,13 @@ namespace Ecs.Parser
 
 		rule ExprStatement::LNode @{
 			r:=Expr(ContinueExpr)
-			(	(EOF | TT.@else | TT.@while | TT.@catch | TT.@finally) => 
+			(	(EOF | TT.@else | TT.@while | TT.@catch | TT.@finally) =>
 				{r = F.Call(S.Result, r, r.Range.StartIndex, r.Range.EndIndex);}
 			|	default ";"
 			)
 			{return r;}
 		};
-		
+
 		@[private] token ScanToEndOfStmt() @{
 			// Used for error recovery
 			(greedy(~(";"|"{")))*
@@ -1097,7 +1097,7 @@ namespace Ecs.Parser
 		rule AliasDecl(startIndex::int, attrs::RVList!LNode)::LNode
 		@{
 			&{@[Hoist] Is($LI, _alias)} t:=TT.ContextualKeyword
-			newName:=ComplexNameDecl 
+			newName:=ComplexNameDecl
 			r:=RestOfAlias(startIndex, newName)
 			{return r.WithAttrs(attrs);}
 		};
@@ -1196,16 +1196,16 @@ namespace Ecs.Parser
 		};
 
 		@[private] rule WhereClause::KeyValuePair!(Symbol, LNode) @{
-			&{@[Hoist] Is($LI,_where)} where:=TT.ContextualKeyword T:=(TT.Id|TT.ContextualKeyword) ":" 
+			&{@[Hoist] Is($LI,_where)} where:=TT.ContextualKeyword T:=(TT.Id|TT.ContextualKeyword) ":"
 			{var constraints = RVList!LNode.Empty;}
 			constraints+=WhereConstraint
 			("," constraints+=WhereConstraint)*
-			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol, 
+			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol,
 				F.Call(S.Where, constraints, where.StartIndex, constraints.Last.Range.EndIndex)));}
 		};
 		@[private] rule WhereConstraint::LNode @{
 			(	t:=(TT.@class | TT.@struct) {return IdNode(t);}
-			|	n:=TT.@new &{LT($LI).Count == 0} lp:="(" rp:=")"  
+			|	n:=TT.@new &{LT($LI).Count == 0} lp:="(" rp:=")"
 				{return F.Call(S.New, n.StartIndex, rp.EndIndex);}
 			|	t:=DataType                 {return t;} )
 		};
@@ -1228,10 +1228,10 @@ namespace Ecs.Parser
 		@[private] rule AssemblyOrModuleAttribute(startIndex::int, attrs::RVList!LNode)::LNode
 		@{
 			&{@[Hoist] Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} lb:="[" rb:="]"
-			(_* => {Down(lb);} 
-				kind:=AsmOrModLabel 
+			(_* => {Down(lb);}
+				kind:=AsmOrModLabel
 				{var list = (new RWList!LNode());}
-				ExprList(list) 
+				ExprList(list)
 				{
 					Up();
 					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), startIndex, rb.EndIndex);
@@ -1330,7 +1330,7 @@ namespace Ecs.Parser
 			|	body:=BracedBlock(S.Fn)           {return body;} )
 		};
 
-		def IsArrayType(type::LNode)::bool 
+		def IsArrayType(type::LNode)::bool
 		{
 			// Detect an array type, which has the form #of(#[,], Type)
 			return type.Calls(S.Of, 2) && S.IsArrayKeyword(type.Args[0].Name);
@@ -1354,7 +1354,7 @@ namespace Ecs.Parser
 				// cases by checking for semicolons. If there's a ";", it's an EC# block.
 				// If it is a C# initializer, treat {...} as new[] {...} (#new(#[](), ...))
 				(	&{@[Local] isArray}
-					&{@[Local] Down($LI) && Up(HasNoSemicolons())} 
+					&{@[Local] Down($LI) && Up(HasNoSemicolons())}
 					lb:="{" rb:="}"
 					{
 						var initializers = InitializerListInside(lb).ToRVList();
@@ -1368,7 +1368,7 @@ namespace Ecs.Parser
 			)?
 			{return r;}
 		};
-		@[recognizer(def HasNoSemicolons()::bool), private] 
+		@[recognizer(def HasNoSemicolons()::bool), private]
 		rule NoSemicolons @{ ~";"* EOF };
 
 		// ---------------------------------------------------------------------
@@ -1394,7 +1394,7 @@ namespace Ecs.Parser
 		@[private] rule Destructor(startIndex::int, attrs::RVList!LNode)::LNode @{
 			{var(r::LNode, n::Token);}
 			tilde:="~"
-			(	( &{LT($LI).Value == _spaceName} 
+			(	( &{LT($LI).Value == _spaceName}
 				/ error {Error("Unexpected destructor '{0}'", LT(0).Value);} )
 				n=(TT.Id|TT.ContextualKeyword)
 			|	n=TT.(noMacro(@this))
@@ -1417,10 +1417,10 @@ namespace Ecs.Parser
 		@[private] rule EventDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
 			{r::LNode;}
 			TT.@event type:=DataType name:=ComplexNameDecl
-			(	default 
+			(	default
 				{var parts = (new RVList!LNode(type, name));}
 				( "," parts+=ComplexNameDecl )*
-				end:=";"         
+				end:=";"
 				{r = F.Call(S.Event, parts, startIndex, end.EndIndex);}
 			|	body:=BracedBlock(S.Fn)
 				{r = F.Call(S.Event, type, name, body, startIndex, body.Range.EndIndex);}
@@ -1431,17 +1431,17 @@ namespace Ecs.Parser
 		// ---------------------------------------------------------------------
 		// Statements for executable contexts ----------------------------------
 		// ---------------------------------------------------------------------
-		
+
 		// Labels, default:, case expr: ----------------------------------------
 
 		rule LabelStmt(startIndex::int)::LNode @{
 			id:=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@default))) end:=":"
-			{return F.Call(S.Label, IdNode(id), startIndex, end.EndIndex);} 
+			{return F.Call(S.Label, IdNode(id), startIndex, end.EndIndex);}
 		};
 
 		rule CaseStmt(startIndex::int)::LNode @{
 			{var cases = RVList!LNode.Empty;}
-			kw:=TT.@case cases+=ExprStart2(true) 
+			kw:=TT.@case cases+=ExprStart2(true)
 			        ("," cases+=ExprStart2(true))* end:=":"
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
 		};
@@ -1449,8 +1449,8 @@ namespace Ecs.Parser
 		// Block-call statement (e.g. get {...}, unroll(...) {...}) ----------------
 
 		// Block-call statements help support properties (get/set), events (add/
-		// remove) and macros. No semicolon is required at the end, and the 
-		// statement cannot continue afterward (at statement level, foo {y} = z; 
+		// remove) and macros. No semicolon is required at the end, and the
+		// statement cannot continue afterward (at statement level, foo {y} = z;
 		// is a syntax error since '}' marks the end of the statement.)
 		// The expressions in "foo(exprs) {...}" are parsed subtly differently than
 		// for "foo(exprs);" : unassigned variable declarations are allowed only in
@@ -1462,7 +1462,7 @@ namespace Ecs.Parser
 			{var args = (new RWList!LNode());}
 			{block::LNode;}
 			(	lp:="(" rp:=")" {AppendExprsInside(lp, args, false, true);}
-				(	block=BracedBlock 
+				(	block=BracedBlock
 				|	TT.Id => block=Stmt
 					{	// Not using braces? Could be a missing semicolon...
 						if (ColumnOf(block.Range.StartIndex) <= ColumnOf(id.StartIndex)
@@ -1572,7 +1572,7 @@ namespace Ecs.Parser
 		};
 
 		@[private] rule ForEachStmt(startIndex::int)::LNode @{
-			TT.@foreach p:="(" ")" 
+			TT.@foreach p:="(" ")"
 			block:=Stmt
 			(_ => {Down(p);})
 				var:=VarIn
@@ -1582,7 +1582,7 @@ namespace Ecs.Parser
 		};
 
 		@[private] rule VarIn::LNode @{
-			{var::LNode;}
+			{var::LNode = null;}
 			(	&(Atom TT.@in)
 				var=Atom
 			/	pair:=VarDeclStart
@@ -1596,7 +1596,7 @@ namespace Ecs.Parser
 
 		@[private] rule IfStmt(startIndex::int)::LNode @{
 			{else::LNode = null;}
-			TT.@if p:="(" ")" then:=Stmt 
+			TT.@if p:="(" ")" then:=Stmt
 			greedy(TT.@else else=Stmt)?
 			{
 				var cond = SingleExprInside(p, "if (...)");
@@ -1726,4 +1726,3 @@ namespace Ecs.Parser
 		};
 	};
 };
-
