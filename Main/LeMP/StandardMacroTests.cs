@@ -524,7 +524,7 @@ namespace LeMP
 					}");
 		}
 
-		[Test]
+		[Test(Fails = "Macro not implemented")]
 		public void TestStringInterpolation()
 		{
 			Assert.Fail("TODO");
@@ -586,7 +586,7 @@ namespace LeMP
 				"public string[] Strs; void Set(params string[] strs) { Strs = strs; }");
 		}
 		
-		[Test]
+		[Test(Fails = "Macro not implemented")]
 		public void ResultTest()
 		{
 			TestEcs("static int Square(int x) { x*x }",
@@ -694,7 +694,7 @@ namespace LeMP
 			        @"{ int r = 5; r++; return r; }");
 		}
 
-		[Test]
+		[Test(Fails = "Macro not implemented")]
 		public void RequireTest()
 		{
 			// "[requires] is currently not supported for methods that do not have a body (e.g. interface methods)"
@@ -721,7 +721,7 @@ namespace LeMP
 			        @"public void AssertRange(int x, int min, int max) {"+
 			        @"  Debug.Assert(x >= min, ""x is too low""); Debug.Assert(x <= max, ""x is too high""); }");
 		}
-		[Test]
+		[Test(Fails = "Macro not implemented")]
 		public void EnsuresTest()
 		{
 			// TODO: support ensures-on-throw
@@ -771,7 +771,7 @@ namespace LeMP
 				}");
 		}
 
-		[Test]
+		[Test(Fails = "Not yet supported")]
 		public void MixingFeatures()
 		{
 			TestEcs("[requires(x >= 0)] static double Sqrt(double x) ==> Math.Sqrt;",

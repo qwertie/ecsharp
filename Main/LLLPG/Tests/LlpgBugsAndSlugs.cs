@@ -9,6 +9,60 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+		[Test] public void Regression_2015_01_AndPredBug()
+		{
+			Test(@"LLLPG (parser(terminalType: Token, laType: TT)) {
+					token AndPredBug() @{
+						[  t:TT.QuestionMark (&{flagA} | &{flagB})  ]?
+					};
+				}", @"
+					void AndPredBug()
+					{
+						TT la0;
+						Token t = default(Token);
+						la0 = (TT) LA0;
+						if (la0 == TT.QuestionMark) {
+							if (flagA || flagB)
+								t = MatchAny();
+						}
+					}");
+			Test(@"LLLPG (parser) {
+					token AndPredBug()
+					@{
+						[	t:=TT.QuestionMark (&{flagA} | &{flagB})
+							{Action();}
+						]*
+					};
+				}", @"
+					void AndPredBug()
+					{
+						TokenType la0, la1;
+						for (;;) {
+							la0 = LA0;
+							if (la0 == TT.QuestionMark) {
+								la1 = LA(1);
+								if (la1 == TT.QuestionMark) {
+									if (flagA || flagB)
+										goto match1;
+									else
+										break;
+								} else {
+									if (flagA || flagB)
+										goto match1;
+									else
+										break;
+								}
+							} else
+								break;
+						match1:
+							{
+								var t = MatchAny();
+								Action();
+							}
+						}
+					}");
+		}
+
 		[Test] public void SlugTest1()
 		{
 			// [2013-12-25]
