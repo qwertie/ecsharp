@@ -140,13 +140,11 @@ namespace Ecs.Parser
 
 		@[recognizer(def Scan_DataType(afterAsOrIs::bool = false))]
 		rule DataType(afterAsOrIs::bool, out majorDimension::opt!Token)::LNode @{
-			e:=ComplexId()
-			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref e)
-			{return e;}
+			result:ComplexId()
+			TypeSuffixOpt(afterAsOrIs, out majorDimension, ref result)
 		};
-
 		@[FullLLk] // http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html
-		token ComplexId::LNode @{
+		token ComplexId::LNode @{ // Part of DataType
 			e:=IdAtom 
 			// There can be only a single "externAlias::" prefix in a complex Id.
 			(	"::" e2:=IdAtom 
