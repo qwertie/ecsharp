@@ -118,7 +118,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles EC# processor directives. <a href="classEcs_1_1Parser_1_1EcsPreprocessor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html">TokenExt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#aff2b8fa3534f49d10b063cb940028283" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d" title="Expresses an LES token as a string.">ToString(Token)</a> method to express an EC# token as a string, for tokens that contain sufficient information to do so. <a href="classEcs_1_1Parser_1_1TokenExt.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides the <code><a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#aff2b8fa3534f49d10b063cb940028283" title="Converts t.TypeInt to TokenType.">Type()</a></code> extension method required by Token and the <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d" title="Expresses an EC# token as a string.">ToString(Token)</a> method to express an EC# token as a string, for tokens that contain sufficient information to do so. <a href="classEcs_1_1Parser_1_1TokenExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -149,143 +149,138 @@ Enumerations</h2></td></tr>
 <b>base</b> = TokenKind.Id + 2, 
 <br />
 &#160;&#160;<b>this</b> = TokenKind.Id + 3, 
-<b>Number</b> = TokenKind.Number, 
-<b>String</b> = TokenKind.String, 
+<b>Literal</b> = TokenKind.Literal, 
+<b>Comma</b> = TokenKind.Separator, 
 <br />
-&#160;&#160;<b>SQString</b> = TokenKind.String + 1, 
-<b>OtherLit</b> = TokenKind.OtherLit, 
-<b>Symbol</b> = TokenKind.OtherLit + 1, 
-<br />
-&#160;&#160;<b>Comma</b> = TokenKind.Separator, 
-<b>Semicolon</b> = TokenKind.Separator + 1, 
+&#160;&#160;<b>Semicolon</b> = TokenKind.Separator + 1, 
 <b>LParen</b> = TokenKind.LParen, 
+<b>RParen</b> = TokenKind.RParen, 
 <br />
-&#160;&#160;<b>RParen</b> = TokenKind.RParen, 
-<b>LBrack</b> = TokenKind.LBrack, 
+&#160;&#160;<b>LBrack</b> = TokenKind.LBrack, 
 <b>RBrack</b> = TokenKind.RBrack, 
+<b>LBrace</b> = TokenKind.LBrace, 
 <br />
-&#160;&#160;<b>LBrace</b> = TokenKind.LBrace, 
-<b>RBrace</b> = TokenKind.RBrace, 
+&#160;&#160;<b>RBrace</b> = TokenKind.RBrace, 
 <b>AttrKeyword</b> = TokenKind.AttrKeyword, 
+<b>TypeKeyword</b> = TokenKind.TypeKeyword, 
 <br />
-&#160;&#160;<b>TypeKeyword</b> = TokenKind.TypeKeyword, 
-<b>break</b> = TokenKind.OtherKeyword + 1, 
+&#160;&#160;<b>break</b> = TokenKind.OtherKeyword + 1, 
 <b>case</b> = TokenKind.OtherKeyword + 2, 
+<b>checked</b> = TokenKind.OtherKeyword + 3, 
 <br />
-&#160;&#160;<b>checked</b> = TokenKind.OtherKeyword + 3, 
-<b>class</b> = TokenKind.OtherKeyword + 4, 
+&#160;&#160;<b>class</b> = TokenKind.OtherKeyword + 4, 
 <b>continue</b> = TokenKind.OtherKeyword + 5, 
+<b>default</b> = TokenKind.OtherKeyword + 6, 
 <br />
-&#160;&#160;<b>default</b> = TokenKind.OtherKeyword + 6, 
-<b>delegate</b> = TokenKind.OtherKeyword + 7, 
+&#160;&#160;<b>delegate</b> = TokenKind.OtherKeyword + 7, 
 <b>do</b> = TokenKind.OtherKeyword + 8, 
+<b>enum</b> = TokenKind.OtherKeyword + 9, 
 <br />
-&#160;&#160;<b>enum</b> = TokenKind.OtherKeyword + 9, 
-<b>event</b> = TokenKind.OtherKeyword + 10, 
+&#160;&#160;<b>event</b> = TokenKind.OtherKeyword + 10, 
 <b>fixed</b> = TokenKind.OtherKeyword + 11, 
+<b>for</b> = TokenKind.OtherKeyword + 12, 
 <br />
-&#160;&#160;<b>for</b> = TokenKind.OtherKeyword + 12, 
-<b>foreach</b> = TokenKind.OtherKeyword + 13, 
+&#160;&#160;<b>foreach</b> = TokenKind.OtherKeyword + 13, 
 <b>goto</b> = TokenKind.OtherKeyword + 14, 
+<b>if</b> = TokenKind.OtherKeyword + 15, 
 <br />
-&#160;&#160;<b>if</b> = TokenKind.OtherKeyword + 15, 
-<b>interface</b> = TokenKind.OtherKeyword + 16, 
+&#160;&#160;<b>interface</b> = TokenKind.OtherKeyword + 16, 
 <b>lock</b> = TokenKind.OtherKeyword + 17, 
+<b>namespace</b> = TokenKind.OtherKeyword + 18, 
 <br />
-&#160;&#160;<b>namespace</b> = TokenKind.OtherKeyword + 18, 
-<b>return</b> = TokenKind.OtherKeyword + 19, 
+&#160;&#160;<b>return</b> = TokenKind.OtherKeyword + 19, 
 <b>struct</b> = TokenKind.OtherKeyword + 20, 
+<b>switch</b> = TokenKind.OtherKeyword + 21, 
 <br />
-&#160;&#160;<b>switch</b> = TokenKind.OtherKeyword + 21, 
-<b>throw</b> = TokenKind.OtherKeyword + 22, 
+&#160;&#160;<b>throw</b> = TokenKind.OtherKeyword + 22, 
 <b>try</b> = TokenKind.OtherKeyword + 23, 
+<b>unchecked</b> = TokenKind.OtherKeyword + 24, 
 <br />
-&#160;&#160;<b>unchecked</b> = TokenKind.OtherKeyword + 24, 
-<b>using</b> = TokenKind.OtherKeyword + 25, 
+&#160;&#160;<b>using</b> = TokenKind.OtherKeyword + 25, 
 <b>while</b> = TokenKind.OtherKeyword + 26, 
+<b>operator</b> = TokenKind.OtherKeyword + 32, 
 <br />
-&#160;&#160;<b>operator</b> = TokenKind.OtherKeyword + 32, 
-<b>sizeof</b> = TokenKind.OtherKeyword + 33, 
+&#160;&#160;<b>sizeof</b> = TokenKind.OtherKeyword + 33, 
 <b>typeof</b> = TokenKind.OtherKeyword + 34, 
+<b>else</b> = TokenKind.OtherKeyword + 40, 
 <br />
-&#160;&#160;<b>else</b> = TokenKind.OtherKeyword + 40, 
-<b>catch</b> = TokenKind.OtherKeyword + 41, 
+&#160;&#160;<b>catch</b> = TokenKind.OtherKeyword + 41, 
 <b>finally</b> = TokenKind.OtherKeyword + 42, 
+<b>in</b> = TokenKind.OtherKeyword + 48, 
 <br />
-&#160;&#160;<b>in</b> = TokenKind.OtherKeyword + 48, 
-<b>as</b> = TokenKind.OtherKeyword + 49, 
+&#160;&#160;<b>as</b> = TokenKind.OtherKeyword + 49, 
 <b>is</b> = TokenKind.OtherKeyword + 50, 
+<b>new</b> = TokenKind.OtherKeyword + 56, 
 <br />
-&#160;&#160;<b>new</b> = TokenKind.OtherKeyword + 56, 
-<b>out</b> = TokenKind.OtherKeyword + 57, 
+&#160;&#160;<b>out</b> = TokenKind.OtherKeyword + 57, 
 <b>stackalloc</b> = TokenKind.OtherKeyword + 58, 
+<b>PPif</b> = TokenKind.Other + 64, 
 <br />
-&#160;&#160;<b>PPif</b> = TokenKind.Other + 64, 
-<b>PPelse</b> = TokenKind.Other + 65, 
+&#160;&#160;<b>PPelse</b> = TokenKind.Other + 65, 
 <b>PPelif</b> = TokenKind.Other + 66, 
+<b>PPendif</b> = TokenKind.Other + 67, 
 <br />
-&#160;&#160;<b>PPendif</b> = TokenKind.Other + 67, 
-<b>PPdefine</b> = TokenKind.Other + 68, 
+&#160;&#160;<b>PPdefine</b> = TokenKind.Other + 68, 
 <b>PPundef</b> = TokenKind.Other + 69, 
+<b>PPwarning</b> = TokenKind.Other + 70, 
 <br />
-&#160;&#160;<b>PPwarning</b> = TokenKind.Other + 70, 
-<b>PPerror</b> = TokenKind.Other + 71, 
+&#160;&#160;<b>PPerror</b> = TokenKind.Other + 71, 
 <b>PPnote</b> = TokenKind.Other + 72, 
+<b>PPline</b> = TokenKind.Other + 73, 
 <br />
-&#160;&#160;<b>PPline</b> = TokenKind.Other + 73, 
-<b>PPregion</b> = TokenKind.Other + 74, 
+&#160;&#160;<b>PPregion</b> = TokenKind.Other + 74, 
 <b>PPendregion</b> = TokenKind.Other + 75, 
+<b>PPpragma</b> = TokenKind.Other + 76, 
 <br />
-&#160;&#160;<b>PPpragma</b> = TokenKind.Other + 76, 
-<b>PPignored</b> = TokenKind.Other + 77, 
+&#160;&#160;<b>PPignored</b> = TokenKind.Other + 77, 
 <b>Dot</b> = TokenKind.Dot, 
+<b>PtrArrow</b> = TokenKind.Dot + 1, 
 <br />
-&#160;&#160;<b>PtrArrow</b> = TokenKind.Dot + 1, 
-<b>ColonColon</b> = TokenKind.Dot + 2, 
+&#160;&#160;<b>ColonColon</b> = TokenKind.Dot + 2, 
 <b>NullDot</b> = TokenKind.Dot + 3, 
+<b>Set</b> = TokenKind.Assignment, 
 <br />
-&#160;&#160;<b>Set</b> = TokenKind.Assignment, 
-<b>CompoundSet</b> = TokenKind.Assignment + 1, 
+&#160;&#160;<b>CompoundSet</b> = TokenKind.Assignment + 1, 
 <b>QuickBindSet</b> = TokenKind.Assignment + 2, 
+<b>Colon</b> = TokenKind.Operator, 
 <br />
-&#160;&#160;<b>Colon</b> = TokenKind.Operator, 
-<b>At</b> = TokenKind.Operator + 1, 
+&#160;&#160;<b>At</b> = TokenKind.Operator + 1, 
 <b>BQString</b> = TokenKind.Operator + 2, 
+<b>Backslash</b> = TokenKind.Operator + 4, 
 <br />
-&#160;&#160;<b>Backslash</b> = TokenKind.Operator + 4, 
-<b>Mul</b> = TokenKind.Operator + 5, 
+&#160;&#160;<b>Mul</b> = TokenKind.Operator + 5, 
 <b>DivMod</b> = TokenKind.Operator + 6, 
+<b>Power</b> = TokenKind.Operator + 7, 
 <br />
-&#160;&#160;<b>Power</b> = TokenKind.Operator + 7, 
-<b>Add</b> = TokenKind.Operator + 8, 
+&#160;&#160;<b>Add</b> = TokenKind.Operator + 8, 
 <b>Sub</b> = TokenKind.Operator + 9, 
+<b>IncDec</b> = TokenKind.Operator + 10, 
 <br />
-&#160;&#160;<b>IncDec</b> = TokenKind.Operator + 10, 
-<b>And</b> = TokenKind.Operator + 11, 
+&#160;&#160;<b>And</b> = TokenKind.Operator + 11, 
 <b>OrXor</b> = TokenKind.Operator + 12, 
+<b>Not</b> = TokenKind.Operator + 14, 
 <br />
-&#160;&#160;<b>Not</b> = TokenKind.Operator + 14, 
-<b>AndBits</b> = TokenKind.Operator + 15, 
+&#160;&#160;<b>AndBits</b> = TokenKind.Operator + 15, 
 <b>OrBits</b> = TokenKind.Operator + 16, 
+<b>XorBits</b> = TokenKind.Operator + 17, 
 <br />
-&#160;&#160;<b>XorBits</b> = TokenKind.Operator + 17, 
-<b>NotBits</b> = TokenKind.Operator + 18, 
+&#160;&#160;<b>NotBits</b> = TokenKind.Operator + 18, 
 <b>EqNeq</b> = TokenKind.Operator + 19, 
+<b>LT</b> = TokenKind.Operator + 20, 
 <br />
-&#160;&#160;<b>LT</b> = TokenKind.Operator + 20, 
-<b>GT</b> = TokenKind.Operator + 21, 
+&#160;&#160;<b>GT</b> = TokenKind.Operator + 21, 
 <b>LEGE</b> = TokenKind.Operator + 22, 
+<b>DotDot</b> = TokenKind.Operator + 23, 
 <br />
-&#160;&#160;<b>DotDot</b> = TokenKind.Operator + 23, 
-<b>QuestionMark</b> = TokenKind.Operator + 24, 
+&#160;&#160;<b>QuestionMark</b> = TokenKind.Operator + 24, 
 <b>NullCoalesce</b> = TokenKind.Operator + 25, 
+<b>QuickBind</b> = TokenKind.Operator + 26, 
 <br />
-&#160;&#160;<b>QuickBind</b> = TokenKind.Operator + 26, 
-<b>Forward</b> = TokenKind.Operator + 27, 
+&#160;&#160;<b>Forward</b> = TokenKind.Operator + 27, 
 <b>Substitute</b> = TokenKind.Operator + 28, 
+<b>LambdaArrow</b> = TokenKind.Operator + 29, 
 <br />
-&#160;&#160;<b>LambdaArrow</b> = TokenKind.Operator + 29, 
-<b>Unknown</b> = TokenKind.Other
+&#160;&#160;<b>Unknown</b> = TokenKind.Other
 <br />
  }</td></tr>
 <tr class="separator:ae21e71ce246a5b28730856190398a99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -296,7 +291,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

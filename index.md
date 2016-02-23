@@ -38,6 +38,37 @@ Loyc is in its infancy, and probably will remain so until I attract either (A) v
 - [SIL](https://github.com/qwertie/Loyc/wiki/Standard-Imperative-Language) (Standard Imperative Language): not yet started
 - Visual studio integration: When you write a lexer & parser, you can get syntax highlighting almost for free.
 
-At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.loyc.net](http://core.loyc.net).
+At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.loyc.net](http://core.loyc.net). The dependence tree of existing libraries is
 
-Loyc is a concept with many parts and potential parts, and I am looking feverishly for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.
+     Loyc.Essentials.dll  (Collection interfaces, collection adaptors, extension 
+              ^            methods, UString, important utility classes, and more)
+              |
+     Loyc.Collections.dll (Handy mutable and immutable collections: RVList/RWList, 
+            ^   ^      AList/BList/BMultiMap/SparseAList, Set/Map/MSet/MMap, ...)
+            |   |      
+            |   +-----------------+
+            |                     |     
+            |                     |
+      Loyc.Utilities.dll    Loyc.Syntax.dll (LES, Loyc trees, helper types for LLLPG)
+    (more utility classes)     ^       ^ 
+            ^        ^         |       |
+            |        |         |       |
+            |   LoycCore.Tests and     |
+            |   LoycCore.Benchmarks    |
+            |                       Ecs.exe (Enhanced C# parser & printer)
+            |                          |
+            +-----------------------+  |
+                                    |  | 
+                                  LeMP.exe (Lexical Macro Processor + macros)
+                                      |
+                                      |
+                                   LLLPG.exe (Loyc LL(k) Parser Generator)
+
+    External libraries:
+    - Theraot.Core is a compatibility library used only in .NET 3.5 builds
+    - ICSharpCode.TextEditor is a text editor widget for LeMP's built-in editor
+    - OxyPlot is used by LoycCore.Benchmarks to results of the newest benchmarks
+    Note: Baadia is a prototype boxes-and-arrows diagram maker. It doesn't belong 
+      in this repo, but I haven't got around to separating it into its own repo.
+
+Loyc is a concept with many parts and potential parts, and I am looking for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.

@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
+<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
@@ -100,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator). Note: this is the old (harder to use) base class design. You should use BaseParserForList{Token, LaType} instead.  
+<p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator). Note: this is the old (harder to use) base class design. You should use BaseParserForList{Token,MatchType} instead.  
  <a href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/Parsing/BaseParser.cs'>/Core/Loyc.Syntax/Parsing/BaseParser.cs</a></li>
@@ -111,22 +112,21 @@ Inheritance diagram for Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.png" usemap="#Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;_map" alt=""/>
   <map id="Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;_map" name="Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;_map">
-<area href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol..." alt="Loyc.Syntax.BaseParser&lt; Token &gt;" shape="rect" coords="402,56,794,80"/>
-<area href="structLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4_1_1SavePosition.html" title="A helper class used by LLLPG for backtracking." alt="Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;.SavePosition" shape="rect" coords="804,56,1196,80"/>
-<area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;" shape="rect" coords="1407,56,1799,80"/>
-<area href="classEcs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement." alt="Ecs.Parser.EcsParser" shape="rect" coords="0,112,392,136"/>
-<area href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;" shape="rect" coords="402,112,794,136"/>
-<area href="classLoyc_1_1Syntax_1_1Les_1_1LesParser.html" title="Parses LES (Loyc Expression Syntax) code into a sequence of Loyc trees (LNode), one per top-level sta..." alt="Loyc.Syntax.Les.LesParser" shape="rect" coords="804,112,1196,136"/>
-<area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType &gt;" shape="rect" coords="1206,112,1598,136"/>
-<area href="classLoyc_1_1Syntax_1_1ParserSourceWorkaround_3_01Token_00_01MatchType_00_01List_01_4.html" title="This class only exists to work around a limitation of the C# language: "cannot change access modifier..." alt="Loyc.Syntax.ParserSourceWorkaround&lt; Token, MatchType, List &gt;" shape="rect" coords="1608,112,2000,136"/>
-<area href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserNoBacktracking&lt; Token &gt;" shape="rect" coords="402,168,794,192"/>
-<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html" title="An implementation of the LLLPG Parser API, used with the LLLPG options inputSource and inputClass..." alt="Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;" shape="rect" coords="1608,168,2000,192"/>
-<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_01_4.html" title="Alias for ParserSource{Token, int, IList{Token}}." alt="Loyc.Syntax.ParserSource&lt; Token, MatchType &gt;" shape="rect" coords="1608,224,2000,248"/>
-<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_01_4.html" title="Alias for ParserSource{Token, int, IList{Token}}." alt="Loyc.Syntax.ParserSource&lt; Token &gt;" shape="rect" coords="1608,280,2000,304"/>
+<area href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol..." alt="Loyc.Syntax.BaseParser&lt; Token &gt;" shape="rect" coords="191,56,564,80"/>
+<area href="structLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4_1_1SavePosition.html" title="A helper class used by LLLPG for backtracking." alt="Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;.SavePosition" shape="rect" coords="574,56,947,80"/>
+<area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;" shape="rect" coords="957,56,1330,80"/>
+<area href="classEcs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement." alt="Ecs.Parser.EcsParser" shape="rect" coords="0,112,373,136"/>
+<area href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;" shape="rect" coords="383,112,756,136"/>
+<area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType &gt;" shape="rect" coords="766,112,1139,136"/>
+<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html" title="An implementation of the LLLPG Parser API, used with the LLLPG options inputSource and inputClass..." alt="Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;" shape="rect" coords="1149,112,1522,136"/>
+<area href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserNoBacktracking&lt; Token &gt;" shape="rect" coords="383,168,756,192"/>
+<area href="classLoyc_1_1Syntax_1_1Les_1_1LesParser.html" title="Parses LES (Loyc Expression Syntax) code into a sequence of Loyc trees (LNode), one per top-level sta..." alt="Loyc.Syntax.Les.LesParser" shape="rect" coords="766,168,1139,192"/>
+<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_01_4.html" title="Alias for ParserSource{Token, int, IList{Token}}." alt="Loyc.Syntax.ParserSource&lt; Token, MatchType &gt;" shape="rect" coords="1149,168,1522,192"/>
+<area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_01_4.html" title="Alias for ParserSource{Token, int, IList{Token}}." alt="Loyc.Syntax.ParserSource&lt; Token &gt;" shape="rect" coords="1149,224,1522,248"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator). Note: this is the old (harder to use) base class design. You should use BaseParserForList{Token, LaType} instead. </p>
+<div class="textblock"><p>An base class designed for parsers that use LLLPG (<a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL(k) Parser Generator). Note: this is the old (harder to use) base class design. You should use BaseParserForList{Token,MatchType} instead. </p>
 <div class="typeconstraint">
 <dl><dt><b>Type Constraints</b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
@@ -141,8 +141,17 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A helper class used by LLLPG for backtracking. <a href="structLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4_1_1SavePosition.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Public static fields</h2></td></tr>
+<tr class="memitem:a81a37ef2627b1262a173c450312b04f1"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1">FormatExceptionErrorSink</a></td></tr>
+<tr class="memdesc:a81a37ef2627b1262a173c450312b04f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current. <a href="#a81a37ef2627b1262a173c450312b04f1">More...</a><br /></td></tr>
+<tr class="separator:a81a37ef2627b1262a173c450312b04f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
+<tr class="memitem:aabc8daddf91eb4f85683aabd69e8368c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#aabc8daddf91eb4f85683aabd69e8368c">ErrorSink</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:aabc8daddf91eb4f85683aabd69e8368c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1" title="Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.">FormatExceptionErrorSink</a>, which throws FormatException if an error occurs. <a href="#aabc8daddf91eb4f85683aabd69e8368c">More...</a><br /></td></tr>
+<tr class="separator:aabc8daddf91eb4f85683aabd69e8368c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93f4b9a3662e980b526022a658b2b1a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a93f4b9a3662e980b526022a658b2b1a5">SourceFile</a><code> [get]</code></td></tr>
 <tr class="memdesc:a93f4b9a3662e980b526022a658b2b1a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> object that was provided to the constructor, if any. <a href="#a93f4b9a3662e980b526022a658b2b1a5">More...</a><br /></td></tr>
 <tr class="separator:a93f4b9a3662e980b526022a658b2b1a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,14 +179,17 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a4157d0b3685588a3b5020e1dfa327689"><td class="memItemLeft" align="right" valign="top">abstract string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a4157d0b3685588a3b5020e1dfa327689">ToString</a> (MatchType tokenType)</td></tr>
 <tr class="memdesc:a4157d0b3685588a3b5020e1dfa327689"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string representation of the specified token type. These strings are used in error messages. <a href="#a4157d0b3685588a3b5020e1dfa327689">More...</a><br /></td></tr>
 <tr class="separator:a4157d0b3685588a3b5020e1dfa327689"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a72f72281c763bbefa305e5abc5dd21ee"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a72f72281c763bbefa305e5abc5dd21ee">LaIndexToSourcePos</a> (int lookaheadIndex)</td></tr>
-<tr class="memdesc:a72f72281c763bbefa305e5abc5dd21ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a lookahead token index to a character index (used for error reporting). Returns -1 if unsuccessful. <a href="#a72f72281c763bbefa305e5abc5dd21ee">More...</a><br /></td></tr>
-<tr class="separator:a72f72281c763bbefa305e5abc5dd21ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc15e8bf09489349279c2bc571e97f85"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#acc15e8bf09489349279c2bc571e97f85">LaIndexToCharIndex</a> (int lookaheadIndex)</td></tr>
+<tr class="memdesc:acc15e8bf09489349279c2bc571e97f85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a lookahead token index to a character index (used for error reporting). <a href="#acc15e8bf09489349279c2bc571e97f85">More...</a><br /></td></tr>
+<tr class="separator:acc15e8bf09489349279c2bc571e97f85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac781c80ef5776f46da3b696cb6bac260"><td class="memItemLeft" align="right" valign="top">virtual object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#ac781c80ef5776f46da3b696cb6bac260">LaIndexToSourcePos</a> (int lookaheadIndex)</td></tr>
+<tr class="memdesc:ac781c80ef5776f46da3b696cb6bac260"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a lookahead token index to a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> object using <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#acc15e8bf09489349279c2bc571e97f85" title="Converts a lookahead token index to a character index (used for error reporting).">LaIndexToCharIndex</a> and <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a>. <a href="#ac781c80ef5776f46da3b696cb6bac260">More...</a><br /></td></tr>
+<tr class="separator:ac781c80ef5776f46da3b696cb6bac260"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a333c9f91e85f283e4c130b21f6dacd"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a1a333c9f91e85f283e4c130b21f6dacd">Error</a> (int lookaheadIndex, string message)</td></tr>
 <tr class="memdesc:a1a333c9f91e85f283e4c130b21f6dacd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Records an error or throws an exception. <a href="#a1a333c9f91e85f283e4c130b21f6dacd">More...</a><br /></td></tr>
 <tr class="separator:a1a333c9f91e85f283e4c130b21f6dacd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a421facb5dd950f58f7e6c9e12979c122"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a421facb5dd950f58f7e6c9e12979c122"></a>
-virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Error</b> (int lookaheadIndex, string format, params object[] args)</td></tr>
+virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a421facb5dd950f58f7e6c9e12979c122">Error</a> (int lookaheadIndex, string format, params object[] args)</td></tr>
 <tr class="separator:a421facb5dd950f58f7e6c9e12979c122"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5438fe3f96d185a1df771c2b2a74530b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5438fe3f96d185a1df771c2b2a74530b"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Skip</b> ()</td></tr>
@@ -309,7 +321,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 
 <p>Returns the value used for EOF (normally 0)</p>
 
-<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a64e0db2b003e993052b1a46192252f1b">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#aa80ffb2160b269a57ed84ae40d66f975">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a3265f02a8603c1d21bad319ec32b1480">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesParser.html#a57d5b8b2cbf2f4c77095a68a6580fa92">Loyc.Syntax.Les.LesParser</a>.</p>
+<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a64e0db2b003e993052b1a46192252f1b">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#aa80ffb2160b269a57ed84ae40d66f975">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a3265f02a8603c1d21bad319ec32b1480">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>.</p>
 
 </div>
 </div>
@@ -354,11 +366,11 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 </dl>
 <p>The default implementation throws a FormatException. When overriding this method, you can convert the lookaheadIndex to a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> using the expression <code>SourceFile.IndexToLine(LT(lookaheadIndex).StartIndex)</code>. This only works if an <code><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a></code> object was provided to the constructor of this class, and <code>Token</code> implements ISimpleToken. </p>
 
-<p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1ParserSourceWorkaround_3_01Token_00_01MatchType_00_01List_01_4.html#ae31362b2bb90119b6381608ade812c19">Loyc.Syntax.ParserSourceWorkaround&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#ab05dfc9c37b631a2287476240f477fa7">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#acf458c5cf22be1218c3056cab891485a">Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesParser.html#af653a439404d4512fc852b1aabe805e4">Loyc.Syntax.Les.LesParser</a>.</p>
+<p>Reimplemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#ab05dfc9c37b631a2287476240f477fa7">Ecs.Parser.EcsParser</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a72f72281c763bbefa305e5abc5dd21ee"></a>
+<a class="anchor" id="acc15e8bf09489349279c2bc571e97f85"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -366,7 +378,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual int Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.LaIndexToSourcePos </td>
+          <td class="memname">virtual int Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.LaIndexToCharIndex </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>lookaheadIndex</em></td><td>)</td>
@@ -380,7 +392,36 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 </table>
 </div><div class="memdoc">
 
-<p>Converts a lookahead token index to a character index (used for error reporting). Returns -1 if unsuccessful.</p>
+<p>Converts a lookahead token index to a character index (used for error reporting).</p>
+<p>The default implementation does this by trying to cast <code>LT(lookaheadIndex)</code> to <code>ISimpleToken{MatchType}</code>. Returns -1 on failure. </p>
+<p>The <code>StartIndex</code> reported by an EOF token is assumed not to be trustworthy: this method will ensure that the character index returned for EOF is at least as large as <code>SourceFile.Text.Count</code> if a <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a> was provided, or, otherwise, at least as large as the last token in the file, by scanning backward to find the last token in the file. </p>
+
+</div>
+</div>
+<a class="anchor" id="ac781c80ef5776f46da3b696cb6bac260"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual object Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.LaIndexToSourcePos </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>lookaheadIndex</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts a lookahead token index to a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> object using <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#acc15e8bf09489349279c2bc571e97f85" title="Converts a lookahead token index to a character index (used for error reporting).">LaIndexToCharIndex</a> and <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a>.</p>
+<p>If the derived class initialized <code><a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a></code> to null, returns "At index {0}" where {0} is the character index.</p>
 
 </div>
 </div>
@@ -408,7 +449,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 
 <p>Returns the token at lookahead i (e.g. <code>Source[InputPosition + i]</code> if the tokens come from a list called Source) </p>
 
-<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a96287501dbe7ad1c99619fb358a1ee10">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a10a3221e25f2d91ecc0bc34ca6b01d58">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a92d6714b904509b8351e51e6f3c41281">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#a6e2e8d4144666deb3ffe594dfc3f15bc">Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesParser.html#adc2b84d3bcbcb0714573365523d9bd2a">Loyc.Syntax.Les.LesParser</a>.</p>
+<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a96287501dbe7ad1c99619fb358a1ee10">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a10a3221e25f2d91ecc0bc34ca6b01d58">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a92d6714b904509b8351e51e6f3c41281">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#a6e2e8d4144666deb3ffe594dfc3f15bc">Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;</a>.</p>
 
 </div>
 </div>
@@ -440,7 +481,60 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a81a37ef2627b1262a173c450312b04f1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.FormatExceptionErrorSink</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div>
+<div class="line">            (sev, location, fmt, args) =&gt;</div>
+<div class="line">            {</div>
+<div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div>
+<div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.LocationString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.From(fmt, args));</div>
+<div class="line">                <span class="keywordflow">else</span></div>
+<div class="line">                    MessageSink.Current.Write(sev, location, fmt, args);</div>
+<div class="line">            })</div>
+</div><!-- fragment -->
+<p>Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Property Documentation</h2>
+<a class="anchor" id="aabc8daddf91eb4f85683aabd69e8368c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.ErrorSink</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1" title="Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.">FormatExceptionErrorSink</a>, which throws FormatException if an error occurs.</p>
+
+</div>
+</div>
 <a class="anchor" id="ac74a81e15edf2f0ce08ce217c1a75203"></a>
 <div class="memitem">
 <div class="memproto">
@@ -533,7 +627,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:10 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

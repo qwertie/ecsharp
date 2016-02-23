@@ -4,7 +4,7 @@ var searchData=
   ['pool',['Pool',['../classLoyc_1_1Symbol.html#aacafe7216546adb5d192889e542b16a5',1,'Loyc::Symbol']]],
   ['positiveinfinity',['PositiveInfinity',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a458752990986401856690d09a834b326',1,'Loyc::Math::INumTraits&lt; T &gt;']]],
   ['predusesla',['PredUsesLA',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html#aedb279eff153f7afcecab906ed30e5db',1,'Loyc::LLParserGenerator::AndPred']]],
-  ['preferoldstylecasts',['PreferOldStyleCasts',['../classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a',1,'Ecs::EcsNodePrinter']]],
+  ['preferplaincsharp',['PreferPlainCSharp',['../classEcs_1_1EcsNodePrinter.html#aa39e1b1580553f0759ea005acbbbd53a',1,'Ecs::EcsNodePrinter']]],
   ['printer',['Printer',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#ada112e6a76fa724000c69447c3bfaa12',1,'Loyc.Syntax.IParsingService.Printer()'],['../classLoyc_1_1Syntax_1_1LNode.html#a130548f4529a1da652da4e9cbd851ca8',1,'Loyc.Syntax.LNode.Printer()']]],
   ['printexplicittrivia',['PrintExplicitTrivia',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a832454e19ff751e338d94365376bb20e',1,'Loyc::Syntax::Les::LesNodePrinter']]],
   ['printseverityat',['PrintSeverityAt',['../classLoyc_1_1ConsoleMessageSink.html#a49dee4bb03921423d485c6b782b0270c',1,'Loyc::ConsoleMessageSink']]],

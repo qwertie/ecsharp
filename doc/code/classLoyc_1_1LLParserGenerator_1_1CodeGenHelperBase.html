@@ -157,12 +157,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a88aa254b7cf196c03245564ac51fc004"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">SetListInitializer</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> varDecl)</td></tr>
 <tr class="memdesc:a88aa254b7cf196c03245564ac51fc004"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets ListType and/or ListInitializer based on an expression. A statement like <code>Type x = expr</code> sets <code>ListType = Type</code> and <code>ListInitializer = expr</code>; A statement like <code>Type x</code> just sets <code>ListType = Type</code>; and any other expression <code>expr</code> sets <code>ListInitializer = expr</code>. <a href="#a88aa254b7cf196c03245564ac51fc004">More...</a><br /></td></tr>
 <tr class="separator:a88aa254b7cf196c03245564ac51fc004"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708a262eb22bab1b2d469ac13ab74721"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a708a262eb22bab1b2d469ac13ab74721">ResolveAlias</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr)</td></tr>
+<tr class="memdesc:a708a262eb22bab1b2d469ac13ab74721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the node for an alias. If the specified node is not an alias, returns the same node unchanged. <a href="#a708a262eb22bab1b2d469ac13ab74721">More...</a><br /></td></tr>
+<tr class="separator:a708a262eb22bab1b2d469ac13ab74721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4296d674e4af706302d4fca4837be0b6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">VisitInput</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
 <tr class="memdesc:a4296d674e4af706302d4fca4837be0b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required. <a href="#a4296d674e4af706302d4fca4837be0b6">More...</a><br /></td></tr>
 <tr class="separator:a4296d674e4af706302d4fca4837be0b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac61ea15c0b83848aadcfe82a754bd7d0"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac61ea15c0b83848aadcfe82a754bd7d0">CodeToPred</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr, ref string errorMsg)</td></tr>
-<tr class="memdesc:ac61ea15c0b83848aadcfe82a754bd7d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a terminal or sequence predicate from a code expression. <a href="#ac61ea15c0b83848aadcfe82a754bd7d0">More...</a><br /></td></tr>
-<tr class="separator:ac61ea15c0b83848aadcfe82a754bd7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dc8b836460e709e2cf1754f163ec997"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a0dc8b836460e709e2cf1754f163ec997">CodeToTerminalPred</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr, ref string errorMsg)</td></tr>
+<tr class="memdesc:a0dc8b836460e709e2cf1754f163ec997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a terminal predicate from a code expression. <a href="#a0dc8b836460e709e2cf1754f163ec997">More...</a><br /></td></tr>
+<tr class="separator:a0dc8b836460e709e2cf1754f163ec997"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89ebc20aea6b1915b1e4599170006cd4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a89ebc20aea6b1915b1e4599170006cd4">Optimize</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set, <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> dontcare)</td></tr>
 <tr class="memdesc:a89ebc20aea6b1915b1e4599170006cd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simplifies the specified set, if possible, so that <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aec228a031cdc56dea1a7a81cd4f9b01a" title="Generates code to test whether the terminal denoted &#39;laVar&#39; is in the set.">GenerateTest()</a> can generate simpler code for an if-else chain in a prediction tree. <a href="#a89ebc20aea6b1915b1e4599170006cd4">More...</a><br /></td></tr>
 <tr class="separator:a89ebc20aea6b1915b1e4599170006cd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -198,9 +201,6 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a708a262eb22bab1b2d469ac13ab74721"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a708a262eb22bab1b2d469ac13ab74721"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ResolveAlias</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr)</td></tr>
-<tr class="separator:a708a262eb22bab1b2d469ac13ab74721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc255d44e93242af3dd25e05d702493a"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#adc255d44e93242af3dd25e05d702493a">GenerateTest</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> subject, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> setName)</td></tr>
 <tr class="memdesc:adc255d44e93242af3dd25e05d702493a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates code to test whether a terminal is in the set. <a href="#adc255d44e93242af3dd25e05d702493a">More...</a><br /></td></tr>
 <tr class="separator:adc255d44e93242af3dd25e05d702493a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -587,7 +587,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 
 </div>
 </div>
-<a class="anchor" id="ac61ea15c0b83848aadcfe82a754bd7d0"></a>
+<a class="anchor" id="a0dc8b836460e709e2cf1754f163ec997"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -595,7 +595,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a> Loyc.LLParserGenerator.CodeGenHelperBase.CodeToPred </td>
+          <td class="memname">abstract <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a> Loyc.LLParserGenerator.CodeGenHelperBase.CodeToTerminalPred </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
           <td class="paramname"><em>expr</em>, </td>
@@ -619,7 +619,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </table>
 </div><div class="memdoc">
 
-<p>Creates a terminal or sequence predicate from a code expression.</p>
+<p>Creates a terminal predicate from a code expression.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>A expression provided by the user, such as <code>"a string"</code>, a <code>Token.Type</code>, or a <code>value..range</code>. <code>expr</code> will not be a call to the inversion operator #~ (that's handled internally using <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html#a0c7902f443a1e562c2be62ad6e4a25f3" title="Creates a version of the set with IsInverted toggled.">IPGTerminalSet.Inverted()</a>). This method also handles the "any token" input, which is an underscore by convention (_).</td></tr>
@@ -629,9 +629,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>If successful, a terminal predicate; otherwise null.</dd></dl>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#ae7cfc0bdfacb01d9b6c542201bee5cd6">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
+<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a7fea88f12ac2fe1cb4ce16249b89c2f0">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#ae71ee5b79e5893b7f6f8083f4789bdc8">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a40711eba1cacc9bf92276ff21ee152ea">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -1455,6 +1455,34 @@ complete, generate a Check() statement".</td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a708a262eb22bab1b2d469ac13ab74721"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLParserGenerator.CodeGenHelperBase.ResolveAlias </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>node</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the node for an alias. If the specified node is not an alias, returns the same node unchanged.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a5e102ada641d2aee0e10da9893f1df48">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a88aa254b7cf196c03245564ac51fc004"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1705,7 +1733,7 @@ complete, generate a Check() statement".</td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:07 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

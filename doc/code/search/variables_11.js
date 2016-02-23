@@ -10,7 +10,6 @@ var searchData=
   ['skipvalueparsing',['SkipValueParsing',['../classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#a96f3f35459c4e3015cbd4d2c4368ca22',1,'Loyc::Syntax::Les::LesLexer']]],
   ['splice',['Splice',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549',1,'Loyc::Syntax::CodeSymbols']]],
   ['stackalloc',['StackAlloc',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aced5b164655dd05adf2ccd77fc36be83',1,'Loyc::Syntax::CodeSymbols']]],
-  ['startexpr',['StartExpr',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#aad68f91a53f079ab7490a1c8a52fcaf8',1,'Loyc::Syntax::Les::LesNodePrinter']]],
   ['startindex',['StartIndex',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165',1,'Loyc::Syntax::Lexing::Token']]],
   ['startstmt',['StartStmt',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a8eb92fcb590e7d8b5e458c3b4d4db14c',1,'Loyc::Syntax::Les::LesNodePrinter']]],
   ['stmts',['Stmts',['../classLoyc_1_1Syntax_1_1ParsingService.html#af29026fa0925b638573f11459b81d83d',1,'Loyc::Syntax::ParsingService']]],

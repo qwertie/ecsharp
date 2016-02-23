@@ -1,8 +1,8 @@
 var searchData=
 [
   ['_5faddressof',['_AddressOf',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#af9672aa4215bab8561d293cdbdedc421',1,'Loyc::Syntax::CodeSymbols']]],
-  ['_5farray',['_Array',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aa82bd2f2d10b077d26fd93568548a5f8',1,'Loyc::Syntax::CodeSymbols']]],
   ['_5fblkoffsets',['_blkOffsets',['../classLoyc_1_1Syntax_1_1StreamCharSource.html#a09e530563472a5c6ec3a7f466d17df3b',1,'Loyc::Syntax::StreamCharSource']]],
+  ['_5fbracks',['_Bracks',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a3b6565e429f159bb31cd4a67e1f9f3c2',1,'Loyc::Syntax::CodeSymbols']]],
   ['_5fchildcount',['_childCount',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#aa7efb1f66090765df0594ddeab39fbbb',1,'Loyc::Collections::Impl::AListNode&lt; K, T &gt;']]],
   ['_5fchildren',['_children',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#ae49cc2cee7ea0fdd768eaba12f34d948',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['_5fcompareitems',['_compareItems',['../classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#ac2629e3f6b29ef2f45740312e7ebd9be',1,'Loyc::Collections::BList&lt; T &gt;']]],

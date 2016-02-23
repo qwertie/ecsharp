@@ -112,6 +112,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aa588d56669d4d11260b4cbee83046d61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa588d56669d4d11260b4cbee83046d61"></a>
 static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#aa588d56669d4d11260b4cbee83046d61">TryGetValue&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, V defaultValue)</td></tr>
 <tr class="separator:aa588d56669d4d11260b4cbee83046d61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae043e760b2f59fb29f440511e92045b2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#ae043e760b2f59fb29f440511e92045b2">TryGetValue&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key)</td></tr>
+<tr class="memdesc:ae043e760b2f59fb29f440511e92045b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns <a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>), and it returns the result as Maybe{V} instead of storing the result in an "out" parameter. <a href="#ae043e760b2f59fb29f440511e92045b2">More...</a><br /></td></tr>
+<tr class="separator:ae043e760b2f59fb29f440511e92045b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36db6dc944c76c1caec16a92cf38b15b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1DictionaryExt.html#a36db6dc944c76c1caec16a92cf38b15b">TryGetValueSafe&lt; K, V &gt;</a> (this IDictionary&lt; K, V &gt; dict, K key, out V value)</td></tr>
 <tr class="memdesc:a36db6dc944c76c1caec16a92cf38b15b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns false). <a href="#a36db6dc944c76c1caec16a92cf38b15b">More...</a><br /></td></tr>
 <tr class="separator:a36db6dc944c76c1caec16a92cf38b15b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,6 +160,42 @@ static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 <p>An alternate version TryGetValue that returns a default value if the key was not found in the dictionary, and that does not throw if the key is null.</p>
 <dl class="section return"><dt>Returns</dt><dd>The value associated with the specified key, or defaultValue if no value is associated with the key.</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ae043e760b2f59fb29f440511e92045b2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;V&gt; Loyc.Collections.DictionaryExt.TryGetValue&lt; K, V &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IDictionary&lt; K, V &gt;&#160;</td>
+          <td class="paramname"><em>dict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">K&#160;</td>
+          <td class="paramname"><em>key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as IDictionary.TryGetValue() except that this method does not throw an exception when <code>key==null</code> (it simply returns <a class="el" href="classLoyc_1_1NoValue.html" title="NoValue.Value is meant to be used as the value of a property that has &quot;no value&quot;, meaning no value is...">NoValue</a>), and it returns the result as Maybe{V} instead of storing the result in an "out" parameter.</p>
 
 </div>
 </div>
@@ -206,7 +245,7 @@ static V&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:01 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

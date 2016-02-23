@@ -96,8 +96,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">LeMP.IMacroContext Interface Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>This interface provides services offered by the lexical macro processor (<a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>). 
+ <a href="interfaceLeMP_1_1IMacroContext.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/IMacroContext.cs'>/Main/LeMP/IMacroContext.cs</a></li>
+<li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/LeMP/IMacroContext.cs'>/Core/Loyc.Syntax/LeMP/IMacroContext.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for LeMP.IMacroContext:</div>
@@ -108,7 +111,10 @@ Inheritance diagram for LeMP.IMacroContext:</div>
 <area href="interfaceLoyc_1_1IMessageSink.html" title="A general-purpose interface for a class that accepts formatted messages with context information..." alt="Loyc.IMessageSink" shape="rect" coords="0,0,131,24"/>
 </map>
  </div></div>
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
+<div class="textblock"><p>This interface provides services offered by the lexical macro processor (<a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>).</p>
+<p>Macros receive this as their second argument (see <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576" title="Method signature of an LeMP macro.">LexicalMacro</a>)</p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:a8419c79777d647e75169adb9a3968ee8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a8419c79777d647e75169adb9a3968ee8">Sink</a><code> [get]</code></td></tr>
@@ -230,7 +236,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Applies all available macros to the current node's children and returns the result.</p>
 <p>This method only processes children once. If this method is called again for the same node, it returns a cached result. </p>
-<p>If the currently-running macro fails the result may be thrown away and the effort of processing the children will have been wasted. If the macro succeeds a its <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576" title="Method signature of an LEL simple macro.">LexicalMacro</a> attribute does not include <code>Mode = MacroMode.NoReprocessing</code>, the children will (normally) be processed again after the macro returns. </p>
+<p>If the currently-running macro fails the result may be thrown away and the effort of processing the children will have been wasted. If the macro succeeds a its <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576" title="Method signature of an LeMP macro.">LexicalMacro</a> attribute does not include <code>Mode = MacroMode.NoReprocessing</code>, the children will (normally) be processed again after the macro returns. </p>
 
 </div>
 </div>
@@ -442,7 +448,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the message sink, used for writing warnings and errors.</p>
-<p>For backward compatibility, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> itself implements IMessageSink, but if I were starting from scratch you'd have to write output through this property.</p>
+<p>For backward compatibility, <a class="el" href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP).">IMacroContext</a> itself implements IMessageSink, but if we were starting from scratch you'd have to write output through this property.</p>
 
 </div>
 </div>
@@ -450,7 +456,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

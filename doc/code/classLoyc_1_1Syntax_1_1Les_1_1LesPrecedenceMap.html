@@ -100,13 +100,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>This class's main job is to maintains a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is cached for future reference. 
+<p>This class's main job is to maintain a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is cached for future reference. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#details">More...</a></p>
 <hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/LES/LesPrecedenceMap.cs'>/Core/Loyc.Syntax/LES/LesPrecedenceMap.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>This class's main job is to maintains a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is cached for future reference.</p>
+<div class="textblock"><p>This class's main job is to maintain a table of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> values for LES operators. When you ask about a new operator, its precedence is cached for future reference.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -123,7 +123,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aaf26f0a7849ec0608800b80abd0915b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the precedence of a prefix, suffix, or infix operator in LES, under the assumption that the operator isn't surrounded in backticks (in which case its precedence is always Backtick). <a href="#aaf26f0a7849ec0608800b80abd0915b7">More...</a><br /></td></tr>
 <tr class="separator:aaf26f0a7849ec0608800b80abd0915b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d21513d9866974350f7886fbfb83be5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#a7d21513d9866974350f7886fbfb83be5">ToSuffixOpName</a> (object symbol)</td></tr>
-<tr class="memdesc:a7d21513d9866974350f7886fbfb83be5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a normal operator symbol like <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"++"</code>, gets the suffix form of the name, such as <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"suf++"</code>. In LES, operators that end with a backslash () are always suffix operators, so their names are left unchanged. <a href="#a7d21513d9866974350f7886fbfb83be5">More...</a><br /></td></tr>
+<tr class="memdesc:a7d21513d9866974350f7886fbfb83be5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a normal operator symbol like <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"++"</code>, gets the suffix form of the name, such as <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"suf++"</code>. <a href="#a7d21513d9866974350f7886fbfb83be5">More...</a><br /></td></tr>
 <tr class="separator:a7d21513d9866974350f7886fbfb83be5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -134,9 +134,6 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aaf324e030d40f109be3b4a8fb88b5a87"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#aaf324e030d40f109be3b4a8fb88b5a87">IsNaturalOperator</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> s)</td></tr>
 <tr class="memdesc:aaf324e030d40f109be3b4a8fb88b5a87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the given <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> can be printed as an operator without escaping it. <a href="#aaf324e030d40f109be3b4a8fb88b5a87">More...</a><br /></td></tr>
 <tr class="separator:aaf324e030d40f109be3b4a8fb88b5a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49ac0fd5fdcd419bd04a15e407f6d7f5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#a49ac0fd5fdcd419bd04a15e407f6d7f5">RequiresBackticks</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> s)</td></tr>
-<tr class="memdesc:a49ac0fd5fdcd419bd04a15e407f6d7f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if a given <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html" title="Contains classes related to Loyc Expression Syntax (LES), including the parser and printer (reachable...">Les</a> operator can only be printed with backticks, because a leading backslash is insufficient. <a href="#a49ac0fd5fdcd419bd04a15e407f6d7f5">More...</a><br /></td></tr>
-<tr class="separator:a49ac0fd5fdcd419bd04a15e407f6d7f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e68a90fa13147ac16e72dfcbed282c5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html#a7e68a90fa13147ac16e72dfcbed282c5">IsSuffixOperatorName</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, out <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> bareName, bool checkNatural)</td></tr>
 <tr class="memdesc:a7e68a90fa13147ac16e72dfcbed282c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decides whether the name appears to represent a suffix operator of the form <code>sufOP</code> or <code>OP&lt;/c&gt;.</code><code> </code> <a href="#a7e68a90fa13147ac16e72dfcbed282c5">More...</a><br /></td></tr>
 <tr class="separator:a7e68a90fa13147ac16e72dfcbed282c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,7 +202,7 @@ static readonly Map&lt; object, <br class="typebreak" />
 <p>Gets the precedence of a prefix, suffix, or infix operator in LES, under the assumption that the operator isn't surrounded in backticks (in which case its precedence is always Backtick).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">op</td><td>Parsed form of the operator. op must be a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, but the parameter has type object to avoid casting <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> in the parser.</td></tr>
+    <tr><td class="paramname">op</td><td>Parsed form of the operator. op must be a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, but the parameter has type object to avoid casting Token.Value in the parser.</td></tr>
   </table>
   </dd>
 </dl>
@@ -317,32 +314,6 @@ static readonly Map&lt; object, <br class="typebreak" />
 
 </div>
 </div>
-<a class="anchor" id="a49ac0fd5fdcd419bd04a15e407f6d7f5"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool Loyc.Syntax.Les.LesPrecedenceMap.RequiresBackticks </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns true if a given <a class="el" href="namespaceLoyc_1_1Syntax_1_1Les.html" title="Contains classes related to Loyc Expression Syntax (LES), including the parser and printer (reachable...">Les</a> operator can only be printed with backticks, because a leading backslash is insufficient.</p>
-
-</div>
-</div>
 <a class="anchor" id="af8e62e7774abf5bd45904af1c435b6b8"></a>
 <div class="memitem">
 <div class="memproto">
@@ -390,8 +361,8 @@ static readonly Map&lt; object, <br class="typebreak" />
 </table>
 </div><div class="memdoc">
 
-<p>Given a normal operator symbol like <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"++"</code>, gets the suffix form of the name, such as <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"suf++"</code>. In LES, operators that end with a backslash () are always suffix operators, so their names are left unchanged.</p>
-<p>op must be a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, but the parameter has type object to avoid casting <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> in the parser.</p>
+<p>Given a normal operator symbol like <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"++"</code>, gets the suffix form of the name, such as <code>(<a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>)"suf++"</code>.</p>
+<p>op must be a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, but the parameter has type object to avoid casting Token.Value in the parser.</p>
 
 </div>
 </div>
@@ -429,7 +400,6 @@ static readonly Map&lt; object, <br class="typebreak" />
 <div class="line">                { S.DotDot,      P.PrefixDots  }, </div>
 <div class="line">                { <a class="code" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#acfdd5dac0f2f13ab5f3ae152e5eed150">S.OrBits</a>,      P.PrefixOr    }, </div>
 <div class="line">                { <a class="code" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a661c77d6023f9550088e3794a63ee259">S.Div</a>,         P.Reserved    }, </div>
-<div class="line">                { S.Backslash,   P.Reserved    }, </div>
 <div class="line">                { <a class="code" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a6c7d4e2fdc70cf90e64f89bea2c45779">S.LT</a>,          P.Reserved    }, </div>
 <div class="line">                { <a class="code" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a826c7c3143cbec08dcc108c2ee6b5fbb">S.GT</a>,          P.Reserved    }, </div>
 <div class="line">                { <a class="code" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a306a3682a3eff3b6500545a5afd18596">S.QuestionMark</a>,P.Reserved    }, </div>
@@ -467,7 +437,7 @@ static readonly Map&lt; object, <br class="typebreak" />
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:12 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

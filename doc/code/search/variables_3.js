@@ -8,6 +8,5 @@ var searchData=
   ['coloncolon',['ColonColon',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ade52d4e682e138d242eae55bf9574424',1,'Loyc::Syntax::CodeSymbols']]],
   ['concatset',['ConcatSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a753f8388b8a9928edec38f52ec02d7bd',1,'Loyc::Syntax::CodeSymbols']]],
   ['console',['Console',['../classLoyc_1_1MessageSink.html#a81ac62c2a94fe066156cce21f878f2a1',1,'Loyc::MessageSink']]],
-  ['continue',['Continue',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a67830e7e484161917444e93ced605698',1,'Loyc::Syntax::CodeSymbols']]],
-  ['continueexpr',['ContinueExpr',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a0235757341a6d95c930b1d3c4695fde2',1,'Loyc::Syntax::Les::LesNodePrinter']]]
+  ['continue',['Continue',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a67830e7e484161917444e93ced605698',1,'Loyc::Syntax::CodeSymbols']]]
 ];

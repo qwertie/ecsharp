@@ -7,7 +7,7 @@ var searchData=
   ['basedictionary_3c_20tkey_2c_20tvalue_20_3e',['BaseDictionary&lt; TKey, TValue &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1BaseDictionary_3_01TKey_00_01TValue_01_4.html',1,'Loyc::Collections::Impl']]],
   ['baseilexer_3c_20charsrc_2c_20token_20_3e',['BaseILexer&lt; CharSrc, Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html',1,'Loyc::Syntax::Lexing']]],
-  ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#a11dd2a86be25ddbef49a36cf230fd9b5',1,'Loyc::Syntax::Lexing::BaseLexer&lt; CharSrc &gt;']]],
+  ['baselexer',['BaseLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#aee0fca65b95753d88fdccc1b9e5a7214',1,'Loyc::Syntax::Lexing::BaseLexer&lt; CharSrc &gt;']]],
   ['baselexer_3c_20charsrc_20_3e',['BaseLexer&lt; CharSrc &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['baseparser_3c_20token_20_3e',['BaseParser&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1BaseParser_3_01Token_01_4.html',1,'Loyc::Syntax']]],
   ['baseparser_3c_20token_2c_20matchtype_20_3e',['BaseParser&lt; Token, MatchType &gt;',['../classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html',1,'Loyc::Syntax']]],
@@ -43,7 +43,6 @@ var searchData=
   ['boxedtrue',['BoxedTrue',['../classLoyc_1_1G.html#ad9741fafb8aa1e28d5b19e3b5c06ff6a',1,'Loyc::G']]],
   ['boxedvoid',['BoxedVoid',['../classLoyc_1_1G.html#aa11796c638519b8f6b3d6815fc3724e5',1,'Loyc::G']]],
   ['braces',['Braces',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1b43c4a6ddadf3ab8fe3333aee405969',1,'Loyc::Syntax::CodeSymbols']]],
-  ['bracks',['Bracks',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#add163c407ce603e430d4600414edb060',1,'Loyc::Syntax::CodeSymbols']]],
   ['branchmode',['BranchMode',['../namespaceLoyc_1_1LLParserGenerator.html#a888ba124aff3c23bd1e4594971fbd53e',1,'Loyc::LLParserGenerator']]],
   ['break',['Break',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666',1,'Loyc::Syntax::CodeSymbols']]],
   ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]]

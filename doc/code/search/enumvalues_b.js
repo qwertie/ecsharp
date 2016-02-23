@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['passive',['Passive',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85',1,'LeMP']]],
-  ['prefixnotation',['PrefixNotation',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a531100057c5cfdf34cfc72170c4bb7ba',1,'Loyc::Syntax']]],
-  ['prioritymask',['PriorityMask',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f',1,'LeMP']]],
-  ['processchildrenafter',['ProcessChildrenAfter',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92',1,'LeMP']]],
-  ['processchildrenbefore',['ProcessChildrenBefore',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1',1,'LeMP']]]
+  ['oldstyle',['OldStyle',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ac7dd353737b0e4ade06a598627de9c2d',1,'Loyc::Syntax']]],
+  ['openbracket',['OpenBracket',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#a804a504dd17627158424c2c243b31685a8ee1f3d3bba931acdcbde13ad0ae8b9e',1,'Loyc::Syntax::Lexing::IndentTokenGenerator&lt; Token &gt;']]],
+  ['operator',['Operator',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903ae1b3ec89ead7f83a9245ed5c9cacfdbf',1,'Loyc.Syntax.Lexing.Operator()'],['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ae1b3ec89ead7f83a9245ed5c9cacfdbf',1,'Loyc.Syntax.Operator()']]],
+  ['other',['Other',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#a804a504dd17627158424c2c243b31685a6311ae17c1ee52b36e68aaf4ad066387',1,'Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.Other()'],['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a6311ae17c1ee52b36e68aaf4ad066387',1,'Loyc.Syntax.Lexing.Other()']]],
+  ['otherkeyword',['OtherKeyword',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a3da6889722c9caab6a052a6866a05e9c',1,'Loyc::Syntax::Lexing']]],
+  ['override',['Override',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849',1,'LeMP']]],
+  ['overridemax',['OverrideMax',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ae9275e07c79aa464189c6ee9b8724a61',1,'LeMP']]]
 ];

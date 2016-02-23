@@ -117,7 +117,7 @@ Names must come from the global symbol pool (GSymbol.Pool). The printer will hap
 <p>Only the attributes, head (LiteralNode.Value, IdNode.Name or CallNode.Target), and arguments of nodes are round-trippable. Superficial properties such as original source code locations and the LNode.Style are, in general, lost, although the printer can faithfully reproduce some (not all) NodeStyles. Also, any attribute whose Name starts with "#trivia_" will be dropped, because these attributes are considered extensions of the NodeStyle. However, the style indicated by the #trivia_* attribute will be used if the printer recognizes it. </p>
 <p>Because EC# is based on C# which has some tricky ambiguities, there is a lot of code in this class dedicated to special cases and ambiguities. Even so, it is likely that some cases have been missed&ndash;that some unusual trees will not round-trip properly. Any failure to round-trip is a bug, and your bug reports are welcome. If this class uses prefix notation (with #specialNames) unnecessarily, that's also a bug, but it has low priority unless it affects plain C# output (where #specialNames are illegal.) </p>
 <p>This class contains some configuration options that will defeat round- tripping but will make the output look better. For example, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a> will print a tree such as <code>@*(a + b, c)</code> as <code>(a + b) * c</code>, by adding parenthesis to eliminate prefix notation, even though parenthesis make the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree slightly different. </p>
-<p>To avoid printing EC# syntax that does not exist in C#, you can call <a class="el" href="classEcs_1_1EcsNodePrinter.html#ab0f0e57ea166c5bdab5d4fed0daf0dd2" title="Sets AllowChangeParenthesis, PreferOldStyleCasts and DropNonDeclarationAttributes to true...">SetPlainCSharpMode</a>, but this only works if the syntax tree does not contain invalid structure or EC#-specific code such as "==&gt;", "alias", and template arguments ($T). </p>
+<p>To avoid printing EC# syntax that does not exist in C#, you can call <a class="el" href="classEcs_1_1EcsNodePrinter.html#ab0f0e57ea166c5bdab5d4fed0daf0dd2" title="Sets AllowChangeParenthesis, PreferPlainCSharp and DropNonDeclarationAttributes to true...">SetPlainCSharpMode</a>, but this only works if the syntax tree does not contain invalid structure or EC#-specific code such as "==&gt;", "alias", and template arguments ($T). </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -139,11 +139,10 @@ Public Types</h2></td></tr>
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa906db9293715c6c5d602734d781ab36d">Ambiguity.ForEachInitializer</a> = 0x1000, 
 <br />
 &#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaaadac743356a64174846304ba4b33ee72">Ambiguity.ElseClause</a> = 0x2000, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa888bb746148f4f71dbabfe1ae648e7d3">Ambiguity.RecursivePrefixNotation</a> = 0x4000, 
 <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa6cd8d34467de36f84cedd7a7a40ef479">Ambiguity.AllowThisAsCallTarget</a> = 0x8000, 
+<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa2e1b04fc1a8e5adcc2f231bb548232e9">Ambiguity.NoIfWithoutElse</a> = 0x10000, 
 <br />
-&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa2e1b04fc1a8e5adcc2f231bb548232e9">Ambiguity.NoIfWithoutElse</a> = 0x10000, 
-<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa1490ee442c93799096a36f90f2a72dad">Ambiguity.NoParenthesis</a> = 0x20000
+&#160;&#160;<a class="el" href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa1490ee442c93799096a36f90f2a72dad">Ambiguity.NoParenthesis</a> = 0x20000
 <br />
  }</td></tr>
 <tr class="memdesc:a0704c1e9fe32d570b29323438180ddfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal enum (marked public for an obscure technical reason). These are flags that represent special situations in EC# syntax. <a href="classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfa">More...</a><br /></td></tr>
@@ -152,7 +151,7 @@ Public Types</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a0398f19a40059b0cef357e0f1acf616a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0398f19a40059b0cef357e0f1acf616a"></a>
-static readonly LNodePrinter&#160;</td><td class="memItemRight" valign="bottom"><b>Printer</b> = Print</td></tr>
+static readonly LNodePrinter&#160;</td><td class="memItemRight" valign="bottom"><b>Printer</b> = PrintECSharp</td></tr>
 <tr class="separator:a0398f19a40059b0cef357e0f1acf616a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
@@ -175,9 +174,6 @@ Properties</h2></td></tr>
 <tr class="memitem:a8c58d5d5b0f9afe15e7a9f1158175888"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a8c58d5d5b0f9afe15e7a9f1158175888">AllowExtraBraceForIfElseAmbig</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a8c58d5d5b0f9afe15e7a9f1158175888"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve if-else ambiguity by adding braces rather than reverting to prefix notation. <a href="#a8c58d5d5b0f9afe15e7a9f1158175888">More...</a><br /></td></tr>
 <tr class="separator:a8c58d5d5b0f9afe15e7a9f1158175888"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7bff08a2dd1f5d51810f5721b792c54a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a">PreferOldStyleCasts</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a7bff08a2dd1f5d51810f5721b792c54a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefers plain C# syntax for cast operators even when the syntax tree requests the new cast style, e.g. x(-&gt;int) becomes (int) x. <a href="#a7bff08a2dd1f5d51810f5721b792c54a">More...</a><br /></td></tr>
-<tr class="separator:a7bff08a2dd1f5d51810f5721b792c54a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3c3deb517997e483564634b3528bcac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac">DropNonDeclarationAttributes</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ae3c3deb517997e483564634b3528bcac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suppresses printing of all attributes that are not on declaration or definition statements (such as classes, methods and variable declarations at statement level). Also, avoids prefix notation when the attributes would have required it, e.g. <code>@+([Foo] a, b)</code> can be printed "a+b" instead. <a href="#ae3c3deb517997e483564634b3528bcac">More...</a><br /></td></tr>
 <tr class="separator:ae3c3deb517997e483564634b3528bcac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,11 +193,14 @@ Properties</h2></td></tr>
 <tr class="memdesc:aed9662d830c09dc2503ab28c65f40a27"><td class="mdescLeft">&#160;</td><td class="mdescRight">When the printer encounters an unprintable literal, it calls Value.ToString(). When this flag is set, the string is placed in double quotes; when this flag is clear, it is printed as raw text. <a href="#aed9662d830c09dc2503ab28c65f40a27">More...</a><br /></td></tr>
 <tr class="separator:aed9662d830c09dc2503ab28c65f40a27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ece6d3ef9a5ab4b36f3ec1d8fc54e38"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">AllowConstructorAmbiguity</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a3ece6d3ef9a5ab4b36f3ec1d8fc54e38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes the ambiguity between constructors and method calls to be ignored; see EcsNodePrinterTests.ConstructorAmbiguities(). <a href="#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">More...</a><br /></td></tr>
+<tr class="memdesc:a3ece6d3ef9a5ab4b36f3ec1d8fc54e38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Causes the ambiguity between constructors and method calls to be ignored; see EcsPrinterAndParserTests.ConstructorAmbiguities(). <a href="#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">More...</a><br /></td></tr>
 <tr class="separator:a3ece6d3ef9a5ab4b36f3ec1d8fc54e38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bde4cd0548b0216af7a7194cec73d8e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#a0bde4cd0548b0216af7a7194cec73d8e">AvoidMacroSyntax</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a0bde4cd0548b0216af7a7194cec73d8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints statements like "foo (...) bar()" in the equivalent form "foo (..., bar())" instead. Does not affect foo {...} because property and event definitions require this syntax (get {...}, set {...}). <a href="#a0bde4cd0548b0216af7a7194cec73d8e">More...</a><br /></td></tr>
 <tr class="separator:a0bde4cd0548b0216af7a7194cec73d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa39e1b1580553f0759ea005acbbbd53a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#aa39e1b1580553f0759ea005acbbbd53a">PreferPlainCSharp</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:aa39e1b1580553f0759ea005acbbbd53a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x. <a href="#aa39e1b1580553f0759ea005acbbbd53a">More...</a><br /></td></tr>
+<tr class="separator:aa39e1b1580553f0759ea005acbbbd53a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0ac09b2066cc8bc6c6cb70c2db567f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceEcs.html#a2a06be7b18a785bc843cf1645d4c5909">SpaceOpt</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#aa0ac09b2066cc8bc6c6cb70c2db567f4">SpaceOptions</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:aa0ac09b2066cc8bc6c6cb70c2db567f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls the locations where spaces should be emitted. <a href="#aa0ac09b2066cc8bc6c6cb70c2db567f4">More...</a><br /></td></tr>
 <tr class="separator:aa0ac09b2066cc8bc6c6cb70c2db567f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -217,11 +216,14 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>SpaceAfterPrefixStopPr
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a1ae7c032901989e320a042feefd5bcc5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1ae7c032901989e320a042feefd5bcc5"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode, string indentString, string lineSeparator)</td></tr>
+<tr class="separator:a1ae7c032901989e320a042feefd5bcc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02b58d9f742cffd7770fff88de58cc3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02b58d9f742cffd7770fff88de58cc3e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>EcsNodePrinter</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a> target)</td></tr>
 <tr class="separator:a02b58d9f742cffd7770fff88de58cc3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0f0e57ea166c5bdab5d4fed0daf0dd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classEcs_1_1EcsNodePrinter.html">EcsNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEcs_1_1EcsNodePrinter.html#ab0f0e57ea166c5bdab5d4fed0daf0dd2">SetPlainCSharpMode</a> ()</td></tr>
-<tr class="memdesc:ab0f0e57ea166c5bdab5d4fed0daf0dd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a" title="Prefers plain C# syntax for cast operators even when the syntax tree requests the new cast style...">PreferOldStyleCasts</a> and <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#ab0f0e57ea166c5bdab5d4fed0daf0dd2">More...</a><br /></td></tr>
+<tr class="memdesc:ab0f0e57ea166c5bdab5d4fed0daf0dd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#aa39e1b1580553f0759ea005acbbbd53a" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#ab0f0e57ea166c5bdab5d4fed0daf0dd2">More...</a><br /></td></tr>
 <tr class="separator:ab0f0e57ea166c5bdab5d4fed0daf0dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -235,9 +237,6 @@ static <a class="el" href="classEcs_1_1EcsNodePrinter.html">EcsNodePrinter</a>&#
 <tr class="memitem:ae927783581c257e0583ad1bd9f1d277d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae927783581c257e0583ad1bd9f1d277d"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PrintPlainCSharp</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode, string indentString, string lineSeparator)</td></tr>
 <tr class="separator:ae927783581c257e0583ad1bd9f1d277d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2b7a568b051e1480f48faa1ef82efc3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2b7a568b051e1480f48faa1ef82efc3"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, StringBuilder target, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> errors, object mode, string indentString, string lineSeparator)</td></tr>
-<tr class="separator:ab2b7a568b051e1480f48faa1ef82efc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
 <a class="anchor" id="a0704c1e9fe32d570b29323438180ddfa"></a>
@@ -256,7 +255,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <p>The expression can contain uninitialized variable declarations, e.g. because it is the subject of an assignment. In the tree "(x + y, int z) = (a, b)", this flag is passed down to "(x + y, int z)" and then down to "int y" and "x + y", but it doesn't propagate down to "x", "y" and "int".</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa1ae4f69bae69c68dbba947988e250186"></a>CastRhs&#160;</td><td class="fielddoc">
-<p>The expression is the right side of a traditional cast, so the printer must avoid ambiguity in case of the following prefix operators: <code>(Foo)-x, (Foo)+x, (Foo)&amp;x, (Foo)*x, (Foo)~x, (Foo)++(x), (Foo)&ndash;(x)</code> (the (Foo)++(x) case is parsed as a post-increment and a call).</p>
+<p>The expression is the right side of a traditional cast, so the printer must avoid ambiguity in case of the following prefix operators: <code>(Foo)&amp;x, (Foo)*x, (Foo)++(x), (Foo)&ndash;(x)</code> (the (Foo)++(x) case is parsed as a post-increment and a call).</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa3049892795d62eadfd05ad49720c6e86"></a>IsCallTarget&#160;</td><td class="fielddoc">
 <p>The expression is in a location where, if it is parenthesized and has the syntax of a data type inside, it will be treated as a cast. This occurs when a call that is printed with prefix notation has a parenthesized target node, e.g. (target)(arg). The target node can avoid the syntax of a data type by adding "[ ]" (an empty set of attributes) at the beginning of the expression.</p>
@@ -290,9 +289,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaaadac743356a64174846304ba4b33ee72"></a>ElseClause&#160;</td><td class="fielddoc">
 <p>After 'else', valid 'if' statements are not indented.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa888bb746148f4f71dbabfe1ae648e7d3"></a>RecursivePrefixNotation&#160;</td><td class="fielddoc">
-<p>Use prefix notation recursively.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a0704c1e9fe32d570b29323438180ddfaa6cd8d34467de36f84cedd7a7a40ef479"></a>AllowThisAsCallTarget&#160;</td><td class="fielddoc">
 <p>Print #this(...) as this(...) inside a method</p>
@@ -329,10 +325,10 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Sets <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a" title="Prefers plain C# syntax for cast operators even when the syntax tree requests the new cast style...">PreferOldStyleCasts</a> and <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
+<p>Sets <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#aa39e1b1580553f0759ea005acbbbd53a" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
 <dl class="section return"><dt>Returns</dt><dd>this.</dd></dl>
 
-<p>References <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a">Ecs.EcsNodePrinter.AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">Ecs.EcsNodePrinter.AllowConstructorAmbiguity</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a8c58d5d5b0f9afe15e7a9f1158175888">Ecs.EcsNodePrinter.AllowExtraBraceForIfElseAmbig</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0bde4cd0548b0216af7a7194cec73d8e">Ecs.EcsNodePrinter.AvoidMacroSyntax</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac">Ecs.EcsNodePrinter.DropNonDeclarationAttributes</a>, and <a class="el" href="classEcs_1_1EcsNodePrinter.html#a7bff08a2dd1f5d51810f5721b792c54a">Ecs.EcsNodePrinter.PreferOldStyleCasts</a>.</p>
+<p>References <a class="el" href="classEcs_1_1EcsNodePrinter.html#a80b31b21a9280a488b75c71b5856071a">Ecs.EcsNodePrinter.AllowChangeParenthesis</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a3ece6d3ef9a5ab4b36f3ec1d8fc54e38">Ecs.EcsNodePrinter.AllowConstructorAmbiguity</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a8c58d5d5b0f9afe15e7a9f1158175888">Ecs.EcsNodePrinter.AllowExtraBraceForIfElseAmbig</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#a0bde4cd0548b0216af7a7194cec73d8e">Ecs.EcsNodePrinter.AvoidMacroSyntax</a>, <a class="el" href="classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac">Ecs.EcsNodePrinter.DropNonDeclarationAttributes</a>, and <a class="el" href="classEcs_1_1EcsNodePrinter.html#aa39e1b1580553f0759ea005acbbbd53a">Ecs.EcsNodePrinter.PreferPlainCSharp</a>.</p>
 
 </div>
 </div>
@@ -380,7 +376,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Causes the ambiguity between constructors and method calls to be ignored; see EcsNodePrinterTests.ConstructorAmbiguities().</p>
+<p>Causes the ambiguity between constructors and method calls to be ignored; see EcsPrinterAndParserTests.ConstructorAmbiguities().</p>
 
 <p>Referenced by <a class="el" href="classEcs_1_1EcsNodePrinter.html#ab0f0e57ea166c5bdab5d4fed0daf0dd2">Ecs.EcsNodePrinter.SetPlainCSharpMode()</a>.</p>
 
@@ -615,7 +611,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 
 </div>
 </div>
-<a class="anchor" id="a7bff08a2dd1f5d51810f5721b792c54a"></a>
+<a class="anchor" id="aa39e1b1580553f0759ea005acbbbd53a"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -623,7 +619,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool Ecs.EcsNodePrinter.PreferOldStyleCasts</td>
+          <td class="memname">bool Ecs.EcsNodePrinter.PreferPlainCSharp</td>
         </tr>
       </table>
   </td>
@@ -633,7 +629,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Prefers plain C# syntax for cast operators even when the syntax tree requests the new cast style, e.g. x(-&gt;int) becomes (int) x.</p>
+<p>Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x.</p>
 
 <p>Referenced by <a class="el" href="classEcs_1_1EcsNodePrinter.html#ab0f0e57ea166c5bdab5d4fed0daf0dd2">Ecs.EcsNodePrinter.SetPlainCSharpMode()</a>.</p>
 
@@ -687,7 +683,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -16,5 +16,6 @@ var searchData=
   ['done',['Done',['../classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a1a81b255479a6044672d15626765364c',1,'Loyc.LLParserGenerator.CodeGenHelperBase.Done()'],['../interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a8d39526aa1964cbecf3b65cbe0aeb043',1,'Loyc.LLParserGenerator.IPGCodeGenHelper.Done()']]],
   ['dorange',['DoRange',['../classLoyc_1_1Collections_1_1BList_3_01T_01_4.html#a68610104747eee3e42a43a9032c61605',1,'Loyc::Collections::BList&lt; T &gt;']]],
   ['dot',['Dot',['../classLoyc_1_1Geometry_1_1PointMath.html#a78a7c29de64d5a09e652c82001e17298',1,'Loyc.Geometry.PointMath.Dot(this Vector a, Vector b)'],['../classLoyc_1_1Geometry_1_1PointMath.html#a78a7c29de64d5a09e652c82001e17298',1,'Loyc.Geometry.PointMath.Dot(this Vector a, Vector b)'],['../classLoyc_1_1Geometry_1_1PointMath.html#a78a7c29de64d5a09e652c82001e17298',1,'Loyc.Geometry.PointMath.Dot(this Vector a, Vector b)']]],
-  ['dot_3c_20t_2c_20m_20_3e',['Dot&lt; T, M &gt;',['../classLoyc_1_1Geometry_1_1PointExt.html#a08dc857b0a94b1bef2778e8418228660',1,'Loyc::Geometry::PointExt']]]
+  ['dot_3c_20t_2c_20m_20_3e',['Dot&lt; T, M &gt;',['../classLoyc_1_1Geometry_1_1PointExt.html#a08dc857b0a94b1bef2778e8418228660',1,'Loyc::Geometry::PointExt']]],
+  ['down',['Down',['../classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a077168b9064afbe8efeee46992d97645',1,'Loyc::Syntax::BaseParserForList&lt; Token, MatchType, List &gt;']]]
 ];

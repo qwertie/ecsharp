@@ -126,17 +126,11 @@ Inheritance diagram for Loyc.Collections.StringSlice:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A random-access slice of System.String.</p>
-<p>Where possible, it is recommended that you use <a class="el" href="structLoyc_1_1UString.html" title="UString is a wrapper around string that provides a range of 21-bit UCS-4 characters. &quot;U&quot; stands for &quot;Unicode&quot;, as in UCS-4, as opposed to a normal string that is UTF-16.">UString</a> instead. </p>
-<p>Note to self: I forgot why I made this type as a distinct entity from <a class="el" href="structLoyc_1_1UString.html" title="UString is a wrapper around string that provides a range of 21-bit UCS-4 characters. &quot;U&quot; stands for &quot;Unicode&quot;, as in UCS-4, as opposed to a normal string that is UTF-16.">UString</a>. Consider attempting to eliminate <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html" title="A random-access slice of System.String.">StringSlice</a>. </p>
+<p>Where possible, it is recommended that you use <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange{T} of 21-bit UC...">UString</a> instead. </p>
+<p>Note to self: I forgot why I made this type as a distinct entity from <a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange{T} of 21-bit UC...">UString</a>. Consider attempting to eliminate <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html" title="A random-access slice of System.String.">StringSlice</a>. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
-<tr class="memitem:aa7f5346d98f42e9bd76b63ab4fffb04a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7f5346d98f42e9bd76b63ab4fffb04a"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>_str</b></td></tr>
-<tr class="separator:aa7f5346d98f42e9bd76b63ab4fffb04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa388f949d79e1ad4080643a35582fdca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa388f949d79e1ad4080643a35582fdca"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>_start</b></td></tr>
-<tr class="separator:aa388f949d79e1ad4080643a35582fdca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e48a302fbbf906941cb7e5a72858bd2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e48a302fbbf906941cb7e5a72858bd2"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>_count</b></td></tr>
 <tr class="separator:a3e48a302fbbf906941cb7e5a72858bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -551,7 +545,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:05 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:44 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -127,7 +127,7 @@ Public fields</h2></td></tr>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>AllowNestedComments</b> = true</td></tr>
 <tr class="separator:af39f24976c4b63604c144f1620eb3e30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96f3f35459c4e3015cbd4d2c4368ca22"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#a96f3f35459c4e3015cbd4d2c4368ca22">SkipValueParsing</a> = false</td></tr>
-<tr class="memdesc:a96f3f35459c4e3015cbd4d2c4368ca22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used for syntax highlighting, which doesn't care about token values. This option causes the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> to be set to a default, like '\0' for single-quoted strings and 0 for numbers. Operator names are still parsed. <a href="#a96f3f35459c4e3015cbd4d2c4368ca22">More...</a><br /></td></tr>
+<tr class="memdesc:a96f3f35459c4e3015cbd4d2c4368ca22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used for syntax highlighting, which doesn't care about token values. This option causes the Token.Value to be set to a default, like '\0' for single-quoted strings and 0 for numbers. Operator names are still parsed. <a href="#a96f3f35459c4e3015cbd4d2c4368ca22">More...</a><br /></td></tr>
 <tr class="separator:a96f3f35459c4e3015cbd4d2c4368ca22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -173,7 +173,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:af894b54304a6a9c502ac3a2165ee5c3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a normal or triple-quoted string whose starting quotes have been stripped out. If triple-quote parsing was requested, stops parsing at three quote marks; otherwise, stops parsing at a single end-quote or newline. <a href="#af894b54304a6a9c502ac3a2165ee5c3b">More...</a><br /></td></tr>
 <tr class="separator:af894b54304a6a9c502ac3a2165ee5c3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6a29534fb938217c56c6b3a3b3dd2af"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#af6a29534fb938217c56c6b3a3b3dd2af">ParseIdentifier</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, Action&lt; int, string &gt; onError, out bool checkForNamedLiteral)</td></tr>
-<tr class="memdesc:af6a29534fb938217c56c6b3a3b3dd2af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses an LES-style identifier such as <code>foo</code>, <code></code>, <code>&lt;tt&gt;foo</code> or <code>&amp;ndash;punctuation&ndash;</code>. Also recognizes <code>#<code>foo</code></code>.  <a href="#af6a29534fb938217c56c6b3a3b3dd2af">More...</a><br /></td></tr>
+<tr class="memdesc:af6a29534fb938217c56c6b3a3b3dd2af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses an LES-style identifier such as <code>foo</code>, <code></code>, <code>&lt;tt&gt;foo</code> or <code>&amp;ndash;punctuation&ndash;</code>.  <a href="#af6a29534fb938217c56c6b3a3b3dd2af">More...</a><br /></td></tr>
 <tr class="separator:af6a29534fb938217c56c6b3a3b3dd2af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa99aa1c1e84c6845cde40914b8234f27"><td class="memItemLeft" align="right" valign="top">static object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html#aa99aa1c1e84c6845cde40914b8234f27">ParseNumberCore</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> source, bool isNegative, int numberBase, bool isFloat, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> typeSuffix, out string error)</td></tr>
 <tr class="memdesc:aa99aa1c1e84c6845cde40914b8234f27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses the digits of a literal (integer or floating-point), not including the radix prefix (0x, 0b) or type suffix (F, D, L, etc.) <a href="#aa99aa1c1e84c6845cde40914b8234f27">More...</a><br /></td></tr>
@@ -288,12 +288,12 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Parses an LES-style identifier such as <code>foo</code>, <code></code>, <code>&lt;tt&gt;foo</code> or <code>&amp;ndash;punctuation&ndash;</code>. Also recognizes <code>#<code>foo</code></code>. </p>
+<p>Parses an LES-style identifier such as <code>foo</code>, <code></code>, <code>&lt;tt&gt;foo</code> or <code>&amp;ndash;punctuation&ndash;</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">source</td><td>Text to parse. On return, the range has been decreased by the length of the token; this method also stops if this range becomes empty.</td></tr>
     <tr><td class="paramname">onError</td><td>A method to call on error</td></tr>
-    <tr><td class="paramname">checkForNamedLiteral</td><td>This is set to true when the input starts with @ but is a normal identifier, which could indicate that it is an LES named literal such as  or .</td></tr>
+    <tr><td class="paramname">checkForNamedLiteral</td><td>This is set to true when the input starts with @ but doesn't use backquotes, which could indicate that it is an LES named literal such as  or .</td></tr>
   </table>
   </dd>
 </dl>
@@ -555,7 +555,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Used for syntax highlighting, which doesn't care about token values. This option causes the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Token.Value</a> to be set to a default, like '\0' for single-quoted strings and 0 for numbers. Operator names are still parsed.</p>
+<p>Used for syntax highlighting, which doesn't care about token values. This option causes the Token.Value to be set to a default, like '\0' for single-quoted strings and 0 for numbers. Operator names are still parsed.</p>
 
 </div>
 </div>
@@ -563,7 +563,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:11 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

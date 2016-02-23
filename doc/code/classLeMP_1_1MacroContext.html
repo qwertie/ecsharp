@@ -96,13 +96,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>. 
+<p>Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP).">IMacroContext</a>. 
  <a href="classLeMP_1_1MacroContext.html#details">More...</a></p>
 <hr/>Source file:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/IMacroContext.cs'>/Main/LeMP/IMacroContext.cs</a></li>
+<li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/LeMP/IMacroContext.cs'>/Core/Loyc.Syntax/LeMP/IMacroContext.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>.</p>
+<div class="textblock"><p>Standard extension methods for <a class="el" href="interfaceLeMP_1_1IMacroContext.html" title="This interface provides services offered by the lexical macro processor (LeMP).">IMacroContext</a>.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -113,6 +113,10 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 , RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#aaf279bb68596f90487b6a34064a5ca19">GetArgsAndBody</a> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx, bool orRemainingNodes)</td></tr>
 <tr class="memdesc:aaf279bb68596f90487b6a34064a5ca19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits the current node into a pair of "argument" and "body" lists, potentially treating ctx.RemainingNodes as the "body" list. <a href="#aaf279bb68596f90487b6a34064a5ca19">More...</a><br /></td></tr>
 <tr class="separator:aaf279bb68596f90487b6a34064a5ca19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab12abbd7a04756033be8e9d7f1940b13"><td class="memItemLeft" align="right" valign="top">static IEnumerable<br class="typebreak" />
+&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#ab12abbd7a04756033be8e9d7f1940b13">GetOptions</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; optionList)</td></tr>
+<tr class="memdesc:ab12abbd7a04756033be8e9d7f1940b13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms an option list in the format <code>option1(v1), option2(v2)</code> or <code>option1: v1, option2: v2</code> into a sequence of (key, value) pairs. If the format of a given node is invalid, this function yields <code>(null, node)</code>. <a href="#ab12abbd7a04756033be8e9d7f1940b13">More...</a><br /></td></tr>
+<tr class="separator:ab12abbd7a04756033be8e9d7f1940b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="aaf279bb68596f90487b6a34064a5ca19"></a>
@@ -166,11 +170,42 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 
 </div>
 </div>
+<a class="anchor" id="ab12abbd7a04756033be8e9d7f1940b13"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;KeyValuePair&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetOptions </td>
+          <td>(</td>
+          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramname"><em>optionList</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Transforms an option list in the format <code>option1(v1), option2(v2)</code> or <code>option1: v1, option2: v2</code> into a sequence of (key, value) pairs. If the format of a given node is invalid, this function yields <code>(null, node)</code>.</p>
+<p><code>option1: v1, option2: v2</code> is parsed into <code>#namedArg(option1, v1), #namedArg(option2, v2)</code> in EC# or <code>@:(option1, v1), @:(option2, v2)</code> in LES. This function recognizes both forms. </p>
+
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aba9eeedc26cc952131b6955797efd7e2">Loyc.Syntax.CodeSymbols.NamedArg</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02">Loyc.LLPG.Macros.LLLPG_lexer()</a>, and <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:26:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

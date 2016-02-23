@@ -31,7 +31,7 @@ var searchData=
   ['igointerfacewrapper',['IGoInterfaceWrapper',['../interfaceLoyc_1_1Utilities_1_1IGoInterfaceWrapper.html',1,'Loyc::Utilities']]],
   ['ihaslocation',['IHasLocation',['../interfaceLoyc_1_1IHasLocation.html',1,'Loyc']]],
   ['ihasroot_3c_20t_20_3e',['IHasRoot&lt; T &gt;',['../interfaceLoyc_1_1Math_1_1IHasRoot_3_01T_01_4.html',1,'Loyc::Math']]],
-  ['ihasvalue_3c_20t_20_3e',['IHasValue&lt; T &gt;',['../interfaceLoyc_1_1IHasValue_3_01T_01_4.html',1,'Loyc']]],
+  ['ihasvalue_3c_20out_20t_20_3e',['IHasValue&lt; out T &gt;',['../interfaceLoyc_1_1IHasValue_3_01out_01T_01_4.html',1,'Loyc']]],
   ['iincrementer_3c_20t_20_3e',['IIncrementer&lt; T &gt;',['../interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html',1,'Loyc::Math']]],
   ['iindexpositionmapper',['IIndexPositionMapper',['../interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html',1,'Loyc::Syntax']]],
   ['iindextoline',['IIndexToLine',['../interfaceLoyc_1_1Syntax_1_1IIndexToLine.html',1,'Loyc::Syntax']]],

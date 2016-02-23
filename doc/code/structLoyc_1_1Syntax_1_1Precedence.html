@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Represents the precedence and miscibility of an operator. 
+<p>A four-byte tuple that represents the precedence and miscibility of an operator. 
  <a href="structLoyc_1_1Syntax_1_1Precedence.html#details">More...</a></p>
 <hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/Parsing/Precedence.cs'>/Core/Loyc.Syntax/Parsing/Precedence.cs</a></li>
@@ -114,9 +114,8 @@ Inheritance diagram for Loyc.Syntax.Precedence:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Represents the precedence and miscibility of an operator.</p>
-<p>This class contains four numbers. The first two, Lo and Hi, are a precedence range that describes how the operator can be mixed with other operators. If one operator's range overlaps another AND the ranges are not equal, then the two operators are immiscible. For example, == and != have the same precedence in EC#, 38..39, so they can be mixed with each other, but they cannot be mixed with &amp; which has the overlapping range 32..45 (this will be explained below.) </p>
-<p>The "actual" precedence is encoded in the other two numbers, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295" title="Left and Right denote the precedence level on the left and right sides of an operator; see the remark...">Left</a> and Right. These numbers encode the knowledge that, for example, <code>x &amp; y == z</code> will be parsed as <code>x &amp; (y == z)</code>. Normally, Left and Right are the same. However, some operators have different precedence on the left than on the right, a prime example being the =&gt; operator: <code>x = a =&gt; y = a</code> is parsed <code>x = (a =&gt; (y = a))</code>; it has very high precedence on the left, but very low precedence on the right. </p>
+<div class="textblock"><p>A four-byte tuple that represents the precedence and miscibility of an operator.</p>
+<p>An operator's precedence is encoded in the two numbers, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295" title="Left and Right denote the precedence level on the left and right sides of an operator; see the remark...">Left</a> and Right. These numbers encode the knowledge that, for example, <code>x &amp; y == z</code> will be parsed as <code>x &amp; (y == z)</code>. For normal left-associative operators, Left and Right are the same. However, some operators have different precedence on the left than on the right, a prime example being the =&gt; operator: <code>x = a =&gt; y = a</code> is parsed <code>x = (a =&gt; (y = a))</code>; it has very high precedence on the left, but very low precedence on the right. </p>
 <p>To understand how this works, remember that a parser scans from left to right. Each time it encounters a new operator, it needs to figure out whether to include that operator in the current (inner) expression or whether to "complete" the inner expression and bind the operator to an outer expression instead. The concept of a "precedence floor" can be used to make this decision. </p>
 <p>For example, suppose we start parsing the expression <code>-a.b + c * d + e</code>. The parser sees "-" first, which must be a prefix operator since there is no expression on the left. The Right precedence of unary '-' is 90 in EC#, so that will be the "precedence floor" to parse the right-hand side. Operators above 90 will be permitted in the right-hand side; operators at 90 or below will not. </p>
 <p>The next token is 'a', which is an expression by itself and doesn't have any precedence, so it becomes the initial right-hand expression of '-'. Next we have '.', which has a <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295" title="Left and Right denote the precedence level on the left and right sides of an operator; see the remark...">Left</a> precedence of 100, which is above the precedence floor of 90 so it can be bound to 'a'. The precedence floor (PF) is raised to 100, and the next token 'b' is bound to '.'. </p>
@@ -124,42 +123,44 @@ Inheritance diagram for Loyc.Syntax.Precedence:</div>
 <p>Notice that <code>a + b + c</code> is parsed <code>(a + b) + c</code>, not <code>a + (b + c)</code>. This is the natural result when the operator's precedence is the same on the left and on the right. However, <code>a = b = c</code> is parsed <code>a = (b = c)</code>, because its precedence is 1 on the left and 0 on the right. When the parser sees the first '=' it sets the PF to 0 because it is about to parse the right side. When it encounters the second '=', the left-hand precedence of that operator is 1 which is higher than the current PF (0) so it is included in the right-hand side of the first '='. This behavior is called "right associativity"; <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#ac587c783e958192a3d409fb8a973b39a" title="Returns true if this object represents a right-associative operator such as equals (x = (y = z))...">IsRightAssociative</a> returns true when <code>Left &gt; Right</code>. </p>
 <p>Prefix and suffix operators only have one "side"; you can imagine that the unused side (e.g. the left side of prefix -) has infinite precedence, so that EC# can parse $-x as $(-x) even though the precedence of '-' is supposedly lower than '$'. </p>
 <p>Some languages have a conditional operator (a?b:c) with three parts. In the middle part, the PF must drop to Precedence.MinValue so that it is possible to parse <code>a?b=x:c</code> even though '=' supposedly has lower precedence than the conditional operator. Note that <code>a=b ? c=d : e=f</code> is interpreted <code>a=(b ? c=d : e)=f</code>, so you can see that the precedence of the conditional operator is higher at the "edges". </p>
-<p>The above explanation illustrates the meaning of Left and Right from the perspective of a parser, but an actual parser may or may not use the PF concept and PrecedenceRange objects. </p>
-<p>The printer (e.g. LesNodePrinter) has a different way of analyzing precedence. It starts with a known parse tree and then has to figure out how to output something that the parser will reconstruct into the original tree. Making this more difficult is the fact that in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees, parens are significant; therefore the printer cannot simply put expressions in parens "just to be safe"&ndash;extra parenthesis will change the syntax tree, so round- tripping will fail. </p>
-<p>Generally, the printer has two ways of printing any expression tree: (1) with operators (e.g. a+b), and (2) with prefix notation (e.g. #+(a, b)). The tree <code>#+(#*(a, b), c)</code> will be printed as "a*b+c" (unless prefix notation is specifically requested) because the precedence rules allow it, but <code>#*(#+(a, b), c)</code> will be printed as <code>#+(a, b)*c</code> because both "a+b*c" and "(a+b)*c" are different from the original tree. </p>
-<p>While a parser proceeds from left to right, a printer proceeds from parents to children. So the printer for #*(#+(a, b), c) starts at #* with no precedence restrictions, and roughly speaking will set the precedence floor to LesPrecedence.Multiply in order to print its two children. Since the precedence of #+ (Add) is below Multiply, the + operator is not allowed in that context and either prefix notation or extra parenthesis is used as a fallback (depending on the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a4d145df5580f529b86a120ce6795b9c6" title="Introduces extra parenthesis to express precedence, without using an empty attribute list @() to allo...">LesNodePrinter.AllowExtraParenthesis</a> option that permits <code>(a+b)*c</code>). </p>
+<p>The above explanation illustrates the meaning of Left and Right from the perspective of a parser, but an actual parser may or may not use the PF concept and <code><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a></code> objects. </p>
+<p>This struct contains two other numbers, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694" title="Lo and Hi specify the miscibility of an operator; see the remarks of Precedence for details...">Lo</a> and Hi, which are a precedence range that determines whether and how the operator can be mixed with other operators, as explained below. </p>
+<p>A printer (e.g. LesNodePrinter) has a different way of analyzing precedence. It starts with a known parse tree and then has to figure out how to output something that the parser will reconstruct into the original tree. This is more difficult if perfect round-tripping is required: parentheses are encoded in the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree as a #trivia_inParens attribute, so if perfect round-tripping is desired, the printer cannot simply put everything in parens "just to be safe". </p>
+<p>Generally, the printer has two ways of printing any expression tree: (1) with operators (e.g. a+b), and (2) with prefix notation (e.g. @+(a, b)). The tree <code>@+(@*(a, b), c)</code> will be printed as "a*b+c" (unless prefix notation is specifically requested) because the precedence rules allow it, but <code>@*(@+(a, b), c)</code> will be printed as <code>@+(a, b)*c</code> because both "a+b*c" and "(a+b)*c" are different from the original tree. </p>
+<p>While a parser proceeds from left to right, a printer proceeds from parents to children. So the printer for @*(@+(a, b), c) starts at @* with no precedence restrictions, and roughly speaking will set the precedence floor to LesPrecedence.Multiply in order to print its two children. Since the precedence of @+ (Add) is below Multiply, the + operator is not allowed in that context and either prefix notation or extra parenthesis is used as a fallback (depending on the <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a4d145df5580f529b86a120ce6795b9c6" title="Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow...">LesNodePrinter.AllowExtraParenthesis</a> option that permits <code>(a+b)*c</code>). </p>
 <p>Printing has numerous "gotchas"; the ones related to precedence are </p><ol>
 <li>
-Although LesPrecedence.Add has the "same" precedence on the Left and Right, <code>#-(#-(a, b), c)</code> can be printed <code>a - b - c</code> but <code>#-(a, #-(b, c))</code> would have to be printed <code>a - #-(b, c)</code> instead. Clearly, the left and right sides must be treated somehow differently. </li>
+Although LesPrecedence.Add has the "same" precedence on the Left and Right, <code>@-(@-(a, b), c)</code> can be printed <code>a - b - c</code> but <code>@-(a, @-(b, c))</code> would have to be printed <code>a - @-(b, c)</code> instead. Clearly, the left and right sides must be treated somehow differently. </li>
 <li>
-Similarly, the different arguments in <code>a?b:c</code> and <code>a=&gt;b</code> must be treated differently. And careful handling is needed for the dot operator in particular due to its high precedence; e.g. <code>#.(a(b))</code> cannot be printed <code>.a(b)</code> because that would mean <code>#.(a)(b)</code>. </li>
+Similarly, the different arguments in <code>a?b:c</code> and <code>a=&gt;b</code> must be treated differently. And careful handling is needed for the dot operator in particular due to its high precedence; e.g. <code>(a(b))</code> cannot be printed <code>.a(b)</code> because that would mean <code>(a)(b)</code>. </li>
 <li>
-The LES parser, at least, allows a prefix operator to appear on the right-hand side of any infix or prefix operator, regardless of the precedence of the two operators; "$ ++x" is permitted even though ++ has lower precedence than $. Another example is that <code>a.-b.c</code> can be parsed with the interpretation <code>a.(-b).c</code>, even though #- has lower precedence than #$. Ideally the printer would replicate this rule, but whether it does ot not, it also must take care that <code>#.(a, -b.c)</code> is not printed as <code>a.-b.c</code> even though the similar expression <code>#*(a, #-(b.c))</code> can be printed as <code>a*-b.c</code>. </li>
+The LES parser, at least, allows a prefix operator to appear on the right-hand side of any infix or prefix operator, regardless of the precedence of the two operators; "$ ++x" is permitted even though ++ has lower precedence than $. Another example is that <code>a.-b.c</code> can be parsed with the interpretation <code>a.(-b).c</code>, even though @- has lower precedence than $. Ideally the printer would replicate this rule, but whether it does ot not, it also must take care that <code>(a, -b.c)</code> is not printed as <code>a.-b.c</code> even though the similar expression <code>@*(a, @-(b.c))</code> can be printed as <code>a*-b.c</code>. </li>
 <li>
-Prefix notation is needed when an operator's arguments have attributes; <code>#+([Foo] a, b)</code> cannot be printed <code>[Foo] a + b</code> because that would mean <code>[Foo] #+(a, b)</code>. </li>
+Prefix notation is needed when an operator's arguments have attributes; <code>@+([Foo] a, b)</code> cannot be printed <code>[Foo] a + b</code> because that would mean <code>[Foo] @+(a, b)</code>. </li>
 </ol>
 <h3>Printing and parsing are different</h3>
 <p>This type contains different methods for printers and parsers. A basic difference between them is that printers must make decisions (of whether an operator is allowed or not in a given context) based on both sides of the operator and both sides of the context (Left and Right), while parsers only have to worry about one side. For example, consider the following expression: </p><div class="fragment"><div class="line">a = b + c ?? d</div>
-</div><!-- fragment --><p> When the parser encounters the "+" operator, it only has to consider whether the precedence of the <em>left-hand side</em> of the "+" operator is above the <em>right-hand side</em> of the "=" operator. The fact that there is a "??" later on is irrelevant. In contrast, when printing the expression "b + c", both sides of the "+" operator and both sides of the context must be considered. The right-hand side is relevant because if the right-hand operator was "*" instead of "??", the following printout would be wrong: </p><div class="fragment"><div class="line">a = b + c * d   <span class="comment">// actual syntax tree: a = #+(b, c) * d</span></div>
+</div><!-- fragment --><p> When the parser encounters the "+" operator, it only has to consider whether the precedence of the <em>left-hand side</em> of the "+" operator is above the <em>right-hand side</em> of the "=" operator. The fact that there is a "??" later on is irrelevant. In contrast, when printing the expression "b + c", both sides of the "+" operator and both sides of the context must be considered. The right-hand side is relevant because if the right-hand operator was "*" instead of "??", the following printout would be wrong: </p><div class="fragment"><div class="line">a = b + c * d   <span class="comment">// actual syntax tree: a = @+(b, c) * d</span></div>
 </div><!-- fragment --><p> The same reasoning applies to the left-hand side (imagine if "=" was "*" instead.) </p>
-<p>So, naturally there are different methods for parsing and printing. For printing you can use <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aeca528a19eac804f3d8609337361ce0e" title="For use in printers. Returns true if an infix operator with this precedence can appear in the specifi...">CanAppearIn(Precedence)</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af07a82282e299b44ea73a18eac73afd9" title="For use in printers. Auto-raises the precedence floor to prepare to print an expression on the left s...">LeftContext</a> and <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af7cc55f4627e92274a930ee9021a203e" title="For use in printers. Auto-raises the precedence floor to prepare to print an expression on the right ...">RightContext</a>, while for parsing you only need <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a2d2b5a804370c95545031ed1f5da0df3" title="For use in parsers. Returns true if &#39;rightOp&#39;, an operator on the right, has higher precedence than t...">CanParse</a> (to raise the precedence floor, simply replace the current <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> value with that of the new operator). In a parser, the "current" precedence is represented by Right; the value of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295" title="Left and Right denote the precedence level on the left and right sides of an operator; see the remark...">Left</a> doesn't matter. </p>
+<p>So, naturally there are different methods for parsing and printing. For printing you can use <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aeca528a19eac804f3d8609337361ce0e" title="For use in printers. Returns true if an infix operator with this precedence can appear in the specifi...">CanAppearIn(Precedence)</a>, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af07a82282e299b44ea73a18eac73afd9" title="For use in printers. Auto-raises the precedence floor to prepare to print an expression on the left s...">LeftContext</a> and <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af7cc55f4627e92274a930ee9021a203e" title="For use in printers. Auto-raises the precedence floor to prepare to print an expression on the right ...">RightContext</a>, while for parsing you only need <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a2d2b5a804370c95545031ed1f5da0df3" title="For use in parsers. Returns true if &#39;rightOp&#39;, an operator on the right, has higher precedence than t...">CanParse</a> (to raise the precedence floor, simply replace the current <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> value with that of the new operator). In a parser, the "current" precedence is represented by Right; the value of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295" title="Left and Right denote the precedence level on the left and right sides of an operator; see the remark...">Left</a> doesn't matter. </p>
 <p>Both printers and parsers can use <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a494101430520b6ca70b21de7627b1c74" title="Returns true if an operator with this precedence is miscible without parenthesis with the specified o...">CanMixWith</a>.</p>
 <h3>Miscibility (mixability)</h3>
+<p><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694" title="Lo and Hi specify the miscibility of an operator; see the remarks of Precedence for details...">Lo</a> and Hi don't affect how operators are parsed into a tree, but are used to request a warning or error if operators are mixed improperly. If one operator's range overlaps another AND (the ranges are not equal OR <code>Lo &gt; Hi</code>), then the two operators are immiscible. For example, == and != have the same precedence in EC#, 38..39, so they can be mixed with each other, but they cannot be mixed with &amp; which has the overlapping range 32..45 (this will be explained below.) Normally Lo and Hi are set to <code>Min(Left,Right)</code> and <code>Max(Left,Right)</code> respectively, but this is not required&ndash;in particular, any pair where <code>Lo &gt; Hi</code> is used to indicate that the operator cannot be mixed with other operators of the same precedence, even though it can (perhaps) be mixed with others of different precedence. This is called non-associativity. For example, in PHP are not allowed to write an expression such as <code>x &gt; y &gt;= z</code>; to represent this, operators <code>&gt;</code> and <code>&gt;=</code> should make <code>Lo &gt; Hi</code>. </p>
 <p>Certain operators should not be mixed because their precedence was originally chosen incorrectly, e.g. x &amp; 3 == 1 should be parsed (x &amp; 3) == 1 but is actually parsed x &amp; (3 == 1). To allow the precedence to be repaired eventually, expressions like x &amp; y == z are deprecated in EC#: the parser will warn you if you have mixed operators improperly. PrecedenceRange describes both precedence and miscibility with a simple range of integers. As mentioned before, two operators are immiscible if their ranges overlap but are not identical. </p>
-<p>In LES, the precedence range feature (a.k.a. immiscibility) is used to indicate that a specific precedence has not been chosen for an operator. If a precedence is chosen in the future, it will be somewhere within the range.</p>
+<p>In LES, the precedence range feature (a.k.a. immiscibility) is also used to indicate that a specific precedence has not been chosen for an operator. If a precedence is chosen in the future, it will be somewhere within the range.</p>
 <h3>Overall Range</h3>
-<p>By convention, precedence scales range from 0 to 100 (or slightly higher). The precedence numbers are stored in this structure as <code>sbyte</code>s, so the standard range cannot be exceeded by much. </p>
+<p>By convention, precedence scales range from 0 to 100 (or slightly higher). The precedence numbers are stored in this structure as <code>sbyte</code>s, so <code>Left</code>, <code>Right</code>, <code>Lo</code>, and <code>Hi</code> must be between -128 and 127. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a960ac158fb2d0d01817f5a15d4adf694"><td class="memItemLeft" align="right" valign="top">readonly sbyte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694">Lo</a></td></tr>
-<tr class="memdesc:a960ac158fb2d0d01817f5a15d4adf694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lo and Hi specify the miscibility of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> for details. <a href="#a960ac158fb2d0d01817f5a15d4adf694">More...</a><br /></td></tr>
+<tr class="memdesc:a960ac158fb2d0d01817f5a15d4adf694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lo and Hi specify the miscibility of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> for details. <a href="#a960ac158fb2d0d01817f5a15d4adf694">More...</a><br /></td></tr>
 <tr class="separator:a960ac158fb2d0d01817f5a15d4adf694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96860f88e7aa19e0e82295c24e5df515"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96860f88e7aa19e0e82295c24e5df515"></a>
 readonly sbyte&#160;</td><td class="memItemRight" valign="bottom"><b>Hi</b></td></tr>
 <tr class="separator:a96860f88e7aa19e0e82295c24e5df515"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa336b14413bbed1bc0192bf90d297295"><td class="memItemLeft" align="right" valign="top">readonly sbyte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295">Left</a></td></tr>
-<tr class="memdesc:aa336b14413bbed1bc0192bf90d297295"><td class="mdescLeft">&#160;</td><td class="mdescRight">Left and Right denote the precedence level on the left and right sides of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> for details. <a href="#aa336b14413bbed1bc0192bf90d297295">More...</a><br /></td></tr>
+<tr class="memdesc:aa336b14413bbed1bc0192bf90d297295"><td class="mdescLeft">&#160;</td><td class="mdescRight">Left and Right denote the precedence level on the left and right sides of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> for details. <a href="#aa336b14413bbed1bc0192bf90d297295">More...</a><br /></td></tr>
 <tr class="separator:aa336b14413bbed1bc0192bf90d297295"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4be1fbcbc9124c7ae6b258bc76bcace1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4be1fbcbc9124c7ae6b258bc76bcace1"></a>
 readonly sbyte&#160;</td><td class="memItemRight" valign="bottom"><b>Right</b></td></tr>
@@ -167,12 +168,12 @@ readonly sbyte&#160;</td><td class="memItemRight" valign="bottom"><b>Right</b></
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a746276b3b14c203aeb110b1d1ee42f03"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a746276b3b14c203aeb110b1d1ee42f03"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MinValue</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(sbyte.MinValue, sbyte.MinValue, sbyte.MinValue)</td></tr>
-<tr class="separator:a746276b3b14c203aeb110b1d1ee42f03"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87c8fb4fe8a04f294ebffe506fa6020b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a87c8fb4fe8a04f294ebffe506fa6020b"></a>
-static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MaxValue</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(sbyte.MaxValue, sbyte.MaxValue, sbyte.MaxValue)</td></tr>
-<tr class="separator:a87c8fb4fe8a04f294ebffe506fa6020b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae4ed940b6a1ccffcddacbc598d8ddb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaae4ed940b6a1ccffcddacbc598d8ddb"></a>
+static <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MinValue</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(sbyte.MinValue)</td></tr>
+<tr class="separator:aaae4ed940b6a1ccffcddacbc598d8ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ff1acc52cf9c90e13b81642b4e5a3e1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ff1acc52cf9c90e13b81642b4e5a3e1"></a>
+static <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MaxValue</b> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(sbyte.MaxValue)</td></tr>
+<tr class="separator:a5ff1acc52cf9c90e13b81642b4e5a3e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -182,18 +183,18 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a11dcada0dea777c4e7514e3233799983"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11dcada0dea777c4e7514e3233799983"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Precedence</b> (int actual)</td></tr>
+<tr class="memitem:a11dcada0dea777c4e7514e3233799983"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a11dcada0dea777c4e7514e3233799983">Precedence</a> (int actual)</td></tr>
+<tr class="memdesc:a11dcada0dea777c4e7514e3233799983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a left-associative operator with the specified precedence. <a href="#a11dcada0dea777c4e7514e3233799983">More...</a><br /></td></tr>
 <tr class="separator:a11dcada0dea777c4e7514e3233799983"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9a0b5f109f06e9a376ab06895ec27c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9a0b5f109f06e9a376ab06895ec27c6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Precedence</b> (int lo, int hi, int actual)</td></tr>
-<tr class="separator:af9a0b5f109f06e9a376ab06895ec27c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af88c434b86e0e7a4a828098e40685d6e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af88c434b86e0e7a4a828098e40685d6e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Precedence</b> (int lo, int hi, int left, int right)</td></tr>
-<tr class="separator:af88c434b86e0e7a4a828098e40685d6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b95cbe44d73fc56cd43000c90615611"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4b95cbe44d73fc56cd43000c90615611"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Precedence</b> (sbyte lo, sbyte hi, sbyte left, sbyte right)</td></tr>
-<tr class="separator:a4b95cbe44d73fc56cd43000c90615611"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf5a624242388bd069d9bca2075b80df"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#acf5a624242388bd069d9bca2075b80df">Precedence</a> (int left, int right)</td></tr>
+<tr class="memdesc:acf5a624242388bd069d9bca2075b80df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an operator with different precedence on the left and right sides. For a right associative operator, conventionally <code>right = left-1</code>. <a href="#acf5a624242388bd069d9bca2075b80df">More...</a><br /></td></tr>
+<tr class="separator:acf5a624242388bd069d9bca2075b80df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6117080fc5f861365d26832a434a8234"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a6117080fc5f861365d26832a434a8234">Precedence</a> (int left, int right, int lo, int hi)</td></tr>
+<tr class="memdesc:a6117080fc5f861365d26832a434a8234"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an operator with the given precedence on the left and right sides, and the given immiscibility range (see documentation of this type). <a href="#a6117080fc5f861365d26832a434a8234">More...</a><br /></td></tr>
+<tr class="separator:a6117080fc5f861365d26832a434a8234"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee4bde70863c879906d35189e92e0873"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee4bde70863c879906d35189e92e0873"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Precedence</b> (sbyte left, sbyte right, sbyte lo, sbyte hi)</td></tr>
+<tr class="separator:aee4bde70863c879906d35189e92e0873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af07a82282e299b44ea73a18eac73afd9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af07a82282e299b44ea73a18eac73afd9">LeftContext</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> outerContext)</td></tr>
 <tr class="memdesc:af07a82282e299b44ea73a18eac73afd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use in printers. Auto-raises the precedence floor to prepare to print an expression on the left side of an operator. <a href="#af07a82282e299b44ea73a18eac73afd9">More...</a><br /></td></tr>
 <tr class="separator:af07a82282e299b44ea73a18eac73afd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -204,7 +205,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aeca528a19eac804f3d8609337361ce0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use in printers. Returns true if an infix operator with this precedence can appear in the specified context. <a href="#aeca528a19eac804f3d8609337361ce0e">More...</a><br /></td></tr>
 <tr class="separator:aeca528a19eac804f3d8609337361ce0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54f6debe554f34455cbee81f97bb9a40"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a54f6debe554f34455cbee81f97bb9a40">CanAppearIn</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, bool prefix)</td></tr>
-<tr class="memdesc:a54f6debe554f34455cbee81f97bb9a40"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use in printers. Returns true if a prefix operator with this precedence can appear in the specified context's right-hand precedence floor. <a href="#a54f6debe554f34455cbee81f97bb9a40">More...</a><br /></td></tr>
+<tr class="memdesc:a54f6debe554f34455cbee81f97bb9a40"><td class="mdescLeft">&#160;</td><td class="mdescRight">For use in printers. Returns true if a prefix operator with this precedence can appear in the specified context's right-hand precedence floor (ignoring miscibility). <a href="#a54f6debe554f34455cbee81f97bb9a40">More...</a><br /></td></tr>
 <tr class="separator:a54f6debe554f34455cbee81f97bb9a40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a494101430520b6ca70b21de7627b1c74"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a494101430520b6ca70b21de7627b1c74">CanMixWith</a> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context)</td></tr>
 <tr class="memdesc:a494101430520b6ca70b21de7627b1c74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if an operator with this precedence is miscible without parenthesis with the specified other operator. <a href="#a494101430520b6ca70b21de7627b1c74">More...</a><br /></td></tr>
@@ -234,6 +235,117 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (<a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> a, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> b)</td></tr>
 <tr class="separator:a4dabb7ccb718d67ff482ed4399a01b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a11dcada0dea777c4e7514e3233799983"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.Precedence.Precedence </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>actual</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes a left-associative operator with the specified precedence.</p>
+
+</div>
+</div>
+<a class="anchor" id="acf5a624242388bd069d9bca2075b80df"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.Precedence.Precedence </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>left</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>right</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes an operator with different precedence on the left and right sides. For a right associative operator, conventionally <code>right = left-1</code>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6117080fc5f861365d26832a434a8234"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.Precedence.Precedence </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>left</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>right</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>lo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>hi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes an operator with the given precedence on the left and right sides, and the given immiscibility range (see documentation of this type).</p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="aeca528a19eac804f3d8609337361ce0e"></a>
 <div class="memitem">
@@ -294,7 +406,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 </table>
 </div><div class="memdoc">
 
-<p>For use in printers. Returns true if a prefix operator with this precedence can appear in the specified context's right-hand precedence floor.</p>
+<p>For use in printers. Returns true if a prefix operator with this precedence can appear in the specified context's right-hand precedence floor (ignoring miscibility).</p>
 <p>It is assumed that the left side of a prefix operator has "infinite" precedence so only the right side is checked. This rule is used by the EC# printer but may not be needed or allowed in all languages (if in doubt, set prefix=false).</p>
 
 <p>References <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#aa336b14413bbed1bc0192bf90d297295">Loyc.Syntax.Precedence.Left</a>.</p>
@@ -434,7 +546,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
       </table>
 </div><div class="memdoc">
 
-<p>Left and Right denote the precedence level on the left and right sides of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> for details.</p>
+<p>Left and Right denote the precedence level on the left and right sides of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> for details.</p>
 
 <p>Referenced by <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a54f6debe554f34455cbee81f97bb9a40">Loyc.Syntax.Precedence.CanAppearIn()</a>, and <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#af07a82282e299b44ea73a18eac73afd9">Loyc.Syntax.Precedence.LeftContext()</a>.</p>
 
@@ -450,7 +562,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
       </table>
 </div><div class="memdoc">
 
-<p>Lo and Hi specify the miscibility of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="Represents the precedence and miscibility of an operator.">Precedence</a> for details.</p>
+<p>Lo and Hi specify the miscibility of an operator; see the remarks of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> for details.</p>
 
 </div>
 </div>
@@ -481,7 +593,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:11 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

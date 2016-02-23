@@ -31,7 +31,6 @@ var searchData=
   ['maybe_3c_20t_20_3e',['Maybe&lt; T &gt;',['../structLoyc_1_1Maybe_3_01T_01_4.html',1,'Loyc']]],
   ['memoizedtypename',['MemoizedTypeName',['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc']]],
   ['memoizedtypename_3c_20t_20_3e',['MemoizedTypeName&lt; T &gt;',['../classLoyc_1_1MemoizedTypeName_3_01T_01_4.html',1,'Loyc']]],
-  ['message',['Message',['../structLoyc_1_1MessageHolder_1_1Message.html',1,'Loyc::MessageHolder']]],
   ['messagefilter',['MessageFilter',['../classLoyc_1_1MessageFilter.html',1,'Loyc']]],
   ['messageholder',['MessageHolder',['../classLoyc_1_1MessageHolder.html',1,'Loyc']]],
   ['messagesink',['MessageSink',['../classLoyc_1_1MessageSink.html',1,'Loyc']]],

@@ -123,7 +123,7 @@ Inheritance diagram for Loyc.Syntax.IndexPositionMapper&lt; CharSource &gt;:</di
 <p>The outputs are immutable and this class assumes the input file never changes. However, this class is not entirly multi-thread-safe until the entire input file or string has been scanned, since the list of line breaks is built on-demand, without locking. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">CharSource</td><td>A type that implements <code>IListSource(Char)</code>. Originally this class did not have any type parameters and dealt with <code>IListSource(Char)</code>, but it was made generic so that one could wrap value types such as <code><a class="el" href="structLoyc_1_1UString.html" title="UString is a wrapper around string that provides a range of 21-bit UCS-4 characters. &quot;U&quot; stands for &quot;Unicode&quot;, as in UCS-4, as opposed to a normal string that is UTF-16.">UString</a></code> without boxing. </td></tr>
+    <tr><td class="paramname">CharSource</td><td>A type that implements <code>IListSource(Char)</code>. Originally this class did not have any type parameters and dealt with <code>IListSource(Char)</code>, but it was made generic so that one could wrap value types such as <code><a class="el" href="structLoyc_1_1UString.html" title="UString is a slice of a string. It is a wrapper around string that provides a IBRange{T} of 21-bit UC...">UString</a></code> without boxing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -342,7 +342,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_offsetsComplete</b> 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:10 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

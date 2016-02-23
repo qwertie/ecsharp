@@ -7,10 +7,8 @@ var searchData=
   ['lesindenttokengenerator',['LesIndentTokenGenerator',['../classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html',1,'Loyc::Syntax::Les']]],
   ['leslanguageservice',['LesLanguageService',['../classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html',1,'Loyc::Syntax::Les']]],
   ['leslexer',['LesLexer',['../classLoyc_1_1Syntax_1_1Les_1_1LesLexer.html',1,'Loyc::Syntax::Les']]],
-  ['leslexergenerator',['LesLexerGenerator',['../classLoyc_1_1LLParserGenerator_1_1LesLexerGenerator.html',1,'Loyc::LLParserGenerator']]],
   ['lesnodeprinter',['LesNodePrinter',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html',1,'Loyc::Syntax::Les']]],
   ['lesparser',['LesParser',['../classLoyc_1_1Syntax_1_1Les_1_1LesParser.html',1,'Loyc::Syntax::Les']]],
-  ['lesparsergenerator',['LesParserGenerator',['../classLoyc_1_1Syntax_1_1Les_1_1LesParserGenerator.html',1,'Loyc::Syntax::Les']]],
   ['lesprecedence',['LesPrecedence',['../classLoyc_1_1Syntax_1_1Les_1_1LesPrecedence.html',1,'Loyc::Syntax::Les']]],
   ['lesprecedencemap',['LesPrecedenceMap',['../classLoyc_1_1Syntax_1_1Les_1_1LesPrecedenceMap.html',1,'Loyc::Syntax::Les']]],
   ['lexersource',['LexerSource',['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html',1,'Loyc::Syntax::Lexing']]],
@@ -48,5 +46,7 @@ var searchData=
   ['localizableattribute',['LocalizableAttribute',['../classLoyc_1_1LocalizableAttribute.html',1,'Loyc']]],
   ['localize',['Localize',['../classLoyc_1_1Localize.html',1,'Loyc']]],
   ['localizeext',['LocalizeExt',['../classLoyc_1_1LocalizeExt.html',1,'Loyc']]],
+  ['logexception',['LogException',['../classLoyc_1_1LogException.html',1,'Loyc']]],
+  ['logmessage',['LogMessage',['../structLoyc_1_1LogMessage.html',1,'Loyc']]],
   ['longenumerator',['LongEnumerator',['../classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie_3_01TValue_01_4_1_1LongEnumerator.html',1,'Loyc::Collections::Impl::CPIntTrie&lt; TValue &gt;']]]
 ];

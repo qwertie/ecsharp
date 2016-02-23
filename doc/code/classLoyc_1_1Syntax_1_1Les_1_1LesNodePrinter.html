@@ -132,15 +132,9 @@ Public static fields</h2></td></tr>
 <tr class="memitem:aa6369a4babe2ff70c508becebcbd3e5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa6369a4babe2ff70c508becebcbd3e5d"></a>
 static readonly <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Printer</b> = Print</td></tr>
 <tr class="separator:aa6369a4babe2ff70c508becebcbd3e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8eb92fcb590e7d8b5e458c3b4d4db14c"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a8eb92fcb590e7d8b5e458c3b4d4db14c">StartStmt</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec, MinPrec, MinPrec)</td></tr>
-<tr class="memdesc:a8eb92fcb590e7d8b5e458c3b4d4db14c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: beginning of statement (';' printed at the end) <a href="#a8eb92fcb590e7d8b5e458c3b4d4db14c">More...</a><br /></td></tr>
+<tr class="memitem:a8eb92fcb590e7d8b5e458c3b4d4db14c"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a8eb92fcb590e7d8b5e458c3b4d4db14c">StartStmt</a> = Precedence.MinValue</td></tr>
+<tr class="memdesc:a8eb92fcb590e7d8b5e458c3b4d4db14c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: beginning of main expression (potential superexpression) <a href="#a8eb92fcb590e7d8b5e458c3b4d4db14c">More...</a><br /></td></tr>
 <tr class="separator:a8eb92fcb590e7d8b5e458c3b4d4db14c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad68f91a53f079ab7490a1c8a52fcaf8"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#aad68f91a53f079ab7490a1c8a52fcaf8">StartExpr</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+1, MinPrec+1, MinPrec+1)</td></tr>
-<tr class="memdesc:aad68f91a53f079ab7490a1c8a52fcaf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: beginning of main expression (potential superexpression) <a href="#aad68f91a53f079ab7490a1c8a52fcaf8">More...</a><br /></td></tr>
-<tr class="separator:aad68f91a53f079ab7490a1c8a52fcaf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0235757341a6d95c930b1d3c4695fde2"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a0235757341a6d95c930b1d3c4695fde2">ContinueExpr</a> = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+2, MinPrec+2, MinPrec+2)</td></tr>
-<tr class="memdesc:a0235757341a6d95c930b1d3c4695fde2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Context: second, third, etc. expression in a superexpression. <a href="#a0235757341a6d95c930b1d3c4695fde2">More...</a><br /></td></tr>
-<tr class="separator:a0235757341a6d95c930b1d3c4695fde2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -151,10 +145,10 @@ Properties</h2></td></tr>
 <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Errors</b><code> [get, set]</code></td></tr>
 <tr class="separator:abd0435fb0cf792c5edd8aea9c71d5453"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d145df5580f529b86a120ce6795b9c6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a4d145df5580f529b86a120ce6795b9c6">AllowExtraParenthesis</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a4d145df5580f529b86a120ce6795b9c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Introduces extra parenthesis to express precedence, without using an empty attribute list @() to allow perfect round-tripping. <a href="#a4d145df5580f529b86a120ce6795b9c6">More...</a><br /></td></tr>
+<tr class="memdesc:a4d145df5580f529b86a120ce6795b9c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow perfect round-tripping. <a href="#a4d145df5580f529b86a120ce6795b9c6">More...</a><br /></td></tr>
 <tr class="separator:a4d145df5580f529b86a120ce6795b9c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a7c572a565bf60fd0da3881c41c3a4ebf">OmitMissingArguments</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="mdescLeft">&#160;</td><td class="mdescRight">When an argument to a method or macro has the value #missing, it will be omitted completely if this flag is set. <a href="#a7c572a565bf60fd0da3881c41c3a4ebf">More...</a><br /></td></tr>
+<tr class="memdesc:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="mdescLeft">&#160;</td><td class="mdescRight">When an argument to a method or macro has the value <code>@``</code>, it will be omitted completely if this flag is set. <a href="#a7c572a565bf60fd0da3881c41c3a4ebf">More...</a><br /></td></tr>
 <tr class="separator:a7c572a565bf60fd0da3881c41c3a4ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a7bdd6fd9cd655af0cbcfabe61111ffe0">OmitSpaceTrivia</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a7bdd6fd9cd655af0cbcfabe61111ffe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">When this flag is set, space trivia attributes are ignored (e.g. CodeSymbols.TriviaSpaceAfter). <a href="#a7bdd6fd9cd655af0cbcfabe61111ffe0">More...</a><br /></td></tr>
@@ -183,9 +177,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9fe32f7beb75165aa301e7afec27adf9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9fe32f7beb75165aa301e7afec27adf9"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node)</td></tr>
 <tr class="separator:a9fe32f7beb75165aa301e7afec27adf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac40b00e9509ce53529a994e187ed0695"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac40b00e9509ce53529a994e187ed0695"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794">Mode</a> mode, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context)</td></tr>
-<tr class="separator:ac40b00e9509ce53529a994e187ed0695"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09b12670dd922ab25f22606fe0bf33f5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a09b12670dd922ab25f22606fe0bf33f5"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794">Mode</a> mode, <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> context, string terminator=null)</td></tr>
+<tr class="separator:a09b12670dd922ab25f22606fe0bf33f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -236,7 +230,7 @@ Protected fields</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a0235757341a6d95c930b1d3c4695fde2"></a>
+<a class="anchor" id="a8eb92fcb590e7d8b5e458c3b4d4db14c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -244,29 +238,7 @@ Protected fields</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Loyc.Syntax.Les.LesNodePrinter.ContinueExpr = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+2, MinPrec+2, MinPrec+2)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Context: second, third, etc. expression in a superexpression.</p>
-
-</div>
-</div>
-<a class="anchor" id="aad68f91a53f079ab7490a1c8a52fcaf8"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Loyc.Syntax.Les.LesNodePrinter.StartExpr = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec+1, MinPrec+1, MinPrec+1)</td>
+          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Loyc.Syntax.Les.LesNodePrinter.StartStmt = Precedence.MinValue</td>
         </tr>
       </table>
   </td>
@@ -277,28 +249,6 @@ Protected fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Context: beginning of main expression (potential superexpression)</p>
-
-</div>
-</div>
-<a class="anchor" id="a8eb92fcb590e7d8b5e458c3b4d4db14c"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a> Loyc.Syntax.Les.LesNodePrinter.StartStmt = new <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Precedence</a>(MinPrec, MinPrec, MinPrec)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Context: beginning of statement (';' printed at the end)</p>
 
 </div>
 </div>
@@ -321,8 +271,8 @@ Protected fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Introduces extra parenthesis to express precedence, without using an empty attribute list @() to allow perfect round-tripping.</p>
-<p>For example, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree <code>x * #+(a, b)</code> will be printed <code>x * (a + b)</code>, which is a different tree (due to the parenthesis, <code>a + b</code> is nested in a call to the empty identifier \``, which represents parenthesis.)</p>
+<p>Introduces extra parenthesis to express precedence, without using an empty attribute list [] to allow perfect round-tripping.</p>
+<p>For example, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree <code>x * @+(a, b)</code> will be printed <code>x * (a + b)</code>, which is a slightly different tree (the parenthesis add the trivia attribute #trivia_inParens.)</p>
 
 </div>
 </div>
@@ -388,7 +338,7 @@ Protected fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>When an argument to a method or macro has the value #missing, it will be omitted completely if this flag is set.</p>
+<p>When an argument to a method or macro has the value <code>@``</code>, it will be omitted completely if this flag is set.</p>
 
 </div>
 </div>
@@ -484,7 +434,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:11 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

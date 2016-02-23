@@ -133,6 +133,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:a7558565c6c79514e1470dbe4498f0f9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7558565c6c79514e1470dbe4498f0f9b"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutAttrNamed</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> removedAttr)</td></tr>
 <tr class="separator:a7558565c6c79514e1470dbe4498f0f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af682a17fd5cbd3cbfa9dd951db72d3c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af682a17fd5cbd3cbfa9dd951db72d3c4"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutOuterParens</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self)</td></tr>
+<tr class="separator:af682a17fd5cbd3cbfa9dd951db72d3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24f9cb6e10844fce891705efb46e0bde"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24f9cb6e10844fce891705efb46e0bde"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ArgNamed</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a24f9cb6e10844fce891705efb46e0bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,9 +145,6 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexWithName</
 <tr class="memitem:a2cc8617df939c98a18e28a9e23c8a2ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cc8617df939c98a18e28a9e23c8a2ed"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NodeNamed</b> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a2cc8617df939c98a18e28a9e23c8a2ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9df9f5869188fb52c8cae821dd827732"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a9df9f5869188fb52c8cae821dd827732">FindAndReplace</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> root, Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; replaceFunc, bool replaceRoot=true)</td></tr>
-<tr class="memdesc:a9df9f5869188fb52c8cae821dd827732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Recursively runs a replacement function on a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree. <a href="#a9df9f5869188fb52c8cae821dd827732">More...</a><br /></td></tr>
-<tr class="separator:a9df9f5869188fb52c8cae821dd827732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0cc0d95540817e2c036083dfa4e8ca96"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a0cc0d95540817e2c036083dfa4e8ca96">MatchesPattern</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> candidate, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> pattern, ref MMap&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; captures, out RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; unmatchedAttrs)</td></tr>
 <tr class="memdesc:a0cc0d95540817e2c036083dfa4e8ca96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether one <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree "matches" another. This is different from a simple equality test in that (1) trivia atributes do not have to match, and (2) the pattern can contain placeholders represented by calls to $ (the substitution operator) with an identifier as a parameter. Placeholders match any subtree, and are saved to the <code>captures</code> map.  <a href="#a0cc0d95540817e2c036083dfa4e8ca96">More...</a><br /></td></tr>
 <tr class="separator:a0cc0d95540817e2c036083dfa4e8ca96"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,58 +234,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 
 </div>
 </div>
-<a class="anchor" id="a9df9f5869188fb52c8cae821dd827732"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNodeExt.FindAndReplace </td>
-          <td>(</td>
-          <td class="paramtype">this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
-          <td class="paramname"><em>root</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
-          <td class="paramname"><em>replaceFunc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>replaceRoot</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Recursively runs a replacement function on a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">root</td><td>A node to scan recursively (depth-first, starting at the top level).</td></tr>
-    <tr><td class="paramname">replaceFunc</td><td>A user-defined method that returns either (1) null, to do no replacement and request that child nodes be processed, or (2) non-null, to replace the input node with an output node. When replaceFunc returns a node, <code>FindAndReplace</code> does not recursively call replaceFunc again on that node or its children.</td></tr>
-    <tr><td class="paramname">replaceRoot</td><td>If true, <code>replaceFunc</code> is called on the root node. If false, <code>replaceFunc</code> is not called on the root node.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The new node produced after all replacements have occurred.</dd></dl>
-<p>If <code>replaceFunc</code> always returns null (or if <code>replaceRoot</code> is false and the root has no children), <code>FindAndReplace</code> returns <code>root</code>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a0cc0d95540817e2c036083dfa4e8ca96"></a>
 <div class="memitem">
 <div class="memproto">
@@ -355,7 +303,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 16 2015 15:27:11 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
