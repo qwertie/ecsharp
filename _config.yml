@@ -5,7 +5,7 @@
 exclude: [Src, Lib, Visual Studio Integration]
 
 # Jekyll settings
-markdown: redcarpet
+markdown: kramdown
 encoding: UTF-8
 highlighter: pygments                    # `rouge` now causes "Page build failure" on GitHub
 paginate: 8
