@@ -484,10 +484,20 @@ namespace Loyc.Syntax.Les
 			return _staticStringBuilder.ToString();
 		}
 
-		private void PrintIdOrSymbol(Symbol name, bool isSymbol)
+		/// <summary>Returns true if the given symbol can be printed as a 
+		/// normal identifier, without an "@" prefix. Note: identifiers 
+		/// starting with "#" still count as normal; call <see cref="LNode.HasSpecialName"/> 
+		/// to detect this.</summary>
+		public static bool IsNormalIdentifier(Symbol name)
 		{
-			// Figure out what style we need to use: plain, @special, or @`backquoted`
-			bool special = isSymbol, backquote = name.Name.Length == 0, first = true;
+			bool bq;
+			return !IsSpecialIdentifier(name, out bq);
+		}
+		
+		static bool IsSpecialIdentifier(Symbol name, out bool backquote)
+		{
+			backquote = name.Name.Length == 0;
+			bool special = false, first = true;
 			foreach (char c in name.Name)
 			{
 				if (!LesLexer.IsIdContChar(c)) {
@@ -499,14 +509,20 @@ namespace Loyc.Syntax.Les
 					special = true;
 				first = false;
 			}
-
-			// Watch out for the these identifiers, because they
-			// will be interpreted as named literals if we don't
-			// backquote them.
+			
+			// Watch out for @`-inf_d` and @`-inf_f`, because they will be
+			// interpreted as named literals if we don't backquote them.
 			if (special && !backquote && (name.Name == "-inf_d" || name.Name == "-inf_f"))
 				backquote = true;
+			return special || backquote;
+		}
 
-			if (special || backquote)
+		private void PrintIdOrSymbol(Symbol name, bool isSymbol)
+		{
+			// Figure out what style we need to use: plain, @special, or @`backquoted`
+			bool backquote, special = IsSpecialIdentifier(name, out backquote); 
+
+			if (special || isSymbol)
 				_out.Write(isSymbol ? "@@" : "@", false);
 			if (backquote)
 				PrintStringCore('`', false, name.Name);

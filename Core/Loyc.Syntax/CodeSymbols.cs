@@ -109,8 +109,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Label = GSymbol.Get("#label");         //!< e.g. #label(success) <=> success:
 		public static readonly Symbol Case = GSymbol.Get("#case");           //!< e.g. #case(10, 20) <=> case 10, 20:
 		public static readonly Symbol Return = GSymbol.Get("#return");       //!< e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
-		public static readonly Symbol Continue = GSymbol.Get("#continue");   //!< e.g. #continue;   <=> continue;
-		public static readonly Symbol Break = GSymbol.Get("#break");         //!< e.g. #break;      <=> break;
+		public static readonly Symbol Continue = GSymbol.Get("#continue");   //!< e.g. #continue(); <=> continue;
+		public static readonly Symbol Break = GSymbol.Get("#break");         //!< e.g. #break();    <=> break;
 		public static readonly Symbol Goto = GSymbol.Get("#goto");           //!< e.g. #goto(label) <=> goto label;
 		public static readonly Symbol GotoCase = GSymbol.Get("#gotoCase");   //!< e.g. #gotoCase(expr) <=> goto case expr;
 		public static readonly Symbol Throw = GSymbol.Get("#throw");         //!< e.g. #throw(expr);  <=> throw expr;
@@ -187,12 +187,13 @@ namespace Loyc.Syntax
 		public static readonly Symbol BadCode = GSymbol.Get("#badCode");
 
 		// Enhanced C# stuff (node names)
-		public static readonly Symbol NullDot = GSymbol.Get("?.");      //!< "?."  safe navigation ("null dot") operator
-		public static readonly Symbol Exp = GSymbol.Get("**");          //!< "**"  exponent operator
-		public static readonly Symbol In = GSymbol.Get("#in");          //!< "#in" membership test operator
-		public static readonly Symbol Substitute = GSymbol.Get(@"$");   //!< "$"   substitution operator
-		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$"); //!< Alias for Substitude
-		public static readonly Symbol DotDot = GSymbol.Get("..");       //!< ".." Binary range operator
+		public static readonly Symbol NullDot = GSymbol.Get("?.");       //!< "?."  safe navigation ("null dot") operator
+		public static readonly Symbol Exp = GSymbol.Get("**");           //!< "**"  exponent operator
+		public static readonly Symbol In = GSymbol.Get("#in");           //!< "#in" membership test operator
+		public static readonly Symbol Substitute = GSymbol.Get(@"$");    //!< "$"   substitution operator
+		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$");  //!< Alias for Substitude
+		public static readonly Symbol DotDot = GSymbol.Get("..");        //!< ".." Binary range operator (exclusive)
+		public static readonly Symbol DotDotDot = GSymbol.Get("...");    //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)

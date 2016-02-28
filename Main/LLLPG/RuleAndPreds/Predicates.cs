@@ -183,7 +183,7 @@ namespace Loyc.LLParserGenerator
 			return clone;
 		}
 
-		internal virtual void DiscardAnalysisResult() {}
+		internal virtual void DiscardAnalysisResult() { }
 		
 		public string ToStringWithPosition()
 		{
@@ -205,6 +205,9 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return Basis != LNode.Missing ? Basis.Range.Start : (object)this; }
 		}
+
+		//internal PredA _analytic;
+		//internal PredA Analytic { get { return _analytic ?? PredA.FromPred(this); } }
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -546,7 +549,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Computed by <see cref="LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
 		internal LLParserGenerator.PredictionTree PredictionTree;
-		internal override void DiscardAnalysisResult() { PredictionTree = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); PredictionTree = null; }
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
@@ -902,7 +905,7 @@ namespace Loyc.LLParserGenerator
 		public object Pred;
 
 		public bool? Prematched;
-		internal override void DiscardAnalysisResult() { Prematched = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); Prematched = null; }
 
 		public override bool IsNullable
 		{
@@ -946,7 +949,7 @@ namespace Loyc.LLParserGenerator
 		new public IPGTerminalSet Set;
 		
 		public bool? Prematched;
-		internal override void DiscardAnalysisResult() { Prematched = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); Prematched = null; }
 
 		public TerminalPred(LNode basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
 		public TerminalPred(LNode basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }

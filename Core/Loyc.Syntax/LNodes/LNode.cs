@@ -10,6 +10,7 @@ using Loyc.Collections;
 
 namespace Loyc.Syntax
 {
+	/// <summary>The three kinds of nodes in a Loyc tree</summary>
 	public enum LNodeKind { Id, Literal, Call }
 
 	/// <summary>Signature for a method that serializes a Loyc tree to text. Each
@@ -733,9 +734,21 @@ namespace Loyc.Syntax
 		/// a call (<see cref="IsCall"/>) and <c>Target.IsId</c> is true, 
 		/// this property returns <c>Target.Name</c>. In all other cases, the name
 		/// is <see cref="GSymbol.Empty"/>. Shall not return null.</summary>
+		/// <remarks>Examples (using C#/LES syntax):
+		/// <pre>
+		/// Expression   Kind    Name (blank if empty)
+		/// hello        Id      hello
+		/// @#if         Id      #if
+		/// Foo(x, y)    Call    Foo
+		/// x += y       Call    +=
+		/// x.Foo(y)     Call    
+		/// 5.0          Literal 
+		/// </pre>
+		/// </remarks>
 		public abstract Symbol Name { get; }
 
 		/// <summary>Returns true if <see cref="Name"/> starts with '#'.</summary>
+		/// <remarks>Note that this property returns false for the empty identifier <c>@``</c>.</remarks>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] == '#'; } }
 
@@ -1203,7 +1216,7 @@ namespace Loyc.Syntax
 			} else if (index < -1) {
 				var a = Attrs;
 				return a.TryGet(index + 1 + a.Count, out fail);
-			} else {
+			} else { // index == -1
 				var t = Target;
 				fail = t == null;
 				return t;
