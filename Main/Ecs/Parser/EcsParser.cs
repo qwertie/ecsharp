@@ -110,7 +110,7 @@ namespace Ecs.Parser
 		}
 		protected LNode Error(string message, params object[] args)
 		{
-			Error(InputPosition, message, args);
+			Error(0, message, args);
 			if (args.Length > 0)
 				message = string.Format(message, args);
 			return F.Call(S.Error, F.Literal(message));

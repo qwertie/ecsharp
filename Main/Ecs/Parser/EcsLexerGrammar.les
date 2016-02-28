@@ -4,7 +4,6 @@ import System.Collections.Generic;
 import System.Linq;
 import System.Text;
 import Loyc;
-import Loyc.LLParserGenerator;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
 
@@ -196,7 +195,9 @@ namespace Ecs.Parser
 		@[private] token At        @{ '@' { _type = TT.At;    _value = _At; } };
 
 		@[k(3), private] token Operator  @{
-		( ".."  { _type = TT.DotDot; _value = _DotDot; }
+		( "..."  { _type = TT.DotDot; _value = _DotDotDot; }
+		/ "..<"  { _type = TT.DotDot; _value = _DotDot; }
+		/ ".."  { _type = TT.DotDot; _value = _DotDot; }
 		/ "."   { _type = TT.Dot; _value = _Dot; }
 		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
 		/ ">="  { _type = TT.LEGE; _value = _GE; }
@@ -251,6 +252,7 @@ namespace Ecs.Parser
 		@[static, readonly] _Semicolon::Symbol = GSymbol.Get(";");
 		@[static, readonly] _At::Symbol = GSymbol.Get("@");
 		@[static, readonly] _DotDot::Symbol = GSymbol.Get("..");
+		@[static, readonly] _DotDotDot::Symbol = GSymbol.Get("...");
 		@[static, readonly] _Dot::Symbol = GSymbol.Get(".");
 		@[static, readonly] _ShrSet::Symbol = GSymbol.Get(">>=");
 		@[static, readonly] _GE::Symbol = GSymbol.Get(">=");

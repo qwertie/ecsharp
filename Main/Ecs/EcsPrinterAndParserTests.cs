@@ -62,6 +62,19 @@ namespace Ecs
 			Stmt(after, code, configure, exprMode, mode == Mode.PrintBothParseFirst ? Mode.PrintOnly : mode);
 		}
 
+		protected LNode Attr(LNode attr, LNode node)
+		{
+			return node.WithAttrs(node.Attrs.Insert(0, attr));
+		}
+		protected LNode Attr(params LNode[] attrsAndNode)
+		{
+			LNode node = attrsAndNode[attrsAndNode.Length - 1];
+			var attrs = node.Attrs;
+			for (int i = 0; i < attrsAndNode.Length - 1; i++)
+				attrs.Insert(i, attrsAndNode[i]);
+			return node.WithAttrs(attrs);
+		}
+
 		[Test]
 		public void SimpleAtoms()
 		{
@@ -170,15 +183,12 @@ namespace Ecs
 			Stmt("@`*`(a, b) / c % 2;",  F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
 			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParseOnly);
 			Stmt("a / b * c % 2;",       F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
-			Stmt("a `*` b ? c : 0;",     F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
-			Stmt("a * b ? c : 0;",       F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParseOnly);
 			Stmt("a << 1 | b >> 1;",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
 			Stmt("a++ + a--;",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
 			Stmt("a ? b : c;",           F.Call(S.QuestionMark, a, b, c));
 			Stmt("a => a + 1;",          F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
 			Stmt("1 + a => 2 + b => c;", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
 			Stmt("a is Foo ? a as Foo : b;", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
-			Stmt("a ??= b using Foo;",   F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
 			Stmt("(a + b).b<c>;", F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c));
 		}
 
@@ -196,17 +206,22 @@ namespace Ecs
 			Stmt("Foo a, b = c;", F.Vars(Foo, a, F.Call(S.Assign, b, c)));
 		}
 
-		protected LNode Attr(LNode attr, LNode node)
+		public void NewEcsOperators()
 		{
-			return node.WithAttrs(node.Attrs.Insert(0, attr));
-		}
-		protected LNode Attr(params LNode[] attrsAndNode)
-		{
-			LNode node = attrsAndNode[attrsAndNode.Length - 1];
-			var attrs = node.Attrs;
-			for (int i = 0; i < attrsAndNode.Length - 1; i++)
-				attrs.Insert(i, attrsAndNode[i]);
-			return node.WithAttrs(attrs);
+			Expr("1 `Foo` 2", F.Call(Foo, F.Literal(1), F.Literal(2)));
+			// Printer detects a possible ambiguity between multiplication and a pointer declaration?
+			Stmt("a `*` b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
+			Stmt("a * b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParseOnly);
+			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
+			Expr("x(->Foo)", F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("x(as Foo)", F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("x(using Foo)", F.Call(S.UsingCast, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("a..b", F.Call(S.DotDot, a, b));
+			Expr("a..<b", F.Call(S.DotDot, a, b));
+			Expr("a...b", F.Call(S.DotDotDot, a, b));
+			Expr("..a", F.Call(S.DotDot, a));
+			Expr("..<a", F.Call(S.DotDot, a));
+			Expr("...a", F.Call(S.DotDotDot, a));
 		}
 
 		[Test]
@@ -796,7 +811,6 @@ namespace Ecs
 			Stmt("@#region(57);",       ExprStyle(F.Call(GSymbol.Get("#region"), F.Literal(57))));
 		}
 
-		// TODO : new expressions: new object() { ... }, new int[] { ... }, new [] { ... }
 
 		//protected static string Lines(params string[] lines)
 		//{
