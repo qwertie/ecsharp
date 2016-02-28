@@ -29,6 +29,42 @@ namespace LeMP
 			return null;
 		}
 
+		// Used to avoid evaluating `value` more than once by creating a 
+		// declaration in `output` of a temporary variable to hold the value. 
+		// If `value` looks simple (according to LooksLikeSimpleValue), this 
+		// fn returns value and leaves output unchanged.
+		protected static LNode MaybeAddTempVarDecl(LNode value, RWList<LNode> output)
+		{
+			if (!LooksLikeSimpleValue(value)) {
+				LNode tmpId;
+				output.Add(TempVarDecl(value, out tmpId));
+				return tmpId;
+			}
+			return value;
+		}
+		// Decides whether a value should be placed in a temporary variable
+		// if it is evaluated more than once by a macro. This returns true for 
+		// non-uppercase identifiers like "x" or "_Foo", for literals like 42,
+		// and for dotted expressions in which all components are non-uppercase 
+		// identifiers, e.g. foo.bar.baz. Returns false for everything else.
+		protected static bool LooksLikeSimpleValue(LNode value)
+		{
+			if (value.IsCall) {
+				if (value.Calls(S.Dot)) {
+					if (value.ArgCount == 1)
+						value = value.Args[0];
+					else if (value.ArgCount == 2) {
+						if (!LooksLikeSimpleValue(value.Args[0]))
+							return false;
+						value = value.Args[1];
+					} else
+						return false;
+				} else
+					return false;
+			}
+			return !char.IsUpper(value.Name.Name.TryGet(0, '\0'));
+		}
+
 		// quote @{ Hope.For(777, $cash) } => F.Call(F.Dot(F.Id("Hope"), F.Id("For")), F.Literal(777), cash)
 		// declare_symbols @@Foo @@Bar {...} (braces optional, invoke replace_code)
 		// replace_code (IntSet.Parse($s) \with ParseSet($s), IntSet \with HashSet!int) {...}

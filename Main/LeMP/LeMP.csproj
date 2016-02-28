@@ -272,6 +272,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MatchCode.ecs</DependentUpon>
     </Compile>
+    <None Include="StandardMacros\MatchMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="StandardMacros\MatchMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MatchMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="StandardMacros\NullDotMacro.cs" />
     <Compile Include="StandardMacros\OnFinallyReturnCatch.cs" />
     <Compile Include="StandardMacros\ReplaceMacro.cs" />
@@ -285,6 +294,10 @@
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
+      <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
+      <Name>Loyc.Utilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\Tests\LoycCore.Tests.csproj">
       <Project>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</Project>
       <Name>LoycCore.Tests</Name>
@@ -304,10 +317,6 @@
     <ProjectReference Include="..\..\Core\Loyc.Syntax\Loyc.Syntax.csproj">
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
       <Name>Loyc.Syntax</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

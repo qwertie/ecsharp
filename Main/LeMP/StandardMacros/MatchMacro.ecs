@@ -1,0 +1,360 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Diagnostics;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Syntax.Les;
+using S = Loyc.Syntax.CodeSymbols;
+
+namespace LeMP
+{
+	partial class StandardMacros
+	{
+		[LexicalMacro("match (var) { case ...: ... }; // In LES, use a => b instead of case a: b",
+			"Attempts to match and deconstruct an object against a \"pattern\", such as a tuple or an algebraic data type. Example:\n"+
+			"match (obj) {  \n"+
+			"   case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y)): \n"+
+			"      Circle(size, x, y); \n"+
+			"}\n\n"+
+			"This is translated to the following C# code: \n"+
+			"do { \n"+
+			"   Point<int> p; \n"+
+			"   Shape tmp1; \n"+
+			"   if (obj is Shape) { \n" +
+			"      var tmp1 = (Shape)obj; \n"+
+			"      if (tmp1.Item1 == ShapeType.Circle) { \n"+
+			"         var size = tmp1.Item2; \n"+
+			"         var tmp2 = tmp1.Location; \n"+
+			"         if (tmp2 is Point<int>) { \n"+
+			"            var p = (Point<int>)tmp2; \n"+
+			"            var x = p.Item1; \n"+
+			"            var y = p.Item2; \n"+
+			"            Circle(size, x, y); \n"+
+			"            break; \n"+
+			"         } \n"+
+			"      }\n"+
+			"   }\n"+
+			"} while(false); \n"+
+			"`break` is not expected at the end of each handler (`case` code block), but it can "+
+			"be used to exit early from a `case`. You can associate multiple patterns with the same "+
+			"handler using `case pattern1, pattern2:` in EC#, but please note that (due to a "+
+			"limitation of plain C#) this causes code duplication since the handler will be repeated "+
+			"for each pattern.")]
+		public static LNode match(LNode node, IMacroContext context)
+		{
+			matchCode (node) {
+			case $_($input, { $(..contents); }):
+				var outputs = new RWList<LNode>();
+				input = MaybeAddTempVarDecl(input, outputs);
+
+				int next_i = 0;
+				for (int case_i = 0; case_i < contents.Count; case_i = next_i) {
+					var @case = contents[case_i];
+					if (!IsCaseLabel(@case))
+						return Reject(context, contents[0], "In 'match': expected 'case' statement");
+					for (next_i = case_i + 1; next_i < contents.Count; next_i++) {
+						var stmt = contents[next_i];
+						if (IsCaseLabel(stmt))
+							break;
+						if (stmt.Calls(S.Break, 0)) {
+							next_i++;
+							break;
+						}
+					}
+					var handler = new RVList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
+					
+					if (@case.Calls(S.Case) && @case.Args.Count > 0) { 
+						var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
+						foreach (var pattern in @case.Args)
+							outputs.Add(codeGen.GenCodeForPattern(pattern));
+					} else { // default:
+						// Note: the extra {braces} around the handler are rarely 
+						// needed. They are added just in case the handler declares a 
+						// variable and a different handler declares another variable 
+						// by the same name, which is illegal unless we add braces.
+						outputs.Add(quote {{ $(..handler); }});
+						if (next_i < contents.Count)
+							context.Write(Severity.Error, @contents[next_i], "The default branch must be the final branch in a 'match' statement.");
+					}
+				}
+				return quote {
+					do
+						$(outputs.ToRVList().AsLNode(S.Braces));
+					while (false);
+				};
+			}
+			return null;
+		}
+
+		static bool IsCaseLabel(LNode @case) {
+			matchCode(@case) {
+				case { case $(.._): }, { default: }: return true;
+			}
+			return false;
+		}
+		
+		// This class is for generating code for a single case pattern
+		class CodeGeneratorForMatchCase
+		{
+			internal CodeGeneratorForMatchCase(protected IMacroContext _context, protected LNode _input, protected RVList<LNode> _handler)
+			{
+				var @break = quote { break; };
+				if (_handler.IsEmpty || !_handler.Last.Equals(@break))
+					_handler.Add(@break);
+			}
+			internal LNode GenCodeForPattern(LNode pattern)
+			{
+				_output = new List<Pair<Mode, LNode>>();
+				GenCodeForPattern(_input, pattern);
+				return GetOutputAsLNode();
+			}
+			
+			enum Mode { Statement, Condition }
+			List<Pair<Mode, LNode>> _output;
+			void PutStmt(LNode stmt) { _output.Add(Pair.Create(Mode.Statement, stmt)); }
+			void PutCond(LNode cond) { _output.Add(Pair.Create(Mode.Condition, cond)); }
+			
+			void GenCodeForPattern(LNode input, LNode pattern)
+			{
+				// Get the parts of the pattern, e.g. `$x is T(sp)` => varBinding=x, isType=T, sp is returned
+				bool refExistingVar;
+				LNode varBinding, cmpExpr, isType, inRange;
+				RVList<LNode> subPatterns, conditions;
+				GetPatternComponents(pattern, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
+
+				// For a pattern like `(varBinding is IsType in A...B)(subPatterns) && conds`, 
+				// our goal is to generate code like this:
+				//
+				//   var tmp_1 = $input; // temp var created unless $input looks simple
+				//   if (tmp_1 is IsType) {
+				//     Type varBinding = (IsType)tmp_1;
+				//     if (varBinding >= A && varBinding <= B && /* code for matching subPatterns */)
+				//         if (conds)
+				//             $handler;
+				//   }
+
+				if (isType != null) {
+					if ((cmpExpr ?? inRange ?? varBinding) != null) {
+						// input will be used multiple times, so consider making a tmp var.
+						if (!LooksLikeSimpleValue(input))
+							PutStmt(TempVarDecl(input, out input));
+					}
+					
+					PutCond(quote( $input is $isType ));
+					
+					if (varBinding == null && ((cmpExpr ?? inRange) != null || subPatterns.Count > 0))
+						// we'll need another temp variable to hold the same value, casted.
+						varBinding = LNode.Id(NextTempName(), isType);
+				}
+
+				if (varBinding != null) {
+					if (isType != null) {
+						if (refExistingVar)
+							PutStmt(quote { $varBinding = ($isType)$input; });
+						else
+							PutStmt(quote { $isType $varBinding = ($isType)$input; });
+					} else {
+						if (refExistingVar)
+							PutStmt(quote { $varBinding = $input; });
+						else
+							PutStmt(quote { var $varBinding = $input; });
+					}
+					input = varBinding;
+				}
+				
+				if (cmpExpr != null) { // do equality test
+					if (cmpExpr.Value == null)
+						PutCond(quote( $input == null ));
+					else
+						PutCond(quote( $cmpExpr.Equals($input) ));
+				}
+				
+				if (inRange != null) {
+					bool exclRange = false;
+					matchCode (inRange) {
+						case $rangeLo..$(rangeHi[exclRange=true]) /*, $rangeLo...$rangeHi*/:
+							if (!LooksLikeSimpleValue(input)) {
+								Debug.Assert(isType == null);
+								PutStmt(TempVarDecl(input, out input));
+							}
+							PutCond(quote( $input >= $rangeLo ));
+							PutCond(exclRange ? quote( $input < $rangeHi ) : quote( $input <= $rangeHi ));
+						case ..$(rangeHi[exclRange=true]) /*, ...$rangeHi*/:
+							PutCond(exclRange ? quote( $input < $rangeHi ) : quote( $input <= $rangeHi ));
+						default:
+							PutCond(quote( $input in $inRange ));
+					}
+				}
+
+				// Generate code for subpatterns
+				for (int itemIndex = 0; itemIndex < subPatterns.Count; itemIndex++) {
+					var subPattern = subPatterns[itemIndex];
+					LNode propName;
+					// Recognize `propName:` in front of the subpattern (fun fact: we 
+					// can't use `matchCode` to detect a named parameter here, because if 
+					// we write `case { $propName: $subPattern; }:` it is parsed as a 
+					// goto-label, not as a named parameter.)
+					if (subPattern.Calls(S.NamedArg, 2) || subPattern.Calls(S.Colon, 2)) {
+						propName = subPattern[0];
+						subPattern = subPattern[1];
+					} else
+						propName = LNode.Id("Item" + (itemIndex+1), subPattern);
+				
+					GenCodeForPattern(quote( $input.$propName ), subPattern);
+				}
+
+				foreach(var cond in conditions)
+					PutCond(cond);
+			}
+
+			void GetPatternComponents(LNode pattern, out LNode varBinding, out bool refExistingVar, out LNode cmpExpr, out LNode isType, out LNode inRange, out RVList<LNode> subPatterns, out RVList<LNode> conditions)
+			{
+				// Here's a typical pattern (case expr):
+				//  is Shape(ShapeType.Circle, ref size, Location: p is Point<int>(x, y)):
+				// When there is an arg list, we decode its Target and return the args.
+				//
+				// The caller is in charge of stripping out "Property:" prefix, if any,
+				// so the most complex pattern that this method considers is something 
+				// like `(expr is Type in Range)(subPatterns) && conds` where `expr` is 
+				// a varName or $varName to deconstruct, or some expression to test for 
+				// equality. Assuming it's an equality test, the output will be
+				//
+				//   varBinding = null
+				//   refExistingVar = false
+				//   cmpExpr = quote(expr);
+				//   isType = quote(Type);
+				//   inRange = quote(Range);
+				//   conds will have "conds" pushed to the front.
+				// 
+				bool haveSubPatterns = false;
+				subPatterns = RVList<LNode>.Empty;
+				refExistingVar = pattern.AttrNamed(S.Ref) != null;
+
+				// First, look for "pattern && condition"
+				conditions = RVList<LNode>.Empty;
+				while (pattern.Calls(S.And, 2)) { 
+					conditions.Add(pattern.Args.Last);
+					pattern = pattern.Args[0];
+				}
+
+				LNode cmpExprOrBinding = null;
+				varBinding = cmpExpr = isType = inRange = null;
+
+				// Now decode the expression. Use three passes, each of which decodes 
+				// an "outer" layer such as A is B, A in B, or expr(args). Since you 
+				// can combine these operators, we may need multiple passes (e.g. 
+				// "X is T in R" and "X in R is T" are equivalent), and keep in mind 
+				// that operator trees like "A in B" are nearly identical to prefix-
+				// calls like "foo(A, B)" except for the call target and the `BaseStyle`. 
+				//
+				// It's very tempting to detect NodeStyle.PrefixNotation to distinguish, 
+				// say, A.B<C> from id(A, B, C), but I'm reluctant to do so. BaseStyle 
+				// is by convention "unsemantic" and not guaranteed to be preserved 
+				// across serializations or supported the same way by different parsers. 
+				// So instead of asking "is this in PrefixNotation?" I ask "does the 
+				// target appear to be a normal identifier?" 
+				for (int pass = 1; pass <= 3; pass++) {
+					LNode inRange2 = inRange, isType2 = isType;
+					matchCode(pattern) {
+						case $(ref cmpExprOrBinding) in $(ref inRange), // EC#
+							 $(ref cmpExprOrBinding) `in` $(ref inRange): // LES
+							pattern = cmpExprOrBinding;
+							if (inRange2 != null)
+								_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
+						case $(ref cmpExprOrBinding) is $(ref isType),   // EC#
+							 $(ref cmpExprOrBinding) `is` $(ref isType): // LES
+							pattern = cmpExprOrBinding;
+							if (isType2 != null)
+								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+						case is $(ref isType),  // EC#
+							@is($(ref isType)): // LES
+							if (isType2 != null)
+								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+							goto doneAnalysis;
+						case $_...$_, $_..$_, ...$_, ..$_:
+							inRange = pattern;
+							goto doneAnalysis;
+						case #tuple($(.._)):
+							subPatterns = pattern.Args;
+							cmpExprOrBinding = null;
+						default:
+							if (pattern.Calls(S.Substitute, 1)) {
+								cmpExprOrBinding = pattern;
+								varBinding = pattern[0];
+								break;
+							} else if (!haveSubPatterns && pattern.IsCall && (pattern.Name == GSymbol.Empty || 
+								(!pattern.HasSpecialName && LesNodePrinter.IsNormalIdentifier(pattern.Name)))) {
+								haveSubPatterns = true;
+								//if (pattern.Target.IsId && pattern.BaseStyle != NodeStyle.PrefixNotation && !LesNodePrinter.IsNormalIdentifier(pattern.Target.Name))
+								//	_context.Write(Severity.Warning, pattern.Target, "Unrecognized operator in match-case: {0}", pattern.Target);
+								subPatterns = pattern.Args;
+								pattern = pattern.Target;
+							} else {
+								cmpExprOrBinding = pattern;
+							}
+					}
+				}
+			doneAnalysis:
+			
+				if (cmpExprOrBinding != null) {
+					if (cmpExprOrBinding.IsId && cmpExprOrBinding.AttrNamed(S.TriviaInParens) == null)
+						varBinding = cmpExprOrBinding;
+			
+					if (varBinding != null) {
+						if (varBinding.AttrNamed(S.Ref) != null) {
+							refExistingVar = true;
+							varBinding = varBinding.WithoutAttrs();
+						}
+						if (varBinding.IsIdNamed(__)) // user is asking to discard this value
+							varBinding = cmpExprOrBinding = null;
+						else if (!varBinding.IsId) {
+							_context.Write(Severity.Error, varBinding, "Invalid variable name in match-case: {0}", varBinding);
+							varBinding = null;
+						}
+					}
+					if (varBinding == null)
+						cmpExpr = cmpExprOrBinding;
+				}
+			
+				if (refExistingVar && varBinding == null) {
+					refExistingVar = false;
+					var got = cmpExprOrBinding ?? pattern;
+					_context.Write(Severity.Warning, got, "'ref' expected a variable name (got `{0}`)", got);
+				}
+			}
+
+			LNode GetOutputAsLNode()
+			{
+				RWList<LNode> finalOutput = _handler.ToRWList();
+				for (int end = _output.Count-1; end >= 0; end--) {
+					Mode  mode = _output[end].A;
+					LNode code = _output[end].B;
+					
+					if (mode == Mode.Condition) {
+						// Merge adjacent conditions into the same if-statement
+						int start = end;
+						for (; start > 0 && _output[start-1].A == mode; start--) {}
+						LNode cond = _output[start].B;
+						for (int i = start + 1; i <= end; i++) 
+							cond = quote( $cond && $(_output[i].B) );
+						end = start;
+
+						finalOutput = new RWList<LNode> { 
+							quote {
+								if ($cond) 
+									$(finalOutput.ToRVList().AsLNode(S.Braces));
+							}
+						};
+					}
+					else
+						finalOutput.Insert(0, code);
+				}
+				return finalOutput.ToRVList().AsLNode(S.Braces);
+			}
+		}
+
+	}
+}

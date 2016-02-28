@@ -104,20 +104,8 @@ namespace LeMP
 
 		static LNode TempVarDecl(LNode value, out LNode tmpId)
 		{
-			tmpId = F.Id(NextTempName());
+			tmpId = LNode.Id(NextTempName(), value);
 			return F.Var(F._Missing, tmpId, value);
-		}
-		// Used to avoid evaluating `value` more than once by creating a 
-		// temporary variable to hold the value. If `value` looks like a 
-		// simple variable, this fn returns value and leaves output unchanged.
-		static LNode MaybeAddTempVarDecl(LNode value, RWList<LNode> output)
-		{
-			if (value.IsCall || char.IsUpper(value.Name.Name.TryGet(0, '\0'))) {
-				LNode tmpId;
-				output.Add(TempVarDecl(value, out tmpId));
-				return tmpId;
-			}
-			return value;
 		}
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
