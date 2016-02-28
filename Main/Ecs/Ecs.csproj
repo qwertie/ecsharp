@@ -245,7 +245,7 @@
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
-      <CustomToolNamespace>--timeout=30</CustomToolNamespace>
+      <CustomToolNamespace>--timeout=40</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>

@@ -706,7 +706,7 @@ namespace LeMP
 						}
 					}
 				while(false);"
-				.Replace("tmp_1", "tmp_" + n));
+				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
 		}
 
 		[Test(Fails = "Macro not implemented")]

@@ -175,14 +175,14 @@ namespace LeMP
 				if (inRange != null) {
 					bool exclRange = false;
 					matchCode (inRange) {
-						case $rangeLo..$(rangeHi[exclRange=true]) /*, $rangeLo...$rangeHi*/:
+						case $rangeLo..$(rangeHi && (exclRange=true)), $rangeLo...$rangeHi:
 							if (!LooksLikeSimpleValue(input)) {
 								Debug.Assert(isType == null);
 								PutStmt(TempVarDecl(input, out input));
 							}
 							PutCond(quote( $input >= $rangeLo ));
 							PutCond(exclRange ? quote( $input < $rangeHi ) : quote( $input <= $rangeHi ));
-						case ..$(rangeHi[exclRange=true]) /*, ...$rangeHi*/:
+						case ..$(rangeHi && (exclRange=true)), ...$rangeHi:
 							PutCond(exclRange ? quote( $input < $rangeHi ) : quote( $input <= $rangeHi ));
 						default:
 							PutCond(quote( $input in $inRange ));
