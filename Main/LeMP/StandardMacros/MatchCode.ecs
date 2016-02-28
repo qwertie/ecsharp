@@ -372,11 +372,13 @@ namespace LeMP
 						refExistingVar = true;
 
 					if (id.Calls(S.IndexBracks, 2)) {
+						// old style
 						condition = id.Args[1];
 						id = id.Args[0];
-					} else if (id.ArgCount == 1) {
-						condition = id.Args[0];
-						id = id.Target;
+					} else while (id.Calls(S.And, 2)) { 
+						// new style (recommended)
+						condition = condition == null ? id.Args[1] : quote( $(id.Args[1]) && $condition );
+						id = id.Args[0];
 					}
 
 					if (condition != null)

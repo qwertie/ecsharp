@@ -155,7 +155,7 @@ namespace LeMP
 							Do(stuff);
 					}");
 			TestEcs(@"matchCode(code) { 
-					$(lit(#.IsLiteral)) => Literal(); 
+					$(lit && #.IsLiteral) => Literal(); 
 					$(id[#.IsId]) => Id(); 
 					$_ => Call();
 				}",
@@ -220,7 +220,7 @@ namespace LeMP
 			TestEcs(@"matchCode(code) { 
 					case $x = $y:
 						Assign(x, y);
-					case [$(..attrs)] $x = $(x_(#.Equals(x))) + 1, 
+					case [$(..attrs)] $x = $(x_ && #.Equals(x)) + 1, 
 					     [$(..attrs)] $op($x, $y):
 						Handle(attrs);
 						Handle(x, y);
@@ -685,7 +685,7 @@ namespace LeMP
 			int n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 				match (obj) {
-						case t is Thing(ref $r is double in x..y, c...d) in x..<y:
+					case t is Thing(ref $r is double in x..y, c...d) in x..<y:
 						DoSomethingWith(t, r);
 				}",
 				@"do
@@ -1043,7 +1043,12 @@ namespace LeMP
 		public void TestReplace_basics()
 		{
 			// Simple cases
-			TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
+			var oldSink = _sink; _sink = MessageSink.Trace; // block warning message about 'no replacements'
+			try {
+				TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
+			} finally {
+				_sink = oldSink;
+			}
 			TestLes(@"replace (a => b) {a;}", "b;");
 			TestLes(@"replace (7 => seven) {x = 7;}", "x = seven;");
 			TestLes(@"replace (7() => ""seven"") {x = 7() + 7;}", @"x = ""seven"" + 7;");
@@ -1072,10 +1077,10 @@ namespace LeMP
 			        "{{ var foo = new Foo(); on_exit { foo.Dispose(); } Combobulate(foo); return foo; }}",
 			        " { var foo = new Foo(); try { Combobulate(foo); return foo; } finally { foo.Dispose(); } }");
 			
-			TestLes("replace ($($format; $(@[#params] args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $args))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}""; noun)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}"", noun));");
-			TestLes("replace ($($format; $(@[#params] args)) => String.Format($format, $args))\n"+
+			TestLes("replace ($($format; $(..args)) => String.Format($format, $args))\n"+
 			        @"   { MessageBox.Show($(""I hate {0}ing {1}s""; verb; noun), $(""FYI"";)); }",
 			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}

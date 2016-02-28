@@ -150,14 +150,14 @@ namespace Loyc.VisualStudio
 				var printer = LNode.Printer;
 				if (!NoOutHeader)
 					Output.AppendFormat(
-						"// Generated from {1} by LeMP custom tool. LLLPG version: {2}{0}"
+						"// Generated from {1} by LeMP custom tool. LeMP version: {2}{0}"
 						+ "// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':{0}"
 						+ "// --no-out-header       Suppress this message{0}"
 						+ "// --verbose             Allow verbose messages (shown by VS as 'warnings'){0}"
 						+ "// --timeout=X           Abort processing thread after X seconds (default: 10){0}"
 						+ "// --macros=FileName.dll Load macros from FileName.dll, path relative to this file {0}"
 						+ "// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);{0}", NewlineString, 
-						Path.GetFileName(io.FileName), typeof(Rule).Assembly.GetName().Version.ToString());
+						Path.GetFileName(io.FileName), typeof(MacroProcessor).Assembly.GetName().Version.ToString());
 				foreach (LNode node in results)
 				{
 					printer(node, Output, Sink, null, IndentString, NewlineString);

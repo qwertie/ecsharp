@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LLLPG version: 1.4.0.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 1.4.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -188,7 +188,7 @@ namespace LeMP
 						if (isType2 != null)
 							_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
 						goto doneAnalysis;
-					} else if (pattern.Calls(CodeSymbols.DotDot, 2) && pattern.Args[1].Calls(CodeSymbols.Dot, 1) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 1) && pattern.Args[0].Calls(CodeSymbols.Dot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
+					} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
 						inRange = pattern;
 						goto doneAnalysis;
 					} else if (pattern.Calls(CodeSymbols.Tuple)) {

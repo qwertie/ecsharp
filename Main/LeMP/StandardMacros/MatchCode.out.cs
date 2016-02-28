@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LLLPG version: 1.4.0.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.4.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -326,10 +326,11 @@ namespace LeMP
 					if (id.Calls(S.IndexBracks, 2)) {
 						condition = id.Args[1];
 						id = id.Args[0];
-					} else if (id.ArgCount == 1) {
-						condition = id.Args[0];
-						id = id.Target;
-					}
+					} else
+						while (id.Calls(S.And, 2)) {
+							condition = condition == null ? id.Args[1] : LNode.Call(CodeSymbols.And, LNode.List(id.Args[1], condition)).SetStyle(NodeStyle.Operator);
+							id = id.Args[0];
+						}
 					if (condition != null)
 						condition = condition.ReplaceRecursive(n => n.IsIdNamed(S._HashMark) ? id : null);
 					if (!id.IsId)

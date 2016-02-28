@@ -130,9 +130,11 @@ namespace Loyc.Syntax
 		/// <param name="candidate">A node that you want to compare with a 'pattern'.</param>
 		/// <param name="pattern">A syntax tree that may contain placeholders. A 
 		/// placeholder is a call to the $ operator with one parameter, which must 
-		/// be a simple identifier (otherwise the $ operator is treated literally as
-		/// something that must exist in <c>candidate</c>). The subtree in 
-		/// <c>candidate</c> corresponding to the placeholder is saved in <c>captures</c>.</param>
+		/// be either (A) a simple identifier, or (B) the ".." operator with a simple
+		/// identifier as its single parameter. Otherwise, the $ operator is treated 
+		/// literally as something that must exist in <c>candidate</c>). The subtree 
+		/// in <c>candidate</c> corresponding to the placeholder is saved in 
+		/// <c>captures</c>.</param>
 		/// <param name="captures">A table that maps placeholder names from 
 		/// <c>pattern</c> to subtrees in <c>candidate</c>. You can set your map to 
 		/// null and a map will be created for you if necessary. If you already have
@@ -144,7 +146,8 @@ namespace Loyc.Syntax
 		/// Attributes in patterns are not yet supported.
 		/// <para/>
 		/// This method supports multi-part captures, which are matched to 
-		/// placeholders whose identifier has a #params attribute (for example, if 
+		/// placeholders whose identifier either (A) has a #params attribute or
+		/// (B) has the unary ".." operator applied to it (for example, if 
 		/// the placeholder is called p, this is written as <c>$(params p)</c> in 
 		/// EC#.) A placeholder that looks like this can match multiple arguments or
 		/// multiple statements in the <c>candidate</c> (or <i>no</i> arguments, or
@@ -168,9 +171,9 @@ namespace Loyc.Syntax
 			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs))
 				return false;
 
-			// $capture
-			LNode sub;
-			if (pattern.Calls(S.Substitute, 1) && (sub = pattern.Args.Last).IsId)
+			// $capture or $(..capture)
+			LNode sub = GetCaptureIdentifier(pattern);
+			if (sub != null)
 			{
 				captures = captures ?? new MMap<Symbol, LNode>();
 				AddCapture(captures, sub.Name, candidate);
@@ -219,11 +222,11 @@ namespace Loyc.Syntax
 
 		static void AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items)
 		{
-			Debug.Assert(cap.Calls(S.Substitute, 1) && cap.Args.Last.IsId);
+			LNode capId = GetCaptureIdentifier(cap);
 			if (items.Count == 1)
-				AddCapture(captures, cap.Args.Last.Name, items[0]);
+				AddCapture(captures, capId.Name, items[0]);
 			else
-				AddCapture(captures, cap.Args.Last.Name, F.Call(S.Splice, items));
+				AddCapture(captures, capId.Name, F.Call(S.Splice, items));
 		}
 		static void AddCapture(MMap<Symbol, LNode> captures, Symbol capName, LNode candidate)
 		{
@@ -251,8 +254,22 @@ namespace Loyc.Syntax
 		}
 		static bool IsParamsCapture(LNode p)
 		{
-			return p.Calls(S.Substitute, 1) && p.Args.Last.AttrNamed(S.Params) != null;
+			return p.Calls(S.Substitute, 1) 
+				&& (p.Args.Last.AttrNamed(S.Params) != null || p.Args.Last.Calls(S.DotDot, 1))
+				&& GetCaptureIdentifier(p) != null;
 		}
+		static LNode GetCaptureIdentifier(LNode pattern)
+		{
+			if (pattern.Calls(S.Substitute, 1)) {
+				var arg = pattern.Args.Last;
+				if (arg.Calls(S.DotDot, 1))
+					arg = arg.Args[0];
+				if (arg.IsId)
+					return arg;
+			}
+			return null;
+		}
+
 		static bool MatchThenParams(RVList<LNode> cArgs, RVList<LNode> pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref RVList<LNode> attrs)
 		{
 			// This helper function of MatchesPattern() is called when pArgs is followed 
