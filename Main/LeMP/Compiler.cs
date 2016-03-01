@@ -13,6 +13,7 @@ using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc.Threading;
+using Loyc.Ecs;
 using LeMP.Prelude;
 using System.Threading;
 
@@ -31,8 +32,8 @@ namespace LeMP
 		/// <summary>A list of available syntaxes.</summary>
 		public static HashSet<IParsingService> Languages = new HashSet<IParsingService> { 
 			Loyc.Syntax.Les.LesLanguageService.Value,
-			Ecs.Parser.EcsLanguageService.Value,
-			Ecs.Parser.EcsLanguageService.WithPlainCSharpPrinter
+			Loyc.Ecs.EcsLanguageService.Value,
+			Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter
 		};
 
 		#region Command-line interface
@@ -75,7 +76,7 @@ namespace LeMP
 				c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);
 				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 				c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
-				using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp))
+				using (LNode.PushPrinter(EcsNodePrinter.PrintPlainCSharp))
 					c.Run();
 			} else if (args.Length == 0) {
 				ShowHelp(KnownOptions.OrderBy(p => p.Key));
@@ -98,7 +99,7 @@ namespace LeMP
 				RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
 				RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 				RunLeMPTests();
-				Ecs.Program.RunEcsTests();
+				Loyc.Ecs.Program.RunEcsTests();
 			}
 		}
 

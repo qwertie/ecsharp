@@ -13,7 +13,7 @@ using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 

@@ -10,7 +10,7 @@ using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 
 /// <summary>Enhanced C# parser</summary>
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using EP = EcsPrecedence;

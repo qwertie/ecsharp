@@ -9,6 +9,7 @@ using System.Text;
 namespace LeMP
 {
 	using S = CodeSymbols;
+	using Loyc.Ecs;
 
 	public partial class StandardMacros
 	{
@@ -40,7 +41,7 @@ namespace LeMP
 				if (arg.Calls(S.Property)) {
 					// #property(Type, Name<T>, {...})
 					var name = arg.Args[1];
-					fieldName = Ecs.EcsNodePrinter.KeyNameComponentOf(name);
+					fieldName = EcsNodePrinter.KeyNameComponentOf(name);
 					paramName = ChooseArgName(fieldName);
 					plainArg = F.Var(arg.Args[0], paramName);
 					createStmt = arg;

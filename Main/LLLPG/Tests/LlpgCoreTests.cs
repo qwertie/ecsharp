@@ -6,7 +6,7 @@ using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
-using Ecs;
+using Loyc.Ecs;
 using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator

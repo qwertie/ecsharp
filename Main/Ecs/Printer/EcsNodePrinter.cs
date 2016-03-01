@@ -10,12 +10,12 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Math;
 using S = Loyc.Syntax.CodeSymbols;
-using EP = Ecs.EcsPrecedence;
+using EP = Loyc.Ecs.EcsPrecedence;
 using System.IO;
 using Loyc.Syntax.Les;
 using Loyc.Syntax.Lexing;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	// This file contains enumerations (ICI, SpaceOpt, NewlineOpt) and miscellaneous
 	// code of EcsNodePrinter:
@@ -1375,7 +1375,7 @@ namespace Ecs
 			P<byte>   (np => np.PrintIntegerToString("(->byte)")),   // Unnatural. Not produced by parser.
 			P<double> (np => {
 				double n = ((double)np._n.Value);
-				np.PrintValueToString(Math.Floor(n) == n ? "d" : "");
+				np.PrintValueToString(System.Math.Floor(n) == n ? "d" : "");
 			}),
 			P<float>  (np => np.PrintValueToString("f")),
 			P<decimal>(np => np.PrintValueToString("m")),

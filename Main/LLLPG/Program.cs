@@ -11,7 +11,7 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Syntax.Tests;
-using Ecs.Parser;
+using Loyc.Ecs.Parser;
 
 namespace Loyc.LLParserGenerator
 {

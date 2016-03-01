@@ -6,11 +6,11 @@ using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
-using Ecs.Parser;
+using Loyc.Ecs.Parser;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	// Tests shared between the printer and the parser. Both tests together verify 
 	// round-tripping from AST -> text -> AST, although the other kind of round-

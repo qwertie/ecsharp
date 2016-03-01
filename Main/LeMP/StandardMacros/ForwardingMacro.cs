@@ -1,15 +1,16 @@
-﻿using Loyc;
-using Loyc.Collections;
-using Loyc.Syntax;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Ecs;
 
 namespace LeMP
 {
 	using S = CodeSymbols;
-	using System.Diagnostics;
 
 	public partial class StandardMacros
 	{
@@ -88,7 +89,7 @@ namespace LeMP
 				LNode target = fwd.Args[0];
 				if (target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(_hash))
 					return target.WithArgChanged(1, target.Args[1].WithName(
-						Ecs.EcsNodePrinter.KeyNameComponentOf(methodName)));
+						EcsNodePrinter.KeyNameComponentOf(methodName)));
 				return target;
 			} else
 				return null;

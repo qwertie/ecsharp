@@ -12,7 +12,7 @@ using System.Text;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using S = CodeSymbols;

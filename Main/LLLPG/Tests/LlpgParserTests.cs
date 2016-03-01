@@ -95,7 +95,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		static IParsingService[] _languages = new IParsingService[] {
-			Ecs.Parser.EcsLanguageService.Value,
+			Ecs.EcsLanguageService.Value,
 			Loyc.Syntax.Les.LesLanguageService.Value
 		};
 
@@ -103,7 +103,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TestStage1Core(text, expected);
 			if (tryECSharp)
-				using (ParsingService.PushCurrent(Ecs.Parser.EcsLanguageService.Value))
+				using (ParsingService.PushCurrent(Ecs.EcsLanguageService.Value))
 					TestStage1Core(text, expected);
 		}
 		void TestStage1Core(string text, LNode expected)

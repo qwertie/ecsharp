@@ -8,9 +8,9 @@ using Loyc.Math;
 using Loyc.Syntax;
 using Loyc.Collections.Impl;
 using S = Loyc.Syntax.CodeSymbols;
-using EP = Ecs.EcsPrecedence;
+using EP = Loyc.Ecs.EcsPrecedence;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	// This file: code for printing expressions
 	public partial class EcsNodePrinter

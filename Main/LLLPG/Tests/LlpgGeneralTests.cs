@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Collections;
-using Ecs.Parser;
-using System.Diagnostics;
 using Loyc.Syntax.Les;
+using Loyc.Ecs;
 
 namespace Loyc.LLParserGenerator
 {

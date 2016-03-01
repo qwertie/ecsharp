@@ -10,7 +10,7 @@ using Loyc.Collections;
 using Loyc.Collections.Impl;
 using System.Collections;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using S = CodeSymbols;
 

@@ -7,8 +7,9 @@ using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
+using Loyc.Ecs.Parser;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs
 {
 	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
 	/// parser and printer for Enhanced C#.</summary>

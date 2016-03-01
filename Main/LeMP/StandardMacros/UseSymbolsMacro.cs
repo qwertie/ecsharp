@@ -5,6 +5,7 @@ using System.Text;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
+using Loyc.Ecs;
 
 namespace LeMP
 {
@@ -38,7 +39,7 @@ namespace LeMP
 			RVList<LNode> output = args_body.B.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
 				var sym = n.Value as Symbol;
 				if (n.IsLiteral && sym != null)
-					return symbols[sym] = LNode.Id(prefix + Ecs.EcsNodePrinter.SanitizeIdentifier(sym.Name));
+					return symbols[sym] = LNode.Id(prefix + EcsNodePrinter.SanitizeIdentifier(sym.Name));
 				return null;
 			}));
 

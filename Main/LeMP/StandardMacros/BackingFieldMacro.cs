@@ -25,19 +25,21 @@ namespace LeMP
 				return null;
 
 			// Look for an attribute of the form [field], [field name] or [field Type name]
-			LNode fieldAttr = null, fieldVarAttr = null;
-			LNode fieldName;
+			LNode fieldAttr = null, fieldName;
 			bool autoType = false;
 			int i;
 			for (i = 0; i < prop.Attrs.Count; i++) {
 				LNode attr = prop.Attrs[i];
-				if (attr.IsIdNamed(_field)
-					|| attr.Calls(S.Var, 2) 
-						&& ((autoType = attr.Args[0].IsIdNamed(_field)) ||
-							(fieldVarAttr = attr.AttrNamed(__field)) != null && fieldVarAttr.IsId))
-				{
+				if (attr.IsIdNamed(_field)) {
 					fieldAttr = attr;
 					break;
+				} else if (attr.Calls(S.Var, 2)) {
+					LNode fieldVarAttr = null;
+					attr = attr.WithoutAttrNamed(__field, out fieldVarAttr);
+					if (fieldVarAttr != null && fieldVarAttr.IsId || (autoType = attr.Args[0].IsIdNamed(_field))) {
+						fieldAttr = attr;
+						break;
+					}
 				}
 			}
 			if (fieldAttr == null)
@@ -49,7 +51,7 @@ namespace LeMP
 			propName = prop.Args[1];
 			propArgs = prop.Args[2];
 			if (field.IsId) {
-				fieldName = F.Id(ChooseFieldName(Ecs.EcsNodePrinter.KeyNameComponentOf(propName)));
+				fieldName = F.Id(ChooseFieldName(Loyc.Ecs.EcsNodePrinter.KeyNameComponentOf(propName)));
 				field = F.Call(S.Var, propType, fieldName).WithAttrs(fieldAttr.Attrs);
 			} else {
 				fieldName = field.Args[1];
@@ -58,8 +60,6 @@ namespace LeMP
 			}
 			if (autoType)
 				field = field.WithArgChanged(0, propType);
-			if (fieldVarAttr != null)
-				field = field.WithoutAttrNamed(__field);
 
 			// Construct the new backing field, fill in the property getter and/or setter
 			LNode newBody = body.WithArgs(body.Args.SmartSelect(stmt =>

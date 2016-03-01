@@ -5,7 +5,7 @@ using System.Text;
 using Loyc.Syntax.Lexing;
 using System.Diagnostics;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using Loyc;

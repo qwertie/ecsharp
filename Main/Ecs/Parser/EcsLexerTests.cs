@@ -7,7 +7,7 @@ using Loyc;
 using System.Diagnostics;
 using S = Loyc.Syntax.CodeSymbols;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using Loyc.Syntax.Lexing;

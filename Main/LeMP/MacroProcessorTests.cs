@@ -9,6 +9,7 @@ using Loyc.Collections;
 using Loyc;
 using LeMP.Prelude;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Ecs;
 
 namespace LeMP.Test
 {
@@ -57,7 +58,7 @@ namespace LeMP
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF)
 		{
-			using (LNode.PushPrinter(new Ecs.EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
+			using (LNode.PushPrinter(new EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)

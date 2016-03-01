@@ -1,14 +1,13 @@
-﻿using Ecs.Parser;
-using LeMP;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Loyc;
 using Loyc.Collections;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Loyc.Ecs;
 
 namespace LeMP
 {
@@ -16,6 +15,24 @@ namespace LeMP
 	public class StandardMacroTests
 	{
 		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+
+		[Test]
+		public void TestUsingMulti()
+		{
+			TestEcs("using System.Collections;", 
+					"using System.Collections;");
+			TestEcs("using System.(Collections, Collections.Generic, Text, Linq);",
+				   @"using System.Collections;
+			         using System.Collections.Generic;
+			         using System.Text;
+			         using System.Linq;");
+			TestEcs("using System.(#, Collections.(#, Generic), Text, Linq);",
+				   @"using System;
+				     using System.Collections;
+			         using System.Collections.Generic;
+			         using System.Text;
+			         using System.Linq;");
+		}
 
 		[Test]
 		public void TestNullDot()

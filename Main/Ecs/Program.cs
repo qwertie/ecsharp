@@ -8,12 +8,12 @@ using Loyc.MiniTest;
 using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
-using Ecs.Parser;
+using Loyc.Ecs.Parser;
 
 /// <summary>Enhanced C#. Currently only the parser (<see cref="Ecs.Parser.EcsParser"/>)
 /// and printer (<see cref="Ecs.EcsNodePrinter"/>) are implemented, so LeMP is used 
 /// to convert supported features of EC# to C#.</summary>
-namespace Ecs
+namespace Loyc.Ecs
 {
 	/// <summary>Entry point: runs the EC# test suite and related tests.</summary>
 	public class Program

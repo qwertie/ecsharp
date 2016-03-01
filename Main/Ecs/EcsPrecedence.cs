@@ -7,7 +7,7 @@ using Loyc;
 using Loyc.Math;
 using Loyc.Syntax;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	/// <summary>Contains <see cref="Precedence"/> objects that represent the 
 	/// precedence rules of EC#.</summary>

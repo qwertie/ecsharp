@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using Loyc.Syntax;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	/// <summary>Helper class of <see cref="EcsNodePrinter"/></summary>
 	internal class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
