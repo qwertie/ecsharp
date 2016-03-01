@@ -290,6 +290,15 @@
     <Compile Include="StandardMacros\TupleMacros.cs" />
     <Compile Include="StandardMacros\UnrollMacro.cs" />
     <Compile Include="StandardMacros\UseSymbolsMacro.cs" />
+    <None Include="StandardMacros\UsingMultiMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="StandardMacros\UsingMultiMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="StandardMacros\WithMacro.cs" />
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
