@@ -209,7 +209,7 @@ namespace Loyc.Syntax
 			}
 			return sb.ToString();
 		}
-		public static string PrintMultiple(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public static string Print(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			return PrintMultiple(service.Printer, nodes, msgs, mode, indentString, lineSeparator);
 		}

@@ -267,7 +267,7 @@ namespace Loyc.LLParserGenerator
 
 				if (loopType == S.For) {
 					// (...)* => for (;;) {}
-					code = F.Call(S.For, F._Missing, F._Missing, F._Missing, code);
+					code = F.Call(S.For, F.Missing, F.Missing, F.Missing, code);
 				} else if (loopType == S.DoWhile) {
 					// (...)? becomes "do {...} while(false);" IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
@@ -377,7 +377,7 @@ namespace Loyc.LLParserGenerator
 			private LNode GetExitStmt(Symbol haveLoop)
 			{
 				if (haveLoop == null || haveLoop == S.DoWhile)
-					return F._Missing;
+					return F.Missing;
 				if (haveLoop == S.For)
 					return F.Call(S.Break);
 				return F.Call(S.Goto, F.Id(haveLoop));

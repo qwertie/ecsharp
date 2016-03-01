@@ -223,7 +223,7 @@ namespace LeMP
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode A = a[0], B = a[1];
-				return F.Vars(F._Missing, F.Assign(B, A));
+				return F.Vars(F.Missing, F.Assign(B, A));
 			}
 			return null;
 		}
@@ -234,7 +234,7 @@ namespace LeMP
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode A = a[0], B = a[1];
-				return F.Vars(F._Missing, F.Assign(A, B));
+				return F.Vars(F.Missing, F.Assign(A, B));
 			}
 			return null;
 		}

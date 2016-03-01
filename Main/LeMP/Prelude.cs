@@ -100,7 +100,7 @@ namespace LeMP.Prelude
 		[LexicalMacro("import Namespace;", "Use symbols from specified namespace ('using' in C#).")]
 		public static LNode import(LNode node, IMessageSink sink)
 		{
-			if (!node.Args.TryGet(0, F._Missing).IsIdNamed(_macros))
+			if (!node.Args.TryGet(0, F.Missing).IsIdNamed(_macros))
 				return node.WithTarget(S.Import);
 			return null;
 		}
@@ -304,7 +304,7 @@ namespace LeMP.Prelude
 			}
 			if (retVal != null && retVal.Calls(S.Braces) && body == null) {
 				body = retVal;
-				retVal = F._Missing;
+				retVal = F.Missing;
 			}
 			var name = sig.Target ?? sig;
 			if (!IsTargetDefinitionId(sig, true))
@@ -312,7 +312,7 @@ namespace LeMP.Prelude
 			var argList = sig.ArgCount != 0 ? sig.WithTarget(S.AltList) : F.List();
 
 			if (retVal == null)
-				retVal = isCons ? F._Missing : F.Void;
+				retVal = isCons ? F.Missing : F.Void;
 			else if (isCons)
 				return Reject(sink, retVal, "A constructor cannot have a return type");
 
@@ -346,12 +346,12 @@ namespace LeMP.Prelude
 				retVal = sig.Args[1];
 			} else {
 				name = sig;
-				retVal = F._Missing;
+				retVal = F.Missing;
 			}
 			if (!IsComplexId(name))
 				return Reject(sink, name, "Property name must be a complex identifier");
 
-			return node.With(S.Property, retVal, name, F._Missing, body);
+			return node.With(S.Property, retVal, name, F.Missing, body);
 		}
 
 		//static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
@@ -398,7 +398,7 @@ namespace LeMP.Prelude
 					return Reject(sink, part, "Expected a simple variable name here");
 				if (type != null && !IsComplexId(type))
 					return Reject(sink, type, "Expected a type name here");
-				type = type ?? F._Missing;
+				type = type ?? F.Missing;
 
 				var nameAndInit = init == null ? part : F.Call(S.Assign, part, init);
 				if (varStmt != null && varStmt.Args[0].Equals(type)) {
@@ -454,7 +454,7 @@ namespace LeMP.Prelude
 			if (args.Count == 2 && args[0].Calls(_in, 2)) {
 				LNode decl = args[0].Args[0], list = args[0].Args[1], body = args[1];
 				if (decl.IsId)
-					decl = F.Var(F._Missing, decl);
+					decl = F.Var(F.Missing, decl);
 				return node.With(S.ForEach, decl, list, body);
 			}
 			return null;
@@ -619,16 +619,16 @@ namespace LeMP.Prelude
 						if (p.ArgCount > 1)
 							sink.Write(Severity.Error, p, "Expected catch() to take one argument.");
 						// This is a normal catch clause
-						clauses.Insert(0, F.Call(S.Catch, p.Args[0], F._Missing, parts[i + 1]));
+						clauses.Insert(0, F.Call(S.Catch, p.Args[0], F.Missing, parts[i + 1]));
 					} else {
 						// This is a catch-all clause (the type argument is missing)
 						if (clauses.Count != 0)
 							sink.Write(Severity.Error, p, "The catch-all clause must be the last «catch» clause.");
-						clauses.Add(F.Call(S.Catch, F._Missing, F._Missing, parts[i + 1]));
+						clauses.Add(F.Call(S.Catch, F.Missing, F.Missing, parts[i + 1]));
 					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {
 					// This is a normal catch clause
-					clauses.Insert(0, F.Call(S.Catch, AutoRemoveParens(p), F._Missing, parts[i+1]));
+					clauses.Insert(0, F.Call(S.Catch, AutoRemoveParens(p), F.Missing, parts[i+1]));
 					i--;
 				} else {
 					return Reject(sink, p, "Expected «catch» or «finally» clause here. Clause is missing or malformed.");
@@ -873,7 +873,7 @@ namespace LeMP.Prelude
 			var a = node.Args;
 			if (a.Count == 2) {
 				LNode name = a[0], value = a[1];
-				return node.With(S.Var, F._Missing, F.Call(S.Assign, name, value));
+				return node.With(S.Var, F.Missing, F.Call(S.Assign, name, value));
 			}
 			return null;
 		}
@@ -882,7 +882,7 @@ namespace LeMP.Prelude
 		{
 			var a = node.Args;
 			if (a.Count == 2)
-				return node.With(S.Var, new RVList<LNode>(F._Missing, F.Call(S.Assign, a[1], a[0])));
+				return node.With(S.Var, new RVList<LNode>(F.Missing, F.Call(S.Assign, a[1], a[0])));
 			return null;
 		}
 		

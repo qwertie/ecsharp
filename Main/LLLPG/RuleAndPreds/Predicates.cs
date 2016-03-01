@@ -70,7 +70,7 @@ namespace Loyc.LLParserGenerator
 			if (@operator == S.AddSet)
 				return result => F.Call(F.Dot(lhs, _Add), result);
 			else if (@operator == S.QuickBindSet)
-				return result => F.Call(S.Var, F._Missing, F.Call(S.Assign, lhs, result));
+				return result => F.Call(S.Var, F.Missing, F.Call(S.Assign, lhs, result));
 			else if (@operator.Name.EndsWith(":"))
 				return null;
 			else
@@ -152,7 +152,7 @@ namespace Loyc.LLParserGenerator
 		public static Pred SetVar(string varName, Pred pred) {
 			pred.ResultSaver = res => {
 				// #var(@``, $varName($res))
-				return F.Var(F._Missing, varName, res);
+				return F.Var(F.Missing, varName, res);
 			};
 			return pred;
 		}

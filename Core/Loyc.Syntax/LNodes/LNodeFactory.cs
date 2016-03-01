@@ -16,10 +16,10 @@ namespace Loyc.Syntax
 	/// </summary>
 	public class LNodeFactory
 	{
-		public static readonly LNode Missing = new StdIdNode(S.Missing, new SourceRange(null));
+		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(null));
 		
 		private LNode _emptyList, _emptyTuple, _inParens;
-		public LNode _Missing { get { return Missing; } } // allow access through class reference
+		public LNode Missing { get { return Missing_; } } // allow access through class reference
 
 		// Common literals
 		public LNode @true { get { return Literal(true); } }
@@ -417,11 +417,11 @@ namespace Loyc.Syntax
 		}
 		public LNode Property(LNode type, LNode name, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
-			return Property(type, name, Missing, body, null, startIndex, endIndex);
+			return Property(type, name, Missing_, body, null, startIndex, endIndex);
 		}
 		public LNode Property(LNode type, LNode name, LNode argList, LNode body, LNode initializer = null, int startIndex = -1, int endIndex = -1)
 		{
-			argList = argList ?? Missing;
+			argList = argList ?? Missing_;
 			CheckParam.Arg("body with initializer", initializer == null || (body != null && body.Calls(S.Braces)));
 			if (endIndex < startIndex) endIndex = startIndex;
 			LNode[] list = body == null
@@ -442,7 +442,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Var(LNode type, LNode name, LNode initValue = null)
 		{
-			type = type ?? _Missing;
+			type = type ?? Missing;
 			if (initValue != null)
 				return Call(S.Var, type, Call(S.Assign, name, initValue));
 			else
@@ -450,18 +450,18 @@ namespace Loyc.Syntax
 		}
 		public LNode Var(LNode type, LNode name)
 		{
-			return Call(S.Var, type ?? _Missing, name);
+			return Call(S.Var, type ?? Missing, name);
 		}
 		public LNode Vars(LNode type, params Symbol[] names)
 		{
-			type = type ?? _Missing;
+			type = type ?? Missing;
 			var list = new List<LNode>(names.Length + 1) { type };
 			list.AddRange(names.Select(n => Id(n)));
 			return Call(S.Var, list.ToArray());
 		}
 		public LNode Vars(LNode type, params LNode[] namesWithValues)
 		{
-			type = type ?? _Missing;
+			type = type ?? Missing;
 			var list = new RWList<LNode>() { type };
 			list.AddRange(namesWithValues);
 			return Call(S.Var, list.ToRVList());

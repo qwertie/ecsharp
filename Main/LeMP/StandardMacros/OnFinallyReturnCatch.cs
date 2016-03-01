@@ -65,7 +65,7 @@ namespace LeMP
 				firstArg = LNode.Missing;
 			else if (firstArg.IsId)
 				firstArg = firstArg.With(S.Var, F.Id(_Exception), firstArg);
-			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F._Missing, on_handler));
+			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F.Missing, on_handler));
 		}
 
 		[LexicalMacro("on_return(result) { result++; }", 
@@ -87,13 +87,13 @@ namespace LeMP
 			bool varAssigned = false;
 			if (firstArg == null) {
 				varName = F.Id(__result__);
-				varDecl = F.Var(F._Missing, varName);
+				varDecl = F.Var(F.Missing, varName);
 			} else {
 				if (varDecl.Calls(S.Var, 2)) {
 					if (varAssigned = (varName = varDecl.Args[1]).Calls(S.Assign, 2))
 						varName = varName.Args[0];
 				} else if (varName.IsId) {
-					varDecl = node.With(S.Var, F._Missing, varName);
+					varDecl = node.With(S.Var, F.Missing, varName);
 				} else
 					return Reject(context, firstArg, "The first parameter to on_return must be a simple identifier (the name of a variable to return) or a variable declaration (for a variable to be returned).");
 			}

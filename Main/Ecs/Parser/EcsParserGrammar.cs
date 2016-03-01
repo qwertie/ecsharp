@@ -1589,7 +1589,7 @@ namespace Ecs.Parser
 				var lb = MatchAny();
 				var rb = Match((int) TT.RBrace);
 				#line 439 "EcsParserGrammar.les"
-				list.Add(F._Missing);
+				list.Add(F.Missing);
 				AppendInitializersInside(lb, list);
 				endIndex = rb.EndIndex;
 				#line default
@@ -6599,7 +6599,7 @@ namespace Ecs.Parser
 				{
 					r = Constructor(startIndex, attrs);
 					#line 1037 "EcsParserGrammar.les"
-					if ((wc != 0 && !r.Args[1, F._Missing].IsIdNamed(S.This))) {
+					if ((wc != 0 && !r.Args[1, F.Missing].IsIdNamed(S.This))) {
 						NonKeywordAttrError(attrs, "constructor");
 					}
 					#line default
@@ -7058,7 +7058,7 @@ namespace Ecs.Parser
 						{
 							WhereClausesOpt(ref name);
 							#line 1290 "EcsParserGrammar.les"
-							LNode args = F._Missing;
+							LNode args = F.Missing;
 							#line default
 							// Line 1291: (TT.LBrack TT.RBrack)?
 							la0 = LA0;
@@ -7082,7 +7082,7 @@ namespace Ecs.Parser
 						{
 							ScanToEndOfStmt();
 							Error("Syntax error in method, property, or variable declaration");
-							result = F._Missing.PlusAttrs(attrs);
+							result = F.Missing.PlusAttrs(attrs);
 						}
 						break;
 					}
@@ -7349,7 +7349,7 @@ namespace Ecs.Parser
 			#line 1428 "EcsParserGrammar.les"
 			LNode name = F.Id((Symbol) n.Value, n.StartIndex, n.EndIndex);
 			#line default
-			r = MethodArgListAndBody(startIndex, attrs, S.Cons, F._Missing, name);
+			r = MethodArgListAndBody(startIndex, attrs, S.Cons, F.Missing, name);
 			#line 1430 "EcsParserGrammar.les"
 			return r;
 			#line default
@@ -7381,7 +7381,7 @@ namespace Ecs.Parser
 			#line 1441 "EcsParserGrammar.les"
 			LNode name = F.Call(S.NotBits, F.Id((Symbol) n.Value, n.StartIndex, n.EndIndex), tilde.StartIndex, n.EndIndex);
 			#line default
-			r = MethodArgListAndBody(startIndex, attrs, S.Fn, F._Missing, name);
+			r = MethodArgListAndBody(startIndex, attrs, S.Fn, F.Missing, name);
 			#line 1443 "EcsParserGrammar.les"
 			return r;
 			#line default

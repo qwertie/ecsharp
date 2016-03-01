@@ -153,7 +153,7 @@ namespace Loyc.Syntax.Les
 		{
 			Test(Mode.Stmt, -1, "a; b; c;", a, b, c);
 			Stmt("a.b(c);", F.Call(F.Dot(a, b), c));
-			Expr("{ b(c); } + { ; Foo() }", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F._Missing, F.Call(Foo))));
+			Expr("{ b(c); } + { ; Foo() }", F.Call(S.Add, F.Braces(F.Call(b, c)), F.Braces(F.Missing, F.Call(Foo))));
 			Stmt("a.{b;c;}();", F.Call(F.Dot(a, F.Braces(b, c))));
 		}
 

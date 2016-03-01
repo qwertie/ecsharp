@@ -55,7 +55,7 @@ namespace Loyc.LLParserGenerator
 
 		protected static LNode Stmt(string code)
 		{
-			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F._Missing);
+			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F.Missing);
 		}
 		protected static LNode Expr(string code)
 		{
@@ -1965,7 +1965,7 @@ namespace Loyc.LLParserGenerator
 			Rule NTokens = Rule("NTokens", 
 				Set("x", 0) + Opt(And(Expr("x < max")) + Plus(Set("[^\n\r ]"))) +
 				             Star(And(Expr("x < max")) + C(' ') + Star(Set("[^\n\r ]")) + Stmt("x++"), true));
-			NTokens.Basis = F.Fn(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
+			NTokens.Basis = F.Fn(F.Void, F.Missing, F.List(F.Var(F.Int32, "max")));
 			Rule Line = Rule("Line", SetVar("c", Set("[0-9]")) + Call(NTokens, Expr("c - '0'")) + Opt(Set("[\n\r]")));
 
 			_pg.AddRules(NTokens, Line);

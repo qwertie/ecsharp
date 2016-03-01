@@ -273,7 +273,7 @@ namespace Ecs
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes
 			Stmt("class Foo\n{\n  public Foo()\n  {\n  }\n}",
 				F.Call(S.Class, Foo, F.List(), F.Braces(
-					Attr(@public, F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces())))), 
+					Attr(@public, F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces())))), 
 				p => p.DropNonDeclarationAttributes = true);
 			// bug: 'ref' and 'out' attributes were suppressed by DropNonDeclarationAttributes
 			Option(Mode.PrintBothParseFirst, 
@@ -778,7 +778,7 @@ namespace Ecs
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new",                  F.Id(S.New));
 			Expr("#new()",                F.Call(S.New));
-			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F._Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
+			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F.Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
 
 			//int[,] a = null;
 			//int[][,] aa = new int[][,] { a };
@@ -931,18 +931,18 @@ namespace Ecs
 			stmt = F.Fn(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#fn(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
-			stmt = F.Call(S.Cons, F._Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
+			stmt = F.Call(S.Cons, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
 			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
 			Expr("#cons(@``, this, #(#var(int, x)), {\n  #this(x, 1);\n  a = x;\n})", stmt);
-			stmt = F.Call(S.Cons, F._Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
+			stmt = F.Call(S.Cons, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
 			Expr("#cons(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
-			stmt = F.Fn(F._Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
+			stmt = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			Stmt("~Foo()\n{\n}", stmt);
 			Expr("#fn(@``, ~Foo, #(), {\n})", stmt);
-			stmt = F.Fn(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
+			stmt = F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
 			Stmt("#fn(@``, -Foo, #(), {\n});", stmt);
-			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F._Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
+			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  #fn(@``, -Foo, #(), {\n  });\n}", stmt);
 			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b); 
@@ -1018,11 +1018,11 @@ namespace Ecs
 		[Test]
 		public void ConstructorAmbiguities()
 		{
-			var emptyConstructor = F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces());
-			var thisColonBase    = F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
-			var thisConsNoBody   = F.Call(S.Cons, F._Missing, _(S.This), F.List());
-			var fooConstructor   = F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces(F.Call(x)));
-			var fooConsNoBody    = F.Call(S.Cons, F._Missing, Foo, F.List());
+			var emptyConstructor = F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces());
+			var thisColonBase    = F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
+			var thisConsNoBody   = F.Call(S.Cons, F.Missing, _(S.This), F.List());
+			var fooConstructor   = F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
+			var fooConsNoBody    = F.Call(S.Cons, F.Missing, Foo, F.List());
 			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
 			Stmt("this()\n{\n}",                        emptyConstructor);
 			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
@@ -1030,25 +1030,25 @@ namespace Ecs
 			Stmt("#this(x);",                           F.Call(S.This, x));
 			Stmt("base(x);",                            F.Call(S.Base, x));
 			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), {\n});", "Foo()\n{\n}",
-				F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces()), allowAmbig);
+				F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
 			Stmt("this() : base()\n{\n}",       thisColonBase, allowAmbig);
 			Stmt("this() : this(x)\n{\n  x;\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
 			Stmt("this()\n{\n  x;\n  this(x);\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
 			Stmt("this()\n{\n  this();\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
 			Stmt("this()\n{\n  x;\n  this();\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
 			Stmt("this()\n{\n  #cons(@``, this, #());\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
 			//Stmt("this()\n{\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}", 
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
 			Stmt("this()\n{\n  #cons(@``, this, #(), {\n  });\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
 			Stmt("class Foo\n{\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
 			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
@@ -1056,9 +1056,9 @@ namespace Ecs
 			Stmt("class Foo\n{\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
 			Stmt("class Foo\n{\n  Foo()\n  {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
 			Stmt("class Foo\n{\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Cons, F._Missing, IFoo, F.List()))));
+			                                          F.Call(S.Cons, F.Missing, IFoo, F.List()))));
 			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Cons, F._Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
+			                                          F.Call(S.Cons, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
 			if (this is EcsNodePrinterTests)
 			{
 				Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig);
@@ -1068,16 +1068,16 @@ namespace Ecs
 			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
 			
 			// Non-keyword attributes allowed on this() but not Foo() constructor
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())))));
+			                                      Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())))));
 			Stmt("class Foo\n{\n  [#partial] Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(@partial,  F.Call(S.Cons, F._Missing, Foo, F.List(), F.Braces())))));
-			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces())));
+			                                      Attr(@partial,  F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces())))));
+			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("this()\n{\n  x;\n  partial this(x)\n  {\n  }\n}",
-				F.Call(S.Cons, F._Missing, _(S.This), F.List(), F.Braces(x,
-					Attr(partialWA, F.Call(S.Cons, F._Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
+				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x,
+					Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
 		}
 
 		LNode AddWords(LNode stmt, bool partialIsWA = true) { return stmt.PlusAttrs(@public, @new, partialIsWA ? partialWA : partial, @static); }
@@ -1172,7 +1172,7 @@ namespace Ecs
 		{
 			Stmt("using Foo.x;",       F.Call(S.Import, F.Dot(Foo, x)));
 			Stmt("using Foo = x;",     Attr(F.Id(S.FilePrivate), F.Call(S.Alias, F.Call(S.Assign, Foo, x), F.List())));
-			Stmt("using (var x = Foo)\n  x.a();", F.Call(S.UsingStmt, F.Var(F._Missing, x.Name, Foo), F.Call(F.Dot(x, a))));
+			Stmt("using (var x = Foo)\n  x.a();", F.Call(S.UsingStmt, F.Var(F.Missing, x.Name, Foo), F.Call(F.Dot(x, a))));
 		}
 
 		[Test]
@@ -1221,19 +1221,19 @@ namespace Ecs
 
 			stmt = F.Call(S.While, F.Call(S.GT, x, one), F.Call(S.PostDec, x));
 			Stmt("while (x > 1)\n  x--;", stmt);
-			stmt = F.Call(S.UsingStmt, F.Var(F._Missing, x.Name, F.Call(S.New, F.Call(Foo))), F.Call(F.Dot(x, a)));
+			stmt = F.Call(S.UsingStmt, F.Var(F.Missing, x.Name, F.Call(S.New, F.Call(Foo))), F.Call(F.Dot(x, a)));
 			Stmt("using (var x = new Foo())\n  x.a();", stmt);
 			stmt = F.Call(S.Lock, Foo, F.Braces(F.Call(F.Dot(Foo, Foo))));
 			Stmt("lock (Foo) {\n  Foo.Foo();\n}", stmt);
 
-			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F._Missing, F.Braces()));
+			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Missing, F.Missing, F.Braces()));
 			Stmt("try\n  Foo();\ncatch {\n}", stmt);
-			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Vars(_("Exception"), x), F._Missing, F.Braces(F.Call(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
+			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Vars(_("Exception"), x), F.Missing, F.Braces(F.Call(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
 			Stmt("try\n  Foo();\n"+
 				 "catch (Exception x) {\n  throw;\n"+
 				 "} finally\n  hi_mom();", stmt);
 
-			stmt = F.Call(S.ForEach, F.Vars(F._Missing, x), Foo, F.Call(a, x));
+			stmt = F.Call(S.ForEach, F.Vars(F.Missing, x), Foo, F.Call(a, x));
 			Stmt("foreach (var x in Foo)\n  a(x);", stmt);
 			if (this is EcsParserTests) {
 				stmt = F.Call(S.ForEach, x, Foo, F.Call(a, x));
@@ -1270,15 +1270,15 @@ namespace Ecs
 		[Test]
 		public void Missing()
 		{
-			Stmt(";", F._Missing);
+			Stmt(";", F.Missing);
 			Action<EcsNodePrinter> oma = o => o.OmitMissingArguments = true;
-			Stmt("Foo(@``);", F.Call(Foo, F._Missing), oma);
-			Stmt("Foo(@``, b);", F.Call(Foo, F._Missing, b));
-			Stmt("Foo(, b);", F.Call(Foo, F._Missing, b), oma);
-			Stmt("Foo(a,);", F.Call(Foo, a, F._Missing), oma);
-			Stmt("Foo(,);", F.Call(Foo, F._Missing, F._Missing), oma);
-			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F._Missing, F._Missing, F._Missing, F.Braces(F.Call(a))));
-			Stmt("for (;; @``())\n  ;", F.Call(S.For, F._Missing, F._Missing, F.Call(F._Missing), F._Missing));
+			Stmt("Foo(@``);", F.Call(Foo, F.Missing), oma);
+			Stmt("Foo(@``, b);", F.Call(Foo, F.Missing, b));
+			Stmt("Foo(, b);", F.Call(Foo, F.Missing, b), oma);
+			Stmt("Foo(a,);", F.Call(Foo, a, F.Missing), oma);
+			Stmt("Foo(,);", F.Call(Foo, F.Missing, F.Missing), oma);
+			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F.Missing, F.Missing, F.Missing, F.Braces(F.Call(a))));
+			Stmt("for (;; @``())\n  ;", F.Call(S.For, F.Missing, F.Missing, F.Call(F.Missing), F.Missing));
 		}
 
 		[Test]
@@ -1452,15 +1452,15 @@ namespace Ecs
 			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
 			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x, false)));
 			Stmt("class Foo\n{\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partial, F.Call(S.Cons, F._Missing, Foo, F.List())))));
+			                                                          Attr(partial, F.Call(S.Cons, F.Missing, Foo, F.List())))));
 			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partialWA, F.Call(S.Cons, F._Missing, F.Id(S.This), F.List())))));
-			Stmt("public new partial static this();",             AddWords(F.Call(S.Cons, F._Missing, F.Id(S.This), F.List())));
+			                                                          Attr(partialWA, F.Call(S.Cons, F.Missing, F.Id(S.This), F.List())))));
+			Stmt("public new partial static this();",             AddWords(F.Call(S.Cons, F.Missing, F.Id(S.This), F.List())));
 			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
 			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
 			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
 			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, F.Call(Foo)), false));
-			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F._Missing, F._Missing, F.Braces()))));
+			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Missing, F.Missing, F.Braces()))));
 			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, F.Call(Foo))));
 			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
 			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo)), false));
@@ -1468,7 +1468,7 @@ namespace Ecs
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
 			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
-			Stmt("[#public, #new, #partial] static ;",            AddWords(F._Missing, false));
+			Stmt("[#public, #new, #partial] static ;",            AddWords(F.Missing, false));
 			Stmt("this int x;",                                   F.Vars(F.Int32, x).PlusAttr(F.@this));
 			Stmt("[this] a(b);",                                  F.Call(a, b).PlusAttr(F.@this));
 		}
@@ -1525,14 +1525,14 @@ namespace Ecs
 			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.List(x)), Foo)));
 			Stmt("int Foo(int x) => x * x;",           F.Fn(F.Int32, Foo, F.List(F.Var(F.Int32, x)), F.Call(S.Mul, x, x)));
 			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, F.Literal(5)));
-			Stmt("int Foo\n{\n  get;\n} = x * 5;",     F.Property(F.Int32, Foo, F._Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
+			Stmt("int Foo\n{\n  get;\n} = x * 5;",     F.Property(F.Int32, Foo, F.Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
 			Stmt("public Foo this[long x] => get(x);", Attr(F.Public, F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Call(get, x))));
 			Stmt("new Foo { [0] = a, [1] = b };",
 				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, a), F.Call(S.InitializerAssignment, one, b)));
 			Stmt("new Foo { [0, 1] = a, [2] = b };",
 				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, one, a), F.Call(S.InitializerAssignment, two, b)));
 			Stmt("try {\n  Foo();\n} catch when (true) {\n}",
-				F.Call(S.Try, F.Braces(F.Call(Foo)), F.Call(S.Catch, F._Missing, F.True, F.Braces())));
+				F.Call(S.Try, F.Braces(F.Call(Foo)), F.Call(S.Catch, F.Missing, F.True, F.Braces())));
 			Stmt("try {\n} catch (Foo b) when (c) {\n  x;\n}",
 				F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Var(Foo, b), c, F.Braces(x))));
 		}
@@ -1541,7 +1541,7 @@ namespace Ecs
 		public void TODO()
 		{
 			Stmt("var a = (Foo ? b = c as Foo? : 0);", 
-				F.Var(F._Missing, F.Call(S.Assign, a, F.InParens(
+				F.Var(F.Missing, F.Call(S.Assign, a, F.InParens(
 					F.Call(S.QuestionMark, Foo,
 						F.Call(S.Assign, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
 		}
@@ -1573,7 +1573,7 @@ namespace Ecs
 		public void RawText()
 		{
 			var stmt = Attr(F.Trivia(S.TriviaRawTextBefore, "Eat my shorts!"), 
-				F.Trivia(S.TriviaRawTextAfter, "...then do it again!"), F._Missing);
+				F.Trivia(S.TriviaRawTextAfter, "...then do it again!"), F.Missing);
 			Stmt("Eat my shorts!;...then do it again!", stmt);
 			stmt = Attr(F.Trivia(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
 			Stmt("if (a)\n  x(); // end if", stmt);

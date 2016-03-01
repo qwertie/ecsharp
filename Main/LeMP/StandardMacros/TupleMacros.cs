@@ -46,7 +46,7 @@ namespace LeMP
 		public static LNode set_tuple_type(LNode node, IMacroContext context) {
 			var tupleMakers = MaybeInitTupleMakers(context.ScopedProperties);
 
-			int? size = node.Args[0, F._Missing].Value as int?;
+			int? size = node.Args[0, F.Missing].Value as int?;
 			var rest = node.Slice(size != null ? 1 : 0);
 			if (!MathEx.IsInRange(rest.Count, 1, 2)) 
 				return Reject(context, node, "Incorrect number of arguments");
@@ -70,7 +70,7 @@ namespace LeMP
 		[LexicalMacro("#<x, y, ...>", "Represents a tuple type", "#of")]
 		public static LNode TupleType(LNode node, IMacroContext context)
 		{
-			var stem = node.Args[0, F._Missing];
+			var stem = node.Args[0, F.Missing];
 			if (stem.IsId && (stem.Name == S.AltList || stem.Name == S.Tuple)) {
 				var tupleMakers = MaybeInitTupleMakers(context.ScopedProperties);
 				
@@ -105,7 +105,7 @@ namespace LeMP
 		static LNode TempVarDecl(LNode value, out LNode tmpId)
 		{
 			tmpId = LNode.Id(NextTempName(), value);
-			return F.Var(F._Missing, tmpId, value);
+			return F.Var(F.Missing, tmpId, value);
 		}
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
