@@ -588,6 +588,7 @@ namespace Loyc.Syntax
 		public static RVList<LNode> List(LNode a) { return new RVList<LNode>(a); }
 		public static RVList<LNode> List(LNode a, LNode b) { return new RVList<LNode>(a, b); }
 		public static RVList<LNode> List(params LNode[] list) { return new RVList<LNode>(list); }
+		public static RVList<LNode> List(IEnumerable<LNode> list) { return new RVList<LNode>(list); }
 
 		// It's difficult to enforce "nulls not allowed" with high performance.
 		// Compromise: only check in debug builds. This is called by node types
