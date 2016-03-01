@@ -29,7 +29,7 @@ namespace Ecs
 		protected LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
 		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
-		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value");
+		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), await = F.Id("await");
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 
@@ -1112,7 +1112,7 @@ namespace Ecs
 		{
 			LNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
 			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
-			Expr("#property(int, Foo, {\n  get;\n  set;\n})", stmt);
+			Expr("#property(int, Foo, @``, {\n  get;\n  set;\n})", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 								   AsStyle(NodeStyle.Special, F.Call(get, F.Braces(F.Call(S.Return, x)))),
 								   AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Assign(x, value)))))));
@@ -1139,6 +1139,11 @@ namespace Ecs
 			Stmt("int Foo\n{\n  protected get;\n  private set;\n}",
 				F.Property(F.Int32, Foo, F.Braces(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
+
+			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Braces(get, set));
+			Stmt("Foo this[long x]\n{\n  get;\n  set;\n}", stmt);
+			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), F.Braces(get, set)));
+			Stmt("private Foo<T> this<T>[T x]\n{\n  get;\n  set;\n}", stmt);
 		}
 
 		[Test]
@@ -1221,9 +1226,9 @@ namespace Ecs
 			stmt = F.Call(S.Lock, Foo, F.Braces(F.Call(F.Dot(Foo, Foo))));
 			Stmt("lock (Foo) {\n  Foo.Foo();\n}", stmt);
 
-			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F.Braces()));
+			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F._Missing, F._Missing, F.Braces()));
 			Stmt("try\n  Foo();\ncatch {\n}", stmt);
-			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Vars(_("Exception"), x), F.Braces(F.Call(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
+			stmt = F.Call(S.Try, F.Call(Foo), F.Call(S.Catch, F.Vars(_("Exception"), x), F._Missing, F.Braces(F.Call(S.Throw))), F.Call(S.Finally, F.Call(_("hi_mom"))));
 			Stmt("try\n  Foo();\n"+
 				 "catch (Exception x) {\n  throw;\n"+
 				 "} finally\n  hi_mom();", stmt);
@@ -1336,7 +1341,7 @@ namespace Ecs
 		public void ArrayInitializers()
 		{
 			// TODO: The printer's newline choices are odd. See if we can improve them.
-			Stmt("int[,] Foo = new[,] { { 0\n  }, { 1, 2\n  } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
 					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
 					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
@@ -1455,7 +1460,7 @@ namespace Ecs
 			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
 			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
 			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, F.Call(Foo)), false));
-			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F._Missing, F.Braces()))));
+			Stmt("[#public, #new] partial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F._Missing, F._Missing, F.Braces()))));
 			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, F.Call(Foo))));
 			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
 			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo)), false));
@@ -1473,7 +1478,7 @@ namespace Ecs
 		{
 			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
 			LNode def = F.Fn(F.Void, Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>) xToken)));
-			LNode prop = F.Call(S.Property, F.Void, Foo, F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
+			LNode prop = F.Property(F.Void, Foo, F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken)));
 			Stmt("void Foo() => @[ x ];", def);
 			Stmt("void Foo => @[ x ];", prop);
 			Stmt("partial void Foo() => @[ x ];", Attr(partialWA, def));
@@ -1489,6 +1494,47 @@ namespace Ecs
 		{
 			Expr("@`.`()", F.Call(S.Dot));
 			Expr("@`*`()", F.Call(S.Mul));
+		}
+
+		[Test(Fails = "Left broken because LLLPG is too slow to analyze the grammar")]
+		public void Await()
+		{
+			Expr("await x ** 2", F.Call(S.Exp, F.Call(await, x), F.Literal(2)));
+			Expr("await Foo.x", F.Call(await, F.Dot(Foo, x)));
+			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(await, F.Dot(Foo, x))));
+
+			Expr("await ++x", F.Call(await, F.Call(S.PreInc, x)));
+			Expr("await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
+			// Uh-oh, it looks like the parsing of this should depend on whether the
+			// enclosing function has the `async` keyword or not. If it does, it 
+			// should parse as `await((a).b)`, otherwise it should be `(await(a)).b`.
+			// But EC# doesn't change modes in this way, so it's always parsed as
+			// `await((a).b)`
+			Expr("await(a).b", F.Call(await, F.Dot(F.InParens(a), b)));
+			// @await is treated slightly differently, but currently the node Name is 
+			// "await" either way. Should it be #await when the @ sign is absent?
+			Expr("@await(a).b", F.Dot(F.Call(await, a), b));
+		}
+
+		[Test]
+		public void CSharp6Features()
+		{
+			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParseOnly);
+			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));
+			// Tentative tree structure - there is an undesirable inconsistency between ?. and ?[]
+			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.List(x)), Foo)));
+			Stmt("int Foo(int x) => x * x;",           F.Fn(F.Int32, Foo, F.List(F.Var(F.Int32, x)), F.Call(S.Mul, x, x)));
+			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, F.Literal(5)));
+			Stmt("int Foo\n{\n  get;\n} = x * 5;",     F.Property(F.Int32, Foo, F._Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
+			Stmt("public Foo this[long x] => get(x);", Attr(F.Public, F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Call(get, x))));
+			Stmt("new Foo { [0] = a, [1] = b };",
+				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, a), F.Call(S.InitializerAssignment, one, b)));
+			Stmt("new Foo { [0, 1] = a, [2] = b };",
+				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, one, a), F.Call(S.InitializerAssignment, two, b)));
+			Stmt("try {\n  Foo();\n} catch when (true) {\n}",
+				F.Call(S.Try, F.Braces(F.Call(Foo)), F.Call(S.Catch, F._Missing, F.True, F.Braces())));
+			Stmt("try {\n} catch (Foo b) when (c) {\n  x;\n}",
+				F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Var(Foo, b), c, F.Braces(x))));
 		}
 
 		[Test(Fails = "Stuff that is intentionally left broken for the time being")]

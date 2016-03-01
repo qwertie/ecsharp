@@ -50,11 +50,20 @@ namespace Loyc.Syntax
 		
 		public static readonly Symbol Braces = GSymbol.Get("{}"); //!< "{}" Creates a scope.
 		public static readonly Symbol IndexBracks = GSymbol.Get("_[]"); //!< "_[]" indexing operator
-		                                                          //!< foo[1] <=> @`[]`(foo, 1) and int[] <=> #of(@`[]`, int)
+		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> #of(@`[]`, Foo)
 		public static readonly Symbol Array = GSymbol.Get("[]");  //!< Used for list/array literals. Not used for attributes.
 		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`[]`)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("[,]"); //!< "[,]" int[,] <=> #of(@`[,]`, int)
 
+		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
+		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
+		                              // async is a normal contextual attribute so it needs no special parser support.
+		public static readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
+		public static readonly Symbol NullIndexBracks = GSymbol.Get("?[]"); //!< "?[]" indexing operator of C# 6
+		                              //!< @`?[]`(foo, #(1, A)) <=> foo?[1, A] (TENTATIVE, may be changed later)
+		public static readonly Symbol InitializerAssignment = GSymbol.Get("[]="); //!< @`[]=`(0, 1, x) <=> [0, 1]=x
+		                              // (TENTATIVE, and only supported in 'new' initializer blocks)
+		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
 		///     <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
 		/// For a time, #tuple was used for this purpose; the problem is that a
@@ -119,8 +128,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x = &y), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
-		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
-		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), {...})
+		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, @``, {...})); <=> try {...} catch {...}
+		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...})
 		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement: #finally({...})
 		
 		// Space definitions

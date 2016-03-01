@@ -417,11 +417,18 @@ namespace Loyc.Syntax
 		}
 		public LNode Property(LNode type, LNode name, LNode body = null, int startIndex = -1, int endIndex = -1)
 		{
+			return Property(type, name, Missing, body, null, startIndex, endIndex);
+		}
+		public LNode Property(LNode type, LNode name, LNode argList, LNode body, LNode initializer = null, int startIndex = -1, int endIndex = -1)
+		{
+			argList = argList ?? Missing;
+			CheckParam.Arg("body with initializer", initializer == null || (body != null && body.Calls(S.Braces)));
 			if (endIndex < startIndex) endIndex = startIndex;
-			CheckParam.Arg("body", body.IsCall && (body.Name == S.Braces || (body.Name == S.Forward && body.Args.Count == 1)));
 			LNode[] list = body == null
-				? new[] { type, name, }
-				: new[] { type, name, body };
+				? new[] { type, name, argList, }
+				: initializer == null
+				? new[] { type, name, argList, body }
+				: new[] { type, name, argList, body, initializer };
 			return new StdSimpleCallNode(S.Property, new RVList<LNode>(list), new SourceRange(_file, startIndex, endIndex - startIndex));
 		}
 		

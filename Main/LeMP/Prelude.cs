@@ -351,7 +351,7 @@ namespace LeMP.Prelude
 			if (!IsComplexId(name))
 				return Reject(sink, name, "Property name must be a complex identifier");
 
-			return node.With(S.Property, retVal, name, body);
+			return node.With(S.Property, retVal, name, F._Missing, body);
 		}
 
 		//static readonly LNode trivia_macroCall = F.Id(S.TriviaMacroCall);
@@ -616,17 +616,19 @@ namespace LeMP.Prelude
 					finallyCode = parts[i+1];
 				} else if (p.Name == _catch) {
 					if (p.ArgCount > 0) {
+						if (p.ArgCount > 1)
+							sink.Write(Severity.Error, p, "Expected catch() to take one argument.");
 						// This is a normal catch clause
-						clauses.Insert(0, F.Call(S.Catch, F.Call(S.Splice, p.Args), parts[i + 1]));
+						clauses.Insert(0, F.Call(S.Catch, p.Args[0], F._Missing, parts[i + 1]));
 					} else {
 						// This is a catch-all clause (the type argument is missing)
 						if (clauses.Count != 0)
 							sink.Write(Severity.Error, p, "The catch-all clause must be the last «catch» clause.");
-						clauses.Add(F.Call(S.Catch, F._Missing, parts[i + 1]));
+						clauses.Add(F.Call(S.Catch, F._Missing, F._Missing, parts[i + 1]));
 					}
 				} else if (i > 1 && parts[i-1].IsIdNamed(_catch)) {
 					// This is a normal catch clause
-					clauses.Insert(0, F.Call(S.Catch, AutoRemoveParens(p), parts[i+1]));
+					clauses.Insert(0, F.Call(S.Catch, AutoRemoveParens(p), F._Missing, parts[i+1]));
 					i--;
 				} else {
 					return Reject(sink, p, "Expected «catch» or «finally» clause here. Clause is missing or malformed.");

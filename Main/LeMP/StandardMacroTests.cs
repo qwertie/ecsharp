@@ -810,9 +810,9 @@ namespace LeMP
 			TestEcs("void AppendFormat(string fmt, params string[] args) ==> sb.#;",
 					"void AppendFormat(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
 			TestEcs("internal int Count ==> _list.Count;",
-					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
+					"internal int Count { get { return _list.Count; } }");
 			TestEcs("internal int Count ==> _list.#;",
-					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
+					"internal int Count { get { return _list.Count; } }");
 			TestEcs("internal int Count { get ==> _list.#; set ==> _list.#; }",
 					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
 		}
@@ -833,7 +833,11 @@ namespace LeMP
 			TestEcs("[[A] field] [B, C] public string Name { get; }",
 			        "[A] string _name; [B, C] public string Name { get { return _name; } }");
 			TestEcs("public string Name { get; protected set; }",
-			        "public string Name { get; protected set; }");
+					"public string Name { get; protected set; }");
+			TestEcs("[field string _name] public string Name { get; protected set; }",
+					"string _name; public string Name { get { return _name; } protected set { _name = value; } }");
+			TestEcs("[field List<T> L] T this[int x] { get; set; }",
+					"List<T> L; T this[int x] { get { return L[x]; } set { L[x] = value; } }");
 		}
 
 		[Test]

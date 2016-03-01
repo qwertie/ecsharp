@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LLLPG version: 1.4.0.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 1.4.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -97,6 +97,7 @@ namespace Ecs.Parser
 		static readonly Symbol _module = GSymbol.Get("module");
 		static readonly Symbol _await = GSymbol.Get("await");
 		static readonly Symbol _where = GSymbol.Get("where");
+		static readonly Symbol _when = GSymbol.Get("when");
 		static readonly Symbol _select = GSymbol.Get("select");
 		static readonly Symbol _from = GSymbol.Get("from");
 		static readonly Symbol _join = GSymbol.Get("join");
@@ -1777,7 +1778,7 @@ namespace Ecs.Parser
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
-			// Line 315: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId =>  / [a] [s] EndId =>  / [b] [a] [s] [e] EndId =>  / [b] [o] [o] [l] EndId =>  / [b] [r] [e] [a] [k] EndId =>  / [b] [y] [t] [e] EndId =>  / [c] [a] [s] [e] EndId =>  / [c] [a] [t] [c] [h] EndId =>  / [c] [h] [a] [r] EndId =>  / [c] [h] [e] [c] [k] [e] [d] EndId =>  / [c] [l] [a] [s] [s] EndId =>  / [c] [o] [n] [s] [t] EndId =>  / [c] [o] [n] [t] [i] [n] [u] [e] EndId =>  / [d] [e] [c] [i] [m] [a] [l] EndId =>  / [d] [e] [f] [a] [u] [l] [t] EndId =>  / [d] [e] [l] [e] [g] [a] [t] [e] EndId =>  / [d] [o] [u] [b] [l] [e] EndId =>  / [d] [o] EndId =>  / [e] [l] [s] [e] EndId =>  / [e] [n] [u] [m] EndId =>  / [e] [v] [e] [n] [t] EndId =>  / [e] [x] [p] [l] [i] [c] [i] [t] EndId =>  / [e] [x] [t] [e] [r] [n] EndId =>  / [f] [a] [l] [s] [e] EndId =>  / [f] [i] [n] [a] [l] [l] [y] EndId =>  / [f] [i] [x] [e] [d] EndId =>  / [f] [l] [o] [a] [t] EndId =>  / [f] [o] [r] [e] [a] [c] [h] EndId =>  / [f] [o] [r] EndId =>  / [g] [o] [t] [o] EndId =>  / [i] [f] EndId =>  / [i] [m] [p] [l] [i] [c] [i] [t] EndId =>  / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId =>  / [i] [n] [t] [e] [r] [n] [a] [l] EndId =>  / [i] [n] [t] EndId =>  / [i] [n] EndId =>  / [i] [s] EndId =>  / [l] [o] [c] [k] EndId =>  / [l] [o] [n] [g] EndId =>  / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId =>  / [n] [e] [w] EndId =>  / [n] [u] [l] [l] EndId =>  / [o] [b] [j] [e] [c] [t] EndId =>  / [o] [p] [e] [r] [a] [t] [o] [r] EndId =>  / [o] [u] [t] EndId =>  / [o] [v] [e] [r] [r] [i] [d] [e] EndId =>  / [p] [a] [r] [a] [m] [s] EndId =>  / [p] [r] [i] [v] [a] [t] [e] EndId =>  / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId =>  / [p] [u] [b] [l] [i] [c] EndId =>  / [r] [e] [a] [d] [o] [n] [l] [y] EndId =>  / [r] [e] [f] EndId =>  / [r] [e] [t] [u] [r] [n] EndId =>  / [s] [b] [y] [t] [e] EndId =>  / [s] [e] [a] [l] [e] [d] EndId =>  / [s] [h] [o] [r] [t] EndId =>  / [s] [i] [z] [e] [o] [f] EndId =>  / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId =>  / [s] [t] [a] [t] [i] [c] EndId =>  / [s] [t] [r] [i] [n] [g] EndId =>  / [s] [t] [r] [u] [c] [t] EndId =>  / [s] [w] [i] [t] [c] [h] EndId =>  / [t] [h] [i] [s] EndId =>  / [t] [h] [r] [o] [w] EndId =>  / [t] [r] [u] [e] EndId =>  / [t] [r] [y] EndId =>  / [t] [y] [p] [e] [o] [f] EndId =>  / [u] [i] [n] [t] EndId =>  / [u] [l] [o] [n] [g] EndId =>  / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId =>  / [u] [n] [s] [a] [f] [e] EndId =>  / [u] [s] [h] [o] [r] [t] EndId =>  / [u] [s] [i] [n] [g] EndId =>  / [v] [i] [r] [t] [u] [a] [l] EndId =>  / [v] [o] [l] [a] [t] [i] [l] [e] EndId =>  / [v] [o] [i] [d] EndId =>  / [w] [h] [i] [l] [e] EndId =>  / &{AllowPP} [#] [i] [f] EndId =>  / &{AllowPP} [#] [e] [l] [s] [e] EndId =>  / &{AllowPP} [#] [e] [l] [i] [f] EndId =>  / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId =>  / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId =>  / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId =>  / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId =>  / &{AllowPP} [#] [l] [i] [n] [e] EndId =>  / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId =>  / [v] [a] [r] EndId =>  / [d] [y] [n] [a] [m] [i] [c] EndId =>  / [t] [r] [a] [i] [t] EndId =>  / [a] [l] [i] [a] [s] EndId =>  / [a] [s] [s] [e] [m] [b] [l] [y] EndId =>  / [m] [o] [d] [u] [l] [e] EndId =>  / [f] [r] [o] [m] EndId =>  / [w] [h] [e] [r] [e] EndId =>  / [s] [e] [l] [e] [c] [t] EndId =>  / [j] [o] [i] [n] EndId =>  / [o] [n] EndId =>  / [e] [q] [u] [a] [l] [s] EndId =>  / [i] [n] [t] [o] EndId =>  / [l] [e] [t] EndId =>  / [o] [r] [d] [e] [r] [b] [y] EndId =>  / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [g] [r] [o] [u] [p] EndId =>  / [b] [y] EndId =>  / [a] [w] [a] [i] [t] EndId =>  / Id )
+			// Line 315: ( [a] [b] [s] [t] [r] [a] [c] [t] EndId =>  / [a] [s] EndId =>  / [b] [a] [s] [e] EndId =>  / [b] [o] [o] [l] EndId =>  / [b] [r] [e] [a] [k] EndId =>  / [b] [y] [t] [e] EndId =>  / [c] [a] [s] [e] EndId =>  / [c] [a] [t] [c] [h] EndId =>  / [c] [h] [a] [r] EndId =>  / [c] [h] [e] [c] [k] [e] [d] EndId =>  / [c] [l] [a] [s] [s] EndId =>  / [c] [o] [n] [s] [t] EndId =>  / [c] [o] [n] [t] [i] [n] [u] [e] EndId =>  / [d] [e] [c] [i] [m] [a] [l] EndId =>  / [d] [e] [f] [a] [u] [l] [t] EndId =>  / [d] [e] [l] [e] [g] [a] [t] [e] EndId =>  / [d] [o] [u] [b] [l] [e] EndId =>  / [d] [o] EndId =>  / [e] [l] [s] [e] EndId =>  / [e] [n] [u] [m] EndId =>  / [e] [v] [e] [n] [t] EndId =>  / [e] [x] [p] [l] [i] [c] [i] [t] EndId =>  / [e] [x] [t] [e] [r] [n] EndId =>  / [f] [a] [l] [s] [e] EndId =>  / [f] [i] [n] [a] [l] [l] [y] EndId =>  / [f] [i] [x] [e] [d] EndId =>  / [f] [l] [o] [a] [t] EndId =>  / [f] [o] [r] [e] [a] [c] [h] EndId =>  / [f] [o] [r] EndId =>  / [g] [o] [t] [o] EndId =>  / [i] [f] EndId =>  / [i] [m] [p] [l] [i] [c] [i] [t] EndId =>  / [i] [n] [t] [e] [r] [f] [a] [c] [e] EndId =>  / [i] [n] [t] [e] [r] [n] [a] [l] EndId =>  / [i] [n] [t] EndId =>  / [i] [n] EndId =>  / [i] [s] EndId =>  / [l] [o] [c] [k] EndId =>  / [l] [o] [n] [g] EndId =>  / [n] [a] [m] [e] [s] [p] [a] [c] [e] EndId =>  / [n] [e] [w] EndId =>  / [n] [u] [l] [l] EndId =>  / [o] [b] [j] [e] [c] [t] EndId =>  / [o] [p] [e] [r] [a] [t] [o] [r] EndId =>  / [o] [u] [t] EndId =>  / [o] [v] [e] [r] [r] [i] [d] [e] EndId =>  / [p] [a] [r] [a] [m] [s] EndId =>  / [p] [r] [i] [v] [a] [t] [e] EndId =>  / [p] [r] [o] [t] [e] [c] [t] [e] [d] EndId =>  / [p] [u] [b] [l] [i] [c] EndId =>  / [r] [e] [a] [d] [o] [n] [l] [y] EndId =>  / [r] [e] [f] EndId =>  / [r] [e] [t] [u] [r] [n] EndId =>  / [s] [b] [y] [t] [e] EndId =>  / [s] [e] [a] [l] [e] [d] EndId =>  / [s] [h] [o] [r] [t] EndId =>  / [s] [i] [z] [e] [o] [f] EndId =>  / [s] [t] [a] [c] [k] [a] [l] [l] [o] [c] EndId =>  / [s] [t] [a] [t] [i] [c] EndId =>  / [s] [t] [r] [i] [n] [g] EndId =>  / [s] [t] [r] [u] [c] [t] EndId =>  / [s] [w] [i] [t] [c] [h] EndId =>  / [t] [h] [i] [s] EndId =>  / [t] [h] [r] [o] [w] EndId =>  / [t] [r] [u] [e] EndId =>  / [t] [r] [y] EndId =>  / [t] [y] [p] [e] [o] [f] EndId =>  / [u] [i] [n] [t] EndId =>  / [u] [l] [o] [n] [g] EndId =>  / [u] [n] [c] [h] [e] [c] [k] [e] [d] EndId =>  / [u] [n] [s] [a] [f] [e] EndId =>  / [u] [s] [h] [o] [r] [t] EndId =>  / [u] [s] [i] [n] [g] EndId =>  / [v] [i] [r] [t] [u] [a] [l] EndId =>  / [v] [o] [l] [a] [t] [i] [l] [e] EndId =>  / [v] [o] [i] [d] EndId =>  / [w] [h] [i] [l] [e] EndId =>  / &{AllowPP} [#] [i] [f] EndId =>  / &{AllowPP} [#] [e] [l] [s] [e] EndId =>  / &{AllowPP} [#] [e] [l] [i] [f] EndId =>  / &{AllowPP} [#] [e] [n] [d] [i] [f] EndId =>  / &{AllowPP} [#] [d] [e] [f] [i] [n] [e] EndId =>  / &{AllowPP} [#] [u] [n] [d] [e] [f] EndId =>  / &{AllowPP} [#] [p] [r] [a] [g] [m] [a] EndId =>  / &{AllowPP} [#] [l] [i] [n] [e] EndId =>  / &{AllowPP} [#] [e] [r] [r] [o] [r] EndId => RestOfPPLine / &{AllowPP} [#] [w] [a] [r] [n] [i] [n] [g] EndId => RestOfPPLine / &{AllowPP} [#] [n] [o] [t] [e] EndId => RestOfPPLine / &{AllowPP} [#] [r] [e] [g] [i] [o] [n] EndId => RestOfPPLine / &{AllowPP} [#] [e] [n] [d] [r] [e] [g] [i] [o] [n] EndId =>  / [v] [a] [r] EndId =>  / [d] [y] [n] [a] [m] [i] [c] EndId =>  / [t] [r] [a] [i] [t] EndId =>  / [a] [l] [i] [a] [s] EndId =>  / [a] [s] [s] [e] [m] [b] [l] [y] EndId =>  / [m] [o] [d] [u] [l] [e] EndId =>  / [f] [r] [o] [m] EndId =>  / [w] [h] [e] [r] [e] EndId =>  / [w] [h] [e] [n] EndId =>  / [s] [e] [l] [e] [c] [t] EndId =>  / [j] [o] [i] [n] EndId =>  / [o] [n] EndId =>  / [e] [q] [u] [a] [l] [s] EndId =>  / [i] [n] [t] [o] EndId =>  / [l] [e] [t] EndId =>  / [o] [r] [d] [e] [r] [b] [y] EndId =>  / [a] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [d] [e] [s] [c] [e] [n] [d] [i] [n] [g] EndId =>  / [g] [r] [o] [u] [p] EndId =>  / [b] [y] EndId =>  / [a] [w] [a] [i] [t] EndId =>  / Id )
 			switch (LA0) {
 			case 'a':
 				{
@@ -1896,7 +1897,7 @@ namespace Ecs.Parser
 														Skip();
 														Skip();
 														Skip();
-														#line 420 "EcsLexerGrammar.les"
+														#line 421 "EcsLexerGrammar.les"
 														OtherContextualKeyword();
 														#line default
 													} else
@@ -1956,9 +1957,9 @@ namespace Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 424 "EcsLexerGrammar.les"
+										#line 425 "EcsLexerGrammar.les"
 										_type = TT.ContextualKeyword;
-										#line 424 "EcsLexerGrammar.les"
+										#line 425 "EcsLexerGrammar.les"
 										_value = _await;
 										#line default
 									} else
@@ -2070,7 +2071,7 @@ namespace Ecs.Parser
 						} else if (!IdOrKeyword_set0.Contains(la2)) {
 							Skip();
 							Skip();
-							#line 423 "EcsLexerGrammar.les"
+							#line 424 "EcsLexerGrammar.les"
 							OtherContextualKeyword();
 							#line default
 						} else
@@ -2410,7 +2411,7 @@ namespace Ecs.Parser
 															Skip();
 															Skip();
 															Skip();
-															#line 421 "EcsLexerGrammar.les"
+															#line 422 "EcsLexerGrammar.les"
 															OtherContextualKeyword();
 															#line default
 														} else
@@ -2686,7 +2687,7 @@ namespace Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 416 "EcsLexerGrammar.les"
+												#line 417 "EcsLexerGrammar.les"
 												OtherContextualKeyword();
 												#line default
 											} else
@@ -2952,7 +2953,7 @@ namespace Ecs.Parser
 										Skip();
 										Skip();
 										Skip();
-										#line 422 "EcsLexerGrammar.les"
+										#line 423 "EcsLexerGrammar.les"
 										OtherContextualKeyword();
 										#line default
 									} else
@@ -3109,7 +3110,7 @@ namespace Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 417 "EcsLexerGrammar.les"
+									#line 418 "EcsLexerGrammar.les"
 									OtherContextualKeyword();
 									#line default
 								} else
@@ -3193,7 +3194,7 @@ namespace Ecs.Parser
 								Skip();
 								Skip();
 								Skip();
-								#line 418 "EcsLexerGrammar.les"
+								#line 419 "EcsLexerGrammar.les"
 								OtherContextualKeyword();
 								#line default
 							} else
@@ -3451,7 +3452,7 @@ namespace Ecs.Parser
 							if (!IdOrKeyword_set0.Contains(la2)) {
 								Skip();
 								Skip();
-								#line 415 "EcsLexerGrammar.les"
+								#line 416 "EcsLexerGrammar.les"
 								OtherContextualKeyword();
 								#line default
 							} else
@@ -3479,7 +3480,7 @@ namespace Ecs.Parser
 													Skip();
 													Skip();
 													Skip();
-													#line 419 "EcsLexerGrammar.les"
+													#line 420 "EcsLexerGrammar.les"
 													OtherContextualKeyword();
 													#line default
 												} else
@@ -3822,9 +3823,9 @@ namespace Ecs.Parser
 												Skip();
 												Skip();
 												Skip();
-												#line 413 "EcsLexerGrammar.les"
+												#line 414 "EcsLexerGrammar.les"
 												_type = TT.ContextualKeyword;
-												#line 413 "EcsLexerGrammar.les"
+												#line 414 "EcsLexerGrammar.les"
 												_value = _select;
 												#line default
 											} else
@@ -4574,6 +4575,20 @@ namespace Ecs.Parser
 										Id();
 								} else
 									Id();
+							} else if (la3 == 'n') {
+								la4 = LA(4);
+								if (!IdOrKeyword_set0.Contains(la4)) {
+									Skip();
+									Skip();
+									Skip();
+									Skip();
+									#line 413 "EcsLexerGrammar.les"
+									_type = TT.ContextualKeyword;
+									#line 413 "EcsLexerGrammar.les"
+									_value = _when;
+									#line default
+								} else
+									Id();
 							} else
 								Id();
 						} else
@@ -5068,7 +5083,7 @@ namespace Ecs.Parser
 									Skip();
 									Skip();
 									Skip();
-									#line 414 "EcsLexerGrammar.les"
+									#line 415 "EcsLexerGrammar.les"
 									OtherContextualKeyword();
 									#line default
 								} else
@@ -5089,10 +5104,10 @@ namespace Ecs.Parser
 		string RestOfPPLine()
 		{
 			int la0;
-			#line 455 "EcsLexerGrammar.les"
+			#line 457 "EcsLexerGrammar.les"
 			int start = InputPosition;
 			#line default
-			// Line 456: ([^\$\n\r])*
+			// Line 458: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -5100,7 +5115,7 @@ namespace Ecs.Parser
 				else
 					break;
 			}
-			#line 457 "EcsLexerGrammar.les"
+			#line 459 "EcsLexerGrammar.les"
 			return CharSource.Slice(start, InputPosition - start).ToString();
 			#line default
 		}
@@ -5108,14 +5123,14 @@ namespace Ecs.Parser
 		void Token()
 		{
 			int la0, la1, la2;
-			// Line 469: ( Newline | (Spaces / DotIndent / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM) | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
+			// Line 471: ( Newline | (Spaces / DotIndent / Number / SLComment / MLComment / &{InputPosition == 0} Shebang / Id => IdOrKeyword / TQString / SQString / DQString / BQString / Symbol / At / Operator / UTF_BOM) | Comma | Semicolon | [(] | [)] | [[] | [\]] | [{] | [}] )
 			do {
 				la0 = LA0;
 				switch (la0) {
 				case '\n':
 				case '\r':
 					{
-						#line 469 "EcsLexerGrammar.les"
+						#line 471 "EcsLexerGrammar.les"
 						_type = TT.Newline;
 						#line default
 						Newline();
@@ -5124,7 +5139,7 @@ namespace Ecs.Parser
 				case '\t':
 				case ' ':
 					{
-						#line 470 "EcsLexerGrammar.les"
+						#line 472 "EcsLexerGrammar.les"
 						_type = TT.Spaces;
 						#line default
 						Spaces();
@@ -5135,7 +5150,7 @@ namespace Ecs.Parser
 						if (_startPosition == _lineStartAt) {
 							la1 = LA(1);
 							if (la1 == '\t' || la1 == ' ') {
-								#line 471 "EcsLexerGrammar.les"
+								#line 473 "EcsLexerGrammar.les"
 								_type = TT.Spaces;
 								#line default
 								DotIndent();
@@ -5167,14 +5182,14 @@ namespace Ecs.Parser
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
-							#line 473 "EcsLexerGrammar.les"
+							#line 475 "EcsLexerGrammar.les"
 							_type = TT.SLComment;
 							#line default
 							SLComment();
 						} else if (la1 == '*') {
 							la2 = LA(2);
 							if (la2 != -1) {
-								#line 474 "EcsLexerGrammar.les"
+								#line 476 "EcsLexerGrammar.les"
 								_type = TT.MLComment;
 								#line default
 								MLComment();
@@ -5189,7 +5204,7 @@ namespace Ecs.Parser
 						if (InputPosition == 0) {
 							la1 = LA(1);
 							if (la1 == '!') {
-								#line 476 "EcsLexerGrammar.les"
+								#line 478 "EcsLexerGrammar.les"
 								_type = TT.Shebang;
 								#line default
 								Shebang();
@@ -5258,7 +5273,7 @@ namespace Ecs.Parser
 						if (char.IsLetter((char) LA0))
 							goto match8;
 						else {
-							#line 485 "EcsLexerGrammar.les"
+							#line 487 "EcsLexerGrammar.les"
 							_type = TT.Spaces;
 							#line default
 							UTF_BOM();
@@ -5387,7 +5402,7 @@ namespace Ecs.Parser
 					}
 				case '`':
 					{
-						#line 481 "EcsLexerGrammar.les"
+						#line 483 "EcsLexerGrammar.les"
 						_type = TT.BQString;
 						#line default
 						BQString();
@@ -5412,7 +5427,7 @@ namespace Ecs.Parser
 					break;
 				case ',':
 					{
-						#line 486 "EcsLexerGrammar.les"
+						#line 488 "EcsLexerGrammar.les"
 						_type = TT.Comma;
 						#line default
 						Comma();
@@ -5420,7 +5435,7 @@ namespace Ecs.Parser
 					break;
 				case ';':
 					{
-						#line 487 "EcsLexerGrammar.les"
+						#line 489 "EcsLexerGrammar.les"
 						_type = TT.Semicolon;
 						#line default
 						Semicolon();
@@ -5428,7 +5443,7 @@ namespace Ecs.Parser
 					break;
 				case '(':
 					{
-						#line 488 "EcsLexerGrammar.les"
+						#line 490 "EcsLexerGrammar.les"
 						_type = TT.LParen;
 						#line default
 						Skip();
@@ -5436,7 +5451,7 @@ namespace Ecs.Parser
 					break;
 				case ')':
 					{
-						#line 489 "EcsLexerGrammar.les"
+						#line 491 "EcsLexerGrammar.les"
 						_type = TT.RParen;
 						#line default
 						Skip();
@@ -5444,7 +5459,7 @@ namespace Ecs.Parser
 					break;
 				case '[':
 					{
-						#line 490 "EcsLexerGrammar.les"
+						#line 492 "EcsLexerGrammar.les"
 						_type = TT.LBrack;
 						#line default
 						Skip();
@@ -5452,7 +5467,7 @@ namespace Ecs.Parser
 					break;
 				case ']':
 					{
-						#line 491 "EcsLexerGrammar.les"
+						#line 493 "EcsLexerGrammar.les"
 						_type = TT.RBrack;
 						#line default
 						Skip();
@@ -5460,7 +5475,7 @@ namespace Ecs.Parser
 					break;
 				case '{':
 					{
-						#line 492 "EcsLexerGrammar.les"
+						#line 494 "EcsLexerGrammar.les"
 						_type = TT.LBrace;
 						#line default
 						Skip();
@@ -5468,7 +5483,7 @@ namespace Ecs.Parser
 					break;
 				case '}':
 					{
-						#line 493 "EcsLexerGrammar.les"
+						#line 495 "EcsLexerGrammar.les"
 						_type = TT.RBrace;
 						#line default
 						Skip();
@@ -5483,7 +5498,7 @@ namespace Ecs.Parser
 				break;
 			matchNumber:
 				{
-					#line 472 "EcsLexerGrammar.les"
+					#line 474 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					Number();
@@ -5491,7 +5506,7 @@ namespace Ecs.Parser
 				break;
 			match8:
 				{
-					#line 477 "EcsLexerGrammar.les"
+					#line 479 "EcsLexerGrammar.les"
 					_type = TT.Id;
 					#line default
 					IdOrKeyword();
@@ -5499,7 +5514,7 @@ namespace Ecs.Parser
 				break;
 			matchTQString:
 				{
-					#line 478 "EcsLexerGrammar.les"
+					#line 480 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					TQString();
@@ -5507,7 +5522,7 @@ namespace Ecs.Parser
 				break;
 			matchSQString:
 				{
-					#line 479 "EcsLexerGrammar.les"
+					#line 481 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					SQString();
@@ -5515,7 +5530,7 @@ namespace Ecs.Parser
 				break;
 			matchDQString:
 				{
-					#line 480 "EcsLexerGrammar.les"
+					#line 482 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					DQString();
@@ -5523,7 +5538,7 @@ namespace Ecs.Parser
 				break;
 			matchSymbol:
 				{
-					#line 482 "EcsLexerGrammar.les"
+					#line 484 "EcsLexerGrammar.les"
 					_type = TT.Literal;
 					#line default
 					Symbol();
@@ -5531,7 +5546,7 @@ namespace Ecs.Parser
 				break;
 			matchAt:
 				{
-					#line 483 "EcsLexerGrammar.les"
+					#line 485 "EcsLexerGrammar.les"
 					_type = TT.At;
 					#line default
 					At();
@@ -5539,9 +5554,9 @@ namespace Ecs.Parser
 				break;
 			error:
 				{
-					#line 494 "EcsLexerGrammar.les"
+					#line 496 "EcsLexerGrammar.les"
 					_type = TT.Unknown;
-					#line 494 "EcsLexerGrammar.les"
+					#line 496 "EcsLexerGrammar.les"
 					Error(0, "Unrecognized token");
 					#line default
 					MatchExcept();

@@ -72,9 +72,10 @@ namespace Ecs
 	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
-	/// <see cref="AllowChangeParenthesis"/> will print a tree such as <c>@*(a + b, c)</c> 
-	/// as <c>(a + b) * c</c>, by adding parenthesis to eliminate prefix notation,
-	/// even though parenthesis make the Loyc tree slightly different.
+	/// <see cref="AllowExtraBraceForIfElseAmbig"/> will print a tree such as 
+	/// <c>#if(a, #if(b, f()), g())</c> as <c>if (a) { if (b) f(); } else g();</c>,
+	/// by adding braces to eliminate prefix notation, even though braces make the 
+	/// Loyc tree different.
 	/// <para/>
 	/// To avoid printing EC# syntax that does not exist in C#, you can call
 	/// <see cref="SetPlainCSharpMode"/>, but this only works if the syntax tree
@@ -668,12 +669,16 @@ namespace Ecs
 		public bool IsPropertyDefinition()
 		{
 			var argCount = _n.ArgCount;
-			if (!CallsMinWPAIH(_n, S.Property, 2) || _n.ArgCount > 3)
+			// DLP: Although I wrote this code, I don't remember how a property 
+			// without a body (final argument) makes any sense (it's called a variable 
+			// declaration and it's S.Var, not S.Property). TODO: require 4 args?
+			if (!CallsMinWPAIH(_n, S.Property, 3) || _n.ArgCount > 5)
 				return false;
 
-			LNode retType = _n.Args[0], name = _n.Args[1], body = _n.Args[2, null];
+			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
 			return IsComplexIdentifier(retType, ICI.Default) &&
-			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition);
+			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
+				   (args.IsIdNamed(S.Missing) || args.Calls(S.AltList));
 		}
 
 		public bool IsEventDefinition() { return EventDefinitionType() != EventDef.Invalid; }
@@ -926,7 +931,7 @@ namespace Ecs
 					if (n == S.Finally) {
 						if (c != 1 || i + 1 != argCount)
 							return null;
-					} else if (n != S.Catch || c != 2)
+					} else if (n != S.Catch || c != 3)
 						return null;
 				}
 				return name;
@@ -1001,6 +1006,8 @@ namespace Ecs
 
 				bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
 				                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
+				// 'div' will be used to divide normal attributes from keyword/word 
+				// attributes (the word attributes will be `_n.Attrs.Slice(div)`)
 				int div = _n.AttrCount, attrCount = div;
 				if (div == 0)
 					break;
@@ -1073,6 +1080,8 @@ namespace Ecs
 				// And now the word attributes...
 				for (int i = div; i < attrCount; i++) {
 					var a = _n.Attrs[i];
+					if (a == skipClause)
+						continue;
 					string text;
 					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
 						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)

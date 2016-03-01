@@ -189,7 +189,7 @@ namespace Ecs
 				else
 					PrintSimpleIdent(_n.Name, 0);
 
-				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
+				PrintArgList(_n.Args.WithoutLast(1), ParenFor.MacroCall, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 
 				PrintBracedBlockOrStmt(body, flags, NewlineOpt.BeforeExecutableBrace);
 				return true;
@@ -486,7 +486,7 @@ namespace Ecs
 			var ifClause = PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
-			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
+			PrintArgList(args.Args, ParenFor.MethodDecl, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
 			PrintWhereClauses(name);
 			
@@ -545,18 +545,22 @@ namespace Ecs
 			}
 			return ifClause;
 		}
-		private void PrintArgList(LNode args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(RVList<LNode> args, ParenFor kind, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
-			PrintArgs(args, argCount, flags, omitMissingArguments, separator);
+			PrintArgs(args, flags, omitMissingArguments, separator);
 			WriteCloseParen(kind);
 		}
-		private void PrintArgs(LNode args, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(LNode args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
-			for (int i = 0; i < argCount; i++)
+			PrintArgs(args.Args, flags, omitMissingArguments, separator);
+		}
+		private void PrintArgs(RVList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		{
+			for (int i = 0; i < args.Count; i++)
 			{
-				var arg = args.Args[i];
-				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && argCount > 1;
+				var arg = args[i];
+				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && args.Count > 1;
 				if (i != 0)
 					WriteThenSpace(separator, missing ? SpaceOpt.MissingAfterComma : SpaceOpt.AfterComma);
 				if (!missing)
@@ -597,8 +601,8 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintProperty(Ambiguity flags)
 		{
-			// S.Property: 
-			// #property(int, Foo, { 
+			// For S.Property (#property), _n typically looks like this: 
+			// #property(int, Foo, @``, { 
 			//     get({ return _foo; });
 			//     set({ _foo = value; });
 			// });
@@ -609,7 +613,28 @@ namespace Ecs
 
 			PrintWhereClauses(_n.Args[1]);
 
-			return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
+			// Detect if property has argument list (T this[...] {...})
+			if (_n.Args[2].Calls(S.AltList))
+			{
+				// Do what PrintArgList does, only with [] instead of ()
+				Space(SpaceOpt.BeforeMethodDeclArgList);
+				_out.Write('[', true);
+				WriteInnerSpace(ParenFor.MethodDecl);
+				PrintArgs(_n.Args[2].Args, flags | Ambiguity.AllowUnassignedVarDecl, false);
+				WriteInnerSpace(ParenFor.MethodDecl);
+				_out.Write(']', true);
+			}
+
+			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null], ifClause);
+			if (_n.Args.Count >= 5) {
+				var initializer = _n.Args[4];
+				if (!initializer.IsIdNamed(S.Missing)) {
+					PrintInfixWithSpace(S.Assign, EcsPrecedence.Assign, 0);
+					PrintExpr(initializer, StartExpr, flags);
+					return SPResult.NeedSemicolon;
+				}
+			}
+			return spr;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -648,17 +673,18 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
 		{
-			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
+			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
 			if (!IsSimpleKeywordStmt())
 				return SPResult.Fail;
 
-			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
-
 			var name = _n.Name;
+			LNode usingStatic = name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags, usingStatic));
+
 			if (name == S.GotoCase)
 				_out.Write("goto case", true);
 			else if (name == S.Import)
-				_out.Write("using", true);
+				_out.Write(usingStatic != null ? "using static" : "using", true);
 			else
 				WriteOperatorName(name);
 
@@ -752,13 +778,12 @@ namespace Ecs
 			if (type == S.For)
 			{
 				_out.Write("for", true);
-				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, true, ';');
+				PrintArgList(_n.Args.First(3), ParenFor.KeywordCall, flags, true, ';');
 				PrintBracedBlockOrStmt(_n.Args[3], flags);
 			}
 			else if (type == S.ForEach)
 			{
 				_out.Write("foreach", true);
-				
 				WriteOpenParen(ParenFor.KeywordCall);
 				PrintExpr(_n.Args[0], EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
 				_out.Space();
@@ -781,9 +806,20 @@ namespace Ecs
 					LNode first = clause.Args[0], second = clause.Args[1, null];
 					
 					WriteOperatorName(clause.Name);
-					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
-						PrintWithinParens(ParenFor.KeywordCall, first, Ambiguity.AllowUnassignedVarDecl);
-					braces = PrintBracedBlockOrStmt(second ?? first, flags);
+					if (clause.Name == S.Finally)
+						braces = PrintBracedBlockOrStmt(clause.Args[0], flags);
+					else { // catch
+						var eVar = clause.Args[0];
+						if (!eVar.IsIdNamed(S.Missing))
+							PrintWithinParens(ParenFor.KeywordCall, eVar, Ambiguity.AllowUnassignedVarDecl);
+						var when = clause.Args[1];
+						if (!when.IsIdNamed(S.Missing)) {
+							Space(SpaceOpt.Default);
+							_out.Write("when", true);
+							PrintWithinParens(ParenFor.KeywordCall, when);
+						}
+						braces = PrintBracedBlockOrStmt(clause.Args[2], flags);
+					}
 				}
 			}
 			else if (type == S.Checked) // includes S.Unchecked

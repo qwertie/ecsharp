@@ -242,9 +242,9 @@ namespace Ecs.Parser
 			}
 			return list;
 		}
-		protected RWList<LNode> ExprListInside(Token t, bool allowTrailingComma = false)
+		protected RWList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
-			return AppendExprsInside(t, new RWList<LNode>(), allowTrailingComma);
+			return AppendExprsInside(t, new RWList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
 		}
 		private RWList<LNode> StmtListInside(Token t)
 		{

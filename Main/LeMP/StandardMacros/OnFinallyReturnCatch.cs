@@ -65,7 +65,7 @@ namespace LeMP
 				firstArg = LNode.Missing;
 			else if (firstArg.IsId)
 				firstArg = firstArg.With(S.Var, F.Id(_Exception), firstArg);
-			return node.With(S.Try, rest, node.With(S.Catch, firstArg, on_handler));
+			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F._Missing, on_handler));
 		}
 
 		[LexicalMacro("on_return(result) { result++; }", 

@@ -78,6 +78,7 @@ namespace Ecs
 			// ?  []  suf++  suf--  #of  .  #isLegal  #new
 			P(S.QuestionMark,EP.IfElse),  // a?b:c
 			P(S.IndexBracks, EP.Primary), // a[]
+			P(S.NullIndexBracks, EP.Primary), // a?[] (C# 6 feature)
 			P(S.PostInc,     EP.Primary), // x++
 			P(S.PostDec,     EP.Primary), // x--
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
@@ -673,12 +674,12 @@ namespace Ecs
 			if (type == null) {
 				// 1b, new {...}
 				_out.Write("new ", true);
-				PrintBracedBlockInNewExpr();
+				PrintBracedBlockInNewExpr(1);
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
 				_out.Write("new", true);
 				_out.Write(type.Name.Name, true);
 				Space(SpaceOpt.Default);
-				PrintBracedBlockInNewExpr();
+				PrintBracedBlockInNewExpr(1);
 			} else {
 				_out.Write("new ", true);
 				int dims = CountDimensionsIfArrayType(type);
@@ -688,10 +689,10 @@ namespace Ecs
 					// Otherwise we can print the type name without caring if it's an array or not.
 					PrintType(type, EP.Primary.LeftContext(context));
 					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
-						PrintArgList(cons, ParenFor.MethodCall, cons.ArgCount, 0, OmitMissingArguments);
+						PrintArgList(cons.Args, ParenFor.MethodCall, 0, OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
-					PrintBracedBlockInNewExpr();
+					PrintBracedBlockInNewExpr(1);
 			}
 			return true;
 		}
@@ -702,19 +703,30 @@ namespace Ecs
 				return S.CountArrayDimensions(dimsNode.Name);
 			return 0;
 		}
-		private void PrintBracedBlockInNewExpr()
+		private void PrintBracedBlockInNewExpr(int start_i)
 		{
 			if (!Newline(NewlineOpt.BeforeOpenBraceInNewExpr))
 				Space(SpaceOpt.BeforeNewInitBrace);
 			WriteThenSpace('{', SpaceOpt.InsideNewInitializer);
 			using (Indented) {
 				Newline(NewlineOpt.AfterOpenBraceInNewExpr);
-				for (int i = 1, c = _n.ArgCount; i < c; i++) {
-					if (i != 1) {
+				for (int i = start_i, c = _n.ArgCount; i < c; i++) {
+					if (i != start_i) {
 						WriteThenSpace(',', SpaceOpt.AfterComma);
 						Newline(NewlineOpt.AfterEachInitializerInNew);
 					}
-					PrintExpr(_n.Args[i], StartExpr);
+					var expr = _n.Args[i];
+					if (expr.Calls(S.Braces))
+						using (With(expr))
+							PrintBracedBlockInNewExpr(0);
+					else if (expr.CallsMin(S.InitializerAssignment, 1)) {
+						_out.Write('[', true);
+						PrintArgs(expr.Args.WithoutLast(1), 0, false);
+						_out.Write(']', true);
+						PrintInfixWithSpace(S.Assign, EcsPrecedence.Assign, 0);
+						PrintExpr(expr.Args.Last, StartExpr);
+					} else 
+						PrintExpr(expr, StartExpr);
 				}
 			}
 			if (!Newline(NewlineOpt.BeforeCloseBraceInNewExpr))
@@ -763,7 +775,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
 		{
-			// Handles one of:  ?  []  suf++  suf--
+			// Handles one of:  ?  _[]  ?[]  suf++  suf--
 			int argCount = _n.ArgCount;
 			Symbol name = _n.Name;
 			if (argCount < 1)
@@ -776,9 +788,12 @@ namespace Ecs
 			// level and that its arguments fit the operator's constraints.
 			var first = _n.Args[0];
 			if (name == S.IndexBracks) {
-				// Careful: a[] means #of(@`[]`, a) in a type context, @`[]`(a) otherwise
+				// Careful: a[] means #of(@`[]`, a) in a type context, @`_[]`(a) otherwise
 				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
+					return false;
+			} else if (name == S.NullIndexBracks) {
+				if (argCount != 2 || HasPAttrs(first) || HasPAttrs(_n.Args[1]) || !_n.Args[1].Calls(S.AltList))
 					return false;
 			} else if (name == S.QuestionMark) {
 				if (argCount != 3 || HasPAttrs(first) || HasPAttrs(_n.Args[1]) || HasPAttrs(_n.Args[2]))
@@ -803,6 +818,16 @@ namespace Ecs
 					if (i != 1) WriteThenSpace(',', SpaceOpt.AfterComma);
 					PrintExpr(_n.Args[i], StartExpr);
 				}
+				Space(SpaceOpt.InsideCallParens);
+				_out.Write(']', true);
+			}
+			else if (name == S.NullIndexBracks)
+			{
+				PrintExpr(first, precedence.LeftContext(context));
+				Space(SpaceOpt.BeforeMethodCall);
+				_out.Write("?[", true);
+				Space(SpaceOpt.InsideCallParens);
+				PrintArgs(_n.Args[1], flags, false);
 				Space(SpaceOpt.InsideCallParens);
 				_out.Write(']', true);
 			}

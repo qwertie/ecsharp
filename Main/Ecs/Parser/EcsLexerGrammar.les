@@ -410,6 +410,7 @@ namespace Ecs.Parser
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
 			/ "from"                  (EndId=>{_type=TT.ContextualKeyword; _value = _from;})
 			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
+			/ "when"                  (EndId=>{_type=TT.ContextualKeyword; _value = _when;})
 			/ "select"                (EndId=>{_type=TT.ContextualKeyword; _value = _select;})
 			/ "join"                  (EndId=>{OtherContextualKeyword();})
 			/ "on"                    (EndId=>{OtherContextualKeyword();})
@@ -434,6 +435,7 @@ namespace Ecs.Parser
 		@[static, readonly] _await::Symbol = GSymbol.Get("await");
 		
 		@[static, readonly] _where::Symbol = GSymbol.Get("where");
+		@[static, readonly] _when::Symbol = GSymbol.Get("when");
 		@[static, readonly] _select::Symbol = GSymbol.Get("select");
 		@[static, readonly] _from::Symbol = GSymbol.Get("from");
 		@[static, readonly] _join::Symbol = GSymbol.Get("join");

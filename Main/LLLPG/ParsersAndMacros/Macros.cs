@@ -210,7 +210,7 @@ namespace Loyc.LLPG
 			// This will be called for all methods and properties, so we have to 
 			// examine it for the earmarks of a rule definition.
 			bool isProp;
-			if (!(isProp = node.Calls(S.Property, 3)) && !node.Calls(S.Fn, 4))
+			if (!(isProp = node.Calls(S.Property, 4)) && !node.Calls(S.Fn, 4))
 				return null;
 			LNode returnType = node.Args[0];
 			bool isToken;
@@ -231,7 +231,9 @@ namespace Loyc.LLPG
 			//node = context.PreProcessChildren();
 
 			LNode name = node.Args[1];
-			LNode args = isProp ? F.List() : node.Args[2];
+			LNode args = node.Args[2];
+			if (args.IsIdNamed(S.Missing)) // @``
+				args = F.List(); // output will be a #fn, which does not allow @`` as its arg list
 			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
@@ -278,7 +280,7 @@ namespace Loyc.LLPG
 			}
 		}
 
-		[LexicalMacro("LLLPG Helper {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
+		[LexicalMacro("run_LLLPG(helper literal, {Body...})", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
 			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
 		public static LNode run_LLLPG(LNode node, IMessageSink sink)
 		{
