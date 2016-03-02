@@ -175,9 +175,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad4c27eb153d32cd0c8f00ccad7100eb1"><td class="memItemLeft" align="right" valign="top">abstract string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad4c27eb153d32cd0c8f00ccad7100eb1">Example</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set)</td></tr>
 <tr class="memdesc:ad4c27eb153d32cd0c8f00ccad7100eb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an example of an item in the set. If the example is a character, it should be surrounded by single quotes. <a href="#ad4c27eb153d32cd0c8f00ccad7100eb1">More...</a><br /></td></tr>
 <tr class="separator:ad4c27eb153d32cd0c8f00ccad7100eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b108bbd734de42c2ee6fc3f50911e87"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a2b108bbd734de42c2ee6fc3f50911e87">Begin</a> (RWList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; classBody, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
-<tr class="memdesc:a2b108bbd734de42c2ee6fc3f50911e87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Before the parser generator generates code, it calls this method. <a href="#a2b108bbd734de42c2ee6fc3f50911e87">More...</a><br /></td></tr>
-<tr class="separator:a2b108bbd734de42c2ee6fc3f50911e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4858c8a12a24c49792c8e3807243e258"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4858c8a12a24c49792c8e3807243e258">Begin</a> (WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; classBody, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> sourceFile)</td></tr>
+<tr class="memdesc:a4858c8a12a24c49792c8e3807243e258"><td class="mdescLeft">&#160;</td><td class="mdescRight">Before the parser generator generates code, it calls this method. <a href="#a4858c8a12a24c49792c8e3807243e258">More...</a><br /></td></tr>
+<tr class="separator:a4858c8a12a24c49792c8e3807243e258"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6603a1e5bcda9216bc301b6ffd9eb8f0"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a6603a1e5bcda9216bc301b6ffd9eb8f0">BeginRule</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule)</td></tr>
 <tr class="memdesc:a6603a1e5bcda9216bc301b6ffd9eb8f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notifies the snippet generator that code generation is starting for a new rule. <a href="#a6603a1e5bcda9216bc301b6ffd9eb8f0">More...</a><br /></td></tr>
 <tr class="separator:a6603a1e5bcda9216bc301b6ffd9eb8f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -195,7 +195,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af7745a5200fb646155dd56bbe598c20a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7adce01ca79557e475f40caaa5187063"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a7adce01ca79557e475f40caaa5187063">GenerateMatch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a> set, bool savingResult, bool recognizerMode)</td></tr>
 <tr class="memdesc:a7adce01ca79557e475f40caaa5187063"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate code to match a set, e.g. <code> MatchRange('a', 'z');</code> or <code> MatchExcept('<br />
-', ''); }</code>. If the set is too complex, a declaration for it is created in the <code>classBody</code> which was passed to <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a2b108bbd734de42c2ee6fc3f50911e87" title="Before the parser generator generates code, it calls this method.">Begin()</a></code>. <a href="#a7adce01ca79557e475f40caaa5187063">More...</a><br /></td></tr>
+', ''); }</code>. If the set is too complex, a declaration for it is created in the <code>classBody</code> which was passed to <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4858c8a12a24c49792c8e3807243e258" title="Before the parser generator generates code, it calls this method.">Begin()</a></code>. <a href="#a7adce01ca79557e475f40caaa5187063">More...</a><br /></td></tr>
 <tr class="separator:a7adce01ca79557e475f40caaa5187063"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">Loyc.LLParserGenerator.IPGCodeGenHelper</a></td></tr>
 </table><table class="memberdecls">
@@ -222,9 +222,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_setNameCounter</b> = 
 <tr class="memitem:a86f78ea007dce3b6f20701c7164ca94a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86f78ea007dce3b6f20701c7164ca94a"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html">LNodeFactory</a>&#160;</td><td class="memItemRight" valign="bottom"><b>F</b></td></tr>
 <tr class="separator:a86f78ea007dce3b6f20701c7164ca94a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75b5480140dae697792cd703414a9528"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a75b5480140dae697792cd703414a9528"></a>
-RWList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_classBody</b></td></tr>
-<tr class="separator:a75b5480140dae697792cd703414a9528"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24a7442d889c7de0900978a6a470b1a8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24a7442d889c7de0900978a6a470b1a8"></a>
+WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_classBody</b></td></tr>
+<tr class="separator:a24a7442d889c7de0900978a6a470b1a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfef22181cc58a116d9ddd8cdb9d695d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abfef22181cc58a116d9ddd8cdb9d695d"></a>
 <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_currentRule</b></td></tr>
 <tr class="separator:abfef22181cc58a116d9ddd8cdb9d695d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -307,9 +307,9 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="memitem:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aae7475d5e1a113d8b0317e4dc4da5cfb">GenerateSwitch</a> (<a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html">IPGTerminalSet</a>[] branchSets, MSet&lt; int &gt; casesToInclude, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] branchCode, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> defaultBranch, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> laVar)</td></tr>
 <tr class="memdesc:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a switch statement with the specified branches where branchCode[i] is the code to run if the input is in the set branchSets[i]. <a href="#aae7475d5e1a113d8b0317e4dc4da5cfb">More...</a><br /></td></tr>
 <tr class="separator:aae7475d5e1a113d8b0317e4dc4da5cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa575e921435a30e86bbd9e1335df3b95"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aa575e921435a30e86bbd9e1335df3b95">CreateRuleMethod</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; methodBody)</td></tr>
-<tr class="memdesc:aa575e921435a30e86bbd9e1335df3b95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates the method for a rule, given the method's contents. <a href="#aa575e921435a30e86bbd9e1335df3b95">More...</a><br /></td></tr>
-<tr class="separator:aa575e921435a30e86bbd9e1335df3b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac00429f16525464eaf306172c8e673ad"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac00429f16525464eaf306172c8e673ad">CreateRuleMethod</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; methodBody)</td></tr>
+<tr class="memdesc:ac00429f16525464eaf306172c8e673ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates the method for a rule, given the method's contents. <a href="#ac00429f16525464eaf306172c8e673ad">More...</a><br /></td></tr>
+<tr class="separator:ac00429f16525464eaf306172c8e673ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade5d7f86e64b287a2ddf7f669f4e114c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ade5d7f86e64b287a2ddf7f669f4e114c">CreateTryWrapperForRecognizer</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html">Rule</a> rule)</td></tr>
 <tr class="memdesc:ade5d7f86e64b287a2ddf7f669f4e114c"><td class="mdescLeft">&#160;</td><td class="mdescRight">See <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#af03aa22d777a81d3eb5e467ebb0034ec" title="Generates the try-wrapper for a recognizer rule.">IPGCodeGenHelper.CreateTryWrapperForRecognizer</a> for more information. <a href="#ade5d7f86e64b287a2ddf7f669f4e114c">More...</a><br /></td></tr>
 <tr class="separator:ade5d7f86e64b287a2ddf7f669f4e114c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -432,7 +432,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 
 </div>
 </div>
-<a class="anchor" id="a2b108bbd734de42c2ee6fc3f50911e87"></a>
+<a class="anchor" id="a4858c8a12a24c49792c8e3807243e258"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -442,7 +442,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
         <tr>
           <td class="memname">virtual <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.LLParserGenerator.CodeGenHelperBase.Begin </td>
           <td>(</td>
-          <td class="paramtype">RWList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>classBody</em>, </td>
         </tr>
         <tr>
@@ -473,7 +473,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a8d6aee837af47815c887ed41353fb00d">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
+<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a92c280fa6cea1991530a1de70de0bc2b">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -545,7 +545,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a3d02d133032ce986c1770cbb46c0f2fd">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1">Loyc.LLParserGenerator.Rule.Basis</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1a2c2083e93ccb361f38162ddde112d1">Loyc.Syntax.CodeSymbols.Return</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Rule.html#a8686989cfa5779b9b70c117a890535d1">Loyc.LLParserGenerator.Rule.Basis</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a1a2c2083e93ccb361f38162ddde112d1">Loyc.Syntax.CodeSymbols.Return</a>.</p>
 
 </div>
 </div>
@@ -635,7 +635,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 
 </div>
 </div>
-<a class="anchor" id="aa575e921435a30e86bbd9e1335df3b95"></a>
+<a class="anchor" id="ac00429f16525464eaf306172c8e673ad"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -651,7 +651,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>methodBody</em>&#160;</td>
         </tr>
         <tr>
@@ -676,9 +676,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A method definition for the rule.</dd></dl>
-<p>To generate the default method, simply call Rule.CreateMethod(RVList{LNode}).</p>
+<p>To generate the default method, simply call Rule.CreateMethod(VList{LNode}).</p>
 
-<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#aab237f3bc07a7c4931c150b7a2ca9b3e">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
+<p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#aa9441414dd838976ccb8074fe4cd6183">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
 </div>
 </div>
@@ -939,7 +939,7 @@ complete, generate a Check() statement".</td></tr>
 </div><div class="memdoc">
 
 <p>Generate code to match a set, e.g. <code> MatchRange('a', 'z');</code> or <code> MatchExcept('<br />
-', ''); }</code>. If the set is too complex, a declaration for it is created in the <code>classBody</code> which was passed to <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a2b108bbd734de42c2ee6fc3f50911e87" title="Before the parser generator generates code, it calls this method.">Begin()</a></code>.</p>
+', ''); }</code>. If the set is too complex, a declaration for it is created in the <code>classBody</code> which was passed to <code><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4858c8a12a24c49792c8e3807243e258" title="Before the parser generator generates code, it calls this method.">Begin()</a></code>.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#af729edb03c372e92c47f0e5ce0e38a91">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
@@ -1507,7 +1507,7 @@ complete, generate a Check() statement".</td></tr>
 
 <p>Sets ListType and/or ListInitializer based on an expression. A statement like <code>Type x = expr</code> sets <code>ListType = Type</code> and <code>ListInitializer = expr</code>; A statement like <code>Type x</code> just sets <code>ListType = Type</code>; and any other expression <code>expr</code> sets <code>ListInitializer = expr</code>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b">Loyc.Syntax.CodeSymbols.Assign</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af84fe50fb0bea5deffc924b886dd56ad">Loyc.Syntax.CodeSymbols.Var</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b">Loyc.Syntax.CodeSymbols.Assign</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af84fe50fb0bea5deffc924b886dd56ad">Loyc.Syntax.CodeSymbols.Var</a>.</p>
 
 </div>
 </div>
@@ -1733,7 +1733,7 @@ complete, generate a Check() statement".</td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:53 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -17,7 +17,7 @@ var searchData=
   ['upcast_3c_20base_2c_20derived_20_3e',['Upcast&lt; Base, Derived &gt;',['../classLoyc_1_1Collections_1_1EnumerableExt.html#ae6af03afbb1a0cc88d639533478b742e',1,'Loyc::Collections::EnumerableExt']]],
   ['upcastlistsource_3c_20t_2c_20tout_20_3e',['UpCastListSource&lt; T, TOut &gt;',['../classLoyc_1_1Collections_1_1UpCastListSource_3_01T_00_01TOut_01_4.html',1,'Loyc::Collections']]],
   ['upcastsource_3c_20t_2c_20tout_20_3e',['UpCastSource&lt; T, TOut &gt;',['../classLoyc_1_1Collections_1_1UpCastSource_3_01T_00_01TOut_01_4.html',1,'Loyc::Collections']]],
-  ['usebacktick',['UseBacktick',['../classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa60c8a6d80a80793396e36544c06669d1',1,'Ecs::EcsNodePrinter']]],
+  ['usebacktick',['UseBacktick',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a60c8a6d80a80793396e36544c06669d1',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['userbyte',['UserByte',['../classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a91b497232e20ce4a9ac270ff3446a421',1,'Loyc::Collections::WListProtected&lt; T &gt;']]],
   ['usingstmt',['UsingStmt',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a54ac05b6bd02e9c86972679bdcd103cf',1,'Loyc::Syntax::CodeSymbols']]],
   ['ustring',['UString',['../structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89',1,'Loyc::UString']]],

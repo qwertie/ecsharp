@@ -610,7 +610,7 @@ When no value is needed (because the Type() is enough): null </li>
 <p>For performance reasons, the text of whitespace is not extracted from the source file; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a0fc5edd738f43ff57d7265a54993a910" title="The parsed value of the token.">Value</a> is WhitespaceTag.Value for whitespace. Value must be assigned for other types such as identifiers and literals. </p>
 <p>Since the same identifiers and literals are often used more than once in a given source file, an optimized lexer could use a data structure such as a trie or hashtable to cache boxed literals and identifier symbols, and re-use the same values when the same identifiers and literals are encountered multiple times. Done carefully, this avoids the overhead of repeatedly extracting string objects from the source file. If strings must be extracted for some reason (e.g. <code> double.TryParse</code> requires an extracted string), at least memory can be saved. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html#aacb7accda77ade30b2d8cfb7cb910d70">Loyc.Syntax.Les.LesIndentTokenGenerator.GetTokenCategory()</a>, and <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d">Ecs.Parser.TokenExt.ToString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html#aacb7accda77ade30b2d8cfb7cb910d70">Loyc.Syntax.Les.LesIndentTokenGenerator.GetTokenCategory()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>.</p>
 
 </div>
 </div>
@@ -703,7 +703,7 @@ When no value is needed (because the Type() is enough): null </li>
 
 <p><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html" title="A common token type recommended for Loyc languages that want to use features such as token literals o...">Token</a> kind.</p>
 
-<p>Referenced by <a class="el" href="classEcs_1_1Parser_1_1TokenExt.html#ad7fc2e19c2d70f9a1960269b91b4c91d">Ecs.Parser.TokenExt.ToString()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html#ac6935ee6458354ae3a7ecb4dc86e71c7">Loyc.Ecs.Parser.TokenExt.ToString()</a>.</p>
 
 </div>
 </div>
@@ -777,7 +777,7 @@ When no value is needed (because the Type() is enough): null </li>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

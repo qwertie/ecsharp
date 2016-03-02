@@ -115,7 +115,7 @@ Inheritance diagram for Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;:</div>
 <area href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator). Note: this is the ol..." alt="Loyc.Syntax.BaseParser&lt; Token &gt;" shape="rect" coords="191,56,564,80"/>
 <area href="structLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4_1_1SavePosition.html" title="A helper class used by LLLPG for backtracking." alt="Loyc.Syntax.BaseParser&lt; Token, MatchType &gt;.SavePosition" shape="rect" coords="574,56,947,80"/>
 <area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;" shape="rect" coords="957,56,1330,80"/>
-<area href="classEcs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement." alt="Ecs.Parser.EcsParser" shape="rect" coords="0,112,373,136"/>
+<area href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement." alt="Loyc.Ecs.Parser.EcsParser" shape="rect" coords="0,112,373,136"/>
 <area href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;" shape="rect" coords="383,112,756,136"/>
 <area href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html" title="An base class designed for parsers that use LLLPG (Loyc LL(k) Parser Generator) and receive tokens fr..." alt="Loyc.Syntax.BaseParserForList&lt; Token, MatchType &gt;" shape="rect" coords="766,112,1139,136"/>
 <area href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html" title="An implementation of the LLLPG Parser API, used with the LLLPG options inputSource and inputClass..." alt="Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;" shape="rect" coords="1149,112,1522,136"/>
@@ -321,7 +321,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 
 <p>Returns the value used for EOF (normally 0)</p>
 
-<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a64e0db2b003e993052b1a46192252f1b">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#aa80ffb2160b269a57ed84ae40d66f975">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a3265f02a8603c1d21bad319ec32b1480">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html#a0087a85dbde5496415959a43c71b1030">Loyc.Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#aa80ffb2160b269a57ed84ae40d66f975">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a3265f02a8603c1d21bad319ec32b1480">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>.</p>
 
 </div>
 </div>
@@ -366,7 +366,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 </dl>
 <p>The default implementation throws a FormatException. When overriding this method, you can convert the lookaheadIndex to a <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> using the expression <code>SourceFile.IndexToLine(LT(lookaheadIndex).StartIndex)</code>. This only works if an <code><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a></code> object was provided to the constructor of this class, and <code>Token</code> implements ISimpleToken. </p>
 
-<p>Reimplemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#ab05dfc9c37b631a2287476240f477fa7">Ecs.Parser.EcsParser</a>.</p>
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html#a8e6bb3ae6d9cc315ef12b670ff446aab">Loyc.Ecs.Parser.EcsParser</a>.</p>
 
 </div>
 </div>
@@ -449,7 +449,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 
 <p>Returns the token at lookahead i (e.g. <code>Source[InputPosition + i]</code> if the tokens come from a list called Source) </p>
 
-<p>Implemented in <a class="el" href="classEcs_1_1Parser_1_1EcsParser.html#a96287501dbe7ad1c99619fb358a1ee10">Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a10a3221e25f2d91ecc0bc34ca6b01d58">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a92d6714b904509b8351e51e6f3c41281">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#a6e2e8d4144666deb3ffe594dfc3f15bc">Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html#a0436dabb2b9e9bf89d854be6ea412cc9">Loyc.Ecs.Parser.EcsParser</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a10a3221e25f2d91ecc0bc34ca6b01d58">Loyc.Syntax.BaseParserForList&lt; Token, MatchType, List &gt;</a>, <a class="el" href="classLoyc_1_1Syntax_1_1BaseParserNoBacktracking_3_01Token_00_01Enumerator_01_4.html#a92d6714b904509b8351e51e6f3c41281">Loyc.Syntax.BaseParserNoBacktracking&lt; Token, Enumerator &gt;</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#a6e2e8d4144666deb3ffe594dfc3f15bc">Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;</a>.</p>
 
 </div>
 </div>
@@ -627,7 +627,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -8,6 +8,7 @@ var searchData=
   ['vector_3c_20t_20_3e',['Vector&lt; T &gt;',['../structLoyc_1_1Geometry_1_1Vector_3_01T_01_4.html',1,'Loyc::Geometry']]],
   ['vectorext',['VectorExt',['../classLoyc_1_1Geometry_1_1VectorExt.html',1,'Loyc::Geometry']]],
   ['vectormath_3c_20t_20_3e',['VectorMath&lt; T &gt;',['../structLoyc_1_1Geometry_1_1VectorMath_3_01T_01_4.html',1,'Loyc::Geometry']]],
+  ['vlist_3c_20t_20_3e',['VList&lt; T &gt;',['../structLoyc_1_1Collections_1_1VList_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['vlistblock_3c_20t_20_3e',['VListBlock&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['vlistblockarray_3c_20t_20_3e',['VListBlockArray&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlockArray_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['vlistblockoftwo_3c_20t_20_3e',['VListBlockOfTwo&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html',1,'Loyc::Collections']]],

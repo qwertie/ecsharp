@@ -116,6 +116,7 @@ Public Types</h2></td></tr>
 <tr class="memitem:a66a7ae48a90617f822292e4fd957d794"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794">Mode</a> { <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794a7d997cddc5be3c1cd6f0a47182d47e14">Mode.Wsa</a> = 8, 
 <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794afd6030d32f2d2e0de890eb5dbb0f4bcc">Mode.InParens</a> = 24
  }</td></tr>
+<tr class="memdesc:a66a7ae48a90617f822292e4fd957d794"><td class="mdescLeft">&#160;</td><td class="mdescRight">TODO: these modes no longer apply, remove them <a href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794">More...</a><br /></td></tr>
 <tr class="separator:a66a7ae48a90617f822292e4fd957d794"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -201,6 +202,9 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintLiteral
 <tr class="memitem:a652e2acb80f0db30a659ebfde10d17dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a652e2acb80f0db30a659ebfde10d17dd"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>PrintString</b> (string text, char quoteType, bool tripleQuoted)</td></tr>
 <tr class="separator:a652e2acb80f0db30a659ebfde10d17dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5857944390ef4425d81198e0bf1529c3"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a5857944390ef4425d81198e0bf1529c3">IsNormalIdentifier</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+<tr class="memdesc:a5857944390ef4425d81198e0bf1529c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the given symbol can be printed as a normal identifier, without an "@" prefix. Note: identifiers starting with "#" still count as normal; call <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708" title="Returns true if Name starts with &#39;#&#39;.">LNode.HasSpecialName</a> to detect this. <a href="#a5857944390ef4425d81198e0bf1529c3">More...</a><br /></td></tr>
+<tr class="separator:a5857944390ef4425d81198e0bf1529c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
@@ -218,6 +222,8 @@ Protected fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>TODO: these modes no longer apply, remove them</p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a66a7ae48a90617f822292e4fd957d794a7d997cddc5be3c1cd6f0a47182d47e14"></a>Wsa&#160;</td><td class="fielddoc">
 <p>Whitespace agnostic mode. ':' cannot be used to begin a python-style code block.</p>
@@ -226,6 +232,33 @@ Protected fields</h2></td></tr>
 <p>Inside parenthesis (implies Wsa, and additionally allows ':' as an operator).</p>
 </td></tr>
 </table>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a5857944390ef4425d81198e0bf1529c3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool Loyc.Syntax.Les.LesNodePrinter.IsNormalIdentifier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if the given symbol can be printed as a normal identifier, without an "@" prefix. Note: identifiers starting with "#" still count as normal; call <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708" title="Returns true if Name starts with &#39;#&#39;.">LNode.HasSpecialName</a> to detect this.</p>
 
 </div>
 </div>
@@ -434,7 +467,7 @@ Protected fields</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:58 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

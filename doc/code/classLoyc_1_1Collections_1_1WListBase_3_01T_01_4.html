@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Shared base class of FWList and RWList. 
+<p>Shared base class of FWList and WList. 
  <a href="classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Collections/VLists/WListBase.cs'>/Core/Loyc.Collections/VLists/WListBase.cs</a></li>
@@ -114,11 +114,11 @@ Inheritance diagram for Loyc.Collections.WListBase&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Collections_1_1IListSource_3_01out_01T_01_4.html" title="A read-only list indexed by an integer." alt="Loyc.Collections.IListSource&lt; out T &gt;" shape="rect" coords="289,56,568,80"/>
 <area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly_3_01T_01_4.html" title="This interface combines the original ICollection{T} with IReadOnlyCollection{T}. It exists for the sa..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="722,56,1001,80"/>
 <area href="classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html" title="FWList is the mutable variant of the FVList data structure. " alt="Loyc.Collections.FWList&lt; T &gt;" shape="rect" coords="0,224,279,248"/>
-<area href="classLoyc_1_1Collections_1_1RWList_3_01T_01_4.html" title="RWList is the mutable variant of the RVList data structure. " alt="Loyc.Collections.RWList&lt; T &gt;" shape="rect" coords="289,224,568,248"/>
+<area href="classLoyc_1_1Collections_1_1WList_3_01T_01_4.html" title="WList is the mutable variant of the VList data structure. " alt="Loyc.Collections.WList&lt; T &gt;" shape="rect" coords="289,224,568,248"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Shared base class of FWList and RWList.</p>
+<div class="textblock"><p>Shared base class of FWList and WList.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>The type of elements in the list</td></tr>
@@ -189,36 +189,36 @@ IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Get
 <tr class="memitem:aedb252d13aabe2d4115aacdce525b7b1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aedb252d13aabe2d4115aacdce525b7b1"></a>
 new FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToFVList</b> ()</td></tr>
 <tr class="separator:aedb252d13aabe2d4115aacdce525b7b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c6f43846a93b2b01b40c84a1ddfd3a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c6f43846a93b2b01b40c84a1ddfd3a6"></a>
-new RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToRVList</b> ()</td></tr>
-<tr class="separator:a7c6f43846a93b2b01b40c84a1ddfd3a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7947d6cb7e79fd29bd0cfe453878300"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7947d6cb7e79fd29bd0cfe453878300"></a>
+new VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToVList</b> ()</td></tr>
+<tr class="separator:ae7947d6cb7e79fd29bd0cfe453878300"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a6f22b30abdec8616854f5543708e13a6"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html#a6f22b30abdec8616854f5543708e13a6">operator FVList&lt; T &gt;</a> (WListBase&lt; T &gt; list)</td></tr>
-<tr class="memdesc:a6f22b30abdec8616854f5543708e13a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FVList; if this is a RWList, the order of the elements is reversed at the same time. <a href="#a6f22b30abdec8616854f5543708e13a6">More...</a><br /></td></tr>
+<tr class="memdesc:a6f22b30abdec8616854f5543708e13a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FVList; if this is a WList, the order of the elements is reversed at the same time. <a href="#a6f22b30abdec8616854f5543708e13a6">More...</a><br /></td></tr>
 <tr class="separator:a6f22b30abdec8616854f5543708e13a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a324ffddae3b9f25c974094dfd89290f7"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html#a324ffddae3b9f25c974094dfd89290f7">operator RVList&lt; T &gt;</a> (WListBase&lt; T &gt; list)</td></tr>
-<tr class="memdesc:a324ffddae3b9f25c974094dfd89290f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as an RVList; if this is a FWList, the order of the elements is reversed at the same time. <a href="#a324ffddae3b9f25c974094dfd89290f7">More...</a><br /></td></tr>
-<tr class="separator:a324ffddae3b9f25c974094dfd89290f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa409dffa4061409ee106731cdfa1fe1b"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html#aa409dffa4061409ee106731cdfa1fe1b">operator VList&lt; T &gt;</a> (WListBase&lt; T &gt; list)</td></tr>
+<tr class="memdesc:aa409dffa4061409ee106731cdfa1fe1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a VList; if this is a FWList, the order of the elements is reversed at the same time. <a href="#aa409dffa4061409ee106731cdfa1fe1b">More...</a><br /></td></tr>
+<tr class="separator:aa409dffa4061409ee106731cdfa1fe1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html">Loyc.Collections.WListProtected&lt; T &gt;</a></td></tr>
 <tr class="memitem:ad42b66f9db3137bad997db69b6eecccd inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#ad42b66f9db3137bad997db69b6eecccd">AdjustWListIndex</a> (int index, int size)</td></tr>
-<tr class="memdesc:ad42b66f9db3137bad997db69b6eecccd inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method implements the difference between FWList and RWList: In FWList it returns <code>index</code>, but in RWList it returns <code>Count-size-index</code>. <a href="#ad42b66f9db3137bad997db69b6eecccd">More...</a><br /></td></tr>
+<tr class="memdesc:ad42b66f9db3137bad997db69b6eecccd inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method implements the difference between FWList and WList: In FWList it returns <code>index</code>, but in WList it returns <code>Count-size-index</code>. <a href="#ad42b66f9db3137bad997db69b6eecccd">More...</a><br /></td></tr>
 <tr class="separator:ad42b66f9db3137bad997db69b6eecccd inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65a82dc757236810af8a39d5a83884d2 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a65a82dc757236810af8a39d5a83884d2"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>WListProtected</b> (WListProtected&lt; T &gt; original, bool takeOwnership)</td></tr>
 <tr class="separator:a65a82dc757236810af8a39d5a83884d2 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78cbbf27af2241280d9d0e198a4c99f6 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a78cbbf27af2241280d9d0e198a4c99f6">GetAt</a> (int index)</td></tr>
-<tr class="memdesc:a78cbbf27af2241280d9d0e198a4c99f6 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item from a FWList or RWList at the specified index. <a href="#a78cbbf27af2241280d9d0e198a4c99f6">More...</a><br /></td></tr>
+<tr class="memdesc:a78cbbf27af2241280d9d0e198a4c99f6 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item from a FWList or WList at the specified index. <a href="#a78cbbf27af2241280d9d0e198a4c99f6">More...</a><br /></td></tr>
 <tr class="separator:a78cbbf27af2241280d9d0e198a4c99f6 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5c1e348730258e87324a96592fbb608 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#ab5c1e348730258e87324a96592fbb608">SetAt</a> (int index, T value)</td></tr>
-<tr class="memdesc:ab5c1e348730258e87324a96592fbb608 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets an item in a FWList or RWList at the specified index. <a href="#ab5c1e348730258e87324a96592fbb608">More...</a><br /></td></tr>
+<tr class="memdesc:ab5c1e348730258e87324a96592fbb608 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets an item in a FWList or WList at the specified index. <a href="#ab5c1e348730258e87324a96592fbb608">More...</a><br /></td></tr>
 <tr class="separator:ab5c1e348730258e87324a96592fbb608 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a875043ff6608e7b6d6a787e51852b999">Add</a> (T item)</td></tr>
-<tr class="memdesc:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the "front" of the list, which is index 0 for FWList, or Count for RWList. <a href="#a875043ff6608e7b6d6a787e51852b999">More...</a><br /></td></tr>
+<tr class="memdesc:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an item at the "front" of the list, which is index 0 for FWList, or Count for WList. <a href="#a875043ff6608e7b6d6a787e51852b999">More...</a><br /></td></tr>
 <tr class="separator:a875043ff6608e7b6d6a787e51852b999 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3c166434ae43b414f5069d8a17d073a inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab3c166434ae43b414f5069d8a17d073a"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (int index, T item)</td></tr>
@@ -244,9 +244,9 @@ virtual IEnumerator&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom
 <tr class="memitem:adc1c53e6d6b2ccd19209f3aa5bae3a01 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc1c53e6d6b2ccd19209f3aa5bae3a01"></a>
 FVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>GetVListEnumerator</b> ()</td></tr>
 <tr class="separator:adc1c53e6d6b2ccd19209f3aa5bae3a01 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a466088e8d8ca369c98c3e944259fa519 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a466088e8d8ca369c98c3e944259fa519"></a>
-RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>GetRVListEnumerator</b> ()</td></tr>
-<tr class="separator:a466088e8d8ca369c98c3e944259fa519 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36813622fc08ae559eb735051a84ce9c inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36813622fc08ae559eb735051a84ce9c"></a>
+VList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom"><b>GetRVListEnumerator</b> ()</td></tr>
+<tr class="separator:a36813622fc08ae559eb735051a84ce9c inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af298cccdf4e7b2ec649954b578338fa0 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af298cccdf4e7b2ec649954b578338fa0"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AddRange</b> (IEnumerator&lt; T &gt; items)</td></tr>
 <tr class="separator:af298cccdf4e7b2ec649954b578338fa0 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -272,11 +272,11 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
 <tr class="memdesc:a1233d9eed7328d1fde38cf819b12cc1f inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets an item WITHOUT doing a range or mutability check <a href="#a1233d9eed7328d1fde38cf819b12cc1f">More...</a><br /></td></tr>
 <tr class="separator:a1233d9eed7328d1fde38cf819b12cc1f inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9aaf453d3bf4af6967cc446fd6e587b inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#af9aaf453d3bf4af6967cc446fd6e587b">ToFVList</a> ()</td></tr>
-<tr class="memdesc:af9aaf453d3bf4af6967cc446fd6e587b inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FVList; if this is a RWList, the order of the elements is reversed at the same time. <a href="#af9aaf453d3bf4af6967cc446fd6e587b">More...</a><br /></td></tr>
+<tr class="memdesc:af9aaf453d3bf4af6967cc446fd6e587b inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FVList; if this is a WList, the order of the elements is reversed at the same time. <a href="#af9aaf453d3bf4af6967cc446fd6e587b">More...</a><br /></td></tr>
 <tr class="separator:af9aaf453d3bf4af6967cc446fd6e587b inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a682d7943560a87e0efa536e559d2edc2 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a682d7943560a87e0efa536e559d2edc2">ToRVList</a> ()</td></tr>
-<tr class="memdesc:a682d7943560a87e0efa536e559d2edc2 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as an RVList; if this is a FWList, the order of the elements is reversed at the same time. <a href="#a682d7943560a87e0efa536e559d2edc2">More...</a><br /></td></tr>
-<tr class="separator:a682d7943560a87e0efa536e559d2edc2 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a309d2aab8c65f04f866c6bb6e0215931 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a309d2aab8c65f04f866c6bb6e0215931">ToVList</a> ()</td></tr>
+<tr class="memdesc:a309d2aab8c65f04f866c6bb6e0215931 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a VList; if this is a FWList, the order of the elements is reversed at the same time. <a href="#a309d2aab8c65f04f866c6bb6e0215931">More...</a><br /></td></tr>
+<tr class="separator:a309d2aab8c65f04f866c6bb6e0215931 inherit pro_methods_classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a6f22b30abdec8616854f5543708e13a6"></a>
@@ -301,12 +301,12 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 
-<p>Returns this list as a FVList; if this is a RWList, the order of the elements is reversed at the same time.</p>
-<p>This operation marks the items of the FWList or RWList as immutable. You can still modify the list afterward, but some or all of the list may have to be copied.</p>
+<p>Returns this list as a FVList; if this is a WList, the order of the elements is reversed at the same time.</p>
+<p>This operation marks the items of the FWList or WList as immutable. You can still modify the list afterward, but some or all of the list may have to be copied.</p>
 
 </div>
 </div>
-<a class="anchor" id="a324ffddae3b9f25c974094dfd89290f7"></a>
+<a class="anchor" id="aa409dffa4061409ee106731cdfa1fe1b"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -314,7 +314,7 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static Loyc.Collections.WListBase&lt; T &gt;.operator RVList&lt; T &gt; </td>
+          <td class="memname">static Loyc.Collections.WListBase&lt; T &gt;.operator VList&lt; T &gt; </td>
           <td>(</td>
           <td class="paramtype">WListBase&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
@@ -328,8 +328,8 @@ RVList&lt; T &gt;.Enumerator&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 
-<p>Returns this list as an RVList; if this is a FWList, the order of the elements is reversed at the same time.</p>
-<p>This operation marks the items of the FWList or RWList as immutable. You can still modify the list afterward, but some or all of the list may have to be copied.</p>
+<p>Returns this list as a VList; if this is a FWList, the order of the elements is reversed at the same time.</p>
+<p>This operation marks the items of the FWList or WList as immutable. You can still modify the list afterward, but some or all of the list may have to be copied.</p>
 
 </div>
 </div>
@@ -474,7 +474,7 @@ public Slice_&lt;T&gt; Slice(int start, int count) { return new Slice_&lt;T&gt;(
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:45 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:51 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

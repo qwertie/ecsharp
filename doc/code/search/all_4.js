@@ -38,8 +38,8 @@ var searchData=
   ['dowhile',['DoWhile',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a16a8619f73dbcf7c5bfee0b212c44bbc',1,'Loyc::Syntax::CodeSymbols']]],
   ['down',['Down',['../classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#a077168b9064afbe8efeee46992d97645',1,'Loyc::Syntax::BaseParserForList&lt; Token, MatchType, List &gt;']]],
   ['drop',['Drop',['../namespaceLoyc_1_1Collections.html#af0ffc4d7615f186f5aa815a344723f35a3e679cff5b3a6f6f8f32aead541a0a12',1,'Loyc::Collections']]],
-  ['dropattributes',['DropAttributes',['../classEcs_1_1EcsNodePrinter.html#a0704c1e9fe32d570b29323438180ddfaa5246efcdea330ea7058b5134460debdd',1,'Ecs::EcsNodePrinter']]],
-  ['dropnondeclarationattributes',['DropNonDeclarationAttributes',['../classEcs_1_1EcsNodePrinter.html#ae3c3deb517997e483564634b3528bcac',1,'Ecs::EcsNodePrinter']]],
+  ['dropattributes',['DropAttributes',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a5246efcdea330ea7058b5134460debdd',1,'Loyc::Ecs::EcsNodePrinter']]],
+  ['dropnondeclarationattributes',['DropNonDeclarationAttributes',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['dropremaininglistitems',['DropRemainingListItems',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a0aadb65b9c0a1c1d1de0da006a23f4c0',1,'LeMP']]],
   ['dropremainingnodes',['DropRemainingNodes',['../interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1',1,'LeMP::IMacroContext']]]
 ];

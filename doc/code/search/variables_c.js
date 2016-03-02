@@ -11,5 +11,6 @@ var searchData=
   ['notbits',['NotBits',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab259fd6eb869d058090882037145eeae',1,'Loyc::Syntax::CodeSymbols']]],
   ['null',['Null',['../classLoyc_1_1MessageSink.html#a1b623da080d610f1ba95284d747fae21',1,'Loyc::MessageSink']]],
   ['nullcoalesce',['NullCoalesce',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a61e8a90ed51990449f45e580782b4a83',1,'Loyc::Syntax::CodeSymbols']]],
-  ['nullcoalesceset',['NullCoalesceSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e60a815eecd23f0cef605fae65d3921',1,'Loyc::Syntax::CodeSymbols']]]
+  ['nullcoalesceset',['NullCoalesceSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a5e60a815eecd23f0cef605fae65d3921',1,'Loyc::Syntax::CodeSymbols']]],
+  ['nullindexbracks',['NullIndexBracks',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a7a4f0187c1f7fa1ca8fc49971dccc5b8',1,'Loyc::Syntax::CodeSymbols']]]
 ];

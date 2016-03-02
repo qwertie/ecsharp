@@ -10,6 +10,6 @@ var searchData=
   ['minint',['MinInt',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a98c2dc75fb19814d11b0367705fb54eb',1,'Loyc::Math::INumTraits&lt; T &gt;']]],
   ['mintrials',['MinTrials',['../classLoyc_1_1MiniTest_1_1BenchmarkAttribute.html#a0af2be33e7b68e4d03a4d8ac7899022f',1,'Loyc::MiniTest::BenchmarkAttribute']]],
   ['minvalue',['MinValue',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a5a791cf2398d20c0192cdbc0921b5938',1,'Loyc::Math::INumTraits&lt; T &gt;']]],
-  ['miximmiscibleoperators',['MixImmiscibleOperators',['../classEcs_1_1EcsNodePrinter.html#a2a0be7e830f1ebb38057c5cf923d151d',1,'Ecs::EcsNodePrinter']]],
+  ['miximmiscibleoperators',['MixImmiscibleOperators',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a3daff12313f5597e0f8a422ea8a687eb',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['msg',['Msg',['../classLoyc_1_1LogException.html#a6b7da3536dc75e4bae55a2a218486876',1,'Loyc::LogException']]]
 ];

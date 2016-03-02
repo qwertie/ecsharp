@@ -106,24 +106,24 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a277130eeea97e359494eb7c429da27a1"><td class="memItemLeft" align="right" valign="top">static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a277130eeea97e359494eb7c429da27a1">AsList</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> block, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> braces)</td></tr>
-<tr class="memdesc:a277130eeea97e359494eb7c429da27a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interprets a node as a list by returning <code>block.Args</code> if <code>block.Calls(braces)</code>, otherwise returning a one-item list of nodes with <code>block</code> as the only item. <a href="#a277130eeea97e359494eb7c429da27a1">More...</a><br /></td></tr>
-<tr class="separator:a277130eeea97e359494eb7c429da27a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac219f9b767cf2f5f1a2522f7f42af698"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ac219f9b767cf2f5f1a2522f7f42af698">AsLNode</a> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listIdentifier)</td></tr>
-<tr class="memdesc:ac219f9b767cf2f5f1a2522f7f42af698"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a list of LNodes to a single <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> by using the list as the argument list in a call to the specified identifier, or, if the list contains a single item, by returning that single item. <a href="#ac219f9b767cf2f5f1a2522f7f42af698">More...</a><br /></td></tr>
-<tr class="separator:ac219f9b767cf2f5f1a2522f7f42af698"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc2ca857f2af3ac0b1fdc1f9f20e8294"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abc2ca857f2af3ac0b1fdc1f9f20e8294"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithSpliced</b> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
-<tr class="separator:abc2ca857f2af3ac0b1fdc1f9f20e8294"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e04d98431aa7c3fd3c191f4ce81be54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e04d98431aa7c3fd3c191f4ce81be54"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithSpliced</b> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
-<tr class="separator:a3e04d98431aa7c3fd3c191f4ce81be54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5473a25443140f234378d4fb8108a175"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5473a25443140f234378d4fb8108a175"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SpliceInsert</b> (this RWList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
-<tr class="separator:a5473a25443140f234378d4fb8108a175"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa11c70534320ca7e456dac9402fe90b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa11c70534320ca7e456dac9402fe90b2"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SpliceAdd</b> (this RWList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
-<tr class="separator:aa11c70534320ca7e456dac9402fe90b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d993d054a056f5333452551e7c0385f"><td class="memItemLeft" align="right" valign="top">static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">AsList</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> block, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> braces)</td></tr>
+<tr class="memdesc:a7d993d054a056f5333452551e7c0385f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interprets a node as a list by returning <code>block.Args</code> if <code>block.Calls(braces)</code>, otherwise returning a one-item list of nodes with <code>block</code> as the only item. <a href="#a7d993d054a056f5333452551e7c0385f">More...</a><br /></td></tr>
+<tr class="separator:a7d993d054a056f5333452551e7c0385f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12a4590905ffa883fd102e47f9b2bf2a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a12a4590905ffa883fd102e47f9b2bf2a">AsLNode</a> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listIdentifier)</td></tr>
+<tr class="memdesc:a12a4590905ffa883fd102e47f9b2bf2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a list of LNodes to a single <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> by using the list as the argument list in a call to the specified identifier, or, if the list contains a single item, by returning that single item. <a href="#a12a4590905ffa883fd102e47f9b2bf2a">More...</a><br /></td></tr>
+<tr class="separator:a12a4590905ffa883fd102e47f9b2bf2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0e379baf0c3d74922f7dae4d82a2c19"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0e379baf0c3d74922f7dae4d82a2c19"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithSpliced</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
+<tr class="separator:ae0e379baf0c3d74922f7dae4d82a2c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af48191b0a7ffb229a3a29bdcab86eb55"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af48191b0a7ffb229a3a29bdcab86eb55"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithSpliced</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
+<tr class="separator:af48191b0a7ffb229a3a29bdcab86eb55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eb40fe1a4c8fe78b324392f34efd5a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7eb40fe1a4c8fe78b324392f34efd5a1"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SpliceInsert</b> (this WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
+<tr class="separator:a7eb40fe1a4c8fe78b324392f34efd5a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2d894522a9a807d893f6dda916630ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2d894522a9a807d893f6dda916630ab"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SpliceAdd</b> (this WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
+<tr class="separator:ac2d894522a9a807d893f6dda916630ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55c5c5d137b357950c7f7d64c83afc3c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a55c5c5d137b357950c7f7d64c83afc3c"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AttrNamed</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a55c5c5d137b357950c7f7d64c83afc3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,27 +133,33 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:a7558565c6c79514e1470dbe4498f0f9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7558565c6c79514e1470dbe4498f0f9b"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutAttrNamed</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> removedAttr)</td></tr>
 <tr class="separator:a7558565c6c79514e1470dbe4498f0f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade08a8b0fba7d983716d85fbd70b6aeb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade08a8b0fba7d983716d85fbd70b6aeb"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutNodeNamed</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; a, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+<tr class="separator:ade08a8b0fba7d983716d85fbd70b6aeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac45f07ac5a4cf0fda6b82e8104f1465b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac45f07ac5a4cf0fda6b82e8104f1465b"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutNodeNamed</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> removedNode)</td></tr>
+<tr class="separator:ac45f07ac5a4cf0fda6b82e8104f1465b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af682a17fd5cbd3cbfa9dd951db72d3c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af682a17fd5cbd3cbfa9dd951db72d3c4"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutOuterParens</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self)</td></tr>
 <tr class="separator:af682a17fd5cbd3cbfa9dd951db72d3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24f9cb6e10844fce891705efb46e0bde"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24f9cb6e10844fce891705efb46e0bde"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ArgNamed</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a24f9cb6e10844fce891705efb46e0bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46b63b40110379e4865da0643d8ea6b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a46b63b40110379e4865da0643d8ea6b3"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexWithName</b> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
-<tr class="separator:a46b63b40110379e4865da0643d8ea6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cc8617df939c98a18e28a9e23c8a2ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cc8617df939c98a18e28a9e23c8a2ed"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NodeNamed</b> (this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
-<tr class="separator:a2cc8617df939c98a18e28a9e23c8a2ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cc0d95540817e2c036083dfa4e8ca96"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a0cc0d95540817e2c036083dfa4e8ca96">MatchesPattern</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> candidate, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> pattern, ref MMap&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; captures, out RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; unmatchedAttrs)</td></tr>
-<tr class="memdesc:a0cc0d95540817e2c036083dfa4e8ca96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether one <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree "matches" another. This is different from a simple equality test in that (1) trivia atributes do not have to match, and (2) the pattern can contain placeholders represented by calls to $ (the substitution operator) with an identifier as a parameter. Placeholders match any subtree, and are saved to the <code>captures</code> map.  <a href="#a0cc0d95540817e2c036083dfa4e8ca96">More...</a><br /></td></tr>
-<tr class="separator:a0cc0d95540817e2c036083dfa4e8ca96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d9be97592e8fd4c366a74957368fbed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d9be97592e8fd4c366a74957368fbed"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> candidate, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> pattern, out MMap&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; captures)</td></tr>
-<tr class="separator:a3d9be97592e8fd4c366a74957368fbed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03527ee04554a3957299e99cd9979814"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a03527ee04554a3957299e99cd9979814"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>IndexWithName</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+<tr class="separator:a03527ee04554a3957299e99cd9979814"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a721890dc9a80eac54637f2c68b1267a9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a721890dc9a80eac54637f2c68b1267a9"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NodeNamed</b> (this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
+<tr class="separator:a721890dc9a80eac54637f2c68b1267a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad20bab0fd1ed507bf5fce0650168d303"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">MatchesPattern</a> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> candidate, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> pattern, ref MMap&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; captures, out VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; unmatchedAttrs)</td></tr>
+<tr class="memdesc:ad20bab0fd1ed507bf5fce0650168d303"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether one <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree "matches" another. This is different from a simple equality test in that (1) trivia atributes do not have to match, and (2) the pattern can contain placeholders represented by calls to $ (the substitution operator) with an identifier as a parameter. Placeholders match any subtree, and are saved to the <code>captures</code> map.  <a href="#ad20bab0fd1ed507bf5fce0650168d303">More...</a><br /></td></tr>
+<tr class="separator:ad20bab0fd1ed507bf5fce0650168d303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e568e7c664e05c8d164a6dd22e6d643"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1e568e7c664e05c8d164a6dd22e6d643"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern</b> (this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> candidate, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> pattern, out MMap&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; captures)</td></tr>
+<tr class="separator:a1e568e7c664e05c8d164a6dd22e6d643"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a277130eeea97e359494eb7c429da27a1"></a>
+<a class="anchor" id="a7d993d054a056f5333452551e7c0385f"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -161,7 +167,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNodeExt.AsList </td>
+          <td class="memname">static VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNodeExt.AsList </td>
           <td>(</td>
           <td class="paramtype">this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
           <td class="paramname"><em>block</em>, </td>
@@ -187,11 +193,11 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 
 <p>Interprets a node as a list by returning <code>block.Args</code> if <code>block.Calls(braces)</code>, otherwise returning a one-item list of nodes with <code>block</code> as the only item.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac219f9b767cf2f5f1a2522f7f42af698"></a>
+<a class="anchor" id="a12a4590905ffa883fd102e47f9b2bf2a"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -201,7 +207,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
         <tr>
           <td class="memname">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNodeExt.AsLNode </td>
           <td>(</td>
-          <td class="paramtype">this RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">this VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
@@ -234,7 +240,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 
 </div>
 </div>
-<a class="anchor" id="a0cc0d95540817e2c036083dfa4e8ca96"></a>
+<a class="anchor" id="ad20bab0fd1ed507bf5fce0650168d303"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -244,7 +250,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
         <tr>
           <td class="memname">static bool Loyc.Syntax.LNodeExt.MatchesPattern </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramtype">this <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
           <td class="paramname"><em>candidate</em>, </td>
         </tr>
         <tr>
@@ -262,7 +268,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">out RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">out VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>unmatchedAttrs</em>&#160;</td>
         </tr>
         <tr>
@@ -282,7 +288,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">candidate</td><td>A node that you want to compare with a 'pattern'.</td></tr>
-    <tr><td class="paramname">pattern</td><td>A syntax tree that may contain placeholders. A placeholder is a call to the $ operator with one parameter, which must be a simple identifier (otherwise the $ operator is treated literally as something that must exist in <code>candidate</code>). The subtree in <code>candidate</code> corresponding to the placeholder is saved in <code>captures</code>.</td></tr>
+    <tr><td class="paramname">pattern</td><td>A syntax tree that may contain placeholders. A placeholder is a call to the $ operator with one parameter, which must be either (A) a simple identifier, or (B) the ".." operator with a simple identifier as its single parameter. Otherwise, the $ operator is treated literally as something that must exist in <code>candidate</code>). The subtree in <code>candidate</code> corresponding to the placeholder is saved in <code>captures</code>.</td></tr>
     <tr><td class="paramname">captures</td><td>A table that maps placeholder names from <code>pattern</code> to subtrees in <code>candidate</code>. You can set your map to null and a map will be created for you if necessary. If you already have a map, you should clear it before calling this method.</td></tr>
     <tr><td class="paramname">unmatchedAttrs</td><td>On return, a list of trivia attributes in <code>candidate</code> that were not present in <code>pattern</code>.</td></tr>
   </table>
@@ -290,7 +296,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if <code>pattern</code> matches <code>candidate</code>, false otherwise.</dd></dl>
 <p>Attributes in patterns are not yet supported. </p>
-<p>This method supports multi-part captures, which are matched to placeholders whose identifier has a #params attribute (for example, if the placeholder is called p, this is written as <code>$(params p)</code> in EC#.) A placeholder that looks like this can match multiple arguments or multiple statements in the <code>candidate</code> (or <em>no</em> arguments, or no statements), and will become a #splice(...) node in <code>captures</code> if it matches multiple items. Multi-part captures are often useful for getting lists of statements before and after some required element, e.g. <code>{ $(params before); MatchThis($something); $(params after); }</code> </p>
+<p>This method supports multi-part captures, which are matched to placeholders whose identifier either (A) has a #params attribute or (B) has the unary ".." operator applied to it (for example, if the placeholder is called p, this is written as <code>$(params p)</code> in EC#.) A placeholder that looks like this can match multiple arguments or multiple statements in the <code>candidate</code> (or <em>no</em> arguments, or no statements), and will become a #splice(...) node in <code>captures</code> if it matches multiple items. Multi-part captures are often useful for getting lists of statements before and after some required element, e.g. <code>{ $(params before); MatchThis($something); $(params after); }</code> </p>
 <p>If the same placeholder appears twice then the two matching items are combined into a single output node (calling #splice). </p>
 <p>If matching is unsuccessful, <code>captures</code> and <code>unmatchedAttrs</code> may contain irrelevant information gathered during the attempt to match. </p>
 <p>In EC#, the quote(...) macro can be used to create the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> object for a pattern. </p>
@@ -303,7 +309,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchesPattern
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

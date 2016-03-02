@@ -19,7 +19,7 @@ var searchData=
   ['preda',['PredA',['../classLoyc_1_1LLParserGenerator_1_1PredA.html',1,'Loyc::LLParserGenerator']]],
   ['predictionanalysisvisitor',['PredictionAnalysisVisitor',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
   ['predvisitor',['PredVisitor',['../classLoyc_1_1LLParserGenerator_1_1PredVisitor.html',1,'Loyc::LLParserGenerator']]],
-  ['program',['Program',['../classEcs_1_1Program.html',1,'Ecs']]],
+  ['program',['Program',['../classLoyc_1_1Ecs_1_1Program.html',1,'Loyc::Ecs']]],
   ['program',['Program',['../classTextEditor_1_1Program.html',1,'TextEditor']]],
   ['pushedcurrent',['PushedCurrent',['../structLoyc_1_1Syntax_1_1ParsingService_1_1PushedCurrent.html',1,'Loyc::Syntax::ParsingService']]],
   ['pushedcurrent',['PushedCurrent',['../structLoyc_1_1MessageSink_1_1PushedCurrent.html',1,'Loyc::MessageSink']]],

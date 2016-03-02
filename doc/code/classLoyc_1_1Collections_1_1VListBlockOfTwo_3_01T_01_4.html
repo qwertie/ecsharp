@@ -109,7 +109,7 @@ Inheritance diagram for Loyc.Collections.VListBlockOfTwo&lt; T &gt;:</div>
  <div class="center">
   <img src="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.png" usemap="#Loyc.Collections.VListBlockOfTwo&lt; T &gt;_map" alt=""/>
   <map id="Loyc.Collections.VListBlockOfTwo&lt; T &gt;_map" name="Loyc.Collections.VListBlockOfTwo&lt; T &gt;_map">
-<area href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html" title="VListBlock implements the core functionality of FVList, RVList, FWList and RWList. It is not intended to be used directly. " alt="Loyc.Collections.VListBlock&lt; T &gt;" shape="rect" coords="0,0,237,24"/>
+<area href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html" title="VListBlock implements the core functionality of FVList, VList, FWList and WList. It is not intended t..." alt="Loyc.Collections.VListBlock&lt; T &gt;" shape="rect" coords="0,0,237,24"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -180,13 +180,13 @@ Public Member Functions</h2></td></tr>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>FGet</b> (int index, int localCount, ref T value)</td></tr>
 <tr class="separator:a4132a529786a602c9bba22948b7f0970"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06aaca8297b68f39815940aadcef1cc8"><td class="memItemLeft" align="right" valign="top">override T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a06aaca8297b68f39815940aadcef1cc8">RGet</a> (int index, int localCount)</td></tr>
-<tr class="memdesc:a06aaca8297b68f39815940aadcef1cc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item at distance 'index' from the back (beginning of an RVList) <a href="#a06aaca8297b68f39815940aadcef1cc8">More...</a><br /></td></tr>
+<tr class="memdesc:a06aaca8297b68f39815940aadcef1cc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item at distance 'index' from the back (beginning of a VList) <a href="#a06aaca8297b68f39815940aadcef1cc8">More...</a><br /></td></tr>
 <tr class="separator:a06aaca8297b68f39815940aadcef1cc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf6fd11c00ef4459d49d7eb1b5aa2e69"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf6fd11c00ef4459d49d7eb1b5aa2e69"></a>
 override bool&#160;</td><td class="memItemRight" valign="bottom"><b>RGet</b> (int index, int localCount, ref T value)</td></tr>
 <tr class="separator:acf6fd11c00ef4459d49d7eb1b5aa2e69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52edeceb732a0b3ed8ee776ae6bdc4ab"><td class="memItemLeft" align="right" valign="top">override T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a52edeceb732a0b3ed8ee776ae6bdc4ab">Front</a> (int localCount)</td></tr>
-<tr class="memdesc:a52edeceb732a0b3ed8ee776ae6bdc4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "front" item in a FVList/FWList associated with this block (or back item of a RVList) where localCount is the number of items in the FVList's first block.  <a href="#a52edeceb732a0b3ed8ee776ae6bdc4ab">More...</a><br /></td></tr>
+<tr class="memdesc:a52edeceb732a0b3ed8ee776ae6bdc4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "front" item in a FVList/FWList associated with this block (or back item of a VList) where localCount is the number of items in the FVList's first block.  <a href="#a52edeceb732a0b3ed8ee776ae6bdc4ab">More...</a><br /></td></tr>
 <tr class="separator:a52edeceb732a0b3ed8ee776ae6bdc4ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70bd823a0e491fc52b8c3b35322b6335"><td class="memItemLeft" align="right" valign="top">override VListBlock&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a70bd823a0e491fc52b8c3b35322b6335">Add</a> (int localIndex, T item)</td></tr>
 <tr class="memdesc:a70bd823a0e491fc52b8c3b35322b6335"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a new item at the "front" of a FVList where localCount is the number of items currently in the FVList's first block.  <a href="#a70bd823a0e491fc52b8c3b35322b6335">More...</a><br /></td></tr>
@@ -251,9 +251,9 @@ static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>T
 <tr class="memitem:abd5cc060806dd8ad69f7bd678137de4d inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#abd5cc060806dd8ad69f7bd678137de4d">InsertRange</a> (VListBlock&lt; T &gt; self, int localCount, IList&lt; T &gt; items, int distanceFromFront, bool isRVList)</td></tr>
 <tr class="memdesc:abd5cc060806dd8ad69f7bd678137de4d inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items in the middle of a FVList, where localCount is the number of items in the FVList's first block and distanceFromFront is the insertion position (0=front).  <a href="#abd5cc060806dd8ad69f7bd678137de4d">More...</a><br /></td></tr>
 <tr class="separator:abd5cc060806dd8ad69f7bd678137de4d inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af81c386ce03cedf0543a940a60ee66f3 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af81c386ce03cedf0543a940a60ee66f3">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IEnumerator&lt; T &gt; items)</td></tr>
-<tr class="memdesc:af81c386ce03cedf0543a940a60ee66f3 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable RVList (not a FVList). <a href="#af81c386ce03cedf0543a940a60ee66f3">More...</a><br /></td></tr>
-<tr class="separator:af81c386ce03cedf0543a940a60ee66f3 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d70df73f23e8695e5b0810368e8073a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a7d70df73f23e8695e5b0810368e8073a">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IEnumerator&lt; T &gt; items)</td></tr>
+<tr class="memdesc:a7d70df73f23e8695e5b0810368e8073a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable VList (not a FVList). <a href="#a7d70df73f23e8695e5b0810368e8073a">More...</a><br /></td></tr>
+<tr class="separator:a7d70df73f23e8695e5b0810368e8073a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4defe27114f0c15484817b4afac04e72 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a4defe27114f0c15484817b4afac04e72">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IList&lt; T &gt; items, bool isRVList)</td></tr>
 <tr class="memdesc:a4defe27114f0c15484817b4afac04e72 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable FVList. <a href="#a4defe27114f0c15484817b4afac04e72">More...</a><br /></td></tr>
 <tr class="separator:a4defe27114f0c15484817b4afac04e72 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -263,20 +263,20 @@ static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>T
 <tr class="memitem:a8f289aee67d4b75a35b10e5d8a14ef1a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8f289aee67d4b75a35b10e5d8a14ef1a">FindNextBlock</a> (ref FVList&lt; T &gt; subList, FVList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
 <tr class="memdesc:a8f289aee67d4b75a35b10e5d8a14ef1a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the block that comes before 'subList' in the direction of the larger list, 'list'.  <a href="#a8f289aee67d4b75a35b10e5d8a14ef1a">More...</a><br /></td></tr>
 <tr class="separator:a8f289aee67d4b75a35b10e5d8a14ef1a inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a840855e3f481f9cf70f6299206ed5c20 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a840855e3f481f9cf70f6299206ed5c20"></a>
-static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>FindNextBlock</b> (ref RVList&lt; T &gt; subList, RVList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
-<tr class="separator:a840855e3f481f9cf70f6299206ed5c20 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70d27060b917570a5bba5f85b437ed50 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70d27060b917570a5bba5f85b437ed50"></a>
+static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>FindNextBlock</b> (ref VList&lt; T &gt; subList, VList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
+<tr class="separator:a70d27060b917570a5bba5f85b437ed50 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a7617036d10a5eb9bfcf2aa0bc98add inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a7617036d10a5eb9bfcf2aa0bc98add"></a>
 static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (FVList&lt; T &gt; subList, FVList&lt; T &gt; list)</td></tr>
 <tr class="separator:a6a7617036d10a5eb9bfcf2aa0bc98add inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9e1bfed3b5b6595df1b83f9c572a87d inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9e1bfed3b5b6595df1b83f9c572a87d"></a>
-static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (RVList&lt; T &gt; subList, RVList&lt; T &gt; list)</td></tr>
-<tr class="separator:af9e1bfed3b5b6595df1b83f9c572a87d inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af045098188b8f54e070ec458aba3d6b0 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af045098188b8f54e070ec458aba3d6b0"></a>
+static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (VList&lt; T &gt; subList, VList&lt; T &gt; list)</td></tr>
+<tr class="separator:af045098188b8f54e070ec458aba3d6b0 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70c51be7a71c9b0ce5afe1d23005ba43 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a70c51be7a71c9b0ce5afe1d23005ba43">EnsureImmutable</a> (VListBlock&lt; T &gt; self, int localCount)</td></tr>
 <tr class="memdesc:a70c51be7a71c9b0ce5afe1d23005ba43 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an immutable FVList with the specified parameters, modifying blocks if necessary. <a href="#a70c51be7a71c9b0ce5afe1d23005ba43">More...</a><br /></td></tr>
 <tr class="separator:a70c51be7a71c9b0ce5afe1d23005ba43 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a332d4f58527a64091468f82d86503152 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a332d4f58527a64091468f82d86503152">EnsureMutable</a> (WListProtected&lt; T &gt; w, int mutablesNeeded)</td></tr>
-<tr class="memdesc:a332d4f58527a64091468f82d86503152 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that at least the specified number of items at the front of a FWList or RWList are mutable and owned by the list. <a href="#a332d4f58527a64091468f82d86503152">More...</a><br /></td></tr>
+<tr class="memdesc:a332d4f58527a64091468f82d86503152 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that at least the specified number of items at the front of a FWList or WList are mutable and owned by the list. <a href="#a332d4f58527a64091468f82d86503152">More...</a><br /></td></tr>
 <tr class="separator:a332d4f58527a64091468f82d86503152 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4a01a84b7d5f2b0d84969b6314430ff inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4a01a84b7d5f2b0d84969b6314430ff"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>MutableCount</b> (WListProtected&lt; T &gt; w)</td></tr>
@@ -394,7 +394,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </div><div class="memdoc">
 
 <p>Initializes a block with two items.</p>
-<p>The secondItem is added second, so it will occupy position [0] of a FVList or position [1] of an RVList.</p>
+<p>The secondItem is added second, so it will occupy position [0] of a FVList or position [1] of a VList.</p>
 
 </div>
 </div>
@@ -498,7 +498,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the "front" item in a FVList/FWList associated with this block (or back item of a RVList) where localCount is the number of items in the FVList's first block. </p>
+<p>Returns the "front" item in a FVList/FWList associated with this block (or back item of a VList) where localCount is the number of items in the FVList's first block. </p>
 
 <p>Implements <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8058c3c6e74a5ddeb0de9a170cf3cc16">Loyc.Collections.VListBlock&lt; T &gt;</a>.</p>
 
@@ -565,7 +565,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Gets an item at distance 'index' from the back (beginning of an RVList)</p>
+<p>Gets an item at distance 'index' from the back (beginning of a VList)</p>
 
 <p>Implements <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#ad17c5164b37d0b8ddeacb8433b07ae78">Loyc.Collections.VListBlock&lt; T &gt;</a>.</p>
 
@@ -604,7 +604,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:45 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:51 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

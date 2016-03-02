@@ -9,7 +9,7 @@ var searchData=
   ['codesymbols',['CodeSymbols',['../classLoyc_1_1Syntax_1_1CodeSymbols.html',1,'Loyc::Syntax']]],
   ['collectionasreadonly_3c_20t_20_3e',['CollectionAsReadOnly&lt; T &gt;',['../classLoyc_1_1Collections_1_1CollectionAsReadOnly_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['collectiondebugview_3c_20t_20_3e',['CollectionDebugView&lt; T &gt;',['../classLoyc_1_1Collections_1_1CollectionDebugView_3_01T_01_4.html',1,'Loyc::Collections']]],
-  ['commentsaver',['CommentSaver',['../classEcs_1_1Parser_1_1CommentSaver.html',1,'Ecs::Parser']]],
+  ['commentsaver',['CommentSaver',['../classLoyc_1_1Ecs_1_1Parser_1_1CommentSaver.html',1,'Loyc::Ecs::Parser']]],
   ['compiler',['Compiler',['../classLeMP_1_1Compiler.html',1,'LeMP']]],
   ['computenext',['ComputeNext',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1ComputeNext.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
   ['concurrentmodificationexception',['ConcurrentModificationException',['../classLoyc_1_1ConcurrentModificationException.html',1,'Loyc']]],

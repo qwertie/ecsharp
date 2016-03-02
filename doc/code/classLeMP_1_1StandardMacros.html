@@ -91,6 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="classLeMP_1_1StandardMacros-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">LeMP.StandardMacros Class Reference</div>  </div>
@@ -103,7 +104,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/AlgebraicDataType.out.cs'>/Main/LeMP/StandardMacros/AlgebraicDataType.out.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/BackingFieldMacro.cs'>/Main/LeMP/StandardMacros/BackingFieldMacro.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/CodeQuoteMacro.cs'>/Main/LeMP/StandardMacros/CodeQuoteMacro.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/DeblockMacro.cs'>/Main/LeMP/StandardMacros/DeblockMacro.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/ForwardingMacro.cs'>/Main/LeMP/StandardMacros/ForwardingMacro.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/MatchCode.out.cs'>/Main/LeMP/StandardMacros/MatchCode.out.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/NullDotMacro.cs'>/Main/LeMP/StandardMacros/NullDotMacro.cs</a></li>
@@ -117,6 +117,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/MatchMacro.out.cs'>/Main/LeMP/StandardMacros/MatchMacro.out.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/RequiresMacro.cs'>/Main/LeMP/StandardMacros/RequiresMacro.cs</a></li>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/UseSymbolsMacro.cs'>/Main/LeMP/StandardMacros/UseSymbolsMacro.cs</a></li>
+<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LeMP/StandardMacros/UsingMultiMacro.out.cs'>/Main/LeMP/StandardMacros/UsingMultiMacro.out.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Standard macros, such as unroll() and replace() that can work in all <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> languages. Also includes macros designed to convert EC# feature to C# (e.g. tuples). </p>
@@ -141,12 +142,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:a6559cbfebbff0051dbce58a50245c7c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6559cbfebbff0051dbce58a50245c7c6"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>QuoteOne</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, bool substitutions)</td></tr>
 <tr class="separator:a6559cbfebbff0051dbce58a50245c7c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2d1fb7facc31ef28cb37a0e8205fd70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2d1fb7facc31ef28cb37a0e8205fd70"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>to_csharp</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
-<tr class="separator:ac2d1fb7facc31ef28cb37a0e8205fd70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a650a4f4a3d53ce1c32e331056947a68d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a650a4f4a3d53ce1c32e331056947a68d"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ForwardMethod</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> fn, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="separator:a650a4f4a3d53ce1c32e331056947a68d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d6666183dc141513ae12bc059d3b658"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d6666183dc141513ae12bc059d3b658"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ForwardMethod</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> fn, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> sink)</td></tr>
+<tr class="separator:a9d6666183dc141513ae12bc059d3b658"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc9bd5988e0ec48e10bace77fae0dac2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc9bd5988e0ec48e10bace77fae0dac2"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ForwardProperty</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prop, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
 <tr class="separator:adc9bd5988e0ec48e10bace77fae0dac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,9 +175,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:ac5b64d83e56b983096fd63d50bae7a48"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5b64d83e56b983096fd63d50bae7a48"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>replace</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="separator:ac5b64d83e56b983096fd63d50bae7a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69e5ad9ef6bfb0593636c19563a385a5"><td class="memItemLeft" align="right" valign="top">static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1StandardMacros.html#a69e5ad9ef6bfb0593636c19563a385a5">Replace</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; stmts, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;[] patterns, out int replacementCount)</td></tr>
-<tr class="memdesc:a69e5ad9ef6bfb0593636c19563a385a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches a list of expressions/statements for one or more patterns, and performs replacements. <a href="#a69e5ad9ef6bfb0593636c19563a385a5">More...</a><br /></td></tr>
-<tr class="separator:a69e5ad9ef6bfb0593636c19563a385a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8bceedf2f8e1319f77df88619cd2392"><td class="memItemLeft" align="right" valign="top">static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1StandardMacros.html#ad8bceedf2f8e1319f77df88619cd2392">Replace</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; stmts, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;[] patterns, out int replacementCount)</td></tr>
+<tr class="memdesc:ad8bceedf2f8e1319f77df88619cd2392"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches a list of expressions/statements for one or more patterns, and performs replacements. <a href="#ad8bceedf2f8e1319f77df88619cd2392">More...</a><br /></td></tr>
+<tr class="separator:ad8bceedf2f8e1319f77df88619cd2392"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa27ca10317ac5840a05fff542d41e5eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa27ca10317ac5840a05fff542d41e5eb"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Replace</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;[] patterns, out int replacementCount)</td></tr>
 <tr class="separator:aa27ca10317ac5840a05fff542d41e5eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -246,9 +244,21 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:ab8530a93a69b59d28cd79c40a458ba00"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8530a93a69b59d28cd79c40a458ba00"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>use_symbols</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> input, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="separator:ab8530a93a69b59d28cd79c40a458ba00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e5fd9949f38be2c444c57fa4a363b92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e5fd9949f38be2c444c57fa4a363b92"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>UsingMulti</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
+<tr class="separator:a3e5fd9949f38be2c444c57fa4a363b92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a8982369622f0fa9d730533fb0e1386"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a8982369622f0fa9d730533fb0e1386"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>with</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> fn, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
 <tr class="separator:a1a8982369622f0fa9d730533fb0e1386"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:a752e76629d45660640a9e253d63c41bd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a752e76629d45660640a9e253d63c41bd"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MaybeAddTempVarDecl</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> value, WList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; output)</td></tr>
+<tr class="separator:a752e76629d45660640a9e253d63c41bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4310877f53b1eafff0ec5c43ac6c7379"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4310877f53b1eafff0ec5c43ac6c7379"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>LooksLikeSimpleValue</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> value)</td></tr>
+<tr class="separator:a4310877f53b1eafff0ec5c43ac6c7379"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ae9853a01dffc5b6f78b6bd13ca445590"></a>
@@ -274,13 +284,13 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </div><div class="memdoc">
 
 <p>Retrieves the "key" name component for the nameof(...) macro.</p>
-<p>The key name component of <code>global::Foo!int.Bar!T(x)</code> (which is is structured <code>((((global::Foo)!int).Bar)!T)(x)</code>) is <code>Bar</code>. </p>
+<p>The key name component of <code>global::Foo!int.Bar!T(x)</code> (in C# notation global::Foo&lt;int&gt;.Bar&lt;T&gt;(x)) is <code>Bar</code>. This example tree has the structure <code>((((global::Foo)!int).Bar)!T)(x)</code>). </p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac3bbdaf945130e196febcb9ad51eae09">Loyc.Syntax.CodeSymbols.Dot</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7c56025ca1da53ce5a019de6c22ccb10">Loyc.Syntax.CodeSymbols.Of</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ac3bbdaf945130e196febcb9ad51eae09">Loyc.Syntax.CodeSymbols.Dot</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7c56025ca1da53ce5a019de6c22ccb10">Loyc.Syntax.CodeSymbols.Of</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a69e5ad9ef6bfb0593636c19563a385a5"></a>
+<a class="anchor" id="ad8bceedf2f8e1319f77df88619cd2392"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -288,9 +298,9 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; LeMP.StandardMacros.Replace </td>
+          <td class="memname">static VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; LeMP.StandardMacros.Replace </td>
           <td>(</td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>stmts</em>, </td>
         </tr>
         <tr>
@@ -336,7 +346,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

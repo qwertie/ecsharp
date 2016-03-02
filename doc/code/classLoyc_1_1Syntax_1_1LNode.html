@@ -173,7 +173,7 @@ An empty Name is now allowed. A literal now has a blank name (instead of #litera
 As mentioned, an expression in parenthesis is represented differently. </li>
 </ul>
 <p>The problems that motivated a redesign are described at <a href="http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html">http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html</a> </p>
-<p>One very common use of mutable nodes is building lists of statements, e.g. you might create an empty braced block or an empty loop and then add statements to the body of the block or loop. To do this without mutable nodes, create a mutable RWList{LNode} instead and add statements there; once the list is finished, create the braced block or loop afterward. The new design stores arguments and attributes in RVList{LNode} objects; you can instantly convert your WList to a VList by calling WListBase{LNode}.ToRVList(). </p>
+<p>One very common use of mutable nodes is building lists of statements, e.g. you might create an empty braced block or an empty loop and then add statements to the body of the block or loop. To do this without mutable nodes, create a mutable WList{LNode} instead and add statements there; once the list is finished, create the braced block or loop afterward. The new design stores arguments and attributes in VList{LNode} objects; you can instantly convert your WList to a VList by calling WListBase{LNode}.ToVList(). </p>
 <p>During the redesign I've decided on some small changes to the representation of certain expressions in EC#. </p><ul>
 <li>
 The '.' operator is now treated more like a normal binary operator; <code>a.b.c</code> is now represented <code>#.(#.(a, b), c)</code> rather than <code>#.(a, b, c)</code> mainly because it's easier that way, and because the second representation doesn't buy anything significant other than a need for special-casing. </li>
@@ -195,7 +195,7 @@ The \ and $ characters have been swapped;  now denotes a symbol S, while $S now 
 <h3>Important properties</h3>
 <p>The main properties of a node are </p><ol>
 <li>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>: holds the attributes of the node, if any. </li>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>: holds the attributes of the node, if any. </li>
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a>: the name of an <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)...">IdNode</a>, or the name of the <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)...">IdNode</a> that is acting as the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> of a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>. </li>
 <li>
@@ -203,13 +203,13 @@ The \ and $ characters have been swapped;  now denotes a symbol S, while $S now 
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>: the target of a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>. It represents a method, macro, or special identifier that is being called. </li>
 <li>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>: holds the arguments to a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, if any. Returns an empty list if the node does not have an argument list. </li>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>: holds the arguments to a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, if any. Returns an empty list if the node does not have an argument list. </li>
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>: indicates the source file that the node came from and location in that source file. </li>
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a>: an 8-bit flag value that is used as a hint to the node printer about how the node should be printed. For example, a hex literal like 0x10 has the NodeStyle.Alternate style to distinguish it from decimal literals such as 16. Custom display styles that do not fit in the Style property can be expressed with attributes. </li>
 </ol>
-<p>The argument and attribute lists cannot be null, since they have type RVList{Node} which is a struct. </p>
+<p>The argument and attribute lists cannot be null, since they have type VList{Node} which is a struct. </p>
 <p><code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a></code> implements INegListSource{T}, so you can loop through all children of the node like this: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = node.Min; i &amp;lt;= node.Max; i++) {</div>
 <div class="line">    LNode child = node[i];</div>
 <div class="line">}</div>
@@ -223,7 +223,7 @@ Non-negative values are indexes of Args, e.g. node[i] means node.Args[i]. </li>
 </ul>
 <p><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> also provides <code>Select(child =&gt; result)</code> and <code>ReplaceRecursive(child =&gt; result)</code> methods which allows you to transform all children (Atrrs, Target and Args). Currently there is no <code>Where(child =&gt; bool)</code> method because it is not possible to remove the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> (you can still use standard LINQ Where(), of course, but the result is not an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>).</p>
 <h3>Note</h3>
-<p>The argument and attribute lists should never contain null nodes. Any code that puts nulls in <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a> or <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a> is buggy. However, we can't ensure nulls are not placed into RVList{T} since it's a general-purpose data type, not specialized for <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. There is code to ensure nulls are not placed in Args and Attrs (NoNulls), but only in debug builds, since null-checking is fairly expensive. </p>
+<p>The argument and attribute lists should never contain null nodes. Any code that puts nulls in <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a> or <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a> is buggy. However, we can't ensure nulls are not placed into VList{T} since it's a general-purpose data type, not specialized for <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. There is code to ensure nulls are not placed in Args and Attrs (NoNulls), but only in debug builds, since null-checking is fairly expensive. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
@@ -260,14 +260,14 @@ Properties</h2></td></tr>
 <tr class="memitem:a5518f28da8ff5115d698840090b84d5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5518f28da8ff5115d698840090b84d5d"></a>
 <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a>&#160;</td><td class="memItemRight" valign="bottom"><b>BaseStyle</b><code> [get, set]</code></td></tr>
 <tr class="separator:a5518f28da8ff5115d698840090b84d5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a945b59fd72bff0ffcf9f23ac305a6e1f"><td class="memItemLeft" align="right" valign="top">virtual RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f">Attrs</a><code> [get]</code></td></tr>
-<tr class="memdesc:a945b59fd72bff0ffcf9f23ac305a6e1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attribute list for this node. <a href="#a945b59fd72bff0ffcf9f23ac305a6e1f">More...</a><br /></td></tr>
-<tr class="separator:a945b59fd72bff0ffcf9f23ac305a6e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae344d28e9355aa0e75fbc582bedf78f5"><td class="memItemLeft" align="right" valign="top">virtual VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5">Attrs</a><code> [get]</code></td></tr>
+<tr class="memdesc:ae344d28e9355aa0e75fbc582bedf78f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attribute list for this node. <a href="#ae344d28e9355aa0e75fbc582bedf78f5">More...</a><br /></td></tr>
+<tr class="separator:ae344d28e9355aa0e75fbc582bedf78f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6ed01f8d42d56e9531d79589e72f610"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad6ed01f8d42d56e9531d79589e72f610">IsFrozen</a><code> [get]</code></td></tr>
 <tr class="memdesc:ad6ed01f8d42d56e9531d79589e72f610"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the node is immutable, and false if any part of it can be edited. Currently, mutable nodes are not implemented. <a href="#ad6ed01f8d42d56e9531d79589e72f610">More...</a><br /></td></tr>
 <tr class="separator:ad6ed01f8d42d56e9531d79589e72f610"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adfa09640d17b6dde094e2bb4839eb747"><td class="memItemLeft" align="right" valign="top">abstract LNodeKind&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#adfa09640d17b6dde094e2bb4839eb747">Kind</a><code> [get]</code></td></tr>
-<tr class="memdesc:adfa09640d17b6dde094e2bb4839eb747"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the LNodeKind: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call. <a href="#adfa09640d17b6dde094e2bb4839eb747">More...</a><br /></td></tr>
+<tr class="memitem:adfa09640d17b6dde094e2bb4839eb747"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">LNodeKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#adfa09640d17b6dde094e2bb4839eb747">Kind</a><code> [get]</code></td></tr>
+<tr class="memdesc:adfa09640d17b6dde094e2bb4839eb747"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212" title="The three kinds of nodes in a Loyc tree">LNodeKind</a>: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call. <a href="#adfa09640d17b6dde094e2bb4839eb747">More...</a><br /></td></tr>
 <tr class="separator:adfa09640d17b6dde094e2bb4839eb747"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad188b12f8f11841baf6b383f31a970c7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad188b12f8f11841baf6b383f31a970c7"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsCall</b><code> [get]</code></td></tr>
@@ -293,9 +293,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasValue</b><code> [g
 <tr class="memitem:a6f61573eaf64e0cf5e44e38085311d74"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Target</a><code> [get]</code></td></tr>
 <tr class="memdesc:a6f61573eaf64e0cf5e44e38085311d74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no name (GSymbol.Empty) to represent a parenthesized expression, if there is one argument. <a href="#a6f61573eaf64e0cf5e44e38085311d74">More...</a><br /></td></tr>
 <tr class="separator:a6f61573eaf64e0cf5e44e38085311d74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b81a06051e9243f000e70e7ab3ae4d9"><td class="memItemLeft" align="right" valign="top">abstract RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9">Args</a><code> [get]</code></td></tr>
-<tr class="memdesc:a5b81a06051e9243f000e70e7ab3ae4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the argument list of this node. Always empty when <code>IsCall==false</code>. <a href="#a5b81a06051e9243f000e70e7ab3ae4d9">More...</a><br /></td></tr>
-<tr class="separator:a5b81a06051e9243f000e70e7ab3ae4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef941397a7ad3198591a8f1255444844"><td class="memItemLeft" align="right" valign="top">abstract VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Args</a><code> [get]</code></td></tr>
+<tr class="memdesc:aef941397a7ad3198591a8f1255444844"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the argument list of this node. Always empty when <code>IsCall==false</code>. <a href="#aef941397a7ad3198591a8f1255444844">More...</a><br /></td></tr>
+<tr class="separator:aef941397a7ad3198591a8f1255444844"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a130548f4529a1da652da4e9cbd851ca8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a130548f4529a1da652da4e9cbd851ca8">Printer</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a130548f4529a1da652da4e9cbd851ca8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the default node printer on the current thread, which controls how nodes are serialized to text by default. <a href="#a130548f4529a1da652da4e9cbd851ca8">More...</a><br /></td></tr>
 <tr class="separator:a130548f4529a1da652da4e9cbd851ca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -358,15 +358,15 @@ virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#
 <tr class="memitem:ad7b61fa44abb6b5c12396756733467b9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad7b61fa44abb6b5c12396756733467b9"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithTarget</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:ad7b61fa44abb6b5c12396756733467b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36c93dfc5817d19e8e25238d1d499eda"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a36c93dfc5817d19e8e25238d1d499eda">WithArgs</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="memdesc:a36c93dfc5817d19e8e25238d1d499eda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Node with a new argument list. If this node is not a call, a new node is created using this node as its target. Otherwise, the existing argument list is replaced. <a href="#a36c93dfc5817d19e8e25238d1d499eda">More...</a><br /></td></tr>
-<tr class="separator:a36c93dfc5817d19e8e25238d1d499eda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa61f66d96c5888f366813a5b98a8f0d6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa61f66d96c5888f366813a5b98a8f0d6">With</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="memdesc:aa61f66d96c5888f366813a5b98a8f0d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#aa61f66d96c5888f366813a5b98a8f0d6">More...</a><br /></td></tr>
-<tr class="separator:aa61f66d96c5888f366813a5b98a8f0d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a873fa002281b08a2eea521bac1c4b5d7"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a873fa002281b08a2eea521bac1c4b5d7">With</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="memdesc:a873fa002281b08a2eea521bac1c4b5d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#a873fa002281b08a2eea521bac1c4b5d7">More...</a><br /></td></tr>
-<tr class="separator:a873fa002281b08a2eea521bac1c4b5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a406a157154471b738c0ea068a55e6136"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a406a157154471b738c0ea068a55e6136">WithArgs</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
+<tr class="memdesc:a406a157154471b738c0ea068a55e6136"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Node with a new argument list. If this node is not a call, a new node is created using this node as its target. Otherwise, the existing argument list is replaced. <a href="#a406a157154471b738c0ea068a55e6136">More...</a><br /></td></tr>
+<tr class="separator:a406a157154471b738c0ea068a55e6136"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc9436665fc3def9e35cf764b44b785c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#afc9436665fc3def9e35cf764b44b785c">With</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
+<tr class="memdesc:afc9436665fc3def9e35cf764b44b785c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#afc9436665fc3def9e35cf764b44b785c">More...</a><br /></td></tr>
+<tr class="separator:afc9436665fc3def9e35cf764b44b785c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70e26f0f490a4c97ac59fee241f482aa"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a70e26f0f490a4c97ac59fee241f482aa">With</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
+<tr class="memdesc:a70e26f0f490a4c97ac59fee241f482aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#a70e26f0f490a4c97ac59fee241f482aa">More...</a><br /></td></tr>
+<tr class="separator:a70e26f0f490a4c97ac59fee241f482aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefb946a5deb1e47454c573880883ac16"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefb946a5deb1e47454c573880883ac16"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>With</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] args)</td></tr>
 <tr class="separator:aefb946a5deb1e47454c573880883ac16"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -388,9 +388,9 @@ virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</
 <tr class="memitem:a638090c1d7fead9b672340773ecd01b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a638090c1d7fead9b672340773ecd01b8"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithoutAttrs</b> ()</td></tr>
 <tr class="separator:a638090c1d7fead9b672340773ecd01b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99d99dff43f3ee15a69ada5329dd3c47"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99d99dff43f3ee15a69ada5329dd3c47"></a>
-abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs)</td></tr>
-<tr class="separator:a99d99dff43f3ee15a69ada5329dd3c47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89f004b7e4eb15af74cabf1864bfe6f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89f004b7e4eb15af74cabf1864bfe6f0"></a>
+abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs)</td></tr>
+<tr class="separator:a89f004b7e4eb15af74cabf1864bfe6f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97fe749a3d2edc4775bec082e2ec2d9e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97fe749a3d2edc4775bec082e2ec2d9e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] attrs)</td></tr>
 <tr class="separator:a97fe749a3d2edc4775bec082e2ec2d9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -400,9 +400,9 @@ abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;<
 <tr class="memitem:a7d02fcfd6642ef2736bbdc36302f9b09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d02fcfd6642ef2736bbdc36302f9b09"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusAttr</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> attr)</td></tr>
 <tr class="separator:a7d02fcfd6642ef2736bbdc36302f9b09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a811a2f15e09070faef99007d27b08d2d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a811a2f15e09070faef99007d27b08d2d"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusAttrs</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs)</td></tr>
-<tr class="separator:a811a2f15e09070faef99007d27b08d2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a217b7b009555033c98cdddc0bb7721db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a217b7b009555033c98cdddc0bb7721db"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusAttrs</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs)</td></tr>
+<tr class="separator:a217b7b009555033c98cdddc0bb7721db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71695a7dca50a1daf2573749c42c566e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71695a7dca50a1daf2573749c42c566e"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusAttrs</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs)</td></tr>
 <tr class="separator:a71695a7dca50a1daf2573749c42c566e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -412,9 +412,9 @@ abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;<
 <tr class="memitem:aae107470271bf00d78392b5b79433aff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae107470271bf00d78392b5b79433aff"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusArg</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> arg)</td></tr>
 <tr class="separator:aae107470271bf00d78392b5b79433aff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc82969a14026d8b1890623bc9372ca4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc82969a14026d8b1890623bc9372ca4"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusArgs</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="separator:adc82969a14026d8b1890623bc9372ca4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae13c6f37c1ae5998529204a446acd8ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae13c6f37c1ae5998529204a446acd8ce"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusArgs</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
+<tr class="separator:ae13c6f37c1ae5998529204a446acd8ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30b97c2e3725065de78ebd29bf5f2e74"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a30b97c2e3725065de78ebd29bf5f2e74"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusArgs</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
 <tr class="separator:a30b97c2e3725065de78ebd29bf5f2e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -454,18 +454,27 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>Equals</b> (
 <tr class="memitem:a9eed7098b0b4edf582d24daa038ec9f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9eed7098b0b4edf582d24daa038ec9f3"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasPAttrs</b> ()</td></tr>
 <tr class="separator:a9eed7098b0b4edf582d24daa038ec9f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9b6f7776325d60acdaca764f3402fb4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9b6f7776325d60acdaca764f3402fb4"></a>
-RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PAttrs</b> ()</td></tr>
-<tr class="separator:ab9b6f7776325d60acdaca764f3402fb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a711058841a984342c0163e721deedea2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a711058841a984342c0163e721deedea2"></a>
+VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PAttrs</b> ()</td></tr>
+<tr class="separator:a711058841a984342c0163e721deedea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48ba76d2600b73aca2aa8f04fe17bfc6"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
 <tr class="separator:a48ba76d2600b73aca2aa8f04fe17bfc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a346f7e1f265262261551bb4dfd36a3cd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a346f7e1f265262261551bb4dfd36a3cd"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (string name, int argCount)</td></tr>
+<tr class="separator:a346f7e1f265262261551bb4dfd36a3cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6218083cfe349667e0dfbc45785f4c7d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6218083cfe349667e0dfbc45785f4c7d"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a6218083cfe349667e0dfbc45785f4c7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cff8a418f30ecad07265da32b1e5011"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cff8a418f30ecad07265da32b1e5011"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (string name)</td></tr>
+<tr class="separator:a5cff8a418f30ecad07265da32b1e5011"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abcf78a11db105660bfa6fd6ba3625dc2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abcf78a11db105660bfa6fd6ba3625dc2"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
 <tr class="separator:abcf78a11db105660bfa6fd6ba3625dc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6864de502e176884337a17e6f95faf9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6864de502e176884337a17e6f95faf9b"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (string name, int argCount)</td></tr>
+<tr class="separator:a6864de502e176884337a17e6f95faf9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abaffe6461fb891bfaed8f5c4aab40716"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abaffe6461fb891bfaed8f5c4aab40716">HasSimpleHead</a> ()</td></tr>
 <tr class="memdesc:abaffe6461fb891bfaed8f5c4aab40716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the Target is an Id or a Literal, and the Target has no attributes. <a href="#abaffe6461fb891bfaed8f5c4aab40716">More...</a><br /></td></tr>
 <tr class="separator:abaffe6461fb891bfaed8f5c4aab40716"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -487,6 +496,9 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdWithoutPA
 <tr class="memitem:a6e1cc349ca191f60c4bc8af82cf05366"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e1cc349ca191f60c4bc8af82cf05366"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdNamed</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a6e1cc349ca191f60c4bc8af82cf05366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdbf259c8e012ec0ddd2990fffb2af24"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdbf259c8e012ec0ddd2990fffb2af24"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdNamed</b> (string name)</td></tr>
+<tr class="separator:abdbf259c8e012ec0ddd2990fffb2af24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56d8d042eb801b07a16970bd954d5934"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56d8d042eb801b07a16970bd954d5934"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsParenthesizedExpr</b> ()</td></tr>
 <tr class="separator:a56d8d042eb801b07a16970bd954d5934"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -523,7 +535,7 @@ IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>
 <tr class="memdesc:a47e1be6d75a8893c913552f0f4deb0d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms the attributes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a47e1be6d75a8893c913552f0f4deb0d8" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>. <a href="#a47e1be6d75a8893c913552f0f4deb0d8">More...</a><br /></td></tr>
 <tr class="separator:a47e1be6d75a8893c913552f0f4deb0d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a200e6751ae8d9214f4b20a423bf4f5fb">ReplaceRecursive</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector, bool replaceRoot=true)</td></tr>
-<tr class="memdesc:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null. <a href="#a200e6751ae8d9214f4b20a423bf4f5fb">More...</a><br /></td></tr>
+<tr class="memdesc:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null. <a href="#a200e6751ae8d9214f4b20a423bf4f5fb">More...</a><br /></td></tr>
 <tr class="separator:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -534,36 +546,36 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;<
 <tr class="memitem:aaf1e7f5afbf8af2e1b3b043a7a3f0336"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf1e7f5afbf8af2e1b3b043a7a3f0336"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:aaf1e7f5afbf8af2e1b3b043a7a3f0336"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9093d0a0658a783e34b4cfb1409b9e22"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9093d0a0658a783e34b4cfb1409b9e22"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:a9093d0a0658a783e34b4cfb1409b9e22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2a8b68075db3f5ee0a142362791f81d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2a8b68075db3f5ee0a142362791f81d"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:ae2a8b68075db3f5ee0a142362791f81d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad7e6beadab6f73873ec8a0f5ffcb238"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad7e6beadab6f73873ec8a0f5ffcb238"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:aad7e6beadab6f73873ec8a0f5ffcb238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a734b746ecd33d66fcb7ba7f7b3981a8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a734b746ecd33d66fcb7ba7f7b3981a8a"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a734b746ecd33d66fcb7ba7f7b3981a8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87c47f374738f460e0eb91cec43dc1b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a87c47f374738f460e0eb91cec43dc1b3"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:a87c47f374738f460e0eb91cec43dc1b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b9b4cd937b64f5b7e352428e5abff5e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b9b4cd937b64f5b7e352428e5abff5e"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:a2b9b4cd937b64f5b7e352428e5abff5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefd86302429100b01eae63b62307ae99"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefd86302429100b01eae63b62307ae99"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:aefd86302429100b01eae63b62307ae99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae929acabeb9b34087aad2a8b56d36ca2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae929acabeb9b34087aad2a8b56d36ca2"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:ae929acabeb9b34087aad2a8b56d36ca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a11b7c3abc9249230af75bc4962ca13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a11b7c3abc9249230af75bc4962ca13"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:a1a11b7c3abc9249230af75bc4962ca13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe83f3c338f49c97cfd2aec87796e892"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afe83f3c338f49c97cfd2aec87796e892"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:afe83f3c338f49c97cfd2aec87796e892"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb096d43e5dfe79e9d67c3f95ed8d8e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb096d43e5dfe79e9d67c3f95ed8d8e7"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:acb096d43e5dfe79e9d67c3f95ed8d8e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f6cf0d60373339ec5686f854db937ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f6cf0d60373339ec5686f854db937ac"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:a8f6cf0d60373339ec5686f854db937ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c6a4d123536e6ef5dd2482376fdde6f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c6a4d123536e6ef5dd2482376fdde6f"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
-<tr class="separator:a7c6a4d123536e6ef5dd2482376fdde6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ff5c8e86328efc8984a755904801460"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ff5c8e86328efc8984a755904801460"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a5ff5c8e86328efc8984a755904801460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31b83b1ec03ea52d63ff734dd739cfbf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a31b83b1ec03ea52d63ff734dd739cfbf"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a31b83b1ec03ea52d63ff734dd739cfbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c845a769b0bf9886c5b1a50d5ec6446"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6c845a769b0bf9886c5b1a50d5ec6446"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a6c845a769b0bf9886c5b1a50d5ec6446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0231cb21d9f43a8d892aa7247e418d0f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0231cb21d9f43a8d892aa7247e418d0f"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
+<tr class="separator:a0231cb21d9f43a8d892aa7247e418d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ac8fd8bc1578f4d20fab6be8004ddb1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ac8fd8bc1578f4d20fab6be8004ddb1"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> prototype)</td></tr>
 <tr class="separator:a7ac8fd8bc1578f4d20fab6be8004ddb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -576,36 +588,36 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;<
 <tr class="memitem:a0451ccca04f152e63f299e3b2bc77932"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0451ccca04f152e63f299e3b2bc77932"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a0451ccca04f152e63f299e3b2bc77932"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20e5fac850db0a867a35d17c439487a9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a20e5fac850db0a867a35d17c439487a9"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a20e5fac850db0a867a35d17c439487a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2305fa9c4b8bbe0743cd8f86d4909f0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2305fa9c4b8bbe0743cd8f86d4909f0c"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a2305fa9c4b8bbe0743cd8f86d4909f0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d04d30f58d47802f26e784f0a9d6918"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d04d30f58d47802f26e784f0a9d6918"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a7d04d30f58d47802f26e784f0a9d6918"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5db29db6b3d6ca7b93dc5c0df80c9b9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5db29db6b3d6ca7b93dc5c0df80c9b9b"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a5db29db6b3d6ca7b93dc5c0df80c9b9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a491f2cc40e056ec07c3257612f18b746"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a491f2cc40e056ec07c3257612f18b746"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a491f2cc40e056ec07c3257612f18b746"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdbdf67fbc69ea4489f6c77ec9e8bbd1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acdbdf67fbc69ea4489f6c77ec9e8bbd1"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:acdbdf67fbc69ea4489f6c77ec9e8bbd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99e96f8f2ce260b65d122e33ee602c5e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99e96f8f2ce260b65d122e33ee602c5e"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a99e96f8f2ce260b65d122e33ee602c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f4b9f6d0d465890f8afcb1f8e55b332"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f4b9f6d0d465890f8afcb1f8e55b332"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a6f4b9f6d0d465890f8afcb1f8e55b332"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e69dcb596aa4a113bc9ffbeafe4faa3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e69dcb596aa4a113bc9ffbeafe4faa3"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a7e69dcb596aa4a113bc9ffbeafe4faa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af736689d5e4f7ba3ffea159dc67e6589"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af736689d5e4f7ba3ffea159dc67e6589"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:af736689d5e4f7ba3ffea159dc67e6589"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e113cbbf1a453141e8fb5230a045e29"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e113cbbf1a453141e8fb5230a045e29"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a2e113cbbf1a453141e8fb5230a045e29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f578c2b52b300fbd2c95bd0bc447f13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3f578c2b52b300fbd2c95bd0bc447f13"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a3f578c2b52b300fbd2c95bd0bc447f13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15dc9af42d2d2b39366fdeb06e651594"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15dc9af42d2d2b39366fdeb06e651594"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a15dc9af42d2d2b39366fdeb06e651594"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27f1e5529ef81177becfcfdc3a51408b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27f1e5529ef81177becfcfdc3a51408b"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a27f1e5529ef81177becfcfdc3a51408b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cc4eedb6545d71765254d838ee47adb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4cc4eedb6545d71765254d838ee47adb"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a4cc4eedb6545d71765254d838ee47adb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f2c7069849e299d6ea022d9e2366380"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9f2c7069849e299d6ea022d9e2366380"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a9f2c7069849e299d6ea022d9e2366380"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4ec15793870dcf2519d045e3cfc64e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4ec15793870dcf2519d045e3cfc64e2"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:ab4ec15793870dcf2519d045e3cfc64e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ee9e4af4414bcbbb16d98119b653aee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6ee9e4af4414bcbbb16d98119b653aee"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html">SourceRange</a> range, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a6ee9e4af4414bcbbb16d98119b653aee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -618,63 +630,69 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;<
 <tr class="memitem:a36e728be77ee3722c05c3003ce7c6365"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36e728be77ee3722c05c3003ce7c6365"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
 <tr class="separator:a36e728be77ee3722c05c3003ce7c6365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1867f702cf8697960f19bb53822dcb4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa1867f702cf8697960f19bb53822dcb4"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
-<tr class="separator:aa1867f702cf8697960f19bb53822dcb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3cf4e89a417676892b9a98c7ac9a79b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3cf4e89a417676892b9a98c7ac9a79b6"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
-<tr class="separator:a3cf4e89a417676892b9a98c7ac9a79b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a547d2ca8230a831eddf86f89322066a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a547d2ca8230a831eddf86f89322066a6"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
+<tr class="separator:a547d2ca8230a831eddf86f89322066a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac78485f7a01c80391bfe3b012e003d70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac78485f7a01c80391bfe3b012e003d70"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, string name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
+<tr class="separator:ac78485f7a01c80391bfe3b012e003d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f6017ba98bd66fc012c36bf7c8d5b72"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f6017ba98bd66fc012c36bf7c8d5b72"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a6f6017ba98bd66fc012c36bf7c8d5b72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf70ca20ccae0fda77c0163a177aa40e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf70ca20ccae0fda77c0163a177aa40e"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:aaf70ca20ccae0fda77c0163a177aa40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a343421147a4c513cd37c4f209c7acafe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a343421147a4c513cd37c4f209c7acafe"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html">LiteralNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Literal</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a343421147a4c513cd37c4f209c7acafe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05cc03db5efab59330a5f323f012a3eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a05cc03db5efab59330a5f323f012a3eb"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a05cc03db5efab59330a5f323f012a3eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a195269dc8bc410e3384f2674bfad26e0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a195269dc8bc410e3384f2674bfad26e0"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:a195269dc8bc410e3384f2674bfad26e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2167a5cc0a7a89c54bf893d851e31fa5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2167a5cc0a7a89c54bf893d851e31fa5"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a2167a5cc0a7a89c54bf893d851e31fa5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24b661cdb885b91afb5c5ee06ed34786"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24b661cdb885b91afb5c5ee06ed34786"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a24b661cdb885b91afb5c5ee06ed34786"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca3130d459d07934be961bd5c0efd33f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca3130d459d07934be961bd5c0efd33f"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:aca3130d459d07934be961bd5c0efd33f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ceb1a6b219ef156a916f613899b1049"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ceb1a6b219ef156a916f613899b1049"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
-<tr class="separator:a0ceb1a6b219ef156a916f613899b1049"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add4f2792b501f3364285ca77fef33dfa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add4f2792b501f3364285ca77fef33dfa"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:add4f2792b501f3364285ca77fef33dfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2651c080c5e6109f8fb6b388d6edf871"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2651c080c5e6109f8fb6b388d6edf871"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:a2651c080c5e6109f8fb6b388d6edf871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8c5145b11f2f8ec1932badfbf68e38e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8c5145b11f2f8ec1932badfbf68e38e"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:aa8c5145b11f2f8ec1932badfbf68e38e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affe69a7e5769efca8095afbba609cbf3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="affe69a7e5769efca8095afbba609cbf3"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Call</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; attrs, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
+<tr class="separator:affe69a7e5769efca8095afbba609cbf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8b15a152ec75b0e7654b04b955786f1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8b15a152ec75b0e7654b04b955786f1"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Trivia</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, object value, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1, <a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> style=NodeStyle.Default)</td></tr>
 <tr class="separator:aa8b15a152ec75b0e7654b04b955786f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5a045ab48f949ce046bcffc142f4510"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5a045ab48f949ce046bcffc142f4510"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InParens</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int position=-1, int width=-1)</td></tr>
 <tr class="separator:af5a045ab48f949ce046bcffc142f4510"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a0a62c91f551abb018e030a2c841a33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a0a62c91f551abb018e030a2c841a33"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
-<tr class="separator:a0a0a62c91f551abb018e030a2c841a33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae84fa45ffcc11cd6ad339858b08bc4ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae84fa45ffcc11cd6ad339858b08bc4ff"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a)</td></tr>
-<tr class="separator:ae84fa45ffcc11cd6ad339858b08bc4ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7fb864db69f7b721bf7df6eb23499ca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab7fb864db69f7b721bf7df6eb23499ca"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> b)</td></tr>
-<tr class="separator:ab7fb864db69f7b721bf7df6eb23499ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef38f252b6f21a99d2f95297630f78d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aef38f252b6f21a99d2f95297630f78d1"></a>
-static RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] list)</td></tr>
-<tr class="separator:aef38f252b6f21a99d2f95297630f78d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac26a0ec013dd0f4a987375272532fda3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac26a0ec013dd0f4a987375272532fda3"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
+<tr class="separator:ac26a0ec013dd0f4a987375272532fda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52e700188b41e4182a012fc4cdb29c42"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a52e700188b41e4182a012fc4cdb29c42"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a)</td></tr>
+<tr class="separator:a52e700188b41e4182a012fc4cdb29c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a535b919c4beb4e6c3af01dccc6ec6cf3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a535b919c4beb4e6c3af01dccc6ec6cf3"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> b)</td></tr>
+<tr class="separator:a535b919c4beb4e6c3af01dccc6ec6cf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a229fc7eb3319ed867bccfe6fd71609a1"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] list)</td></tr>
+<tr class="separator:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e406817e6f843782f523a5f2c213e56"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e406817e6f843782f523a5f2c213e56"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list)</td></tr>
+<tr class="separator:a9e406817e6f843782f523a5f2c213e56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8378bece4ac6b245b5712b090b4e9bc"><td class="memItemLeft" align="right" valign="top">static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa8378bece4ac6b245b5712b090b4e9bc">List</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list)</td></tr>
+<tr class="memdesc:aa8378bece4ac6b245b5712b090b4e9bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">A no-op that exists to avoid a potential slug when using <code>quote {...}</code>. <a href="#aa8378bece4ac6b245b5712b090b4e9bc">More...</a><br /></td></tr>
+<tr class="separator:aa8378bece4ac6b245b5712b090b4e9bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec680a7dbb7699e35b109ac15dd9b434"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434">PushPrinter</a> (<a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> printer)</td></tr>
 <tr class="memdesc:aec680a7dbb7699e35b109ac15dd9b434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helps you change printers temporarily. Usage in C#: <code>using (LNode.PushPrinter(myPrinter)) { ... }</code> <a href="#aec680a7dbb7699e35b109ac15dd9b434">More...</a><br /></td></tr>
 <tr class="separator:aec680a7dbb7699e35b109ac15dd9b434"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade7b6705a30f3c495032695cf4524558"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ade7b6705a30f3c495032695cf4524558"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ade7b6705a30f3c495032695cf4524558">Equals</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> b, bool compareStyles=false)</td></tr>
 <tr class="separator:ade7b6705a30f3c495032695cf4524558"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2ae858f8d0b338302010b01a5fde6b8"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa2ae858f8d0b338302010b01a5fde6b8">Equals</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; a, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; b, bool compareStyles=false)</td></tr>
-<tr class="memdesc:aa2ae858f8d0b338302010b01a5fde6b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two lists of nodes for structural equality. <a href="#aa2ae858f8d0b338302010b01a5fde6b8">More...</a><br /></td></tr>
-<tr class="separator:aa2ae858f8d0b338302010b01a5fde6b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf6a7f1abe7b71318de17bdecb402517"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abf6a7f1abe7b71318de17bdecb402517">Equals</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; a, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; b, bool compareStyles=false)</td></tr>
+<tr class="memdesc:abf6a7f1abe7b71318de17bdecb402517"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two lists of nodes for structural equality. <a href="#abf6a7f1abe7b71318de17bdecb402517">More...</a><br /></td></tr>
+<tr class="separator:abf6a7f1abe7b71318de17bdecb402517"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a3de98272cbbebd9bd71bdf12cfe1841a">MergeLists</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node1, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node2, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> listName)</td></tr>
 <tr class="memdesc:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Some <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>s are used to represent lists. This method merges two nodes, forming or appending a list (see remarks). <a href="#a3de98272cbbebd9bd71bdf12cfe1841a">More...</a><br /></td></tr>
 <tr class="separator:a3de98272cbbebd9bd71bdf12cfe1841a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -693,9 +711,9 @@ Protected Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a569d7f3596c2b4cc987fd0bd0cac1ccb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a569d7f3596c2b4cc987fd0bd0cac1ccb"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NoNulls</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; node, string propName)</td></tr>
-<tr class="separator:a569d7f3596c2b4cc987fd0bd0cac1ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8032e6d7833c2143fe44de2bd8ff331a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8032e6d7833c2143fe44de2bd8ff331a"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NoNulls</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; node, string propName)</td></tr>
+<tr class="separator:a8032e6d7833c2143fe44de2bd8ff331a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
@@ -733,7 +751,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 
 </div>
 </div>
-<a class="anchor" id="aa2ae858f8d0b338302010b01a5fde6b8"></a>
+<a class="anchor" id="abf6a7f1abe7b71318de17bdecb402517"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -743,13 +761,13 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
         <tr>
           <td class="memname">static bool Loyc.Syntax.LNode.Equals </td>
           <td>(</td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
@@ -908,6 +926,32 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 <p>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</p>
 
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#acda83c0c4d8f443aedd6c256357dd1d3">Loyc.Syntax.CallNode</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aa8378bece4ac6b245b5712b090b4e9bc"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.List </td>
+          <td>(</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramname"><em>list</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A no-op that exists to avoid a potential slug when using <code>quote {...}</code>.</p>
 
 </div>
 </div>
@@ -1084,7 +1128,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </table>
 </div><div class="memdoc">
 
-<p>Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a945b59fd72bff0ffcf9f23ac305a6e1f" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a5b81a06051e9243f000e70e7ab3ae4d9" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null.</p>
+<p>Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">selector</td><td>The selector is called for each descendant, and optionally the root node. If the selector returns a node, the new node replaces the node that was passed to <code>selector</code> and the children of the new node are ignored. If the selector returns null, children of the child are scanned recursively.</td></tr>
@@ -1128,7 +1172,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 </div>
 </div>
-<a class="anchor" id="aa61f66d96c5888f366813a5b98a8f0d6"></a>
+<a class="anchor" id="afc9436665fc3def9e35cf764b44b785c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1144,7 +1188,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>args</em>&#160;</td>
         </tr>
         <tr>
@@ -1164,7 +1208,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 </div>
 </div>
-<a class="anchor" id="a873fa002281b08a2eea521bac1c4b5d7"></a>
+<a class="anchor" id="a70e26f0f490a4c97ac59fee241f482aa"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1180,7 +1224,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>args</em>&#160;</td>
         </tr>
         <tr>
@@ -1200,7 +1244,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 </div>
 </div>
-<a class="anchor" id="a36c93dfc5817d19e8e25238d1d499eda"></a>
+<a class="anchor" id="a406a157154471b738c0ea068a55e6136"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1210,7 +1254,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
         <tr>
           <td class="memname">abstract <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a> Loyc.Syntax.LNode.WithArgs </td>
           <td>(</td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>args</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1230,7 +1274,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ad5dcf6d0426c67dd69b23e88a746dd7f">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#abe79574997cfa94a586abd0de858e72a">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a20d72f5cc9708e83186b6238c55d92a2">Loyc.Syntax.IdNode</a>.</p>
+<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#aa26db505e1da43420ef7e840c9fa3a36">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aea99c2d89d0744711e876c3164c48743">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#ad67fc2f0a2367fc16aa14247ac8bb7b1">Loyc.Syntax.IdNode</a>.</p>
 
 </div>
 </div>
@@ -1298,7 +1342,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="a5b81a06051e9243f000e70e7ab3ae4d9"></a>
+<a class="anchor" id="aef941397a7ad3198591a8f1255444844"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1306,7 +1350,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.Args</td>
+          <td class="memname">abstract VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.Args</td>
         </tr>
       </table>
   </td>
@@ -1319,11 +1363,11 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <p>Returns the argument list of this node. Always empty when <code>IsCall==false</code>.</p>
 <p>Depending on the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, Args may represent an actual argument list, or it may represent some other kind of list. For example, if the target is "{}" then Args represents a list of statements in a braced block, and if the target is "&gt;=" then Args represents the two arguments to the "&gt;=" operator. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a277130eeea97e359494eb7c429da27a1">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a945b59fd72bff0ffcf9f23ac305a6e1f"></a>
+<a class="anchor" id="ae344d28e9355aa0e75fbc582bedf78f5"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1331,7 +1375,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.Attrs</td>
+          <td class="memname">virtual VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.Attrs</td>
         </tr>
       </table>
   </td>
@@ -1366,6 +1410,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </div><div class="memdoc">
 
 <p>Returns true if <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> starts with '#'.</p>
+<p>Note that this property returns false for the empty identifier <code>@``</code>.</p>
 
 </div>
 </div>
@@ -1400,7 +1445,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract LNodeKind Loyc.Syntax.LNode.Kind</td>
+          <td class="memname">abstract <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">LNodeKind</a> Loyc.Syntax.LNode.Kind</td>
         </tr>
       </table>
   </td>
@@ -1410,9 +1455,9 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </table>
 </div><div class="memdoc">
 
-<p>Returns the LNodeKind: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call.</p>
+<p>Returns the <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212" title="The three kinds of nodes in a Loyc tree">LNodeKind</a>: <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>, Literal, or Call.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a0cc0d95540817e2c036083dfa4e8ca96">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
 
 </div>
 </div>
@@ -1435,8 +1480,16 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </div><div class="memdoc">
 
 <p>Returns the <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> if IsId. If this node is a call (IsCall) and <code>Target.IsId</code> is true, this property returns <code>Target.Name</code>. In all other cases, the name is GSymbol.Empty. Shall not return null.</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper.CodeToTerminalPred()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a0cc0d95540817e2c036083dfa4e8ca96">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
+<p>Examples (using C#/LES syntax): </p><pre>
+Expression   Kind    Name (blank if empty)
+hello        Id      hello
+#if         Id      #if
+Foo(x, y)    Call    Foo
+x += y       Call    +=
+x.Foo(y)     Call    
+5.0          Literal 
+</pre> 
+<p>Referenced by <a class="el" href="classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#a5edd51343c6c103948fab211ac8128dd">Loyc.LLParserGenerator.GeneralCodeGenHelper.CodeToTerminalPred()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
 
 </div>
 </div>
@@ -1553,7 +1606,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 <p>Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no name (GSymbol.Empty) to represent a parenthesized expression, if there is one argument.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a0cc0d95540817e2c036083dfa4e8ca96">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
 
 </div>
 </div>
@@ -1609,7 +1662,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

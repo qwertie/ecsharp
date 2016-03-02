@@ -19,7 +19,7 @@ var searchData=
   ['threadstarteventargs',['ThreadStartEventArgs',['../classLoyc_1_1Threading_1_1ThreadStartEventArgs.html',1,'Loyc::Threading']]],
   ['tinyreaderwriterlock',['TinyReaderWriterLock',['../structLoyc_1_1Threading_1_1TinyReaderWriterLock.html',1,'Loyc::Threading']]],
   ['token',['Token',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html',1,'Loyc::Syntax::Lexing']]],
-  ['tokenext',['TokenExt',['../classEcs_1_1Parser_1_1TokenExt.html',1,'Ecs::Parser']]],
+  ['tokenext',['TokenExt',['../classLoyc_1_1Ecs_1_1Parser_1_1TokenExt.html',1,'Loyc::Ecs::Parser']]],
   ['tokenext',['TokenExt',['../classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html',1,'Loyc::Syntax::Les']]],
   ['tokenlistaslexer',['TokenListAsLexer',['../classLoyc_1_1Syntax_1_1Lexing_1_1TokenListAsLexer.html',1,'Loyc::Syntax::Lexing']]],
   ['tokenstotree',['TokensToTree',['../classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html',1,'Loyc::Syntax::Lexing']]],

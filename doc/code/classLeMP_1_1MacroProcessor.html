@@ -146,24 +146,24 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Type t
 <tr class="memitem:ac352cacab74fd9104e18b70472a7bb7c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac352cacab74fd9104e18b70472a7bb7c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Assembly assembly, bool writeToSink=true)</td></tr>
 <tr class="separator:ac352cacab74fd9104e18b70472a7bb7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39adf21a12df4924f5c7c17415b9644c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a39adf21a12df4924f5c7c17415b9644c"></a>
-RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessSynchronously</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt)</td></tr>
-<tr class="separator:a39adf21a12df4924f5c7c17415b9644c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae367824944b55521fb9bce27e7113c1c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae367824944b55521fb9bce27e7113c1c"></a>
-RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessSynchronously</b> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; stmts)</td></tr>
-<tr class="separator:ae367824944b55521fb9bce27e7113c1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad248f41753e67781774a0dd0e1518ab4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad248f41753e67781774a0dd0e1518ab4"></a>
+VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessSynchronously</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt)</td></tr>
+<tr class="separator:ad248f41753e67781774a0dd0e1518ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bfab28cc0190a645334f501d22e419f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1bfab28cc0190a645334f501d22e419f"></a>
+VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessSynchronously</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; stmts)</td></tr>
+<tr class="separator:a1bfab28cc0190a645334f501d22e419f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab97d5ced3e55827800c2949b58679360"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#ab97d5ced3e55827800c2949b58679360">ProcessSynchronously</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
 <tr class="memdesc:ab97d5ced3e55827800c2949b58679360"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files one at a time (may be easier for debugging). <a href="#ab97d5ced3e55827800c2949b58679360">More...</a><br /></td></tr>
 <tr class="separator:ab97d5ced3e55827800c2949b58679360"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a165fd693579315d897e71ebff1394c15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#a165fd693579315d897e71ebff1394c15">ProcessParallel</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
 <tr class="memdesc:a165fd693579315d897e71ebff1394c15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel. All files are fully processed before the method returns. <a href="#a165fd693579315d897e71ebff1394c15">More...</a><br /></td></tr>
 <tr class="separator:a165fd693579315d897e71ebff1394c15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8fcac5dbf1293ef3089a111330403d2"><td class="memItemLeft" align="right" valign="top">Task&lt; RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#ae8fcac5dbf1293ef3089a111330403d2">ProcessAsync</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
-<tr class="memdesc:ae8fcac5dbf1293ef3089a111330403d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel using .NET Tasks. The method returns immediately. <a href="#ae8fcac5dbf1293ef3089a111330403d2">More...</a><br /></td></tr>
-<tr class="separator:ae8fcac5dbf1293ef3089a111330403d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa53f53359150972780e07b42a00100ad"><td class="memItemLeft" align="right" valign="top">Task&lt; VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">ProcessAsync</a> (IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles, Action&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; onProcessed=null)</td></tr>
+<tr class="memdesc:aa53f53359150972780e07b42a00100ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes source files in parallel using .NET Tasks. The method returns immediately. <a href="#aa53f53359150972780e07b42a00100ad">More...</a><br /></td></tr>
+<tr class="separator:aa53f53359150972780e07b42a00100ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ae8fcac5dbf1293ef3089a111330403d2"></a>
+<a class="anchor" id="aa53f53359150972780e07b42a00100ad"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -171,7 +171,7 @@ RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Task&lt;RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; [] LeMP.MacroProcessor.ProcessAsync </td>
+          <td class="memname">Task&lt;VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; [] LeMP.MacroProcessor.ProcessAsync </td>
           <td>(</td>
           <td class="paramtype">IReadOnlyList&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt;&#160;</td>
           <td class="paramname"><em>sourceFiles</em>, </td>
@@ -235,7 +235,7 @@ RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;
 
 <p>Processes source files in parallel. All files are fully processed before the method returns.</p>
 
-<p>References <a class="el" href="classLeMP_1_1MacroProcessor.html#ae8fcac5dbf1293ef3089a111330403d2">LeMP.MacroProcessor.ProcessAsync()</a>.</p>
+<p>References <a class="el" href="classLeMP_1_1MacroProcessor.html#aa53f53359150972780e07b42a00100ad">LeMP.MacroProcessor.ProcessAsync()</a>.</p>
 
 </div>
 </div>
@@ -302,7 +302,7 @@ RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

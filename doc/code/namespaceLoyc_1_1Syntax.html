@@ -166,8 +166,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a text file with a file name and its textual content, plus the data necessary to convert between line-column positions and 0-based integer indexes. <a href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LineAndPos.html">LineAndPos</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds a line number (Line) and a position in the line (PosInLine). This class isn't really needed in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> but is separated from <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> in case anyone might want position without a filename. <a href="classLoyc_1_1Syntax_1_1LineAndPos.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LineAndCol.html">LineAndCol</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds a line number (Line) and a position in the line (PosInLine). This class isn't really needed in <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> but is separated from <a class="el" href="classLoyc_1_1Syntax_1_1SourcePos.html" title="Holds a filename (FileName), a line number (Line) and a position in the line (PosInLine), representing a position in a source code file.">SourcePos</a> in case anyone might want position without a filename. <a href="classLoyc_1_1Syntax_1_1LineAndCol.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LineRemapper.html">LineRemapper</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A small helper class for languages such as C# and C++ that permit the locations reported by error messages to be remapped. This class stores and applies such commands (#line in C#/C++) <a href="classLoyc_1_1Syntax_1_1LineRemapper.html#details">More...</a><br /></td></tr>
@@ -261,10 +261,11 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ad4c4676e2fe5b3a9acf9f5b02f88b9c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies which children to enumerate when calling LNode.Descendants(). <a href="namespaceLoyc_1_1Syntax.html#ad4c4676e2fe5b3a9acf9f5b02f88b9c1">More...</a><br /></td></tr>
 <tr class="separator:ad4c4676e2fe5b3a9acf9f5b02f88b9c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af00c062703b2745a9d2ecbe0b7669212"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af00c062703b2745a9d2ecbe0b7669212"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>LNodeKind</b> { <b>Id</b>, 
+<tr class="memitem:af00c062703b2745a9d2ecbe0b7669212"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">LNodeKind</a> { <b>Id</b>, 
 <b>Literal</b>, 
 <b>Call</b>
  }</td></tr>
+<tr class="memdesc:af00c062703b2745a9d2ecbe0b7669212"><td class="mdescLeft">&#160;</td><td class="mdescRight">The three kinds of nodes in a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree <a href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">More...</a><br /></td></tr>
 <tr class="separator:af00c062703b2745a9d2ecbe0b7669212"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc3eedb6b204244ecdfdfeacb1d433b8"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a> : byte { <br />
 &#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67">NodeStyle.Default</a> = 0, 
@@ -308,6 +309,20 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Loyc.Syntax.dll: contains <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>), lexing stuff, LLLPG base classes (BaseParser{T} and BaseLexer), the LES parser and printer, data types related to source code management (e.g. <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile<char>) and the beginning and end indices of a range i...">SourceRange</a>) and other general-purpose code related to the manipulation of syntax. </p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<a class="anchor" id="af00c062703b2745a9d2ecbe0b7669212"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212">Loyc.Syntax.LNodeKind</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The three kinds of nodes in a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree</p>
+
+</div>
+</div>
 <a class="anchor" id="ad4c4676e2fe5b3a9acf9f5b02f88b9c1"></a>
 <div class="memitem">
 <div class="memproto">
@@ -466,7 +481,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

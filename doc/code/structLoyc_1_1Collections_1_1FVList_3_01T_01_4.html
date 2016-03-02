@@ -121,7 +121,7 @@ Inheritance diagram for Loyc.Collections.FVList&lt; T &gt;:</div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A reference to a FVList, a so-called persistent list data structure. </p>
 <p>An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a> is available online about the VList data types. </p>
-<p>See the remarks of VListBlock{T} for more information about VLists. Items are normally added to, and removed from, the front of a FVList or to the back of an RVList; adding, removing or changing items at any other position is inefficient. You can call <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a035d4ab58d67ad71619e61566eb92236" title="Returns this list as an RVList, which effectively reverses the order of the elements.">ToRVList()</a> to convert a FVList to its equivalent RVList, which is a reverse-order view of the same list that shares the same memory.</p>
+<p>See the remarks of VListBlock{T} for more information about VLists. Items are normally added to, and removed from, the front of a FVList or to the back of a VList; adding, removing or changing items at any other position is inefficient. You can call <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ad9765e79b00f47377c2d63a1d81206ca" title="Returns this list as a VList, which effectively reverses the order of the elements.">ToVList()</a> to convert a FVList to its equivalent VList, which is a reverse-order view of the same list that shares the same memory. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
@@ -212,15 +212,15 @@ FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRa
 <tr class="memitem:ae40ace421e465ad45217b7ccc0027809"><td class="memItemLeft" align="right" valign="top">FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ae40ace421e465ad45217b7ccc0027809">Push</a> (T item)</td></tr>
 <tr class="memdesc:ae40ace421e465ad45217b7ccc0027809"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synonym for <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a9060ebd876553a443e2ab3f893eb2c47" title="Inserts an item at the front (index 0) of the FVList.">Add()</a>; adds an item to the front of the list. <a href="#ae40ace421e465ad45217b7ccc0027809">More...</a><br /></td></tr>
 <tr class="separator:ae40ace421e465ad45217b7ccc0027809"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a035d4ab58d67ad71619e61566eb92236"><td class="memItemLeft" align="right" valign="top">RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a035d4ab58d67ad71619e61566eb92236">ToRVList</a> ()</td></tr>
-<tr class="memdesc:a035d4ab58d67ad71619e61566eb92236"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as an RVList, which effectively reverses the order of the elements. <a href="#a035d4ab58d67ad71619e61566eb92236">More...</a><br /></td></tr>
-<tr class="separator:a035d4ab58d67ad71619e61566eb92236"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ac20d4bab56a386a80585cad60a70a9"><td class="memItemLeft" align="right" valign="top">FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a7ac20d4bab56a386a80585cad60a70a9">ToWList</a> ()</td></tr>
-<tr class="memdesc:a7ac20d4bab56a386a80585cad60a70a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FWList. <a href="#a7ac20d4bab56a386a80585cad60a70a9">More...</a><br /></td></tr>
-<tr class="separator:a7ac20d4bab56a386a80585cad60a70a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49edcdf0ae352848be888a2551eba911"><td class="memItemLeft" align="right" valign="top">RWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a49edcdf0ae352848be888a2551eba911">ToRWList</a> ()</td></tr>
-<tr class="memdesc:a49edcdf0ae352848be888a2551eba911"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a RWList, which effectively reverses the order of the elements. <a href="#a49edcdf0ae352848be888a2551eba911">More...</a><br /></td></tr>
-<tr class="separator:a49edcdf0ae352848be888a2551eba911"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9765e79b00f47377c2d63a1d81206ca"><td class="memItemLeft" align="right" valign="top">VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ad9765e79b00f47377c2d63a1d81206ca">ToVList</a> ()</td></tr>
+<tr class="memdesc:ad9765e79b00f47377c2d63a1d81206ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a VList, which effectively reverses the order of the elements. <a href="#ad9765e79b00f47377c2d63a1d81206ca">More...</a><br /></td></tr>
+<tr class="separator:ad9765e79b00f47377c2d63a1d81206ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d36956fe52b034192e9485087d1b039"><td class="memItemLeft" align="right" valign="top">FWList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a6d36956fe52b034192e9485087d1b039">ToFWList</a> ()</td></tr>
+<tr class="memdesc:a6d36956fe52b034192e9485087d1b039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FWList. <a href="#a6d36956fe52b034192e9485087d1b039">More...</a><br /></td></tr>
+<tr class="separator:a6d36956fe52b034192e9485087d1b039"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f6a93dca2f799f4810a4650774daa11"><td class="memItemLeft" align="right" valign="top">WList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a0f6a93dca2f799f4810a4650774daa11">ToWList</a> ()</td></tr>
+<tr class="memdesc:a0f6a93dca2f799f4810a4650774daa11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a WList, which effectively reverses the order of the elements. <a href="#a0f6a93dca2f799f4810a4650774daa11">More...</a><br /></td></tr>
+<tr class="separator:a0f6a93dca2f799f4810a4650774daa11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32c32c209034d4bd151898ad0e89a985"><td class="memItemLeft" align="right" valign="top">T[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a32c32c209034d4bd151898ad0e89a985">ToArray</a> ()</td></tr>
 <tr class="memdesc:a32c32c209034d4bd151898ad0e89a985"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the FVList converted to an array. <a href="#a32c32c209034d4bd151898ad0e89a985">More...</a><br /></td></tr>
 <tr class="separator:a32c32c209034d4bd151898ad0e89a985"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -315,15 +315,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5526e04b2e646564a3b861f4e62f18b1"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a5526e04b2e646564a3b861f4e62f18b1">operator!=</a> (FVList&lt; T &gt; lhs, FVList&lt; T &gt; rhs)</td></tr>
 <tr class="memdesc:a5526e04b2e646564a3b861f4e62f18b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the two list references are different. Does not compare the contents of the lists. <a href="#a5526e04b2e646564a3b861f4e62f18b1">More...</a><br /></td></tr>
 <tr class="separator:a5526e04b2e646564a3b861f4e62f18b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01d63efdc0f37383eae7030a1b8942b4"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a01d63efdc0f37383eae7030a1b8942b4">operator RVList&lt; T &gt;</a> (FVList&lt; T &gt; list)</td></tr>
-<tr class="memdesc:a01d63efdc0f37383eae7030a1b8942b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as an RVList, which effectively reverses the order of the elements. <a href="#a01d63efdc0f37383eae7030a1b8942b4">More...</a><br /></td></tr>
-<tr class="separator:a01d63efdc0f37383eae7030a1b8942b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a012fb0e5dd9d9a750cfba1344c2afde3"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a012fb0e5dd9d9a750cfba1344c2afde3">operator VList&lt; T &gt;</a> (FVList&lt; T &gt; list)</td></tr>
+<tr class="memdesc:a012fb0e5dd9d9a750cfba1344c2afde3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a VList, which effectively reverses the order of the elements. <a href="#a012fb0e5dd9d9a750cfba1344c2afde3">More...</a><br /></td></tr>
+<tr class="separator:a012fb0e5dd9d9a750cfba1344c2afde3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab57f8fd1f27782ec90b2c49e5746e865"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ab57f8fd1f27782ec90b2c49e5746e865">operator FWList&lt; T &gt;</a> (FVList&lt; T &gt; list)</td></tr>
 <tr class="memdesc:ab57f8fd1f27782ec90b2c49e5746e865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a FWList. <a href="#ab57f8fd1f27782ec90b2c49e5746e865">More...</a><br /></td></tr>
 <tr class="separator:ab57f8fd1f27782ec90b2c49e5746e865"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a776d7bf6ca8e08ad4d5ab45de242a212"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a776d7bf6ca8e08ad4d5ab45de242a212">operator RWList&lt; T &gt;</a> (FVList&lt; T &gt; list)</td></tr>
-<tr class="memdesc:a776d7bf6ca8e08ad4d5ab45de242a212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a RWList, which effectively reverses the order of the elements. <a href="#a776d7bf6ca8e08ad4d5ab45de242a212">More...</a><br /></td></tr>
-<tr class="separator:a776d7bf6ca8e08ad4d5ab45de242a212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7649fd2ea7ff0c5c8cfad4a4fde566e"><td class="memItemLeft" align="right" valign="top">static&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac7649fd2ea7ff0c5c8cfad4a4fde566e">operator WList&lt; T &gt;</a> (FVList&lt; T &gt; list)</td></tr>
+<tr class="memdesc:ac7649fd2ea7ff0c5c8cfad4a4fde566e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns this list as a WList, which effectively reverses the order of the elements. <a href="#ac7649fd2ea7ff0c5c8cfad4a4fde566e">More...</a><br /></td></tr>
+<tr class="separator:ac7649fd2ea7ff0c5c8cfad4a4fde566e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a9060ebd876553a443e2ab3f893eb2c47"></a>
@@ -470,7 +470,7 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a01d63efdc0f37383eae7030a1b8942b4"></a>
+<a class="anchor" id="a012fb0e5dd9d9a750cfba1344c2afde3"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -478,7 +478,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static Loyc.Collections.FVList&lt; T &gt;.operator RVList&lt; T &gt; </td>
+          <td class="memname">static Loyc.Collections.FVList&lt; T &gt;.operator VList&lt; T &gt; </td>
           <td>(</td>
           <td class="paramtype">FVList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
@@ -492,12 +492,12 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns this list as an RVList, which effectively reverses the order of the elements.</p>
-<p>This is a trivial operation; the RVList shares the same memory.</p>
+<p>Returns this list as a VList, which effectively reverses the order of the elements.</p>
+<p>This is a trivial operation; the VList shares the same memory.</p>
 
 </div>
 </div>
-<a class="anchor" id="a776d7bf6ca8e08ad4d5ab45de242a212"></a>
+<a class="anchor" id="ac7649fd2ea7ff0c5c8cfad4a4fde566e"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -505,7 +505,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static Loyc.Collections.FVList&lt; T &gt;.operator RWList&lt; T &gt; </td>
+          <td class="memname">static Loyc.Collections.FVList&lt; T &gt;.operator WList&lt; T &gt; </td>
           <td>(</td>
           <td class="paramtype">FVList&lt; T &gt;&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
@@ -519,8 +519,8 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns this list as a RWList, which effectively reverses the order of the elements.</p>
-<p>The list contents are not copied until you modify the RWList.</p>
+<p>Returns this list as a WList, which effectively reverses the order of the elements.</p>
+<p>The list contents are not copied until you modify the WList.</p>
 
 </div>
 </div>
@@ -849,7 +849,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Returns this.</dd></dl>
-<p>This method helps write functional code in which you process an input list and produce an output list that may or may not be the same as the input list. In case the output list is identical, you would prefer to return the original input list rather than wasting memory on a new list. <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> helps you do this. The following method demonstrates <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> by removing all negative numbers from a list:  FVList&lt;int&gt; RemoveNegative(FVList&lt;int&gt; input) { var output = FVList&lt;int&gt;.Empty; // Enumerate tail-to-head foreach (int n in (RVList&lt;int&gt;)input) if (n &gt;= 0) output.SmartAdd(n, input); return output; } </p>
+<p>This method helps write functional code in which you process an input list and produce an output list that may or may not be the same as the input list. In case the output list is identical, you would prefer to return the original input list rather than wasting memory on a new list. <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> helps you do this. The following method demonstrates <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#ac5375ba02c633e8dec38cc6eb4133f46" title="Adds the specified item to the list, or original.WithoutFirst(original.Count - Count - 1) if doing so...">SmartAdd()</a> by removing all negative numbers from a list:  FVList&lt;int&gt; RemoveNegative(FVList&lt;int&gt; input) { var output = FVList&lt;int&gt;.Empty; // Enumerate tail-to-head foreach (int n in (VList&lt;int&gt;)input) if (n &gt;= 0) output.SmartAdd(n, input); return output; } </p>
 <p>You could also do the same thing with input.Filter(delegate(int i) { return i; } &gt;= 0) </p>
 
 </div>
@@ -913,7 +913,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 
 </div>
 </div>
-<a class="anchor" id="a035d4ab58d67ad71619e61566eb92236"></a>
+<a class="anchor" id="a6d36956fe52b034192e9485087d1b039"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -921,59 +921,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">RVList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToRVList </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns this list as an RVList, which effectively reverses the order of the elements.</p>
-<dl class="section return"><dt>Returns</dt><dd>This is a trivial operation; the RVList shares the same memory.</dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a49edcdf0ae352848be888a2551eba911"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">RWList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToRWList </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns this list as a RWList, which effectively reverses the order of the elements.</p>
-<p>The list contents are not copied until you modify the RWList.</p>
-
-</div>
-</div>
-<a class="anchor" id="a7ac20d4bab56a386a80585cad60a70a9"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">FWList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToWList </td>
+          <td class="memname">FWList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToFWList </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -988,6 +936,58 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 
 <p>Returns this list as a FWList.</p>
 <p>The list contents are not copied until you modify the FWList.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad9765e79b00f47377c2d63a1d81206ca"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">VList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToVList </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns this list as a VList, which effectively reverses the order of the elements.</p>
+<dl class="section return"><dt>Returns</dt><dd>This is a trivial operation; the VList shares the same memory.</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a0f6a93dca2f799f4810a4650774daa11"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">WList&lt;T&gt; Loyc.Collections.FVList&lt; T &gt;.ToWList </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns this list as a WList, which effectively reverses the order of the elements.</p>
+<p>The list contents are not copied until you modify the WList.</p>
 
 </div>
 </div>
@@ -1021,16 +1021,16 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A list formed from transforming all items in the list</dd></dl>
-<p>This is my attempt to make an optimized multi-purpose routine for transforming a FVList or RVList. It is slightly cumbersome to use, but allows you to do several common operations in one transformer method. </p>
-<p>The VListTransformer method takes two arguments: an item and its index in the FVList or RVList. It can modify the item if desired, and then it returns a XfAction value, which indicates the action to take. Most often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, which, repectively, drop the item from the output list, copy the item to the output list unchanged (even if you modified the item), and copy the item to the output list (assuming you changed it). </p>
+<p>This is my attempt to make an optimized multi-purpose routine for transforming a FVList or VList. It is slightly cumbersome to use, but allows you to do several common operations in one transformer method. </p>
+<p>The VListTransformer method takes two arguments: an item and its index in the FVList or VList. It can modify the item if desired, and then it returns a XfAction value, which indicates the action to take. Most often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, which, repectively, drop the item from the output list, copy the item to the output list unchanged (even if you modified the item), and copy the item to the output list (assuming you changed it). </p>
 <p><a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a00aaff73e8bd2e48b545a53d9dbc8047" title="Transforms a list (combines filtering with selection and more).">Transform()</a> needs to know if the item changed, at least at first, because if the first items are kept without changes, then the output list can share a common tail with the input list. If the transformer method returns XfAction.Keep for every element, then the output list is exactly the same (operator== returns true). </p>
 <p>Of course, it would have been simpler just to return a boolean indicating whether to keep the item, and the Transform method itself could check whether the item changed. But checking for equality is a tad slow in the .NET framework, because there is no bitwise equality operator in .NET, so a virtual function would have to be called instead to test equality, which is especially slow if T is a value type that does not implement IEquatable(of T). </p>
 <p>The final possible action, XfAction.Repeat, is like XfAction.Change except that <a class="el" href="structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html#a00aaff73e8bd2e48b545a53d9dbc8047" title="Transforms a list (combines filtering with selection and more).">Transform()</a> calls the VListTransformer again. The second call has the form x(~i, ref item), where ~i is the bitwise NOT of the index i, and item is the same item that x returned the first time it was called. On the second call, x() can return XfAction.Change again to get a third call, if it wants. </p>
-<p>XfAction.Repeat is best explained by example. In the following examples, assume "list" is an RVList holding the numbers (1, 2, 3):  output = list.Transform((i, ref n) =&gt; { // This example produces (1, 1, 2, 2, 3, 3) return i &gt;= 0 ? XfAction.Repeat : XfAction.Keep; });</p>
+<p>XfAction.Repeat is best explained by example. In the following examples, assume "list" is a VList holding the numbers (1, 2, 3):  output = list.Transform((i, ref n) =&gt; { // This example produces (1, 1, 2, 2, 3, 3) return i &gt;= 0 ? XfAction.Repeat : XfAction.Keep; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // This example produces (1, 10, 2, 20, 3, 30) if (i &gt;= 0) return XfAction.Repeat; n *= 10; return XfAction.Change; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // This example produces (10, 1, 20, 2, 30, 3) if (i &gt;= 0) { n *= 10; return XfAction.Repeat; } return XfAction.Keep; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // This example produces (10, 100, 1000, 20, 200, 30, 300) n *= 10; if (n &gt; 1000) return XfAction.Drop; return XfAction.Repeat; }); </p>
-<p>And now for some examples using XfAction.Keep, XfAction.Drop and XfAction.Change. Assume list is an RVList holding the following integers: (-1, 2, -2, 13, 5, 8, 9)  output = list.Transform((i, ref n) =&gt; { // Keep every second item: (2, 13, 8) return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop; });</p>
+<p>And now for some examples using XfAction.Keep, XfAction.Drop and XfAction.Change. Assume list is a VList holding the following integers: (-1, 2, -2, 13, 5, 8, 9)  output = list.Transform((i, ref n) =&gt; { // Keep every second item: (2, 13, 8) return (i % 2) == 1 ? XfAction.Keep : XfAction.Drop; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // Keep odd numbers: (-1, 13, 5, 9) return (n % 2) != 0 ? XfAction.Keep : XfAction.Drop; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // Keep and square all odd numbers: (1, 169, 25, 81) if ((n % 2) != 0) { n *= n; return XfAction.Change; } else return XfAction.Drop; });</p>
 <p>output = list.Transform((i, ref n) =&gt; { // Increase each item by its index: (-1, 3, 0, 16, 9, 13, 15) n += i; return i == 0 ? XfAction.Keep : XfAction.Change; }); </p>
@@ -1249,7 +1249,7 @@ public Slice_&lt;T&gt; <a class="el" href="structLoyc_1_1Collections_1_1FVList_3
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

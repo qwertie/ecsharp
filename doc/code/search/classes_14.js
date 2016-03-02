@@ -8,6 +8,7 @@ var searchData=
   ['whitespacefilter',['WhitespaceFilter',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceFilter.html',1,'Loyc::Syntax::Lexing']]],
   ['whitespacefilter_3c_20token_20_3e',['WhitespaceFilter&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceFilter_3_01Token_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['whitespacetag',['WhitespaceTag',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html',1,'Loyc::Syntax::Lexing']]],
+  ['wlist_3c_20t_20_3e',['WList&lt; T &gt;',['../classLoyc_1_1Collections_1_1WList_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wlistbase_3c_20t_20_3e',['WListBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wlistprotected_3c_20t_20_3e',['WListProtected&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wrapperbase_3c_20t_20_3e',['WrapperBase&lt; T &gt;',['../classLoyc_1_1WrapperBase_3_01T_01_4.html',1,'Loyc']]]

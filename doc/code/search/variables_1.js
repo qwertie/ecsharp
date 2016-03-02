@@ -15,5 +15,7 @@ var searchData=
   ['arrayinit',['ArrayInit',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a0c04ac007b0e2db947ebc14f4b03d591',1,'Loyc::Syntax::CodeSymbols']]],
   ['as',['As',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a8fe87592101a85d89beb3c9727eb200b',1,'Loyc::Syntax::CodeSymbols']]],
   ['assembly',['Assembly',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a805db2710da7b2a9b800ed40b3594204',1,'Loyc::Syntax::CodeSymbols']]],
-  ['assign',['Assign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b',1,'Loyc::Syntax::CodeSymbols']]]
+  ['assign',['Assign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a4484aa5c01c373b7f183af9cf314b12b',1,'Loyc::Syntax::CodeSymbols']]],
+  ['async',['Async',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a68ecc8b429d671012701bb846422b2e6',1,'Loyc::Syntax::CodeSymbols']]],
+  ['await',['Await',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a40e50d494d14d9787c8e2295aea408f8',1,'Loyc::Syntax::CodeSymbols']]]
 ];

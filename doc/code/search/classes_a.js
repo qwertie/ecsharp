@@ -17,7 +17,7 @@ var searchData=
   ['lexersourceworkaround_3c_20charsrc_20_3e',['LexerSourceWorkaround&lt; CharSrc &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerSourceWorkaround_3_01CharSrc_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['lexerwrapper_3c_20token_20_3e',['LexerWrapper&lt; Token &gt;',['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerWrapper_3_01Token_01_4.html',1,'Loyc::Syntax::Lexing']]],
   ['lexicalmacroattribute',['LexicalMacroAttribute',['../classLeMP_1_1LexicalMacroAttribute.html',1,'LeMP']]],
-  ['lineandpos',['LineAndPos',['../classLoyc_1_1Syntax_1_1LineAndPos.html',1,'Loyc::Syntax']]],
+  ['lineandcol',['LineAndCol',['../classLoyc_1_1Syntax_1_1LineAndCol.html',1,'Loyc::Syntax']]],
   ['linemath',['LineMath',['../classLoyc_1_1Geometry_1_1LineMath.html',1,'Loyc::Geometry']]],
   ['lineremapper',['LineRemapper',['../classLoyc_1_1Syntax_1_1LineRemapper.html',1,'Loyc::Syntax']]],
   ['linesegment3_3c_20t_20_3e',['LineSegment3&lt; T &gt;',['../structLoyc_1_1Geometry_1_1LineSegment3_3_01T_01_4.html',1,'Loyc::Geometry']]],

@@ -151,9 +151,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2a6f20e79b626a1c314c9442d1beca2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a2a6f20e79b626a1c314c9442d1beca2e">PreProcessChildren</a> ()</td></tr>
 <tr class="memdesc:a2a6f20e79b626a1c314c9442d1beca2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies all available macros to the current node's children and returns the result. <a href="#a2a6f20e79b626a1c314c9442d1beca2e">More...</a><br /></td></tr>
 <tr class="separator:a2a6f20e79b626a1c314c9442d1beca2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a300eb9c39f4d1dbfeb9d905a7b74e0a9"><td class="memItemLeft" align="right" valign="top">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a300eb9c39f4d1dbfeb9d905a7b74e0a9">PreProcess</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; input, bool asRoot=false, bool resetOpenNamespaces=false, bool areAttributes=false)</td></tr>
-<tr class="memdesc:a300eb9c39f4d1dbfeb9d905a7b74e0a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the macro processor on the specified node(s). <a href="#a300eb9c39f4d1dbfeb9d905a7b74e0a9">More...</a><br /></td></tr>
-<tr class="separator:a300eb9c39f4d1dbfeb9d905a7b74e0a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5332aac3b0d4fc87e14fef5a8aacb68c"><td class="memItemLeft" align="right" valign="top">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a5332aac3b0d4fc87e14fef5a8aacb68c">PreProcess</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; input, bool asRoot=false, bool resetOpenNamespaces=false, bool areAttributes=false)</td></tr>
+<tr class="memdesc:a5332aac3b0d4fc87e14fef5a8aacb68c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the macro processor on the specified node(s). <a href="#a5332aac3b0d4fc87e14fef5a8aacb68c">More...</a><br /></td></tr>
+<tr class="separator:a5332aac3b0d4fc87e14fef5a8aacb68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fdedeed7f8a76e677522764b3dee444"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7fdedeed7f8a76e677522764b3dee444"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a7fdedeed7f8a76e677522764b3dee444">PreProcess</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> input, bool asRoot=false, bool resetOpenNamespaces=false, bool isTarget=false)</td></tr>
 <tr class="separator:a7fdedeed7f8a76e677522764b3dee444"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,14 +172,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a77fa394b05a1f42adcd07a4d1fc89de5 inherit pub_methods_interfaceLoyc_1_1IMessageSink"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a300eb9c39f4d1dbfeb9d905a7b74e0a9"></a>
+<a class="anchor" id="a5332aac3b0d4fc87e14fef5a8aacb68c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; LeMP.IMacroContext.PreProcess </td>
+          <td class="memname">VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; LeMP.IMacroContext.PreProcess </td>
           <td>(</td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>input</em>, </td>
         </tr>
         <tr>
@@ -305,7 +305,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Gets or sets a value that indicates whether to drop all remaining node after the current one when the current macro returns. This property has no effect if the macro rejects the input by returning null.</p>
-<p>See remarks at <a class="el" href="classLeMP_1_1MacroContext.html#aaf279bb68596f90487b6a34064a5ca19" title="Splits the current node into a pair of &quot;argument&quot; and &quot;body&quot; lists, potentially treating ctx...">MacroContext.GetArgsAndBody</a>.</p>
+<p>See remarks at <a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307" title="Splits the current node into a pair of &quot;argument&quot; and &quot;body&quot; lists, potentially treating ctx...">MacroContext.GetArgsAndBody</a>.</p>
 
 </div>
 </div>
@@ -456,7 +456,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

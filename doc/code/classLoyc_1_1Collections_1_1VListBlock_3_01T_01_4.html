@@ -101,7 +101,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>VListBlock implements the core functionality of FVList, RVList, FWList and RWList. It is not intended to be used directly.  
+<p>VListBlock implements the core functionality of FVList, VList, FWList and WList. It is not intended to be used directly.  
  <a href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#details">More...</a></p>
 <hr/>Source file:<ul>
 <li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Collections/VLists/VListBlock.cs'>/Core/Loyc.Collections/VLists/VListBlock.cs</a></li>
@@ -117,33 +117,33 @@ Inheritance diagram for Loyc.Collections.VListBlock&lt; T &gt;:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>VListBlock implements the core functionality of FVList, RVList, FWList and RWList. It is not intended to be used directly. </p>
+<div class="textblock"><p>VListBlock implements the core functionality of FVList, VList, FWList and WList. It is not intended to be used directly. </p>
 <p>VList is a persistent list data structure described in Phil Bagwell's 2002 paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
 Arrays". I (David P) call the .NET equivalent "FVList" or "forward VList". In the forward VList, the "beginning" of the list (index 0) is by far the fastest place to insert items. </p>
-<p>This is unnatural in .NET, so I also created a second data structure, the "reverse" VList or RVList, in which the end of the list (index Count-1) is the natural location for adding items. To achieve this, the RVList sees the same elements as a FVList, but in reverse order. </p>
-<p>FWList and RWList are the names I picked for the mutable (Writable) variants of FVList and RVList. </p>
-<p>A persistent list is a list that is normally considered immutable, so adding an item implies creating a new list rather than changing the one you've got. This is fast because persistent lists have a sort of copy-on-write semantics, so that "copying" a list is a trivial O(1) operation, but modifying a list is sometimes quite inefficient. My implementation of VLists presents a mutable IList(of T) interface, but this is only to adhere to .NET Framework conventions. FVList and RVList are value types that update their own references to the list when they are modified. Thus, "Copying" a list is done with a simple assignment statement. For example: </p><div class="fragment"><div class="line">RVList&amp;lt;<span class="keywordtype">int</span>&amp;gt; a = <span class="keyword">new</span> RVList&amp;lt;<span class="keywordtype">int</span>&amp;gt;(), b = <span class="keyword">new</span> RVList&amp;lt;<span class="keywordtype">int</span>&amp;gt;();</div>
+<p>This is unnatural in .NET, so I also created a second data structure, the "reverse" VList, originally called RVList, in which the end of the list (index Count-1) is the natural location for adding items. To achieve this, the VList sees the same elements as a FVList, but in reverse order. </p>
+<p>FWList and WList are the names I picked for the mutable (Writable) variants of FVList and VList. </p>
+<p>A persistent list is a list that is normally considered immutable, so adding an item implies creating a new list rather than changing the one you've got. This is fast because persistent lists have a sort of copy-on-write semantics, so that "copying" a list is a trivial O(1) operation, but modifying a list is sometimes quite inefficient. My implementation of VLists presents a mutable IList(of T) interface, but this is only to adhere to .NET Framework conventions. FVList and VList are value types that update their own references to the list when they are modified. Thus, "Copying" a list is done with a simple assignment statement. For example: </p><div class="fragment"><div class="line">VList&amp;lt;<span class="keywordtype">int</span>&amp;gt; a = <span class="keyword">new</span> VList&amp;lt;<span class="keywordtype">int</span>&amp;gt;(), b = <span class="keyword">new</span> VList&amp;lt;<span class="keywordtype">int</span>&amp;gt;();</div>
 <div class="line">a.Add(1);</div>
 <div class="line">a.Add(2);</div>
 <div class="line">b = a;             <span class="comment">// copy the list</span></div>
 <div class="line">a.Add(3);          <span class="comment">// a[0] is 1, a[1] is 2, a[2] is 3</span></div>
 <div class="line">b.Add(97);         <span class="comment">// b[0] is 1, b[1] is 2, b[2] is 97</span></div>
-</div><!-- fragment --><p> Traditionally, this kind of behavior was accomplished with singly-linked lists, but FVList does it with (in essence) a singly-linked list of arrays and thereby saves memory while allowing some operations to be done faster than they were done with linked lists. In pathological cases, however, FVList can use much more memory than a linked list and degenerate so that its performance characteristics are almost as bad as a linked list. One major problem that comes to mind is if you keep changing the last item: </p><div class="fragment"><div class="line">RVList&amp;lt;<span class="keywordtype">int</span>&amp;gt; list = <span class="keyword">new</span> RVList&amp;lt;<span class="keywordtype">int</span>&amp;gt;();</div>
+</div><!-- fragment --><p> Traditionally, this kind of behavior was accomplished with singly-linked lists, but FVList does it with (in essence) a singly-linked list of arrays and thereby saves memory while allowing some operations to be done faster than they were done with linked lists. In pathological cases, however, FVList can use much more memory than a linked list and degenerate so that its performance characteristics are almost as bad as a linked list. One major problem that comes to mind is if you keep changing the last item: </p><div class="fragment"><div class="line">VList&amp;lt;<span class="keywordtype">int</span>&amp;gt; list = <span class="keyword">new</span> VList&amp;lt;<span class="keywordtype">int</span>&amp;gt;();</div>
 <div class="line">... add some items to list ...</div>
 <div class="line">for(<span class="keywordtype">int</span> n;; n++)</div>
 <div class="line">    list[list.Count-1] = n;</div>
-</div><!-- fragment --><p> Unlike, for example, a C++-based FVList implementation, it is impossible for the FVList or RVList, which are value types, to know if the list has been "copied" or not. In case the list has been copied, changing any element requires a copy to be made of the VListBlock that contains that element, as well as any subsequent blocks (in this example, only the last block must be copied). Thus, the above example produces a lot of garbage very quickly; in fact the rate of garbage production is (very roughly) proportional to the list length. The performance will be equally bad if you repeatedly remove the last item and then re-add it. </p>
-<p>Since this kind of problem tends to get worse as the list gets larger, Phil Bagwell proposed using a two- or three-dimentional list arrangement so that no single block could exceed a certain size. I have not implemented that suggestion due to lack of free time and because I did not understand the details of his suggested implementation, but I have placed a size limit of 1024 elements on any given block. Unfortunately, this means that some operations listed below degrade toward O(N) when the list is large, most notably including the indexer, which requires over 1000 iterations to look up element zero in an RVList that has one million elements. </p>
+</div><!-- fragment --><p> Unlike, for example, a C++-based FVList implementation, it is impossible for the FVList or VList, which are value types, to know if the list has been "copied" or not. In case the list has been copied, changing any element requires a copy to be made of the VListBlock that contains that element, as well as any subsequent blocks (in this example, only the last block must be copied). Thus, the above example produces a lot of garbage very quickly; in fact the rate of garbage production is (very roughly) proportional to the list length. The performance will be equally bad if you repeatedly remove the last item and then re-add it. </p>
+<p>Since this kind of problem tends to get worse as the list gets larger, Phil Bagwell proposed using a two- or three-dimentional list arrangement so that no single block could exceed a certain size. I have not implemented that suggestion due to lack of free time and because I did not understand the details of his suggested implementation, but I have placed a size limit of 1024 elements on any given block. Unfortunately, this means that some operations listed below degrade toward O(N) when the list is large, most notably including the indexer, which requires over 1000 iterations to look up element zero in a VList that has one million elements. </p>
 <p>Due to the slow performance you get from operations like this, I decided to implement FWList, a mutable version of the FVList, which I'll discuss later. </p>
 <p>Similarly to a persistent linked list, </p><ul>
 <li>
-Adding an item to the front of a VList or the end of an RVList is always O(1) in time, and often O(1) in space (though, unlike a linked list, it may be much more) </li>
+Adding an item to the front of a VList or the end of a VList is always O(1) in time, and often O(1) in space (though, unlike a linked list, it may be much more) </li>
 <li>
-Removing an item from the front of a VList or the end of an RVList is O(1) in time, although space not necessarily reclaimed. </li>
+Removing an item from the front of a VList or the end of a VList is O(1) in time, although space not necessarily reclaimed. </li>
 <li>
-Adding or removing an item at the end of a VList or the front of an RVList is O(N) and requires making a copy of the entire list. </li>
+Adding or removing an item at the end of a VList or the front of an VList is O(N) and requires making a copy of the entire list. </li>
 <li>
-Inserting or removing a list of M items at the end of a VList or the front of an RVList is O(N + M). </li>
+Inserting or removing a list of M items at the end of a VList or the front of a VList is O(N + M). </li>
 <li>
 Changing an item at an arbitrary position should be avoided, as it performs as poorly as inserting or removing an item at that position. </li>
 </ul>
@@ -156,13 +156,13 @@ Getting the list length is typically O(log N), but O(1) in my version </li>
 If a sublist points somewhere within a larger list, its index within the larger list can be obtained in between O(1) and O(log N) time. Consequently, reverse enumeration is possible without creating a temporary stack or list. </li>
 </ul>
 <p>Also, VLists can (in the best cases) store data almost as compactly as ordinary arrays. </p>
-<p>I suspect FVList(of T) and RVList(of T) almost always outperforms LinkedList(of T) in both time and space, if you are always adding and removing items at the correct end of the list. And it should perform as well as List(of T) in some situations while providing an illusion of immutability that List(of T) can't. For lists of 0 to 2 items, FVList and RVList use less space than List(of T) (in fact, no object is allocated for an empty FVList or RVList.) </p>
+<p>I suspect FVList(of T) and VList(of T) almost always outperforms LinkedList(of T) in both time and space, if you are always adding and removing items at the correct end of the list. And it should perform as well as List(of T) in some situations while providing an illusion of immutability that List(of T) can't. For lists of 0 to 2 items, FVList and VList use less space than List(of T) (in fact, no object is allocated for an empty FVList or VList.) </p>
 <p>The FWList is built on the same foundation as the FVList (a linked list of VListBlock objects whose size increases exponentially), but it allows you to modify the list just like List&lt;T&gt;. FWList is a hybrid mutable-immutable data structure: a single list can be partly mutable and partly immutable. More specifically, a FWList is conceptually divided into two "halves": the front half is mutable, and the tail half is immutable. The two halves need not be the same size (in fact, very often one half is zero-size). </p>
 <p>Because some or all of a FWList can be immutable, a VList can be converted to a FWList, or vice versa, in typically O(log N) time. If you modify a FWList after calling its ToFVList() method, a portion of the list is first copied into a mutable block and then modified, and this copy operation typically takes O(N) time. </p>
-<p>RWList is like FWList except that new items are added at index Count instead of index zero. The head of a FWList is at index 0 and is returned from the First property; the head of an RWList is at index Count-1 and is returned from the Last property. </p>
+<p>WList is like FWList except that new items are added at index Count instead of index zero. The head of a FWList is at index 0 and is returned from the First property; the head of an WList is at index Count-1 and is returned from the Last property. </p>
 <p>VListBlock implements a single "node" or "sub-array" within a VList. It contains a fixed-size array. When adding a new item to a VListBlock that is already full, a new empty VListBlock is created (with a larger array), whose _prior reference points to the old VListBlock. See Phil Bagwell's paper (or Wikipedia) for details. </p>
-<p>VListBlock adds one new member to the structure Phil Bagwell described, PriorCount, a count of elements in other (smaller) lists to which this list is linked. This makes TotalCount an O(1) operation instead of O(log N), which is necessary so that RVList[i] and RWList[i] are O(1) on average. </p>
-<p>Independent instances of FVList, RVList, FWList and RWList can be accessed from independent threads even though they may share some of the same memory. Individual instances of these objects, however, are not synchronized. </p>
+<p>VListBlock adds one new member to the structure Phil Bagwell described, PriorCount, a count of elements in other (smaller) lists to which this list is linked. This makes TotalCount an O(1) operation instead of O(log N), which is necessary so that VList[i] and WList[i] are O(1) on average. </p>
+<p>Independent instances of FVList, VList, FWList and WList can be accessed from independent threads even though they may share some of the same memory. Individual instances of these objects, however, are not synchronized. </p>
 <p>A few LINQ-style methods like Select and Where are implemented on the four data structures. These are provided to optimize functional code that takes an input list and produces an output list, but might not actually change the list. If all, or the tail, of the output is the same as the output, then the output list will share memory with the input list. </p>
 <p>Note that unlike LINQ methods, these methods are greedy. They perform the requested operation immediately, not as-needed. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
@@ -214,7 +214,7 @@ Public Member Functions</h2></td></tr>
 abstract bool&#160;</td><td class="memItemRight" valign="bottom"><b>FGet</b> (int index, int localCount, ref T value)</td></tr>
 <tr class="separator:af6baf3395a1bc8dc07b68a24675862eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad17c5164b37d0b8ddeacb8433b07ae78"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#ad17c5164b37d0b8ddeacb8433b07ae78">RGet</a> (int index, int localCount)</td></tr>
-<tr class="memdesc:ad17c5164b37d0b8ddeacb8433b07ae78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item at distance 'index' from the back (beginning of an RVList) <a href="#ad17c5164b37d0b8ddeacb8433b07ae78">More...</a><br /></td></tr>
+<tr class="memdesc:ad17c5164b37d0b8ddeacb8433b07ae78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets an item at distance 'index' from the back (beginning of a VList) <a href="#ad17c5164b37d0b8ddeacb8433b07ae78">More...</a><br /></td></tr>
 <tr class="separator:ad17c5164b37d0b8ddeacb8433b07ae78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8000708f5618a4d1478ac30a5c75b63c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8000708f5618a4d1478ac30a5c75b63c"></a>
 abstract bool&#160;</td><td class="memItemRight" valign="bottom"><b>RGet</b> (int index, int localCount, ref T value)</td></tr>
@@ -238,7 +238,7 @@ FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRa
 <tr class="memdesc:a786c68e77ff95b433c00a470612cea29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears all mutable items in this chain, and clears the mutable flag. If this block owns mutable items in prior blocks, they are cleared too. <a href="#a786c68e77ff95b433c00a470612cea29">More...</a><br /></td></tr>
 <tr class="separator:a786c68e77ff95b433c00a470612cea29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="memItemLeft" align="right" valign="top">abstract T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8058c3c6e74a5ddeb0de9a170cf3cc16">Front</a> (int localCount)</td></tr>
-<tr class="memdesc:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "front" item in a FVList/FWList associated with this block (or back item of a RVList) where localCount is the number of items in the FVList's first block.  <a href="#a8058c3c6e74a5ddeb0de9a170cf3cc16">More...</a><br /></td></tr>
+<tr class="memdesc:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "front" item in a FVList/FWList associated with this block (or back item of a VList) where localCount is the number of items in the FVList's first block.  <a href="#a8058c3c6e74a5ddeb0de9a170cf3cc16">More...</a><br /></td></tr>
 <tr class="separator:a8058c3c6e74a5ddeb0de9a170cf3cc16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d65ba48b36502b81d4273f6d291d44a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d65ba48b36502b81d4273f6d291d44a"></a>
 virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int _localCount, Predicate&lt; T &gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
@@ -267,9 +267,9 @@ static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>T
 <tr class="memitem:abd5cc060806dd8ad69f7bd678137de4d"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#abd5cc060806dd8ad69f7bd678137de4d">InsertRange</a> (VListBlock&lt; T &gt; self, int localCount, IList&lt; T &gt; items, int distanceFromFront, bool isRVList)</td></tr>
 <tr class="memdesc:abd5cc060806dd8ad69f7bd678137de4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a list of items in the middle of a FVList, where localCount is the number of items in the FVList's first block and distanceFromFront is the insertion position (0=front).  <a href="#abd5cc060806dd8ad69f7bd678137de4d">More...</a><br /></td></tr>
 <tr class="separator:abd5cc060806dd8ad69f7bd678137de4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af81c386ce03cedf0543a940a60ee66f3"><td class="memItemLeft" align="right" valign="top">static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af81c386ce03cedf0543a940a60ee66f3">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IEnumerator&lt; T &gt; items)</td></tr>
-<tr class="memdesc:af81c386ce03cedf0543a940a60ee66f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable RVList (not a FVList). <a href="#af81c386ce03cedf0543a940a60ee66f3">More...</a><br /></td></tr>
-<tr class="separator:af81c386ce03cedf0543a940a60ee66f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d70df73f23e8695e5b0810368e8073a"><td class="memItemLeft" align="right" valign="top">static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a7d70df73f23e8695e5b0810368e8073a">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IEnumerator&lt; T &gt; items)</td></tr>
+<tr class="memdesc:a7d70df73f23e8695e5b0810368e8073a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable VList (not a FVList). <a href="#a7d70df73f23e8695e5b0810368e8073a">More...</a><br /></td></tr>
+<tr class="separator:a7d70df73f23e8695e5b0810368e8073a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4defe27114f0c15484817b4afac04e72"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a4defe27114f0c15484817b4afac04e72">AddRange</a> (VListBlock&lt; T &gt; self, int localCount, IList&lt; T &gt; items, bool isRVList)</td></tr>
 <tr class="memdesc:a4defe27114f0c15484817b4afac04e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a list of items to an immutable FVList. <a href="#a4defe27114f0c15484817b4afac04e72">More...</a><br /></td></tr>
 <tr class="separator:a4defe27114f0c15484817b4afac04e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -279,20 +279,20 @@ static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>T
 <tr class="memitem:a8f289aee67d4b75a35b10e5d8a14ef1a"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8f289aee67d4b75a35b10e5d8a14ef1a">FindNextBlock</a> (ref FVList&lt; T &gt; subList, FVList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
 <tr class="memdesc:a8f289aee67d4b75a35b10e5d8a14ef1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the block that comes before 'subList' in the direction of the larger list, 'list'.  <a href="#a8f289aee67d4b75a35b10e5d8a14ef1a">More...</a><br /></td></tr>
 <tr class="separator:a8f289aee67d4b75a35b10e5d8a14ef1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a840855e3f481f9cf70f6299206ed5c20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a840855e3f481f9cf70f6299206ed5c20"></a>
-static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>FindNextBlock</b> (ref RVList&lt; T &gt; subList, RVList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
-<tr class="separator:a840855e3f481f9cf70f6299206ed5c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70d27060b917570a5bba5f85b437ed50"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70d27060b917570a5bba5f85b437ed50"></a>
+static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>FindNextBlock</b> (ref VList&lt; T &gt; subList, VList&lt; T &gt; list, out int localCountOfSubList)</td></tr>
+<tr class="separator:a70d27060b917570a5bba5f85b437ed50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a7617036d10a5eb9bfcf2aa0bc98add"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a7617036d10a5eb9bfcf2aa0bc98add"></a>
 static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (FVList&lt; T &gt; subList, FVList&lt; T &gt; list)</td></tr>
 <tr class="separator:a6a7617036d10a5eb9bfcf2aa0bc98add"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9e1bfed3b5b6595df1b83f9c572a87d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9e1bfed3b5b6595df1b83f9c572a87d"></a>
-static RVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (RVList&lt; T &gt; subList, RVList&lt; T &gt; list)</td></tr>
-<tr class="separator:af9e1bfed3b5b6595df1b83f9c572a87d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af045098188b8f54e070ec458aba3d6b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af045098188b8f54e070ec458aba3d6b0"></a>
+static VList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BackUpOnce</b> (VList&lt; T &gt; subList, VList&lt; T &gt; list)</td></tr>
+<tr class="separator:af045098188b8f54e070ec458aba3d6b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70c51be7a71c9b0ce5afe1d23005ba43"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a70c51be7a71c9b0ce5afe1d23005ba43">EnsureImmutable</a> (VListBlock&lt; T &gt; self, int localCount)</td></tr>
 <tr class="memdesc:a70c51be7a71c9b0ce5afe1d23005ba43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an immutable FVList with the specified parameters, modifying blocks if necessary. <a href="#a70c51be7a71c9b0ce5afe1d23005ba43">More...</a><br /></td></tr>
 <tr class="separator:a70c51be7a71c9b0ce5afe1d23005ba43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a332d4f58527a64091468f82d86503152"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a332d4f58527a64091468f82d86503152">EnsureMutable</a> (WListProtected&lt; T &gt; w, int mutablesNeeded)</td></tr>
-<tr class="memdesc:a332d4f58527a64091468f82d86503152"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that at least the specified number of items at the front of a FWList or RWList are mutable and owned by the list. <a href="#a332d4f58527a64091468f82d86503152">More...</a><br /></td></tr>
+<tr class="memdesc:a332d4f58527a64091468f82d86503152"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that at least the specified number of items at the front of a FWList or WList are mutable and owned by the list. <a href="#a332d4f58527a64091468f82d86503152">More...</a><br /></td></tr>
 <tr class="separator:a332d4f58527a64091468f82d86503152"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4a01a84b7d5f2b0d84969b6314430ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4a01a84b7d5f2b0d84969b6314430ff"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>MutableCount</b> (WListProtected&lt; T &gt; w)</td></tr>
@@ -447,7 +447,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 
 </div>
 </div>
-<a class="anchor" id="af81c386ce03cedf0543a940a60ee66f3"></a>
+<a class="anchor" id="a7d70df73f23e8695e5b0810368e8073a"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -455,7 +455,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static RVList&lt;T&gt; Loyc.Collections.VListBlock&lt; T &gt;.AddRange </td>
+          <td class="memname">static VList&lt;T&gt; Loyc.Collections.VListBlock&lt; T &gt;.AddRange </td>
           <td>(</td>
           <td class="paramtype">VListBlock&lt; T &gt;&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -485,7 +485,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Adds a list of items to an immutable RVList (not a FVList).</p>
+<p>Adds a list of items to an immutable VList (not a FVList).</p>
 <p>This method is for use by immutable RVLists only.</p>
 
 <p>References <a class="el" href="namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9">Loyc.Collections.Add</a>.</p>
@@ -712,7 +712,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Ensures that at least the specified number of items at the front of a FWList or RWList are mutable and owned by the list.</p>
+<p>Ensures that at least the specified number of items at the front of a FWList or WList are mutable and owned by the list.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mutablesNeeded</td><td>Number of mutable items required.</td></tr>
@@ -837,7 +837,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the "front" item in a FVList/FWList associated with this block (or back item of a RVList) where localCount is the number of items in the FVList's first block. </p>
+<p>Returns the "front" item in a FVList/FWList associated with this block (or back item of a VList) where localCount is the number of items in the FVList's first block. </p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1VListBlockArray_3_01T_01_4.html#a9a7a7fd40578adf30d019cf4f90c0533">Loyc.Collections.VListBlockArray&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a52edeceb732a0b3ed8ee776ae6bdc4ab">Loyc.Collections.VListBlockOfTwo&lt; T &gt;</a>.</p>
 
@@ -954,7 +954,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 <p>Inserts a list of items in the middle of a FVList, where localCount is the number of items in the FVList's first block and distanceFromFront is the insertion position (0=front). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">isRVList</td><td>Indicates the insertion order. If isRVList==true, the items[0] is inserted first (which is appropriate for an RVList), otherwise it is inserted last (which is appropriate for a FVList)</td></tr>
+    <tr><td class="paramname">isRVList</td><td>Indicates the insertion order. If isRVList==true, the items[0] is inserted first (which is appropriate for a VList), otherwise it is inserted last (which is appropriate for a FVList)</td></tr>
   </table>
   </dd>
 </dl>
@@ -1012,7 +1012,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
   <table class="params">
     <tr><td class="paramname">w</td><td>List that needs items</td></tr>
     <tr><td class="paramname">count</td><td>Number of items to add</td></tr>
-    <tr><td class="paramname">newBlockSizeLimit</td><td>Limit on size of new block(s); normally VListBlockArray.MAX_BLOCK_LEN (this parameter is used by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a332d4f58527a64091468f82d86503152" title="Ensures that at least the specified number of items at the front of a FWList or RWList are mutable an...">EnsureMutable()</a>).</td></tr>
+    <tr><td class="paramname">newBlockSizeLimit</td><td>Limit on size of new block(s); normally VListBlockArray.MAX_BLOCK_LEN (this parameter is used by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a332d4f58527a64091468f82d86503152" title="Ensures that at least the specified number of items at the front of a FWList or WList are mutable and...">EnsureMutable()</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -1258,7 +1258,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 </table>
 </div><div class="memdoc">
 
-<p>Gets an item at distance 'index' from the back (beginning of an RVList)</p>
+<p>Gets an item at distance 'index' from the back (beginning of a VList)</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Collections_1_1VListBlockArray_3_01T_01_4.html#a830a93478fffed54fcc9d2675866eb4d">Loyc.Collections.VListBlockArray&lt; T &gt;</a>, and <a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a06aaca8297b68f39815940aadcef1cc8">Loyc.Collections.VListBlockOfTwo&lt; T &gt;</a>.</p>
 
@@ -1420,7 +1420,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 
 <p>number of immutable elements in our local array, plus a "mutable" flag in bit 30.</p>
 <p>Aside from the mutable flag, this value only increases, never decreases. </p>
-<p>If the some or all of the block is mutable, _immCount bit 30 is set (0x40000000), and the low bits contain the number of immutable items. In that case the total number of items in use, including mutable items, is only known by the FWList or RWList that encapsulates the block. </p>
+<p>If the some or all of the block is mutable, _immCount bit 30 is set (0x40000000), and the low bits contain the number of immutable items. In that case the total number of items in use, including mutable items, is only known by the FWList or WList that encapsulates the block. </p>
 <p>The mutable flag is part of this field instead of being a separate flag for two reasons: (1) Saving space. A separate boolean would enlarge the object 4 bytes. (2) High-performance thread safety. Instead of using locks, I use interlocked changes to obtain thread safety. </p>
 <p>I don't know how fast or slow .NET locking is, but I assume you can't get faster than a single Interlocked.CompareExchange, so I have designed thread safety around _immCount. </p>
 <p>I hate trying to guarantee thread safety because I don't know how to prove correctness. I know that thread safety must be considered for at least the following operations: </p><ul>
@@ -1433,9 +1433,9 @@ Reserving mutable items in a list: two threads may do this at once, or an immuta
 <p>A mutable block can be made immutable again by clearing bit 30. No interlocked exchange is required for this, since any thread that notices bit 30 is set will not attempt to modify this field in the first place. </p>
 <p>We need not worry about thread safety in order to obtain the immutable tail of a list (or equivalently, to remove items from the "front") because that operation doesn't make use of this field (Remember, each instance of VList has its own private _localCount.) Nor do we need to worry about enumerating or modifying an immutable list (the latter is just an illusion, after all). </p>
 <p>I have not concerned myself with thread safety when a single VList instance (whether mutable or immutable) is accessed from multiple threads, because doing so is not supported. It occurs to me, however, that there could be security concerns if untrusted code is given access to any kind of VList; e.g. perhaps malicious code could corrupt a VListBlock somehow by exploiting lack of thread safety. </p>
-<p>Theoretically you shouldn't modify an FWList/RWList while it is being enumerated, but the danger is limited to an incorrect sequence of items being returned from the enumerator; a "subList is not within 
+<p>Theoretically you shouldn't modify an FWList/WList while it is being enumerated, but the danger is limited to an incorrect sequence of items being returned from the enumerator; a "subList is not within 
 list" exception is also possible. </p>
-<p>Important things to note: (1) once items are switched from mutable to immutable, they can never be made mutable again, since there is no way to know if any immutable VList references still exist. (2) mutable items always belong to exactly one FWList or one RWList, but a VListBlock doesn't know what FWList it belongs to. A FWList or RWList is detached from its VListBlock when Clear() is called, making the block immutable again. (3) if not all the items in a VListBlock are mutable, then the Prior list is guaranteed to be immutable. In other words, mutable and immutable items are not interleaved; mutable items are always at the "front" and immutable items are always at the "back" (which is the beginning of an RVList or end of an FVList). (4) When the mutable flag is set, _immCount appears to be a very large number. Code that uses _immCount directly instead of calling ImmCount is taking advantage of that fact. </p>
+<p>Important things to note: (1) once items are switched from mutable to immutable, they can never be made mutable again, since there is no way to know if any immutable VList references still exist. (2) mutable items always belong to exactly one FWList or one WList, but a VListBlock doesn't know what FWList it belongs to. A FWList or WList is detached from its VListBlock when Clear() is called, making the block immutable again. (3) if not all the items in a VListBlock are mutable, then the Prior list is guaranteed to be immutable. In other words, mutable and immutable items are not interleaved; mutable items are always at the "front" and immutable items are always at the "back" (which is the beginning of a VList or end of an FVList). (4) When the mutable flag is set, _immCount appears to be a very large number. Code that uses _immCount directly instead of calling ImmCount is taking advantage of that fact. </p>
 
 <p>Referenced by <a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af613016ac9ecb1f638d1acbc00d40e83">Loyc.Collections.VListBlock&lt; T &gt;.Transform()</a>.</p>
 
@@ -1599,7 +1599,7 @@ list" exception is also possible. </p>
 
 <p>Gets/sets the specified value at the specified index of this block's array, or, if localIndex is negative, searches recursively in previous blocks for the desired index.</p>
 <p>A FVList computes localIndex as FVList._localCount-1-index. </p>
-<p>FVList/RVList is responsible for checking that the user's index is valid and throwing IndexOutOfRangeException if not. </p>
+<p>FVList/VList is responsible for checking that the user's index is valid and throwing IndexOutOfRangeException if not. </p>
 <p>The setter can only be called on mutable indices! </p>
 
 </div>
@@ -1630,7 +1630,7 @@ list" exception is also possible. </p>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:45 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:51 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

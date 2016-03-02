@@ -243,7 +243,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="memdesc:a1b43c4a6ddadf3ab8fe3333aee405969"><td class="mdescLeft">&#160;</td><td class="mdescRight">"{}" Creates a scope. <br /></td></tr>
 <tr class="separator:a1b43c4a6ddadf3ab8fe3333aee405969"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78be31dfce1d8092cb12368259070939"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a78be31dfce1d8092cb12368259070939">IndexBracks</a> = GSymbol.Get(&quot;_[]&quot;)</td></tr>
-<tr class="memdesc:a78be31dfce1d8092cb12368259070939"><td class="mdescLeft">&#160;</td><td class="mdescRight">foo[1] &lt;=&gt; &lt;tt&gt;[](foo, 1) and int[] &lt;=&gt; #of(&lt;tt&gt;[], int)  <a href="#a78be31dfce1d8092cb12368259070939">More...</a><br /></td></tr>
+<tr class="memdesc:a78be31dfce1d8092cb12368259070939"><td class="mdescLeft">&#160;</td><td class="mdescRight">foo[1, A] &lt;=&gt; &lt;tt&gt;_[](foo, 1, A), but in a type context, Foo[] &lt;=&gt; #of(&lt;tt&gt;[], Foo)  <a href="#a78be31dfce1d8092cb12368259070939">More...</a><br /></td></tr>
 <tr class="separator:a78be31dfce1d8092cb12368259070939"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25615887d2c9b4753c8b29d07f67ed40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25615887d2c9b4753c8b29d07f67ed40"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a25615887d2c9b4753c8b29d07f67ed40">Array</a> = GSymbol.Get(&quot;[]&quot;)</td></tr>
@@ -257,6 +257,21 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a9ebcb88817e2b3d2cd9259fcc54da952">TwoDimensionalArray</a> = GSymbol.Get(&quot;[,]&quot;)</td></tr>
 <tr class="memdesc:a9ebcb88817e2b3d2cd9259fcc54da952"><td class="mdescLeft">&#160;</td><td class="mdescRight">"[,]" int[,] &lt;=&gt; #of(&lt;tt&gt;[,], int) <br /></td></tr>
 <tr class="separator:a9ebcb88817e2b3d2cd9259fcc54da952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68ecc8b429d671012701bb846422b2e6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68ecc8b429d671012701bb846422b2e6"></a>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a68ecc8b429d671012701bb846422b2e6">Async</a> = GSymbol.Get(&quot;#async&quot;)</td></tr>
+<tr class="memdesc:a68ecc8b429d671012701bb846422b2e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">[#async] Task Foo(); &lt;=&gt; async Task Foo(); <br /></td></tr>
+<tr class="separator:a68ecc8b429d671012701bb846422b2e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40e50d494d14d9787c8e2295aea408f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40e50d494d14d9787c8e2295aea408f8"></a>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a40e50d494d14d9787c8e2295aea408f8">Await</a> = GSymbol.Get(&quot;await&quot;)</td></tr>
+<tr class="memdesc:a40e50d494d14d9787c8e2295aea408f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">await(x); &lt;=&gt; await x; (TENTATIVE: should this be changed to #await?) <br /></td></tr>
+<tr class="separator:a40e50d494d14d9787c8e2295aea408f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a7a4f0187c1f7fa1ca8fc49971dccc5b8">NullIndexBracks</a> = GSymbol.Get(&quot;?[]&quot;)</td></tr>
+<tr class="memdesc:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">&lt;tt&gt;?[](foo, #(1, A)) &lt;=&gt; foo?[1, A] (TENTATIVE, may be changed later)  <a href="#a7a4f0187c1f7fa1ca8fc49971dccc5b8">More...</a><br /></td></tr>
+<tr class="separator:a7a4f0187c1f7fa1ca8fc49971dccc5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affd0628335f3f317ef8954f09ecd9dff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="affd0628335f3f317ef8954f09ecd9dff"></a>
+static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#affd0628335f3f317ef8954f09ecd9dff">InitializerAssignment</a> = GSymbol.Get(&quot;[]=&quot;)</td></tr>
+<tr class="memdesc:affd0628335f3f317ef8954f09ecd9dff"><td class="mdescLeft">&#160;</td><td class="mdescRight">&lt;tt&gt;[]=(0, 1, x) &lt;=&gt; [0, 1]=x <br /></td></tr>
+<tr class="separator:affd0628335f3f317ef8954f09ecd9dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aff3159e20b6c4b8de5a29ada18e47a3a">AltList</a> = GSymbol.Get(&quot;#&quot;)</td></tr>
 <tr class="memdesc:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight"># is used for lists of things in definition constructs, e.g. <code>#class(Derived, #(Base, IEnumerable), {...})</code>. For a time, #tuple was used for this purpose; the problem is that a find-and-replace operation intended to find run-time tuples could accidentally match one of these lists. So I decided to dedicate # for use inside special constructs; its meaning depends on context.  <a href="#aff3159e20b6c4b8de5a29ada18e47a3a">More...</a><br /></td></tr>
 <tr class="separator:aff3159e20b6c4b8de5a29ada18e47a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -419,11 +434,11 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="separator:a1a2c2083e93ccb361f38162ddde112d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67830e7e484161917444e93ced605698"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a67830e7e484161917444e93ced605698"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a67830e7e484161917444e93ced605698">Continue</a> = GSymbol.Get(&quot;#continue&quot;)</td></tr>
-<tr class="memdesc:a67830e7e484161917444e93ced605698"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #continue; &lt;=&gt; continue; <br /></td></tr>
+<tr class="memdesc:a67830e7e484161917444e93ced605698"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #continue(); &lt;=&gt; continue; <br /></td></tr>
 <tr class="separator:a67830e7e484161917444e93ced605698"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab84080680179aab3c395a65a216a4666"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab84080680179aab3c395a65a216a4666"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666">Break</a> = GSymbol.Get(&quot;#break&quot;)</td></tr>
-<tr class="memdesc:ab84080680179aab3c395a65a216a4666"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #break; &lt;=&gt; break; <br /></td></tr>
+<tr class="memdesc:ab84080680179aab3c395a65a216a4666"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #break(); &lt;=&gt; break; <br /></td></tr>
 <tr class="separator:ab84080680179aab3c395a65a216a4666"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac0e8fcc1f2fa9ee093aa8688f82483c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac0e8fcc1f2fa9ee093aa8688f82483c"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aac0e8fcc1f2fa9ee093aa8688f82483c">Goto</a> = GSymbol.Get(&quot;#goto&quot;)</td></tr>
@@ -459,11 +474,11 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="separator:afddb6f44849db45db0f8ccc61d5c99a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa0d9ba6adcc1db34dc234239a306a1e2"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa0d9ba6adcc1db34dc234239a306a1e2">Try</a> = GSymbol.Get(&quot;#try&quot;)</td></tr>
-<tr class="memdesc:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #try({...}, #catch(@``, {...})); &lt;=&gt; try {...} catch {...} <br /></td></tr>
+<tr class="memdesc:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #try({...}, #catch(&lt;tt&gt;, @, {...})); &lt;=&gt; try {...} catch {...} <br /></td></tr>
 <tr class="separator:aa0d9ba6adcc1db34dc234239a306a1e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa35426e37b6ed6db5d49dd319f37dbb0"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#aa35426e37b6ed6db5d49dd319f37dbb0">Catch</a> = GSymbol.Get(&quot;#catch&quot;)</td></tr>
-<tr class="memdesc:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#catch" catch clause of #try statement: #catch(#var(Exception,e), {...}) <br /></td></tr>
+<tr class="memdesc:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">"#catch" catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...}) <br /></td></tr>
 <tr class="separator:aa35426e37b6ed6db5d49dd319f37dbb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3af6a9b6d7fee3e1ffb2bc1ef699358f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3af6a9b6d7fee3e1ffb2bc1ef699358f"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a3af6a9b6d7fee3e1ffb2bc1ef699358f">Finally</a> = GSymbol.Get(&quot;#finally&quot;)</td></tr>
@@ -509,7 +524,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="separator:a79be8a501e81e4626f613ec68e35674e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8c4f4491a71aef6c9ed49fcb22ae4f33"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a8c4f4491a71aef6c9ed49fcb22ae4f33">Property</a> = GSymbol.Get(&quot;#property&quot;)</td></tr>
-<tr class="memdesc:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #property(#int32, Foo, { get; }) &lt;=&gt; int Foo { get; } <br /></td></tr>
+<tr class="memdesc:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">e.g. #property(#int32, Foo, @``, { get; }) &lt;=&gt; int Foo { get; } <br /></td></tr>
 <tr class="separator:a8c4f4491a71aef6c9ed49fcb22ae4f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c8f4eb707e150d0b4c5811fda159c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a43c8f4eb707e150d0b4c5811fda159c3"></a>
 static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#a43c8f4eb707e150d0b4c5811fda159c3">Where</a> = GSymbol.Get(&quot;#where&quot;)</td></tr>
@@ -655,8 +670,31 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 </table>
 </div><div class="memdoc">
 
-<p>foo[1] &lt;=&gt; &lt;tt&gt;[](foo, 1) and int[] &lt;=&gt; #of(&lt;tt&gt;[], int) </p>
+<p>foo[1, A] &lt;=&gt; &lt;tt&gt;_[](foo, 1, A), but in a type context, Foo[] &lt;=&gt; #of(&lt;tt&gt;[], Foo) </p>
 <p>"_[]" indexing operator </p>
+
+</div>
+</div>
+<a class="anchor" id="a7a4f0187c1f7fa1ca8fc49971dccc5b8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.CodeSymbols.NullIndexBracks = GSymbol.Get(&quot;?[]&quot;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>&lt;tt&gt;?[](foo, #(1, A)) &lt;=&gt; foo?[1, A] (TENTATIVE, may be changed later) </p>
+<p>"?[]" indexing operator of C# 6 </p>
 
 </div>
 </div>
@@ -685,7 +723,7 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -5,5 +5,5 @@ var searchData=
   ['quadrance_3c_20t_2c_20m_20_3e',['Quadrance&lt; T, M &gt;',['../classLoyc_1_1Geometry_1_1PointExt.html#a66352735d866dd786539276202a931be',1,'Loyc::Geometry::PointExt']]],
   ['questionmark',['QuestionMark',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a306a3682a3eff3b6500545a5afd18596',1,'Loyc::Syntax::CodeSymbols']]],
   ['quickrun',['QuickRun',['../classLoyc_1_1LLParserGenerator_1_1LLLPG.html#a6c43f243f012693ac20312a00a9c31d5',1,'Loyc::LLParserGenerator::LLLPG']]],
-  ['quoteunprintableliterals',['QuoteUnprintableLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a0c25febd2b6f590ab53672a25df27327',1,'Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals()'],['../classEcs_1_1EcsNodePrinter.html#aed9662d830c09dc2503ab28c65f40a27',1,'Ecs.EcsNodePrinter.QuoteUnprintableLiterals()']]]
+  ['quoteunprintableliterals',['QuoteUnprintableLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a0c25febd2b6f590ab53672a25df27327',1,'Loyc.Syntax.Les.LesNodePrinter.QuoteUnprintableLiterals()'],['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a92a936865bd918ebcd1d4e6cffe02304',1,'Loyc.Ecs.EcsNodePrinter.QuoteUnprintableLiterals()']]]
 ];

@@ -19,7 +19,5 @@ var searchData=
   ['reversedlistsource_3c_20t_20_3e',['ReversedListSource&lt; T &gt;',['../classLoyc_1_1Collections_1_1ReversedListSource_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['rule',['Rule',['../classLoyc_1_1LLParserGenerator_1_1Rule.html',1,'Loyc::LLParserGenerator']]],
   ['ruleref',['RuleRef',['../classLoyc_1_1LLParserGenerator_1_1RuleRef.html',1,'Loyc::LLParserGenerator']]],
-  ['runtests',['RunTests',['../classLoyc_1_1MiniTest_1_1RunTests.html',1,'Loyc::MiniTest']]],
-  ['rvlist_3c_20t_20_3e',['RVList&lt; T &gt;',['../structLoyc_1_1Collections_1_1RVList_3_01T_01_4.html',1,'Loyc::Collections']]],
-  ['rwlist_3c_20t_20_3e',['RWList&lt; T &gt;',['../classLoyc_1_1Collections_1_1RWList_3_01T_01_4.html',1,'Loyc::Collections']]]
+  ['runtests',['RunTests',['../classLoyc_1_1MiniTest_1_1RunTests.html',1,'Loyc::MiniTest']]]
 ];

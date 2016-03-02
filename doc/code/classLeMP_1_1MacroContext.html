@@ -109,17 +109,17 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a97a3d3efd3a36f28d05a5a58ea6c804d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97a3d3efd3a36f28d05a5a58ea6c804d"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CurrentNode</b> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx)</td></tr>
 <tr class="separator:a97a3d3efd3a36f28d05a5a58ea6c804d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf279bb68596f90487b6a34064a5ca19"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;<br class="typebreak" />
-, RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#aaf279bb68596f90487b6a34064a5ca19">GetArgsAndBody</a> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx, bool orRemainingNodes)</td></tr>
-<tr class="memdesc:aaf279bb68596f90487b6a34064a5ca19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits the current node into a pair of "argument" and "body" lists, potentially treating ctx.RemainingNodes as the "body" list. <a href="#aaf279bb68596f90487b6a34064a5ca19">More...</a><br /></td></tr>
-<tr class="separator:aaf279bb68596f90487b6a34064a5ca19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab12abbd7a04756033be8e9d7f1940b13"><td class="memItemLeft" align="right" valign="top">static IEnumerable<br class="typebreak" />
-&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#ab12abbd7a04756033be8e9d7f1940b13">GetOptions</a> (RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; optionList)</td></tr>
-<tr class="memdesc:ab12abbd7a04756033be8e9d7f1940b13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms an option list in the format <code>option1(v1), option2(v2)</code> or <code>option1: v1, option2: v2</code> into a sequence of (key, value) pairs. If the format of a given node is invalid, this function yields <code>(null, node)</code>. <a href="#ab12abbd7a04756033be8e9d7f1940b13">More...</a><br /></td></tr>
-<tr class="separator:ab12abbd7a04756033be8e9d7f1940b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;<br class="typebreak" />
+, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#a645c9e0b5a4d7f7fccf6885147fcb307">GetArgsAndBody</a> (this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> ctx, bool orRemainingNodes)</td></tr>
+<tr class="memdesc:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits the current node into a pair of "argument" and "body" lists, potentially treating ctx.RemainingNodes as the "body" list. <a href="#a645c9e0b5a4d7f7fccf6885147fcb307">More...</a><br /></td></tr>
+<tr class="separator:a645c9e0b5a4d7f7fccf6885147fcb307"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1536a9346e03f3adc67d822deaf99ace"><td class="memItemLeft" align="right" valign="top">static IEnumerable<br class="typebreak" />
+&lt; KeyValuePair&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1MacroContext.html#a1536a9346e03f3adc67d822deaf99ace">GetOptions</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; optionList)</td></tr>
+<tr class="memdesc:a1536a9346e03f3adc67d822deaf99ace"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms an option list in the format <code>option1(v1), option2(v2)</code> or <code>option1: v1, option2: v2</code> into a sequence of (key, value) pairs. If the format of a given node is invalid, this function yields <code>(null, node)</code>. <a href="#a1536a9346e03f3adc67d822deaf99ace">More...</a><br /></td></tr>
+<tr class="separator:a1536a9346e03f3adc67d822deaf99ace"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aaf279bb68596f90487b6a34064a5ca19"></a>
+<a class="anchor" id="a645c9e0b5a4d7f7fccf6885147fcb307"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -127,7 +127,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt;, RVList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetArgsAndBody </td>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt;, VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetArgsAndBody </td>
           <td>(</td>
           <td class="paramtype">this <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>&#160;</td>
           <td class="paramname"><em>ctx</em>, </td>
@@ -164,13 +164,13 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </div><!-- fragment --><p> This is stored as a call node with a body, in braces, as its final parameter, i.e. it is equivalent to </p><div class="fragment"><div class="line">macroName(args, { stmts; });</div>
 </div><!-- fragment --><p> A similar, but more general feature called "superexpressions" exists in LES. </p>
 <p>Some macros would additionally like to apply themselves to all remaining nodes in the current list of statements or expressions, i.e. </p><div class="fragment"><div class="line">macroName(args); stmts;</div>
-</div><!-- fragment --><p> <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> supports this through the <a class="el" href="interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1" title="Gets or sets a value that indicates whether to drop all remaining node after the current one when the...">IMacroContext.DropRemainingNodes</a> and <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a68425589ee09ef9f92085782abf8b53b" title="Gets a list of the remaining nodes (arguments/statements or attributes) after this point in the code ...">IMacroContext.RemainingNodes</a> APIs. If your macro wants to apply itself to all remaining statements or expressions in the current sequence of nodes, it can set the DropRemainingNodes property to true and then simply incorporate RemainingNodes into its own output (if you need to return multiple statements from your macro, use <code>list.AsLNode(CodeSymbols.Splice)</code> to convert a RVList{LNode} to an LNode.) </p>
+</div><!-- fragment --><p> <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> supports this through the <a class="el" href="interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1" title="Gets or sets a value that indicates whether to drop all remaining node after the current one when the...">IMacroContext.DropRemainingNodes</a> and <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a68425589ee09ef9f92085782abf8b53b" title="Gets a list of the remaining nodes (arguments/statements or attributes) after this point in the code ...">IMacroContext.RemainingNodes</a> APIs. If your macro wants to apply itself to all remaining statements or expressions in the current sequence of nodes, it can set the DropRemainingNodes property to true and then simply incorporate RemainingNodes into its own output (if you need to return multiple statements from your macro, use <code>list.AsLNode(CodeSymbols.Splice)</code> to convert a VList{LNode} to an LNode.) </p>
 <p>This extension method helps you by detecting whether the current node has a body in braces or not. If the braces are present, the returned pair consists of the args shortened by one (i.e. <code>ctx.CurrentNode().Args.WithoutLast(1)</code>) and the Args of the "{}" braces node. Otherwise, <code>ctx.CurrentNode().Args</code> is the first item in the pair. </p>
 <p>In the latter case, if <code>orRemainingNodes</code> then this method sets <code>ctx.DropRemainingNodes</code> to true and uses <code>ctx.RemainingNodes</code> as the second list. Otherwise the second list is left blank. </p>
 
 </div>
 </div>
-<a class="anchor" id="ab12abbd7a04756033be8e9d7f1940b13"></a>
+<a class="anchor" id="a1536a9346e03f3adc67d822deaf99ace"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -180,7 +180,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
         <tr>
           <td class="memname">static IEnumerable&lt;KeyValuePair&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; &gt; LeMP.MacroContext.GetOptions </td>
           <td>(</td>
-          <td class="paramtype">RVList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
+          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
           <td class="paramname"><em>optionList</em></td><td>)</td>
           <td></td>
         </tr>
@@ -205,7 +205,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 23 2016 09:35:41 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Mar 2 2016 14:55:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
