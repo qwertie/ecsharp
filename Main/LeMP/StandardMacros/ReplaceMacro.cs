@@ -68,7 +68,7 @@ namespace LeMP
 		/// <param name="replacementCount">Number of replacements that occurred.</param>
 		/// <returns>The result of applying the replacements.</returns>
 		/// <remarks><see cref="LNodeExt.MatchesPattern"/> is used for matching.</remarks>
-		public static RVList<LNode> Replace(RVList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
+		public static VList<LNode> Replace(VList<LNode> stmts, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			// This list is used to support simple token replacement in TokenTrees
 			_tokenTreeRepls = InternalList<Triplet<Symbol, LNode, int>>.Empty;
@@ -90,7 +90,7 @@ namespace LeMP
 		public static LNode Replace(LNode stmt, Pair<LNode, LNode>[] patterns, out int replacementCount)
 		{
 			CheckParam.IsNotNull("stmt", stmt);
-			return Replace(new RVList<LNode>(stmt), patterns, out replacementCount)[0];
+			return Replace(new VList<LNode>(stmt), patterns, out replacementCount)[0];
 		}
 
 		static LNode TryReplaceHere(LNode node, Pair<LNode, LNode>[] patterns, MMap<Symbol, LNode> temp)
@@ -114,7 +114,7 @@ namespace LeMP
 		}
 		public static LNode TryReplaceHere(LNode node, LNode pattern, LNode replacement, MMap<Symbol, LNode> captures, Pair<LNode, LNode>[] allPatterns)
 		{
-			RVList<LNode> attrs;
+			VList<LNode> attrs;
 			if (LNodeExt.MatchesPattern(node, pattern, ref captures, out attrs)) {
 				foreach (var pair in captures) {
 					var input = pair.Value.AsList(S.Splice);

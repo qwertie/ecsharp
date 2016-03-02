@@ -27,7 +27,7 @@ namespace Loyc.Collections
 	/// <para/>
 	/// <remarks>See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
-	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
+	/// a FWList (at index 0) or the back of an WList (at index Count-1).</remarks>
 	public sealed class FWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<FWList<T>>, ICloneable
 	{
 		protected override int AdjustWListIndex(int index, int size) { return index; }
@@ -104,9 +104,9 @@ namespace Loyc.Collections
 		{
 			return new FVList<T>.Enumerator(InternalVList);
 		}
-		public RVList<T>.Enumerator ReverseEnumerator()
+		public VList<T>.Enumerator ReverseEnumerator()
 		{
-			return new RVList<T>.Enumerator(InternalVList);
+			return new VList<T>.Enumerator(InternalVList);
 		}
 
 		#endregion
@@ -138,7 +138,7 @@ namespace Loyc.Collections
 		/// items.</summary>
 		/// <param name="keep">A function that chooses which items to include
 		/// (exclude items by returning false).</param>
-		/// <returns>The list after filtering has been applied. The original RVList
+		/// <returns>The list after filtering has been applied. The original VList
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
@@ -175,7 +175,7 @@ namespace Loyc.Collections
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
+		/// original VList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
@@ -194,7 +194,7 @@ namespace Loyc.Collections
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
+		/// original VList structure is not modified.</returns>
 		public FWList<Out> Select<Out>(Func<T, Out> map)
 		{
 			FWList<Out> newList = new FWList<Out>();
@@ -245,21 +245,21 @@ namespace Loyc.Collections
 			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove);
 		}
 
-		/// <summary>Returns this list as an RWList, which effectively reverses 
+		/// <summary>Returns this list as an WList, which effectively reverses 
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public static explicit operator RWList<T>(FWList<T> list) { return list.ToRWList(); }
-		/// <summary>Returns this list as an RWList, which effectively reverses 
+		public static explicit operator WList<T>(FWList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as an WList, which effectively reverses 
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public RWList<T> ToRWList()
+		public WList<T> ToWList()
 		{
 			VListBlock<T>.EnsureImmutable(Block, LocalCount);
-			return new RWList<T>(Block, LocalCount, false);
+			return new WList<T>(Block, LocalCount, false);
 		}
 
 		/// <summary>Returns the FWList converted to an array.</summary>
@@ -395,7 +395,7 @@ namespace Loyc.Collections
 		{
 			// Make a single block mutable
 			FVList<int> v = new FVList<int>(0, 1);
-			FWList<int> w = v.ToWList();
+			FWList<int> w = v.ToFWList();
 			ExpectList(w, 0, 1);
 			w[0] = 2;
 			ExpectList(w, 2, 1);
@@ -403,7 +403,7 @@ namespace Loyc.Collections
 
 			// Make another block, make the front block mutable, then the block-of-2
 			v.Push(-1);
-			w = v.ToWList();
+			w = v.ToFWList();
 			w[0] = 3;
 			ExpectList(w, 3, 0, 1);
 			Assert.That(w.WithoutFirst(1) == v.WithoutFirst(1));
@@ -424,7 +424,7 @@ namespace Loyc.Collections
 			// a linked list!) and the capacity of each block is 2.
 			Assert.AreEqual(7, v.BlockChainLength);
 
-			w = v.ToWList();
+			w = v.ToFWList();
 			w.AddRange(new int[] { 5, 4, 3, 2, 1 });
 			Assert.AreEqual(w.Count, 12);
 			ExpectList(w, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6);
@@ -472,10 +472,10 @@ namespace Loyc.Collections
 			// converted to mutable
 			FVList<int> oneTwo = new FVList<int>(1, 2);
 			FVList<int> threeFour = new FVList<int>(3, 4);
-			list = oneTwo.ToWList();
+			list = oneTwo.ToFWList();
 			list.InsertRange(1, threeFour);
 			ExpectList(list, 1, 3, 4, 2);
-			list = threeFour.ToWList();
+			list = threeFour.ToFWList();
 			list.InsertRange(2, oneTwo);
 			ExpectList(list, 3, 4, 1, 2);
 

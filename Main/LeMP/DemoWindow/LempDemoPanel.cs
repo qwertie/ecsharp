@@ -163,7 +163,7 @@ namespace TextEditor
 
 			protected override void WriteOutput(InputOutput io)
 			{
-				RVList<LNode> results = io.Output;
+				VList<LNode> results = io.Output;
 
 				using (LNode.PushPrinter(io.OutPrinter)) {
 					Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", NewlineString,

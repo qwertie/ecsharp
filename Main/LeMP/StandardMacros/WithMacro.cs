@@ -24,15 +24,15 @@ namespace LeMP
 				return null;
 
 			LNode tmp = F.Id(NextTempName());
-			RWList<LNode> stmts = braces.Args.ToRWList();
+			WList<LNode> stmts = braces.Args.ToWList();
 			stmts = stmts.SmartSelect(stmt => 
 				stmt.ReplaceRecursive(expr => {
 					if (expr.Calls(S.Dot, 1))
-						return expr.WithArgs(new RVList<LNode>(tmp, expr.Args.Last));
+						return expr.WithArgs(new VList<LNode>(tmp, expr.Args.Last));
 					return null;
 				}));
 			stmts.Insert(0, F.Var(null, tmp.Name, fn.Args[0]));
-			return F.Braces(stmts.ToRVList());
+			return F.Braces(stmts.ToVList());
 		}
 	}
 }

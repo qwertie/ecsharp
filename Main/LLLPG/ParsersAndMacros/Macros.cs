@@ -179,7 +179,7 @@ namespace Loyc.LLPG
 				if (LeMP.Prelude.Les.Macros.IsComplexId(name))
 					name = F.Call(name); // def requires an argument list
 				
-				RVList<LNode> args = name.Args;
+				VList<LNode> args = name.Args;
 				name = name.Target;
 				
 				LNode newBody = ParseRuleBody(node.Args[1], context);
@@ -237,7 +237,7 @@ namespace Loyc.LLPG
 			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
-					new RVList<LNode> { returnType, name, args, newBody }, 
+					new VList<LNode> { returnType, name, args, newBody }, 
 					node.Range, node.Style).WithAttrs(attrs);
 			else
 				return null;

@@ -77,7 +77,7 @@ namespace LeMP
 			if (node.Equals(LNode.Missing))
 				return LNode_Missing;
 
-			RVList<LNode> creationArgs = new RVList<LNode>();
+			VList<LNode> creationArgs = new VList<LNode>();
 
 			// Translate attributes (if any)
 			var attrList = MaybeQuoteList(node.Attrs, substitutions);
@@ -129,17 +129,17 @@ namespace LeMP
 			return result;
 		}
 
-		static LNode MaybeQuoteList(RVList<LNode> list, bool substitutions)
+		static LNode MaybeQuoteList(VList<LNode> list, bool substitutions)
 		{
 			if (list.IsEmpty)
 				return null;
 			else if (substitutions && list.Any(a => VarArgExpr(a) != null))
 			{
 				if (list.Count == 1)
-					return F.Call(S.New, F.Call(F.Of(F.Id("RVList"), F.Id("LNode")), VarArgExpr(list[0])));
+					return F.Call(LNode_List, VarArgExpr(list[0]));
 				// If you write something like quote(Foo($x, $(..y), $z)), a special
 				// output style is used to accommodate the variable argument list.
-				LNode argList = F.Call(S.New, F.Call(F.Of(F.Id("RVList"), F.Id("LNode"))));
+				LNode argList = F.Call(LNode_List);
 				foreach (LNode arg in list) {
 					var vae = VarArgExpr(arg);
 					if (vae != null)

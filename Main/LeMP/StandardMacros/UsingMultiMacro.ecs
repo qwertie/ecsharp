@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;             // For Symbol
-using Loyc.Collections; // For RVList<LNode>
+using Loyc.Collections; // For VList<LNode>
 using Loyc.Syntax;      // For LNode
 using Loyc.Ecs;         // For EcsLanguageService
 

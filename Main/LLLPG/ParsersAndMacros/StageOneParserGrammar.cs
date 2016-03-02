@@ -1,7 +1,8 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LLLPG version: 1.3.2.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.4.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
@@ -20,6 +21,7 @@ namespace Loyc.LLParserGenerator
 	using S = CodeSymbols;
 	internal partial class StageOneParser
 	{
+		static readonly TT EOF = TT.EOF;
 		void Infix(ref LNode a, Symbol op, LNode b)
 		{
 			a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
@@ -103,7 +105,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			#line 92 "StageOneParserGrammar.ecs"
-			var seq = RVList<LNode>.Empty;
+			var seq = LNode.List();
 			#line default
 			// Line 93: (LoopExpr (TT.Separator)?)*
 			for (;;) {

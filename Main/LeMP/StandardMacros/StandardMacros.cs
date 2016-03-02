@@ -33,7 +33,7 @@ namespace LeMP
 		// declaration in `output` of a temporary variable to hold the value. 
 		// If `value` looks simple (according to LooksLikeSimpleValue), this 
 		// fn returns value and leaves output unchanged.
-		protected static LNode MaybeAddTempVarDecl(LNode value, RWList<LNode> output)
+		protected static LNode MaybeAddTempVarDecl(LNode value, WList<LNode> output)
 		{
 			if (!LooksLikeSimpleValue(value)) {
 				LNode tmpId;
@@ -97,7 +97,7 @@ namespace LeMP
 			if (args.Slice(0, args.Count - 1).Any(n => n.IsCall))
 				return Reject(sink, node, "All arguments to ##() or concat() must be identifiers or literals (except the last one)");
 
-			RVList<LNode> attrs = node.Attrs;
+			VList<LNode> attrs = node.Attrs;
 			LNode arg = null;
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < args.Count; i++)
@@ -191,7 +191,7 @@ namespace LeMP
 		{
 			if (!MathEx.IsInRange(@if.ArgCount, 2, 3))
 				return null;
-			RVList<LNode> conds = MacroProcessor.Current.ProcessSynchronously(@if.Args[0]);
+			VList<LNode> conds = MacroProcessor.Current.ProcessSynchronously(@if.Args[0]);
 			object @bool;
 			if (conds.Count == 1 && (@bool = conds[0].Value) is bool)
 			{

@@ -251,7 +251,7 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private void PrintArgList(RVList<LNode> args, bool stmtMode, char leftDelim, char rightDelim)
+		private void PrintArgList(VList<LNode> args, bool stmtMode, char leftDelim, char rightDelim)
 		{
 			_out.Write(leftDelim, true);
 			if (stmtMode) {

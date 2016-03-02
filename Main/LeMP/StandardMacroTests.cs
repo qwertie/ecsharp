@@ -125,11 +125,11 @@ namespace LeMP
 			TestEcs("rawQuote { Func($Foo); }",
 					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
 			TestEcs("quote(Foo($first, $(..rest)));",
-				   @"LNode.Call((Symbol) ""Foo"", new RVList<LNode>().Add(first).AddRange(rest));");
+				   @"LNode.Call((Symbol) ""Foo"", new VList<LNode>().Add(first).AddRange(rest));");
 			TestEcs("quote(Foo($(..args)));",
-				   @"LNode.Call((Symbol) ""Foo"", new RVList<LNode>(args));");
+				   @"LNode.Call((Symbol) ""Foo"", new VList<LNode>(args));");
 			TestEcs("quote { [$(..attrs)] public X; }",
-				   @"LNode.Id(new RVList<LNode>().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
+				   @"LNode.Id(new VList<LNode>().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
 		}
 
 		[Test]
@@ -218,12 +218,12 @@ namespace LeMP
 					case ($(..args),):                           Tuple(args);
 				}", @"{
 					LNode a, b, c, first = null, last;
-					RVList<LNode> args;
+					VList<LNode> args;
 					if (code.CallsMin(CodeSymbols.Tuple, 3) && (a = code.Args[0]) != null && (b = code.Args[1]) != null && (c = code.Args[code.Args.Count - 1]) != null) {
-						args = new RVList<LNode>(code.Args.Slice(2, code.Args.Count - 3));
+						args = new VList<LNode>(code.Args.Slice(2, code.Args.Count - 3));
 						Three(a, b, c);
-					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new RVList<LNode>(code.Args.Slice(1))).IsEmpty | true 
-						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new RVList<LNode>(code.Args.Slice(1))).IsEmpty | true)
+					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new VList<LNode>(code.Args.Slice(1))).IsEmpty | true 
+						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new VList<LNode>(code.Args.Slice(1))).IsEmpty | true)
 						Tuple(first, args);
 					else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
 						args = code.Args.WithoutLast(1);
@@ -245,7 +245,7 @@ namespace LeMP
 						Other();
 				}", @"{
 					LNode op          = null, tmp_"+n+@" = null, x, x_ = null, y = null;
-					RVList<LNode> attrs;
+					VList<LNode> attrs;
 					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
 						Assign(x, y);
 					else if ( 
@@ -270,7 +270,7 @@ namespace LeMP
 						Handler();
 				}", @"{
 					LNode typeName;
-					RVList<LNode> attrs, baseTypes, body;
+					VList<LNode> attrs, baseTypes, body;
 					if ((attrs = classDecl.Attrs).IsEmpty | true && classDecl.Calls(CodeSymbols.Class, 3) && 
 						(typeName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && 
 						classDecl.Args[2].Calls(CodeSymbols.Braces))
@@ -1169,7 +1169,7 @@ namespace LeMP
 			var lemp = NewLemp(maxExpand);
 			using (ParsingService.PushCurrent(inLang))
 			{
-				var inputCode = new RVList<LNode>(inLang.Parse(input, _sink));
+				var inputCode = new VList<LNode>(inLang.Parse(input, _sink));
 				var results = lemp.ProcessSynchronously(inputCode);
 				var expectCode = outLang.Parse(expected, _sink);
 				if (!results.SequenceEqual(expectCode))

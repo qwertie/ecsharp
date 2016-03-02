@@ -14,7 +14,7 @@ namespace LeMP
 	{
 		static readonly Symbol TupleMakers = (Symbol)"StandardMacros.TupleMakers";
 		static readonly Symbol DefaultTupleMaker = (Symbol)"StandardMacros.DefaultTupleMaker";
-		static readonly LNode id_Tuple = LNode.Id("Tuple"), Tuple_Create = LNode.Call(S.Dot, new RVList<LNode>(id_Tuple, LNode.Id("Create")));
+		static readonly LNode id_Tuple = LNode.Id("Tuple"), Tuple_Create = LNode.Call(S.Dot, new VList<LNode>(id_Tuple, LNode.Id("Create")));
 
 		static IList<Pair<LNode, LNode>> MaybeInitTupleMakers(IDictionary<object, object> properties)
 		{
@@ -115,7 +115,7 @@ namespace LeMP
 		{
 			var a = node.Args;
 			if (a.Count == 2 && a[0].CallsMin(S.Tuple, 1)) {
-				var output = new RWList<LNode>();
+				var output = new WList<LNode>();
 				var tuple = a[0].Args;
 				var rhs = a[1];
 				
@@ -129,7 +129,7 @@ namespace LeMP
 					else
 						output.Add(F.Call(S.Assign, tuple[i], itemi));
 				}
-				return F.Call(S.Splice, output.ToRVList());
+				return F.Call(S.Splice, output.ToVList());
 			}
 			return null;
 		}

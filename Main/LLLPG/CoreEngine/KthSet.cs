@@ -107,8 +107,8 @@ namespace Loyc.LLParserGenerator
 		/// </remarks>
 		protected class Transition : ICloneable<Transition>
 		{
-			public Transition(Pred prevPosition, IPGTerminalSet set, GrammarPos position) : this(prevPosition, set, RVList<AndPred>.Empty, position) { }
-			public Transition(Pred prevPosition, IPGTerminalSet set, RVList<AndPred> andPreds, GrammarPos position)
+			public Transition(Pred prevPosition, IPGTerminalSet set, GrammarPos position) : this(prevPosition, set, VList<AndPred>.Empty, position) { }
+			public Transition(Pred prevPosition, IPGTerminalSet set, VList<AndPred> andPreds, GrammarPos position)
 			{
 				PrevPosition = prevPosition;
 				Debug.Assert(position != null);
@@ -117,7 +117,7 @@ namespace Loyc.LLParserGenerator
 				AndPreds = andPreds;
 			}
 			public IPGTerminalSet Set;
-			public RVList<AndPred> AndPreds;
+			public VList<AndPred> AndPreds;
 			public GrammarPos Position;
 			public Pred PrevPosition; // null if there were multiple starting positions
 

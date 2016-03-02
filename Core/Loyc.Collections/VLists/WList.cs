@@ -20,7 +20,7 @@ using Loyc.MiniTest;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// RWList is the mutable variant of the RVList data structure.
+	/// WList is the mutable variant of the VList data structure.
 	/// </summary>
 	/// <remarks>
 	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
@@ -28,22 +28,22 @@ namespace Loyc.Collections
 	/// <para/>
 	/// See the remarks of <see cref="VListBlock{T}"/> for more information
 	/// about VLists and WLists. It is most efficient to add items to the front of
-	/// a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
-	public sealed class RWList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<RWList<T>>, ICloneable
+	/// a FWList (at index 0) or the back of an WList (at index Count-1).</remarks>
+	public sealed class WList<T> : WListBase<T>, IListAndListSource<T>, ICloneable<WList<T>>, ICloneable
 	{
 		protected override int AdjustWListIndex(int index, int size) { return Count - size - index; }
 
 		#region Constructors
 
-		internal RWList(VListBlock<T> block, int localCount, bool isOwner)
+		internal WList(VListBlock<T> block, int localCount, bool isOwner)
 			: base(block, localCount, isOwner) {}
-		public RWList() {} // empty list is all null
-		public RWList(T itemZero, T itemOne)
+		public WList() {} // empty list is all null
+		public WList(T itemZero, T itemOne)
 		{
 			Block = new VListBlockOfTwo<T>(itemZero, itemOne, true);
 			LocalCount = 2;
 		}
-		public RWList(IEnumerable<T> list)
+		public WList(IEnumerable<T> list)
 		{
 			AddRange(list);
 		}
@@ -94,9 +94,9 @@ namespace Loyc.Collections
 		#region IEnumerable<T> Members
 
 		protected override IEnumerator<T> GetIEnumerator() { return GetEnumerator(); }
-		public new RVList<T>.Enumerator GetEnumerator()
+		public new VList<T>.Enumerator GetEnumerator()
 		{
-			return new RVList<T>.Enumerator(InternalVList); 
+			return new VList<T>.Enumerator(InternalVList); 
 		}
 		public FVList<T>.Enumerator ReverseEnumerator()
 		{
@@ -118,9 +118,9 @@ namespace Loyc.Collections
 
 		#region ICloneable Members
 
-		public RWList<T> Clone() {
+		public WList<T> Clone() {
 			VListBlock<T>.EnsureImmutable(Block, LocalCount);
-			return new RWList<T>(Block, LocalCount, false);
+			return new WList<T>(Block, LocalCount, false);
 		}
 		object ICloneable.Clone() { return Clone(); }
 
@@ -132,16 +132,16 @@ namespace Loyc.Collections
 		/// items.</summary>
 		/// <param name="filter">A function that chooses which items to include
 		/// (exclude items by returning false).</param>
-		/// <returns>The list after filtering has been applied. The original RVList
+		/// <returns>The list after filtering has been applied. The original VList
 		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed (which are the
 		/// last or "tail" items in a WList), those N items are typically not 
 		/// copied, but shared between the existing list and the new one.
 		/// </remarks>
-		public RWList<T> Where(Predicate<T> filter)
+		public WList<T> Where(Predicate<T> filter)
 		{
-			RWList<T> newList = new RWList<T>();
+			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
 				Block.Where(LocalCount, filter, newList);
 			return newList;
@@ -157,9 +157,9 @@ namespace Loyc.Collections
 		/// items it is passed those N items are typically not copied, but shared 
 		/// between the existing list and the new one.
 		/// </remarks>
-		public RWList<T> WhereSelect(Func<T,Maybe<T>> filter)
+		public WList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
-			RWList<T> newList = new RWList<T>();
+			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
 				Block.WhereSelect(LocalCount, filter, newList);
 			return newList;
@@ -168,7 +168,7 @@ namespace Loyc.Collections
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
+		/// original VList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
@@ -176,9 +176,9 @@ namespace Loyc.Collections
 		/// typically not copied, but shared between the existing list and the 
 		/// new one.
 		/// </remarks>
-		public RWList<T> SmartSelect(Func<T, T> map)
+		public WList<T> SmartSelect(Func<T, T> map)
 		{
-			RWList<T> newList = new RWList<T>();
+			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
 				Block.SmartSelect(LocalCount, map, newList);
 			return newList;
@@ -187,10 +187,10 @@ namespace Loyc.Collections
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
-		public RWList<Out> Select<Out>(Func<T, Out> map)
+		/// original VList structure is not modified.</returns>
+		public WList<Out> Select<Out>(Func<T, Out> map)
 		{
-			RWList<Out> newList = new RWList<Out>();
+			WList<Out> newList = new WList<Out>();
 			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
 			return newList;
 		}
@@ -199,9 +199,9 @@ namespace Loyc.Collections
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
 		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
-		public RWList<T> Transform(VListTransformer<T> x)
+		public WList<T> Transform(VListTransformer<T> x)
 		{
-			RWList<T> newList = new RWList<T>();
+			WList<T> newList = new WList<T>();
 			VListBlock<T>.Transform(Block, LocalCount, x, true, newList);
 			return newList;
 		}
@@ -242,9 +242,9 @@ namespace Loyc.Collections
 			return item;
 		}
 
-		public RVList<T> WithoutLast(int numToRemove)
+		public VList<T> WithoutLast(int numToRemove)
 		{
-			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove).ToRVList();
+			return VListBlock<T>.EnsureImmutable(Block, LocalCount - numToRemove).ToVList();
 		}
 
 		/// <summary>Returns this list as a FWList, which effectively reverses 
@@ -252,19 +252,19 @@ namespace Loyc.Collections
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public static explicit operator FWList<T>(RWList<T> list) { return list.ToWList(); }
+		public static explicit operator FWList<T>(WList<T> list) { return list.ToFWList(); }
 		/// <summary>Returns this list as a FWList, which effectively reverses 
 		/// the order of the elements.</summary>
 		/// <remarks>This operation marks the items of the list as immutable.
 		/// You can modify either list afterward, but some or all of the list 
 		/// may have to be copied.</remarks>
-		public FWList<T> ToWList()
+		public FWList<T> ToFWList()
 		{
 			VListBlock<T>.EnsureImmutable(Block, LocalCount);
 			return new FWList<T>(Block, LocalCount, false);
 		}
 
-		/// <summary>Returns the RWList converted to an array.</summary>
+		/// <summary>Returns the WList converted to an array.</summary>
 		public T[] ToArray()
 		{
 			return VListBlock<T>.ToArray(Block, LocalCount, true);
@@ -302,11 +302,11 @@ namespace Loyc.Collections
 			// makes part of its tail immutable, but doesn't make it mutable
 			// again. Also, we test operations that don't modify the list.
 
-			RWList<int> list = new RWList<int>();
+			WList<int> list = new WList<int>();
 			Assert.That(list.IsEmpty);
 			
 			// create VListBlockOfTwo
-			list = new RWList<int>(10, 20);
+			list = new WList<int>(10, 20);
 			ExpectList(list, 10, 20);
 
 			// Add()
@@ -319,7 +319,7 @@ namespace Loyc.Collections
 			Assert.AreEqual(2, list.BlockChainLength);
 
 			ExpectList(list, 1, 2, 3);
-			RVList<int> snap = list.ToRVList();
+			VList<int> snap = list.ToVList();
 			ExpectList(snap, 1, 2, 3);
 			
 			// AddRange(), Push(), Pop()
@@ -398,9 +398,9 @@ namespace Loyc.Collections
 		[Test]
 		public void TestFork()
 		{
-			RWList<int> A = new RWList<int>();
+			WList<int> A = new WList<int>();
 			A.AddRange(new int[] { 1, 2, 3 });
-			RWList<int> B = A.Clone();
+			WList<int> B = A.Clone();
 			
 			A.Push(4);
 			ExpectList(B, 1, 2, 3);
@@ -415,8 +415,8 @@ namespace Loyc.Collections
 		public void TestMutabilification()
 		{
 			// Make a single block mutable
-			RVList<int> v = new RVList<int>(1, 0);
-			RWList<int> w = v.ToRWList();
+			VList<int> v = new VList<int>(1, 0);
+			WList<int> w = v.ToWList();
 			ExpectList(w, 1, 0);
 			w[1] = 2;
 			ExpectList(w, 1, 2);
@@ -424,7 +424,7 @@ namespace Loyc.Collections
 
 			// Make another block, make the front block mutable, then the block-of-2
 			v.Push(-1);
-			w = v.ToRWList();
+			w = v.ToWList();
 			w[2] = 3;
 			ExpectList(w, 1, 0, 3);
 			Assert.That(w.WithoutLast(1) == v.WithoutLast(1));
@@ -437,7 +437,7 @@ namespace Loyc.Collections
 			// make some of the immutable blocks mutable. This will cause several
 			// immutable blocks to be consolidated into one mutable block, 
 			// shortening the chain.
-			v = new RVList<int>(6);
+			v = new VList<int>(6);
 			v = v.Add(-1).Tail.Add(5).Add(-1).Tail.Add(4).Add(-1).Tail.Add(3);
 			v = v.Add(-1).Tail.Add(2).Add(-1).Tail.Add(1).Add(-1).Tail.Add(0);
 			ExpectList(v, 6, 5, 4, 3, 2, 1, 0);
@@ -445,7 +445,7 @@ namespace Loyc.Collections
 			// a linked list!) and the capacity of each block is 2.
 			Assert.AreEqual(7, v.BlockChainLength);
 
-			w = v.ToRWList();
+			w = v.ToWList();
 			w.AddRange(new int[] { 1, 2, 3, 4, 5 });
 			Assert.AreEqual(w.Count, 12);
 			ExpectList(w, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5);
@@ -464,7 +464,7 @@ namespace Loyc.Collections
 		[Test]
 		public void TestInsertRemove()
 		{
-			RWList<int> list = new RWList<int>();
+			WList<int> list = new WList<int>();
 			for (int i = 0; i <= 12; i++)
 				list.Insert(0, i);
 			ExpectList(list, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
@@ -484,20 +484,20 @@ namespace Loyc.Collections
 			list[0] = 12;
 			ExpectList(list, 12, 10, 8, 6, 4, 2);
 
-			// Make sure RWList.Clear doesn't disturb FVList
-			RVList<int> v = list.WithoutLast(4);
+			// Make sure WList.Clear doesn't disturb FVList
+			VList<int> v = list.WithoutLast(4);
 			list.Clear();
 			ExpectList(list);
 			ExpectList(v, 12, 10);
 
 			// Some simple InsertRange calls where some immutable items must be
 			// converted to mutable
-			RVList<int> oneTwo = new RVList<int>(1, 2);
-			RVList<int> threeFour = new RVList<int>(3, 4);
-			list = oneTwo.ToRWList();
+			VList<int> oneTwo = new VList<int>(1, 2);
+			VList<int> threeFour = new VList<int>(3, 4);
+			list = oneTwo.ToWList();
 			list.InsertRange(1, threeFour);
 			ExpectList(list, 1, 3, 4, 2);
-			list = threeFour.ToRWList();
+			list = threeFour.ToWList();
 			list.InsertRange(0, oneTwo);
 			ExpectList(list, 1, 2, 3, 4);
 
@@ -508,7 +508,7 @@ namespace Loyc.Collections
 			ExpectList(list, 1, 2, 3, 3, 4, 4, 4, 5, 6, 7, 8, 9);
 			list.RemoveRange(3, 3);
 			ExpectList(list, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-			v = list.ToRVList();
+			v = list.ToVList();
 			list.RemoveRange(5, 4);
 			ExpectList(list, 1, 2, 3, 4, 5);
 			ExpectList(v,    1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -517,8 +517,8 @@ namespace Loyc.Collections
 		[Test]
 		public void TestEmptyListOperations()
 		{
-			RWList<int> a = new RWList<int>();
-			RWList<int> b = new RWList<int>();
+			WList<int> a = new WList<int>();
+			WList<int> b = new WList<int>();
 			a.AddRange(b);
 			a.InsertRange(0, b);
 			a.RemoveRange(0, 0);
@@ -545,10 +545,10 @@ namespace Loyc.Collections
 		[Test]
 		public void TestFalseOwnership()
 		{
-			// This test tries to make sure a RWList doesn't get confused about what 
-			// blocks it owns. It's possible for a RWList to share a partially-mutable 
-			// block that contains mutable items with another RWList, but only one
-			// RWList owns the items.
+			// This test tries to make sure a WList doesn't get confused about what 
+			// blocks it owns. It's possible for a WList to share a partially-mutable 
+			// block that contains mutable items with another WList, but only one
+			// WList owns the items.
 
 			// Case 1: two WLists point to the same block but only one owns it:
 			//
@@ -562,11 +562,11 @@ namespace Loyc.Collections
 			// (The location of "Imm" in each block denotes the highest immutable 
 			// item; this diagram shows there are two immutable items in each 
 			// block)
-			RWList<int> A = new RWList<int>();
+			WList<int> A = new WList<int>();
 			A.Resize(4);
 			for (int i = 0; i < 4; i++)
 				A[i] = i;
-			RWList<int> B = A.Clone();
+			WList<int> B = A.Clone();
 			
 			// B can't add to the second block because it's not the owner, so a 
 			// third block is created when we Add(1).
@@ -600,24 +600,24 @@ namespace Loyc.Collections
 			// returns false. 
 			Assert.That(B.IsOwner && !B.Block.PriorIsOwned);
 			Assert.That(A.IsOwner);
-			Assert.That(B.Block.Prior.ToRVList() == A.WithoutLast(1));
+			Assert.That(B.Block.Prior.ToVList() == A.WithoutLast(1));
 		}
 
 		[Test]
 		public void TestWhere()
 		{
-			RWList<int> one = new RWList<int>(); one.Add(3);
-			RWList<int> two = one.Clone();       two.Add(2);
-			RWList<int> thr = two.Clone();       thr.Add(1);
+			WList<int> one = new WList<int>(); one.Add(3);
+			WList<int> two = one.Clone();       two.Add(2);
+			WList<int> thr = two.Clone();       thr.Add(1);
 			ExpectList(one.Where(delegate(int i) { return false; }));
 			ExpectList(two.Where(delegate(int i) { return false; }));
 			ExpectList(thr.Where(delegate(int i) { return false; }));
-			Assert.That(one.Where(delegate(int i) { return true; }).ToRVList() == one.ToRVList());
-			Assert.That(two.Where(delegate(int i) { return true; }).ToRVList() == two.ToRVList());
-			Assert.That(thr.Where(delegate(int i) { return true; }).ToRVList() == thr.ToRVList());
-			Assert.That(two.Where(delegate(int i) { return i==3; }).ToRVList() == two.WithoutLast(1));
-			Assert.That(thr.Where(delegate(int i) { return i==3; }).ToRVList() == thr.WithoutLast(2));
-			Assert.That(thr.Where(delegate(int i) { return i>1; }).ToRVList() == thr.WithoutLast(1));
+			Assert.That(one.Where(delegate(int i) { return true; }).ToVList() == one.ToVList());
+			Assert.That(two.Where(delegate(int i) { return true; }).ToVList() == two.ToVList());
+			Assert.That(thr.Where(delegate(int i) { return true; }).ToVList() == thr.ToVList());
+			Assert.That(two.Where(delegate(int i) { return i==3; }).ToVList() == two.WithoutLast(1));
+			Assert.That(thr.Where(delegate(int i) { return i==3; }).ToVList() == thr.WithoutLast(2));
+			Assert.That(thr.Where(delegate(int i) { return i>1; }).ToVList() == thr.WithoutLast(1));
 			ExpectList(two.Where(delegate(int i) { return i==2; }), 2);
 			ExpectList(thr.Where(delegate(int i) { return i==2; }), 2);
 		}
@@ -625,9 +625,9 @@ namespace Loyc.Collections
 		[Test]
 		public void TestSelect()
 		{
-			RWList<int> one = new RWList<int>(); one.Add(3);
-			RWList<int> two = one.Clone();       two.Add(2);
-			RWList<int> thr = two.Clone();       thr.Add(1);
+			WList<int> one = new WList<int>(); one.Add(3);
+			WList<int> two = one.Clone();       two.Add(2);
+			WList<int> thr = two.Clone();       thr.Add(1);
 			ExpectList(thr, 3, 2, 1);
 
 			ExpectList(one.Select(delegate(int i) { return i + 1; }), 4);
@@ -637,9 +637,9 @@ namespace Loyc.Collections
 			ExpectList(thr.Select(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0, 0);
 			ExpectList(thr.Select(delegate(int i) { return i == 1 ? 0 : i; }), 3, 2, 0);
 
-			Assert.That(one.SmartSelect(delegate(int i) { return i; }).ToRVList() == one.ToRVList());
-			Assert.That(two.SmartSelect(delegate(int i) { return i; }).ToRVList() == two.ToRVList());
-			Assert.That(thr.SmartSelect(delegate(int i) { return i; }).ToRVList() == thr.ToRVList());
+			Assert.That(one.SmartSelect(delegate(int i) { return i; }).ToVList() == one.ToVList());
+			Assert.That(two.SmartSelect(delegate(int i) { return i; }).ToVList() == two.ToVList());
+			Assert.That(thr.SmartSelect(delegate(int i) { return i; }).ToVList() == thr.ToVList());
 			ExpectList(one.SmartSelect(delegate(int i) { return i + 1; }), 4);
 			ExpectList(two.SmartSelect(delegate(int i) { return i + 1; }), 4, 3);
 			ExpectList(thr.SmartSelect(delegate(int i) { return i + 1; }), 4, 3, 2);
@@ -654,16 +654,16 @@ namespace Loyc.Collections
 		{
 			// Test transforms on 1-item lists. The helper method TestTransform() 
 			// creates a list of the specified length, counting up from 1 at the 
-			// tail. For instance, TestTransform(3, ...) will start with a RWList of 
+			// tail. For instance, TestTransform(3, ...) will start with a WList of 
 			// (3, 2, 1). Its transform function always multiplies the item by 10,
-			// then it returns the next action in the list. RWList<int>.Transform()
+			// then it returns the next action in the list. WList<int>.Transform()
 			// transforms the tail first, so for example,
 			// 
 			//    TestTransform(4, ..., XfAction.Keep, XfAction.Change, 
 			//                          XfAction.Drop, XfAction.Keep);
 			// 
-			// ...should produce a result of (4, 20, 1) as a RWList, which is 
-			// equivalent to the RVList (1, 20, 4).
+			// ...should produce a result of (4, 20, 1) as a WList, which is 
+			// equivalent to the VList (1, 20, 4).
 			
 			// Tests on 1-item lists
 			TestTransform(1, new int[] {},   0, XfAction.Drop);
@@ -702,12 +702,12 @@ namespace Loyc.Collections
 
 		private void TestTransform(int count, int[] expect, int commonTailLength, params XfAction[] actions)
 		{
-			RWList<int> list = new RWList<int>();
+			WList<int> list = new WList<int>();
 			for (int i = 0; i < count; i++)
 				list.Add(i + 1);
 
 			int counter = 0;
-			RWList<int> result =
+			WList<int> result =
 				list.Transform(delegate(int i, ref int item) {
 					if (i >= 0)
 						Assert.AreEqual(list[i], item);

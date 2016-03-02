@@ -26,7 +26,7 @@ namespace LeMP
 						var list = GetNamespaces(stmt[0]);
 						if (list == null)
 							return null;
-						return LNode.Call(CodeSymbols.Splice, new RVList<LNode>(list.Select(namespc => (LNode)LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
+						return LNode.Call(CodeSymbols.Splice, new VList<LNode>(list.Select(namespc => LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
 					} catch (NotSupportedException) {
 						context.Write(Severity.Note, stmt, "Multi-using statement seems malformed. Correct example: `using (System, System.(Text, Linq));`");
 					}
@@ -37,7 +37,7 @@ namespace LeMP
 		{
 			{
 				LNode outerNamespace;
-				RVList<LNode> tupleArgs;
+				VList<LNode> tupleArgs;
 				if (multiName.Calls(CodeSymbols.Tuple)) {
 					tupleArgs = multiName.Args;
 					return tupleArgs.SelectMany(expr => GetNamespaces(expr) ?? Range.Single(expr));

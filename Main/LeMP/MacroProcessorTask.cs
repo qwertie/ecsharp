@@ -117,7 +117,7 @@ namespace LeMP
 
 		#region Public entry points: ProcessFileWithThreadAbort(), ProcessFile(), ProcessRoot()
 
-		public RVList<LNode> ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
+		public VList<LNode> ProcessFileWithThreadAbort(InputOutput io, Action<InputOutput> onProcessed, TimeSpan timeout)
 		{
 			if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
 				return ProcessFile(io, onProcessed);
@@ -132,7 +132,7 @@ namespace LeMP
 				if (thread.Join(timeout)) {
 					onProcessed(io);
 				} else {
-					io.Output = new RVList<LNode>(F.Id("processing_thread_timed_out"));
+					io.Output = new VList<LNode>(F.Id("processing_thread_timed_out"));
 					thread.Abort();
 					thread.Join(timeout);
 				}
@@ -141,11 +141,11 @@ namespace LeMP
 				return io.Output;
 			}
 		}
-		public RVList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
+		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
 			using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Current)) {
 				var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink);
-				var inputRV = new RVList<LNode>(input);
+				var inputRV = new VList<LNode>(input);
 
 				io.Output = ProcessRoot(inputRV);
 				if (onProcessed != null)
@@ -155,18 +155,18 @@ namespace LeMP
 		}
 
 		/// <summary>Top-level macro applicator.</summary>
-		public RVList<LNode> ProcessRoot(RVList<LNode> stmts)
+		public VList<LNode> ProcessRoot(VList<LNode> stmts)
 		{
 			Process(ref stmts, null, true, true, false);
 			return stmts;
 		}
 		public LNode ProcessRoot(LNode stmt)
 		{
-			RVList<LNode> empty = new RVList<LNode>();
+			VList<LNode> empty = new VList<LNode>();
 			return Process(ref empty, null, true, true, false);
 		}
 
-		LNode Process(ref RVList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool areAttributesOrIsTarget)
+		LNode Process(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool areAttributesOrIsTarget)
 		{
 			if (single == null && list.Count == 0)
 				return null; // no-op requested
@@ -266,14 +266,14 @@ namespace LeMP
 				get { var st = _task._ancestorStack; return st[st.Count - 2, null]; }
 			}
 
-			public RVList<LNode> PreProcess(RVList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false)
+			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false)
 			{
 				_task.Process(ref input, null, asRoot, resetOpenNamespaces, areAttributes);
 				return input;
 			}
 			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false)
 			{
-				RVList<LNode> empty = new RVList<LNode>();
+				VList<LNode> empty = new VList<LNode>();
 				return _task.Process(ref empty, input, asRoot, resetOpenNamespaces, isTarget);
 			}
 			
@@ -329,7 +329,7 @@ namespace LeMP
 			public InternalList<MacroResult> Results = InternalList<MacroResult>.Empty;
 
 			// These three fields suport the IMacroContext.RemainingNodes property
-			public RVList<LNode> CurrentNodeList;
+			public VList<LNode> CurrentNodeList;
 			public int CurrentNodeIndex;
 			private IListSource<LNode> _remainingNodes;
 			public IListSource<LNode> RemainingNodes { 
@@ -356,7 +356,7 @@ namespace LeMP
 				Debug.Assert(!IsTarget || !IsAttribute);
 				DropRemainingNodes = false;
 			}
-			public void StartNextListItem(RVList<LNode> currentNodeList, int index, bool isAttribute)
+			public void StartNextListItem(VList<LNode> currentNodeList, int index, bool isAttribute)
 			{
 				CurrentNodeList = currentNodeList;
 				CurrentNodeIndex = index;
@@ -668,12 +668,12 @@ namespace LeMP
 			}
 		}
 
-		RVList<LNode> ApplyMacrosToList(RVList<LNode> list, int maxExpansions, bool areAttributes)
+		VList<LNode> ApplyMacrosToList(VList<LNode> list, int maxExpansions, bool areAttributes)
 		{
-			RVList<LNode> results = list;
+			VList<LNode> results = list;
 			LNode result = null;
 			int i, count;
-			// Share as much of the original RVList as is left unchanged
+			// Share as much of the original VList as is left unchanged
 			for (i = 0, count = list.Count; i < count; i++) {
 				_s.StartNextListItem(list, i, areAttributes);
 				LNode input = list[i];
@@ -698,7 +698,7 @@ namespace LeMP
 			_s.IsAttribute = false;
 			return results;
 		}
-		private void Add(ref RVList<LNode> results, LNode result)
+		private void Add(ref VList<LNode> results, LNode result)
 		{
 			if (result.Calls(S.Splice))
 				results.AddRange(result.Args);
@@ -712,7 +712,7 @@ namespace LeMP
 				return null;
 
 			bool changed = false;
-			RVList<LNode> old;
+			VList<LNode> old;
 			var newAttrs = ApplyMacrosToList(old = node.Attrs, maxExpansions, true);
 			if (newAttrs != old) {
 				node = node.WithAttrs(newAttrs);

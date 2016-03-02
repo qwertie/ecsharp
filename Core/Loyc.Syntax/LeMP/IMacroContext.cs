@@ -105,8 +105,8 @@ namespace LeMP
 		/// stays the same; if true it is cleared to the set of pre-opened 
 		/// namespaces (<see cref="MacroProcessor.PreOpenedNamespaces"/>).</param>
 		/// <remarks>The node(s)</remarks>
-		RVList<LNode> PreProcess(RVList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
-		/// <inheritdoc cref="PreProcess(RVList{LNode}, bool, bool, bool)"/>
+		VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
+		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false);
 
 		/// <summary>Gets information about all macros registered with the macro 
@@ -146,7 +146,7 @@ namespace LeMP
 		/// current sequence of nodes, it can set the DropRemainingNodes property 
 		/// to true and then simply incorporate RemainingNodes into its own output
 		/// (if you need to return multiple statements from your macro, use 
-		/// <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a RVList{LNode} to an 
+		/// <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a VList{LNode} to an 
 		/// LNode.)
 		/// <para/>
 		/// This extension method helps you by detecting whether the current node
@@ -160,17 +160,17 @@ namespace LeMP
 		/// <c>ctx.DropRemainingNodes</c> to true and uses <c>ctx.RemainingNodes</c>
 		/// as the second list. Otherwise the second list is left blank.
 		/// </remarks>
-		public static Pair<RVList<LNode>, RVList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
+		public static Pair<VList<LNode>, VList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
 		{
 			var node = ctx.CurrentNode();
 			var args = node.Args;
 			LNode last = null;
-			RVList<LNode> body = new RVList<LNode>();
+			VList<LNode> body = new VList<LNode>();
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {
 				body = last.Args;
 				args = args.WithoutLast(1);
 			} else if (orRemainingNodes) {
-				body = new RVList<LNode>(ctx.RemainingNodes);
+				body = new VList<LNode>(ctx.RemainingNodes);
 				ctx.DropRemainingNodes = true;
 			}
 			return Pair.Create(args, body);
@@ -184,7 +184,7 @@ namespace LeMP
 		/// #namedArg(option2, v2)</c> in EC# or <c>@:(option1, v1), @:(option2, v2)</c> in LES.
 		/// This function recognizes both forms.
 		/// </remarks>
-		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(RVList<LNode> optionList)
+		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(VList<LNode> optionList)
 		{
 			foreach (var option in optionList) {
 				if ((option.Calls(CodeSymbols.NamedArg, 2) || option.Calls(CodeSymbols.Colon, 2)) && option.Args[0].IsId)

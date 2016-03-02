@@ -89,7 +89,7 @@ namespace Loyc.LLParserGenerator
 				}
 			];
 			private rule LNode SeqExpr() @[
-				{var seq = RVList<LNode>.Empty;}
+				{var seq = LNode.List();}
 				(seq+=LoopExpr ","?)*
 				{
 					if (seq.Count == 1) return seq[0];

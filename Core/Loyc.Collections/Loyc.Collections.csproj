@@ -75,7 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
@@ -86,7 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;DotNet4</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Collections.XML</DocumentationFile>
@@ -160,8 +162,8 @@
     <Compile Include="Sets\Set.cs" />
     <Compile Include="VLists\FVList.cs" />
     <Compile Include="VLists\FWList.cs" />
-    <Compile Include="VLists\RVList.cs" />
-    <Compile Include="VLists\RWList.cs" />
+    <Compile Include="VLists\VList.cs" />
+    <Compile Include="VLists\WList.cs" />
     <Compile Include="VLists\VListBlock.cs" />
     <Compile Include="VLists\VListBlockArray.cs" />
     <Compile Include="VLists\VListBlockOfTwo.cs" />

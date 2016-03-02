@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 
 		protected int _setNameCounter = 0;
 		protected LNodeFactory F;
-		protected RWList<LNode> _classBody;
+		protected WList<LNode> _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
@@ -113,7 +113,7 @@ namespace Loyc.LLParserGenerator
 				} else if ((q = _definedAliases.Where(pair => replacement.Equals(pair.Value))).Any())
 					sink.Write(Severity.Warning, replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
 				_definedAliases[alias] = replacement;
-				return LNode.Call(S.Splice, RVList<LNode>.Empty); // erase alias from output
+				return LNode.Call(S.Splice, VList<LNode>.Empty); // erase alias from output
 			}
 			return null;
 		}
@@ -124,7 +124,7 @@ namespace Loyc.LLParserGenerator
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }
 		public abstract string Example(IPGTerminalSet set);
 
-		public virtual void Begin(RWList<LNode> classBody, ISourceFile sourceFile)
+		public virtual void Begin(WList<LNode> classBody, ISourceFile sourceFile)
 		{
 			_classBody = classBody;
 			F = new LNodeFactory(sourceFile);
@@ -331,7 +331,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 
-			RWList<LNode> stmts = new RWList<LNode>();
+			WList<LNode> stmts = new WList<LNode>();
 			for (int i = 0; i < branchSets.Length; i++)
 			{
 				if (casesToInclude.Contains(i))
@@ -352,9 +352,9 @@ namespace Loyc.LLParserGenerator
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 
-			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToRVList()));
+			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToVList()));
 		}
-		private void AddSwitchHandler(LNode branch, RWList<LNode> stmts)
+		private void AddSwitchHandler(LNode branch, WList<LNode> stmts)
 		{
 			stmts.SpliceAdd(branch, S.Splice);
 			if (EndMayBeReachable(branch))
@@ -425,7 +425,7 @@ namespace Loyc.LLParserGenerator
 			return true;
 		}
 
-		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody)
+		public virtual LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody)
 		{
 			return rule.CreateMethod(methodBody);
 		}
@@ -439,7 +439,7 @@ namespace Loyc.LLParserGenerator
 
 			LNode method = rule.GetMethodSignature();
 			LNode retType = method.Args[0], name = method.Args[1], args = method.Args[2];
-			RVList<LNode> forwardedArgs = ForwardedArgList(args);
+			VList<LNode> forwardedArgs = ForwardedArgList(args);
 			
 			LNode lookahead = F.Id("lookaheadAmt");
 			Debug.Assert(args.Calls(S.AltList));
@@ -453,7 +453,7 @@ namespace Loyc.LLParserGenerator
 			);
 			return method.WithArgs(retType, rule.TryWrapperName, args, body);
 		}
-		static RVList<LNode> ForwardedArgList(LNode args)
+		static VList<LNode> ForwardedArgList(LNode args)
 		{
 			// translates an argument list like (int x, string y) to { x, y }
 			return args.Args.SmartSelect(arg => VarName(arg) ?? arg);

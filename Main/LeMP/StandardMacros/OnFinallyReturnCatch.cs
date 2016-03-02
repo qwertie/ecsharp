@@ -101,19 +101,19 @@ namespace LeMP
 			Pair<LNode, LNode>[] patterns = new Pair<LNode, LNode>[2] {
 				// return; => { <on_handler> return; }
 				new Pair<LNode,LNode>(F.Call(S.Return), varAssigned
-				                ? on_handler.WithArgs(new RVList<LNode>(varDecl)
+				                ? on_handler.WithArgs(new VList<LNode>(varDecl)
 				                      .AddRange(on_handler.Args)
 				                      .Add(F.Call(S.Return, varName)))
 				                : on_handler.PlusArg(F.Call(S.Return))),
 				// return exp; => { <varDecl = $exp> <on_handler> return <varName>; }
 				new Pair<LNode,LNode>(F.Call(S.Return, retExpr),
-				                  on_handler.WithArgs(new RVList<LNode>(
+				                  on_handler.WithArgs(new VList<LNode>(
 				                      varDecl.WithArgChanged(1, F.Call(S.Assign, varName, retExpr)))
 				                      .AddRange(on_handler.Args)
 				                      .Add(F.Call(S.Return, varName))))
 			};
 			int replacementCount = 0;
-			RVList<LNode> output = StandardMacros.Replace(rest.Args, patterns, out replacementCount);
+			VList<LNode> output = StandardMacros.Replace(rest.Args, patterns, out replacementCount);
 			if (replacementCount == 0)
 				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found below this line, so this macro had no effect.");
 			return output.AsLNode(S.Splice);

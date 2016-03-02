@@ -64,7 +64,7 @@ namespace LeMP
 							break;
 						}
 					}
-					var handler = new RVList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
+					var handler = new VList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
 					
 					if (@case.Calls(S.Case) && @case.Args.Count > 0) { 
 						var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
@@ -82,7 +82,7 @@ namespace LeMP
 				}
 				return quote {
 					do
-						$(outputs.ToRVList().AsLNode(S.Braces));
+						$(outputs.ToVList().AsLNode(S.Braces));
 					while (false);
 				};
 			}
@@ -99,7 +99,7 @@ namespace LeMP
 		// This class is for generating code for a single case pattern
 		class CodeGeneratorForMatchCase
 		{
-			internal CodeGeneratorForMatchCase(protected IMacroContext _context, protected LNode _input, protected RVList<LNode> _handler)
+			internal CodeGeneratorForMatchCase(protected IMacroContext _context, protected LNode _input, protected VList<LNode> _handler)
 			{
 				var @break = quote { break; };
 				if (_handler.IsEmpty || !_handler.Last.Equals(@break))
@@ -122,7 +122,7 @@ namespace LeMP
 				// Get the parts of the pattern, e.g. `$x is T(sp)` => varBinding=x, isType=T, sp is returned
 				bool refExistingVar;
 				LNode varBinding, cmpExpr, isType, inRange;
-				RVList<LNode> subPatterns, conditions;
+				VList<LNode> subPatterns, conditions;
 				GetPatternComponents(pattern, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
 
 				// For a pattern like `(varBinding is IsType in A...B)(subPatterns) && conds`, 
@@ -210,7 +210,7 @@ namespace LeMP
 					PutCond(cond);
 			}
 
-			void GetPatternComponents(LNode pattern, out LNode varBinding, out bool refExistingVar, out LNode cmpExpr, out LNode isType, out LNode inRange, out RVList<LNode> subPatterns, out RVList<LNode> conditions)
+			void GetPatternComponents(LNode pattern, out LNode varBinding, out bool refExistingVar, out LNode cmpExpr, out LNode isType, out LNode inRange, out VList<LNode> subPatterns, out VList<LNode> conditions)
 			{
 				// Here's a typical pattern (case expr):
 				//  is Shape(ShapeType.Circle, ref size, Location: p is Point<int>(x, y)):
@@ -230,11 +230,11 @@ namespace LeMP
 				//   conds will have "conds" pushed to the front.
 				// 
 				bool haveSubPatterns = false;
-				subPatterns = RVList<LNode>.Empty;
+				subPatterns = VList<LNode>.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
 
 				// First, look for "pattern && condition"
-				conditions = RVList<LNode>.Empty;
+				conditions = VList<LNode>.Empty;
 				while (pattern.Calls(S.And, 2)) { 
 					conditions.Add(pattern.Args.Last);
 					pattern = pattern.Args[0];
@@ -345,14 +345,14 @@ namespace LeMP
 						finalOutput = new RWList<LNode> { 
 							quote {
 								if ($cond) 
-									$(finalOutput.ToRVList().AsLNode(S.Braces));
+									$(finalOutput.ToVList().AsLNode(S.Braces));
 							}
 						};
 					}
 					else
 						finalOutput.Insert(0, code);
 				}
-				return finalOutput.ToRVList().AsLNode(S.Braces);
+				return finalOutput.ToVList().AsLNode(S.Braces);
 			}
 		}
 

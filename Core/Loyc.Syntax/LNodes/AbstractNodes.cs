@@ -24,14 +24,14 @@ namespace Loyc.Syntax
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return NoValue.Value; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
-		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override VList<LNode> Args { get { return VList<LNode>.Empty; } }
+		public override CallNode WithArgs(VList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
 
 		public abstract override LNode Clone();
-		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public abstract override LNode WithAttrs(VList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
 			if (b == null)
@@ -78,14 +78,14 @@ namespace Loyc.Syntax
 
 		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol Name { get { return GSymbol.Empty; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override RVList<LNode> Args { get { return RVList<LNode>.Empty; } }
-		public override CallNode WithArgs(RVList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override VList<LNode> Args { get { return VList<LNode>.Empty; } }
+		public override CallNode WithArgs(VList<LNode> args) { return new StdComplexCallNode(this, args, Range); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
 
 		public abstract override LNode Clone();
-		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public abstract override LNode WithAttrs(VList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
 			if (b == null)
@@ -139,14 +139,14 @@ namespace Loyc.Syntax
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value { get { return NoValue.Value; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is a CallNode, cannot change Value."); }
 		public abstract override LNode Target { get; }
-		public abstract override RVList<LNode> Args { get; }
-		public override CallNode WithArgs(RVList<LNode> args) { return With(Target, args); }
+		public abstract override VList<LNode> Args { get; }
+		public override CallNode WithArgs(VList<LNode> args) { return With(Target, args); }
 
 		public sealed override void Call(LNodeVisitor visitor)  { visitor.Visit(this); }
 		public sealed override void Call(ILNodeVisitor visitor) { visitor.Visit(this); }
 
 		public abstract override LNode Clone();
-		public abstract override LNode WithAttrs(RVList<LNode> attrs);
+		public abstract override LNode WithAttrs(VList<LNode> attrs);
 		public override bool Equals(LNode b, bool compareStyles)
 		{
 			if (b == null)
@@ -163,7 +163,7 @@ namespace Loyc.Syntax
 		}
 		protected internal override int GetHashCode(int recurse, int styleMask)
 		{
-			RVList<LNode> args = Args, attrs = Attrs;
+			VList<LNode> args = Args, attrs = Attrs;
 			int hash = (args.Count << 3) + attrs.Count;
 			if (recurse > 0) {
 				var target = Target;
@@ -187,7 +187,7 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 		public override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
 		{
-			RVList<LNode> args = Args, newArgs = args.WhereSelect(selector);
+			VList<LNode> args = Args, newArgs = args.WhereSelect(selector);
 			if (args == newArgs)
 				return this;
 			return WithArgs(newArgs);

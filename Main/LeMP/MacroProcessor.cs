@@ -35,7 +35,7 @@ namespace LeMP
 		public IParsingService InputLang;
 		public LNodePrinter OutPrinter;
 		public string OutFileName;
-		public RVList<LNode> Output;
+		public VList<LNode> Output;
 		public override string ToString()
 		{
 			return FileName;
@@ -178,11 +178,11 @@ namespace LeMP
 
 		#endregion
 
-		public RVList<LNode> ProcessSynchronously(LNode stmt)
+		public VList<LNode> ProcessSynchronously(LNode stmt)
 		{
-			return ProcessSynchronously(new RVList<LNode>(stmt));
+			return ProcessSynchronously(new VList<LNode>(stmt));
 		}
-		public RVList<LNode> ProcessSynchronously(RVList<LNode> stmts)
+		public VList<LNode> ProcessSynchronously(VList<LNode> stmts)
 		{
 			return new MacroProcessorTask(this).ProcessRoot(stmts);
 		}
@@ -210,20 +210,20 @@ namespace LeMP
 		/// processed before the method returns.</summary>
 		public void ProcessParallel(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
-			Task<RVList<LNode>>[] tasks = ProcessAsync(sourceFiles, onProcessed);
+			Task<VList<LNode>>[] tasks = ProcessAsync(sourceFiles, onProcessed);
 			for (int i = 0; i < tasks.Length; i++)
 				tasks[i].Wait();
 		}
 
 		/// <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
-		public Task<RVList<LNode>>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
+		public Task<VList<LNode>>[] ProcessAsync(IReadOnlyList<InputOutput> sourceFiles, Action<InputOutput> onProcessed = null)
 		{
 			int parentThreadId = Thread.CurrentThread.ManagedThreadId;
-			Task<RVList<LNode>>[] tasks = new Task<RVList<LNode>>[sourceFiles.Count];
+			Task<VList<LNode>>[] tasks = new Task<VList<LNode>>[sourceFiles.Count];
 			for (int i = 0; i < tasks.Length; i++)
 			{
 				var io = sourceFiles[i];
-				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<RVList<LNode>>(() => {
+				tasks[i] = System.Threading.Tasks.Task.Factory.StartNew<VList<LNode>>(() => {
 					using (ThreadEx.PropagateVariables(parentThreadId))
 						return new MacroProcessorTask(this).ProcessFileWithThreadAbort(io, onProcessed, AbortTimeout);
 				});

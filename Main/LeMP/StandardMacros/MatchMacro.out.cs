@@ -23,10 +23,10 @@ namespace LeMP
 		{
 			{
 				LNode input;
-				RVList<LNode> contents;
+				VList<LNode> contents;
 				if (node.Args.Count == 2 && (input = node.Args[0]) != null && node.Args[1].Calls(CodeSymbols.Braces)) {
 					contents = node.Args[1].Args;
-					var outputs = new RWList<LNode>();
+					var outputs = new WList<LNode>();
 					input = MaybeAddTempVarDecl(input, outputs);
 					int next_i = 0;
 					for (int case_i = 0; case_i < contents.Count; case_i = next_i) {
@@ -42,18 +42,18 @@ namespace LeMP
 								break;
 							}
 						}
-						var handler = new RVList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
+						var handler = new VList<LNode>(contents.Slice(case_i + 1, next_i - (case_i + 1)));
 						if (@case.Calls(S.Case) && @case.Args.Count > 0) {
 							var codeGen = new CodeGeneratorForMatchCase(context, input, handler);
 							foreach (var pattern in @case.Args)
 								outputs.Add(codeGen.GenCodeForPattern(pattern));
 						} else {
-							outputs.Add(LNode.Call(CodeSymbols.Braces, new RVList<LNode>(handler)).SetStyle(NodeStyle.Statement));
+							outputs.Add(LNode.Call(CodeSymbols.Braces, new VList<LNode>(handler)).SetStyle(NodeStyle.Statement));
 							if (next_i < contents.Count)
 								context.Write(Severity.Error, contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
 					}
-					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToRVList().AsLNode(S.Braces), LNode.Literal(false)));
+					return LNode.Call(CodeSymbols.DoWhile, LNode.List(outputs.ToVList().AsLNode(S.Braces), LNode.Literal(false)));
 				}
 			}
 			return null;
@@ -68,8 +68,8 @@ namespace LeMP
 		{
 			protected IMacroContext _context;
 			protected LNode _input;
-			protected RVList<LNode> _handler;
-			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, RVList<LNode> handler)
+			protected VList<LNode> _handler;
+			internal CodeGeneratorForMatchCase(IMacroContext context, LNode input, VList<LNode> handler)
 			{
 				_context = context;
 				_input = input;
@@ -101,7 +101,7 @@ namespace LeMP
 			{
 				bool refExistingVar;
 				LNode varBinding, cmpExpr, isType, inRange;
-				RVList<LNode> subPatterns, conditions;
+				VList<LNode> subPatterns, conditions;
 				GetPatternComponents(pattern, out varBinding, out refExistingVar, out cmpExpr, out isType, out inRange, out subPatterns, out conditions);
 				if (isType != null) {
 					if ((cmpExpr ?? inRange ?? varBinding) != null) {
@@ -162,12 +162,12 @@ namespace LeMP
 				foreach (var cond in conditions)
 					PutCond(cond);
 			}
-			void GetPatternComponents(LNode pattern, out LNode varBinding, out bool refExistingVar, out LNode cmpExpr, out LNode isType, out LNode inRange, out RVList<LNode> subPatterns, out RVList<LNode> conditions)
+			void GetPatternComponents(LNode pattern, out LNode varBinding, out bool refExistingVar, out LNode cmpExpr, out LNode isType, out LNode inRange, out VList<LNode> subPatterns, out VList<LNode> conditions)
 			{
 				bool haveSubPatterns = false;
-				subPatterns = RVList<LNode>.Empty;
+				subPatterns = VList<LNode>.Empty;
 				refExistingVar = pattern.AttrNamed(S.Ref) != null;
-				conditions = RVList<LNode>.Empty;
+				conditions = VList<LNode>.Empty;
 				while (pattern.Calls(S.And, 2)) {
 					conditions.Add(pattern.Args.Last);
 					pattern = pattern.Args[0];
@@ -233,7 +233,7 @@ namespace LeMP
 			}
 			LNode GetOutputAsLNode()
 			{
-				RWList<LNode> finalOutput = _handler.ToRWList();
+				WList<LNode> finalOutput = _handler.ToWList();
 				for (int end = _output.Count - 1; end >= 0; end--) {
 					Mode mode = _output[end].A;
 					LNode code = _output[end].B;
@@ -245,13 +245,13 @@ namespace LeMP
 						for (int i = start + 1; i <= end; i++)
 							cond = LNode.Call(CodeSymbols.And, LNode.List(cond, _output[i].B)).SetStyle(NodeStyle.Operator);
 						end = start;
-						finalOutput = new RWList<LNode> { 
-							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToRVList().AsLNode(S.Braces)))
+						finalOutput = new WList<LNode> { 
+							LNode.Call(CodeSymbols.If, LNode.List(cond, finalOutput.ToVList().AsLNode(S.Braces)))
 						};
 					} else
 						finalOutput.Insert(0, code);
 				}
-				return finalOutput.ToRVList().AsLNode(S.Braces);
+				return finalOutput.ToVList().AsLNode(S.Braces);
 			}
 		}
 	}

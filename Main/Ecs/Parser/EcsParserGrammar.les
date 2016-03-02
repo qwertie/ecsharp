@@ -184,7 +184,7 @@ namespace Loyc.Ecs.Parser
 		@[recognizer(def Scan_TParams())]
 		rule TParams(ref r::LNode)
 		@{
-			{list::RWList!LNode = (new RWList!LNode() { r });}
+			{list::WList!LNode = (new WList!LNode() { r });}
 			{end::Token;}
 			( "<" (list+=DataType ("," list+=DataType)*)? end=">"
 			| "." t:="[" end="]" {list = AppendExprsInside(t, list);}
@@ -192,7 +192,7 @@ namespace Loyc.Ecs.Parser
 			)
 			{
 				start::int = r.Range.StartIndex;
-				r = F.Call(S.Of, list.ToRVList(), start, end.EndIndex);
+				r = F.Call(S.Of, list.ToVList(), start, end.EndIndex);
 			}
 		};
 
@@ -286,7 +286,7 @@ namespace Loyc.Ecs.Parser
 		@[recognizer(def Scan_TParamsDecl())]
 		rule TParamsDecl(ref r::LNode)
 		@{
-			{list::RWList!LNode = (new RWList!LNode() { r });}
+			{list::WList!LNode = (new WList!LNode() { r });}
 			{end::Token;}
 			( "<" (list+=TParamDecl ("," list+=TParamDecl)*)? end=">"
 			| "." t:="[" end="]" {list = AppendExprsInside(t, list);}
@@ -294,17 +294,17 @@ namespace Loyc.Ecs.Parser
 			)
 			{
 				start::int = r.Range.StartIndex;
-				r = F.Call(S.Of, list.ToRVList(), start, end.EndIndex);
+				r = F.Call(S.Of, list.ToVList(), start, end.EndIndex);
 			}
 		};
 
 		rule TParamDecl()::LNode @{
-			{attrs::RWList!LNode = null; startIndex::int = GetTextPosition(InputPosition);}
+			{attrs::WList!LNode = null; startIndex::int = GetTextPosition(InputPosition);}
 			NormalAttributes(ref attrs);
 			TParamAttributeKeywords(ref attrs)
 			node:=IdAtom
 			{
-				if (attrs != null) { node = node.WithAttrs(attrs.ToRVList()); };
+				if (attrs != null) { node = node.WithAttrs(attrs.ToVList()); };
 				return node;
 			}
 		};
@@ -398,7 +398,7 @@ namespace Loyc.Ecs.Parser
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex);}
 			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
-				{r = F.Call(S.Lambda, F.List(ExprListInside(args).ToRVList()), F.Braces(StmtListInside(block).ToRVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
+				{r = F.Call(S.Lambda, F.List(ExprListInside(args).ToVList()), F.Braces(StmtListInside(block).ToVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
 			|	t:=TT.@is dt:=DataType
 				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex);}
 			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
@@ -420,7 +420,7 @@ namespace Loyc.Ecs.Parser
 			{
 				majorDimension::opt!Token = null;
 				endIndex::int; 
-				var list = (new RWList!LNode());
+				var list = (new WList!LNode());
 			}
 			op:=TT.@new
 			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
@@ -453,7 +453,7 @@ namespace Loyc.Ecs.Parser
 						if (majorDimension != null) {
 							Error("Syntax error: unexpected constructor argument list (...)");
 						};
-						list.Add(F.Call(type, ExprListInside(lp).ToRVList(), type.Range.StartIndex, rp.EndIndex));
+						list.Add(F.Call(type, ExprListInside(lp).ToVList(), type.Range.StartIndex, rp.EndIndex));
 						endIndex = rp.EndIndex;
 					}
 					(	lb:="{" rb:="}"
@@ -469,7 +469,7 @@ namespace Loyc.Ecs.Parser
 					( lb="{" rb="}" {haveBraces = true;} )?
 					{
 						if (majorDimension != null) {
-							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value).ToRVList(), type.Range))
+							list.Add(LNode.Call(type, ExprListInside(majorDimension.Value).ToVList(), type.Range))
 						} else {
 							list.Add(LNode.Call(type, type.Range));
 						};
@@ -489,7 +489,7 @@ namespace Loyc.Ecs.Parser
 					}
 				)
 			)
-			{return F.Call(S.New, list.ToRVList(), op.StartIndex, endIndex);}
+			{return F.Call(S.New, list.ToVList(), op.StartIndex, endIndex);}
 		};
 
 		def TypeInside(args::Token)::LNode
@@ -530,8 +530,8 @@ namespace Loyc.Ecs.Parser
 			/	// x(-> Foo), x(as Foo), x(using Foo)
 				e=PrimaryExpr_NewStyleCast(e)
 			/	lp:="(" rp:=")" {e = F.Call(e, ExprListInside(lp), e.Range.StartIndex, rp.EndIndex);}
-			|	lb:="[" rb:="]" {var list = (new RWList!LNode() { e });}
-				{e = F.Call(S.IndexBracks, AppendExprsInside(lb, list).ToRVList(), e.Range.StartIndex, rb.EndIndex);}
+			|	lb:="[" rb:="]" {var list = (new WList!LNode() { e });}
+				{e = F.Call(S.IndexBracks, AppendExprsInside(lb, list).ToVList(), e.Range.StartIndex, rb.EndIndex);}
 			|	// Tentative tree structure - there is an undesirable inconsistency between ?. and ?[].
 				// Specifically, `a.b?.c.d` parses as `(a.b)?.(c.d)` so that the 
 				// null-dot macro can manipulate the `.d` on the end; it would be 
@@ -547,7 +547,7 @@ namespace Loyc.Ecs.Parser
 				// This is the easiest way to parse it, anyhow. And I'll leave `?.` 
 				// as-is, even though it works differently than `?[]`.
 				t:="?" lb:="[" rb:="]"
-				{e = F.Call(S.NullIndexBracks, e, F.List(ExprListInside(lb).ToRVList()), e.Range.StartIndex, rb.EndIndex);}
+				{e = F.Call(S.NullIndexBracks, e, F.List(ExprListInside(lb).ToVList()), e.Range.StartIndex, rb.EndIndex);}
 			|	// Post-inc or post-dec
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
@@ -568,7 +568,7 @@ namespace Loyc.Ecs.Parser
 			(=>
 				{Down(lp);}
 				{kind::Symbol;}
-				{attrs::RWList!LNode = null;}
+				{attrs::WList!LNode = null;}
 				( "->"      {kind = S.Cast;} 
 				| TT.@as    {kind = S.As;}
 				| TT.@using {kind = S.UsingCast;})
@@ -577,7 +577,7 @@ namespace Loyc.Ecs.Parser
 				type:=DataType EOF
 				{
 					if attrs != null {
-						type = type.PlusAttrs(attrs.ToRVList());
+						type = type.PlusAttrs(attrs.ToVList());
 					};
 					return Up(SetAlternateStyle(SetOperatorStyle(
 						F.Call(kind, e, type, e.Range.StartIndex, rp.EndIndex))));
@@ -692,7 +692,7 @@ namespace Loyc.Ecs.Parser
 		@[public] rule ExprStart2(allowUnassignedVarDecl::bool)::LNode @{
 			{
 				e::LNode;
-				attrs::RWList!LNode = null;
+				attrs::WList!LNode = null;
 			}
 			NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
@@ -704,7 +704,7 @@ namespace Loyc.Ecs.Parser
 			)
 			{
 				if (attrs != null) {
-					e = e.PlusAttrs(attrs.ToRVList());
+					e = e.PlusAttrs(attrs.ToVList());
 				};
 				return e;
 			}
@@ -791,7 +791,7 @@ namespace Loyc.Ecs.Parser
 		rule InParens_ExprOrTuple(allowUnassignedVarDecl::bool, startIndex::int, endIndex::int)::LNode @{
 			(	e:=ExprStart(allowUnassignedVarDecl)
 				(	"," _* =>
-					{var list = (new RVList!LNode() { e });}
+					{var list = (new VList!LNode() { e });}
 					(	"," list+=ExprStart(allowUnassignedVarDecl)
 					|	","
 					)*
@@ -799,7 +799,7 @@ namespace Loyc.Ecs.Parser
 				)?
 				{return F.InParens(e, startIndex, endIndex);}
 			|	// Empty tuple
-				{return F.Tuple(RVList!LNode.Empty, startIndex, endIndex);} )
+				{return F.Tuple(VList!LNode.Empty, startIndex, endIndex);} )
 			EOF
 		};
 		@[private] rule BracedBlock(spaceName::Symbol = @null, target::Symbol = @null)::LNode
@@ -808,7 +808,7 @@ namespace Loyc.Ecs.Parser
 				_spaceName = spaceName ?? oldSpace;
 			}
 			lb:="{" rb:="}"
-			{	var stmts = StmtListInside(lb).ToRVList();
+			{	var stmts = StmtListInside(lb).ToVList();
 				_spaceName = oldSpace;
 				return F.Call(target ?? S.Braces, stmts, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.Statement);
 			}
@@ -819,7 +819,7 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 		
 		@[recognizer(fn Scan_NormalAttributes())]
-		token NormalAttributes(ref attrs::RWList!LNode) @{
+		token NormalAttributes(ref attrs::WList!LNode) @{
 			(	&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))}
 				t:="[" "]" 
 				{
@@ -830,13 +830,13 @@ namespace Loyc.Ecs.Parser
 				}
 			)*
 		};
-		token AttributeContents(ref attrs::RWList!LNode) @{
+		token AttributeContents(ref attrs::WList!LNode) @{
 			{attrTarget::Token = default(Token);}
 			greedy(
 				attrTarget=(TT.Id|TT.ContextualKeyword|TT.(noMacro(return))) ":"
 			)?
 			// Use gate (=>) to avoid hoisting predicate DetectVarDecl(allowUnassignedVarDecl)
-			(_ => ExprList(attrs = attrs ?? `new` RWList!LNode(), allowTrailingComma: true, allowUnassignedVarDecl: true))
+			(_ => ExprList(attrs = attrs ?? `new` WList!LNode(), allowTrailingComma: true, allowUnassignedVarDecl: true))
 			{
 				if attrTarget.Value != null {
 					var attrTargetNode = F.Id(attrTarget);
@@ -856,15 +856,15 @@ namespace Loyc.Ecs.Parser
 
 		fn IsNamedArg(node::LNode)::bool { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; };
 
-		token AttributeKeywords(ref attrs::RWList!LNode) @{
+		token AttributeKeywords(ref attrs::WList!LNode) @{
 			(	t:=TT.AttrKeyword 
-				{(attrs = attrs ?? `new` RWList!LNode()).Add(F.Id(t));}
+				{(attrs = attrs ?? `new` WList!LNode()).Add(F.Id(t));}
 			)*
 		};
 		@[recognizer(fn Scan_TParamAttributeKeywords())]
-		token TParamAttributeKeywords(ref attrs::RWList!LNode) @{
+		token TParamAttributeKeywords(ref attrs::WList!LNode) @{
 			(	t:=(TT.AttrKeyword|TT.@in)
-				{(attrs = attrs ?? `new` RWList!LNode()).Add(F.Id(t));}
+				{(attrs = attrs ?? `new` WList!LNode()).Add(F.Id(t));}
 			)*
 		};
 			
@@ -927,7 +927,7 @@ namespace Loyc.Ecs.Parser
 		// My strategy here is to use lookahead with &(...) to decide if a word 
 		// (or the "new" keyword) is an attribute or not.
 
-		token WordAttributes(ref attrs::RWList!LNode)::int
+		token WordAttributes(ref attrs::WList!LNode)::int
 		@{
 			{	// Optimize the common case (non-exhaustive short circuit)
 				LA1::TokenType;
@@ -959,7 +959,7 @@ namespace Loyc.Ecs.Parser
 					} else {
 						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
 					};
-					attrs = attrs ?? `new` RWList!LNode();
+					attrs = attrs ?? `new` WList!LNode();
 					attrs.Add(node);
 					nonKeywords++; // yes, includes 'new'
 				}
@@ -1007,7 +1007,7 @@ namespace Loyc.Ecs.Parser
 		// -- Statements -------------------------------------------------------
 		// ---------------------------------------------------------------------
 		
-		_stmtAttrs::RWList!LNode = (new RWList!LNode());
+		_stmtAttrs::WList!LNode = (new WList!LNode());
 
 		@[k(3), pub] rule Stmt::LNode @{
 			{_stmtAttrs.Clear();}
@@ -1015,7 +1015,7 @@ namespace Loyc.Ecs.Parser
 			NormalAttributes(ref _stmtAttrs)
 			AttributeKeywords(ref _stmtAttrs)
 			wc:=WordAttributes(ref _stmtAttrs)
-			{var attrs = _stmtAttrs.ToRVList();}
+			{var attrs = _stmtAttrs.ToVList();}
 			
 			{r::LNode;}
 				// Declaration-level statements (except using, which is below the using() stmt)
@@ -1086,20 +1086,20 @@ namespace Loyc.Ecs.Parser
 		// namespace, class, struct, interface, trait, alias, using, enum ------
 		// ---------------------------------------------------------------------
 
-		@[private] rule SpaceDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule SpaceDecl(startIndex::int, attrs::VList!LNode)::LNode @{
 			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface)
 			{var kind = t.Value -> Symbol;}
 			r:=RestOfSpaceDecl(startIndex, kind, attrs)
 			{return r;}
 		};
 
-		rule TraitDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
+		rule TraitDecl(startIndex::int, attrs::VList!LNode)::LNode @{
 			&{@[Hoist] Is($LI, _trait)} t:=TT.ContextualKeyword
 			r:=RestOfSpaceDecl(startIndex, S.Trait, attrs)
 			{return r;}
 		};
 
-		@[private] rule RestOfSpaceDecl(startIndex::int, kind::Symbol, attrs::RVList!LNode)::LNode @{
+		@[private] rule RestOfSpaceDecl(startIndex::int, kind::Symbol, attrs::VList!LNode)::LNode @{
 			name:=ComplexNameDecl
 			bases:=BaseListOpt
 			WhereClausesOpt(ref name)
@@ -1110,7 +1110,7 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
-		rule AliasDecl(startIndex::int, attrs::RVList!LNode)::LNode
+		rule AliasDecl(startIndex::int, attrs::VList!LNode)::LNode
 		@{
 			&{@[Hoist] Is($LI, _alias)} t:=TT.ContextualKeyword
 			newName:=ComplexNameDecl 
@@ -1119,13 +1119,13 @@ namespace Loyc.Ecs.Parser
 			{return r.WithAttrs(attrs);}
 		};
 
-		rule UsingDirective(startIndex::int, attrs::RVList!LNode)::LNode @{
+		rule UsingDirective(startIndex::int, attrs::VList!LNode)::LNode @{
 			t:TT.@using
 			(	// C# 6 "using static"
 				&{Is($LI, S.Static)} static_:TT.AttrKeyword
 				nsName:ExprStart(true) end:";"
 				{attrs.Add(F.Id(static_));}
-			|	nsName:ExprStart(true)
+			/	nsName:ExprStart(true)
 				{aliasedType::LNode = null;}
 				(	&{@[Local] nsName.Calls(S.Assign, 2) && (aliasedType = nsName[1]) != null}
 					{nsName = nsName[0];}
@@ -1148,7 +1148,7 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
-		@[private] rule EnumDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule EnumDecl(startIndex::int, attrs::VList!LNode)::LNode @{
 			t:=TT.@enum
 			name:=ComplexNameDecl
 			bases:=BaseListOpt
@@ -1164,7 +1164,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule BaseListOpt::LNode @{
-			(	{var bases = (new RVList!LNode());}
+			(	{var bases = (new VList!LNode());}
 				":" bases+=DataType
 				("," bases+=DataType)*
 				{return F.List(bases);}
@@ -1196,13 +1196,13 @@ namespace Loyc.Ecs.Parser
 					if (!name.CallsMin(S.Of, 2)) {
 						Error("'{0}' is not generic and cannot use 'where' clauses.", name.ToString())
 					} else {
-						var tparams = name.Args.ToRWList();
+						var tparams = name.Args.ToWList();
 						for (i::int = 1; i < tparams.Count; i++) {
 							var wheres = list[TParamSymbol(tparams[i])];
 							tparams[i] = tparams[i].PlusAttrs(wheres);
 							wheres.Clear();
 						};
-						name = name.WithArgs(tparams.ToRVList());
+						name = name.WithArgs(tparams.ToVList());
 						if (list.Count > 0) {
 							Error(list[0].Value, "There is no type parameter named '{0}'", list[0].Key);
 						};
@@ -1222,7 +1222,7 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule WhereClause::KeyValuePair!(Symbol, LNode) @{
 			&{@[Hoist] Is($LI,_where)} where:=TT.ContextualKeyword T:=(TT.Id|TT.ContextualKeyword) ":" 
-			{var constraints = RVList!LNode.Empty;}
+			{var constraints = VList!LNode.Empty;}
 			constraints+=WhereConstraint
 			("," constraints+=WhereConstraint)*
 			{return (new KeyValuePair!(Symbol, LNode)(T.Value -> Symbol, 
@@ -1250,16 +1250,16 @@ namespace Loyc.Ecs.Parser
 			{return t;}
 		};
 
-		@[private] rule AssemblyOrModuleAttribute(startIndex::int, attrs::RVList!LNode)::LNode
+		@[private] rule AssemblyOrModuleAttribute(startIndex::int, attrs::VList!LNode)::LNode
 		@{
 			&{@[Hoist] Down($LI) && Up(Try_Scan_AsmOrModLabel(0))} lb:="[" rb:="]"
 			(_* => {Down(lb);} 
 				kind:=AsmOrModLabel 
-				{var list = (new RWList!LNode());}
+				{var list = (new WList!LNode());}
 				ExprList(list) 
 				{
 					Up();
-					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToRVList(), startIndex, rb.EndIndex);
+					var r = F.Call(kind.Value == _module ? S.Module : S.Assembly, list.ToVList(), startIndex, rb.EndIndex);
 					return r.WithAttrs(attrs);
 				}
 			)
@@ -1269,13 +1269,13 @@ namespace Loyc.Ecs.Parser
 		// methods, properties, variable/field declarations, operators ---------
 		// ---------------------------------------------------------------------
 
-		@[private] rule MethodOrPropertyOrVar(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule MethodOrPropertyOrVar(startIndex::int, attrs::VList!LNode)::LNode @{
 			type:=DataType
 			(	// Variable declaration statement
 				// TODO: see if we can get rid of this &synpred
 				&(IdAtom ("="|","|";")) // LL(2) is not enough in case of `$(expr) =`
 				{MaybeRecognizeVarAsKeyword(ref type);}
-				{var parts = (new RVList!LNode() { type });}
+				{var parts = (new VList!LNode() { type });}
 				     parts+=NameAndMaybeInit(IsArrayType(type))
 				("," parts+=NameAndMaybeInit(IsArrayType(type)))* end:=";"
 				{$result = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);}
@@ -1302,7 +1302,7 @@ namespace Loyc.Ecs.Parser
 			)
 		};
 
-		@[private] rule OperatorCast(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule OperatorCast(startIndex::int, attrs::VList!LNode)::LNode @{
 			{r::LNode;}
 			op:=TT.@operator type:=DataType
 			{var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));}
@@ -1310,7 +1310,7 @@ namespace Loyc.Ecs.Parser
 			{return r;}
 		};
 
-		@[private] rule MethodArgListAndBody(startIndex::int, attrs::RVList!LNode, kind::Symbol, type::LNode, name::LNode)::LNode @{
+		@[private] rule MethodArgListAndBody(startIndex::int, attrs::VList!LNode, kind::Symbol, type::LNode, name::LNode)::LNode @{
 			lp:="(" rp:=")"
 			WhereClausesOpt(ref name)
 			{var(r::LNode, baseCall::LNode = null); }
@@ -1337,7 +1337,7 @@ namespace Loyc.Ecs.Parser
 					if kind == S.Cons && baseCall != null {
 						Error(baseCall, "A method body is required.");
 						// Behave as though the method body were present.
-						var parts = (new RVList!LNode() { type; name; ArgList(lp, rp); LNode.Call(S.Braces, new RVList!LNode(baseCall), baseCall.Range) });
+						var parts = (new VList!LNode() { type; name; ArgList(lp, rp); LNode.Call(S.Braces, new VList!LNode(baseCall), baseCall.Range) });
 						return F.Call(kind, parts, startIndex, baseCall.Range.EndIndex);
 					};
 					r = F.Call(kind, type, name, ArgList(lp, rp), startIndex, end.EndIndex);
@@ -1348,7 +1348,7 @@ namespace Loyc.Ecs.Parser
 					if baseCall != null {
 						body = body.WithArgs(body.Args.Insert(0, baseCall)).WithRange(baseCall.Range.StartIndex, body.Range.EndIndex);
 					};
-					var parts = (new RVList!LNode() { type; name; ArgList(lp, rp); body });
+					var parts = (new VList!LNode() { type; name; ArgList(lp, rp); body });
 					r = F.Call(kind, parts, startIndex, body.Range.EndIndex);
 				}
 			)
@@ -1377,12 +1377,12 @@ namespace Loyc.Ecs.Parser
 
 		def ArgList(lp::Token, rp::Token)::LNode
 		{
-			var list = (new RWList!LNode());
+			var list = (new WList!LNode());
 			if (Down(lp.Children)) {
 				ArgList(list);
 				Up();
 			};
-			return F.List(list.ToRVList(), lp.StartIndex, rp.EndIndex);
+			return F.List(list.ToVList(), lp.StartIndex, rp.EndIndex);
 		};
 
 		@[private] rule NameAndMaybeInit(isArray::bool)::LNode @{
@@ -1396,7 +1396,7 @@ namespace Loyc.Ecs.Parser
 					&{@[Local] Down($LI) && Up(HasNoSemicolons())} 
 					lb:="{" rb:="}"
 					{
-						var initializers = InitializerListInside(lb).ToRVList();
+						var initializers = InitializerListInside(lb).ToVList();
 						var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
 						expr = expr.SetBaseStyle(NodeStyle.OldStyle);
 						r = F.Call(S.Assign, r, expr, r.Range.StartIndex, rb.EndIndex);
@@ -1414,7 +1414,7 @@ namespace Loyc.Ecs.Parser
 		// Constructor/destructor ----------------------------------------------
 		// ---------------------------------------------------------------------
 
-		@[private] rule Constructor(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule Constructor(startIndex::int, attrs::VList!LNode)::LNode @{
 			{r::LNode; n::Token;}
 			(	&{_spaceName == LT($LI).Value}
 				n=(TT.Id|TT.ContextualKeyword)
@@ -1430,7 +1430,7 @@ namespace Loyc.Ecs.Parser
 			{return r;}
 		};
 
-		@[private] rule Destructor(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule Destructor(startIndex::int, attrs::VList!LNode)::LNode @{
 			{var(r::LNode, n::Token);}
 			tilde:="~"
 			(	( &{LT($LI).Value == _spaceName} 
@@ -1447,17 +1447,17 @@ namespace Loyc.Ecs.Parser
 		// Delegate & event declarations ---------------------------------------
 		// ---------------------------------------------------------------------
 
-		@[private] rule DelegateDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule DelegateDecl(startIndex::int, attrs::VList!LNode)::LNode @{
 			TT.@delegate type:=DataType name:=ComplexNameDecl
 			r:=MethodArgListAndBody(startIndex, attrs, S.Delegate, type, name)
 			{return r.WithAttrs(attrs);}
 		};
 
-		@[private] rule EventDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
+		@[private] rule EventDecl(startIndex::int, attrs::VList!LNode)::LNode @{
 			{r::LNode;}
 			TT.@event type:=DataType name:=ComplexNameDecl
 			(	default 
-				{var parts = (new RVList!LNode(type, name));}
+				{var parts = (new VList!LNode(type, name));}
 				( "," parts+=ComplexNameDecl )*
 				end:=";"         
 				{r = F.Call(S.Event, parts, startIndex, end.EndIndex);}
@@ -1479,7 +1479,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		rule CaseStmt(startIndex::int)::LNode @{
-			{var cases = RVList!LNode.Empty;}
+			{var cases = VList!LNode.Empty;}
 			kw:=TT.@case cases+=ExprStart2(true) 
 			        ("," cases+=ExprStart2(true))* end:=":"
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
@@ -1498,7 +1498,7 @@ namespace Loyc.Ecs.Parser
 		@[private] rule BlockCallStmt::LNode @{
 			id:=(TT.Id|TT.ContextualKeyword)
 			&( "(" ")" ("{" "}" | TT.Id) | "{" "}" | "==>" ) // Used by Stmt to disambiguate
-			{var args = (new RWList!LNode());}
+			{var args = (new WList!LNode());}
 			{block::LNode;}
 			(	lp:="(" rp:=")" {AppendExprsInside(lp, args, false, true);}
 				(	block=BracedBlock 
@@ -1516,7 +1516,7 @@ namespace Loyc.Ecs.Parser
 			)
 			{
 				args.Add(block);
-				var result = F.Call(id.Value -> Symbol, args.ToRVList(), id.StartIndex, block.Range.EndIndex);
+				var result = F.Call(id.Value -> Symbol, args.ToVList(), id.StartIndex, block.Range.EndIndex);
 				if block.Calls(S.Forward, 1) {
 					result = F.Attr(_triviaForwardedProperty, result);
 				};
@@ -1572,9 +1572,9 @@ namespace Loyc.Ecs.Parser
 		@[private] rule DoStmt(startIndex::int)::LNode @{
 			TT.@do block:=Stmt TT.@while p:="(" ")" end:=";"
 			{
-				var parts = (new RWList!LNode { block });
+				var parts = (new WList!LNode { block });
 				SingleExprInside(p, "while (...)", parts);
-				return F.Call(S.DoWhile, parts.ToRVList(), startIndex, end.EndIndex);
+				return F.Call(S.DoWhile, parts.ToVList(), startIndex, end.EndIndex);
 			}
 		};
 
@@ -1605,7 +1605,7 @@ namespace Loyc.Ecs.Parser
 				init:=ExprOpt(true) ";" cond:=ExprOpt(false) ";" inc:=ExprOpt(false)
 			(EOF => {Up();})
 			{
-				var parts = (new RVList!LNode { init; cond; inc; block });
+				var parts = (new VList!LNode { init; cond; inc; block });
 				return F.Call(S.For, parts, startIndex, block.Range.EndIndex);
 			}
 		};
@@ -1682,7 +1682,7 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule TryStmt(startIndex::int)::LNode @{
 			TT.@try header:=Stmt
-			{var parts = (new RVList!LNode { header });}
+			{var parts = (new VList!LNode { header });}
 			{varExpr::LNode; whenExpr::LNode;}
 			greedy[
 				kw:=TT.@catch
@@ -1724,7 +1724,7 @@ namespace Loyc.Ecs.Parser
 			var i = GetTextPosition(InputPosition);
 			return F.Id(S.Missing, i, i);
 		};
-		rule ExprList(list::RWList!LNode, allowTrailingComma::bool = false, allowUnassignedVarDecl::bool = false) @{
+		rule ExprList(list::WList!LNode, allowTrailingComma::bool = false, allowUnassignedVarDecl::bool = false) @{
 			nongreedy(
 				list+=ExprOpt(allowUnassignedVarDecl)
 				( "," &{@[Local] allowTrailingComma} EOF
@@ -1733,7 +1733,7 @@ namespace Loyc.Ecs.Parser
 			)?
 			EOF
 		};
-		rule ArgList(list::RWList!LNode) @{
+		rule ArgList(list::WList!LNode) @{
 			nongreedy(
 				list+=ExprOpt(true)
 				( "," list+=ExprOpt(true)
@@ -1746,16 +1746,16 @@ namespace Loyc.Ecs.Parser
 		rule InitializerExpr::LNode @{
 			( lb:="{" rb:="}"
 			  {
-				var exprs = InitializerListInside(lb).ToRVList();
+				var exprs = InitializerListInside(lb).ToVList();
 				$result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.OldStyle);
 			  }
 			/ lb:="[" rb:="]" "=" e:=ExprStart(false)
-			  { $result = F.Call(S.InitializerAssignment, ExprListInside(lb).ToRVList().Add(e), lb.StartIndex, e.Range.EndIndex); }
+			  { $result = F.Call(S.InitializerAssignment, ExprListInside(lb).ToVList().Add(e), lb.StartIndex, e.Range.EndIndex); }
 			/ result:ExprOpt(false)
 			)
 		};
 		// Used for new int[][] { ... } or int[][] x = { ... }
-		rule InitializerList(list::RWList!LNode) @{
+		rule InitializerList(list::WList!LNode) @{
 			nongreedy(
 				list+=InitializerExpr
 				( "," EOF
@@ -1764,7 +1764,7 @@ namespace Loyc.Ecs.Parser
 			)?
 			EOF
 		};
-		rule StmtList(list::RWList!LNode) @{
+		rule StmtList(list::WList!LNode) @{
 			(_ => list+=Stmt)*
 			EOF
 		};

@@ -31,7 +31,7 @@ namespace LeMP
 					attrs = attrs.RemoveAt(i);
 					var adt = new AltType(attrs, baseName, baseTypes, null);
 					adt.ScanClassBody(body);
-					var output = new RVList<LNode>();
+					var output = new VList<LNode>();
 					adt.GenerateOutput(ref output);
 					return quote(#splice($(..output)));
 			}
@@ -40,7 +40,7 @@ namespace LeMP
 
 		// Info about one variant of an ADT
 		class AltType {
-			public AltType(private RVList<LNode> _typeAttrs, public LNode TypeName, public RVList<LNode> BaseTypes, public AltType ParentType)
+			public AltType(private VList<LNode> _typeAttrs, public LNode TypeName, public VList<LNode> BaseTypes, public AltType ParentType)
 			{
 				if (ParentType != null)
 					BaseTypes.Add(ParentType.TypeName);
@@ -51,8 +51,8 @@ namespace LeMP
 				//}
 				{	// Above matchCode expanded:
 					LNode stem;
-					RVList<LNode> a = default(RVList<LNode>);
-					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new RVList<LNode>(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
+					VList<LNode> a = default(VList<LNode>);
+					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new VList<LNode>(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
 						_typeNameStem = stem;
 						_genericArgs = a;
 					}
@@ -60,19 +60,19 @@ namespace LeMP
 			}
 
 			LNode _typeNameStem;
-			RVList<LNode> _genericArgs = new RVList<LNode>();
+			VList<LNode> _genericArgs = new VList<LNode>();
 			List<AltType> _children = new List<AltType>();
 			internal List<AdtParam> Parts = new List<AdtParam>();
-			RVList<LNode> _constructorAttrs;
-			RVList<LNode> _extraConstrLogic;
-			RVList<LNode> _classBody = new RVList<LNode>();
+			VList<LNode> _constructorAttrs;
+			VList<LNode> _extraConstrLogic;
+			VList<LNode> _classBody = new VList<LNode>();
 
-			public void AddParts(RVList<LNode> parts)
+			public void AddParts(VList<LNode> parts)
 			{
 				foreach (var part in parts)
 					Parts.Add(new AdtParam(part, this));
 			}
-			public void ScanClassBody(RVList<LNode> body)
+			public void ScanClassBody(VList<LNode> body)
 			{
 				foreach (var stmt in body) {
 					int i;
@@ -103,7 +103,7 @@ namespace LeMP
 				}
 			}
 			// Generates a class declaration for the current alt and its subtypes
-			public void GenerateOutput(ref RVList<LNode> list)
+			public void GenerateOutput(ref VList<LNode> list)
 			{
 				bool isAbstract = _typeAttrs.Any(a => a.IsIdNamed(S.Abstract));
 				
@@ -116,7 +116,7 @@ namespace LeMP
 				if (baseParts.Count > 0)
 					initialization.Insert(0, F.Call(S.Base, baseParts.Select(p => p.NameId)));
 
-				var args = new RVList<LNode>(allParts.Select(p => p.OriginalDecl));
+				var args = new VList<LNode>(allParts.Select(p => p.OriginalDecl));
 				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
 					_constructorAttrs.Add(F.Id(S.Public));
 				LNode constructor = quote {
@@ -127,7 +127,7 @@ namespace LeMP
 					});
 				};
 
-				var outBody = new RVList<LNode>();
+				var outBody = new VList<LNode>();
 				outBody.Add(constructor);
 				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));
 				outBody.AddRange(baseParts.Select(p => GetWithFn(p, isAbstract, S.Override, allParts)));
@@ -170,7 +170,7 @@ namespace LeMP
 						args.Add(otherPart.NameId);
 				}
 				
-				var attrs = new RVList<LNode>(F.Id(S.Public));
+				var attrs = new VList<LNode>(F.Id(S.Public));
 				if (isAbstract)
 					attrs.Add(F.Id(S.Abstract));
 				if (virtualOverride != null && (!isAbstract || virtualOverride == S.Override))

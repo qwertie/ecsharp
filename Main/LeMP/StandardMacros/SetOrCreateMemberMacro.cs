@@ -29,8 +29,8 @@ namespace LeMP
 			var args = fn.Args[2].Args;
 			LNode body = null;
 
-			RVList<LNode> createStmts = RVList<LNode>.Empty;
-			RVList<LNode> setStmts = RVList<LNode>.Empty;
+			VList<LNode> createStmts = VList<LNode>.Empty;
+			VList<LNode> setStmts = VList<LNode>.Empty;
 			for (int i = 0; i < args.Count; i++) {
 				var arg = args[i];
 				Symbol a = S.Property;

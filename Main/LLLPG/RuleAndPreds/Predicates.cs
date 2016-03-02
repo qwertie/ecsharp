@@ -216,7 +216,7 @@ namespace Loyc.LLParserGenerator
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public RVList<LNode> Params = RVList<LNode>.Empty; // Params.Args is a list of parameters
+		public VList<LNode> Params = VList<LNode>.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 		public override bool IsNullable
 		{

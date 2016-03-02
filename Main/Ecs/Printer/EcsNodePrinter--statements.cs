@@ -545,7 +545,7 @@ namespace Loyc.Ecs
 			}
 			return ifClause;
 		}
-		private void PrintArgList(RVList<LNode> args, ParenFor kind, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(VList<LNode> args, ParenFor kind, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
 			PrintArgs(args, flags, omitMissingArguments, separator);
@@ -555,7 +555,7 @@ namespace Loyc.Ecs
 		{
 			PrintArgs(args.Args, flags, omitMissingArguments, separator);
 		}
-		private void PrintArgs(RVList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(VList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			for (int i = 0; i < args.Count; i++)
 			{

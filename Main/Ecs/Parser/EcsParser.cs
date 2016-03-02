@@ -66,7 +66,7 @@ namespace Loyc.Ecs.Parser
 
 		public IListSource<LNode> ParseExprs()
 		{
-			var list = new RWList<LNode>();
+			var list = new WList<LNode>();
 			try {
 				ExprList(list);
 			} catch (Exception ex) { UnhandledException(ex); }
@@ -75,7 +75,7 @@ namespace Loyc.Ecs.Parser
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
-			var list = new RWList<LNode>();
+			var list = new WList<LNode>();
 			try {
 				StmtList(list);
 			} catch (Exception ex) { UnhandledException(ex); }
@@ -199,9 +199,9 @@ namespace Loyc.Ecs.Parser
 
 		#region Other parsing helpers: ExprListInside, etc.
 
-		protected LNode SingleExprInside(Token group, string stmtType, RWList<LNode> list = null, bool allowUnassignedVarDecl = false)
+		protected LNode SingleExprInside(Token group, string stmtType, WList<LNode> list = null, bool allowUnassignedVarDecl = false)
 		{
-			list = list ?? new RWList<LNode>();
+			list = list ?? new WList<LNode>();
 			int oldCount = list.Count;
 			AppendExprsInside(group, list, false, allowUnassignedVarDecl);
 			if (list.Count != oldCount + 1)
@@ -218,7 +218,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return list[0];
 		}
-		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected WList<LNode> AppendExprsInside(Token group, WList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			if (Down(group.Children)) {
 				ExprList(list, allowTrailingComma, allowUnassignedVarDecl);
@@ -226,7 +226,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return list;
 		}
-		protected RWList<LNode> AppendInitializersInside(Token group, RWList<LNode> list)
+		protected WList<LNode> AppendInitializersInside(Token group, WList<LNode> list)
 		{
 			if (Down(group.Children)) {
 				InitializerList(list);
@@ -234,7 +234,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return list;
 		}
-		protected RWList<LNode> AppendStmtsInside(Token group, RWList<LNode> list)
+		protected WList<LNode> AppendStmtsInside(Token group, WList<LNode> list)
 		{
 			if (Down(group.Children)) {
 				StmtList(list);
@@ -242,17 +242,17 @@ namespace Loyc.Ecs.Parser
 			}
 			return list;
 		}
-		protected RWList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected WList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
-			return AppendExprsInside(t, new RWList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
+			return AppendExprsInside(t, new WList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
 		}
-		private RWList<LNode> StmtListInside(Token t)
+		private WList<LNode> StmtListInside(Token t)
 		{
-			return AppendStmtsInside(t, new RWList<LNode>());
+			return AppendStmtsInside(t, new WList<LNode>());
  		}
-		private RWList<LNode> InitializerListInside(Token t)
+		private WList<LNode> InitializerListInside(Token t)
 		{
-			return AppendInitializersInside(t, new RWList<LNode>());
+			return AppendInitializersInside(t, new WList<LNode>());
  		}
 
 		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3

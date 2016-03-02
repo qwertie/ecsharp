@@ -117,9 +117,9 @@ namespace Loyc.Syntax.Lexing
 
 		/// <summary>Converts this list of <see cref="Token"/> to a list of <see cref="LNode"/>.</summary>
 		/// <remarks>See <see cref="Token.ToLNode(ISourceFile)"/> for more information.</remarks>
-		public RVList<LNode> ToLNodes()
+		public VList<LNode> ToLNodes()
 		{
-			RVList<LNode> list = RVList<LNode>.Empty;
+			VList<LNode> list = VList<LNode>.Empty;
 			foreach (var item in (DList<Token>)this)
 				list.Add(item.ToLNode(File));
 			return list;
@@ -468,7 +468,7 @@ namespace Loyc.Syntax.Lexing
 					r = new SourceRange(file, StartIndex, System.Math.Max(EndIndex, c.Last.EndIndex) - StartIndex);
 				return LNode.Call(kSym, c.ToLNodes(), r, Style);
 			} else if (IsOpenerOrCloser(kind) || Value == WhitespaceTag.Value) {
-				return LNode.Call(kSym, RVList<LNode>.Empty, r, Style);
+				return LNode.Call(kSym, VList<LNode>.Empty, r, Style);
 			} else if (kind == TokenKind.Id && (id = this.Value as Symbol) != null) {
 				return LNode.Id(id, r, Style);
 			} else {

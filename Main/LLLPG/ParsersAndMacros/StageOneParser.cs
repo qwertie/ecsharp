@@ -262,13 +262,13 @@ namespace Loyc.LLParserGenerator
 		
 		#region Tree structure handling
 
-		RVList<LNode> ParseArgList(Token group)
+		VList<LNode> ParseArgList(Token group)
 		{
 			var ch = group.Children;
 			if (ch != null)
-				return new RVList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
+				return new VList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
 			else
-				return RVList<LNode>.Empty;
+				return VList<LNode>.Empty;
 		}
 		
 		LNode ParseParens(Token p, int endIndex)
@@ -287,7 +287,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var ch = p.Children;
 			if (ch == null)
-				return F.Braces(RVList<LNode>.Empty, p.StartIndex, endIndex);
+				return F.Braces(VList<LNode>.Empty, p.StartIndex, endIndex);
 			else {
 				var mode = singleExpr ? ParsingService.Exprs : ParsingService.Stmts;
 				return F.Braces(

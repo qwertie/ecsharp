@@ -22,56 +22,65 @@ using Loyc.Collections;
 namespace Loyc.Collections
 {
 	/// <summary>
-	/// RVList represents a reference to a reverse-order FVList.
+	/// VList represents a reference to a reverse-order FVList.
 	/// </summary><remarks>
 	/// An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
 	/// is available online about the VList data types.
 	/// <para/>
-	/// FVList is a persistent list data structure described in Phil Bagwell's 2002
-	/// paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
-	/// Arrays". RVList is the name I (DLP) give to a variant of this structure in
-	/// which new elements are efficiently added to the end of the list rather 
-	/// than to the beginning. See the remarks of <see cref="VListBlock{T}"/> for a 
-	/// more detailed description.
+	/// The VList is a persistent list data structure described in Phil Bagwell's 
+	/// 2002 paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
+	/// Arrays". Originally, this type was called RVList because it works in the
+	/// reverse order to the original VList type: new items are normally added at
+	/// the <i>beginning</i> of a VList, which is normal in functional languages,
+	/// but <i>this</i> VList acts like a normal .NET list, so it is optimized for
+	/// new items to be added at the end. The name "RVList" is ugly, though, since
+	/// it misleadingly appears to be related to Recreational Vehicles. So as 
+	/// of LeMP 1.5, it's called simply VList.
+	/// <para/>
+	/// In contrast, the <see cref="FVList{T}"/> type acts like the original VList;
+	/// its Add method puts new items at the beginning (index 0).
+	/// <para/>
+	/// See the remarks of <see cref="VListBlock{T}"/> for a more detailed 
+	/// description.
 	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
-	public struct RVList<T> : IListAndListSource<T>, ICloneable<RVList<T>>, ICloneable
+	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>, ICloneable
 	{
 		internal VListBlock<T> _block;
 		internal int _localCount;
 
 		#region Constructors
 
-		internal RVList(VListBlock<T> block, int localCount)
+		internal VList(VListBlock<T> block, int localCount)
 		{
 			_block = block;
 			_localCount = localCount;
 		}
-		public RVList(T firstItem)
+		public VList(T firstItem)
 		{
 			_block = new VListBlockOfTwo<T>(firstItem, false);
 			_localCount = 1;
 		}
-		public RVList(T itemZero, T itemOne)
+		public VList(T itemZero, T itemOne)
 		{
 			_block = new VListBlockOfTwo<T>(itemZero, itemOne, false);
 			_localCount = 2;
 		}
-		public RVList(T[] array)
+		public VList(T[] array)
 		{
 			_block = null;
 			_localCount = 0;
 			for (int i = 0; i < array.Length; i++)
 				Add(array[i]);
 		}
-		public RVList(IEnumerable<T> list)
+		public VList(IEnumerable<T> list)
 		{
 			_block = null;
 			_localCount = 0;
 			AddRange(list);
 		}
-		public RVList(RVList<T> list)
+		public VList(VList<T> list)
 		{
 			this = list;
 		}
@@ -80,23 +89,23 @@ namespace Loyc.Collections
 
 		#region Obtaining sublists
 
-		public RVList<T> WithoutLast(int offset)
+		public VList<T> WithoutLast(int offset)
 		{
-			return VListBlock<T>.SubList(_block, _localCount, offset).ToRVList();
+			return VListBlock<T>.SubList(_block, _localCount, offset).ToVList();
 		}
 		/// <summary>Returns a list without the last item. If the list is empty, 
 		/// an empty list is retured.</summary>
-		public RVList<T> Tail
+		public VList<T> Tail
 		{
 			get {
-				return VListBlock<T>.TailOf(ToFVList()).ToRVList();
+				return VListBlock<T>.TailOf(ToFVList()).ToVList();
 			}
 		}
-		public RVList<T> NextIn(RVList<T> largerList)
+		public VList<T> NextIn(VList<T> largerList)
 		{
 			return VListBlock<T>.BackUpOnce(this, largerList);
 		}
-		public RVList<T> First(int count)
+		public VList<T> First(int count)
 		{
 			int c = Count;
 			if (count >= c)
@@ -112,13 +121,13 @@ namespace Loyc.Collections
 
 		/// <summary>Returns whether the two list references are the same.
 		/// Does not compare the contents of the lists.</summary>
-		public static bool operator ==(RVList<T> lhs, RVList<T> rhs)
+		public static bool operator ==(VList<T> lhs, VList<T> rhs)
 		{
 			return lhs._localCount == rhs._localCount && lhs._block == rhs._block;
 		}
 		/// <summary>Returns whether the two list references are different.
 		/// Does not compare the contents of the lists.</summary>
-		public static bool operator !=(RVList<T> lhs, RVList<T> rhs)
+		public static bool operator !=(VList<T> lhs, VList<T> rhs)
 		{
 			return lhs._localCount != rhs._localCount || lhs._block != rhs._block;
 		}
@@ -127,7 +136,7 @@ namespace Loyc.Collections
 		public override bool Equals(object rhs_)
 		{
 			try {
-				RVList<T> rhs = (RVList<T>)rhs_;
+				VList<T> rhs = (VList<T>)rhs_;
 				return this == rhs;
 			} catch(InvalidCastException) {
 				return false;
@@ -145,31 +154,31 @@ namespace Loyc.Collections
 
 		#region AddRange, InsertRange, RemoveRange
 
-		public RVList<T> AddRange(RVList<T> list) { return AddRange(list, new RVList<T>()); }
-		public RVList<T> AddRange(RVList<T> list, RVList<T> excludeSubList)
+		public VList<T> AddRange(VList<T> list) { return AddRange(list, new VList<T>()); }
+		public VList<T> AddRange(VList<T> list, VList<T> excludeSubList)
 		{
-			this = VListBlock<T>.AddRange(_block, _localCount, list.ToFVList(), excludeSubList.ToFVList()).ToRVList();
+			this = VListBlock<T>.AddRange(_block, _localCount, list.ToFVList(), excludeSubList.ToFVList()).ToVList();
 			return this;
 		}
-		public RVList<T> AddRange(IList<T> list)
+		public VList<T> AddRange(IList<T> list)
 		{
-			this = VListBlock<T>.AddRange(_block, _localCount, list, true).ToRVList();
+			this = VListBlock<T>.AddRange(_block, _localCount, list, true).ToVList();
 			return this;
 		}
-		public RVList<T> AddRange(IEnumerable<T> list)
+		public VList<T> AddRange(IEnumerable<T> list)
 		{
 			this = VListBlock<T>.AddRange(_block, _localCount, list.GetEnumerator());
 			return this;
 		}
-		public RVList<T> InsertRange(int index, IList<T> list)
+		public VList<T> InsertRange(int index, IList<T> list)
 		{
-			this = VListBlock<T>.InsertRange(_block, _localCount, list, Count - index, true).ToRVList();
+			this = VListBlock<T>.InsertRange(_block, _localCount, list, Count - index, true).ToVList();
 			return this;
 		}
-		public RVList<T> RemoveRange(int index, int count)
+		public VList<T> RemoveRange(int index, int count)
 		{
 			if (count != 0)
-				this = _block.RemoveRange(_localCount, Count - (index + count), count).ToRVList();
+				this = _block.RemoveRange(_localCount, Count - (index + count), count).ToVList();
 			return this;
 		}
 
@@ -201,12 +210,12 @@ namespace Loyc.Collections
 			return item;
 		}
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
-		public RVList<T> Push(T item) { return Add(item); }
+		public VList<T> Push(T item) { return Add(item); }
 
 		/// <summary>Returns this list as a FVList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>This is a trivial operation; the FVList shares the same memory.</remarks>
-		public static explicit operator FVList<T>(RVList<T> list)
+		public static explicit operator FVList<T>(VList<T> list)
 		{
 			return new FVList<T>(list._block, list._localCount);
 		}
@@ -221,26 +230,26 @@ namespace Loyc.Collections
 		/// <summary>Returns this list as a FWList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
-		public static explicit operator FWList<T>(RVList<T> list) { return list.ToWList(); }
+		public static explicit operator FWList<T>(VList<T> list) { return list.ToFWList(); }
 		/// <summary>Returns this list as a FWList, which effectively reverses the
 		/// order of the elements.</summary>
 		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
-		public FWList<T> ToWList()
+		public FWList<T> ToFWList()
 		{
 			return new FWList<T>(_block, _localCount, false);
 		}
 
-		/// <summary>Returns this list as an RWList.</summary>
-		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
-		public static explicit operator RWList<T>(RVList<T> list) { return list.ToRWList(); }
-		/// <summary>Returns this list as an RWList.</summary>
-		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
-		public RWList<T> ToRWList()
+		/// <summary>Returns this list as an WList.</summary>
+		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
+		public static explicit operator WList<T>(VList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as an WList.</summary>
+		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
+		public WList<T> ToWList()
 		{
-			return new RWList<T>(_block, _localCount, false);
+			return new WList<T>(_block, _localCount, false);
 		}
 
-		/// <summary>Returns the RVList converted to an array.</summary>
+		/// <summary>Returns the VList converted to an array.</summary>
 		public T[] ToArray()
 		{
 			return VListBlock<T>.ToArray(_block, _localCount, true);
@@ -250,14 +259,14 @@ namespace Loyc.Collections
 		/// <remarks>You might look at this property when optimizing your program,
 		/// because the runtime of some operations increases as the chain length 
 		/// increases. This property runs in O(BlockChainLength) time. Ideally,
-		/// BlockChainLength is proportional to log_2(Count), but certain RVList 
+		/// BlockChainLength is proportional to log_2(Count), but certain VList 
 		/// usage patterns can produce long chains.</remarks>
 		public int BlockChainLength
 		{
 			get { return _block == null ? 0 : _block.ChainLength; }
 		}
 
-		public static readonly RVList<T> Empty = new RVList<T>();
+		public static readonly VList<T> Empty = new VList<T>();
 
 		#endregion
 
@@ -265,7 +274,7 @@ namespace Loyc.Collections
 
         /// <summary>Searches for the specified object and returns the zero-based
         /// index of the first occurrence (lowest index) within the entire
-        /// RVList.</summary>
+        /// VList.</summary>
         /// <param name="item">Item to locate (can be null if T can be null)</param>
         /// <returns>Index of the item, or -1 if it was not found.</returns>
         /// <remarks>This method determines equality using the default equality
@@ -291,7 +300,7 @@ namespace Loyc.Collections
 		}
 
 		void IList<T>.Insert(int index, T item) { Insert(index, item); }
-		public RVList<T> Insert(int index, T item)
+		public VList<T> Insert(int index, T item)
 		{
 			_block = VListBlock<T>.Insert(_block, _localCount, item, Count - index);
 			_localCount = _block.ImmCount;
@@ -299,9 +308,9 @@ namespace Loyc.Collections
 		}
 
 		void IList<T>.RemoveAt(int index) { RemoveAt(index); }
-		public RVList<T> RemoveAt(int index)
+		public VList<T> RemoveAt(int index)
 		{
-			this = _block.RemoveAt(_localCount, Count - (index + 1)).ToRVList();
+			this = _block.RemoveAt(_localCount, Count - (index + 1)).ToVList();
 			return this;
 		}
 
@@ -311,7 +320,7 @@ namespace Loyc.Collections
 				return _block.RGet(index, _localCount);
 			}
 			set {
-				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToRVList();
+				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToVList();
 			}
 		}
 		/// <summary>Gets an item from the list at the specified index; returns 
@@ -329,10 +338,10 @@ namespace Loyc.Collections
 
 		#region ICollection<T> Members
 
-		/// <summary>Inserts an item at the back (index Count) of the RVList.</summary>
+		/// <summary>Inserts an item at the back (index Count) of the VList.</summary>
 		void ICollection<T>.Add(T item) { Add(item); }
-		/// <summary>Inserts an item at the back (index Count) of the RVList.</summary>
-		public RVList<T> Add(T item)
+		/// <summary>Inserts an item at the back (index Count) of the VList.</summary>
+		public VList<T> Add(T item)
 		{
 			_block = VListBlock<T>.Add(_block, _localCount, item);
 			_localCount = _block.ImmCount;
@@ -340,7 +349,7 @@ namespace Loyc.Collections
 		}
 
 		void ICollection<T>.Clear() { Clear(); }
-		public RVList<T> Clear()
+		public VList<T> Clear()
 		{
 			_block = null;
 			_localCount = 0;
@@ -386,7 +395,7 @@ namespace Loyc.Collections
 
 		#region IEnumerable<T> Members
 
-        /// <summary>Enumerates through an RVList from index 0 up to index Count-1.
+        /// <summary>Enumerates through a VList from index 0 up to index Count-1.
         /// </summary><remarks>
         /// Normally, enumerating the list takes O(Count + log(Count)^2) = O(Count)
 		/// time. However, if the list's block chain does not increase in size 
@@ -402,9 +411,9 @@ namespace Loyc.Collections
 			VListBlock<T> _nextBlock;
 			FVList<T> _outerList;
 
-			public Enumerator(RVList<T> list)
+			public Enumerator(VList<T> list)
 				: this(new FVList<T>(list._block, list._localCount), new FVList<T>()) { }
-			public Enumerator(RVList<T> list, RVList<T> subList)
+			public Enumerator(VList<T> list, VList<T> subList)
 				: this(new FVList<T>(list._block, list._localCount),
 					   new FVList<T>(subList._block, subList._localCount)) { }
 			public Enumerator(FVList<T> list) : this(list, new FVList<T>()) { }
@@ -486,7 +495,7 @@ namespace Loyc.Collections
 
 		#region ICloneable Members
 
-		public RVList<T> Clone() { return this; }
+		public VList<T> Clone() { return this; }
 		object ICloneable.Clone() { return this; }
 
 		#endregion
@@ -504,12 +513,12 @@ namespace Loyc.Collections
 		/// typically not copied, but shared between the existing list and the new 
 		/// one.
 		/// </remarks>
-		public RVList<T> Where(Predicate<T> keep)
+		public VList<T> Where(Predicate<T> keep)
 		{
 			if (_localCount == 0)
 				return this;
 			else
-				return (RVList<T>)_block.Where(_localCount, keep, null);
+				return (VList<T>)_block.Where(_localCount, keep, null);
 		}
 
 		/// <summary>Filters and maps a list with a user-defined function.</summary>
@@ -522,18 +531,18 @@ namespace Loyc.Collections
 		/// items it is passed, those N items are typically not copied, but shared 
 		/// between the existing list and the new one.
 		/// </remarks>
-		public RVList<T> WhereSelect(Func<T,Maybe<T>> filter)
+		public VList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
 			if (_localCount == 0)
 				return this;
 			else
-				return (RVList<T>)_block.WhereSelect(_localCount, filter, null);
+				return (VList<T>)_block.WhereSelect(_localCount, filter, null);
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
+		/// original VList structure is not modified.</returns>
 		/// <remarks>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
@@ -541,30 +550,30 @@ namespace Loyc.Collections
 		/// the existing list and the new one. This is useful for functional code
 		/// that sometimes processes a list without modifying it at all.
 		/// </remarks>
-		public RVList<T> SmartSelect(Func<T, T> map)
+		public VList<T> SmartSelect(Func<T, T> map)
 		{
 			if (_localCount == 0)
 				return this;
 			else
-				return (RVList<T>)_block.SmartSelect(_localCount, map, null);
+				return (VList<T>)_block.SmartSelect(_localCount, map, null);
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
-		/// original RVList structure is not modified.</returns>
-		public RVList<Out> Select<Out>(Func<T, Out> map)
+		/// original VList structure is not modified.</returns>
+		public VList<Out> Select<Out>(Func<T, Out> map)
 		{
-			return (RVList<Out>)VListBlock<T>.Select<Out>(_block, _localCount, map, null);
+			return (VList<Out>)VListBlock<T>.Select<Out>(_block, _localCount, map, null);
 		}
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
 		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
-		public RVList<T> Transform(VListTransformer<T> x)
+		public VList<T> Transform(VListTransformer<T> x)
 		{
-			return (RVList<T>)VListBlock<T>.Transform(_block, _localCount, x, true, null);
+			return (VList<T>)VListBlock<T>.Transform(_block, _localCount, x, true, null);
 		}
 
 		#endregion
@@ -577,16 +586,16 @@ namespace Loyc.Collections
 		public void SimpleTests()
 		{
 			// In this simple test, I only add and remove items from the back
-			// of an RVList, but forking is also tested.
+			// of a VList, but forking is also tested.
 
-			RVList<int> list = new RVList<int>();
+			VList<int> list = new VList<int>();
 			Assert.That(list.IsEmpty);
 
 			// Adding to VListBlockOfTwo
-			list = new RVList<int>(10, 20);
+			list = new VList<int>(10, 20);
 			ExpectList(list, 10, 20);
 
-			list = new RVList<int>();
+			list = new VList<int>();
 			list.Add(1);
 			Assert.That(!list.IsEmpty);
 			list.Add(2);
@@ -594,7 +603,7 @@ namespace Loyc.Collections
 
 			// A fork in VListBlockOfTwo. Note that list2 will use two VListBlocks
 			// here but list will only use one.
-			RVList<int> list2 = list.WithoutLast(1);
+			VList<int> list2 = list.WithoutLast(1);
 			list2.Add(3);
 			ExpectList(list, 1, 2);
 			ExpectList(list2, 1, 3);
@@ -643,7 +652,7 @@ namespace Loyc.Collections
 			Assert.That(list.IndexOf(3) == -1);
 
 			// PreviousIn(), Back
-			RVList<int> list3 = list2;
+			VList<int> list3 = list2;
 			Assert.AreEqual(11, (list3 = list3.NextIn(list)).Last);
 			Assert.AreEqual(12, (list3 = list3.NextIn(list)).Last);
 			Assert.AreEqual(13, (list3 = list3.NextIn(list)).Last);
@@ -716,8 +725,8 @@ namespace Loyc.Collections
 		[Test]
 		public void TestInsertRemove()
 		{
-			RVList<int> list = new RVList<int>(9);
-			RVList<int> list2 = new RVList<int>(10, 11);
+			VList<int> list = new VList<int>(9);
+			VList<int> list2 = new VList<int>(10, 11);
 			list.Insert(0, 12);
 			list.Insert(1, list2[1]);
 			list.Insert(2, list2[0]);
@@ -753,10 +762,10 @@ namespace Loyc.Collections
 		[Test]
 		public void TestInsertRemoveRange()
 		{
-			RVList<int> oneTwo = new RVList<int>(1, 2);
-			RVList<int> threeFour = new RVList<int>(3, 4);
-			RVList<int> list = oneTwo;
-			RVList<int> list2 = threeFour;
+			VList<int> oneTwo = new VList<int>(1, 2);
+			VList<int> threeFour = new VList<int>(3, 4);
+			VList<int> list = oneTwo;
+			VList<int> list2 = threeFour;
 
 			ExpectList(list, 1, 2);
 			list.InsertRange(1, threeFour);
@@ -794,8 +803,8 @@ namespace Loyc.Collections
 		[Test]
 		public void TestEmptyListOperations()
 		{
-			RVList<int> a = new RVList<int>();
-			RVList<int> b = new RVList<int>();
+			VList<int> a = new VList<int>();
+			VList<int> b = new VList<int>();
 			a.AddRange(b);
 			a.InsertRange(0, b);
 			a.RemoveRange(0, 0);
@@ -822,7 +831,7 @@ namespace Loyc.Collections
 		[Test]
 		public void TestToArray()
 		{
-			RVList<int> list = new RVList<int>();
+			VList<int> list = new VList<int>();
 			int[] array = list.ToArray();
 			Assert.AreEqual(array.Length, 0);
 
@@ -842,8 +851,8 @@ namespace Loyc.Collections
 		[Test]
 		void TestAddRangePair()
 		{
-			RVList<int> list = new RVList<int>();
-			RVList<int> list2 = new RVList<int>();
+			VList<int> list = new VList<int>();
+			VList<int> list2 = new VList<int>();
 			list2.AddRange(new int[] { 1, 2, 3, 4 });
 			list.AddRange(list2, list2.WithoutLast(1));
 			list.AddRange(list2, list2.WithoutLast(2));
@@ -852,18 +861,18 @@ namespace Loyc.Collections
 			ExpectList(list, 1, 2, 3, 1, 2, 1);
 
 			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(list2.WithoutLast(1), list2); });
-			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(RVList<int>.Empty, list2); });
+			AssertThrows<InvalidOperationException>(delegate() { list2.AddRange(VList<int>.Empty, list2); });
 		}
 		
 		[Test]
 		public void TestSublistProblem()
 		{
-			// This problem affects FVList.PreviousIn(), RVList.NextIn(),
-			// AddRange(list, excludeSubList), RVList.Enumerator when used with a
+			// This problem affects FVList.PreviousIn(), VList.NextIn(),
+			// AddRange(list, excludeSubList), VList.Enumerator when used with a
 			// range.
 
 			// Normally this works fine:
-			RVList<int> subList = new RVList<int>(), list;
+			VList<int> subList = new VList<int>(), list;
 			subList.AddRange(new int[] { 1, 2, 3, 4, 5, 6, 7 });
 			list = subList;
 			list.Add(8);
@@ -896,8 +905,8 @@ namespace Loyc.Collections
 			// These examples are listed in the documentation of FVList.Transform().
 			// There are more Transform() tests in VListTests() and RWListTests().
 
-			RVList<int> list = new RVList<int>(new int[] { -1, 2, -2, 13, 5, 8, 9 });
-			RVList<int> output;
+			VList<int> list = new VList<int>(new int[] { -1, 2, -2, 13, 5, 8, 9 });
+			VList<int> output;
 
 			output = list.Transform((int i, ref int n) =>
 			{   // Keep every second item
@@ -928,7 +937,7 @@ namespace Loyc.Collections
 			});
 			ExpectList(output, -1, 3, 0, 16, 9, 13, 15);
 
-			list = new RVList<int>(new int[] { 1, 2, 3 });
+			list = new VList<int>(new int[] { 1, 2, 3 });
 
 			output = list.Transform(delegate(int i, ref int n) {
 				return i >= 0 ? XfAction.Repeat : XfAction.Keep;

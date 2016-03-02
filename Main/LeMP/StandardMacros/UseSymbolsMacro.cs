@@ -36,7 +36,7 @@ namespace LeMP
 
 			// Replace all symbols while collecting a list of them
 			var symbols = new Dictionary<Symbol, LNode>();
-			RVList<LNode> output = args_body.B.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
+			VList<LNode> output = args_body.B.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
 				var sym = n.Value as Symbol;
 				if (n.IsLiteral && sym != null)
 					return symbols[sym] = LNode.Id(prefix + EcsNodePrinter.SanitizeIdentifier(sym.Name));

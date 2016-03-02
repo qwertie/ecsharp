@@ -378,7 +378,7 @@ namespace LeMP.Prelude
 			if (parts[0].IsId)
 				return null; // e.g. this is true for "static readonly x::Foo"
 
-			RWList<LNode> varStmts = null;
+			WList<LNode> varStmts = null;
 			LNode varStmt = null;
 			for (int i = 0; i < parts.Count; i++) {
 				LNode part = parts[i], type = null, init = null;
@@ -407,7 +407,7 @@ namespace LeMP.Prelude
 				} else {
 					// first item (var x::int => #var int x) or type changed (var a::A b::B => #var A a; #var B b)
 					if (varStmt != null) {
-						varStmts = varStmts ?? new RWList<LNode>();
+						varStmts = varStmts ?? new WList<LNode>();
 						varStmts.Add(varStmt);
 					}
 					varStmt = node.With(S.Var, type, nameAndInit);
@@ -417,7 +417,7 @@ namespace LeMP.Prelude
 			// Return a single statement or a list of them if necessary
 			if (varStmts != null) {
 				varStmts.Add(varStmt);
-				return F.Call(S.Splice, varStmts.ToRVList());
+				return F.Call(S.Splice, varStmts.ToVList());
 			} else {
 				return varStmt;
 			}
@@ -473,9 +473,9 @@ namespace LeMP.Prelude
 		{
 			var args = node.Args;
 			if (node.ArgCount == 2 && args.Last.Calls(_while, 1)) {
-				return node.With(S.DoWhile, new RVList<LNode>(node.Args[0], node.Args[1].Args[0]));
+				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[1].Args[0]));
 			} else if (node.ArgCount == 3 && args.TryGet(1, null).IsIdNamed(_while)) {
-				return node.With(S.DoWhile, new RVList<LNode>(node.Args[0], node.Args[2]));
+				return node.With(S.DoWhile, new VList<LNode>(node.Args[0], node.Args[2]));
 			}
 			return null;
 		}
@@ -513,7 +513,7 @@ namespace LeMP.Prelude
 			if (!elseKW.IsIdNamed(_else))
 				return Reject(sink, elseKW, "'{0}': expected else clause or end-of-statement marker", isUnless ? "unless" : "if");
 			if (@else.IsId && args.Count > 4)
-				@else = LNode.Call(@else.Name, new RVList<LNode>(args.Slice(4)), node);
+				@else = LNode.Call(@else.Name, new VList<LNode>(args.Slice(4)), node);
 			return node.With(S.If, cond, then, @else);
 		}
 
@@ -544,7 +544,7 @@ namespace LeMP.Prelude
 			if (node.ArgCount == 1)
 				return node.WithTarget(S.Case);
 			else if (node.ArgCount == 2 && node.Args[1].Calls(S.Braces))
-				return F.Call(S.Splice, new RVList<LNode>(node.WithArgs(node.Args.First(1)), node.Args[1]));
+				return F.Call(S.Splice, new VList<LNode>(node.WithArgs(node.Args.First(1)), node.Args[1]));
 			return null;
 		}
 		
@@ -554,7 +554,7 @@ namespace LeMP.Prelude
 			if (node.IsId)
 				return node.With(S.Label, F.Id(S.Default));
 			else if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
-				return F.Call(S.Splice, new RVList<LNode>(node.With(S.Label, new RVList<LNode>(F.Id(S.Default))), node.Args[0]));
+				return F.Call(S.Splice, new VList<LNode>(node.With(S.Label, new VList<LNode>(F.Id(S.Default))), node.Args[0]));
 			return null;
 		}
 
@@ -604,7 +604,7 @@ namespace LeMP.Prelude
 			// ...becomes...
 			// #try(#{ stmt1; stmt2; ... }, #catch(#var(Exception, e), handler), #finally(handler))
 			LNode finallyCode = null;
-			RWList<LNode> clauses = new RWList<LNode>();
+			WList<LNode> clauses = new WList<LNode>();
 			var parts = node.Args;
 			
 			for (int i = parts.Count-2; i >= 1; i -= 2)
@@ -643,7 +643,7 @@ namespace LeMP.Prelude
 			if (finallyCode != null)
 				clauses.Add(F.Call(S.Finally, finallyCode));
 			clauses.Insert(0, node.Args[0]);
-			return node.With(S.Try, clauses.ToRVList());
+			return node.With(S.Try, clauses.ToVList());
 		}
 		
 		public static LNode AutoRemoveParens(LNode node)
@@ -882,7 +882,7 @@ namespace LeMP.Prelude
 		{
 			var a = node.Args;
 			if (a.Count == 2)
-				return node.With(S.Var, new RVList<LNode>(F.Missing, F.Call(S.Assign, a[1], a[0])));
+				return node.With(S.Var, new VList<LNode>(F.Missing, F.Call(S.Assign, a[1], a[0])));
 			return null;
 		}
 		

@@ -438,7 +438,7 @@ namespace Loyc.LLParserGenerator
 		#region Run()
 
 		protected ISourceFile _sourceFile;
-		protected RWList<LNode> _classBody;
+		protected WList<LNode> _classBody;
 
 		/// <summary>Generates a braced block of code {...} for the grammar 
 		/// described by the rules that were previously added to this object 
@@ -767,7 +767,7 @@ namespace Loyc.LLParserGenerator
 			// Generate output code
 			_sourceFile = sourceFile;
 			var F = new LNodeFactory(_sourceFile);
-			_classBody = new RWList<LNode>();
+			_classBody = new WList<LNode>();
 			_helper.Begin(_classBody, _sourceFile);
 
 			var generator = new GenerateCodeVisitor(this);
@@ -779,7 +779,7 @@ namespace Loyc.LLParserGenerator
 			
 			_helper.Done();
 
-			return F.Braces(_classBody.ToRVList());
+			return F.Braces(_classBody.ToVList());
 		}
 
 		private void PrintVerboseStats(IEnumerable<Rule> rules)
@@ -1012,7 +1012,7 @@ namespace Loyc.LLParserGenerator
 				try {
 					_result = result;
 					_currentPos = position;
-					_andPreds = RVList<AndPred>.Empty;
+					_andPreds = VList<AndPred>.Empty;
 					Visit(position.Pred);
 					Debug.Assert(_stackDepth == 0);
 				} finally {
@@ -1020,7 +1020,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			KthSet _result;
-			RVList<AndPred> _andPreds;
+			VList<AndPred> _andPreds;
 			GrammarPos _currentPos;
 			HashSet<Pred> _followSetVisited = new HashSet<Pred>();
 			int _stackDepth;

@@ -42,7 +42,7 @@ namespace LeMP
 		}
 			
 		public StringBuilder Output;
-		public RVList<LNode> Results;
+		public VList<LNode> Results;
 			
 		protected override void WriteOutput(InputOutput io)
 		{
