@@ -150,7 +150,7 @@
       <DependentUpon>InstallForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="LllpgCustomTool.cs">
+    <Compile Include="LoycCustomTools.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

@@ -65,9 +65,11 @@
             <param name="candidate">A node that you want to compare with a 'pattern'.</param>
             <param name="pattern">A syntax tree that may contain placeholders. A 
             placeholder is a call to the $ operator with one parameter, which must 
-            be a simple identifier (otherwise the $ operator is treated literally as
-            something that must exist in <c>candidate</c>). The subtree in 
-            <c>candidate</c> corresponding to the placeholder is saved in <c>captures</c>.</param>
+            be either (A) a simple identifier, or (B) the ".." operator with a simple
+            identifier as its single parameter. Otherwise, the $ operator is treated 
+            literally as something that must exist in <c>candidate</c>). The subtree 
+            in <c>candidate</c> corresponding to the placeholder is saved in 
+            <c>captures</c>.</param>
             <param name="captures">A table that maps placeholder names from 
             <c>pattern</c> to subtrees in <c>candidate</c>. You can set your map to 
             null and a map will be created for you if necessary. If you already have
@@ -79,7 +81,8 @@
             Attributes in patterns are not yet supported.
             <para/>
             This method supports multi-part captures, which are matched to 
-            placeholders whose identifier has a #params attribute (for example, if 
+            placeholders whose identifier either (A) has a #params attribute or
+            (B) has the unary ".." operator applied to it (for example, if 
             the placeholder is called p, this is written as <c>$(params p)</c> in 
             EC#.) A placeholder that looks like this can match multiple arguments or
             multiple statements in the <c>candidate</c> (or <i>no</i> arguments, or
@@ -3211,6 +3214,9 @@
             When this option is false, raw text trivia is printed as a normal 
             attribute.</summary>
         </member>
+        <member name="T:Loyc.Syntax.Les.LesNodePrinter.Mode">
+            <summary>TODO: these modes no longer apply, remove them</summary>
+        </member>
         <member name="F:Loyc.Syntax.Les.LesNodePrinter.Mode.Wsa">
             <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
             python-style code block.</summary>
@@ -3353,12 +3359,12 @@
             TODO: IndentLevel, IndentString do not work.
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.LineAndPos">
+        <member name="T:Loyc.Syntax.LineAndCol">
             <summary>Holds a line number (Line) and a position in the line (PosInLine).
             This class isn't really needed in Loyc but is separated from SourcePos 
             in case anyone might want position without a filename.</summary>
-            <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-            nowhere in particular.</remarks>
+            <remarks>Numbering starts at one for both Line and PosInLine. 
+            Line=0 signifies nowhere in particular, or an unknown location.</remarks>
         </member>
         <member name="T:Loyc.Syntax.SourcePos">
             <summary>Holds a filename (FileName), a line number (Line) and a position in 
