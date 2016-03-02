@@ -2,7 +2,7 @@
 layout: default
 title: Home
 ---
-# <center>The Power of Choice</choice>
+# <center>The Power of Choice</center>
 
 Coders are constrained in the way they express themselves by the language they are using. Different languages have different strengths and weaknesses, but expert coders are often unable to choose a programming language or library with the combination of strengths they desire. There are many scenarios that produce this result...
 
