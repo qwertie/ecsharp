@@ -70,7 +70,7 @@
             Also includes macros designed to convert EC# feature to C# (e.g. tuples).
             </summary>
         </member>
-        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
+        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
             <summary>Searches a list of expressions/statements for one or more 
             patterns, and performs replacements.</summary>
             <param name="stmts">A list of expressions/statements in which to search.</param>
@@ -81,7 +81,7 @@
             to insert the captured subexpression(s) into the output.</param>
             <param name="replacementCount">Number of replacements that occurred.</param>
             <returns>The result of applying the replacements.</returns>
-            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.RVList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
+            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
         </member>
         <member name="M:LeMP.StandardMacros.ReplaceInTokenTree(Loyc.Syntax.Lexing.TokenTree@,Loyc.Collections.Impl.InternalList{Loyc.Triplet{Loyc.Symbol,Loyc.Syntax.LNode,System.Int32}})">
             <summary>Replaces Ids with Ids or Literals in token trees.</summary>
@@ -224,7 +224,7 @@
             view or even modify some of this information.
             </remarks>
         </member>
-        <member name="M:LeMP.MacroProcessorTask.ProcessRoot(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:LeMP.MacroProcessorTask.ProcessRoot(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Top-level macro applicator.</summary>
         </member>
         <member name="M:LeMP.MacroProcessorTask.ApplyMacros(Loyc.Syntax.LNode,System.Int32,System.Boolean)">

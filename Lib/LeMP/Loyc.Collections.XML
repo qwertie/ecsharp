@@ -1082,248 +1082,6 @@
                 e.Stack.Last.KeyOffset, so that e.Key.Left is the number of bytes
                 of the key that are stored in this node.
         </member>
-        <member name="T:Loyc.Collections.RWList`1">
-            <summary>
-            RWList is the mutable variant of the RVList data structure.
-            </summary>
-            <remarks>
-            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
-            is available online about the VList data types.
-            <para/>
-            See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
-            about VLists and WLists. It is most efficient to add items to the front of
-            a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
-        </member>
-        <member name="T:Loyc.Collections.WListBase`1">
-            <summary>Shared base class of FWList and RWList.</summary>
-            <typeparam name="T">The type of elements in the list</typeparam>
-        </member>
-        <member name="T:Loyc.Collections.WListProtected`1">
-            <summary>WList implementation in which the WList operations are only 
-            accessible to a derived class.</summary>
-            <typeparam name="T">The type of elements in the list</typeparam>
-            <remarks>
-            This base class is used in the same way one would use protected inheritance 
-            in C++: it provides the derived class with access to a FWList/RWList, but it
-            does not allow users of the derived class to access the list.
-            <para/>
-            I plan to use this base class as an optimization, to implement ITags in 
-            Loyc AST nodes. It is important that AST nodes, which are immutable, use as 
-            little memory as possible so that copies can be made as quickly as possible
-            (and so that Loyc isn't a memory hog). By using WListProtected as a base 
-            class, AST nodes can have extra attributes attached to them without 
-            allocating a separate heap object that would have to be cloned every time 
-            the node's immutable attributes change. Consequently, nodes use 12 bytes 
-            less memory and can be copied faster.
-            <para/>
-            Besides that, WListProtected provides an extra byte of storage in UserByte 
-            that AstNode uses to optimize access to a tag without enlarging the object.
-            <para/>
-            By default, the list will act like a FWList. If you want the list to act 
-            like an RWList instead, override AdjustWListIndex and GetWListEnumerator 
-            as follows:
-            <code>
-            protected override int AdjustWListIndex(int index, int size) 
-            	{ return Count - size - index; }
-            protected virtual IEnumerator&lt;T> GetWListEnumerator() 
-            	{ return GetRVListEnumerator(); }
-            </code>
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.AdjustWListIndex(System.Int32,System.Int32)">
-            <summary>This method implements the difference between FWList and RWList:
-            In FWList it returns <c>index</c>, but in RWList it returns 
-            <c>Count-size-index</c>.</summary>
-            <param name="index">Index to adjust</param>
-            <param name="size">Number of elements being accessed or removed</param>
-            <remarks>Solely as an optimization, FWList and RWList also have separate 
-            versions of this[], InsertAt and RemoveAt.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.GetAt(System.Int32)">
-            <summary>Gets an item from a FWList or RWList at the specified index.</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.SetAt(System.Int32,`0)">
-            <summary>Sets an item in a FWList or RWList at the specified index.</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.Add(`0)">
-            <summary>Inserts an item at the "front" of the list, 
-            which is index 0 for FWList, or Count for RWList.</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.Clear">
-            <summary>Clears the list and frees the memory it used.</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.IndexOf(`0)">
-             <summary>Searches for the specified object and returns the zero-based
-             index of the first occurrence (lowest index) within the entire
-             FVList.</summary>
-             <param name="item">Item to locate (can be null if T can be null)</param>
-             <returns>Index of the item, or -1 if it was not found.</returns>
-             <remarks>This method determines equality using the default equality
-             comparer EqualityComparer.Default for T, the type of values in the list.
-            
-             This method performs a linear search; therefore, this method is an O(n)
-             operation, where n is Count.
-             </remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.GetAtDff(System.Int32)">
-            <summary>Gets an item WITHOUT doing a range check</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.SetAtDff(System.Int32,`0)">
-            <summary>Sets an item WITHOUT doing a range or mutability check</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.ToFVList">
-            <summary>Returns this list as a FVList; if this is a RWList, the order 
-            of the elements is reversed at the same time.</summary>
-            <remarks>This operation marks the items of the FWList or RWList as 
-            immutable. You can still modify the list afterward, but some or all
-            of the list may have to be copied.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListProtected`1.ToRVList">
-            <summary>Returns this list as an RVList; if this is a FWList, the order 
-            of the elements is reversed at the same time.</summary>
-            <remarks>This operation marks the items of the FWList or RWList as 
-            immutable. You can still modify the list afterward, but some or all
-            of the list may have to be copied.</remarks>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.Block">
-            <summary>Reference to VListBlock that contains items at the "front" 
-            of the list. _block can be null if the list is empty.</summary>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.LocalCount">
-            <summary>Number of items in _block that belong to this list.</summary>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.IsOwner">
-            <summary>Specifies whether this object owns the mutable part of _block.</summary>
-            <remarks>
-            Two WLists can have pointers to the same mutable block, but only one 
-            can be the owner. The non-owner must not modify the block.
-            <para/>
-            This flag is false if _block.IsMutable is false.</remarks>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.UserByte">
-            <summary>An additional byte that the derived class can optionally use.</summary>
-            <remarks>Used by Loyc.</remarks>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.InternalVList">
-            <summary>Returns this list as a FVList without marking all items as 
-            immutable. This is for internal use only; a FVList with mutable items 
-            is never returned from a public method.</summary>
-        </member>
-        <member name="P:Loyc.Collections.WListProtected`1.BlockChainLength">
-            <summary>Gets the number of blocks used by this list.</summary>
-            <remarks>You might look at this property when optimizing your program,
-            because the runtime of some operations increases as the chain length 
-            increases. This property runs in O(BlockChainLength) time. Ideally,
-            BlockChainLength is proportional to log_2(Count), but if you produced 
-            the FWList by converting it from a FVList, certain FVList usage patterns 
-            can produce long chains.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListBase`1.Push(`0)">
-            <summary>Synonym for Add(); adds an item to the front of the list.</summary>
-        </member>
-        <member name="M:Loyc.Collections.WListBase`1.op_Explicit(Loyc.Collections.WListBase{`0})~Loyc.Collections.FVList{`0}">
-            <summary>Returns this list as a FVList; if this is a RWList, the order 
-            of the elements is reversed at the same time.</summary>
-            <remarks>This operation marks the items of the FWList or RWList as 
-            immutable. You can still modify the list afterward, but some or all
-            of the list may have to be copied.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.WListBase`1.op_Explicit(Loyc.Collections.WListBase{`0})~Loyc.Collections.RVList{`0}">
-            <summary>Returns this list as an RVList; if this is a FWList, the order 
-            of the elements is reversed at the same time.</summary>
-            <remarks>This operation marks the items of the FWList or RWList as 
-            immutable. You can still modify the list afterward, but some or all
-            of the list may have to be copied.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.Where(System.Predicate{`0})">
-            <summary>Applies a filter to a list, to exclude zero or more
-            items.</summary>
-            <param name="filter">A function that chooses which items to include
-            (exclude items by returning false).</param>
-            <returns>The list after filtering has been applied. The original RVList
-            structure is not modified.</returns>
-            <remarks>
-            If the predicate keeps the first N items it is passed (which are the
-            last or "tail" items in a WList), those N items are typically not 
-            copied, but shared between the existing list and the new one.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
-            <summary>Filters and maps a list with a user-defined function.</summary>
-            <param name="filter">A function that chooses which items to include
-            in a new list, and what to change them to.</param>
-            <returns>The list after filtering has been applied. The original list
-            structure is not modified.</returns>
-            <remarks>
-            This is a smart function. If the filter does not modify the first N 
-            items it is passed those N items are typically not copied, but shared 
-            between the existing list and the new one.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.SmartSelect(System.Func{`0,`0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
-            <remarks>
-            This method is called "Smart" because of what happens if the map
-            doesn't do anything. If the map function returns the first N items
-            unmodified (the items at the tail of the WList), those N items are 
-            typically not copied, but shared between the existing list and the 
-            new one.
-            </remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.Select``1(System.Func{`0,``0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.Transform(Loyc.Collections.VListTransformer{`0})">
-            <summary>Transforms a list (combines filtering with selection and more).</summary>
-            <param name="x">Method to apply to each item in the list</param>
-            <returns>A list formed from transforming all items in the list</returns>
-            <remarks>See the documentation of FVList.Transform() for more information.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.Pop">
-            <summary>Removes the back item (at index Count-1) from the list and returns it.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.op_Explicit(Loyc.Collections.RWList{`0})~Loyc.Collections.FWList{`0}">
-            <summary>Returns this list as a FWList, which effectively reverses 
-            the order of the elements.</summary>
-            <remarks>This operation marks the items of the list as immutable.
-            You can modify either list afterward, but some or all of the list 
-            may have to be copied.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.ToWList">
-            <summary>Returns this list as a FWList, which effectively reverses 
-            the order of the elements.</summary>
-            <remarks>This operation marks the items of the list as immutable.
-            You can modify either list afterward, but some or all of the list 
-            may have to be copied.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.ToArray">
-            <summary>Returns the RWList converted to an array.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RWList`1.Resize(System.Int32)">
-            <summary>Resizes the list to the specified size.</summary>
-            <remarks>If the new size is larger than the old size, empty elements 
-            are added to the end. If the new size is smaller, elements are 
-            truncated from the end.
-            <para/>
-            I decided not to offer a Resize() method for the FWList because the 
-            natural place to insert or remove items in a FWList is at the beginning.
-            For a Resize() method to do so, I felt, would come as too much of a 
-            surprise to some programmers.
-            </remarks>
-        </member>
-        <member name="P:Loyc.Collections.RWList`1.Item(System.Int32,`0)">
-            <summary>Gets an item from the list at the specified index; returns 
-            defaultValue if the index is not valid.</summary>
-        </member>
-        <member name="P:Loyc.Collections.RWList`1.Last">
-            <summary>Returns the last item of the list (at index Count-1).</summary>
-        </member>
         <member name="T:Loyc.Collections.Set`1">
             <summary>An immutable set.</summary>
             <remarks>
@@ -1778,8 +1536,8 @@
         </member>
         <member name="T:Loyc.Collections.VListBlock`1">
             <summary>
-            VListBlock implements the core functionality of FVList, RVList, FWList and 
-            RWList. It is not intended to be used directly.
+            VListBlock implements the core functionality of FVList, VList, FWList and 
+            WList. It is not intended to be used directly.
             </summary><remarks>
             VList is a persistent list data structure described in Phil Bagwell's 2002
             paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
@@ -1788,12 +1546,12 @@
             fastest place to insert items.
             <para/>
             This is unnatural in .NET, so I also created a second data structure, the
-            "reverse" VList or RVList, in which the end of the list (index Count-1) is 
-            the natural location for adding items. To achieve this, the RVList sees
-            the same elements as a FVList, but in reverse order.
+            "reverse" VList, originally called RVList, in which the end of the list 
+            (index Count-1) is the natural location for adding items. To achieve this, 
+            the VList sees the same elements as a FVList, but in reverse order.
             <para/>
-            FWList and RWList are the names I picked for the mutable (Writable) 
-            variants of FVList and RVList.
+            FWList and WList are the names I picked for the mutable (Writable) 
+            variants of FVList and VList.
             <para/>
             A persistent list is a list that is normally considered immutable, so
             adding an item implies creating a new list rather than changing the one
@@ -1801,12 +1559,12 @@
             copy-on-write semantics, so that "copying" a list is a trivial O(1)
             operation, but modifying a list is sometimes quite inefficient. My 
             implementation of VLists presents a mutable IList(of T) interface, but 
-            this is only to adhere to .NET Framework conventions. FVList and RVList 
+            this is only to adhere to .NET Framework conventions. FVList and VList 
             are value types that update their own references to the list when they are 
             modified. Thus, "Copying" a list is done with a simple assignment 
             statement. For example:
             <code lang="C#">
-            RVList&lt;int&gt; a = new RVList&lt;int&gt;(), b = new RVList&lt;int&gt;();
+            VList&lt;int&gt; a = new VList&lt;int&gt;(), b = new VList&lt;int&gt;();
             a.Add(1);
             a.Add(2);
             b = a;             // copy the list
@@ -1821,13 +1579,13 @@
             performance characteristics are almost as bad as a linked list. One major 
             problem that comes to mind is if you keep changing the last item:
             <code lang="C#">
-            RVList&lt;int&gt; list = new RVList&lt;int&gt;();
+            VList&lt;int&gt; list = new VList&lt;int&gt;();
             ... add some items to list ...
             for(int n;; n++)
                 list[list.Count-1] = n;
             </code>
             Unlike, for example, a C++-based FVList implementation, it is impossible for
-            the FVList or RVList, which are value types, to know if the list has been 
+            the FVList or VList, which are value types, to know if the list has been 
             "copied" or not. In case the list has been copied, changing any element 
             requires a copy to be made of the VListBlock that contains that element, as 
             well as any subsequent blocks (in this example, only the last block must be 
@@ -1844,7 +1602,7 @@
             1024 elements on any given block. Unfortunately, this means that some
             operations listed below degrade toward O(N) when the list is large, most 
             notably including the indexer, which requires over 1000 iterations to look 
-            up element zero in an RVList that has one million elements.
+            up element zero in a VList that has one million elements.
             <para/>
             Due to the slow performance you get from operations like this, I decided 
             to implement FWList, a mutable version of the FVList, which I'll discuss 
@@ -1852,15 +1610,15 @@
             <para/>
             Similarly to a persistent linked list,
             <ul>
-            <li>Adding an item to the front of a VList or the end of an RVList is always
+            <li>Adding an item to the front of a VList or the end of a VList is always
               O(1) in time, and often O(1) in space (though, unlike a linked list, it
               may be much more)</li>
-            <li>Removing an item from the front of a VList or the end of an RVList is 
+            <li>Removing an item from the front of a VList or the end of a VList is 
               O(1) in time, although space not necessarily reclaimed.</li>
             <li>Adding or removing an item at the end of a VList or the front of an 
-              RVList is O(N) and requires making a copy of the entire list.</li>
+              VList is O(N) and requires making a copy of the entire list.</li>
             <li>Inserting or removing a list of M items at the end of a VList or the 
-              front of an RVList is O(N + M).</li>
+              front of a VList is O(N + M).</li>
             <li>Changing an item at an arbitrary position should be avoided, as it
               performs as poorly as inserting or removing an item at that position.</li>
             </ul>
@@ -1877,13 +1635,13 @@
             Also, VLists can (in the best cases) store data almost as compactly as
             ordinary arrays.
             <para/>
-            I suspect FVList(of T) and RVList(of T) almost always outperforms 
+            I suspect FVList(of T) and VList(of T) almost always outperforms 
             LinkedList(of T) in both time and space, if you are always adding and
             removing items at the correct end of the list. And it should perform as 
             well as List(of T) in some situations while providing an illusion of 
             immutability that List(of T) can't. For lists of 0 to 2 items, FVList and 
-            RVList use less space than List(of T) (in fact, no object is allocated 
-            for an empty FVList or RVList.)
+            VList use less space than List(of T) (in fact, no object is allocated 
+            for an empty FVList or VList.)
             <para/>
             The FWList is built on the same foundation as the FVList (a linked list of
             VListBlock objects whose size increases exponentially), but it allows 
@@ -1900,9 +1658,9 @@
             copied into a mutable block and then modified, and this copy operation 
             typically takes O(N) time.
             <para/>
-            RWList is like FWList except that new items are added at index Count 
+            WList is like FWList except that new items are added at index Count 
             instead of index zero. The head of a FWList is at index 0 and is returned 
-            from the First property; the head of an RWList is at index Count-1 and is
+            from the First property; the head of an WList is at index Count-1 and is
             returned from the Last property.
             <para/>
             VListBlock implements a single "node" or "sub-array" within a VList. It
@@ -1914,9 +1672,9 @@
             VListBlock adds one new member to the structure Phil Bagwell described,
             PriorCount, a count of elements in other (smaller) lists to which this list
             is linked. This makes TotalCount an O(1) operation instead of O(log N),
-            which is necessary so that RVList[i] and RWList[i] are O(1) on average.
+            which is necessary so that VList[i] and WList[i] are O(1) on average.
             <para/>
-            Independent instances of FVList, RVList, FWList and RWList can be accessed 
+            Independent instances of FVList, VList, FWList and WList can be accessed 
             from independent threads even though they may share some of the same 
             memory. Individual instances of these objects, however, are not 
             synchronized.
@@ -1941,7 +1699,7 @@
             If the some or all of the block is mutable, _immCount bit 30 is set 
             (0x40000000), and the low bits contain the number of immutable items.
             In that case the total number of items in use, including mutable 
-            items, is only known by the FWList or RWList that encapsulates the 
+            items, is only known by the FWList or WList that encapsulates the 
             block.
             <para/>
             The mutable flag is part of this field instead of being a separate 
@@ -1987,7 +1745,7 @@
             access to any kind of VList; e.g. perhaps malicious code could 
             corrupt a VListBlock somehow by exploiting lack of thread safety.
             <para/>
-            Theoretically you shouldn't modify an FWList/RWList while it is being
+            Theoretically you shouldn't modify an FWList/WList while it is being
             enumerated, but the danger is limited to an incorrect sequence of 
             items being returned from the enumerator; a "subList is not within 
             list" exception is also possible.
@@ -1996,15 +1754,15 @@
             (1) once items are switched from mutable to immutable, they can never 
                 be made mutable again, since there is no way to know if any 
                 immutable VList references still exist.
-            (2) mutable items always belong to exactly one FWList or one RWList,
+            (2) mutable items always belong to exactly one FWList or one WList,
                 but a VListBlock doesn't know what FWList it belongs to. A FWList 
-                or RWList is detached from its VListBlock when Clear() is called,
+                or WList is detached from its VListBlock when Clear() is called,
                 making the block immutable again.
             (3) if not all the items in a VListBlock are mutable, then the Prior 
                 list is guaranteed to be immutable. In other words, mutable and 
                 immutable items are not interleaved; mutable items are always at 
                 the "front" and immutable items are always at the "back" (which
-                is the beginning of an RVList or end of an FVList).
+                is the beginning of a VList or end of an FVList).
             (4) When the mutable flag is set, _immCount appears to be a very 
                 large number. Code that uses _immCount directly instead of 
                 calling ImmCount is taking advantage of that fact.
@@ -2017,7 +1775,7 @@
             of calculations involved in looking up an item.</remarks>
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.RGet(System.Int32,System.Int32)">
-            <summary>Gets an item at distance 'index' from the back (beginning of an RVList)</summary>
+            <summary>Gets an item at distance 'index' from the back (beginning of a VList)</summary>
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.Add(System.Int32,`0)">
             <summary>Inserts a new item at the "front" of a FVList where localCount
@@ -2053,7 +1811,7 @@
             distanceFromFront is the insertion position (0=front).
             </summary>
             <param name="isRVList">Indicates the insertion order. If isRVList==true,
-            the items[0] is inserted first (which is appropriate for an RVList),
+            the items[0] is inserted first (which is appropriate for a VList),
             otherwise it is inserted last (which is appropriate for a FVList)</param>
             <exception cref="T:System.IndexOutOfRangeException">distanceFromFront was out of
             range.</exception>
@@ -2082,7 +1840,7 @@
             <remarks>This method is for use by immutable VLists only.</remarks>
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.AddRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IEnumerator{`0})">
-            <summary>Adds a list of items to an immutable RVList (not a FVList).</summary>
+            <summary>Adds a list of items to an immutable VList (not a FVList).</summary>
             <remarks>This method is for use by immutable RVLists only.</remarks>
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.AddRange(Loyc.Collections.VListBlock{`0},System.Int32,System.Collections.Generic.IList{`0},System.Boolean)">
@@ -2142,7 +1900,7 @@
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.EnsureMutable(Loyc.Collections.WListProtected{`0},System.Int32)">
             <summary>Ensures that at least the specified number of items at the 
-            front of a FWList or RWList are mutable and owned by the list.</summary>
+            front of a FWList or WList are mutable and owned by the list.</summary>
             <param name="mutablesNeeded">Number of mutable items required.</param>
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.MuClear(System.Int32)">
@@ -2178,7 +1936,7 @@
         </member>
         <member name="M:Loyc.Collections.VListBlock`1.Front(System.Int32)">
             <summary>Returns the "front" item in a FVList/FWList associated with 
-            this block (or back item of a RVList) where localCount is the 
+            this block (or back item of a VList) where localCount is the 
             number of items in the FVList's first block.
             </summary>
         </member>
@@ -2234,7 +1992,7 @@
             previous blocks for the desired index.</summary>
             <remarks>A FVList computes localIndex as FVList._localCount-1-index.
             <para/>
-            FVList/RVList is responsible for checking that the user's index is 
+            FVList/VList is responsible for checking that the user's index is 
             valid and throwing IndexOutOfRangeException if not.
             <para/>
             The setter can only be called on mutable indices!
@@ -2254,7 +2012,7 @@
             <summary>The local array (elements [0.._localCount - 1] are in use).
             _array[_localCount-1] is the "front" of the list according to the
             terminology of a FVList, but it's the back of the list in the
-            terminology of a RVList.</summary>
+            terminology of a VList.</summary>
             <remarks>
             The method descriptions here use the terminology of a FVList, so if
             we're talking about _array[i], and i is increasing, then we are getting
@@ -2282,10 +2040,11 @@
             <para/>
             See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
             about VLists. Items are normally added to, and removed from, the front of a 
-            FVList or to the back of an RVList; adding, removing or changing items at any 
-            other position is inefficient. You can call ToRVList() to convert a FVList to 
-            its equivalent RVList, which is a reverse-order view of the same list that 
-            shares the same memory.</remarks>
+            FVList or to the back of a VList; adding, removing or changing items at any 
+            other position is inefficient. You can call ToVList() to convert a FVList to 
+            its equivalent VList, which is a reverse-order view of the same list that 
+            shares the same memory.
+            </remarks>
         </member>
         <member name="M:Loyc.Collections.FVList`1.op_Equality(Loyc.Collections.FVList{`0},Loyc.Collections.FVList{`0})">
             <summary>Returns whether the two list references are the same.
@@ -2305,33 +2064,33 @@
         <member name="M:Loyc.Collections.FVList`1.Push(`0)">
             <summary>Synonym for Add(); adds an item to the front of the list.</summary>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.op_Explicit(Loyc.Collections.FVList{`0})~Loyc.Collections.RVList{`0}">
-            <summary>Returns this list as an RVList, which effectively reverses the
+        <member name="M:Loyc.Collections.FVList`1.op_Explicit(Loyc.Collections.FVList{`0})~Loyc.Collections.VList{`0}">
+            <summary>Returns this list as a VList, which effectively reverses the
             order of the elements.</summary>
-            <remarks>This is a trivial operation; the RVList shares the same memory.</remarks>
+            <remarks>This is a trivial operation; the VList shares the same memory.</remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.ToRVList">
-            <summary>Returns this list as an RVList, which effectively reverses the
+        <member name="M:Loyc.Collections.FVList`1.ToVList">
+            <summary>Returns this list as a VList, which effectively reverses the
             order of the elements.</summary>
-            <returns>This is a trivial operation; the RVList shares the same memory.</returns>
+            <returns>This is a trivial operation; the VList shares the same memory.</returns>
         </member>
         <member name="M:Loyc.Collections.FVList`1.op_Explicit(Loyc.Collections.FVList{`0})~Loyc.Collections.FWList{`0}">
             <summary>Returns this list as a FWList.</summary>
             <remarks>The list contents are not copied until you modify the FWList.</remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.ToWList">
+        <member name="M:Loyc.Collections.FVList`1.ToFWList">
             <summary>Returns this list as a FWList.</summary>
             <remarks>The list contents are not copied until you modify the FWList.</remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.op_Explicit(Loyc.Collections.FVList{`0})~Loyc.Collections.RWList{`0}">
-            <summary>Returns this list as a RWList, which effectively reverses the
+        <member name="M:Loyc.Collections.FVList`1.op_Explicit(Loyc.Collections.FVList{`0})~Loyc.Collections.WList{`0}">
+            <summary>Returns this list as a WList, which effectively reverses the
             order of the elements.</summary>
-            <remarks>The list contents are not copied until you modify the RWList.</remarks>
+            <remarks>The list contents are not copied until you modify the WList.</remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.ToRWList">
-            <summary>Returns this list as a RWList, which effectively reverses the
+        <member name="M:Loyc.Collections.FVList`1.ToWList">
+            <summary>Returns this list as a WList, which effectively reverses the
             order of the elements.</summary>
-            <remarks>The list contents are not copied until you modify the RWList.</remarks>
+            <remarks>The list contents are not copied until you modify the WList.</remarks>
         </member>
         <member name="M:Loyc.Collections.FVList`1.ToArray">
             <summary>Returns the FVList converted to an array.</summary>
@@ -2355,7 +2114,7 @@
             {
                 var output = FVList&lt;int&gt;.Empty;
                 // Enumerate tail-to-head
-                foreach (int n in (RVList&lt;int&gt;)input)
+                foreach (int n in (VList&lt;int&gt;)input)
                     if (n >= 0)
                         output.SmartAdd(n, input);
                 return output;
@@ -2433,12 +2192,12 @@
             <returns>A list formed from transforming all items in the list</returns>
             <remarks>
             This is my attempt to make an optimized multi-purpose routine for
-            transforming a FVList or RVList. It is slightly cumbersome to use,
+            transforming a FVList or VList. It is slightly cumbersome to use,
             but allows you to do several common operations in one transformer
             method.
             <para/>
             The VListTransformer method takes two arguments: an item and its index 
-            in the FVList or RVList. It can modify the item if desired, and then it
+            in the FVList or VList. It can modify the item if desired, and then it
             returns a XfAction value, which indicates the action to take. Most
             often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, 
             which, repectively, drop the item from the output list, copy the item 
@@ -2467,7 +2226,7 @@
             to get a third call, if it wants.
             <para/>
             XfAction.Repeat is best explained by example. In the following
-            examples, assume "list" is an RVList holding the numbers (1, 2, 3):
+            examples, assume "list" is a VList holding the numbers (1, 2, 3):
             <example>
             output = list.Transform((i, ref n) => {
                 // This example produces (1, 1, 2, 2, 3, 3)
@@ -2500,7 +2259,7 @@
             });
             </example>
             And now for some examples using XfAction.Keep, XfAction.Drop and
-            XfAction.Change. Assume list is an RVList holding the following 
+            XfAction.Change. Assume list is a VList holding the following 
             integers: (-1, 2, -2, 13, 5, 8, 9)
             <example>
             output = list.Transform((i, ref n) =>
@@ -2665,6 +2424,181 @@
         </member>
         <member name="P:Loyc.Collections.CG.ObjectCache">
             <summary>Gets the cache used by <see cref="M:Loyc.Collections.CG.Cache(System.Object)"/>.</summary>
+        </member>
+        <member name="T:Loyc.Collections.VList`1">
+            <summary>
+            VList represents a reference to a reverse-order FVList.
+            </summary><remarks>
+            An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
+            is available online about the VList data types.
+            <para/>
+            The VList is a persistent list data structure described in Phil Bagwell's 
+            2002 paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
+            Arrays". Originally, this type was called RVList because it works in the
+            reverse order to the original VList type: new items are normally added at
+            the <i>beginning</i> of a VList, which is normal in functional languages,
+            but <i>this</i> VList acts like a normal .NET list, so it is optimized for
+            new items to be added at the end. The name "RVList" is ugly, though, since
+            it misleadingly appears to be related to Recreational Vehicles. So as 
+            of LeMP 1.5, it's called simply VList.
+            <para/>
+            In contrast, the <see cref="T:Loyc.Collections.FVList`1"/> type acts like the original VList;
+            its Add method puts new items at the beginning (index 0).
+            <para/>
+            See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for a more detailed 
+            description.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.op_Equality(Loyc.Collections.VList{`0},Loyc.Collections.VList{`0})">
+            <summary>Returns whether the two list references are the same.
+            Does not compare the contents of the lists.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.op_Inequality(Loyc.Collections.VList{`0},Loyc.Collections.VList{`0})">
+            <summary>Returns whether the two list references are different.
+            Does not compare the contents of the lists.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Equals(System.Object)">
+            <summary>Returns whether the two list references are the same.
+            Does not compare the contents of the lists.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Pop">
+            <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Push(`0)">
+            <summary>Synonym for Add(); adds an item to the front of the list.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.op_Explicit(Loyc.Collections.VList{`0})~Loyc.Collections.FVList{`0}">
+            <summary>Returns this list as a FVList, which effectively reverses the
+            order of the elements.</summary>
+            <remarks>This is a trivial operation; the FVList shares the same memory.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.ToFVList">
+            <summary>Returns this list as a FVList, which effectively reverses the
+            order of the elements.</summary>
+            <returns>This is a trivial operation; the FVList shares the same memory.</returns>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.op_Explicit(Loyc.Collections.VList{`0})~Loyc.Collections.FWList{`0}">
+            <summary>Returns this list as a FWList, which effectively reverses the
+            order of the elements.</summary>
+            <remarks>The list contents are not copied until you modify the FWList.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.ToFWList">
+            <summary>Returns this list as a FWList, which effectively reverses the
+            order of the elements.</summary>
+            <remarks>The list contents are not copied until you modify the FWList.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.op_Explicit(Loyc.Collections.VList{`0})~Loyc.Collections.WList{`0}">
+            <summary>Returns this list as an WList.</summary>
+            <remarks>The list contents are not copied until you modify the WList.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.ToWList">
+            <summary>Returns this list as an WList.</summary>
+            <remarks>The list contents are not copied until you modify the WList.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.ToArray">
+            <summary>Returns the VList converted to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.IndexOf(`0)">
+             <summary>Searches for the specified object and returns the zero-based
+             index of the first occurrence (lowest index) within the entire
+             VList.</summary>
+             <param name="item">Item to locate (can be null if T can be null)</param>
+             <returns>Index of the item, or -1 if it was not found.</returns>
+             <remarks>This method determines equality using the default equality
+             comparer EqualityComparer.Default for T, the type of values in the list.
+            
+             This method performs a linear search, and is typically an O(n)
+             operation, where n is Count. However, because the list is searched
+             upward from index 0 to Count-1, if the list's blocks do not increase in
+             size exponentially (due to the way that the list has been modified in
+             the past), the search can have worse performance; the (unlikely) worst
+             case is O(n^2). FVList(of T).IndexOf() doesn't have this problem.
+             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.System#Collections#Generic#ICollection{T}#Add(`0)">
+            <summary>Inserts an item at the back (index Count) of the VList.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Add(`0)">
+            <summary>Inserts an item at the back (index Count) of the VList.</summary>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Where(System.Predicate{`0})">
+            <summary>Applies a filter to a list, to exclude zero or more
+            items.</summary>
+            <param name="keep">A function that chooses which items to include
+            (exclude items by returning false).</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            If the predicate keeps the first N items it is passed, those N items are
+            typically not copied, but shared between the existing list and the new 
+            one.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+            <summary>Filters and maps a list with a user-defined function.</summary>
+            <param name="filter">A function that chooses which items to include
+            in a new list, and what to change them to.</param>
+            <returns>The list after filtering has been applied. The original list
+            structure is not modified.</returns>
+            <remarks>
+            This is a smart function. If the filter does not modify the first N 
+            items it is passed, those N items are typically not copied, but shared 
+            between the existing list and the new one.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.SmartSelect(System.Func{`0,`0})">
+            <summary>Maps a list to another list of the same length.</summary>
+            <param name="map">A function that transforms each item in the list.</param>
+            <returns>The list after the map function is applied to each item. The 
+            original VList structure is not modified.</returns>
+            <remarks>
+            This method is called "Smart" because of what happens if the map
+            doesn't do anything. If the map function returns the first N items
+            unmodified, those N items are typically not copied, but shared between
+            the existing list and the new one. This is useful for functional code
+            that sometimes processes a list without modifying it at all.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Select``1(System.Func{`0,``0})">
+            <summary>Maps a list to another list of the same length.</summary>
+            <param name="map">A function that transforms each item in the list.</param>
+            <returns>The list after the map function is applied to each item. The 
+            original VList structure is not modified.</returns>
+        </member>
+        <member name="M:Loyc.Collections.VList`1.Transform(Loyc.Collections.VListTransformer{`0})">
+            <summary>Transforms a list (combines filtering with selection and more).</summary>
+            <param name="x">Method to apply to each item in the list</param>
+            <returns>A list formed from transforming all items in the list</returns>
+            <remarks>See the documentation of FVList.Transform() for more information.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.VList`1.Tail">
+            <summary>Returns a list without the last item. If the list is empty, 
+            an empty list is retured.</summary>
+        </member>
+        <member name="P:Loyc.Collections.VList`1.Last">
+            <summary>Returns the last item of the list (at index Count-1), which is the head of the list.</summary>
+        </member>
+        <member name="P:Loyc.Collections.VList`1.BlockChainLength">
+            <summary>Gets the number of blocks used by this list.</summary>
+            <remarks>You might look at this property when optimizing your program,
+            because the runtime of some operations increases as the chain length 
+            increases. This property runs in O(BlockChainLength) time. Ideally,
+            BlockChainLength is proportional to log_2(Count), but certain VList 
+            usage patterns can produce long chains.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.VList`1.Item(System.Int32,`0)">
+            <summary>Gets an item from the list at the specified index; returns 
+            defaultValue if the index is not valid.</summary>
+        </member>
+        <member name="T:Loyc.Collections.VList`1.Enumerator">
+            <summary>Enumerates through a VList from index 0 up to index Count-1.
+            </summary><remarks>
+            Normally, enumerating the list takes O(Count + log(Count)^2) = O(Count)
+            time. However, if the list's block chain does not increase in size 
+            exponentially (due to the way that the list has been modified in the 
+            past), the search can have worse performance; the worst case is O(n^2),
+            but this is unlikely. FVList's Enumerator doesn't have this problem 
+            because it enumerates in the other direction.</remarks>
         </member>
         <member name="T:Loyc.Collections.Impl.InternalSet`1">
             <summary>A hash-trie data structure for use inside other data structures.</summary>
@@ -3317,6 +3251,139 @@
             <summary>Called by DoSingleOperation to split a full node, then retry the add operation.</summary>
             <remarks>Same arguments and return value as DoSingleOperation.</remarks>
         </member>
+        <member name="T:Loyc.Collections.WListProtected`1">
+            <summary>WList implementation in which the WList operations are only 
+            accessible to a derived class.</summary>
+            <typeparam name="T">The type of elements in the list</typeparam>
+            <remarks>
+            This base class is used in the same way one would use protected inheritance 
+            in C++: it provides the derived class with access to a FWList/WList, but it
+            does not allow users of the derived class to access the list.
+            <para/>
+            I had planned to use this base class as an optimization to help implement
+            Loyc trees, but I didn't end up using it. Still, it could be useful someday
+            as a base class of a memory-critical class that wants a mutable WList.
+            <para/>
+            By default, the list will act like a FWList. If you want the list to act 
+            like an WList instead, override AdjustWListIndex and GetWListEnumerator 
+            as follows:
+            <code>
+            protected override int AdjustWListIndex(int index, int size) 
+            	{ return Count - size - index; }
+            protected virtual IEnumerator&lt;T> GetWListEnumerator() 
+            	{ return GetRVListEnumerator(); }
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.AdjustWListIndex(System.Int32,System.Int32)">
+            <summary>This method implements the difference between FWList and WList:
+            In FWList it returns <c>index</c>, but in WList it returns 
+            <c>Count-size-index</c>.</summary>
+            <param name="index">Index to adjust</param>
+            <param name="size">Number of elements being accessed or removed</param>
+            <remarks>Solely as an optimization, FWList and WList also have separate 
+            versions of this[], InsertAt and RemoveAt.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.GetAt(System.Int32)">
+            <summary>Gets an item from a FWList or WList at the specified index.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.SetAt(System.Int32,`0)">
+            <summary>Sets an item in a FWList or WList at the specified index.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.Add(`0)">
+            <summary>Inserts an item at the "front" of the list, 
+            which is index 0 for FWList, or Count for WList.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.Clear">
+            <summary>Clears the list and frees the memory it used.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.IndexOf(`0)">
+             <summary>Searches for the specified object and returns the zero-based
+             index of the first occurrence (lowest index) within the entire
+             FVList.</summary>
+             <param name="item">Item to locate (can be null if T can be null)</param>
+             <returns>Index of the item, or -1 if it was not found.</returns>
+             <remarks>This method determines equality using the default equality
+             comparer EqualityComparer.Default for T, the type of values in the list.
+            
+             This method performs a linear search; therefore, this method is an O(n)
+             operation, where n is Count.
+             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.GetAtDff(System.Int32)">
+            <summary>Gets an item WITHOUT doing a range check</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.SetAtDff(System.Int32,`0)">
+            <summary>Sets an item WITHOUT doing a range or mutability check</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.ToFVList">
+            <summary>Returns this list as a FVList; if this is a WList, the order 
+            of the elements is reversed at the same time.</summary>
+            <remarks>This operation marks the items of the FWList or WList as 
+            immutable. You can still modify the list afterward, but some or all
+            of the list may have to be copied.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.WListProtected`1.ToVList">
+            <summary>Returns this list as a VList; if this is a FWList, the order 
+            of the elements is reversed at the same time.</summary>
+            <remarks>This operation marks the items of the FWList or WList as 
+            immutable. You can still modify the list afterward, but some or all
+            of the list may have to be copied.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.Block">
+            <summary>Reference to VListBlock that contains items at the "front" 
+            of the list. _block can be null if the list is empty.</summary>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.LocalCount">
+            <summary>Number of items in _block that belong to this list.</summary>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.IsOwner">
+            <summary>Specifies whether this object owns the mutable part of _block.</summary>
+            <remarks>
+            Two WLists can have pointers to the same mutable block, but only one 
+            can be the owner. The non-owner must not modify the block.
+            <para/>
+            This flag is false if _block.IsMutable is false.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.UserByte">
+            <summary>An additional byte that the derived class can optionally use.</summary>
+            <remarks>Used by Loyc.</remarks>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.InternalVList">
+            <summary>Returns this list as a FVList without marking all items as 
+            immutable. This is for internal use only; a FVList with mutable items 
+            is never returned from a public method.</summary>
+        </member>
+        <member name="P:Loyc.Collections.WListProtected`1.BlockChainLength">
+            <summary>Gets the number of blocks used by this list.</summary>
+            <remarks>You might look at this property when optimizing your program,
+            because the runtime of some operations increases as the chain length 
+            increases. This property runs in O(BlockChainLength) time. Ideally,
+            BlockChainLength is proportional to log_2(Count), but if you produced 
+            the FWList by converting it from a FVList, certain FVList usage patterns 
+            can produce long chains.</remarks>
+        </member>
+        <member name="T:Loyc.Collections.WListBase`1">
+            <summary>Shared base class of FWList and WList.</summary>
+            <typeparam name="T">The type of elements in the list</typeparam>
+        </member>
+        <member name="M:Loyc.Collections.WListBase`1.Push(`0)">
+            <summary>Synonym for Add(); adds an item to the front of the list.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WListBase`1.op_Explicit(Loyc.Collections.WListBase{`0})~Loyc.Collections.FVList{`0}">
+            <summary>Returns this list as a FVList; if this is a WList, the order 
+            of the elements is reversed at the same time.</summary>
+            <remarks>This operation marks the items of the FWList or WList as 
+            immutable. You can still modify the list afterward, but some or all
+            of the list may have to be copied.</remarks>
+        </member>
+        <member name="M:Loyc.Collections.WListBase`1.op_Explicit(Loyc.Collections.WListBase{`0})~Loyc.Collections.VList{`0}">
+            <summary>Returns this list as a VList; if this is a FWList, the order 
+            of the elements is reversed at the same time.</summary>
+            <remarks>This operation marks the items of the FWList or WList as 
+            immutable. You can still modify the list afterward, but some or all
+            of the list may have to be copied.</remarks>
+        </member>
         <member name="T:Loyc.Collections.Impl.AListInner`1">
             <summary>Internal node of <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.SparseAList`1"/>.</summary>
         </member>
@@ -3418,7 +3485,7 @@
         <member name="M:Loyc.Collections.VListBlockOfTwo`1.#ctor(`0,`0,System.Boolean)">
             <summary>Initializes a block with two items.</summary>
             <remarks>The secondItem is added second, so it will occupy position [0]
-            of a FVList or position [1] of an RVList.</remarks>
+            of a FVList or position [1] of a VList.</remarks>
         </member>
         <member name="T:Loyc.Collections.MMap`2">
             <summary>
@@ -3905,14 +3972,14 @@
             <para/>
             <remarks>See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
             about VLists and WLists. It is most efficient to add items to the front of
-            a FWList (at index 0) or the back of an RWList (at index Count-1).</remarks>
+            a FWList (at index 0) or the back of an WList (at index Count-1).</remarks>
         </member>
         <member name="M:Loyc.Collections.FWList`1.Where(System.Predicate{`0})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
             <param name="keep">A function that chooses which items to include
             (exclude items by returning false).</param>
-            <returns>The list after filtering has been applied. The original RVList
+            <returns>The list after filtering has been applied. The original VList
             structure is not modified.</returns>
             <remarks>
             If the predicate keeps the first N items it is passed (which are the
@@ -3937,7 +4004,7 @@
             <summary>Maps a list to another list of the same length.</summary>
             <param name="map">A function that transforms each item in the list.</param>
             <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
+            original VList structure is not modified.</returns>
             <remarks>
             This method is called "Smart" because of what happens if the map
             doesn't do anything. If the map function returns the first N items
@@ -3950,7 +4017,7 @@
             <summary>Maps a list to another list of the same length.</summary>
             <param name="map">A function that transforms each item in the list.</param>
             <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
+            original VList structure is not modified.</returns>
         </member>
         <member name="M:Loyc.Collections.FWList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -3961,15 +4028,15 @@
         <member name="M:Loyc.Collections.FWList`1.Pop">
             <summary>Removes the front item (at index 0) from the list and returns it.</summary>
         </member>
-        <member name="M:Loyc.Collections.FWList`1.op_Explicit(Loyc.Collections.FWList{`0})~Loyc.Collections.RWList{`0}">
-            <summary>Returns this list as an RWList, which effectively reverses 
+        <member name="M:Loyc.Collections.FWList`1.op_Explicit(Loyc.Collections.FWList{`0})~Loyc.Collections.WList{`0}">
+            <summary>Returns this list as an WList, which effectively reverses 
             the order of the elements.</summary>
             <remarks>This operation marks the items of the list as immutable.
             You can modify either list afterward, but some or all of the list 
             may have to be copied.</remarks>
         </member>
-        <member name="M:Loyc.Collections.FWList`1.ToRWList">
-            <summary>Returns this list as an RWList, which effectively reverses 
+        <member name="M:Loyc.Collections.FWList`1.ToWList">
+            <summary>Returns this list as an WList, which effectively reverses 
             the order of the elements.</summary>
             <remarks>This operation marks the items of the list as immutable.
             You can modify either list afterward, but some or all of the list 
@@ -4065,107 +4132,32 @@
         <member name="T:Loyc.Collections.CPStringTrie`1.KeyCollection">
             <summary>Return value of <see cref="P:Loyc.Collections.CPStringTrie`1.Keys"/>.</summary>
         </member>
-        <member name="T:Loyc.Collections.RVList`1">
+        <member name="T:Loyc.Collections.WList`1">
             <summary>
-            RVList represents a reference to a reverse-order FVList.
-            </summary><remarks>
+            WList is the mutable variant of the VList data structure.
+            </summary>
+            <remarks>
             An <a href="http://www.codeproject.com/Articles/26171/VList-data-structures-in-C">article</a>
             is available online about the VList data types.
             <para/>
-            FVList is a persistent list data structure described in Phil Bagwell's 2002
-            paper "Fast Functional Lists, Hash-Lists, Deques and Variable Length
-            Arrays". RVList is the name I (DLP) give to a variant of this structure in
-            which new elements are efficiently added to the end of the list rather 
-            than to the beginning. See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for a 
-            more detailed description.
-            </remarks>
+            See the remarks of <see cref="T:Loyc.Collections.VListBlock`1"/> for more information
+            about VLists and WLists. It is most efficient to add items to the front of
+            a FWList (at index 0) or the back of an WList (at index Count-1).</remarks>
         </member>
-        <member name="M:Loyc.Collections.RVList`1.op_Equality(Loyc.Collections.RVList{`0},Loyc.Collections.RVList{`0})">
-            <summary>Returns whether the two list references are the same.
-            Does not compare the contents of the lists.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.op_Inequality(Loyc.Collections.RVList{`0},Loyc.Collections.RVList{`0})">
-            <summary>Returns whether the two list references are different.
-            Does not compare the contents of the lists.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.Equals(System.Object)">
-            <summary>Returns whether the two list references are the same.
-            Does not compare the contents of the lists.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.Pop">
-            <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.Push(`0)">
-            <summary>Synonym for Add(); adds an item to the front of the list.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.op_Explicit(Loyc.Collections.RVList{`0})~Loyc.Collections.FVList{`0}">
-            <summary>Returns this list as a FVList, which effectively reverses the
-            order of the elements.</summary>
-            <remarks>This is a trivial operation; the FVList shares the same memory.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.ToFVList">
-            <summary>Returns this list as a FVList, which effectively reverses the
-            order of the elements.</summary>
-            <returns>This is a trivial operation; the FVList shares the same memory.</returns>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.op_Explicit(Loyc.Collections.RVList{`0})~Loyc.Collections.FWList{`0}">
-            <summary>Returns this list as a FWList, which effectively reverses the
-            order of the elements.</summary>
-            <remarks>The list contents are not copied until you modify the FWList.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.ToWList">
-            <summary>Returns this list as a FWList, which effectively reverses the
-            order of the elements.</summary>
-            <remarks>The list contents are not copied until you modify the FWList.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.op_Explicit(Loyc.Collections.RVList{`0})~Loyc.Collections.RWList{`0}">
-            <summary>Returns this list as an RWList.</summary>
-            <remarks>The list contents are not copied until you modify the RWList.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.ToRWList">
-            <summary>Returns this list as an RWList.</summary>
-            <remarks>The list contents are not copied until you modify the RWList.</remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.ToArray">
-            <summary>Returns the RVList converted to an array.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.IndexOf(`0)">
-             <summary>Searches for the specified object and returns the zero-based
-             index of the first occurrence (lowest index) within the entire
-             RVList.</summary>
-             <param name="item">Item to locate (can be null if T can be null)</param>
-             <returns>Index of the item, or -1 if it was not found.</returns>
-             <remarks>This method determines equality using the default equality
-             comparer EqualityComparer.Default for T, the type of values in the list.
-            
-             This method performs a linear search, and is typically an O(n)
-             operation, where n is Count. However, because the list is searched
-             upward from index 0 to Count-1, if the list's blocks do not increase in
-             size exponentially (due to the way that the list has been modified in
-             the past), the search can have worse performance; the (unlikely) worst
-             case is O(n^2). FVList(of T).IndexOf() doesn't have this problem.
-             </remarks>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.System#Collections#Generic#ICollection{T}#Add(`0)">
-            <summary>Inserts an item at the back (index Count) of the RVList.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.Add(`0)">
-            <summary>Inserts an item at the back (index Count) of the RVList.</summary>
-        </member>
-        <member name="M:Loyc.Collections.RVList`1.Where(System.Predicate{`0})">
+        <member name="M:Loyc.Collections.WList`1.Where(System.Predicate{`0})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
-            <param name="keep">A function that chooses which items to include
+            <param name="filter">A function that chooses which items to include
             (exclude items by returning false).</param>
-            <returns>The list after filtering has been applied. The original list
+            <returns>The list after filtering has been applied. The original VList
             structure is not modified.</returns>
             <remarks>
-            If the predicate keeps the first N items it is passed, those N items are
-            typically not copied, but shared between the existing list and the new 
-            one.
+            If the predicate keeps the first N items it is passed (which are the
+            last or "tail" items in a WList), those N items are typically not 
+            copied, but shared between the existing list and the new one.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.RVList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
+        <member name="M:Loyc.Collections.WList`1.WhereSelect(System.Func{`0,Loyc.Maybe{`0}})">
             <summary>Filters and maps a list with a user-defined function.</summary>
             <param name="filter">A function that chooses which items to include
             in a new list, and what to change them to.</param>
@@ -4173,63 +4165,73 @@
             structure is not modified.</returns>
             <remarks>
             This is a smart function. If the filter does not modify the first N 
-            items it is passed, those N items are typically not copied, but shared 
+            items it is passed those N items are typically not copied, but shared 
             between the existing list and the new one.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.RVList`1.SmartSelect(System.Func{`0,`0})">
+        <member name="M:Loyc.Collections.WList`1.SmartSelect(System.Func{`0,`0})">
             <summary>Maps a list to another list of the same length.</summary>
             <param name="map">A function that transforms each item in the list.</param>
             <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
+            original VList structure is not modified.</returns>
             <remarks>
             This method is called "Smart" because of what happens if the map
             doesn't do anything. If the map function returns the first N items
-            unmodified, those N items are typically not copied, but shared between
-            the existing list and the new one. This is useful for functional code
-            that sometimes processes a list without modifying it at all.
+            unmodified (the items at the tail of the WList), those N items are 
+            typically not copied, but shared between the existing list and the 
+            new one.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.RVList`1.Select``1(System.Func{`0,``0})">
+        <member name="M:Loyc.Collections.WList`1.Select``1(System.Func{`0,``0})">
             <summary>Maps a list to another list of the same length.</summary>
             <param name="map">A function that transforms each item in the list.</param>
             <returns>The list after the map function is applied to each item. The 
-            original RVList structure is not modified.</returns>
+            original VList structure is not modified.</returns>
         </member>
-        <member name="M:Loyc.Collections.RVList`1.Transform(Loyc.Collections.VListTransformer{`0})">
+        <member name="M:Loyc.Collections.WList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
             <param name="x">Method to apply to each item in the list</param>
             <returns>A list formed from transforming all items in the list</returns>
             <remarks>See the documentation of FVList.Transform() for more information.</remarks>
         </member>
-        <member name="P:Loyc.Collections.RVList`1.Tail">
-            <summary>Returns a list without the last item. If the list is empty, 
-            an empty list is retured.</summary>
+        <member name="M:Loyc.Collections.WList`1.Pop">
+            <summary>Removes the back item (at index Count-1) from the list and returns it.</summary>
         </member>
-        <member name="P:Loyc.Collections.RVList`1.Last">
-            <summary>Returns the last item of the list (at index Count-1), which is the head of the list.</summary>
+        <member name="M:Loyc.Collections.WList`1.op_Explicit(Loyc.Collections.WList{`0})~Loyc.Collections.FWList{`0}">
+            <summary>Returns this list as a FWList, which effectively reverses 
+            the order of the elements.</summary>
+            <remarks>This operation marks the items of the list as immutable.
+            You can modify either list afterward, but some or all of the list 
+            may have to be copied.</remarks>
         </member>
-        <member name="P:Loyc.Collections.RVList`1.BlockChainLength">
-            <summary>Gets the number of blocks used by this list.</summary>
-            <remarks>You might look at this property when optimizing your program,
-            because the runtime of some operations increases as the chain length 
-            increases. This property runs in O(BlockChainLength) time. Ideally,
-            BlockChainLength is proportional to log_2(Count), but certain RVList 
-            usage patterns can produce long chains.</remarks>
+        <member name="M:Loyc.Collections.WList`1.ToFWList">
+            <summary>Returns this list as a FWList, which effectively reverses 
+            the order of the elements.</summary>
+            <remarks>This operation marks the items of the list as immutable.
+            You can modify either list afterward, but some or all of the list 
+            may have to be copied.</remarks>
         </member>
-        <member name="P:Loyc.Collections.RVList`1.Item(System.Int32,`0)">
+        <member name="M:Loyc.Collections.WList`1.ToArray">
+            <summary>Returns the WList converted to an array.</summary>
+        </member>
+        <member name="M:Loyc.Collections.WList`1.Resize(System.Int32)">
+            <summary>Resizes the list to the specified size.</summary>
+            <remarks>If the new size is larger than the old size, empty elements 
+            are added to the end. If the new size is smaller, elements are 
+            truncated from the end.
+            <para/>
+            I decided not to offer a Resize() method for the FWList because the 
+            natural place to insert or remove items in a FWList is at the beginning.
+            For a Resize() method to do so, I felt, would come as too much of a 
+            surprise to some programmers.
+            </remarks>
+        </member>
+        <member name="P:Loyc.Collections.WList`1.Item(System.Int32,`0)">
             <summary>Gets an item from the list at the specified index; returns 
             defaultValue if the index is not valid.</summary>
         </member>
-        <member name="T:Loyc.Collections.RVList`1.Enumerator">
-            <summary>Enumerates through an RVList from index 0 up to index Count-1.
-            </summary><remarks>
-            Normally, enumerating the list takes O(Count + log(Count)^2) = O(Count)
-            time. However, if the list's block chain does not increase in size 
-            exponentially (due to the way that the list has been modified in the 
-            past), the search can have worse performance; the worst case is O(n^2),
-            but this is unlikely. FVList's Enumerator doesn't have this problem 
-            because it enumerates in the other direction.</remarks>
+        <member name="P:Loyc.Collections.WList`1.Last">
+            <summary>Returns the last item of the list (at index Count-1).</summary>
         </member>
         <member name="T:Loyc.Utilities.Co`1">
             <summary>A structure that helps you to write coroutines, or to avoid the 
@@ -5020,7 +5022,7 @@
         </member>
         <member name="T:Loyc.Collections.XfAction">
             <summary>Values that can be returned by the VListTransformer function that 
-            the user passes to the Transform method in FVList, RVList, FWList or RWList.
+            the user passes to the Transform method in FVList, VList, FWList or WList.
             </summary>
         </member>
         <member name="F:Loyc.Collections.XfAction.Drop">
@@ -5037,7 +5039,7 @@
         </member>
         <member name="T:Loyc.Collections.VListTransformer`1">
             <summary>User-supplied list transformer function.</summary>
-            <param name="item">An item from the FVList or RVList</param>
+            <param name="item">An item from the FVList or VList</param>
             <param name="i">Index of the item</param>
             <returns>See the documentation of FVList.Transform() for
             instructions and possible return values.</returns>

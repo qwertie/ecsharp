@@ -97,33 +97,26 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ecs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Ecs">
+      <HintPath>..\..\Lib\LeMP\Ecs.exe</HintPath>
     </Reference>
-    <Reference Include="LeMP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\Lib\LLLPG\LeMP.exe</HintPath>
+    <Reference Include="LeMP">
+      <HintPath>..\..\Lib\LeMP\LeMP.exe</HintPath>
     </Reference>
     <Reference Include="LLLPG">
-      <HintPath>..\..\Lib\LLLPG\LLLPG.exe</HintPath>
+      <HintPath>..\..\Lib\LeMP\LLLPG.exe</HintPath>
     </Reference>
-    <Reference Include="Loyc.Collections, Version=1.0.5078.15246, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Collections.dll</HintPath>
+    <Reference Include="Loyc.Collections">
+      <HintPath>..\..\Lib\LeMP\Loyc.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Essentials, Version=1.0.5060.33699, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Essentials.dll</HintPath>
+    <Reference Include="Loyc.Essentials">
+      <HintPath>..\..\Lib\LeMP\Loyc.Essentials.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Syntax, Version=1.0.5078.15248, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Syntax.dll</HintPath>
+    <Reference Include="Loyc.Syntax">
+      <HintPath>..\..\Lib\LeMP\Loyc.Syntax.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Utilities, Version=1.0.5078.15249, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Utilities.dll</HintPath>
+    <Reference Include="Loyc.Utilities">
+      <HintPath>..\..\Lib\LeMP\Loyc.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

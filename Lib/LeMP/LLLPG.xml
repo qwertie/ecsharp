@@ -954,7 +954,7 @@
         <member name="M:Loyc.LLParserGenerator.Rule.GetMethodSignature">
             <summary>Returns Basis if it's a method signature; otherwise constructs a default signature.</summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Creates the default method definition to wrap around the body 
             of the rule, which has already been generated. Returns <see cref="F:Loyc.LLParserGenerator.Rule.Basis"/> 
             with the specified new method body. If Basis is null, a simple default 
@@ -1045,7 +1045,7 @@
             a character, it should be surrounded by single quotes.</summary>
             <remarks>This helps produce error messages in LLLPG.</remarks>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Begin(Loyc.Collections.RWList{Loyc.Syntax.LNode},Loyc.Syntax.ISourceFile)">
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.Begin(Loyc.Collections.WList{Loyc.Syntax.LNode},Loyc.Syntax.ISourceFile)">
             <summary>Before the parser generator generates code, it calls this
             method.</summary>
             <param name="classBody">the body (braced block) of the class where 
@@ -1176,14 +1176,14 @@
         <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.GenerateTest(Loyc.LLParserGenerator.IPGTerminalSet,Loyc.Syntax.LNode)">
             <summary>Generates code to test whether the terminal denoted 'laVar' is in the set.</summary>
         </member>
-        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateRuleMethod(Loyc.LLParserGenerator.Rule,Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateRuleMethod(Loyc.LLParserGenerator.Rule,Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Generates the method for a rule, given the method's contents.</summary>
             <param name="rule">Rule for which a method is needed.</param>
             <param name="methodBody">A list of statements produced by 
             LLParserGenerator inside the method.</param>
             <returns>A method definition for the rule.</returns>
             <remarks>To generate the default method, simply call 
-            <see cref="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.RVList{Loyc.Syntax.LNode})"/>.</remarks>
+            <see cref="M:Loyc.LLParserGenerator.Rule.CreateMethod(Loyc.Collections.VList{Loyc.Syntax.LNode})"/>.</remarks>
         </member>
         <member name="M:Loyc.LLParserGenerator.IPGCodeGenHelper.CreateTryWrapperForRecognizer(Loyc.LLParserGenerator.Rule)">
             <summary>Generates the try-wrapper for a recognizer rule.</summary>

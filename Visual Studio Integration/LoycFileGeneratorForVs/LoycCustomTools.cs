@@ -147,7 +147,7 @@ namespace Loyc.VisualStudio
 
 			protected override void WriteOutput(InputOutput io)
 			{
-				RVList<LNode> results = io.Output;
+				VList<LNode> results = io.Output;
 				var printer = LNode.Printer;
 				if (!NoOutHeader)
 					Output.AppendFormat(

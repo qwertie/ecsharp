@@ -47,7 +47,7 @@
             <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
             with <c>block</c> as the only item.</summary>
         </member>
-        <member name="M:Loyc.Syntax.LNodeExt.AsLNode(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Symbol)">
+        <member name="M:Loyc.Syntax.LNodeExt.AsLNode(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Symbol)">
             <summary>Converts a list of LNodes to a single LNode by using the list 
             as the argument list in a call to the specified identifier, or, if the 
             list contains a single item, by returning that single item.</summary>
@@ -55,7 +55,7 @@
             does not contain exactly one item. Typical values include "{}" and "#splice".</param>
             <remarks>This is the reverse of the operation performed by <see cref="M:Loyc.Syntax.LNodeExt.AsList(Loyc.Syntax.LNode,Loyc.Symbol)"/>.</remarks>
         </member>
-        <member name="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.RVList{Loyc.Syntax.LNode}@)">
+        <member name="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)">
             <summary>Determines whether one Loyc tree "matches" another. This is 
             different from a simple equality test in that (1) trivia atributes do 
             not have to match, and (2) the pattern can contain placeholders represented
@@ -1539,11 +1539,11 @@
              One very common use of mutable nodes is building lists of statements, e.g. 
              you might create an empty braced block or an empty loop and then add 
              statements to the body of the block or loop. To do this without mutable 
-             nodes, create a mutable <see cref="T:Loyc.Collections.RWList`1"/> instead and add 
+             nodes, create a mutable <see cref="T:Loyc.Collections.WList`1"/> instead and add 
              statements there; once the list is finished, create the braced block or
              loop afterward. The new design stores arguments and attributes in 
-             <see cref="T:Loyc.Collections.RVList`1"/> objects; you can instantly convert your WList 
-             to a VList by calling <see cref="M:Loyc.Collections.WListBase`1.ToRVList"/>.
+             <see cref="T:Loyc.Collections.VList`1"/> objects; you can instantly convert your WList 
+             to a VList by calling <see cref="M:Loyc.Collections.WListBase`1.ToVList"/>.
              <para/>
              During the redesign I've decided on some small changes to the representation
              of certain expressions in EC#.
@@ -1617,7 +1617,7 @@
              </ol>
              <para/>
              The argument and attribute lists cannot be null, since they have type 
-             <see cref="T:Loyc.Collections.RVList`1"/> which is a struct.
+             <see cref="T:Loyc.Collections.VList`1"/> which is a struct.
              <para/>
              <c>LNode</c> implements <see cref="T:Loyc.Collections.INegListSource`1"/>, so you can loop 
              through all children of the node like this:
@@ -1643,11 +1643,14 @@
              
              The argument and attribute lists should never contain null nodes. Any code 
              that puts nulls in <see cref="P:Loyc.Syntax.LNode.Args"/> or <see cref="P:Loyc.Syntax.LNode.Attrs"/> is buggy. 
-             However, we can't ensure nulls are not placed into <see cref="T:Loyc.Collections.RVList`1"/> 
+             However, we can't ensure nulls are not placed into <see cref="T:Loyc.Collections.VList`1"/> 
              since it's a general-purpose data type, not specialized for LNode. There is
-             code to ensure nulls are not placed in Args and Attrs (<see cref="M:Loyc.Syntax.LNode.NoNulls(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.String)"/>),
+             code to ensure nulls are not placed in Args and Attrs (<see cref="M:Loyc.Syntax.LNode.NoNulls(Loyc.Collections.VList{Loyc.Syntax.LNode},System.String)"/>),
              but only in debug builds, since null-checking is fairly expensive.
              </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.LNode.List(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>A no-op that exists to avoid a potential slug when using `quote {...}`.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNode.WithName(Loyc.Symbol)">
             <summary>Creates a node with a new value for Name.</summary>
@@ -1660,20 +1663,20 @@
             <summary>Creates a new literal node with a different Value than the current literal node.</summary>
             <exception cref="T:System.InvalidOperationException">The node was not a literal already.</exception>
         </member>
-        <member name="M:Loyc.Syntax.LNode.WithArgs(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.Syntax.LNode.WithArgs(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Creates a Node with a new argument list. If this node is not a 
             call, a new node is created using this node as its target. Otherwise,
             the existing argument list is replaced.</summary>
             <param name="args">New argument list</param>
         </member>
-        <member name="M:Loyc.Syntax.LNode.With(Loyc.Syntax.LNode,Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.Syntax.LNode.With(Loyc.Syntax.LNode,Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Creates a <see cref="T:Loyc.Syntax.CallNode"/> with the same attributes and 
             <see cref="P:Loyc.Syntax.LNode.Range"/>, but a different target and argument list. If the 
             current node is not a CallNode, it becomes one (the Range, Style and 
             attributes of the current node are kept, but the Kind, Value, and 
             Name are discarded.)</summary>
         </member>
-        <member name="M:Loyc.Syntax.LNode.With(Loyc.Symbol,Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:Loyc.Syntax.LNode.With(Loyc.Symbol,Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Creates a <see cref="T:Loyc.Syntax.CallNode"/> with the same attributes and 
             <see cref="P:Loyc.Syntax.LNode.Range"/>, but a different target and argument list. If the 
             current node is not a CallNode, it becomes one (the Range, Style and 
@@ -1701,7 +1704,7 @@
         <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.LNode,Loyc.Syntax.LNode,System.Boolean)">
             <inheritdoc cref="M:Loyc.Syntax.LNode.Equals(Loyc.Syntax.LNode,System.Boolean)"/>
         </member>
-        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Collections.RVList{Loyc.Syntax.LNode},Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean)">
+        <member name="M:Loyc.Syntax.LNode.Equals(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean)">
             <summary>Compares two lists of nodes for structural equality.</summary>
             <param name="compareStyles">Whether to compare values of <see cref="P:Loyc.Syntax.LNode.Style"/></param>
             <remarks>Position information is not compared.</remarks>
@@ -1752,7 +1755,7 @@
             its two Args.</li>
             </ul>
             </remarks>
-            <seealso cref="M:Loyc.Syntax.LNodeExt.WithSpliced(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Int32,Loyc.Syntax.LNode,Loyc.Symbol)"/>
+            <seealso cref="M:Loyc.Syntax.LNodeExt.WithSpliced(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Int32,Loyc.Syntax.LNode,Loyc.Symbol)"/>
         </member>
         <member name="M:Loyc.Syntax.LNode.MergeBinary(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Symbol)">
             <summary>Combines two nodes using a binary operator or function.</summary>
@@ -2735,7 +2738,7 @@
             (normally) be processed again after the macro returns.
             </remarks>
         </member>
-        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)">
             <summary>Runs the macro processor on the specified node(s).</summary>
             <param name="input">The node or node list to process.</param>
             <param name="asRoot">If false, the nodes are treated as children of the 
@@ -2747,7 +2750,7 @@
             <remarks>The node(s)</remarks>
         </member>
         <member name="M:LeMP.IMacroContext.PreProcess(Loyc.Syntax.LNode,System.Boolean,System.Boolean,System.Boolean)">
-            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.RVList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)"/>
+            <inheritdoc cref="M:LeMP.IMacroContext.PreProcess(Loyc.Collections.VList{Loyc.Syntax.LNode},System.Boolean,System.Boolean,System.Boolean)"/>
         </member>
         <member name="P:LeMP.IMacroContext.Sink">
             <summary>Returns the message sink, used for writing warnings and errors.</summary>
@@ -2855,7 +2858,7 @@
             current sequence of nodes, it can set the DropRemainingNodes property 
             to true and then simply incorporate RemainingNodes into its own output
             (if you need to return multiple statements from your macro, use 
-            <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a RVList{LNode} to an 
+            <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a VList{LNode} to an 
             LNode.)
             <para/>
             This extension method helps you by detecting whether the current node
@@ -2870,7 +2873,7 @@
             as the second list. Otherwise the second list is left blank.
             </remarks>
         </member>
-        <member name="M:LeMP.MacroContext.GetOptions(Loyc.Collections.RVList{Loyc.Syntax.LNode})">
+        <member name="M:LeMP.MacroContext.GetOptions(Loyc.Collections.VList{Loyc.Syntax.LNode})">
             <summary>Transforms an option list in the format <c>option1(v1), option2(v2)</c> 
             or <c>option1: v1, option2: v2</c> into a sequence of (key, value) pairs.
             If the format of a given node is invalid, this function yields <c>(null, node)</c>.</summary>
