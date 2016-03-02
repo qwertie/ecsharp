@@ -1150,7 +1150,7 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule EnumDecl(startIndex::int, attrs::RVList!LNode)::LNode @{
 			t:=TT.@enum
-			id:=TT.Id   {var name = F.Id(id);}
+			name:=ComplexNameDecl
 			bases:=BaseListOpt
 			(	end:=";"
 				{return F.Call(S.Enum, name, bases,       startIndex, end.EndIndex).WithAttrs(attrs);}

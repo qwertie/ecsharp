@@ -1080,8 +1080,11 @@ namespace Loyc.Syntax
 		}
 
 		public virtual bool Calls(Symbol name, int argCount)       { Debug.Assert(!IsCall); return false; }
+		public virtual bool Calls(string name, int argCount)       { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(Symbol name)                     { Debug.Assert(!IsCall); return false; }
+		public virtual bool Calls(string name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
+		public virtual bool CallsMin(string name, int argCount)    { Debug.Assert(!IsCall); return false; }
 		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</summary>
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
 		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
@@ -1098,6 +1101,7 @@ namespace Loyc.Syntax
 		public virtual bool IsIdWithoutPAttrs()                    { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdWithoutPAttrs(Symbol name)         { Debug.Assert(!IsId); return false; }
 		public virtual bool IsIdNamed(Symbol name)                 { Debug.Assert(!IsId); return false; }
+		public virtual bool IsIdNamed(string name)                 { Debug.Assert(!IsId); return false; }
 		public virtual bool IsParenthesizedExpr()
 		{
 			return this.AttrNamed(CodeSymbols.TriviaInParens) != null;

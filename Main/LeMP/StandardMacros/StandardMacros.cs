@@ -132,11 +132,12 @@ namespace LeMP
 			var expr = KeyNameComponentOf(nameof.Args[0]);
 			return F.Literal(ParsingService.Current.Print(expr, context.Sink, ParsingService.Exprs));
 		}
-		
+
 		/// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
 		/// <remarks>
-		/// The key name component of <c>global::Foo!int.Bar!T(x)</c> (which is 
-		/// is structured <c>((((global::Foo)!int).Bar)!T)(x)</c>) is <c>Bar</c>. 
+		/// The key name component of <c>global::Foo!int.Bar!T(x)</c> (in C# notation
+		/// global::Foo&lt;int>.Bar&lt;T>(x)) is <c>Bar</c>. This example tree has the 
+		/// structure <c>((((global::Foo)!int).Bar)!T)(x)</c>).
 		/// </remarks>
 		public static LNode KeyNameComponentOf(LNode name)
 		{

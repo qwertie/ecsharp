@@ -433,6 +433,7 @@ namespace Loyc.Ecs
 		{
 			// The printer must use prefix notation if the arguments passed to an 
 			// operator have attributes.
+			Stmt("[Foo] get;",          Attr(Foo, get));
 			Expr("@`+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
 			Expr("@`+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
 			Expr("@`_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
@@ -870,6 +871,8 @@ namespace Loyc.Ecs
 			stmt = F.Call(S.Enum, Foo, F.List(F.UInt8), F.Braces(F.Assign(a, one), b, c, F.Assign(x, F.Literal(24))));
 			Stmt("enum Foo : byte\n{\n  a = 1, b, c, x = 24\n}", stmt);
 			Expr("#enum(Foo, #(byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
+			stmt = F.Call(S.Enum, F.Call(S.Substitute, F.Dot(Foo, x)), F.List(), F.Braces(F.Assign(a, one)));
+			Stmt("enum $(Foo.x)\n{\n  a = 1\n}", stmt);
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);

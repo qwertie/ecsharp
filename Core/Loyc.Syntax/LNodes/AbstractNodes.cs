@@ -55,7 +55,8 @@ namespace Loyc.Syntax
 
 		public override bool IsIdWithoutPAttrs()            { return !HasPAttrs(); }
 		public override bool IsIdWithoutPAttrs(Symbol name) { return Name == name && !HasPAttrs(); }
-		public override bool IsIdNamed(Symbol name)             { return Name == name; }
+		public override bool IsIdNamed(Symbol name)         { return Name == name; }
+		public override bool IsIdNamed(string name)         { return Name.Name == name; }
 		
 		public sealed override int Max { get { return -2; } }
 		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Value(selector(n))); }
@@ -177,9 +178,12 @@ namespace Loyc.Syntax
 		}
 
 		public override bool Calls(Symbol name, int argCount)    { return Name == name && ArgCount == argCount; }
+		public override bool Calls(string name, int argCount)    { return Name.Name == name && ArgCount == argCount; }
 		public override bool Calls(Symbol name)                  { return Name == name; }
+		public override bool Calls(string name)                  { return Name.Name == name; }
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
-		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
+		public override bool CallsMin(string name, int argCount) { return Name.Name == name && ArgCount >= argCount; }
+		public override bool HasSimpleHead() { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 		public override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
 		{

@@ -15,14 +15,6 @@ using Loyc.Syntax;
 using Loyc.Ecs;
 namespace LeMP
 {
-	class Example
-	{
-		public static string HelloWorldProgram(string whatToPrint)
-		{
-			LNode code = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Import, LNode.List(LNode.Id((Symbol) "System"))), LNode.Call(CodeSymbols.Import, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Collections"))), LNode.Id((Symbol) "Generic"))))), LNode.Call(CodeSymbols.Namespace, LNode.List(LNode.Id((Symbol) "Namespaze"), LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Class, LNode.List(LNode.Id((Symbol) "Klass"), LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Fn, LNode.List(LNode.Id(CodeSymbols.Void), LNode.Id((Symbol) "Main"), LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Console"), LNode.Id((Symbol) "WriteLine"))), LNode.List(LNode.Literal(whatToPrint))))).SetStyle(NodeStyle.Statement))))).SetStyle(NodeStyle.Statement))))).SetStyle(NodeStyle.Statement))))).SetStyle(NodeStyle.Statement);
-			return EcsLanguageService.WithPlainCSharpPrinter.Print(code.Args);
-		}
-	}
 	partial class StandardMacros
 	{
 		[LexicalMacro("using (System, System.(Collections.Generic, Linq, Text));", "Generates multiple using-statements from a single one.", "#import", Mode = MacroMode.Passive | MacroMode.Normal)] public static LNode UsingMulti(LNode stmt, IMacroContext context)

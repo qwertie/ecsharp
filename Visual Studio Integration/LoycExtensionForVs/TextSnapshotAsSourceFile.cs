@@ -73,7 +73,7 @@ namespace Loyc.VisualStudio
 			var line = _ss.GetLineFromPosition(index);
 			return new SourcePos("", line.LineNumber + 1, index - line.Start.Position + 1);
 		}
-		public int LineToIndex(LineAndPos pos)
+		public int LineToIndex(LineAndCol pos)
 		{
 			if (pos.Line <= 0)
 				return -1;

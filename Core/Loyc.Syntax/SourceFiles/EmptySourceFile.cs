@@ -38,7 +38,7 @@ namespace Loyc.Syntax
 		{
 			return -1;
 		}
-		public int LineToIndex(LineAndPos pos)
+		public int LineToIndex(LineAndCol pos)
 		{
 			return -1;
 		}

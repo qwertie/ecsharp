@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Ecs.Parser;
+using Loyc.Ecs.Parser;
 using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 using Microsoft.VisualStudio.Text;

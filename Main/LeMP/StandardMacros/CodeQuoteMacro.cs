@@ -16,10 +16,9 @@ namespace LeMP
 		static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
 
 		[LexicalMacro("e.g. quote({ foo(); }) ==> F.Id(id);", 
-			"Poor-man's code quote mechanism, to be used until something more sophisticated becomes available. "+
-			"Assumes the existence of an LNodeFactory F, which is used to build a syntax tree from the specified code. "+
+			"Macro-based code quote mechanism, to be used as long as a more complete compiler is availabe. "+
 			"If there is a single parameter that is braces, the braces are stripped out. "+
-			"If there are multiple parameters or multiple statements in braces, the result is a call to #splice(). "+
+			"If there are multiple parameters, or multiple statements in braces, the result is a call to #splice(). "+
 			"The output refers unqualified to 'CodeSymbols' and 'LNodeFactory' so you must have 'using Loyc.Syntax' at the top of your file. " +
 			"The substitution operator $(expr) causes the specified expression to be inserted unchanged into the output.",
 			"quote", "#quote")]

@@ -5,20 +5,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Windows.Forms;
 using Loyc;
 using Loyc.Collections;
-using Loyc.LLParserGenerator;
 using Loyc.Syntax;
 using Loyc.Utilities;
+using Loyc.Ecs;
+using Loyc.LLParserGenerator;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using LeMP;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Windows.Forms;
 
 namespace Loyc.VisualStudio
 {
@@ -279,8 +280,8 @@ namespace SingleFileGenerator
 			// This is a simple self test to make sure there's no DLLs version mismatches.
 			try {
 				var testCode = @"Hello(""World!"");";
-				var parsed = Ecs.Parser.EcsLanguageService.Value.Parse(testCode);
-				string printed = Ecs.Parser.EcsLanguageService.Value.Print(parsed.First());
+				var parsed = EcsLanguageService.Value.Parse(testCode);
+				string printed = EcsLanguageService.Value.Print(parsed.First());
 				Loyc.MiniTest.Assert.AreEqual(testCode, printed);
 			} catch (Exception ex) {
 				MessageBox.Show(Localize.From(

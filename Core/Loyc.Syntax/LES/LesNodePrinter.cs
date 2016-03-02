@@ -100,6 +100,7 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		/// <summary>TODO: these modes no longer apply, remove them</summary>
 		[Flags]
 		public enum Mode
 		{

@@ -9,25 +9,6 @@ using Loyc.Ecs;         // For EcsLanguageService
 
 namespace LeMP
 {
-	class Example
-	{
-		public static string HelloWorldProgram(string whatToPrint)
-		{
-			LNode code = quote {
-				using System;
-				using System.Collections.Generic;
-				namespace Namespaze {
-					class Klass {
-						void Main() {
-							Console.WriteLine($(LNode.Literal(whatToPrint)));
-						}
-					}
-				}
-			};
-			return EcsLanguageService.WithPlainCSharpPrinter.Print(code.Args);
-		}
-	}
-
 	partial class StandardMacros
 	{
 		[LexicalMacro("using (System, System.(Collections.Generic, Linq, Text));", 

@@ -81,14 +81,26 @@ namespace Loyc.Syntax
 		}
 		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode removedAttr)
 		{
-			var a = self.Attrs;
-			for (int i = 0, c = a.Count; i < c; i++)
-				if (a[i].Name == name) {
-					removedAttr = a[i];
-					return self.WithAttrs(a.RemoveAt(i));
+			var a = self.Attrs.WithoutNodeNamed(name, out removedAttr);
+			if (removedAttr != null)
+				return self.WithAttrs(a);
+			else
+				return self;
+		}
+		public static RVList<LNode> WithoutNodeNamed(this RVList<LNode> a, Symbol name)
+		{
+			LNode _;
+			return WithoutNodeNamed(a, name, out _);
+		}
+		public static RVList<LNode> WithoutNodeNamed(this RVList<LNode> list, Symbol name, out LNode removedNode)
+		{
+			removedNode = null;
+			for (int i = 0, c = list.Count; i < c; i++)
+				if (list[i].Name == name) {
+					removedNode = list[i];
+					return list.RemoveAt(i);
 				}
-			removedAttr = null;
-			return self;
+			return list;
 		}
 		public static LNode WithoutOuterParens(this LNode self)
 		{
@@ -165,7 +177,7 @@ namespace Loyc.Syntax
 		/// In EC#, the quote(...) macro can be used to create the LNode object for 
 		/// a pattern.
 		/// </remarks>
-		public static bool MatchesPattern(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out RVList<LNode> unmatchedAttrs)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out RVList<LNode> unmatchedAttrs)
 		{
 			// [$capture] (...)
 			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs))
@@ -213,7 +225,7 @@ namespace Loyc.Syntax
 			} else // kind == Id
 				return true;
 		}
-		public static bool MatchesPattern(LNode candidate, LNode pattern, out MMap<Symbol, LNode> captures)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out MMap<Symbol, LNode> captures)
 		{
 			RVList<LNode> unmatchedAttrs = RVList<LNode>.Empty;
 			captures = null;

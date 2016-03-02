@@ -146,7 +146,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       //!< e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
 		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, #tuple()); <=> delegate int Foo();
-		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, { get; }) <=> int Foo { get; }
+		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, @``, { get; }) <=> int Foo { get; }
 
 		// Misc
 		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(#of(Foo, [#where(#class, Foo)] T), #(), {});
