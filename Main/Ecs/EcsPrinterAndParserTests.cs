@@ -16,7 +16,7 @@ namespace Loyc.Ecs
 	// round-tripping from AST -> text -> AST, although the other kind of round-
 	// tripping, text -> AST -> text, is not fully verified (and is not designed to
 	// be fully supported, as the printer is not designed to preserve spacing.)
-	abstract class EcsPrinterAndParserTests : Assert
+	public abstract class EcsPrinterAndParserTests : Assert
 	{
 		protected static LNodeFactory F = new LNodeFactory(EmptySourceFile.Unknown);
 		protected LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c"), x = F.Id("x");
@@ -1553,7 +1553,7 @@ namespace Loyc.Ecs
 	////////////////////////////////////////////////////////////////////////////
 	/// <summary>EC# node printer tests</summary>
 	[TestFixture]
-	class EcsNodePrinterTests : EcsPrinterAndParserTests
+	public class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{
 		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false, Mode mode = Mode.Both)
 		{
@@ -1652,7 +1652,7 @@ namespace Loyc.Ecs
 	////////////////////////////////////////////////////////////////////////////
 	/// <summary>EC# parser tests</summary>
 	[TestFixture]
-	class EcsParserTests : EcsPrinterAndParserTests
+	public class EcsParserTests : EcsPrinterAndParserTests
 	{
 		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, bool exprMode = false, Mode mode = Mode.Both)
 		{

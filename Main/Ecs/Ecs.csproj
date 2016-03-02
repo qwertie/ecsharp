@@ -6,10 +6,10 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ecs</RootNamespace>
-    <AssemblyName>Ecs</AssemblyName>
+    <RootNamespace>Loyc.Ecs</RootNamespace>
+    <AssemblyName>Loyc.Ecs</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -65,7 +65,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <NoWarn>1591,1573</NoWarn>
-    <DocumentationFile>..\..\Bin\Release.NET4\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\Loyc.Ecs.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -124,7 +124,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OutputPath>..\..\Bin\Release.NET3\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET3\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET3\Loyc.Ecs.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -175,13 +175,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET45\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET45\Loyc.Ecs.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -219,7 +222,6 @@
     <Compile Include="Printer\EcsNodePrinter--statements.cs" />
     <Compile Include="Printer\EcsNodePrinter.cs" />
     <Compile Include="Printer\NodePrinterWriter.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

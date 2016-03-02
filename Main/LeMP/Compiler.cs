@@ -91,22 +91,9 @@ namespace LeMP
 				thread.Thread.SetApartmentState(ApartmentState.STA);
 				thread.Start();
 
-				Console.WriteLine("Press Enter to run unit tests. Using the editor? Keep the terminal open.");
+				Console.WriteLine("Press Enter to exit console thread.");
 				Console.ReadLine();
-
-				RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
-				RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
-				RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
-				RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
-				RunLeMPTests();
-				Loyc.Ecs.Program.RunEcsTests();
 			}
-		}
-
-		public static void RunLeMPTests()
-		{
-			RunTests.Run(new MacroProcessorTests());
-			RunTests.Run(new StandardMacroTests());
 		}
 
 		public static Compiler ProcessArguments(BMultiMap<string, string> options, SeverityMessageFilter sink, Type prelude, List<string> inputFiles)

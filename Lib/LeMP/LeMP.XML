@@ -4,6 +4,27 @@
         <name>LeMP</name>
     </assembly>
     <members>
+        <member name="T:LeMP.Compiler">
+            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
+            set of source files.</summary>
+            <remarks>
+            Helps you process command-line options (e.g. --outext=cs), complete 
+            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see 
+            cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
+            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
+            </remarks>
+        </member>
+        <member name="F:LeMP.Compiler.Languages">
+            <summary>A list of available syntaxes.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
+            <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
+            based on the command-line options.</summary>
+        </member>
+        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
+            <summary>Finds a language service in ExtensionToLanguage() for the 
+            specified file extension, or null if there is no match.</summary>
+        </member>
         <member name="T:LeMP.InputOutput">
             <summary>
             For LeMP: an input file plus per-file options (input and output language) and output code.
@@ -51,6 +72,9 @@
             TODO: add method for processing an LNode instead of a list of source files.
             </remarks>
         </member>
+        <member name="P:LeMP.MacroProcessor.Current">
+            <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+        </member>
         <member name="M:LeMP.MacroProcessor.ProcessSynchronously(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files one at a time (may be easier for debugging).</summary>
         </member>
@@ -60,108 +84,6 @@
         </member>
         <member name="M:LeMP.MacroProcessor.ProcessAsync(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files in parallel using .NET Tasks. The method returns immediately.</summary>
-        </member>
-        <member name="P:LeMP.MacroProcessor.Current">
-            <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
-        </member>
-        <member name="T:LeMP.StandardMacros">
-            <summary>
-            Standard macros, such as unroll() and replace() that can work in all Loyc languages.
-            Also includes macros designed to convert EC# feature to C# (e.g. tuples).
-            </summary>
-        </member>
-        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
-            <summary>Searches a list of expressions/statements for one or more 
-            patterns, and performs replacements.</summary>
-            <param name="stmts">A list of expressions/statements in which to search.</param>
-            <param name="patterns">Each pair consists of (A) something to search 
-            for and (B) a replacement expression. Part A can use the substitution
-            operator with an identifier inside (e.g. $Foo) to "capture" any 
-            subexpression, and part B can use the same substitution (e.g. $Foo)
-            to insert the captured subexpression(s) into the output.</param>
-            <param name="replacementCount">Number of replacements that occurred.</param>
-            <returns>The result of applying the replacements.</returns>
-            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
-        </member>
-        <member name="M:LeMP.StandardMacros.ReplaceInTokenTree(Loyc.Syntax.Lexing.TokenTree@,Loyc.Collections.Impl.InternalList{Loyc.Triplet{Loyc.Symbol,Loyc.Syntax.LNode,System.Int32}})">
-            <summary>Replaces Ids with Ids or Literals in token trees.</summary>
-        </member>
-        <member name="M:LeMP.StandardMacros.FindStaticReadOnlies``1(System.Type,System.Predicate{System.Reflection.FieldInfo})">
-            <summary>Helper function that finds the static readonly fields of a given 
-            type in a given class, and creates a table from the _values_ of those 
-            fields to the _names_ of those fields.</summary>
-        </member>
-        <member name="M:LeMP.StandardMacros.KeyNameComponentOf(Loyc.Syntax.LNode)">
-            <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
-            <remarks>
-            The key name component of <c>global::Foo!int.Bar!T(x)</c> (in C# notation
-            global::Foo&lt;int>.Bar&lt;T>(x)) is <c>Bar</c>. This example tree has the 
-            structure <c>((((global::Foo)!int).Bar)!T)(x)</c>).
-            </remarks>
-        </member>
-        <member name="T:LeMP.Prelude.Macros">
-            <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
-            <c>import macros your.namespace.name</c> as an alias for 
-            <c>#importMacros(your.namespace.name)</c>.
-            </summary>
-        </member>
-        <member name="T:LeMP.Prelude.Les.Macros">
-            <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.IsModified">
-            <summary>Gets whether the file in the specified editor is modified.</summary>
-            <remarks>TextEditorControl doesn't maintain its own internal modified 
-            flag, so we use the '*' shown after the file name to represent the 
-            modified state.</remarks>
-        </member>
-        <member name="F:TextEditor.LempDemoPanel.components">
-            <summary> 
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.Dispose(System.Boolean)">
-            <summary> 
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoPanel.InitializeComponent">
-            <summary> 
-            Required method for Designer support - do not modify 
-            the contents of this method with the code editor.
-            </summary>
-        </member>
-        <member name="P:TextEditor.LempDemoPanel.EditorSettings">
-            <summary>This variable holds the editor settings (whether to show line 
-            numbers, etc.) that all editor controls share.</summary>
-        </member>
-        <member name="T:LeMP.Compiler">
-            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
-            set of source files.</summary>
-            <remarks>
-            Helps you process command-line options (e.g. --outext=cs), complete 
-            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
-            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
-            </remarks>
-        </member>
-        <member name="F:LeMP.Compiler.Languages">
-            <summary>A list of available syntaxes.</summary>
-        </member>
-        <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
-            <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
-            based on the command-line options.</summary>
-        </member>
-        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
-            <summary>Finds a language service in ExtensionToLanguage() for the 
-            specified file extension, or null if there is no match.</summary>
-        </member>
-        <member name="T:LeMP.TestCompiler">
-            <summary>A simple version of Compiler that takes a single input and produces 
-            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
-        </member>
-        <member name="M:LeMP.TestCompiler.StripExtraWhitespace(System.String,System.String[])">
-            <summary>Strips whitespace and single-line comments from a string.
-            Helps test whether two blocks of code are "sufficiently equal".</summary>
         </member>
         <member name="T:LeMP.MacroProcessorTask">
             <summary>Holds the transient state of the macro processor. Since one
@@ -177,29 +99,29 @@
                 Process   // initializes _s, _ancestorStack, root scope, etc.
                    |      
                    v      
-            +-&gt;ApplyMacrosToList // uses _s implicitly                     
+            +->ApplyMacrosToList // uses _s implicitly                     
             |      |                                                       
             |      |  +----------------------------------------------------------+
             |      |  |                                                          |
             |      v  v                                                          |
-            |  ApplyMacros----1-----&gt;GetApplicableMacros                         |
+            |  ApplyMacros----1----->GetApplicableMacros                         |
             |      |    |                                                        |
             |      |*OR*|                                                        |
-            |      |    +-----2-----&gt;ApplyMacrosFound                            |
+            |      |    +-----2----->ApplyMacrosFound                            |
             |      |     (macro(s)          |                                    |
             |      |      found)            v                                    |
             |      |                 ApplyMacrosFound2                           |
             |      |                         |                                   |
             |      |                         v                                   |
-            |      |                 ApplyMacrosFound3---1----&gt;invoke macro(s)   |
+            |      |                 ApplyMacrosFound3---1---->invoke macro(s)   |
             |      |                         |    |  |         (SimpleMacro fn)  |
-            |      |                         3    3  +---2----&gt;PrintMessages     |
+            |      |                         3    3  +---2---->PrintMessages     |
             |      |                         |    |                              |
             |      |                         |*OR*|  Process same node again     |
             |      |                  Process|    +------------------------------+
             |      |(no macros       Children|    (if a macro was applied here)
             |      | applicable)             |                                 
-            |      +--------2-------&gt;ApplyMacrosToChildrenOf                   
+            |      +--------2------->ApplyMacrosToChildrenOf                   
             |                                +                                 
             |  Attrs and Args of child node  |                                 
             +--------------------------------+                                 
@@ -219,7 +141,8 @@
             usually the object called <c>_s</c> is re-used for all the different nodes, 
             but sometimes a macro will ask for its child nodes to be processed, in 
             which case a second <see cref="T:LeMP.MacroProcessorTask.CurNodeState"/> must be introduced to
-            avoid destroying the original state. Some of the fields of <see cref="T:LeMP.MacroProcessorTask.CurNodeState"/> would have just been local variables, if not for the 
+            avoid destroying the original state. Some of the fields of <see cref=
+            "T:LeMP.MacroProcessorTask.CurNodeState"/> would have just been local variables, if not for the 
             fact that <see cref="T:LeMP.IMacroContext"/> allows a currently-running macro to 
             view or even modify some of this information.
             </remarks>
@@ -238,6 +161,58 @@
             change the syntax tree at any level, paired with a flag that is
             true if the remainder of the nodes in the current list of nodes
             should be dropped.</returns>
+        </member>
+        <member name="T:LeMP.TestCompiler">
+            <summary>A simple version of Compiler that takes a single input and produces 
+            a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
+        </member>
+        <member name="M:LeMP.TestCompiler.StripExtraWhitespace(System.String,System.String[])">
+            <summary>Strips whitespace and single-line comments from a string.
+            Helps test whether two blocks of code are "sufficiently equal".</summary>
+        </member>
+        <member name="T:LeMP.Prelude.Macros">
+            <summary>Defines <c>noMacro(...)</c> for suppressing macro expansion and 
+            <c>import macros your.namespace.name</c> as an alias for 
+            <c>#importMacros(your.namespace.name)</c>.
+            </summary>
+        </member>
+        <member name="T:LeMP.Prelude.Les.Macros">
+            <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
+        </member>
+        <member name="T:LeMP.StandardMacros">
+            <summary>
+            Standard macros, such as unroll() and replace() that can work in all Loyc languages.
+            Also includes macros designed to convert EC# feature to C# (e.g. tuples).
+            </summary>
+        </member>
+        <member name="M:LeMP.StandardMacros.FindStaticReadOnlies``1(System.Type,System.Predicate{System.Reflection.FieldInfo})">
+            <summary>Helper function that finds the static readonly fields of a given 
+            type in a given class, and creates a table from the _values_ of those 
+            fields to the _names_ of those fields.</summary>
+        </member>
+        <member name="M:LeMP.StandardMacros.Replace(Loyc.Collections.VList{Loyc.Syntax.LNode},Loyc.Pair{Loyc.Syntax.LNode,Loyc.Syntax.LNode}[],System.Int32@)">
+            <summary>Searches a list of expressions/statements for one or more 
+            patterns, and performs replacements.</summary>
+            <param name="stmts">A list of expressions/statements in which to search.</param>
+            <param name="patterns">Each pair consists of (A) something to search 
+            for and (B) a replacement expression. Part A can use the substitution
+            operator with an identifier inside (e.g. $Foo) to "capture" any 
+            subexpression, and part B can use the same substitution (e.g. $Foo)
+            to insert the captured subexpression(s) into the output.</param>
+            <param name="replacementCount">Number of replacements that occurred.</param>
+            <returns>The result of applying the replacements.</returns>
+            <remarks><see cref="M:Loyc.Syntax.LNodeExt.MatchesPattern(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Collections.MMap{Loyc.Symbol,Loyc.Syntax.LNode}@,Loyc.Collections.VList{Loyc.Syntax.LNode}@)"/> is used for matching.</remarks>
+        </member>
+        <member name="M:LeMP.StandardMacros.KeyNameComponentOf(Loyc.Syntax.LNode)">
+            <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
+            <remarks>
+            The key name component of <c>global::Foo!int.Bar!T(x)</c> (in C# notation
+            global::Foo&lt;int>.Bar&lt;T>(x)) is <c>Bar</c>. This example tree has the 
+            structure <c>((((global::Foo)!int).Bar)!T)(x)</c>).
+            </remarks>
+        </member>
+        <member name="M:LeMP.StandardMacros.ReplaceInTokenTree(Loyc.Syntax.Lexing.TokenTree@,Loyc.Collections.Impl.InternalList{Loyc.Triplet{Loyc.Symbol,Loyc.Syntax.LNode,System.Int32}})">
+            <summary>Replaces Ids with Ids or Literals in token trees.</summary>
         </member>
         <member name="F:TextEditor.FindAndReplaceForm.components">
             <summary>
@@ -268,18 +243,18 @@
             <summary>Sets the region to search. The region is updated 
             automatically as the document changes.</summary>
         </member>
+        <member name="P:TextEditor.TextEditorSearcher.BeginOffset">
+            <summary>Begins the start offset for searching</summary>
+        </member>
+        <member name="P:TextEditor.TextEditorSearcher.EndOffset">
+            <summary>Begins the end offset for searching</summary>
+        </member>
         <member name="M:TextEditor.TextEditorSearcher.FindNext(System.Int32,System.Boolean,System.Boolean@)">
             <summary>Finds next instance of LookFor, according to the search rules 
             (MatchCase, MatchWholeWordOnly).</summary>
             <param name="beginAtOffset">Offset in Document at which to begin the search</param>
             <remarks>If there is a match at beginAtOffset precisely, it will be returned.</remarks>
             <returns>Region of document that matches the search string</returns>
-        </member>
-        <member name="P:TextEditor.TextEditorSearcher.BeginOffset">
-            <summary>Begins the start offset for searching</summary>
-        </member>
-        <member name="P:TextEditor.TextEditorSearcher.EndOffset">
-            <summary>Begins the end offset for searching</summary>
         </member>
         <member name="T:TextEditor.HighlightGroup">
             <summary>Bundles a group of markers together so that they can be cleared 
@@ -288,23 +263,6 @@
         <member name="T:TextEditor.LempDemoForm">
             <summary>Main form for a multi-file text editor based on 
             ICSharpCode.TextEditor.TextEditorControl.</summary>
-        </member>
-        <member name="F:TextEditor.LempDemoForm.components">
-            <summary>
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:TextEditor.LempDemoForm.InitializeComponent">
-            <summary>
-            Required method for Designer support - do not modify
-            the contents of this method with the code editor.
-            </summary>
         </member>
         <member name="F:TextEditor.LempDemoForm._editorSettings">
             <summary>This variable holds the editor settings (whether to show line 
@@ -337,6 +295,12 @@
             <remarks>We don't have to sync settings between the editors because 
             they all share the same DefaultTextEditorProperties object.</remarks>
         </member>
+        <member name="P:TextEditor.LempDemoForm.AllEditors">
+            <summary>Returns a list of all editor controls</summary>
+        </member>
+        <member name="P:TextEditor.LempDemoForm.ActivePage">
+            <summary>Returns the currently displayed editor page, or null if none are open</summary>
+        </member>
         <member name="M:TextEditor.LempDemoForm.IsModified(ICSharpCode.TextEditor.TextEditorControl)">
             <summary>Gets whether the file in the specified editor is modified.</summary>
             <remarks>TextEditorControl doesn't maintain its own internal modified 
@@ -346,11 +310,63 @@
         <member name="M:TextEditor.LempDemoForm.TextEditorForm_DragEnter(System.Object,System.Windows.Forms.DragEventArgs)">
             <summary>We handle DragEnter and DragDrop so users can drop files on the editor.</summary>
         </member>
-        <member name="P:TextEditor.LempDemoForm.AllEditors">
-            <summary>Returns a list of all editor controls</summary>
+        <member name="F:TextEditor.LempDemoForm.components">
+            <summary>
+            Required designer variable.
+            </summary>
         </member>
-        <member name="P:TextEditor.LempDemoForm.ActivePage">
-            <summary>Returns the currently displayed editor page, or null if none are open</summary>
+        <member name="M:TextEditor.LempDemoForm.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:TextEditor.LempDemoForm.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:TextEditor.RegionFoldingStrategy">
+            <summary>
+            The class to generate the foldings, it implements ICSharpCode.TextEditor.Document.IFoldingStrategy
+            </summary>
+        </member>
+        <member name="M:TextEditor.RegionFoldingStrategy.GenerateFoldMarkers(ICSharpCode.TextEditor.Document.IDocument,System.String,System.Object)">
+            <summary>
+            Generates the foldings for our document.
+            </summary>
+            <param name="document">The current document.</param>
+            <param name="fileName">The filename of the document.</param>
+            <param name="parseInformation">Extra parse information, not used in this sample.</param>
+            <returns>A list of FoldMarkers.</returns>
+        </member>
+        <member name="P:TextEditor.LempDemoPanel.EditorSettings">
+            <summary>This variable holds the editor settings (whether to show line 
+            numbers, etc.) that all editor controls share.</summary>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.IsModified">
+            <summary>Gets whether the file in the specified editor is modified.</summary>
+            <remarks>TextEditorControl doesn't maintain its own internal modified 
+            flag, so we use the '*' shown after the file name to represent the 
+            modified state.</remarks>
+        </member>
+        <member name="F:TextEditor.LempDemoPanel.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:TextEditor.LempDemoPanel.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
         </member>
         <member name="T:System.Windows.Forms.InputBoxDialog">
             <summary>
@@ -370,20 +386,6 @@
             The Show() method returns null if the user clicks Cancel, and non-null
             if the user clicks OK.
             </summary>
-        </member>
-        <member name="T:TextEditor.RegionFoldingStrategy">
-            <summary>
-            The class to generate the foldings, it implements ICSharpCode.TextEditor.Document.IFoldingStrategy
-            </summary>
-        </member>
-        <member name="M:TextEditor.RegionFoldingStrategy.GenerateFoldMarkers(ICSharpCode.TextEditor.Document.IDocument,System.String,System.Object)">
-            <summary>
-            Generates the foldings for our document.
-            </summary>
-            <param name="document">The current document.</param>
-            <param name="fileName">The filename of the document.</param>
-            <param name="parseInformation">Extra parse information, not used in this sample.</param>
-            <returns>A list of FoldMarkers.</returns>
         </member>
     </members>
 </doc>

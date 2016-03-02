@@ -14,7 +14,7 @@ namespace Loyc.Ecs.Parser
 	using Loyc.Utilities;
 
 	[TestFixture]
-	class EcsLexerTests
+	public class EcsLexerTests
 	{
 		[DebuggerStepThrough] static Symbol _(string s) { return GSymbol.Get(s); }
 		[DebuggerStepThrough] static T[] A<T>(params T[] list) { return list; }

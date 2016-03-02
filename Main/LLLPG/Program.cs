@@ -16,7 +16,7 @@ using Loyc.Ecs.Parser;
 namespace Loyc.LLParserGenerator
 {
 	/// <summary>Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.</summary>
-	public class LLLPG // Avoid name collision with 'Program' class in LinqPad
+	public class Program // Avoid name collision with 'Program' class in LinqPad
 	{
 		public static void Main(params string[] args)
 		{
@@ -52,8 +52,7 @@ namespace Loyc.LLParserGenerator
 				}
 			} else {
 				LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
-				Tests();
-				Ecs.Program.Main(args); // do EC# tests
+				Test_LLLPG();
 			}
 		}
 
@@ -80,7 +79,7 @@ namespace Loyc.LLParserGenerator
 			return c.Output.ToString();
 		}
 
-		static void Tests()
+		public static void Test_LLLPG()
 		{
 			Console.WriteLine("Running tests... (a small number of them are broken)");
 
@@ -88,24 +87,12 @@ namespace Loyc.LLParserGenerator
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
-			RunTests.Run(new IntSetTests());
-			//RunTests.Run(new LNodeTests());
 			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgGeneralTests());
-			RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
-			RunTests.Run(new LexerSourceTests_Calculator());
-			RunTests.Run(new ParserSourceTests_Calculator());
-			RunTests.Run(new LeMP.MacroProcessorTests());
-			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgAutoValueSaverVisitorTests());
 			RunTests.Run(new LlpgTestLargerExamples());
 			RunTests.Run(new LlpgBugsAndSlugs());
-			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 		}
 	}
 }

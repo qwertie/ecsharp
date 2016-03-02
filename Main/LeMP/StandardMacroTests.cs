@@ -125,11 +125,11 @@ namespace LeMP
 			TestEcs("rawQuote { Func($Foo); }",
 					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
 			TestEcs("quote(Foo($first, $(..rest)));",
-				   @"LNode.Call((Symbol) ""Foo"", new VList<LNode>().Add(first).AddRange(rest));");
+				   @"LNode.Call((Symbol) ""Foo"", LNode.List().Add(first).AddRange(rest));");
 			TestEcs("quote(Foo($(..args)));",
-				   @"LNode.Call((Symbol) ""Foo"", new VList<LNode>(args));");
+				   @"LNode.Call((Symbol) ""Foo"", LNode.List(args));");
 			TestEcs("quote { [$(..attrs)] public X; }",
-				   @"LNode.Id(new VList<LNode>().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
+				   @"LNode.Id(LNode.List().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
 		}
 
 		[Test]

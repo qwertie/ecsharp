@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
 	/// In that case, there is no need to use this class directly. The source code of
-	/// <see cref="LLLPG.Main"/> shows how to invoke LLLPG as a macro via the 
+	/// <see cref="Program.Main"/> shows how to invoke LLLPG as a macro via the 
 	/// <see cref="LeMP.Compiler"/>.
 	/// <para/>
 	/// For more information about how to use LLLPG, read

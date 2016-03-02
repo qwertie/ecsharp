@@ -168,6 +168,7 @@ namespace Loyc
 					value = value * 16 + digit;
 			}
 		}
+		/// <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
 		public static int HexDigitValue(char c)
 		{
 			if (c >= '0' && c <= '9')
@@ -190,13 +191,15 @@ namespace Loyc
 			else
 				return -1;
 		}
+		/// <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
 		public static char HexDigitChar(int value)
 		{
-			Debug.Assert((uint)value < 16);
 			if ((uint)value < 10)
 				return (char)('0' + value);
-			else
+			else if ((uint)value < 16)
 				return (char)('A' - 10 + value);
+			else
+				return '?';
 		}
 
 		public static string EscapeCStyle(UString s, EscapeC flags = EscapeC.Default)

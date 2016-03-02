@@ -84,18 +84,24 @@ namespace Loyc
 		}
 		void WriteCore(Severity type, object context, string text)
 		{
+			string typeText;
+			var color = PickColor(type, out typeText);
+			if (typeText != null)
+				text = typeText + ": " + text;
+			WriteColoredMessage(color, context, text);
+		}
+		public static void WriteColoredMessage(ConsoleColor color, object context, string text)
+		{
 			string loc = MessageSink.LocationString(context);
 			if (!string.IsNullOrEmpty(loc))
 				Console.Write(loc + ": ");
 
-			string typeText;
 			ConsoleColor oldColor = Console.ForegroundColor;
-			Console.ForegroundColor = PickColor(type, out typeText);
-			if (typeText != null)
-				text = typeText + ": " + text;
+			Console.ForegroundColor = color;
 			Console.WriteLine(text);
 			Console.ForegroundColor = oldColor;
 		}
+
 		/// <summary>Always returns true.</summary>
 		public bool IsEnabled(Severity type)
 		{
