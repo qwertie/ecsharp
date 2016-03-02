@@ -1,19 +1,19 @@
-copy Bin\Release.NET4\*.dll Lib\LLLPG
+copy Bin\Release.NET4\*.dll Lib\LeMP
 @IF ERRORLEVEL 1 GOTO ERROR
-copy Bin\Release.NET4\*.exe Lib\LLLPG
+copy Bin\Release.NET4\*.exe Lib\LeMP
 @IF ERRORLEVEL 1 GOTO ERROR
-copy Bin\Release.NET4\*.xml Lib\LLLPG
-copy Bin\Release.NET4\*.pdb Lib\LLLPG
-del Lib\LLLPG\*.vshost.exe
+copy Bin\Release.NET4\*.xml Lib\LeMP
+copy Bin\Release.NET4\*.pdb Lib\LeMP
+del Lib\LeMP\*.vshost.exe
 "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\devenv.exe" /out vsbuild.log /build Debug "Visual Studio Integration\Visual Studio Integration 2010.sln"
 @IF ERRORLEVEL 1 GOTO ERROR
-copy "Visual Studio Integration\LoycFileGeneratorForVs\bin\Debug\LoycFileGeneratorForVs.exe" "Lib\LLLPG"
+copy "Visual Studio Integration\LoycFileGeneratorForVs\bin\Debug\LoycFileGeneratorForVs.exe" "Lib\LeMP"
 @IF ERRORLEVEL 1 GOTO ERROR
-"Lib\LLLPG\LoycFileGeneratorForVs.exe"
+"Lib\LeMP\LoycFileGeneratorForVs.exe"
 @IF ERRORLEVEL 1 GOTO ERROR
-copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsix" "Lib\LLLPG\LoycSyntaxForVs.vsix"
+copy "Visual Studio Integration\LoycExtensionForVs\bin\Debug\LoycSyntaxForVs.vsix" "Lib\LeMP\LoycSyntaxForVs.vsix"
 @IF ERRORLEVEL 1 GOTO ERROR
-"Lib\LLLPG\LoycSyntaxForVs.vsix"
+"Lib\LeMP\LoycSyntaxForVs.vsix"
 pause
 GOTO STOP
 :ERROR

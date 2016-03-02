@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<!-- NuGet package specification. Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg -->
+<!-- NuGet package specification. 
+     Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg -->
 <package >
   <metadata>
     <id>LoycCore</id>
