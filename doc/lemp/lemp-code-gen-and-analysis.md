@@ -8,7 +8,7 @@ Introduction
 
 Today I planned to write an article about the new pattern-matching and "algebraic data type" features I added to C# via [LeMP](https://github.com/qwertie/Loyc/wiki/LeMP), but then I saw the new [WuffProjects.CodeGeneration](http://www.codeproject.com/Articles/892114/WuffProjects-CodeGeneration) library and thought "wait a minute, LeMP has made that easy for a year now!" In fact, LeMP can do some pretty neat stuff, as you'll see!
 
-LeMP is a macro processor for a superset of C# called "Enhanced C#". If you've ever used [sweet.js](http://sweetjs.org/), LeMP is basically the same thing for C#, just not as polished.
+LeMP is a macro processor for a superset of C# called "Enhanced C#". If you've ever used [sweet.js](http://sweetjs.org/), LeMP is basically the same thing for C#, just not as polished. Also, whereas sweet.js seems focused on letting you create your own macros, LeMP comes with many useful built-in macros, but creating new ones isn't as easy (yet).
 
 So here's the scenario: you want to write a program that generates C# source code, and either runs it or analyzes it somehow. How should you do it?
 
@@ -314,11 +314,6 @@ There are two parts to the answer.
 
 I won't distract you with too much depth on this topic; if you want to know more, please ask.
 
-By the way, if you're reading this and thinking "this LeMP thing has some pretty impressive capabilities... why haven't I heard of it before?" the answer is twofold:
-
-1. this is the first article I've written about LeMP's new `codeMatch` construct, and
-2. I stopped working on LeMP for a couple of months because people showed very little no interest in it. Currently if you Google "LeMP", my [original article about LeMP](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part) doesn't show up in the top 10 search results, because nobody blogged about it so there ain't no links anywhere about it. If you like LeMP, please say so, share it with your friends, blog about it, make a YouTube video... something!
-
 Converting code to text and compiling it
 ----------------------------------------
 
@@ -459,11 +454,12 @@ If you simply want to search for "everything that matches a certain pattern" and
 ~~~csharp
    node = node.ReplaceRecursive(expr => {
       matchCode (expr) {
-         case { $_ $method($(.._)) { $(.._); } }: 
+         case { $type $method($(.._)) { $(.._); } }: // any normal method
+			Console.WriteLine("Method '{0}' returns '{1}'", method, type);
             return expr; // prevent children from being scanned
       }
-      ...
-   }));
+	  return null;
+   });
 ~~~
 
 ### Pattern matching using matchCode ###
@@ -548,6 +544,11 @@ String;
 BinaryDigits;
 Point<T>;
 ~~~
+
+By the way, if you're reading this and thinking "this LeMP thing has some pretty impressive capabilities... why haven't I heard of it before?" the answer is twofold:
+
+1. this is the first article I've written about LeMP's new `matchCode` construct, and
+2. I stopped working on LeMP for a couple of months because people showed very little interest in it. Currently if you Google "LeMP", my [original article about LeMP](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part) doesn't show up in the top 10 search results, because nobody blogged about it so there ain't no links anywhere about it. If you like LeMP, please say so, share it with your friends, blog about it, make a YouTube video... something!
 
 ### Pattern-matching example 3: `[notify]` ###
 
@@ -848,7 +849,7 @@ Conclusion
 
 LeMP is a useful code generation and code analysis tool. QED. Let me know if you have any questions, and what you're doing with it!
 
-**Tip**: when using LeMP, keep your Error List open. An error in your `example.ecs` file will often lead to more errors in your `example.out.cs` file, but unfortunately Visual Studio often puts errors from the `*.out.cs` file first, so when diagnosing errors, you'll have to look near the end of the error list first for any errors in your `*.ecs` file.
+**Tip**: when using LeMP, keep your Error List open. An error in your `example.ecs` file will often lead to more errors in your `example.out.cs` file, but unfortunately Visual Studio often puts errors from the `*.out.cs` file first, so when diagnosing errors, you'll have to look near the _end_ of the error list first for any errors in your `*.ecs` file.
 
 Help wanted
 -----------

@@ -15,12 +15,12 @@ See [status at core.loyc.net](http://core.loyc.net/project-status.html).
 - Parser:
     - Supports most of C# and most planned syntax for EC#
     - TODO: LINQ parsing with tests
-    - TODO: async/await parsing with tests
+    - TODO: async/await parsing (blocking issue: slug in LLLPG)
 - Printer:
     - Supports most of C# and most planned syntax for EC#
     - Includes plain C# output mode that avoids using EC# syntax (only works when the syntax tree does not contain EC#-only stuff)
 - Semantic analysis:
-    - TODO. Does not exist!
+    - TODO. Does not exist! (idea: use Roslyn)
 - Backend:
     - TODO. Does not exist! (for now, using LeMP with C# output)
 - Syntax highlighting:
@@ -36,13 +36,15 @@ I'm trying to get as much mileage as possible out of LeMP before writing a prope
 
 so that `A` is evaluated only once. However, this would require me to create a compiler that lets me declare a variable inside an expression, and I don't have time to write that compiler yet, so for now I settle for the inferior translation `x = A != null ? A.B : null`.
 
+(Of course, this particular feature was added to C# 6, so the macro could be removed, but there are other macros too that are 'hurting' because C# doesn't allow variable declarations inside expressions.)
+
 - Lexical Macro Processor (LeMP.MacroProcessor class, plus helper class LeMP.Compiler):
-    - "Simple" version is done. Supports only [SimpleMacro] macros, which are designed to be stateless and to operate without context information. Currently macros do not support "hygiene", they do not support typing, and they cannot store state that is limited to a lexical block (macros that need state currently store it in ThreadStatic variabes). Macro names can be overloaded; if two macros have the same name, that's fine if exactly one of the macros returns a non-null result.
+    - Simple lexical macros are done. [`IMacroContext`](http://loyc.net/doc/code/interfaceLeMP_1_1IMacroContext.html) is done. Currently macros do not support "hygiene", and they have no access to type information (i.e. there are no symbol tables). Macro names can be overloaded; if two macros have the same name, that's fine if exactly one of the macros returns a non-null result.
     - TODO: design a more powerful macro system.
 - Standard Macros (designed to convert simple EC# code to plain C# code. this is not an exhaustive list):
     - Done: LES to C# macros (LeMP.Prelude.Les.Macros class): Contains numerous macros to convert LES code that resembles C# into syntax trees understood by the C# printer, e.g. the LES expression "class X { two::int; };" is converted to the syntax tree "#class(X, #(), { #var(#int, two); });" which is recognized by the C# printer as a class declaration.
     - Done: Null-dot: e.g. `a = b.c?.d.e` is translated to `a = b.c != null ? b.c.d.e : null`
-    - TODO: Null coalesce set: e.g. `a ??= b` means `a = a ?? b` (`a ?? (a = b)` is potentially more efficient but not always allowed by standard C#).
+    - Done: Null coalesce set: e.g. `a ??= b` means `a = a ?? b` (`a ?? (a = b)` is potentially more efficient but not always allowed by standard C#).
     - Done: Tuple literals e.g. `(3, "three")`: done. By default `(X, Y)` is mapped to `Pair.Create(X, Y)` while other numbers of arguments are mapped to `Tuple.Create`. Use `set_tuple_maker(Tuple.Create)` if you prefer to use `System.Tuple` for all sizes. Unpacking, e.g. `(x, var y) = Foo();` is supported at the statement level (not inside a more complex statement)
     - TODO: String interpolation e.g. `$"Did you know that $x + $y = $(x+y)? It's true!"`
     - Done: `unroll(...) {...}`. This EC# example creates three fields and three properties: 
@@ -56,15 +58,16 @@ so that `A` is evaluated only once. However, this would require me to create a c
     - Done: `replace(...) {...}`, e.g. `replace(C => Console, W => WriteLine) {C.WL("Hello");}`
     - TODO: `in`: `x in (1, 2, 3)` => `x == 1 || x == 2 || x == 3`
     - TODO: code contracts: `[requires]`, `[required]`, `[assert]` `[ensures]`
-    - TODO: set-field modifiers: `public Foo(public int X, private int Y, set int Z) {}`
-    - TODO: `[field]` attribute: `[field _x] public int X { get; set; }`
-    - TODO: Forwarded methods: `static int InRange(int x, int lo, int hi) ==> MathEx.InRange;`
-    - TODO: D's `scope(exit), scope(success), scope(failure)`, probably renamed `on_finally {}`, `on_return {}`, `on_exception {}`
-    - TODO: `static int Square(int x) => x*x;` becomes `static int Square(int x) { return x*x; }`
+    - Done: set-field modifiers: `public Foo(public int X, private int Y, set int Z) {}`
+    - Done: `[field]` attribute: `[field _x] public int X { get; set; }`
+    - Done: Forwarded methods: `static int InRange(int x, int lo, int hi) ==> MathEx.InRange;`
+    - Done: D's `scope(exit), scope(success), scope(failure)`, probably renamed `on_finally {}`, `on_return {}`, `on_exception {}`
+    - Cancelled: `static int Square(int x) => x*x;` becomes `static int Square(int x) { return x*x; }`. Cancelled because this feature was added to C# 6 anyway.
     - TODO: `[unroll<T>(int, long, float, double)] public static T Add<$T>(T a, T b) { return a+b; }`
-    - TODO: Code quotes.
+    - Done: Code quotes.
     - TODO: A macro that runs C# code at compile-time.
     - Done: `LLLPG`
+    - Done: Pattern matching for objects and code. Algebraic data types.
 - IDE features:
     - LeMP single-file generator is done. It is the engine behind [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp). The copy distributed with LLLPG as of June 2014 doesn't include new macros like `unroll` and `replace`.
 
@@ -103,8 +106,8 @@ SIL will be a superset of most existing languages, in that its broadest incarnat
 - [Documentation](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)
 - LLLPG works almost exactly as desired. I can think of two current issues and one feature I'd like to add:
   - `&(and predicates)` are used in prediction only to resolve ambiguity. When they are not strictly needed for prediction, they are converted to calls to `Check()` instead, which is less than ideal because (1) you might want to force it to be used for prediction, but you can't and (2) LLLPG provides no way to customize the error message given to `Check()`; the end-user is shown the code of the predicate, which is ugly.
-  - LLLPG is slow for some grammars, especially highly ambiguous ones; in fact I have found a case that has O(N!) performance for a specially-crafted input grammar of size N. The EC# parser and lexer require 3 seconds each to compile, and that's using a couple of strategically-placed gates to avoid extremely poor performance. I do not yet understand what makes the performance so bad.
-  - Rather than write `@[ x:=X (ys+=Y)* { /* do something with x and ys */ } ]` I want to be able to write code like `@[ X Y* { /* do something with $X and $Y */ } ]`.
+  - LLLPG is slow for some grammars, especially highly ambiguous ones; in fact I have found a case that has O(N!) performance for a specially-crafted input grammar of size N. The EC# parser and lexer require 3 seconds each to compile (EDIT: parser is up to 20 seconds), and that's using a couple of strategically-placed gates to avoid extremely poor performance. I do not understand very well what makes the performance so bad. A large rewrite and theoretical analysis may be in order. But theoretical analysis is not my forté.
+  - Done: Rather than write `@[ x:=X (ys+=Y)* { /* do something with x and ys */ } ]` I want to be able to write code like `@[ X Y* { /* do something with $X and $Y */ } ]`. Limitation: it currently doesn't work if X and Y are aliases.
 
 ## Baadia: Boxes and arrows diagram maker
 
