@@ -681,36 +681,13 @@ The property name is an `LNode` called `Name`, and it has a property called `Nam
 This line is actually wrong, because it won't work properly for explicit interface implementations like this:
 
 ~~~csharp
-   T IFunky.FunkyProp<T> { get => _funkyProp; [notify] set; }
+   T IFunky.FunkyProp<T> { get { return _funkyProp; } [notify] set; }
 ~~~
 
-In this case `Name` will hold the syntax tree for `IFunky.FunkyProp<T>`. If we want to extract the name `FunkyProp` from this, there is a method `LeMP.StandardMacros.KeyNameComponentOf(Name)` for doing this, but if you'd like to avoid adding `LeMP.exe` as a runtime reference, you could just copy the method's source code:
+In this case `Name` will hold the syntax tree for `IFunky.FunkyProp<T>`. If we want to extract the name `FunkyProp` from this, there is a method `EcsValidators.KeyNameComponentOf(Name)` for doing this. You can use this method as follows:
 
 ~~~csharp
-   /// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
-   /// <remarks>
-   /// The key name component of <c>global::Foo!int.Bar!T(x)</c> (in C# notation
-   /// global::Foo<int>.Bar<T>(x)) is <c>Bar</c>. This example tree has the 
-   /// structure <c>((((global::Foo)!int).Bar)!T)(x)</c>).
-   /// </remarks>
-   public static LNode KeyNameComponentOf(LNode name)
-   {
-      // So if #of, get first arg (which cannot itself be #of), then if @`.`, get second arg.
-      // If it's a call, note that we have to check for #of and @`.` BEFORE stripping off the args.
-      if (name.CallsMin(S.Of, 1))
-         name = name.Args[0];
-      if (name.CallsMin(S.Dot, 1))
-         name = name.Args.Last;
-      if (name.IsCall)
-         return KeyNameComponentOf(name.Target);
-      return name;
-   }
-~~~
-
-You can use this method as follows:
-
-~~~csharp
-   string propNameString = KeyNameComponentOf(Name).Name.Name;
+   string propNameString = EcsValidators.KeyNameComponentOf(Name).Name.Name;
 ~~~
 
 Finally, notice how we call the `notifyMethod`:
@@ -842,7 +819,7 @@ Learn more about LeMP!
 
 You can learn about some other LeMP capabilities in the [previous article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part), and I plan to write another article soon, this time about pattern matching with `match` (as opposed to `matchCode` which you saw in this article).
 
-In addition to LeMP, you'll find that the `LNode` class has numerous useful methods for querying and modifying Loyc trees. See the [`LNode` class reference](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html).
+In addition to LeMP macros, you'll find that the `LNode` class has numerous useful methods for querying and modifying Loyc trees. See the [`LNode` class reference](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html). You can search for any class or method you've seen in the search box above the [Code Documentation](http://loyc.net/doc/code/), or browse through the [Loyc namespace](http://loyc.net/doc/code/namespaceLoyc.html) to find out what else is available.
 
 Conclusion
 ----------
@@ -850,6 +827,8 @@ Conclusion
 LeMP is a useful code generation and code analysis tool. QED. Let me know if you have any questions, and what you're doing with it!
 
 **Tip**: when using LeMP, keep your Error List open. An error in your `example.ecs` file will often lead to more errors in your `example.out.cs` file, but unfortunately Visual Studio often puts errors from the `*.out.cs` file first, so when diagnosing errors, you'll have to look near the _end_ of the error list first for any errors in your `*.ecs` file.
+
+**Tip**: Because there is no IntelliSense in ecs files, learn to love [`partial class`](https://msdn.microsoft.com/en-us/library/wa80x488.aspx?f=255&MSPPError=-2147217396). You may find it useful to break up some of your classes into two parts, one in an .ecs file (so you can use LeMP macros), and another in a .cs file (so you can use IntelliSense).
 
 Help wanted
 -----------
