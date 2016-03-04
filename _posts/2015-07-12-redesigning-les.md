@@ -27,7 +27,7 @@ For example, you could write `if(x > 0) {...} else {...}`, which is parsed into 
 
 This solution actually works quite well, if all we're talking about is executable code. It supports all the usual stuff pretty well:
 
-~~~C#
+~~~csharp
 if(...) {...};
 if(...) {...} else {...};
 while(...) {...}
@@ -39,7 +39,7 @@ do {...} while {...};
 
 The do-while statement is a little awkward, needing braces around the loop condition instead of parentheses, but on the whole, this design seemed quite usuable. And although it requires semicolons after each statement, it is pretty effective at detecting missing semicolons:
 
-~~~C#
+~~~csharp
 while (x < 100) { x *= 2; }
 Foo(x); // Syntax error
 
@@ -55,7 +55,7 @@ if (x > 0) { return 0 }; // Syntax error
 
 However, declarative statements that used to have a nice, clean syntax became illegal, and the `new` expression won't work either:
 
-~~~C#
+~~~csharp
 var x = 0;                        // syntax error
 fn square(x::int)::int { x*x };   // syntax error
 class Foo(Base, IBase) { ... };   // syntax error
@@ -66,13 +66,13 @@ x := (new Class.Name(...) {...}); // syntax error
 
 Of these, I guess function declarations and `new` expressions bothered me the most. The best solution seemed to be using a colon (`:` being a normal operator)
 
-~~~C#
+~~~csharp
 fn: square(x::int)::int { x * x };
 ~~~
 
 The tree structure of this is a bit odd though:
 
-~~~C#
+~~~csharp
 fn : ((square(x::int))::int)({ x * x }));
 ~~~
 
@@ -105,3 +105,13 @@ This requires three changes:
 3. Introduce `[list syntax]`.
 
 Then JSON like `{"foo": [[22, 22.2], true], "bar":0}` is also LES. Yay!
+
+New idea
+--------
+New idea for whitespace agnosticism. Three kinds of sugar:
+
+1. Block-call expression (adds an argument): expr {...}, expr (...) {...}
+2. Contextual binary operators: else catch finally where in @anything
+3. Top-level expr: Id Expr (`return 0`) - doesn't work if Expr starts with binary op or '('
+
+do for while if unless until switch return break throw goto using let var loop with | else catch finally where in | class struct fn type new case enum event alias foreach import | public private protected internal module
