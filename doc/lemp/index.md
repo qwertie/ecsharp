@@ -78,7 +78,7 @@ Learn more
 Learn more about LeMP in these published articles:
 
 - [Avoid tedious coding with LeMP, part 1](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)
-- [Using LeMP as a C# code generator](http://www.codeproject.com/Articles/1081882/Using-LeMP-as-a-Csharp-code-generator)
+- [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
 
 Installation
 ------------
