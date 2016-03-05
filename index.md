@@ -30,10 +30,10 @@ Language of Your Choice (Loyc) is a group of projects related to cross-language 
 Loyc is in its infancy, and probably will remain so until I attract either (A) volunteers to work on its components, or (B) a major sponsor. Current and potential Loyc projects include:
 
 - [Enhanced C#](https://github.com/qwertie/Loyc/wiki/Enhanced-C%23): a starting point for the Loyc framework, EC# will add new operators and many other new features to C#, starting with a LISP-inspired macro system (LeMP).
-- [LeMP](/doc/lemp) (Lexical Macro Processor): a LISP-style macro preprocessor that operates on Loyc trees
+- [LeMP](/lemp) (Lexical Macro Processor): a LISP-style macro preprocessor that operates on Loyc trees
 - [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees): a generic in-memory representation for syntax trees of any language.
 - [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) (Loyc Expression Syntax): a superset of JSON, LES is an C-like interchange format for Loyc trees, suitable for representing normal programming languages, DSLs, configuration files, and intermediate representations.
-- [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) (Loyc LL(k) Parser Generator): The parser generator being used to parse Enhanced C# and LES
+- [LLLPG](/lllpg) (Loyc LL(k) Parser Generator): The parser generator being used to parse Enhanced C# and LES
 - [MLSL](http://loyc.net/2014/design-elements-of-mlsl.html) (Multi-Language Standard Library): not yet started
 - [SIL](https://github.com/qwertie/Loyc/wiki/Standard-Imperative-Language) (Standard Imperative Language): not yet started
 - Visual studio integration: When you write a lexer & parser, you can get syntax highlighting almost for free.
