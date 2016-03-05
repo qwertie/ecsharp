@@ -411,7 +411,7 @@ The bug in the [SFG][6] custom tool (LllpgForVisualStudio.exe 1.0) that involved
 
 has been fixed in 1.1.0, so error messages will appear in the normal error list instead of on message boxes.
 
-[Part 2][24], [part 3][25], and [part 4][26] are available. Here's a list of topics that are covered in future articles:
+For more articles about LLLPG, return to the [home page](http://loyc.net/lllpg). Here's a list of topics that are covered in future articles:
 
 * **What does LL(k) mean, anyway?**
 * **Requirements on the base class** ([BaseLexer][27] and [BaseParser][28]).
@@ -467,4 +467,4 @@ So that's it! Hope you like my parser generator, folks, and I'll be happy to ans
 [28]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Syntax/BaseParser.cs
 [29]: http://www.antlr3.org/doc/glossary.html#Linear_approximate_lookahead
 [30]: http://www.codeproject.com/Articles/732222/The-Loyc-LL-k-Parser-Generator-Part-3
-  
+[31]: http://www.codeproject.com/Articles/1002541/The-Loyc-LL-k-Parser-Generator-Part  
