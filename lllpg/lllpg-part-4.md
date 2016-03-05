@@ -109,7 +109,7 @@ I didn't realize it at first, but LLLPG's technique doesn't support all LL(k) gr
 		token Number   @[ '-'? '.'? '0'..'9'+ ];
 	}
 
-After (correctly) warning that `Alternatives (1, 2) are ambiguous for input such as «'-' '.' 0» ([\-.], [.0-9], ~())`, LLLPG generates this slightly incorrect code for `Token`:
+After (correctly) warning that `Alternatives (1, 2) are ambiguous for input such as Â«'-' '.' 0Â» ([\-.], [.0-9], ~())`, LLLPG generates this slightly incorrect code for `Token`:
 
     void Token()
     {
@@ -313,9 +313,9 @@ The thing is, any lexer grammar that follows this pattern is ambiguous! Because 
 
 So if all the rules are written using `rule` rather than `token`, LLLPG will report three ambiguities, one each for `Id` or `Num` and `Spaces`:
 
-- Warning: (12,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as « *» ([\t ], [\$\t *+\-/-9=A-Za-z])
-- Warning: (13,43): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as «0*» ([0-9A-Za-z], [\$\t *+\-/-9=A-Za-z])
-- Warning: (15,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as «0*» ([0-9], [\$\t *+\-/-9=A-Za-z])
+- Warning: (12,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as Â« *Â» ([\t ], [\$\t *+\-/-9=A-Za-z])
+- Warning: (13,43): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as Â«0*Â» ([0-9A-Za-z], [\$\t *+\-/-9=A-Za-z])
+- Warning: (15,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, exit) are ambiguous for input such as Â«0*Â» ([0-9], [\$\t *+\-/-9=A-Za-z])
 
 LLLPG detects the ambiguity while looking at the _follow set_ of each rule, which it does while analyzing the loops. Since `Token` appears in a loop, `Id` can theoretically be followed by another `Id`, or by `Num`, so the location where an `Id` or `Num` or `Spaces` loop should _stop_ is ambiguous.
 
@@ -331,8 +331,8 @@ In certain ambiguous cases, notably those in which some alternatives are prefixe
 	
 The output is:
 
-- Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 2) are ambiguous for input such as «>=» ([>], [=])
-- Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 3) are ambiguous for input such as «<=» ([<], [=])
+- Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 2) are ambiguous for input such as Â«>=Â» ([>], [=])
+- Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Alternatives (1, 3) are ambiguous for input such as Â«<=Â» ([<], [=])
 - Warning: (4,23): Loyc.LLParserGenerator.Macros.run_LLLPG: Branches 2, 3 are unreachable.
 
         void CompareOp()
@@ -903,7 +903,7 @@ Verifies that `LA0` is not within the specified range(s) of characters, then inc
 
 	void Check(bool expectation, string expectedDescr);
 
-As explained in the section §"Error handling mechanisms in LLLPG" (part 3), this is called to check and-predicate conditions during matching if they were not verified during prediction.
+As explained in the section Â§"Error handling mechanisms in LLLPG" (part 3), this is called to check and-predicate conditions during matching if they were not verified during prediction.
 
 	// Example
 	LLLPG(lexer) {
@@ -1094,7 +1094,7 @@ I'll skip the example this time: I think by now you get the idea.
 
 ## Reference: APIs you must write in classes derived from BaseLexer and BaseParser
 
-This is a summary of information presented in §"Boilerplate" in Part 3.
+This is a summary of information presented in Â§"Boilerplate" in Part 3.
 
 When writing a lexer, `BaseLexer` (whether in Loyc.Syntax.dll or the standalone example) implements almost all of the APIs required by LLLPG. There's just one that you must write yourself:
 
