@@ -287,6 +287,7 @@
     <Compile Include="StandardMacros\RequiresMacro.cs" />
     <Compile Include="StandardMacros\SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros\StandardMacros.cs" />
+    <Compile Include="StandardMacros\ThisConstructorMacro.cs" />
     <Compile Include="StandardMacros\TupleMacros.cs" />
     <Compile Include="StandardMacros\UnrollMacro.cs" />
     <Compile Include="StandardMacros\UseSymbolsMacro.cs" />

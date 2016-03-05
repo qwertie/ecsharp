@@ -89,7 +89,7 @@ namespace LeMP
 							child.AddParts(parts);
 							child.ScanClassBody(childBody);
 							_children.Add(child);
-						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1 && stmt.CallsMin(CodeSymbols.Cons, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new VList<LNode>(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
+						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.IndexWhere(a => a.IsIdNamed(__alt))) > -1 && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new VList<LNode>(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
 							parts = stmt.Args[2].Args;
 							attrs.RemoveAt(i);
 							_constructorAttrs.AddRange(attrs);
@@ -114,7 +114,7 @@ namespace LeMP
 				var args = new VList<LNode>(allParts.Select(p => p.OriginalDecl));
 				if (!_constructorAttrs.Any(a => a.IsIdNamed(S.Public)))
 					_constructorAttrs.Add(F.Id(S.Public));
-				LNode constructor = LNode.Call(new VList<LNode>(_constructorAttrs), CodeSymbols.Cons, LNode.List(LNode.Missing, _typeNameStem, LNode.Call(CodeSymbols.AltList, new VList<LNode>(args)), LNode.Call(CodeSymbols.Braces, new VList<LNode>().AddRange(initialization).AddRange(_extraConstrLogic)).SetStyle(NodeStyle.Statement)));
+				LNode constructor = LNode.Call(new VList<LNode>(_constructorAttrs), CodeSymbols.Constructor, LNode.List(LNode.Missing, _typeNameStem, LNode.Call(CodeSymbols.AltList, new VList<LNode>(args)), LNode.Call(CodeSymbols.Braces, new VList<LNode>().AddRange(initialization).AddRange(_extraConstrLogic)).SetStyle(NodeStyle.Statement)));
 				var outBody = new VList<LNode>();
 				outBody.Add(constructor);
 				outBody.AddRange(Parts.Select(p => p.GetFieldDecl()));

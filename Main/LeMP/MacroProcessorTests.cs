@@ -14,12 +14,34 @@ using Loyc.Ecs;
 namespace LeMP.Test
 {
 	[ContainsMacros]
-	public class Macros
+	public class TestMacros
 	{
 		[LexicalMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
 		public static LNode Identity(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Splice);
+		}
+		[LexicalMacro("priorityTest(x, y)", "Change first argument to 'hi'", 
+			"priorityTest", "priorityTestPCB", Mode = MacroMode.PriorityOverride)]
+		public static LNode priorityTestHi(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount >= 1 && !node[0].IsIdNamed("hi"))
+				return node.WithArgChanged(0, LNode.Id("hi"));
+			return null;
+		}
+		[LexicalMacro("priorityTest(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenAfter)]
+		public static LNode priorityTest(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithArgs(node[1], node[0]);
+			return null;
+		}
+		[LexicalMacro("priorityTestPCB(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenBefore)]
+		public static LNode priorityTestPCB(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithArgs(node[1], node[0]);
+			return null;
 		}
 	}
 }
@@ -35,7 +57,7 @@ namespace LeMP
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			MacroProcessor.AddMacros(typeof(LeMP.StandardMacros));
-			MacroProcessor.AddMacros(typeof(LeMP.Test.Macros));
+			MacroProcessor.AddMacros(typeof(LeMP.Test.TestMacros));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
@@ -303,6 +325,19 @@ namespace LeMP
 		{
 			Test("prop x::int { get { return 0; } set; };",
 				"int x { get ({ return 0; }, set); }");
+		}
+
+		[Test]
+		public void PriorityTest()
+		{
+			Test("import_macros LeMP.Test; priorityTest(0, 1);",
+			                              "priorityTest(1, hi);");
+			Test("{ import_macros LeMP.Test; foo0(); priorityTest(0, 2); foo(); }",
+				 "{                          foo0(); priorityTest(2, hi); foo(); }");
+			Test("{ import_macros LeMP.Test; priorityTest(0, x::int = 3); foo(); }",
+				 "{                          priorityTest(int x = 3, hi); foo(); }");
+			Test("{ import_macros LeMP.Test; priorityTestPCB(0, x::int = 4); foo2(); }",
+				 "{                          priorityTestPCB(int x = 4, hi); foo2(); }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);

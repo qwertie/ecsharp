@@ -273,7 +273,7 @@ namespace Loyc.Ecs
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes
 			Stmt("class Foo\n{\n  public Foo()\n  {\n  }\n}",
 				F.Call(S.Class, Foo, F.List(), F.Braces(
-					Attr(@public, F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces())))), 
+					Attr(@public, F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))), 
 				p => p.DropNonDeclarationAttributes = true);
 			// bug: 'ref' and 'out' attributes were suppressed by DropNonDeclarationAttributes
 			Option(Mode.PrintBothParseFirst, 
@@ -297,7 +297,7 @@ namespace Loyc.Ecs
 			Stmt("(Foo) @`.`(x);", F.Call(S.Cast, F.Call(S.Dot, x).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) a.b;",     F.Call(S.Cast, F.Dot(a, b).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) @`-`(x);", F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo));
-			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParenthesis = true, false, Mode.PrintOnly);
+			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParentheses = true, false, Mode.PrintOnly);
 			Stmt("(Foo) @`--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
 		}
 
@@ -598,7 +598,7 @@ namespace Loyc.Ecs
 			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferPlainCSharp = true);
 			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(Attr(F.Id(S.TriviaWordAttribute), _(S.Yield)), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
-			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
+			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
 			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
 			Option(Mode.PrintBothParseFirst, @"@`-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
 			
@@ -652,7 +652,7 @@ namespace Loyc.Ecs
 			// [] certifies "this is not a cast!"; extra parentheses also work
 			Option(Mode.PrintBothParseFirst,
 				"([ ] Foo<a>)(-a);", "((Foo<a>))(-a);",
-				F.Call(F.InParens(Foo_a), neg_a), p => p.AllowChangeParenthesis = true);
+				F.Call(F.InParens(Foo_a), neg_a), p => p.AllowChangeParentheses = true);
 			Expr("(a.b<c>) x",        F.Call(S.Cast, x, F.Of(F.Dot(a, b), c)));
 			Expr("(a.b!(c > 1)) x",   F.Call(S.Cast, x, F.Of(F.Dot(a, b), F.Call(S.GT, c, one))));
 			Expr("x(->[Foo] a.b<c>)", F.Call(S.Cast, x, Attr(Foo, F.Of(F.Dot(a, b), c))));
@@ -666,15 +666,15 @@ namespace Loyc.Ecs
 		public void Parentheses()
 		{
 			if (this is EcsNodePrinterTests)
-				Stmt("int x;",             F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = true);
-			Stmt("#var(int, (x));",    F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParenthesis = false);
-			Stmt("int x = (1);",       F.Call(S.Var, F.Int32, F.Call(S.Assign, x, F.InParens(one))), p => p.AllowChangeParenthesis = true);
-			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParenthesis = false);
-			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParenthesis = true);
+				Stmt("int x;",             F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParentheses = true);
+			Stmt("#var(int, (x));",    F.Call(S.Var, F.Int32, F.InParens(x)), p => p.AllowChangeParentheses = false);
+			Stmt("int x = (1);",       F.Call(S.Var, F.Int32, F.Call(S.Assign, x, F.InParens(one))), p => p.AllowChangeParentheses = true);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParentheses = false);
+			Stmt("#var(int, (x) = 1);",F.Call(S.Var, F.Int32, F.Call(S.Assign, F.InParens(x), one)), p => p.AllowChangeParentheses = true);
 			Option(Mode.PrintBothParseFirst, "#var(int, (x = 1));", "int x = 1;",
-				F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Assign, x, one))), p => p.AllowChangeParenthesis = true);
-			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = false);
-			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParenthesis = true);
+				F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Assign, x, one))), p => p.AllowChangeParentheses = true);
+			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParentheses = false);
+			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParentheses = true);
 			// TODO
 			//Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = false);
 			//Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = true);
@@ -709,7 +709,7 @@ namespace Loyc.Ecs
 		[Test]
 		public void Immiscibility()
 		{
-			Action<EcsNodePrinter> parens = p => p.AllowChangeParenthesis = true;
+			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
 			Action<EcsNodePrinter> mixImm = p => p.MixImmiscibleOperators = true;
 			// Of course, operators can be mixed with themselves.
 			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c), parens);
@@ -934,10 +934,10 @@ namespace Loyc.Ecs
 			stmt = F.Fn(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#fn(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
-			stmt = F.Call(S.Cons, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
+			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
 			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
 			Expr("#cons(@``, this, #(#var(int, x)), {\n  #this(x, 1);\n  a = x;\n})", stmt);
-			stmt = F.Call(S.Cons, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
+			stmt = F.Call(S.Constructor, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
 			Expr("#cons(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
 			stmt = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
@@ -1021,11 +1021,11 @@ namespace Loyc.Ecs
 		[Test]
 		public void ConstructorAmbiguities()
 		{
-			var emptyConstructor = F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces());
-			var thisColonBase    = F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
-			var thisConsNoBody   = F.Call(S.Cons, F.Missing, _(S.This), F.List());
-			var fooConstructor   = F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
-			var fooConsNoBody    = F.Call(S.Cons, F.Missing, Foo, F.List());
+			var emptyConstructor = F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces());
+			var thisColonBase    = F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.Base)));
+			var thisConsNoBody   = F.Call(S.Constructor, F.Missing, _(S.This), F.List());
+			var fooConstructor   = F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
+			var fooConsNoBody    = F.Call(S.Constructor, F.Missing, Foo, F.List());
 			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
 			Stmt("this()\n{\n}",                        emptyConstructor);
 			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
@@ -1033,25 +1033,25 @@ namespace Loyc.Ecs
 			Stmt("#this(x);",                           F.Call(S.This, x));
 			Stmt("base(x);",                            F.Call(S.Base, x));
 			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), {\n});", "Foo()\n{\n}",
-				F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
+				F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
 			Stmt("this() : base()\n{\n}",       thisColonBase, allowAmbig);
 			Stmt("this() : this(x)\n{\n  x;\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
 			Stmt("this()\n{\n  x;\n  this(x);\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
 			Stmt("this()\n{\n  this();\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
 			Stmt("this()\n{\n  x;\n  this();\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
 			Stmt("this()\n{\n  #cons(@``, this, #());\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
 			//Stmt("this()\n{\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}", 
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
 			Stmt("this()\n{\n  #cons(@``, this, #(), {\n  });\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
 			Stmt("class Foo\n{\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
 			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
@@ -1059,28 +1059,28 @@ namespace Loyc.Ecs
 			Stmt("class Foo\n{\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
 			Stmt("class Foo\n{\n  Foo()\n  {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
 			Stmt("class Foo\n{\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Cons, F.Missing, IFoo, F.List()))));
+			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List()))));
 			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Cons, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
+			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
 			if (this is EcsNodePrinterTests)
 			{
 				Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig);
-				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParenthesis = false);
-				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParenthesis = true);
+				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false);
+				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true);
 			}
 			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
 			
 			// Non-keyword attributes allowed on this() but not Foo() constructor
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())))));
+			                                      Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())))));
 			Stmt("class Foo\n{\n  [#partial] Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(@partial,  F.Call(S.Cons, F.Missing, Foo, F.List(), F.Braces())))));
-			Stmt("this() : this(x)\n{\n}",        F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces())));
+			                                      Attr(@partial,  F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))));
+			Stmt("this() : this(x)\n{\n}",        F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("this()\n{\n  x;\n  partial this(x)\n  {\n  }\n}",
-				F.Call(S.Cons, F.Missing, _(S.This), F.List(), F.Braces(x,
-					Attr(partialWA, F.Call(S.Cons, F.Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x,
+					Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
 		}
 
 		LNode AddWords(LNode stmt, bool partialIsWA = true) { return stmt.PlusAttrs(@public, @new, partialIsWA ? partialWA : partial, @static); }
@@ -1455,10 +1455,10 @@ namespace Loyc.Ecs
 			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
 			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x, false)));
 			Stmt("class Foo\n{\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partial, F.Call(S.Cons, F.Missing, Foo, F.List())))));
+			                                                          Attr(partial, F.Call(S.Constructor, F.Missing, Foo, F.List())))));
 			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                                          Attr(partialWA, F.Call(S.Cons, F.Missing, F.Id(S.This), F.List())))));
-			Stmt("public new partial static this();",             AddWords(F.Call(S.Cons, F.Missing, F.Id(S.This), F.List())));
+			                                                          Attr(partialWA, F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())))));
+			Stmt("public new partial static this();",             AddWords(F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())));
 			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
 			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
 			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
@@ -1561,7 +1561,7 @@ namespace Loyc.Ecs
 				return;
 			var sb = new StringBuilder();
 			var printer = EcsNodePrinter.New(input, sb, "  ");
-			printer.AllowChangeParenthesis = false;
+			printer.AllowChangeParentheses = false;
 			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
 				configure(printer);
@@ -1595,16 +1595,15 @@ namespace Loyc.Ecs
 		{
 			var np = new EcsNodePrinter(expr, null);
 			_testNum++;
-			var is1 = np.IsComplexIdentifier(expr);
-			var is2 = np.IsComplexIdentifierOrNull(expr.Target);
-			if (result == null && !is1 && is2)
+			var isCI = EcsValidators.IsComplexIdentifier(expr);
+			if (result == null && !isCI)
 				return;
-			else if (result == is1 && result == is2)
+			else if (result == isCI)
 				return;
 
 			Assert.Fail(string.Format(
-				"IsComplexIdentifier: fail on test #{0} '{1}'. Expected {2}, got {3}/{4}",
-				_testNum, expr.ToString(), result, is1, is2));
+				"IsComplexIdentifier: fail on test #{0} '{1}'. Expected {2}, got {3}",
+				_testNum, expr.ToString(), result, isCI));
 		}
 
 		[Test]

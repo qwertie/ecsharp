@@ -120,6 +120,6 @@
   <data name="label2.Text" xml:space="preserve">
     <value>This is a self-registration tool, not an installer in the traditional sense. The executable will be registered in-place; if you move or delete it (or the other DLLs and EXEs it came with), it will stop working in Visual Studio.
 
-Run this progam as Administrator, or you may get  You must restart Visual Studio after installing. The tool will not appear in Visual Studio's Extension Manager.</value>
+You must restart Visual Studio after installing. The tool will not appear in Visual Studio's Extension Manager. This registration tool must run as "Administrator".</value>
   </data>
 </root>

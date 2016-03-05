@@ -36,10 +36,10 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred AnyNode { get { return NotSym(); } }
 		protected static AndPred And(LNode test) { return Pred.And(test); }
 		protected static AndPred And(Pred test) { return Pred.And(test); }
-		protected static AndPred And(string expr) { return Pred.And(Expr(expr)); }
+		protected static AndPred And(string ident) { return Pred.And(LNode.Id(ident)); }
 		protected static AndPred AndNot(LNode test) { return Pred.AndNot(test); }
 		protected static AndPred AndNot(Pred test) { return Pred.AndNot(test); }
-		protected static AndPred AndNot(string expr) { return Pred.AndNot(Expr(expr)); }
+		protected static AndPred AndNot(string ident) { return Pred.AndNot(LNode.Id(ident)); }
 		protected static RuleRef Call(Rule rule, params LNode[] args) { 
 			return new RuleRef(null, rule) { Params = new VList<LNode>(args) };
 		}

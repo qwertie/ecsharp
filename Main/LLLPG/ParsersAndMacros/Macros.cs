@@ -204,7 +204,7 @@ namespace Loyc.LLPG
 
 		[LexicalMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"#fn", "#property", Mode = MacroMode.Passive)]
+			"#fn", "#property", Mode = MacroMode.Passive | MacroMode.NoReprocessing)]
 		public static LNode ECSharpRule(LNode node, IMacroContext context)
 		{
 			// This will be called for all methods and properties, so we have to 
@@ -280,10 +280,11 @@ namespace Loyc.LLPG
 			}
 		}
 
-		[LexicalMacro("run_LLLPG(helper literal, {Body...})", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
-			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
-		public static LNode run_LLLPG(LNode node, IMessageSink sink)
+		[LexicalMacro("run_LLLPG(helper literal, {Body...})", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).")]
+		public static LNode run_LLLPG(LNode node, IMacroContext context)
 		{
+			node = context.PreProcessChildren();
+
 			IPGCodeGenHelper helper;
 			LNode body;
 			bool hasBraces = true;
@@ -293,7 +294,7 @@ namespace Loyc.LLPG
 			{
 				string msg = Localize.From("Expected run_LLLPG(helper_object, {...}).");
 				if (hasBraces) msg = " " + Localize.From("An auxiliary macro is required to supply the helper object.");
-				sink.Write(Severity.Note, node, msg);
+				context.Write(Severity.Note, node, msg);
 				return null;
 			}
 			helper = helper ?? new GeneralCodeGenHelper();
@@ -303,7 +304,7 @@ namespace Loyc.LLPG
 
 			// Let helper preprocess the code if it wants to
 			foreach (var stmt in body.Args) {
-				var stmt2 = helper.VisitInput(stmt, sink) ?? stmt;
+				var stmt2 = helper.VisitInput(stmt, context) ?? stmt;
 				if (stmt2.Calls(S.Splice))
 					stmts.AddRange(stmt2.Args);
 				else
@@ -320,11 +321,11 @@ namespace Loyc.LLPG
 					LNode methodBody = stmt.Args.Last;
 
 					// basis has the form #fn(ReturnType, Name, #(Args))
-					var rule = MakeRuleObject(isToken, ref basis, sink);
+					var rule = MakeRuleObject(isToken, ref basis, context);
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
-							sink.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
+							context.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
 						else {
 							rules.Add(Pair.Create(rule, methodBody));
 							stmts[i] = null; // remove processed rules from the list
@@ -332,21 +333,21 @@ namespace Loyc.LLPG
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))
-						sink.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+						context.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 				}
 			}
 
 			if (rules.Count == 0)
-				sink.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
+				context.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
 
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
 			// to refer to a terminal).
-			new StageTwoParser(helper, sink).Parse(rules);
+			new StageTwoParser(helper, context).Parse(rules);
 			
 			// Process the grammar & generate code
-			var lllpg = new LLParserGenerator(helper, sink);
-			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
+			var lllpg = new LLParserGenerator(helper, context);
+			ApplyOptions(node, lllpg, context); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);
 			

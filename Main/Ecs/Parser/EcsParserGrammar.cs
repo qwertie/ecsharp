@@ -7142,7 +7142,7 @@ namespace Loyc.Ecs.Parser
 				var baserp = Match((int) TT.RParen);
 				#line 1319 "EcsParserGrammar.les"
 				baseCall = F.Call((Symbol) target.Value, ExprListInside(baselp), target.StartIndex, baserp.EndIndex);
-				if ((kind != S.Cons)) {
+				if ((kind != S.Constructor)) {
 					Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 				}
 				#line default
@@ -7191,7 +7191,7 @@ namespace Loyc.Ecs.Parser
 				{
 					var end = Match((int) TT.Semicolon);
 					#line 1337 "EcsParserGrammar.les"
-					if (kind == S.Cons && baseCall != null) {
+					if (kind == S.Constructor && baseCall != null) {
 						Error(baseCall, "A method body is required.");
 						var parts = new VList<LNode> { 
 							type, name, ArgList(lp, rp), LNode.Call(S.Braces, new VList<LNode>(baseCall), baseCall.Range)
@@ -7368,7 +7368,7 @@ namespace Loyc.Ecs.Parser
 			#line 1428 "EcsParserGrammar.les"
 			LNode name = F.Id((Symbol) n.Value, n.StartIndex, n.EndIndex);
 			#line default
-			r = MethodArgListAndBody(startIndex, attrs, S.Cons, F.Missing, name);
+			r = MethodArgListAndBody(startIndex, attrs, S.Constructor, F.Missing, name);
 			#line 1430 "EcsParserGrammar.les"
 			return r;
 			#line default

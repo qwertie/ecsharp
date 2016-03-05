@@ -35,6 +35,39 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestThisConstructor()
+		{
+			TestEcs(@"
+				namespace N {
+					class Klass {
+						public this() { Smile(); }
+					}
+				}", @"
+				namespace N {
+					class Klass {
+						public Klass() { Smile(); }
+					}
+				}");
+			TestEcs(@"
+				class Holder<T> {
+					public this(T value) { }
+				}", @"
+				class Holder<T> {
+					public Holder(T value) { }
+				}");
+			TestEcs(@"
+				class Holder<T> {
+					public this(public readonly T Value) {}
+				}
+			", @"
+				class Holder<T> {
+					public readonly T Value;
+					public Holder(T value) { Value = value; }
+				}
+			");
+		}
+
+		[Test]
 		public void TestNullDot()
 		{
 			TestBoth(@"a = b.c?.d;", @"a = b.c?.d;",
@@ -297,6 +330,7 @@ namespace LeMP
 		[Test]
 		public void TestAlgebraicDataTypeDecls()
 		{
+			// Simple example with multiple 'type constructors'(subclasses)
 			TestEcs(@"
 				public alt class SExpr {
 					public alt Atom(object Value);
@@ -324,6 +358,7 @@ namespace LeMP
 						[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 						public object[] Item1 { get { return Items; } }
 					}");
+			// Try adding a generic parameter.
 			TestEcs(@"
 				public alt class Opt<T> {
 					public alt Have(T Value);
@@ -344,6 +379,8 @@ namespace LeMP
 					{
 						public static Have<T> New<T>(T Value) { return new Have<T>(Value); }
 					}");
+			// Check that attributes are preserved, that an ultimate base class is 
+			// allowed, and that additional init code and common_stuff is preserved.
 			TestEcs(@"
 				[A] public abstract alt class BinaryTree<T> : BaseClass {
 					[N] alt Node(BinaryTree<T> Left, BinaryTree<T> Right);
@@ -394,6 +431,7 @@ namespace LeMP
 		[Test]
 		public void TestAlgebraicDataTypesAdvanced()
 		{
+			// Try including shared data in the base type.
 			TestEcs(@"
 				public abstract alt class LNode {
 					public alt this(LNode[] Attributes);
@@ -452,6 +490,7 @@ namespace LeMP
 						[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 						public LNode[] Item3 { get { return Args; } }
 					}");
+			// Try adding a generic parameter to the subtypes
 			TestEcs(@"
 				public alt class MyTuple<T1> {
 					public alt this(T1 Item1);
@@ -499,6 +538,7 @@ namespace LeMP
 							{ return new MyTuple<T1, T2, T3>(Item1, Item2, Item3); }
 					}
 				");
+			// Another variation.
 			TestEcs(@"
 				public alt class Base<T> {
 					public alt this(T Toilet) { base_constructor_code; }
@@ -782,7 +822,7 @@ namespace LeMP
 				public int X;
 				public int Y;
 				public Point(int x, int y) { X = x; Y = y; }
-				public this(int x, int y) { X = x; Y = y; }
+				public Point(int x, int y) { X = x; Y = y; }
 			}");
 			TestEcs("void Set(public params string[] Strs) {}",
 				"public string[] Strs; void Set(params string[] strs) { Strs = strs; }");

@@ -161,7 +161,7 @@ namespace Loyc.Ecs
 			NewlineOptions = NewlineOpt.Default;
 			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
 			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
-			AllowChangeParenthesis = true;
+			AllowChangeParentheses = true;
 		}
 
 		#endregion
@@ -175,7 +175,7 @@ namespace Loyc.Ecs
 		/// </summary>
 		public bool MixImmiscibleOperators { get; set; }
 		
-		/// <summary>Permits extra parenthesis to express precedence, instead of
+		/// <summary>Permits extra parentheses to express precedence, instead of
 		/// resorting to prefix notation (defaults to true). Also permits removal
 		/// of parenthesis if necessary to print special constructs.</summary>
 		/// <remarks>For example, the Loyc tree <c>x * @+(a, b)</c> will be printed 
@@ -187,7 +187,7 @@ namespace Loyc.Ecs
 		/// changes the Loyc tree in an important way, so the default has changed
 		/// from false to true (except in the test suite).
 		/// </remarks>
-		public bool AllowChangeParenthesis { get; set; }
+		public bool AllowChangeParentheses { get; set; }
 
 		/// <summary>Solve if-else ambiguity by adding braces rather than reverting 
 		/// to prefix notation.</summary>
@@ -256,12 +256,12 @@ namespace Loyc.Ecs
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
-		/// <summary>Sets <see cref="AllowChangeParenthesis"/>, <see cref="PreferPlainCSharp"/> 
+		/// <summary>Sets <see cref="AllowChangeParentheses"/>, <see cref="PreferPlainCSharp"/> 
 		/// and <see cref="DropNonDeclarationAttributes"/> to true.</summary>
 		/// <returns>this.</returns>
 		public EcsNodePrinter SetPlainCSharpMode()
 		{
-			AllowChangeParenthesis = true;
+			AllowChangeParentheses = true;
 			AllowExtraBraceForIfElseAmbig = true;
 			DropNonDeclarationAttributes = true;
 			AllowConstructorAmbiguity = true;
@@ -554,22 +554,12 @@ namespace Loyc.Ecs
 
 		#endregion
 
-		#region Syntax validators
+		#region Validation helpers (note: most of them were moved to EcsValidators)
 		// These are validators for printing purposes: they check that each node 
 		// that shouldn't have attributes, doesn't; if attributes are present in
 		// strange places then we print with prefix notation instead to avoid 
 		// losing them when round-tripping.
 
-		bool HasPAttrsOrParens(LNode node)
-		{
-			var attrs = node.Attrs;
-			for (int i = 0, c = attrs.Count; i < c; i++) {
-				var a = attrs[i];
-				if (a.IsIdNamed(S.TriviaInParens) || !DropNonDeclarationAttributes && !a.IsTrivia)
-					return true;
-			}
-			return false;
-		}
 		bool HasPAttrs(LNode node) // for use in expression context
 		{
 			return !DropNonDeclarationAttributes && node.HasPAttrs();
@@ -582,400 +572,44 @@ namespace Loyc.Ecs
 		{
 			return self.Calls(name) && HasSimpleHeadWPA(self);
 		}
-		public bool CallsMinWPAIH(LNode self, Symbol name, int argCount)
+		bool CallsMinWPAIH(LNode self, Symbol name, int argCount)
 		{
 			return self.CallsMin(name, argCount) && HasSimpleHeadWPA(self);
 		}
-		public bool CallsWPAIH(LNode self, Symbol name, int argCount)
+		bool CallsWPAIH(LNode self, Symbol name, int argCount)
 		{
 			return self.Calls(name, argCount) && HasSimpleHeadWPA(self);
 		}
-		public bool IsSimpleSymbolWPA(LNode self)
+		bool IsSimpleSymbolWPA(LNode self)
 		{
 			return self.IsId && !HasPAttrs(self);
 		}
-		public bool IsSimpleSymbolWPA(LNode self, Symbol name)
+		bool IsSimpleSymbolWPA(LNode self, Symbol name)
 		{
 			return self.Name == name && IsSimpleSymbolWPA(self);
 		}
 
-		public bool IsSpaceStatement()
-		{
-			// All space declarations and space definitions have the form
-			// #spacetype(Name, #(BaseList), { ... }) and the syntax
-			// spacetype Name : BaseList { ... }, with optional "where" and "if" clauses
-			// e.g. enum Foo : ushort { A, B, C }
-			// The "if" clause is attached as an attribute on the statement;
-			// "where" clauses are attached as attributes of the generic parameters.
-			// For printing purposes,
-			// - A declaration always has 2 args; a definition always has 3 args
-			// - Name must be a complex (definition) identifier without attributes for
-			//   normal spaces, or a #= expression for aliases.
-			// - #(BaseList) can be missing (@``); the bases can be any expressions
-			// - the arguments do not have attributes
-			var type = _n.Name;
-			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(_n) && MathEx.IsInRange(_n.ArgCount, 2, 3))
-			{
-				LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
-				if (type == S.Alias) {
-					if (!CallsWPAIH(name, S.Assign, 2))
-						return false;
-					if (!IsComplexIdentifier(name.Args[0], ICI.Default | ICI.NameDefinition) ||
-						!IsComplexIdentifier(name.Args[1]))
-						return false;
-				} else {
-					if (!IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition))
-						return false;
-				}
-				if (bases == null) return true;
-				if (HasPAttrs(bases)) return false;
-				if (IsSimpleSymbolWPA(bases, S.Missing) || bases.Calls(S.AltList))
-				{
-					if (body == null) return true;
-					if (HasPAttrs(body)) return false;
-					return CallsWPAIH(body, S.Braces);
-				}
-			}
-			return false;
-		}
-
-		public bool IsMethodDefinition(bool orDelegate) // method declarations (no body) also count
-		{
-			var def = _n.Name;
-			if ((def != S.Fn && def != S.Delegate && def != S.Cons) || !HasSimpleHeadWPA(_n))
-				return false;
-			if (!MathEx.IsInRange(_n.ArgCount, 3, def == S.Delegate ? 3 : 4))
-				return false;
-
-			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
-			if (def == S.Cons && !retType.IsIdNamed(S.Missing))
-				return false;
-			// Note: the parser doesn't require that the argument list have a 
-			// particular format, so the printer doesn't either.
-			if (!CallsWPAIH(args, S.AltList))
-				return false;
-			if (def == S.Cons && (body != null && !CallsWPAIH(body, S.Braces) && !CallsWPAIH(body, S.Forward, 1)))
-				return false;
-			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition)) {
-				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs);
-			} else {
-				// Check for a destructor
-				return retType.IsIdNamed(S.Missing)
-					&& CallsWPAIH(name, S._Destruct, 1) 
-					&& IsSimpleIdentifier(name.Args[0]);
+		EcsValidators.Pedantics Pedantics {
+			get {
+				return
+					(DropNonDeclarationAttributes ? EcsValidators.Pedantics.IgnoreWeirdAttributes : 0) |
+					(AllowChangeParentheses ? EcsValidators.Pedantics.IgnoreIllegalParentheses : 0);
 			}
 		}
 
-		public bool IsPropertyDefinition()
+		bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
 		{
-			var argCount = _n.ArgCount;
-			// DLP: Although I wrote this code, I don't remember how a property 
-			// without a body (final argument) makes any sense (it's called a variable 
-			// declaration and it's S.Var, not S.Property). TODO: require 4 args?
-			if (!CallsMinWPAIH(_n, S.Property, 3) || _n.ArgCount > 5)
-				return false;
-
-			LNode retType = _n.Args[0], name = _n.Args[1], args = _n.Args[2], body = _n.Args[3, null];
-			return IsComplexIdentifier(retType, ICI.Default) &&
-			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition) &&
-				   (args.IsIdNamed(S.Missing) || args.Calls(S.AltList));
+			return EcsValidators.IsVariableDecl(_n, allowMultiple, allowNoAssignment, Pedantics);
 		}
 
-		public bool IsEventDefinition() { return EventDefinitionType() != EventDef.Invalid; }
-
-		enum EventDef { Invalid, WithBody, List };
-		EventDef EventDefinitionType()
+		bool IsComplexIdentifier(LNode n, ICI f = ICI.Default)
 		{
-			// EventDef.WithBody: #event(EventHandler, Click, { ... })
-			// EventDef.List:     #event(EventHandler, Click, DoubleClick, RightClick)
-			if (!CallsMinWPAIH(_n, S.Event, 2))
-				return EventDef.Invalid;
-
-			LNode type = _n.Args[0], name = _n.Args[1];
-			if (!IsComplexIdentifier(type, ICI.Default) ||
-				!IsSimpleIdentifier(name))
-				return EventDef.Invalid;
-
-			int argCount = _n.ArgCount;
-			if (argCount == 3) {
-				var body = _n.Args[2];
-				if (CallsWPAIH(body, S.Braces) || CallsWPAIH(body, S.Forward))
-					return EventDef.WithBody;
-			}
-
-			for (int i = 2; i < argCount; i++)
-				if (!IsSimpleIdentifier(_n.Args[i]))
-					return EventDef.Invalid;
-			return EventDef.List;
+			return EcsValidators.IsComplexIdentifier(n, f, Pedantics);
 		}
 
-		public bool IsVariableDecl(bool allowMultiple, bool allowNoAssignment) // for printing purposes
-		{
-			// e.g. #var(#int32, x = 0) <=> int x = 0
-			// For printing purposes in EC#,
-			// - The expression is not in parenthesis
-			// - Head and args do not have attributes
-			// - First argument must have the syntax of a type name
-			// - Other args must have the form foo or foo = expr, where expr does not have attributes
-			// - Must define a single variable unless allowMultiple
-			// - Must immediately assign the variable unless allowNoAssignment
-			if (CallsMinWPAIH(_n, S.Var, 2))
-			{
-				var a = _n.Args;
-				if (!IsComplexIdentifier(a[0]))
-					return false;
-				if (a.Count > 2 && !allowMultiple)
-					return false;
-				for (int i = 1; i < a.Count; i++)
-				{
-					var var = a[i];
-					if (HasPAttrs(var))
-						return false;
-					if (!AllowChangeParenthesis && var.IsParenthesizedExpr())
-						return false;
-					if (var.IsId) {
-						if (!allowNoAssignment)
-							return false;
-					} else if (!CallsWPAIH(var, S.Substitute, 1)) {
-						if (!CallsWPAIH(var, S.Assign, 2))
-							return false;
-						LNode name = var.Args[0], init = var.Args[1];
-						if (!IsSimpleIdentifier(name) || HasPAttrs(init))
-							return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		}
-
-		public bool IsSimpleIdentifier(LNode n)
-		{
-			if (HasPAttrsOrParens(n)) // Callers of this method don't want attributes
-				return false;
-			if (n.IsId)
-				return true;
-			if (CallsWPAIH(n, S.Substitute, 1))
-				return true;
-			return false;
-		}
-		public bool IsComplexIdentifierOrNull(LNode n)
-		{
-			if (n == null)
-				return true;
-			return IsComplexIdentifier(n);
-		}
-		public bool IsComplexIdentifier(LNode n, ICI f = ICI.Default)
-		{
-			// Returns true if 'n' is printable as a complex identifier.
-			//
-			// To be printable, a complex identifier in EC# must not contain 
-			// attributes (DropNonDeclarationAttributes to override) and must be
-			// 1. A simple symbol
-			// 2. A substitution expression
-			// 3. A dotted expr (a.b), where 'a' is a complex identifier and 'b' 
-			//    is (1) or (2); structures like #.(a, b, c) and #.(a, b<c>) do 
-			//    not count as complex identifiers. Note that a.b<c> is 
-			//    structured #of(#.(a, b), c), not #.(a, #of(b, c)). A dotted
-			//    expression that starts with a dot, such as .a.b, is structured
-			//    (.a).b rather than .(a.b); unary . has high precedence.
-			// 4. An #of expr a<b,...>, where 
-			//    - 'a' is a complex identifier and not itself an #of expr
-			//    - each arg 'b' is a complex identifier (if printing in C# style)
-			// 
-			// Type names have the same structure, with the following patterns for
-			// arrays, pointers, nullables and typeof<>:
-			// 
-			// Foo*      <=> #of(@*, Foo)
-			// Foo[]     <=> #of(@`[]`, Foo)
-			// Foo[,]    <=> #of(#`[,]`, Foo)
-			// Foo?      <=> #of(@?, Foo)
-			// typeof<X> <=> #of(#typeof, X)
-			//
-			// Note that we can't just use #of(Nullable, Foo) for Foo? because it
-			// doesn't work if System is not imported. It's reasonable to allow #? 
-			// as a synonym for global::System.Nullable, since we have special 
-			// symbols for types like #int32 anyway.
-			// 
-			// (a.b<c>.d<e>.f is structured ((((a.b)<c>).d)<e>).f or #.(#of(#.(#of(#.(a,b), c), d), e), f)
-			if ((f & ICI.AllowAttrs) == 0 && ((f & ICI.AllowParensAround) != 0 ? HasPAttrs(n) : HasPAttrsOrParens(n)))
-			{
-				// Attribute(s) are illegal, except 'in', 'out' and 'where' when 
-				// TypeParamDefinition inside <...>
-				return (f & (ICI.NameDefinition | ICI.InOf)) == (ICI.NameDefinition | ICI.InOf) && IsPrintableTypeParam(n);
-			}
-
-			if (n.IsId)
-				return true;
-			if (CallsWPAIH(n, S.Substitute, 1))
-				return true;
-
-			if (CallsMinWPAIH(n, S.Of, 1) && (f & ICI.DisallowOf) == 0) {
-				var baseName = n.Args[0];
-				if (!IsComplexIdentifier(baseName, (f & (ICI.DisallowDotted)) | ICI.DisallowOf))
-					return false;
-				if ((f & ICI.AllowAnyExprInOf) != 0)
-					return true;
-				return OfHasNormalArgs(n, (f & ICI.NameDefinition) != 0);
-			}
-			if (CallsWPAIH(n, S.Dot) && (f & ICI.DisallowDotted) == 0 && MathEx.IsInRange(n.ArgCount, 1, 2)) {
-				var args = n.Args;
-				LNode lhs = args[0], rhs = args.Last;
-				// right-hand argument must be simple
-				var rhsFlags = (f & ICI.ExprMode) | ICI.DisallowOf | ICI.DisallowDotted;
-				if ((f & ICI.ExprMode) != 0)
-					rhsFlags |= ICI.AllowParensAround;
-				if (!IsComplexIdentifier(args.Last, rhsFlags))
-					return false;
-				if ((f & ICI.ExprMode) != 0 && lhs.IsParenthesizedExpr() || (lhs.IsCall && !lhs.Calls(S.Dot) && !lhs.Calls(S.Of)))
-					return true;
-				return IsComplexIdentifier(args[0], (f & ICI.ExprMode));
-			}
-			return false;
-		}
-		public bool OfHasNormalArgs(LNode n, bool nameDefinition)
-		{
-			if (!CallsMinWPAIH(n, S.Of, 1))
-				return false;
-			
-			ICI childFlags = ICI.InOf;
-			if (nameDefinition)
-				childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted | ICI.DisallowOf);
-			for (int i = 1; i < n.ArgCount; i++)
-				if (!IsComplexIdentifier(n.Args[i], childFlags))
-					return false;
-			return true;
-		}
-
-
-		/// <summary>Checks if 'n' is a legal type parameter definition.</summary>
-		/// <remarks>A type parameter definition must be a simple symbol with at 
-		/// most one #in or #out attribute, and at most one #where attribute with
-		/// an argument list consisting of complex identifiers.</remarks>
-		public bool IsPrintableTypeParam(LNode n)
-		{
-			foreach (var attr in n.Attrs)
-			{
-				var name = attr.Name;
-				if (attr.IsCall) {
-					if (name == S.Where) {
-						if (HasPAttrs(attr))
-							return false;
-						foreach (var arg in attr.Args)
-							if (!IsComplexIdentifier(arg) && !arg.Calls(S.New, 0))
-								return false;
-					} else if (!DropNonDeclarationAttributes)
-						return false;
-				} else {
-					if (!DropNonDeclarationAttributes && name != S.In && name != S.Out)
-						return false;
-					if (HasPAttrs(attr))
-						return false;
-				}
-			}
-			return true;
-		}
-
-		public bool IsBlockStmt() { return BlockStmtType() != null; }
-		Symbol BlockStmtType()
-		{
-			return TwoArgBlockStmtType() ?? OtherBlockStmtType();
-		}
-		Symbol TwoArgBlockStmtType()
-		{
-			// S.Do:                     #doWhile(stmt, expr)
-			// S.Switch:                 #switch(expr, @`{}`(...))
-			// S.While (S.Using, etc.):  #while(expr, stmt), #using(expr, stmt), #lock(expr, stmt), #fixed(expr, stmt)
-			var argCount = _n.ArgCount;
-			if (argCount != 2)
-				return null;
-			var name = _n.Name;
-			if (name == S.Switch)
-				return CallsWPAIH(_n.Args[1], S.Braces) ? name : null;
-			else if (name == S.DoWhile)
-				return name;
-			else if (name == S.While || name == S.UsingStmt || name == S.Lock || name == S.Fixed)
-				return S.While; // all four can be printed in the same style as while()
-			return null;
-		}
-		Symbol OtherBlockStmtType()
-		{
-			// S.If:                     #if(expr, stmt [, stmt])
-			// S.For:                    #for(expr1, expr2, expr3, stmt)
-			// S.ForEach:                #foreach(decl, list, stmt)
-			// S.Try:                    #try(stmt, #catch(expr | @``, stmt) | #finally(stmt), ...)
-			// S.Checked (S.Unchecked):  #checked(@`{}`(...))       // if no braces, it's a checked(expr)
-			var argCount = _n.ArgCount;
-			if (!HasSimpleHeadWPA(_n) || argCount < 1)
-				return null;
-
-			var name = _n.Name;
-			if (name == S.If)
-				return argCount == 2 || argCount == 3 ? name : null;
-			else if (name == S.For)
-				return argCount == 4 ? name : null;
-			else if (name == S.ForEach)
-				return argCount == 3 ? name : null;
-			else if (name == S.Checked || name == S.Unchecked)
-				return argCount == 1 && CallsWPAIH(_n.Args[0], S.Braces) ? S.Checked : null;
-			else if (name == S.Try)
-			{
-				if (argCount < 2) return null;
-				for (int i = 1; i < argCount; i++)
-				{
-					var clause = _n.Args[i];
-					if (!clause.HasSimpleHeadWithoutPAttrs())
-						return null;
-					var n = clause.Name;
-					int c = clause.ArgCount;
-					if (n == S.Finally) {
-						if (c != 1 || i + 1 != argCount)
-							return null;
-					} else if (n != S.Catch || c != 3)
-						return null;
-				}
-				return name;
-			}
-			return null;
-		}
-
-		public static bool IsBlockOfStmts(LNode n)
-		{
-			return n.Name == S.Braces;
-		}
-
-		public bool IsSimpleKeywordStmt()
-		{
-			var name = _n.Name;
-			int argC = _n.ArgCount;
-			return _n.IsCall && SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n) && 
-				(argC == 1 || (argC > 1 && name == S.Import) || 
-				(argC == 0 && (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
-		}
-
-		public bool IsLabelStmt()
-		{
-			if (_n.Name == S.Label)
-				return _n.ArgCount == 1 && IsSimpleSymbolWPA(_n.Args[0]);
-			return CallsWPAIH(_n, S.Case);
-		}
-
-		public bool IsNamedArgument()
-		{
- 			return CallsWPAIH(_n, S.NamedArg, 2) && IsSimpleSymbolWPA(_n.Args[0]);
-		}
-		
-		public bool IsResultExpr(LNode n, bool allowAttrs = false)
+		bool IsResultExpr(LNode n, bool allowAttrs = false)
 		{
 			return CallsWPAIH(n, S.Result, 1) && (allowAttrs || !HasPAttrs(n));
-		}
-
-		public bool IsForwardedProperty()
-		{
-			// A forwarded property with the syntax  name ==> expr;
-			//                  has the syntax tree  name(@==>(expr));
-			//      in contrast to the block syntax  name({ code });
-			return _n.ArgCount == 1 && HasSimpleHeadWPA(_n) && CallsWPAIH(_n.Args[0], S.Forward, 1);
 		}
 
 		#endregion
@@ -1119,7 +753,7 @@ namespace Loyc.Ecs
 				// instead.
 				if (haveParens == 1 && (flags & Ambiguity.IsCallTarget) != 0
 					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
-					if (AllowChangeParenthesis) {
+					if (AllowChangeParentheses) {
 						haveParens++;
 						_out.Write('(', true);
 					} else

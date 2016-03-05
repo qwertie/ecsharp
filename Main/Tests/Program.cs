@@ -17,9 +17,9 @@ namespace Loyc.Tests
 	{
 		public static readonly VList<Pair<string, Action>> Menu = RunCoreTests.Menu.AddRange(
 			new Pair<string, Action>[] {
-				Pair.Create("Run unit tests of Enhanced C#", new Action(Test_Ecs)),
-				Pair.Create("Run unit tests of LeMP",        new Action(Test_LeMP)),
-				Pair.Create("Run unit tests of LLLPG",       new Action(Loyc.LLParserGenerator.Program.Test_LLLPG)),
+				new Pair<string,Action>("Run unit tests of Enhanced C#", Test_Ecs),
+				new Pair<string,Action>("Run unit tests of LeMP", Test_LeMP),
+				new Pair<string,Action>("Run unit tests of LLLPG",Loyc.LLParserGenerator.Program.Test_LLLPG),
 			});
 
 		public static void Main(string[] args)

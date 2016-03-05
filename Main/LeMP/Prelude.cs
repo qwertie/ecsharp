@@ -316,7 +316,7 @@ namespace LeMP.Prelude
 			else if (isCons)
 				return Reject(sink, retVal, "A constructor cannot have a return type");
 
-			Symbol kind = isCons ? S.Cons : S.Fn;
+			Symbol kind = isCons ? S.Constructor : S.Fn;
 			if (body != null)
 				return node.With(kind, retVal, name, argList, body);
 			else if (forwardTo != null)

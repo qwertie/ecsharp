@@ -182,7 +182,7 @@ namespace Loyc.Ecs
 				
 				if (isVarDecl && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0))
 					PrintVariableDecl(false, context, flags);
-				else if (startExpr && IsNamedArgument())
+				else if (startExpr && EcsValidators.IsNamedArgument(_n, Pedantics))
 					PrintNamedArg(context);
 				else if (!AutoPrintOperator(context, flags))
 					PrintPrefixNotation(context, true, flags, true);
@@ -210,8 +210,8 @@ namespace Loyc.Ecs
 				return true;
 			if (_n.IsParenthesizedExpr())
 				return true;
-			if (AllowChangeParenthesis || !EP.Primary.CanAppearIn(context)) {
-				Trace.WriteLineIf(!AllowChangeParenthesis, "Forced to write node in parens");
+			if (AllowChangeParentheses || !EP.Primary.CanAppearIn(context)) {
+				Trace.WriteLineIf(!AllowChangeParentheses, "Forced to write node in parens");
 				return extraParens = true;
 			}
 			return false;
@@ -280,7 +280,7 @@ namespace Loyc.Ecs
 					name == S.Dot || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate) && !_n.IsParenthesizedExpr())
 				{
-					if (AllowChangeParenthesis)
+					if (AllowChangeParentheses)
 						needParens = true; // Resolve ambiguity with extra parens
 					else
 						return false; // Fallback to prefix notation

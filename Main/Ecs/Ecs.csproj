@@ -202,6 +202,7 @@
   <ItemGroup>
     <Compile Include="EcsPrinterAndParserTests.cs" />
     <Compile Include="EcsPrecedence.cs" />
+    <Compile Include="EcsValidators.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
     <Compile Include="Parser\EcsLexerGrammar.cs">

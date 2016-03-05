@@ -16,8 +16,6 @@ namespace Loyc.LLParserGenerator
 
 	internal partial class StageOneParser
 	{
-		static readonly TT EOF = TT.EOF;
-
 		[FullLLk] [Verbosity(3)]
 		LLLPG(parser(laType(TT), matchType(int), allowSwitch(true), terminalType(Token)))
 		{

@@ -36,15 +36,15 @@ namespace Loyc.Ecs
 		// | Expression stmt     | x += y;                | When none of the above    |
 
 		// Space definitions are containers for other definitions
-		static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
+		internal static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
 			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
 		});
 		// Definition statements define types, spaces, methods, properties, events and variables
 		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Var, S.Fn, S.Cons, S.Delegate, S.Event, S.Property
+			S.Var, S.Fn, S.Constructor, S.Delegate, S.Event, S.Property
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
-		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
+		internal static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
 			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
 		});
 		// Block statements take block(s) as arguments
@@ -102,7 +102,7 @@ namespace Loyc.Ecs
 			if ((flags & Ambiguity.ElseClause) == 0)
 				_out.BeginStatement();
 
-			if (AllowChangeParenthesis || !_n.IsParenthesizedExpr())
+			if (AllowChangeParentheses || !_n.IsParenthesizedExpr())
 			{
 				var style = _n.BaseStyle;
 				StatementPrinter printer;
@@ -198,7 +198,7 @@ namespace Loyc.Ecs
 		}
 		private bool AutoPrintForwardedProperty()
 		{
-			if (!IsForwardedProperty())
+			if (!EcsValidators.IsForwardedProperty(_n, Pedantics))
 				return false;
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, Ambiguity.NoParenthesis));
@@ -248,22 +248,24 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintSpaceDefinition(Ambiguity flags)
 		{
 			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
-			if (!IsSpaceStatement())
+			var kind = EcsValidators.SpaceStatementKind(_n, Pedantics);
+			if (kind == null)
 				return SPResult.Fail;
 
 			var ifClause = GetIfClause();
 
 			int ai;
 			var old_n = _n;
-			if (_n.Name == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
+			if (kind == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
 				// Cause "[#filePrivate] #alias x = y;" to print as "using x = y;"
 				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai)).WithTarget(S.UsingStmt);
+				kind = S.UsingStmt;
 			}
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
 			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
-			WriteOperatorName(_n.Name);
+			WriteOperatorName(kind);
 			
 			_n = old_n;
 			
@@ -290,7 +292,7 @@ namespace Loyc.Ecs
 			if (body == null)
 				return SPResult.NeedSemicolon;
 
-			if (_n.Name == S.Enum)
+			if (kind == S.Enum)
 				PrintEnumBody(body);
 			else
 				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace, false, KeyNameComponentOf(name));
@@ -301,19 +303,10 @@ namespace Loyc.Ecs
 		/// this method identifies the base name component, which in this example 
 		/// is Bar. This is used, for example, to identify the expected name for
 		/// a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
-		/// <remarks>It is not verified that name is a complex identifier. There
-		/// is no error detection but in some cases an empty name may be returned, 
-		/// e.g. for input like <c>Foo."Hello"</c>.</remarks>
+		/// <remarks>This was moved to EcsValidators.</remarks>
 		public static Symbol KeyNameComponentOf(LNode name)
 		{
-			// global::Foo<int>.Bar<T> is structured (((global::Foo)<int>).Bar)<T>
-			// So if #of, get first arg (which cannot itself be #of), then if #dot, 
-			// get second arg.
-			if (name.CallsMin(S.Of, 1))
-				name = name.Args[0];
-			if (name.CallsMin(S.Dot, 1))
-				name = name.Args.Last;
-			return name.Name;
+			return EcsValidators.KeyNameComponentOf(name);
 		}
 
 		void AutoPrintIfClause(LNode ifClause)
@@ -415,7 +408,7 @@ namespace Loyc.Ecs
 			if (name == S.If && (flags & Ambiguity.ElseClause) != 0)
 			{
 				using (With(stmt))
-					if (OtherBlockStmtType() == S.If)
+					if (EcsValidators.OtherBlockStmtType(_n, Pedantics) == S.If)
 					{
 						PrintStmt(flags & (Ambiguity.FinalStmt | Ambiguity.ElseClause));
 						return false;
@@ -447,13 +440,13 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
 			// S.Fn, S.Delegate: #fn(#int32, Square, #(int x), { return x * x; });
-			if (!IsMethodDefinition(true))
+			if (!EcsValidators.IsMethodDefinition(_n, true, Pedantics))
 				return SPResult.Fail;
 
 			LNode retType = _n.Args[0], name = _n.Args[1];
 			LNode args = _n.Args[2];
 			LNode body = _n.Args[3, null];
-			bool isConstructor = _n.Name == S.Cons;
+			bool isConstructor = _n.Name == S.Constructor;
 			bool isDestructor = !isConstructor && name.Calls(S._Destruct, 1);
 			
 			LNode firstStmt = null;
@@ -606,7 +599,7 @@ namespace Loyc.Ecs
 			//     get({ return _foo; });
 			//     set({ _foo = value; });
 			// });
-			if (!IsPropertyDefinition())
+			if (!EcsValidators.IsPropertyDefinition(_n, Pedantics))
 				return SPResult.Fail;
 
 			var ifClause = PrintTypeAndName(false);
@@ -653,14 +646,14 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintEvent(Ambiguity flags)
 		{
-			var eventType = EventDefinitionType();
-			if (eventType == EventDef.Invalid)
+			var eventType = EcsValidators.EventDefinitionType(_n, Pedantics);
+			if (eventType == EcsValidators.EventDef.Invalid)
 				return SPResult.Fail;
 
 			var ifClause = PrintTypeAndName(false, false, AttrStyle.IsDefinition, "event ");
-			if (eventType == EventDef.WithBody)
+			if (eventType == EcsValidators.EventDef.WithBody)
 				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
-			else {
+			else { // EcsValidators.EventDef.List
 				for (int i = 2, c = _n.ArgCount; i < c; i++)
 				{
 					WriteThenSpace(',', SpaceOpt.AfterComma);
@@ -674,7 +667,7 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
 		{
 			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
-			if (!IsSimpleKeywordStmt())
+			if (!EcsValidators.IsSimpleExecutableKeywordStmt(_n, Pedantics))
 				return SPResult.Fail;
 
 			var name = _n.Name;
@@ -702,7 +695,7 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintTwoArgBlockStmt(Ambiguity flags)
 		{
 			// S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
-			var type = TwoArgBlockStmtType();
+			var type = EcsValidators.TwoArgBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;
 
@@ -734,7 +727,7 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintOtherBlockStmt(Ambiguity flags)
 		{
 			// S.If, S.For, S.ForEach, S.Checked, S.Unchecked, S.Try
-			var type = OtherBlockStmtType();
+			var type = EcsValidators.OtherBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;
 
@@ -834,7 +827,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintLabelStmt(Ambiguity flags)
 		{
-			if (!IsLabelStmt())
+			if (!EcsValidators.IsLabelStmt(_n, Pedantics))
 				return SPResult.Fail;
 
 			_out.BeginLabel();
@@ -864,7 +857,7 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintBlockOfStmts(Ambiguity flags)
 		{
-			if (!IsBlockOfStmts(_n))
+			if (!_n.Calls(S.Braces))
 				return SPResult.Fail;
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));

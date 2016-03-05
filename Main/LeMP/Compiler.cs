@@ -49,7 +49,7 @@ namespace LeMP
 			var argList = args.ToList();
 			UG.ProcessCommandLineArguments(argList, options, "", ShortOptions, TwoArgOptions);
 			if (!options.ContainsKey("nologo"))
-				Console.WriteLine("LeMP macro compiler (pre-alpha)");
+				Console.WriteLine("LeMP macro compiler (beta)");
 
 			string _;
 			if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
@@ -80,19 +80,6 @@ namespace LeMP
 					c.Run();
 			} else if (args.Length == 0) {
 				ShowHelp(KnownOptions.OrderBy(p => p.Key));
-
-				Console.WriteLine();
-				Console.WriteLine("LeMP started without arguments. Starting editor (--editor)");
-
-				var thread = new ThreadEx(() => {
-					System.Windows.Forms.Application.EnableVisualStyles();
-					System.Windows.Forms.Application.Run(new TextEditor.LempDemoForm());
-				});
-				thread.Thread.SetApartmentState(ApartmentState.STA);
-				thread.Start();
-
-				Console.WriteLine("Press Enter to exit console thread.");
-				Console.ReadLine();
 			}
 		}
 

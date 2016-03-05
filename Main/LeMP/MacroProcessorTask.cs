@@ -157,16 +157,18 @@ namespace LeMP
 		/// <summary>Top-level macro applicator.</summary>
 		public VList<LNode> ProcessRoot(VList<LNode> stmts)
 		{
-			Process(ref stmts, null, true, true, false);
+			PreProcess(ref stmts, null, true, true, false);
 			return stmts;
 		}
 		public LNode ProcessRoot(LNode stmt)
 		{
 			VList<LNode> empty = new VList<LNode>();
-			return Process(ref empty, null, true, true, false);
+			return PreProcess(ref empty, null, true, true, false);
 		}
 
-		LNode Process(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool areAttributesOrIsTarget)
+		// This is called either at the root node, or by a macro that wants to 
+		// preprocess its children (see IMacroContext.PreProcess()).
+		LNode PreProcess(ref VList<LNode> list, LNode single, bool asRoot, bool resetOpenNamespaces, bool areAttributesOrIsTarget)
 		{
 			if (single == null && list.Count == 0)
 				return null; // no-op requested
@@ -194,7 +196,8 @@ namespace LeMP
 				}
 				int maxExpansions = asRoot ? MaxExpansions : _s.MaxExpansions - 1;
 				if (single != null) {
-					return ApplyMacros(single, maxExpansions, areAttributesOrIsTarget);
+					bool _;
+					return ApplyMacros(single, maxExpansions, areAttributesOrIsTarget, out _);
 				} else {
 					int oldStackCount = _ancestorStack.Count;
 					LNode splice = null;
@@ -268,13 +271,13 @@ namespace LeMP
 
 			public VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false)
 			{
-				_task.Process(ref input, null, asRoot, resetOpenNamespaces, areAttributes);
+				_task.PreProcess(ref input, null, asRoot, resetOpenNamespaces, areAttributes);
 				return input;
 			}
 			public LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false)
 			{
 				VList<LNode> empty = new VList<LNode>();
-				return _task.Process(ref empty, input, asRoot, resetOpenNamespaces, isTarget);
+				return _task.PreProcess(ref empty, input, asRoot, resetOpenNamespaces, isTarget);
 			}
 			
 			public LNode PreProcessChildren()
@@ -286,7 +289,7 @@ namespace LeMP
 			public IListSource<LNode> RemainingNodes { get { return _task._s.RemainingNodes; } }
 			public bool IsAttribute { get { return _task._s.IsAttribute; } }
 			public bool IsTarget { get { return _task._s.IsTarget; } }
-			public bool DropRemainingNodes { get { return _task._s.DropRemainingNodes; } set { _task._s.DropRemainingNodes = value; } }
+			public bool DropRemainingNodes { get { return _task._s.DropRemainingNodesRequested; } set { _task._s.DropRemainingNodesRequested = value; } }
 
 			public void Write(Severity type, object context, string format)
 			{
@@ -312,7 +315,10 @@ namespace LeMP
 
 		#endregion
 
-		// State variables related to the current node or current macro invocation.
+		// State variables related to the current node and current macro invocation.
+		// Note: the way state is managed here is a recurring source of bugs, but I 
+		// can't think of a less-brittle-but-still-efficient code structure that 
+		// doesn't produce tons of garbage objects.
 		class CurNodeState
 		{
 			public LNode Input;
@@ -328,41 +334,55 @@ namespace LeMP
 			public MessageHolder MessageHolder = new MessageHolder();
 			public InternalList<MacroResult> Results = InternalList<MacroResult>.Empty;
 
-			// These three fields suport the IMacroContext.RemainingNodes property
-			public VList<LNode> CurrentNodeList;
+			// These three fields suport the IMacroContext.RemainingNodes property.
+			// The first VList contains (1) old nodes that been processed, (2) the old
+			// version of the current node, and (3) remaining nodes. Only #3 matters,
+			// but we keep the old part around to avoid expensive mutations.
+			public VList<LNode> OldAndRemainingNodes;
 			public int CurrentNodeIndex;
 			private IListSource<LNode> _remainingNodes;
 			public IListSource<LNode> RemainingNodes { 
-				get { 
-					if (_remainingNodes == null)
-						_remainingNodes = CurrentNodeList.Slice(CurrentNodeIndex + 1); 
+				get {
+					if (_remainingNodes == null && !IsTarget)
+						_remainingNodes = OldAndRemainingNodes.Slice(CurrentNodeIndex + 1); 
 					return _remainingNodes; 
 				}
 			}
+			public bool HasRemainingNodes { get { return CurrentNodeIndex + 1 < OldAndRemainingNodes.Count; } }
 
 			// Cached result of applying macros to the children of the current node.
+			// If the current macro has no effect, this result is returned from 
+			// ApplyMacros so it doesn't need to reprocess subtrees a second time.
 			public LNode Preprocessed;
 
-			public bool DropRemainingNodes; // A macro can set this flag
-
+			public bool DropRemainingNodesRequested; // Any macro can set this flag
+			public void DropRemainingNodes()
+			{
+				if (DropRemainingNodesRequested && !IsTarget) {
+					OldAndRemainingNodes = OldAndRemainingNodes.First(CurrentNodeIndex + 1);
+					_remainingNodes = null;
+				}
+			}
+			
+			public void StartListItem(VList<LNode> list, int index, bool areAttributes)
+			{
+				OldAndRemainingNodes = list;
+				CurrentNodeIndex = index;
+				IsAttribute = areAttributes;
+				DropRemainingNodesRequested = false;
+			}
 			public void StartNextNode(LNode input, int maxExpansions, bool isTargetNode)
 			{
 				Input = input;
-				IsTarget = isTargetNode;
 				FoundMacros.Clear();
 				_remainingNodes = null;
 				Preprocessed = null;
 				MaxExpansions = maxExpansions;
 				Debug.Assert(!IsTarget || !IsAttribute);
-				DropRemainingNodes = false;
+				IsTarget = isTargetNode;
+				DropRemainingNodesRequested = false;
 			}
-			public void StartNextListItem(VList<LNode> currentNodeList, int index, bool isAttribute)
-			{
-				CurrentNodeList = currentNodeList;
-				CurrentNodeIndex = index;
-				IsAttribute = isAttribute;
-			}
-			public void StartApplyMacros()
+			public void BeforeApplyMacros()
 			{
 				MessageHolder.List.Clear();
 				Results.Resize(0);
@@ -451,15 +471,6 @@ namespace LeMP
 				return null;
 			return node.WithTarget(S.Splice);
 		}
-		[LexicalMacro("{}", "Used internally by the macro processor.", 
-			"{}", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public LNode OnBraces(LNode node, IMessageSink sink)
-		{
-			// This no-op macro exists to ensure ApplyMacrosFound2() is called, 
-			// since that function is in charge of creating scopes. (as an 
-			// optimization, we ignore all symbols that are not in the macro table.)
-			return null; 
-		}
 
 		private void PopScope()
 		{
@@ -472,11 +483,12 @@ namespace LeMP
 
 		#endregion
 
-		#region Lower-level processing: ApplyMacros, PrintMessages, etc.
+		#region Algorithm for applying macros to individual nodes, lists & children
 
 		Symbol NamespaceToSymbol(LNode node)
 		{
-			return GSymbol.Get(node.Print(NodeStyle.Expression)); // quick & dirty
+			// quick & dirty, probably not cheap
+			return GSymbol.Get(node.Print(NodeStyle.Expression));
 		}
 
 		/// <summary>Recursively applies macros in scope to <c>input</c>.</summary>
@@ -485,51 +497,104 @@ namespace LeMP
 		/// transformed again (as if by calling this method) with 
 		/// <c>maxExpansions = maxExpansions - 1</c> to encourage the 
 		/// expansion process to terminate eventually.</param>
-		/// <returns>Returns a transformed tree or null if the macros did not 
-		/// change the syntax tree at any level, paired with a flag that is
-		/// true if the remainder of the nodes in the current list of nodes
-		/// should be dropped.</returns>
-		LNode ApplyMacros(LNode input, int maxExpansions, bool isTargetNode)
+		/// <returns>Returns a transformed tree (or null if the macros did not 
+		/// change the syntax tree at any level).</returns>
+		LNode ApplyMacros(LNode input, int maxExpansions, bool isTargetNode, out bool dropRemainingNodes)
 		{
-			if (maxExpansions <= 0)
-				return null;
-			_s.StartNextNode(input, maxExpansions, isTargetNode);
-			
-			// Find macros...
-			LNode target;
-			if (input.HasSimpleHead()) {
-				GetApplicableMacros(_curScope.OpenNamespaces, input.Name, _s.FoundMacros);
-			} else if ((target = input.Target).Calls(S.Dot, 2) && target.Args[1].IsId) {
-				Symbol name = target.Args[1].Name, @namespace = NamespaceToSymbol(target.Args[0]);
-				GetApplicableMacros(@namespace, name, _s.FoundMacros);
-			}
+			LNode resultNode = null;
+			dropRemainingNodes = false;
+			for(LNode curNode = input; maxExpansions > 0; curNode = resultNode)
+			{
+				_s.StartNextNode(curNode, maxExpansions, isTargetNode);
+				GetApplicableMacros(curNode, _s.FoundMacros);
+				if (_s.FoundMacros.Count == 0 && !curNode.IsCall)
+					return resultNode; // most common case: a boring leaf node
 
-			_ancestorStack.PushLast(input);
-			try {
-				if (_s.FoundMacros.Count != 0)
-					return ApplyMacrosFound(_s);
-				else
-					return ApplyMacrosToChildrenOf(input, maxExpansions);
-			} finally {
-				_ancestorStack.PopLast(1);
+				bool braces = curNode.Calls(S.Braces);
+				if (braces)
+					_scopes.Add(null);
+
+				MacroResult result;
+				_ancestorStack.PushLast(curNode);
+				try {
+					if (_s.FoundMacros.Count == 0)
+						return ApplyMacrosToChildrenOf(curNode, maxExpansions) ?? resultNode;
+
+					// USER MACROS RUN HERE!
+					var result_ = ApplyMacrosFound(_s);
+					if (result_ == null) {
+						// Macro(s) had no effect (not in this iteration, anyway), 
+						// so move on to processing children.
+						return _s.Preprocessed ?? ApplyMacrosToChildrenOf(curNode, maxExpansions) ?? resultNode;
+					}
+					result = result_.Value;
+				} finally {
+					_ancestorStack.PopLast(1);
+					if (braces)
+						PopScope();
+				}
+
+				// Deal with result produced by the macro (unless Macro.NoReprocessing etc.)
+				NodesReplaced++;
+				Debug.Assert(result.NewNode != null);
+				if (result.DropRemainingNodes) {
+					dropRemainingNodes = true;
+					_s.DropRemainingNodes();
+				}
+				
+				// I don't think this has any effect
+				//if ((result.Macro.Mode & MacroMode.ProcessChildrenBefore) != 0)
+				//	_s.MaxExpansions--; // children already expanded
+
+				resultNode = result.NewNode;
+				if ((result.Macro.Mode & MacroMode.ProcessChildrenAfter) != 0) {
+					return ApplyMacrosToChildrenOf(resultNode, maxExpansions - 1) ?? resultNode;
+				} else if ((result.Macro.Mode & (MacroMode.NoReprocessing | MacroMode.ProcessChildrenBefore)) != 0) {
+					return resultNode; // we're done!
+				} else {
+					if (resultNode == curNode) {
+						// node is unchanged, so reprocessing would produce the 
+						// same result. Don't do that, just process children.
+						return ApplyMacrosToChildrenOf(resultNode, maxExpansions - 1);
+					} else {
+						// Avoid deepening the call stack like we used to do...
+						//   result2 = ApplyMacros(result.NewNode, s.MaxExpansions - 1, s.IsTarget);
+						//   if (result2 != null) result.DropRemainingNodesRequested |= _s.DropRemainingNodesRequested;
+						// instead, iterate, changing our own parameters.
+						maxExpansions--;
+						Debug.Assert(isTargetNode == _s.IsTarget);
+					}
+				}
+			}
+			return resultNode;
+		}
+
+		private void GetApplicableMacros(LNode curNode, List<MacroInfo> foundMacros)
+		{
+			LNode target;
+			if (curNode.HasSimpleHead()) {
+				GetApplicableMacros(_curScope.OpenNamespaces, curNode.Name, foundMacros);
+			} else if ((target = curNode.Target).Calls(S.Dot, 2) && target.Args[1].IsId) {
+				Symbol name = target.Args[1].Name, @namespace = NamespaceToSymbol(target.Args[0]);
+				GetApplicableMacros(@namespace, name, foundMacros);
 			}
 		}
 
-		private LNode ApplyMacrosFound(CurNodeState s)
+		private MacroResult? ApplyMacrosFound(CurNodeState s)
 		{
 			var foundMacros = s.FoundMacros;
 			// if any of the macros use a priority flag, group by priority.
 			if (foundMacros.Count > 1) {
-				var p = foundMacros[0].Mode & MacroMode.PriorityMask;
+				var p = foundMacros[0].Priority;
 				for (int x = 1; x < foundMacros.Count; x++) {
-					if ((foundMacros[x].Mode & MacroMode.PriorityMask) != p) {
+					if (foundMacros[x].Priority != p) {
 						// need to make an independent list because _s.foundMacros may be cleared and re-used for descendant nodes
 						foundMacros = new List<MacroInfo>(foundMacros);
-						foundMacros.Sort();
+						foundMacros.Sort(); // descending by priority
 						for (int i = 0, j; i < foundMacros.Count; i = j) {
-							p = foundMacros[i].Mode & MacroMode.PriorityMask;
+							p = foundMacros[i].Priority;
 							for (j = i + 1; j < foundMacros.Count; j++)
-								if ((foundMacros[j].Mode & MacroMode.PriorityMask) != p)
+								if (foundMacros[j].Priority != p)
 									break;
 							var newNode = ApplyMacrosFound2(s, foundMacros.Slice(i, j - i));
 							if (newNode != null)
@@ -542,23 +607,9 @@ namespace LeMP
 			return ApplyMacrosFound2(s, foundMacros.Slice(0));
 		}
 
-		private LNode ApplyMacrosFound2(CurNodeState s, ListSlice<MacroInfo> foundMacros)
+		private MacroResult? ApplyMacrosFound2(CurNodeState s, ListSlice<MacroInfo> foundMacros)
 		{
-			s.StartApplyMacros();
-
-			if (!s.Input.Calls(S.Braces))
-				return ApplyMacrosFound3(s, foundMacros);
-			else {
-				_scopes.Add(null);
-				try {
-					return ApplyMacrosFound3(s, foundMacros);
-				} finally {
-					PopScope();
-				}
-			}
-		}
-		private LNode ApplyMacrosFound3(CurNodeState s, ListSlice<MacroInfo> foundMacros)
-		{
+			s.BeforeApplyMacros();
 			LNode input = s.Input;
 			Debug.Assert(s.Results.IsEmpty && s.MessageHolder.List.Count == 0);
 			IList<LogMessage> messageList = s.MessageHolder.List;
@@ -572,7 +623,7 @@ namespace LeMP
 					macroInput = ProcessChildrenOfCurrentNode();
 
 				LNode output = null;
-				s.DropRemainingNodes = (macro.Mode & MacroMode.DropRemainingListItems) != 0;
+				s.DropRemainingNodesRequested = (macro.Mode & MacroMode.DropRemainingListItems) != 0;
 				int mhi = messageList.Count;
 				try {
 					Scope scope = AutoInitScope();
@@ -583,7 +634,7 @@ namespace LeMP
 				} catch (ThreadAbortException e) {
 					_sink.Write(Severity.Error, input, "Macro-processing thread aborted in {0}", QualifiedName(macro.Macro.Method));
 					_sink.Write(Severity.Detail, input, e.StackTrace);
-					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodes));
+					s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 					PrintMessages(s.Results, input, accepted, Severity.Error);
 					throw;
 				} catch (LogException e) {
@@ -592,53 +643,31 @@ namespace LeMP
 					s.MessageHolder.Write(Severity.Error, input, "{0}: {1}", e.GetType().Name, e.Message);
 					s.MessageHolder.Write(Severity.Detail, input, e.StackTrace);
 				}
-				s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodes));
+				s.Results.Add(new MacroResult(macro, output, messageList.Slice(mhi, messageList.Count - mhi), s.DropRemainingNodesRequested));
 			}
 
-			s.DropRemainingNodes = false;
+			s.DropRemainingNodesRequested = false;
 
 			PrintMessages(s.Results, input, accepted,
 				s.MessageHolder.List.MaxOrDefault(msg => (int)msg.Severity).Severity);
 
 			if (accepted >= 1) {
 				var result = s.Results[acceptedIndex];
-				NodesReplaced++;
-					
-				Debug.Assert(result.NewNode != null);
-				if ((result.Macro.Mode & MacroMode.ProcessChildrenBefore) != 0)
-					s.MaxExpansions--;
-
-				LNode result2;
-				if ((result.Macro.Mode & MacroMode.Normal) != 0) {
-					if (result.NewNode == input)
-						result2 = ApplyMacrosToChildrenOf(result.NewNode, s.MaxExpansions - 1);
-					else {
-						result2 = ApplyMacros(result.NewNode, s.MaxExpansions - 1, s.IsTarget);
-						if (result2 != null)
-							result.DropRemainingNodes |= _s.DropRemainingNodes;
-					}
-				} else if ((result.Macro.Mode & MacroMode.ProcessChildrenAfter) != 0) {
-					result2 = ApplyMacrosToChildrenOf(result.NewNode, s.MaxExpansions - 1);
-				} else
-					return result.NewNode;
-
-				s.DropRemainingNodes = result.DropRemainingNodes;
-				return result2 ?? result.NewNode;
-			} else {
-				return s.Preprocessed ?? ApplyMacrosToChildrenOf(input, s.MaxExpansions);
-			}
+				return result;
+			} else
+				return null;
 		}
 
 		internal LNode ProcessChildrenOfCurrentNode()
 		{
 			if (_s.Preprocessed == null) {
-				// ApplyMacrosFound2() is using the lists _foundMacros, _results,
-				// and _messageHolder; make new lists so that processing the 
-				// children won't disturb them.
+				// ApplyMacros and ApplyMacrosFound() are already on the call 
+				// stack. Make a new CurNodeState so that we do not disturb the 
+				// state currently in use.
 				var s = _s;
 				_s = new CurNodeState();
 				try {
-					Debug.Assert(s.Input == _ancestorStack.Last);					
+					Debug.Assert(s.Input == _ancestorStack.Last);
 					s.Preprocessed = ApplyMacrosToChildrenOf(s.Input, s.MaxExpansions - 1) ?? s.Input;
 				} finally {
 					_s = s;
@@ -673,28 +702,29 @@ namespace LeMP
 			VList<LNode> results = list;
 			LNode result = null;
 			int i, count;
+			bool dropRemaining = false;
 			// Share as much of the original VList as is left unchanged
-			for (i = 0, count = list.Count; i < count; i++) {
-				_s.StartNextListItem(list, i, areAttributes);
+			for (i = 0, count = list.Count; i < count; i++)
+			{
+				Debug.Assert(!dropRemaining);
+				_s.StartListItem(list, i, areAttributes);
 				LNode input = list[i];
-				result = ApplyMacros(input, maxExpansions, false);
-				if (result != null || (result = input).Calls(S.Splice)) {
-					results = list.WithoutLast(count - i);
+				result = ApplyMacros(input, maxExpansions, false, out dropRemaining);
+				if (result != null || (result = input).Calls(S.Splice))
+				{
+					results = list.First(i);
 					Add(ref results, result);
 					break;
 				}
 			}
 			// Prepare a modified list from now on
-			for (i++; i < count && !_s.DropRemainingNodes; i++) {
-				_s.StartNextListItem(list, i, areAttributes);
+			for (i++; i < count && !dropRemaining; i++)
+			{
+				_s.StartListItem(list, i, areAttributes);
 				LNode input = list[i];
-				result = ApplyMacros(input, maxExpansions, false);
-				if (result != null || (result = input).Calls(S.Splice))
-					Add(ref results, result);
-				else
-					results.Add(input);
+				result = ApplyMacros(input, maxExpansions, false, out dropRemaining);
+				Add(ref results, result ?? input);
 			}
-			_s.DropRemainingNodes = false;
 			_s.IsAttribute = false;
 			return results;
 		}
@@ -714,14 +744,18 @@ namespace LeMP
 			bool changed = false;
 			VList<LNode> old;
 			var newAttrs = ApplyMacrosToList(old = node.Attrs, maxExpansions, true);
-			if (newAttrs != old) {
+			if (newAttrs != old)
+			{
 				node = node.WithAttrs(newAttrs);
 				changed = true;
 			}
 			LNode target = node.Target;
-			if (target != null && target.Kind != LNodeKind.Literal) {
-				LNode newTarget = ApplyMacros(target, maxExpansions, true);
-				if (newTarget != null) {
+			if (target != null && target.Kind != LNodeKind.Literal)
+			{
+				bool _;
+				LNode newTarget = ApplyMacros(target, maxExpansions, true, out _);
+				if (newTarget != null)
+				{
 					if (newTarget.Calls(S.Splice, 1))
 						newTarget = newTarget.Args[0];
 					node = node.WithTarget(newTarget);
@@ -729,7 +763,8 @@ namespace LeMP
 				}
 			}
 			var newArgs = ApplyMacrosToList(old = node.Args, maxExpansions, false);
-			if (newArgs != old) {
+			if (newArgs != old)
+			{
 				node = node.WithArgs(newArgs);
 				changed = true;
 			}
