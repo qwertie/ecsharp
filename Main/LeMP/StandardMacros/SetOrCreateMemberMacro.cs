@@ -29,7 +29,7 @@ namespace LeMP
 			var args = fn.Args[2].Args;
 			LNode body = null;
 
-			VList<LNode> createStmts = VList<LNode>.Empty;
+			VList<LNode> propOrFieldDecls = VList<LNode>.Empty;
 			VList<LNode> setStmts = VList<LNode>.Empty;
 			for (int i = 0; i < args.Count; i++) {
 				var arg = args[i];
@@ -37,14 +37,19 @@ namespace LeMP
 				Symbol fieldName = null;
 				Symbol paramName = null;
 				LNode plainArg = null;
-				LNode createStmt = null;
-				if (arg.Calls(S.Property)) {
+				LNode propOrFieldDecl = null;
+				if (arg.CallsMin(S.Property, 4)) {
 					// #property(Type, Name<T>, {...})
 					var name = arg.Args[1];
 					fieldName = EcsNodePrinter.KeyNameComponentOf(name);
 					paramName = ChooseArgName(fieldName);
-					plainArg = F.Var(arg.Args[0], paramName);
-					createStmt = arg;
+					if (arg.ArgCount == 5) { // initializer is Args[4]
+						plainArg = F.Var(arg.Args[0], F.Call(S.Assign, F.Id(paramName), arg.Args[4]));
+						propOrFieldDecl = arg.WithArgs(arg.Args.First(4));
+					} else {
+						plainArg = F.Var(arg.Args[0], paramName);
+						propOrFieldDecl = arg;
+					}
 				} else {
 					LNode type, defaultValue;
 					if (IsVar(arg, out type, out paramName, out defaultValue)) {
@@ -66,15 +71,15 @@ namespace LeMP
 										// initializer, that [A] belongs on the field, except `params` 
 										// which stays on the argument.
 										plainArg = F.Var(type, paramName, defaultValue);
-										createStmt = arg;
+										propOrFieldDecl = arg;
 										if (arg.Args[1].Calls(S.Assign, 2))
-											createStmt = arg.WithArgChanged(1,
+											propOrFieldDecl = arg.WithArgChanged(1,
 												arg.Args[1].Args[0]);
 										int i_params = arg.Attrs.IndexWithName(S.Params);
 										if (i_params > -1)
 										{
 											plainArg = plainArg.PlusAttr(arg.Attrs[i_params]);
-											createStmt = createStmt.WithAttrs(createStmt.Attrs.RemoveAt(i_params));
+											propOrFieldDecl = propOrFieldDecl.WithAttrs(propOrFieldDecl.Attrs.RemoveAt(i_params));
 										}
 									}
 									break;
@@ -100,8 +105,8 @@ namespace LeMP
 					else
 						assignment = F.Call(S.Assign, F.Id(fieldName), F.Id(paramName));
 					setStmts.Add(assignment);
-					if (createStmt != null)
-						createStmts.Add(createStmt);
+					if (propOrFieldDecl != null)
+						propOrFieldDecls.Add(propOrFieldDecl);
 				}
 			}
 			if (body != null) // if this macro has been used...
@@ -110,11 +115,11 @@ namespace LeMP
 				parts[2] = parts[2].WithArgs(args);
 				parts[3] = body.WithArgs(body.Args.InsertRange(0, setStmts));
 				fn = fn.WithArgs(parts);
-				if (createStmts.IsEmpty)
+				if (propOrFieldDecls.IsEmpty)
 					return fn;
 				else {
-					createStmts.Add(fn);
-					return F.Call(S.Splice, createStmts);
+					propOrFieldDecls.Add(fn);
+					return F.Call(S.Splice, propOrFieldDecls);
 				}
 			}
 			return null;

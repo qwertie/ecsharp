@@ -1540,6 +1540,15 @@ namespace Loyc.Ecs
 				F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Var(Foo, b), c, F.Braces(x))));
 		}
 
+		[Test]
+		public void PropertyDefinitionExpr()
+		{
+			Stmt("this(int Foo { get; }) {}", F.Call(S.Constructor, F.Missing, F.@this, F.List(
+				F.Property(F.Int32, Foo, F.Missing, F.Braces(get))), F.Braces()));
+			Stmt("Foo(x, int Foo { get; } = 0);", F.Call(Foo, x,
+				F.Property(F.Int32, Foo, F.Missing, F.Braces(get), zero)));
+		}
+
 		[Test(Fails = "Stuff that is intentionally left broken for the time being")]
 		public void TODO()
 		{

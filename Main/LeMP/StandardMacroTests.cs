@@ -826,6 +826,13 @@ namespace LeMP
 			}");
 			TestEcs("void Set(public params string[] Strs) {}",
 				"public string[] Strs; void Set(params string[] strs) { Strs = strs; }");
+			TestEcs("void Prop(public Foo Foo {get; private set;}) {}", @"
+				public Foo Foo {get; private set;} 
+				void Prop(Foo foo) { Foo = foo; }");
+			TestEcs("void Prop(public Foo Foo {get; private set;}, int _bar {get;} = 0) {}", @"
+				public Foo Foo {get; private set;} 
+				int _bar {get;}
+				void Prop(Foo foo, int bar = 0) { Foo = foo; _bar = bar; }");
 		}
 		
 		[Test(Fails = "Macro not implemented")]

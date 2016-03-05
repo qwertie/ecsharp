@@ -16,7 +16,7 @@ namespace LeMP
 		static readonly Symbol __field = GSymbol.Get("#field");
 
 		// TODO: support "attribute" macros.
-		[LexicalMacro("[field x] int X { get; set; }", "Create a backing field for a property.", "#property", 
+		[LexicalMacro("[field x] int X { get; set; }", "Create a backing field for a property. In addition, if the body of the property is empty, a getter is added.", "#property", 
 			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode BackingField(LNode prop, IMessageSink sink)
 		{
@@ -62,6 +62,8 @@ namespace LeMP
 				field = field.WithArgChanged(0, propType);
 
 			// Construct the new backing field, fill in the property getter and/or setter
+			if (body.ArgCount == 0)
+				body = body.WithArgs(LNode.Id(S.get));
 			LNode newBody = body.WithArgs(body.Args.SmartSelect(stmt =>
 			{
 				var fieldAccessExpr = fieldName;

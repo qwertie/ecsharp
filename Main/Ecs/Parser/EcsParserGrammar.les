@@ -720,7 +720,7 @@ namespace Loyc.Ecs.Parser
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
 		@[private] rule DetectVarDecl(allowUnassigned::bool) @{
-			VarDeclStart (("="|":=") NoUnmatchedColon / &{@[Local] allowUnassigned} (","|EOF))
+			VarDeclStart (("="|":=") NoUnmatchedColon | &{@[Local] allowUnassigned} (","|EOF) | "{")
 		};
 		@[private] rule NoUnmatchedColon @{
 			// There's currently no way to run actions inside a recognizer, which 
@@ -748,12 +748,13 @@ namespace Loyc.Ecs.Parser
 		@[private] rule VarDeclExpr::LNode @{
 			pair:=VarDeclStart
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
-			(	("="|":=") init:=Expr(ContinueExpr)
-				{return F.Call(S.Var, type, 
-					F.Call(S.Assign, name, init, name.Range.StartIndex, init.Range.EndIndex),
-					type.Range.StartIndex, init.Range.EndIndex);}
-			)?
-			{return F.Call(S.Var, type, name, type.Range.StartIndex, name.Range.EndIndex);}
+			(	// A property is allowed whereever an initialized variable is 
+				// allowed, to make possible `Constructor(public int Prop {get;}) {}`
+				result:RestOfPropertyDefinition(type, name, true)
+			/	name=VarInitializerOpt(name, IsArrayType(type))
+				{$result = F.Call(S.Var, type, name, 
+					type.Range.StartIndex, name.Range.EndIndex);}
+			)
 		};
 
 		@[private] rule VarDeclStart::Pair!(LNode, LNode) @{
@@ -1008,7 +1009,7 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 		
 		_stmtAttrs::WList!LNode = (new WList!LNode());
-
+		
 		@[k(3), pub] rule Stmt::LNode @{
 			{_stmtAttrs.Clear();}
 			{startIndex::int = LT0.StartIndex;}
@@ -1127,11 +1128,12 @@ namespace Loyc.Ecs.Parser
 				{attrs.Add(F.Id(static_));}
 			/	nsName:ExprStart(true)
 				{aliasedType::LNode = null;}
-				(	&{@[Local] nsName.Calls(S.Assign, 2) && (aliasedType = nsName[1]) != null}
+				(	// If the name is like something like `X = Y.Z`, it's really an alias
+					&{@[Local] nsName.Calls(S.Assign, 2) && (aliasedType = nsName[1]) != null}
 					{nsName = nsName[0];}
 					r:=RestOfAlias(aliasedType, startIndex, nsName)
 					{return r.WithAttrs(attrs).PlusAttr(_filePrivate);}
-				|	default end:";"
+				/	end:";"
 				)
 			)
 			{return F.Call(S.Import, nsName, t.StartIndex, end.EndIndex).WithAttrs(attrs);}
@@ -1271,35 +1273,65 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule MethodOrPropertyOrVar(startIndex::int, attrs::VList!LNode)::LNode @{
 			type:=DataType
-			(	// Variable declaration statement
-				// TODO: see if we can get rid of this &synpred
-				&(IdAtom ("="|","|";")) // LL(2) is not enough in case of `$(expr) =`
-				{MaybeRecognizeVarAsKeyword(ref type);}
-				{var parts = (new VList!LNode() { type });}
-				     parts+=NameAndMaybeInit(IsArrayType(type))
-				("," parts+=NameAndMaybeInit(IsArrayType(type)))* end:=";"
-				{$result = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex).PlusAttrs(attrs);}
-			/	// Note: `this` (ComplexThisDecl) is allowed as a property name only 
-				// in the special case that it is followed by `[..]`, but Stmt only calls 
-				// this rule after using a custom &(predicate) that checks for the `[..]`.
-				(name:ComplexNameDecl | name:ComplexThisDecl)
-				(	// Method declaration/definition
+			(	name:ComplexNameDecl
+				(	// Variable declaration statement
+					{MaybeRecognizeVarAsKeyword(ref type);}
+					{var parts = LNode.List(type);}
+					{var isArray = IsArrayType(type);}
+					parts+=VarInitializerOpt(name, isArray)
+					["," name:ComplexNameDecl
+						 parts+=VarInitializerOpt(name, isArray)]*
+					end:=";"
+					{$result = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex);}
+				/	// Method declaration/definition
 					result:MethodArgListAndBody(startIndex, attrs, S.Fn, type, name)
+					{return $result;} // don't add attributes again
 				|	// Property definition
-					WhereClausesOpt(ref name)
-					{args::LNode = F.Missing;}
-					[lb:"[" rb:"]" {args = ArgList(lb, rb);}]?
-					{initializer::LNode;}
-					body:=MethodBodyOrForward(true, out initializer)
-					{$result = (initializer != null
-						? F.Property(type, name, args, body, initializer, type.Range.StartIndex, initializer.Range.EndIndex)
-						: F.Property(type, name, args, body, null,        type.Range.StartIndex, body.Range.EndIndex)
-						).PlusAttrs(attrs);}
+					result:RestOfPropertyDefinition(type, name, false)
 				|	error ScanToEndOfStmt
 					{Error("Syntax error in method, property, or variable declaration");}
-					{$result = F.Missing.PlusAttrs(attrs);}
 				)
+			|	name:ComplexThisDecl
+				// Note: `this` (ComplexThisDecl) is allowed as a property name only 
+				// in the special case that it is followed by `[..]`, but Stmt only calls 
+				// this rule after using a custom &(predicate) that checks for the `[..]`.
+				result:RestOfPropertyDefinition(type, name, false)
 			)
+			{$result = $result.PlusAttrs(attrs);}
+		};
+
+		@[private] rule VarInitializerOpt(name::LNode, isArray::bool)::LNode @{
+			[	expr:VarInitializer(isArray)
+				{return F.Call(S.Assign, name, expr, name.Range.StartIndex, expr.Range.EndIndex);}]?
+			{return name;}
+		};
+		@[private] rule VarInitializer(isArray::bool)::LNode @{
+			("="|":=")
+			// The initializer for an array in C# can be a braced list of expressions.
+			// EC# also allows braced blocks as expressions, so I'll distinguish the
+			// cases by checking for semicolons. If there's a ";", it's an EC# block.
+			(	&{@[Local] isArray}
+				&{@[Local] Down($LI) && Up(HasNoSemicolons())} 
+				lb:="{" rb:="}"
+				{
+					var initializers = InitializerListInside(lb).ToVList();
+					$result = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex)
+					           .SetBaseStyle(NodeStyle.OldStyle);
+				}
+			/	result:ExprStart(false)
+			)
+		};
+
+		@[private] rule RestOfPropertyDefinition(type::LNode, name::LNode, isExpression::bool)::LNode @{
+			WhereClausesOpt(ref name)
+			{args::LNode = F.Missing;}
+			[lb:"[" rb:"]" {args = ArgList(lb, rb);}]?
+			{initializer::LNode;}
+			body:=MethodBodyOrForward(true, out initializer, isExpression)
+			{$result = (initializer != null
+				? F.Property(type, name, args, body, initializer, type.Range.StartIndex, initializer.Range.EndIndex)
+				: F.Property(type, name, args, body, null,        type.Range.StartIndex, body.Range.EndIndex)
+				);}
 		};
 
 		@[private] rule OperatorCast(startIndex::int, attrs::VList!LNode)::LNode @{
@@ -1317,7 +1349,7 @@ namespace Loyc.Ecs.Parser
 			(	":" target:=(TT.(noMacro(this)) | TT.(noMacro(base))) baselp:="(" baserp:=")"
 				{
 					baseCall = F.Call(target.Value -> Symbol, ExprListInside(baselp), target.StartIndex, baserp.EndIndex);
-					if (kind != S.Cons) {
+					if (kind != S.Constructor) {
 						Error(baseCall, "This is not a constructor declaration, so there should be no ':' clause.");
 					};
 				}
@@ -1334,7 +1366,7 @@ namespace Loyc.Ecs.Parser
 			}
 			(	default end:=";"
 				{
-					if kind == S.Cons && baseCall != null {
+					if kind == S.Constructor && baseCall != null {
 						Error(baseCall, "A method body is required.");
 						// Behave as though the method body were present.
 						var parts = (new VList!LNode() { type; name; ArgList(lp, rp); LNode.Call(S.Braces, new VList!LNode(baseCall), baseCall.Range) });
@@ -1356,17 +1388,24 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] fn MethodBodyOrForward()::LNode { _::LNode; return MethodBodyOrForward(@false, out _); };
-		@[private] rule MethodBodyOrForward(isProperty::bool, out propInitializer::LNode)::LNode @{
+		@[private] rule MethodBodyOrForward(isProperty::bool, out propInitializer::LNode, isExpression::bool = false)::LNode @{
 			{propInitializer = null;}
-			(	op:="==>" e:=ExprStart(true)  ";" {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
-			|	op:="=>"  e:=ExprStart(false) ";" {return e;} // C# 6 lambda-style function
-			|	e:=TokenLiteral ";"               {return e;}
+			(	op:="==>" e:=ExprStart(true)  StmtSemicolon(isExpression) {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
+			|	op:="=>"  e:=ExprStart(false) StmtSemicolon(isExpression) {return e;} // C# 6 lambda-style function
+			|	e:=TokenLiteral               StmtSemicolon(isExpression) {return e;}
 			|	body:=BracedBlock(S.Fn)
 				// TODO: figure out why the hell LLLPG thinks there's an ambiguity here
 				greedy[	// C# 6 property initializer
-					&{@[Local] isProperty} "=" propInitializer=ExprStart(false) end:=";" ]?
+					&{@[Local] isProperty} "=" propInitializer=ExprStart(false) 
+					StmtSemicolon(isExpression)
+				]?
 				{ return body; }
 			)
+		};
+		@[private] rule StmtSemicolon(isExpression::bool) @{
+			(";"|","|EOF) =>             // remember that ')','}',']' counts as EOF
+			(	&{@[Local] isExpression} // no semicolon needed on expression form
+			/	";")
 		};
 
 		def IsArrayType(type::LNode)::bool 
@@ -1385,28 +1424,6 @@ namespace Loyc.Ecs.Parser
 			return F.List(list.ToVList(), lp.StartIndex, rp.EndIndex);
 		};
 
-		@[private] rule NameAndMaybeInit(isArray::bool)::LNode @{
-			r:=IdAtom
-			(	("="|":=")
-				// The initializer for an array in C# can be a braced list of expressions.
-				// EC# also allows braced blocks as expressions, so I'll distinguish the
-				// cases by checking for semicolons. If there's a ";", it's an EC# block.
-				// If it is a C# initializer, treat {...} as new[] {...} (#new(#[](), ...))
-				(	&{@[Local] isArray}
-					&{@[Local] Down($LI) && Up(HasNoSemicolons())} 
-					lb:="{" rb:="}"
-					{
-						var initializers = InitializerListInside(lb).ToVList();
-						var expr = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex);
-						expr = expr.SetBaseStyle(NodeStyle.OldStyle);
-						r = F.Call(S.Assign, r, expr, r.Range.StartIndex, rb.EndIndex);
-					}
-				/	init:=ExprStart(false)
-					{r = F.Call(S.Assign, r, init, r.Range.StartIndex, init.Range.EndIndex);}
-				)
-			)?
-			{return r;}
-		};
 		@[recognizer(def HasNoSemicolons()::bool), private] 
 		rule NoSemicolons @{ ~";"* EOF };
 
@@ -1426,7 +1443,7 @@ namespace Loyc.Ecs.Parser
 				&("(" ")" ":")
 			)
 			{name::LNode = F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex);}
-			r=MethodArgListAndBody(startIndex, attrs, S.Cons, F.Missing, name)
+			r=MethodArgListAndBody(startIndex, attrs, S.Constructor, F.Missing, name)
 			{return r;}
 		};
 
