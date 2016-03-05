@@ -15,7 +15,7 @@ It took me a bit longer to make LLLPG than I intended (what, 5 years?), but... b
 
 There are multiple ways to run LLLPG: on the command line, with LLLPG.exe, in a [single-file generator][6] for Visual Studio, or programmatically, e.g. in [LINQPad][7]:
 
-![LLLPG in LinqPad](http://www.codeproject.com/KB/recipes/664785/LLLPG-LINQPad.png)
+![LLLPG in LinqPad](LLLPG-LINQPad.png)
 
 In the screenshot you'll notice that the input language is not C#, even though the output is. Later, I'll explain this bizarre fact.
 
@@ -194,7 +194,7 @@ So here's the deal. I designed a language called Enhanced C# which it only now s
         string output = code.ToString();
     }
 
-![](http://www.codeproject.com/KB/recipes/664785/ParseEcsInLinqPad.png)
+![](ParseEcsInLinqPad.png)
 
 Since EC# is a superset of C#, LLLPG is able to produce C# code by using the EC# printer, as long as it only uses the C# subset of the language.
 
