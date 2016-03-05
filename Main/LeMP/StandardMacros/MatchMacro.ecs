@@ -47,7 +47,7 @@ namespace LeMP
 		{
 			matchCode (node) {
 			case $_($input, { $(..contents); }):
-				var outputs = new RWList<LNode>();
+				var outputs = new WList<LNode>();
 				input = MaybeAddTempVarDecl(input, outputs);
 
 				int next_i = 0;
@@ -328,7 +328,7 @@ namespace LeMP
 
 			LNode GetOutputAsLNode()
 			{
-				RWList<LNode> finalOutput = _handler.ToRWList();
+				WList<LNode> finalOutput = _handler.ToWList();
 				for (int end = _output.Count-1; end >= 0; end--) {
 					Mode  mode = _output[end].A;
 					LNode code = _output[end].B;
@@ -342,7 +342,7 @@ namespace LeMP
 							cond = quote( $cond && $(_output[i].B) );
 						end = start;
 
-						finalOutput = new RWList<LNode> { 
+						finalOutput = new WList<LNode> { 
 							quote {
 								if ($cond) 
 									$(finalOutput.ToVList().AsLNode(S.Braces));

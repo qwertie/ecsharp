@@ -27,7 +27,7 @@ namespace LeMP
 			if (cases.IsEmpty)
 				return null;
 			
-			var output = new RWList<LNode>();
+			var output = new WList<LNode>();
 			var var = MaybeAddTempVarDecl(args[0], output);
 
 			var ifClauses = new List<Pair<LNode,LNode>>();
@@ -146,7 +146,7 @@ namespace LeMP
 			public VList<LNode> ThenClause = new VList<LNode>(); // stuff to do at the start of the {block} inside the if-statement
 			public IMacroContext Context;
 			public bool IsMultiCase; // true if building a case statement with multiple patterns
-			public RWList<LNode> Tests = new RWList<LNode>(); // list of tests involved in matching the current pattern
+			public WList<LNode> Tests = new WList<LNode>(); // list of tests involved in matching the current pattern
 
 			internal LNode MakeTopTestExpr(LNode pattern, LNode var)
 			{
