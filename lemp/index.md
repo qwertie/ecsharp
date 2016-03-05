@@ -14,8 +14,8 @@ Arguably, the use of certain design patterns, especially complex ones like the [
 
 A LISP-style macro processor helps you solve the **repetition-of-boilerplate** problem, and it also provides a framework in which you can run sophisticated algorithms at compile-time (for example, have a look at [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), just one of many macros included with LeMP.)
 
-Example: Simple data types
---------------------------
+Example: Making simple classes
+------------------------------
 
 I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying.
 
@@ -27,9 +27,9 @@ A simple type isn't hard:
 		public List<Person> SubItems;
 	};
 
-But there are limitations:
+But there are major limitations:
 
-- There's no constructor, so you must always use property-initializer syntax to create one of these. That could get old fast.
+- There's no constructor, so you must always use property-initializer syntax to create one of these. That could get old fast. And if you ever _add_ a constructor later, you might have to change every place where you created one of those types.
 - Since there's no constructor, you can't easily validate that valid values are used for the fields.
 - Many of the best developers say you should make your fields read-only by default. And the style police say you should make them properties instead of fields.
 
@@ -62,20 +62,19 @@ LeMP solves these problems with a combination of (1) a macro, and (2) a little s
 	public class Person
 	{
 		public this(
-			[prop] public string Name,
-			[prop] public DateTime DateOfBirth,
-			[prop] public List<Person> SubItems) {
+			public string Name           { get; },
+			public DateTime DateOfBirth  { get; },
+			public List<Person> SubItems { get; }) {
 			// TODO: Add validation code
 		}
 	};
 
-Your output file will contain exactly the code listed above, and there is no repetition except for `[prop] public` (but you might not want everything to be a public property anyway). Great! 
+Your output file will contain exactly the code listed above, and there is no repetition except for `public .. { get; }` (but you might not want everything to be a public property anyway). Great! 
 
-What's going on? In fact, there are three different macros working together:
+What's going on? Enhanced C# includes two syntax changes to support this, each with a supporting macro:
 
-1. To reduce repetition and ambiguity, Enhanced C# allows `this` as a constructor name (the [D language](http://dlang.org) has the same feature). A macro changes `this` into `Person`.
-2. The second macro responds to the `prop` attribute by converting a field into a property. By default, it's a `{ get; private set; }` autoproperty. [INCOMPLETE]
-3. A third macro is programmed to notice properties and visibility attributes (like `public`) on variables. When it notices one of those, it responds by transferring it out to the class, and putting a normal argument in the constructor. Finally, it adds a statement at the beginning of the constructor, to assign the value of the argument to the property or field.
+1. To reduce repetition and ambiguity, Enhanced C# allows `this` as a constructor name (the [D language](http://dlang.org) has the same feature). A macro changes `this` into `Person` so that plain C# understands it.
+2. Enhanced C# allows property definitions as method parameters (or wherever an expression is allowed). A macro is programmed to notice properties, and visibility attributes (like `public`) on variables. When it notices one of those, it responds by transferring it out to the class, and putting a normal argument in the constructor. Finally, it adds a statement at the beginning of the constructor, to assign the value of the argument to the property or field.
 
 Learn more
 ----------
