@@ -1,5 +1,5 @@
 ---
-title: LLLPG Part 1: A new parser generator for C#
+title: "LLLPG Part 1: A new parser generator for C#"
 layout: article
 ---
 

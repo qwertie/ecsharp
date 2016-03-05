@@ -1,5 +1,5 @@
 ---
-title: LeMP, the Lexical Macro Processor for C#
+title: "LeMP: the Lexical Macro Processor for C#"
 layout: article
 ---
 
@@ -81,7 +81,7 @@ Learn more
 
 Learn more about LeMP in these published articles:
 
-- [Avoid tedious coding with LeMP, part 1](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)
+- [Avoid tedious coding with LeMP, part 1](avoid-tedium-with-LeMP.html)
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
 
 Some use cases and built-in macros (such as pattern matching and algebraic data types for C#) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
