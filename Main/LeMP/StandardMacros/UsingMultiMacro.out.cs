@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 1.4.1.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 1.5.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -26,7 +26,7 @@ namespace LeMP
 						var list = GetNamespaces(stmt[0]);
 						if (list == null)
 							return null;
-						return LNode.Call(CodeSymbols.Splice, new VList<LNode>(list.Select(namespc => (LNode)LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
+						return LNode.Call(CodeSymbols.Splice, LNode.List(list.Select(namespc => LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
 					} catch (NotSupportedException) {
 						context.Write(Severity.Note, stmt, "Multi-using statement seems malformed. Correct example: `using (System, System.(Text, Linq));`");
 					}

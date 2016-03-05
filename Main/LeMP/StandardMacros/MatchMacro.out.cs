@@ -1,4 +1,4 @@
-// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 1.4.1.0
+// Generated from MatchMacro.ecs by LeMP custom tool. LeMP version: 1.5.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -48,7 +48,7 @@ namespace LeMP
 							foreach (var pattern in @case.Args)
 								outputs.Add(codeGen.GenCodeForPattern(pattern));
 						} else {
-							outputs.Add(LNode.Call(CodeSymbols.Braces, new VList<LNode>(handler)).SetStyle(NodeStyle.Statement));
+							outputs.Add(LNode.Call(CodeSymbols.Braces, LNode.List(handler)).SetStyle(NodeStyle.Statement));
 							if (next_i < contents.Count)
 								context.Write(Severity.Error, contents[next_i], "The default branch must be the final branch in a 'match' statement.");
 						}
