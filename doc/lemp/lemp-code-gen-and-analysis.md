@@ -3,7 +3,7 @@ title: Using LeMP for C# code generation and analysis
 layout: article
 ---
 
-_March 2, 2016_
+_March 2, 2016 (edited March 5)_
 
 Introduction
 ------------
@@ -21,10 +21,10 @@ Background: The Old Ways
 
 First, let's touch on a couple of alternatives:
 
-- Obviously, you can generate C# code as a string and simply write it to a file. That's okay for simple tasks, but it can be challenging to ensure that the syntax and spacing is correct. Therefore, many people use [CodeDom](https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx), but that's a "lowest common denominator" technology; the constructs supported by CodeDom are limited.
+- Obviously, you can generate C# code as a string and simply write it to a file. That's okay for simple tasks, but it can be challenging to ensure that the syntax and spacing is correct. Therefore, many people use [CodeDom](https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx), but that's a "lowest common denominator" technology; the constructs supported by CodeDom are limited. Finally there's [Roslyn](https://github.com/dotnet/roslyn), which includes the recently-open-sourced official C# compiler engine. Compared to LeMP it's downright clunky to use, but it does offer semantic analysis and 100% perfect reliability.
 - If you'd like to generate code inside Visual Studio, the most well-known approach is to use T4 templates. However, it may be better to use LeMP instead, because (1) the output looks better (no ugly indentation problems), (2) your input file is much more elegant, (3) LeMP has lots of built-in features to enhance C#, and (4) your input file gets syntax highlighting thanks to a free Visual Studio extension. Let me know in the comments what you'd like to accomplish with LeMP; I might be able to help!
 
-My [LL(k) parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) needs a robust way to generate C# code, and for this it uses [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) printed by the Enhanced C# printing engine in ecs.exe, all of which is part of the [Loyc repo on GitHub](https://github.com/qwertie/Loyc).
+Now, a couple of years ago I wrote the [LL(k) parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), which needs a robust way to generate C# code. For this it uses [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) printed by the Enhanced C# printing engine in ecs.exe, all of which is part of the [Loyc repo on GitHub](https://github.com/qwertie/Loyc).
 
 In layman's terms, you can use somewhat scary code like this to generate C# (**without** any LeMP goodness):
 
@@ -835,7 +835,7 @@ LeMP is a useful code generation and code analysis tool. QED. Let me know if you
 Help wanted
 -----------
 
-I would like someone to help make a Roslyn back-end for LeMP. In other words, I want to convert the output of LeMP into a Microsoft Roslyn syntax tree and compile it with the Roslyn C# 6 compiler. Then I want a Visual Studio extension that introduces a new "Enhanced C# project type" that uses LeMP as the front-end and Roslyn C# as the backend. An EC# project type could allow `*.ecs` files to enjoy IntelliSense just like plain C#! I do not have time to do this myself, my TO-DO list is full, so if nobody else volunteers, it won't happen. If you want to do this project, I will happily teach you whatever you need to now about LeMP; learning about Roslyn will be your responsibility, and I only know the basics of writing Visual Studio extensions (having written the syntax highlighter for `*.ecs`).
+I would like someone to help make a Roslyn back-end for LeMP. In other words, I want to convert the output of LeMP into a Microsoft Roslyn syntax tree and compile it with the Roslyn C# 6 compiler. Once that exists, the next step will be to write a Visual Studio extension that introduces a new "Enhanced C# project type" that uses LeMP as the front-end and Roslyn C# as the backend. An EC# project type could allow `*.ecs` files to enjoy IntelliSense just like plain C#! I do not have time to do all of this myself, my TO-DO list is full, so if nobody else volunteers, it won't happen. If you want to do this project, I will happily teach you whatever you need to now about LeMP; learning about Roslyn will be your responsibility, and I only know the basics of writing Visual Studio extensions (having written the syntax highlighter for `*.ecs`).
 
 As a simpler exercise, could someone write a test program that looks for bugs in the Enhanced C# parser?
 
