@@ -1,5 +1,7 @@
-LLLPG FAQ
-=========
+---
+title: LLLPG FAQ
+layout: article
+---
 
 ### Q. What are the advantages of LLLPG over other tools?
 
