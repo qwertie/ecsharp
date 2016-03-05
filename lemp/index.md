@@ -90,3 +90,8 @@ Installation
 ------------
 
 For now, please see the instructions in the [second article](http://www.codeproject.com/Articles/1081882/Using-LeMP-as-a-Csharp-code-generator).
+
+Help wanted
+-----------
+
+Do you have time to [make LeMP better](help-wanted.html)? I can't pay you, since this is all non-profit. However, if you're an employer maybe you could [hire me](https://www.linkedin.com/in/qwertie) for consulting work. Seriously: if you don't hire me I might run out of things to do with C# soon, and then who's going to maintain LeMP? Sorry, I hope that didn't sound like a threat. Just sayin'.
