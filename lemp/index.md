@@ -6,7 +6,7 @@ layout: article
 Introduction
 ------------
 
-LeMP is a new open-source LISP-style macro processor, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP will make you more productive.
+LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP will make you more productive.
 
 <div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
 
@@ -55,7 +55,7 @@ It's too much repetition!
 - You repeat each data type twice.
 - You repeat each property name twice.
 - You repeat the name of each constructor parameter twice.
-- You repeat "public" for each field.
+- You repeat "public" for each field (and more, if they are properties)
 
 LeMP solves these problems with a combination of (1) a macro, and (2) a little syntactical "makeover" of C#. In LeMP you'd write this:
 
@@ -69,7 +69,7 @@ LeMP solves these problems with a combination of (1) a macro, and (2) a little s
 		}
 	};
 
-Your output file will contain exactly the code listed above, and there is no repetition except for `[prop] public` (but you might not everything to be a public property anyway). Great! 
+Your output file will contain exactly the code listed above, and there is no repetition except for `[prop] public` (but you might not want everything to be a public property anyway). Great! 
 
 What's going on? In fact, there are three different macros working together:
 
