@@ -517,7 +517,6 @@ namespace Loyc.Syntax
 	/// code to ensure nulls are not placed in Args and Attrs (<see cref="NoNulls"/>),
 	/// but only in debug builds, since null-checking is fairly expensive.
 	/// </remarks>
-	[DebuggerDisplay("{ToString()}")]
 	public abstract class LNode : ICloneable<LNode>, IEquatable<LNode>, IHasLocation, IHasValue<object>, INegListSource<LNode>
 	{
 		#region Constructors and static node creator methods

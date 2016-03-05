@@ -484,7 +484,7 @@ namespace Loyc.Collections
 		public T TryGet(int index, out bool fail)
 		{
 			T value = default(T);
-			fail = !_block.RGet(index, _localCount, ref value);
+			fail = _block == null || !_block.RGet(index, _localCount, ref value);
 			return value;
 		}
 

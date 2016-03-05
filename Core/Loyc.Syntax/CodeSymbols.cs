@@ -112,7 +112,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
 		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     //!< e.g. #doWhile(x++, condition); <=> do x++; while(condition);
 		public static readonly Symbol While = GSymbol.Get("#while");         //!< e.g. #while(condition,{...}); <=> while(condition) {...}
-		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...}
+		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...} (note: use #import or CodeSymbols.Import for a using directive)
 		public static readonly Symbol For = GSymbol.Get("#for");             //!< e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
 		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     //!< e.g. #foreach(#var(@``, n), list, {...}); <=> foreach(var n in list) {...}
 		public static readonly Symbol Label = GSymbol.Get("#label");         //!< e.g. #label(success) <=> success:
@@ -207,7 +207,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");           //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
-		public static readonly Symbol Cons = GSymbol.Get("#cons");       //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
+		public static readonly Symbol Constructor = GSymbol.Get("#cons");//!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
 		public static readonly Symbol Forward = GSymbol.Get("==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}

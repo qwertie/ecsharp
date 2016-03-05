@@ -110,7 +110,7 @@ namespace Loyc.Collections
 		public new T TryGet(int index, out bool fail)
 		{
 			T value = default(T);
-			fail = !Block.RGet(index, LocalCount, ref value);
+			fail = Block == null || !Block.RGet(index, LocalCount, ref value);
 			return value;
 		}
 		

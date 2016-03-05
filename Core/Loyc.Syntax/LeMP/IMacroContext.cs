@@ -29,7 +29,7 @@ namespace LeMP
 		
 		/// <summary>Returns a list of ancestors of the current node being 
 		/// processed. Normally Ancestors[0] is a #splice node that contains a list 
-		/// of all top-level statements in the file, and Parents.Last() is the
+		/// of all top-level statements in the file, and Ancestors.Last() is the
 		/// current node.</summary>
 		/// <remarks>You would expect that Ancestors[N] would contain Ancestors[N+1]
 		/// as part of the attributes, target or arguments, but this is not always
@@ -54,11 +54,11 @@ namespace LeMP
 		/// This method only processes children once. If this method is called 
 		/// again for the same node, it returns a cached result.
 		/// <para/>
-		/// If the currently-running macro fails the result may be thrown away
+		/// If the currently-running macro fails, the result may be thrown away
 		/// and the effort of processing the children will have been wasted. If
-		/// the macro succeeds a its <see cref="LexicalMacro"/> attribute does not 
-		/// include <c>Mode = MacroMode.NoReprocessing</c>, the children will 
-		/// (normally) be processed again after the macro returns.
+		/// the macro succeeds, and its <see cref="LexicalMacro"/> attribute uses
+		/// the default <c>MacroMode.Normal</c> processing mode, the children 
+		/// will (normally) be processed again after the macro returns.
 		/// </remarks>
 		LNode PreProcessChildren();
 
@@ -209,18 +209,19 @@ namespace LeMP
 			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
 			Mode = info.Mode;
 			if ((Mode & MacroMode.PriorityMask) == 0)
-				Mode |= MacroMode.NormalPriority;
+				Mode |= MacroMode.PriorityNormal;
 		}
 		public Symbol NamespaceSym { get; private set; }
 		public Symbol Name { get; private set; }
 		public LexicalMacro Macro { get; private set; }
 		public LexicalMacroAttribute Info { get; private set; }
 		public MacroMode Mode { get; private set; }
+		public MacroMode Priority { get { return Mode & MacroMode.PriorityMask; } }
 
-		/// <summary>Compare priorities of two macros.</summary>
+		/// <summary>Compare priorities of two macros. Will sort in descending order.</summary>
 		public int CompareTo(MacroInfo other)
 		{
-			return (Mode & MacroMode.PriorityMask).CompareTo(other.Mode & MacroMode.PriorityMask);
+			return other.Priority.CompareTo(Priority);
 		}
 	}
 }

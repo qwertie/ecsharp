@@ -25,10 +25,10 @@ namespace Loyc.Tests
 	{
 		public static readonly VList<Pair<string, Action>> Menu = new VList<Pair<string, Action>>()
 		{
-			Pair.Create("Run unit tests of Loyc.Essentials.dll",  new Action(Loyc_Essentials)),
-			Pair.Create("Run unit tests of Loyc.Collections.dll", new Action(Loyc_Collections)),
-			Pair.Create("Run unit tests of Loyc.Syntax.dll",      new Action(Loyc_Syntax)),
-			Pair.Create("Run unit tests of Loyc.Utilities.dll",   new Action(Loyc_Utilities)),
+			new Pair<string,Action>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Action>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
+			new Pair<string,Action>("Run unit tests of Loyc.Syntax.dll",      Loyc_Syntax),
+			new Pair<string,Action>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
 		};
 
 		public static void Main(string[] args)
