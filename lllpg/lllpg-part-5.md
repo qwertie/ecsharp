@@ -1,5 +1,5 @@
 ---
-title: LLLPG Part 5: The Final Sales Pitch
+title: "LLLPG Part 5: The Final Sales Pitch"
 layout: article
 ---
 

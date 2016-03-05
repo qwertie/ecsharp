@@ -1,5 +1,5 @@
 ---
-title: LLLPG Part 3: Beyond the basics
+title: "LLLPG Part 3: Beyond the basics"
 layout: article
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: LLLPG Part 2: Learning how to parse
+title: "LLLPG Part 2: Learning how to parse"
 layout: article
 ---
 

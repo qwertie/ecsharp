@@ -1,3 +1,8 @@
+---
+title: LLLPG Version History
+layout: article
+---
+
 LLLPG v1.5.1 (March 5, 2015):
 
 - Changes to LLLPG itself are minimal, but [LeMP](http://loyc.net/lemp) has been updated to v1.5.1, which includes a richer set of macros (not really related to parsing), such as macros for pattern matching and algebraic data types.
