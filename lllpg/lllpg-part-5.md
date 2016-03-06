@@ -6,8 +6,6 @@ tagline: "Concerned about regular expressions being unintelligible, repetitive, 
 toc: true
 ---
 
-Frustrated that regular expressions are unintelligible, repetitive, hard to get right and don't recurse? Read part 5, possibly the most useful part yet!
-
 Welcome to part 5
 -----------------
 

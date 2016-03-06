@@ -15,11 +15,9 @@ LLLPG is a system that I decided to create after trying to use [ANTLR3][5]'s C# 
 
 It took me a bit longer to make LLLPG than I intended (what, 5 years?), but... better late than never, right? While ANTLR has advanced some ways in that time period, it is still Java-centric, and I think the advantages of LLLPG still make it worth considering even if all the major C#-specific bugs in ANTLR have been fixed (I don't know if they have or not, but the C# version still lags behind the Java version).
 
-There are multiple ways to run LLLPG: on the command line, with LLLPG.exe, in a [single-file generator][6] for Visual Studio, or programmatically, e.g. in [LINQPad][7]:
+Typically, you will use the LLLPG Visual Studio Custom Tool (a.k.a. Single-File Generator):
 
-![LLLPG in LinqPad](LLLPG-LINQPad.png)
-
-In the screenshot you'll notice that the input language is not C#, even though the output is. Later, I'll explain this bizarre fact.
+![LLLPG in Visual Studio](lllpg-vs-custom-tool.png)
 
 LLLPG is not a dedicated tool the way ANTLR is. Instead, LLLPG is designed to be embedded inside another programming language. While you may use LLLPG similarly to other parser generators, it's really just a "macro" inside a programming language I'm making called Enhanced C# — one of a hundred macros that you might be using, and perhaps in the future you'll write a macro or two yourself.
 
