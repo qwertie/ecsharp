@@ -7,9 +7,9 @@ toc: true
 
 ## Introduction
 
-LLLPG (Loyc LL(k) Parser Generator) is a recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2. LLLPG is now complete, and supports either Enhanced C# (EC#) or [Loyc Expression Syntax][2] (LES) as input languages.
+LLLPG (Loyc LL(k) Parser Generator) is a recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2.
 
-In this article I assume you already know what [parsers][3] and [lexers][4] are; if not, click the links. In case you haven't written parsers before, [article #2](lllpg-part-2.html) will fill in your knowledge.
+In this article I assume you already know what [parsers][3] and [lexers][4] are; if not, click the links. If you haven't written parsers before, [article #2](lllpg-part-2.html) will fill in your knowledge.
 
 LLLPG is a system that I decided to create after trying to use [ANTLR3][5]'s C# module, and running into C#-specific bugs that I couldn't overcome. Besides, I wasn't happy with the ANTLR-generated code; I thought I could generate simpler and more efficient code. "How hard could it be to make an LL(k) parser generator?" I wondered. The answer: pretty damn hard, actually.
 
@@ -21,7 +21,7 @@ Typically, you will use the LLLPG Visual Studio Custom Tool (a.k.a. Single-File 
 
 LLLPG is not a dedicated tool the way ANTLR is. Instead, LLLPG is designed to be embedded inside another programming language. While you may use LLLPG similarly to other parser generators, it's really just a "macro" inside a programming language I'm making called Enhanced C# — one of a hundred macros that you might be using, and perhaps in the future you'll write a macro or two yourself.
 
-As of 2016, Enhanced C# is incomplete; only two components of it are ready (the parser, and the macro runner which is called [LeMP (Lexical Macro Processor)](/lemp)). However, hopefully you'll find it fairly user-friendly and fun.
+As of 2016, Enhanced C# is incomplete; only two components of it are ready (the parser, and the macro runner which is called [LeMP](/lemp)). Hopefully though, you'll find it fairly user-friendly and fun.
 
 Other design elements of LLLPG include:
 
@@ -444,35 +444,30 @@ So that's it! Hope you like my parser generator, folks, and I'll be happy to ans
 * Nov 19, 2013: Updated LLLPG to 0.91. Updated demo to be a bit cleaner and to eliminate dependencies on Loyc libraries. LLLPG 0.91 contains some bug fixes, a new `alias(X = Y)` command, and eliminates the dependency on `IntSet`. Visual Studio extensions coming soon...
 * Nov 26, 2013: [Part 2 published][12] with Visual Studio extensions.
 * Feb 8, 2014: LLLPG 1.0 released with EC# support; demo and article updated. Demo now uses EC# by default (LES version still included) and supports "mathy" expressions such as 2(2 + 5) => 14\.
-* Feb. 23, 2014: [Part 3][30] published with LLLPG 1.1.0 and multiple new demos.
-* Feb. 25, 2014: [Part 4][26] published.
+* Feb. 23, 2014: [Part 3](lllpg-part-3.html) published with LLLPG 1.1.0 and multiple new demos.
+* Feb. 25, 2014: [Part 4](lllpg-part-4.html) published.
+* June 19, 2015: [Part 5](lllpg-part-5.html) published.
+* March 3, 2016: LLLPG updated with new version of LeMP - please visit the new [LeMP home page](http://loyc.net/lemp).
 
-[1]: http://www.codeproject.com/KB/recipes/664785/LLLPG.png
 [2]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
 [3]: http://en.wikipedia.org/wiki/Parsing
 [4]: http://en.wikipedia.org/wiki/Lexical_analysis
 [5]: http://www.antlr.org/
 [6]: http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator
-[7]: http://www.linqpad.net/
 [9]: http://loyc.net
 [10]: https://github.com/qwertie/LoycCore/wiki/Loyc-trees
 [11]: http://www.ssw.uni-linz.ac.at/coco/
-[12]: http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
-[14]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LLLPG/Tests/LlpgCoreTests.cs
+[12]: lllpg-part-2.html
+[14]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/Tests/LlpgCoreTests.cs
 [15]: http://lambda-the-ultimate.org/node/4836
-[16]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LEL/MacroProcessor.cs
-[17]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LEL/Compiler.cs
-[18]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LEL/Prelude1.cs
-[19]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LLLPG/ParsersAndMacros/Macros.cs
-[20]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/LES/LesParserGrammar.les
-[21]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Ecs/Parser/EcsParserGrammar.les
-[22]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LLLPG/ParsersAndMacros/StageOneParserGrammar.ecs
+[16]: https://github.com/qwertie/Loyc/blob/master/Main/LeMP/MacroProcessor.cs
+[17]: https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Compiler.cs
+[18]: https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Prelude.cs
+[19]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/ParsersAndMacros/Macros.cs
+[20]: https://github.com/qwertie/Loyc/blob/master/Core/Loyc.Syntax/LES/LesParserGrammar.les
+[21]: https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les
+[22]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/ParsersAndMacros/StageOneParserGrammar.ecs
 [23]: http://en.wikipedia.org/wiki/Lisp_(programming_language)
-[24]: http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2-2
-[25]: http://www.codeproject.com/Articles/732222/The-Loyc-LL-k-Parser-Generator-Part-3-2
-[26]: http://www.codeproject.com/Articles/733426/The-Loyc-LL-k-Parser-Generator-Part-4
 [27]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Syntax/Lexing/BaseLexer.cs
 [28]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Syntax/BaseParser.cs
 [29]: http://www.antlr3.org/doc/glossary.html#Linear_approximate_lookahead
-[30]: http://www.codeproject.com/Articles/732222/The-Loyc-LL-k-Parser-Generator-Part-3
-[31]: http://www.codeproject.com/Articles/1002541/The-Loyc-LL-k-Parser-Generator-Part  

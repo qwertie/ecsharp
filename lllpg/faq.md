@@ -9,7 +9,7 @@ Many! See the beginning of [article #5](lllpg-part-5.html).
 
 ### Q. I've used other parser generators before. Could you explain quckly how to use LLLPG?
 
-That's covered in [article #1](lllpg-part-1.html). Skim it... I haven't written a cheat sheet yet.
+That's covered in [article #1](lllpg-part-1.html). Skim it... I haven't written a cheat sheet yet. You might even want to read [article #5](lllpg-part-5.html) first because it summarizes the main features again and talks about the newest features, as well as the most advanced topics.
 
 ### Q. What example grammars are available?
 
