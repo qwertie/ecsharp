@@ -7,7 +7,7 @@ toc: true
 
 ## Introduction
 
-LLLPG (Loyc LL(k) Parser Generator) is a new recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2. LLLPG 1.0 is now virtually complete, and supports either Enhanced C# (EC#) or [Loyc Expression Syntax][2] (LES) as input languages. I've updated most of the examples to use EC# as the host language.
+LLLPG (Loyc LL(k) Parser Generator) is a recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2. LLLPG is now complete, and supports either Enhanced C# (EC#) or [Loyc Expression Syntax][2] (LES) as input languages.
 
 In this article I assume you already know what [parsers][3] and [lexers][4] are; if not, click the links. In case you haven't written parsers before, [article #2](lllpg-part-2.html) will fill in your knowledge.
 

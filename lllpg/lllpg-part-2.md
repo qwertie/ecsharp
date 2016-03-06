@@ -1,7 +1,7 @@
 ---
 title: "LLLPG Part 2: Learning how to parse"
 layout: article
-date: 26 Nov 2013 (updated 14 Jan 2016)
+date: 26 Nov 2013 (updated 6 Mar 2016)
 toc: true
 ---
 
@@ -11,9 +11,9 @@ _New to LLLPG? Start at [part 1][1]._
 
 In this article series I will be teaching not just how to use my parser generator, but broader knowledge such as: what kinds of parser generators are out there? What's ambiguity and what do we do about it? What's a terminal? So in this article I'll start with a general discussion of parsing terminology and parsing techniques, and then I will teach you about some useful core features of LLLPG.
 
-**Note**: if you're wondering how to configure LLLPG or how to structure your source code, visit [part 3][2] ("Configuring LLLPG", "Boilerplate"), then return here.
+**Note**: if you're wondering how to configure LLLPG or how to structure your source code, visit [part 3][3] ("Configuring LLLPG", "Boilerplate"), then return here.
 
-**Note**: The LES syntax highlighter works in Visual Studio 2010 and 2012 (untested with 2013), and it doesn't have all the features I want yet. In particular, it does't highlight the important difference between "`foo(x)`" and "`foo (x)`" (see my [Loyc Expression Syntax article][3] for details.) An Enhanced C# highlighter isn't written yet (C# highlighters in programs like Notepad++ and Nodepad2 are good enough, for now). Meanwhile, the Custom Tool works in VS 2008 through VS 2013, including Express editions, and if you're wondering how it's made, I wrote a [whole article about that][4].
+**Note**: The LES syntax highlighter works in Visual Studio 2010 through 2015. The Custom Tool works in VS 2008 through VS 2015, including Express editions, and if you're wondering how it's made, I wrote a [whole article about that][4].
 
 **Note**: In future articles you will see `@[...]` syntax for token literals instead of `@{...}`. `@{...}` is the new style, and `@[...]` is the old style. Both syntaxes are supported in EC#, but in LES, the `@[...]` syntax was replaced with `@{...}` as part of a change that made LES into a superset of JSON.
 
@@ -205,7 +205,7 @@ Here are some key points about the three classes of parser generators.
 * Straightforward to learn: just look at the generated code, you can see how it works directly.
 * Straightforward to add custom behavior with action code (`{...}`).
 * Straightforward default error handling. When unexpected input arrives, an LL(k) parser can always report what input it was expecting at the point of failure.
-* Predictably good performance. Performance depends on how many lookahead characters are _actually_ needed, not by the maximum k specified in the grammar definition. Performance of LL(k) parsers can be harmed by nesting rules too deeply, since each rule requires a method call (and often a prediction step); specifically, expression grammars often have this problem. But in LLLPG you can use a trick to handle large expression grammars without deep nesting (I suppose I'll talk about this in a future article; my technique is demonstrated in my [LES grammar][12].)
+* Predictably good performance. Performance depends on how many lookahead characters are _actually_ needed, not by the maximum k specified in the grammar definition. Performance of LL(k) parsers can be harmed by nesting rules too deeply, since each rule requires a method call (and often a prediction step); specifically, expression grammars often have this problem. But in LLLPG you can use a trick to handle large expression grammars without deep nesting (this is explained in [Part 5](lllpg-part-5.html#collapsing-precedence-levels-into-a-single-rule).)
 * LL(k) parser generators, including LLLPG, may support valuable extra features outside the realm of LL(k) grammars, such as zero-width assertions (a.k.a. and-predicates), and multiple techniques for dealing with ambiguity.
 * No left recursion allowed (direct or indirect)
 * Strictly limited lookahead. It's easy to write grammars that require unlimited lookahead, so such grammars will have to be modified to work in LL(k). By the way, [ANTLR][13] overcomes this problem with techniques such as LL(*).
@@ -725,7 +725,7 @@ So, until I find time to fix the speed issue, I'd suggest using LL(2), which is 
 
 ## Wrapping Up
 
-By now we've covered all the basic features. Ready for [part 3? Then click the link!][17]
+By now we've covered all the basic features. Ready for [part 3? Then click the link!][3]
 
 In future articles I'll talk more about the following topics.
 
@@ -751,19 +751,16 @@ I would also love to hear how you're planning to use LLLPG in your own projects.
 See [part 1][1] for history.
 
 [1]: http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp
-[2]: http://www.codeproject.com/Articles/732222/The-Loyc-LL-k-Parser-Generator-Part
-[3]: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES#LES.27s_dirty_little_secret:_space_sensitivity
+[3]: lllpg-part-3.html
 [4]: http://code.msdn.microsoft.com/windowsdesktop/Single-File-Generator-94d856d4
 [5]: http://www.codeproject.com/KB/recipes/688152/LLLPG-in-VS.png
 [6]: http://higherlogics.blogspot.ca/2009/11/extensible-statically-typed-pratt.html
 [7]: http://www.regular-expressions.info/
-[8]: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+[8]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
 [9]: http://loyc-etc.blogspot.ca/2013/11/grammars-theory-vs-practice.html
 [10]: http://pdos.csail.mit.edu/papers/parsing%3Apopl04.pdf
 [11]: http://en.wikipedia.org/wiki/LALR_parser
-[12]: https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/LES/LesParserGrammar.les
 [13]: http://antlr.org/
 [14]: http://en.wikipedia.org/wiki/Deterministic_finite_automaton
 [15]: http://en.wikipedia.org/wiki/Nondeterministic_finite_automaton
 [16]: http://loyc-etc.blogspot.ca/2013/11/lllpg-greedy-and-nongreedy.html
-[17]: http://www.codeproject.com/Articles/732222/The-Loyc-LL-k-Parser-Generator-Part-3
