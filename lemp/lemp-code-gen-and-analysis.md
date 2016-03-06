@@ -1,6 +1,7 @@
 ---
 title: Using LeMP for C# code generation and analysis
 layout: article
+toc: true
 ---
 
 _March 2, 2016 (edited March 5)_
@@ -24,7 +25,7 @@ First, let's touch on a couple of alternatives:
 - Obviously, you can generate C# code as a string and simply write it to a file. That's okay for simple tasks, but it can be challenging to ensure that the syntax and spacing is correct. Therefore, many people use [CodeDom](https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx), but that's a "lowest common denominator" technology; the constructs supported by CodeDom are limited. Finally there's [Roslyn](https://github.com/dotnet/roslyn), which includes the recently-open-sourced official C# compiler engine. Compared to LeMP it's downright clunky to use, but it does offer semantic analysis and 100% perfect reliability.
 - If you'd like to generate code inside Visual Studio, the most well-known approach is to use T4 templates. However, it may be better to use LeMP instead, because (1) the output looks better (no ugly indentation problems), (2) your input file is much more elegant, (3) LeMP has lots of built-in features to enhance C#, and (4) your input file gets syntax highlighting thanks to a free Visual Studio extension. Let me know in the comments what you'd like to accomplish with LeMP; I might be able to help!
 
-Now, a couple of years ago I wrote the [LL(k) parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), which needs a robust way to generate C# code. For this it uses [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) printed by the Enhanced C# printing engine in ecs.exe, all of which is part of the [Loyc repo on GitHub](https://github.com/qwertie/Loyc).
+Now, a couple of years ago I wrote the [LL(k) parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), which needs a robust way to generate C# code. For this it uses [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) printed by the Enhanced C# printing engine in Loyc.Ecs.dll, all of which is part of the [Loyc repo on GitHub](https://github.com/qwertie/Loyc).
 
 In layman's terms, you can use somewhat scary code like this to generate C# (**without** any LeMP goodness):
 
@@ -168,7 +169,7 @@ You'll need to add references to the following assemblies from your copy of LeMP
 - `Loyc.Essentials.dll`
 - `Loyc.Collections.dll`
 - `Loyc.Syntax.dll`
-- `Ecs.exe` (make a copy named Ecs.dll if you prefer it not to be executable)
+- `Loyc.Ecs.dll`
 
 Put the following code in your `example.ecs` file:
 
@@ -299,12 +300,15 @@ LNode function = quote {
 };
 Console.WriteLine(EcsLanguageService.Value.Print(function));
 ~~~
+
 The output is
+
 ~~~csharp
 void function(int first, string second, object third, long fourth)
 {
 }
 ~~~
+
 As you can see, the `$(..args)` expression causes the nodes in `args` to be expanded and treated as part of the function's argument list.
 
 A peculiar thing here is that `string second; object third;` are separated by _semicolons_, even though arguments in a method's argument list are separated by _commas_. In fact, if you try to separate these variables by commas, you'll get a syntax error. So what's really going on here?
