@@ -1,9 +1,8 @@
 ---
 title: Avoid tedious coding with LeMP, Part 1
 layout: article
+tagline: "The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor."
 ---
-
-The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor.
 
 Introduction
 ------------
