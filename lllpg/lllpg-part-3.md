@@ -1,6 +1,8 @@
 ---
 title: "LLLPG Part 3: Beyond the basics"
 layout: article
+date: 23 Feb 2014
+toc: true
 ---
 
 Welcome to part 3
@@ -16,17 +18,6 @@ There are lots of things left to cover, so let's get started. LLLPG 1.1.0 is bei
 - EnhancedC#Parser: I ripped the C# parser used by LLLPG out of Ecs.exe and dropped it into this demo program.
 
 The other download link is a new build of the LES syntax highlighter for VS2010 (no EC# highlighter is available yet.) An (imperfect but good) [LES syntax highlighter for Notepad++](https://sourceforge.net/apps/mediawiki/notepad-plus/index.php?title=User_Defined_Language_Files) is also available on the list of user-defined languages. 
-
-**Table of contents for today**:
-
-1. A brief overview of the Loyc libraries
-2. Configuring LLLPG
-3. Boilerplate
-4. Rules with parameters and return values
-5. Parameters to recognizers
-6. Saving inputs
-7. Error handling mechanisms in LLLPG
-8. A random fact
 
 ## A brief overview of the Loyc libraries
 

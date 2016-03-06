@@ -1,6 +1,8 @@
 ---
 title: "LLLPG Part 1: A new parser generator for C#"
 layout: article
+date: 7 Oct 2013 (updated 26 Jun 2015). Originally published on CodeProject.
+toc: true
 ---
 
 ## Introduction

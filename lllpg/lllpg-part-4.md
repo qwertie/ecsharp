@@ -1,6 +1,9 @@
 ---
 title: "LLLPG Part 4: Managing Ambiguity + API reference"
 layout: article
+date: 25 Feb 2014
+tagline: "The ambivalent world of ambiguity, the slash, greedy and nongreedy. At the end, in lieu of refreshments, there will be an API reference."
+toc: true
 ---
 
 Welcome to part 4
@@ -9,17 +12,6 @@ Welcome to part 4
 _New to LLLPG? Start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)_.
 
 Part 4 is all about nitty-gritty details: how prediction works, a discussion of ambiguity (what it is, common ambiguous situations, and how to deal with them), and a list of APIs that LLLPG calls in generated code.
-
-**Table of contents for today**:
-
-1. FullLLk versus "approximate" LL(k)
-2. Ambiguity: introduction
-3. Managing ambiguity, part 1: `token` rules
-4. Managing ambiguity, part 2: LLLPG's missing feature
-5. Managing ambiguity, part 3: the slash operator
-6. Managing ambiguity, part 4: `greedy` and `nongreedy`
-7. Reference: APIs called by LLLPG
-8. Reference: APIs you must write in classes derived from `BaseLexer` and `BaseParser`
 
 ## FullLLk versus "approximate" LL(k)
 

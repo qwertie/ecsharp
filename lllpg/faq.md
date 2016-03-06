@@ -31,9 +31,11 @@ This is demonstrated by the "CalcExample-Standalone" example in the [release rep
 
 I found the .NET Framework never had all the facilities I needed, so I made a series of libraries to "fill in the gaps" in the .NET Framework. You can read about them [on their home page](http://core.loyc.net/). Basically,
 
-- Loyc.Essentials.dll contains miscellaneous things I personally can't bear to live without, stuff that comes in handy regardless of what kind of software I'm writing for .NET. For example, it includes `UString` which is a string 'slice' type that is very useful for when writing parsers: it allows you to represent a part of a larger string without allocating memory for the substring. Another example is [`IMessageSink`](http://loyc.net/doc/code/interfaceLoyc_1_1IMessageSink.html), a generic interface for logging messages with context attached to them, and associated types like [`ConsoleMessageSink`](http://loyc.net/doc/code/classLoyc_1_1ConsoleMessageSink.html). In compilers it would be used to emit errors, while in other apps it would work well as a logging framework. It also includes [Symbol](http://loyc.net/doc/code/classLoyc_1_1Symbol.html), a useful type in compiler development.
+- Loyc.Essentials.dll contains miscellaneous things I personally can't bear to live without, stuff that comes in handy regardless of what kind of software I'm writing for .NET.
 - Loyc.Syntax.dll contains the actual runtime classes for LLLPG, such as [`BaseLexer`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html) and [`BaseParserForList<Token,MatchType>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html). It also defines [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) ([LNode](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html)) and [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax).
 - Loyc.Collections.dll isn't that important for LLLPG users, unless you use Loyc trees or LES, which rely on the `VList<T>` type defined in Loyc.Collections.dll. In any case, Loyc.Syntax takes a dependency on Loyc.Collections.dll so you'll have to have it, too.
+
+[Article #3](lllpg-part-3.html) talks about these libraries in more detail; see "A brief overview of the Loyc libraries".
 
 ### Q. How do I customize error handling in my grammar?
 

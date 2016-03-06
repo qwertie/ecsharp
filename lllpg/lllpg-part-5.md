@@ -1,6 +1,9 @@
 ---
 title: "LLLPG Part 5: The Final Sales Pitch"
 layout: article
+date: 19 Jun 2015 (updated 24 Aug 2015)
+tagline: "Concerned about regular expressions being unintelligible, repetitive, hard to get right and non-recursive? Read part 5, possibly the most useful part yet!"
+toc: true
 ---
 
 Frustrated that regular expressions are unintelligible, repetitive, hard to get right and don't recurse? Read part 5, possibly the most useful part yet!

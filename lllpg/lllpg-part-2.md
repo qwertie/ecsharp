@@ -1,6 +1,8 @@
 ---
 title: "LLLPG Part 2: Learning how to parse"
 layout: article
+date: 26 Nov 2013 (updated 14 Jan 2016)
+toc: true
 ---
 
 ## Introduction
@@ -14,14 +16,6 @@ In this article series I will be teaching not just how to use my parser generato
 **Note**: The LES syntax highlighter works in Visual Studio 2010 and 2012 (untested with 2013), and it doesn't have all the features I want yet. In particular, it does't highlight the important difference between "`foo(x)`" and "`foo (x)`" (see my [Loyc Expression Syntax article][3] for details.) An Enhanced C# highlighter isn't written yet (C# highlighters in programs like Notepad++ and Nodepad2 are good enough, for now). Meanwhile, the Custom Tool works in VS 2008 through VS 2013, including Express editions, and if you're wondering how it's made, I wrote a [whole article about that][4].
 
 ![][5]
-
-#### Table of contents for today:
-
-1. Do you really need a parser generator?
-2. Parsing terminology: if you already know about stuff like terminals and nullability, skip this.
-3. LL(k) versus the competition: in part one you got a sense of what LL(k) means (choosing a path through a grammar based only on k tokens of lookahead, k >= 1). This time I will compare LL(k) with alternatives such as LALR(1) and PEGs. If you already know or don't care about alternative parsing models, skip this.
-4. Learning LLLPG, with numbers: this section introduces syntactic predicates, semantic predicates, gates, underscore and tilde, and the [`k]` attribute.
-5. Wrapping Up.
 
 ## Do you really need a parser generator?
 
