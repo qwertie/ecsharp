@@ -5,7 +5,7 @@ layout: article
 
 ![Logo](lllpg-logo.png)
 
-LLLPG is a new recursive-decent parser generator for C#, with a feature set better than ANTLR version 2. 
+LLLPG is a recursive-decent parser generator for C#, with a feature set better than ANTLR version 2. 
 
 To learn more, [read the FAQ](faq.html) or the five-part article series about LLLPG:
 
