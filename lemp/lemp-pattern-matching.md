@@ -1,8 +1,11 @@
 ---
 title: C# Gets Pattern Matching & Algebraic Data Types
 layout: article
+toc: true
 ---
-_Well, not literally. LeMP/EC# supports pattern matching, ADTs, and tuples, so C# gets all that by transitivity._
+Well, not literally. LeMP/EC# supports pattern matching, ADTs, and tuples, so C# gets all that by transitivity.
+
+_March 7, 2016_
 
 Pattern matching!
 -----------------
@@ -25,7 +28,7 @@ else if (obj is DataPacket)
 }
 ~~~
 
-I bet you've written code like this. Some of you write this style of code a lot, so often that it hardly even seems tedious. But now LeMP has a shortcut for patterns like these: it's called `match`. It's like `switch`, but for pattern-matching. With `match`, the code above becomes simply
+I bet you've written code like this. Some of you write this style of code a lot. But now LeMP has a shortcut for patterns like these: it's called `match`. It's like `switch`, but for pattern-matching. With `match`, the code above becomes simply
 
 ~~~csharp
 match (connection.DownloadNextObject()) {
@@ -89,7 +92,7 @@ public abstract alt class BinaryTree<T> where T: IComparable<T>
 
 In fact, this is nothing more or less than a really quick way to produce a class hierarchy of immutable types. The output is fairly massive:
 
-~~~~csharp
+~~~csharp
 public abstract class BinaryTree<T> where T: IComparable<T>
 {
 	public BinaryTree() { }
@@ -207,7 +210,7 @@ Notice that this code says `Leaf<T>($value)` instead of `Leaf<T>(Value: $value)`
 
 But wait, there's more! In fact, `alt class` can do more than ADTs in other languages that support ADTs, because it "accepts" its identity as a class hierarchy instead of pretending to be a traditional mathematical disjoint union: _it has the same capabilities as a normal class hierarchy_.
 
-For one thing, notice that `Leaf` and `Node` both have a `Value` property. We can move the common property into the base class like this:
+For starters, notice that `Leaf` and `Node` both have a `Value` property. We can move the common property into the base class like this:
 
 ~~~csharp
 public partial abstract alt class BinaryTree<T> where T: IComparable<T>
@@ -344,7 +347,9 @@ Enhanced C# supports tuples, e.g.
 ~~~csharp
 var pair = (12, "twelve");
 ~~~
+
 This comes out as
+
 ~~~csharp
 var pair = Tuple.Create(12, "twelve");
 ~~~
@@ -356,7 +361,9 @@ You can also deconstruct tuples, like this:
 ~~~csharp
 (var num, var str) = pair; 
 ~~~
+
 Output:
+
 ~~~csharp
 var num = pair.Item1;
 var str = pair.Item2;
@@ -367,7 +374,9 @@ Since ADTs have properties named `Item1`, `Item2`, etc., you can deconstruct the
 ~~~csharp
 (var x, var y, var w, var h) = new Rectangle(10, 10, 600, 400);
 ~~~
+
 Output:
+
 ~~~csharp
 var tmp_0 = new Rectangle(10, 10, 600, 400);
 var x = tmp_0.Item1;
@@ -433,17 +442,17 @@ static void FavoriteNumberGame()
 {
 	Console.Write("What's your favorite number? ");
 	match(int.Parse(Console.ReadLine())) {
-		case 7, 777: Console.WriteLine("You lucky bastard!");
-		case 5, 10: Console.WriteLine("I have that many fingers too!");
-		case 0, 1: Console.WriteLine("What? Nobody picks that!");
-		case 2, 3: Console.WriteLine("Yeah, I guess you deal with those a lot.");
-		case 12: Console.WriteLine("I prefer a baker's dozen.");
+		case 7, 777:  Console.WriteLine("You lucky bastard!");
+		case 5, 10:   Console.WriteLine("I have that many fingers too!");
+		case 0, 1:    Console.WriteLine("What? Nobody picks that!");
+		case 2, 3:    Console.WriteLine("Yeah, I guess you deal with those a lot.");
+		case 12:      Console.WriteLine("I prefer a baker's dozen.");
 		case 666, 13: Console.WriteLine("Isn't that bad luck though?");
-		case 1..<10: Console.WriteLine("Kind of boring, don't you think?");
+		case 1..<10:  Console.WriteLine("Kind of boring, don't you think?");
 		case 11, 13, 17, 19, 23, 29: Console.WriteLine("A prime choice.");
 		case 10...99: Console.WriteLine("I have to admit... it has two digits.");
-		case _...-1: Console.WriteLine("Oh, don't be so negative.");
-		default: Console.WriteLine("What are you, high? Like that number?");
+		case _...-1:  Console.WriteLine("Oh, don't be so negative.");
+		default:      Console.WriteLine("What are you, high? Like that number?");
 	}
 }
 ~~~
@@ -452,16 +461,14 @@ Several features are shown here:
 
 - Enhanced C# allows `case` to have multiple _separate_ cases separated by commas, such as `1..10, 20, 30`. Unfortunately, when translating your code to plain C#, it is often impossible for two separate patterns to lead into the same _handler_, and therefore the output will duplicate the handler. For example, the first `case` above is translated as 
 
-	~~~csharp
-	if (7.Equals(tmp_0)) {
-		Console.WriteLine("You lucky bastard!");
-		break;
-	}
-	if (777.Equals(tmp_0)) {
-		Console.WriteLine("You lucky bastard!");
-		break;
-	}
-	~~~
+		if (7.Equals(tmp_0)) {
+			Console.WriteLine("You lucky bastard!");
+			break;
+		}
+		if (777.Equals(tmp_0)) {
+			Console.WriteLine("You lucky bastard!");
+			break;
+		}
 	
 	In this particular example it _is_ possible to avoid duplicating the `Console.WriteLine` statement, but in most nontrivial patterns it is not possible, so `match` doesn't even try. Therefore, if possible, avoid writing large code blocks inside a `case` with multiple patterns.
 
