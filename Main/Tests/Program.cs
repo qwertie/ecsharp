@@ -20,6 +20,7 @@ namespace Loyc.Tests
 				new Pair<string,Action>("Run unit tests of Enhanced C#", Test_Ecs),
 				new Pair<string,Action>("Run unit tests of LeMP", Test_LeMP),
 				new Pair<string,Action>("Run unit tests of LLLPG",Loyc.LLParserGenerator.Program.Test_LLLPG),
+				new Pair<string,Action>("LeMP article examples",Samples.Samples.Run),
 			});
 
 		public static void Main(string[] args)

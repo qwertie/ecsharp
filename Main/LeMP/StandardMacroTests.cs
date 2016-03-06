@@ -386,8 +386,7 @@ namespace LeMP
 					[N] alt Node(BinaryTree<T> Left, BinaryTree<T> Right);
 					[L] alt Leaf<T>(T Value) { stuff; }
 					common_stuff;
-				}
-			", @"
+				}", @"
 				[A] public abstract class BinaryTree<T> : BaseClass
 				{ 
 					public BinaryTree() { }
@@ -538,15 +537,17 @@ namespace LeMP
 							{ return new MyTuple<T1, T2, T3>(Item1, Item2, Item3); }
 					}
 				");
-			// Another variation.
+			// A variation in which T has a `where` clause
 			TestEcs(@"
-				public alt class Base<T> {
+				public alt class Base<T> where T: IComparable<T> {
 					public alt this(T Toilet) { base_constructor_code; }
-					public alt Derived<T,P>(P Paper) {
+					public alt Derived<T,P>(P Paper) where T: IEquatable<T> 
+					                                 where P: IPaper
+					{
 						public alt this() { constructor_code; }
 					}
 				}", @"
-					public class Base<T> {
+					public class Base<T> where T: IComparable<T> {
 						public Base(T Toilet)
 						{
 							this.Toilet = Toilet;
@@ -560,9 +561,11 @@ namespace LeMP
 					}
 					public static partial class Base
 					{
-						public static Base<T> New<T>(T Toilet) { return new Base<T>(Toilet); }
+						public static Base<T> New<T>(T Toilet)
+							where T: IComparable<T> 
+							{ return new Base<T>(Toilet); }
 					}
-					public class Derived<T,P> : Base<T>
+					public class Derived<T,P> : Base<T> where T: IEquatable<T>, IComparable<T> where P: IPaper
 					{
 						public Derived(T Toilet, P Paper) : base(Toilet)
 						{
@@ -577,7 +580,9 @@ namespace LeMP
 					}
 					public static partial class Derived
 					{
-						public static Derived<T,P> New<T,P>(T Toilet, P Paper) { return new Derived<T,P>(Toilet, Paper); }
+						public static Derived<T,P> New<T,P>(T Toilet, P Paper) 
+							where T: IEquatable<T>, IComparable<T> where P: IPaper 
+							{ return new Derived<T,P>(Toilet, Paper); }
 					}");
 		}
 
@@ -918,15 +923,15 @@ namespace LeMP
 		[Test]
 		public void Test_on_catch_on_throw()
 		{
-			TestEcs(@"{ bool ok = true; on_catch { ok = false; } DoSomeStuff(); Etc(); }",
+			TestEcs(@"{ bool ok = true; on_error_catch { ok = false; } DoSomeStuff(); Etc(); }",
 					@"{ bool ok = true; try { DoSomeStuff(); Etc(); } catch { ok = false; } }");
-			TestEcs(@"{ _crashed = false; on_catch { _crashed = true; } DoSomeStuff(); }",
+			TestEcs(@"{ _crashed = false; on_error_catch { _crashed = true; } DoSomeStuff(); }",
 					@"{ _crashed = false; try { DoSomeStuff(); } catch { _crashed = true; } }");
-			TestEcs(@"{ on_catch(ex) { MessageBox.Show(ex.Message); } Etc(); }",
+			TestEcs(@"{ on_error_catch(ex) { MessageBox.Show(ex.Message); } Etc(); }",
 					@"{ try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); } }");
 			TestEcs(@"on_throw(ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); throw; }");
-			TestEcs(@"on_catch(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+			TestEcs(@"on_error_catch(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); }");
 			TestEcs(@"on_throw(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); throw; }");

@@ -450,6 +450,8 @@ namespace Loyc.Ecs
 			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("([#partial] #var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
+			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partial, F.Id("#alt"),
+				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
 		}
 
 		[Test]

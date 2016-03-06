@@ -39,28 +39,67 @@ namespace LeMP
 		}
 
 		// Info about one variant of an ADT
-		class AltType {
-			public AltType(private VList<LNode> _typeAttrs, public LNode TypeName, public VList<LNode> BaseTypes, public AltType ParentType)
+		class AltType
+		{
+			// The Member variables come from...
+			// EITHER [$(.._classAttrs)] alt class $TypeName : $(..BaseTypes) { ScanClassBody produces _children }
+			// OR     [$(.._classAttrs)] alt $TypeName(... AddParts() is called for this stuff ...)
+			// where TypeName consists of $_typeNameStem<$(.._genericArgs)>
+
+			public AltType(private VList<LNode> _classAttrs, public LNode TypeName, public VList<LNode> BaseTypes, public AltType ParentType)
 			{
-				if (ParentType != null)
-					BaseTypes.Add(ParentType.TypeName);
 				//matchCode (TypeName) {
 				//	case $stem<$(..a)>, $stem: 
 				//		_typeNameStem = stem;
 				//		_genericArgs = a; 
+				//  default:
+				//		_genericArgs = new WList<LNode>();
 				//}
 				{	// Above matchCode expanded:
 					LNode stem;
 					VList<LNode> a = default(VList<LNode>);
 					if (TypeName.CallsMin(CodeSymbols.Of, 1) && (stem = TypeName.Args[0]) != null && (a = new VList<LNode>(TypeName.Args.Slice(1))).IsEmpty | true || (stem = TypeName) != null) {
 						_typeNameStem = stem;
-						_genericArgs = a;
+						_genericArgs = a.ToWList();
+					} else {
+						_genericArgs = new WList<LNode>();
 					}
 				}
+				if (ParentType != null) {
+					BaseTypes.Insert(0, ParentType.TypeNameWithoutAttrs);
+
+					// Search for all 'where' clauses on the ParentType and make sure OUR generic args have them too.
+					bool changed = false;
+					for (int i = 0; i < _genericArgs.Count; i++) {
+						var arg = _genericArgs[i];
+						var parentArg = ParentType._genericArgs.FirstOrDefault(a => a.IsIdNamed(arg.Name));
+						if (parentArg != null) {
+							var wheres = new HashSet<LNode>(WhereTypes(arg));
+							int oldCount = wheres.Count;
+							var parentWheres = WhereTypes(parentArg);
+							foreach (var where in parentWheres)
+								wheres.Add(where);
+							if (wheres.Count > oldCount) {
+								arg = arg.WithAttrs(arg.Attrs.Where(a => !a.Calls(S.Where)).Add(LNode.Call(S.Where, LNode.List(wheres))));
+								_genericArgs[i] = arg;
+								changed = true;
+							}
+						}
+					}
+					if (changed)
+						TypeName = quote($_typeNameStem<$(.._genericArgs)>);
+				}
+				TypeNameWithoutAttrs = TypeName.Select(n => n.WithoutAttrs());
+			}
+
+			static IEnumerable<LNode> WhereTypes(LNode genericParameter)
+			{
+				return genericParameter.Attrs.Where(a => a.Calls(S.Where)).SelectMany(a => a.Args);
 			}
 
 			LNode _typeNameStem;
-			VList<LNode> _genericArgs = new VList<LNode>();
+			WList<LNode> _genericArgs;
+			LNode TypeNameWithoutAttrs; // TypeName with type-param attributes (e.g. #in #out #where) removed
 			List<AltType> _children = new List<AltType>();
 			internal List<AdtParam> Parts = new List<AdtParam>();
 			VList<LNode> _constructorAttrs;
@@ -84,7 +123,7 @@ namespace LeMP
 							case $_<$(.._)>: // do nothing
 							default:
 								if (_genericArgs.Count > 0)
-									genericAltName = quote($altName<$(.._genericArgs)>);
+									genericAltName = quote($altName<$(.._genericArgs.ToVList())>);
 						}
 						var child = new AltType(attrs, genericAltName, LNode.List(), this);
 						child.AddParts(parts);
@@ -105,7 +144,7 @@ namespace LeMP
 			// Generates a class declaration for the current alt and its subtypes
 			public void GenerateOutput(ref VList<LNode> list)
 			{
-				bool isAbstract = _typeAttrs.Any(a => a.IsIdNamed(S.Abstract));
+				bool isAbstract = _classAttrs.Any(a => a.IsIdNamed(S.Abstract));
 				
 				var baseParts = new List<AdtParam>();
 				for (var type = ParentType; type != null; type = type.ParentType)
@@ -138,7 +177,7 @@ namespace LeMP
 				outBody.AddRange(_classBody);
 
 				list.Add(quote {
-					[$(.._typeAttrs)] 
+					[$(.._classAttrs)] 
 					class $TypeName : $(..BaseTypes) {
 						$(..outBody);
 					}
@@ -146,10 +185,10 @@ namespace LeMP
 				if (_genericArgs.Count > 0 && Parts.Count > 0) {
 					var argNames = allParts.Select(p => p.NameId);
 					list.Add(quote {
-						[$(.._typeAttrs)] static partial class $_typeNameStem
+						[$(.._classAttrs)] static partial class $_typeNameStem
 						{
-							public static $TypeName New<$(.._genericArgs)>($(..args))
-								{ return new $TypeName($(..argNames)); }
+							public static $TypeNameWithoutAttrs New<$(.._genericArgs)>($(..args))
+								{ return new $TypeNameWithoutAttrs($(..argNames)); }
 						}
 					});
 				}
@@ -158,7 +197,6 @@ namespace LeMP
 			}
 			public LNode GetWithFn(AdtParam part, bool isAbstract, Symbol virtualOverride, IEnumerable<AdtParam> allParts)
 			{
-				LNode genericClassName = this.TypeName;
 				int totalParts = allParts.Count();
 				var withField = F.Id("With" + part.NameId.Name);
 				
@@ -178,7 +216,7 @@ namespace LeMP
 
 				LNode method;
 				LNode type = part.Type;
-				LNode retType = part.ContainingType.TypeName;
+				LNode retType = part.ContainingType.TypeNameWithoutAttrs;
 				if (isAbstract) {
 					method = quote {
 						[$(..attrs)] $retType $withField([$(..part.OriginalDecl.Attrs)] $type newValue);
@@ -186,7 +224,7 @@ namespace LeMP
 				} else {
 					method = quote {
 						[$(..attrs)] $retType $withField([$(..part.OriginalDecl.Attrs)] $type newValue) 
-							{ return new $genericClassName($(..args)); }
+							{ return new $TypeNameWithoutAttrs($(..args)); }
 					};
 				}
 				return method;

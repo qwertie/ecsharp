@@ -1,0 +1,124 @@
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.MiniTest;
+
+namespace Samples {
+	using ADT;
+
+	[TestFixture]
+	class Samples
+	{
+		public static void Run() {
+			RunTests.Run(new Samples());
+		}
+		[Test] public void ContainsTest()
+		{
+			var tree = Node.New(5, Node.New(1, null, Leaf.New(3)), Node.New(9, Leaf.New(7), null));
+			for (int i = 0; i <= 12; i++)
+				if (tree.Contains(i))
+					Console.Write(" {0}",i);
+			Console.WriteLine(" were found");
+		}
+		static void FavoriteNumberGame()
+		{
+			Console.Write("What's your favorite number? ");
+			match(int.Parse(Console.ReadLine())) {
+				case 7, 777: Console.WriteLine("You lucky bastard!");
+				case 5, 10: Console.WriteLine("I have that many fingers too!");
+				case 0, 1: Console.WriteLine("What? Nobody picks that!");
+				case 2, 3: Console.WriteLine("Yeah, I guess you deal with those a lot.");
+				case 12: Console.WriteLine("I prefer a baker's dozen.");
+				case 666, 13: Console.WriteLine("Isn't that bad luck though?");
+				case 1..<10: Console.WriteLine("Kind of boring, don't you think?");
+				case 11, 13, 17, 19, 23, 29: Console.WriteLine("A prime choice.");
+				case 10...99: Console.WriteLine("Well... it's got two digits, I'll give you that much.");
+				case ...-1: Console.WriteLine("Oh, don't be so negative.");
+				default: Console.WriteLine("What are you, high? Like that number?");
+			}
+		}
+		static void NumberGuessingGame()
+		{
+			int num = new Random().Next(1, 101);
+			do {
+				Console.Write("Guess a number between 1 and 100: ");
+				on_catch (FormatException) {
+					Console.WriteLine("No, I want an integer.");
+				}
+				int guess = int.Parse(Console.ReadLine());
+				match (guess) {
+				}
+
+			} while(true);
+		}
+	}
+}
+namespace ADT
+{
+	// Example of ADT from "C# Gets Pattern Matching & Algebraic Data Types"
+	public alt class BinaryTree<T> where T: IComparable<T>
+	{
+		alt this(T Value);
+		alt Node(BinaryTree<T> Left, BinaryTree<T> Right)
+		{
+			public alt this()
+			{
+				if (Left == null && Right == null) throw new ArgumentNullException("Both children");
+			}
+			public override bool Contains(T item)
+			{
+				int cmp = Compare(item, Value);
+				if (cmp < 0)
+					return Left != null && Left.Contains(item);
+				else if (cmp > 0)
+					return Right != null && Right.Contains(item);
+				else
+					return true;
+			}
+		}
+	
+		public virtual bool Contains(T item)
+		{
+			return Compare(Value, item) == 0;
+		}
+		internal static int Compare(T a, T b)
+		{	// It's null's fault that this method exists.
+			if (a != null)
+				return a.CompareTo(b);
+			else if (b != null)
+				return -a.CompareTo(a);
+			else
+				return 0;
+		}
+	}
+	public static class Leaf {
+		public static BinaryTree<T> New<T>(T item) 
+			where T: IComparable<T> 
+			{ return new BinaryTree<T>(item); }
+	}
+
+	public abstract alt class Rectangle {
+		alt this(int X, int Y, int Width, int Height);
+	}
+	public abstract alt class Widget {
+		alt this(Rectangle Location) {
+			if (Location == null) throw new ArgumentNullException("Location");
+		}
+		alt Button(string Text) { }
+		alt TextBox(string Text) { }
+		abstract alt StringListWidget(string[] subItems) {
+			alt ComboBox();
+			alt ListBox();
+		}
+		public abstract alt Container() {
+			alt TabControl(TabPage[] Children);
+			alt Panel(Widget[] Children) {
+				alt TabPage(string Title);
+			}
+		}
+	}
+}

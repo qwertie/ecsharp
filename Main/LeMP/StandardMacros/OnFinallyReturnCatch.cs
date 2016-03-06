@@ -14,7 +14,7 @@ namespace LeMP
 	{
 		static readonly Symbol _on_finally = (Symbol)"on_finally";
 		static readonly Symbol _on_return = (Symbol)"on_return";
-		static readonly Symbol _on_catch = (Symbol)"on_catch";
+		static readonly Symbol _on_error_catch = (Symbol)"on_error_catch";
 		static readonly Symbol _exit = (Symbol)"exit";
 		static readonly Symbol _success = (Symbol)"success";
 		static readonly Symbol _failure = (Symbol)"failure";
@@ -47,11 +47,11 @@ namespace LeMP
 			return TransformOnCatch(node, firstArg, rest, on_handler);
 		}
 
-		[LexicalMacro("on_catch(exc) { _foo = 0; }", 
+		[LexicalMacro("on_error_catch(exc) { _foo = 0; }", 
 			"Wraps the code that follows this macro in a try-catch statement, with the specified block as the 'catch' block. "+
-			"The first argument to on_catch is optional and represents the desired name of the exception variable. "+
+			"The first argument to on_error_catch is optional and represents the desired name of the exception variable. "+
 			"In contrast to on_throw(), the exception is not rethrown at the end of the generated catch block.")]
-		public static LNode on_catch(LNode node, IMacroContext context)
+		public static LNode on_error_catch(LNode node, IMacroContext context)
 		{
 			LNode firstArg, rest, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			return TransformOnCatch(node, firstArg, rest, on_handler);
@@ -148,7 +148,7 @@ namespace LeMP
 				else if (name == _success || name == S.Return)
 					return F.Call(_on_return, a[1]);
 				else if (name == _failure || name == S.Catch)
-					return F.Call(_on_catch, a[1]);
+					return F.Call(_on_error_catch, a[1]);
 				else
 					return Reject(context, a[0], "Expected 'exit', 'success', or 'failure'");
 			}
