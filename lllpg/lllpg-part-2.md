@@ -15,6 +15,8 @@ In this article series I will be teaching not just how to use my parser generato
 
 **Note**: The LES syntax highlighter works in Visual Studio 2010 and 2012 (untested with 2013), and it doesn't have all the features I want yet. In particular, it does't highlight the important difference between "`foo(x)`" and "`foo (x)`" (see my [Loyc Expression Syntax article][3] for details.) An Enhanced C# highlighter isn't written yet (C# highlighters in programs like Notepad++ and Nodepad2 are good enough, for now). Meanwhile, the Custom Tool works in VS 2008 through VS 2013, including Express editions, and if you're wondering how it's made, I wrote a [whole article about that][4].
 
+**Note**: In future articles you will see `@[...]` syntax for token literals instead of `@{...}`. `@{...}` is the new style, and `@[...]` is the old style. Both syntaxes are supported in EC#, but in LES, the `@[...]` syntax was replaced with `@{...}` as part of a change that made LES into a superset of JSON.
+
 ![][5]
 
 ## Do you really need a parser generator?

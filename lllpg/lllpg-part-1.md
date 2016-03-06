@@ -1,7 +1,7 @@
 ---
 title: "LLLPG Part 1: A new parser generator for C#"
 layout: article
-date: 7 Oct 2013 (updated 26 Jun 2015). Originally published on CodeProject.
+date: 7 Oct 2013 (updated 6 Mar 2016). Originally published on CodeProject.
 toc: true
 ---
 
@@ -9,7 +9,7 @@ toc: true
 
 LLLPG (Loyc LL(k) Parser Generator) is a new recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2. LLLPG 1.0 is now virtually complete, and supports either Enhanced C# (EC#) or [Loyc Expression Syntax][2] (LES) as input languages. I've updated most of the examples to use EC# as the host language.
 
-In this article I assume you already know what [parsers][3] and [lexers][4] are; if not, click the links.
+In this article I assume you already know what [parsers][3] and [lexers][4] are; if not, click the links. In case you haven't written parsers before, [article #2](lllpg-part-2.html) will fill in your knowledge.
 
 LLLPG is a system that I decided to create after trying to use [ANTLR3][5]'s C# module, and running into C#-specific bugs that I couldn't overcome. Besides, I wasn't happy with the ANTLR-generated code; I thought I could generate simpler and more efficient code. "How hard could it be to make an LL(k) parser generator?" I wondered. The answer: pretty damn hard, actually.
 
@@ -21,9 +21,9 @@ There are multiple ways to run LLLPG: on the command line, with LLLPG.exe, in a 
 
 In the screenshot you'll notice that the input language is not C#, even though the output is. Later, I'll explain this bizarre fact.
 
-LLLPG is not a dedicated tool the way ANTLR is. Instead, LLLPG is designed to be embedded inside another programming language. Right now you can use LLLPG the same way you would use other parser generators, by invoking LLLPG.exe as a pre-build step at compile-time, to produce C# code which is then compiled. But eventually, LLLPG will merely be a "macro" inside a programming language I'm making called Enhanced C# — one of a hundred macros that you might be using, perhaps including a few that you wrote yourself. In fact, LLLPG _already_ operates as a macro inside a mini-language that I call LeMP (Lexical Macro Processor).
+LLLPG is not a dedicated tool the way ANTLR is. Instead, LLLPG is designed to be embedded inside another programming language. While you may use LLLPG similarly to other parser generators, it's really just a "macro" inside a programming language I'm making called Enhanced C# — one of a hundred macros that you might be using, and perhaps in the future you'll write a macro or two yourself.
 
-So someday, you will add LLLPG as a compile-time reference, the same way you might add "System.Core" as a run-time reference today. This means that using a parser generator will be no more difficult than using any other library. When I'm done, you'll be able to easily embed parsers anywhere you want them; creating a parser that is generated and optimized at compile-time will be no more difficult than making a "compiled Regex" is today. But of course, a "compiled Regex" is actually compiled at runtime, while LLLPG will work entirely at compile-time.
+As of 2016, Enhanced C# is incomplete; only two components of it are ready (the parser, and the macro runner which is called [LeMP (Lexical Macro Processor)](/lemp)). However, hopefully you'll find it fairly user-friendly and fun.
 
 Other design elements of LLLPG include:
 
@@ -39,8 +39,8 @@ Other design elements of LLLPG include:
 Okay, let's get started! Here's a really simple example (EC#):
 
     LLLPG (lexer) {
-        public rule Digit @[ '0'..'9' ];
-        public rule Integer @[ Digit+ ];
+        public rule Digit @{ '0'..'9' };
+        public rule Integer @{ Digit+ };
     };
 
 And the output is:
@@ -73,7 +73,7 @@ That's it! So here's some relevant facts to learn at this point (I love bulleted
 * The lexer mode expects a method called `MatchRange()` to exist (and both modes expect a series of `Match()` methods for matching particular characters or tokens). This method's job is to test whether the input character matches the specified range, and to emit an error message if not. On mismatch, you can throw an exception, print a message, or whatever suits you. On success,  `MatchRange()` should return the consumed character so that you can store it in a variable if you want.
 * The `+` operator means "one or more of these". `Digit+` is exactly equivalent to `Digit Digit*`; the `*` means "zero or more of these", and the `*` operator is translated into a for-loop, as you can see in the output (as you probably know, `for (;;)` means "loop indefinitely"; it's equivalent to `while (true)`.)
 * This example also demonstrates the main characteristic of LL(k) parsers: prediction. The `if (la0 >= '0' && la0 <= '9')` statement is performing a task called "prediction", which means, it is deciding which branch to take (`Digit`? or exit the loop?). It must reach across rules to do this: each rule requires an analysis of every other rule it calls, in addition to analysis inside the rule itself. In this case, `Integer` must be intimately familiar with the contents of `Digit`. Which is kind of romantic, when you think about it.
-* The body of the rule is enclosed in `@[...];`. Why not braces, or parenthesis? Because LLLPG is embedded inside another programming language, and it cannot change the syntax of the host language. The construct "`public rule Foo @[...];`" is actually parsed by EC# as a property declaration, except with `@[...]` instead of the usual `{...}`. The `@[...]` is something called a **token literal**, which is a list of tokens (actually a _tree_, which matches pairs of `( ) { } [ ]`). The EC# (or LES) parser gathers up all the tokens and stores them for later. After the entire source file is parsed, the macro processor gives LLLPG a chance to receive the token tree and transform it into something else. LLLPG it runs its _own independent parser_ to process the token tree. Finally, it replaces the `LLLPG` block with normal C# code that it generated. I'll explain this in more detail later.
+* The body of the rule is enclosed in `@{...};`. Why not just braces or something else? Because LLLPG is embedded inside another programming language, and it cannot change the syntax of the host language. The construct "`public rule Foo @{...};`" is actually parsed by EC# as a property declaration, except with `@{...}` instead of the usual `{...}`. The `@{...}` is something called a **token literal**, which is a list of tokens (actually a _tree_, which matches pairs of `( ) { } [ ]`). The EC# (or LES) parser gathers up all the tokens and stores them for later. After the entire source file is parsed, the macro processor gives LLLPG a chance to receive the token tree and transform it into something else. LLLPG it runs its _own independent parser_ to process the token tree. Finally, it replaces the `LLLPG` block with normal C# code that it generated. I'll explain this in more detail later.
 
 ## Another example
 
@@ -81,19 +81,20 @@ My next example is almost useful: a simple lexer.
 
     using System;
 
-    enum TT {     Integer, Identifier, Operator
-    }
+    enum TT { 
+		Integer, Identifier, Operator
+	}
     LLLPG (lexer) {
-        private token Letter @[ ('a'..'z'|'A'..'Z') ];
-        private token Id  @[ (Letter|'_')
-                             (Letter|'_'|'0'..'9')* ];
-        private token Int @[ '0'..'9'+ ];
-        private token Op  @[ '+'|'-'|'*'|'/' ];
+        private token Letter @{ ('a'..'z'|'A'..'Z') };
+        private token Id  @{ (Letter|'_')
+                             (Letter|'_'|'0'..'9')* };
+        private token Int @{ '0'..'9'+ };
+        private token Op  @{ '+'|'-'|'*'|'/' };
         public token TT Token @
-          [  Op  {return TT.Operator;}
+          {  Op  {return TT.Operator;}
           |  Id  {return TT.Identifier;}
           |  Int {return TT.Integer;}
-          ];
+          };
     };
 
 In this example, `using System` and the `enum` are completely standard C# code and it will be printed out unchanged (well, it'll be reformatted. Whitespaces and comments are not preserved.) The rest is a mixture of Enhanced C# and LLLPG code.
@@ -186,7 +187,7 @@ This example demonstrates some new things:
 
 If you're only interested in the parser generator, please skip this section, because right now I'd like to discuss the fancy technology that LLLPG is built on. In fact, you can skip most of the rest of the article and go straight to [part 2][12].
 
-So here's the deal. I designed a language called Enhanced C# which it only now starting to take shape. This language is designed to be about 99.7% backward compatible with C#, and the parser is about 93% complete (e.g. LINQ support is missing.) There is no EC# compiler yet, but there is a _printer_. With a few lines of code, you can parse a block of EC# code and print it out again:
+So here's the deal. I designed a language called Enhanced C#. It's supposed to be about 99.7% backward compatible with C#, and the parser is about 95% complete (LINQ support is missing, but C# 6 syntax is available.) There is no EC# compiler yet, but there is a _printer_; instead you use the parser + LeMP + printer and feed the output to the plain C# compiler. With a few lines of code, you can parse a block of EC# code and print it out again:
 
     using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
     using (ParsingService.PushCurrent(Ecs.Parser.EcsLanguageService.Value))
@@ -202,6 +203,31 @@ Since EC# is a superset of C#, LLLPG is able to produce C# code by using the EC#
 
 Earlier you saw a screen shot of LINQPad in which the input to LLLPG was _LES code_. LES is not a programming language, it is just a _syntax_ and nothing else.  One of the core ideas of the [Loyc project][9] is to "modularize" programming languages into a series of re-usable components.  So instead of writing one big compiler for a language, a compiler is built by mixing and matching components. One of those components is the Loyc tree (the `LNode` class in `Loyc.Syntax.dll`). Another component is the LES parser (which is a text representation for Loyc trees). A third component is the EC# parser, a fourth component is the EC# printer, and a fifth component is LeMP, the macro processor.
 
+### Macros
+
+Macros are a fundamental feature of [LISP][23] that I am porting over to the wider world of non-LISP languages.
+
+A macro (in the LISP sense, not in the C/C++ sense) is simply a method that takes a syntax tree as input, and produces another syntax tree as output. Here's an example of a macro:
+
+    [LexicalMacro("Name::Type",
+      "Defines a variable or field in the current scope.", "#::")]
+    public static LNode ColonColon(LNode node, IMacroContext sink)
+    {
+        var a = node.Args;
+        if (a.Count == 2) {
+            LNode r = node.With(CodeSymbols.Var, a[1], a[0]);
+            r.BaseStyle = NodeStyle.Statement;
+            return r;
+        }
+        return null;
+    }
+
+This macro is part of the "LES Prelude class" for LeMP. Its job is to take a LES "variable declaration"  such as `x::Foo` and change it into a different tree that the C# language service understands: ``#var(Foo, x)``, which represents `Foo x;`.
+
+The input, `x::Foo`, is represented as a call to `#::` with two arguments, `x` and `Foo`. `ColonColon()` is designed to transform the call to "`#::`". It checks that there are two arguments, and swaps them while changing the call target from `#::` to `S.Var`,  which is an alias for `#var`. The C# node printer considers `#var(type, name)` to represent a variable declaration, and prints it with the  more familiar syntax "`type name`".
+
+The point is, LLLPG is defined as a "macro" that takes your `LLLPG (lexer) { ... }`; or `LLLPG (parser) { ... }`; statement as input, and returns another syntax tree that represents C# source code. As a macro, it can live in harmony with other macros like the `ColonColon` macro.
+
 ### Bootstrapping LLLPG
 
 In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I create a parser for EC#? Obviously, I wanted to use LLLPG to write the parser, but without any parser there was no easy way to submit a grammar to LLLPG! After writing the LLLPG core engine and the EC# printer, here's what I did to create the EC# parser:
@@ -212,7 +238,7 @@ In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I c
 4. I wrote the [`MacroProcessor][16]` (which I later named "LeMP", short for "Lexical Macro Processor") and a wrapper class called [`Compiler][17]` that provides the command-line interface. `MacroProcessor`'s job is to scan through a syntax tree looking for calls to "macros", which are source code transformers (more on that below). It calls those transformers recursively until there are no macro calls left in the code. Finally, ``Compiler`` prints the result as text.
 5. I built a small "macro language" on top of LES which combines LeMP (the macro processor) with a set of small macros that makes LES look a lot like C#. The [macros][18] are designed to convert LES to C# (you can write C# syntax trees directly in LES, but they are a bit ugly.)
 6. I wrote some [additional macros][19] that allow you to invoke LLLPG from within LES.
-7. I hacked the LES parser to also be able to parse LLLPG code like `@[ a* | b ]` in a derived class (a shameful abuse of "reusable code").
+7. I hacked the LES parser to also be able to parse LLLPG code like `@{ a* | b }` in a derived class (a shameful abuse of "reusable code").
 8. I wrote a lexer and [parser for LES in LES itself][20].
 9. I published this article in (Oct 2013).
 10. I wrote the lexer and [parser of EC# in LES][21], in the process uncovering a bunch of new bugs in LLLPG (which I fixed)
@@ -222,30 +248,6 @@ In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I c
 
 At long last the bootstrapping is complete, so you can write LLLPG parsers in EC#!
 
-### Macros
-
-Macros are a fundamental feature of [LISP][23] that I am porting over to the wider world of non-LISP languages.
-
-A macro (in the LISP sense, not in the C/C++ sense) is simply a method that takes a syntax tree as input, and produces another syntax tree as output. Here's an example of a macro:
-
-    [SimpleMacro("Name::Type",
-      "Defines a variable or field in the current scope.", "#::")]
-    public static LNode ColonColon(LNode node, IMessageSink sink)
-    {
-        var a = node.Args;
-        if (a.Count == 2) {
-            LNode r = node.With(S.Var, a[1], a[0]);
-            r.BaseStyle = NodeStyle.Statement;
-            return r;
-        }
-        return null; }
-
-This macro is part of the "LES Prelude class" for LeMP. Its job is to take a LES "variable declaration"  such as `x::Foo` and change it into a different tree that the C# language service understands: ``#var(Foo, x)``, which represents `Foo x;`.
-
-The input, `x::Foo`, is represented as a call to `#::` with two arguments, `x` and `Foo`. `ColonColon()` is designed to transform the call to "`#::`". It checks that there are two arguments, and swaps them while changing the call target from `#::` to `S.Var`,  which is an alias for `#var`. The C# node printer considers `#var(type, name)` to represent a variable declaration, and prints it with the  more familiar syntax "`type name`".
-
-The point is, LLLPG is defined as a "macro" that takes your `LLLPG (lexer) { ... }`; or `LLLPG (parser) { ... }`; statement as input, and returns another syntax tree that represents C# source code. As a macro, it can live in harmony with other macros like the `ColonColon` macro.
-
 ## LLLPG's input languages: EC# & LES
 
 ### Enhanced C# (EC#)
@@ -254,11 +256,11 @@ As I mentioned, Enhanced C# is a language based on C# whose compiler doesn't exi
 
 #### Token literals
 
-    Loyc.Syntax.Lexing.TokenTree eightTokens = @[
+    Loyc.Syntax.Lexing.TokenTree eightTokens = @{
         This token tree has eight children
         (specifically, six identifiers and two parentheses.
          The tokens inside the parentheses are children of the opening '('.)
-    ];
+    };
 
 LLLPG is a "domain-specific language" or DSL, which means it's a special-purpose language (for creating parsers).
 
@@ -266,8 +268,8 @@ Token trees are a technique for allowing DSLs (Domain-Specific Languages) withou
 
 EC# allows token trees in any location where an expression is allowed. It also allows you to use a token tree instead of a method body, or instead of a property body. So when the EC# parser encounters statements like these:
 
-    rule Bar @[ "Bar" ];
-    rule int Foo(int x) @[ 'F' 'o' 'o' {return x;} ];
+    rule Bar @{ "Bar" };
+    rule int Foo(int x) @{ 'F' 'o' 'o' {return x;} };
 
 The parser actually sees these as property or method declarations. LLLPG's `ECSharpRule` macro then transforms them into a different form, shown here:
 
@@ -290,6 +292,8 @@ The main LLLPG macro is in charge of turning this into the final output:
       return x;
     }
 
+**Note**: you may also see token literals with square brackets `@[...]`. This means the same thing as `@{...}`; there are two syntaxes for a historical reason, as explained in the next article.
+
 #### Block-call statements
 
     get { return _foo; }
@@ -308,13 +312,13 @@ These statements are considered exactly equivalent to method calls of the follow
 So the LLLPG block:
 
     LLLPG (parser(laType(TokenType), matchType(int))) {
-       rule Foo @[ ... ];
+       rule Foo @{ ... };
     }
 
 Is a block-call statement, equivalent to
 
     LLLPG (parser(laType(TokenType), matchType(int)), {
-       rule Foo @[...];
+       rule Foo @{...};
     });
 
 #### Blocks as expressions
@@ -326,7 +330,7 @@ In EC#, `{braced blocks}` can be used as expressions, which explains what a meth
 
 In the case of a statement like
 
-    LLLPG (parser(laType(TokenType), matchType(int)), { rule Foo @[...]; });
+    LLLPG (parser(laType(TokenType), matchType(int)), { rule Foo @{...}; });
 
 Everything in parenthesis is passed to a macro belonging to LLLPG, which (to make a long story short) transforms it into C# code.
 
@@ -336,7 +340,7 @@ That's enough information to understand how LLLPG works. Hopefully now you under
 
 LES is very comparable to EC#, especially its lexer (e.g. `"strings"`, `'c'`haracters, and `@identifiers` are practically the same between the two languages). It has
 
-* Token literals `@[...]`
+* Token literals `@{...}`
 * Blocks as expressions
 * Superexpressions, which serve a similar function as block-call statements in EC#, and are also used to represent `def` method declarations, `if` statements, `for` loops, `rule`s and virtually all other "special" syntax.
 
@@ -346,7 +350,11 @@ LES is very comparable to EC#, especially its lexer (e.g. `"strings"`, `'c'`hara
 
 Originally this was not required because the LES "prelude" macros were imported automatically. However, the LES prelude could potentially interfere with normal C# code, so it is no longer imported automatically (the macro compiler doesn't know anything about the input language, so it is unaware of whether it should import the macros or not).
 
-When LLLPG was first released, you had to use LES, so I wrote the following section which describes the relationship between LES code and C# code. If you want, you can still write parsers in LES, but of course most readers will prefer EC#.
+When LLLPG was first released, you had to use LES, so I wrote the following section which describes the relationship between LES code and C# code. If you want, you can still write parsers in LES, but of course most readers will prefer EC#. If you are using "LeMP" instead of "LLLPG" as your single-file generator, add the line
+
+    import macros Loyc.LLPG;
+
+at the top of your file to gain access to LLLPG.
 
 ### Differences & similarities between LeMP/LES and C#
 
@@ -442,14 +450,14 @@ So that's it! Hope you like my parser generator, folks, and I'll be happy to ans
 * Feb. 25, 2014: [Part 4][26] published.
 
 [1]: http://www.codeproject.com/KB/recipes/664785/LLLPG.png
-[2]: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+[2]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
 [3]: http://en.wikipedia.org/wiki/Parsing
 [4]: http://en.wikipedia.org/wiki/Lexical_analysis
 [5]: http://www.antlr.org/
 [6]: http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator
 [7]: http://www.linqpad.net/
 [9]: http://loyc.net
-[10]: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc_trees
+[10]: https://github.com/qwertie/LoycCore/wiki/Loyc-trees
 [11]: http://www.ssw.uni-linz.ac.at/coco/
 [12]: http://www.codeproject.com/Articles/688152/The-Loyc-LL-k-Parser-Generator-Part-2
 [14]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/LLLPG/Tests/LlpgCoreTests.cs
