@@ -68,6 +68,35 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestDotDotRanges()
+		{
+			TestEcs("A.B..C.D", "Range.Excl(A.B, C.D)");
+			TestEcs("A.B...C.D", "Range.Incl(A.B, C.D)");
+			TestEcs("..C.D", "Range.Excl(C.D)");
+			TestEcs("_..C.D", "Range.Excl(C.D)");
+			TestEcs("...C.D", "Range.Incl(C.D)");
+			TestEcs("_...C.D", "Range.Incl(C.D)");
+			TestEcs("A.B.._", "Range.Low(A.B)");
+			TestEcs("A.B..._", "Range.Low(A.B)");
+		}
+
+		[Test]
+		public void Test_in()
+		{
+			TestEcs("A + 1 in C.D;", "C.D.Contains(A + 1);");
+			TestEcs("A.B in x..y;",  "A.B.IsInRangeExcl(x, y);");
+			TestEcs("A.C in x...y;", "A.C.IsInRangeIncl(x, y);");
+			TestEcs("A.D in ..y;",   "A.D.IsInRangeExcl(y);");
+			TestEcs("A.E in _..y;",  "A.E.IsInRangeExcl(y);");
+			TestEcs("A.F in ...y;",  "A.F.IsInRangeIncl(y);");
+			TestEcs("A.G in _...y;", "A.G.IsInRangeIncl(y);");
+			TestEcs("A.H in x.._;",  "A.H >= x;");
+			TestEcs("A.I in x..._;", "A.I >= x;");
+			TestEcs("A.J in (x..y);", "Range.Excl(x, y).Contains(A.J);");
+			TestEcs("A.K in (x...y);","Range.Incl(x, y).Contains(A.K);");
+		}
+
+		[Test]
 		public void TestNullDot()
 		{
 			TestBoth(@"a = b.c?.d;", @"a = b.c?.d;",
@@ -753,16 +782,13 @@ namespace LeMP
 				@"do
 					if (obj is Thing) {
 						Thing t = (Thing)obj;
-						if (t >= x && t < y) {
+						if (t.IsInRangeExcl(x, y)) {
 							var tmp_1 = t.Item1;
 							if (tmp_1 is double) {
 								r = (double)tmp_1;
-								if (r >= x && r < y) {
-									var tmp_2 = t.Item2;
-									if (tmp_2 >= c && tmp_2 <= d) {
-										DoSomethingWith(t, r);
-										break;
-									}
+								if (r.IsInRangeExcl(x, y) && t.Item2.IsInRangeIncl(c, d)) {
+									DoSomethingWith(t, r);
+									break;
 								}
 							}
 						}

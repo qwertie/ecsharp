@@ -11,12 +11,13 @@ using System.Text;
 using System.Collections.Generic;
 using Loyc;
 using Loyc.Collections;
-using Loyc.Syntax;
 using Loyc.MiniTest;
+using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
 namespace Samples
 {
 	using ADT;
-	[TestFixture] class Samples
+	[TestFixture] class Samples : Assert
 	{
 		public static void Run()
 		{
@@ -29,6 +30,17 @@ namespace Samples
 				if (tree.Contains(i))
 					Console.Write(" {0}", i);
 			Console.WriteLine(" were found");
+		}
+		[Test] public void RangeTest()
+		{
+			IsTrue(5.IsInRangeExcl(4, 6));
+			IsTrue(6.IsInRangeIncl(5, 6));
+			IsFalse(5.IsInRangeExcl(4, 5));
+			IsFalse(4.IsInRangeExcl(4, 3));
+			AreEqual(10, Range.Excl(1, 5).Sum());
+			AreEqual(15, Range.Incl(1, 5).Sum());
+			AreEqual(0, Range.Excl(1, 1).Sum());
+			AreEqual(0, Range.Incl(1, 0).Sum());
 		}
 		static void FavoriteNumberGame()
 		{
@@ -515,5 +527,89 @@ namespace ADT
 				return Title;
 			}
 		}
+	}
+}
+struct EmailAddress
+{
+	public UString UserName;
+	public UString Domain;
+	public EmailAddress(UString userName, UString domain)
+	{
+		UserName = userName;
+		Domain = domain;
+	}
+	public override string ToString()
+	{
+		return UserName + "@" + Domain;
+	}
+	[ThreadStatic] static LexerSource<UString> src;
+	static readonly HashSet<int> UsernameChars_set0 = LexerSource.NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', '-', '/', '9', '=', '=', '?', '?', 'A', 'Z', '^', '~');
+	static void UsernameChars(LexerSource<UString> src)
+	{
+		int la0;
+		src.Match(UsernameChars_set0);
+		// Line 150: ([!#-'*+\-/-9=?A-Z^-~])*
+		for (;;) {
+			la0 = src.LA0;
+			if (UsernameChars_set0.Contains(la0))
+				src.Skip();
+			else
+				break;
+		}
+	}
+	static readonly HashSet<int> DomainCharSeq_set0 = LexerSource.NewSetOfRanges('0', '9', 'A', 'Z', 'a', 'z');
+	static readonly HashSet<int> DomainCharSeq_set1 = LexerSource.NewSetOfRanges('-', '-', '0', '9', 'A', 'Z', 'a', 'z');
+	static void DomainCharSeq(LexerSource<UString> src)
+	{
+		int la0;
+		src.Match(DomainCharSeq_set0);
+		// Line 155: (([\-])? [0-9A-Za-z])*
+		for (;;) {
+			la0 = src.LA0;
+			if (DomainCharSeq_set1.Contains(la0)) {
+				// Line 155: ([\-])?
+				la0 = src.LA0;
+				if (la0 == '-')
+					src.Skip();
+				src.Match(DomainCharSeq_set0);
+			} else
+				break;
+		}
+	}
+	public static EmailAddress Parse(UString email)
+	{
+		int la0;
+		#line 163 "Samples.ecs"
+		if (src == null)
+			src = new LexerSource<UString>(email, "", 0, false);
+		else
+			src.Reset(email, "", 0, false);
+		#line default
+		UsernameChars(src);
+		// Line 168: ([.] UsernameChars)*
+		for (;;) {
+			la0 = src.LA0;
+			if (la0 == '.') {
+				src.Skip();
+				UsernameChars(src);
+			} else
+				break;
+		}
+		int at = src.InputPosition;
+		UString userName = email.Substring(0, at);
+		src.Match('@');
+		DomainCharSeq(src);
+		// Line 172: ([.] DomainCharSeq)*
+		for (;;) {
+			la0 = src.LA0;
+			if (la0 == '.') {
+				src.Skip();
+				DomainCharSeq(src);
+			} else
+				break;
+		}
+		src.Match(-1);
+		UString domain = email.Substring(at + 1);
+		return new EmailAddress(userName, domain);
 	}
 }

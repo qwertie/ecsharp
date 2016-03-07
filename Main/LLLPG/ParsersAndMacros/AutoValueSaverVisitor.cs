@@ -170,7 +170,7 @@ namespace Loyc.LLParserGenerator
 				return LiteralToVarName(label.Value);
 			} else if (label.Calls(S.Dot, 2))
 				return GSymbol.Get("tok__" + label.Args[1].Name);
-			else if (label.Calls(S.DotDot, 2))
+			else if (label.Calls(S.DotDot, 2) || label.Calls(S.DotDotDot, 2))
 				return GSymbol.Get(PickVarNameForLNode(label[0]).Name + "_" + PickVarNameForLNode(label[1]).Name);
 			else // can't return null
 				return GSymbol.Get(label.GetHashCode().ToString());

@@ -37,6 +37,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("a", a);
 			TestStage1("'a'", F.Literal('a'));
 			TestStage1("123", F.Literal(123));
+			TestStage1("a...b", F.Call(S.DotDotDot, a, b));
 			TestStage1("a..b", F.Call(S.DotDot, a, b));
 			TestStage1("~a", F.Call(S.NotBits, a));
 			TestStage1("a*", F.Call(Star, a));
@@ -51,7 +52,7 @@ namespace Loyc.LLParserGenerator
 			TestStage1("(a) (b)", F.Tuple(a, b));
 			TestStage1("(a b)?", F.Call(Opt, F.Tuple(a, b)));
 			TestStage1("{ a(); b(); }", F.Braces(F.Call(a), F.Call(b)));
-			TestStage1("a = b..c", F.Call(S.Assign, a, F.Call(S.DotDot, b, c)));
+			TestStage1("a = b...c", F.Call(S.Assign, a, F.Call(S.DotDotDot, b, c)));
 			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
 			TestStage1("a := b", F.Call(S.QuickBindSet, a, b));
 			TestStage1("a : b",  F.Call(S.Colon, a, b));

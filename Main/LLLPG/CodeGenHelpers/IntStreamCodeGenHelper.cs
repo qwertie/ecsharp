@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 				set = PGIntSet.AllExceptEOF;
 			} else if (expr.IsIdNamed(_EOF)) {
 				set = PGIntSet.EOF;
-			} else if (expr.Calls(S.DotDot, 2)) {
+			} else if (expr.Calls(S.DotDot, 2) || expr.Calls(S.DotDotDot, 2)) {
 				int? from = ConstValue(expr.Args[0], ref isInt);
 				int? to   = ConstValue(expr.Args[1], ref isInt);
 				if (from == null || to == null) {

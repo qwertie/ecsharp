@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.5.0.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.5.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -265,9 +265,9 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			var a = PrimaryExpr();
-			// Line 132: (TT.DotDot PrimaryExpr)?
+			// Line 132: (TT.DotDotDot PrimaryExpr)?
 			la0 = (TT) LA0;
-			if (la0 == TT.DotDot) {
+			if (la0 == TT.DotDotDot) {
 				var op = MatchAny();
 				var b = PrimaryExpr();
 				#line 132 "StageOneParserGrammar.ecs"

@@ -101,7 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Samples.ecs">
-      <Generator>LeMP</Generator>
+      <Generator>LLLPG</Generator>
       <LastGenOutput>Samples.out.cs</LastGenOutput>
     </None>
   </ItemGroup>

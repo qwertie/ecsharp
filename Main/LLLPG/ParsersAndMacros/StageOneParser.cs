@@ -32,7 +32,7 @@ namespace Loyc.LLParserGenerator
 		HostOperator= TokenKind.Operator,
 		Alt         = TokenKind.Operator + 1, // |
 		Slash       = TokenKind.Operator + 2, // /
-		DotDot      = TokenKind.Operator + 3, // .. or :
+		DotDotDot   = TokenKind.Operator + 3, // .. or ...
 		InvertSet   = TokenKind.Operator + 4, // ~
 		Plus        = TokenKind.Operator + 5, // +
 		Star        = TokenKind.Operator + 6, // *
@@ -184,7 +184,8 @@ namespace Loyc.LLParserGenerator
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
 			{S.Div,      TT.Slash},
-			{S.DotDot,   TT.DotDot},
+			{S.DotDot,   TT.DotDotDot},
+			{S.DotDotDot,TT.DotDotDot},
 			{S.Colon,    TT.Assignment},
 			{_AddColon,  TT.Assignment},
 			{_ColonSet,  TT.Assignment},

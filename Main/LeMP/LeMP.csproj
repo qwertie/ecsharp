@@ -260,6 +260,10 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
     </None>
+    <None Include="StandardMacros\InRange.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>InRange.out.cs</LastGenOutput>
+    </None>
     <None Include="StandardMacros\MatchCode.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>
@@ -267,6 +271,11 @@
     <Compile Include="StandardMacros\CodeQuoteMacro.cs" />
     <Compile Include="StandardMacros\FluentMacro.cs" />
     <Compile Include="StandardMacros\ForwardingMacro.cs" />
+    <Compile Include="StandardMacros\InRange.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>InRange.ecs</DependentUpon>
+    </Compile>
     <Compile Include="StandardMacros\MatchCode.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

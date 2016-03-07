@@ -134,20 +134,7 @@ namespace LeMP
 				}
 				if (inRange != null) {
 					bool exclRange = false;
-					{
-						LNode rangeHi, rangeLo;
-						if (inRange.Calls(CodeSymbols.DotDot, 2) && (rangeLo = inRange.Args[0]) != null && (rangeHi = inRange.Args[1]) != null && (exclRange = true) || inRange.Calls(CodeSymbols.DotDotDot, 2) && (rangeLo = inRange.Args[0]) != null && (rangeHi = inRange.Args[1]) != null) {
-							if (!LooksLikeSimpleValue(input)) {
-								Debug.Assert(isType == null);
-								PutStmt(TempVarDecl(input, out input));
-							}
-							PutCond(LNode.Call(CodeSymbols.GE, LNode.List(input, rangeLo)).SetStyle(NodeStyle.Operator));
-							PutCond(exclRange ? LNode.Call(CodeSymbols.LT, LNode.List(input, rangeHi)).SetStyle(NodeStyle.Operator) : LNode.Call(CodeSymbols.LE, LNode.List(input, rangeHi)).SetStyle(NodeStyle.Operator));
-						} else if (inRange.Calls(CodeSymbols.DotDot, 1) && (rangeHi = inRange.Args[0]) != null && (exclRange = true) || inRange.Calls(CodeSymbols.DotDotDot, 1) && (rangeHi = inRange.Args[0]) != null)
-							PutCond(exclRange ? LNode.Call(CodeSymbols.LT, LNode.List(input, rangeHi)).SetStyle(NodeStyle.Operator) : LNode.Call(CodeSymbols.LE, LNode.List(input, rangeHi)).SetStyle(NodeStyle.Operator));
-						else
-							PutCond(LNode.Call(CodeSymbols.In, LNode.List(input, inRange)).SetStyle(NodeStyle.Operator));
-					}
+					PutCond(LNode.Call(CodeSymbols.In, LNode.List(input, inRange)).SetStyle(NodeStyle.Operator));
 				}
 				for (int itemIndex = 0; itemIndex < subPatterns.Count; itemIndex++) {
 					var subPattern = subPatterns[itemIndex];

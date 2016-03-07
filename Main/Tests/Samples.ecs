@@ -1,17 +1,19 @@
-﻿using System;
+﻿#importMacros(Loyc.LLPG);
+using System;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using Loyc;
 using Loyc.Collections;
-using Loyc.Syntax;
 using Loyc.MiniTest;
+using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
 
 namespace Samples {
 	using ADT;
 
 	[TestFixture]
-	class Samples
+	class Samples : Assert
 	{
 		public static void Run() {
 			RunTests.Run(new Samples());
@@ -23,6 +25,17 @@ namespace Samples {
 				if (tree.Contains(i))
 					Console.Write(" {0}",i);
 			Console.WriteLine(" were found");
+		}
+		[Test] public void RangeTest()
+		{
+			IsTrue(5 in 4..6);
+			IsTrue(6 in 5...6);
+			IsFalse(5 in 4..5);
+			IsFalse(4 in 4..3);
+			AreEqual(10, (1..5).Sum());
+			AreEqual(15, (1...5).Sum());
+			AreEqual(0, (1..1).Sum());
+			AreEqual(0, (1...0).Sum());
 		}
 		static void FavoriteNumberGame()
 		{
@@ -46,13 +59,12 @@ namespace Samples {
 			int num = new Random().Next(1, 101);
 			do {
 				Console.Write("Guess a number between 1 and 100: ");
-				on_catch (FormatException) {
+				on_error_catch (FormatException) {
 					Console.WriteLine("No, I want an integer.");
 				}
 				int guess = int.Parse(Console.ReadLine());
 				match (guess) {
 				}
-
 			} while(true);
 		}
 	}
@@ -121,4 +133,44 @@ namespace ADT
 			}
 		}
 	}
+}
+
+// Example from LLLPG article #5
+struct EmailAddress
+{
+  public EmailAddress(public UString UserName, public UString Domain) {}
+  public override string ToString() { return UserName + "@" + Domain; }
+
+  LLLPG (lexer(inputSource(src), inputClass(LexerSource)));
+  // LexerSource provides the APIs expected by LLLPG. This is
+  // static to avoid reallocating the helper object for each email.
+  [ThreadStatic] static LexerSource<UString> src;
+
+  static rule UsernameChars(LexerSource<UString> src) @{
+    ('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
+    '*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
+  };
+  static rule DomainCharSeq(LexerSource<UString> src) @{
+           ('a'..'z'|'A'..'Z'|'0'..'9')
+    ( '-'? ('a'..'z'|'A'..'Z'|'0'..'9') )*
+  };
+
+  /// <summary>Parses email addresses according to RFC 5322, not including 
+  /// quoted usernames or non-ASCII addresses (TODO: support Unicode).</summary>
+  /// <exception cref="FormatException">The input is not a legal email address.</exception>
+  public static rule EmailAddress Parse(UString email)
+  {
+    if (src == null)
+      src = new LexerSource<UString>(email, "", 0, false);
+    else
+      src.Reset(email, "", 0, false); // re-use old object
+    
+    @{ UsernameChars(src) ('.' UsernameChars(src))* };
+    int at = src.InputPosition;
+    UString userName = email.Substring(0, at);
+    
+    @[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+    UString domain = email.Substring(at + 1);
+    return new EmailAddress(userName, domain);
+  }
 }

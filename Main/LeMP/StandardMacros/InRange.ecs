@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
+
+namespace LeMP
+{
+	partial class StandardMacros
+	{
+		[LexicalMacro("x in lo..hi; x in lo...hi; x in ..hi; x in lo..._; x in range",
+			"Converts an 'in' expression to a normal C# expression using the following rules "+
+			"(keeping in mind that the EC# parser treats `..<` as an alias for `..`):\n"+
+			"1. `x in _..hi` and `x in ..hi` become `x.IsInRangeExcl(hi)`\n"+
+			"2. `x in _...hi` and `x in ...hi` become `x.IsInRangeIncl(hi)`\n"+
+			"3. `x in lo.._` and `x in lo..._` become simply `x >= lo`\n"+
+			"4. `x in lo..hi` becomes `x.IsInRangeExcl(lo, hi)`\n"+
+			"5. `x in lo...hi` becomes `x.IsInRangeIncl(lo, hi)`\n"+
+			"6. `x in range` becomes `range.Contains(x)`\n"+
+			"The first applicable rule is used.", "#in")]
+		public static LNode In(LNode node, IMacroContext context)
+		{
+			matchCode(node) {
+			case $x in $range:
+				LNode parens;
+				range = range.WithoutAttrNamed(S.TriviaInParens, out parens);
+				if (parens == null) {
+					matchCode(range) {
+						case $lo..$hi:
+							if (lo.IsIdNamed(__))
+								return quote($x.IsInRangeExcl($hi));
+							else if (hi.IsIdNamed(__))
+								return quote($x >= $lo);
+							else
+								return quote($x.IsInRangeExcl($lo, $hi));
+						case ..$hi:
+							return quote($x.IsInRangeExcl($hi));
+						case $lo...$hi:
+							if (lo.IsIdNamed(__))
+								return quote($x.IsInRangeIncl($hi));
+							else if (hi.IsIdNamed(__))
+								return quote($x >= $lo);
+							else
+								return quote($x.IsInRangeIncl($lo, $hi));
+						case ...$hi:
+							return quote($x.IsInRangeIncl($hi));
+					}
+				}
+				return quote($range.Contains($x));
+			}
+			return null;
+		}
+
+		static LNode Range_Excl = quote(Range.Excl);
+		static LNode Range_Incl = quote(Range.Incl);
+		static LNode Range_Low  = quote(Range.Low);
+
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "..")]
+		public static LNode RangeExcl(LNode node, IMacroContext context)
+		{
+			matchCode(node) {
+				case $_($lo, $hi):
+					if (lo.IsIdNamed(__))
+						return quote($Range_Excl($hi));
+					else if (hi.IsIdNamed(__))
+						return quote($Range_Low($lo));
+					else
+						return quote($Range_Excl($lo, $hi));
+				case $_($hi):
+					return quote($Range_Excl($hi));
+			}
+			return null;
+		}
+
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "...")]
+		public static LNode RangeIncl(LNode node, IMacroContext context)
+		{
+			matchCode(node) {
+				case $_($lo, $hi):
+					if (lo.IsIdNamed(__))
+						return quote($Range_Incl($hi));
+					else if (hi.IsIdNamed(__))
+						return quote($Range_Low($lo));
+					else
+						return quote($Range_Incl($lo, $hi));
+				case $_($hi):
+					return quote($Range_Incl($hi));
+			}
+			return null;
+		}
+	}
+}
