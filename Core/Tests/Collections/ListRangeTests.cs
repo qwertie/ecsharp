@@ -23,20 +23,20 @@ namespace Loyc.Collections.Tests
 		public void TestAddRange()
 		{
 			var list = _newList();
-			list.AddRange(new IntRange(1, 3));
+			list.AddRange(Range.Incl(1, 3));
 			list.AddRange(Enumerable.Range(5, 3));
 			ExpectList(list, 1, 2, 3, 5, 6, 7);
-			list.AddRange(new IntRange(10, 2));
+			list.AddRange(Range.Incl(10, 11));
 			list.AddRange(Enumerable.Range(20, 2));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21);
-			list.AddRange(Range.Single(30));
+			list.AddRange(Range.Incl(30, 30));
 			list.AddRange(Enumerable.Range(40, 1));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
-			list.AddRange(Range.Repeat(0, 0));
+			list.AddRange(Range.Excl(0, 0));
 			list.AddRange(Enumerable.Repeat(0, 0));
 			ExpectList(list, 1, 2, 3, 5, 6, 7, 10, 11, 20, 21, 30, 40);
 
-			list.AddRange(Range.Single(-99));
+			list.AddRange(Range.Only(-99));
 			if (list.First() == -99)
 			{
 				// It's a sorted list.

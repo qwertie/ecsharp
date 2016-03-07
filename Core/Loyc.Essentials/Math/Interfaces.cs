@@ -24,7 +24,7 @@ namespace Loyc.Math
 	/// redundant, because standard numeric types already implement IConvertible for 
 	/// this purpose. To use IConvertible in generic code, add IConvertible as a 
 	/// type constraint on the numeric type.</remarks>
-	public interface INumConverter<T>
+	public interface IConvertTo<T>
 	{
 		T From(uint t);
 		T From(int t);
@@ -112,6 +112,12 @@ namespace Loyc.Math
 		bool IsInfinity(T value);
 		/// <summary>Returns true if the given value is not a number (can only be true for floats).</summary>
 		bool IsNaN(T value);
+		/// <summary>Gets the closest integer equal to or lower than the specified number.</summary>
+		/// <remarks>For integer types, this has no effect.</remarks>
+		T Floor(T value);
+		/// <summary>Gets the closest integer equal to or higher than the specified number.</summary>
+		/// <remarks>For integer types, this has no effect.</remarks>
+		T Ceiling(T value);
 		/// <summary>Returns true if T can represent negative values.</summary>
 		bool IsSigned { get; }
 		/// <summary>Returns true if T is floating-point, meaning that it can 
@@ -324,9 +330,9 @@ namespace Loyc.Math
 	/// </remarks>
 	public interface IMath<T> :
 		INumTraits<T>,          // MinValue MaxValue Epsilon PositiveInfinity NegativeInfinity IsSigned...
-		INumConverter<T>,       // From
+		IConvertTo<T>,          // From, Clip
 		IOrdered<T>,            // CompareTo, Equals, IsLess, IsLessOrEqual, Abs, Min, Max
-		IIncrementer<T>,         // ++ -- NextHigher NextLower
+		IIncrementer<T>,        // ++ -- NextHigher NextLower
 		IField<T>,              // + - * / << >> Zero One
 		IHasRoot<T>             // Sqrt Square
 	{
@@ -385,7 +391,7 @@ namespace Loyc.Math
 	/// </summary>
 	public interface IComplexMath<T> :
 		INumTraits<T>,
-		INumConverter<T>,
+		IConvertTo<T>,
 		IField<T>,
 		IHasRoot<T>,
 		IExp<T>

@@ -244,6 +244,10 @@ namespace Loyc.Math
 		public static <#=T#> operator --(<#=T#> a) { a.N -= Unit; return a; }
 		
 		public <#=T#> Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public <#=T#> Floor() { return Prescaled(N & ~Mask); }
+		public <#=T#> Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{

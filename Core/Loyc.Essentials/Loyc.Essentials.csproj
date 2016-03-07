@@ -111,7 +111,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DotNet45,CSharp4</DefineConstants>
@@ -123,7 +124,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;DotNet45,CSharp4</DefineConstants>
@@ -158,6 +160,10 @@
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
+    <None Include="Utilities\In.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>In.out.cs</LastGenOutput>
+    </None>
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToCollections.cs">
       <AutoGen>True</AutoGen>
@@ -173,13 +179,22 @@
     <Compile Include="Collections\HelperClasses\EmptyArray.cs" />
     <Compile Include="Collections\HelperClasses\EmptyEnumerator.cs" />
     <Compile Include="Collections\HelperClasses\EmptyList.cs" />
-    <Compile Include="Collections\HelperClasses\IntRange.cs" />
     <Compile Include="Collections\Adapters\KeyCollection.cs" />
     <Compile Include="Collections\Adapters\ListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ListSlice.cs" />
     <Compile Include="Collections\Adapters\ListSourceAsList.cs" />
     <Compile Include="Collections\Adapters\NegList.cs" />
     <Compile Include="Collections\Adapters\NegListSource.cs" />
+    <Compile Include="Collections\HelperClasses\NumRange.cs" />
+    <None Include="Collections\HelperClasses\Range.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Range.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="Collections\HelperClasses\Range.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Range.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Collections\HelperClasses\RangeEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -252,6 +267,11 @@
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
+    <Compile Include="Utilities\In.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>In.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />

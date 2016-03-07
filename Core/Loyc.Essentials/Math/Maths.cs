@@ -37,6 +37,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (sbyte)0; } }
 		public T One        { get { return (sbyte)1; } }
 
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+
 		#endregion
 
 		#region ISignedMath
@@ -129,6 +132,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (byte)0; } }
 		public T One        { get { return (byte)1; } }
 
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+
 		#endregion
 
 		#region IMath
@@ -218,6 +224,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)(long)System.Int16.MinValue; } }
 		public T Zero       { get { return (short)0; } }
 		public T One        { get { return (short)1; } }
+
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
 
 		#endregion
 
@@ -311,6 +320,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (ushort)0; } }
 		public T One        { get { return (ushort)1; } }
 
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+
 		#endregion
 
 		#region IMath
@@ -400,6 +412,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)(long)System.Int32.MinValue; } }
 		public T Zero       { get { return (int)0; } }
 		public T One        { get { return (int)1; } }
+
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
 
 		#endregion
 
@@ -493,6 +508,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (uint)0; } }
 		public T One        { get { return (uint)1; } }
 
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+
 		#endregion
 
 		#region IMath
@@ -582,6 +600,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)(long)System.Int64.MinValue; } }
 		public T Zero       { get { return (long)0; } }
 		public T One        { get { return (long)1; } }
+
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
 
 		#endregion
 
@@ -675,6 +696,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (ulong)0; } }
 		public T One        { get { return (ulong)1; } }
 
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+
 		#endregion
 
 		#region IMath
@@ -764,6 +788,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)long.MinValue; } }
 		public T Zero       { get { return (float)0; } }
 		public T One        { get { return (float)1; } }
+
+		public T Floor(T a)               { return (T)System.Math.Floor(a); }
+		public T Ceiling(T a)             { return (T)System.Math.Ceiling(a); }
 
 		#endregion
 
@@ -869,6 +896,9 @@ namespace Loyc.Math
 		public T Zero       { get { return (double)0; } }
 		public T One        { get { return (double)1; } }
 
+		public T Floor(T a)               { return (T)System.Math.Floor(a); }
+		public T Ceiling(T a)             { return (T)System.Math.Ceiling(a); }
+
 		#endregion
 
 		#region ISignedMath
@@ -973,6 +1003,9 @@ namespace Loyc.Math
 		public T Zero       { get { return FPI8.Zero; } }
 		public T One        { get { return FPI8.One; } }
 
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
+
 		#endregion
 
 		#region ISignedMath
@@ -1065,6 +1098,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)(long)FPI16.MinValue; } }
 		public T Zero       { get { return FPI16.Zero; } }
 		public T One        { get { return FPI16.One; } }
+
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
 
 		#endregion
 
@@ -1159,6 +1195,9 @@ namespace Loyc.Math
 		public T Zero       { get { return FPI23.Zero; } }
 		public T One        { get { return FPI23.One; } }
 
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
+
 		#endregion
 
 		#region ISignedMath
@@ -1252,6 +1291,9 @@ namespace Loyc.Math
 		public T Zero       { get { return FPL16.Zero; } }
 		public T One        { get { return FPL16.One; } }
 
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
+
 		#endregion
 
 		#region ISignedMath
@@ -1344,6 +1386,9 @@ namespace Loyc.Math
 		public long MinInt  { get { return (long)(long)FPL32.MinValue; } }
 		public T Zero       { get { return FPL32.Zero; } }
 		public T One        { get { return FPL32.One; } }
+
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
 
 		#endregion
 
