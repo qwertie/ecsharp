@@ -244,7 +244,11 @@ namespace Loyc
 	{
 		public LogException(object context, string format, params object[] args) : this(Severity.Error, context, format, args) {}
 		public LogException(Severity severity, object context, string format, params object[] args) : this(new LogMessage(severity, context, format, args)) {}
-		public LogException(LogMessage msg) { Msg = msg; }
+		public LogException(LogMessage msg) { 
+			Msg = msg; 
+			Data["Severity"] = msg.Severity; 
+			Data["Context"] = msg.Context;
+		}
 		
 		/// <summary>Contains additional information about the error that occurred.</summary>
 		public LogMessage Msg { get; private set; }
