@@ -581,6 +581,20 @@ Earlier you saw that you could write `case lo..hi` to find out if a value is wit
 			SizeIsOK(w, h);
 	}
 
+### Assigning to an existing variable with `ref` ###
+
+You can use `ref variable` instead of `$variable` to assign a value to an existing variable rather than creating a new variable. For consistency with the `matchCode` macro introduced in the [previous article](lemp-code-gen-and-analysis.html), `$(ref variable)` is also accepted.
+
+### Rationales ###
+
+That reminds me: why do you think the syntax for creating a new variable in `case` is `$x` instead of, say, `var x`? Partially it's because `var x` would, in general, not be permitted by the parser, but it's also because the `matchCode` macro also uses the `$x` syntax, and `var x` usually isn't even _possible_ in the context of `matchCode`.
+
+It's also fair to ask why you have to write `case $x is Foo` instead of simply `case x is Foo`. In fact, initially I did support the latter syntax (because Rust works similarly), but soon afterward I decided to drop support. There are three reasons:
+
+  1. `$x` is easier to spot, so people reading the code can more easily see the point where `x` is created.
+  2. `$x` is consistent with the syntax of `matchCode`.
+  3. If you write `777 is Foo` or `Foo.Bar is Foo`, the left-hand side is interpreted as an equality test. Thus `x is Foo` would have been a special case, and it would arguably be surprising if `x is Foo` and `x.y is Foo` did fundamentally different things.
+
 ### Standalone ranges and `in` operator ###
 
 The `..<`, `...`, and `in` operators are not limited to `match`. You can use them in ordinary expressions, like this:
