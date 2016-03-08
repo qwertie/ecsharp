@@ -9,7 +9,7 @@ Many! See the beginning of [article #5](lllpg-part-5.html).
 
 ### Q. I've used other parser generators before. Could you explain quckly how to use LLLPG?
 
-That's covered in [article #1](lllpg-part-1.html). Skim it... I haven't written a cheat sheet yet. You might even want to read [article #5](lllpg-part-5.html) first because it summarizes the main features again and talks about the newest features, as well as the most advanced topics.
+That's covered in [article #1](lllpg-part-1.html). Skim it... I haven't written a cheat sheet yet. You might even want to read [article #5](lllpg-part-5.html), which was written 1.6 years later, because it talks about the newest features and summarizes the main features again, as well as the most advanced topics.
 
 ### Q. What example grammars are available?
 
@@ -53,7 +53,7 @@ Could you be more specific? If you're a beginner and wondering why something is 
 
 ### Q. What kind of grammars does LLLPG accept? What's legal and what isn't?
 
-LLLPG accepts "augmented" LL(k) grammars, which are the "top-down" grammars that decide which branch to take in the grammar _before_ "matching" anything from the input stream. By "augmented" I mean that LLLPG also supports extra features: zero-width assertions, "gates", and mechanisms for ambiguity resolution (prioritization).
+LLLPG accepts "augmented" LL(k) grammars, which are the "top-down" grammars that decide which branch to take in the grammar _before_ matching (consuming) anything from the input stream. By "augmented" I mean that LLLPG also supports extra features: zero-width assertions, "gates", and mechanisms for ambiguity resolution (prioritization).
 
 Please see "Parsing terminology" in [article #2](lllpg-part-2.html) for a more in-depth explanation.
 
@@ -63,4 +63,4 @@ Yes. In fact, if you're using the LLLPG Custom Tool in Visual Studio, LLLPG is _
 
 ### Q. My question isn't here!
 
-You can reach me by email at `gmail.com`, with account name `qwertie256`.
+I'm gonna level with you. This is not a real FAQ. In fact I've never been asked any of these questions. I am a fraud, I made them up. But you can still ask - reach me by email at `gmail.com`, with account name `qwertie256`.
