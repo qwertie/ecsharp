@@ -10,16 +10,16 @@ LeMP is a new open-source LISP-style macro processor for C#, comparable to [swee
 
 <div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
 
-Arguably, the use of certain design patterns, especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern), are actually indicators that the language being used isn't powerful enough. Many design patterns work by _convention_ rather than being encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).
+Design patterns are a valuable conceptual tool for developers, but some of them - especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern) - arguably demonstrate that the language being used isn't powerful enough. When used in conventional languages, many design patterns can _only_ work by convention and _cannot_ be encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).
 
 A LISP-style macro processor helps you solve the **repetition-of-boilerplate** problem, and it also provides a framework in which you can run sophisticated algorithms at compile-time (for example, have a look at [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), just one of many macros included with LeMP.)
 
 Example: Making simple classes
 ------------------------------
 
-I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying.
+It's not just design patterns. Any code pattern that involves unnecessary repetition is a sign of weakness in your programming language.
 
-A simple type isn't hard:
+I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying. A simple type isn't hard:
 
 	public class Person {
 		public string Name;
@@ -27,11 +27,11 @@ A simple type isn't hard:
 		public List<Person> SubItems;
 	};
 
-But there are major limitations:
+But this simplicity has a big price:
 
 - There's no constructor, so you must always use property-initializer syntax to create one of these. That could get old fast. And if you ever _add_ a constructor later, you might have to change every place where you created one of those types.
-- Since there's no constructor, you can't easily validate that valid values are used for the fields.
-- Many of the best developers say you should make your fields read-only by default. And the style police say you should make them properties instead of fields.
+- Since there's no constructor, you can't easily validate that valid values are used for the fields, and none of your fields have mandatory initialization.
+- Many of the best developers say you should make your fields read-only if possible. And the style police say you should make them properties instead of fields.
 
 So, you probably need a constructor. But adding a constructor is a pain!
 
@@ -73,7 +73,7 @@ Your output file will contain exactly the code listed above, and there is no rep
 
 What's going on? Enhanced C# includes two syntax changes to support this, each with a supporting macro:
 
-1. To reduce repetition and ambiguity, Enhanced C# allows `this` as a constructor name (the [D language](http://dlang.org) has the same feature). A macro changes `this` into `Person` so that plain C# understands it.
+1. To reduce repetition and ambiguity, Enhanced C# allows `this` as a constructor name (a feature borrowed from the [D language](http://dlang.org)). A macro changes `this` into `Person` so that plain C# understands it.
 2. Enhanced C# allows property definitions as method parameters (or wherever an expression is allowed). A macro is programmed to notice properties, and visibility attributes (like `public`) on variables. When it notices one of those, it responds by transferring it out to the class, and putting a normal argument in the constructor. Finally, it adds a statement at the beginning of the constructor, to assign the value of the argument to the property or field.
 
 Learn more
@@ -83,8 +83,9 @@ Learn more about LeMP in these published articles:
 
 - [Avoid tedious coding with LeMP, part 1](avoid-tedium-with-LeMP.html)
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
+- [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](lemp-pattern-matching.html)
 
-Some use cases and built-in macros (such as pattern matching and algebraic data types for C#) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
+Some use cases and built-in macros (such as `on_finally`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
 
 Installation
 ------------

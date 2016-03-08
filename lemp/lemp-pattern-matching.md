@@ -1,5 +1,5 @@
 ---
-title: C# Gets Pattern Matching & Algebraic Data Types
+title: C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges
 layout: article
 date: 7 Mar 2016
 tagline: Well, not literally. LeMP/EC# supports pattern matching, ADTs, and tuples, so C# gets all that by transitivity.
@@ -29,7 +29,7 @@ else if (obj is DataPacket)
 }
 ~~~
 
-I bet you've written code like this. Some of you write this style of code a lot. But now LeMP has a shortcut for patterns like these: it's called `match`. It's like `switch`, but for pattern-matching. With `match`, the code above becomes simply
+I bet you've written code like this. Some of you write this style of code a lot. But now LeMP has a shortcut for patterns like these: it's called `match`. It's like `switch`, but for "pattern matching". With `match`, the code above becomes simply
 
 ~~~csharp
 match (connection.DownloadNextObject()) {
@@ -433,8 +433,8 @@ void DrawIfButton(Graphics g, Widget widget) {
 }
 ~~~
 
-More Pattern Matching
----------------------
+Pattern Matching: basic features
+--------------------------------
 
 What else can you do with pattern matching? For one thing, you can do _equality testing_ and _range testing_, like this:
 
@@ -458,29 +458,152 @@ static void FavoriteNumberGame()
 }
 ~~~
 
-Several features are shown here:
+This example illustrates several things.
 
-- Enhanced C# allows `case` to have multiple _separate_ cases separated by commas, such as `1..10, 20, 30`. Unfortunately, when translating your code to plain C#, it is often impossible for two separate patterns to lead into the same _handler_, and therefore the output will duplicate the handler. For example, the first `case` above is translated as 
+**Single evaluation**: as you would expect, `match` makes a temporary variable so that `Console.ReadLine()` is only called once.
 
-		if (7.Equals(tmp_0)) {
-			Console.WriteLine("You lucky bastard!");
+**Priority order**: Earlier cases are tested before lower cases, so `5` matches `case 5, 10` and not `case 1..<10`.
+
+**Equality testing**: You can use not just literals like `case 5` but expressions like `case (x + y):`. In the output, `case 5` becomes `if (5.Equals(matchExpr))`. Why is this particular equality test used? Consider the alternatives:
+
+- `if (matchExpr == 5)` works in fewer cases. Specifically, consider `match((object)5) {case 5:}`. `5.Equals((object)5)` returns true, but `(object)5 == 5` is a compile-time error. Thus `Equals` is more flexible.
+- `if (object.Equals(matchExpr, 5))` would involve boxing and dynamic downcasting.
+- `if (matchExpr.Equals(5))` would cause `NullReferenceException` in case `matchExpr` is null.
+
+The form only changes if you write `case null`; this becomes `if (matchExpr == null)`. **Note**: other than the literal null, which is allowed, it is your responsibility to ensure that the cases themselves do not evaluate to null. For reasons of performance and epistemology, when you use non-literal expressions like `case X`, `match` does not check whether `X` itself is null (in fact, it cannot tell whether `X` has a nullable type).
+
+**Default**: Like `switch`, `match` can have a `default:`, but it must come last. It's equivalent to `case _:`.
+
+**Multiple patterns per `case`**: Enhanced C# allows `case` to have multiple _separate_ cases separated by commas, such as `1..10, 20, 30`. Unfortunately, when translating your code to plain C#, it is often impossible for two separate patterns to lead into the same _handler_, and therefore the output will duplicate the handler. For example, the first `case` above is translated as 
+
+~~~csharp
+if (7.Equals(tmp_0)) {
+	Console.WriteLine("You lucky bastard!");
+	break;
+}
+if (777.Equals(tmp_0)) {
+	Console.WriteLine("You lucky bastard!");
+	break;
+}
+~~~
+
+In this particular example it _is_ possible to avoid duplicating the `Console.WriteLine` statement, but in most nontrivial patterns it is not (at least not without analysis capabilities LeMP doesn't have), so `match` doesn't even try. Therefore, if possible, avoid writing large code blocks inside a `case` with multiple patterns.
+
+**Range operators**: Enhanced C# defines binary and unary operators named `..<` and `...`, as well as a binary `in` operator that is intended to test whether a value is contained in a collection.
+	- `..<` is the exclusive range operator: it means you want the number on the right side to be excluded from the range. `case 1..<10` is translated to something like `if (tmp_0.IsInRangeExcl(1, 10))`. `IsInRangeExcl` should be an extension method, either one you define yourself or one of the extension methods in Loyc.Essentials.dll. This operator has two names, in fact: you can write `1..10`, as used in [Rust](https://www.rust-lang.org/), or `1..<10`, as used in [Swift](http://oleb.net/blog/2015/09/swift-ranges-and-intervals/). The lexer treats them as the same operator (named `..`).
+	- `...` is the inclusive range operator: it means you want the number on the right side to be included in the range. For example, `case 10...99` is translated to something like `if (tmp_0.IsInRangeIncl(10, 99))`. (This operator's name is also three dots in Rust and Swift.)
+
+You can use underscores to express an open-ended range, e.g. `case _..-1`. `..<` and `...` also exist as unary operators, so you can write `...-1` instead. However, there is no corresponding suffix operator: you must write `100..._`, not `100...`. All of these are translated to the appropriate binary operator (e.g. `_...9` becomes `matchExpr <= 9`).
+
+### A fancy example ###
+
+~~~csharp
+match (obj) {
+	case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
+		Circle(size, x, y);
+}
+~~~
+
+When I wrote this article I tried explaining what this does, but the explanation was so long I decided it would be better just to show the output code:
+
+~~~csharp
+if (obj is Shape) {
+	Shape tmp_0 = (Shape) obj;
+	if (ShapeType.Circle.Equals(tmp_0.Item1)) {
+		var size = tmp_0.Item2;
+		var tmp_1 = tmp_0.Location;
+		if (tmp_1 is Point<int>) {
+			Point<int> p = (Point<int>) tmp_1;
+			var x = p.Item1;
+			var y = p.Item2;
+			if (x > y) {
+				Circle(size, x, y);
+				break;
+			}
+		}
+	}
+}
+~~~
+
+You can see several more features in action here:
+
+**Unary and binary "is" operators**: `is Type` is a new operator added to Enhanced C# for the specific purpose of supporting pattern matching. It means "check if the `match_expression is Type` and if so, downcast to `Type` and make a temporary variable to hold the result". The binary version of `is` allows a few different things on the left-hand side:
+
+- `$newVar is Type` creates a new variable `Type newVar` to hold the downcasted value
+- `ref var is Type` sets an _existing_ variable called `var` to the downcasted value
+- `low..hi is Type` holds the downcasted the value in a temporary variable, then checks if it's in the specified range
+- `otherExpr is Type` (where `otherExpr` matches none of the other patterns above) holds the downcasted the value in a temporary variable, then checks if `otherExpr` is equal to it.
+
+**Subpatterns in parentheses**: After the `is` part of the pattern, you can write "inner patterns" or "subpatterns" in parentheses. For example, in `case A(B(C), D)`, `A` has subpatterns `B(C)` and `D`, and `D` is a subpattern of `B`.  Each subpattern is treated the same way as the outermost pattern, except that subpatterns can specify a property name (e.g. `Location:`) and the outer pattern cannot.
+
+**Positional and named properties**: in this example, the first two components of `Shape` are treated as "positional" properties while the third component is a "named" property (its name is `Location`). A named property consists of an identifier followed by colon (`:`) such as `Location:`. If you don't provide a name, `match` uses a numbered property instead (`Item1`, `Item2`, etc.). So in this example the `Shape.Item1` property is matched against the subpattern `ShapeType.Circle`, and `Shape.Item2` is matched against `$size`.
+
+Please note that you can only name simple properties, not nested properties, methods or indexer properties. For example, you might be tempted to write `case is Foo(Bar(): 777)` to find out if the `Foo.Bar()` method returns `777`, but this is not allowed because it is a syntax error. However, you can write `case $foo is Foo && foo.Bar() == 777` instead.
+
+**Variable binding**: Use the `$` operator to create a new variable and assign it to the value of part of an object. In this case the new `size` variable is assigned to the `Shape.Item2` property of `obj`, the new `p` variable is assigned to `Shape.Location`, and so forth.
+
+**Extra conditions**: You can use the `&&` operator on the main pattern or subpatterns to add extra conditions to a pattern, e.g. given
+
+    case is Size(Width: $w, Height: $h && h > 100) && w > h:
+		DoSomethingWith(w, h);
+
+The output is something like
+
+	if (obj is Size) {
+		Size tmp_2 = (Size) obj;
+		var w = tmp_2.Width;
+		var h = tmp_2.Height;
+		if (h > 100 && w > h) {
+			DoSomethingWith(w, h);
 			break;
 		}
-		if (777.Equals(tmp_0)) {
-			Console.WriteLine("You lucky bastard!");
-			break;
-		}
-	
-	In this particular example it _is_ possible to avoid duplicating the `Console.WriteLine` statement, but in most nontrivial patterns it is not possible, so `match` doesn't even try. Therefore, if possible, avoid writing large code blocks inside a `case` with multiple patterns.
+	}
 
-- Enhanced C# defines binary and unary operators named `..<` and `...`.
-	- `..<` is the exclusive range operator: it means you want the number on the right side to be excluded from the range. For example, `case 1..<10` is translated to something like `if (tmp_0 >= 1 && tmp_0 < 10)`. This operator has two names, in fact: you can write `1..10`, as used in [Rust](https://www.rust-lang.org/), or `1..<10`, as used in [Swift](http://oleb.net/blog/2015/09/swift-ranges-and-intervals/). The lexer treats them as the same operator.
-	- `...` is the inclusive range operator: it means you want the number on the right side to be included in the range. For example, `case 10...99` is translated to something like `if (tmp_0 >= 10 && tmp_0 <= 99)`. (This operator's name is also three dots in Rust and Swift.)
+**Rough left-to-right evaluation**: Patterns are evaluated roughly left-to-right, except that if you're using a binary `is` condition such as `$x is Type`, the type test on the right-hand side (obviously) runs before the test or binding on the left-hand side.
 
-To express an open-ended range, you can use underscores, e.g. `case _...-1` translates to `if (tmp_0 <= -1)`. Please note that `..<` and `...` also exist as unary operators, so you can write `...-1` instead. However, there is no corresponding suffix operator: you must write `100..._`, not `100...`.
+### cases with "in" operator ###
 
+Earlier you saw that you could write `case lo..hi` to find out if a value is within a range. If you want to combine a range test with a variable binding, an equality test, or subpattern matching, you can use the `in` operator. Here are some examples:
 
+	match(value) {
+		// Is value a double between 0 and 1 ?
+		case $newVar is double in 0.0...1.0:
+			ZeroToOne(newVar);
+		// This one is tricky! It requires that `coefficient.Equals(value) && value in 0...1`
+		case coefficient in 0.0...1.0:
+			ZeroToOne(newVar);
+		// Due to the precedence rules of EC#, if you combine `in` with 
+		// subpatterns, the subpatterns must come before `in`.
+		case _ is Point(X: $x, Y: $y) in polygon:
+			CollisionDetected(x, y);
+		// However, when you add conditions with `&&`, they still come last.
+		case is Size(Width: $w, Height: $h) in acceptableSizes && w > h:
+			SizeIsOK(w, h);
+	}
 
-It is recommended to use dollar signs ($) to mark new variables. However, 
+### Standalone ranges and `in` operator ###
 
-UNFINISHED
+The `..<`, `...`, and `in` operators are not limited to `match`. You can use them in ordinary expressions, like this:
+
+	if (!(index in 0..list.Count))
+		throw new ArgumentOutOfRangeException("index");
+
+As before, the `x in lo..<hi` pattern translates to `x.IsInRangeExcl(lo, hi)` while the `x in lo...hi` pattern translates to `x.IsInRangeIncl(lo, hi)`. You can also use `in` by itself, or use the range operators by themselves:
+
+	var range = 0..list.Count;
+	if (!(index in range))
+		throw new ArgumentOutOfRangeException("index");
+
+This is translated to
+
+	var range = Range.ExcludeHi(0, list.Count);
+	if (!range.Contains(index))
+		throw new ArgumentOutOfRangeException("index");
+
+Loyc.Essentials.dll contains all of the methods shown here; `IsInRangeExcl` is an extension method in class `Loyc.In`, while the `Range` is currently placed in the `Loyc.Collections` namespace and returns a variable of type `NumRange<Num,Math>` where `Num` is a numeric type such as `int`, and `Math` is a helper type that allows `NumRange` to perform arithmetic on that numeric type (it is needed since .NET does not define math interfaces for built-in types.) It is worth noting that `NumRange` implements `IReadOnlyList<Num>`, so you can use it in `foreach` loops and LINQ expressions.
+
+Since the expression `x in range` just calls `range.Contains(x)`, it also works with standard collection types.
+
+### Wrapping up ###
+
+I think that's everything. I hope these features make you more productive. Enjoy!
