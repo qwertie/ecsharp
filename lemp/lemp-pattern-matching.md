@@ -388,8 +388,10 @@ var h = tmp_0.Item4;
 
 However, EC# does not help you write tuple _types_. For example, to return `(5,"five")` from a function, the return type is `Tuple<int, string>` - there is no shortcut.
 
-Pattern Matching With Tuples
-----------------------------
+More Pattern Matching
+---------------------
+
+### With tuples ###
 
 `match`, too, supports tuples and other things that have `Item1`, `Item2`, etc.:
 
@@ -433,8 +435,8 @@ void DrawIfButton(Graphics g, Widget widget) {
 }
 ~~~
 
-Pattern Matching: basic features
---------------------------------
+Simple matching
+---------------
 
 What else can you do with pattern matching? For one thing, you can do _equality testing_ and _range testing_, like this:
 
@@ -497,6 +499,8 @@ You can use underscores to express an open-ended range, e.g. `case _..-1`. `..<`
 
 ### A fancy example ###
 
+Here's a much more complicated example that shows most of the features of `match`:
+
 ~~~csharp
 match (obj) {
 	case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
@@ -536,7 +540,7 @@ You can see several more features in action here:
 
 **Subpatterns in parentheses**: After the `is` part of the pattern, you can write "inner patterns" or "subpatterns" in parentheses. For example, in `case A(B(C), D)`, `A` has subpatterns `B(C)` and `D`, and `D` is a subpattern of `B`.  Each subpattern is treated the same way as the outermost pattern, except that subpatterns can specify a property name (e.g. `Location:`) and the outer pattern cannot.
 
-**Positional and named properties**: in this example, the first two components of `Shape` are treated as "positional" properties while the third component is a "named" property (its name is `Location`). A named property consists of an identifier followed by colon (`:`) such as `Location:`. If you don't provide a name, `match` uses a numbered property instead (`Item1`, `Item2`, etc.). So in this example the `Shape.Item1` property is matched against the subpattern `ShapeType.Circle`, and `Shape.Item2` is matched against `$size`.
+**Positional and named properties**: In this example, the first two components of `Shape` are treated as "positional" properties while the third component is a "named" property (its name is `Location`). A named property consists of an identifier followed by colon (`:`) such as `Location:`. If you don't provide a name, `match` uses a numbered property instead (`Item1`, `Item2`, etc.). So in this example the `Shape.Item1` property is matched against the subpattern `ShapeType.Circle`, and `Shape.Item2` is matched against `$size`.
 
 Please note that you can only name simple properties, not nested properties, methods or indexer properties. For example, you might be tempted to write `case is Foo(Bar(): 777)` to find out if the `Foo.Bar()` method returns `777`, but this is not allowed because it is a syntax error. However, you can write `case $foo is Foo && foo.Bar() == 777` instead.
 
@@ -561,25 +565,27 @@ The output is something like
 
 **Rough left-to-right evaluation**: Patterns are evaluated roughly left-to-right, except that if you're using a binary `is` condition such as `$x is Type`, the type test on the right-hand side (obviously) runs before the test or binding on the left-hand side.
 
-### cases with "in" operator ###
+### Cases using the "in" operator ###
 
 Earlier you saw that you could write `case lo..hi` to find out if a value is within a range. If you want to combine a range test with a variable binding, an equality test, or subpattern matching, you can use the `in` operator. Here are some examples:
 
-	match(value) {
-		// Is value a double between 0 and 1 ?
-		case $newVar is double in 0.0...1.0:
-			ZeroToOne(newVar);
-		// This one is tricky! It requires that `coefficient.Equals(value) && value in 0...1`
-		case coefficient in 0.0...1.0:
-			ZeroToOne(newVar);
-		// Due to the precedence rules of EC#, if you combine `in` with 
-		// subpatterns, the subpatterns must come before `in`.
-		case _ is Point(X: $x, Y: $y) in polygon:
-			CollisionDetected(x, y);
-		// However, when you add conditions with `&&`, they still come last.
-		case is Size(Width: $w, Height: $h) in acceptableSizes && w > h:
-			SizeIsOK(w, h);
-	}
+~~~csharp
+match(value) {
+	// Is value a double between 0 and 1 ?
+	case $newVar is double in 0.0...1.0:
+		ZeroToOne(newVar);
+	// This one is tricky! It requires that `coefficient.Equals(value) && value in 0...1`
+	case coefficient in 0.0...1.0:
+		ZeroToOne(newVar);
+	// Due to the precedence rules of EC#, if you combine `in` with 
+	// subpatterns, the subpatterns must come before `in`.
+	case _ is Point(X: $x, Y: $y) in polygon:
+		CollisionDetected(x, y);
+	// However, when you add conditions with `&&`, they still come last.
+	case is Size(Width: $w, Height: $h) in acceptableSizes && w > h:
+		SizeIsOK(w, h);
+}
+~~~
 
 ### Assigning to an existing variable with `ref` ###
 
@@ -599,20 +605,26 @@ It's also fair to ask why you have to write `case $x is Foo` instead of simply `
 
 The `..<`, `...`, and `in` operators are not limited to `match`. You can use them in ordinary expressions, like this:
 
+~~~csharp
 	if (!(index in 0..list.Count))
 		throw new ArgumentOutOfRangeException("index");
+~~~
 
 As before, the `x in lo..<hi` pattern translates to `x.IsInRangeExcl(lo, hi)` while the `x in lo...hi` pattern translates to `x.IsInRangeIncl(lo, hi)`. You can also use `in` by itself, or use the range operators by themselves:
 
+~~~csharp
 	var range = 0..list.Count;
 	if (!(index in range))
 		throw new ArgumentOutOfRangeException("index");
+~~~
 
 This is translated to
 
+~~~csharp
 	var range = Range.ExcludeHi(0, list.Count);
 	if (!range.Contains(index))
 		throw new ArgumentOutOfRangeException("index");
+~~~
 
 Loyc.Essentials.dll contains all of the methods shown here; `IsInRangeExcl` is an extension method in class `Loyc.In`, while the `Range` is currently placed in the `Loyc.Collections` namespace and returns a variable of type `NumRange<Num,Math>` where `Num` is a numeric type such as `int`, and `Math` is a helper type that allows `NumRange` to perform arithmetic on that numeric type (it is needed since .NET does not define math interfaces for built-in types.) It is worth noting that `NumRange` implements `IReadOnlyList<Num>`, so you can use it in `foreach` loops and LINQ expressions.
 
@@ -621,3 +633,5 @@ Since the expression `x in range` just calls `range.Contains(x)`, it also works 
 ### Wrapping up ###
 
 I think that's everything. I hope these features make you more productive. Enjoy!
+
+To learn more or download LeMP, visit the [LeMP home page](/lemp).

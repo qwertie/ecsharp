@@ -19,6 +19,33 @@ Example: Making simple classes
 
 It's not just design patterns. Any code pattern that involves unnecessary repetition is a sign of weakness in your programming language.
 
+### Example: using ###
+
+A really simple example is 'using' statements:
+
+~~~csharp
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using Loyc.Collections;
+using Loyc.MiniTest;
+using Loyc.Syntax;
+~~~
+
+Luckily, Visual Studio can add these for us. But wouldn't it be nice if half the screen wasn't 'using' statements every time you open a file? There is a LeMP macro that lets you collapse these onto a couple of lines:
+
+~~~csharp
+using System(.Linq, .Text, .Collections(, .Generic), .IO, );
+using Loyc(.Collections, .MiniTest, .Syntax);
+~~~
+
+The comma `,` before the closing `)` adds an "empty" parameter to the list, which indicates that `using System` itself is one of the outputs you want to produce.
+
+### Example: Small data types ###
+
 I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying. A simple type isn't hard:
 
 	public class Person {
@@ -62,14 +89,15 @@ LeMP solves these problems with a combination of (1) a macro, and (2) a little s
 	public class Person
 	{
 		public this(
-			public string Name           { get; },
-			public DateTime DateOfBirth  { get; },
-			public List<Person> SubItems { get; }) {
+			public string Name           { get; private set; },
+			public DateTime DateOfBirth  { get; private set; },
+			public List<Person> SubItems { get; private set; })
+		{
 			// TODO: Add validation code
 		}
 	};
 
-Your output file will contain exactly the code listed above, and there is no repetition except for `public .. { get; }` (but you might not want everything to be a public property anyway). Great! 
+Your output file will contain exactly the code listed above, and there is no repetition except for `public .. { get; private set; }` (but you might not want everything to be a public property anyway, and if you're using C# 6.0 / VS2015 you can drop the `private set` part). Great! 
 
 What's going on? Enhanced C# includes two syntax changes to support this, each with a supporting macro:
 
