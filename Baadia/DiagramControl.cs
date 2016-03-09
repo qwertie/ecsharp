@@ -513,8 +513,8 @@ namespace BoxDiagrams
 					_focusShape.OnKeyPress(e);
 				} else if (e.KeyChar >= 32 && _lastClickLocation != null) {
 					var pt = _lastClickLocation.Value;
-					int w = MathEx.InRange(Width / 4, 100, 400);
-					int h = MathEx.InRange(Height / 8, 50, 200);
+					int w = Range.PutInRange(Width / 4, 100, 400);
+					int h = Range.PutInRange(Height / 8, 50, 200);
 					var newShape = new TextBox(new BoundingBox<float>(pt.X - w / 2, pt.Y, pt.X + w / 2, pt.Y + h)) {
 						Text = e.KeyChar.ToString(),
 						BoxType = BoxType.Borderless,

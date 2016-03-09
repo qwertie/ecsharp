@@ -17,8 +17,8 @@ namespace LeMP
 			"1. `x in _..hi` and `x in ..hi` become `x.IsInRangeExcl(hi)`\n"+
 			"2. `x in _...hi` and `x in ...hi` become `x.IsInRangeIncl(hi)`\n"+
 			"3. `x in lo.._` and `x in lo..._` become simply `x >= lo`\n"+
-			"4. `x in lo..hi` becomes `x.IsInRangeExcl(lo, hi)`\n"+
-			"5. `x in lo...hi` becomes `x.IsInRangeIncl(lo, hi)`\n"+
+			"4. `x in lo..hi` becomes `x.IsInRangeExcludeHi(lo, hi)`\n"+
+			"5. `x in lo...hi` becomes `x.IsInRange(lo, hi)`\n"+
 			"6. `x in range` becomes `range.Contains(x)`\n"+
 			"The first applicable rule is used.", "#in")]
 		public static LNode In(LNode node, IMacroContext context)
@@ -31,22 +31,22 @@ namespace LeMP
 					matchCode(range) {
 						case $lo..$hi:
 							if (lo.IsIdNamed(__))
-								return quote($x.IsInRangeExcl($hi));
+								return quote($x < $hi);
 							else if (hi.IsIdNamed(__))
 								return quote($x >= $lo);
 							else
-								return quote($x.IsInRangeExcl($lo, $hi));
+								return quote($x.IsInRangeExcludeHi($lo, $hi));
 						case ..$hi:
-							return quote($x.IsInRangeExcl($hi));
+							return quote($x < $hi);
 						case $lo...$hi:
 							if (lo.IsIdNamed(__))
-								return quote($x.IsInRangeIncl($hi));
+								return quote($x <= $hi);
 							else if (hi.IsIdNamed(__))
 								return quote($x >= $lo);
 							else
-								return quote($x.IsInRangeIncl($lo, $hi));
+								return quote($x.IsInRange($lo, $hi));
 						case ...$hi:
-							return quote($x.IsInRangeIncl($hi));
+							return quote($x <= $hi);
 					}
 				}
 				return quote($range.Contains($x));
@@ -54,23 +54,28 @@ namespace LeMP
 			return null;
 		}
 
-		static LNode Range_Excl = quote(Range.Excl);
-		static LNode Range_Incl = quote(Range.Incl);
-		static LNode Range_Low  = quote(Range.Low);
+		static LNode Range_ExcludeHi = quote(Range.ExcludeHi);
+		static LNode Range_Inclusive = quote(Range.Inclusive);
+		static LNode Range_StartingAt  = quote(Range.StartingAt);
+		static LNode Range_UntilInclusive  = quote(Range.UntilInclusive);
+		static LNode Range_UntilExclusive  = quote(Range.UntilExclusive);
+		static LNode Range_Everything = quote(Range.Everything());
 
 		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "..")]
 		public static LNode RangeExcl(LNode node, IMacroContext context)
 		{
+			LNode lo = null;
 			matchCode(node) {
-				case $_($lo, $hi):
-					if (lo.IsIdNamed(__))
-						return quote($Range_Excl($hi));
+				case $_($(ref lo), $hi), $_($hi):
+					if (lo == null || lo.IsIdNamed(__))
+						if (hi.IsIdNamed(__))
+							return Range_Everything;
+						else
+							return quote($Range_UntilExclusive($hi));
 					else if (hi.IsIdNamed(__))
-						return quote($Range_Low($lo));
+						return quote($Range_StartingAt($lo));
 					else
-						return quote($Range_Excl($lo, $hi));
-				case $_($hi):
-					return quote($Range_Excl($hi));
+						return quote($Range_ExcludeHi($lo, $hi));
 			}
 			return null;
 		}
@@ -78,16 +83,18 @@ namespace LeMP
 		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "...")]
 		public static LNode RangeIncl(LNode node, IMacroContext context)
 		{
+			LNode lo = null;
 			matchCode(node) {
-				case $_($lo, $hi):
-					if (lo.IsIdNamed(__))
-						return quote($Range_Incl($hi));
+				case $_($(ref lo), $hi), $_($hi):
+					if (lo == null || lo.IsIdNamed(__))
+						if (hi.IsIdNamed(__))
+							return Range_Everything;
+						else
+							return quote($Range_UntilInclusive($hi));
 					else if (hi.IsIdNamed(__))
-						return quote($Range_Low($lo));
+						return quote($Range_StartingAt($lo));
 					else
-						return quote($Range_Incl($lo, $hi));
-				case $_($hi):
-					return quote($Range_Incl($hi));
+						return quote($Range_Inclusive($lo, $hi));
 			}
 			return null;
 		}

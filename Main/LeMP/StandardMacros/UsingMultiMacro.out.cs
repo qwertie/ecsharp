@@ -13,6 +13,7 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Ecs;
+using S = Loyc.Syntax.CodeSymbols;
 namespace LeMP
 {
 	partial class StandardMacros
@@ -26,9 +27,9 @@ namespace LeMP
 						var list = GetNamespaces(stmt[0]);
 						if (list == null)
 							return null;
-						return LNode.Call(CodeSymbols.Splice, LNode.List(list.Select(namespc => LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
-					} catch (NotSupportedException) {
-						context.Write(Severity.Note, stmt, "Multi-using statement seems malformed. Correct example: `using (System, System.(Text, Linq));`");
+						return LNode.Call(CodeSymbols.Splice, LNode.List(list.Select(namespc => (LNode) LNode.Call(CodeSymbols.Import, LNode.List(namespc)))));
+					} catch (LogException exc) {
+						exc.Msg.WriteTo(context.Sink);
 					}
 			}
 			return null;
@@ -37,32 +38,31 @@ namespace LeMP
 		{
 			{
 				LNode outerNamespace;
-				VList<LNode> tupleArgs;
-				if (multiName.Calls(CodeSymbols.Tuple)) {
-					tupleArgs = multiName.Args;
-					return tupleArgs.SelectMany(expr => GetNamespaces(expr) ?? Range.Single(expr));
-				} else if (multiName.Calls(CodeSymbols.Dot, 2) && (outerNamespace = multiName.Args[0]) != null && multiName.Args[1].Calls(CodeSymbols.Tuple)) {
-					tupleArgs = multiName.Args[1].Args;
-					return tupleArgs.SelectMany(arg => (GetNamespaces(arg) ?? Range.Single(arg)).Select(subNS => MergeIdentifiers(outerNamespace, subNS)));
-				} else
-					return null;
+				VList<LNode> args;
+				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) {
+				} else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
+					args = multiName.Args;
+					if (args.Count == 1 && args[0].Calls(S.Braces))
+						args = args[0].Args;
+					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg)).Select(subNS => MergeIdentifiers(outerNamespace, subNS));
+				}
 			}
+			return null;
 		}
 		static LNode MergeIdentifiers(LNode left, LNode right)
 		{
-			if (right.IsId) {
-				if (right.Name.Name == "" || right.Name.Name == "#")
-					return left;
+			if (left == null)
+				return right;
+			if (right.IsIdNamed(S.Missing))
+				return left;
+			{
+				LNode right1, right2;
+				if (right.Calls(CodeSymbols.Dot, 1) && (right2 = right.Args[0]) != null)
+					return LNode.Call(CodeSymbols.Dot, LNode.List(left, right2));
+				else if (right.Calls(CodeSymbols.Dot, 2) && (right1 = right.Args[0]) != null && (right2 = right.Args[1]) != null)
+					return LNode.Call(CodeSymbols.Dot, LNode.List(MergeIdentifiers(left, right1), right2));
 				else
-					return LNode.Call(CodeSymbols.Dot, LNode.List(left, right));
-			} else {
-				{
-					LNode right1, right2;
-					if (right.Calls(CodeSymbols.Dot, 2) && (right1 = right.Args[0]) != null && (right2 = right.Args[1]) != null)
-						return MergeIdentifiers(LNode.Call(CodeSymbols.Dot, LNode.List(left, right1)), right2);
-					else
-						throw new NotSupportedException();
-				}
+					throw new LogException(Severity.Note, right, "Multi-using statement seems malformed. Correct example: `using System(.Text, .Linq));`");
 			}
 		}
 	}

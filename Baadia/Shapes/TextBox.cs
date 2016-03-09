@@ -78,10 +78,10 @@ namespace BoxDiagrams
 		{
 			VectorT vec = p - Center, vecAbs = vec.Abs();
 			bool vert = vecAbs.Y / Size.Y > vecAbs.X / Size.X;
-			Coord frac = MathEx.InRange((p.Y - Top) / (Bottom - Top), 0, 1);
+			Coord frac = Range.PutInRange((p.Y - Top) / (Bottom - Top), 0, 1);
 			Anchor a;
 			if (vert) {
-				frac = MathEx.InRange((p.X - Left) / (Right - Left), 0, 1);
+				frac = Range.PutInRange((p.X - Left) / (Right - Left), 0, 1);
 				if (vec.Y > 0) // bottom
 					a = Anchor(() => new PointT(Left + frac * (Right - Left), Bottom), 7 << 5);
 				else // top

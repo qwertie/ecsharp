@@ -21,12 +21,12 @@ namespace LeMP
 		{
 			TestEcs("using System.Collections;", 
 					"using System.Collections;");
-			TestEcs("using System.(Collections, Collections.Generic, Text, Linq);",
+			TestEcs("using System(.Collections, .Collections.Generic, .Text, .Linq);",
 				   @"using System.Collections;
 			         using System.Collections.Generic;
 			         using System.Text;
 			         using System.Linq;");
-			TestEcs("using System.(#, Collections.(#, Generic), Text, Linq);",
+			TestEcs("using System(, .Collections(, .Generic), .Text, .Linq);",
 				   @"using System;
 				     using System.Collections;
 			         using System.Collections.Generic;
@@ -70,30 +70,30 @@ namespace LeMP
 		[Test]
 		public void TestDotDotRanges()
 		{
-			TestEcs("A.B..C.D", "Range.Excl(A.B, C.D)");
-			TestEcs("A.B...C.D", "Range.Incl(A.B, C.D)");
-			TestEcs("..C.D", "Range.Excl(C.D)");
-			TestEcs("_..C.D", "Range.Excl(C.D)");
-			TestEcs("...C.D", "Range.Incl(C.D)");
-			TestEcs("_...C.D", "Range.Incl(C.D)");
-			TestEcs("A.B.._", "Range.Low(A.B)");
-			TestEcs("A.B..._", "Range.Low(A.B)");
+			TestEcs("A.B..C.D", "Range.ExcludeHi(A.B, C.D)");
+			TestEcs("A.B...C.D", "Range.Inclusive(A.B, C.D)");
+			TestEcs("..C.D", "Range.UntilExclusive(C.D)");
+			TestEcs("_..C.D", "Range.UntilExclusive(C.D)");
+			TestEcs("...C.D", "Range.UntilInclusive(C.D)");
+			TestEcs("_...C.D", "Range.UntilInclusive(C.D)");
+			TestEcs("A.B.._", "Range.StartingAt(A.B)");
+			TestEcs("A.B..._", "Range.StartingAt(A.B)");
 		}
 
 		[Test]
 		public void Test_in()
 		{
 			TestEcs("A + 1 in C.D;", "C.D.Contains(A + 1);");
-			TestEcs("A.B in x..y;",  "A.B.IsInRangeExcl(x, y);");
-			TestEcs("A.C in x...y;", "A.C.IsInRangeIncl(x, y);");
-			TestEcs("A.D in ..y;",   "A.D.IsInRangeExcl(y);");
-			TestEcs("A.E in _..y;",  "A.E.IsInRangeExcl(y);");
-			TestEcs("A.F in ...y;",  "A.F.IsInRangeIncl(y);");
-			TestEcs("A.G in _...y;", "A.G.IsInRangeIncl(y);");
+			TestEcs("A.B in x..y;",  "A.B.IsInRangeExcludeHi(x, y);");
+			TestEcs("A.C in x...y;", "A.C.IsInRange(x, y);");
+			TestEcs("A.D in ..y;",   "A.D < y;");
+			TestEcs("A.E in _..y;",  "A.E < y;");
+			TestEcs("A.F in ...y;",  "A.F <= y;");
+			TestEcs("A.G in _...y;", "A.G <= y;");
 			TestEcs("A.H in x.._;",  "A.H >= x;");
 			TestEcs("A.I in x..._;", "A.I >= x;");
-			TestEcs("A.J in (x..y);", "Range.Excl(x, y).Contains(A.J);");
-			TestEcs("A.K in (x...y);","Range.Incl(x, y).Contains(A.K);");
+			TestEcs("A.J in (x..y);", "Range.ExcludeHi(x, y).Contains(A.J);");
+			TestEcs("A.K in (x...y);","Range.Inclusive(x, y).Contains(A.K);");
 		}
 
 		[Test]
@@ -623,7 +623,7 @@ namespace LeMP
 					match (obj) {
 						case (Prop1: 1, Prop2: '2', Prop3: @@3): 
 							DoSomething1();
-						case (x, _, z):
+						case ($x, _, $z):
 							DoSomething1();
 							DoSomething2();
 					}",
@@ -646,7 +646,7 @@ namespace LeMP
 			int n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 					match (obj) {
-						case is Thing(is A, 2, C: c) && c > 3:
+						case is Thing(is A, 2, C: $c) && c > 3:
 							DoSomethingWith(c);
 					}",
 					@"do
@@ -667,10 +667,12 @@ namespace LeMP
 			n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 					match (obj) {
-						case is Shape(ShapeType.Circle, size, Location: p is Point<int>(x, y) && x > y):
+						case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
 							Circle(size, x, y);
+						case _:
+							Default();
 					}",
-				@"do
+				@"do {
 					if (obj is Shape) {
 						Shape tmp_1 = (Shape)obj;
 						if (ShapeType.Circle.Equals(tmp_1.Item1)) {
@@ -687,19 +689,23 @@ namespace LeMP
 							} 
 						}
 					}
-				while(false);"
+					{
+						Default();
+						break;
+					}
+				} while(false);"
 				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n + 1)));
 
 			n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 				match (Foo.Bar) {
-					case true: True();
+					case true || false: True();
 					case null:
 					default: Default();
 				}",
 				@"do {
 					var tmp_1 = Foo.Bar;
-					if (true.Equals(tmp_1)) {
+					if ((true || false).Equals(tmp_1)) {
 						True();
 						break;
 					}
@@ -721,7 +727,7 @@ namespace LeMP
 				SizeF size;
 				Point<int> p;
 				match (obj) {
-					case is Shape(ShapeType.Circle, ref size, Location: ref p is Point<int>(ref $x, $(ref y)) && x > y):
+					case is Shape(ShapeType.Circle, ref size, Location: ref p is Point<int>(ref x, $(ref y)) && x > y):
 						Circle(size, x, y);
 				}", @"
 				int x, y;
@@ -750,7 +756,7 @@ namespace LeMP
 			// Test two patterns on one case
 			TestEcs(@"
 				match (obj) {
-					case ((x), $y), ($y, (x)): DoSomethingWith(x, y);
+					case ((x), $y), ($y, x): DoSomethingWith(x, y);
 				}",
 				@"do {
 					if ((x).Equals(obj.Item1)) {
@@ -760,7 +766,7 @@ namespace LeMP
 					}
 					{
 						var y = obj.Item1;
-						if ((x).Equals(obj.Item2)) {
+						if (x.Equals(obj.Item2)) {
 							DoSomethingWith(x, y);
 							break;
 						}
@@ -776,25 +782,44 @@ namespace LeMP
 			int n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 				match (obj) {
-					case t is Thing(ref $r is double in x..y, c...d) in x..<y:
+					case $t is Thing(ref $r is double in x..y, c...d) in x..<y:
 						DoSomethingWith(t, r);
 				}",
 				@"do
 					if (obj is Thing) {
 						Thing t = (Thing)obj;
-						if (t.IsInRangeExcl(x, y)) {
-							var tmp_1 = t.Item1;
-							if (tmp_1 is double) {
-								r = (double)tmp_1;
-								if (r.IsInRangeExcl(x, y) && t.Item2.IsInRangeIncl(c, d)) {
-									DoSomethingWith(t, r);
-									break;
-								}
+						var tmp_1 = t.Item1;
+						if (tmp_1 is double) {
+							r = (double)tmp_1;
+							if (r.IsInRangeExcludeHi(x, y) && t.Item2.IsInRange(c, d) && t.IsInRangeExcludeHi(x, y)) {
+								DoSomethingWith(t, r);
+								break;
 							}
 						}
 					}
 				while(false);"
 				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
+
+			// Bug fix: This combination didn't work
+			n = StandardMacros.NextTempCounter;
+			TestEcs(@"
+				match (value) {
+					case is Point(X: $x, Y: $y) in polygon:
+						CollisionDetected(x, y);
+				}",
+				@"do
+					if (value is Point) {
+						Point tmp_1 = (Point) value;
+						var x = tmp_1.X;
+						var y = tmp_1.Y;
+						if (polygon.Contains(tmp_1)) {
+							CollisionDetected(x, y);
+							break;
+						}
+					}
+				while(false);"
+				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
+
 		}
 
 		[Test(Fails = "Macro not implemented")]

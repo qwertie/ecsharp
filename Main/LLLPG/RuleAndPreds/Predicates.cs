@@ -7,7 +7,6 @@ using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
-using Loyc.Math;
 using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
@@ -655,8 +654,8 @@ namespace Loyc.LLParserGenerator
 			foreach (var div in _divisions)
 			{
 				if (div.Slash &&
-					MathEx.IsInRange(armA, div.Left, div.Right - 1) &&
- 					MathEx.IsInRange(armB, div.Left, div.Right - 1) &&
+					Loyc.Range.IsInRange(armA, div.Left, div.Right - 1) &&
+					Loyc.Range.IsInRange(armB, div.Left, div.Right - 1) &&
 					(armA < div.Mid) != (armB < div.Mid))
 					return true;
 			}

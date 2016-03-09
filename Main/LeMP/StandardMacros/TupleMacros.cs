@@ -48,7 +48,7 @@ namespace LeMP
 
 			int? size = node.Args[0, F.Missing].Value as int?;
 			var rest = node.Slice(size != null ? 1 : 0);
-			if (!MathEx.IsInRange(rest.Count, 1, 2)) 
+			if (!Range.IsInRange(rest.Count, 1, 2)) 
 				return Reject(context, node, "Incorrect number of arguments");
 			var tupleCfg = Pair.Create(rest[0], rest.TryGet(1, null));
 			if (tupleCfg.A.Value == null)

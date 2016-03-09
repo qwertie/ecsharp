@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.5.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.6.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,7 +17,7 @@ using Loyc.Syntax.Lexing;
 namespace Samples
 {
 	using ADT;
-	[TestFixture] class Samples : Assert
+	[TestFixture] partial class Samples : Assert
 	{
 		public static void Run()
 		{
@@ -33,14 +33,21 @@ namespace Samples
 		}
 		[Test] public void RangeTest()
 		{
-			IsTrue(5.IsInRangeExcl(4, 6));
-			IsTrue(6.IsInRangeIncl(5, 6));
-			IsFalse(5.IsInRangeExcl(4, 5));
-			IsFalse(4.IsInRangeExcl(4, 3));
-			AreEqual(10, Range.Excl(1, 5).Sum());
-			AreEqual(15, Range.Incl(1, 5).Sum());
-			AreEqual(0, Range.Excl(1, 1).Sum());
-			AreEqual(0, Range.Incl(1, 0).Sum());
+			IsTrue(5.IsInRangeExcludeHi(4, 6));
+			IsTrue(6.IsInRange(5, 6));
+			IsFalse(5.IsInRangeExcludeHi(4, 5));
+			IsFalse(4.IsInRangeExcludeHi(4, 3));
+			AreEqual(10, Range.ExcludeHi(1, 5).Sum());
+			AreEqual(15, Range.Inclusive(1, 5).Sum());
+			AreEqual(0, Range.ExcludeHi(1, 1).Sum());
+			AreEqual(0, Range.Inclusive(1, 0).Sum());
+		}
+		[Test] public void PrintAllTheNames()
+		{
+			try {
+				PlayPen.PrintAllTheNames("..\\..\\Core\\Loyc.Essentials\\Utilities");
+			} catch {
+			}
 		}
 		static void FavoriteNumberGame()
 		{
@@ -91,7 +98,7 @@ namespace Samples
 					Console.WriteLine("Isn't that bad luck though?");
 					break;
 				}
-				if (tmp_0 >= 1 && tmp_0 < 10) {
+				if (tmp_0.IsInRangeExcludeHi(1, 10)) {
 					Console.WriteLine("Kind of boring, don't you think?");
 					break;
 				}
@@ -119,7 +126,7 @@ namespace Samples
 					Console.WriteLine("A prime choice.");
 					break;
 				}
-				if (tmp_0 >= 10 && tmp_0 <= 99) {
+				if (tmp_0.IsInRange(10, 99)) {
 					Console.WriteLine("Well... it's got two digits, I'll give you that much.");
 					break;
 				}
@@ -131,20 +138,6 @@ namespace Samples
 					Console.WriteLine("What are you, high? Like that number?");
 				}
 			} while (false);
-		}
-		static void NumberGuessingGame()
-		{
-			int num = new Random().Next(1, 101);
-			do {
-				Console.Write("Guess a number between 1 and 100: ");
-				try {
-					int guess = int.Parse(Console.ReadLine());
-					do {
-					} while (false);
-				} catch (Exception FormatException) {
-					Console.WriteLine("No, I want an integer.");
-				}
-			} while (true);
 		}
 	}
 }
@@ -548,7 +541,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 150: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 144: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -563,11 +556,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 155: (([\-])? [0-9A-Za-z])*
+		// Line 149: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 155: ([\-])?
+				// Line 149: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -579,14 +572,14 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		#line 163 "Samples.ecs"
+		#line 157 "Samples.ecs"
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);
 		#line default
 		UsernameChars(src);
-		// Line 168: ([.] UsernameChars)*
+		// Line 162: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -599,7 +592,7 @@ struct EmailAddress
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 172: ([.] DomainCharSeq)*
+		// Line 166: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {

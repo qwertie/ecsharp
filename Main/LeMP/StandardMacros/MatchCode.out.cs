@@ -71,10 +71,10 @@ namespace LeMP
 				}
 			}
 			if (cmc.NodeVars.Count > 0)
-				output.Add(F.Call(S.Var, Range.Single(F.Id("LNode")).Concat(cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
+				output.Add(F.Call(S.Var, ListExt.Single(F.Id("LNode")).Concat(cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
 			if (cmc.ListVars.Count > 0) {
 				LNode type = LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) "VList"), LNode.Id((Symbol) "LNode")));
-				output.Add(F.Call(S.Var, Range.Single(type).Concat(cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
+				output.Add(F.Call(S.Var, ListExt.Single(type).Concat(cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? LNode.Call(CodeSymbols.Assign, LNode.List(F.Id(kvp.Key), LNode.Call(CodeSymbols.Default, LNode.List(type)))).SetStyle(NodeStyle.Operator) : F.Id(kvp.Key)))));
 			}
 			if (output.Count == 0)
 				return ifStmt;

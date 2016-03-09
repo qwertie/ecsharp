@@ -50,7 +50,7 @@ namespace LeMP
 			            select F.Call(S.Assign, sym.Value, 
 			                   F.Call(S.Cast, F.Literal(sym.Key.Name), _Symbol))).ToList();
 			if (vars.Count > 0)
-				output.Insert(0, F.Call(S.Var, Range.Single(_Symbol).Concat(vars))
+				output.Insert(0, F.Call(S.Var, ListExt.Single(_Symbol).Concat(vars))
 					.WithAttrs(input.Attrs.Add(F.Id(S.Static)).Add(F.Id(S.Readonly))));
 			return F.Call(S.Splice, output);
 		}

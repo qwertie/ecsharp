@@ -189,7 +189,7 @@ namespace LeMP
 			Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode static_if(LNode @if, IMessageSink sink)
 		{
-			if (!MathEx.IsInRange(@if.ArgCount, 2, 3))
+			if (!Range.IsInRange(@if.ArgCount, 2, 3))
 				return null;
 			VList<LNode> conds = MacroProcessor.Current.ProcessSynchronously(@if.Args[0]);
 			object @bool;

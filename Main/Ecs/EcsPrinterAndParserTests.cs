@@ -452,6 +452,8 @@ namespace Loyc.Ecs
 			Stmt("([#partial] #var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
 			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partial, F.Id("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
+			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone()\n{\n  return Clone();\n}",
+				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
 		}
 
 		[Test]

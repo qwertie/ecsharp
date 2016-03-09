@@ -13,9 +13,10 @@ namespace Samples {
 	using ADT;
 
 	[TestFixture]
-	class Samples : Assert
+	partial class Samples : Assert
 	{
-		public static void Run() {
+		public static void Run()
+		{
 			RunTests.Run(new Samples());
 		}
 		[Test] public void ContainsTest()
@@ -37,6 +38,12 @@ namespace Samples {
 			AreEqual(0, (1..1).Sum());
 			AreEqual(0, (1...0).Sum());
 		}
+		[Test] public void PrintAllTheNames()
+		{
+			try {
+				PlayPen.PrintAllTheNames(@"..\..\Core\Loyc.Essentials\Utilities");
+			} catch {}
+		}
 		static void FavoriteNumberGame()
 		{
 			Console.Write("What's your favorite number? ");
@@ -53,19 +60,6 @@ namespace Samples {
 				case ...-1: Console.WriteLine("Oh, don't be so negative.");
 				default: Console.WriteLine("What are you, high? Like that number?");
 			}
-		}
-		static void NumberGuessingGame()
-		{
-			int num = new Random().Next(1, 101);
-			do {
-				Console.Write("Guess a number between 1 and 100: ");
-				on_error_catch (FormatException) {
-					Console.WriteLine("No, I want an integer.");
-				}
-				int guess = int.Parse(Console.ReadLine());
-				match (guess) {
-				}
-			} while(true);
 		}
 	}
 }

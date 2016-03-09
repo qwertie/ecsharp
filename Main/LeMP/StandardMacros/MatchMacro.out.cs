@@ -132,10 +132,6 @@ namespace LeMP
 					else
 						PutCond(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(cmpExpr, LNode.Id((Symbol) "Equals"))), LNode.List(input)));
 				}
-				if (inRange != null) {
-					bool exclRange = false;
-					PutCond(LNode.Call(CodeSymbols.In, LNode.List(input, inRange)).SetStyle(NodeStyle.Operator));
-				}
 				for (int itemIndex = 0; itemIndex < subPatterns.Count; itemIndex++) {
 					var subPattern = subPatterns[itemIndex];
 					LNode propName;
@@ -145,6 +141,9 @@ namespace LeMP
 					} else
 						propName = LNode.Id("Item" + (itemIndex + 1), subPattern);
 					GenCodeForPattern(LNode.Call(CodeSymbols.Dot, LNode.List(input, propName)), subPattern);
+				}
+				if (inRange != null) {
+					PutCond(LNode.Call(CodeSymbols.In, LNode.List(input, inRange)).SetStyle(NodeStyle.Operator));
 				}
 				foreach (var cond in conditions)
 					PutCond(cond);
@@ -163,48 +162,51 @@ namespace LeMP
 				varBinding = cmpExpr = isType = inRange = null;
 				for (int pass = 1; pass <= 3; pass++) {
 					LNode inRange2 = inRange, isType2 = isType;
-					if (pattern.Calls(CodeSymbols.In, 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null) {
-						pattern = cmpExprOrBinding;
-						if (inRange2 != null)
-							_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
-					} else if (pattern.Calls(CodeSymbols.Is, 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null || pattern.Calls((Symbol) "is", 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null) {
-						pattern = cmpExprOrBinding;
-						if (isType2 != null)
-							_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
-					} else if (pattern.Calls(CodeSymbols.Is, 1) && (isType = pattern.Args[0]) != null || pattern.Calls((Symbol) "is", 1) && (isType = pattern.Args[0]) != null) {
-						if (isType2 != null)
-							_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
-						goto doneAnalysis;
-					} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
-						inRange = pattern;
-						goto doneAnalysis;
-					} else if (pattern.Calls(CodeSymbols.Tuple)) {
-						subPatterns = pattern.Args;
-						cmpExprOrBinding = null;
-					} else if (pattern.Calls(S.Substitute, 1)) {
-						cmpExprOrBinding = pattern;
-						varBinding = pattern[0];
-						break;
-					} else if (!haveSubPatterns && pattern.IsCall && (pattern.Name == GSymbol.Empty || (!pattern.HasSpecialName && LesNodePrinter.IsNormalIdentifier(pattern.Name)))) {
-						haveSubPatterns = true;
-						subPatterns = pattern.Args;
-						pattern = pattern.Target;
-					} else {
-						cmpExprOrBinding = pattern;
+					{
+						LNode patternL;
+						if (pattern.Calls(CodeSymbols.In, 2) && (patternL = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null || pattern.Calls((Symbol) "in", 2) && (patternL = pattern.Args[0]) != null && (inRange = pattern.Args[1]) != null) {
+							pattern = patternL;
+							if (inRange2 != null)
+								_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
+						} else if (pattern.Calls(CodeSymbols.Is, 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null || pattern.Calls((Symbol) "is", 2) && (cmpExprOrBinding = pattern.Args[0]) != null && (isType = pattern.Args[1]) != null) {
+							pattern = cmpExprOrBinding;
+							if (isType2 != null)
+								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+						} else if (pattern.Calls(CodeSymbols.Is, 1) && (isType = pattern.Args[0]) != null || pattern.Calls((Symbol) "is", 1) && (isType = pattern.Args[0]) != null) {
+							if (isType2 != null)
+								_context.Write(Severity.Error, isType2, "match-case does not support multiple 'is' operators");
+							goto doneAnalysis;
+						} else if (pattern.Calls(CodeSymbols.DotDotDot, 2) || pattern.Calls(CodeSymbols.DotDot, 2) || pattern.Calls(CodeSymbols.DotDotDot, 1) || pattern.Calls(CodeSymbols.DotDot, 1)) {
+							inRange = pattern;
+							goto doneAnalysis;
+						} else if (pattern.Calls(CodeSymbols.Tuple)) {
+							subPatterns = pattern.Args;
+							cmpExprOrBinding = null;
+						} else {
+							LNode target = pattern.Target;
+							if (!haveSubPatterns && pattern.IsCall && (!target.IsId || target.AttrNamed(S.TriviaInParens) != null || (!target.HasSpecialName && LesNodePrinter.IsNormalIdentifier(target.Name)))) {
+								haveSubPatterns = true;
+								subPatterns = pattern.Args;
+								pattern = pattern.Target;
+							} else
+								cmpExprOrBinding = pattern;
+						}
 					}
 				}
 			doneAnalysis:
 				if (cmpExprOrBinding != null) {
-					if (cmpExprOrBinding.IsId && cmpExprOrBinding.AttrNamed(S.TriviaInParens) == null)
+					if (cmpExprOrBinding.Calls(S.Substitute, 1))
+						varBinding = cmpExprOrBinding[0];
+					else if (refExistingVar)
 						varBinding = cmpExprOrBinding;
+					else if ((varBinding ?? cmpExprOrBinding).IsIdNamed(__))
+						cmpExprOrBinding = varBinding = null;
 					if (varBinding != null) {
 						if (varBinding.AttrNamed(S.Ref) != null) {
 							refExistingVar = true;
 							varBinding = varBinding.WithoutAttrs();
 						}
-						if (varBinding.IsIdNamed(__))
-							varBinding = cmpExprOrBinding = null;
-						else if (!varBinding.IsId) {
+						if (!varBinding.IsId) {
 							_context.Write(Severity.Error, varBinding, "Invalid variable name in match-case: {0}", varBinding);
 							varBinding = null;
 						}

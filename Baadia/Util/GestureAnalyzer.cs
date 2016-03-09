@@ -99,7 +99,7 @@ namespace Util.WinForms
 		public DragPoint(Point<float> p, int ms, IList<DragPoint> prevPts)
 		{
 			Point = p;
-			MsecSincePrev = (ushort)MathEx.InRange(ms, 0, 65535);
+			MsecSincePrev = (ushort)Range.PutInRange(ms, 0, 65535);
 			//RootSecPer1000px = MathEx.Sqrt(SecPer1000px(Point, ms, prevPts));
 			AngleMod256 = (byte)(prevPts.Count == 0 ? 0 : (int)
 				((Point.Sub(prevPts[prevPts.Count - 1].Point)).Angle() * (128.0 / Math.PI)));

@@ -6,6 +6,7 @@ using Loyc;             // For Symbol
 using Loyc.Collections; // For VList<LNode>
 using Loyc.Syntax;      // For LNode
 using Loyc.Ecs;         // For EcsLanguageService
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
@@ -23,11 +24,10 @@ namespace LeMP
 					if (list == null)
 						return null;
 					return quote(#splice(
-						$(.. list.Select(namespc => quote { using $namespc; }))
+						$(.. list.Select(namespc => (LNode)quote { using $namespc; }))
 					));
-				} catch (NotSupportedException) {
-					context.Write(Severity.Note, stmt, 
-						"Multi-using statement seems malformed. Correct example: `using (System, System.(Text, Linq));`");
+				} catch (LogException exc) {
+					exc.Msg.WriteTo(context.Sink);
 				}
 			}
 			return null;
@@ -35,35 +35,33 @@ namespace LeMP
 
 		static IEnumerable<LNode> GetNamespaces(LNode multiName) {
 			matchCode(multiName) {
-				case ($(..tupleArgs),): // a tuple
-					return tupleArgs.SelectMany(expr => 
-						GetNamespaces(expr) ?? Range.Single(expr));
-				case $outerNamespace.($(..tupleArgs),): // dot operator ending in a tuple
-					return tupleArgs.SelectMany(arg =>
-						(GetNamespaces(arg) ?? Range.Single(arg)).Select(subNS => 
-							MergeIdentifiers(outerNamespace, subNS)));
-				default:
-					return null;
+				case @`.`($(.._)), #of($(.._)):
+					// ignore complex identifier
+				case $outerNamespace($(..args)):
+					// Allow Namespace { stuff; } as alternate notation; just ignore the braces
+					if (args.Count == 1 && args[0].Calls(S.Braces))
+						args = args[0].Args;
+
+					return args.SelectMany(arg => GetNamespaces(arg) ?? RangeExt.Single(arg))
+					           .Select(subNS => MergeIdentifiers(outerNamespace, subNS));
 			}
+			return null;
 		}
 		static LNode MergeIdentifiers(LNode left, LNode right)
 		{
-			// '.' is a binary operator, so we can't directly merge dotted identifiers.
-			// Given e.g. System.(Collections.Generic,), we'll use recursion to go from 
-			//   System => System.Collections => System.Collections.Generic
-			if (right.IsId) {
-				if (right.Name.Name == "" || right.Name.Name == "#")
-					return left;
-				else
-					return quote($left.$right);
-			} else {
-				matchCode (right) {
-					case $right1.$right2:
-						return MergeIdentifiers(quote($left.$right1), right2);
-					default:
-						throw new NotSupportedException();
-				}
+			if (left == null)
+				return right;
+			if (right.IsIdNamed(S.Missing))
+				return left;
+			matchCode (right) {
+				case .$right2:
+					return quote($left . $right2);
+				case $right1.$right2:
+					return quote($(MergeIdentifiers(left, right1)) . $right2);
+				default:
+					throw new LogException(Severity.Note, right, "Multi-using statement seems malformed. Correct example: `using System(.Text, .Linq));`");
 			}
 		}
 	}
 }
+

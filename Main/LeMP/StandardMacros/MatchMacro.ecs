@@ -172,11 +172,6 @@ namespace LeMP
 						PutCond(quote( $cmpExpr.Equals($input) ));
 				}
 				
-				if (inRange != null) {
-					bool exclRange = false;
-					PutCond(quote( $input in $inRange ));
-				}
-
 				// Generate code for subpatterns
 				for (int itemIndex = 0; itemIndex < subPatterns.Count; itemIndex++) {
 					var subPattern = subPatterns[itemIndex];
@@ -192,6 +187,10 @@ namespace LeMP
 						propName = LNode.Id("Item" + (itemIndex+1), subPattern);
 				
 					GenCodeForPattern(quote( $input.$propName ), subPattern);
+				}
+
+				if (inRange != null) {
+					PutCond(quote( $input in $inRange ));
 				}
 
 				foreach(var cond in conditions)
@@ -237,19 +236,12 @@ namespace LeMP
 				// "X is T in R" and "X in R is T" are equivalent), and keep in mind 
 				// that operator trees like "A in B" are nearly identical to prefix-
 				// calls like "foo(A, B)" except for the call target and the `BaseStyle`. 
-				//
-				// It's very tempting to detect NodeStyle.PrefixNotation to distinguish, 
-				// say, A.B<C> from id(A, B, C), but I'm reluctant to do so. BaseStyle 
-				// is by convention "unsemantic" and not guaranteed to be preserved 
-				// across serializations or supported the same way by different parsers. 
-				// So instead of asking "is this in PrefixNotation?" I ask "does the 
-				// target appear to be a normal identifier?" 
 				for (int pass = 1; pass <= 3; pass++) {
 					LNode inRange2 = inRange, isType2 = isType;
 					matchCode(pattern) {
-						case $(ref cmpExprOrBinding) in $(ref inRange), // EC#
-							 $(ref cmpExprOrBinding) `in` $(ref inRange): // LES
-							pattern = cmpExprOrBinding;
+						case $patternL in $(ref inRange),   // EC#
+							 $patternL `in` $(ref inRange): // LES
+							pattern = patternL;
 							if (inRange2 != null)
 								_context.Write(Severity.Error, inRange2, "match-case does not support multiple 'in' operators");
 						case $(ref cmpExprOrBinding) is $(ref isType),   // EC#
@@ -269,36 +261,44 @@ namespace LeMP
 							subPatterns = pattern.Args;
 							cmpExprOrBinding = null;
 						default:
-							if (pattern.Calls(S.Substitute, 1)) {
-								cmpExprOrBinding = pattern;
-								varBinding = pattern[0];
-								break;
-							} else if (!haveSubPatterns && pattern.IsCall && (pattern.Name == GSymbol.Empty || 
-								(!pattern.HasSpecialName && LesNodePrinter.IsNormalIdentifier(pattern.Name)))) {
+							// It's very tempting to detect NodeStyle.PrefixNotation to distinguish, 
+							// say, A.B<C> from id(A, B, C), but I'm reluctant to do so. BaseStyle 
+							// is by convention "unsemantic" and not guaranteed to be preserved 
+							// across serializations or supported the same way by different parsers. 
+							// So instead of asking "is this in PrefixNotation?" I ask "does the 
+							// target appear to be a normal identifier?" 
+							LNode target = pattern.Target;
+							if (!haveSubPatterns && pattern.IsCall && (
+								!target.IsId || target.AttrNamed(S.TriviaInParens) != null ||
+								(!target.HasSpecialName && LesNodePrinter.IsNormalIdentifier(target.Name))))
+							{
 								haveSubPatterns = true;
-								//if (pattern.Target.IsId && pattern.BaseStyle != NodeStyle.PrefixNotation && !LesNodePrinter.IsNormalIdentifier(pattern.Target.Name))
-								//	_context.Write(Severity.Warning, pattern.Target, "Unrecognized operator in match-case: {0}", pattern.Target);
 								subPatterns = pattern.Args;
 								pattern = pattern.Target;
-							} else {
-								cmpExprOrBinding = pattern;
 							}
+							else
+								cmpExprOrBinding = pattern;
 					}
 				}
 			doneAnalysis:
 			
 				if (cmpExprOrBinding != null) {
-					if (cmpExprOrBinding.IsId && cmpExprOrBinding.AttrNamed(S.TriviaInParens) == null)
+					if (cmpExprOrBinding.Calls(S.Substitute, 1))
+						varBinding = cmpExprOrBinding[0];
+					else if (refExistingVar)
 						varBinding = cmpExprOrBinding;
+					else if ((varBinding ?? cmpExprOrBinding).IsIdNamed(__))
+						cmpExprOrBinding = varBinding = null;
+					// Originally a plain identifier would be a binding, like $identifier
+					//if (cmpExprOrBinding.IsId && cmpExprOrBinding.AttrNamed(S.TriviaInParens) == null)
+					//	varBinding = cmpExprOrBinding;
 			
 					if (varBinding != null) {
 						if (varBinding.AttrNamed(S.Ref) != null) {
 							refExistingVar = true;
 							varBinding = varBinding.WithoutAttrs();
 						}
-						if (varBinding.IsIdNamed(__)) // user is asking to discard this value
-							varBinding = cmpExprOrBinding = null;
-						else if (!varBinding.IsId) {
+						if (!varBinding.IsId) {
 							_context.Write(Severity.Error, varBinding, "Invalid variable name in match-case: {0}", varBinding);
 							varBinding = null;
 						}

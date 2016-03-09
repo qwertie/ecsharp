@@ -52,6 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlayPen.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PlayPen.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="PlayPen2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Samples.out.cs">
@@ -100,6 +106,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="PlayPen.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>PlayPen.out.cs</LastGenOutput>
+    </None>
     <None Include="Samples.ecs">
       <Generator>LLLPG</Generator>
       <LastGenOutput>Samples.out.cs</LastGenOutput>

@@ -1,0 +1,33 @@
+﻿//
+// A file for playing around with Enhanced C# and LeMP
+// 
+#importMacros(Loyc.LLPG);
+using System;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Collections.Generic;
+using Loyc;
+using Loyc.Collections;
+using Loyc.MiniTest;
+using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
+using Loyc.Ecs;
+
+namespace Samples
+{
+	partial class PlayPen
+	{
+		static LNode GetName(LNode type)
+		{
+			matchCode(type) {
+			  case { class  $name : $(.._) { $(.._); }  },
+				   { struct $name : $(.._) { $(.._); }  },
+				   { enum   $name : $(.._) { $(.._); }  }:
+				return name;
+			  default:
+				return null;
+			}
+		}
+	}
+}
