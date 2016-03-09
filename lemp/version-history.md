@@ -1,7 +1,7 @@
 ---
 title: "LeMP & EC# Release Notes"
 tagline: "Gathered from commit messages. Trivial changes omitted."
-layout: page
+layout: article
 ---
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
