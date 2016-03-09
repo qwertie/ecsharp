@@ -1366,6 +1366,16 @@
             <summary>Returns a reversed view of a list.</summary>
             <remarks>This was originally named <c>ReverseView</c>. Changed to <c>Reverse</c> to match Linq's <c>Reverse(IEnumerable)</c>.</remarks>
         </member>
+        <member name="M:Loyc.Collections.ListExt.Repeat``1(``0,System.Int32)">
+            <summary>Returns a helper object that stores one value, but acts like 
+            a read-only list that repeats the value the specified number of times.</summary>
+            <returns><c>new Repeated&lt;T>(value, count)</c></returns>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Single``1(``0)">
+            <summary>Returns a helper object that stores one value, but acts like 
+            a read-only list of one item.</summary>
+            <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
+        </member>
         <member name="T:Loyc.Collections.ArraySlice`1">
             <summary>Adapter: Provides access to a section of an array.</summary>
         </member>
@@ -3004,6 +3014,20 @@
             <summary>Adapter: reversed view of <see cref="T:Loyc.Collections.IListSource`1"/> returned 
             from <see cref="M:Loyc.Collections.LCExt.Reverse``1(Loyc.Collections.IListSource{``0})"/>.</summary>
         </member>
+        <member name="T:Loyc.Collections.NumRange`2">
+            <summary>Represents a range of integers of a specified data type.</summary>
+            <typeparam name="Num">Any numeric type</typeparam>
+            <typeparam name="Math">Trait type that implements math operations for the 
+            type, e.g. for in, use Loyc.Math.MathI.</typeparam>
+            <remarks>
+            TODO: unit tests.
+            <para/>
+            Note: if the low value is the minimum value of an integer type (e.g. 
+            int.MinValue of int) then the Enumerator will not work. Also, if the difference
+            between the min and max value is int.MaxValue or more, the Count property will
+            overflow and return an incorrect value.
+            </remarks>
+        </member>
         <member name="T:Loyc.Collections.EnumerableExt">
             <summary>
             Additional extension methods for <see cref="T:System.Collections.Generic.IEnumerable`1"/>, beyond what LINQ provides.
@@ -3076,7 +3100,7 @@
         <member name="M:Loyc.Collections.EnumerableExt.Upcast``2(System.Collections.Generic.IEnumerable{``1})">
             <summary>Upcasts a sequence.</summary>
             <remarks>In .NET 4+ this is a no-op that just returns <c>list</c>,
-            but in .NET 3.5 that's illegal so this method creates an adapter.</remarks>
+            but in .NET 3.5 that's illegal, so this method creates an adapter.</remarks>
         </member>
         <member name="M:Loyc.Collections.EnumerableExt.AdjacentPairs``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>Returns all adjacent pairs (e.g. for the list {1,2,3}, returns {(1,2),(2,3)})</summary>
@@ -3515,6 +3539,14 @@
         <member name="M:Loyc.Math.INumTraits`1.IsNaN(`0)">
             <summary>Returns true if the given value is not a number (can only be true for floats).</summary>
         </member>
+        <member name="M:Loyc.Math.INumTraits`1.Floor(`0)">
+            <summary>Gets the closest integer equal to or lower than the specified number.</summary>
+            <remarks>For integer types, this has no effect.</remarks>
+        </member>
+        <member name="M:Loyc.Math.INumTraits`1.Ceiling(`0)">
+            <summary>Gets the closest integer equal to or higher than the specified number.</summary>
+            <remarks>For integer types, this has no effect.</remarks>
+        </member>
         <member name="P:Loyc.Math.INumTraits`1.MinValue">
             <summary>Minimum value of this type above negative infinity.</summary>
         </member>
@@ -3570,7 +3602,7 @@
             <remarks>If the minimum is less than long.MinValue, this returns 
             long.MinValue.</remarks>
         </member>
-        <member name="T:Loyc.Math.INumConverter`1">
+        <member name="T:Loyc.Math.IConvertTo`1">
             <summary>
             Provides methods for converting common numeric types to another numeric type "T".
             </summary>
@@ -4100,6 +4132,13 @@
             <remarks>The name of this type comes from some functional programming 
             languages which define a type such as <c>data Maybe t = Nothing | Just t</c>.
             <para/>
+            This type exists primarily for generic code, since C# does not allow you
+            to write a generic function that returns "T?" if T could be a class.
+            Places where this type is used include the DictionaryExt.TryGetValue(key) 
+            extension method, and the ILexer&lt;T&gt;.NextToken() method. Both of these
+            may not be able to return a value, but they cannot return T? because T 
+            could be a class (or even a Nullable-of-something).
+            <para/>
             There is an implicit conversion from T that returns <c>new Maybe{T}(value)</c>,
             and from <see cref="!:NoValue.Value"/> that returns <see cref="P:Loyc.Maybe`1.NoValue"/>.
             Since C# doesn't allow us to define conversions to/from <c>T?</c>, these
@@ -4284,32 +4323,6 @@
             <param name="index">An index in the range Min to Max.</param>
             <exception cref="T:System.ArgumentOutOfRangeException">The index provided is not 
             valid in this list.</exception>
-        </member>
-        <member name="T:Loyc.Collections.Range">
-            <summary>Extension/helper methods for ranges.</summary>
-        </member>
-        <member name="M:Loyc.Collections.Range.IntRange(System.Int32,System.Int32)">
-            <summary>Returns <c>new IntRange(start, count)</c> (see <see cref="M:Loyc.Collections.Range.IntRange(System.Int32,System.Int32)"/>).</summary>
-        </member>
-        <member name="M:Loyc.Collections.Range.Repeat``1(``0,System.Int32)">
-            <summary>Returns a helper object that stores one value, but acts like 
-            a read-only list that repeats the value the specified number of times.</summary>
-            <returns><c>new Repeated&lt;T>(value, count)</c></returns>
-        </member>
-        <member name="M:Loyc.Collections.Range.Single``1(``0)">
-            <summary>Returns a helper object that stores one value, but acts like 
-            a read-only list of one item.</summary>
-            <returns><c>new Repeated&lt;T>(value, 1)</c></returns>
-        </member>
-        <member name="M:Loyc.Collections.Range.Skip``2(``0@,System.Int32)">
-            <summary>Advances by the specified number of elements.</summary>
-            <param name="count">Number of items to remove from the beginning of the
-            range. If count is higher than the number of items in the range, no
-            exception is thrown but the return value will be less than this value.</param>
-            <returns>Returns the number of items skipped.</returns>
-        </member>
-        <member name="T:Loyc.Collections.IntRange">
-            <summary>Helper struct: treats a range of integers (e.g. 5..10) as a list. This type is returned by <see cref="M:Loyc.Collections.Range.IntRange(System.Int32,System.Int32)"/>.</summary>
         </member>
         <member name="T:Loyc.Collections.CollectionAsReadOnly`1">
             <summary>Adapter: a read-only wrapper that implements ICollection(T) and IReadOnlyCollection(T), 
@@ -4828,7 +4841,7 @@
         <member name="T:Loyc.Collections.Repeated`1">
             <summary>Helper struct. A sequence that stores one value, but acts like a list in which
             that value is repeated a specified number of times. Returned from 
-            <see cref="M:Loyc.Collections.Range.Repeat``1(``0,System.Int32)"/>.</summary>
+            <see cref="!:Range.Repeat&lt;T&gt;"/>.</summary>
         </member>
         <member name="T:Loyc.Pair">
             <summary><c>Pair.Create(a, b)</c> is a helper method for making pairs.</summary>
@@ -5055,7 +5068,7 @@
             <para/>
             An optimization is available when only a single item is being added or
             changed. In that case, the collection class should create a lightweight 
-            read-only single-item list by calling <see cref="M:Loyc.Collections.Range.Single``1(``0)"/>.
+            read-only single-item list by calling <see cref="!:Range.Single&lt;T&gt;(T)"/>.
             Such a list has less overhead than <see cref="T:System.Collections.Generic.List`1"/> and the same
             overhead as an array of one item.
             </remarks>
@@ -5178,6 +5191,16 @@
             form of a triple (list, start index, count). In order to call such an
             old-style API using a slice, one must be able to extract the internal
             list and start index values.</remarks>
+        </member>
+        <member name="T:Loyc.Collections.RangeExt">
+            <summary>Extension/helper methods for ranges.</summary>
+        </member>
+        <member name="M:Loyc.Collections.RangeExt.Skip``2(``0@,System.Int32)">
+            <summary>Advances by the specified number of elements.</summary>
+            <param name="count">Number of items to remove from the beginning of the
+            range. If count is higher than the number of items in the range, no
+            exception is thrown but the return value will be less than this value.</param>
+            <returns>Returns the number of items skipped.</returns>
         </member>
         <member name="T:Loyc.StringExt">
             <summary>Extension methods for strings, such as <see cref="M:Loyc.StringExt.SplitAt(System.String,System.Char)"/>, 
