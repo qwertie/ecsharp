@@ -15,7 +15,7 @@ namespace LeMP
 			"Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. "+
 			"`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. "+
 			"`break` is not required or recognized at the end of each case's handler (code block). "+
-			"Use `$(..x)` to gather zero or more parameters into a list `x`. "+
+			"Use `$(...x)` to gather zero or more parameters into a list `x`. "+
 			"Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.")]
 		public static LNode matchCode(LNode node, IMacroContext context)
 		{
@@ -36,7 +36,7 @@ namespace LeMP
 			foreach (var @case in cases) 
 			{
 				cmc.ThenClause.Clear();
-				// e.g. case [$(.._)] Foo($x + 1, $y) => 
+				// e.g. case [$(..._)] Foo($x + 1, $y) => 
 				//      LNode x, y, tmp9; 
 				//      if (var.Calls((Symbol) "Foo", 2) && (tmp9 = var.Args[0]).Calls(CodeSymbols.Plus, 2)
 				//          && (x = tmp9.Args[0]) != null // this will never be null, but we want to put it the assignment in the 'if' statement
@@ -81,11 +81,11 @@ namespace LeMP
 			}
 
 			if (cmc.NodeVars.Count > 0)
-				output.Add(F.Call(S.Var, Range.Single(F.Id("LNode")).Concat(
+				output.Add(F.Call(S.Var, ListExt.Single(F.Id("LNode")).Concat(
 					cmc.NodeVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? F.Call(S.Assign, F.Id(kvp.Key), F.Null) : F.Id(kvp.Key)))));
 			if (cmc.ListVars.Count > 0) {
 				LNode type = quote(VList<LNode>);
-				output.Add(F.Call(S.Var, Range.Single(type).Concat(
+				output.Add(F.Call(S.Var, ListExt.Single(type).Concat(
 					cmc.ListVars.OrderBy(v => v.Key.Name).Select(kvp => kvp.Value ? quote($(F.Id(kvp.Key)) = default($type)) : F.Id(kvp.Key)))));
 			}
 			if (output.Count == 0)
@@ -166,7 +166,7 @@ namespace LeMP
 				LNode varArgCond;
 				MakeTestExpr(pattern, candidate, out varArgSym, out varArgCond);
 				if (varArgSym != null)
-					Context.Sink.Write(Severity.Error, pattern, "A list cannot be matched in this context. Remove '..' or 'params'.");
+					Context.Sink.Write(Severity.Error, pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
 			}
 			private void MakeTestExpr(LNode pattern, LNode candidate, out Symbol varArgSym, out LNode varArgCond)
 			{
@@ -185,7 +185,7 @@ namespace LeMP
 				if (predictedTests > 1)
 					candidate = MaybePutCandidateInTempVar(candidate.IsCall, candidate);
 
-				MatchAttributes(pattern, candidate); // Look for @[$(..var)]
+				MatchAttributes(pattern, candidate); // Look for @[$(...var)]
 
 				// case $_
 				if (nodeVar != null) {
@@ -284,7 +284,7 @@ namespace LeMP
 							Tests.Add(quote($condition));
 					}
 				} else if (pAttrs.Count != 0)
-					Context.Sink.Write(Severity.Error, pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(..varName)]`");
+					Context.Sink.Write(Severity.Error, pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
 
 			private int GetFixedArgCount(VList<LNode> patternArgs, out int? varArgAt)
@@ -321,7 +321,7 @@ namespace LeMP
 					LNode varArgCond2 = null;
 					MakeTestExpr(patternArgs[i2], quote($candidate.Args[$candidate.Args.Count - $(F.Literal(left))]), out varArgSym2, out varArgCond2);
 					if (varArgSym2 != null) {
-						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(..varargs) variable is not supported in a single argument list.");
+						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
 						break;
 					}
 					left--;
@@ -344,7 +344,7 @@ namespace LeMP
 							grabVarArgs = quote($varArgSymId = new VList<LNode>($candidate.Args.Slice($varArgStartLit, $candidate.Args.Count - $fixedArgsLit)));
 					}
 
-					// Add an extra condition on the $(..list) if requested by user
+					// Add an extra condition on the $(...list) if requested by user
 					if (varArgCond != null || IsMultiCase) {
 						Tests.Add(quote(($grabVarArgs).IsEmpty | true));
 						Tests.Add(varArgCond);
@@ -363,7 +363,7 @@ namespace LeMP
 					LNode id = expr.Args[0];
 					if (id.AttrNamed(S.Params) != null)
 						isParams = true;
-					else if (id.Calls(S.DotDot, 1)) {
+					else if (id.Calls(S.DotDotDot, 1) || id.Calls(S.DotDot, 1)) {
 						isParams = true;
 						id = id.Args[0];
 					}

@@ -6,9 +6,10 @@
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
-using System.Linq;
-using System.Text;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 using Loyc;
 using Loyc.Collections;
 using Loyc.MiniTest;
@@ -541,7 +542,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 144: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 137: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -556,11 +557,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 149: (([\-])? [0-9A-Za-z])*
+		// Line 142: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 149: ([\-])?
+				// Line 142: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -572,14 +573,14 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		#line 157 "Samples.ecs"
+		#line 150 "Samples.ecs"
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);
 		#line default
 		UsernameChars(src);
-		// Line 162: ([.] UsernameChars)*
+		// Line 155: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -592,7 +593,7 @@ struct EmailAddress
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 166: ([.] DomainCharSeq)*
+		// Line 159: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {

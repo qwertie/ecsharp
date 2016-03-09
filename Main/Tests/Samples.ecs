@@ -1,13 +1,6 @@
 ﻿#importMacros(Loyc.LLPG);
-using System;
-using System.Linq;
-using System.Text;
-using System.Collections.Generic;
-using Loyc;
-using Loyc.Collections;
-using Loyc.MiniTest;
-using Loyc.Syntax;
-using Loyc.Syntax.Lexing;
+using System(, .Collections(, .Generic), .Text, .Linq);
+using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing));
 
 namespace Samples {
 	using ADT;

@@ -137,7 +137,7 @@ namespace LeMP
 			{
 				if (list.Count == 1)
 					return F.Call(LNode_List, VarArgExpr(list[0]));
-				// If you write something like quote(Foo($x, $(..y), $z)), a special
+				// If you write something like quote(Foo($x, $(...y), $z)), a special
 				// output style is used to accommodate the variable argument list.
 				LNode argList = F.Call(LNode_List);
 				foreach (LNode arg in list) {
@@ -156,7 +156,7 @@ namespace LeMP
 		private static LNode VarArgExpr(LNode arg)
 		{
 			LNode subj;
-			if (arg.Calls(S.Substitute, 1) && (subj = arg.Args[0]).Calls(S.DotDot, 1))
+			if (arg.Calls(S.Substitute, 1) && ((subj = arg.Args[0]).Calls(S.DotDot, 1) || subj.Calls(S.DotDotDot, 1)))
 				return subj.Args[0];
 			return null;
 		}

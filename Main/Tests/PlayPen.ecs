@@ -2,17 +2,8 @@
 // A file for playing around with Enhanced C# and LeMP
 // 
 #importMacros(Loyc.LLPG);
-using System;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Collections.Generic;
-using Loyc;
-using Loyc.Collections;
-using Loyc.MiniTest;
-using Loyc.Syntax;
-using Loyc.Syntax.Lexing;
-using Loyc.Ecs;
+using System(.Linq, .Text, .Collections(, .Generic), .IO, );
+using Loyc(.Collections, .MiniTest, .Syntax(, .Lexing), .Ecs, );
 
 namespace Samples
 {

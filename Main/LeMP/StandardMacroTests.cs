@@ -186,11 +186,11 @@ namespace LeMP
 				   @"LNode.Id(LNode.List(LNode.InParensTrivia), (Symbol) ""x"");");
 			TestEcs("rawQuote { Func($Foo); }",
 					@"LNode.Call((Symbol) ""Func"", LNode.List(LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""Foo"")))));");
-			TestEcs("quote(Foo($first, $(..rest)));",
+			TestEcs("quote(Foo($first, $(...rest)));",
 				   @"LNode.Call((Symbol) ""Foo"", LNode.List().Add(first).AddRange(rest));");
-			TestEcs("quote(Foo($(..args)));",
+			TestEcs("quote(Foo($(...args)));",
 				   @"LNode.Call((Symbol) ""Foo"", LNode.List(args));");
-			TestEcs("quote { [$(..attrs)] public X; }",
+			TestEcs("quote { [$(...attrs)] public X; }",
 				   @"LNode.Id(LNode.List().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
 		}
 
@@ -274,10 +274,10 @@ namespace LeMP
 						BinOp(binOp);
 				}");
 			TestEcs(@"matchCode(code) { 
-					case ($a, $b, $(..args), $c):                Three(a, b, c);
-					case (null, $(..args)), ($first, $(..args)): Tuple(first, args);
-					case ($(..args), $last):                     Unreachable();
-					case ($(..args),):                           Tuple(args);
+					case ($a, $b, $(...args), $c):                Three(a, b, c);
+					case (null, $(...args)), ($first, $(..args)): Tuple(first, args);
+					case ($(...args), $last):                     Unreachable();
+					case ($(...args),):                           Tuple(args);
 				}", @"{
 					LNode a, b, c, first = null, last;
 					VList<LNode> args;

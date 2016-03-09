@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.5.1.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.6.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,7 +17,7 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("matchCode (var) { case ...: ... }; // In LES, use a => b instead of case a: b", "Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. " + "`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. " + "`break` is not required or recognized at the end of each case's handler (code block). " + "Use `$(..x)` to gather zero or more parameters into a list `x`. " + "Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.")] public static LNode matchCode(LNode node, IMacroContext context)
+		[LexicalMacro("matchCode (var) { case ...: ... }; // In LES, use a => b instead of case a: b", "Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. " + "`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. " + "`break` is not required or recognized at the end of each case's handler (code block). " + "Use `$(...x)` to gather zero or more parameters into a list `x`. " + "Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.")] public static LNode matchCode(LNode node, IMacroContext context)
 		{
 			var args_body = context.GetArgsAndBody(true);
 			VList<LNode> args = args_body.Item1, body = args_body.Item2;
@@ -147,7 +147,7 @@ namespace LeMP
 				LNode varArgCond;
 				MakeTestExpr(pattern, candidate, out varArgSym, out varArgCond);
 				if (varArgSym != null)
-					Context.Sink.Write(Severity.Error, pattern, "A list cannot be matched in this context. Remove '..' or 'params'.");
+					Context.Sink.Write(Severity.Error, pattern, "A list cannot be matched in this context. Remove '...' or 'params'.");
 			}
 			private void MakeTestExpr(LNode pattern, LNode candidate, out Symbol varArgSym, out LNode varArgCond)
 			{
@@ -247,7 +247,7 @@ namespace LeMP
 							Tests.Add(condition);
 					}
 				} else if (pAttrs.Count != 0)
-					Context.Sink.Write(Severity.Error, pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(..varName)]`");
+					Context.Sink.Write(Severity.Error, pAttrs[0], "Currently, Attribute matching is very limited; you can only use `[$(...varName)]`");
 			}
 			private int GetFixedArgCount(VList<LNode> patternArgs, out int? varArgAt)
 			{
@@ -280,7 +280,7 @@ namespace LeMP
 					LNode varArgCond2 = null;
 					MakeTestExpr(patternArgs[i2], LNode.Call(CodeSymbols.IndexBracks, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(candidate, LNode.Id((Symbol) "Args"))), LNode.Id((Symbol) "Count"))), F.Literal(left))).SetStyle(NodeStyle.Operator))), out varArgSym2, out varArgCond2);
 					if (varArgSym2 != null) {
-						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(..varargs) variable is not supported in a single argument list.");
+						Context.Sink.Write(Severity.Error, patternArgs[i2], "More than a single $(...varargs) variable is not supported in a single argument list.");
 						break;
 					}
 					left--;
@@ -317,7 +317,7 @@ namespace LeMP
 					LNode id = expr.Args[0];
 					if (id.AttrNamed(S.Params) != null)
 						isParams = true;
-					else if (id.Calls(S.DotDot, 1)) {
+					else if (id.Calls(S.DotDotDot, 1) || id.Calls(S.DotDot, 1)) {
 						isParams = true;
 						id = id.Args[0];
 					}
