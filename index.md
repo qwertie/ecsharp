@@ -55,11 +55,14 @@ At the moment, Loyc is limited to the .NET platform. Loyc has several general-pu
             |        |         |       |
             |   LoycCore.Tests and     |
             |   LoycCore.Benchmarks    |
-            |                       Ecs.exe (Enhanced C# parser & printer)
             |                          |
-            +-----------------------+  |
-                                    |  | 
-                                  LeMP.exe (Lexical Macro Processor + macros)
+            |                    Loyc.Ecs.dll (Enhanced C# parser & printer)
+            |                          |
+            +-----------------------+  | 
+                                    |  | LeMP.StdMacros.dll (standard LeMP macros)
+                                    |  |  |
+                                    |  |  |
+                                   LeMP.exe (Lexical Macro Processor + macros)
                                       |
                                       |
                                    LLLPG.exe (Loyc LL(k) Parser Generator)
