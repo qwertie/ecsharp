@@ -70,7 +70,7 @@ namespace LeMP
 			#endif
 			var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-			Compiler c = ProcessArguments(options, filter, typeof(Macros), argList);
+			Compiler c = ProcessArguments(options, filter, typeof(BuiltinMacros), argList);
 			Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
 			if (c != null) {
 				c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);

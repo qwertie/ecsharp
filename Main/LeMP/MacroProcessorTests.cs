@@ -51,7 +51,7 @@ namespace LeMP
 	public class TestCompiler : Compiler
 	{
 		public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
-			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(text, fileName) }) 
+			: base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(text, fileName) }) 
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));

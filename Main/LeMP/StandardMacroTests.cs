@@ -1285,7 +1285,7 @@ namespace LeMP
 		}
 		MacroProcessor NewLemp(int maxExpand)
 		{
-			var lemp = new MacroProcessor(typeof(LeMP.Prelude.Macros), _sink);
+			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), _sink);
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));

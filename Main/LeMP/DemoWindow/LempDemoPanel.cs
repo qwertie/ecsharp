@@ -157,7 +157,7 @@ namespace TextEditor
 		class Compiler : global::LeMP.Compiler
 		{
 			public Compiler(IMessageSink sink, InputOutput file)
-				: base(sink, typeof(global::LeMP.Prelude.Macros), new [] { file }) { }
+				: base(sink, typeof(global::LeMP.Prelude.BuiltinMacros), new [] { file }) { }
 
 			public StringBuilder Output = new StringBuilder();
 

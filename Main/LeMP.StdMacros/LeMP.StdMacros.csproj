@@ -79,7 +79,7 @@
     </Compile>
     <Compile Include="NullDotMacro.cs" />
     <Compile Include="OnFinallyReturnCatch.cs" />
-    <Compile Include="Prelude.cs" />
+    <Compile Include="Prelude.Les.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplaceMacro.cs" />
     <Compile Include="RequiresMacro.cs" />

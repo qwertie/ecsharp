@@ -140,7 +140,7 @@ namespace Loyc.VisualStudio
 		class Compiler : global::LeMP.Compiler
 		{
 			public Compiler(IMessageSink sink, InputOutput file)
-				: base(sink, typeof(global::LeMP.Prelude.Macros), new [] { file }) { }
+				: base(sink, typeof(global::LeMP.Prelude.BuiltinMacros), new [] { file }) { }
 
 			public StringBuilder Output = new StringBuilder();
 			public bool NoOutHeader;
@@ -169,8 +169,9 @@ namespace Loyc.VisualStudio
 
 		public virtual void Configure(global::LeMP.Compiler c)
 		{
-			c.AddMacros(typeof(Loyc.LLPG.Macros).Assembly);
-			c.AddMacros(typeof(global::LeMP.Prelude.Macros).Assembly);
+			c.AddMacros(typeof(Loyc.LLPG.Macros).Assembly);                   // LLLPG.exe
+			c.AddMacros(typeof(global::LeMP.Prelude.BuiltinMacros).Assembly); // LeMP.exe
+			c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);        // LeMP.StdMacros.dll
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 		}

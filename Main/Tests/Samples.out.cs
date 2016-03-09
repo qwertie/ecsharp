@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.6.0.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.6.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -43,7 +43,7 @@ namespace Samples
 			AreEqual(0, Range.ExcludeHi(1, 1).Sum());
 			AreEqual(0, Range.Inclusive(1, 0).Sum());
 		}
-		[Test] public void PrintAllTheNames()
+		public void PrintAllTheNames()
 		{
 			try {
 				PlayPen.PrintAllTheNames("..\\..\\Core\\Loyc.Essentials\\Utilities");

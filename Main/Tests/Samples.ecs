@@ -31,7 +31,7 @@ namespace Samples {
 			AreEqual(0, (1..1).Sum());
 			AreEqual(0, (1...0).Sum());
 		}
-		[Test] public void PrintAllTheNames()
+		/*[Test]*/ public void PrintAllTheNames()
 		{
 			try {
 				PlayPen.PrintAllTheNames(@"..\..\Core\Loyc.Essentials\Utilities");

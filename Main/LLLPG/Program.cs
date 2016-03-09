@@ -47,7 +47,7 @@ namespace Loyc.LLParserGenerator
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 					c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
 					c.AddMacros(Assembly.GetExecutingAssembly());
-					c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
+					c.AddMacros(typeof(LeMP.Prelude.BuiltinMacros).Assembly);
 					c.Run();
 				}
 			} else {

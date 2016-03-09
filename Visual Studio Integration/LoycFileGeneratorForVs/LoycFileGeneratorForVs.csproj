@@ -100,6 +100,10 @@
     <Reference Include="LeMP">
       <HintPath>..\..\Lib\LeMP\LeMP.exe</HintPath>
     </Reference>
+    <Reference Include="LeMP.StdMacros, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\LeMP\LeMP.StdMacros.dll</HintPath>
+    </Reference>
     <Reference Include="LLLPG">
       <HintPath>..\..\Lib\LeMP\LLLPG.exe</HintPath>
     </Reference>

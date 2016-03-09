@@ -247,6 +247,7 @@
     <Compile Include="MacroProcessor.cs" />
     <Compile Include="MacroProcessorTask.cs" />
     <Compile Include="MacroProcessorTests.cs" />
+    <Compile Include="BuiltinMacros.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
