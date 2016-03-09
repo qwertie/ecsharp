@@ -3,13 +3,21 @@ title: LLLPG Version History
 layout: article
 ---
 
-LLLPG v1.5.1 (March 5, 2015):
+### LLLPG v1.5.1 (March 5, 2015) ### 
 
+- LLLPG home page officially opens!
+- LLLPG: Added `...` as synonym for `..`; `...` is preferred since character ranges are inclusive
 - Changes to LLLPG itself are minimal, but [LeMP](http://loyc.net/lemp) has been updated to v1.5.1, which includes a richer set of macros (not really related to parsing), such as macros for pattern matching and algebraic data types.
 
-LLLPG v1.3.2 (June 19, 2015):
+### LLLPG v1.4.0 (Aug 25, 2015) ### 
 
-- Published LLLPG Part 5 article
+- LLLPG: Fixed to support for aliases in code blocks e.g. rule Foo @{ "alias" { Process($"alias"); } }; now works when "alias" is an alias
+- LLLPG: eliminated `lexer(option = value)` and `parser(option = value)` syntax; added support for `parser(option: value)` syntax in LES to match EC#. See `MacroContext.GetOptions()`
+- LLLPG custom tool: reduced default timeout to 10 seconds
+
+### LLLPG v1.3.2 (June 19, 2015) ### 
+
+- Published LLLPG Part 5 article, which describes the new features in detail
 - Standalone version: Replaced `BaseParser/BaseLexer` with dual-purpose `LexerSource/ParserSource` which can be used either as base classes, or as objects with LLLPG's `inputSource` and `inputClass` options.
 - LoycSyntaxForVs.vsix now installs (and happens to work) in VS 2015 RC
 - LES "Python mode" (ISM) installed and tested
@@ -40,14 +48,14 @@ LLLPG v1.3.2 (June 19, 2015):
 - LLLPG: Partly fixed nondeterministic bug in `PredictionAnalysisVisitor` that caused EC# parser to parse `alias(...)` calls as type alias constructs.
 - LeMP: substantial enhancements, see my [LeMP article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)
 
-LLLPG v1.1.0 (Feb 23, 2014):
+### LLLPG v1.1.0 (Feb 23, 2014) ### 
 
 - Implemented complex ambiguity suppression behavior for `/` operator (described in part 4)
 - Loyc: Removed dependency on nunit.framework.dll, replaced with Loyc.MiniTest
 - Loyc: Added enum `Severity`. Changed `IMessageSink.Write(Symbol,...)` to `IMessageSink.Write(Severity,...)` 
 Rebuilt LesSyntaxForVs2010 to match DLLs used by LLLPG 1.1.0 (for some reason the LLLPG SFG breaks if LES syntax highlighter uses different DLL versions, even though LLLPG has its own copy of all DLLs.)
 
-LLLPG v1.0.1: 
+### LLLPG v1.0.1 ###
 
 - Bug fix (lexers): now calls `MatchExcept(set)` when inverted set contains `EOF`
 - Bug fix (parsers): removed EOF from `MatchExcept(..., EOF)` 
@@ -58,18 +66,18 @@ LLLPG v1.0.1:
 - Added more useful follow set info at `[Verbosity(2)]` and `[Verbosity(3)]`
 - `Error(InputPosition + li, "...")` changed to `Error(li, "...")`
 
-LLLPG v1.0 (Feb 8, 2014): 
+### LLLPG v1.0 (Feb 8, 2014) ###
 
 - EC# support
 - Demo and article updated
 - Demo now uses EC# by default (LES version still included) and supports "mathy" expressions such as 2(2 + 5) => 14.
 
-LLLPG v0.9.1 (Nov 19, 2013):
+### LLLPG v0.9.1 (Nov 19, 2013) ###
 
 - Updated demo to be a bit cleaner and to eliminate dependencies on Loyc libraries.
 - Some bug fixes, a new alias(X = Y) command, and eliminated dependency on IntSet.
 
-LLLPG v0.9 (Oct 7, 2013): 
+### LLLPG v0.9 (Oct 7, 2013) ### 
 
 - Initial release with Part 1 article
 

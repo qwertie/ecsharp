@@ -2,6 +2,7 @@
 title: Avoid tedious coding with LeMP, Part 1
 layout: article
 tagline: "The Lexical Macro Processor transforms your C# code with a LISP-inspired macro system. Complete with Visual Studio integration & Linux-compatible editor."
+toc: true
 ---
 
 Introduction
@@ -563,4 +564,4 @@ Final thought: if you could add features to C#, what would they be? If there's a
 
 You can post comments on the [old version of this article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part) originally published on CodeProject.
 
-I have many more macros to show you, but those above are perhaps the most useful ones I've made, and depending on how much interest people show here, I'll publish it another article sooner or later.
+I have many more macros to show you, so please visit the [home page](index.html) to find more articles about LeMP!

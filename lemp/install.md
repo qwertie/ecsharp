@@ -4,9 +4,11 @@ First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub
 
 ![](lemp-install-1.png)
 
-Next, browse to the `Lib\LeMP` folder and run `Lib\LeMP\LoycFileGeneratorForVs.exe` to install the LeMP and LLLPG Custom Tools (a.k.a. Single-File Generators). Make sure your version of Visual Studio is listed, and click Register (install).
+**Note**: the instructions below are for Visual Studio. To use LeMP on Linux or Mac, use LeMP.exe instead (it works under mono). For example, use `mono LeMP.exe --editor` to run its built-in editor.
 
-**Note**: to use LeMP on Linux or Mac, use LeMP.exe instead (it works under mono). For example, use `mono LeMP.exe --editor` to run its built-in editor.
+For very esoteric reasons (long story short: blame Microsoft), LeMP/LLLPG are distributed in two separate parts: the Single-File Generator (Custom Tool), and the syntax highlighter.
+
+So, browse to the `Lib\LeMP` folder and run `Lib\LeMP\LoycFileGeneratorForVs.exe` to install the LeMP & LLLPG Custom Tools (a.k.a. Single-File Generators). Make sure your version of Visual Studio is listed, and click Register (install).
 
 ![](lemp-install-2.png)
 
@@ -37,6 +39,6 @@ namespace Loyc.Ecs {
 
 ![](lemp-add-file-3.png)
 
-**Warning**: Before installing a new version of LeMP or LLLPG, you must uninstall the old syntax highlighter _(Tools \| Extensions and Updates \| LoycSyntaxForVS \| Uninstall)_. A version mismatch between the two will cause the LeMP or LLLPG Custom Tool to stop working (typically with a `MissingMethodException` or a failure to load an assembly.)
+**Warning**: Before installing a new version of LeMP or LLLPG, you must uninstall the old syntax highlighter _(Tools \| Extensions and Updates \| LoycSyntaxForVS \| Uninstall)_. A version mismatch between the two will cause the LeMP or LLLPG Custom Tool to stop working (typically with a `MissingMethodException` or a failure to load an assembly.) Fun fact: for extra lameness, such errors occurs even in the absense of changes; whenever I "Rebuild All", it always produces incompatible assemblies.
 
 Certain features of LeMP (or [LLLPG](/lllpg)) require one or more Loyc libraries to be available at runtime. To use such features you'll also have to add references to the necessary DLLs (see the dependency tree on the [home page](/)).
