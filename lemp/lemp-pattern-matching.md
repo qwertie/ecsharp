@@ -492,8 +492,8 @@ if (777.Equals(tmp_0)) {
 In this particular example it _is_ possible to avoid duplicating the `Console.WriteLine` statement, but in most nontrivial patterns it is not (at least not without analysis capabilities LeMP doesn't have), so `match` doesn't even try. Therefore, if possible, avoid writing large code blocks inside a `case` with multiple patterns.
 
 **Range operators**: Enhanced C# defines binary and unary operators named `..<` and `...`, as well as a binary `in` operator that is intended to test whether a value is contained in a collection.
-	- `..<` is the exclusive range operator: it means you want the number on the right side to be excluded from the range. `case 1..<10` is translated to something like `if (tmp_0.IsInRangeExcl(1, 10))`. `IsInRangeExcl` should be an extension method, either one you define yourself or one of the extension methods in Loyc.Essentials.dll. This operator has two names, in fact: you can write `1..10`, as used in [Rust](https://www.rust-lang.org/), or `1..<10`, as used in [Swift](http://oleb.net/blog/2015/09/swift-ranges-and-intervals/). The lexer treats them as the same operator (named `..`).
-	- `...` is the inclusive range operator: it means you want the number on the right side to be included in the range. For example, `case 10...99` is translated to something like `if (tmp_0.IsInRangeIncl(10, 99))`. (This operator's name is also three dots in Rust and Swift.)
+	- `..<` is the exclusive range operator: it means you want the number on the right side to be excluded from the range. `case 1..<10` is translated to something like `if (tmp_0.IsInRangeExcludeHi(1, 10))`. `IsInRangeExcludeHi` should be an extension method, either one you define yourself or one of the extension methods in Loyc.Essentials.dll. This operator has two names, in fact: you can write `1..10`, as used in [Rust](https://www.rust-lang.org/), or `1..<10`, as used in [Swift](http://oleb.net/blog/2015/09/swift-ranges-and-intervals/). The lexer treats them as the same operator (named `..`).
+	- `...` is the inclusive range operator: it means you want the number on the right side to be included in the range. For example, `case 10...99` is translated to something like `if (tmp_0.IsInRange(10, 99))`. (This operator's name is also three dots in Rust and Swift.)
 
 You can use underscores to express an open-ended range, e.g. `case _..-1`. `..<` and `...` also exist as unary operators, so you can write `...-1` instead. However, there is no corresponding suffix operator: you must write `100..._`, not `100...`. All of these are translated to the appropriate binary operator (e.g. `_...9` becomes `matchExpr <= 9`).
 
@@ -610,7 +610,7 @@ The `..<`, `...`, and `in` operators are not limited to `match`. You can use the
 		throw new ArgumentOutOfRangeException("index");
 ~~~
 
-As before, the `x in lo..<hi` pattern translates to `x.IsInRangeExcl(lo, hi)` while the `x in lo...hi` pattern translates to `x.IsInRangeIncl(lo, hi)`. You can also use `in` by itself, or use the range operators by themselves:
+As before, the `x in lo..<hi` pattern translates to `x.IsInRangeExcludeHi(lo, hi)` while the `x in lo...hi` pattern translates to `x.IsInRange(lo, hi)`. You can also use `in` by itself, or use the range operators by themselves:
 
 ~~~csharp
 	var range = 0..list.Count;
@@ -626,9 +626,9 @@ This is translated to
 		throw new ArgumentOutOfRangeException("index");
 ~~~
 
-Loyc.Essentials.dll contains all of the methods shown here; `IsInRangeExcl` is an extension method in class `Loyc.In`, while the `Range` is currently placed in the `Loyc.Collections` namespace and returns a variable of type `NumRange<Num,Math>` where `Num` is a numeric type such as `int`, and `Math` is a helper type that allows `NumRange` to perform arithmetic on that numeric type (it is needed since .NET does not define math interfaces for built-in types.) It is worth noting that `NumRange` implements `IReadOnlyList<Num>`, so you can use it in `foreach` loops and LINQ expressions.
+Loyc.Essentials.dll contains all of the methods shown here; `IsInRangeExcludeHi` is an extension method in class `Loyc.Range`. While `Range.ExcludeHi` is in the `Loyc` namespace, it returns a variable of type `Loyc.Collections.NumRange<Num,Math>` where `Num` is a numeric type such as `int`, and `Math` is a helper type that allows `NumRange` to perform arithmetic on that numeric type (it is needed since .NET does not define math interfaces for built-in types.) It is worth noting that `NumRange` implements `IReadOnlyList<Num>`, so you can use it in `foreach` loops and LINQ expressions.
 
-Since the expression `x in range` just calls `range.Contains(x)`, it also works with standard collection types.
+Since the expression `x in range` just calls `range.Contains(x)`, it is compatible with standard collection types.
 
 ### Wrapping up ###
 

@@ -113,52 +113,7 @@ LeMP lets you do code generation with a "literal" representation of the code (in
    }
 ~~~
 
-But first, you'll need to install the code generator in Visual Studio.
-
-### Installing LeMP
-
-First, download and extract the zip file, or clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub, since I haven't yet figured out how to do that magic auto-installation via NuGet.
-
-![](lemp-install-1.png)
-
-Next, browse to the `Lib\LeMP` folder and run `Lib\LeMP\LoycFileGeneratorForVs.exe` to install the LeMP and LLLPG Custom Tools (a.k.a. Single-File Generators). Make sure your version of Visual Studio is listed, and click Register (install).
-
-![](lemp-install-2.png)
-
-**Note**: The custom tools run in-place; they are not copied anywhere else. Visual Studio versions 2008 through 2015 are supported.
-
-To install syntax highlighting for `.ecs` and `.les` files, run `Lib\LeMP\LoycSyntaxForVs.vsix`. Visual Studio versions 2010 through 2015 are supported.
-
-![](lemp-install-3.png)
-
-Finally, create a new C# project in Visual Studio (or open an existing one), and then create a new text file named `example.ecs`:
-
-![](lemp-add-file-1.png)
-![](lemp-add-file-2.png)
-
-Finally, open the *Properties* panel and change the *Custom Tool* option to **_LeMP_**. An output file called `example.out.cs` should appear under `example.ecs`. To make sure it's all working fine, paste a little code in the new file, e.g.
-
-~~~csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows
-namespace Loyc.Ecs {
-   class Person {
-      public Person(public readonly string Name, public int WeightLb, public int Age) {}
-   }
-}
-~~~
-
-![](lemp-add-file-3.png)
-
-**Warning**: Before installing a new version of LeMP or LLLPG, you must uninstall the old syntax highlighter _(Tools \| Extensions and Updates \| LoycSyntaxForVS \| Uninstall)_. A version mismatch between the two will cause the LeMP or LLLPG Custom Tool to stop working (typically with a `MissingMethodException` or a failure to load an assembly.)
-
-As of this writing, the Loyc libraries have a version number of 1.5.*.
-
-You can use basic features of LeMP already, but if you want write a code generator, you'll also have to add references to the DLLs you'll be using in your program (see below).
-
-### Using LeMP to write a code generator
+First, you'll need to [install LeMP](install.html).
 
 LeMP itself is a code generator, so what I'm doing now is showing you how to use a code generator in Visual Studio (LeMP) to generate another code generator that runs outside Visual Studio. (You could then, if you wanted, reprogram your code generator to run inside Visual Studio by reading my article about [Custom Tools](http://www.codeproject.com/Articles/686405/Writing-a-Single-File-Generator), or better yet, by writing a macro to be called by LeMP itself.)
 
@@ -174,14 +129,8 @@ You'll need to add references to the following assemblies from your copy of LeMP
 Put the following code in your `example.ecs` file:
 
 ~~~csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Loyc;
-using Loyc.Collections;
-using Loyc.Syntax;
-using Loyc.Ecs;
+using System(.Collections.Generic, .Linq, .Text, );
+using Loyc(.Collections, .Syntax, .Ecs, );
 
 namespace Loyc.Ecs {
    class Example {

@@ -60,6 +60,8 @@ This example requires `FMT` to take exactly two arguments called `$fmt` and `$ar
 	FMT($fmt, $(params args)) => string.Format($fmt, $args) // 1 or more args
 	FMT($(params args)) => string.Format($args)             // 0 or more args
 
+**Note**: `$(...args)` can now be used instead of `$(params args)`. The new `...` operator was added mainly to support [pattern matching](lemp-pattern-matching.html), but it seemed appropriate to support it in this situation, too.
+
 `replace` is more sophisticated tool than C's `#define` directive. Consider this example:
 
 	replace ({ 
@@ -127,19 +129,19 @@ Here, `replace` searches for `foreach` loops that have a specific form, and repl
 		...
 	}
 
-This example also used the `nameof()` macro to convert each variable name to a string. It's one of the simplest macros; here's its implementation in [`StandardMacros.cs`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/StandardMacros.cs):
+This example also used the `stringify()` macro to convert each variable name to a string. It's one of the simplest macros; here's its implementation in [`StandardMacros.cs`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/StandardMacros.cs):
 
-		[LexicalMacro(@"nameof(id_or_expr)", "Converts an expression to a "
-		           +"string (note: original formatting is not preserved)")]
-		public static LNode nameof(LNode nameof, IMacroContext context)
+		[LexicalMacro(@"stringify(expr)", "Converts an expression to a string "+
+		    "(note: original formatting is not preserved)")]
+		public static LNode stringify(LNode node, IMacroContext context)
 		{
-			if (nameof.ArgCount != 1)
+			if (node.ArgCount != 1)
 				return null; // reject
-			return F.Literal(ParsingService.Current.Print(nameof.Args[0],
-			                    context.Sink, ParsingService.Exprs));
+			return F.Literal(ParsingService.Current.Print(node.Args[0], 
+			                 context.Sink, ParsingService.Exprs));
 		}
 
-Sadly there's no way to view the documentation attached to the macro except by looking at the source code (hmm, maybe I could write a macro for this...?) 
+The documentation attached to all macros will be printed in your output if you put a `#printKnownMacros;` statement in your input file.
 
 Some developers have to implement the `INotifyPropertyChanged` interface a lot. Implementing this interface often involves a lot of boilerplate and code duplication, and it's error prone because the compiler won't tell you if the string you send to `PropertyChanged` is incorrect (Plus, I would personally question whether `INotifyPropertyChanged` is the right way to accomplish change notification, but that's a subject for another day). Using normal C#, you can avoid some code duplication by sharing common code in a common method, like this:
 
@@ -225,7 +227,7 @@ This code produces four properties, and each additional property only requires o
 
 This code is using two extra tricks beyond just `unroll` and `replace`:
 
-- `nameof(PROP_NAME)` converts PROP_NAME to a string.
+- `nameof(PROP_NAME)` converts PROP_NAME to a string (it was a part of LeMP before it was a part of C# 6).
 - `concat_id(_, PROP_NAME)` concatenates two identifiers to produce a new identifier; in this case I'm just adding an underscore to the beginning of the `PROP_NAME`. A synonym for `concat_id` is ``_`##`PROP_NAME``, which rembles the `##` operator in C/C++, and you can even write `##(_, PROP_NAME)`. Finally, you can use this to convert strings to identifiers (`concat_id("dog")`) or concatenate more than two things (`concat_id("dog", 'h', 0, use)`).
 
 Please note that the `replace` command is actually required in this example, because the parser understands that 
@@ -238,7 +240,7 @@ is creating a variable, whereas
 
 would just confuse the parser: the code appears to be declaring a method called `concat_id` and assigning a value to it.
 
-Note: when using `replace` inside `unroll` one should generally include curly braces (i.e. `replace (...) {...}`) so that there are two sets of braces in total. The reason is that when `unroll` is done, the outer braces disappear, which means that if you didn't use braces with `replace`, your `replace` command applies to the _entire_ rest of the block instead of the small bit of code you intended.
+**Note**: when using `replace` inside `unroll` one should generally include curly braces (i.e. `replace (...) {...}`) so that there are two sets of braces in total. The reason is that when `unroll` is done, the outer braces disappear, which means that if you didn't use braces with `replace`, your `replace` command applies to the _entire_ rest of the block instead of the small bit of code you intended.
 
 ### Automagic field generation ###
 
@@ -273,7 +275,7 @@ You don't have to write classes like this very many times before you start to ge
 With LeMP and Enhanced C# you get the same effect with much shorter code:
 
     public class FullAddress {
-    	internal FullAddress(
+    	internal this(
     		public readonly string Address,
     		public readonly string City,
   	 		public readonly string Province,
@@ -289,7 +291,7 @@ With LeMP and Enhanced C# you get the same effect with much shorter code:
 		...
     }
 
-This code generates virtually identical output to the original class above. A macro notices attributes like `public` on the parameters of the constructor, generates matching fields, and then sets those fields in the body of the constructor. Currently you can't use properties as constructor parameters (but I'll probably add that later).
+As explained on the [home page](index.html), this code generates virtually identical output to the original class above.
 
 A feature similar to this was being considered for C# 6, called "primary constructors". They looked like this:
 
@@ -306,9 +308,9 @@ But primary constructors were limited:
 2. You couldn't take an action that wasn't related to assigning a constructor parameter to a field or property, as I have done with `log`.
 3. The constructor was forced to be `public` (`FullAddress` has an `internal` constructor). 
 
-In contrast, the feature I'm showing you actually has _nothing to do with constructors_. True story, when I wrote the unit tests for this feature and I forgot to test it on constructors... so naturally it didn't work on constructors.
+In contrast, the feature I'm showing you actually has _nothing to do with constructors_. True story, when I wrote the unit tests for this feature and I forgot to test it on constructors... so naturally, it didn't work on constructors.
 
-This macro, also known as [`SetOrCreateMember`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/StandardMacros/SetOrCreateMemberMacro.cs), will work on any method, and you can use the `set` attribute to merely _change_ a field instead of _creating_ a field:
+This macro, also known as [`SetOrCreateMember`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP.StdMacros/SetOrCreateMemberMacro.cs), will work on any method, and you can use the `set` attribute to merely _change_ a field instead of _creating_ a field:
 
 	/// Input
 	string _existingField;
@@ -331,15 +333,7 @@ Installing LeMP
 
 ![LeMP Standalone](LeMPStandalone.png)
 
-If you like this tool, you'll want to run it. Simply download the link that came with this article to get LeMP version 1.3.0. Then you can either 
-
-1. Run the built-in editor of LeMP.exe by double-clicking on it (LeMP.exe is mainly a command-line tool, so in addition to the editor you'll get a pesky terminal window, sorry about that).
-2. Install the Visual Studio extensions.
-
-For very esoteric reasons (long story short: blame Microsoft), it is distributed as two separate parts:
-
-1. The Single-File Generator, also known as a Custom Tool. To install, run `LoycFileGeneratorForVs.exe` (it'll start as Administrator) and click _Register (install)_. It supports all VS versions from to VS 2005 to VS 2013, including Express editions.
-2. The syntax highlighter for LES and EC#. To install, run `LoycSyntaxForVs2010.vsix`. It supports VS 2010, VS 2012, and VS2013, Professional Editions only (including Premium and Ultimate, of course)
+If you like this tool, you'll want to run it, so follow the [installation instructions](install.html). If you'd like to run it on Linux, LeMP also has a built-in editor (e.g. run `mono LeMP.exe --editor`)
 
 To use the custom tool, 
 
@@ -347,8 +341,6 @@ To use the custom tool,
 2. write something in it (e.g. `using System;`)
 3. Right-click your .ecs file in Solution Explorer and click Properties
 4. In the Properties panel, change the Custom Tool field to "LeMP" (it's not case sensitive). An output file should appear with an extension of `.out.cs`.
-
-Unfortunately, in the end, Visual Studio doesn't quite treat the two extensions as separate things: for some reason I don't understand, the LeMP Custom Tool doesn't use the Loyc DLLs in is own directory, instead it always uses the same DLLs as the syntax highlighter. **If there is even the slightest version mismatch** between the syntax highlighter and the LeMP Custom Tool, LeMP will not work and you'll get an error message like `MissingMethodException` or "unable to load Loyc.Collections.dll" or something like that. If you get this error, a workaround is to uninstall the syntax highlighter (go to Tools | Extension Manager, Click LoycSyntaxForVs, Uninstall, and Restart Now).
 
 I hope you don't get the dreaded "Cannot find custom tool 'LeMP' on this system." because that error has many different causes and I have worked very hard to try to avoid it.
 
@@ -422,9 +414,7 @@ LLLPG, the Loyc LL(k) Parser Generator, generates parsers and lexers from LL(k) 
 		}
 	}
 
-To use this macro you also need an implementation of the API functions that you see in the generated code, such as `LA0`, `Skip()`, etc. The recommended implementations of these APIs are the `LexerSource` and `ParserSource<Token>` classes in Loyc.Syntax.dll, but standalone (no-DLL) implementations of the LLLPG APIs are also bundled with LLLPG.
-
-Note: this example uses new features of LLLPG 1.3 which (as of May 25) are not published on CodeProject but are published on GitHub in the [Loyc repo](https://github.com/qwertie/Loyc).
+To use this macro you also need an implementation of the API functions that you see in the generated code, such as `LA0`, `Skip()`, etc. The recommended implementations of these APIs are the `LexerSource` and `ParserSource<Token>` classes in Loyc.Syntax.dll, but standalone (no-DLL) implementations of the LLLPG APIs are also bundled with [LLLPG](/lllpg).
 
 Introducing Enhanced C#
 -----------------------
@@ -479,14 +469,14 @@ There being no distinction between statements and expressions, it's no big surpr
 
 	/// Input
 	string nums = string.Concat(
-		unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }, " [the end]"
+		unroll(N in (1,2,3,4,5,6,7)) { stringify(N); }, " [the end]"
 	);
 	/// Output
 	string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
 
 `unroll` doesn't know or care that it's located in an "expression context" instead of a "statement context".
 
-When the parser is parsing expressions (e.g. `1,2,3`) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore `nameof(N)` is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the `unroll` macro is done, it deletes itself along with the curly braces, leaving only a list of expressions `"1", "2", "3"`, etc. Because these are _printed_ in a location where _expressions_, are expected, they are separated by commas and not semicolons.
+When the parser is parsing expressions (e.g. `1,2,3`) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore `stringify(N)` is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the `unroll` macro is done, it deletes itself along with the curly braces, leaving only a list of expressions `"1", "2", "3"`, etc. Because these are _printed_ in a location where _expressions_, are expected, they are separated by commas and not semicolons.
 
 On the other hand if we simply write
 
@@ -518,9 +508,7 @@ It spits out the following output:
 		return x * x;
 	}
 
-What the hell happened? No, `@#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". The `@` sign simply means "this is an identifier, not a preprocessor directive". It's only _required_ for identifiers like `#if` that coincidentally are also preprocessor directives, and for identifiers that contain punctuation marks. 
-
-That's right. In EC#, identifiers can contain punctuation marks.
+What the hell happened? No, `@#fn` is not some kind of bizarro preprocessor directive. What you're looking at is a representation of the syntax tree of a method. `#fn` means "define a function". The `@` sign simply means "this is an identifier, not a preprocessor directive". It's only _required_ for identifiers like `#if` that coincidentally are also preprocessor directives, and for identifiers that contain punctuation marks.... That's right. In EC#, identifiers can contain punctuation marks.
 
 Anyway, the `#` sign is otherwise _not_ special to the parser; `#` is treated as an identifier character, not unlike an underscore.
 
@@ -572,5 +560,7 @@ Conclusion
 ----------
 
 Final thought: if you could add features to C#, what would they be? If there's a way to treat that feature as a purely syntactic transformation ("syntactic sugar"), chances are good there's some way to accomplish it with LeMP.
+
+You can post comments on the [old version of this article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part) originally published on CodeProject.
 
 I have many more macros to show you, but those above are perhaps the most useful ones I've made, and depending on how much interest people show here, I'll publish it another article sooner or later.
