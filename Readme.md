@@ -29,7 +29,7 @@ At the moment, Loyc is limited to the .NET platform. The Loyc core libraries are
 Installing the Visual Studio extensions
 ---------------------------------------
 
-LeMP and LLLPG are self-hosting: they rely on themselves to help build themselves. Therefore, there is always a binary copy of LeMP and LLLPG in the `Lib\LLLPG` subdirectory.
+LeMP and LLLPG are self-hosting: they rely on themselves to help build themselves. Therefore, there is always a binary copy of LeMP and LLLPG in the `Lib\LeMP` subdirectory.
 
 - **To install the LeMP and LLLPG Custom Tools**, run **Lib\LeMP\LoycFileGeneratorForVs.exe**, make sure your version of Visual Studio is listed, and click Register (install). **Note**: The custom tools run in-place; they are not copied anywhere else. Visual Studio versions 2008 through 2015 are supported.
 - **To install syntax highlighting for *.ecs and *.les files**, run **Lib\LeMP\LoycSyntaxForVs.vsix**. Visual Studio versions 2010 through 2015 are supported.
