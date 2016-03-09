@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Loyc.Utilities;
-using LeMP.Prelude;
 using Loyc.Collections;
 using Loyc;
 using Loyc.Collections.Impl;

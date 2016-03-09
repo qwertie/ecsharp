@@ -247,69 +247,7 @@
     <Compile Include="MacroProcessor.cs" />
     <Compile Include="MacroProcessorTask.cs" />
     <Compile Include="MacroProcessorTests.cs" />
-    <Compile Include="Prelude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StandardMacros\AlgebraicDataType.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AlgebraicDataType.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="StandardMacros\AttrMacroRegistrar.cs" />
-    <Compile Include="StandardMacros\BackingFieldMacro.cs" />
-    <None Include="StandardMacros\AlgebraicDataType.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>AlgebraicDataType.out.cs</LastGenOutput>
-    </None>
-    <None Include="StandardMacros\InRange.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>InRange.out.cs</LastGenOutput>
-    </None>
-    <None Include="StandardMacros\MatchCode.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>MatchCode.out.cs</LastGenOutput>
-    </None>
-    <Compile Include="StandardMacros\CodeQuoteMacro.cs" />
-    <Compile Include="StandardMacros\FluentMacro.cs" />
-    <Compile Include="StandardMacros\ForwardingMacro.cs" />
-    <Compile Include="StandardMacros\InRange.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>InRange.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="StandardMacros\MatchCode.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatchCode.ecs</DependentUpon>
-    </Compile>
-    <None Include="StandardMacros\MatchMacro.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
-    </None>
-    <Compile Include="StandardMacros\MatchMacro.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MatchMacro.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="StandardMacros\NullDotMacro.cs" />
-    <Compile Include="StandardMacros\OnFinallyReturnCatch.cs" />
-    <Compile Include="StandardMacros\ReplaceMacro.cs" />
-    <Compile Include="StandardMacros\RequiresMacro.cs" />
-    <Compile Include="StandardMacros\SetOrCreateMemberMacro.cs" />
-    <Compile Include="StandardMacros\StandardMacros.cs" />
-    <Compile Include="StandardMacros\ThisConstructorMacro.cs" />
-    <Compile Include="StandardMacros\TupleMacros.cs" />
-    <Compile Include="StandardMacros\UnrollMacro.cs" />
-    <Compile Include="StandardMacros\UseSymbolsMacro.cs" />
-    <None Include="StandardMacros\UsingMultiMacro.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>
-    </None>
-    <Compile Include="StandardMacros\UsingMultiMacro.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="StandardMacros\WithMacro.cs" />
     <Compile Include="StandardMacroTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -337,6 +275,10 @@
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
       <Name>Loyc.Syntax</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LeMP.StdMacros\LeMP.StdMacros.csproj">
+      <Project>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</Project>
+      <Name>LeMP.StdMacros</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
@@ -352,6 +294,7 @@
       <DependentUpon>LempDemoPanel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

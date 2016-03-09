@@ -18,8 +18,9 @@ namespace LeMP
 	public partial class StandardMacros
 	{
 		[ThreadStatic]
-		internal static int NextTempCounter = 0; // next tmp variable
-		internal static Symbol NextTempName() { return GSymbol.Get("tmp_" + NextTempCounter++); }
+		internal static int _nextTempCounter = 0; // next tmp variable
+		public static int NextTempCounter { get { return _nextTempCounter; } }
+		public static Symbol NextTempName() { return GSymbol.Get("tmp_" + _nextTempCounter++); }
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
 
@@ -177,23 +178,23 @@ namespace LeMP
 
 		[LexicalMacro(@"static if() {...} else {...}", "TODO. Only boolean true/false implemented now", "#if", 
 			Mode = MacroMode.Passive | MacroMode.Normal)]
-		public static LNode StaticIf(LNode @if, IMessageSink sink)
+		public static LNode StaticIf(LNode @if, IMacroContext context)
 		{
 			LNode @static;
 			if ((@static = @if.AttrNamed(S.Static)) == null || !@static.IsId)
 				return null;
-			return static_if(@if, sink);
+			return static_if(@if, context);
 		}
 		
 		[LexicalMacro(@"static_if(cond, then, otherwise)", "TODO. Only boolean true/false implemented now",
 			Mode = MacroMode.Passive | MacroMode.Normal)]
-		public static LNode static_if(LNode @if, IMessageSink sink)
+		public static LNode static_if(LNode @if, IMacroContext context)
 		{
 			if (!Range.IsInRange(@if.ArgCount, 2, 3))
 				return null;
-			VList<LNode> conds = MacroProcessor.Current.ProcessSynchronously(@if.Args[0]);
+			LNode cond = context.PreProcess(@if.Args[0]);
 			object @bool;
-			if (conds.Count == 1 && (@bool = conds[0].Value) is bool)
+			if ((@bool = cond.Value) is bool)
 			{
 				LNode output = (bool)@bool ? @if.Args[1] : @if.Args.TryGet(2, null) ?? F.Call(S.Splice);
 				if (output.Calls(S.Braces))
@@ -202,7 +203,7 @@ namespace LeMP
 					return output;
 			}
 			else
-				return Reject(sink, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
+				return Reject(context, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
 		}
 
 		[LexicalMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]

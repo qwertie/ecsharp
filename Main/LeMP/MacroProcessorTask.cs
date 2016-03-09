@@ -177,6 +177,7 @@ namespace LeMP
 			var oldMP = MacroProcessor._current;
 			MacroProcessor._current = _parent;
 			bool newScope = false;
+			int maxExpansions = asRoot ? MaxExpansions : _s.MaxExpansions - 1;
 			try {
 				bool reentrant = _reentrancyCounter++ != 0;
 				if (!reentrant)
@@ -194,10 +195,9 @@ namespace LeMP
 					_curScope = new Scope(namespaces, properties, this, true);
 					_scopes.Add(_curScope);
 				}
-				int maxExpansions = asRoot ? MaxExpansions : _s.MaxExpansions - 1;
 				if (single != null) {
 					bool _;
-					return ApplyMacros(single, maxExpansions, areAttributesOrIsTarget, out _);
+					return ApplyMacros(single, maxExpansions, areAttributesOrIsTarget, out _) ?? single;
 				} else {
 					int oldStackCount = _ancestorStack.Count;
 					LNode splice = null;

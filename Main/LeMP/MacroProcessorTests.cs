@@ -7,7 +7,6 @@ using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc;
-using LeMP.Prelude;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
 
