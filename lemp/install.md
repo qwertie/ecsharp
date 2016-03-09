@@ -1,4 +1,7 @@
-### Installing LeMP
+---
+title: "Installing LeMP"
+layout: article
+---
 
 First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub, or download and extract the [repository's zip file](https://github.com/qwertie/Loyc/archive/master.zip), because I haven't yet figured out how to do that magic auto-installation via NuGet.
 
