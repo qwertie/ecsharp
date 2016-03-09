@@ -160,9 +160,9 @@
     <Compile Include="Collections\CollectionDebugView.cs" />
     <Compile Include="Collections\ExtensionMethods\DictionaryExt.cs" />
     <Compile Include="Collections\ExtensionMethods\EnumerableExt.cs" />
-    <None Include="Utilities\In.ecs">
+    <None Include="Utilities\Range.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>In.out.cs</LastGenOutput>
+      <LastGenOutput>Range.out.cs</LastGenOutput>
     </None>
     <Compile Include="Collections\ExtensionMethods\LCExtensions.cs" />
     <Compile Include="Collections\ExtensionMethods\LinqToCollections.cs">
@@ -186,15 +186,6 @@
     <Compile Include="Collections\Adapters\NegList.cs" />
     <Compile Include="Collections\Adapters\NegListSource.cs" />
     <Compile Include="Collections\HelperClasses\NumRange.cs" />
-    <None Include="Collections\HelperClasses\Range.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>Range.out.cs</LastGenOutput>
-    </None>
-    <Compile Include="Collections\HelperClasses\Range.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Range.ecs</DependentUpon>
-    </Compile>
     <Compile Include="Collections\HelperClasses\RangeEnumerator.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -267,11 +258,6 @@
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\HashTags.cs" />
     <Compile Include="Utilities\IMessageSink.cs" />
-    <Compile Include="Utilities\In.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>In.ecs</DependentUpon>
-    </Compile>
     <Compile Include="Utilities\Localize.cs" />
     <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
@@ -280,6 +266,11 @@
     <Compile Include="Utilities\MiscInterfaces.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\PushedTLV.cs" />
+    <Compile Include="Utilities\Range.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Range.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
     <Compile Include="Utilities\Symbol.cs" />

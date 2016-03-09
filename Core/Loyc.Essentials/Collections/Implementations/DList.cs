@@ -338,7 +338,7 @@
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, (IReadOnlyCollection<T>)Range.Repeat(default(T), newSize - Count));
+				InsertRange(Count, (IReadOnlyCollection<T>)ListExt.Repeat(default(T), newSize - Count));
 		}
 
 		public DList<T> Clone()

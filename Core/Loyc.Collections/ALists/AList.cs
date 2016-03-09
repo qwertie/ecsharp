@@ -166,7 +166,7 @@ namespace Loyc.Collections
 			DetectSizeOverflow(1);
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, Range.Single(item)));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item)));
 
 			try {
 				_freezeMode = FrozenForConcurrency;
@@ -251,7 +251,7 @@ namespace Loyc.Collections
 		private void SetHelper(uint index, T value)
 		{
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, Range.Single(value)));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, (int)index, 0, ListExt.Single(value)));
 			++_version;
 			if (_root.IsFrozen)
 				AutoCreateOrCloneRoot();

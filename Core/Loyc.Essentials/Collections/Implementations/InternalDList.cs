@@ -698,7 +698,7 @@ namespace Loyc.Collections.Impl
 			if (newSize < count)
 				this.RemoveRange(newSize, count - newSize);
 			else if (newSize > count)
-				this.InsertRange(count, (IListSource<T>)Range.Repeat(default(T), newSize - count));
+				this.InsertRange(count, (IListSource<T>)ListExt.Repeat(default(T), newSize - count));
 		}
 
 		public bool Contains(T item)

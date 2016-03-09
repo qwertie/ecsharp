@@ -593,7 +593,7 @@ namespace Loyc.Syntax.Lexing
 		}
 		protected override IEnumerator<Token> MakeDedentToken(Token tokenBeforeDedent, ref Maybe<Token> tokenAfterDedent)
 		{
-			return Range.Single(DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex)).GetEnumerator();
+			return ListExt.Single(DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex)).GetEnumerator();
 		}
 		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
 		{

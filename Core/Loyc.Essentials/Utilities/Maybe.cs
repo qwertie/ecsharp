@@ -25,6 +25,13 @@ namespace Loyc
 	/// <remarks>The name of this type comes from some functional programming 
 	/// languages which define a type such as <c>data Maybe t = Nothing | Just t</c>.
 	/// <para/>
+	/// This type exists primarily for generic code, since C# does not allow you
+	/// to write a generic function that returns "T?" if T could be a class.
+	/// Places where this type is used include the DictionaryExt.TryGetValue(key) 
+	/// extension method, and the ILexer&lt;T>.NextToken() method. Both of these
+	/// may not be able to return a value, but they cannot return T? because T 
+	/// could be a class (or even a Nullable-of-something).
+	/// <para/>
 	/// There is an implicit conversion from T that returns <c>new Maybe{T}(value)</c>,
 	/// and from <see cref="NoValue.Value"/> that returns <see cref="Maybe{T}.NoValue"/>.
 	/// Since C# doesn't allow us to define conversions to/from <c>T?</c>, these

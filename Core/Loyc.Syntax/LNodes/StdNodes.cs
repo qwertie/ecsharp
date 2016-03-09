@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections;
 using Loyc.Utilities;
-using Loyc.Math;
+using Loyc;
 
 namespace Loyc.Syntax
 {
@@ -220,7 +220,7 @@ namespace Loyc.Syntax
 					_targetLen = 0;
 			}
 		}
-		ushort ClipUShort(int x) { return (ushort)MathEx.InRange(x, 0, ushort.MaxValue); }
+		ushort ClipUShort(int x) { return (ushort)Loyc.Range.PutInRange(x, 0, ushort.MaxValue); }
 
 		public override LNode Target
 		{

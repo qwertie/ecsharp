@@ -186,7 +186,7 @@ namespace Loyc.Syntax
 		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, Symbol inputType = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, msgs, inputType);
+				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingService.File);
 		}
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
 		{

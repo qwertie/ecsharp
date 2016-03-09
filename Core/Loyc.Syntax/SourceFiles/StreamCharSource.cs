@@ -69,7 +69,9 @@
 		protected uint _eofPosition = 0;
 		protected Decoder _decoder;
 
-		public StreamCharSource(Stream stream) : this(stream, UTF8Encoding.Default.GetDecoder(), DefaultBufSize) { }
+		// Microsoft fail! UTF8Encoding.Default cannot decode UTF8, see
+		// https://startbigthinksmall.wordpress.com/2009/01/20/utf8encodingdefault-encodingutf8-net-c/
+		public StreamCharSource(Stream stream) : this(stream, Encoding.UTF8.GetDecoder(), DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Decoder decoder) : this(stream, decoder, DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Encoding encoding) : this(stream, encoding.GetDecoder(), DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Decoder decoder, int bufSize)

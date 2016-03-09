@@ -87,7 +87,7 @@ namespace Loyc.Math
 		                   <#if(!T.IsSigned||T.WholeBits<31){#> t < (int)T.MinValue ? T.MinValue : <#}#>(T)t; }
 		public T Clip(long t)   { return<#if(T.WholeBits<63){#> t > (long)T.MaxValue ? T.MaxValue : <#}#>
 		                   <#if(!T.IsSigned||T.WholeBits<63){#> t < (long)T.MinValue ? T.MinValue : <#}#>(T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 <#		} #>
 <#		} #>
 

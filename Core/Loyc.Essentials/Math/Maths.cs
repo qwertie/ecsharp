@@ -54,7 +54,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -149,7 +149,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -242,7 +242,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -337,7 +337,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return t > (int)T.MaxValue ? T.MaxValue : 		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -430,7 +430,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                   (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -525,7 +525,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return t > (long)T.MaxValue ? T.MaxValue : 		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -618,7 +618,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return t > (ulong)T.MaxValue ? T.MaxValue : (T)t; }
 		public T Clip(int t)    { return		                   (T)t; }
 		public T Clip(long t)   { return		                   (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }
@@ -713,7 +713,7 @@ namespace Loyc.Math
 		public T Clip(ulong t)  { return(T)t; }
 		public T Clip(int t)    { return		                    t < (int)T.MinValue ? T.MinValue : (T)t; }
 		public T Clip(long t)   { return		                    t < (long)T.MinValue ? T.MinValue : (T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 
 		public bool IsLess(T a, T b)        { return a < b; }
 		public bool IsLessOrEqual(T a, T b) { return a <= b; }

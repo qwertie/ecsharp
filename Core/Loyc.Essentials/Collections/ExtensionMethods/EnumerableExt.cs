@@ -371,7 +371,7 @@ namespace Loyc.Collections
 
 		/// <summary>Upcasts a sequence.</summary>
 		/// <remarks>In .NET 4+ this is a no-op that just returns <c>list</c>,
-		/// but in .NET 3.5 that's illegal so this method creates an adapter.</remarks>
+		/// but in .NET 3.5 that's illegal, so this method creates an adapter.</remarks>
 		public static IEnumerable<Base> Upcast<Base, Derived>(this IEnumerable<Derived> list) where Derived : class, Base
 		{
 			#if DotNet2 || DotNet3

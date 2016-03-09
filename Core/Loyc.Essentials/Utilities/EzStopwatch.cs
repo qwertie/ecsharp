@@ -88,7 +88,7 @@ namespace Loyc
 			if ((int)_offs != _offs)
 				Reset(); // _base getting huge => re-center on zero
 			_timer.Start();
-			return (int)MathEx.InRange(ms, int.MinValue, int.MaxValue);
+			return (int)Range.PutInRange(ms, int.MinValue, int.MaxValue);
 		}
 		/// <summary>Resets the timer to 0 and pauses it there.</summary>
 		public void Reset()
