@@ -7,9 +7,9 @@ toc: true
 Task: make EC# real
 -------------------
 
-Like Pinocchio, Enhanced C# wants to be real: not just a single-file generator, but its own proper project type with member completion and all that!
+Like Pinocchio, Enhanced C# wants to be real: not just a single-file generator, but its own proper project type with member completion and all that! Then again, maybe people really do prefer the single-file generator approach - if it's officially a C# project, a "virgin" copy of Visual Studio 2015 will be able to open it - it's just that they just want IntelliSense, and red squiggly underlined errors in the EC# file.
 
-But before that can happen, I need someone to help make a Roslyn back-end for LeMP. In other words, I want to convert the output of LeMP into a Microsoft Roslyn syntax tree and compile it with the Roslyn C# 6 compiler. Once that exists, the next step will be to write a Visual Studio extension that introduces a new "Enhanced C# project type" that uses LeMP as the front-end and Roslyn C# as the backend. An EC# project type could allow `*.ecs` files to enjoy IntelliSense just like plain C#! It should also allow mixed C#-EC# projects, in which the *.cs files use Roslyn directly; both file types should be first-class citizens.
+In either case, the first thing we need is someone to help make a Roslyn back-end for LeMP. In other words, I want to convert the output of LeMP into a Microsoft Roslyn syntax tree and compile it with the Roslyn C# 6 compiler. Once that exists, the next step might be to write a Visual Studio extension that introduces a new "Enhanced C# project type" that uses LeMP as the front-end and Roslyn C# as the backend. An EC# project type could allow `*.ecs` files to enjoy IntelliSense just like plain C#! It should also allow mixed C#-EC# projects, in which the *.cs files use Roslyn directly; both file types should be first-class citizens.
 
 I do not have time to do all of this myself, my TO-DO list is full, so if nobody else volunteers, it won't happen. If you want to do this project, I will happily teach you whatever you need to now about LeMP; learning about Roslyn will be your responsibility, and I only know the basics of writing Visual Studio extensions (having written the syntax highlighter for `*.ecs`).
 
@@ -28,7 +28,7 @@ The best example of an existing printer is `LesNodePrinter` (`EcsNodePrinter` is
 Task: write Javascript or C++ printer
 -------------------------------------
 
-Write a class that prints Loyc trees as C++ or Javascript code, so that in the future LLLPG and LeMP can produce code in those languages. Since no one has defined a mapping between Loyc trees and C++ or Javascript before, the first step is to plan out how each Javascript or C++ construct will be represented as a Loyc tree.
+Write a class that prints Loyc trees as C++, Javascript or Swift code, so that in the future LLLPG and LeMP can produce code in those languages. Since no one has defined a mapping between Loyc trees and these languages before, the first step is to plan out how each Javascript or C++ or Swift construct will be represented as a Loyc tree.
 
 Sometimes you can just use the same mapping as Enhanced C#, and sometimes you'll have to extend it or modify it. For example, a C# class has a Loyc tree like this:
 
@@ -69,6 +69,6 @@ Finally, if you could [hire me](https://www.linkedin.com/in/qwertie) to do "cons
 Task: talk to the lonely guy
 ----------------------------
 
-What's missing from Enhanced C#? Can that feature be done with a macro? Tell me about your ideas or any macros you've made. My email address is on the home page.
+What's missing from Enhanced C#? Can that feature be done with a macro? Tell me about your ideas or any macros you've made. My email address is on the [home page](/).
 
 P.S. a shout out to the [srclib](https://srclib.org/) project. I wish I had time to implement the Visual Studio version!

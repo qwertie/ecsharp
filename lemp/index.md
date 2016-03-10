@@ -49,11 +49,13 @@ The comma `,` before the closing `)` adds an "empty" parameter to the list, whic
 
 I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying. A simple type isn't hard:
 
-	public class Person {
-		public string Name;
-		public DateTime DateOfBirth;
-		public List<Person> SubItems;
-	};
+~~~csharp
+public class Person {
+	public string Name;
+	public DateTime DateOfBirth;
+	public List<Person> SubItems;
+};
+~~~
 
 But this simplicity has a big price:
 
@@ -63,19 +65,21 @@ But this simplicity has a big price:
 
 So, you probably need a constructor. But adding a constructor is a pain!
 
-	public class Person
-	{
-		public string Name           { get; private set; }
-		public DateTime DateOfBirth  { get; private set; }
-		public List<Person> Children { get; private set; }
-		public Person(string name, DateTime dateOfBirth, List<Person> children)
-		{ 
-			Name = name;
-			DateOfBirth = dateOfBirth;
-			Children = children;
-			// TODO: Add validation code
-		}
+~~~csharp
+public class Person
+{
+	public string Name           { get; private set; }
+	public DateTime DateOfBirth  { get; private set; }
+	public List<Person> Children { get; private set; }
+	public Person(string name, DateTime dateOfBirth, List<Person> children)
+	{ 
+		Name = name;
+		DateOfBirth = dateOfBirth;
+		Children = children;
+		// TODO: Add validation code
 	}
+}
+~~~
 
 It's too much repetition!
 
@@ -87,16 +91,18 @@ It's too much repetition!
 
 LeMP solves these problems with a combination of (1) a macro, and (2) a little syntactical "makeover" of C#. In LeMP you'd write this:
 
-	public class Person
+~~~csharp
+public class Person
+{
+	public this(
+		public string Name           { get; private set; },
+		public DateTime DateOfBirth  { get; private set; },
+		public List<Person> SubItems { get; private set; })
 	{
-		public this(
-			public string Name           { get; private set; },
-			public DateTime DateOfBirth  { get; private set; },
-			public List<Person> SubItems { get; private set; })
-		{
-			// TODO: Add validation code
-		}
-	};
+		// TODO: Add validation code
+	}
+};
+~~~
 
 Your output file will contain exactly the code listed above, and there is no repetition except for `public .. { get; private set; }` (but you might not want everything to be a public property anyway, and if you're using C# 6.0 / VS2015 you can drop the `private set` part). Great! 
 
