@@ -2,6 +2,7 @@
 title: "Loyc's future"
 layout: post
 ---
+
 I don't know whether I want to continue using .NET at all.
 
 For one thing, the developers are remarkably ... I don't know, un-comp-sci. My ["optionally persistent" data structure library](http://core.loyc.net/collections) has been completely ignored, it's becoming clear that .NET devs ignore stuff like [LeMP](/lemp) too. I guess if something comes out of Redmond itself, people will be clamoring to write books about it, but the free open source landscape seems a little... forlorned. Either that or I don't know where to find the good stuff. Did everyone move on from CodeProject when I wasn't looking?
