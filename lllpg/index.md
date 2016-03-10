@@ -1,6 +1,7 @@
 ---
-title: The Loyc LL(k) Parser Generator
-layout: article
+title: "LLLPG Home Page"
+layout: page
+tagline: "The Loyc LL(k) Parser Generator"
 ---
 
 ![Logo](lllpg-logo.png)

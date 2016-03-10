@@ -8,6 +8,11 @@ toc: true
 
 _March 7, 2016_
 
+Introduction
+------------
+
+This article will teach you how to use some of the "functional" features of the open-source Enhanced C# + LeMP project: pattern matching, algebraic data types, tuples and numeric ranges. To download the Visual Studio extension or learn more about LeMP, visit the [LeMP home page](http://loyc.net/lemp).
+
 Pattern matching!
 -----------------
 
@@ -167,7 +172,7 @@ void TreeOfThree()
 }
 ~~~
 
-**Note**: A `New` method is created only when an `alt` uses type parameters.
+**Note**: A `New` method is created only when an `alt` uses generic type parameters.
 
 You can "modify" individual properties of an ADT with the appropriate "`With`" method, like this:
 
@@ -435,8 +440,7 @@ void DrawIfButton(Graphics g, Widget widget) {
 }
 ~~~
 
-Simple matching
----------------
+### Simple matching ###
 
 What else can you do with pattern matching? For one thing, you can do _equality testing_ and _range testing_, like this:
 
@@ -468,11 +472,11 @@ This example illustrates several things.
 
 **Equality testing**: You can use not just literals like `case 5` but expressions like `case (x + y):`. In the output, `case 5` becomes `if (5.Equals(matchExpr))`. Why is this particular equality test used? Consider the alternatives:
 
-- `if (matchExpr == 5)` works in fewer cases. Specifically, consider `match((object)5) {case 5:}`. `5.Equals((object)5)` returns true, but `(object)5 == 5` is a compile-time error. Thus `Equals` is more flexible.
+- `if (matchExpr == 5)` works in fewer cases. Specifically, consider `match((object)5) {case 5:}`. In this case, `5.Equals((object)5)` returns true, but `(object)5 == 5` is a compile-time error. Thus `Equals` is more flexible.
 - `if (object.Equals(matchExpr, 5))` would involve boxing and dynamic downcasting.
 - `if (matchExpr.Equals(5))` would cause `NullReferenceException` in case `matchExpr` is null.
 
-The form only changes if you write `case null`; this becomes `if (matchExpr == null)`. **Note**: other than the literal null, which is allowed, it is your responsibility to ensure that the cases themselves do not evaluate to null. For reasons of performance and epistemology, when you use non-literal expressions like `case X`, `match` does not check whether `X` itself is null (in fact, it cannot tell whether `X` has a nullable type).
+The form only changes if you write `case null`; this becomes `if (matchExpr == null)`. **Note**: other than the literal `null`, which is allowed, it is your responsibility to ensure that the cases themselves do not evaluate to null. For reasons of performance and epistemology, when you use non-literal expressions like `case X`, `match` does not check whether `X` itself is null (in fact, it cannot tell whether `X` has a nullable type).
 
 **Default**: Like `switch`, `match` can have a `default:`, but it must come last. It's equivalent to `case _:`.
 
@@ -508,7 +512,7 @@ match (obj) {
 }
 ~~~
 
-When I wrote this article I tried explaining what this does, but the explanation was so long I decided it would be better just to show the output code:
+When I first wrote this article I tried explaining what this does, but the explanation was so long I decided it would be better just to show the output code:
 
 ~~~csharp
 if (obj is Shape) {
@@ -589,7 +593,7 @@ match(value) {
 
 ### Assigning to an existing variable with `ref` ###
 
-You can use `ref variable` instead of `$variable` to assign a value to an existing variable rather than creating a new variable. For consistency with the `matchCode` macro introduced in the [previous article](lemp-code-gen-and-analysis.html), `$(ref variable)` is also accepted.
+You can use `ref variable` instead of `$variable` to assign a value to an existing variable rather than creating a new variable. For consistency with the [`matchCode` macro introduced in the previous article](lemp-code-gen-and-analysis.html), `$(ref variable)` is also accepted.
 
 ### Rationales ###
 
@@ -630,7 +634,7 @@ Loyc.Essentials.dll contains all of the methods shown here; `IsInRangeExcludeHi`
 
 Since the expression `x in range` just calls `range.Contains(x)`, it is compatible with standard collection types.
 
-### Wrapping up ###
+## Wrapping up ##
 
 I think that's everything. I hope these features make you more productive. Enjoy!
 

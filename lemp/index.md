@@ -1,6 +1,7 @@
 ---
-title: "LeMP: the Lexical Macro Processor for C#"
-layout: article
+title: "LeMP Home Page"
+layout: page
+tagline: "the Lexical Macro Processor for C#"
 ---
 
 Introduction
@@ -115,10 +116,12 @@ Learn more about LeMP in these published articles:
 
 Some use cases and built-in macros (such as `on_finally`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
 
-Installation
-------------
+Download & Installation
+-----------------------
 
-For now, please see the instructions in the [second article](http://www.codeproject.com/Articles/1081882/Using-LeMP-as-a-Csharp-code-generator).
+Please visit the [installation page](install.html).
+
+See also: [Version History](version-history.html)
 
 Help wanted
 -----------
