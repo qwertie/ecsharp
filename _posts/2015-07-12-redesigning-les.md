@@ -110,8 +110,10 @@ New idea
 --------
 New idea for whitespace agnosticism. Three kinds of sugar:
 
-1. Block-call expression (adds an argument): expr {...}, expr (...) {...}
-2. Contextual binary operators: else catch finally where in @anything
+1. Block-call expression (adds an argument): ident {...}, ident (expr) {...}
+2. Lowest-precedence right-associative binary ops: `else catch finally where then` and `@anything`
 3. Top-level expr: Id Expr (`return 0`) - doesn't work if Expr starts with binary op or '('
+
+Final touch: suppress error message about missing ';' if there is a '}' preceding this location.
 
 do for while if unless until switch return break throw goto using let var loop with | else catch finally where in | class struct fn type new case enum event alias foreach import | public private protected internal module
