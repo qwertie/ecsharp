@@ -1,12 +1,12 @@
 ---
 title: "LLLPG Home Page"
 layout: page
-tagline: "The Loyc LL(k) Parser Generator"
+tagline: "The LL(k) Parser Generator for Coders"
 ---
 
 ![Logo](lllpg-logo.png)
 
-LLLPG is a recursive-decent parser generator for C#, with a feature set better than ANTLR version 2. 
+LLLPG is a recursive-decent parser generator for C#, with a feature set better than ANTLR version 2. It's one of the only parser generators designed for _coders_: it generates clean, straightforward code, only slightly uglier than you would write by hand, and it's convenient for small parsing tasks, not just big ones.
 
 To learn more, [read the FAQ](faq.html) or the five-part article series about LLLPG:
 
