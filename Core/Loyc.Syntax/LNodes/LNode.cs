@@ -1086,9 +1086,9 @@ namespace Loyc.Syntax
 		public virtual bool Calls(string name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
 		public virtual bool CallsMin(string name, int argCount)    { Debug.Assert(!IsCall); return false; }
-		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</summary>
+		/// <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal.</summary>
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
-		/// <summary>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
+		/// <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
 		public virtual bool HasSimpleHeadWithoutPAttrs()           { Debug.Assert(!IsCall); return true; }
 		
 		public LNode WithAttrs(Func<LNode, Maybe<LNode>> selector) {

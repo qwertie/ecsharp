@@ -312,6 +312,10 @@ namespace Loyc.Syntax
 			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(S.Of, stem, T1, startIndex, endIndex);
 		}
+		public LNode Of(Symbol stem, LNode T1, int startIndex = -1, int endIndex = -1)
+		{
+			return Of(Id(stem), T1, startIndex, endIndex);
+		}
 		public LNode Of(LNode stem, IEnumerable<LNode> typeParams, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
@@ -319,8 +323,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Of(Symbol stem, IEnumerable<LNode> typeParams, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return Call(S.Of, Id(stem), startIndex, endIndex).PlusArgs(typeParams);
+			return Of(Id(stem), typeParams, startIndex, endIndex);
 		}
 
 		public LNode Braces(params LNode[] contents)
