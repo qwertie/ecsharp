@@ -154,11 +154,11 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"stringify(expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
-		public static LNode stringify(LNode nameof, IMacroContext context)
+		public static LNode stringify(LNode node, IMacroContext context)
 		{
-			if (nameof.ArgCount != 1)
+			if (node.ArgCount != 1)
 				return null; // reject
-			return F.Literal(ParsingService.Current.Print(nameof.Args[0], context.Sink, ParsingService.Exprs));
+			return F.Literal(ParsingService.Current.Print(node.Args[0], context.Sink, ParsingService.Exprs));
 		}
 		
 		#endregion

@@ -9,6 +9,36 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+		[Test] public void Regression_2016_03_InappropriateSkip()
+		{
+			Test(@"@[private] rule D()::LNode @{
+				tilde:=TT.Tilde
+				(	n=(TT.Id|TT.ContextualKeyword)
+				|	n=TT.(noMacro(@this))
+				)
+			};
+			rule X()::LNode @{
+				D | TT.Tilde TT.Literal
+			};", @"
+				LNode D()
+				{
+					var tilde = Match((int) TT.NotBits);
+					TODO; // bug: Skip() here, should be... if-else? MatchAny? not Skip anyway
+				}
+				LNode X()
+				{
+					TokenType la1;
+					la1 = LA(1);
+					if (la1 == TT.@this || la1 == TT.ContextualKeyword || la1 == TT.Id)
+						D();
+					else {
+						Match((int) TT.NotBits);
+						Match((int) TT.Literal);
+					}
+				}
+			");
+		}
+
 		[Test] public void Regression_2015_01_AndPredBug()
 		{
 			Test(@"LLLPG (parser(terminalType: Token, laType: TT)) {

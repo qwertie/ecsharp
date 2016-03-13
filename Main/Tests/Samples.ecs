@@ -1,6 +1,7 @@
 ﻿#importMacros(Loyc.LLPG);
 using System(, .Collections(, .Generic), .Text, .Linq);
-using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing));
+using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing, .Les), .Ecs);
+using TT = Loyc.Syntax.Les.TokenType;
 
 namespace Samples {
 	using ADT;
@@ -31,11 +32,18 @@ namespace Samples {
 			AreEqual(0, (1..1).Sum());
 			AreEqual(0, (1...0).Sum());
 		}
-		/*[Test]*/ public void PrintAllTheNames()
+		[Test] public void PrintAllTheNames()
 		{
 			try {
-				PlayPen.PrintAllTheNames(@"..\..\Core\Loyc.Essentials\Utilities");
+				PlayPen.PrintAllTheNames(@"..\..\Main\LeMP.StdMacros");
 			} catch {}
+		}
+		[Test] public void SExprTest()
+		{
+			LNode @using = SExprParser.Parse("(#import (. System Collections))");
+			Console.WriteLine(EcsLanguageService.Value.Print(@using));
+			LNode assign = SExprParser.Parse("(= x (+ x 2))");
+			Console.WriteLine(EcsLanguageService.Value.Print(assign));
 		}
 		static void FavoriteNumberGame()
 		{
@@ -160,4 +168,55 @@ struct EmailAddress
     UString domain = email.Substring(at + 1);
     return new EmailAddress(userName, domain);
   }
+
+
 }
+
+// Parser for S-expressions => Loyc trees
+// It doesn't support attributes - it's really just an example
+public partial class SExprParser : BaseParserForList<Token, int>
+{
+	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null) 
+	{ 
+		var lexer = LesLanguageService.Value.Tokenize(sexpr, filename, msgs);
+		var withoutComments = new WhitespaceFilter(lexer).Buffered();
+		var parser = new SExprParser(withoutComments, lexer.SourceFile, msgs);
+		return parser.Atom();
+	}
+
+	protected LNodeFactory F;
+	public SExprParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
+		: base(tokens, default(Token), file, startIndex)
+	{
+		ErrorSink = messageSink;
+	}
+	protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+	{
+		base.Reset(list, eofToken, file, startIndex);
+		F = new LNodeFactory(file);
+	}
+	protected override string ToString(int tokenType)
+	{
+		return ((TT)tokenType).ToString();
+	}
+
+	LLLPG (parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(true)));
+	alias("(" = TT.LParen);
+	alias(")" = TT.RParen);
+	alias("." = TT.Dot);
+		
+	rule LNode Atom() @{
+		result:List
+	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Colon|TT.Not|TT.BQString) 
+		         { $result=F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);}
+	|	t:TT.Literal { $result=F.Literal(t.Value, t.StartIndex, t.EndIndex);}
+	};
+	rule LNode List() @{
+		("("|TT.SpaceLParen) ")"
+		{return F.List(VList<LNode>.Empty, $"(".StartIndex, $")".EndIndex);}
+	|	{var parts = VList<LNode>.Empty;}
+		("("|TT.SpaceLParen) target:Atom [parts+=Atom]* ")" 
+		{return F.Call($target, $parts, $"(".StartIndex, $")".EndIndex);}
+	};
+}
+

@@ -15,6 +15,9 @@ using Loyc.Collections;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
+using Loyc.Syntax.Les;
+using Loyc.Ecs;
+using TT = Loyc.Syntax.Les.TokenType;
 namespace Samples
 {
 	using ADT;
@@ -43,12 +46,19 @@ namespace Samples
 			AreEqual(0, Range.ExcludeHi(1, 1).Sum());
 			AreEqual(0, Range.Inclusive(1, 0).Sum());
 		}
-		public void PrintAllTheNames()
+		[Test] public void PrintAllTheNames()
 		{
 			try {
-				PlayPen.PrintAllTheNames("..\\..\\Core\\Loyc.Essentials\\Utilities");
+				PlayPen.PrintAllTheNames("..\\..\\Main\\LeMP.StdMacros");
 			} catch {
 			}
+		}
+		[Test] public void SExprTest()
+		{
+			LNode @using = SExprParser.Parse("(#import (. System Collections))");
+			Console.WriteLine(EcsLanguageService.Value.Print(@using));
+			LNode assign = SExprParser.Parse("(= x (+ x 2))");
+			Console.WriteLine(EcsLanguageService.Value.Print(assign));
 		}
 		static void FavoriteNumberGame()
 		{
@@ -542,7 +552,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 137: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 145: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -557,11 +567,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 142: (([\-])? [0-9A-Za-z])*
+		// Line 150: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 142: ([\-])?
+				// Line 150: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -573,14 +583,14 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		#line 150 "Samples.ecs"
+		#line 158 "Samples.ecs"
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);
 		#line default
 		UsernameChars(src);
-		// Line 155: ([.] UsernameChars)*
+		// Line 163: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -593,7 +603,7 @@ struct EmailAddress
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 159: ([.] DomainCharSeq)*
+		// Line 167: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -605,5 +615,114 @@ struct EmailAddress
 		src.Match(-1);
 		UString domain = email.Substring(at + 1);
 		return new EmailAddress(userName, domain);
+	}
+}
+public partial class SExprParser : BaseParserForList<Token,int>
+{
+	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null)
+	{
+		var lexer = LesLanguageService.Value.Tokenize(sexpr, filename, msgs);
+		var withoutComments = new WhitespaceFilter(lexer).Buffered();
+		var parser = new SExprParser(withoutComments, lexer.SourceFile, msgs);
+		return parser.Atom();
+	}
+	protected LNodeFactory F;
+	public SExprParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) : base(tokens, default(Token), file, startIndex)
+	{
+		ErrorSink = messageSink;
+	}
+	protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+	{
+		base.Reset(list, eofToken, file, startIndex);
+		F = new LNodeFactory(file);
+	}
+	protected override string ToString(int tokenType)
+	{
+		return ((TT) tokenType).ToString();
+	}
+	LNode Atom()
+	{
+		LNode result = default(LNode);
+		Token t = default(Token);
+		// Line 209: ( List | (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		switch ((TT) LA0) {
+		case TT.LParen:
+		case TT.SpaceLParen:
+			result = List();
+			break;
+		case TT.Assignment:
+		case TT.BQString:
+		case TT.Colon:
+		case TT.Dot:
+		case TT.Id:
+		case TT.NormalOp:
+		case TT.Not:
+		case TT.PrefixOp:
+		case TT.PreOrSufOp:
+			{
+				t = MatchAny();
+				#line 211 "Samples.ecs"
+				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
+				#line default
+			}
+			break;
+		default:
+			{
+				t = Match((int) TT.Literal);
+				#line 212 "Samples.ecs"
+				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
+				#line default
+			}
+			break;
+		}
+		return result;
+	}
+	LNode List()
+	{
+		TT la1;
+		Token lit_lpar = default(Token);
+		Token lit_rpar = default(Token);
+		LNode target = default(LNode);
+		// Line 215: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
+		la1 = (TT) LA(1);
+		if (la1 == TT.RParen) {
+			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
+			lit_rpar = MatchAny();
+			#line 216 "Samples.ecs"
+			return F.List(VList<LNode>.Empty, lit_lpar.StartIndex, lit_rpar.EndIndex);
+			#line default
+		} else {
+			#line 217 "Samples.ecs"
+			var parts = VList<LNode>.Empty;
+			#line default
+			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
+			target = Atom();
+			// Line 218: (Atom)*
+			for (;;) {
+				switch ((TT) LA0) {
+				case TT.Assignment:
+				case TT.BQString:
+				case TT.Colon:
+				case TT.Dot:
+				case TT.Id:
+				case TT.Literal:
+				case TT.LParen:
+				case TT.NormalOp:
+				case TT.Not:
+				case TT.PrefixOp:
+				case TT.PreOrSufOp:
+				case TT.SpaceLParen:
+					parts.Add(Atom());
+					break;
+				default:
+					goto stop;
+				}
+			}
+		stop:;
+			lit_rpar = Match((int) TT.RParen);
+			#line 219 "Samples.ecs"
+			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
+			#line default
+		}
 	}
 }

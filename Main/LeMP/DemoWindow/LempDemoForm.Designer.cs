@@ -27,6 +27,7 @@ namespace TextEditor
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LempDemoForm));
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuFileNew = new System.Windows.Forms.ToolStripMenuItem();
@@ -346,6 +347,7 @@ namespace TextEditor
 			this.ClientSize = new System.Drawing.Size(784, 442);
 			this.Controls.Add(this.fileTabs);
 			this.Controls.Add(this.menuStrip1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "LempDemoForm";
 			this.Text = "LeMP Built-in Editor";
