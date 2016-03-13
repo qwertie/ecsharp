@@ -33,7 +33,7 @@ namespace Loyc.Ecs.Parser
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 
-		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
+		public IListSource<Token> TokensRoot { get { return _tokensRoot; } }
 
 		static readonly Severity _Error = Severity.Error;
 		static readonly Severity _Warning = Severity.Warning;

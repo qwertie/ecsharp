@@ -32,34 +32,43 @@ namespace Loyc.Ecs
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), await = F.Id("await");
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
+		protected LNode WordAttr(string name)
+		{
+			if (!name.StartsWith("#"))
+				name = "#" + name;
+			return F.Attr(F.Id(S.TriviaWordAttribute), _(name));
+		}
 
 		// Allows a particular test to exclude the printer or the parser
-		protected enum Mode { 
-			Both, PrintOnly, ParseOnly, 
-			PrintBothParseFirst // for Option()
+		[Flags]
+		protected enum Mode {
+			PrinterTest = 1, ParserTest = 2, Both = 3,
+			Expression = 4,
+			PrintBothParseFirst = 8, // for Option()
+			ExpectAndDropParserError = 16,
 		};
 		
 		// The tests were originally designed for printer tests, so they take 
 		// an Action<EcsNodePrinter> lambda. But the parser accepts no special 
 		// configuration, so EcsParserTests will just ignore the lambda.
-		protected abstract void Stmt(string text, LNode code, Action<EcsNodePrinter> configure = null, bool exprMode = false, Mode mode = Mode.Both);
+		protected abstract void Stmt(string text, LNode code, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both);
 
+		protected void Stmt(string text, LNode code, Mode mode)
+		{
+			Stmt(text, code, null, mode);
+		}
 		protected void Expr(string text, LNode code, Mode mode)
 		{
-			Stmt(text, code, null, true, mode);
+			Stmt(text, code, null, mode | Mode.Expression);
 		}
 		protected void Expr(string text, LNode code, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
 		{
-			Stmt(text, code, configure, true, mode);
+			Stmt(text, code, configure, mode | Mode.Expression);
 		}
-		protected void Stmt(string text, LNode code, Mode mode)
+		protected void Option(Mode mode, string before, string after, LNode code, Action<EcsNodePrinter> configure = null)
 		{
-			Stmt(text, code, null, false, mode);
-		}
-		protected void Option(Mode mode, string before, string after, LNode code, Action<EcsNodePrinter> configure = null, bool exprMode = false)
-		{
-			Stmt(before, code, null,     exprMode, mode == Mode.PrintBothParseFirst ? Mode.Both      : mode);
-			Stmt(after, code, configure, exprMode, mode == Mode.PrintBothParseFirst ? Mode.PrintOnly : mode);
+			Stmt(before, code, null,     mode == Mode.PrintBothParseFirst ? Mode.Both : mode);
+			Stmt(after, code, configure, (mode & Mode.PrintBothParseFirst) != 0 ? Mode.PrinterTest : mode);
 		}
 
 		protected LNode Attr(LNode attr, LNode node)
@@ -139,6 +148,8 @@ namespace Loyc.Ecs
 			Expr("1 + a => 2 + b => c", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
 			Expr("a is Foo ? a as Foo : b", F.Call(S.QuestionMark, F.Call(S.Is, a, Foo), F.Call(S.As, a, Foo), b));
 			Expr("a ??= b using Foo",   F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
+			Stmt("delegate(T a) {\n  return a;\n};", 
+				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle));
 		}
 
 		[Test]
@@ -181,7 +192,7 @@ namespace Loyc.Ecs
 			Stmt("a + b + c;",           F.Call(S.Add, F.Call(S.Add, a, b), c));
 			// To be safe, the printer treats 'a * b' like a pointer decl so it won't print it
 			Stmt("@`*`(a, b) / c % 2;",  F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
-			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParseOnly);
+			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParserTest);
 			Stmt("a / b * c % 2;",       F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
 			Stmt("a << 1 | b >> 1;",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
 			Stmt("a++ + a--;",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
@@ -199,6 +210,7 @@ namespace Loyc.Ecs
 			Stmt("Foo.x a;", F.Vars(F.Dot(Foo, x), a));
 			Stmt("int a;",   F.Vars(F.Int32, a));
 			Stmt("int[] a;", F.Vars(F.Of(S.Array, S.Int32), a));
+			Stmt("Foo[] a;", F.Vars(F.Of(S.Array, Foo), a));
 			Stmt("var a;",   F.Vars(_(S.Missing), a));
 			Stmt("@var a;",  F.Vars(_("var"), a));
 			Stmt(@"$Foo x;", F.Vars(F.Call(S.Substitute, Foo), x));
@@ -211,7 +223,7 @@ namespace Loyc.Ecs
 			Expr("1 `Foo` 2", F.Call(Foo, F.Literal(1), F.Literal(2)));
 			// Printer detects a possible ambiguity between multiplication and a pointer declaration?
 			Stmt("a `*` b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
-			Stmt("a * b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParseOnly);
+			Stmt("a * b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero), Mode.ParserTest);
 			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
 			Expr("x(->Foo)", F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
 			Expr("x(as Foo)", F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
@@ -280,6 +292,7 @@ namespace Loyc.Ecs
 				"Foo(out a, ref b, public static c, [#partial] x);", "Foo(out a, ref b, c, x);",  
 				F.Call(Foo, Attr(@out, a), Attr(@ref, b), Attr(@public, @static, c), Attr(@partial, x)),
 				p => p.DropNonDeclarationAttributes = true);
+			Stmt("private set;", F.Attr(F.Private, _("set")), p => p.DropNonDeclarationAttributes = true);
 		}
 
 		[Test]
@@ -297,7 +310,7 @@ namespace Loyc.Ecs
 			Stmt("(Foo) @`.`(x);", F.Call(S.Cast, F.Call(S.Dot, x).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) a.b;",     F.Call(S.Cast, F.Dot(a, b).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) @`-`(x);", F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo));
-			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParentheses = true, false, Mode.PrintOnly);
+			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
 			Stmt("(Foo) @`--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
 		}
 
@@ -335,7 +348,7 @@ namespace Loyc.Ecs
 			Expr("1u",       F.Literal(1u));
 			Expr("0uL",      F.Literal(0uL));
 			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
-			Expr("-1",       F.Literal(-1), Mode.PrintOnly);
+			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
 			Expr("0xff",     Alternate(F.Literal(0xFF)));
 			Expr("null",     F.Literal(null));
 			Expr("false",    F.Literal(false));
@@ -450,10 +463,16 @@ namespace Loyc.Ecs
 			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("([#partial] #var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
-			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partial, F.Id("#alt"),
+			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone()\n{\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
+			Stmt("Foo<a> IDictionary<a,b>.Keys\n{\n}",
+				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
+			Stmt("T IDictionary<Symbol,T>.this[Symbol x]\n{\n  get;\n  set;\n}",
+				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
+			Stmt("Func<T,T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
+				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
 		}
 
 		[Test]
@@ -525,7 +544,7 @@ namespace Loyc.Ecs
 			Expr("x / a as Foo? / b", F.Call(S.Div, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			Expr("x / a is Foo? / b", F.Call(S.Div, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			// The printer prints x(as Foo)(a, b), which is a bit hard to fix, so don't test the printer here
-			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b).SetBaseStyle(NodeStyle.OldStyle), Mode.ParseOnly);
+			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b).SetBaseStyle(NodeStyle.OldStyle), Mode.ParserTest);
 			Expr("x / a as Foo < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
 			Expr("x / a as Foo? < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			Expr("x / a is Foo? < b", F.Call(S.LT, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
@@ -600,7 +619,7 @@ namespace Loyc.Ecs
 			// MixImmiscibleOperators is tested elsewhere
 			Option(Mode.PrintBothParseFirst, @"b(->Foo)(x);", @"((Foo) b)(x);", F.Call(F.Call(S.Cast, b, Foo), x), p => p.SetPlainCSharpMode());
 			Option(Mode.Both,       @"b(x)(->Foo);", @"(Foo) b(x);", Alternate(F.Call(S.Cast, F.Call(b, x), Foo)), p => p.PreferPlainCSharp = true);
-			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(Attr(F.Id(S.TriviaWordAttribute), _(S.Yield)), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
+			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(WordAttr("yield"), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
 			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
 			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
@@ -774,11 +793,11 @@ namespace Loyc.Ecs
 			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
 			Expr("new int[][,] { a }",    F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32))), a));
 			// This expression is illegal since it requires an initializer list, but it's parsable so should print ok
-			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))));
+			Expr("new int[][,][,,]",      F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(_(S.TwoDimensionalArray), F.Of(S.GetArrayKeyword(3), S.Int32))))), Mode.Both | Mode.ExpectAndDropParserError);
 			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
 			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), x, x)));
 			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), Attr(Foo, x), x)));
-			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))));
+			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))), Mode.Both | Mode.ExpectAndDropParserError);
 			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];", 
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("#new",                  F.Id(S.New));
@@ -877,6 +896,8 @@ namespace Loyc.Ecs
 			Expr("#enum(Foo, #(byte), {\n  a = 1;\n  b;\n  c;\n  x = 24;\n})", stmt);
 			stmt = F.Call(S.Enum, F.Call(S.Substitute, F.Dot(Foo, x)), F.List(), F.Braces(F.Assign(a, one)));
 			Stmt("enum $(Foo.x)\n{\n  a = 1\n}", stmt);
+			LNode anyList = F.Call(S.Substitute, F.Call(S.DotDotDot, _("_")));
+			Stmt("enum $x : $(..._)\n{\n  $(..._)\n}", F.Call(S.Enum, F.Call(S.Substitute, x), F.List(anyList), F.Braces(anyList)));
 
 			stmt = F.Call(S.Interface, F.Of(Foo, Attr(@out, T)), F.List(F.Of(_("IEnumerable"), T)), F.Braces(public_x));
 			Stmt("interface Foo<out T> : IEnumerable<T>\n{\n  public int x;\n}", stmt);
@@ -924,8 +945,8 @@ namespace Loyc.Ecs
 			stmt = Attr(@public, @new, partialWA, F.Fn(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
 			// The printer does not print trivia attributes, but the parsing test will fail if the trivia is missing
-			Expr("[#public, #new, "         +            "#partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.PrintOnly);
-			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.ParseOnly);
+			Expr("[#public, #new, "         +            "#partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.PrinterTest);
+			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.ParserTest);
 			stmt = F.Fn(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
 			Expr("#fn(int, Foo, #(#var(int, x)), {\n  x * x\n})", stmt);
@@ -944,9 +965,16 @@ namespace Loyc.Ecs
 			stmt = F.Call(S.Constructor, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
 			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
 			Expr("#cons(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
-			stmt = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
-			Stmt("~Foo()\n{\n}", stmt);
-			Expr("#fn(@``, ~Foo, #(), {\n})", stmt);
+			var destructor = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
+			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(destructor));
+			Stmt("class Foo\n{\n  ~Foo()\n  {\n  }\n}", stmt);
+			Expr("#class(Foo, #(), {\n  ~Foo()\n  {\n  }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), {\n  });\n})", stmt, Mode.ParserTest);
+			// This should be parsed as a destructor despite the fact that 
+			// #result(~(Foo {})) is a potential interpretation.
+			stmt = destructor;
+			Stmt("~Foo()\n{\n}", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#fn(@``, ~Foo, #(), {\n})", destructor);
 			stmt = F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
 			Stmt("#fn(@``, -Foo, #(), {\n});", stmt);
 			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
@@ -993,13 +1021,11 @@ namespace Loyc.Ecs
 		/// keeps track of the name of the current class, for the sole purpose
 		/// of detecting the constructor. The printer, meanwhile, must detect
 		/// a method call that may be mistaken for a constructor and reformat 
-		/// it as <c>##(Foo(x));</c> or <c>(Foo(x))</c> (<c>##(...)</c> is a
-		/// special form of parenthesis that does not alter the syntax tree that
-		/// the parser produces). Also, when a constructor definition is printed,
-		/// the missing return type must be included if the name does not match
-		/// an enclosing class:
+		/// it as <c>(Foo(x))</c>. Also, when a constructor definition is printed,
+		/// it must use prefix notation if the name does not match the enclosing 
+		/// class:
 		/// <code>
-		/// @`` Foo(int x) { ... }
+		/// #cons(@``, Foo, #(int x), { ... });
 		/// </code>
 		/// When the constructor is called 'this', this(x) is assumed to be a 
 		/// constructor, but that creates a new problem in EC# because you will 
@@ -1011,10 +1037,10 @@ namespace Loyc.Ecs
 		/// constructor definitions inside methods. The printer, in turn, will
 		/// track whether it is in a space definition or not. It can print a
 		/// constructor that is directly within a space definition, but in other
-		/// contexts will use the @`` notation to ensure that round-tripping 
+		/// contexts will use prefix notation to ensure that round-tripping 
 		/// succeeds. When the syntax tree contains a method call to 'this' 
-		/// (which is stored as #this internally, but always printed simply as 
-		/// 'this'), it may have to be enclosed in parens to avoid ambiguity.
+		/// (which is stored as #this internally), it may have to be enclosed 
+		/// in parens or shown as #this to avoid ambiguity.
 		/// <para/>
 		/// Finally, a constructor with the wrong name can still be parsed if
 		/// it calls some other constructor with a colon:
@@ -1046,7 +1072,7 @@ namespace Loyc.Ecs
 			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
 			Stmt("this()\n{\n  this();\n}",
-				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, false, Mode.PrintOnly);
+				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, Mode.PrinterTest);
 			Stmt("this()\n{\n  x;\n  this();\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
 			Stmt("this()\n{\n  #cons(@``, this, #());\n}",
@@ -1059,21 +1085,21 @@ namespace Loyc.Ecs
 			Stmt("class Foo\n{\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
 			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
-			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrintOnly);
+			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
 			Stmt("class Foo\n{\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
 			Stmt("class Foo\n{\n  Foo()\n  {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
 			Stmt("class Foo\n{\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List()))));
 			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
-			if (this is EcsNodePrinterTests)
-			{
-				Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig);
-				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false);
-				Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true);
-			}
+
 			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
-			
+
+			// Printer test only
+			Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig, Mode.PrinterTest);
+			Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false, Mode.PrinterTest);
+			Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
+
 			// Non-keyword attributes allowed on this() but not Foo() constructor
 			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
@@ -1180,6 +1206,8 @@ namespace Loyc.Ecs
 			Stmt("using Foo.x;",       F.Call(S.Import, F.Dot(Foo, x)));
 			Stmt("using Foo = x;",     Attr(F.Id(S.FilePrivate), F.Call(S.Alias, F.Call(S.Assign, Foo, x), F.List())));
 			Stmt("using (var x = Foo)\n  x.a();", F.Call(S.UsingStmt, F.Var(F.Missing, x.Name, Foo), F.Call(F.Dot(x, a))));
+			Stmt("using Loyc(@``, .Syntax);", F.Call(S.Import, F.Call(_("Loyc"), F.Missing, F.Dot(_("Syntax")))));
+			Stmt("using Loyc(, .Syntax);",    F.Call(S.Import, F.Call(_("Loyc"), F.Missing, F.Dot(_("Syntax")))), Mode.ParserTest);
 		}
 
 		[Test]
@@ -1450,6 +1478,8 @@ namespace Loyc.Ecs
 			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Fn(F.Void, F.Id("Main"), F.List(), F.Braces())));
 			Stmt("public new partial static void Main();",        AddWords(F.Fn(F.Void, F.Id("Main"), F.List())));
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
+			Stmt("public new partial static Foo x;",              AddWords(F.Vars(Foo, x)));
+			Stmt("public new partial static Foo operator==;",     AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
 			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
 			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
 			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
@@ -1477,6 +1507,7 @@ namespace Loyc.Ecs
 			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
 			Stmt("[#public, #new, #partial] static ;",            AddWords(F.Missing, false));
 			Stmt("this int x;",                                   F.Vars(F.Int32, x).PlusAttr(F.@this));
+			Stmt("this Foo x;",                                   F.Vars(Foo, x).PlusAttr(F.@this));
 			Stmt("[this] a(b);",                                  F.Call(a, b).PlusAttr(F.@this));
 		}
 
@@ -1493,7 +1524,7 @@ namespace Loyc.Ecs
 			Stmt("Foo.a Foo() => @[ x ];", F.Fn(F.Dot(Foo, a), Foo, F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			Stmt("Foo Foo.a() => @[ x ];", F.Fn(Foo, F.Dot(Foo, a), F.List(), F.Literal(new TokenTree(F.File, (ICollection<Token>)xToken))));
 			// Currently supported. Not sure if it'll stay that way.
-			Stmt("void Foo() @[ x ];", def, Mode.ParseOnly);
+			Stmt("void Foo() @[ x ];", def, Mode.ParserTest);
 		}
 
 		[Test]
@@ -1526,7 +1557,7 @@ namespace Loyc.Ecs
 		[Test]
 		public void CSharp6Features()
 		{
-			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParseOnly);
+			Stmt("static using Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))), Mode.ParserTest);
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));
 			// Tentative tree structure - there is an undesirable inconsistency between ?. and ?[]
 			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.List(x)), Foo)));
@@ -1568,10 +1599,12 @@ namespace Loyc.Ecs
 	[TestFixture]
 	public class EcsNodePrinterTests : EcsPrinterAndParserTests
 	{
-		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, bool exprMode = false, Mode mode = Mode.Both)
+		protected override void Stmt(string result, LNode input, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
 		{
-			if (mode == Mode.ParseOnly)
+			bool exprMode = (mode & Mode.Expression) != 0;
+			if ((mode & Mode.PrinterTest) == 0)
 				return;
+
 			var sb = new StringBuilder();
 			var printer = EcsNodePrinter.New(input, sb, "  ");
 			printer.AllowChangeParentheses = false;
@@ -1666,9 +1699,10 @@ namespace Loyc.Ecs
 	[TestFixture]
 	public class EcsParserTests : EcsPrinterAndParserTests
 	{
-		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, bool exprMode = false, Mode mode = Mode.Both)
+		protected override void Stmt(string text, LNode expected, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both)
 		{
-			if (mode == Mode.PrintOnly)
+			bool exprMode = (mode & Mode.Expression) != 0;
+			if ((mode & Mode.ParserTest) == 0)
 				return;
 			// This is the easy way: 
 			//LNode result = EcsLanguageService.Value.ParseSingle(text, MessageSink.Console, exprMode ? ParsingService.Exprs : ParsingService.Stmts);
@@ -1676,12 +1710,14 @@ namespace Loyc.Ecs
 			ILexer<Token> lexer = EcsLanguageService.Value.Tokenize(new UString(text), "", MessageSink.Console);
 			var preprocessed = new EcsPreprocessor(lexer);
 			var treeified = new TokensToTree(preprocessed, false);
-			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, MessageSink.Console);
-			
+			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)MessageSink.Console;
+			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
 			LNode result = exprMode ? parser.ExprStart(false) : parser.Stmt();
 
 			AreEqual(TokenType.EOF, parser.LT0.Type());
 			AreEqual(expected, result);
+			if (sink is MessageHolder)
+				GreaterOrEqual(((MessageHolder)sink).List.Count, 1);
 		}
 
 		[Test]
@@ -1724,7 +1760,7 @@ namespace Loyc.Ecs
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray), F.Braces(zero), F.Braces(one, two)))));
 
 			// 2015-05-20: parsed incorrectly
-			Expr("Foo[a-1]",         F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)), Mode.ParseOnly);
+			Expr("Foo[a-1]",         F.Call(S.IndexBracks, Foo, F.Call(S.Sub, a, one)), Mode.ParserTest);
 		}
 	}
 }
