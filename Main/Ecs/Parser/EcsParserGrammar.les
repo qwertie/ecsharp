@@ -1031,7 +1031,8 @@ namespace Loyc.Ecs.Parser
 		// 
 		// My strategy here is to use lookahead with &(...) to decide if a word 
 		// (or the "new" keyword) is an attribute or not.
-
+		
+		// TODO : This is obsolete, need to eliminate the last usage of it
 		token WordAttributes(ref attrs::WList!LNode)::int
 		@{
 			{	// Optimize the common case (non-exhaustive short circuit)
