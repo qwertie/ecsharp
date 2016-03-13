@@ -4,6 +4,15 @@ layout: article
 toc: true
 ---
 
+Task: copy comments to output
+-----------------------------
+
+Currently, comments are not copied from `.ecs` or `.les` files to `.cs` files. My idea for supporting this is to (1) add a step after the lexer that strips out comments and stores them in a list (sorted by position), and (2) ??? (3) profit! Okay, there is a set of `#trivia` attributes such as `#trivia_SLCommentBefore` that add comments on nodes, so one could postprocess the output of the parser to scan the syntax tree while simultaneously scanning the sorted comment list; `LNode.ReplaceRecursive` will work as a first approximation. The only problem with adding comments to an existing tree is that some of the tree will be discarded and recreated, but usually the majority of the tree will remain unchanged so the performance should be acceptable. Besides, storing comments is a step that could be turned off in speed-critical scenarios.
+
+Another nice feature would be to preserve blank lines in the output; this could be handled similarly to comments, but would require the printer to be modified to support new "#trivia_NewlineBefore" and "#trivia_NewlineAfter" attributes.
+
+Finally, preserving the spacing of the input file would be great feature, but I've never thought about how to do it.
+
 Task: make EC# real
 -------------------
 

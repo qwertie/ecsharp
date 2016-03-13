@@ -32,7 +32,7 @@ Finally, open the *Properties* panel and change the *Custom Tool* option to **_L
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows
+using System.Windows;
 namespace Loyc.Ecs {
    class Person {
       public Person(public readonly string Name, public int WeightLb, public int Age) {}

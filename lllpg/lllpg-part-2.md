@@ -472,7 +472,8 @@ Here's the code generated for Number, but note that `'0'..'9'* ('.' '0'..'9'+)?`
 
 Gates can also be used to produce nonsensical code, e.g.
 
-          la0 = LA0;
+       // 'A' => 'Q'
+       la0 = LA0;
        if (la0 == 'A')
          Match('Q');
 

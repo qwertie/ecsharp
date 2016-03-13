@@ -21,7 +21,7 @@ The main concerns raised in this post are all valid.... but I think my own parse
 	{prec::Precedence;}
 	e:PrefixExpr
 	greedy
-	(	// Infix operator
+	[	// Infix operator
 		&{context.CanParse(prec=InfixPrecedenceOf($LA))}
 		op:( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
 		   | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.@in )
@@ -46,7 +46,7 @@ The main concerns raised in this post are all valid.... but I think my own parse
 		&{context.CanParse(EP.IfElse)}
 		"?" then:Expr(ContinueExpr) ":" else:Expr(EP.IfElse)
 		{e = SetOperatorStyle(F.Call(S.QuestionMark, e, then, @else, e.Range.StartIndex, else.Range.EndIndex));}
-	)*
+	]*
 	{return e;}
 };
 ~~~

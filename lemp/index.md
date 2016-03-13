@@ -3,7 +3,7 @@ title: "LeMP Home Page"
 layout: page
 tagline: "the Lexical Macro Processor for C#"
 ---
-
+<img src='ecs.png' style='float:right;' alt='E C sharp logo'/>
 Introduction
 ------------
 

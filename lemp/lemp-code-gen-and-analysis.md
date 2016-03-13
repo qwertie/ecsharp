@@ -449,7 +449,7 @@ static LNode GetName(LNode type)
    matchCode(type) {
       case { class  $name : $(.._) { $(.._); }  },
            { struct $name : $(.._) { $(.._); }  },
-           { enum   $name : $(.._) { $(.._); }  }:
+           { enum   $name : $(.._) { $(.._) }   }:
          return name;
       default:
          return null;
