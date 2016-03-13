@@ -128,8 +128,7 @@ namespace Loyc.Ecs
 				for (int i = 0, c = attrs.Count; i < c; i++)
 				{
 					var a = attrs[i];
-					if ((a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
-						(a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty()))
+					if (a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty())
 						return;
 				}
 			}
@@ -138,17 +137,6 @@ namespace Loyc.Ecs
 			PrintSuffixTrivia(true);
 		}
 
-		private bool AutoPrintMacroAttribute()
-		{
-			var argCount = _n.ArgCount;
-			if (argCount < 1)
-				return false;
-
-			// TODO
-			// _out.Write("[[", true);
-			// _out.Write("]]", true);
-			return false;
-		}
 		private bool AutoPrintMacroBlockCall(Ambiguity flags)
 		{
 			var argCount = _n.ArgCount;
@@ -159,6 +147,8 @@ namespace Loyc.Ecs
 			{
 				var body = _n.Args[0];
 				if (!CallsWPAIH(body, S.Braces))
+					return false;
+				if (_n.BaseStyle == NodeStyle.PrefixNotation && !PreferPlainCSharp)
 					return false;
 
 				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
@@ -174,12 +164,11 @@ namespace Loyc.Ecs
 			}
 			else if (argCount > 1)
 			{
-				if (AvoidMacroSyntax)
-					return false;
-
 				var body = _n.Args[argCount - 1];
 				// If the body calls anything other than S.Braces, don't use macro-call notation.
 				if (!CallsWPAIH(body, S.Braces))
+					return false;
+				if (AvoidMacroSyntax || _n.BaseStyle == NodeStyle.PrefixNotation)
 					return false;
 
 				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));

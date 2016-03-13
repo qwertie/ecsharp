@@ -684,7 +684,12 @@ namespace Loyc.Ecs
 				}
 
 				bool any = false;
-				bool dropAttrs = DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor;
+				bool dropAttrs = false;
+				if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
+					// Careful: avoid dropping attributes from get; set; and things that look like macro calls
+					if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
+						dropAttrs = true;
+				}
 				if (!dropAttrs && div > 0) {
 					for (int i = 0; i < div; i++) {
 						var a = _n.Attrs[i];

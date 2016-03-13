@@ -36,29 +36,31 @@ namespace Loyc.Ecs
 			P(S._Negate,    EP.Prefix), P(S._UnaryPlus,   EP.Prefix), P(S.NotBits, EP.Prefix), 
 			P(S.Not,        EP.Prefix), P(S.PreInc,       EP.Prefix), P(S.PreDec,  EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward), 
-			P(S.DotDot,     EP.Prefix), P(S.Substitute, EP.Substitute)
+			P(S.DotDot,     EP.Prefix), P(S.DotDotDot,    EP.Prefix), P(S.Substitute, EP.Substitute)
 		);
 
 		static readonly Dictionary<Symbol,Precedence> InfixOperators = Dictionary(
 			// This is a list of infix binary opertors only. Does not include the
 			// conditional operator `?` or non-infix binary operators such as a[i].
 			// Comma is not an operator at all and generally should not occur. 
+			// '=>' is not included because it has a special 'delegate() {}' form.
 			// Note: I cancelled my plan to add a binary ~ operator because it would
 			//       change the meaning of (x)~y from a type cast to concatenation.
 			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
 			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
 			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
 			P(S.Assign, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
-			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),         P(S.Lambda, EP.Lambda),
+			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),
 			P(S.DotDot, EP.Range),      P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
-			P(S.GT, EP.Compare),        P(S.Shr, EP.Shift),     P(S.Div, EP.Multiply),
-			P(S.MulSet, EP.Assign),     P(S.DivSet, EP.Assign), P(S.ModSet, EP.Assign),
-			P(S.SubSet, EP.Assign),     P(S.AddSet, EP.Assign), P(S.ConcatSet, EP.Assign),
-			P(S.ExpSet, EP.Assign),     P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign),
-			P(S.XorBitsSet, EP.Assign), P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign),
-			P(S.NullDot, EP.NullDot),   P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
+			P(S.DotDotDot, EP.Range),   P(S.GT, EP.Compare),    P(S.Shr, EP.Shift),     
+			P(S.Div, EP.Multiply),      P(S.MulSet, EP.Assign), P(S.DivSet, EP.Assign),
+			P(S.ModSet, EP.Assign),     P(S.SubSet, EP.Assign), P(S.AddSet, EP.Assign), 
+			P(S.ConcatSet, EP.Assign),  P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign), 
+			P(S.ExpSet, EP.Assign),     P(S.XorBitsSet, EP.Assign), 
+			P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign), P(S.NullDot, EP.NullDot), 
+			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
-			P(S.Is, EP.IsAsUsing),        P(S.As, EP.IsAsUsing),    P(S.UsingCast, EP.IsAsUsing),
+			P(S.Is, EP.IsAsUsing),      P(S.As, EP.IsAsUsing),  P(S.UsingCast, EP.IsAsUsing),
 			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary),
 			P(S.NotBits, EP.Add)
 		);
@@ -83,8 +85,9 @@ namespace Loyc.Ecs
 			P(S.PostDec,     EP.Primary), // x--
 			P(S.Of,          EP.Primary), // List<int>, int[], int?, int*
 			P(S.Dot,         EP.Primary), // a.b.c
-			P(S.IsLegal,     EP.Compare), // x is legal
-			P(S.New,         EP.Primary)  // new A()
+			P(S.IsLegal,     EP.Compare)  // x is legal
+			//P(S.New,         EP.Primary),
+			//P(S.Lambda,      EP.Substitute) // delegate(int x) { return x+1; }
 		);
 
 		static readonly HashSet<Symbol> CallOperators = new HashSet<Symbol>(new[] {
@@ -107,6 +110,7 @@ namespace Loyc.Ecs
 			var list = OpenDelegate<OperatorPrinter>("AutoPrintListOperator");
 			var ident = OpenDelegate<OperatorPrinter>("AutoPrintComplexIdentOperator");
 			var @new = OpenDelegate<OperatorPrinter>("AutoPrintNewOperator");
+			var anonfn = OpenDelegate<OperatorPrinter>("AutoPrintAnonymousFunction");
 			var other = OpenDelegate<OperatorPrinter>("AutoPrintOtherSpecialOperator");
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
 			
@@ -122,9 +126,12 @@ namespace Loyc.Ecs
 			foreach (var op in ListOperators)
 				d[op] = G.Pair(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators) {
-				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : p.Key == S.New ? @new : other;
+				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
 				d.Add(p.Key, G.Pair(p.Value, handler));
 			}
+			// Other special cases
+			d.Add(S.New, G.Pair(EP.Primary, @new));
+			d.Add(S.Lambda, G.Pair(EP.Lambda, anonfn));
 			foreach (var op in CallOperators)
 				d.Add(op, G.Pair(Precedence.MaxValue, call));
 
@@ -771,6 +778,40 @@ namespace Loyc.Ecs
 				_out.Write(S.GetArrayKeyword(dimStack[i]).Name, true);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintAnonymousFunction(Precedence precedence, Precedence context, Ambiguity flags)
+		{
+			Symbol name = _n.Name;
+			Debug.Assert(name == S.Lambda);
+			if (_n.ArgCount != 2)
+				return false;
+			LNode args = _n.Args[0], body = _n.Args[1];
+
+			bool needParens = false;
+			bool canUseOldStyle = body.Calls(S.Braces) && args.Calls(S.AltList);
+			bool oldStyle = _n.BaseStyle == NodeStyle.OldStyle && canUseOldStyle;
+			if (!oldStyle && !CanAppearIn(EP.Lambda, context, out needParens)) {
+				if (canUseOldStyle)
+					oldStyle = true;
+				else
+					return false; // precedence fail
+			}
+
+			WriteOpenParen(ParenFor.Grouping, needParens);
+
+			if (oldStyle) {
+				_out.Write("delegate", true);
+				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
+				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, false, S.Fn);
+			} else { 
+				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(context), Ambiguity.AllowUnassignedVarDecl);
+				PrintInfixWithSpace(S.Lambda, EP.IfElse, 0);
+				PrintExpr(_n.Args[1], EP.Lambda.RightContext(context));
+			}
+
+			WriteCloseParen(ParenFor.Grouping, needParens);
+			return true;
+		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
@@ -966,7 +1007,7 @@ namespace Loyc.Ecs
 			if (IsSimpleSymbolWPA(a[0], S.Missing))
 				_out.Write("var", true);
 			else
-				PrintType(a[0], context, allowPointer & Ambiguity.AllowPointer);
+				PrintType(a[0], EP.Primary.LeftContext(context), allowPointer & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				var @var = a[i];
