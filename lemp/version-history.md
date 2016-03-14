@@ -45,7 +45,7 @@ See also: version history of [LoycCore](http://core.loyc.net/version-history.htm
 - LeMP: Added pattern-matching `match(...) {...}` macro!
 - EC# parser: Added `...` operator (and `..<` as synonym of `..`). Fixed a bug where some error messages showed an incorrect location.
 - LES: Edited `ParseIdentifier()` not to support legacy ``#`...` `` identifiers.
-- EC# parser: In order to support a pattern-matching macro, added a unary `is` operator, and tried to add support for parsing `X is Foo(...)` as `(X is Foo)(...)`, while increasing the precedence of `is` and `as` on the right side of the operator. Sadly, parsing of `X as Foo < Y` is broken due to a bug in LLLPG that I can't figure out how to fix. Increased the number of places where uninitialized variable declarations are allowed.
+- EC# parser: In order to support a [pattern-matching macro](pattern-matching.html), added a unary `is` operator, and tried to add support for parsing `X is Foo(...)` as `(X is Foo)(...)`, while increasing the precedence of `is` and `as` on the right side of the operator. Sadly, parsing of `X as Foo < Y` is broken due to a bug in LLLPG that I can't figure out how to fix. Increased the number of places where uninitialized variable declarations are allowed.
 - LLLPG issue #13 (`GeneralCodeGenHelper`): `EOF` is now casted before comparing with laN, e.g. `la0 == (LaType)EOF`
 - `RunTests` Now prints reason of `Fails` option on-screen
 

@@ -118,7 +118,7 @@ Learn more about LeMP in these published articles:
 
 - [Avoid tedious coding with LeMP, part 1](avoid-tedium-with-LeMP.html)
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
-- [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](lemp-pattern-matching.html)
+- [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](pattern-matching.html)
 
 Some use cases and built-in macros (such as `on_finally`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
 

@@ -61,7 +61,7 @@ This example requires `FMT` to take exactly two arguments called `$fmt` and `$ar
 	FMT($fmt, $(params args)) => string.Format($fmt, $args) // 1 or more args
 	FMT($(params args)) => string.Format($args)             // 0 or more args
 
-**Note**: `$(...args)` can now be used instead of `$(params args)`. The new `...` operator was added mainly to support [pattern matching](lemp-pattern-matching.html), but it seemed appropriate to support it in this situation, too.
+**Note**: `$(...args)` can now be used instead of `$(params args)`. The new `...` operator was added mainly to support [pattern matching](pattern-matching.html), but it seemed appropriate to support it in this situation, too.
 
 `replace` is more sophisticated tool than C's `#define` directive. Consider this example:
 

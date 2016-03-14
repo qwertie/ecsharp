@@ -326,7 +326,7 @@ Someone simply needs to write a macro to translate this into a normal class decl
 
 I can only assume this feature works automatically in conjunction with record types. It seems a little odd that one writes `var acode` rather than `out var acode`; I wonder if this means that the pattern-matching `is` operator is only allowed to have output parameters, not input parameters.
 
-I wasn't sure how to support pattern matching in EC#. This plan seems as good as any.
+I wasn't sure how to support pattern matching in EC#. This plan seems as good as any. **Update:** see [this article](/lemp/pattern-matching.html) about how EC# implemented pattern matching.
 
 "`*`" means "don't care". In EC# I was planning to introduce "`_`" to represent "don't care" for any out parameter or unused result (e.g. `_ = control.Handle` calls a property and discards the result) rather than `*`; `_` would mean "don't care" only if there was no explicitly-declared variable named `_`. I suppose `*` can do the same job instead.
 
