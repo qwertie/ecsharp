@@ -7,7 +7,7 @@ tagline: "the Lexical Macro Processor for C#"
 
 <img src='ecs.png' style='float:left; padding:4px; border:1px #ccc; margin:8px;' alt='E C sharp logo'/>
 
-LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP will make you more productive.
+LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP — a preprocessor built on a parser called Enhanced C# — can make you more productive.
 
 <div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
 
