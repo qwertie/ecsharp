@@ -228,6 +228,8 @@ namespace Loyc.Syntax
 		}
 		public override CallNode WithArgs(VList<LNode> args)
 		{
+			if (args == _args)
+				return this;
 		    var copy = cov_Clone();
 		    copy._args = args;
 		    return copy;
@@ -298,6 +300,8 @@ namespace Loyc.Syntax
 
 		public override CallNode WithArgs(VList<LNode> args)
 		{
+			if (args == _args)
+				return this;
 			var copy = cov_Clone();
 			copy._args = args;
 			return copy;

@@ -84,6 +84,8 @@ namespace LeMP
 		PriorityFallbackMin = 0x100,
 		/// <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
 		PriorityFallback = 0x300,
+		/// <summary>Used to order behavior of standard macros.</summary>
+		PriorityInternalFallback = 0x400,
 		/// <summary>Normal priority (this is the default and does not need to be specified.)</summary>
 		PriorityNormal = 0x500,
 		/// <summary>Used to order behavior of standard macros.</summary>

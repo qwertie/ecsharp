@@ -40,30 +40,30 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public static VList<LNode> WithSpliced(this VList<LNode> list, int index, LNode node, Symbol listName)
+		public static VList<LNode> WithSpliced(this VList<LNode> list, int index, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.InsertRange(index, node.Args);
 			else
 				return list.Insert(index, node);
 		}
-		public static VList<LNode> WithSpliced(this VList<LNode> list, LNode node, Symbol listName)
+		public static VList<LNode> WithSpliced(this VList<LNode> list, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.AddRange(node.Args);
 			else
 				return list.Add(node);
 		}
-		public static void SpliceInsert(this WList<LNode> list, int index, LNode node, Symbol listName)
+		public static void SpliceInsert(this WList<LNode> list, int index, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.InsertRange(index, node.Args);
 			else
 				list.Insert(index, node);
 		}
-		public static void SpliceAdd(this WList<LNode> list, LNode node, Symbol listName)
+		public static void SpliceAdd(this WList<LNode> list, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.AddRange(node.Args);
 			else
 				list.Add(node);

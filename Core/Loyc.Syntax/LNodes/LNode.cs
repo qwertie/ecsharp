@@ -583,23 +583,40 @@ namespace Loyc.Syntax
 		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
 		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);
 
+		// List creation with null check (even in release builds)
 		public static VList<LNode> List() { return new VList<LNode>(); }
-		public static VList<LNode> List(LNode a) { return new VList<LNode>(a); }
-		public static VList<LNode> List(LNode a, LNode b) { return new VList<LNode>(a, b); }
-		public static VList<LNode> List(params LNode[] list) { return new VList<LNode>(list); }
-		public static VList<LNode> List(IEnumerable<LNode> list) { return new VList<LNode>(list); }
-		/// <summary>A no-op that exists to avoid a potential slug when using `quote {...}`.</summary>
-		public static VList<LNode> List(VList<LNode> list) { return list; }
+		public static VList<LNode> List(LNode list_0) {
+			if (list_0 == null) throw new ArgumentNullException("list_0");
+			return new VList<LNode>(list_0);
+		}
+		public static VList<LNode> List(LNode list_0, LNode list_1) {
+			if (list_0 == null) throw new ArgumentNullException("list_0");
+			if (list_1 == null) throw new ArgumentNullException("list_1");
+			return new VList<LNode>(list_0, list_1);
+		}
+		public static VList<LNode> List(params LNode[] list) { return List(new VList<LNode>(list)); }
+		public static VList<LNode> List(IEnumerable<LNode> list) { return List(new VList<LNode>(list)); }
+		public static VList<LNode> List(VList<LNode> list) {
+			int i = 0;
+			foreach (var n in list.ToFVList()) { // FVList enumerate faster
+				i++;
+				if (n == null) throw new ArgumentNullException("list[" + (list.Count-i) + "]");
+			}
+			return list;
+		}
 
-		// It's difficult to enforce "nulls not allowed" with high performance.
-		// Compromise: only check in debug builds. This is called by node types
-		// that accept lists of args or attrs.
+		// It's difficult to enforce "nulls not allowed" with high performance,
+		// especially since often what's being done is creating a new node with
+		// the same list as an old node. Compromise: only check in debug builds.
+		// This is called by node types that accept lists of args or attrs.
 		[Conditional("DEBUG")]
-		protected static void NoNulls(VList<LNode> node, string propName)
+		protected static void NoNulls(VList<LNode> list, string propName)
 		{
-			for (int i = 0, c = node.Count; i < c; i++) {
-				if (node[i] == null)
-					throw new ArgumentNullException(propName, string.Format("Attempted to construct an LNode with a null reference at {0}[{1}].", propName, i));
+			int i = 0;
+			foreach (var n in list.ToFVList()) { // FVList enumerate faster
+				i++;
+				if (n == null) throw new ArgumentNullException(propName,
+					string.Format("Attempted to construct an LNode with a null reference at {0}[{1}].", propName, list.Count-i));
 			}
 		}
 

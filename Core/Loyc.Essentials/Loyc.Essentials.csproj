@@ -262,6 +262,7 @@
     <Compile Include="Utilities\Maybe.cs" />
     <Compile Include="Utilities\MemoizedTypeName.cs" />
     <Compile Include="Utilities\MessageSinks.cs" />
+    <Compile Include="Utilities\MiniContract.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\MiscInterfaces.cs" />
     <Compile Include="Utilities\Pair.cs" />
