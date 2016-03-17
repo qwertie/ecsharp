@@ -67,14 +67,8 @@ namespace LeMP
 				var rw = new CodeContractRewriter(fn.Args[0], fn.Args[1], context);
 				
 				// If this thing has an argument list, scan it
-				if ((fnArgs = fn.Args[2]).Calls(S.AltList)) {
-					fn = fn.WithArgChanged(2, 
-						fnArgs.WithArgs(arg => {
-							if (arg.HasAttrs)
-								return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
-							return arg;
-						}));
-				}
+				fn = ProcessArgContractAttributes(fn, 2, rw);
+
 				// Scan attributes on return type, then attributes on the whole method
 				if (fn.Args[0].HasAttrs)
 					fn = fn.WithArgChanged(0, fn.Args[0].WithAttrs(rw.Process(fn.Args[0].Attrs, null)));
@@ -89,6 +83,42 @@ namespace LeMP
 						body = quote {{ return $body; }};
 					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
 					fn = fn.WithArgChanged(3, body);
+					return fn;
+				}
+			}
+			return null;
+		}
+
+		static readonly LNode Id_lambda_function = quote(lambda_function);
+
+		[LexicalMacro(@"([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; "+
+			"([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ",
+			"Generates Contract checks in a lambda function. See the documentation of "+
+			"ContractsOnMethod for more information about the contract attributes.",
+			"=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
+		{
+			// Performance note: one should keep in mind that this macro usually 
+			// has no effect. It looks for contracts and usually finds none.
+			LNode oldFn = fn;
+			if (fn.ArgCount == 2) {
+				var rw = new CodeContractRewriter(LNode.Missing, Id_lambda_function, context);
+				
+				// If this thing has an argument list, scan it
+				fn = ProcessArgContractAttributes(fn, 0, rw, isLambda: true);
+
+				// Scan attributes on the lambda as a whole
+				if (fn.HasAttrs)
+					fn = fn.WithAttrs(rw.Process(fn.Attrs, null));
+				
+				if (rw.PrependStmts.IsEmpty) {
+					return null; // this is the common case
+				} else {
+					var body = fn.Args[1];
+					if (!body.Calls(S.Braces)) // Add braces in case of void LambdaMethod() => expr;
+						body = quote {{ return $body; }};
+					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
+					fn = fn.WithArgChanged(1, body);
 					return fn;
 				}
 			}
@@ -118,14 +148,7 @@ namespace LeMP
 				var rw = new CodeContractRewriter(prop.Args[0], prop.Args[1], context);
 				
 				// If this has an argument list (this[...]), process its contract attributes
-				if ((propArgs = prop.Args[2]).Calls(S.AltList) && propArgs.ArgCount > 0) {
-					prop = prop.WithArgChanged(2, 
-						propArgs.WithArgs(arg => {
-							if (arg.HasAttrs)
-								return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
-							return arg;
-						}));
-				}
+				prop = ProcessArgContractAttributes(prop, 2, rw);
 
 				// Remove contract attributes from the property and store in a list
 				VList<LNode> cAttrs = LNode.List();
@@ -182,6 +205,25 @@ namespace LeMP
 			return null;
 		}
 		
+		static LNode ProcessArgContractAttributes(LNode fn, int argsIndex, CodeContractRewriter rw, bool isLambda = false)
+		{
+			LNode fnArgs = fn.Args[argsIndex];
+			if (fnArgs.CallsMin(isLambda ? S.Tuple : S.AltList, 1)) {
+				return fn.WithArgChanged(argsIndex, 
+					fnArgs.WithArgs(arg => {
+						if (arg.HasAttrs)
+							return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
+						return arg;
+					}));
+			} else if (isLambda) {
+				var arg = fnArgs; // just one argument
+				if (arg.HasAttrs)
+					fn = fn.WithArgChanged(argsIndex, 
+						arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg))));
+			}
+			return fn;
+		}
+
 		static LNode GrabContractAttrs(LNode node, ref VList<LNode> cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
 		{
 			if (node.HasAttrs) {
@@ -220,7 +262,7 @@ namespace LeMP
 				     { $_ $variableName;      }:
 					return variableName;
 				default:
-					return arg;
+					return arg.WithoutAttrs();
 			}
 		}
 
@@ -252,9 +294,12 @@ namespace LeMP
 		{
 			var mode = attr.Name;
 			exceptionType = null;
-			if (attr.Calls(S.Of, 2) && attr.Args[0].IsIdNamed(@@ensuresOnThrow)) {
-				exceptionType = attr.Args[1];
-				mode = @@ensuresOnThrow;
+			if (!attr.HasSimpleHead()) {
+				var target = attr.Target;
+				if (target.Calls(S.Of, 2) && target.Args[0].IsIdNamed(@@ensuresOnThrow)) {
+					exceptionType = target.Args[1];
+					mode = @@ensuresOnThrow;
+				}
 			}
 			if (mode == __notnull)
 				mode = @@notnull;
@@ -295,7 +340,7 @@ namespace LeMP
 			void ProcessAttribute(LNode attr, Symbol mode, LNode exceptionType, LNode variableName, bool isPropSetter)
 			{
 				var conditions = attr.Args;
-				object haveCCRewriter = Context.ScopedProperties.TryGetValue(@@HaveCodeContractsRewriter, null);
+				object haveCCRewriter = Context.ScopedProperties.TryGetValue(@@haveContractRewriter, null);
 				_haveCCRewriter = haveCCRewriter is bool ? (bool)haveCCRewriter : false;
 
 				// #notnull is equivalent to either requires(_ != null) or ensures(_ != null)
@@ -360,6 +405,8 @@ namespace LeMP
 						} else if (ReplaceContractUnderscore(ref condition, null))
 							Context.Write(Severity.Error, condition, "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.");
 					} else { // @@ensures or @@assertEnsures
+						if (haveCCRewriter && ReturnType.IsIdNamed(S.Missing))
+							Context.Write(Severity.Error, condition, "The macro for `ensures` does not support `_` in this context when MS Code Contracts are enabled, because the return type is unknown.");
 						contractResult = haveCCRewriter ? quote(Contract.Result<$ReturnType>()) : Id_return_value;
 						ReplaceContractUnderscore(ref condition, contractResult);
 					}

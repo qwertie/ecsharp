@@ -198,7 +198,7 @@ namespace LeMP
 		{
  			{ "help",      Pair.Create("", "show this screen") },
  			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly") },
- 			{ "max-expand",Pair.Create("N", "stop expanding macros after N expansions.") },
+ 			{ "max-expand",Pair.Create("N", "stop expanding macros after N nested or iterated expansions.") },
  			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
 			{ "noparallel",Pair.Create("", "Process all files in sequence") },

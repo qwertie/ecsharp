@@ -86,7 +86,7 @@ namespace LeMP
 			return null;
 		}
 
-		[LexicalMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple")]
+		[LexicalMacro("(x,); (x, y, ...)", "Create a tuple", "#tuple", Mode = MacroMode.Passive)]
 		public static LNode Tuple(LNode node, IMacroContext context)
 		{
 			// TODO: consider supporting .[a, b] (and !(a, b)) as syntax for @``<a, b> 

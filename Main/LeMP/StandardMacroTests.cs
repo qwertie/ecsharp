@@ -1413,32 +1413,32 @@ namespace LeMP
 			TestEcs(@"#haveContractRewriter;
 			          [ensures(_ >= 0)]
 			          public static int Square(int x) { 
-			            return x*x;
+			            return x * x;
 			          }",
 			        @"public static int Square(int x) {
 			            Contract.Ensures(Contract.Result<int>() >= 0); 
-			            return return_value;
+			            return x * x;
 			          }");
 			TestEcs(@"#haveContractRewriter;
 			        [ensuresOnThrow(Member != null)] 
 			        public void Test() { 
-			            Member ??= new Whatever();
+			            Member = Member ?? new Whatever();
 			            throw new SomeException();
 			        }",
 			      @"public void Test() { 
 			            Contract.EnsuresOnThrow(Member != null);
-			            Member ??= new Whatever();
+			            Member = Member ?? new Whatever();
 			            throw new SomeException();
 			        }");
 			TestEcs(@"#haveContractRewriter;
 			        [ensuresOnThrow<SomeException>(Member != null)] 
 			        public void Test() { 
-			            Member ??= new Whatever();
+			            Member = Member ?? new Whatever();
 			            throw new SomeException();
 			        }",
 			      @"public void Test() { 
 			            Contract.EnsuresOnThrow<SomeException>(Member != null);
-			            Member ??= new Whatever();
+			            Member = Member ?? new Whatever();
 			            throw new SomeException();
 			        }");
 		}
@@ -1447,54 +1447,113 @@ namespace LeMP
 		public void ContractOnLambdaTest()
 		{
 			TestEcs(@"
+				public static Func<int,int> Multiplier() {
+					return (int x, [requires(_ > 0)] int y) => x * y;
+				}", @"
+				public static Func<int,int> Multiplier() {
+					return (int x, int y) => { 
+						Contract.Requires(y > 0, ""`lambda_function` requires `y > 0`""); 
+						return x * y;
+					};
+				}");
+			TestEcs(@"
 				public static Func<int,int> Decrementor() {
 					return ([requires(_ > 0)] num) => num - 1;
 				}", @"
 				public static Func<int,int> Decrementor() {
 					return (num) => { 
-						Contract.Requires(num > 0, ""`Decrementor` requires `num > 0`""); 
+						Contract.Requires(num > 0, ""`lambda_function` requires `num > 0`""); 
 						return num - 1;
-					}
+					};
 				}");
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"
 				public static Func<int,int> Squarer() {
 					return ([ensures(_ >= 0)] delegate (int num) { return num * num; });
 				}", @"
 				public static Func<int,int> Squarer() {
 					return (delegate (int num) { 
-						Contract.Ensures(Contract.Result<int>() >= 0); 
+						{	var return_value = num * num;
+							Contract.Assert(return_value >= 0, ""`lambda_function` did not ensure `return_value >= 0`""); 
+							return return_value;
+						}
+					});
+				}");
+			TestEcs(@"#haveContractRewriter;
+				public static Func<int,int> Squarer() {
+					return ([requires(num >= 0)] delegate (int num) { return num * num; });
+				}", @"
+				public static Func<int,int> Squarer() {
+					return (delegate (int num) { 
+						Contract.Requires(num >= 0); 
 						return num * num;
 					});
 				}");
 		}
 
-		[Test(Fails = "Not yet supported")]
+		[Test] 
 		public void MixingFeatures()
 		{
+			// Check that we can mix code contracts with other features that affect methods & properties...
+			// requires + method forwarding
 			TestEcs("[requires(x >= 0)] static double Sqrt(double x) ==> Math.Sqrt;",
-			       @"static double Sqrt(double x) { Contract.Requires(x >= 0, ""Sqrt() requires x >= 0""); return Math.Sqrt(x); }");
+			       @"static double Sqrt(double x) { Contract.Requires(x >= 0, ""`Sqrt` requires `x >= 0`""); return Math.Sqrt(x); }");
+			// notnull + backing field
 			TestEcs("[field _foo] public List<int> Foo { get; [notnull] set; }",
-			       @"List<int> _foo; public List<int> Foo { "+
-			       @"  get { return _foo; } "+
-			       @"  set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; }");
+			  @"List<int> _foo; public List<int> Foo { 
+			      get { return _foo; } 
+			      set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; } 
+			    }");
+			// ensures + requires + backing field
 			TestEcs("[field _foo] public List<int> Foo { [ensures(_ != null)] get; [requires(_ != null)] set; }",
-			       @"List<int> _foo; public List<int> Foo { "+
-			       @"  get { var @return = _foo; Contract.Assert(); return @return; } "+
-			       @"  set { Contract.Requires(value != null, ""Foo requires value != null""); _foo = value; }");
-			string result = 
-			    @"public static Node Root { get {
-			        var return_value = _root; 
-			        Contract.Assert(@return != null, ""`Root` did not ensure `return_value != null`"");
-			        return return_value;
-			      } }";
+			  @"List<int> _foo; 
+			    public List<int> Foo { 
+			        get { { var return_value = _foo; Contract.Assert(return_value != null, ""`Foo` did not ensure `return_value != null`""); return return_value; } }
+			        set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; }
+			    }");
+			// ensures by itself
+			string result;
 			TestEcs(@"
 				public static Node Root { 
-					[ensures(_ != null)] get => _root;
-				}", result);
+					[ensures(_ != null)] get { return _root; }
+				}",
+			  result = @"
+			    public static Node Root { 
+			      get { {
+			          var return_value = _root; 
+			          Contract.Assert(return_value != null, ""`Root` did not ensure `return_value != null`"");
+			          return return_value;
+			      } }
+			    }");
+			// // ensures + backing field
 			TestEcs(@"[field _root]
 				[ensures(_ != null)] 
 				public static Node Root { get; }",
 				"Node _root; " + result);
+			// requires + set member
+			TestEcs(@"void Foo(set notnull string Name, [requires(IsValidZip(_))] set string Zip) {}",
+				@"
+				void Foo(string name, string zip) {
+					Contract.Requires(name != null, ""`Foo` requires `name != null`"");
+					Contract.Requires(IsValidZip(zip), ""`Foo` requires `IsValidZip(zip)`"");
+					Name = name;
+					Zip = zip;
+				}
+				");
+		}
+
+		[Test(Fails = "Haven't figured out how to support this")] 
+		public void MixingFeatures2()
+		{
+			// requires + set member + create member
+			TestEcs(@"void Foo(public notnull string Name, [requires(IsValidZip(_))] set string Zip) {}",
+				@"public string Name;
+				void Foo(string name, string zip) {
+					Contract.Requires(name != null, ""`Foo` requires `name != null`"");
+					Contract.Requires(IsValidZip(zip), ""`Foo` requires `IsValidZip(zip)`"");
+					Name = name;
+					Zip = zip;
+				}
+				");
 		}
 
 		[Test]

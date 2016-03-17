@@ -17,7 +17,7 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		static readonly Symbol sy_haveContractRewriter = (Symbol) "haveContractRewriter", sy_notnull = (Symbol) "notnull", sy_ensuresOnThrow = (Symbol) "ensuresOnThrow", sy_requires = (Symbol) "requires", sy_assert = (Symbol) "assert", sy_ensures = (Symbol) "ensures", sy_assertEnsures = (Symbol) "assertEnsures", sy_HaveCodeContractsRewriter = (Symbol) "HaveCodeContractsRewriter";
+		static readonly Symbol sy_haveContractRewriter = (Symbol) "haveContractRewriter", sy_notnull = (Symbol) "notnull", sy_ensuresOnThrow = (Symbol) "ensuresOnThrow", sy_requires = (Symbol) "requires", sy_assert = (Symbol) "assert", sy_ensures = (Symbol) "ensures", sy_assertEnsures = (Symbol) "assertEnsures";
 		[LexicalMacro("#haveContractRewriter(true)", "Sets a flag to indicate that your build process includes the Microsoft Code Contracts binary rewriter, so\n\n" + "- [requires(condition)] will be rewritten as `Contract.Requires(condition)` instead of Contract.Requires(condition, s) where s is a string that includes the method name and condition.", "- [ensures(condition)] will be rewritten as `Contract.Ensures(condition)` instead of `on_return(return_value) { Contract.Assert(condition, s); }`.", "- [ensuresOnThrow(condition)] will be rewritten as Contract.EnsuresOnThrow(condition) instead of `on_throw(__exception__) { Contract.Assert(condition, s); }`.", "#haveContractRewriter")] public static LNode haveContractRewriter(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount <= 1) {
@@ -43,13 +43,7 @@ namespace LeMP
 			LNode fnArgs, oldFn = fn;
 			if (fn.ArgCount >= 4) {
 				var rw = new CodeContractRewriter(fn.Args[0], fn.Args[1], context);
-				if ((fnArgs = fn.Args[2]).Calls(S.AltList)) {
-					fn = fn.WithArgChanged(2, fnArgs.WithArgs(arg => {
-						if (arg.HasAttrs)
-							return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
-						return arg;
-					}));
-				}
+				fn = ProcessArgContractAttributes(fn, 2, rw);
 				if (fn.Args[0].HasAttrs)
 					fn = fn.WithArgChanged(0, fn.Args[0].WithAttrs(rw.Process(fn.Args[0].Attrs, null)));
 				if (fn.HasAttrs)
@@ -67,6 +61,28 @@ namespace LeMP
 			}
 			return null;
 		}
+		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
+		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + "([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", "Generates Contract checks in a lambda function. See the documentation of " + "ContractsOnMethod for more information about the contract attributes.", "=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)] public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
+		{
+			LNode oldFn = fn;
+			if (fn.ArgCount == 2) {
+				var rw = new CodeContractRewriter(LNode.Missing, Id_lambda_function, context);
+				fn = ProcessArgContractAttributes(fn, 0, rw, isLambda: true);
+				if (fn.HasAttrs)
+					fn = fn.WithAttrs(rw.Process(fn.Attrs, null));
+				if (rw.PrependStmts.IsEmpty) {
+					return null;
+				} else {
+					var body = fn.Args[1];
+					if (!body.Calls(S.Braces))
+						body = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Return, LNode.List(body)))).SetStyle(NodeStyle.Statement);
+					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
+					fn = fn.WithArgChanged(1, body);
+					return fn;
+				}
+			}
+			return null;
+		}
 		static readonly LNode Id_value = LNode.Id(CodeSymbols.value);
 		[LexicalMacro("notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + "T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + "[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", "Generates contract checks in a property. You can apply contract attributes to " + "the property itself, to the getter, to the setter, or all three. When the [requires] " + "or [assert] attributes are applied to the property itself, they are treated as if " + "they were applied to the getter; but when the [ensures], [assertEnsures], notnull, " + "and [ensuresOnThrow] attributes are applied to the property itself, they are treated " + "as if they were applied to both the getter and the setter separately.", "#property", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)] public static LNode ContractsOnProperty(LNode prop, IMacroContext context)
 		{
@@ -75,13 +91,7 @@ namespace LeMP
 				LNode braces = prop[3];
 				var oldBraces = braces;
 				var rw = new CodeContractRewriter(prop.Args[0], prop.Args[1], context);
-				if ((propArgs = prop.Args[2]).Calls(S.AltList) && propArgs.ArgCount > 0) {
-					prop = prop.WithArgChanged(2, propArgs.WithArgs(arg => {
-						if (arg.HasAttrs)
-							return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
-						return arg;
-					}));
-				}
+				prop = ProcessArgContractAttributes(prop, 2, rw);
 				VList<LNode> cAttrs = LNode.List();
 				prop = prop.WithArgChanged(0, GrabContractAttrs(prop.Args[0], ref cAttrs, ContractAppliesTo.Getter));
 				prop = GrabContractAttrs(prop, ref cAttrs);
@@ -132,6 +142,22 @@ namespace LeMP
 			}
 			return null;
 		}
+		static LNode ProcessArgContractAttributes(LNode fn, int argsIndex, CodeContractRewriter rw, bool isLambda = false)
+		{
+			LNode fnArgs = fn.Args[argsIndex];
+			if (fnArgs.CallsMin(isLambda ? S.Tuple : S.AltList, 1)) {
+				return fn.WithArgChanged(argsIndex, fnArgs.WithArgs(arg => {
+					if (arg.HasAttrs)
+						return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
+					return arg;
+				}));
+			} else if (isLambda) {
+				var arg = fnArgs;
+				if (arg.HasAttrs)
+					fn = fn.WithArgChanged(argsIndex, arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg))));
+			}
+			return fn;
+		}
 		static LNode GrabContractAttrs(LNode node, ref VList<LNode> cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
 		{
 			if (node.HasAttrs) {
@@ -168,7 +194,7 @@ namespace LeMP
 				if (arg.Calls(CodeSymbols.Var, 2) && (tmp_0 = arg.Args[1]) != null && tmp_0.Calls(CodeSymbols.Assign, 2) && (variableName = tmp_0.Args[0]) != null || arg.Calls(CodeSymbols.Var, 2) && (variableName = arg.Args[1]) != null)
 					return variableName;
 				else
-					return arg;
+					return arg.WithoutAttrs();
 			}
 		}
 		static readonly Symbol __notnull = (Symbol) "#notnull";
@@ -198,9 +224,12 @@ namespace LeMP
 		{
 			var mode = attr.Name;
 			exceptionType = null;
-			if (attr.Calls(S.Of, 2) && attr.Args[0].IsIdNamed(sy_ensuresOnThrow)) {
-				exceptionType = attr.Args[1];
-				mode = sy_ensuresOnThrow;
+			if (!attr.HasSimpleHead()) {
+				var target = attr.Target;
+				if (target.Calls(S.Of, 2) && target.Args[0].IsIdNamed(sy_ensuresOnThrow)) {
+					exceptionType = target.Args[1];
+					mode = sy_ensuresOnThrow;
+				}
 			}
 			if (mode == __notnull)
 				mode = sy_notnull;
@@ -237,7 +266,7 @@ namespace LeMP
 			void ProcessAttribute(LNode attr, Symbol mode, LNode exceptionType, LNode variableName, bool isPropSetter)
 			{
 				var conditions = attr.Args;
-				object haveCCRewriter = Context.ScopedProperties.TryGetValue(sy_HaveCodeContractsRewriter, null);
+				object haveCCRewriter = Context.ScopedProperties.TryGetValue(sy_haveContractRewriter, null);
 				_haveCCRewriter = haveCCRewriter is bool ? (bool) haveCCRewriter : false;
 				if (mode == sy_notnull) {
 					if (attr.Args.Count != 0)
@@ -291,6 +320,8 @@ namespace LeMP
 						} else if (ReplaceContractUnderscore(ref condition, null))
 							Context.Write(Severity.Error, condition, "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.");
 					} else {
+						if (haveCCRewriter && ReturnType.IsIdNamed(S.Missing))
+							Context.Write(Severity.Error, condition, "The macro for `ensures` does not support `_` in this context when MS Code Contracts are enabled, because the return type is unknown.");
 						contractResult = haveCCRewriter ? LNode.Call(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Contract"), LNode.Id((Symbol) "Result"))), ReturnType))) : Id_return_value;
 						ReplaceContractUnderscore(ref condition, contractResult);
 					}
