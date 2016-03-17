@@ -17,7 +17,8 @@ namespace LeMP
 		[LexicalMacro(@"replace (input($capture) => output($capture), ...) {...}",
 			"Finds one or more patterns in a block of code and replaces each matching expression with another expression. "+
 			"The braces are omitted from the output (and are not matchable)."+
-			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list.")]
+			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list.",
+			"replace", "#replace")]
 		public static LNode replace(LNode node, IMacroContext context)
 		{
 			var args_body = context.GetArgsAndBody(true);

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Loyc;
-using Loyc.Ecs;
+using Loyc.Collections;
 using Loyc.Syntax;
+using Loyc.Ecs;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
@@ -20,11 +21,11 @@ namespace LeMP
 			if (cons.ArgCount >= 3 && cons.Args[1].IsIdNamed(S.This))
 			{
 				var anc = context.Ancestors;
-				LNode space = anc[anc.Count - 3], typeName;
+				LNode space = anc.TryGet(anc.Count - 3, LNode.Missing), typeName;
 				Symbol type = EcsValidators.SpaceStatementKind(space);
 				if (type != null && anc[anc.Count - 2] == space.Args[2]) {
 					typeName = space.Args[0];
-					return cons.WithArgChanged(1, KeyNameComponentOf(typeName));
+					return cons.WithArgChanged(1, F.Id(KeyNameComponentOf(typeName)));
 				}
 			}
 			return null;

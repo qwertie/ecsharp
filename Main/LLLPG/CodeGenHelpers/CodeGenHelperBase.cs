@@ -364,65 +364,7 @@ namespace Loyc.LLParserGenerator
 		// Decides whether to add a "break" at the end of a switch case.
 		internal protected static bool EndMayBeReachable(LNode stmt)
 		{
-			// The goal of this code is to avoid the dreaded compiler warning 
-			// "Unreachable code detected". We're conservative, to avoid a compiler 
-			// error about a missing "break". This is just a heuristic since we 
-			// don't have access to proper reachability analysis.
-			if (stmt.CallsMin(S.Braces, 1))
-				return EndMayBeReachable(stmt.Args.Last);
-			if (!stmt.HasSpecialName)
-				return true;
-
-			if (stmt.Calls(S.Goto, 1))
-				return false;
-			else if (stmt.Calls(S.Continue) || stmt.Calls(S.Break))
-				return false;
-			else if (stmt.Calls(S.Return))
-				return false;
-			else if (stmt.Calls(S.GotoCase, 1))
-				return false;
-
-			LNode body;
-			if (stmt.Calls(S.If, 2))
-				return true;
-			else if (stmt.Calls(S.If, 3))
-			{
-				return EndMayBeReachable(stmt.Args[1])
-					|| EndMayBeReachable(stmt.Args[2]);
-			}
-			else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
-			{
-				// for a switch statement, assume it exits normally if a break 
-				// statement is the last statement of any of the cases, or if
-				// there is no "default" case.
-				bool beforeCase = true;
-				bool hasDefaultCase = false;
-				for (int i = body.ArgCount - 1; i > 0; i--)
-				{
-					var substmt = body.Args[i];
-					if (beforeCase && substmt.Calls(S.Break))
-						return true;
-					if (substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default))
-						hasDefaultCase = beforeCase = true;
-					else
-						beforeCase = substmt.Calls(S.Case);
-				}
-				return hasDefaultCase == false;
-			}
-			else if (stmt.Calls(S.For) || stmt.Calls(S.While) || stmt.Calls(S.DoWhile))
-			{
-				return true;
-			}
-			else if (stmt.CallsMin(S.Try, 1))
-			{
-				return EndMayBeReachable(stmt.Args[0]);
-			}
-			else if (stmt.ArgCount >= 1)
-			{
-				Debug.Assert(stmt.HasSpecialName);
-				return EndMayBeReachable(stmt.Args.Last);
-			}
-			return true;
+			return LeMP.StandardMacros.NextStatementMayBeReachable(stmt);
 		}
 
 		public virtual LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody)

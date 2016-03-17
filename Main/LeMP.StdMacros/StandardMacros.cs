@@ -7,6 +7,8 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Math;
+using Loyc.Ecs;
+using System.Diagnostics;
 
 namespace LeMP
 {
@@ -83,9 +85,81 @@ namespace LeMP
 		// forward_to _obj { def ToString()::string; def GetHashCode()::int; };
 		// foo ??= Foo();
 		// x - 0.5;
-		// xin(1, 2, 3);
+		// x in (1, 2, 3);
 		// $"The value is {Value,-10:C}." => string.Format("The value is {0,-10:C}", Value)
 		// save_and_restore _foo { Foo(_foo = true); } => var tmp17 = _foo; try { Foo(_foo = true); } finally { _foo = tmp17; }
+
+		/// <summary>Given a statement, this method attempts to decide if the 
+		/// immediately following statement (if any) is reachable.</summary>
+		/// <returns>true if reachable/unsure, false if definitely unreachable.</returns>
+		/// <remarks>
+		/// The goal of this code is to avoid the dreaded compiler warning 
+		/// "Unreachable code detected". This is just a heuristic since we 
+		/// don't have access to proper reachability analysis. In fact, it's
+		/// no doubt buggy.
+		/// </remarks>
+		public static bool NextStatementMayBeReachable(LNode stmt)
+		{
+			if (stmt.CallsMin(S.Braces, 1))
+				return NextStatementMayBeReachable(stmt.Args.Last);
+			if (!stmt.HasSpecialName)
+				return true;
+
+			if (stmt.Calls(S.Goto, 1))
+				return false;
+			else if (stmt.Calls(S.Continue) || stmt.Calls(S.Break))
+				return false;
+			else if (stmt.Calls(S.Return))
+				return false;
+			else if (stmt.Calls(S.GotoCase, 1))
+				return false;
+
+			bool isFor;
+			LNode body;
+			if (stmt.Calls(S.If, 2))
+				return true;
+			else if (stmt.Calls(S.If, 3))
+			{
+				var r1 = NextStatementMayBeReachable(stmt.Args[1]);
+				var r2 = NextStatementMayBeReachable(stmt.Args[2]);
+				return r1 || r2;
+			}
+			else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
+			{
+				// for a switch statement, assume it exits normally if a break 
+				// statement is the last statement of any of the cases, or if
+				// there is no "default" case.
+				bool beforeCase = true;
+				bool hasDefaultCase = false;
+				foreach (var substmt in body.Args.ToFVList())
+				{
+					if (beforeCase && substmt.Calls(S.Break))
+						return true;
+					if (substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default))
+						hasDefaultCase = beforeCase = true;
+					else
+						beforeCase = substmt.Calls(S.Case);
+				}
+				return hasDefaultCase == false;
+			}
+			else if ((isFor = stmt.Calls(S.For, 4)) || stmt.Calls(S.While, 2) || stmt.Calls(S.DoWhile, 2))
+			{   // Infinite loop?
+				var cond = stmt.Args[isFor ? 1 : 0];
+				if (cond.IsIdNamed(S.Missing) || true.Equals(cond.Value))
+					return true; // ok, I don't know what to do
+				return true;
+			}
+			else if (stmt.CallsMin(S.Try, 1))
+			{
+				return NextStatementMayBeReachable(stmt.Args[0]);
+			}
+			else if (stmt.ArgCount >= 1)
+			{
+				Debug.Assert(stmt.HasSpecialName);
+				return NextStatementMayBeReachable(stmt.Args.Last);
+			}
+			return true;
+		}
 
 		#region concat_id (##), nameof
 
@@ -130,8 +204,8 @@ namespace LeMP
 		{
 			if (nameof.ArgCount != 1)
 				return null;
-			var expr = KeyNameComponentOf(nameof.Args[0]);
-			return F.Literal(ParsingService.Current.Print(expr, context.Sink, ParsingService.Exprs));
+			Symbol expr = KeyNameComponentOf(nameof.Args[0]);
+			return F.Literal(expr.Name);
 		}
 
 		/// <summary>Retrieves the "key" name component for the nameof(...) macro.</summary>
@@ -140,17 +214,9 @@ namespace LeMP
 		/// global::Foo&lt;int>.Bar&lt;T>(x)) is <c>Bar</c>. This example tree has the 
 		/// structure <c>((((global::Foo)!int).Bar)!T)(x)</c>).
 		/// </remarks>
-		public static LNode KeyNameComponentOf(LNode name)
+		public static Symbol KeyNameComponentOf(LNode name)
 		{
-			// So if #of, get first arg (which cannot itself be #of), then if @`.`, get second arg.
-			// If it's a call, note that we have to check for #of and @`.` BEFORE stripping off the args.
-			if (name.CallsMin(S.Of, 1))
-				name = name.Args[0];
-			if (name.CallsMin(S.Dot, 1))
-				name = name.Args.Last;
-			if (name.IsCall)
-				return KeyNameComponentOf(name.Target);
-			return name;
+			return EcsValidators.KeyNameComponentOf(name);
 		}
 
 		[LexicalMacro(@"stringify(expr)", "Converts an expression to a string (note: original formatting is not preserved)")]
@@ -237,6 +303,17 @@ namespace LeMP
 			if (a.Count == 2) {
 				LNode A = a[0], B = a[1];
 				return F.Vars(F.Missing, F.Assign(A, B));
+			}
+			return null;
+		}
+
+		[LexicalMacro("namespace Foo;", "Surrounds the remaining code in a namespace block.", "#namespace", Mode = MacroMode.Passive)]
+		public static LNode Namespace(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount == 2 && !node.Args.Last.Calls(S.Braces))
+			{
+				context.DropRemainingNodes = true;
+				return node.WithArgs(node.Args.Add(F.Braces(context.RemainingNodes)));
 			}
 			return null;
 		}

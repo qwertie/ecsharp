@@ -21,21 +21,21 @@ namespace LeMP.Test
 			return node.WithName(S.Splice);
 		}
 		[LexicalMacro("priorityTest(x, y)", "Change first argument to 'hi'", 
-			"priorityTest", "priorityTestPCB", Mode = MacroMode.PriorityOverride)]
+			"priorityTest", "priorityTestPCB", Mode = MacroMode.PriorityOverride | MacroMode.Passive)]
 		public static LNode priorityTestHi(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount >= 1 && !node[0].IsIdNamed("hi"))
 				return node.WithArgChanged(0, LNode.Id("hi"));
 			return null;
 		}
-		[LexicalMacro("priorityTest(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenAfter)]
+		[LexicalMacro("priorityTest(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)]
 		public static LNode priorityTest(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
 				return node.WithArgs(node[1], node[0]);
 			return null;
 		}
-		[LexicalMacro("priorityTestPCB(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenBefore)]
+		[LexicalMacro("priorityTestPCB(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenBefore | MacroMode.Passive)]
 		public static LNode priorityTestPCB(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -55,9 +55,7 @@ namespace LeMP
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			MacroProcessor.AddMacros(typeof(LeMP.StandardMacros));
 			MacroProcessor.AddMacros(typeof(LeMP.Test.TestMacros));
-			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 		}
@@ -141,13 +139,13 @@ namespace LeMP
 				"{ Foo x; int y; }", 2);
 			Test("{ x::Foo; y::int; }",
 				"{ Foo x; @int y; }", 1);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"[@static] @void Main() { @var(x::@int = @default(@int)); }", 1);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { @int x = @default(@int); }", 2);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { int x = default(@int); }", 3);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { int x = default(int); }", 4);
 		}
 

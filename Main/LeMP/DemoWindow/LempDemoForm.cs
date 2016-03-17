@@ -18,6 +18,7 @@ namespace TextEditor
 		string DemoText =
 			"using System(, .Collections.Generic);\n" +
 			"using Loyc(, .Collections, .Syntax, .Syntax.Lexing);\n" +
+			"namespace Example;\n" +
 			"replace (w => Console.WriteLine);\n\n" +
 			"public class Program {\n" +
 			"	public static void Main(string[] args) {\n" +

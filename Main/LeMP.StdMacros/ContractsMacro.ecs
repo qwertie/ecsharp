@@ -1,0 +1,440 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
+
+namespace LeMP
+{
+	partial class StandardMacros
+	{
+		use_symbols;
+
+		[LexicalMacro(@"#haveContractRewriter(true)",
+			"Sets a flag to indicate that your build process includes the Microsoft Code Contracts binary rewriter, so\n\n"+
+			"- [requires(condition)] will be rewritten as `Contract.Requires(condition)` instead of Contract.Requires(condition, s) where s is a string that includes the method name and condition.",
+			"- [ensures(condition)] will be rewritten as `Contract.Ensures(condition)` instead of `on_return(return_value) { Contract.Assert(condition, s); }`.",
+			"- [ensuresOnThrow(condition)] will be rewritten as Contract.EnsuresOnThrow(condition) instead of `on_throw(__exception__) { Contract.Assert(condition, s); }`.",
+			"#haveContractRewriter")]
+		public static LNode haveContractRewriter(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount <= 1) {
+				if (SetScopedProperty<bool>(node.Args[0, F.@true], context, @@haveContractRewriter))
+					return quote(#splice());
+			}
+			return null;
+		}
+
+		static bool SetScopedProperty<T>(LNode literal, IMacroContext context, object key)
+		{
+			if (literal != null) {
+				var value = literal.Value;
+				if (value is T) {
+					context.ScopedProperties[key] = (T) value;
+					return true;
+				}
+			}
+			Reject(context, literal, "Expected a literal of type {0}.".Localized(typeof(T).Name));
+			return false;
+		}
+
+		// Hmm, our macro processor design makes this... unwise to modularize 
+		// across multiple macros. Really we should think of a new and fancy 
+		// macroprocessor design, but right now the important thing is to provide 
+		// VALUE TO USERS. They'll never pay me, but if I'm lucky they'll use LeMP.
+		[LexicalMacro(@"notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; "+
+			"[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; "+
+			"[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}",
+			"Generates Contract checks in a method.\n\n"+
+			"- [requires(expr)] and [assert(expr)] specifies an expression that must be true at the beginning of the method; assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the argument that the attribute is attached to, if any.\n",
+			"- [ensures(expr)] and [assertEnsures(expr)] specifies an expression that must be true if-and-when the method returns normally. assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the return value of the method.\n",
+			"- [ensuresOnThrow(expr)] and [ensuresOnThrow<ExceptionType>(expr)] specify a condition that must be true if the method throws an exception. When #haveContractRewriter is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.\n",
+			"- notnull is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole.\n",
+			"\nAll contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message.",
+			"#fn", "#cons", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnMethod(LNode fn, IMacroContext context)
+		{
+			// Performance note: one should keep in mind that this macro usually 
+			// has no effect. It looks for contracts and usually finds none, so
+			// we should try to search quickly. Luckily, LNode methods like 
+			// n.WithArgChanged(i,N) do not allocate a new node if the new value 
+			// equals the old value (if n[i] == N).
+			LNode fnArgs, oldFn = fn;
+			if (fn.ArgCount >= 4) {
+				var rw = new CodeContractRewriter(fn.Args[0], fn.Args[1], context);
+				
+				// If this thing has an argument list, scan it
+				if ((fnArgs = fn.Args[2]).Calls(S.AltList)) {
+					fn = fn.WithArgChanged(2, 
+						fnArgs.WithArgs(arg => {
+							if (arg.HasAttrs)
+								return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
+							return arg;
+						}));
+				}
+				// Scan attributes on return type, then attributes on the whole method
+				if (fn.Args[0].HasAttrs)
+					fn = fn.WithArgChanged(0, fn.Args[0].WithAttrs(rw.Process(fn.Args[0].Attrs, null)));
+				if (fn.HasAttrs)
+					fn = fn.WithAttrs(rw.Process(fn.Attrs, null));
+				
+				if (rw.PrependStmts.IsEmpty) {
+					return null; // this is the common case
+				} else {
+					var body = fn.Args[3];
+					if (!body.Calls(S.Braces)) // Add braces in case of void LambdaMethod() => expr;
+						body = quote {{ return $body; }};
+					body = body.WithArgs(body.Args.InsertRange(0, rw.PrependStmts));
+					fn = fn.WithArgChanged(3, body);
+					return fn;
+				}
+			}
+			return null;
+		}
+
+		static readonly LNode Id_value = quote(value);
+
+		[LexicalMacro(@"notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; "+
+			"T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; "+
+			"[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}",
+			"Generates contract checks in a property. You can apply contract attributes to "+
+			"the property itself, to the getter, to the setter, or all three. When the [requires] "+
+			"or [assert] attributes are applied to the property itself, they are treated as if "+
+			"they were applied to the getter; but when the [ensures], [assertEnsures], notnull, "+
+			"and [ensuresOnThrow] attributes are applied to the property itself, they are treated "+
+			"as if they were applied to both the getter and the setter separately.",
+			"#property", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnProperty(LNode prop, IMacroContext context)
+		{
+			// Performance note: one should keep in mind that this macro usually 
+			// has no effect. It looks for contracts and usually finds none.
+			LNode propArgs, oldProp = prop;
+			if (prop.ArgCount == 4) {
+				LNode braces = prop[3];
+				var oldBraces = braces;
+				var rw = new CodeContractRewriter(prop.Args[0], prop.Args[1], context);
+				
+				// If this has an argument list (this[...]), process its contract attributes
+				if ((propArgs = prop.Args[2]).Calls(S.AltList) && propArgs.ArgCount > 0) {
+					prop = prop.WithArgChanged(2, 
+						propArgs.WithArgs(arg => {
+							if (arg.HasAttrs)
+								return arg.WithAttrs(rw.Process(arg.Attrs, GetVarName(arg)));
+							return arg;
+						}));
+				}
+
+				// Remove contract attributes from the property and store in a list
+				VList<LNode> cAttrs = LNode.List();
+				prop = prop.WithArgChanged(0, GrabContractAttrs(prop.Args[0], ref cAttrs, ContractAppliesTo.Getter));
+				prop = GrabContractAttrs(prop, ref cAttrs);
+
+				// Find the getter and setter
+				LNode getter = null, setter = null;
+				int getterIndex = -1, setterIndex = -1;
+				VList<LNode> getterAttrs = LNode.List(), setterAttrs = LNode.List();
+				bool isLambdaProperty = !braces.Calls(S.Braces);
+				if (isLambdaProperty) {
+					if (cAttrs.Count == 0)
+						return null; // lambda property has no contract attributes
+					// Transform into a normal property
+					getterAttrs = cAttrs;
+					getter = quote { get { return $braces; } };
+					braces = quote {{ $getter; }};
+					getterIndex = 0;
+				} else {
+					for (int i = 0; i < braces.Args.Count; i++) {
+						var part = braces.Args[i];
+						if (part.Calls(S.get)) { getter = part; getterIndex = i; }
+						if (part.Calls(S.set)) { setter = part; setterIndex = i; }
+					}
+
+					// Now create separate lists of contract attributes for the getter and the setter
+					if (cAttrs.Count != 0) {
+						getterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
+						setterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
+					}
+				}
+				
+				// Process the discovered attributes to produce prepended statements
+				var sharedPrependStmts = rw.PrependStmts;
+				if (getter != null) {
+					getter = GrabContractAttrs(getter, ref getterAttrs);
+					rw.Process(getterAttrs, null);
+					rw.PrependStmtsToGetterOrSetter(ref braces, getterIndex, getter);
+				}
+				if (setter != null) {
+					rw.PrependStmts = sharedPrependStmts;
+					setter = GrabContractAttrs(setter, ref setterAttrs);
+					rw.Process(setterAttrs, quote(value), true);
+					rw.PrependStmtsToGetterOrSetter(ref braces, setterIndex, setter);
+				}
+
+				// Update the property
+				if (braces == oldBraces)
+					return null; // this is the common case
+				else
+					return prop.WithArgChanged(3, braces);
+			}
+			return null;
+		}
+		
+		static LNode GrabContractAttrs(LNode node, ref VList<LNode> cAttrs, ContractAppliesTo kinds = ContractAppliesTo.Both)
+		{
+			if (node.HasAttrs) {
+				VList<LNode> cAttrs2 = cAttrs; // because lambdas cannot access cAttrs directly
+				var r = node.WithAttrs(attr => {
+					if ((PropertyContractInterpretation(attr) & kinds) != 0) {
+						cAttrs2.Add(attr);
+						return NoValue.Value; // remove
+					}
+					return attr;
+				});
+				cAttrs = cAttrs2;
+				return r;
+			}
+			return node;
+		}
+
+		static bool ReplaceContractUnderscore(ref LNode condition, LNode variableName)
+		{
+			bool hasUnderscore = false;
+			LNode old = condition;
+			condition = condition.ReplaceRecursive(n => {
+				if (n.IsIdNamed(__) || n.IsIdNamed(_hash)) {
+					hasUnderscore = true;
+					return variableName;
+				}
+				return null;
+			});
+			return hasUnderscore;
+		}
+
+		static LNode GetVarName(LNode arg)
+		{
+			matchCode (arg) {
+				case { $_ $variableName = $_; },
+				     { $_ $variableName;      }:
+					return variableName;
+				default:
+					return arg;
+			}
+		}
+
+		static readonly Symbol __notnull = (Symbol) "#notnull";
+		static readonly LNode Id_return_value = quote(return_value);
+		static readonly LNode Id__exception__ = quote(__exception__);
+
+		[Flags] // Some contract attributes only apply to the property getter or setter
+		enum ContractAppliesTo { Getter = 1, Setter = 2, Both = 3, Neither = 0 };
+
+		static ContractAppliesTo PropertyContractInterpretation(LNode attribute)
+		{
+			LNode _;
+			var mode = GetContractAttrMode(attribute, out _);
+			if (mode == null)
+				return ContractAppliesTo.Neither;
+			if (mode == @@notnull || mode == @@ensuresOnThrow)
+				return ContractAppliesTo.Both;
+			else if (mode == @@requires || mode == @@assert)
+				return ContractAppliesTo.Setter;
+			else // mode == @@ensures || mode == @@assertEnsures
+				if (attribute.Args.Any(cond => ReplaceContractUnderscore(ref cond, null)))
+					return ContractAppliesTo.Getter;
+				else
+					return ContractAppliesTo.Both;
+		}
+
+		static Symbol GetContractAttrMode(LNode attr, out LNode exceptionType)
+		{
+			var mode = attr.Name;
+			exceptionType = null;
+			if (attr.Calls(S.Of, 2) && attr.Args[0].IsIdNamed(@@ensuresOnThrow)) {
+				exceptionType = attr.Args[1];
+				mode = @@ensuresOnThrow;
+			}
+			if (mode == __notnull)
+				mode = @@notnull;
+			if (mode == @@ensuresOnThrow || mode == @@requires || mode == @@notnull || 
+				mode == @@ensures || mode == @@assert || mode == @@assertEnsures)
+				return mode;
+			return null;
+		}
+
+		// Helper class encapsulating the low-level behavior of contract attributes.
+		private class CodeContractRewriter
+		{
+			internal VList<LNode> PrependStmts;
+			internal this(private LNode ReturnType, private LNode FullMethodName, private IMacroContext Context) 
+				{ PrependStmts = new VList<LNode>(); }
+
+			// Looks for contract attributes in a list and creates statements that 
+			// should be inserted at the beginning of the method that those attributes 
+			// are a part of. `variableName` is the name of the associated method 
+			// argument, or null if the attributes are attached to the return value or 
+			// the entire method. Returns the attribute list with contract attributes 
+			// removed.
+			internal VList<LNode> Process(VList<LNode> attributes, LNode variableName, bool isPropSetter = false)
+			{
+				return attributes.Where(attr => {
+					LNode exceptionType = null;
+					var mode = GetContractAttrMode(attr, out exceptionType);
+					if (mode != null) {
+						ProcessAttribute(attr, mode, exceptionType, variableName, isPropSetter);
+						return false; // Remove contract attribute from method signature
+					}
+					return true; // No change
+				});
+			}
+
+			bool _haveCCRewriter;
+
+			void ProcessAttribute(LNode attr, Symbol mode, LNode exceptionType, LNode variableName, bool isPropSetter)
+			{
+				var conditions = attr.Args;
+				object haveCCRewriter = Context.ScopedProperties.TryGetValue(@@HaveCodeContractsRewriter, null);
+				_haveCCRewriter = haveCCRewriter is bool ? (bool)haveCCRewriter : false;
+
+				// #notnull is equivalent to either requires(_ != null) or ensures(_ != null)
+				if (mode == @@notnull) {
+					if (attr.Args.Count != 0)
+						Context.Write(Severity.Warning, attr, "'#notnull' does not expect arguments.");
+					if (variableName != null) // argument
+						mode = @@requires;
+					else // return value
+						mode = @@ensures;
+					conditions.Add(quote(_ != null));
+				} else if (!attr.IsCall) {
+					Context.Write(Severity.Warning, attr, "'{0}' expects a list of conditions.", attr.Name);
+				}
+
+				if (mode == @@requires || mode == @@assert)
+					ProcessRequiresAttribute(conditions, mode, variableName);
+				else { // mode == @@ensures || mode == @@ensuresOnThrow
+					if (variableName != null && !isPropSetter)
+						Context.Write(Severity.Error, attr, "The '{0}' attribute does not apply to method arguments.", mode);
+					else
+						ProcessEnsuresAttribute(conditions, mode, exceptionType, variableName);
+				}
+			}
+
+			void ProcessRequiresAttribute(VList<LNode> conditions, Symbol mode, LNode variableName)
+			{
+				// Create a "Contract.Requires()" check for each provided condition.
+				foreach (var condition_ in conditions)
+				{
+					LNode condition = condition_; // make it writable so we can replace `_`
+					LNode conditionStr;
+					
+					if (ReplaceContractUnderscore(ref condition, variableName))
+						if (variableName == null)
+							Context.Write(Severity.Error, condition, "`{0}`: underscore has no meaning in this location.", mode);
+					if (mode == @@assert) {
+						PrependStmts.Add(quote { assert($condition); }); // relies on assert() macro
+					} else if (_haveCCRewriter) {
+						PrependStmts.Add(quote { Contract.Requires($condition); });
+					} else {
+						conditionStr = ConditionToStringLit(condition, "`{0}` requires `{1}`");
+						PrependStmts.Add(quote { Contract.Requires($condition, $conditionStr); });
+					}
+				}
+			}
+
+			void ProcessEnsuresAttribute(VList<LNode> conditions, Symbol mode, LNode exceptionType, LNode variableName)
+			{
+				// Create a "Contract.Whatever()" check for each provided condition.
+				bool haveCCRewriter = _haveCCRewriter && mode != @@assertEnsures;
+				var checks = LNode.List();
+				foreach (var condition_ in conditions)
+				{
+					LNode condition = condition_; // make it writable so we can replace `_`
+					LNode conditionStr;
+
+					LNode contractResult = null;
+					if (mode == @@ensuresOnThrow) {
+						if (!haveCCRewriter) {
+							contractResult = Id__exception__;
+						} else if (ReplaceContractUnderscore(ref condition, null))
+							Context.Write(Severity.Error, condition, "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.");
+					} else { // @@ensures or @@assertEnsures
+						contractResult = haveCCRewriter ? quote(Contract.Result<$ReturnType>()) : Id_return_value;
+						ReplaceContractUnderscore(ref condition, contractResult);
+					}
+
+					if (haveCCRewriter) {
+						if (mode == @@ensuresOnThrow)
+							checks.Add(exceptionType != null 
+								? quote { Contract.EnsuresOnThrow<$exceptionType>($condition); }
+								: quote { Contract.EnsuresOnThrow($condition); });
+						else
+							checks.Add(quote { Contract.Ensures($condition); });
+					} else {
+						conditionStr = ConditionToStringLit(condition, 
+							mode == @@ensuresOnThrow 
+							? "`{0}` did not ensure-on-throw `{1}`"
+							: "`{0}` did not ensure `{1}`");
+						var assertMethod = mode == @@assertEnsures 
+							? GetAssertMethod(Context) 
+							: quote(Contract.Assert);
+						checks.Add(quote { $assertMethod($condition, $conditionStr); });
+					}
+				}
+
+				// Request that the checks be added to the beginning of the method
+				if (checks.Count > 0) {
+					if (_haveCCRewriter) {
+						PrependStmts.AddRange(checks);
+					} else if (mode == @@ensuresOnThrow) {
+						LNode excSpec = exceptionType == null ? Id__exception__
+							: quote { $exceptionType $Id__exception__; };
+						PrependStmts.Add(quote {
+							on_throw ($excSpec) {
+								$(..checks);
+							}
+						});
+					} else {
+						PrependStmts.Add(quote {
+							on_return ($Id_return_value) {
+								$(..checks);
+							}
+						});
+					}
+				}
+			}
+
+			LNode ConditionToStringLit(LNode condition, string formatStr)
+			{
+				var methodName = FullMethodName;
+				while (methodName.CallsMin(S.Dot, 2))
+					methodName = methodName.Args.Last;
+				var ps = ParsingService.Current;
+				return F.Literal(string.Format(formatStr,
+					ps.Print(methodName, Context.Sink, ParsingService.Exprs),
+					ps.Print(condition, Context.Sink, ParsingService.Exprs)));
+			}
+
+			// For properties only
+			public void PrependStmtsToGetterOrSetter(ref LNode braces, int getterIndex, LNode getter)
+			{
+				if (!PrependStmts.IsEmpty) {
+					if (getter.ArgCount == 0) {
+						Context.Write(Severity.Error, getter, "`{0}`: contracts cannot be applied to autoproperties. "+
+							"A body is required, but you can use [field] on the property to add a body to `get` and `set` automatically.", getter);
+						return;
+					} else if (getter.ArgCount == 1) {
+						var body = getter.Args[0];
+						if (!body.Calls(S.Braces))
+							body = quote {{ return $body; }};
+						body = body.WithArgs(body.Args.InsertRange(0, PrependStmts));
+						getter = getter.WithArgs(body);
+						braces = braces.WithArgChanged(getterIndex, getter);
+					}
+				}
+			}
+
+		}
+	}
+}

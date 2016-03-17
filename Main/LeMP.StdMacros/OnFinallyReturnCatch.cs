@@ -13,24 +13,21 @@ namespace LeMP
 	public partial class StandardMacros
 	{
 		static readonly Symbol _on_finally = (Symbol)"on_finally";
-		static readonly Symbol _on_return = (Symbol)"on_return";
 		static readonly Symbol _on_error_catch = (Symbol)"on_error_catch";
 		static readonly Symbol _exit = (Symbol)"exit";
 		static readonly Symbol _success = (Symbol)"success";
 		static readonly Symbol _failure = (Symbol)"failure";
 		static readonly Symbol _Exception = (Symbol)"Exception";
-		static readonly Symbol __exception__ = (Symbol)"__exception__";
-		static readonly Symbol __result__ = (Symbol)"__result__";
-		static readonly Symbol __retexpr__ = (Symbol)"<retexpr>";
 
 		[LexicalMacro("on_finally { _foo = 0; }", 
 			"Wraps the code that follows this macro in a try-finally statement, with the specified block as the 'finally' block.")]
 		public static LNode on_finally(LNode node, IMacroContext context)
 		{
-			LNode firstArg, rest, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
+			VList<LNode> rest;
+			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			if (on_handler == null || firstArg != null)
 				return null;
-			return node.With(S.Try, rest, node.With(S.Finally, on_handler));
+			return node.With(S.Try, F.Braces(rest), node.With(S.Finally, on_handler));
 		}
 
 		[LexicalMacro("on_throw(exc) { _foo = 0; }", 
@@ -40,11 +37,12 @@ namespace LeMP
 			"The first argument to on_throw is optional and represents the desired name of the exception variable.")]
 		public static LNode on_throw(LNode node, IMacroContext context)
 		{
-			LNode firstArg, rest, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
+			VList<LNode> rest;
+			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
 			if (on_handler == null)
 				return null;
 			on_handler = on_handler.PlusArg(F.Call(S.Throw));
-			return TransformOnCatch(node, firstArg, rest, on_handler);
+			return TransformOnCatch(node, firstArg, F.Braces(rest), on_handler);
 		}
 
 		[LexicalMacro("on_error_catch(exc) { _foo = 0; }", 
@@ -53,8 +51,9 @@ namespace LeMP
 			"In contrast to on_throw(), the exception is not rethrown at the end of the generated catch block.")]
 		public static LNode on_error_catch(LNode node, IMacroContext context)
 		{
-			LNode firstArg, rest, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
-			return TransformOnCatch(node, firstArg, rest, on_handler);
+			VList<LNode> rest;
+			LNode firstArg, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
+			return TransformOnCatch(node, firstArg, F.Braces(rest), on_handler);
 		}
 
 		private static LNode TransformOnCatch(LNode node, LNode firstArg, LNode rest, LNode on_handler)
@@ -68,62 +67,12 @@ namespace LeMP
 			return node.With(S.Try, rest, node.With(S.Catch, firstArg, F.Missing, on_handler));
 		}
 
-		[LexicalMacro("on_return(result) { result++; }", 
-			"In the code that follows this macro, all return statements are replaced by a block that runs a copy of this code and then returns. "+
-			"For example, the code { on_return(r) { r++; } Foo(); return x > 0 ? x : -x; } is replaced by " +
-			"{ Foo(); { var r = x > 0 ? x : -x; r++; return r; } }. Because this is a lexical macro, it " +
-			"lets you do things that you shouldn't be allowed to do. For example, { on_return { x++; } int x=0; return; } "+
-			"will compile although the on_return block shouldn't be allowed to access x." +
-			"This macro can also replace a plain 'return;' statement with one that returns a value, if the argument to on_return is a variable declaration: " +
-			"{ on_return(var tc = Environment.TickCount) { } Foo(); return; } => { Foo(); { var tc = Environment.TickCount; return tc; } }")]
-		public static LNode on_return(LNode node, IMacroContext context)
-		{
-			LNode firstArg, rest, on_handler = ValidateOnStmt(node, context, out rest, out firstArg);
-			if (on_handler == null)
-				return null;
-			
-			// Get/construct the declaration of the var to return, and get its name
-			LNode varDecl = firstArg, varName = firstArg;
-			bool varAssigned = false;
-			if (firstArg == null) {
-				varName = F.Id(__result__);
-				varDecl = F.Var(F.Missing, varName);
-			} else {
-				if (varDecl.Calls(S.Var, 2)) {
-					if (varAssigned = (varName = varDecl.Args[1]).Calls(S.Assign, 2))
-						varName = varName.Args[0];
-				} else if (varName.IsId) {
-					varDecl = node.With(S.Var, F.Missing, varName);
-				} else
-					return Reject(context, firstArg, "The first parameter to on_return must be a simple identifier (the name of a variable to return) or a variable declaration (for a variable to be returned).");
-			}
-			var retExpr = F.Call(S.Substitute, F.Id(__retexpr__));
-			Pair<LNode, LNode>[] patterns = new Pair<LNode, LNode>[2] {
-				// return; => { <on_handler> return; }
-				new Pair<LNode,LNode>(F.Call(S.Return), varAssigned
-				                ? on_handler.WithArgs(new VList<LNode>(varDecl)
-				                      .AddRange(on_handler.Args)
-				                      .Add(F.Call(S.Return, varName)))
-				                : on_handler.PlusArg(F.Call(S.Return))),
-				// return exp; => { <varDecl = $exp> <on_handler> return <varName>; }
-				new Pair<LNode,LNode>(F.Call(S.Return, retExpr),
-				                  on_handler.WithArgs(new VList<LNode>(
-				                      varDecl.WithArgChanged(1, F.Call(S.Assign, varName, retExpr)))
-				                      .AddRange(on_handler.Args)
-				                      .Add(F.Call(S.Return, varName))))
-			};
-			int replacementCount = 0;
-			VList<LNode> output = StandardMacros.Replace(rest.Args, patterns, out replacementCount);
-			if (replacementCount == 0)
-				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found below this line, so this macro had no effect.");
-			return output.AsLNode(S.Splice);
-		}
-
-		private static LNode ValidateOnStmt(LNode node, IMacroContext context, out LNode restInBraces, out LNode firstArg)
+		private static LNode ValidateOnStmt(LNode node, IMacroContext context, out VList<LNode> restOfStmts, out LNode firstArg)
 		{
 			var a = node.Args;
 			LNode on_handler;
-			restInBraces = firstArg = null;
+			restOfStmts = LNode.List();
+			firstArg = null;
 			if (a.Count == 2) {
 				firstArg = a[0];
 			} else if (a.Count != 1)
@@ -132,7 +81,7 @@ namespace LeMP
 				return null;
 			if (context.RemainingNodes.Count == 0)
 				context.Write(Severity.Warning, node, "{0} should not be the final statement of a block.", node.Name);
-			restInBraces = F.Braces(context.RemainingNodes);
+			restOfStmts = new VList<LNode>(context.RemainingNodes);
 			context.DropRemainingNodes = true;
 			return on_handler;
 		}

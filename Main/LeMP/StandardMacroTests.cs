@@ -14,7 +14,13 @@ namespace LeMP
 	[TestFixture]
 	public class StandardMacroTests
 	{
-		IMessageSink _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+		MessageHolder _msgHolder;
+
+		[SetUp]
+		public void SetUp() {
+			MessageSink.Current = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+			_msgHolder = new MessageHolder();
+		}
 
 		[Test]
 		public void TestUsingMulti()
@@ -49,12 +55,17 @@ namespace LeMP
 					}
 				}");
 			TestEcs(@"
-				class Holder<T> {
-					public this(T value) { }
+				class Derived<T> : Base<T> {
+					public this(T value) : base(value) { }
 				}", @"
-				class Holder<T> {
-					public Holder(T value) { }
+				class Derived<T> : Base<T> {
+					public Derived(T value) : base(value) { }
 				}");
+		}
+
+		[Test]
+		public void TestThisConstructorAndCreateMember()
+		{
 			TestEcs(@"
 				class Holder<T> {
 					public this(public readonly T Value) {}
@@ -112,18 +123,25 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestNullCoalesceSet()
+		{
+			TestBoth(@"a ??= (new A());", @"a ??= new A();",
+			          "a = a ?? new A();");
+		}
+
+		[Test]
 		public void TestTuples()
 		{
-			TestEcs("use_default_tuple_types();", "");
+			TestEcs("#useDefaultTupleTypes();", "");
 			TestBoth("(1; a) + (2; a; b) + (3; a; b; c);",
 			         "(1, a) + (2, a, b) + (3, a, b, c);",
 			         "Tuple.Create(1, a) + Tuple.Create(2, a, b) + Tuple.Create(3, a, b, c);");
 			TestBoth("x::#!(String; DateTime) = (\"\"; DateTime.Now); y::#!(Y) = (new Y(););",
 			         "#<String, DateTime> x = (\"\", DateTime.Now);     #<Y> y = (new Y(),);",
 			         "Tuple<String, DateTime> x = Tuple.Create(\"\", DateTime.Now); Tuple<Y> y = Tuple.Create(new Y());");
-			TestEcs("set_tuple_type(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
+			TestEcs("#setTupleType(Sum, Sum); a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Sum(1) + Sum(1, 2) + Sum(1, 2, 3, 4, 5);");
-			TestEcs("set_tuple_type(Tuple); set_tuple_type(2, Pair, Pair.Create);"+
+			TestEcs("#setTupleType(Tuple); #setTupleType(2, Pair, Pair.Create);"+
 			        "a = (1,) + (1, 2) + (1, 2, 3, 4, 5);",
 			        "a = Tuple.Create(1) + Pair.Create(1, 2) + Tuple.Create(1, 2, 3, 4, 5);");
 			
@@ -145,20 +163,23 @@ namespace LeMP
 			int n = StandardMacros.NextTempCounter;
 			TestEcs("with (foo) { .bar = .baz(); }",
 			        "{ var tmp_"+n+" = foo; tmp_"+n+".bar = tmp_"+n+".baz(); }");
-			n = StandardMacros.NextTempCounter;
-			TestEcs(@"with (jekyll) { 
-						.A = 1; 
-						with(mr.hyde()) { x = .F(x); }
-						with(.B + .C(.D));
-					}", string.Format(@"{{
-						var tmp_{0} = jekyll;
-						tmp_{0}.A = 1;
-						{{
-							var tmp_{1} = mr.hyde();
-							x = tmp_{1}.F(x);
-						}}
-						with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
-					}}", n + 1, n));
+			// Ignore note about 'declined to process... with'
+			using (MessageSink.PushCurrent(_msgHolder)) {
+				n = StandardMacros.NextTempCounter;
+				TestEcs(@"with (jekyll) { 
+							.A = 1; 
+							with(mr.hyde()) { x = .F(x); }
+							with(.B + .C(.D));
+						}", string.Format(@"{{
+							var tmp_{0} = jekyll;
+							tmp_{0}.A = 1;
+							{{
+								var tmp_{1} = mr.hyde();
+								x = tmp_{1}.F(x);
+							}}
+							with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
+						}}", n + 1, n));
+			}
 		}
 
 		[Test]
@@ -176,9 +197,9 @@ namespace LeMP
 				   @"q = LNode.Call(CodeSymbols.While, LNode.List(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) ""Foo""), LNode.Id((Symbol) ""T""))), LNode.Call((Symbol) ""Yay"")));");
 			TestEcs("q = quote({ if (true) { Yay(); } });",
 				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""))).SetStyle(NodeStyle.Statement)));");
-			TestEcs("q = quote({ Yay(); break; });",
-				   @"q = LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break))).SetStyle(NodeStyle.Statement);");
-			TestEcs("q = quote({ $(dict[key]) = 1; });",
+			TestEcs("q = quote { Yay(); break; };",
+				   @"q = LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break))).SetStyle(NodeStyle.Statement);");
+			TestEcs("q = quote { $(dict[key]) = 1; };",
 				   @"q = LNode.Call(CodeSymbols.Assign, LNode.List(dict[key], LNode.Literal(1))).SetStyle(NodeStyle.Operator);");
 			TestEcs("q = quote(hello + $x);",
 				   @"q = LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""hello""), x)).SetStyle(NodeStyle.Operator);");
@@ -192,25 +213,31 @@ namespace LeMP
 				   @"LNode.Call((Symbol) ""Foo"", LNode.List(args));");
 			TestEcs("quote { [$(...attrs)] public X; }",
 				   @"LNode.Id(LNode.List().AddRange(attrs).Add(LNode.Id(CodeSymbols.Public)), (Symbol)""X"");");
+			TestEcs("quote(a, b);",
+				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b"")));");
+			TestEcs("quote { a; b; }",
+				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b""))).SetStyle(NodeStyle.Statement);");
 		}
 
 		[Test]
 		public void TestUseSymbols()
 		{
-			TestLes("@[Attr] use_symbols; @@foo;",
+			TestLes("@[Attr] #useSymbols; @@foo;",
 				@"@[Attr, #static, #readonly] #var(Symbol, sy_foo = #cast(""foo"", Symbol)); sy_foo;");
-			TestEcs("[Attr] use_symbols; Symbol status = @@OK;",
+			TestEcs("[Attr] #useSymbols; Symbol status = @@OK;",
 				@"[Attr] static readonly Symbol sy_OK = (Symbol) ""OK""; Symbol status = sy_OK;");
-			TestEcs("[Attr] use_symbols(prefix(_), inherit(@@OK)); Symbol status = @@OK;",
+			TestEcs("[Attr] #useSymbols(prefix(_), inherit(@@OK)); Symbol status = @@OK;",
 				@"Symbol status = _OK;");
-			TestEcs(@"public use_symbols(prefix: S_, inherit: (@@Good, @@Bad)); 
+			TestEcs(@"public #useSymbols(prefix: S_, inherit: (@@Good, @@Bad)); 
 				Symbol status = @@OK ?? @@Good;
 				Symbol Err() { return @@Bad ?? @@Error; }",
 				@"public static readonly Symbol S_OK = (Symbol) ""OK"", S_Error = (Symbol) ""Error"";
 				Symbol status = S_OK ?? S_Good;
 				Symbol Err() { return S_Bad ?? S_Error; }");
-			TestLes("@[Attr] use_symbols; @@`->`;",
+			TestLes("@[Attr] #useSymbols; @@`->`;",
 				@"@[Attr, #static, #readonly] #var(Symbol, sy__dash_gt = #cast(""->"", Symbol)); sy__dash_gt;");
+			TestLes("@[Attr] #useSymbols; @@#notnull;",
+				@"@[Attr, #static, #readonly] #var(Symbol, sy__numnotnull = #cast(""#notnull"", Symbol)); sy__numnotnull;");
 		}
 
 		[Test]
@@ -819,23 +846,15 @@ namespace LeMP
 					}
 				while(false);"
 				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
-
-		}
-
-		[Test(Fails = "Macro not implemented")]
-		public void TestStringInterpolation()
-		{
-			Assert.Fail("TODO");
 		}
 
 		[Test]
 		public void SetOrCreateMemberTest()
 		{
-			var old = _sink;
-			_sink = MessageSink.Trace;
-			try {
+			using (MessageSink.PushCurrent(_msgHolder)) {
 				TestEcs("void Set(set int X);", "void Set(set int X);"); // Body required
-			} finally { _sink = old; }
+				Assert.IsTrue(_msgHolder.List.Count > 0, "warning expected");
+			}
 			TestEcs("void Set(set int X, set int Y) {}",
 				"void Set(int x, int y) { X = x; Y = y; }");
 			TestEcs("void Set(public int X, bool Y, private string Z) { if (Y) Rejoice(); }",
@@ -891,7 +910,7 @@ namespace LeMP
 				void Prop(Foo foo, int bar = 0) { Foo = foo; _bar = bar; }");
 		}
 		
-		[Test(Fails = "Macro not implemented")]
+		/*[Test(Fails = "Macro not implemented")]
 		public void ResultTest()
 		{
 			TestEcs("static int Square(int x) { x*x }",
@@ -916,7 +935,7 @@ namespace LeMP
 						case 7: {return ""seventh"";} case 8: {return ""eighth"";} case 9: {return ""ninth"";}
 						default: {return ""(not supported)"";} 
 					} }");
-		}
+		}*/
 		
 		[Test]
 		public void ForwardedMethodTest()
@@ -927,13 +946,13 @@ namespace LeMP
 			        "static int InRange(int x, int lo, int hi) { return MathEx.InRange(x, lo, hi); }");
 			TestEcs("void Append(string fmt, params string[] args) ==> sb.AppendFormat;",
 			        "void Append(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
-			TestEcs("void AppendFormat(string fmt, params string[] args) ==> sb.#;",
+			TestEcs("void AppendFormat(string fmt, params string[] args) ==> sb._;",
 					"void AppendFormat(string fmt, params string[] args) { sb.AppendFormat(fmt, args); }");
 			TestEcs("internal int Count ==> _list.Count;",
 					"internal int Count { get { return _list.Count; } }");
-			TestEcs("internal int Count ==> _list.#;",
+			TestEcs("internal int Count ==> _list._;",
 					"internal int Count { get { return _list.Count; } }");
-			TestEcs("internal int Count { get ==> _list.#; set ==> _list.#; }",
+			TestEcs("internal int Count { get ==> _list._; set ==> _list._; }",
 					"internal int Count { get { return _list.Count; } set { _list.Count = value; } }");
 		}
 
@@ -997,71 +1016,334 @@ namespace LeMP
 					@"{ Foo(); { var r = x > 0 ? x : -x; r++; return r; } }");
 			TestEcs(@"{ on_return { Log(""return""); } if (true) return 5; else return; }",
 			        @"{ if (true) { var __result__ = 5; Log(""return""); return __result__; } else { Log(""return""); return; } }");
-			TestEcs(@"on_return(int r = 5) { r++; } return;",
-			        @"{ int r = 5; r++; return r; }");
 			TestEcs(@"on_return(int r) { r++; } return 5;",
 			        @"{ int r = 5; r++; return r; }");
 		}
 
-		[Test(Fails = "Macro not implemented")]
+		[Test]
+		public void Test_on_return_NoReturnStatement()
+		{
+			// First, a couple of situations where on_return will have no effect except a warning message.
+			var msgs = _msgHolder;
+			using (MessageSink.PushCurrent(_msgHolder)) {
+				msgs.List.Clear();
+				TestEcs(@"void Foo() { { on_return() { H(); } F(G()); } }",
+				        @"void Foo() { {                      F(G()); } }");
+				Assert.IsTrue(msgs.List.Count > 0);
+				msgs.List.Clear();
+				TestEcs(@"x => { if (x) { on_return() { H(); } F(); G(); } }",
+				        @"x => { if (x) {                      F(); G(); } }");
+				Assert.IsTrue(msgs.List.Count > 0);
+				msgs.List.Clear();
+				TestEcs(@"set { { on_return() { H(); } F(G()); } }",
+				        @"set { {                      F(G()); } }");
+				Assert.IsTrue(msgs.List.Count > 0);
+			}
+			// And now some situations where it SHOULD add a handler or two.
+			TestEcs(@"void Foo() { F(); on_return() { Console.WriteLine(); } G(); }",
+			        @"void Foo() { F(); G(); Console.WriteLine(); }");
+			TestEcs(@"void Foo(bool c) { on_return() { G(); H(); } if (c) return; F(); }",
+			        @"void Foo(bool c) { if (c) { G(); H(); return; } F(); { G(); H(); } }");
+			TestEcs(@"class Foo { public Foo() : base() { on_return() { G(); H(); } F(); } }",
+			        @"class Foo { public Foo() : base() { F(); { G(); H(); } } }");
+			TestEcs(@"set { on_return() { G(); H(); } F(); }",
+			        @"set { F(); { G(); H(); } }");
+			TestEcs(@"f = x => { on_return { G(); H(); } F(); };",
+			        @"f = x => { F(); { G(); H(); } };");
+			TestEcs(@"delegate(int x) { on_return { G(); H(x); } F(x); };",
+			        @"delegate(int x) { F(x); { G(); H(x); } };");
+		}
+
+		[Test]
+		public void Test_on_return_IgnoresLambda()
+		{
+			TestEcs(@"{ on_return { Returning(); } 
+			            if (list.Any(x => { return x != null; })) 
+			                return true; 
+			            return false;
+			          }",
+			        @"{ if (list.Any(x => { return x != null; })) {
+			                var __result__ = true;
+			                Returning();
+			                return __result__; 
+			            }
+			            {
+			                var __result__ = false;
+			                Returning();
+			                return __result__;
+			            }
+			          }");
+		}
+
+		[Test]
+		public void AssertTest()
+		{
+			TestLes("assert(condition);", 
+			       @"System.Diagnostics.Debug.Assert(condition, ""Assertion failed in ``: condition"");");
+			TestEcs("void Foo() { assert(condition); }", 
+			       @"void Foo() { System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `Foo`: condition""); }");
+			TestEcs("int Num { set { assert(condition); } }", 
+			       @"int Num { set { System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `Num`: condition""); } }");
+			TestEcs(@"class Foo<T> : IFoo {
+			            int IFoo.Num { 
+			                set { assert(condition); }
+			            }
+			       }",
+			       @"class Foo<T> : IFoo {
+			            int IFoo.Num {
+			                set { System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `Foo<T>.Num`: condition""); }
+			            }
+			       }");
+			TestEcs(@"interface IFoo<T> {
+			            void Foo() { 
+			                assert(condition);
+			            }
+			       }",
+			       @"interface IFoo<T> {
+			            void Foo() { 
+			                System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `IFoo<T>.Foo`: condition"");
+			            }
+			       }");
+			TestEcs(@"struct Foo {
+			            event EventHandler Ev { 
+			                add { assert(condition); }
+			            }
+			       }",
+			       @"struct Foo {
+			            event EventHandler Ev { 
+			                add { System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `Foo.Ev`: condition""); }
+			            }
+			       }");
+			TestLes("#setAssertMethod(Contract.Requires); assert(condition);", 
+			       @"Contract.Requires(condition, ""Assertion failed in ``: condition"");");
+		}
+
+		[Test]
+		public void AssertAttributeTest()
+		{
+			TestEcs(@"[assert(x >= min, x <= max)]"+
+			        @"public void AssertRange(int x, int min, int max) { }",
+			        @"public void AssertRange(int x, int min, int max) {
+			            System.Diagnostics.Debug.Assert(x >= min, ""Assertion failed in `AssertRange`: x >= min""); 
+			            System.Diagnostics.Debug.Assert(x <= max, ""Assertion failed in `AssertRange`: x <= max"");
+			        }");
+			TestEcs(@"public void Wait([assert(_ != null)] Task<T> task) { task.Wait(); }",
+			        @"public void Wait(Task<T> task) { 
+			            System.Diagnostics.Debug.Assert(task != null, ""Assertion failed in `Wait`: task != null""); 
+			            task.Wait();
+			        }");
+		}
+
+		[Test]
 		public void RequireTest()
 		{
-			// "[requires] is currently not supported for methods that do not have a body (e.g. interface methods)"
-			// "[ensures] is currently not supported for methods that do not have a body (e.g. interface methods)"
-			TestEcs("[requires(t != null)]"+
-			       @"public void Wait(Task<T> t) { t.Wait(); }",
-			       @"public void Wait(Task<T> t) { "+
-			       @"  Contract.Requires<ArgumentException>(t != null, ""Wait() requires t != null""); t.Wait(); }");
-			TestEcs("public void Wait([requires(# != null)] Task<T> t) { t.Wait(); }",
-			       @"public void Wait(Task<T> t) { "+
-			       @"  Contract.Requires(t != null, ""Wait() requires t != null""); t.Wait(); }");
-			TestEcs("public void Wait([required] Task<T> t) { t.Wait(); }",
-			       @"public void Wait(Task<T> t) { "+
-			       @"  Contract.Requires(t != null, ""Wait() requires t != null""); t.Wait(); }");
-			TestEcs("void Wait([requires(# != null)] Task<T> t) { t.Wait(); }",
-			       @"void Wait(Task<T> t) { Contract.Requires(t != null, ""t != null""); t.Wait(); }");
-			TestEcs("[assert(t != null)]"+
-			       @"public void Wait(Task<T> t) { t.Wait(); }",
-			       @"public void Wait(Task<T> t) { "+
-			       @"  Debug.Assert(t != null, ""Wait() expects t != null""); t.Wait(); }");
-			TestEcs(@"[assert(x >= min, ""x is too low"")]"+
-			        @"[assert(x <= max, ""x is too high"")]"+
-			        @"public void AssertRange(int x, int min, int max) { }",
-			        @"public void AssertRange(int x, int min, int max) {"+
-			        @"  Debug.Assert(x >= min, ""x is too low""); Debug.Assert(x <= max, ""x is too high""); }");
+			// [requires] is currently not supported for methods that do not have a body (e.g. interface methods)
+			// [ensures] is currently not supported for methods that do not have a body (e.g. interface methods)
+			TestEcs("[requires(t != null)]" +
+				   @"public void Wait(Task<T> t) { t.Wait(); }",
+				   @"public void Wait(Task<T> t) { " +
+				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"}");
+			TestEcs("public void Wait([requires(_ != null)] Task<T> t) { t.Wait(); }",
+				   @"public void Wait(Task<T> t) { " +
+				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"}");
+			TestEcs("static uint Decrement([requires(_ > 0)] uint positive) => positive - 1;", 
+			       @"static uint Decrement(uint positive) {
+			           Contract.Requires(positive > 0, ""`Decrement` requires `positive > 0`"");
+			           return positive - 1;
+			       }");
+			TestEcs("public this([requires(_ > 0)] uint positive) { P = positive; }", 
+			       @"public this(uint positive) {
+			           Contract.Requires(positive > 0, ""`this` requires `positive > 0`"");
+			           P = positive;
+			       }");
 		}
-		[Test(Fails = "Macro not implemented")]
+
+		[Test]
+		public void RequirePropertyTest()
+		{
+			TestEcs(@"[requires(_ > 0)]
+			       static uint Positive { 
+			           get { return P; }
+			           set { P = value; }
+			       }",
+				   @"static uint Positive { 
+			           get { return P; }
+			           set { 
+			               Contract.Requires(value > 0, ""`Positive` requires `value > 0`"");
+			               P = value;
+			           }
+			       }");
+			TestEcs(@"
+			       static uint Positive { 
+			           get { return P; }
+			           [requires(_ > 0)]
+			           set { P = value; }
+			       }",
+				   @"static uint Positive { 
+			           get { return P; }
+			           set { 
+			               Contract.Requires(value > 0, ""`Positive` requires `value > 0`"");
+			               P = value;
+			           }
+			       }");
+			TestEcs(@"public T this[[requires((uint)_ < (uint)Count)] int index]
+			       { 
+			           get { return _array[index]; }
+			           internal set { _array[index] = value; }
+			       }",
+				   @"public T  this[int index] { 
+			           get { 
+			               Contract.Requires((uint)index < (uint)Count, ""`this` requires `(uint)index < (uint)Count`"");
+			               return _array[index];
+			           }
+			           internal set {
+			               Contract.Requires((uint)index < (uint)Count, ""`this` requires `(uint)index < (uint)Count`"");
+			               _array[index] = value;
+			           }
+			       }");
+		}
+
+		[Test]
 		public void EnsuresTest()
 		{
-			// TODO: support ensures-on-throw
-			// TODO: support async (Task Result) ensures
-			TestEcs(@"[ensures(# >= 0)]
+			TestEcs(@"[ensures(_ >= 0)]
 			          public static int Square(int x) { 
 			            return x*x;
 			          }",
 			        @"public static int Square(int x) {
-			            var @return = x*x; 
-			            Contract.Assert(x >= 0, ""Square() failed to ensure (result >= 0)""); 
-			            return @return;
+			            { var return_value = x*x; 
+			              Contract.Assert(return_value >= 0, ""`Square` did not ensure `return_value >= 0`""); 
+			              return return_value; }
 			          }");
 			TestEcs(@"public static Node Root { 
-			            [ensures(# != null, ""Internal error"")] 
+			            [ensures(_ != null, !IsFrozen)] 
 			            get { return _root; }
 			          }",
 			        @"public static Node Root { get {
-			            var @return = _root; 
-			            Contract.Assert(@return != null, ""Internal error"");
-			            return @return;
+			            { var return_value = _root; 
+			              Contract.Assert(return_value != null, ""`Root` did not ensure `return_value != null`"");
+			              Contract.Assert(!IsFrozen, ""`Root` did not ensure `!IsFrozen`"");
+			              return return_value; }
 			          } }");
-			TestEcs(@"[ensures(File.Exists(filename), ""Gimme a friggin' break!""]
+			TestEcs(@"[ensures(File.Exists(filename))]
 			          void Save(string filename) { 
 			            File.WriteAllText(filename, ""Saved!"");
 			          }",
 			        @"void Save(string filename) { 
 			            File.WriteAllText(filename, ""Saved!""); 
-			            Contract.Assert(File.Exists(filename), ""Gimme a friggin' break!"");
+			            Contract.Assert(File.Exists(filename), ""`Save` did not ensure `File.Exists(filename)`"");
 			          }");
-			TestEcs(@"[assert_ensures(comp(lo, hi) <= 0)]
+		}
+
+		[Test]
+		public void EnsuresPropertyTest()
+		{
+			TestEcs(@"
+			       static uint Positive { 
+			           [ensures(_ > 0)]
+			           get { return P; }
+			           set { P = value; }
+			       }",
+			       @"static uint Positive { 
+			           get { {
+			               var return_value = P;
+			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               return return_value;
+			           } }
+			           set { P = value; }
+			       }");
+			TestEcs(@"[ensures(_ > 0)]
+			       static uint Positive { 
+			           get { return P; }
+			           set { P = value; }
+			       }",
+				   @"static uint Positive { 
+			           get { {
+			               var return_value = P;
+			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               return return_value;
+			           } }
+			           set { P = value; }
+			       }");
+			TestEcs(@"[ensures(P > 0)]
+			       static uint Positive { 
+			           get { return P; }
+			           set { P = value; }
+			       }",
+				   @"static uint Positive { 
+			           get { {
+			               var return_value = P;
+			               Contract.Assert(P > 0, ""`Positive` did not ensure `P > 0`"");
+			               return return_value;
+			           } }
+			           set { 
+			               P = value;
+			               Contract.Assert(P > 0, ""`Positive` did not ensure `P > 0`"");
+			           }
+			       }");
+			TestEcs(@"[ensures(_ > 0)] static uint Positive => P;",
+			        @"static uint Positive { 
+			           get { {
+			               var return_value = P;
+			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               return return_value;
+			           } }
+			       }");
+		}
+
+		[Test]
+		public void NotNullTest()
+		{
+			TestEcs("public void Wait(notnull Task<T> t) { t.Wait(); }",
+				   @"public void Wait(Task<T> t) { " +
+				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"}");
+			TestEcs("void IFoo<T>.Bar<U>(notnull Task<T> t) { t.Wait(); }",
+				   @"void IFoo<T>.Bar<U>(Task<T> t) { " +
+				   @"  Contract.Requires(t != null, ""`IFoo<T>.Bar<U>` requires `t != null`""); t.Wait(); " +
+				   @"}");
+			TestEcs(@"public class Foo {
+			           public Foo(notnull string name) { Name = name; }
+			       }",
+				   @"public class Foo {
+			           public Foo(string name) {
+			               Contract.Requires(name != null, ""`Foo` requires `name != null`""); 
+			               Name = name;
+                       }
+			       }");
+			TestEcs(@"public static notnull string Double(string x) { 
+			            return x + x;
+			          }",
+			        @"public static string Double(string x) { {
+			            var return_value = x + x; 
+			            Contract.Assert(return_value != null, ""`Double` did not ensure `return_value != null`""); 
+			            return return_value;
+			        } }");
+		}
+
+		[Test]
+		public void NotNullPropertyTest()
+		{
+			TestEcs(@"notnull static uint Positive { get { return P; } set { P = value; } }",
+			        @"static uint Positive { 
+			           get { {
+			               var return_value = P;
+			               Contract.Assert(return_value != null, ""`Positive` did not ensure `return_value != null`"");
+			               return return_value;
+			           } }
+			           set {
+			               Contract.Requires(value != null, ""`Positive` requires `value != null`""); 
+			               P = value;
+			           }
+			       }");
+		}
+
+		[Test]
+		public void AssertEnsuresTest()
+		{
+			TestEcs(@"[assertEnsures(comp(lo, hi) <= 0)]
 				public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp) {
 					if (comp(lo, hi) > 0) {
 						Swap(ref lo, ref hi);
@@ -1072,11 +1354,117 @@ namespace LeMP
 				public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp) {
 					if (comp(lo, hi) > 0) {
 						Swap(ref lo, ref hi);
-						Debug.Assert(comp(lo, hi) <= 0, ""SortPair() failed to ensure comp(lo, hi) <= 0"");
-						return true;
+						{	var return_value = true;
+							System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""`SortPair<T>` did not ensure `comp(lo, hi) <= 0`"");
+							return return_value;
+						}
 					}
-					Debug.Assert(comp(lo, hi) <= 0, ""SortPair() failed to ensure comp(lo, hi) <= 0"");
-					return false;
+					{	var return_value = false;
+						System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""`SortPair<T>` did not ensure `comp(lo, hi) <= 0`"");
+						return return_value;
+					}
+				}");
+		}
+
+		[Test]
+		public void EnsuresOnThrowTest()
+		{
+			TestEcs(@"[ensuresOnThrow(Member != null)] 
+			        public void Test() { 
+			            Member = Member ?? new Whatever();
+			            throw new SomeException();
+			        }",
+			      @"public void Test() { 
+			            try {
+			                Member = Member ?? new Whatever();
+			                throw new SomeException();
+			            } catch (Exception __exception__) {
+			                Contract.Assert(Member != null, ""`Test` did not ensure-on-throw `Member != null`"");
+			                throw;
+			            }
+			        }");
+			TestEcs(@"[ensuresOnThrow<SomeException>(Member != null)] 
+			        public void Test() { 
+			            Member = Member ?? new Whatever();
+			            throw new SomeException();
+			        }",
+			      @"public void Test() { 
+			            try {
+			                Member = Member ?? new Whatever();
+			                throw new SomeException();
+			            } catch (SomeException __exception__) {
+			                Contract.Assert(Member != null, ""`Test` did not ensure-on-throw `Member != null`"");
+			                throw;
+			            }
+			        }");
+		}
+
+		[Test]
+		public void HaveContractRewriterTest()
+		{
+			TestEcs(@"#haveContractRewriter;
+			          public static string Double(notnull string x) { 
+			            return x + x;
+			          }",
+			        @"public static string Double(string x) {
+			            Contract.Requires(x != null); 
+			            return x + x;
+			          }");
+			TestEcs(@"#haveContractRewriter;
+			          [ensures(_ >= 0)]
+			          public static int Square(int x) { 
+			            return x*x;
+			          }",
+			        @"public static int Square(int x) {
+			            Contract.Ensures(Contract.Result<int>() >= 0); 
+			            return return_value;
+			          }");
+			TestEcs(@"#haveContractRewriter;
+			        [ensuresOnThrow(Member != null)] 
+			        public void Test() { 
+			            Member ??= new Whatever();
+			            throw new SomeException();
+			        }",
+			      @"public void Test() { 
+			            Contract.EnsuresOnThrow(Member != null);
+			            Member ??= new Whatever();
+			            throw new SomeException();
+			        }");
+			TestEcs(@"#haveContractRewriter;
+			        [ensuresOnThrow<SomeException>(Member != null)] 
+			        public void Test() { 
+			            Member ??= new Whatever();
+			            throw new SomeException();
+			        }",
+			      @"public void Test() { 
+			            Contract.EnsuresOnThrow<SomeException>(Member != null);
+			            Member ??= new Whatever();
+			            throw new SomeException();
+			        }");
+		}
+
+		[Test]
+		public void ContractOnLambdaTest()
+		{
+			TestEcs(@"
+				public static Func<int,int> Decrementor() {
+					return ([requires(_ > 0)] num) => num - 1;
+				}", @"
+				public static Func<int,int> Decrementor() {
+					return (num) => { 
+						Contract.Requires(num > 0, ""`Decrementor` requires `num > 0`""); 
+						return num - 1;
+					}
+				}");
+			TestEcs(@"#haveContractRewriter;
+				public static Func<int,int> Squarer() {
+					return ([ensures(_ >= 0)] delegate (int num) { return num * num; });
+				}", @"
+				public static Func<int,int> Squarer() {
+					return (delegate (int num) { 
+						Contract.Ensures(Contract.Result<int>() >= 0); 
+						return num * num;
+					});
 				}");
 		}
 
@@ -1085,30 +1473,27 @@ namespace LeMP
 		{
 			TestEcs("[requires(x >= 0)] static double Sqrt(double x) ==> Math.Sqrt;",
 			       @"static double Sqrt(double x) { Contract.Requires(x >= 0, ""Sqrt() requires x >= 0""); return Math.Sqrt(x); }");
-			TestEcs("[field _foo] public List<int> Foo { get; [required] set; }",
+			TestEcs("[field _foo] public List<int> Foo { get; [notnull] set; }",
 			       @"List<int> _foo; public List<int> Foo { "+
 			       @"  get { return _foo; } "+
-			       @"  set { Contract.Requires(value != null, ""Foo requires value != null""); _foo = value; }");
-			TestEcs("[field _foo] public List<int> Foo { [ensures(# != null)] get; [requires(# != null)] set; }",
+			       @"  set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; }");
+			TestEcs("[field _foo] public List<int> Foo { [ensures(_ != null)] get; [requires(_ != null)] set; }",
 			       @"List<int> _foo; public List<int> Foo { "+
 			       @"  get { var @return = _foo; Contract.Assert(); return @return; } "+
 			       @"  set { Contract.Requires(value != null, ""Foo requires value != null""); _foo = value; }");
 			string result = 
 			    @"public static Node Root { get {
-			        var @return = _root; 
-			        Contract.Assert(@return != null, ""Internal error"");
-			        return @return;
+			        var return_value = _root; 
+			        Contract.Assert(@return != null, ""`Root` did not ensure `return_value != null`"");
+			        return return_value;
 			      } }";
 			TestEcs(@"
 				public static Node Root { 
-					[ensures(# != null, ""Internal error"")] 
-					get { _root; }
+					[ensures(_ != null)] get => _root;
 				}", result);
 			TestEcs(@"[field _root]
-				public static Node Root { 
-					[ensures(# != null, ""Internal error"")] 
-					get;
-				}",
+				[ensures(_ != null)] 
+				public static Node Root { get; }",
 				"Node _root; " + result);
 		}
 
@@ -1167,11 +1552,9 @@ namespace LeMP
 		public void TestReplace_basics()
 		{
 			// Simple cases
-			var oldSink = _sink; _sink = MessageSink.Trace; // block warning message about 'no replacements'
-			try {
+			using (MessageSink.PushCurrent(_msgHolder)) { 
 				TestLes(@"replace (nothing => nobody) {nowhere;}", "nowhere;");
-			} finally {
-				_sink = oldSink;
+				Assert.IsTrue(_msgHolder.List.Count > 0, "expected warning about 'no replacements'");
 			}
 			TestLes(@"replace (a => b) {a;}", "b;");
 			TestLes(@"replace (7 => seven) {x = 7;}", "x = seven;");
@@ -1209,7 +1592,7 @@ namespace LeMP
 			        @"MessageBox.Show(String.Format(""I hate {0}ing {1}s"", verb, noun), String.Format(""FYI""));");
 		}
 
-		[Test]
+		[Test(Fails = "Not Implemented")]
 		public void TestReplace_match_attributes()
 		{
 			// [foo] a([attr] Foo) `MatchesPattern` 
@@ -1272,12 +1655,12 @@ namespace LeMP
 			var lemp = NewLemp(maxExpand);
 			using (ParsingService.PushCurrent(inLang))
 			{
-				var inputCode = new VList<LNode>(inLang.Parse(input, _sink));
+				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Current));
 				var results = lemp.ProcessSynchronously(inputCode);
-				var expectCode = outLang.Parse(expected, _sink);
+				var expectCode = outLang.Parse(expected, MessageSink.Current);
 				if (!results.SequenceEqual(expectCode))
 				{	// TEST FAILED, print error
-					string resultStr = results.Select(n => outLang.Print(n, _sink)).Join("\n");
+					string resultStr = results.Select(n => outLang.Print(n)).Join("\n");
 					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
 									TestCompiler.StripExtraWhitespace(resultStr));
 				}
@@ -1285,7 +1668,7 @@ namespace LeMP
 		}
 		MacroProcessor NewLemp(int maxExpand)
 		{
-			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), _sink);
+			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Current);
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));

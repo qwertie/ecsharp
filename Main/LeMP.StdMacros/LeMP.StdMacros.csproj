@@ -57,9 +57,19 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="AssertMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssertMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="AttrMacroRegistrar.cs" />
     <Compile Include="BackingFieldMacro.cs" />
     <Compile Include="CodeQuoteMacro.cs" />
+    <Compile Include="ContractsMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ContractsMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="FluentMacro.cs" />
     <Compile Include="ForwardingMacro.cs" />
     <Compile Include="InRange.out.cs">
@@ -79,10 +89,22 @@
     </Compile>
     <Compile Include="NullDotMacro.cs" />
     <Compile Include="OnFinallyReturnCatch.cs" />
+    <Compile Include="OnReturn.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OnReturn.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Prelude.Les.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReplaceMacro.cs" />
-    <Compile Include="RequiresMacro.cs" />
+    <None Include="AssertMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>AssertMacro.out.cs</LastGenOutput>
+    </None>
+    <None Include="ContractsMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ContractsMacro.out.cs</LastGenOutput>
+    </None>
     <Compile Include="SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
@@ -136,6 +158,12 @@
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
       <Name>Ecs</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OnReturn.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>OnReturn.out.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

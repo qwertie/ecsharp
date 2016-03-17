@@ -788,37 +788,35 @@ namespace LeMP
 			}
 
 			bool macroStyleCall = input.BaseStyle == NodeStyle.Special;
-
-			if (accepted > 0 || macroStyleCall || maxSeverity >= Severity.Warning)
+			var rejected = results.Where(r => r.NewNode == null && (r.Macro.Mode & MacroMode.Passive) == 0);
+			if (macroStyleCall && maxSeverity < Severity.Warning)
+				maxSeverity = Severity.Warning;
+			if (maxSeverity < Severity.Note)
+				maxSeverity = Severity.Note;
+			if (accepted == 0 && _sink.IsEnabled(maxSeverity) && rejected.Any(r => r.Msgs.Count == 0))
 			{
-				if (macroStyleCall && maxSeverity < Severity.Warning)
-					maxSeverity = Severity.Warning;
-				var rejected = results.Where(r => r.NewNode == null && (r.Macro.Mode & MacroMode.Passive) == 0);
-				if (accepted == 0 && macroStyleCall && _sink.IsEnabled(maxSeverity) && rejected.Any())
-				{
-					_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
-						results.Count, rejected.Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
-				}
+				_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
+					results.Count, rejected.Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
+			}
 			
-				foreach (var result in results)
-				{
-					bool printedLast = true;
-					foreach(var msg in result.Msgs) {
-						// Print all messages from macros that accepted the input. 
-						// For rejecting macros, print warning/error messages, and 
-						// other messages when macroStyleCall.
-						if (_sink.IsEnabled(msg.Severity) && (result.NewNode != null
-							|| (msg.Severity == Severity.Detail && printedLast)
-							|| msg.Severity >= Severity.Warning
-							|| macroStyleCall))
-						{
-							var msg2 = new LogMessage(msg.Severity, msg.Context,
-								QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
-							msg2.WriteTo(_sink);
-							printedLast = true;
-						} else
-							printedLast = false;
-					}
+			foreach (var result in results)
+			{
+				bool printedLast = true;
+				foreach(var msg in result.Msgs) {
+					// Print all messages from macros that accepted the input. 
+					// For rejecting macros, print warning/error messages, and 
+					// other messages when macroStyleCall.
+					if (_sink.IsEnabled(msg.Severity) && (result.NewNode != null
+						|| (msg.Severity == Severity.Detail && printedLast)
+						|| msg.Severity >= Severity.Warning
+						|| macroStyleCall))
+					{
+						var msg2 = new LogMessage(msg.Severity, msg.Context,
+							QualifiedName(result.Macro.Macro.Method) + ": " + msg.Format, msg.Args);
+						msg2.WriteTo(_sink);
+						printedLast = true;
+					} else
+						printedLast = false;
 				}
 			}
 		}

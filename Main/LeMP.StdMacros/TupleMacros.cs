@@ -31,8 +31,8 @@ namespace LeMP
 			return result;
 		}
 
-		[LexicalMacro("use_default_tuple_types()", "")]
-		public static LNode use_default_tuple_types(LNode node, IMacroContext context)
+		[LexicalMacro("#useDefaultTupleTypes;", "Reverts to using Tuple and Tuple.Create for all arities of tuple.", "#useDefaultTupleTypes")]
+		public static LNode useDefaultTupleTypes(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount != 0)
 				return null;
@@ -41,9 +41,11 @@ namespace LeMP
 			return F.Call(S.Splice);
 		}
 
-		[LexicalMacro("set_tuple_type(BareName); set_tuple_type(TupleSize, BareName); set_tuple_type(TupleSize, BareName, Factory.Method)",
-			"Set type and creation method for tuples, for a specific size of tuple or for all sizes at once")]
-		public static LNode set_tuple_type(LNode node, IMacroContext context) {
+		[LexicalMacro("#setTupleType(BareName); #setTupleType(TupleSize, BareName); #setTupleType(TupleSize, BareName, Factory.Method)",
+			"Set type and creation method for tuples, for a specific size of tuple or for all sizes at once",
+			"#setTupleType")]
+		public static LNode setTupleType(LNode node, IMacroContext context)
+		{
 			var tupleMakers = MaybeInitTupleMakers(context.ScopedProperties);
 
 			int? size = node.Args[0, F.Missing].Value as int?;
@@ -67,7 +69,8 @@ namespace LeMP
 			return F.Call(S.Splice);
 		}
 
-		[LexicalMacro("#<x, y, ...>", "Represents a tuple type", "#of")]
+		[LexicalMacro("#<x, y, ...>", "Represents a tuple type",
+			"#of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode TupleType(LNode node, IMacroContext context)
 		{
 			var stem = node.Args[0, F.Missing];
@@ -110,7 +113,8 @@ namespace LeMP
 
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
-		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", "=")]
+		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", 
+			"=", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode UnpackTuple(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

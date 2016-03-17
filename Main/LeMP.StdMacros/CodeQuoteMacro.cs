@@ -35,13 +35,17 @@ namespace LeMP
 		}
 		static LNode quote2(LNode node, IMessageSink sink, bool substitutions)
 		{
-			if (node.ArgCount != 1)
-				return Reject(sink, node, "Expected a single parameter.");
-			LNode code = node.Args[0];
-			if (code.Calls(S.Braces, 1) && !code.HasPAttrs())
+			LNode code = node, arg;
+			if (code.ArgCount == 1 && (arg = code.Args[0]).Calls(S.Braces) && !arg.HasPAttrs()) {
+				// Braces are needed to allow statement syntax in EC#; they are 
+				// not necessarily desired in the output, so ignore them. The user 
+				// can still write quote {{...}} to include braces in the output.
+				code = arg;
+			}
+			if (code.ArgCount == 1)
 				return QuoteOne(code.Args[0], substitutions);
 			else
-				return QuoteOne(code, substitutions);
+				return QuoteOne(code.WithTarget(S.Splice), substitutions);
 		}
 		static LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("CodeQuoteMacro.cs"));
 		static LNode Id_LNode = F_.Id("LNode");

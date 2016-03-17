@@ -679,7 +679,9 @@ namespace LeMP.Prelude.Les
 		}
 
 		// only works as long as : is allowed
-		[LexicalMacro(@"condition ? (t : f)", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "?")]
+		[LexicalMacro(@"condition ? (t : f)", 
+			"Attempts to cast a reference down to a derived class. The result is null if the cast fails.", 
+			"?", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode QuestionMark(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[1].Calls(S.Colon, 2))
@@ -700,7 +702,9 @@ namespace LeMP.Prelude.Les
 		static readonly Symbol _opt = GSymbol.Get("opt");
 		static readonly Symbol _ptr = GSymbol.Get("ptr");
 
-		[LexicalMacro("array!Type; opt!Type; ptr!Type", "array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", "#of")]
+		[LexicalMacro("array!Type; opt!Type; ptr!Type", 
+			"array!Type represents an array of Type; opt!Type represents the nullable version of Type; ptr!Type represents a pointer to Type.", 
+			"#of", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode of(LNode node, IMessageSink sink)
 		{
 			LNode kind;
@@ -783,7 +787,7 @@ namespace LeMP.Prelude.Les
 		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
-		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::")]
+		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode ColonColon(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -794,7 +798,7 @@ namespace LeMP.Prelude.Les
 			}
 			return null;
 		}
-		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=")]
+		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode ColonColonInit(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

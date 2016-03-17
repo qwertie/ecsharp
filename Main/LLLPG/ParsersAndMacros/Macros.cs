@@ -159,7 +159,7 @@ namespace Loyc.LLPG
 
 		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"rule", "token", Mode = MacroMode.NoReprocessing)]
+			"rule", "token", Mode = MacroMode.NoReprocessing | MacroMode.Passive)]
 		public static LNode rule(LNode node, IMacroContext context)
 		{
 			bool isToken;

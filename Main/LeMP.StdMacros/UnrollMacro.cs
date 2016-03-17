@@ -16,7 +16,8 @@ namespace LeMP
 		static readonly Symbol @in = GSymbol.Get("in");
 
 		[LexicalMacro(@"unroll ((X, Y) \in ((X, Y), (Y, X))) {...}",
-			"Produces variations of a block of code. The braces are omitted from the output. ")]
+			"Produces variations of a block of code, by replacing an identifier left of `in` with each of the corresponding expressions on the right of `in`. The braces are omitted from the output. ",
+			"unroll", "#unroll")]
 		public static LNode unroll(LNode node, IMessageSink sink)
 		{
 			LNode clause;

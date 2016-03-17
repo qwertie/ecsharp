@@ -13,7 +13,9 @@ namespace LeMP
 
 	partial class StandardMacros
 	{
-		[LexicalMacro("use_symbols; ... @@Foo ...", "Replaces each @@symbol in the code that follows with a static readonly variable named sy_X for each symbol @@X.")]
+		[LexicalMacro("use_symbols; ... @@Foo ...", 
+			"Replaces each @@symbol in the code that follows with a static readonly variable named sy_X for each symbol @@X.",
+			"#useSymbols", "use_symbols" /*old name*/)]
 		public static LNode use_symbols(LNode input, IMacroContext context)
 		{
 			var args_body = context.GetArgsAndBody(true);
