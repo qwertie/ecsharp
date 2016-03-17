@@ -457,6 +457,8 @@ namespace Loyc.Ecs
 		/// e.g. for input like <c>Foo."Hello"</c>.</remarks>
 		public static Symbol KeyNameComponentOf(LNode name)
 		{
+			if (name == null)
+				return null;
 			// global::Foo<int>.Bar<T> is structured (((global::Foo)<int>).Bar)<T>
 			// So if #of, get first arg (which cannot itself be #of), then if #dot, 
 			// get second arg.
@@ -464,6 +466,8 @@ namespace Loyc.Ecs
 				name = name.Args[0];
 			if (name.CallsMin(S.Dot, 1))
 				name = name.Args.Last;
+			if (name.IsCall)
+				return KeyNameComponentOf(name.Target);
 			return name.Name;
 		}
 	}

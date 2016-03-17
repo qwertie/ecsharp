@@ -1087,9 +1087,13 @@ namespace Loyc.Ecs
 			}
 		}
 
+		public static bool IsPlainCsIdentStartChar(char c)
+		{
+ 			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || (c > 128 && char.IsLetter(c));
+		}
 		public static bool IsIdentStartChar(char c)
 		{
- 			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '#' || c == '_' || (c > 128 && char.IsLetter(c));
+			return IsPlainCsIdentStartChar(c) || c == '#';
 		}
 		public static bool IsIdentContChar(char c)
 		{
@@ -1107,18 +1111,18 @@ namespace Loyc.Ecs
 		/// <summary>Eliminates punctuation and special characters from a string so
 		/// that the string can be used as a plain C# identifier, e.g. 
 		/// "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
-		/// <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
+		/// <remarks>The empty string "" becomes "__empty__", ASCII punctuation becomes 
 		/// "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
 		/// and all other characters become "Xxx" where xx is the hexadecimal 
 		/// representation of the code point. Designed for the Unicode BMP only.</remarks>
 		public static string SanitizeIdentifier(string id)
 		{
 			if (id == "")
-				return "__";
+				return "__empty__";
 			int i = 0;
-			if (IsIdentStartChar(id[0])) {
+			if (IsPlainCsIdentStartChar(id[0])) {
 				for (i = 1; i < id.Length; i++)
-					if (!IsIdentStartChar(id[i]) && !char.IsDigit(id[i]))
+					if (!IsPlainCsIdentStartChar(id[i]) && !char.IsDigit(id[i]))
 						break;
 			}
 			if (i >= id.Length)
@@ -1127,7 +1131,7 @@ namespace Loyc.Ecs
 			var sb = new StringBuilder(id.Left(i));
 			for (; i < id.Length; i++) {
 				char c = id[i];
-				if (IsIdentStartChar(c))
+				if (IsPlainCsIdentStartChar(c))
 					sb.Append(c);
 				else if (c >= '0' && c <= '9') {
 					if (i == 0) sb.Append('_');

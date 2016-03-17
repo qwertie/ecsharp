@@ -251,13 +251,14 @@ namespace Loyc.Ecs
 			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
 			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
-			Stmt("public a;",             Attr(@public, a));
-			Stmt("[Foo] public a(b);",    Attr(Foo, Attr(@public, F.Call(a, b))));
-			Stmt("[Foo] static int a;",   Attr(Foo, Attr(@static, F.Vars(F.Int32, a))));
-			Stmt("partial public int a;", Attr(partialWA, Attr(@public, F.Vars(F.Int32, a))));
-			Stmt("[#lock] static int a;", Attr(@lock, Attr(@static, F.Vars(F.Int32, a))));
-			Stmt("[#public, Foo] int a;", Attr(@public, Attr(Foo, F.Vars(F.Int32, a))));
-			Stmt("public #foo;",          Attr(@public, fooKW));
+			Stmt("public a;",             F.Attr(@public, a));
+			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
+			Stmt("[Foo] static int a;",   F.Attr(Foo, @static, F.Vars(F.Int32, a)));
+			Stmt("partial public int a;", F.Attr(partialWA, @public, F.Vars(F.Int32, a)));
+			Stmt("public partial int a;", F.Attr(@public, partialWA, F.Vars(F.Int32, a)));
+			Stmt("[#lock] static int a;", F.Attr(@lock, @static, F.Vars(F.Int32, a)));
+			Stmt("[#public, Foo] int a;", F.Attr(@public, Foo, F.Vars(F.Int32, a)));
+			Stmt("public #foo;",          F.Attr(@public, fooKW));
 		}
 
 		[Test]
@@ -473,6 +474,8 @@ namespace Loyc.Ecs
 				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
 			Stmt("Func<T,T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
+			Stmt("public static rule EmailAddress Parse(T x)\n{\n}",
+				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.List(F.Var(T, x)), F.Braces())));
 		}
 
 		[Test]
@@ -1016,14 +1019,15 @@ namespace Loyc.Ecs
 		/// it's impossible to tell whether
 		/// <code>
 		/// Foo(x);
+		/// Foo(x, y) { }
 		/// </code>
-		/// is a method or a constructor. To resolve this conundrum, the parser
-		/// keeps track of the name of the current class, for the sole purpose
-		/// of detecting the constructor. The printer, meanwhile, must detect
-		/// a method call that may be mistaken for a constructor and reformat 
-		/// it as <c>(Foo(x))</c>. Also, when a constructor definition is printed,
-		/// it must use prefix notation if the name does not match the enclosing 
-		/// class:
+		/// is a pair of constructors, or a method call plus a macro call. To 
+		/// resolve this conundrum, the parser keeps track of the name of the 
+		/// current class, for the sole purpose of detecting the constructor. 
+		/// The printer, meanwhile, must detect a method call that may be 
+		/// mistaken for a constructor and reformat it as <c>(Foo(x))</c>. Also, 
+		/// when a constructor definition is printed, it must use prefix 
+		/// notation if the name does not match the enclosing class:
 		/// <code>
 		/// #cons(@``, Foo, #(int x), { ... });
 		/// </code>
@@ -1040,7 +1044,7 @@ namespace Loyc.Ecs
 		/// contexts will use prefix notation to ensure that round-tripping 
 		/// succeeds. When the syntax tree contains a method call to 'this' 
 		/// (which is stored as #this internally), it may have to be enclosed 
-		/// in parens or shown as #this to avoid ambiguity.
+		/// in parens or shown as `#this` to avoid ambiguity.
 		/// <para/>
 		/// Finally, a constructor with the wrong name can still be parsed if
 		/// it calls some other constructor with a colon:
@@ -1676,11 +1680,11 @@ namespace Loyc.Ecs
 		[Test]
 		public void SanitizeIdentifierTests()
 		{
-			AreEqual("I_aposd", EcsNodePrinter.SanitizeIdentifier("I'd"));
-			AreEqual("_123",    EcsNodePrinter.SanitizeIdentifier("123"));
-			AreEqual("_plus5",  EcsNodePrinter.SanitizeIdentifier("+5" ));
-			AreEqual("__",      EcsNodePrinter.SanitizeIdentifier(""   ));
-			AreEqual("_lt_gt",  EcsNodePrinter.SanitizeIdentifier("<>"));
+			AreEqual("I_aposd",  EcsNodePrinter.SanitizeIdentifier("I'd"));
+			AreEqual("_123",     EcsNodePrinter.SanitizeIdentifier("123"));
+			AreEqual("_plus5",   EcsNodePrinter.SanitizeIdentifier("+5" ));
+			AreEqual("__empty__",EcsNodePrinter.SanitizeIdentifier(""   ));
+			AreEqual("_lt_gt",   EcsNodePrinter.SanitizeIdentifier("<>"));
 		}
 		[Test]
 		public void StaticMethods()

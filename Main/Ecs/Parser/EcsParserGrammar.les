@@ -40,6 +40,7 @@ namespace Loyc.Ecs.Parser
 		enum StmtCat { MethodOrPropOrVar = 0; KeywordStmt = 1; IdStmt = 2; ThisConstructor = 3; OtherStmt = 4; };
 		fn DetectStatementCategory(out wordAttrCount::int)::StmtCat
 		{
+			// Scan past identifiers and extra AttrKeywords at the beginning of the statement
 			wordAttrCount = 0;
 			wordsStartAt::int = InputPosition;
 			haveNew::bool = LA0 == TT.@new; // "new" keyword is the most annoying wrinkle
@@ -1236,8 +1237,7 @@ namespace Loyc.Ecs.Parser
 				addAttrs::bool = false;              // causes attrs to be added to result
 				showWordAttrErrorFor::string = null; // causes error when hasWordAttrs
 			}
-			(
-			/	result:IfStmt(startIndex)
+			(	result:IfStmt(startIndex)
 				{showWordAttrErrorFor = "if statement"; addAttrs = true;}
 			/	result:BracedBlock(null, null, startIndex)
 				{showWordAttrErrorFor = "braced-block statement"; addAttrs = true;}
@@ -1257,6 +1257,9 @@ namespace Loyc.Ecs.Parser
 				&(DataType ComplexNameDecl)
 				{attrs.Add(F.Id(ths));}
 				result:MethodOrPropertyOrVar(startIndex, attrs)
+			/	error 
+				{$result = Error("Statement expected at '{0}'", LT(0).SourceText(SourceFile.Text));}
+				ScanToEndOfStmt
 			)
 			{
 				if addAttrs { 
@@ -1327,13 +1330,14 @@ namespace Loyc.Ecs.Parser
 				nsName:ExprStart(true) end:";"
 				{attrs.Add(F.Id(static_));}
 			/	nsName:ExprStart(true)
-				{aliasedType::LNode = null;}
 				(	// If the name is like something like `X = Y.Z`, it's really an alias
-					&{@[Local] nsName.Calls(S.Assign, 2) && (aliasedType = nsName[1]) != null}
-					{nsName = nsName[0];}
+					&{@[Local] nsName.Calls(S.Assign, 2)}
+					{aliasedType::LNode = nsName.Args[1, F.Missing];}
+					{nsName = nsName.Args[0, F.Missing];}
 					r:=RestOfAlias(aliasedType, startIndex, nsName)
 					{return r.WithAttrs(attrs).PlusAttr(_filePrivate);}
 				/	end:";"
+				/	error {Error("Expected ';'");}
 				)
 			)
 			{return F.Call(S.Import, nsName, t.StartIndex, end.EndIndex).WithAttrs(attrs);}
@@ -1801,17 +1805,6 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// for & foreach -------------------------------------------------------
-
-		/*	TODO: investigate why this approach freezes LLLPG:
-			@[private] rule ForStmt(startIndex::int)::LNode @{
-				TT.@for p:="(" ")"
-				=>	{Down(p);}
-					init:=ExprStart(true) ";" cond:=ExprStart(false) ";" inc:=ExprStart(false) EOF
-					{Up();}
-				block:=Stmt
-				{return F.Call(S.For, init, cond, inc, block, startIndex, block.Range.EndIndex);}
-			};
-		*/
 
 		@[private] rule ForStmt(startIndex::int)::LNode @{
 			TT.@for p:="(" ")" block:=Stmt

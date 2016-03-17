@@ -18,14 +18,14 @@ namespace LeMP
 
 		[LexicalMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", 
 			"#fn", Mode = MacroMode.Passive | MacroMode.Normal)]
-		public static LNode ForwardMethod(LNode fn, IMacroContext sink)
+		public static LNode ForwardMethod(LNode fn, IMacroContext context)
 		{
 			LNode args, fwd, body;
 			if (fn.ArgCount != 4 || !(fwd = fn.Args[3]).Calls(S.Forward, 1) || !(args = fn.Args[2]).Calls(S.AltList))
 				return null;
 
 			VList<LNode> argList = GetArgNamesFromFormalArgList(args, formalArg =>
-				sink.Write(Severity.Error, formalArg, "'==>': Expected a variable declaration here"));
+				context.Write(Severity.Error, formalArg, "'==>': Expected a variable declaration here"));
 
 			LNode target = GetForwardingTarget(fwd, fn.Args[1]);
 			LNode call = F.Call(target, argList);
@@ -58,7 +58,7 @@ namespace LeMP
 
 		[LexicalMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }", "Forward property getter and/or setter", 
 			"#property", Mode = MacroMode.Passive | MacroMode.Normal)]
-		public static LNode ForwardProperty(LNode prop, IMessageSink sink)
+		public static LNode ForwardProperty(LNode prop, IMacroContext context)
 		{
 			LNode name, fwd, body;
 			if (prop.ArgCount != 4)
@@ -87,7 +87,7 @@ namespace LeMP
 		{
 			if (fwd.Calls(S.Forward, 1)) {
 				LNode target = fwd.Args[0];
-				if (target.Calls(S.Dot, 2) && target.Args[1].IsIdNamed(_hash))
+				if (target.Calls(S.Dot, 2) && (target.Args[1].IsIdNamed(_hash) || target.Args[1].IsIdNamed(__)))
 					return target.WithArgChanged(1, target.Args[1].WithName(
 						EcsNodePrinter.KeyNameComponentOf(methodName)));
 				return target;
