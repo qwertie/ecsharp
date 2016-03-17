@@ -755,7 +755,7 @@ namespace Loyc.LLParserGenerator
 			var pav = new PredictionAnalysisVisitor(this);
 			foreach (var rule in rules) {
 				if (Verbosity > 0) Output(Verbose, null, 
-					Localize.From("Doing prediction analysis for rule '{0}'", rule.Name));
+					Localize.Localized("Doing prediction analysis for rule '{0}'", rule.Name));
 				pav.Analyze(rule);
 			}
 
@@ -791,7 +791,7 @@ namespace Loyc.LLParserGenerator
 				if (rule.IsToken)
 					tokens++;
 				else {
-					Output(Verbose, rule.Pred, Localize.From("Follow set of '{0}': {1}",
+					Output(Verbose, rule.Pred, Localize.Localized("Follow set of '{0}': {1}",
 						rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
 					if (Verbosity >= 2) {
 						var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
@@ -811,13 +811,13 @@ namespace Loyc.LLParserGenerator
 						}
 						casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
 
-						Output(Verbose, rule.Pred, Localize.From(message,
+						Output(Verbose, rule.Pred, Localize.Localized(message,
 							rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr));
 					}
 				}
 			}
-			Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
-			Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
+			Output(Verbose, null, Localize.Localized("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
+			Output(Verbose, null, Localize.Localized("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
 		}
 
 		#endregion

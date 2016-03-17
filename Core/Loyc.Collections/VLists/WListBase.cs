@@ -192,7 +192,7 @@ namespace Loyc.Collections
 		protected void CopyTo(T[] array, int arrayIndex)
 		{
 			if (Count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
+				throw new ArgumentException(Localize.Localized("CopyTo: Insufficient space in supplied array"));
 			IEnumerator<T> e = GetIEnumerator();
 			while (e.MoveNext())
 				array[arrayIndex++] = e.Current;

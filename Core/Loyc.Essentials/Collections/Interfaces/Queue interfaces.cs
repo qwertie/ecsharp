@@ -37,7 +37,7 @@ namespace Loyc.Collections
 			bool isEmpty;
 			T next = c.TryPop(out isEmpty);
 			if (isEmpty)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next;
 		}
 		public static T Peek<T>(this IPop<T> c)
@@ -45,7 +45,7 @@ namespace Loyc.Collections
 			bool isEmpty;
 			T next = c.TryPeek(out isEmpty);
 			if (isEmpty)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next;
 		}
 		public static bool TryPop<T>(this IPop<T> c, out T value)
@@ -120,28 +120,28 @@ namespace Loyc.Collections
 		{
 			var next = c.TryPopFirst();
 			if (!next.HasValue)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next.Value;
 		}
 		public static T PopLast<T>(this IDeque<T> c)
 		{
 			var next = c.TryPopLast();
 			if (!next.HasValue)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next.Value;
 		}
 		public static T PeekFirst<T>(this IDeque<T> c)
 		{
 			var next = c.TryPeekFirst();
 			if (!next.HasValue)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next.Value;
 		}
 		public static T PeekLast<T>(this IDeque<T> c)
 		{
 			var next = c.TryPeekLast();
 			if (!next.HasValue)
-				throw new InvalidOperationException(string.Format("The {0} is empty", c.GetType().Name));
+				throw new InvalidOperationException("The {0} is empty".Localized(c.GetType().Name));
 			return next.Value;
 		}
 	}

@@ -30,7 +30,7 @@ namespace Loyc.Syntax
 			(sev, location, fmt, args) =>
 			{
 				if (sev >= Severity.Error)
-					throw new FormatException(MessageSink.LocationString(location) + ": " + Localize.From(fmt, args));
+					throw new FormatException(MessageSink.LocationString(location) + ": " + Localize.Localized(fmt, args));
 				else
 					MessageSink.Current.Write(sev, location, fmt, args);
 			});
@@ -120,7 +120,7 @@ namespace Loyc.Syntax
 		{
 			int charIdx = LaIndexToCharIndex(lookaheadIndex);
 			if (SourceFile == null)
-				return Localize.From("At index {0}", charIdx);
+				return Localize.Localized("At index {0}", charIdx);
 			else
 				return SourceFile.IndexToLine(charIdx);
 		}
@@ -366,15 +366,15 @@ namespace Loyc.Syntax
 		protected void Error(bool inverted, params MatchType[] expected) { Error(inverted, (IEnumerable<MatchType>)expected); }
 		protected virtual void Error(bool inverted, IEnumerable<MatchType> expected)
 		{
-			Error(0, Localize.From("'{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
+			Error(0, Localize.Localized("'{0}': expected {1}", ToString(LA0Int), ToString(inverted, expected)));
 		}
 		protected virtual string ToString(bool inverted, IEnumerable<MatchType> expected)
 		{
 			int plural = expected.Take(2).Count();
 			if (plural == 0)
-				return Localize.From(inverted ? "anything" : "nothing");
+				return Localize.Localized(inverted ? "anything" : "nothing");
 			else if (inverted)
-				return Localize.From("anything except {0}", ToString(false, expected));
+				return Localize.Localized("anything except {0}", ToString(false, expected));
 			else if (plural == 1)
 				return ToString(expected.First());
 			else
@@ -383,7 +383,7 @@ namespace Loyc.Syntax
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(0, Localize.From("An expected condition was false: {0}", expectedDescr));
+				Error(0, Localize.Localized("An expected condition was false: {0}", expectedDescr));
 		}
 	}
 	/// <summary>

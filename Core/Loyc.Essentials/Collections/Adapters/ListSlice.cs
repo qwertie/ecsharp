@@ -241,7 +241,7 @@ namespace Loyc.Collections
 				if ((uint)arrayIndex >= (uint)count)
 					throw new ArgumentOutOfRangeException("arrayIndex");
 				else
-					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
+					throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, count));
 			}
 			
 			for (int i = 0; i < count; i++)
@@ -430,7 +430,7 @@ namespace Loyc.Collections
 				if ((uint)arrayIndex >= (uint)count)
 					throw new ArgumentOutOfRangeException("arrayIndex");
 				else
-					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
+					throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, count));
 			}
 			
 			for (int i = 0; i < count; i++)

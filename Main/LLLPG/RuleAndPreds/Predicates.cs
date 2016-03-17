@@ -334,7 +334,7 @@ namespace Loyc.LLParserGenerator
 			var contents2 = contents as Alts;
 			if (contents2 != null && contents2.PreAction == null && contents2.PostAction == null) {
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
-					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
+					throw new ArgumentException(Localize.Localized("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;
 				Greedy = greedy ?? contents2.Greedy;
 				_divisions = contents2._divisions.Clone();

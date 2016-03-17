@@ -146,7 +146,7 @@ namespace Loyc.Collections
 		{
 			int space = array.Length - arrayIndex;
 			if (c.Count > space)
-				throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, c.Count));
+				throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, c.Count));
 			foreach (var item in c)
 				array[arrayIndex++] = item;
 		}
@@ -194,6 +194,14 @@ namespace Loyc.Collections
 		public static Maybe<T> TryGet<T>(this IListAndListSource<T> list, int index)
 		{
 			return ((IList<T>)list).TryGet(index);
+		}
+		public static T TryGet<T>(this IReadOnlyList<T> list, int index, T defaultValue)
+		{
+			return (uint)index < (uint)list.Count ? list[index] : defaultValue;
+		}
+		public static Maybe<T> TryGet<T>(this IReadOnlyList<T> list, int index)
+		{
+			return (uint)index < (uint)list.Count ? list[index] : Maybe<T>.NoValue;
 		}
 
 		public static void RemoveRange<T>(this IList<T> list, int index, int count)
@@ -682,7 +690,7 @@ namespace Loyc.Collections
 			var e = source.GetEnumerator();
 			for (int i = 0; i < count; i++) {
 				if (!e.MoveNext())
-					throw new InvalidStateException(Localize.From("InsertRange: source enumerator ended early ({0}/{1})", i, count));
+					throw new InvalidStateException("InsertRange: source enumerator ended early ({0}/{1})".Localized(i, count));
 				list[index++] = e.Current;
 			}
 			return count;

@@ -427,7 +427,7 @@ namespace Loyc.Math
 		public static int Log2Floor(long x)
 		{
 			if (x < 0)
-				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
+				throw new ArgumentException("Log2Floor({0}) called".Localized(x));
 			return Log2Floor((ulong)x);
 		}
 		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>

@@ -175,7 +175,7 @@ namespace Loyc.Collections.Impl
 
 		private void ThrowKeyAlreadyExists(long key)
 		{
-			throw new ArgumentException(Localize.From("Key already exists: ") + key.ToString());
+			throw new ArgumentException(Localize.Localized("Key already exists: ") + key.ToString());
 		}
 
 		private KeyWalker Encode(int key)
@@ -212,7 +212,7 @@ namespace Loyc.Collections.Impl
 				if (head.Set(ref key, ref value, ref head, CPMode.Find))
 					return value;
 			}
-			throw new KeyNotFoundException(Localize.From("Key not found: ") + keyI.ToString());
+			throw new KeyNotFoundException(Localize.Localized("Key not found: ") + keyI.ToString());
 		}
 		protected TValue GetValue(ref KeyWalker key, long keyI)
 		{
@@ -223,7 +223,7 @@ namespace Loyc.Collections.Impl
 				if (head.Set(ref key, ref value, ref head, CPMode.Find))
 					return value;
 			}
-			throw new KeyNotFoundException(Localize.From("Key not found: ") + keyI.ToString());
+			throw new KeyNotFoundException(Localize.Localized("Key not found: ") + keyI.ToString());
 		}
 		protected TValue GetValue(ref KeyWalker key, ulong keyI)
 		{
@@ -234,7 +234,7 @@ namespace Loyc.Collections.Impl
 				if (head.Set(ref key, ref value, ref head, CPMode.Find))
 					return value;
 			}
-			throw new KeyNotFoundException(Localize.From("Key not found: ") + keyI.ToString());
+			throw new KeyNotFoundException(Localize.Localized("Key not found: ") + keyI.ToString());
 		}
 
 		internal static int DecodeInt(byte[] buf, int len)
@@ -389,7 +389,7 @@ namespace Loyc.Collections.Impl
 		public void Add(ulong key, TValue value)
 		{
 			if (!TryAdd(key, value))
-				throw new ArgumentException(Localize.From("Key already exists: ") + key.ToString());
+				throw new ArgumentException(Localize.Localized("Key already exists: ") + key.ToString());
 		}
 		
 		/// <summary>Searches for the specified key, returning true if it is

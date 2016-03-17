@@ -170,9 +170,9 @@ namespace Loyc.Syntax
 		{
 			LNode node = e.TryGet(0, null);
 			if (node == null)
-				throw new InvalidOperationException(Localize.From("ParseSingle: result was empty."));
+				throw new InvalidOperationException(Localize.Localized("ParseSingle: result was empty."));
 			if (e.TryGet(1, null) != null) // don't call Count because e is typically Buffered()
-				throw new InvalidOperationException(Localize.From("ParseSingle: multiple parse results."));
+				throw new InvalidOperationException(Localize.Localized("ParseSingle: multiple parse results."));
 			return node;
 		}
 		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, Symbol inputType = null)

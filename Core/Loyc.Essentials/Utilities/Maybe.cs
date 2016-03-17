@@ -53,7 +53,7 @@ namespace Loyc
 		public T Value { 
 			get {
 				if (!_hasValue)
-					throw new InvalidOperationException(Localize.From("This Maybe<{0}> does not have a value.", MemoizedTypeName.Get(typeof(T))));
+					throw new InvalidOperationException("This Maybe<{0}> does not have a value.".Localized(MemoizedTypeName.Get(typeof(T))));
 				return _value;
 			}
 		}

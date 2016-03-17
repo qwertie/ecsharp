@@ -36,7 +36,7 @@ namespace Loyc
 	/// compiler to halt immediately.
 	/// <para/>
 	/// The message sink itself should perform localization, which can be done
-	/// with <see cref="Localize.From"/>.
+	/// with <see cref="Localize.Localized"/>.
 	/// <para/>
 	/// Only a single Write() method is truly needed (<see cref="Write(Severity, object, string, object[])"/>),
 	/// but for efficiency reasons the interface contains two other writers. It 
@@ -187,12 +187,12 @@ namespace Loyc
 		public static string FormatMessage(Severity type, object context, string format, params object[] args)
 		{
 			string loc = LocationString(context);
-			string formatted = Localize.From(format, args);
+			string formatted = Localize.Localized(format, args);
 			if (string.IsNullOrEmpty(loc))
-				return Localize.From(type.ToString()) + ": " + formatted;
+				return type.ToString().Localized() + ": " + formatted;
 			else
 				return loc + ": " + 
-				       Localize.From(type.ToString()) + ": " + formatted;
+				       type.ToString().Localized() + ": " + formatted;
 		}
 
 		/// <summary>Sends all messages to <see cref="System.Diagnostics.Trace.WriteLine(string)"/>.</summary>
@@ -245,9 +245,14 @@ namespace Loyc
 		public LogException(object context, string format, params object[] args) : this(Severity.Error, context, format, args) {}
 		public LogException(Severity severity, object context, string format, params object[] args) : this(new LogMessage(severity, context, format, args)) {}
 		public LogException(LogMessage msg) { 
-			Msg = msg; 
-			Data["Severity"] = msg.Severity; 
-			Data["Context"] = msg.Context;
+			Msg = msg;
+			try {
+				Data["Severity"] = msg.Severity;
+				// Disabled because members of the Data dictionary must be serializable,
+				// but msg.Context might not be. We could convert to string, but is it
+				// worth the performance cost? Loyc code isn't really using Data anyway.
+				//Data["Context"] = msg.Context;
+			} catch { }
 		}
 		
 		/// <summary>Contains additional information about the error that occurred.</summary>

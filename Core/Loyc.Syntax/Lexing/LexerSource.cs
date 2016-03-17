@@ -172,9 +172,9 @@ namespace Loyc.Syntax.Lexing
 			} else {
 				string msg;
 				if (args != null)
-					msg = Localize.From(format, args);
+					msg = Localize.Localized(format, args);
 				else
-					msg = Localize.From(format);
+					msg = Localize.Localized(format);
 				throw new FormatException(pos + ": " + msg);
 			}
 		}

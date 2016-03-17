@@ -120,7 +120,7 @@ namespace Loyc.Syntax
 				} else {
 					if (dif < 0) {
 						_inputPosition -= dif; // restore old value
-						throw new InvalidStateException(Localize.From(
+						throw new InvalidStateException(Localize.Localized(
 							"BaseParser.InputPosition can only increase. Unable to decrease from {0} to {1}.", _inputPosition, value));
 					}
 					if (dif > _tokenBuffer.Count)

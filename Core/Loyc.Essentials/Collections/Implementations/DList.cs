@@ -36,9 +36,9 @@
 		private void CheckPopCount(int amount)
 		{
 			if (amount < 0)
-	 			throw new InvalidOperationException(string.Format("Can't pop a negative number of elements ({0})", amount));
+	 			throw new InvalidOperationException("Can't pop a negative number of elements ({0})".Localized(amount));
 			if (amount > _dlist.Count)
-	 			throw new InvalidOperationException(string.Format("Can't pop more elements than Deque<{0}> contains ({1}>{2})", typeof(T).Name, amount, Count));
+	 			throw new InvalidOperationException("Can't pop more elements than DList<{0}> contains ({1}>{2})".Localized(typeof(T).Name, amount, Count));
 		}
 
 		public int IndexOf(T item)
@@ -90,7 +90,7 @@
 			get { return _dlist.Capacity; }
 			set {
 				if (value < _dlist.Count)
-					throw new ArgumentOutOfRangeException(string.Format("Capacity is too small ({0}<{1})", value, Count));
+					throw new ArgumentOutOfRangeException("Capacity is too small ({0}<{1})".Localized(value, Count));
 				_dlist.Capacity = value;
 			}
 		}
@@ -148,7 +148,7 @@
 		void CheckInsertIndex(int index)
 		{
 			if ((uint)index > (uint)_dlist.Count)
-				throw new IndexOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}])", typeof(T).Name, index, Count));
+				throw new IndexOutOfRangeException(Localize.Localized("Invalid index in DList<{0}> ({1}∉[0,{2}])", typeof(T).Name, index, Count));
 		}
 
 		public void RemoveAt(int index)
@@ -166,7 +166,7 @@
 		void CheckRemoveIndex(int index, int amount)
 		{
 			if ((uint)index > (uint)_dlist.Count || (uint)(index + amount) > (uint)_dlist.Count)
-				throw new IndexOutOfRangeException(string.Format("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
+				throw new IndexOutOfRangeException(Localize.Localized("Invalid removal range in Deque<{0}> ([{1},{2})⊈[0,{3}))", typeof(T).Name, index, index + amount, Count));
 		}
 		public int RemoveAll(Predicate<T> condition)
 		{
@@ -210,7 +210,7 @@
 		}
 		private void ThrowOutOfRange(int index)
 		{
-			throw new ArgumentOutOfRangeException(string.Format("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
+			throw new ArgumentOutOfRangeException(Localize.Localized("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
 		public bool TrySet(int index, T value)

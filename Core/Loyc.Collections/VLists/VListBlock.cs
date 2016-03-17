@@ -606,11 +606,11 @@ namespace Loyc.Collections
 				if (list._block != null)
 					list = list._block.Prior;
 				else if (!subList.IsEmpty)
-					throw new InvalidOperationException(Localize.From("VListBlock.FindNextBlock: specified list is empty"));
+					throw new InvalidOperationException(Localize.Localized("VListBlock.FindNextBlock: specified list is empty"));
 			}
 			if (subList._block == list._block) {
 				if ((localCountOfSubList = list._localCount) < subList._localCount)
-					throw new InvalidOperationException(Localize.From("VListBlock.FindNextBlock: subList is not within list"));
+					throw new InvalidOperationException(Localize.Localized("VListBlock.FindNextBlock: subList is not within list"));
 				return new FVList<T>();
 			} else {
 				// Obtain the block in list that is in front of subList.
@@ -637,7 +637,7 @@ namespace Loyc.Collections
 						}
 
 						// subList is not within list.
-						throw new InvalidOperationException(Localize.From("VListBlock.FindNextBlock: subList is not within list"));
+						throw new InvalidOperationException(Localize.Localized("VListBlock.FindNextBlock: subList is not within list"));
 					} else
 						prior2 = prior._block.Prior;
 					if (prior2._block == subList._block)
@@ -666,7 +666,7 @@ namespace Loyc.Collections
 				return subList;
 			} else {
 				if (next._localCount == 0)
-					throw new InvalidOperationException(Localize.From("VListBlock.BackUpOnce: cannot back up any more."));
+					throw new InvalidOperationException(Localize.Localized("VListBlock.BackUpOnce: cannot back up any more."));
 				next._localCount = 1;
 				return next;
 			}
@@ -680,7 +680,7 @@ namespace Loyc.Collections
 				return subList;
 			} else {
 				if (next._localCount == 0)
-					throw new InvalidOperationException(Localize.From("VListBlock.BackUpOnce: cannot back up any more."));
+					throw new InvalidOperationException(Localize.Localized("VListBlock.BackUpOnce: cannot back up any more."));
 				next._localCount = 1;
 				return next;
 			}

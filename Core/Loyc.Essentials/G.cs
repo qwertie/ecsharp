@@ -142,12 +142,12 @@ namespace Loyc
 		public static void Require(bool condition)
 		{
 			if (!condition)
-				throw new Exception(Localize.From("A required condition was false"));
+				throw new Exception("A required condition was false".Localized());
 		}
 		public static void Require(bool condition, string msg)
 		{
 			if (!condition)
-				throw new Exception(Localize.From("Error: {0}", msg));
+				throw new Exception("Error: {0}".Localized(msg));
 		}
 
 		public static bool TryParseHex(UString s, out int value)

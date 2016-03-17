@@ -184,7 +184,7 @@ namespace TextEditor
 		{
 			string msg = fmt;
 			try {
-				msg = Localize.From(fmt, args);
+				msg = Localize.Localized(fmt, args);
 			} catch { }
 			
 			var pos = GetSourcePos(ctx);

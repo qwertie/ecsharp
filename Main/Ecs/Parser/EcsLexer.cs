@@ -103,9 +103,9 @@ namespace Loyc.Ecs.Parser
 				if (s.Length == 1)
 					_value = CG.Cache(s[0]);
 				else if (s.Length == 0)
-					Error(_startPosition, Localize.From("Empty character literal"));
+					Error(_startPosition, "Empty character literal".Localized());
 				else
-					Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", s.Length));
+					Error(_startPosition, "Character literal has {0} characters (there should be exactly one)".Localized(s.Length));
 			}
 		}
 

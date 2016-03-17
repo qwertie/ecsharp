@@ -99,7 +99,7 @@ namespace Util.UI
 			public Symbol Name { get { return _name; } }
 			public bool CanExecute { get { return _cmd(false); } }
 			public void Run() { _cmd(true); }
-			public string Description { get { return Localize.From(_descr); } }
+			public string Description { get { return Localize.Localized(_descr); } }
 		}
 
 		/// <summary>Gets a list of commands from the methods in the specified 

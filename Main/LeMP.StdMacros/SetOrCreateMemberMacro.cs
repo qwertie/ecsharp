@@ -94,7 +94,7 @@ namespace LeMP
 					if (body == null)
 					{
 						if (fn.ArgCount < 4 || !fn.Args[3].Calls(S.Braces))
-							return Reject(sink, arg, Localize.From("'{0}': to set or create a field or property, the method must have a body in braces {{}}.", a));
+							return Reject(sink, arg, Localize.Localized("'{0}': to set or create a field or property, the method must have a body in braces {{}}.", a));
 						body = fn.Args[3];
 					}
 

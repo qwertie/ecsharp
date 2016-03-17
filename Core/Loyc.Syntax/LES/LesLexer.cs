@@ -95,9 +95,9 @@ namespace Loyc.Syntax.Les
 					else {
 						_value = sb.ToString();
 						if (sb.Length == 0)
-							Error(_startPosition, Localize.From("Empty character literal"));
+							Error(_startPosition, Localize.Localized("Empty character literal"));
 						else
-							Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", sb.Length));
+							Error(_startPosition, Localize.Localized("Character literal has {0} characters (there should be exactly one)", sb.Length));
 					}
 				}
 			}
@@ -180,7 +180,7 @@ namespace Loyc.Syntax.Les
 				isTripleQuoted = true;
 			}
 			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation))
-				onError(sourceText.InternalStart, Localize.From("String literal did not end properly"));
+				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 		
 		/// <summary>Parses a normal or triple-quoted string whose starting quotes 
@@ -206,7 +206,7 @@ namespace Loyc.Syntax.Les
 					}
 					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
 						// This backslash was ignored by UnescapeChar
-						onError(i0, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+						onError(i0, Localize.Localized(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
 					}
 					sb.Append(c);
 				} else {
@@ -443,7 +443,7 @@ namespace Loyc.Syntax.Les
 		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol suffix, ref string error)
 		{
 			if (source.IsEmpty) {
-				error = Localize.From("Syntax error in integer literal");
+				error = Localize.Localized("Syntax error in integer literal");
 				return CG.Cache(0);
 			}
 			// Parse the integer
@@ -451,7 +451,7 @@ namespace Loyc.Syntax.Les
 			bool overflow = !G.TryParseUInt(ref source, out unsigned, numberBase, G.ParseFlag.SkipUnderscores);
 			if (!source.IsEmpty) {
 				// I'm not sure if this can ever happen
-				error = Localize.From("Syntax error in integer literal");
+				error = Localize.Localized("Syntax error in integer literal");
 			}
 
 			// If no suffix, automatically choose int, uint, long or ulong
@@ -490,7 +490,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			if (overflow)
-				error = Localize.From("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
+				error = Localize.Localized("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
 			return value;
 		}
 
@@ -511,7 +511,7 @@ namespace Loyc.Syntax.Les
 				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
 					return isNegative ? -d : d;
 			}
-			error = Localize.From("Syntax error in float literal");
+			error = Localize.Localized("Syntax error in float literal");
 			return null;
 		}
 
@@ -521,9 +521,9 @@ namespace Loyc.Syntax.Les
 			{
 				float result = G.TryParseFloat(ref source, radix, G.ParseFlag.SkipUnderscores);
 				if (float.IsNaN(result))
-					error = Localize.From("Syntax error in '{0}' literal", "float");
+					error = Localize.Localized("Syntax error in '{0}' literal", "float");
 				else if (float.IsInfinity(result))
-					error = Localize.From("Overflow in '{0}' literal", "float");
+					error = Localize.Localized("Overflow in '{0}' literal", "float");
 				if (isNegative)
 					result = -result;
 				return result;
@@ -538,9 +538,9 @@ namespace Loyc.Syntax.Les
 
 				double result = G.TryParseDouble(ref source, radix, G.ParseFlag.SkipUnderscores);
 				if (double.IsNaN(result))
-					error = Localize.From("Syntax error in '{0}' literal", type);
+					error = Localize.Localized("Syntax error in '{0}' literal", type);
 				else if (double.IsInfinity(result))
-					error = Localize.From("Overflow in '{0}' literal", type);
+					error = Localize.Localized("Overflow in '{0}' literal", type);
 				if (isNegative)
 					result = -result;
 				if (typeSuffix == _M)

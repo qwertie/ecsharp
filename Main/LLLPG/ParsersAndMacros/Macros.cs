@@ -292,8 +292,8 @@ namespace Loyc.LLPG
 				|| (helper = node.Args[0].Value as IPGCodeGenHelper) == null 
 				|| !(hasBraces = (body = node.Args[1]).Calls(S.Braces)))
 			{
-				string msg = Localize.From("Expected run_LLLPG(helper_object, {...}).");
-				if (hasBraces) msg = " " + Localize.From("An auxiliary macro is required to supply the helper object.");
+				string msg = Localize.Localized("Expected run_LLLPG(helper_object, {...}).");
+				if (hasBraces) msg = " " + Localize.Localized("An auxiliary macro is required to supply the helper object.");
 				context.Write(Severity.Note, node, msg);
 				return null;
 			}
@@ -456,12 +456,12 @@ namespace Loyc.LLPG
 		private static void ReadOption<T>(IMessageSink sink, LNode attr, Action<T> setter, T? defaultValue) where T:struct
 		{
 			if (attr.ArgCount > 1 || (attr.ArgCount == 0 && defaultValue == null))
-				sink.Write(Severity.Error, attr, Localize.From("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
+				sink.Write(Severity.Error, attr, Localize.Localized("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
 			else if (attr.ArgCount == 1) {
 				if (attr.Args[0].Value is T)
 					setter((T)attr.Args[0].Value);
 				else
-					sink.Write(Severity.Error, attr, Localize.From("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
+					sink.Write(Severity.Error, attr, Localize.Localized("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
 			} else
 				setter(defaultValue.Value);
 		}

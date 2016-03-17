@@ -46,7 +46,7 @@ namespace Samples
 			AreEqual(0, Range.ExcludeHi(1, 1).Sum());
 			AreEqual(0, Range.Inclusive(1, 0).Sum());
 		}
-		[Test] public void PrintAllTheNames()
+		public void PrintAllTheNames()
 		{
 			try {
 				PlayPen.PrintAllTheNames("..\\..\\Main\\LeMP.StdMacros");
