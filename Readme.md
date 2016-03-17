@@ -27,7 +27,7 @@ LeMP and LLLPG are self-hosting: they rely on themselves to help build themselve
 		using System.Windows
 		namespace Loyc.Ecs {
 			class Person {
-				public Person(public readonly string Name, public int WeightLb, public int Age) {}
+				public this(public readonly string Name, public int WeightLb, public int Age) {}
 			}
 		}
 
