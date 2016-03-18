@@ -22,10 +22,10 @@ Loyc is about finding ways to bring the world's programming languages closer tog
 
 Language of Your Choice (Loyc) is a group of projects related to cross-language interoperability:
 
-- Transforming source code between different languages
-- Writing libraries (or entire programs) in multiple programming languages
 - Code analysis and transformation
-- IDEs (syntax highlighting, intellisense)
+- (_future_) Transforming source code between different languages
+- (_future_) Writing libraries (or entire programs) in multiple programming languages
+- (_future_) IDEs (code completion lists, various kinds of code visualization, intellisense)
 
 Loyc is in its infancy, and probably will remain so until I attract either (A) volunteers to work on its components, or (B) a major sponsor. Current and potential Loyc projects include:
 

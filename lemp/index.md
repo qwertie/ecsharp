@@ -45,6 +45,49 @@ using Loyc(.Collections, .MiniTest, .Syntax);
 
 The comma `,` before the closing `)` adds an "empty" parameter to the list, which indicates that `using System` itself is one of the outputs you want to produce.
 
+### Example: Null checking ###
+
+As long as there is no such thing as [non-](https://gist.github.com/olmobrutall/31d2abafe0b21b017d56)[nullable reference types](http://twistedoakstudios.com/blog/Post330_non-nullable-types-vs-c-fixing-the-billion-dollar-mistake), we'll be checking if our method parameters are `null`, and if we're extra careful, we might check our return value, too. This can be done in the traditional way,
+
+~~~csharp
+static string Twice(string s)
+{
+	if (s != null)
+		throw new ArgumentNullException("s");
+	return s + s;
+}
+~~~ 
+
+Or in the new way, using Microsoft Code Contracts:
+
+~~~csharp
+static string Twice(string s)
+{
+	Contract.Requires(s != null)
+	return s + s;
+}
+~~~ 
+
+But with LeMP, it's a one-liner:
+
+~~~csharp
+static string Twice(notnull string s) => s + s;
+~~~ 
+
+Your output file will say
+
+~~~csharp
+static string Twice(string s)
+{
+	Contract.Requires(s != null, "`Twice` expected `s != null`")
+	return s + s;
+}
+~~~ 
+
+**Note**: This feature does _not_ require the MS Code Contracts rewriter to be installed. If you're not using the rewriter, you can either write the `Contract` class yourself, or add a reference to Loyc.Essentials.dll and put `using Loyc.MiniContract` at the top of your file, instead of `using System.Diagnostics.Contracts`.)
+
+The `notnull` attribute can be applied to the return value, as well, to check at run-time that a method does not return null. However, `notnull` is not supported on ordinary variables. LeMP also includes other "code contract" attributes. For example, the `notnull` modifier actually equivalent to either `[requires(_ != null)]` or `[ensures(_ != null)]`, depending on whether you use it on an argument or return value, respectively. The underscore `_` represents the value of a parameter, or a return value, depending on where you have used the contract attribute.
+
 ### Example: Small data types ###
 
 I like to create a lot of small data types, rather than using a few huge ones. And when you're making small data types, C# is annoying. A simple type isn't hard:
@@ -101,7 +144,7 @@ public class Person
 	{
 		// TODO: Add validation code
 	}
-};
+}
 ~~~
 
 Your output file will contain exactly the code listed above, and there is no repetition except for `public .. { get; private set; }` (but you might not want everything to be a public property anyway, and if you're using C# 6.0 / VS2015 you can drop the `private set` part). Great! 
@@ -120,7 +163,7 @@ Learn more about LeMP in these published articles:
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
 - [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](pattern-matching.html)
 
-Some use cases and built-in macros (such as `on_finally`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
+Some use cases and built-in macros (such as Code Contract attributes, `on_return`, `on_finally`, `includeFile`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
 
 Download & Installation
 -----------------------
