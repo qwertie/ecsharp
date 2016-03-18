@@ -79,12 +79,12 @@ Your output file will say
 ~~~csharp
 static string Twice(string s)
 {
-	Contract.Requires(s != null, "`Twice` expected `s != null`")
+	Contract.Assert(s != null, "Precondition failed: s != null")
 	return s + s;
 }
 ~~~ 
 
-**Note**: This feature does _not_ require the MS Code Contracts rewriter to be installed. If you're not using the rewriter, you can either write the `Contract` class yourself, or add a reference to Loyc.Essentials.dll and put `using Loyc.MiniContract` at the top of your file, instead of `using System.Diagnostics.Contracts`.)
+**Note**: This feature does _not_ require the MS Code Contracts rewriter to be installed in Visual Studio, since LeMP has a built-in "rewriter" of its own, and it relies on `Contract.Assert`, one of the only methods of the `Contracts` class that does not require the rewriter. This behavior is customizable, e.g. LeMP can be told to use the standard methods instead, such as `Contract.Requires` and `Contract.Ènsures`.)
 
 The `notnull` attribute can be applied to the return value, as well, to check at run-time that a method does not return null. However, `notnull` is not supported on ordinary variables. LeMP also includes other "code contract" attributes. For example, the `notnull` modifier actually equivalent to either `[requires(_ != null)]` or `[ensures(_ != null)]`, depending on whether you use it on an argument or return value, respectively. The underscore `_` represents the value of a parameter, or a return value, depending on where you have used the contract attribute.
 
