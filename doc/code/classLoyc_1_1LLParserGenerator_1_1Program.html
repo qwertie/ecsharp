@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: Loyc.LocalizeExt Class Reference</title>
+<title>Loyc: Loyc.LLParserGenerator.Program Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,47 +84,83 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespaceLoyc.html">Loyc</a></li><li class="navelem"><a class="el" href="classLoyc_1_1LocalizeExt.html">LocalizeExt</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespaceLoyc.html">Loyc</a></li><li class="navelem"><a class="el" href="namespaceLoyc_1_1LLParserGenerator.html">LLParserGenerator</a></li><li class="navelem"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html">Program</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="classLoyc_1_1LocalizeExt-members.html">List of all members</a>  </div>
+<a href="classLoyc_1_1LLParserGenerator_1_1Program-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Loyc.LocalizeExt Class Reference</div>  </div>
+<div class="title">Loyc.LLParserGenerator.Program Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Contains Localize() extension methods for strings. 
- <a href="classLoyc_1_1LocalizeExt.html#details">More...</a></p>
+<p>Entry point of LLLPG.exe, with <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html#a4d5404b4221ec44af88cd18407ea5614" title="Run macro processor for LLLPG on the specified input, with the specified command-line option map...">QuickRun()</a> method to help invoke LLLPG programmatically. 
+ <a href="classLoyc_1_1LLParserGenerator_1_1Program.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Essentials/Utilities/Localize.cs'>/Core/Loyc.Essentials/Utilities/Localize.cs</a></li>
+<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LLLPG/Program.cs'>/Main/LLLPG/Program.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Contains Localize() extension methods for strings.</p>
-<p>This would be part of the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Loyc.Localize</a> class except that the <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a> class is not allowed to have a member that is also named <a class="el" href="classLoyc_1_1Localize.html" title="Localize is a global hook into which a string-mapping localizer can be installed. It is designed to m...">Localize</a>.</p>
+<div class="textblock"><p>Entry point of LLLPG.exe, with <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html#a4d5404b4221ec44af88cd18407ea5614" title="Run macro processor for LLLPG on the specified input, with the specified command-line option map...">QuickRun()</a> method to help invoke LLLPG programmatically.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a01019966d4405bca8f154f4555ab6d45"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01019966d4405bca8f154f4555ab6d45"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localize</b> ([Localizable] this string message, params object[] args)</td></tr>
-<tr class="separator:a01019966d4405bca8f154f4555ab6d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab59e719cc5c2bd6c5ff2e3892402ebf2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab59e719cc5c2bd6c5ff2e3892402ebf2"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localize</b> ([Localizable] this string message)</td></tr>
-<tr class="separator:ab59e719cc5c2bd6c5ff2e3892402ebf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde6f82e3dd1263693c931562839548b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afde6f82e3dd1263693c931562839548b"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localize</b> ([Localizable] this string message, object arg1)</td></tr>
-<tr class="separator:afde6f82e3dd1263693c931562839548b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad15a490956ce81601fba68861b5d9929"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad15a490956ce81601fba68861b5d9929"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>Localize</b> ([Localizable] this string message, object arg1, object arg2)</td></tr>
-<tr class="separator:ad15a490956ce81601fba68861b5d9929"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91c5bde3a46b89afa93e039b63a52a04"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a91c5bde3a46b89afa93e039b63a52a04"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Main</b> (params string[] args)</td></tr>
+<tr class="separator:a91c5bde3a46b89afa93e039b63a52a04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d5404b4221ec44af88cd18407ea5614"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1Program.html#a4d5404b4221ec44af88cd18407ea5614">QuickRun</a> (string input, params Assembly[] macroAssemblies)</td></tr>
+<tr class="memdesc:a4d5404b4221ec44af88cd18407ea5614"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run macro processor for LLLPG on the specified input, with the specified command-line option map, returning the result as a string. <a href="#a4d5404b4221ec44af88cd18407ea5614">More...</a><br /></td></tr>
+<tr class="separator:a4d5404b4221ec44af88cd18407ea5614"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6182ab351d29a88f732c679fda5ee5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa6182ab351d29a88f732c679fda5ee5a"></a>
+static string&#160;</td><td class="memItemRight" valign="bottom"><b>QuickRun</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> inputLang, int maxExpand, string input, params Assembly[] macroAssemblies)</td></tr>
+<tr class="separator:aa6182ab351d29a88f732c679fda5ee5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a989bcc2501b57253d4d3e6c11c93fc6b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a989bcc2501b57253d4d3e6c11c93fc6b"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Test_LLLPG</b> ()</td></tr>
+<tr class="separator:a989bcc2501b57253d4d3e6c11c93fc6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a4d5404b4221ec44af88cd18407ea5614"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.LLParserGenerator.Program.QuickRun </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>input</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">params Assembly[]&#160;</td>
+          <td class="paramname"><em>macroAssemblies</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Run macro processor for LLLPG on the specified input, with the specified command-line option map, returning the result as a string.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:45 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

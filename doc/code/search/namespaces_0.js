@@ -7,7 +7,6 @@ var searchData=
   ['impl',['Impl',['../namespaceLoyc_1_1Collections_1_1Impl.html',1,'Loyc::Collections']]],
   ['lemp',['LeMP',['../namespaceLeMP.html',1,'']]],
   ['les',['Les',['../namespaceLoyc_1_1Syntax_1_1Les.html',1,'Loyc::Syntax']]],
-  ['les',['Les',['../namespaceLeMP_1_1Prelude_1_1Les.html',1,'LeMP::Prelude']]],
   ['lexing',['Lexing',['../namespaceLoyc_1_1Syntax_1_1Lexing.html',1,'Loyc::Syntax']]],
   ['llparsergenerator',['LLParserGenerator',['../namespaceLoyc_1_1LLParserGenerator.html',1,'Loyc']]],
   ['llpg',['LLPG',['../namespaceLoyc_1_1LLPG.html',1,'Loyc']]],

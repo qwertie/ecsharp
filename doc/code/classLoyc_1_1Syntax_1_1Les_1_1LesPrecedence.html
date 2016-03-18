@@ -141,7 +141,7 @@ OrIfNull: binary ?? </li>
 <li>
 PrefixDots: prefix .. </li>
 <li>
-Range: binary right-associative .. </li>
+<a class="el" href="classLoyc_1_1Range.html">Range</a>: binary right-associative .. </li>
 <li>
 Compare: binary != == &gt;= &gt; &lt; &lt;= </li>
 <li>
@@ -158,7 +158,7 @@ PrefixOr: | </li>
 <p>Not listed in table: binary =&gt; ~ &lt;&gt; <code>backtick</code>; prefix / \ &lt; &gt; ? = </p>
 <p>Notice that the precedence of an operator depends on how it is used. The prefix operator '-' has higher precedence than the binary operator '-', so for example <code>- y * z</code> is parsed as <code>(- y) * z</code>, while <code>x - y * z</code> is parsed as <code>x - (y * z)</code>. </p>
 <p>The Lambda operator =&gt;, which is right-associative, has a precedence level above Multiply on the left side, but below Assign on the right side. For example, the expression <code>a = b =&gt; c = d</code> is parsed as <code>a = (b =&gt; (c = d))</code>, and similarly <code>a + b =&gt; c + d</code> is parsed as <code>a + (b =&gt; (c + d))</code>, but <code>a ** b =&gt; c ** d</code> is parsed <code>(a ** b) =&gt; (c ** d)</code>. The idea of two different precedences on the two sides of an operator may seem strange; see the documentation of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> for more explanation. </p>
-<p>In addition to these, the binary <code>backtick</code> operators have a "precedence range" that is above Compare and below Power. This means that they are immiscible with the Multiply, Add, Arrow, AndBits, OrBits, OrIfNull, PrefixDots, and Range operators, as explained in the documentation of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a>. </p>
+<p>In addition to these, the binary <code>backtick</code> operators have a "precedence range" that is above Compare and below Power. This means that they are immiscible with the Multiply, Add, Arrow, AndBits, OrBits, OrIfNull, PrefixDots, and <a class="el" href="classLoyc_1_1Range.html">Range</a> operators, as explained in the documentation of <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a>. </p>
 <p>After constructing an initial table based on common operators from other languages, I noticed that </p><ul>
 <li>
 All the suffix operators (++ &ndash;) had the same precedence, so I added ... as an extra suffix operator with a lower precedence (but, not seeing a purpose for low-precedence suffixes, it's still above * and /.) </li>
@@ -288,7 +288,7 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:17:00 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -16,6 +16,5 @@ var searchData=
   ['arrayslice_3c_20t_20_3e',['ArraySlice&lt; T &gt;',['../structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['assert',['Assert',['../classLoyc_1_1MiniTest_1_1Assert.html',1,'Loyc::MiniTest']]],
   ['assertionexception',['AssertionException',['../classLoyc_1_1MiniTest_1_1AssertionException.html',1,'Loyc::MiniTest']]],
-  ['attrmacroregistrar',['AttrMacroRegistrar',['../classLeMP_1_1AttrMacroRegistrar.html',1,'LeMP']]],
   ['autovaluesavervisitor',['AutoValueSaverVisitor',['../classLoyc_1_1LLParserGenerator_1_1AutoValueSaverVisitor.html',1,'Loyc::LLParserGenerator']]]
 ];

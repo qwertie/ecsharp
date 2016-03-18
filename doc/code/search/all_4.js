@@ -11,6 +11,7 @@ var searchData=
   ['defaulterrorbranch',['DefaultErrorBranch',['../classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html',1,'Loyc::LLParserGenerator']]],
   ['defaultk',['DefaultK',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#aa054df00b95c9e9bfb3e0083f36ee816',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
   ['defaultnodeprinterwriter',['DefaultNodePrinterWriter',['../classLoyc_1_1Syntax_1_1Les_1_1DefaultNodePrinterWriter.html',1,'Loyc::Syntax::Les']]],
+  ['defaultscopedproperties',['DefaultScopedProperties',['../classLeMP_1_1MacroProcessor.html#a98d06ae7e836d56deaec67e5eb620d8a',1,'LeMP::MacroProcessor']]],
   ['definecustomwrappercreator',['DefineCustomWrapperCreator',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#aec970845df3bb4ac035c044c59e9d110',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
   ['delegate',['Delegate',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a79be8a501e81e4626f613ec68e35674e',1,'Loyc::Syntax::CodeSymbols']]],
   ['depth',['Depth',['../interfaceLoyc_1_1Geometry_1_1ISize3Reader_3_01T_01_4.html#a275aa178a88471597c0547fdc5de019e',1,'Loyc::Geometry::ISize3Reader&lt; T &gt;']]],

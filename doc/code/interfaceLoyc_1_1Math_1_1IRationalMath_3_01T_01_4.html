@@ -110,7 +110,7 @@ Inheritance diagram for Loyc.Math.IRationalMath&lt; T &gt;:</div>
 <area href="interfaceLoyc_1_1Math_1_1ISignedMath_3_01T_01_4.html" title="Provides operations available on all signed numeric types (int, double, etc.); see also IUIntMath{T}..." alt="Loyc.Math.ISignedMath&lt; T &gt;" shape="rect" coords="687,280,906,304"/>
 <area href="interfaceLoyc_1_1Math_1_1IMath_3_01T_01_4.html" title="Provides operations available on all system numeric types (int, uint, double, etc.); see also ISignedMath{T}, IUIntMath{T}, IIntMath{T} and IFloatMath{T}. " alt="Loyc.Math.IMath&lt; T &gt;" shape="rect" coords="687,224,906,248"/>
 <area href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html" title="This interface provides information about a numeric type T." alt="Loyc.Math.INumTraits&lt; T &gt;" shape="rect" coords="114,168,333,192"/>
-<area href="interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4.html" title="Provides methods for converting common numeric types to another numeric type "T". ..." alt="Loyc.Math.INumConverter&lt; T &gt;" shape="rect" coords="343,168,562,192"/>
+<area href="interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4.html" title="Provides methods for converting common numeric types to another numeric type "T". ..." alt="Loyc.Math.IConvertTo&lt; T &gt;" shape="rect" coords="343,168,562,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4.html" title="Provides comparison function for type T along with absolute value (Abs), and the minimum or maximum o..." alt="Loyc.Math.IOrdered&lt; T &gt;" shape="rect" coords="572,168,791,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html" title="Provides increment, decrement, and next/previous-representable- value operations." alt="Loyc.Math.IIncrementer&lt; T &gt;" shape="rect" coords="801,168,1020,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IField_3_01T_01_4.html" title="This defines a Field with the operations +,-,*,/" alt="Loyc.Math.IField&lt; T &gt;" shape="rect" coords="1087,168,1306,192"/>
@@ -154,37 +154,43 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Negate</b> (T a)</td></t
 <tr class="memitem:a10573a1bd23f878e5d47f4d55d497773 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a10573a1bd23f878e5d47f4d55d497773">IsNaN</a> (T value)</td></tr>
 <tr class="memdesc:a10573a1bd23f878e5d47f4d55d497773 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the given value is not a number (can only be true for floats). <a href="#a10573a1bd23f878e5d47f4d55d497773">More...</a><br /></td></tr>
 <tr class="separator:a10573a1bd23f878e5d47f4d55d497773 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4.html">Loyc.Math.INumConverter&lt; T &gt;</a></td></tr>
-<tr class="memitem:a49d48364e67c52e59719f1ab80505606 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a49d48364e67c52e59719f1ab80505606"></a>
+<tr class="memitem:a14e0c494e3d1ffcdc8a83b9505d12afc inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a14e0c494e3d1ffcdc8a83b9505d12afc">Floor</a> (T value)</td></tr>
+<tr class="memdesc:a14e0c494e3d1ffcdc8a83b9505d12afc inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the closest integer equal to or lower than the specified number. <a href="#a14e0c494e3d1ffcdc8a83b9505d12afc">More...</a><br /></td></tr>
+<tr class="separator:a14e0c494e3d1ffcdc8a83b9505d12afc inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3197596537a1956605a195e002d960d inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#af3197596537a1956605a195e002d960d">Ceiling</a> (T value)</td></tr>
+<tr class="memdesc:af3197596537a1956605a195e002d960d inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the closest integer equal to or higher than the specified number. <a href="#af3197596537a1956605a195e002d960d">More...</a><br /></td></tr>
+<tr class="separator:af3197596537a1956605a195e002d960d inherit pub_methods_interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4.html">Loyc.Math.IConvertTo&lt; T &gt;</a></td></tr>
+<tr class="memitem:a2d260e7b0c1a9b1307163d234ea75122 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d260e7b0c1a9b1307163d234ea75122"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (uint t)</td></tr>
-<tr class="separator:a49d48364e67c52e59719f1ab80505606 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac79d2a3326f6e619910984003caeb822 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac79d2a3326f6e619910984003caeb822"></a>
+<tr class="separator:a2d260e7b0c1a9b1307163d234ea75122 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7046181394e154409f43986c2f5efa6f inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7046181394e154409f43986c2f5efa6f"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (int t)</td></tr>
-<tr class="separator:ac79d2a3326f6e619910984003caeb822 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a103e670c773fb9c039b210abbad7466a inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a103e670c773fb9c039b210abbad7466a"></a>
+<tr class="separator:a7046181394e154409f43986c2f5efa6f inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9049faad81455d88a6805ce87c8d5a5a inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9049faad81455d88a6805ce87c8d5a5a"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (ulong t)</td></tr>
-<tr class="separator:a103e670c773fb9c039b210abbad7466a inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab958b2f079fc5a8758b0de0212afe798 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab958b2f079fc5a8758b0de0212afe798"></a>
+<tr class="separator:a9049faad81455d88a6805ce87c8d5a5a inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6830103636998b7896b78db926db169 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6830103636998b7896b78db926db169"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (long t)</td></tr>
-<tr class="separator:ab958b2f079fc5a8758b0de0212afe798 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a115a089d6bb61a86f5c637ddebd330ad inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a115a089d6bb61a86f5c637ddebd330ad"></a>
+<tr class="separator:ae6830103636998b7896b78db926db169 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac24a113caa538fe587212d75b811e32e inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac24a113caa538fe587212d75b811e32e"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (double t)</td></tr>
-<tr class="separator:a115a089d6bb61a86f5c637ddebd330ad inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a106859c82b6a174f9c13b78836e36d40 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a106859c82b6a174f9c13b78836e36d40"></a>
+<tr class="separator:ac24a113caa538fe587212d75b811e32e inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a307e49391bea6654543860977e088ef2 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a307e49391bea6654543860977e088ef2"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clip</b> (uint t)</td></tr>
-<tr class="separator:a106859c82b6a174f9c13b78836e36d40 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26b3918c32fb3c66023989293279f95d inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a26b3918c32fb3c66023989293279f95d"></a>
+<tr class="separator:a307e49391bea6654543860977e088ef2 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a213c4536f463f1ea8a9d7e791736906e inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a213c4536f463f1ea8a9d7e791736906e"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clip</b> (int t)</td></tr>
-<tr class="separator:a26b3918c32fb3c66023989293279f95d inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a476513293cdb74e10af62231fa7e69c7 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a476513293cdb74e10af62231fa7e69c7"></a>
+<tr class="separator:a213c4536f463f1ea8a9d7e791736906e inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1e36a4e1c98be0df88b119747beec1d inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1e36a4e1c98be0df88b119747beec1d"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clip</b> (ulong t)</td></tr>
-<tr class="separator:a476513293cdb74e10af62231fa7e69c7 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cb4116a934e92efeeb5892d561dca37 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cb4116a934e92efeeb5892d561dca37"></a>
+<tr class="separator:af1e36a4e1c98be0df88b119747beec1d inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97a9b28ec865ed9105a43057031874f3 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97a9b28ec865ed9105a43057031874f3"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clip</b> (long t)</td></tr>
-<tr class="separator:a5cb4116a934e92efeeb5892d561dca37 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86783b13b7e08034d7b96e1860dcf593 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86783b13b7e08034d7b96e1860dcf593"></a>
+<tr class="separator:a97a9b28ec865ed9105a43057031874f3 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f876f28b7ee3bda8af8bb510650fd73 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7f876f28b7ee3bda8af8bb510650fd73"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>Clip</b> (double t)</td></tr>
-<tr class="separator:a86783b13b7e08034d7b96e1860dcf593 inherit pub_methods_interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a7f876f28b7ee3bda8af8bb510650fd73 inherit pub_methods_interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4.html">Loyc.Math.IOrdered&lt; T &gt;</a></td></tr>
 <tr class="memitem:a99fd402624d606596e9518b1439cf546 inherit pub_methods_interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99fd402624d606596e9518b1439cf546"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsLess</b> (T a, T b)</td></tr>
@@ -307,7 +313,7 @@ Additional Inherited Members</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:57 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:46 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

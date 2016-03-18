@@ -127,7 +127,7 @@ Inheritance diagram for Loyc.LLParserGenerator.CodeGenHelperBase:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ac435965c539b1e0187ecb99b2dfebac9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac435965c539b1e0187ecb99b2dfebac9">InputSource</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ac435965c539b1e0187ecb99b2dfebac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies an object or class on which <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> APIs such as Match() and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac673569c92ae6ef0f02929618ef0d394" title="Generates code to read LA(k).">LA()</a> should be called. <a href="#ac435965c539b1e0187ecb99b2dfebac9">More...</a><br /></td></tr>
+<tr class="memdesc:ac435965c539b1e0187ecb99b2dfebac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies an object or class on which LLLPG APIs such as Match() and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac673569c92ae6ef0f02929618ef0d394" title="Generates code to read LA(k).">LA()</a> should be called. <a href="#ac435965c539b1e0187ecb99b2dfebac9">More...</a><br /></td></tr>
 <tr class="separator:ac435965c539b1e0187ecb99b2dfebac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15b985b5718e46b0bf70cc7ecc379aab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a15b985b5718e46b0bf70cc7ecc379aab">InputClass</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a15b985b5718e46b0bf70cc7ecc379aab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies a class or namespace to use when calling static functions. There is only one currently: NewSet(), which applies only to . <a href="#a15b985b5718e46b0bf70cc7ecc379aab">More...</a><br /></td></tr>
@@ -161,7 +161,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a708a262eb22bab1b2d469ac13ab74721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the node for an alias. If the specified node is not an alias, returns the same node unchanged. <a href="#a708a262eb22bab1b2d469ac13ab74721">More...</a><br /></td></tr>
 <tr class="separator:a708a262eb22bab1b2d469ac13ab74721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4296d674e4af706302d4fca4837be0b6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a4296d674e4af706302d4fca4837be0b6">VisitInput</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> stmt, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="memdesc:a4296d674e4af706302d4fca4837be0b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required. <a href="#a4296d674e4af706302d4fca4837be0b6">More...</a><br /></td></tr>
+<tr class="memdesc:a4296d674e4af706302d4fca4837be0b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the LLLPG macro calls this method on each statement in the body of the macro (as a preprocessing step, before LLLPG looks at it). No action is required. <a href="#a4296d674e4af706302d4fca4837be0b6">More...</a><br /></td></tr>
 <tr class="separator:a4296d674e4af706302d4fca4837be0b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0dc8b836460e709e2cf1754f163ec997"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a0dc8b836460e709e2cf1754f163ec997">CodeToTerminalPred</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr, ref string errorMsg)</td></tr>
 <tr class="memdesc:a0dc8b836460e709e2cf1754f163ec997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a terminal predicate from a code expression. <a href="#a0dc8b836460e709e2cf1754f163ec997">More...</a><br /></td></tr>
@@ -332,10 +332,10 @@ static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</
 <tr class="memdesc:a108285fdaa441d5cf01a4bcd6241779d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the literals or symbols to use for switch cases of a set (just the values, not including the case labels.) <a href="#a108285fdaa441d5cf01a4bcd6241779d">More...</a><br /></td></tr>
 <tr class="separator:a108285fdaa441d5cf01a4bcd6241779d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb9618b64668f6e273b82d38b07a80d3"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#acb9618b64668f6e273b82d38b07a80d3">ApiCall</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> apiName, params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] args)</td></tr>
-<tr class="memdesc:acb9618b64668f6e273b82d38b07a80d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an LNode representing a call to the specified <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>. <a href="#acb9618b64668f6e273b82d38b07a80d3">More...</a><br /></td></tr>
+<tr class="memdesc:acb9618b64668f6e273b82d38b07a80d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an LNode representing a call to the specified LLLPG API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>. <a href="#acb9618b64668f6e273b82d38b07a80d3">More...</a><br /></td></tr>
 <tr class="separator:acb9618b64668f6e273b82d38b07a80d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad779b7db1dbeffc6c30b9a9cf9008ee"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#aad779b7db1dbeffc6c30b9a9cf9008ee">ApiCall</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> apiName, IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args, bool isStatic=false)</td></tr>
-<tr class="memdesc:aad779b7db1dbeffc6c30b9a9cf9008ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an LNode representing a call to the specified <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>. <a href="#aad779b7db1dbeffc6c30b9a9cf9008ee">More...</a><br /></td></tr>
+<tr class="memdesc:aad779b7db1dbeffc6c30b9a9cf9008ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an LNode representing a call to the specified LLLPG API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>. <a href="#aad779b7db1dbeffc6c30b9a9cf9008ee">More...</a><br /></td></tr>
 <tr class="separator:aad779b7db1dbeffc6c30b9a9cf9008ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a19b35ee542d65316a09a49d55e94507c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a19b35ee542d65316a09a49d55e94507c"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ApiType</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> typeName)</td></tr>
@@ -380,7 +380,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </table>
 </div><div class="memdoc">
 
-<p>Returns an LNode representing a call to the specified <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>.</p>
+<p>Returns an LNode representing a call to the specified LLLPG API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>.</p>
 
 </div>
 </div>
@@ -422,7 +422,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </table>
 </div><div class="memdoc">
 
-<p>Returns an LNode representing a call to the specified <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>.</p>
+<p>Returns an LNode representing a call to the specified LLLPG API. For example, if the user used a "inputSource=input" option, then <code>ApiCall(_Match, F.Literal('7'))</code> would generate a node that represents <code>input.Match('7')</code>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">args</td><td>Parameters to the API call, or null to access a property or field.</td></tr>
@@ -623,7 +623,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">expr</td><td>A expression provided by the user, such as <code>"a string"</code>, a <code>Token.Type</code>, or a <code>value..range</code>. <code>expr</code> will not be a call to the inversion operator #~ (that's handled internally using <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html#a0c7902f443a1e562c2be62ad6e4a25f3" title="Creates a version of the set with IsInverted toggled.">IPGTerminalSet.Inverted()</a>). This method also handles the "any token" input, which is an underscore by convention (_).</td></tr>
-    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
+    <tr><td class="paramname">errorMsg</td><td>An error message to display. If the method returns null, the LLLPG macro shows this as an error; if this method does not return null, the message (if provided) is shown as a warning.</td></tr>
   </table>
   </dd>
 </dl>
@@ -805,7 +805,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </div><div class="memdoc">
 
 <p>Returns an example of an item in the set. If the example is a character, it should be surrounded by single quotes.</p>
-<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
+<p>This helps produce error messages in LLLPG.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#adc0df4dce390856caa0a5a135f8b2cc9">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
@@ -836,7 +836,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EndMayBeReacha
 </div><div class="memdoc">
 
 <p>Returns an example of a character in the set, or null if this is not a set of characters or if EOF is the only member of the set.</p>
-<p>This helps produce error messages in <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a>.</p>
+<p>This helps produce error messages in LLLPG.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a2e64d4fb52d3e2207cf4d0f42ebd1b8c">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
@@ -892,7 +892,7 @@ complete, generate a Check() statement".</td></tr>
   </table>
   </dd>
 </dl>
-<p><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> substitutes $LI and $LA before it calls this method.</p>
+<p>LLLPG substitutes $LI and $LA before it calls this method.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a8170abf75a0b0c7ad6f3f8614c9667aa">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
 
@@ -1587,7 +1587,7 @@ complete, generate a Check() statement".</td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> macro calls this method on each statement in the body of the macro (as a preprocessing step, before <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> looks at it). No action is required.</p>
+<p>In case the <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html" title="A class that implements this interface will generate small bits of code that the parser generator wil...">IPGCodeGenHelper</a> is interested, the LLLPG macro calls this method on each statement in the body of the macro (as a preprocessing step, before LLLPG looks at it). No action is required.</p>
 <dl class="section return"><dt>Returns</dt><dd>a new statement to replace the original statement, or null to do nothing.</dd></dl>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a56ad205983c4f44c5deed04ccbe17642">Loyc.LLParserGenerator.IPGCodeGenHelper</a>.</p>
@@ -1659,7 +1659,7 @@ complete, generate a Check() statement".</td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Specifies an object or class on which <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLLPG.html" title="Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.">LLLPG</a> APIs such as Match() and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac673569c92ae6ef0f02929618ef0d394" title="Generates code to read LA(k).">LA()</a> should be called.</p>
+<p>Specifies an object or class on which LLLPG APIs such as Match() and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ac673569c92ae6ef0f02929618ef0d394" title="Generates code to read LA(k).">LA()</a> should be called.</p>
 
 </div>
 </div>
@@ -1733,7 +1733,7 @@ complete, generate a Check() statement".</td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:56 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:44 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

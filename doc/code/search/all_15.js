@@ -10,6 +10,7 @@ var searchData=
   ['union_3c_20rect_2c_20t_20_3e',['Union&lt; Rect, T &gt;',['../classLoyc_1_1Geometry_1_1RectangleExt.html#a0662bc504e5ef4e6961c23d2eef71b42',1,'Loyc::Geometry::RectangleExt']]],
   ['unioncore',['UnionCore',['../classLoyc_1_1LLParserGenerator_1_1PGNodeSet.html#ab988cbe66d8669a81c415faaa1894919',1,'Loyc.LLParserGenerator.PGNodeSet.UnionCore()'],['../interfaceLoyc_1_1LLParserGenerator_1_1IPGTerminalSet.html#a7e6eb343b953f2bb48e31e5fd2e3c9bb',1,'Loyc.LLParserGenerator.IPGTerminalSet.UnionCore()']]],
   ['unionwith',['UnionWith',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSet_3_01T_01_4.html#a67aff8e7df81b991c98919b9074b8f26',1,'Loyc.Collections.Impl.InternalSet&lt; T &gt;.UnionWith(IEnumerable&lt; T &gt; other, IEqualityComparer&lt; T &gt; thisComparer, bool replaceIfPresent)'],['../structLoyc_1_1Collections_1_1Impl_1_1InternalSet_3_01T_01_4.html#a6de2eb42dd79b7d7718c12f5995e133a',1,'Loyc.Collections.Impl.InternalSet&lt; T &gt;.UnionWith(InternalSet&lt; T &gt; other, IEqualityComparer&lt; T &gt; thisComparer, bool replaceIfPresent)']]],
+  ['unregister',['Unregister',['../classLoyc_1_1Syntax_1_1ParsingService.html#a1f537ce2b6768e1312b7d5ec840f8b9e',1,'Loyc::Syntax::ParsingService']]],
   ['unwrap',['Unwrap',['../classLoyc_1_1Utilities_1_1GoInterface.html#a9b89ef67eee2d0e4f9bd51c8f5ef42c1',1,'Loyc::Utilities::GoInterface']]],
   ['unwraponce',['UnwrapOnce',['../classLoyc_1_1Utilities_1_1GoInterface.html#a8393054a04a66c4da4556db39f3a65a4',1,'Loyc::Utilities::GoInterface']]],
   ['up',['Up',['../classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html#aec24ac4174d6b989e39b2360cf71e257',1,'Loyc::Syntax::BaseParserForList&lt; Token, MatchType, List &gt;']]],
@@ -20,6 +21,6 @@ var searchData=
   ['usebacktick',['UseBacktick',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a60c8a6d80a80793396e36544c06669d1',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['userbyte',['UserByte',['../classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html#a91b497232e20ce4a9ac270ff3446a421',1,'Loyc::Collections::WListProtected&lt; T &gt;']]],
   ['usingstmt',['UsingStmt',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a54ac05b6bd02e9c86972679bdcd103cf',1,'Loyc::Syntax::CodeSymbols']]],
-  ['ustring',['UString',['../structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89',1,'Loyc::UString']]],
-  ['ustring',['UString',['../structLoyc_1_1UString.html',1,'Loyc']]]
+  ['ustring',['UString',['../structLoyc_1_1UString.html',1,'Loyc']]],
+  ['ustring',['UString',['../structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89',1,'Loyc::UString']]]
 ];

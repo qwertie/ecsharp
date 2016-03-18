@@ -503,7 +503,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <div class="line">            (sev, location, fmt, args) =&gt;</div>
 <div class="line">            {</div>
 <div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div>
-<div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.LocationString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.From(fmt, args));</div>
+<div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> FormatException(MessageSink.LocationString(location) + <span class="stringliteral">&quot;: &quot;</span> + Localize.Localized(fmt, args));</div>
 <div class="line">                <span class="keywordflow">else</span></div>
 <div class="line">                    MessageSink.Current.Write(sev, location, fmt, args);</div>
 <div class="line">            })</div>
@@ -627,7 +627,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:58 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:47 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

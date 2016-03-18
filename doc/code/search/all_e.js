@@ -45,7 +45,6 @@ var searchData=
   ['noparenthesis',['NoParenthesis',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a1490ee442c93799096a36f90f2a72dad',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['noreprocessing',['NoReprocessing',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98',1,'LeMP']]],
   ['normal',['Normal',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0',1,'LeMP']]],
-  ['normalpriority',['NormalPriority',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a19f3ea8b6cb880e0a670e266566df86d',1,'LeMP']]],
   ['not',['Not',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ac56097e29f5254529470d32b8d6191bf',1,'Loyc.Syntax.CodeSymbols.Not()'],['../classLoyc_1_1LLParserGenerator_1_1AndPred.html#a18c9d523ef4f2c88dfbfcce2eac3a4e9',1,'Loyc.LLParserGenerator.AndPred.Not()']]],
   ['notbits',['NotBits',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab259fd6eb869d058090882037145eeae',1,'Loyc::Syntax::CodeSymbols']]],
   ['nounwrap',['NoUnwrap',['../namespaceLoyc_1_1Utilities.html#a0b991347be36ec89ac569a0b7042a6feae531aa8575dd7a956fa1f77a11f1a10b',1,'Loyc::Utilities']]],
@@ -58,5 +57,6 @@ var searchData=
   ['numberofambiguousmethods',['NumberOfAmbiguousMethods',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#a942c85ae1dfee17906e7159fad7dab1e',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
   ['numberofmethodsmissingparameters',['NumberOfMethodsMissingParameters',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#af9dfde58d2dc3eeed010a34678f8ad91',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
   ['numberofmethodswithrefmismatch',['NumberOfMethodsWithRefMismatch',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#ac88591bdcaa2a22b04c215b9908064dd',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
-  ['numberofunmatchedmethods',['NumberOfUnmatchedMethods',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#a76ca129c58d6f02e6375eb469ff7a115',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]]
+  ['numberofunmatchedmethods',['NumberOfUnmatchedMethods',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#a76ca129c58d6f02e6375eb469ff7a115',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
+  ['numrange_3c_20num_2c_20math_20_3e',['NumRange&lt; Num, Math &gt;',['../structLoyc_1_1Collections_1_1NumRange_3_01Num_00_01Math_01_4.html',1,'Loyc::Collections']]]
 ];

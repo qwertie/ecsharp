@@ -152,9 +152,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>ForceInLang</b></td><
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a8e093f4f26001cd8a8f32277e49e90ff"><td class="memItemLeft" align="right" valign="top">static HashSet&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#a8e093f4f26001cd8a8f32277e49e90ff">Languages</a></td></tr>
-<tr class="memdesc:a8e093f4f26001cd8a8f32277e49e90ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of available syntaxes. <a href="#a8e093f4f26001cd8a8f32277e49e90ff">More...</a><br /></td></tr>
-<tr class="separator:a8e093f4f26001cd8a8f32277e49e90ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af288ac4c89b6b200f3ac7ae08b598871"><td class="memItemLeft" align="right" valign="top">static Dictionary&lt; char, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ShortOptions</b></td></tr>
 <tr class="separator:af288ac4c89b6b200f3ac7ae08b598871"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27dc563d3f8fef18f06560bab0ba6c5e"><td class="memItemLeft" align="right" valign="top">static MMap&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a><br class="typebreak" />
@@ -181,9 +178,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Verbose</b><code> [ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5fe088e678830e5208962449a223ec97"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5fe088e678830e5208962449a223ec97"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Compiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude=null)</td></tr>
-<tr class="separator:a5fe088e678830e5208962449a223ec97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f9154e00a0900fb08c5a728822f5172"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f9154e00a0900fb08c5a728822f5172"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> (BMultiMap&lt; string, string &gt; options)</td></tr>
+<tr class="separator:a8f9154e00a0900fb08c5a728822f5172"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bc8025419b1af94f56ee09be1cff0cd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bc8025419b1af94f56ee09be1cff0cd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Compiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude=null, bool registerEcsAndLes=true)</td></tr>
+<tr class="separator:a6bc8025419b1af94f56ee09be1cff0cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83ac2f0dc822e66263ff249bd9993539"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a83ac2f0dc822e66263ff249bd9993539"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Compiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude, IEnumerable&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles)</td></tr>
 <tr class="separator:a83ac2f0dc822e66263ff249bd9993539"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,24 +205,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a4725d64828926296d81c577e06e44b0b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4725d64828926296d81c577e06e44b0b"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Main</b> (string[] args)</td></tr>
 <tr class="separator:a4725d64828926296d81c577e06e44b0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a424556d630e8efaf9e13f849cd5a3774"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a424556d630e8efaf9e13f849cd5a3774"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RunLeMPTests</b> ()</td></tr>
-<tr class="separator:a424556d630e8efaf9e13f849cd5a3774"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e572b4501234b500510818b86a2eb3f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e572b4501234b500510818b86a2eb3f"></a>
 static <a class="el" href="classLeMP_1_1Compiler.html">Compiler</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> (BMultiMap&lt; string, string &gt; options, <a class="el" href="classLoyc_1_1SeverityMessageFilter.html">SeverityMessageFilter</a> sink, Type prelude, List&lt; string &gt; inputFiles)</td></tr>
 <tr class="separator:a4e572b4501234b500510818b86a2eb3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68af55dcd5f0740321272c8d533f281d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a68af55dcd5f0740321272c8d533f281d"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> (<a class="el" href="classLeMP_1_1Compiler.html">Compiler</a> c, BMultiMap&lt; string, string &gt; options)</td></tr>
-<tr class="separator:a68af55dcd5f0740321272c8d533f281d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70da1e11566662d0eacd8b7f7f73f7ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70da1e11566662d0eacd8b7f7f73f7ab"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnAboutUnknownOptions</b> (BMultiMap&lt; string, string &gt; options, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, IDictionary&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt; knownOptions)</td></tr>
 <tr class="separator:a70da1e11566662d0eacd8b7f7f73f7ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2dc3f00b951ed0cb53b49a519f1b46f7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2dc3f00b951ed0cb53b49a519f1b46f7"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ShowHelp</b> (IEnumerable&lt; KeyValuePair&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt;&gt; knownOptions, TextWriter @out=null)</td></tr>
 <tr class="separator:a2dc3f00b951ed0cb53b49a519f1b46f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7283976f16953c7964cea40a4416d2d2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#a7283976f16953c7964cea40a4416d2d2">FileNameToLanguage</a> (string fn)</td></tr>
-<tr class="memdesc:a7283976f16953c7964cea40a4416d2d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds a language service in ExtensionToLanguage() for the specified file extension, or null if there is no match. <a href="#a7283976f16953c7964cea40a4416d2d2">More...</a><br /></td></tr>
-<tr class="separator:a7283976f16953c7964cea40a4416d2d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad1408eb29462dd1f1d2c4536414fd63"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad1408eb29462dd1f1d2c4536414fd63"></a>
 static List&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>OpenSourceFiles</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, IEnumerable&lt; string &gt; fileNames)</td></tr>
 <tr class="separator:aad1408eb29462dd1f1d2c4536414fd63"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -259,34 +250,6 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 
 </div>
 </div>
-<a class="anchor" id="a7283976f16953c7964cea40a4416d2d2"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> LeMP.Compiler.FileNameToLanguage </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>fn</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Finds a language service in ExtensionToLanguage() for the specified file extension, or null if there is no match.</p>
-
-<p>References <a class="el" href="classLeMP_1_1Compiler.html#a8e093f4f26001cd8a8f32277e49e90ff">LeMP.Compiler.Languages</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a27dc563d3f8fef18f06560bab0ba6c5e"></a>
 <div class="memitem">
@@ -309,7 +272,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <div class="line">        {</div>
 <div class="line">            { <span class="stringliteral">&quot;help&quot;</span>,      Pair.Create(<span class="stringliteral">&quot;&quot;</span>, <span class="stringliteral">&quot;show this screen&quot;</span>) },</div>
 <div class="line">            { <span class="stringliteral">&quot;macros&quot;</span>,    Pair.Create(<span class="stringliteral">&quot;filename.dll&quot;</span>, <span class="stringliteral">&quot;load macros from given assembly&quot;</span>) },</div>
-<div class="line">            { <span class="stringliteral">&quot;max-expand&quot;</span>,Pair.Create(<span class="stringliteral">&quot;N&quot;</span>, <span class="stringliteral">&quot;stop expanding macros after N expansions.&quot;</span>) },</div>
+<div class="line">            { <span class="stringliteral">&quot;max-expand&quot;</span>,Pair.Create(<span class="stringliteral">&quot;N&quot;</span>, <span class="stringliteral">&quot;stop expanding macros after N nested or iterated expansions.&quot;</span>) },</div>
 <div class="line">            { <span class="stringliteral">&quot;verbose&quot;</span>,   Pair.Create(<span class="stringliteral">&quot;&quot;</span>, <span class="stringliteral">&quot;Print extra status messages (e.g. discovered Types, list output files).&quot;</span>) },</div>
 <div class="line">            { <span class="stringliteral">&quot;parallel&quot;</span>,  Pair.Create(<span class="stringliteral">&quot;&quot;</span>, <span class="stringliteral">&quot;Process all files in parallel (this is the default)&quot;</span>) },</div>
 <div class="line">            { <span class="stringliteral">&quot;noparallel&quot;</span>,Pair.Create(<span class="stringliteral">&quot;&quot;</span>, <span class="stringliteral">&quot;Process all files in sequence&quot;</span>) },</div>
@@ -323,35 +286,6 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <div class="line">            { <span class="stringliteral">&quot;timeout&quot;</span>,   Pair.Create(<span class="stringliteral">&quot;&quot;</span>, <span class="stringliteral">&quot;Aborts the processing thread(s) after this number of seconds\n(0=never, default=30)&quot;</span>) },</div>
 <div class="line">        }</div>
 </div><!-- fragment -->
-</div>
-</div>
-<a class="anchor" id="a8e093f4f26001cd8a8f32277e49e90ff"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HashSet&lt;<a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a>&gt; LeMP.Compiler.Languages</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= <span class="keyword">new</span> HashSet&lt;IParsingService&gt; { </div>
-<div class="line">            Loyc.Syntax.Les.LesLanguageService.Value,</div>
-<div class="line">            Loyc.Ecs.EcsLanguageService.Value,</div>
-<div class="line">            Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter</div>
-<div class="line">        }</div>
-</div><!-- fragment -->
-<p>A list of available syntaxes.</p>
-
-<p>Referenced by <a class="el" href="classLeMP_1_1Compiler.html#a7283976f16953c7964cea40a4416d2d2">LeMP.Compiler.FileNameToLanguage()</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="af288ac4c89b6b200f3ac7ae08b598871"></a>
@@ -380,7 +314,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

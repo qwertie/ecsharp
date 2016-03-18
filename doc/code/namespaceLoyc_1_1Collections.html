@@ -297,9 +297,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html">INotifyListChanging&lt; T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encapsulates the <a class="el" href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html#a5371a11becb3c1c655b33b5d52a2af32" title="Occurs when the collection associated with this interface is about to change.">ListChanging</a> event that notifies listeners of dynamic changes to an indexed list, such as when items get added and removed or the whole list is refreshed.  <a href="interfaceLoyc_1_1Collections_1_1INotifyListChanging_3_01T_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1IntRange.html">IntRange</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct: treats a range of integers (e.g. 5..10) as a list. This type is returned by <a class="el" href="classLoyc_1_1Collections_1_1Range.html#a386a0efa1c6a6b0f251b1eb8de39799d" title="Returns new IntRange(start, count) (see IntRange).">Range.IntRange(int, int)</a>. <a href="structLoyc_1_1Collections_1_1IntRange.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1InvertibleSet_3_01T_01_4.html">InvertibleSet&lt; T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An immutable set that can be inverted. For example, an <code>InvertibleSet&lt;int&gt;</code> could contain "everything except 4 and 10", or it could contain a positive set such as "1, 2, and 3". <a href="classLoyc_1_1Collections_1_1InvertibleSet_3_01T_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -421,14 +418,17 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NestedEnumerator_3_01Frame_00_01T_01_4.html">NestedEnumerator&lt; Frame, T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class. An enumerator that helps enumerate tree data structures. It maintains a virtual call stack that avoids the performance hit of using nested "yield return" statements in C#. <a href="structLoyc_1_1Collections_1_1NestedEnumerator_3_01Frame_00_01T_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Range.html">Range</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension/helper methods for ranges. <a href="classLoyc_1_1Collections_1_1Range.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1NumRange_3_01Num_00_01Math_01_4.html">NumRange&lt; Num, Math &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a range of integers of a specified data type. <a href="structLoyc_1_1Collections_1_1NumRange_3_01Num_00_01Math_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1RangeEnumerator_3_01R_00_01T_01_4.html">RangeEnumerator&lt; R, T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct: enumerates through a forward range (IFRange{T}), calling the range methods through R instead of through IFRange{T}.  <a href="structLoyc_1_1Collections_1_1RangeEnumerator_3_01R_00_01T_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Collections_1_1RangeEnumerator_3_01T_01_4.html">RangeEnumerator&lt; T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct: enumerates through a forward range (IFRange{T}). <a href="structLoyc_1_1Collections_1_1RangeEnumerator_3_01T_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1RangeExt.html">RangeExt</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension/helper methods for ranges. <a href="classLoyc_1_1Collections_1_1RangeExt.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ReadOnlyAsCollection_3_01T_01_4.html">ReadOnlyAsCollection&lt; T &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A read-only wrapper that implements ICollection(T) and ISource(T), returned from LCExt.AsCollection{T}  <a href="classLoyc_1_1Collections_1_1ReadOnlyAsCollection_3_01T_01_4.html#details">More...</a><br /></td></tr>
@@ -703,7 +703,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

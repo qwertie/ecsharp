@@ -12,6 +12,8 @@ var searchData=
   ['hasspecialname',['HasSpecialName',['../classLoyc_1_1Syntax_1_1LNode.html#a44e1ab2c87f098ccf59f9a689f644708',1,'Loyc::Syntax::LNode']]],
   ['hastokenizer',['HasTokenizer',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#a423c32c87da703adfc474562a07a1634',1,'Loyc::Syntax::IParsingService']]],
   ['height',['Height',['../interfaceLoyc_1_1Geometry_1_1ISizeReader_3_01T_01_4.html#aae7275767dd4e152a27d880e580a0333',1,'Loyc::Geometry::ISizeReader&lt; T &gt;']]],
+  ['hexdigitchar',['HexDigitChar',['../classLoyc_1_1G.html#abaa91c08a145887137e586183d519cb0',1,'Loyc::G']]],
+  ['hexdigitvalue',['HexDigitValue',['../classLoyc_1_1G.html#a11cc44a5b02545f5c6908bd5be8d216f',1,'Loyc::G']]],
   ['highlightgroup',['HighlightGroup',['../classTextEditor_1_1HighlightGroup.html',1,'TextEditor']]],
   ['holder_3c_20t_20_3e',['Holder&lt; T &gt;',['../classLoyc_1_1Holder_3_01T_01_4.html',1,'Loyc']]]
 ];

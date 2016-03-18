@@ -121,13 +121,12 @@ Inheritance diagram for Loyc.Collections.IFRange&lt; out T &gt;:</div>
 <area href="interfaceLoyc_1_1Collections_1_1IMRange_3_01T_01_4.html" title="A mutable random-access range." alt="Loyc.Collections.IMRange&lt; T &gt;" shape="rect" coords="458,224,677,248"/>
 <area href="classLoyc_1_1Collections_1_1EmptyList_3_01T_01_4.html" title="Helper class: EmptyList{T}.Value is a read-only empty list." alt="Loyc.Collections.EmptyList&lt; T &gt;" shape="rect" coords="916,224,1135,248"/>
 <area href="interfaceLoyc_1_1Collections_1_1IMRange_3_01T_01_4.html" title="A mutable random-access range." alt="Loyc.Collections.IMRange&lt; T &gt;" shape="rect" coords="916,280,1135,304"/>
-<area href="structLoyc_1_1Collections_1_1IntRange.html" title="Helper struct: treats a range of integers (e.g. 5..10) as a list. This type is returned by Range..." alt="Loyc.Collections.IntRange" shape="rect" coords="916,336,1135,360"/>
-<area href="interfaceLoyc_1_1Collections_1_1IRangeEx_3_01R_00_01T_01_4.html" title="A random-access range that can perform operations such as intersection and overlap tests on pairs of ..." alt="Loyc.Collections.IRangeEx&lt; R, T &gt;" shape="rect" coords="916,392,1135,416"/>
-<area href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html" title="Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are re..." alt="Loyc.Collections.ListSlice&lt; T &gt;" shape="rect" coords="916,448,1135,472"/>
-<area href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html" title="Adapter: a random-access range for a slice of an INegListSource{T}." alt="Loyc.Collections.NegListSlice&lt; T &gt;" shape="rect" coords="916,504,1135,528"/>
-<area href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html" title="Helper struct. A sequence that stores one value, but acts like a list in which that value is repeated..." alt="Loyc.Collections.Repeated&lt; T &gt;" shape="rect" coords="916,560,1135,584"/>
-<area href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html" title="Adapter: a random-access range for a slice of an IListSource{T}." alt="Loyc.Collections.Slice_&lt; T &gt;" shape="rect" coords="916,616,1135,640"/>
-<area href="structLoyc_1_1Collections_1_1StringSlice.html" title="A random-access slice of System.String." alt="Loyc.Collections.StringSlice" shape="rect" coords="916,672,1135,696"/>
+<area href="interfaceLoyc_1_1Collections_1_1IRangeEx_3_01R_00_01T_01_4.html" title="A random-access range that can perform operations such as intersection and overlap tests on pairs of ..." alt="Loyc.Collections.IRangeEx&lt; R, T &gt;" shape="rect" coords="916,336,1135,360"/>
+<area href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html" title="Adapter: a wrapper of a list that provides a view of a range of elements. Objects of this type are re..." alt="Loyc.Collections.ListSlice&lt; T &gt;" shape="rect" coords="916,392,1135,416"/>
+<area href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html" title="Adapter: a random-access range for a slice of an INegListSource{T}." alt="Loyc.Collections.NegListSlice&lt; T &gt;" shape="rect" coords="916,448,1135,472"/>
+<area href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html" title="Helper struct. A sequence that stores one value, but acts like a list in which that value is repeated..." alt="Loyc.Collections.Repeated&lt; T &gt;" shape="rect" coords="916,504,1135,528"/>
+<area href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html" title="Adapter: a random-access range for a slice of an IListSource{T}." alt="Loyc.Collections.Slice_&lt; T &gt;" shape="rect" coords="916,560,1135,584"/>
+<area href="structLoyc_1_1Collections_1_1StringSlice.html" title="A random-access slice of System.String." alt="Loyc.Collections.StringSlice" shape="rect" coords="916,616,1135,640"/>
 <area href="interfaceLoyc_1_1Collections_1_1IMRange_3_01T_01_4.html" title="A mutable random-access range." alt="Loyc.Collections.IMRange&lt; T &gt;" shape="rect" coords="1145,224,1364,248"/>
 </map>
  </div></div>
@@ -226,7 +225,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> ()</td></tr>
 <p>This method is a little unweildy in plain C#, but in EC# it will be a bit more convenient to use via extension methods like <code>PopFirst(ref this Range range, T defaultValue)</code> and <code>PopFirst(ref this Range range)</code>, which are illegal in plain C#. </p>
 <p>I wanted to give this method the signature "bool PopFirst(out T first)" but the generic parameter "T" is covariant, i.e. it is marked "out T" which, ironically, is not compatible with "out T" parameters, only with return values. </p>
 
-<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html#abda1358cd0551cc630b4552e6a04e75f">Loyc.Collections.Repeated&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1IntRange.html#a7b5b048d7bce3633cb666a04230496d8">Loyc.Collections.IntRange</a>, <a class="el" href="classLoyc_1_1Collections_1_1EmptyList_3_01T_01_4.html#a5c9a28c9ea7e5d91834267e09c98ce5b">Loyc.Collections.EmptyList&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ac70b407f60e9602304fc597188a1a7b2">Loyc.Collections.ListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html#aef90608e2736caec7e8f2775dce8ddac">Loyc.Collections.Slice_&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ab3deda083a3f19999a1b19b6449a3c67">Loyc.Collections.StringSlice</a>, <a class="el" href="structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html#a7c2dba50c34b27f41b94a4b2f20ad648">Loyc.Collections.ArraySlice&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html#a4dde4cbc8a664a6d66668bf08c320df9">Loyc.Collections.NegListSlice&lt; T &gt;</a>.</p>
+<p>Implemented in <a class="el" href="structLoyc_1_1Collections_1_1Repeated_3_01T_01_4.html#abda1358cd0551cc630b4552e6a04e75f">Loyc.Collections.Repeated&lt; T &gt;</a>, <a class="el" href="classLoyc_1_1Collections_1_1EmptyList_3_01T_01_4.html#a5c9a28c9ea7e5d91834267e09c98ce5b">Loyc.Collections.EmptyList&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1ListSlice_3_01T_01_4.html#ac70b407f60e9602304fc597188a1a7b2">Loyc.Collections.ListSlice&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html#aef90608e2736caec7e8f2775dce8ddac">Loyc.Collections.Slice_&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html#ab3deda083a3f19999a1b19b6449a3c67">Loyc.Collections.StringSlice</a>, <a class="el" href="structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html#a7c2dba50c34b27f41b94a4b2f20ad648">Loyc.Collections.ArraySlice&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1Collections_1_1NegListSlice_3_01T_01_4.html#a4dde4cbc8a664a6d66668bf08c320df9">Loyc.Collections.NegListSlice&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -265,7 +264,7 @@ T Front { get { return Range.PopFront(Clone()); } }
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:52 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:39 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

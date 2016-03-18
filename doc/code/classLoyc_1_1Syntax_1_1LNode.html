@@ -205,7 +205,7 @@ The \ and $ characters have been swapped;  now denotes a symbol S, while $S now 
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>: holds the arguments to a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, if any. Returns an empty list if the node does not have an argument list. </li>
 <li>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>: indicates the source file that the node came from and location in that source file. </li>
+<a class="el" href="classLoyc_1_1Range.html">Range</a>: indicates the source file that the node came from and location in that source file. </li>
 <li>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688" title="Indicates the preferred style to use when printing the node to a text string.">Style</a>: an 8-bit flag value that is used as a hint to the node printer about how the node should be printed. For example, a hex literal like 0x10 has the NodeStyle.Alternate style to distinguish it from decimal literals such as 16. Custom display styles that do not fit in the Style property can be expressed with attributes. </li>
 </ol>
@@ -252,7 +252,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:a211792d5ca6f8214a7483152bae6f650"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the location and range in source code of this node. <a href="#a211792d5ca6f8214a7483152bae6f650">More...</a><br /></td></tr>
 <tr class="separator:a211792d5ca6f8214a7483152bae6f650"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a002045914ce7a51f2a2b7323ac671ac0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a002045914ce7a51f2a2b7323ac671ac0">Source</a><code> [get]</code></td></tr>
-<tr class="memdesc:a002045914ce7a51f2a2b7323ac671ac0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the source file (shortcut for <code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>.Source</code>). <a href="#a002045914ce7a51f2a2b7323ac671ac0">More...</a><br /></td></tr>
+<tr class="memdesc:a002045914ce7a51f2a2b7323ac671ac0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the source file (shortcut for <code><a class="el" href="classLoyc_1_1Range.html">Range</a>.Source</code>). <a href="#a002045914ce7a51f2a2b7323ac671ac0">More...</a><br /></td></tr>
 <tr class="separator:a002045914ce7a51f2a2b7323ac671ac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2bf9a6e1588146c029ca74b9514c688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8">NodeStyle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad2bf9a6e1588146c029ca74b9514c688">Style</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ad2bf9a6e1588146c029ca74b9514c688"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates the preferred style to use when printing the node to a text string. <a href="#ad2bf9a6e1588146c029ca74b9514c688">More...</a><br /></td></tr>
@@ -362,10 +362,10 @@ virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#
 <tr class="memdesc:a406a157154471b738c0ea068a55e6136"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a Node with a new argument list. If this node is not a call, a new node is created using this node as its target. Otherwise, the existing argument list is replaced. <a href="#a406a157154471b738c0ea068a55e6136">More...</a><br /></td></tr>
 <tr class="separator:a406a157154471b738c0ea068a55e6136"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc9436665fc3def9e35cf764b44b785c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#afc9436665fc3def9e35cf764b44b785c">With</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="memdesc:afc9436665fc3def9e35cf764b44b785c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#afc9436665fc3def9e35cf764b44b785c">More...</a><br /></td></tr>
+<tr class="memdesc:afc9436665fc3def9e35cf764b44b785c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Range.html">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the <a class="el" href="classLoyc_1_1Range.html">Range</a>, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#afc9436665fc3def9e35cf764b44b785c">More...</a><br /></td></tr>
 <tr class="separator:afc9436665fc3def9e35cf764b44b785c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70e26f0f490a4c97ac59fee241f482aa"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a70e26f0f490a4c97ac59fee241f482aa">With</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; args)</td></tr>
-<tr class="memdesc:a70e26f0f490a4c97ac59fee241f482aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#a70e26f0f490a4c97ac59fee241f482aa">More...</a><br /></td></tr>
+<tr class="memdesc:a70e26f0f490a4c97ac59fee241f482aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Range.html">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the <a class="el" href="classLoyc_1_1Range.html">Range</a>, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.) <a href="#a70e26f0f490a4c97ac59fee241f482aa">More...</a><br /></td></tr>
 <tr class="separator:a70e26f0f490a4c97ac59fee241f482aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefb946a5deb1e47454c573880883ac16"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefb946a5deb1e47454c573880883ac16"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>With</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> target, params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] args)</td></tr>
@@ -476,10 +476,10 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> 
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (string name, int argCount)</td></tr>
 <tr class="separator:a6864de502e176884337a17e6f95faf9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abaffe6461fb891bfaed8f5c4aab40716"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abaffe6461fb891bfaed8f5c4aab40716">HasSimpleHead</a> ()</td></tr>
-<tr class="memdesc:abaffe6461fb891bfaed8f5c4aab40716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the Target is an Id or a Literal, and the Target has no attributes. <a href="#abaffe6461fb891bfaed8f5c4aab40716">More...</a><br /></td></tr>
+<tr class="memdesc:abaffe6461fb891bfaed8f5c4aab40716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is not a call, or if the call's Target is an Id or a Literal. <a href="#abaffe6461fb891bfaed8f5c4aab40716">More...</a><br /></td></tr>
 <tr class="separator:abaffe6461fb891bfaed8f5c4aab40716"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4b5b4a0a72fb8cf469bf55afeb6d64e5">HasSimpleHeadWithoutPAttrs</a> ()</td></tr>
-<tr class="memdesc:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes. <a href="#a4b5b4a0a72fb8cf469bf55afeb6d64e5">More...</a><br /></td></tr>
+<tr class="memdesc:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes. <a href="#a4b5b4a0a72fb8cf469bf55afeb6d64e5">More...</a><br /></td></tr>
 <tr class="separator:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf090777711ce93e64005cf57f96f01b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf090777711ce93e64005cf57f96f01b"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
@@ -669,20 +669,20 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:ac26a0ec013dd0f4a987375272532fda3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac26a0ec013dd0f4a987375272532fda3"></a>
 static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
 <tr class="separator:ac26a0ec013dd0f4a987375272532fda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52e700188b41e4182a012fc4cdb29c42"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a52e700188b41e4182a012fc4cdb29c42"></a>
-static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a)</td></tr>
-<tr class="separator:a52e700188b41e4182a012fc4cdb29c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a535b919c4beb4e6c3af01dccc6ec6cf3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a535b919c4beb4e6c3af01dccc6ec6cf3"></a>
-static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> a, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> b)</td></tr>
-<tr class="separator:a535b919c4beb4e6c3af01dccc6ec6cf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a902520addb173d3deb35a56513a92558"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a902520addb173d3deb35a56513a92558"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_0)</td></tr>
+<tr class="separator:a902520addb173d3deb35a56513a92558"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf71fafbfd5d19878c4f6356a451d6cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf71fafbfd5d19878c4f6356a451d6cf"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_0, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_1)</td></tr>
+<tr class="separator:aaf71fafbfd5d19878c4f6356a451d6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a229fc7eb3319ed867bccfe6fd71609a1"></a>
 static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] list)</td></tr>
 <tr class="separator:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e406817e6f843782f523a5f2c213e56"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e406817e6f843782f523a5f2c213e56"></a>
 static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (IEnumerable&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list)</td></tr>
 <tr class="separator:a9e406817e6f843782f523a5f2c213e56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa8378bece4ac6b245b5712b090b4e9bc"><td class="memItemLeft" align="right" valign="top">static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa8378bece4ac6b245b5712b090b4e9bc">List</a> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list)</td></tr>
-<tr class="memdesc:aa8378bece4ac6b245b5712b090b4e9bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">A no-op that exists to avoid a potential slug when using <code>quote {...}</code>. <a href="#aa8378bece4ac6b245b5712b090b4e9bc">More...</a><br /></td></tr>
+<tr class="memitem:aa8378bece4ac6b245b5712b090b4e9bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8378bece4ac6b245b5712b090b4e9bc"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list)</td></tr>
 <tr class="separator:aa8378bece4ac6b245b5712b090b4e9bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec680a7dbb7699e35b109ac15dd9b434"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html">PushedPrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434">PushPrinter</a> (<a class="el" href="namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e">LNodePrinter</a> printer)</td></tr>
 <tr class="memdesc:aec680a7dbb7699e35b109ac15dd9b434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helps you change printers temporarily. Usage in C#: <code>using (LNode.PushPrinter(myPrinter)) { ... }</code> <a href="#aec680a7dbb7699e35b109ac15dd9b434">More...</a><br /></td></tr>
@@ -711,9 +711,9 @@ Protected Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a8032e6d7833c2143fe44de2bd8ff331a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8032e6d7833c2143fe44de2bd8ff331a"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NoNulls</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; node, string propName)</td></tr>
-<tr class="separator:a8032e6d7833c2143fe44de2bd8ff331a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf4b38422f9926b33b7d1a70113f5c05"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf4b38422f9926b33b7d1a70113f5c05"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NoNulls</b> (VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; list, string propName)</td></tr>
+<tr class="separator:abf4b38422f9926b33b7d1a70113f5c05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected fields</h2></td></tr>
@@ -839,7 +839,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
   </table>
   </dd>
 </dl>
-<p>Position information (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>) is not compared.</p>
+<p>Position information (<a class="el" href="classLoyc_1_1Range.html">Range</a>) is not compared.</p>
 
 <p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode</a>.</p>
 
@@ -896,7 +896,7 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 </table>
 </div><div class="memdoc">
 
-<p>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</p>
+<p>Returns true if this is not a call, or if the call's Target is an Id or a Literal.</p>
 
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ad5beb8ea5874807c4c0eae765f3b31ad">Loyc.Syntax.CallNode</a>.</p>
 
@@ -923,35 +923,9 @@ RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td>
 </table>
 </div><div class="memdoc">
 
-<p>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</p>
+<p>Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes.</p>
 
 <p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#acda83c0c4d8f443aedd6c256357dd1d3">Loyc.Syntax.CallNode</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aa8378bece4ac6b245b5712b090b4e9bc"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static VList&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.List </td>
-          <td>(</td>
-          <td class="paramtype">VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
-          <td class="paramname"><em>list</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>A no-op that exists to avoid a potential slug when using <code>quote {...}</code>.</p>
 
 </div>
 </div>
@@ -1204,7 +1178,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </table>
 </div><div class="memdoc">
 
-<p>Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.)</p>
+<p>Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Range.html">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the <a class="el" href="classLoyc_1_1Range.html">Range</a>, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.)</p>
 
 </div>
 </div>
@@ -1240,7 +1214,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </table>
 </div><div class="memdoc">
 
-<p>Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the Range, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.)</p>
+<p>Creates a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a> with the same attributes and <a class="el" href="classLoyc_1_1Range.html">Range</a>, but a different target and argument list. If the current node is not a <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, it becomes one (the <a class="el" href="classLoyc_1_1Range.html">Range</a>, Style and attributes of the current node are kept, but the Kind, Value, and Name are discarded.)</p>
 
 </div>
 </div>
@@ -1363,7 +1337,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <p>Returns the argument list of this node. Always empty when <code>IsCall==false</code>.</p>
 <p>Depending on the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, Args may represent an actual argument list, or it may represent some other kind of list. For example, if the target is "{}" then Args represents a list of statements in a braced block, and if the target is "&gt;=" then Args represents the two arguments to the "&gt;=" operator. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1844f801e52ca0f5840327014ec6bc0f">Loyc.Ecs.EcsValidators.SpaceStatementKind()</a>.</p>
 
 </div>
 </div>
@@ -1387,7 +1361,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 <p>Returns the attribute list for this node.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a186f669ce2e92f6b641679bd06cf9030">Loyc.Syntax.IdNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#aebe455efe4ffe7a3269d4b7b69b04757">Loyc.Syntax.LiteralNode.Equals()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#af9674f0329d85ca378bc1326e03e1ab0">Loyc.Ecs.EcsValidators.IsPrintableTypeParam()</a>.</p>
 
 </div>
 </div>
@@ -1557,7 +1531,7 @@ x.Foo(y)     Call
 </table>
 </div><div class="memdoc">
 
-<p>Returns the source file (shortcut for <code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a211792d5ca6f8214a7483152bae6f650" title="Returns the location and range in source code of this node.">Range</a>.Source</code>).</p>
+<p>Returns the source file (shortcut for <code><a class="el" href="classLoyc_1_1Range.html">Range</a>.Source</code>).</p>
 
 </div>
 </div>
@@ -1606,7 +1580,7 @@ x.Foo(y)     Call
 
 <p>Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no name (GSymbol.Empty) to represent a parenthesized expression, if there is one argument.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLeMP_1_1StandardMacros.html#ae9853a01dffc5b6f78b6bd13ca445590">LeMP.StandardMacros.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ad20bab0fd1ed507bf5fce0650168d303">Loyc.Syntax.LNodeExt.MatchesPattern()</a>.</p>
 
 </div>
 </div>
@@ -1662,7 +1636,7 @@ x.Foo(y)     Call
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:59 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:48 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -20,5 +20,6 @@ var searchData=
   ['boundingbox_3c_20t_20_3e',['BoundingBox&lt; T &gt;',['../classLoyc_1_1Geometry_1_1BoundingBox_3_01T_01_4.html',1,'Loyc::Geometry']]],
   ['boundingboxext',['BoundingBoxExt',['../classLoyc_1_1Geometry_1_1BoundingBoxExt.html',1,'Loyc::Geometry']]],
   ['boundingboxmath',['BoundingBoxMath',['../classLoyc_1_1Geometry_1_1BoundingBoxMath.html',1,'Loyc::Geometry']]],
-  ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]]
+  ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]]
 ];

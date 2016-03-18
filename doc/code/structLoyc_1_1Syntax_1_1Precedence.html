@@ -148,7 +148,7 @@ Prefix notation is needed when an operator's arguments have attributes; <code>@+
 <p><a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html#a960ac158fb2d0d01817f5a15d4adf694" title="Lo and Hi specify the miscibility of an operator; see the remarks of Precedence for details...">Lo</a> and Hi don't affect how operators are parsed into a tree, but are used to request a warning or error if operators are mixed improperly. If one operator's range overlaps another AND (the ranges are not equal OR <code>Lo &gt; Hi</code>), then the two operators are immiscible. For example, == and != have the same precedence in EC#, 38..39, so they can be mixed with each other, but they cannot be mixed with &amp; which has the overlapping range 32..45 (this will be explained below.) Normally Lo and Hi are set to <code>Min(Left,Right)</code> and <code>Max(Left,Right)</code> respectively, but this is not required&ndash;in particular, any pair where <code>Lo &gt; Hi</code> is used to indicate that the operator cannot be mixed with other operators of the same precedence, even though it can (perhaps) be mixed with others of different precedence. This is called non-associativity. For example, in PHP are not allowed to write an expression such as <code>x &gt; y &gt;= z</code>; to represent this, operators <code>&gt;</code> and <code>&gt;=</code> should make <code>Lo &gt; Hi</code>. </p>
 <p>Certain operators should not be mixed because their precedence was originally chosen incorrectly, e.g. x &amp; 3 == 1 should be parsed (x &amp; 3) == 1 but is actually parsed x &amp; (3 == 1). To allow the precedence to be repaired eventually, expressions like x &amp; y == z are deprecated in EC#: the parser will warn you if you have mixed operators improperly. PrecedenceRange describes both precedence and miscibility with a simple range of integers. As mentioned before, two operators are immiscible if their ranges overlap but are not identical. </p>
 <p>In LES, the precedence range feature (a.k.a. immiscibility) is also used to indicate that a specific precedence has not been chosen for an operator. If a precedence is chosen in the future, it will be somewhere within the range.</p>
-<h3>Overall Range</h3>
+<h3>Overall <a class="el" href="classLoyc_1_1Range.html">Range</a></h3>
 <p>By convention, precedence scales range from 0 to 100 (or slightly higher). The precedence numbers are stored in this structure as <code>sbyte</code>s, so <code>Left</code>, <code>Right</code>, <code>Lo</code>, and <code>Hi</code> must be between -128 and 127. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -593,7 +593,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:17:00 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

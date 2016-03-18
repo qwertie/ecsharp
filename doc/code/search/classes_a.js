@@ -33,7 +33,6 @@ var searchData=
   ['listsourcebase_3c_20t_20_3e',['ListSourceBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1ListSourceBase_3_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['listsourcedebugview_3c_20t_20_3e',['ListSourceDebugView&lt; T &gt;',['../classLoyc_1_1Collections_1_1ListSourceDebugView_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['literalnode',['LiteralNode',['../classLoyc_1_1Syntax_1_1LiteralNode.html',1,'Loyc::Syntax']]],
-  ['lllpg',['LLLPG',['../classLoyc_1_1LLParserGenerator_1_1LLLPG.html',1,'Loyc::LLParserGenerator']]],
   ['llparsergenerator',['LLParserGenerator',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html',1,'Loyc::LLParserGenerator']]],
   ['llpgbugsandslugs',['LlpgBugsAndSlugs',['../classLoyc_1_1LLParserGenerator_1_1LlpgBugsAndSlugs.html',1,'Loyc::LLParserGenerator']]],
   ['llpggeneraltestsbase',['LlpgGeneralTestsBase',['../classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTestsBase.html',1,'Loyc::LLParserGenerator']]],
@@ -45,7 +44,6 @@ var searchData=
   ['lnodevisitor',['LNodeVisitor',['../classLoyc_1_1Syntax_1_1LNodeVisitor.html',1,'Loyc::Syntax']]],
   ['localizableattribute',['LocalizableAttribute',['../classLoyc_1_1LocalizableAttribute.html',1,'Loyc']]],
   ['localize',['Localize',['../classLoyc_1_1Localize.html',1,'Loyc']]],
-  ['localizeext',['LocalizeExt',['../classLoyc_1_1LocalizeExt.html',1,'Loyc']]],
   ['logexception',['LogException',['../classLoyc_1_1LogException.html',1,'Loyc']]],
   ['logmessage',['LogMessage',['../structLoyc_1_1LogMessage.html',1,'Loyc']]],
   ['longenumerator',['LongEnumerator',['../classLoyc_1_1Collections_1_1Impl_1_1CPIntTrie_3_01TValue_01_4_1_1LongEnumerator.html',1,'Loyc::Collections::Impl::CPIntTrie&lt; TValue &gt;']]]

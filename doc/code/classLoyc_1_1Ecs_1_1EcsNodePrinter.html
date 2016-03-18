@@ -117,7 +117,7 @@ Names must come from the global symbol pool (GSymbol.Pool). The printer will hap
 <p>Only the attributes, head (LiteralNode.Value, IdNode.Name or CallNode.Target), and arguments of nodes are round-trippable. Superficial properties such as original source code locations and the LNode.Style are, in general, lost, although the printer can faithfully reproduce some (not all) NodeStyles. Also, any attribute whose Name starts with "#trivia_" will be dropped, because these attributes are considered extensions of the NodeStyle. However, the style indicated by the #trivia_* attribute will be used if the printer recognizes it. </p>
 <p>Because EC# is based on C# which has some tricky ambiguities, there is a lot of code in this class dedicated to special cases and ambiguities. Even so, it is likely that some cases have been missed&ndash;that some unusual trees will not round-trip properly. Any failure to round-trip is a bug, and your bug reports are welcome. If this class uses prefix notation (with #specialNames) unnecessarily, that's also a bug, but it has low priority unless it affects plain C# output (where #specialNames are illegal.) </p>
 <p>This class contains some configuration options that will defeat round- tripping but will make the output look better. For example, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a7ff3d207c9d4d6a069e0058ae249856f" title="Solve if-else ambiguity by adding braces rather than reverting to prefix notation.">AllowExtraBraceForIfElseAmbig</a> will print a tree such as <code>#if(a, #if(b, f()), g())</code> as <code>if (a) { if (b) f(); } else g();</code>, by adding braces to eliminate prefix notation, even though braces make the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree different. </p>
-<p>To avoid printing EC# syntax that does not exist in C#, you can call <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a15e3f6bc884f4444ba9c256479eafb4f" title="Sets AllowChangeParenthesis, PreferPlainCSharp and DropNonDeclarationAttributes to true...">SetPlainCSharpMode</a>, but this only works if the syntax tree does not contain invalid structure or EC#-specific code such as "==&gt;", "alias", and template arguments ($T). </p>
+<p>To avoid printing EC# syntax that does not exist in C#, you can call <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a15e3f6bc884f4444ba9c256479eafb4f" title="Sets AllowChangeParentheses, PreferPlainCSharp and DropNonDeclarationAttributes to true...">SetPlainCSharpMode</a>, but this only works if the syntax tree does not contain invalid structure or EC#-specific code such as "==&gt;", "alias", and template arguments ($T). </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -168,9 +168,9 @@ Properties</h2></td></tr>
 <tr class="memitem:a3daff12313f5597e0f8a422ea8a687eb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a3daff12313f5597e0f8a422ea8a687eb">MixImmiscibleOperators</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a3daff12313f5597e0f8a422ea8a687eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows operators to be mixed that will cause the parser to produce a warning. An example is <code>x &amp; @==(y, z)</code>: if you enable this option, it will be printed as <code>x &amp; y == z</code>, which the parser will complain about because mixing those operators is deprecated.  <a href="#a3daff12313f5597e0f8a422ea8a687eb">More...</a><br /></td></tr>
 <tr class="separator:a3daff12313f5597e0f8a422ea8a687eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7bc1f90378879fd3a3f054ece9a72f3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ac7bc1f90378879fd3a3f054ece9a72f3">AllowChangeParenthesis</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:ac7bc1f90378879fd3a3f054ece9a72f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to true). Also permits removal of parenthesis if necessary to print special constructs. <a href="#ac7bc1f90378879fd3a3f054ece9a72f3">More...</a><br /></td></tr>
-<tr class="separator:ac7bc1f90378879fd3a3f054ece9a72f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cd257f323ababaa140f6b6f7a960e25"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25">AllowChangeParentheses</a><code> [get, set]</code></td></tr>
+<tr class="memdesc:a1cd257f323ababaa140f6b6f7a960e25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to true). Also permits removal of parenthesis if necessary to print special constructs. <a href="#a1cd257f323ababaa140f6b6f7a960e25">More...</a><br /></td></tr>
+<tr class="separator:a1cd257f323ababaa140f6b6f7a960e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ff3d207c9d4d6a069e0058ae249856f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a7ff3d207c9d4d6a069e0058ae249856f">AllowExtraBraceForIfElseAmbig</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a7ff3d207c9d4d6a069e0058ae249856f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve if-else ambiguity by adding braces rather than reverting to prefix notation. <a href="#a7ff3d207c9d4d6a069e0058ae249856f">More...</a><br /></td></tr>
 <tr class="separator:a7ff3d207c9d4d6a069e0058ae249856f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -223,7 +223,7 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>EcsNodePrinter</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a> target)</td></tr>
 <tr class="separator:a6df84d44e2e8271bc3291a9724e1daa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15e3f6bc884f4444ba9c256479eafb4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html">EcsNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a15e3f6bc884f4444ba9c256479eafb4f">SetPlainCSharpMode</a> ()</td></tr>
-<tr class="memdesc:a15e3f6bc884f4444ba9c256479eafb4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ac7bc1f90378879fd3a3f054ece9a72f3" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#a15e3f6bc884f4444ba9c256479eafb4f">More...</a><br /></td></tr>
+<tr class="memdesc:a15e3f6bc884f4444ba9c256479eafb4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#a15e3f6bc884f4444ba9c256479eafb4f">More...</a><br /></td></tr>
 <tr class="separator:a15e3f6bc884f4444ba9c256479eafb4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -325,13 +325,13 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#ac7bc1f90378879fd3a3f054ece9a72f3" title="Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParenthesis</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
+<p>Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
 <dl class="section return"><dt>Returns</dt><dd>this.</dd></dl>
 
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="ac7bc1f90378879fd3a3f054ece9a72f3"></a>
+<a class="anchor" id="a1cd257f323ababaa140f6b6f7a960e25"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -339,7 +339,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool Loyc.Ecs.EcsNodePrinter.AllowChangeParenthesis</td>
+          <td class="memname">bool Loyc.Ecs.EcsNodePrinter.AllowChangeParentheses</td>
         </tr>
       </table>
   </td>
@@ -349,7 +349,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Permits extra parenthesis to express precedence, instead of resorting to prefix notation (defaults to true). Also permits removal of parenthesis if necessary to print special constructs.</p>
+<p>Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to true). Also permits removal of parenthesis if necessary to print special constructs.</p>
 <p>For example, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree <code>x * @+(a, b)</code> will be printed <code>x * (a + b)</code>. Originally, the second tree had a significantly different structure from the first, as parenthesis were represented by a call to the empty symbol @``. This was annoyingly restrictive, so I reconsidered the design; now, parenthesis will be represented only by a trivia attribute #trivia_inParens, so adding new parenthesis no longer changes the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree in an important way, so the default has changed from false to true (except in the test suite). </p>
 
 </div>
@@ -669,7 +669,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

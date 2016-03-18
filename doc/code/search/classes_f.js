@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['range',['Range',['../classLoyc_1_1Collections_1_1Range.html',1,'Loyc::Collections']]],
+  ['range',['Range',['../classLoyc_1_1Range.html',1,'Loyc']]],
   ['rangeenumerator_3c_20r_2c_20t_20_3e',['RangeEnumerator&lt; R, T &gt;',['../structLoyc_1_1Collections_1_1RangeEnumerator_3_01R_00_01T_01_4.html',1,'Loyc::Collections']]],
   ['rangeenumerator_3c_20t_20_3e',['RangeEnumerator&lt; T &gt;',['../structLoyc_1_1Collections_1_1RangeEnumerator_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['rangeext',['RangeExt',['../classLoyc_1_1Collections_1_1RangeExt.html',1,'Loyc::Collections']]],
   ['readonlyascollection_3c_20t_20_3e',['ReadOnlyAsCollection&lt; T &gt;',['../classLoyc_1_1Collections_1_1ReadOnlyAsCollection_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['readonlycollectionbase_3c_20t_20_3e',['ReadOnlyCollectionBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1ReadOnlyCollectionBase_3_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['readonlyexception',['ReadOnlyException',['../classLoyc_1_1ReadOnlyException.html',1,'Loyc']]],

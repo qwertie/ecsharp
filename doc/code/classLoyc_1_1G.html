@@ -183,14 +183,14 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseHex</b
 <tr class="memitem:a8ade9492f448e12cd1144125ad9811a9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ade9492f448e12cd1144125ad9811a9"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseHex</b> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int value)</td></tr>
 <tr class="separator:a8ade9492f448e12cd1144125ad9811a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11cc44a5b02545f5c6908bd5be8d216f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11cc44a5b02545f5c6908bd5be8d216f"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>HexDigitValue</b> (char c)</td></tr>
+<tr class="memitem:a11cc44a5b02545f5c6908bd5be8d216f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a11cc44a5b02545f5c6908bd5be8d216f">HexDigitValue</a> (char c)</td></tr>
+<tr class="memdesc:a11cc44a5b02545f5c6908bd5be8d216f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit. <a href="#a11cc44a5b02545f5c6908bd5be8d216f">More...</a><br /></td></tr>
 <tr class="separator:a11cc44a5b02545f5c6908bd5be8d216f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a3174d2915e39fe93f855c027b91ae7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a3174d2915e39fe93f855c027b91ae7"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>Base36DigitValue</b> (char c)</td></tr>
 <tr class="separator:a6a3174d2915e39fe93f855c027b91ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abaa91c08a145887137e586183d519cb0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abaa91c08a145887137e586183d519cb0"></a>
-static char&#160;</td><td class="memItemRight" valign="bottom"><b>HexDigitChar</b> (int value)</td></tr>
+<tr class="memitem:abaa91c08a145887137e586183d519cb0"><td class="memItemLeft" align="right" valign="top">static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#abaa91c08a145887137e586183d519cb0">HexDigitChar</a> (int value)</td></tr>
+<tr class="memdesc:abaa91c08a145887137e586183d519cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15. <a href="#abaa91c08a145887137e586183d519cb0">More...</a><br /></td></tr>
 <tr class="separator:abaa91c08a145887137e586183d519cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2282a9a5f50bfbbc7e6346c843820997"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2282a9a5f50bfbbc7e6346c843820997"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><b>EscapeCStyle</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, EscapeC flags=EscapeC.Default)</td></tr>
@@ -310,6 +310,58 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 
 <p>Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>. </p>
 <p>The complete entity name is <code>"&amp;" + GetHtmlEntityNameForAscii(c) + ";"</code>. Some HTML entities have multiple names; this function returns one of them. There is a name in this table for all ASCII punctuation characters. </p>
+
+</div>
+</div>
+<a class="anchor" id="abaa91c08a145887137e586183d519cb0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static char Loyc.G.HexDigitChar </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</p>
+
+</div>
+</div>
+<a class="anchor" id="a11cc44a5b02545f5c6908bd5be8d216f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int Loyc.G.HexDigitValue </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</p>
 
 </div>
 </div>
@@ -1071,7 +1123,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:50 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

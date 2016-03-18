@@ -124,7 +124,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:a12883b70ba50042d8fbda2e89e43b4f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a table of "properties" (arbitrary key-value pairs) that exist in the current scope. This dictionary is "persistent" in the computer science sense; any changes to these properties affect only the current scope and child scopes. When the current scope ends, the set of properties that existed in the parent scope are restored. <a href="#a12883b70ba50042d8fbda2e89e43b4f5">More...</a><br /></td></tr>
 <tr class="separator:a12883b70ba50042d8fbda2e89e43b4f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb6b2fbd85b1bb5fb33bf25f04aa890b"><td class="memItemLeft" align="right" valign="top">IReadOnlyList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#abb6b2fbd85b1bb5fb33bf25f04aa890b">Ancestors</a><code> [get]</code></td></tr>
-<tr class="memdesc:abb6b2fbd85b1bb5fb33bf25f04aa890b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a list of ancestors of the current node being processed. Normally Ancestors[0] is a #splice node that contains a list of all top-level statements in the file, and Parents.Last() is the current node. <a href="#abb6b2fbd85b1bb5fb33bf25f04aa890b">More...</a><br /></td></tr>
+<tr class="memdesc:abb6b2fbd85b1bb5fb33bf25f04aa890b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a list of ancestors of the current node being processed. Normally Ancestors[0] is a #splice node that contains a list of all top-level statements in the file, and Ancestors.Last() is the current node. <a href="#abb6b2fbd85b1bb5fb33bf25f04aa890b">More...</a><br /></td></tr>
 <tr class="separator:abb6b2fbd85b1bb5fb33bf25f04aa890b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a681a62874a05eee15058bd1723403ce4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a681a62874a05eee15058bd1723403ce4">Parent</a><code> [get]</code></td></tr>
 <tr class="memdesc:a681a62874a05eee15058bd1723403ce4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the logical parent of the current node, which is <code>Ancestors[Ancestors.Count - 2]</code>, or null if the current node is the root node. <a href="#a681a62874a05eee15058bd1723403ce4">More...</a><br /></td></tr>
@@ -236,7 +236,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Applies all available macros to the current node's children and returns the result.</p>
 <p>This method only processes children once. If this method is called again for the same node, it returns a cached result. </p>
-<p>If the currently-running macro fails the result may be thrown away and the effort of processing the children will have been wasted. If the macro succeeds a its <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576" title="Method signature of an LeMP macro.">LexicalMacro</a> attribute does not include <code>Mode = MacroMode.NoReprocessing</code>, the children will (normally) be processed again after the macro returns. </p>
+<p>If the currently-running macro fails, the result may be thrown away and the effort of processing the children will have been wasted. If the macro succeeds, and its <a class="el" href="namespaceLeMP.html#af4fd3c217e2a127d5546c3b99a7f3576" title="Method signature of an LeMP macro.">LexicalMacro</a> attribute uses the default <code>MacroMode.Normal</code> processing mode, the children will (normally) be processed again after the macro returns. </p>
 
 </div>
 </div>
@@ -281,7 +281,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns a list of ancestors of the current node being processed. Normally Ancestors[0] is a #splice node that contains a list of all top-level statements in the file, and Parents.Last() is the current node.</p>
+<p>Returns a list of ancestors of the current node being processed. Normally Ancestors[0] is a #splice node that contains a list of all top-level statements in the file, and Ancestors.Last() is the current node.</p>
 <p>You would expect that Ancestors[N] would contain Ancestors[N+1] as part of the attributes, target or arguments, but this is not always true. The ancestor list contains original versions of each node; when a child node is changed by a macro, the parent is not updated in this list, but macro processing continues for the descendants of that child, so the ancestor list may occasionally seem incoherent.</p>
 
 </div>
@@ -456,7 +456,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

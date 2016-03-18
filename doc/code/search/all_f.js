@@ -34,7 +34,5 @@ var searchData=
   ['otherkeyword',['OtherKeyword',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903a3da6889722c9caab6a052a6866a05e9c',1,'Loyc::Syntax::Lexing']]],
   ['out',['Out',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#af0271325e0aec32aa2b4cbe5ab5abc70',1,'Loyc::Syntax::CodeSymbols']]],
   ['overlaps',['Overlaps',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSet_3_01T_01_4.html#a50bccc5fbf584aded2ccd670d48038d8',1,'Loyc.Collections.Impl.InternalSet&lt; T &gt;.Overlaps()'],['../classLoyc_1_1Collections_1_1InvertibleSet_3_01T_01_4.html#ad932f97564f0574a4c765141c2512727',1,'Loyc.Collections.InvertibleSet&lt; T &gt;.Overlaps()'],['../classLoyc_1_1Collections_1_1MSet_3_01T_01_4.html#a86c86d43d87fbf7405f7aace5a7b4b0f',1,'Loyc.Collections.MSet&lt; T &gt;.Overlaps()'],['../structLoyc_1_1Collections_1_1Set_3_01T_01_4.html#af04d2b365b555e0b77881e0246d2bdb3',1,'Loyc.Collections.Set&lt; T &gt;.Overlaps()']]],
-  ['overlaps_3c_20rect_2c_20t_20_3e',['Overlaps&lt; Rect, T &gt;',['../classLoyc_1_1Geometry_1_1RectangleExt.html#a36822d85a5bc29fa9c59df7905f80eac',1,'Loyc::Geometry::RectangleExt']]],
-  ['override',['Override',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849',1,'LeMP']]],
-  ['overridemax',['OverrideMax',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ae9275e07c79aa464189c6ee9b8724a61',1,'LeMP']]]
+  ['overlaps_3c_20rect_2c_20t_20_3e',['Overlaps&lt; Rect, T &gt;',['../classLoyc_1_1Geometry_1_1RectangleExt.html#a36822d85a5bc29fa9c59df7905f80eac',1,'Loyc::Geometry::RectangleExt']]]
 ];

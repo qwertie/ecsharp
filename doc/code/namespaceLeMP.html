@@ -106,8 +106,6 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1AttrMacroRegistrar.html">AttrMacroRegistrar</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html">Compiler</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class that helps you invoke <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> on a set of source files. <a href="classLeMP_1_1Compiler.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,9 +132,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>MacroProcessorTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1StandardMacros.html">StandardMacros</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard macros, such as unroll() and replace() that can work in all <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> languages. Also includes macros designed to convert EC# feature to C# (e.g. tuples).  <a href="classLeMP_1_1StandardMacros.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>StandardMacroTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1TestCompiler.html">TestCompiler</a></td></tr>
@@ -145,15 +140,15 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:ae674de794b4a51078ea4a1a3c4b51456"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae674de794b4a51078ea4a1a3c4b51456"></a>
+<tr class="memitem:a198c95b96643036a7919594c73d415b1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a198c95b96643036a7919594c73d415b1"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>S</b> = <a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html">CodeSymbols</a></td></tr>
-<tr class="separator:ae674de794b4a51078ea4a1a3c4b51456"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a198c95b96643036a7919594c73d415b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:ab267185fdc116f4e8f06125be9858721"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721">MacroMode</a> { <br />
-&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98">MacroMode.NoReprocessing</a> = 0, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0">MacroMode.Normal</a> = 1, 
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0">MacroMode.Normal</a> = 0, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98">MacroMode.NoReprocessing</a> = 1, 
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92">MacroMode.ProcessChildrenAfter</a> = 2, 
 <br />
 &#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1">MacroMode.ProcessChildrenBefore</a> = 4, 
@@ -161,14 +156,16 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721acaccf488509e944ace72367a515cdda5">MacroMode.AllowDuplicates</a> = 16, 
 <br />
 &#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a0aadb65b9c0a1c1d1de0da006a23f4c0">MacroMode.DropRemainingListItems</a> = 32, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a98a208d641d4023e8c975526f57ff76e">MacroMode.FallbackMin</a> = 0x100, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a882277bdf25efaeb8295e842ebcb3d11">MacroMode.Fallback</a> = 0x300, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a03517381d93013b68e8706d60f65cf0c">MacroMode.PriorityFallbackMin</a> = 0x100, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a138988fcf70e07affa310f6a6a69ff8d">MacroMode.PriorityFallback</a> = 0x300, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a19f3ea8b6cb880e0a670e266566df86d">MacroMode.NormalPriority</a> = 0x500, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849">MacroMode.Override</a> = 0x700, 
-<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ae9275e07c79aa464189c6ee9b8724a61">MacroMode.OverrideMax</a> = 0x900, 
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ab78ffa29cc2191841095b8993455c05f">MacroMode.PriorityInternalFallback</a> = 0x400, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a79891fe0c283fa33f64539263c152d1f">MacroMode.PriorityNormal</a> = 0x500, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ad54535d98b6d1aadcd1aa7f2ae52c3f0">MacroMode.PriorityInternalOverride</a> = 0x600, 
 <br />
-&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f">MacroMode.PriorityMask</a> = 0xF00
+&#160;&#160;<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a66057e7fb1b999cf202660a21fee7471">MacroMode.PriorityOverride</a> = 0x700, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a2f29ce8de24666f3fd15df6aa3218ccb">MacroMode.PriorityOverrideMax</a> = 0x900, 
+<a class="el" href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f">MacroMode.PriorityMask</a> = 0xF00
 <br />
  }</td></tr>
 <tr class="memdesc:ab267185fdc116f4e8f06125be9858721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a SimpleMacro. Unless otherwise specified, these flags only apply when the macro accepts the input by returning a non-null result. <a href="namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721">More...</a><br /></td></tr>
@@ -195,11 +192,11 @@ Functions</h2></td></tr>
 
 <p>Flags that affect the way that <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">LeMP.MacroProcessor</a> uses a SimpleMacro. Unless otherwise specified, these flags only apply when the macro accepts the input by returning a non-null result.</p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98"></a>NoReprocessing&#160;</td><td class="fielddoc">
-<p>The macro's result (including children) is not processed further.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0"></a>Normal&#160;</td><td class="fielddoc">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a960b44c579bc2f6818d2daaf9e4c16f0"></a>Normal&#160;</td><td class="fielddoc">
 <p>The macro's result is reprocessed directly (this is the default behavior).</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a30f214a1c65632f67af10cfca0b35d98"></a>NoReprocessing&#160;</td><td class="fielddoc">
+<p>The macro's result (including children) is not processed further.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92"></a>ProcessChildrenAfter&#160;</td><td class="fielddoc">
 <p>The macro's result is not reprocessed, but the result's children are processed.</p>
@@ -217,19 +214,25 @@ Functions</h2></td></tr>
 <p>If this macro succeeds, all nodes after this one in the current attribute or statement/argument list are dropped.</p>
 <p>Tyically this option is used by macros that splice together the list of <a class="el" href="interfaceLeMP_1_1IMacroContext.html#a68425589ee09ef9f92085782abf8b53b" title="Gets a list of the remaining nodes (arguments/statements or attributes) after this point in the code ...">IMacroContext.RemainingNodes</a> into their own result.</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a98a208d641d4023e8c975526f57ff76e"></a>FallbackMin&#160;</td><td class="fielddoc">
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a03517381d93013b68e8706d60f65cf0c"></a>PriorityFallbackMin&#160;</td><td class="fielddoc">
 <p>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a882277bdf25efaeb8295e842ebcb3d11"></a>Fallback&#160;</td><td class="fielddoc">
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a138988fcf70e07affa310f6a6a69ff8d"></a>PriorityFallback&#160;</td><td class="fielddoc">
 <p>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a19f3ea8b6cb880e0a670e266566df86d"></a>NormalPriority&#160;</td><td class="fielddoc">
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721ab78ffa29cc2191841095b8993455c05f"></a>PriorityInternalFallback&#160;</td><td class="fielddoc">
+<p>Used to order behavior of standard macros.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a79891fe0c283fa33f64539263c152d1f"></a>PriorityNormal&#160;</td><td class="fielddoc">
 <p>Normal priority (this is the default and does not need to be specified.)</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a6da8e67225fdcfa78c3ea5dc3154b849"></a>Override&#160;</td><td class="fielddoc">
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721ad54535d98b6d1aadcd1aa7f2ae52c3f0"></a>PriorityInternalOverride&#160;</td><td class="fielddoc">
+<p>Used to order behavior of standard macros.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a66057e7fb1b999cf202660a21fee7471"></a>PriorityOverride&#160;</td><td class="fielddoc">
 <p>High priority. If this macro is ambiguous with another macro that doesn't have this flag nor OverrideAll, this macro takes precedence (note: only one priority flag can be used at a time).</p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721ae9275e07c79aa464189c6ee9b8724a61"></a>OverrideMax&#160;</td><td class="fielddoc">
+<tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721a2f29ce8de24666f3fd15df6aa3218ccb"></a>PriorityOverrideMax&#160;</td><td class="fielddoc">
 <p>Highest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by this macro are used (note: only one priority flag can be used at a time).</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f"></a>PriorityMask&#160;</td><td class="fielddoc">
@@ -282,7 +285,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

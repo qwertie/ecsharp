@@ -94,9 +94,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Package Loyc.Ecs</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Enhanced C#. Currently only the parser (<a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement.">Ecs.Parser.EcsParser</a>) and printer (<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Prints a Loyc tree to EC# source code.">Ecs.EcsNodePrinter</a>) are implemented, so <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> is used to convert supported features of EC# to C#. 
-<a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -123,8 +120,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><b>EcsPrinterAndParserTests</b></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1Program.html">Program</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Entry point: runs the EC# test suite and related tests. <a href="classLoyc_1_1Ecs_1_1Program.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html">EcsValidators</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class filled with methods for checking whether a node has the correct LNode.Name and structure. For example, <code>IsPropertyDefinition(node)</code> checks whether <code>node</code> meets the requirements for being a property definition, such as having a Name equal to #property, and having name and return value that are complex identifiers.  <a href="classLoyc_1_1Ecs_1_1EcsValidators.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -219,9 +216,7 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="separator:a31748d155453336105544fe3a55e83e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Enhanced C#. Currently only the parser (<a class="el" href="classLoyc_1_1Ecs_1_1Parser_1_1EcsParser.html" title="Parses Enhanced C# code into a sequence of Loyc trees (LNode), one per top-level statement.">Ecs.Parser.EcsParser</a>) and printer (<a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html" title="Prints a Loyc tree to EC# source code.">Ecs.EcsNodePrinter</a>) are implemented, so <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> is used to convert supported features of EC# to C#.</p>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
 <a class="anchor" id="a26c2f30acf269ea309847823fdedfb36"></a>
 <div class="memitem">
 <div class="memproto">
@@ -255,7 +250,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:55 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -5,8 +5,6 @@ var searchData=
   ['macromode',['MacroMode',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721',1,'LeMP']]],
   ['macroprocessor',['MacroProcessor',['../classLeMP_1_1MacroProcessor.html',1,'LeMP']]],
   ['macros',['Macros',['../classLoyc_1_1LLPG_1_1Macros.html',1,'Loyc::LLPG']]],
-  ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Les_1_1Macros.html',1,'LeMP::Prelude::Les']]],
-  ['macros',['Macros',['../classLeMP_1_1Prelude_1_1Macros.html',1,'LeMP::Prelude']]],
   ['makededenttoken',['MakeDedentToken',['../classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html#af0d44e6613c29f7c22d2f01e15beb2f1',1,'Loyc.Syntax.Les.LesIndentTokenGenerator.MakeDedentToken()'],['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#aac98d95b000862a8ca35574b62c0f228',1,'Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.MakeDedentToken()']]],
   ['makeendoflinetoken',['MakeEndOfLineToken',['../classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html#abfd3785d749ffae63bcb1e69f330963a',1,'Loyc.Syntax.Les.LesIndentTokenGenerator.MakeEndOfLineToken()'],['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#ae3543c3c1ee2c4c175f1b98334dfab55',1,'Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.MakeEndOfLineToken()']]],
   ['makeindenttoken',['MakeIndentToken',['../classLoyc_1_1Syntax_1_1Les_1_1LesIndentTokenGenerator.html#a6038cefdf5cf58472cbf96ba46d243c6',1,'Loyc.Syntax.Les.LesIndentTokenGenerator.MakeIndentToken()'],['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#a5d837138bb5c52255da9a68bbd2c4b52',1,'Loyc.Syntax.Lexing.IndentTokenGenerator&lt; Token &gt;.MakeIndentToken()']]],

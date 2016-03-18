@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4_1_1SavePosition.html',1,'Loyc::Syntax::Lexing::BaseLexer&lt; CharSrc &gt;']]],
   ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4_1_1SavePosition.html',1,'Loyc::Syntax::BaseParser&lt; Token, MatchType &gt;']]],
+  ['saveposition',['SavePosition',['../structLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4_1_1SavePosition.html',1,'Loyc::Syntax::Lexing::BaseLexer&lt; CharSrc &gt;']]],
   ['scell',['SCell',['../structLoyc_1_1Collections_1_1Impl_1_1SCell.html',1,'Loyc::Collections::Impl']]],
   ['scratchbuffer_3c_20t_20_3e',['ScratchBuffer&lt; T &gt;',['../structLoyc_1_1Threading_1_1ScratchBuffer_3_01T_01_4.html',1,'Loyc::Threading']]],
   ['selectlistsource_3c_20t_2c_20tresult_20_3e',['SelectListSource&lt; T, TResult &gt;',['../classLoyc_1_1Collections_1_1SelectListSource_3_01T_00_01TResult_01_4.html',1,'Loyc::Collections']]],
@@ -13,7 +13,6 @@ var searchData=
   ['severitymessagefilter',['SeverityMessageFilter',['../classLoyc_1_1SeverityMessageFilter.html',1,'Loyc']]],
   ['simplecache_3c_20t_20_3e',['SimpleCache&lt; T &gt;',['../classLoyc_1_1Collections_1_1SimpleCache_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['simpletimer',['SimpleTimer',['../classLoyc_1_1Utilities_1_1SimpleTimer.html',1,'Loyc::Utilities']]],
-  ['sink',['sink',['../classLeMP_1_1Prelude_1_1Les_1_1Macros_1_1sink.html',1,'LeMP::Prelude::Les::Macros']]],
   ['slice_5f_3c_20t_20_3e',['Slice_&lt; T &gt;',['../structLoyc_1_1Collections_1_1Slice___3_01T_01_4.html',1,'Loyc::Collections']]],
   ['sourcefile',['SourceFile',['../classLoyc_1_1Syntax_1_1SourceFile.html',1,'Loyc::Syntax']]],
   ['sourcefile_3c_20charsource_20_3e',['SourceFile&lt; CharSource &gt;',['../classLoyc_1_1Syntax_1_1SourceFile_3_01CharSource_01_4.html',1,'Loyc::Syntax']]],
@@ -23,7 +22,6 @@ var searchData=
   ['sourcerange',['SourceRange',['../structLoyc_1_1Syntax_1_1SourceRange.html',1,'Loyc::Syntax']]],
   ['sparsealist_3c_20t_20_3e',['SparseAList&lt; T &gt;',['../classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['sparsealistleaf_3c_20t_20_3e',['SparseAListLeaf&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1SparseAListLeaf_3_01T_01_4.html',1,'Loyc::Collections::Impl']]],
-  ['standardmacros',['StandardMacros',['../classLeMP_1_1StandardMacros.html',1,'LeMP']]],
   ['statistic',['Statistic',['../classLoyc_1_1Utilities_1_1Statistic.html',1,'Loyc::Utilities']]],
   ['streamcharsource',['StreamCharSource',['../classLoyc_1_1Syntax_1_1StreamCharSource.html',1,'Loyc::Syntax']]],
   ['stringext',['StringExt',['../classLoyc_1_1StringExt.html',1,'Loyc']]],

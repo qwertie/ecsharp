@@ -45,5 +45,6 @@ var searchData=
   ['braces',['Braces',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1b43c4a6ddadf3ab8fe3333aee405969',1,'Loyc::Syntax::CodeSymbols']]],
   ['branchmode',['BranchMode',['../namespaceLoyc_1_1LLParserGenerator.html#a888ba124aff3c23bd1e4594971fbd53e',1,'Loyc::LLParserGenerator']]],
   ['break',['Break',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666',1,'Loyc::Syntax::CodeSymbols']]],
-  ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]]
+  ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]]
 ];

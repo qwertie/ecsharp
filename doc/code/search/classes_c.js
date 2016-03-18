@@ -7,5 +7,6 @@ var searchData=
   ['nestedenumerator_3c_20frame_2c_20t_20_3e',['NestedEnumerator&lt; Frame, T &gt;',['../structLoyc_1_1Collections_1_1NestedEnumerator_3_01Frame_00_01T_01_4.html',1,'Loyc::Collections']]],
   ['nodeprinterwriterbase',['NodePrinterWriterBase',['../classLoyc_1_1Syntax_1_1Les_1_1NodePrinterWriterBase.html',1,'Loyc::Syntax::Les']]],
   ['novalue',['NoValue',['../classLoyc_1_1NoValue.html',1,'Loyc']]],
-  ['nullmessagesink',['NullMessageSink',['../classLoyc_1_1NullMessageSink.html',1,'Loyc']]]
+  ['nullmessagesink',['NullMessageSink',['../classLoyc_1_1NullMessageSink.html',1,'Loyc']]],
+  ['numrange_3c_20num_2c_20math_20_3e',['NumRange&lt; Num, Math &gt;',['../structLoyc_1_1Collections_1_1NumRange_3_01Num_00_01Math_01_4.html',1,'Loyc::Collections']]]
 ];

@@ -113,7 +113,7 @@ Inheritance diagram for Loyc.Math.MathUL:</div>
 <area href="interfaceLoyc_1_1Math_1_1IMath_3_01T_01_4.html" title="Provides operations available on all system numeric types (int, uint, double, etc.); see also ISignedMath{T}, IUIntMath{T}, IIntMath{T} and IFloatMath{T}. " alt="Loyc.Math.IMath&lt; T &gt;" shape="rect" coords="572,168,791,192"/>
 <area href="interfaceLoyc_1_1Math_1_1IBinaryMath_3_01T_01_4.html" title="Provides additional bit-oriented integer operations." alt="Loyc.Math.IBinaryMath&lt; T &gt;" shape="rect" coords="1374,168,1593,192"/>
 <area href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html" title="This interface provides information about a numeric type T." alt="Loyc.Math.INumTraits&lt; T &gt;" shape="rect" coords="0,112,219,136"/>
-<area href="interfaceLoyc_1_1Math_1_1INumConverter_3_01T_01_4.html" title="Provides methods for converting common numeric types to another numeric type "T". ..." alt="Loyc.Math.INumConverter&lt; T &gt;" shape="rect" coords="229,112,448,136"/>
+<area href="interfaceLoyc_1_1Math_1_1IConvertTo_3_01T_01_4.html" title="Provides methods for converting common numeric types to another numeric type "T". ..." alt="Loyc.Math.IConvertTo&lt; T &gt;" shape="rect" coords="229,112,448,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IOrdered_3_01T_01_4.html" title="Provides comparison function for type T along with absolute value (Abs), and the minimum or maximum o..." alt="Loyc.Math.IOrdered&lt; T &gt;" shape="rect" coords="458,112,677,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html" title="Provides increment, decrement, and next/previous-representable- value operations." alt="Loyc.Math.IIncrementer&lt; T &gt;" shape="rect" coords="687,112,906,136"/>
 <area href="interfaceLoyc_1_1Math_1_1IField_3_01T_01_4.html" title="This defines a Field with the operations +,-,*,/" alt="Loyc.Math.IField&lt; T &gt;" shape="rect" coords="916,112,1135,136"/>
@@ -246,6 +246,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae9cf369d848eeb35e117ada0ffc3861a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Math_1_1MathUL.html#ae9cf369d848eeb35e117ada0ffc3861a">IsNaN</a> (T value)</td></tr>
 <tr class="memdesc:ae9cf369d848eeb35e117ada0ffc3861a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the given value is not a number (can only be true for floats). <a href="#ae9cf369d848eeb35e117ada0ffc3861a">More...</a><br /></td></tr>
 <tr class="separator:ae9cf369d848eeb35e117ada0ffc3861a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75a2cb48919dbf40030034b0bfcc6eba"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Math_1_1MathUL.html#a75a2cb48919dbf40030034b0bfcc6eba">Floor</a> (T a)</td></tr>
+<tr class="memdesc:a75a2cb48919dbf40030034b0bfcc6eba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the closest integer equal to or lower than the specified number. <a href="#a75a2cb48919dbf40030034b0bfcc6eba">More...</a><br /></td></tr>
+<tr class="separator:a75a2cb48919dbf40030034b0bfcc6eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a529472565cccc952ff447be1826cd829"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Math_1_1MathUL.html#a529472565cccc952ff447be1826cd829">Ceiling</a> (T a)</td></tr>
+<tr class="memdesc:a529472565cccc952ff447be1826cd829"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the closest integer equal to or higher than the specified number. <a href="#a529472565cccc952ff447be1826cd829">More...</a><br /></td></tr>
+<tr class="separator:a529472565cccc952ff447be1826cd829"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d288c13e9ac6e6eb36d883ca4b3fa47"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d288c13e9ac6e6eb36d883ca4b3fa47"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>From</b> (uint t)</td></tr>
 <tr class="separator:a9d288c13e9ac6e6eb36d883ca4b3fa47"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -390,6 +396,35 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Not</b> (T a)</td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a529472565cccc952ff447be1826cd829"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T Loyc.Math.MathUL.Ceiling </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the closest integer equal to or higher than the specified number.</p>
+<p>For integer types, this has no effect.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#af3197596537a1956605a195e002d960d">Loyc.Math.INumTraits&lt; T &gt;</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ace0519f04f9af4a49d793d6a72111c46"></a>
 <div class="memitem">
 <div class="memproto">
@@ -415,6 +450,35 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Not</b> (T a)</td></tr>
 <p>Returns the number of '1' bits in 'a'.</p>
 
 <p>Implements <a class="el" href="interfaceLoyc_1_1Math_1_1IBinaryMath_3_01T_01_4.html#a4a1d43b8744224c834897b0eaf7bf4f3">Loyc.Math.IBinaryMath&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a75a2cb48919dbf40030034b0bfcc6eba"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T Loyc.Math.MathUL.Floor </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the closest integer equal to or lower than the specified number.</p>
+<p>For integer types, this has no effect.</p>
+
+<p>Implements <a class="el" href="interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a14e0c494e3d1ffcdc8a83b9505d12afc">Loyc.Math.INumTraits&lt; T &gt;</a>.</p>
 
 </div>
 </div>
@@ -669,7 +733,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Not</b> (T a)</td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 2 2016 19:16:58 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Mar 18 2016 22:22:47 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
