@@ -32,7 +32,7 @@ namespace LeMP
 			VList<LNode> argList = GetArgNamesFromFormalArgList(args, formalArg =>
 				context.Write(Severity.Error, formalArg, "'==>': Expected a variable declaration here"));
 
-			LNode target = GetForwardingTarget(fwd, fn.Args[1]);
+			LNode target = GetForwardingTarget(fn.Args[1], fwd);
 			LNode call = F.Call(target, argList);
 			
 			bool isVoidFn = fn.Args[0].IsIdNamed(S.Void);
@@ -69,18 +69,18 @@ namespace LeMP
 			LNode name, fwd, body;
 			if (prop.ArgCount != 4)
 				return null;
-			LNode target = GetForwardingTarget(fwd = prop.Args[3], name = prop.Args[1]);
+			LNode target = GetForwardingTarget(name = prop.Args[1], fwd = prop.Args[3]);
 			if (target != null)
 			{
-				body = F.Braces(F.Call(S.get, F.Braces(F.Call(S.Return, target))));
+				body = F.Braces(F.Call(S.get, F.Braces(F.Call(S.Return, target))).SetBaseStyle(NodeStyle.Special));
 				return prop.WithArgChanged(3, body);
 			}
 			else if ((body = fwd).Calls(S.Braces))
 			{
 				var body2 = body.WithArgs(stmt => {
-					if (stmt.Calls(S.get, 1) && (target = GetForwardingTarget(stmt.Args[0], name)) != null)
+					if (stmt.Calls(S.get, 1) && (target = GetForwardingTarget(name, stmt.Args[0])) != null)
 						return stmt.WithArgs(new VList<LNode>(F.Braces(F.Call(S.Return, target))));
-					if (stmt.Calls(S.set, 1) && (target = GetForwardingTarget(stmt.Args[0], name)) != null)
+					if (stmt.Calls(S.set, 1) && (target = GetForwardingTarget(name, stmt.Args[0])) != null)
 						return stmt.WithArgs(new VList<LNode>(F.Braces(F.Call(S.Assign, target, F.Id(S.value)))));
 					return stmt;
 				});
@@ -89,7 +89,7 @@ namespace LeMP
 			}
 			return null;
 		}
-		static LNode GetForwardingTarget(LNode fwd, LNode methodName)
+		static LNode GetForwardingTarget(LNode methodName, LNode fwd)
 		{
 			if (fwd.Calls(S.Forward, 1)) {
 				LNode target = fwd.Args[0];

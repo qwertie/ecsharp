@@ -16,17 +16,17 @@ namespace LeMP
 		static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
 
 		[LexicalMacro("e.g. quote({ foo(); }) ==> F.Id(id);", 
-			"Macro-based code quote mechanism, to be used as long as a more complete compiler is availabe. "+
+			"Macro-based code quote mechanism, to be used as long as a more complete compiler is not availabe. "+
 			"If there is a single parameter that is braces, the braces are stripped out. "+
 			"If there are multiple parameters, or multiple statements in braces, the result is a call to #splice(). "+
-			"The output refers unqualified to 'CodeSymbols' and 'LNodeFactory' so you must have 'using Loyc.Syntax' at the top of your file. " +
+			"The output refers unqualified to `CodeSymbols` and `LNode` so you must have 'using Loyc.Syntax' at the top of your file. " +
 			"The substitution operator $(expr) causes the specified expression to be inserted unchanged into the output.",
 			"quote", "#quote")]
 		public static LNode quote(LNode node, IMessageSink sink)
 		{
 			return quote2(node, sink, true);
 		}
-		[LexicalMacro(@"e.g. quoteRaw($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
+		[LexicalMacro(@"e.g. rawQuote($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
 			"Behaves the same as quote(code) except that the substitution operator $ is not recognized as a request for substitution.",
 			"rawQuote", "#rawQuote")]
 		public static LNode rawQuote(LNode node, IMessageSink sink)

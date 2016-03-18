@@ -1,4 +1,4 @@
-// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.6.0.0
+// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.7.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')

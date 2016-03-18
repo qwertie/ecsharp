@@ -283,13 +283,7 @@
              is decided based on the last character, or the first and last character;
              the middle characters, if any, do not affect precedence.
              <para/>
-             The LES precedence table is designed to be comparable with popular
-             programming languages, with a couple of "corrections" that I felt were 
-             appropriate; for example, in LES, <c>x ^ 7 != 0</c> is parsed 
-             <c>(x ^ 7) != 0</c>, rather than <c>x ^ (7 != 0)</c> as in the C family
-             of languages. Similarly, <c>x >> 1 + y</c> is parsed <c>(x >> 1) + y</c>
-             rather than <c>x >> (1 + y)</c>. Shifting is often used as a substitute
-             for multiplication and division, so it has the same precedence.
+             The LES precedence table is designed to match most programming languages.
              <para/>
              As a nod to functional languages, the arrow operator "->" is right-
              associative and has a precedence below '*' so that <c>int * int -> int</c>
@@ -2070,6 +2064,29 @@
             <summary>Gets or sets the active language service on this thread. If 
             no service has been assigned on this thread, returns <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/>.</summary>
         </member>
+        <member name="P:Loyc.Syntax.ParsingService.RegisteredLanguages">
+            <summary>Dictionary of registered parsing services, keyed by file extension 
+            (without leading dots). The default dictionary contains one pair: 
+            <c>("les", LesLanguageService.Value)</c></summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.Register(Loyc.Syntax.IParsingService,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>Registers a parsing service.</summary>
+            <param name="service">Service to register.</param>
+            <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
+            <returns>The number of new file extensions registered, or 0 if none.</returns>
+            <remarks>This method does not replace existing registrations.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.Unregister(Loyc.Syntax.IParsingService,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>Unregisters a language service.</summary>
+            <param name="service">Service to unregister</param>
+            <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
+            <returns>The number of file extensions unregistered, or 0 if none.</returns>
+            <remarks>The service for a file extension is not removed unless the given service reference is equal to the registered service.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParsingService.GetServiceForFileName(System.String)">
+            <summary>Finds the language service associated with the longest matching registered file extension.</summary>
+            <remarks>Returns null if there is no registered language service for the filename's extension.</remarks>
+        </member>
         <member name="M:Loyc.Syntax.ParsingService.PushCurrent(Loyc.Syntax.IParsingService)">
             <summary>Sets the current language service, returning a value suitable 
             for use in a C# using statement, which will restore the old service.</summary>
@@ -2077,7 +2094,7 @@
             <example><code>
             LNode code;
             using (var old = ParsingService.PushCurrent(LesLanguageService.Value))
-                code = ParsingService.Current.ParseSingle("This is les code;");
+                code = ParsingService.Current.ParseSingle("This `is` LES_code;");
             </code></example>
         </member>
         <member name="T:Loyc.Syntax.ParsingService.PushedCurrent">
@@ -2620,9 +2637,6 @@
              but only in debug builds, since null-checking is fairly expensive.
              </remarks>
         </member>
-        <member name="M:Loyc.Syntax.LNode.List(Loyc.Collections.VList{Loyc.Syntax.LNode})">
-            <summary>A no-op that exists to avoid a potential slug when using `quote {...}`.</summary>
-        </member>
         <member name="P:Loyc.Syntax.LNode.Range">
             <summary>Returns the location and range in source code of this node.</summary>
             <remarks>
@@ -2813,10 +2827,10 @@
             <summary>An IEqualityComparer that compares nodes structurally.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNode.HasSimpleHead">
-            <summary>Returns true if the Target is an Id or a Literal, and the Target has no attributes.</summary>
+            <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNode.HasSimpleHeadWithoutPAttrs">
-            <summary>Returns true if the Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
+            <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes.</summary>
         </member>
         <member name="M:Loyc.Syntax.LNode.MergeLists(Loyc.Syntax.LNode,Loyc.Syntax.LNode,Loyc.Symbol)">
             <summary>Some <see cref="T:Loyc.Syntax.CallNode"/>s are used to represent lists. This 
@@ -3857,6 +3871,9 @@
         </member>
         <member name="F:LeMP.MacroMode.PriorityFallback">
             <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
+        </member>
+        <member name="F:LeMP.MacroMode.PriorityInternalFallback">
+            <summary>Used to order behavior of standard macros.</summary>
         </member>
         <member name="F:LeMP.MacroMode.PriorityNormal">
             <summary>Normal priority (this is the default and does not need to be specified.)</summary>

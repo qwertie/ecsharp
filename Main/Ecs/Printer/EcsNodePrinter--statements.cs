@@ -32,8 +32,9 @@ namespace Loyc.Ecs
 		// | Block stmt with or  | for (...) {...}        | Check BlockStmts list     |
 		// |   without args      | try {...} catch {...}  |                           |
 		// | Label stmt          | case 2: ... label:     | IsLabelStmt()             |
-		// | Block or list       | { ... } or #{ ... }    | Name in (S.List,S.Braces) |
+		// | Block or list       | { ... }                | Name is S.Braces          |
 		// | Expression stmt     | x += y;                | When none of the above    |
+		// | Assembly attribute  | [assembly: Foo]        | Name is S.Assembly        |
 
 		// Space definitions are containers for other definitions
 		internal static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
@@ -60,7 +61,12 @@ namespace Loyc.Ecs
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
-		public enum SPResult { Fail, Complete, NeedSemicolon, NeedSuffixTrivia };
+		/// <summary>Result from statement printer</summary>
+		public enum SPResult {
+			Fail,              // input tree did not have the expected format
+			NeedSemicolon,     // caller should print semicolon & suffix trivia
+			NeedSuffixTrivia   // caller should print suffix trivia
+		};
 		delegate SPResult StatementPrinter(EcsNodePrinter @this, Ambiguity flags);
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters = StatementPrinters_();
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters_()
@@ -80,6 +86,7 @@ namespace Loyc.Ecs
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
+			d[S.Assembly] = OpenDelegate<StatementPrinter>("AutoPrintAssemblyAttribute");
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -114,8 +121,7 @@ namespace Loyc.Ecs
 					{
 						var result = printer(this, flags | Ambiguity.NoParenthesis);
 						if (result != SPResult.Fail) {
-							if (result != SPResult.Complete)
-								PrintSuffixTrivia(result == SPResult.NeedSemicolon);
+							PrintSuffixTrivia(result == SPResult.NeedSemicolon);
 							return;
 						}
 					}
@@ -851,6 +857,18 @@ namespace Loyc.Ecs
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			PrintBracedBlock(_n, 0);
+			return SPResult.NeedSuffixTrivia;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintAssemblyAttribute(Ambiguity flags)
+		{
+			Debug.Assert(_n.Calls(S.Assembly));
+			PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, flags);
+			_out.Write("[assembly:", true);
+			Space(SpaceOpt.Default);
+			PrintArgs(_n, flags, false);
+			_out.Write(']', true);
 			return SPResult.NeedSuffixTrivia;
 		}
 	}

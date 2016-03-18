@@ -15,18 +15,17 @@
             it's impossible to tell whether
             <code>
             Foo(x);
+            Foo(x, y) { }
             </code>
-            is a method or a constructor. To resolve this conundrum, the parser
-            keeps track of the name of the current class, for the sole purpose
-            of detecting the constructor. The printer, meanwhile, must detect
-            a method call that may be mistaken for a constructor and reformat 
-            it as <c>##(Foo(x));</c> or <c>(Foo(x))</c> (<c>##(...)</c> is a
-            special form of parenthesis that does not alter the syntax tree that
-            the parser produces). Also, when a constructor definition is printed,
-            the missing return type must be included if the name does not match
-            an enclosing class:
+            is a pair of constructors, or a method call plus a macro call. To 
+            resolve this conundrum, the parser keeps track of the name of the 
+            current class, for the sole purpose of detecting the constructor. 
+            The printer, meanwhile, must detect a method call that may be 
+            mistaken for a constructor and reformat it as <c>(Foo(x))</c>. Also, 
+            when a constructor definition is printed, it must use prefix 
+            notation if the name does not match the enclosing class:
             <code>
-            @`` Foo(int x) { ... }
+            #cons(@``, Foo, #(int x), { ... });
             </code>
             When the constructor is called 'this', this(x) is assumed to be a 
             constructor, but that creates a new problem in EC# because you will 
@@ -38,10 +37,10 @@
             constructor definitions inside methods. The printer, in turn, will
             track whether it is in a space definition or not. It can print a
             constructor that is directly within a space definition, but in other
-            contexts will use the @`` notation to ensure that round-tripping 
+            contexts will use prefix notation to ensure that round-tripping 
             succeeds. When the syntax tree contains a method call to 'this' 
-            (which is stored as #this internally, but always printed simply as 
-            'this'), it may have to be enclosed in parens to avoid ambiguity.
+            (which is stored as #this internally), it may have to be enclosed 
+            in parens or shown as `#this` to avoid ambiguity.
             <para/>
             Finally, a constructor with the wrong name can still be parsed if
             it calls some other constructor with a colon:
@@ -265,6 +264,9 @@
         <member name="F:Loyc.Ecs.EcsNodePrinter.ContinueExpr">
             <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
         </member>
+        <member name="T:Loyc.Ecs.EcsNodePrinter.SPResult">
+            <summary>Result from statement printer</summary>
+        </member>
         <member name="M:Loyc.Ecs.EcsNodePrinter.KeyNameComponentOf(Loyc.Syntax.LNode)">
             <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
             this method identifies the base name component, which in this example 
@@ -445,7 +447,7 @@
             <summary>Eliminates punctuation and special characters from a string so
             that the string can be used as a plain C# identifier, e.g. 
             "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
-            <remarks>The empty string "" becomes "__", ASCII punctuation becomes 
+            <remarks>The empty string "" becomes "__empty__", ASCII punctuation becomes 
             "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
             and all other characters become "Xxx" where xx is the hexadecimal 
             representation of the code point. Designed for the Unicode BMP only.</remarks>

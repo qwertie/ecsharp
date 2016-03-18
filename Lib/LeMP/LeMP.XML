@@ -5,25 +5,72 @@
     </assembly>
     <members>
         <member name="T:LeMP.Compiler">
-            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on a 
-            set of source files.</summary>
+            <summary>A class that helps you invoke <see cref="F:LeMP.Compiler.MacroProcessor"/> on
+            on a set of source files, given a set of command-line options.</summary>
             <remarks>
-            Helps you process command-line options (e.g. --outext=cs), complete 
-            <see cref="T:LeMP.InputOutput"/> objects based on those options (see <see 
-            cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
-            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/>).
+            This class helps you process command-line options (see <see cref="M:LeMP.Compiler.ProcessArguments(System.Collections.Generic.IList{System.String},System.Boolean,System.Boolean,System.Collections.Generic.IList{System.String})"/>), 
+            complete <see cref="T:LeMP.InputOutput"/> objects based on those options (see 
+            <see cref="M:LeMP.Compiler.CompleteInputOutputOptions"/>), and add macros from Assemblies 
+            (<see cref="M:LeMP.Compiler.AddMacros(System.Reflection.Assembly)"/> and <see cref="M:LeMP.Compiler.AddStdMacros"/>). 
             </remarks>
         </member>
-        <member name="F:LeMP.Compiler.Languages">
-            <summary>A list of available syntaxes.</summary>
+        <member name="M:LeMP.Compiler.ProcessArguments(System.Collections.Generic.IList{System.String},System.Boolean,System.Boolean,System.Collections.Generic.IList{System.String})">
+            <summary>Processes command-line arguments to build a BMultiMap and 
+            sends those options to the other overload of this method.</summary>
+            <param name="args">Arg list from which to extract options. **NOTE**:
+            discovered options are removed from the list. This parameter 
+            cannot be an array.</param>
+            <param name="warnAboutUnknownOptions">Whether this method should
+            call <see cref="M:LeMP.Compiler.WarnAboutUnknownOptions(Loyc.Collections.BMultiMap{System.String,System.String},Loyc.IMessageSink,System.Collections.Generic.IDictionary{System.String,Loyc.Pair{System.String,System.String}})"/> for you.</param>
+            <param name="autoOpenInputFiles">Whether to open input files 
+            for you by calling <see cref="M:LeMP.Compiler.OpenSourceFiles(Loyc.IMessageSink,System.Collections.Generic.IEnumerable{System.String})"/>.
+            </param>
+            <param name="inputFiles">A list of input files to open if 
+            autoOpenInputFiles is true. If this is null, The input files are 
+            assumed to be those command-line arguments left over after the options 
+            are removed.</param>
+            <returns>The map of options (key-value pairs and, for options that 
+            don't have a value, key-null pairs).</returns>
+            <remarks>
+            Note: If you get your command-line arguments as a single 
+            string, use <see cref="M:Loyc.G.SplitCommandLineArguments(System.String)"/> first 
+            to split it into an array.
+            <para/>
+            This method doesn't check for --help. To implement --help, call 
+            <see cref="M:LeMP.Compiler.MaybeShowHelp(System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,Loyc.Pair{System.String,System.String}}},System.IO.TextWriter)"/> on the return value.
+            </remarks>
+        </member>
+        <member name="M:LeMP.Compiler.ProcessArguments(Loyc.Collections.BMultiMap{System.String,System.String},System.Boolean,System.Collections.Generic.IList{System.String})">
+            <summary>Processes all standard command-line arguments from 
+            <see cref="F:LeMP.Compiler.KnownOptions"/>, except --help.</summary>
+            <param name="options">A set of options, presumably derived from command-
+            line options using <see cref="M:Loyc.Utilities.UG.ProcessCommandLineArguments(System.Collections.Generic.IList{System.String},System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{System.String,System.String}},System.String,System.Collections.Generic.IDictionary{System.Char,System.String},Loyc.Collections.InvertibleSet{System.String},System.Int32,System.Boolean,System.Boolean)"/></param>
+            <param name="warnAboutUnknownOptions">Whether to warn (to <see cref="P:LeMP.Compiler.Sink"/>) 
+            about options not listed in <see cref="F:LeMP.Compiler.KnownOptions"/>.</param>
+            <param name="inputFiles">Files to open with <see cref="M:LeMP.Compiler.OpenSourceFiles(Loyc.IMessageSink,System.Collections.Generic.IEnumerable{System.String})"/></param>
+            <returns>true, unless inputFiles != null and all input files failed to open.</returns>
+            <remarks>
+            This method calls AddStdMacros() unless options includes "nostdmacros".
+            </remarks>
+        </member>
+        <member name="M:LeMP.Compiler.AddStdMacros">
+            <summary>Adds standard macros from LeMP.StdMacros.dll, and adds the 
+            namespaces LeMP and LeMP.Prelude to the pre-opened namespace list.</summary>
+            <remarks>Note: prelude macros were already added by the constructor.</remarks>
         </member>
         <member name="M:LeMP.Compiler.CompleteInputOutputOptions">
             <summary>Fills in all fields of <see cref="F:LeMP.Compiler.Files"/> that are still null,
-            based on the command-line options.</summary>
+            based on the command-line options. Calling this is optional, since Run()
+            calls it anyway.</summary>
         </member>
-        <member name="M:LeMP.Compiler.FileNameToLanguage(System.String)">
-            <summary>Finds a language service in ExtensionToLanguage() for the 
-            specified file extension, or null if there is no match.</summary>
+        <member name="M:LeMP.Compiler.OpenSourceFiles(Loyc.IMessageSink,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>Opens a set of source files by file name, and creates a text file for each.</summary>
+            <param name="sink"></param>
+            <param name="fileNames"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LeMP.Compiler.Run">
+            <summary>Runs the <see cref="F:LeMP.Compiler.MacroProcessor"/> on all input <see cref="F:LeMP.Compiler.Files"/>.</summary>
         </member>
         <member name="T:LeMP.InputOutput">
             <summary>
@@ -36,13 +83,16 @@
             suitable for running LLLPG and other lexical macros.
             </summary>
             <remarks>
-            MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
-            statements, and { braces } (for scoping the #import statements). The
-            macro processor should be configured with any needed macros like this:
+            MacroProcessor itself only cares about a few nodes including 
+            #importMacros and #unimportMacros, and { braces } (for scoping the 
+            #import statements). The macro processor should be configured with any 
+            needed macros like this:
             <code>
+              var prelude = typeof(LeMP.Prelude.BuiltinMacros); // the default prelude
               var MP = new MacroProcessor(prelude, sink);
-              MP.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
-              MP.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+              MP.AddMacros(typeof(LeMP.StandardMacros).Assembly);
+              MP.PreOpenedNamespaces.Add((Symbol) "LeMP.Prelude"); // already done for you
+              MP.PreOpenedNamespaces.Add((Symbol) "LeMP");
             </code>
             In order for the input code to have access to macros, two steps are 
             necessary: you have to add the macro classes with <see cref="M:LeMP.MacroProcessor.AddMacros(System.Type)"/>
@@ -50,7 +100,7 @@
             Higher-level code (e.g. <see cref="T:LeMP.Compiler"/>) can define "always-open"
             namespaces by adding entries to PreOpenedNamespaces, and the code being 
             processed can open additional namespaces with a #importMacros(Namespace) 
-            statement (in LES, "import macros Namespace" can be used as a synonym if 
+            statement (in LES, "import_macros Namespace" can be used as a synonym if 
             PreOpenedNamespaces contains LeMP.Prelude).
             <para/>
             MacroProcessor is not aware of any distinction between "statements"
@@ -65,7 +115,7 @@
             messages.
             <para/>
             This class processes a batch of files at once. Call either
-            <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Syntax.LNode)"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
+            <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>.
             Parallelizing on a file-by-file basis is easy; each source file is completely 
             independent, since no semantic analysis is being done. 
             <para/>
@@ -74,6 +124,27 @@
         </member>
         <member name="P:LeMP.MacroProcessor.Current">
             <summary>Returns the <c>MacroProcessor</c> running on the current thread, or null if none.</summary>
+        </member>
+        <member name="P:LeMP.MacroProcessor.PreOpenedNamespaces">
+            <summary>Macros in these namespaces will be available without an explicit 
+            import command (#importMacros). By default this list has one item: 
+            @@LeMP.Prelude (i.e. (Symbol)"LeMP.Prelude")</summary>
+        </member>
+        <member name="F:LeMP.MacroProcessor.DefaultScopedProperties">
+            <summary>Default values of scoped properties. This map is empty by 
+            default.</summary>
+            <remarks>The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
+            syntax for <see cref="T:Loyc.Symbol"/>) are not normally stored in this collection; 
+            when you use <see cref="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})"/> or <see cref="M:LeMP.MacroProcessor.ProcessParallel(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})"/>, 
+            @@#inputFolder and @@#inputFileName are set according to the folder and 
+            filename in <see cref="F:LeMP.InputOutput.FileName"/>. However, @@#inputFolder 
+            is not set if the filename has no folder component, so this collection 
+            could be used to override @@#inputFolder in that case.
+            </remarks>
+        </member>
+        <member name="M:LeMP.MacroProcessor.ProcessSynchronously(Loyc.Collections.VList{Loyc.Syntax.LNode})">
+            <summary>Processes a list of nodes directly on the current thread.</summary>
+            <remarks>Note: <c>AbortTimeout</c> doesn't work when using this overload.</remarks>
         </member>
         <member name="M:LeMP.MacroProcessor.ProcessSynchronously(System.Collections.Generic.IReadOnlyList{LeMP.InputOutput},System.Action{LeMP.InputOutput})">
             <summary>Processes source files one at a time (may be easier for debugging).</summary>
@@ -92,6 +163,7 @@
             transformation task.</summary>
             <remarks>
             This is a flowchart showing how MacroProcessorTask applies macros.
+            **NOTE**: this is outdated, TODO: redo it.
             <pre>
                ProcessRoot
                    |      

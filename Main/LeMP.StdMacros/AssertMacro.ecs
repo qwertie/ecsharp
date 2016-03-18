@@ -58,7 +58,9 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"assert(condition);", 
-			"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\").", 
+			"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\"). "
+			+"You can change the assert method with `#snippet` as follows:\n\n"
+			+"    #snippet #assertMethod = System.Diagnostics.Debug.Assert; // default", 
 			"assert")]
 		public static LNode _assert(LNode node, IMacroContext context)
 		{

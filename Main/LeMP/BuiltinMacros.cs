@@ -70,7 +70,8 @@ namespace LeMP.Prelude
 		}
 
 		[LexicalMacro("#get(key, defaultValueOpt)", 
-			"Alias for #getScopedProperty. Gets a literal or code snippet that was previously set in this scope.", 
+			"Alias for #getScopedProperty. Gets a literal or code snippet that was previously set in this scope. "
+			+"If the key is an identifier, it is treated as a symbol instead, e.g. `#get(Foo)` is equivalent to `#get(@@Foo)`.", 
 			"#get")]
 		public static LNode _get(LNode node, IMacroContext context)
 		{
@@ -90,7 +91,7 @@ namespace LeMP.Prelude
 		}
 
 		[LexicalMacro("#printKnownMacros;", "Prints a table of all macros known to LeMP, as (invalid) C# code.",
-			"#printKnownMacros", Mode = MacroMode.NoReprocessing)]
+			"printKnownMacros", "#printKnownMacros", Mode = MacroMode.NoReprocessing)]
 		public static LNode printKnownMacros(LNode node, IMacroContext context)
 		{
 			// namespace LeMP {
@@ -100,9 +101,9 @@ namespace LeMP.Prelude
 			// }
 			return F.Call(S.Splice, context.AllKnownMacros.SelectMany(p => p.Value)
 				.GroupBy(mi => mi.NamespaceSym).OrderBy(g => g.Key).Select(group =>
-					F.Attr(F.Trivia(S.TriviaSLCommentBefore, "#printKnownMacros"),
+					F.Attr(F.Trivia(S.TriviaSLCommentBefore, "printKnownMacros"),
 					F.Call(S.Namespace, NamespaceSymbolToLNode(group.Key ?? GSymbol.Empty), LNode.Missing,
-						F.Braces(group.Select(mi =>
+						F.Braces(group.OrderBy(mi => mi.Macro.Method.Name).Select(mi =>
 						{
 							StringBuilder descr = new StringBuilder(string.Format("\n\t\t### {0} ###\n",
 								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingService.Exprs)));

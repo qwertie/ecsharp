@@ -16,7 +16,7 @@ namespace LeMP
 	{
 		[LexicalMacro(@"replace (input($capture) => output($capture), ...) {...}",
 			"Finds one or more patterns in a block of code and replaces each matching expression with another expression. "+
-			"The braces are omitted from the output (and are not matchable)."+
+			"The braces are omitted from the output (and are not matchable). "+
 			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list. "+
 			"The alternate name `replacePP` additionally preprocesses the input and output arguments, and is useful to get around problems with macro execution order. "+
 			"This behavior is not the default, since the final output will be macro-processed a second time.",

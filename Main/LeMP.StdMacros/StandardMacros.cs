@@ -163,7 +163,8 @@ namespace LeMP
 		#region concatId (##), nameof
 
 		[LexicalMacro(@"a `##` b; concatId(a, b)", 
-			"Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`..", 
+			"Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`.\n"
+			+"\n**Note**: concatId cannot be used directly as a variable or method name unless you use `$(out concatId(...))`.", 
 			"##", "concatId")]
 		public static LNode concatId(LNode node, IMessageSink sink)
 		{
@@ -230,15 +231,18 @@ namespace LeMP
 		
 		#endregion
 
-		[LexicalMacro(@"x `tree==` y", "Returns the literal true if two or more syntax trees are equal, or false if not.", "tree==")]
-		public static LNode TreeEqual(LNode node, IMessageSink sink)
+		[LexicalMacro(@"x `tree==` y", 
+			"Returns the literal true if two or more syntax trees are equal, or false if not. The two arguments are preprocessed.", 
+			"tree==")]
+		public static LNode TreeEqual(LNode node, IMacroContext context)
 		{
-			var a = node.Args;
-			if (a.Count < 2) return null;
-			
-			LNode left = a[0];
-			for (int i = 1; i < a.Count; i++)
-				if (!left.Equals(a[i]))
+			if (node.ArgCount < 2) return null;
+			node = context.PreProcessChildren();
+			var args = node.Args;
+
+			LNode left = args[0];
+			for (int i = 1; i < args.Count; i++)
+				if (!left.Equals(args[i]))
 					return F.Literal(G.BoxedFalse);
 			return F.Literal(G.BoxedTrue);
 		}
@@ -297,7 +301,7 @@ namespace LeMP
 			return null;
 		}
 		
-		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".")]
+		[LexicalMacro("A := B", "Deprecated. Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", ":=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -320,7 +324,9 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"includeFile(""Filename"")", 
-			"Reads source code from the specified file, and inserts the syntax tree in place of the macro call. For nostalgic purposes, `#include` is a synonym of `includeFile`.", 
+			"Reads source code from the specified file, and inserts the syntax tree in place of the macro call. "
+			+"The input language is determined automatically according to the file extension. "
+			+"For nostalgic purposes (to resemble C/C++), `#include` is a synonym of `includeFile`.", 
 			"includeFile", "#include")]
 		public static LNode includeFile(LNode node, IMacroContext context)
 		{
@@ -331,6 +337,25 @@ namespace LeMP
 				var path = System.IO.Path.Combine(inputFolder, filename);
 				var contents = LNode.List(parser.ParseFile(path, context.Sink));
 				return LNode.Call(S.Splice, contents, node);
+			}
+			return null;
+		}
+
+		[LexicalMacro(@"$(out concatId(a, b, c))", 
+			"`$(out ...)` allows you to use a macro in Enhanced C# in places where macros are ordinarily not allowed, "
+			+"such as in places where a data type or a method name are expected. The `out` attribute is required "
+			+"to make it clear you want to run this macro and that some other meaning of `$` does not apply. Examples:\n\n"
+			+"    $(out Foo) number; // variable of type Foo\n"
+			+"    int $(out concatId(Sq, uare))(int x) => x*x;",
+			"$")]
+		public static LNode DollarSignIdentity(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount == 1)
+			{
+				var expA = node.Args[0];
+				var expB = expA.WithoutAttrNamed(S.Out);
+				if (expA != expB)
+					return expB;
 			}
 			return null;
 		}

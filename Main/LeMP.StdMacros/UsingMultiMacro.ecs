@@ -12,7 +12,7 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("using (System, System.(Collections.Generic, Linq, Text));", 
+		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", 
 			"Generates multiple using-statements from a single one.", 
 			"#import", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode UsingMulti(LNode stmt, IMacroContext context)
