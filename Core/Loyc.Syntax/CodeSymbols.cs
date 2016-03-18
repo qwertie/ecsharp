@@ -157,7 +157,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); //!< e.g. [#explicit] #fn(#int32, [#operator] #cast, (Foo a,))
 		public static readonly Symbol Missing = GSymbol.Empty;             //!< Indicates that a syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
 		public static readonly Symbol Splice = GSymbol.Get("#splice");     //!< When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
-		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); //!< e.g. [assembly: Foo] <=> [Foo] #assembly;
+		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); //!< e.g. [assembly: Foo] <=> #assembly(Foo);
 		public static readonly Symbol Module = GSymbol.Get("#module");     //!< e.g. [module: Foo] <=> [Foo] #module;
 		public static readonly Symbol Import = GSymbol.Get("#import");     //!< e.g. using System; <=> #import(System);
 		//!< #import is used instead of #using because the using(...) {...} statement already uses #using
