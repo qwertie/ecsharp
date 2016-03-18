@@ -42,10 +42,7 @@ namespace LeMP
 				// can still write quote {{...}} to include braces in the output.
 				code = arg;
 			}
-			if (code.ArgCount == 1)
-				return QuoteOne(code.Args[0], substitutions);
-			else
-				return QuoteOne(code.WithTarget(S.Splice), substitutions);
+			return QuoteOne(code.Args.AsLNode(S.Splice), substitutions);
 		}
 		static LNodeFactory F_ = new LNodeFactory(new EmptySourceFile("CodeQuoteMacro.cs"));
 		static LNode Id_LNode = F_.Id("LNode");

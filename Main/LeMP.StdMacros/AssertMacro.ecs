@@ -50,43 +50,34 @@ namespace LeMP
 			}
 		}
 
-		[LexicalMacro(@"#setAssertMethod(Class.MethodName)",
-			"Sets the method to be called by the assert() macro (default: System.Diagnostics.Debug.Assert). "+
-			"This method should accept two arguments: (bool condition, string failureMessage)",
-			"#setAssertMethod")]
-		public static LNode setAssertMethod(LNode node, IMacroContext context)
-		{
-			if (node.ArgCount == 1) {
-				context.ScopedProperties[@@assertMethod] = node[0];
-				return quote(#splice());
-			}
-			return null;
-		}
-
 		static readonly LNode defaultAssertMethod = quote(System.Diagnostics.Debug.Assert);
 
 		internal static LNode GetAssertMethod(IMacroContext context) 
 		{
-			return (context.ScopedProperties.TryGetValue(@@assertMethod, null) as LNode) ?? defaultAssertMethod;
+			return (context.ScopedProperties.TryGetValue(@@#assertMethod, null) as LNode) ?? defaultAssertMethod;
 		}
 
 		[LexicalMacro(@"assert(condition);", 
-			"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\").")]
-		public static LNode assert(LNode node, IMacroContext context)
+			"Translates assert(expr) to System.Diagnostics.Debug.Assert(expr, \"Assertion failed in Class.MethodName: expr\").", 
+			"assert")]
+		public static LNode _assert(LNode node, IMacroContext context)
 		{
-			var results = LNode.List();
-			foreach (var condition in node.Args) {
-				string name = GetFnAndClassNameString(context) ?? "";
-				var ps = ParsingService.Current;
-				LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
-					name, ps.Print(condition, context.Sink, ParsingService.Exprs)));
+			if (node.ArgCount > 0) {
+				var results = LNode.List();
+				foreach (var condition in node.Args) {
+					string name = GetFnAndClassNameString(context) ?? "";
+					var ps = ParsingService.Current;
+					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
+						name, ps.Print(condition, context.Sink, ParsingService.Exprs)));
 				
-				var assertFn = GetAssertMethod(context);
-				if (assertFn.IsIdNamed(node.Name))
-					return null; // disabled!
-				results.Add(quote($assertFn($condition, $condStr)));
+					var assertFn = GetAssertMethod(context);
+					if (assertFn.IsIdNamed(node.Name))
+						return null; // disabled!
+					results.Add(quote($assertFn($condition, $condStr)));
+				}
+				return results.AsLNode(S.Splice);
 			}
-			return results.AsLNode(S.Splice);
+			return null;
 		}
 	}
 }

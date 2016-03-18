@@ -208,14 +208,14 @@ namespace Loyc.VisualStudio
 				// them immediately. I'll report the errors at the very end.
 				MessageHolder sink = new MessageHolder();
 				
-				var sourceFile = new InputOutput((UString)inputFileContents, Path.GetFileName(inputFilePath));
+				var sourceFile = new InputOutput((UString)inputFileContents, inputFilePath);
 
 				var c = new Compiler(sink, sourceFile) { 
 					AbortTimeout = TimeSpan.FromSeconds(10),
 					Parallel = false // only one file, parallel doesn't help
 				};
 
-				if (LeMP.Compiler.ProcessArguments(c, options))
+				if (c.ProcessArguments(options))
 				{
 					if (options.ContainsKey("no-out-header"))
 					{
@@ -246,7 +246,7 @@ namespace Loyc.VisualStudio
 		void ReportErrorToVS(IVsGeneratorProgress generatorProgress, Severity severity, object context, string message, object[] args)
 		{
 			int line = 0, col = 1;
-			string message2 = Localize.From(message, args);
+			string message2 = message.Localized(args);
 			if (context is LNode) {
 				var range = ((LNode)context).Range;
 				line = range.Start.Line;
@@ -285,9 +285,9 @@ namespace SingleFileGenerator
 				string printed = EcsLanguageService.Value.Print(parsed.First());
 				Loyc.MiniTest.Assert.AreEqual(testCode, printed);
 			} catch (Exception ex) {
-				MessageBox.Show(Localize.From(
-					"Self-test failed with the following exception:\n{0}\n{1}", 
-					ex.ExceptionMessageAndType(), ex.StackTrace));
+				MessageBox.Show(
+					string.Format("Self-test failed with the following exception:\n{0}\n{1}",
+						ex.ExceptionMessageAndType(), ex.StackTrace));
 			}
 		}
 	}

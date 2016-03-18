@@ -16,21 +16,43 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Debug.NET4' or '$(Configuration)' == 'Debug.NET35' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\Bin\Debug.NET4\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug.NET35'">
+    <OutputPath>..\..\Bin\Debug.NET35\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DotNet3</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET4'">
+    <OutputPath>..\..\Bin\Debug.NET4\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DotNet4</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45'">
+    <OutputPath>..\..\Bin\Debug.NET45\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release.NET45' or '$(Configuration)' == 'Release.NET4' or '$(Configuration)' == 'Release.NET35' ">
-    <OutputPath>..\..\Bin\Release.NET4\</OutputPath>
-    <DefineConstants>TRACE;DotNet4</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <NoWarn>1591,1573</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release.NET35'">
+    <OutputPath>..\..\Bin\Release.NET35\</OutputPath>
+    <DefineConstants>TRACE;DotNet3</DefineConstants>
+    <DocumentationFile>..\..\Bin\Release.NET35\Tests.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release.NET4'">
+    <OutputPath>..\..\Bin\Release.NET4\</OutputPath>
+    <DefineConstants>TRACE;DotNet4</DefineConstants>
     <DocumentationFile>..\..\Bin\Release.NET4\Tests.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release.NET45'">
+    <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
+    <DefineConstants>TRACE;DotNet45</DefineConstants>
+    <DocumentationFile>..\..\Bin\Release.NET45\Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug.NET45' or '$(Configuration)' == 'Release.NET45'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

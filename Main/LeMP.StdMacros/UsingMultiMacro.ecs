@@ -42,7 +42,7 @@ namespace LeMP
 					if (args.Count == 1 && args[0].Calls(S.Braces))
 						args = args[0].Args;
 
-					return args.SelectMany(arg => GetNamespaces(arg) ?? RangeExt.Single(arg))
+					return args.SelectMany(arg => GetNamespaces(arg) ?? ListExt.Single(arg))
 					           .Select(subNS => MergeIdentifiers(outerNamespace, subNS));
 			}
 			return null;

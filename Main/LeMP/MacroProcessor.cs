@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using Loyc.Utilities;
 using Loyc.Collections;
 using Loyc;
-using Loyc.Collections.Impl;
 using Loyc.Syntax;
-using System.ComponentModel;
-using System.Collections.Concurrent;
 using System.Threading;
 using Loyc.Threading;
 using System.Threading.Tasks;
@@ -17,9 +12,6 @@ using System.Threading.Tasks;
 /// <summary>The lexical macro processor. Main classes: <see cref="LeMP.Compiler"/> and <see cref="LeMP.MacroProcessor"/>.</summary>
 namespace LeMP
 {
-	using S = CodeSymbols;
-	using System.Diagnostics;
-
 	/// <summary>
 	/// For LeMP: an input file plus per-file options (input and output language) and output code.
 	/// </summary>
@@ -46,13 +38,14 @@ namespace LeMP
 	/// suitable for running LLLPG and other lexical macros.
 	/// </summary>
 	/// <remarks>
-	/// MacroProcessor itself only cares about to #import/#importMacros/#unimportMacros 
-	/// statements, and { braces } (for scoping the #import statements). The
-	/// macro processor should be configured with any needed macros like this:
+	/// MacroProcessor itself only cares about a few nodes including 
+	/// #importMacros and #unimportMacros, and { braces } (for scoping the 
+	/// #import statements). The macro processor should be configured with any 
+	/// needed macros like this:
 	/// <code>
 	///   var MP = new MacroProcessor(prelude, sink);
-	///   MP.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
-	///   MP.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+	///   MP.AddMacros(typeof(LeMP.Prelude.BuiltinMacros).Assembly);
+	///   MP.PreOpenedNamespaces.Add((Symbol) "LeMP.Prelude");
 	/// </code>
 	/// In order for the input code to have access to macros, two steps are 
 	/// necessary: you have to add the macro classes with <see cref="AddMacros"/>
@@ -60,13 +53,13 @@ namespace LeMP
 	/// Higher-level code (e.g. <see cref="Compiler"/>) can define "always-open"
 	/// namespaces by adding entries to PreOpenedNamespaces, and the code being 
 	/// processed can open additional namespaces with a #importMacros(Namespace) 
-	/// statement (in LES, "import macros Namespace" can be used as a synonym if 
+	/// statement (in LES, "import_macros Namespace" can be used as a synonym if 
 	/// PreOpenedNamespaces contains LeMP.Prelude).
 	/// <para/>
 	/// MacroProcessor is not aware of any distinction between "statements"
 	/// and "expressions"; it will run macros no matter where they are located,
 	/// whether as standalone statements, attributes, or arguments to functions.
-	 /// <para/>
+	/// <para/>
 	/// MacroProcessor's main responsibilities are to keep track of a table of 
 	/// registered macros (call <see cref="AddMacros"/> to register more), to
 	/// keep track of which namespaces are open (namespaces can be imported by
@@ -104,6 +97,18 @@ namespace LeMP
 		internal MMap<Symbol, List<MacroInfo>> Macros { get { return _macros; } }
 
 		public MSet<Symbol> PreOpenedNamespaces = new MSet<Symbol>();
+
+		/// <summary>Default values of scoped properties. This map is empty by 
+		/// default.</summary>
+		/// <remarks>The @@#inputFolder and @@#inputFileName properties (note: @@ is EC# 
+		/// syntax for <see cref="Symbol"/>) are not normally stored in this collection; 
+		/// when you use <see cref="ProcessSynchronously"/> or <see cref="ProcessParallel"/>, 
+		/// @@#inputFolder and @@#inputFileName are set according to the folder and 
+		/// filename in <see cref="InputOutput.FileName"/>. However, @@#inputFolder 
+		/// is not set if the filename has no folder component, so this collection 
+		/// could be used to override @@#inputFolder in that case.
+		/// </remarks>
+		public MMap<object, object> DefaultScopedProperties = new MMap<object, object>();
 
 		#region Adding macros from types (AddMacros())
 
@@ -177,10 +182,6 @@ namespace LeMP
 
 		#endregion
 
-		public VList<LNode> ProcessSynchronously(LNode stmt)
-		{
-			return ProcessSynchronously(new VList<LNode>(stmt));
-		}
 		public VList<LNode> ProcessSynchronously(VList<LNode> stmts)
 		{
 			return new MacroProcessorTask(this).ProcessRoot(stmts);

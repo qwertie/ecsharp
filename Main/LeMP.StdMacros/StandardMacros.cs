@@ -5,10 +5,9 @@ using System.Text;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
-using Loyc.Math;
 using Loyc.Ecs;
 using System.Diagnostics;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
@@ -161,10 +160,12 @@ namespace LeMP
 			return true;
 		}
 
-		#region concat_id (##), nameof
+		#region concatId (##), nameof
 
-		[LexicalMacro(@"a `##` b", "Concatenates identifiers and/or literals to produce an identifier", "##", "concat_id")]
-		public static LNode concat_id(LNode node, IMessageSink sink)
+		[LexicalMacro(@"a `##` b; concatId(a, b)", 
+			"Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`..", 
+			"##", "concatId")]
+		public static LNode concatId(LNode node, IMessageSink sink)
 		{
 			var args = node.Args;
 			if (args.Count == 0)
@@ -314,6 +315,22 @@ namespace LeMP
 			{
 				context.DropRemainingNodes = true;
 				return node.WithArgs(node.Args.Add(F.Braces(context.RemainingNodes)));
+			}
+			return null;
+		}
+
+		[LexicalMacro(@"includeFile(""Filename"")", 
+			"Reads source code from the specified file, and inserts the syntax tree in place of the macro call. For nostalgic purposes, `#include` is a synonym of `includeFile`.", 
+			"includeFile", "#include")]
+		public static LNode includeFile(LNode node, IMacroContext context)
+		{
+			string filename;
+			if (node.ArgCount == 1 && (filename = context.PreProcess(node[0]).Value as string) != null) {
+				var parser = ParsingService.GetServiceForFileName(filename) ?? ParsingService.Current;
+				var inputFolder = context.ScopedProperties.TryGetValue((Symbol)"#inputFolder", "").ToString();
+				var path = System.IO.Path.Combine(inputFolder, filename);
+				var contents = LNode.List(parser.ParseFile(path, context.Sink));
+				return LNode.Call(S.Splice, contents, node);
 			}
 			return null;
 		}

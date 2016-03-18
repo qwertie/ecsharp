@@ -13,6 +13,7 @@ using Loyc.Threading;
 
 namespace LeMP
 {
+	using System.IO;
 	using S = CodeSymbols;
 
 	/// <summary>Holds the transient state of the macro processor. Since one
@@ -21,6 +22,7 @@ namespace LeMP
 	/// transformation task.</summary>
 	/// <remarks>
 	/// This is a flowchart showing how MacroProcessorTask applies macros.
+	/// **NOTE**: this is outdated, TODO: redo it.
 	/// <pre>
 	///    ProcessRoot
 	///        |      
@@ -84,6 +86,7 @@ namespace LeMP
 			foreach (var mi in MacroProcessor.GetMacros(this.GetType(), null, _sink, this))
 				MacroProcessor.AddMacro(_macros, mi);
 			_macroNamespaces = new MSet<Symbol>(_macros.SelectMany(ms => ms.Value).Select(mi => mi.NamespaceSym).Where(ns => ns != null));
+			_rootScopedProperties = parent.DefaultScopedProperties.Clone();
 		}
 
 		#region Fields
@@ -93,6 +96,7 @@ namespace LeMP
 		int MaxExpansions { get { return _parent.MaxExpansions; } }
 		MMap<Symbol, List<MacroInfo>> _macros;
 		MSet<Symbol> _macroNamespaces; // A list of namespaces that contain macros
+		MMap<object, object> _rootScopedProperties;
 		
 		// Statistics
 		public int MacrosInvoked { get; set; }
@@ -144,6 +148,14 @@ namespace LeMP
 		public VList<LNode> ProcessFile(InputOutput io, Action<InputOutput> onProcessed)
 		{
 			using (ParsingService.PushCurrent(io.InputLang ?? ParsingService.Current)) {
+				try {
+					string dir = Path.GetDirectoryName(io.FileName);
+					if (!string.IsNullOrEmpty(dir))
+						_rootScopedProperties[(Symbol)"#inputFolder"] = dir;
+					_rootScopedProperties[(Symbol)"#inputFileName"] = Path.GetFileName(io.FileName);
+				} catch (ArgumentException) { }    // Path.* may throw
+				  catch (PathTooLongException) { } // Path.* may throw
+
 				var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink);
 				var inputRV = new VList<LNode>(input);
 
@@ -190,7 +202,7 @@ namespace LeMP
 				_s = new CurNodeState();
 				if (asRoot || resetOpenNamespaces) {
 					var namespaces = !reentrant || resetOpenNamespaces ? _parent.PreOpenedNamespaces.Clone() : _curScope.OpenNamespaces.Clone();
-					var properties = asRoot ? new MMap<object,object>() : _curScope.ScopedProperties;
+					var properties = asRoot ? _rootScopedProperties.Clone() : _curScope.ScopedProperties;
 					newScope = true;
 					_curScope = new Scope(namespaces, properties, this, true);
 					_scopes.Add(_curScope);
@@ -430,46 +442,105 @@ namespace LeMP
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		[LexicalMacro("#importMacros(namespace);", "LeMP will look for macros in the specified namespace.", 
+		[LexicalMacro("#importMacros(namespace);", 
+			"LeMP will look for macros in the specified namespace. Only applies within the current braced block. Note: normal C# `using` statements also import macros.", 
 			"#importMacros", Mode = MacroMode.Normal)]
-		public LNode OnImportMacros(LNode node, IMessageSink sink)
+		public LNode importMacros(LNode node, IMacroContext context)
 		{
-			OnImport(node, sink, true);
+			OnImport(node, context, true);
 			return F.Call(S.Splice);
 		}
-		[LexicalMacro("#import(namespace);", "LeMP will look for macros in the specified namespace.", 
+		[LexicalMacro("#import(namespace);", 
+			"LeMP will look for macros in the specified namespace.", 
 			"#import", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public LNode OnImport(LNode node, IMessageSink sink) { return OnImport(node, sink, false); }
-		public LNode OnImport(LNode node, IMessageSink sink, bool expectMacros)
+		public LNode OnImport(LNode node, IMacroContext context) { return OnImport(node, context, false); }
+		public LNode OnImport(LNode node, IMacroContext context, bool expectMacros)
 		{
 			AutoInitScope().BeforeImport();
 			foreach (var arg in node.Args) {
 				var namespaceSym = NamespaceToSymbol(arg);
 				_curScope.OpenNamespaces.Add(namespaceSym);
 				if (expectMacros && !_macroNamespaces.Contains(namespaceSym))
-					sink.Write(Severity.Warning, node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
+					context.Write(Severity.Warning, node, "Namespace '{0}' does not contain any macros. Use #printKnownMacros to put a list of known macros in the output.", namespaceSym);
 			}
 			return null;
 		}
-		[LexicalMacro("#unimportMacros(namespace1, namespace2)", "Tells LeMP to stop looking for macros in the specified namespace(s).", 
+		[LexicalMacro("#unimportMacros(namespace1, namespace2)",
+			"Tells LeMP to stop looking for macros in the specified namespace(s). Only applies within the current braced block.", 
 			"#unimportMacros", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public LNode OnUnimportMacros(LNode node, IMessageSink sink)
+		public LNode unimportMacros(LNode node, IMacroContext context)
 		{
 			AutoInitScope().BeforeImport();
 			foreach (var arg in node.Args) {
 				var sym = NamespaceToSymbol(arg);
 				if (!_curScope.OpenNamespaces.Remove(sym))
-					sink.Write(Severity.Debug, arg, "Namespace not found to remove: {0}", sym);
+					context.Write(Severity.Debug, arg, "Namespace not found to remove: {0}", sym);
 			}
 			return null;
 		}
-		[LexicalMacro("#noLexicalMacros(expr)", "Suppresses macro invocations inside the specified expression. Note: #noLexicalMacros may not work when it is used within another macro.",
+		[LexicalMacro("#noLexicalMacros(expr)", 
+			"Suppresses macro invocations inside the specified expression. The word `#noLexicalMacros` is removed from the output. Note: `noMacro` (in LeMP.Prelude) is a shortened synonym for this macro.",
 			"#noLexicalMacros", Mode = MacroMode.NoReprocessing)]
-		public static LNode NoLexicalMacros(LNode node, IMessageSink sink)
+		public static LNode noLexicalMacros(LNode node, IMacroContext context)
 		{
 			if (!node.IsCall)
 				return null;
 			return node.WithTarget(S.Splice);
+		}
+
+		[LexicalMacro("#setScopedProperty(keyLiteral, valueLiteral);", 
+			"Sets the value of a scoped property, using the first parameter (usually a @@symbol) as a key in the property dictionary. The key and value must both be literals; expressions are not supported.", 
+			"#setScopedProperty", Mode = MacroMode.Normal)]
+		public static LNode setScopedProperty(LNode node, IMacroContext context)
+		{
+			LNode key;
+			if (node.ArgCount == 2 && (key = context.PreProcess(node[0])).IsLiteral && node[1].IsLiteral) {
+				context.ScopedProperties[key.Value] = node[1].Value;
+				return F.Call(S.Splice);
+            }
+			context.Write(Severity.Error, node, "Expected two literals as parameters (key, value).");
+			return null;
+		}
+
+		[LexicalMacro("#setScopedPropertyQuote(keyLiteral, valueCode);", 
+			"Sets the value of a scoped property to an LNode, using the first parameter (usually a @@symbol) as a key in the property dictionary. The key must be a literal, while the value can be _any_ expression.", 
+			"#setScopedPropertyQuote", Mode = MacroMode.Normal)]
+		public static LNode setScopedPropertyQuote(LNode node, IMacroContext context)
+		{
+			LNode key;
+			if (node.ArgCount == 2 && (key = context.PreProcess(node[0])).IsLiteral) {
+				context.ScopedProperties[key.Value] = node[1];
+				return F.Call(S.Splice);
+            }
+			context.Write(Severity.Error, node, "Expected two parameters (key, value), of which the first is a literal.");
+			return null;
+		}
+
+		[LexicalMacro("#getScopedProperty(keyLiteral, defaultCode);", 
+			"Replaces the current node with the value of a scoped property. The key must be a literal. "+
+			"If the scoped property is an LNode, the code it represents is expanded in-place. "+
+			"If the scoped property is anything else, its value is inserted as a literal."+
+			"If the property does not exist, the second parameter is used instead. "+
+			"The second parameter is optional; if there is no second parameter and the "+
+			"requested property does not exist, an error is printed.",
+			"#getScopedProperty", Mode = MacroMode.Normal)]
+		public static LNode getScopedProperty(LNode node, IMacroContext context)
+		{
+			LNode key;
+			if (node.ArgCount >= 1 && !(key = context.PreProcess(node.Args[0])).IsCall)
+			{
+				var keyValue = key.IsId ? key.Name : key.Value;
+				var @default = node.Args[1, node];
+				var result = context.ScopedProperties.TryGetValue(keyValue, @default);
+				if (result == node)
+					context.Write(Severity.Error, key, "The specified property does not exist.");
+				if (result is LNode)
+					return (LNode)result;
+				else
+					return LNode.Literal(result, node);
+			}
+			context.Write(Severity.Error, node, "Expected one argument, a key literal, with the default code as an optional second argument.");
+			return null;
 		}
 
 		private void PopScope()

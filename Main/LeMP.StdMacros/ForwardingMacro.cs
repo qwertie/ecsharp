@@ -16,7 +16,12 @@ namespace LeMP
 	{
 		static readonly Symbol _hash = GSymbol.Get("#");
 
-		[LexicalMacro("Type Fn(Type param) ==> target;", "Forward a call to another method", 
+		[LexicalMacro("Type SomeMethod(Type param) ==> target._;",
+			"Forward a call to another method. The target method must not include an "+
+			"argument list; the method parameters are forwarded automatically. If the "+
+			"target expression includes an underscore (`_`), it is replaced with the "+
+			"name of the current function. For example, `int Compute(int x) ==> base._` "+
+			"is implemented as `int Compute(int x) { return base.Compute(x); }`", 
 			"#fn", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode ForwardMethod(LNode fn, IMacroContext context)
 		{
@@ -56,7 +61,8 @@ namespace LeMP
 			return argList;
 		}
 
-		[LexicalMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }", "Forward property getter and/or setter", 
+		[LexicalMacro("Type Prop ==> target; Type Prop { get ==> target; set ==> target; }",
+			"Forward property getter and/or setter. If the first syntax is used (with no braces), only the getter is forwarded.", 
 			"#property", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode ForwardProperty(LNode prop, IMacroContext context)
 		{

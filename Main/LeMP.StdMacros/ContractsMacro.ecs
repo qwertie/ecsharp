@@ -13,20 +13,7 @@ namespace LeMP
 	{
 		use_symbols;
 
-		[LexicalMacro(@"#haveContractRewriter(true)",
-			"Sets a flag to indicate that your build process includes the Microsoft Code Contracts binary rewriter, so\n\n"+
-			"- [requires(condition)] will be rewritten as `Contract.Requires(condition)` instead of Contract.Requires(condition, s) where s is a string that includes the method name and condition.",
-			"- [ensures(condition)] will be rewritten as `Contract.Ensures(condition)` instead of `on_return(return_value) { Contract.Assert(condition, s); }`.",
-			"- [ensuresOnThrow(condition)] will be rewritten as Contract.EnsuresOnThrow(condition) instead of `on_throw(__exception__) { Contract.Assert(condition, s); }`.",
-			"#haveContractRewriter")]
-		public static LNode haveContractRewriter(LNode node, IMacroContext context)
-		{
-			if (node.ArgCount <= 1) {
-				if (SetScopedProperty<bool>(node.Args[0, F.@true], context, @@haveContractRewriter))
-					return quote(#splice());
-			}
-			return null;
-		}
+		static readonly Symbol _haveContractRewriter = (Symbol)"#haveContractRewriter";
 
 		static bool SetScopedProperty<T>(LNode literal, IMacroContext context, object key)
 		{
@@ -49,10 +36,11 @@ namespace LeMP
 			"[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; "+
 			"[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}",
 			"Generates Contract checks in a method.\n\n"+
-			"- [requires(expr)] and [assert(expr)] specifies an expression that must be true at the beginning of the method; assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the argument that the attribute is attached to, if any.\n",
-			"- [ensures(expr)] and [assertEnsures(expr)] specifies an expression that must be true if-and-when the method returns normally. assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the return value of the method.\n",
-			"- [ensuresOnThrow(expr)] and [ensuresOnThrow<ExceptionType>(expr)] specify a condition that must be true if the method throws an exception. When #haveContractRewriter is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.\n",
-			"- notnull is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole.\n",
+			"- [requires(expr)] and [assert(expr)] specify an expression that must be true at the beginning of the method; assert conditions are checked in debug builds only, while \"requires\" conditions are checked in all builds. The condition can include an underscore `_` that refers to the argument that the attribute is attached to, if any.\n"+
+			"- [ensures(expr)] and [ensuresAssert(expr)] specify an expression that must be true if-and-when the method returns normally. assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the return value of the method.\n"+
+			"- [ensuresFinally(expr)] specifies an expression that must be true when the method exits, whether by exception or by a normal return. This is implemented by wrapping the method in a try-finally block.\n"+
+			"- [ensuresOnThrow(expr)] and [ensuresOnThrow<ExceptionType>(expr)] specify a condition that must be true if the method throws an exception. When #haveContractRewriter is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.\n"+
+			"- notnull is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole.\n"+
 			"\nAll contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message.",
 			"#fn", "#cons", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
 		public static LNode ContractsOnMethod(LNode fn, IMacroContext context)
@@ -133,7 +121,7 @@ namespace LeMP
 			"Generates contract checks in a property. You can apply contract attributes to "+
 			"the property itself, to the getter, to the setter, or all three. When the [requires] "+
 			"or [assert] attributes are applied to the property itself, they are treated as if "+
-			"they were applied to the getter; but when the [ensures], [assertEnsures], notnull, "+
+			"they were applied to the getter; but when the [ensures], [ensuresAssert], notnull, "+
 			"and [ensuresOnThrow] attributes are applied to the property itself, they are treated "+
 			"as if they were applied to both the getter and the setter separately.",
 			"#property", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
@@ -283,7 +271,7 @@ namespace LeMP
 				return ContractAppliesTo.Both;
 			else if (mode == @@requires || mode == @@assert)
 				return ContractAppliesTo.Setter;
-			else // mode == @@ensures || mode == @@assertEnsures
+			else // mode == @@ensures || mode == @@ensuresAssert || mode == @@ensuresFinally
 				if (attribute.Args.Any(cond => ReplaceContractUnderscore(ref cond, null)))
 					return ContractAppliesTo.Getter;
 				else
@@ -303,8 +291,8 @@ namespace LeMP
 			}
 			if (mode == __notnull)
 				mode = @@notnull;
-			if (mode == @@ensuresOnThrow || mode == @@requires || mode == @@notnull || 
-				mode == @@ensures || mode == @@assert || mode == @@assertEnsures)
+			if (mode == @@ensuresOnThrow || mode == @@requires || mode == @@notnull || mode == @@assert || 
+				mode == @@ensures || mode == @@ensuresAssert || mode == @@ensuresFinally)
 				return mode;
 			return null;
 		}
@@ -340,7 +328,7 @@ namespace LeMP
 			void ProcessAttribute(LNode attr, Symbol mode, LNode exceptionType, LNode variableName, bool isPropSetter)
 			{
 				var conditions = attr.Args;
-				object haveCCRewriter = Context.ScopedProperties.TryGetValue(@@haveContractRewriter, null);
+				object haveCCRewriter = Context.ScopedProperties.TryGetValue(_haveContractRewriter, null);
 				_haveCCRewriter = haveCCRewriter is bool ? (bool)haveCCRewriter : false;
 
 				// #notnull is equivalent to either requires(_ != null) or ensures(_ != null)
@@ -358,7 +346,7 @@ namespace LeMP
 
 				if (mode == @@requires || mode == @@assert)
 					ProcessRequiresAttribute(conditions, mode, variableName);
-				else { // mode == @@ensures || mode == @@ensuresOnThrow
+				else { // mode == @@ensures || mode == @@ensuresFinally || mode == @@ensuresOnThrow
 					if (variableName != null && !isPropSetter)
 						Context.Write(Severity.Error, attr, "The '{0}' attribute does not apply to method arguments.", mode);
 					else
@@ -382,8 +370,8 @@ namespace LeMP
 					} else if (_haveCCRewriter) {
 						PrependStmts.Add(quote { Contract.Requires($condition); });
 					} else {
-						conditionStr = ConditionToStringLit(condition, "`{0}` requires `{1}`");
-						PrependStmts.Add(quote { Contract.Requires($condition, $conditionStr); });
+						conditionStr = ConditionToStringLit(condition, "Precondition failed: {1}");
+						PrependStmts.Add(quote { $(GetAssertMethodForRequires())($condition, $conditionStr); });
 					}
 				}
 			}
@@ -391,7 +379,7 @@ namespace LeMP
 			void ProcessEnsuresAttribute(VList<LNode> conditions, Symbol mode, LNode exceptionType, LNode variableName)
 			{
 				// Create a "Contract.Whatever()" check for each provided condition.
-				bool haveCCRewriter = _haveCCRewriter && mode != @@assertEnsures;
+				bool haveCCRewriter = _haveCCRewriter && mode != @@ensuresAssert && mode != @@ensuresFinally;
 				var checks = LNode.List();
 				foreach (var condition_ in conditions)
 				{
@@ -399,17 +387,21 @@ namespace LeMP
 					LNode conditionStr;
 
 					LNode contractResult = null;
+					string underscoreError = null;
 					if (mode == @@ensuresOnThrow) {
-						if (!haveCCRewriter) {
-							contractResult = Id__exception__;
-						} else if (ReplaceContractUnderscore(ref condition, null))
-							Context.Write(Severity.Error, condition, "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.");
-					} else { // @@ensures or @@assertEnsures
-						if (haveCCRewriter && ReturnType.IsIdNamed(S.Missing))
-							Context.Write(Severity.Error, condition, "The macro for `ensures` does not support `_` in this context when MS Code Contracts are enabled, because the return type is unknown.");
+						contractResult = Id__exception__;
+						if (haveCCRewriter)
+							underscoreError = "`ensuresOnThrow` does not support `_` in MS Code Contracts mode.";
+					} else { // @@ensures or @@ensuresAssert or @@ensuresFinally
 						contractResult = haveCCRewriter ? quote(Contract.Result<$ReturnType>()) : Id_return_value;
-						ReplaceContractUnderscore(ref condition, contractResult);
+						if (mode == @@ensuresFinally)
+							underscoreError = "The macro for `{0}` does not support `_` because the return value is not available in `finally`";
+						else if (haveCCRewriter && ReturnType.IsIdNamed(S.Missing))
+							underscoreError = "The macro for `{0}` does not support `_` in this context when MS Code Contracts are enabled, because the return type is unknown.";
+						bool changed = ReplaceContractUnderscore(ref condition, contractResult);
 					}
+					if (ReplaceContractUnderscore(ref condition, contractResult) && underscoreError != null)
+						Context.Write(Severity.Error, condition, underscoreError, mode);
 
 					if (haveCCRewriter) {
 						if (mode == @@ensuresOnThrow)
@@ -421,12 +413,24 @@ namespace LeMP
 					} else {
 						conditionStr = ConditionToStringLit(condition, 
 							mode == @@ensuresOnThrow 
-							? "`{0}` did not ensure-on-throw `{1}`"
-							: "`{0}` did not ensure `{1}`");
-						var assertMethod = mode == @@assertEnsures 
-							? GetAssertMethod(Context) 
-							: quote(Contract.Assert);
-						checks.Add(quote { $assertMethod($condition, $conditionStr); });
+							? "Postcondition failed after throwing an exception: {1}"
+							: "Postcondition failed: {1}");
+						
+						
+						if (mode == @@ensuresOnThrow) {
+							var excType = GetExceptionTypeForEnsuresOnThrow();
+							checks.Add(quote { if (!$condition) throw new $excType($conditionStr, $Id__exception__); });
+						} else {
+							LNode assertMethod;
+							if (mode == @@ensuresAssert)
+								assertMethod = GetAssertMethod(Context);
+							else if (mode == @@ensuresFinally)
+								assertMethod = GetAssertMethodForEnsuresFinally();
+							else
+								assertMethod = GetAssertMethodForEnsures();
+
+							checks.Add(quote { $assertMethod($condition, $conditionStr); });
+						}
 					}
 				}
 
@@ -439,21 +443,47 @@ namespace LeMP
 							: quote { $exceptionType $Id__exception__; };
 						PrependStmts.Add(quote {
 							on_throw ($excSpec) {
-								$(..checks);
+								$(...checks);
 							}
 						});
-					} else {
+					} else if (mode == @@ensuresFinally) {
+						PrependStmts.Add(quote {
+							on_finally {
+								$(...checks);
+							}
+						});
+					} else { // mode == @@ensures || mode == @@ensuresAssert
 						PrependStmts.Add(quote {
 							on_return ($Id_return_value) {
-								$(..checks);
+								$(...checks);
 							}
 						});
 					}
 				}
 			}
 
+			static readonly LNode defaultContractAssert = quote(Contract.Assert);
+			
+			unroll ((GetAssertMethodFor, symbol) in 
+				((GetAssertMethodForRequires, @@#assertMethodForRequires),
+				 (GetAssertMethodForEnsures, @@#assertMethodForEnsures),
+				 (GetAssertMethodForEnsuresFinally, @@#assertMethodForEnsuresFinally)))
+			{
+				LNode GetAssertMethodFor() 
+				{
+					return (Context.ScopedProperties.TryGetValue(symbol, null) as LNode) ?? defaultContractAssert;
+				}
+			}
+			LNode GetExceptionTypeForEnsuresOnThrow() 
+			{
+				return (Context.ScopedProperties.TryGetValue(@@#exceptionTypeForEnsuresOnThrow, null) as LNode) 
+					?? quote(InvalidOperationException);
+			}
+
 			LNode ConditionToStringLit(LNode condition, string formatStr)
 			{
+				// TODO: consider removing FullMethodName. To match MS Code 
+				// Contract behavior, it's no longer used in format strings.
 				var methodName = FullMethodName;
 				while (methodName.CallsMin(S.Dot, 2))
 					methodName = methodName.Args.Last;

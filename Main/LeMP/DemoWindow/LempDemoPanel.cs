@@ -126,13 +126,13 @@ namespace TextEditor
 				ShowOutput(output);
 			} else {
 				var sink = MessageSink.FromDelegate(WriteMessage);
-				var sourceFile = new InputOutput((UString)inputCode, Path.GetFileName(inputPath));
+				var sourceFile = new InputOutput((UString)inputCode, inputPath);
 
 				var c = new Compiler(sink, sourceFile);
 				c.Files = new List<InputOutput> { sourceFile };
 				c.Parallel = false; // only one file, parallel doesn't help
 
-				if (LeMP.Compiler.ProcessArguments(c, options)) {
+				if (c.ProcessArguments(options)) {
 					LeMP.Compiler.WarnAboutUnknownOptions(options, sink, KnownOptions);
 
 					c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);

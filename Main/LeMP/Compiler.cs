@@ -29,13 +29,6 @@ namespace LeMP
 	/// </remarks>
 	public class Compiler
 	{
-		/// <summary>A list of available syntaxes.</summary>
-		public static HashSet<IParsingService> Languages = new HashSet<IParsingService> { 
-			Loyc.Syntax.Les.LesLanguageService.Value,
-			Loyc.Ecs.EcsLanguageService.Value,
-			Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter
-		};
-
 		#region Command-line interface
 
 		public static Dictionary<char, string> ShortOptions = new Dictionary<char,string>()
@@ -56,6 +49,7 @@ namespace LeMP
 				ShowHelp(KnownOptions.OrderBy(p => p.Key));
 				return;
 			}
+
 			if (options.ContainsKey("editor")) {
 				Console.WriteLine("Starting editor...");
 				System.Windows.Forms.Application.EnableVisualStyles();
@@ -92,10 +86,12 @@ namespace LeMP
 			}
 			Compiler c = new Compiler(sink, prelude);
 			c.Files = new List<InputOutput>(OpenSourceFiles(sink, inputFiles));
-			return ProcessArguments(c, options) ? c : null;
+			return c.ProcessArguments(options) ? c : null;
 		}
-		public static bool ProcessArguments(Compiler c, BMultiMap<string, string> options)
+
+		public bool ProcessArguments(BMultiMap<string, string> options)
 		{
+			Compiler c = this;
 			string value;
 			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.Note);
 			if (options.TryGetValue("verbose", out value))
@@ -151,7 +147,7 @@ namespace LeMP
 			}
 			if (options.TryGetValue("forcelang", out value) && (value == null || value == "true"))
 				c.ForceInLang = true;
-			if (!options.ContainsKey("outlang") && c.OutExt != null && FileNameToLanguage(c.OutExt) == null)
+			if (!options.ContainsKey("outlang") && c.OutExt != null && ParsingService.GetServiceForFileName(c.OutExt) == null)
 				sink.Write(Severity.Error, "--outext", "No language was found for extension «{0}»", c.OutExt);
 			double num;
 			if (options.TryGetValue("timeout", out value)) {
@@ -170,7 +166,7 @@ namespace LeMP
 			else {
 				if (!value.StartsWith("."))
 					value = "." + value;
-				if ((lang = FileNameToLanguage(value)) == null)
+				if ((lang = ParsingService.GetServiceForFileName(value)) == null)
 					sink.Write(Severity.Error, option, "No language was found for extension «{0}»", value);
 			}
 		}
@@ -231,9 +227,15 @@ namespace LeMP
 
 		#endregion
 
-		public Compiler(IMessageSink sink, Type prelude = null)
+		public Compiler(IMessageSink sink, Type prelude = null, bool registerEcsAndLes = true)
 		{
 			MacroProcessor = new MacroProcessor(prelude, sink);
+
+			if (registerEcsAndLes) {
+				ParsingService.Register(Loyc.Syntax.Les.LesLanguageService.Value);
+				ParsingService.Register(Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter, new[] { "cs" });
+				ParsingService.Register(Loyc.Ecs.EcsLanguageService.Value);
+			}
 		}
 		public Compiler(IMessageSink sink, Type prelude, IEnumerable<InputOutput> sourceFiles)
  			: this(sink, prelude) {
@@ -269,7 +271,7 @@ namespace LeMP
 			if (file.InputLang == null) {
 				var inLang = InLang ?? ParsingService.Current;
 				if (!ForceInLang || InLang == null)
-					inLang = FileNameToLanguage(file.FileName) ?? inLang;
+					inLang = ParsingService.GetServiceForFileName(file.FileName) ?? inLang;
 				file.InputLang = inLang;
 			}
 			if (file.OutFileName == null) {
@@ -289,7 +291,7 @@ namespace LeMP
 			if (file.OutPrinter == null) {
 				var outLang = OutLang;
 				if (outLang == null && OutExt != null) {
-					var lang = FileNameToLanguage(OutExt); 
+					var lang = ParsingService.GetServiceForFileName(OutExt); 
 					if (lang != null) outLang = lang.Printer;
 				}
 				file.OutPrinter = outLang ?? LNode.Printer;
@@ -304,20 +306,6 @@ namespace LeMP
 			return dot;
 		}
 
-		/// <summary>Finds a language service in ExtensionToLanguage() for the 
-		/// specified file extension, or null if there is no match.</summary>
-		public static IParsingService FileNameToLanguage(string fn)
-		{
-			return Languages.FirstOrDefault(lang => fn.EndsWith(lang.ToString()))
-				?? Languages
-				.Where(lang => lang.FileExtensions.Any(ext => ExtensionMatches(ext, fn)))
-				.MinOrDefault(lang => lang.FileExtensions.IndexWhere(ext => ExtensionMatches(ext, fn)));
-		}
-		static bool ExtensionMatches(string ext, string fn)
-		{
-			return fn.Length > ext.Length && fn[fn.Length - ext.Length - 1] == '.' && fn.EndsWith(ext, StringComparison.OrdinalIgnoreCase);
-		}
-		
 		public static List<InputOutput> OpenSourceFiles(IMessageSink sink, IEnumerable<string> fileNames)
 		{
 			var openFiles = new List<InputOutput>();

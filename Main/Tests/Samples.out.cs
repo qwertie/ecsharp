@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.6.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -163,7 +163,7 @@ namespace ADT
 		public T Value
 		{
 			get;
-			set;
+			private set;
 		}
 		public virtual BinaryTree<T> WithValue(T newValue)
 		{
@@ -208,12 +208,12 @@ namespace ADT
 		public BinaryTree<T> Left
 		{
 			get;
-			set;
+			private set;
 		}
 		public BinaryTree<T> Right
 		{
 			get;
-			set;
+			private set;
 		}
 		public override BinaryTree<T> WithValue(T newValue)
 		{
@@ -276,22 +276,22 @@ namespace ADT
 		public int X
 		{
 			get;
-			set;
+			private set;
 		}
 		public int Y
 		{
 			get;
-			set;
+			private set;
 		}
 		public int Width
 		{
 			get;
-			set;
+			private set;
 		}
 		public int Height
 		{
 			get;
-			set;
+			private set;
 		}
 		public abstract Rectangle WithX(int newValue);
 		public abstract Rectangle WithY(int newValue);
@@ -333,7 +333,7 @@ namespace ADT
 		public Rectangle Location
 		{
 			get;
-			set;
+			private set;
 		}
 		public abstract Widget WithLocation(Rectangle newValue);
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Rectangle Item1
@@ -352,7 +352,7 @@ namespace ADT
 		public string Text
 		{
 			get;
-			set;
+			private set;
 		}
 		public override Widget WithLocation(Rectangle newValue)
 		{
@@ -378,7 +378,7 @@ namespace ADT
 		public string Text
 		{
 			get;
-			set;
+			private set;
 		}
 		public override Widget WithLocation(Rectangle newValue)
 		{
@@ -404,7 +404,7 @@ namespace ADT
 		public string[] subItems
 		{
 			get;
-			set;
+			private set;
 		}
 		public abstract override Widget WithLocation(Rectangle newValue);
 		public abstract StringListWidget WithsubItems(string[] newValue);
@@ -459,7 +459,7 @@ namespace ADT
 		public TabPage[] Children
 		{
 			get;
-			set;
+			private set;
 		}
 		public override Widget WithLocation(Rectangle newValue)
 		{
@@ -485,7 +485,7 @@ namespace ADT
 		public Widget[] Children
 		{
 			get;
-			set;
+			private set;
 		}
 		public override Widget WithLocation(Rectangle newValue)
 		{
@@ -511,7 +511,7 @@ namespace ADT
 		public string Title
 		{
 			get;
-			set;
+			private set;
 		}
 		public override Widget WithLocation(Rectangle newValue)
 		{

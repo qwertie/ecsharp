@@ -17,8 +17,10 @@ namespace LeMP
 		[LexicalMacro(@"replace (input($capture) => output($capture), ...) {...}",
 			"Finds one or more patterns in a block of code and replaces each matching expression with another expression. "+
 			"The braces are omitted from the output (and are not matchable)."+
-			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list.",
-			"replace", "#replace")]
+			"This macro can be used without braces, in which case it affects all the statements/arguments that follow it in the current statement or argument list. "+
+			"The alternate name `replacePP` additionally preprocesses the input and output arguments, and is useful to get around problems with macro execution order. "+
+			"This behavior is not the default, since the final output will be macro-processed a second time.",
+			"replace", "#replace", "replacePP")]
 		public static LNode replace(LNode node, IMacroContext context)
 		{
 			var args_body = context.GetArgsAndBody(true);
@@ -27,12 +29,19 @@ namespace LeMP
 			if (args.Count == 1 && args[0].Calls(S.Tuple)) args = args[0].Args; // LESv2
 			if (args.Count >= 1)
 			{
+				bool preprocess = node.Calls("replacePP");
+
 				var patterns = new Pair<LNode, LNode>[args.Count];
 				for (int i = 0; i < patterns.Length; i++)
 				{
 					var pair = args[i];
 					if (pair.Calls(S.Lambda, 2)) {
 						LNode pattern = pair[0], repl = pair[1];
+						if (preprocess)
+						{
+							pattern = context.PreProcess(pattern);
+							repl = context.PreProcess(repl);
+						}
 						if (pattern.Calls(S.Braces, 1) && repl.Calls(S.Braces)) {
 							pattern = pattern.Args[0];
 							repl = repl.WithTarget(S.Splice);

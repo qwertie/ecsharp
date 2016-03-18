@@ -16,10 +16,11 @@ namespace LeMP
 		static readonly Symbol _set = GSymbol.Get("#set");
 
 		[LexicalMacro("Type Name(set Type name) {...}; Type Name(public Type name) {...}", 
-			"Automatically assign a value to an existing field, or creates a new "+
-			"field with an initial value set by calling the method. This macro is "+
-			"activated by attaching one of the following attributes to a method "+
-			"parameter: set, public, internal, protected, private, #protectedIn, static, partial.", 
+			"Automatically assigns a value to an existing field, or creates a new "+
+			"field with an initial value set by calling the method. This macro can "+
+			"be used with constructors and methods. This macro is activated by "+
+			"attaching one of the following modifiers to a method parameter: "+
+			"`set, public, internal, protected, private, protectedIn, static, partial`.", 
 			"#fn", "#cons", Mode = MacroMode.Passive | MacroMode.Normal)]
 		public static LNode SetOrCreateMember(LNode fn, IMessageSink sink)
 		{

@@ -198,7 +198,7 @@ namespace LeMP
 			TestEcs("q = quote({ if (true) { Yay(); } });",
 				   @"q = LNode.Call(CodeSymbols.If, LNode.List(LNode.Literal(true), LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call((Symbol) ""Yay""))).SetStyle(NodeStyle.Statement)));");
 			TestEcs("q = quote { Yay(); break; };",
-				   @"q = LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break))).SetStyle(NodeStyle.Statement);");
+				   @"q = LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Call((Symbol) ""Yay""), LNode.Call(CodeSymbols.Break)));");
 			TestEcs("q = quote { $(dict[key]) = 1; };",
 				   @"q = LNode.Call(CodeSymbols.Assign, LNode.List(dict[key], LNode.Literal(1))).SetStyle(NodeStyle.Operator);");
 			TestEcs("q = quote(hello + $x);",
@@ -216,7 +216,7 @@ namespace LeMP
 			TestEcs("quote(a, b);",
 				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b"")));");
 			TestEcs("quote { a; b; }",
-				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b""))).SetStyle(NodeStyle.Statement);");
+				   @"LNode.Call(CodeSymbols.Splice, LNode.List(LNode.Id((Symbol)""a""), LNode.Id((Symbol)""b"")));");
 		}
 
 		[Test]
@@ -993,15 +993,15 @@ namespace LeMP
 		[Test]
 		public void Test_on_catch_on_throw()
 		{
-			TestEcs(@"{ bool ok = true; on_error_catch { ok = false; } DoSomeStuff(); Etc(); }",
+			TestEcs(@"{ bool ok = true; on_throw_catch { ok = false; } DoSomeStuff(); Etc(); }",
 					@"{ bool ok = true; try { DoSomeStuff(); Etc(); } catch { ok = false; } }");
-			TestEcs(@"{ _crashed = false; on_error_catch { _crashed = true; } DoSomeStuff(); }",
+			TestEcs(@"{ _crashed = false; on_throw_catch { _crashed = true; } DoSomeStuff(); }",
 					@"{ _crashed = false; try { DoSomeStuff(); } catch { _crashed = true; } }");
-			TestEcs(@"{ on_error_catch(ex) { MessageBox.Show(ex.Message); } Etc(); }",
+			TestEcs(@"{ on_throw_catch(ex) { MessageBox.Show(ex.Message); } Etc(); }",
 					@"{ try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); } }");
 			TestEcs(@"on_throw(ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(Exception ex) { MessageBox.Show(ex.Message); throw; }");
-			TestEcs(@"on_error_catch(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
+			TestEcs(@"on_throw_catch(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); }");
 			TestEcs(@"on_throw(FormatException ex) { MessageBox.Show(ex.Message); } Etc();",
 					@"try { Etc(); } catch(FormatException ex) { MessageBox.Show(ex.Message); throw; }");
@@ -1114,8 +1114,8 @@ namespace LeMP
 			                add { System.Diagnostics.Debug.Assert(condition, ""Assertion failed in `Foo.Ev`: condition""); }
 			            }
 			       }");
-			TestLes("#setAssertMethod(Contract.Requires); assert(condition);", 
-			       @"Contract.Requires(condition, ""Assertion failed in ``: condition"");");
+			TestEcs("#snippet #assertMethod = Contract.Assert; assert(condition);", 
+			       @"Contract.Assert(condition, ""Assertion failed in ``: condition"");");
 		}
 
 		[Test]
@@ -1142,20 +1142,20 @@ namespace LeMP
 			TestEcs("[requires(t != null)]" +
 				   @"public void Wait(Task<T> t) { t.Wait(); }",
 				   @"public void Wait(Task<T> t) { " +
-				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"  Contract.Assert(t != null, ""Precondition failed: t != null""); t.Wait(); " +
 				   @"}");
 			TestEcs("public void Wait([requires(_ != null)] Task<T> t) { t.Wait(); }",
 				   @"public void Wait(Task<T> t) { " +
-				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"  Contract.Assert(t != null, ""Precondition failed: t != null""); t.Wait(); " +
 				   @"}");
 			TestEcs("static uint Decrement([requires(_ > 0)] uint positive) => positive - 1;", 
 			       @"static uint Decrement(uint positive) {
-			           Contract.Requires(positive > 0, ""`Decrement` requires `positive > 0`"");
+			           Contract.Assert(positive > 0, ""Precondition failed: positive > 0"");
 			           return positive - 1;
 			       }");
 			TestEcs("public this([requires(_ > 0)] uint positive) { P = positive; }", 
 			       @"public this(uint positive) {
-			           Contract.Requires(positive > 0, ""`this` requires `positive > 0`"");
+			           Contract.Assert(positive > 0, ""Precondition failed: positive > 0"");
 			           P = positive;
 			       }");
 		}
@@ -1171,7 +1171,7 @@ namespace LeMP
 				   @"static uint Positive { 
 			           get { return P; }
 			           set { 
-			               Contract.Requires(value > 0, ""`Positive` requires `value > 0`"");
+			               Contract.Assert(value > 0, ""Precondition failed: value > 0"");
 			               P = value;
 			           }
 			       }");
@@ -1184,7 +1184,7 @@ namespace LeMP
 				   @"static uint Positive { 
 			           get { return P; }
 			           set { 
-			               Contract.Requires(value > 0, ""`Positive` requires `value > 0`"");
+			               Contract.Assert(value > 0, ""Precondition failed: value > 0"");
 			               P = value;
 			           }
 			       }");
@@ -1195,11 +1195,11 @@ namespace LeMP
 			       }",
 				   @"public T  this[int index] { 
 			           get { 
-			               Contract.Requires((uint)index < (uint)Count, ""`this` requires `(uint)index < (uint)Count`"");
+			               Contract.Assert((uint)index < (uint)Count, ""Precondition failed: (uint)index < (uint)Count"");
 			               return _array[index];
 			           }
 			           internal set {
-			               Contract.Requires((uint)index < (uint)Count, ""`this` requires `(uint)index < (uint)Count`"");
+			               Contract.Assert((uint)index < (uint)Count, ""Precondition failed: (uint)index < (uint)Count"");
 			               _array[index] = value;
 			           }
 			       }");
@@ -1214,7 +1214,7 @@ namespace LeMP
 			          }",
 			        @"public static int Square(int x) {
 			            { var return_value = x*x; 
-			              Contract.Assert(return_value >= 0, ""`Square` did not ensure `return_value >= 0`""); 
+			              Contract.Assert(return_value >= 0, ""Postcondition failed: return_value >= 0""); 
 			              return return_value; }
 			          }");
 			TestEcs(@"public static Node Root { 
@@ -1223,8 +1223,8 @@ namespace LeMP
 			          }",
 			        @"public static Node Root { get {
 			            { var return_value = _root; 
-			              Contract.Assert(return_value != null, ""`Root` did not ensure `return_value != null`"");
-			              Contract.Assert(!IsFrozen, ""`Root` did not ensure `!IsFrozen`"");
+			              Contract.Assert(return_value != null, ""Postcondition failed: return_value != null"");
+			              Contract.Assert(!IsFrozen, ""Postcondition failed: !IsFrozen"");
 			              return return_value; }
 			          } }");
 			TestEcs(@"[ensures(File.Exists(filename))]
@@ -1233,7 +1233,18 @@ namespace LeMP
 			          }",
 			        @"void Save(string filename) { 
 			            File.WriteAllText(filename, ""Saved!""); 
-			            Contract.Assert(File.Exists(filename), ""`Save` did not ensure `File.Exists(filename)`"");
+			            Contract.Assert(File.Exists(filename), ""Postcondition failed: File.Exists(filename)"");
+			          }");
+			TestEcs(@"[ensuresFinally(everybodyIsHappy)]
+			          void Save(string filename) { 
+			            File.WriteAllText(filename, ""Saved!"");
+			          }",
+			        @"void Save(string filename) { 
+			            try {
+			                File.WriteAllText(filename, ""Saved!""); 
+			            } finally {
+			                Contract.Assert(everybodyIsHappy, ""Postcondition failed: everybodyIsHappy"");
+			            }
 			          }");
 		}
 
@@ -1249,7 +1260,7 @@ namespace LeMP
 			       @"static uint Positive { 
 			           get { {
 			               var return_value = P;
-			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               Contract.Assert(return_value > 0, ""Postcondition failed: return_value > 0"");
 			               return return_value;
 			           } }
 			           set { P = value; }
@@ -1262,7 +1273,7 @@ namespace LeMP
 				   @"static uint Positive { 
 			           get { {
 			               var return_value = P;
-			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               Contract.Assert(return_value > 0, ""Postcondition failed: return_value > 0"");
 			               return return_value;
 			           } }
 			           set { P = value; }
@@ -1275,19 +1286,19 @@ namespace LeMP
 				   @"static uint Positive { 
 			           get { {
 			               var return_value = P;
-			               Contract.Assert(P > 0, ""`Positive` did not ensure `P > 0`"");
+			               Contract.Assert(P > 0, ""Postcondition failed: P > 0"");
 			               return return_value;
 			           } }
 			           set { 
 			               P = value;
-			               Contract.Assert(P > 0, ""`Positive` did not ensure `P > 0`"");
+			               Contract.Assert(P > 0, ""Postcondition failed: P > 0"");
 			           }
 			       }");
 			TestEcs(@"[ensures(_ > 0)] static uint Positive => P;",
 			        @"static uint Positive { 
 			           get { {
 			               var return_value = P;
-			               Contract.Assert(return_value > 0, ""`Positive` did not ensure `return_value > 0`"");
+			               Contract.Assert(return_value > 0, ""Postcondition failed: return_value > 0"");
 			               return return_value;
 			           } }
 			       }");
@@ -1298,18 +1309,18 @@ namespace LeMP
 		{
 			TestEcs("public void Wait(notnull Task<T> t) { t.Wait(); }",
 				   @"public void Wait(Task<T> t) { " +
-				   @"  Contract.Requires(t != null, ""`Wait` requires `t != null`""); t.Wait(); " +
+				   @"  Contract.Assert(t != null, ""Precondition failed: t != null""); t.Wait(); " +
 				   @"}");
 			TestEcs("void IFoo<T>.Bar<U>(notnull Task<T> t) { t.Wait(); }",
 				   @"void IFoo<T>.Bar<U>(Task<T> t) { " +
-				   @"  Contract.Requires(t != null, ""`IFoo<T>.Bar<U>` requires `t != null`""); t.Wait(); " +
+				   @"  Contract.Assert(t != null, ""Precondition failed: t != null""); t.Wait(); " +
 				   @"}");
 			TestEcs(@"public class Foo {
 			           public Foo(notnull string name) { Name = name; }
 			       }",
 				   @"public class Foo {
 			           public Foo(string name) {
-			               Contract.Requires(name != null, ""`Foo` requires `name != null`""); 
+			               Contract.Assert(name != null, ""Precondition failed: name != null""); 
 			               Name = name;
                        }
 			       }");
@@ -1318,7 +1329,7 @@ namespace LeMP
 			          }",
 			        @"public static string Double(string x) { {
 			            var return_value = x + x; 
-			            Contract.Assert(return_value != null, ""`Double` did not ensure `return_value != null`""); 
+			            Contract.Assert(return_value != null, ""Postcondition failed: return_value != null""); 
 			            return return_value;
 			        } }");
 		}
@@ -1330,11 +1341,11 @@ namespace LeMP
 			        @"static uint Positive { 
 			           get { {
 			               var return_value = P;
-			               Contract.Assert(return_value != null, ""`Positive` did not ensure `return_value != null`"");
+			               Contract.Assert(return_value != null, ""Postcondition failed: return_value != null"");
 			               return return_value;
 			           } }
 			           set {
-			               Contract.Requires(value != null, ""`Positive` requires `value != null`""); 
+			               Contract.Assert(value != null, ""Precondition failed: value != null""); 
 			               P = value;
 			           }
 			       }");
@@ -1343,7 +1354,7 @@ namespace LeMP
 		[Test]
 		public void AssertEnsuresTest()
 		{
-			TestEcs(@"[assertEnsures(comp(lo, hi) <= 0)]
+			TestEcs(@"[ensuresAssert(comp(lo, hi) <= 0)]
 				public static bool SortPair<T>(ref T lo, ref T hi, Comparison<T> comp) {
 					if (comp(lo, hi) > 0) {
 						Swap(ref lo, ref hi);
@@ -1355,12 +1366,12 @@ namespace LeMP
 					if (comp(lo, hi) > 0) {
 						Swap(ref lo, ref hi);
 						{	var return_value = true;
-							System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""`SortPair<T>` did not ensure `comp(lo, hi) <= 0`"");
+							System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""Postcondition failed: comp(lo, hi) <= 0"");
 							return return_value;
 						}
 					}
 					{	var return_value = false;
-						System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""`SortPair<T>` did not ensure `comp(lo, hi) <= 0`"");
+						System.Diagnostics.Debug.Assert(comp(lo, hi) <= 0, ""Postcondition failed: comp(lo, hi) <= 0"");
 						return return_value;
 					}
 				}");
@@ -1379,7 +1390,7 @@ namespace LeMP
 			                Member = Member ?? new Whatever();
 			                throw new SomeException();
 			            } catch (Exception __exception__) {
-			                Contract.Assert(Member != null, ""`Test` did not ensure-on-throw `Member != null`"");
+			                if (!(Member != null)) throw new InvalidOperationException(""Postcondition failed after throwing an exception: Member != null"", __exception__);
 			                throw;
 			            }
 			        }");
@@ -1393,7 +1404,7 @@ namespace LeMP
 			                Member = Member ?? new Whatever();
 			                throw new SomeException();
 			            } catch (SomeException __exception__) {
-			                Contract.Assert(Member != null, ""`Test` did not ensure-on-throw `Member != null`"");
+			                if (!(Member != null)) throw new InvalidOperationException(""Postcondition failed after throwing an exception: Member != null"", __exception__);
 			                throw;
 			            }
 			        }");
@@ -1402,7 +1413,7 @@ namespace LeMP
 		[Test]
 		public void HaveContractRewriterTest()
 		{
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"#set #haveContractRewriter;
 			          public static string Double(notnull string x) { 
 			            return x + x;
 			          }",
@@ -1410,7 +1421,7 @@ namespace LeMP
 			            Contract.Requires(x != null); 
 			            return x + x;
 			          }");
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"#set #haveContractRewriter;
 			          [ensures(_ >= 0)]
 			          public static int Square(int x) { 
 			            return x * x;
@@ -1419,7 +1430,7 @@ namespace LeMP
 			            Contract.Ensures(Contract.Result<int>() >= 0); 
 			            return x * x;
 			          }");
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"#set #haveContractRewriter;
 			        [ensuresOnThrow(Member != null)] 
 			        public void Test() { 
 			            Member = Member ?? new Whatever();
@@ -1430,7 +1441,7 @@ namespace LeMP
 			            Member = Member ?? new Whatever();
 			            throw new SomeException();
 			        }");
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"#set #haveContractRewriter;
 			        [ensuresOnThrow<SomeException>(Member != null)] 
 			        public void Test() { 
 			            Member = Member ?? new Whatever();
@@ -1452,7 +1463,7 @@ namespace LeMP
 				}", @"
 				public static Func<int,int> Multiplier() {
 					return (int x, int y) => { 
-						Contract.Requires(y > 0, ""`lambda_function` requires `y > 0`""); 
+						Contract.Assert(y > 0, ""Precondition failed: y > 0""); 
 						return x * y;
 					};
 				}");
@@ -1462,7 +1473,7 @@ namespace LeMP
 				}", @"
 				public static Func<int,int> Decrementor() {
 					return (num) => { 
-						Contract.Requires(num > 0, ""`lambda_function` requires `num > 0`""); 
+						Contract.Assert(num > 0, ""Precondition failed: num > 0""); 
 						return num - 1;
 					};
 				}");
@@ -1473,12 +1484,12 @@ namespace LeMP
 				public static Func<int,int> Squarer() {
 					return (delegate (int num) { 
 						{	var return_value = num * num;
-							Contract.Assert(return_value >= 0, ""`lambda_function` did not ensure `return_value >= 0`""); 
+							Contract.Assert(return_value >= 0, ""Postcondition failed: return_value >= 0""); 
 							return return_value;
 						}
 					});
 				}");
-			TestEcs(@"#haveContractRewriter;
+			TestEcs(@"#set #haveContractRewriter;
 				public static Func<int,int> Squarer() {
 					return ([requires(num >= 0)] delegate (int num) { return num * num; });
 				}", @"
@@ -1496,19 +1507,21 @@ namespace LeMP
 			// Check that we can mix code contracts with other features that affect methods & properties...
 			// requires + method forwarding
 			TestEcs("[requires(x >= 0)] static double Sqrt(double x) ==> Math.Sqrt;",
-			       @"static double Sqrt(double x) { Contract.Requires(x >= 0, ""`Sqrt` requires `x >= 0`""); return Math.Sqrt(x); }");
+			       @"static double Sqrt(double x) { 
+			             Contract.Assert(x >= 0, ""Precondition failed: x >= 0""); return Math.Sqrt(x);
+			         }");
 			// notnull + backing field
 			TestEcs("[field _foo] public List<int> Foo { get; [notnull] set; }",
 			  @"List<int> _foo; public List<int> Foo { 
 			      get { return _foo; } 
-			      set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; } 
+			      set { Contract.Assert(value != null, ""Precondition failed: value != null""); _foo = value; } 
 			    }");
 			// ensures + requires + backing field
 			TestEcs("[field _foo] public List<int> Foo { [ensures(_ != null)] get; [requires(_ != null)] set; }",
 			  @"List<int> _foo; 
 			    public List<int> Foo { 
-			        get { { var return_value = _foo; Contract.Assert(return_value != null, ""`Foo` did not ensure `return_value != null`""); return return_value; } }
-			        set { Contract.Requires(value != null, ""`Foo` requires `value != null`""); _foo = value; }
+			        get { { var return_value = _foo; Contract.Assert(return_value != null, ""Postcondition failed: return_value != null""); return return_value; } }
+			        set { Contract.Assert(value != null, ""Precondition failed: value != null""); _foo = value; }
 			    }");
 			// ensures by itself
 			string result;
@@ -1520,7 +1533,7 @@ namespace LeMP
 			    public static Node Root { 
 			      get { {
 			          var return_value = _root; 
-			          Contract.Assert(return_value != null, ""`Root` did not ensure `return_value != null`"");
+			          Contract.Assert(return_value != null, ""Postcondition failed: return_value != null"");
 			          return return_value;
 			      } }
 			    }");
@@ -1533,8 +1546,8 @@ namespace LeMP
 			TestEcs(@"void Foo(set notnull string Name, [requires(IsValidZip(_))] set string Zip) {}",
 				@"
 				void Foo(string name, string zip) {
-					Contract.Requires(name != null, ""`Foo` requires `name != null`"");
-					Contract.Requires(IsValidZip(zip), ""`Foo` requires `IsValidZip(zip)`"");
+					Contract.Assert(name != null, ""Precondition failed: name != null"");
+					Contract.Assert(IsValidZip(zip), ""Precondition failed: IsValidZip(zip)"");
 					Name = name;
 					Zip = zip;
 				}
@@ -1548,8 +1561,8 @@ namespace LeMP
 			TestEcs(@"void Foo(public notnull string Name, [requires(IsValidZip(_))] set string Zip) {}",
 				@"public string Name;
 				void Foo(string name, string zip) {
-					Contract.Requires(name != null, ""`Foo` requires `name != null`"");
-					Contract.Requires(IsValidZip(zip), ""`Foo` requires `IsValidZip(zip)`"");
+					Contract.Assert(name != null, ""Precondition failed: name != null"");
+					Contract.Assert(IsValidZip(zip), ""Precondition failed: IsValidZip(zip)"");
 					Name = name;
 					Zip = zip;
 				}
@@ -1583,6 +1596,9 @@ namespace LeMP
 			TestEcs(@"a(); static if (foo() `tree==` foo(2)) b(); else {{ c(); }} d();", @"a(); { c(); } d();");
 			TestEcs(@"a(); static if (foo.bar<baz> `tree==` foo.bar<baz>) b(); else c(); d();", @"a(); b(); d();");
 			TestEcs(@"c = static_if(false, see, C);", @"c = C;");
+			TestEcs(@"#set Flag; a(); static if (#get(Flag, false)) b();
+			                          static if (#get(Nada, false)) c(); d();",
+			        @"a(); b(); d();");
 		}
 
 		[Test]

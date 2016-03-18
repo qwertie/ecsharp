@@ -25,11 +25,58 @@ namespace LeMP.Prelude
 
 		[LexicalMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.",
 			Mode = MacroMode.NoReprocessing)]
-		public static LNode noMacro(LNode node, IMessageSink sink)
+		public static LNode noMacro(LNode node, IMacroContext sink)
 		{
 			if (!node.IsCall)
 				return null;
 			return node.WithTarget(S.Splice);
+		}
+
+		static readonly Symbol _hash_set = (Symbol)"#set";
+		static readonly Symbol _hash_snippet = (Symbol)"#snippet";
+		static readonly Symbol _hash_setScopedProperty = (Symbol)"#setScopedProperty";
+		static readonly Symbol _hash_setScopedPropertyQuote = (Symbol)"#setScopedPropertyQuote";
+
+		[LexicalMacro("#set Identifier = literal; #snippet Identifier = { statements; }; #snippet Identifier = expression;",
+			"Sets an option, or saves a snippet of code for use later. See also: #get", 
+			"#var", Mode = MacroMode.Passive)]
+		public static LNode _set(LNode node, IMacroContext context)
+		{
+			var lhs = node.Args[0, LNode.Missing];
+			var name = lhs.Name;
+			bool isSnippet = name == _hash_snippet;
+			if ((isSnippet || name == _hash_set) && node.ArgCount == 2 && lhs.IsId)
+			{
+				node = context.PreProcessChildren();
+
+				Symbol newTarget = isSnippet ? _hash_setScopedPropertyQuote : _hash_setScopedProperty;
+				var stmts = node.Args.Slice(1).Select(key =>
+					{
+						LNode value = F.@true;
+						if (key.Calls(S.Assign, 2))
+						{
+							value = key.Args[1];
+							key = key.Args[0];
+							if (isSnippet && value.Calls(S.Braces))
+								value = value.Args.AsLNode(S.Splice);
+						}
+						if (!key.IsId)
+							context.Write(Severity.Error, key, "Invalid key; expected an identifier.");
+						return node.With(newTarget, LNode.Literal(key.Name, key), value);
+					});
+				return F.Call(S.Splice, stmts);
+			}
+			return null;
+		}
+
+		[LexicalMacro("#get(key, defaultValueOpt)", 
+			"Alias for #getScopedProperty. Gets a literal or code snippet that was previously set in this scope.", 
+			"#get")]
+		public static LNode _get(LNode node, IMacroContext context)
+		{
+			if (node.ArgCount.IsInRange(1, 2))
+				return MacroProcessorTask.getScopedProperty(node, context);
+			return null;
 		}
 
 		static readonly Symbol _macros = GSymbol.Get("macros");
@@ -37,7 +84,7 @@ namespace LeMP.Prelude
 
 		[LexicalMacro("import_macros Namespace",
 			"Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.")]
-		public static LNode import_macros(LNode node, IMessageSink sink)
+		public static LNode import_macros(LNode node, IMacroContext sink)
 		{
 			return node.With(_importMacros, node.Args);
 		}
@@ -48,7 +95,7 @@ namespace LeMP.Prelude
 		{
 			// namespace LeMP {
 			//     /* documentation */
-			//     #fn("Type Name(set Type name) {...}; Type Name(public Type name) {...}");
+			//     #fn;
 			//     ...
 			// }
 			return F.Call(S.Splice, context.AllKnownMacros.SelectMany(p => p.Value)
@@ -57,12 +104,24 @@ namespace LeMP.Prelude
 					F.Call(S.Namespace, NamespaceSymbolToLNode(group.Key ?? GSymbol.Empty), LNode.Missing,
 						F.Braces(group.Select(mi =>
 						{
-							LNode line = F.Call(mi.Name, F.Literal(mi.Info.Syntax).SetStyle(NodeStyle.Alternate)).SetBaseStyle(NodeStyle.PrefixNotation);
-							if (string.IsNullOrEmpty(mi.Info.Description))
-								return line;
-							else
-								return F.Attr(F.Trivia(S.TriviaMLCommentBefore, mi.Info.Description),
-									F.Trivia(S.TriviaSpaceBefore, "\n"), line);
+							StringBuilder descr = new StringBuilder(string.Format("\n\t\t### {0} ###\n",
+								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingService.Exprs)));
+							if (!string.IsNullOrWhiteSpace(mi.Info.Syntax))
+								descr.Append("\n\t\t\t").Append(mi.Info.Syntax.Replace("\n", "\n\t\t")).Append("\n");
+							if (!string.IsNullOrWhiteSpace(mi.Info.Description))
+								descr.Append("\n\t\t").Append(mi.Info.Description.Replace("\n", "\n\t\t")).Append("\n");
+							descr.Append("\t");
+							LNode line = LNode.Id(mi.Name ?? (Symbol)"<null>");
+
+							string methodName = mi.Macro.Method.Name, @class = mi.Macro.Method.DeclaringType.Name;
+							string postComment = " " + @class + "." + methodName;
+							if (mi.Mode != MacroMode.Normal)
+								postComment += string.Format(" (Mode = {0})", mi.Mode);
+							return F.Attr(
+								F.Trivia(S.TriviaMLCommentBefore, descr.ToString()),
+								F.Trivia(S.TriviaSpaceBefore, "\n"), 
+								F.Trivia(S.TriviaSLCommentAfter, postComment),
+								line);
 						}))))));
 		}
 		internal static LNode NamespaceSymbolToLNode(Symbol ns)
