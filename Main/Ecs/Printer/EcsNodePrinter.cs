@@ -817,7 +817,7 @@ namespace Loyc.Ecs
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);
 						_out.Write("//", false);
-						_out.Write((attr.Value ?? "").ToString(), true);
+						_out.Write(GetRawText(attr), true);
 						_out.Newline(true);
 						spaces = true;
 					} else if (name == S.TriviaMLCommentAfter && !OmitComments) {

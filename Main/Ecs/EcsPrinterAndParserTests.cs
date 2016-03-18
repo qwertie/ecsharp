@@ -1536,6 +1536,8 @@ namespace Loyc.Ecs
 		{
 			Expr("@`.`()", F.Call(S.Dot));
 			Expr("@`*`()", F.Call(S.Mul));
+			Stmt("{\n  [assembly: CLSCompliant(false)]\n  Foo;\n}", 
+				F.Braces(F.Call(S.Assembly, F.Call(_("CLSCompliant"), F.@false)), Foo));
 		}
 
 		[Test(Fails = "Left broken because LLLPG is too slow to analyze the grammar")]
