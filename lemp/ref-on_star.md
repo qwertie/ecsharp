@@ -2,7 +2,7 @@
 title: "LeMP Macro Reference: on_return, on_throw, on_throw_catch, on_finally"
 tagline: Standard macros in the LeMP namespace
 layout: article
-date: 17 Mar 2016
+date: 20 Mar 2016
 toc: true
 ---
 
