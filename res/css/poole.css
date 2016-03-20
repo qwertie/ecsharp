@@ -81,7 +81,8 @@ a:focus {
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
-  margin-bottom: .5rem;
+  margin-top: .25rem;
+  margin-bottom: .25rem;
   font-weight: bold;
   line-height: 1.25;
   color: #313131;
@@ -105,8 +106,8 @@ h4, h5, h6 {
 
 /* Body text */
 p {
-  margin-top: 0;
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 strong {
@@ -116,15 +117,16 @@ strong {
 
 /* Lists */
 ul, ol, dl {
-  margin-top: 0;
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 dt {
   font-weight: bold;
 }
 dd {
-  margin-bottom: .5rem;
+  margin-top: .25rem;
+  margin-bottom: .25rem;
 }
 
 /* Misc */
@@ -182,7 +184,7 @@ pre code {
 
 /* Pygments via Jekyll */
 .highlight {
-  margin-bottom: 1rem;
+  /*margin-bottom: 1rem; WHY?*/
   border-radius: 4px;
 }
 .highlight pre {
@@ -237,7 +239,8 @@ img {
 
 /* Tables */
 table {
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   width: 100%;
   border: 1px solid #e5e5e5;
   border-collapse: collapse;
@@ -273,7 +276,8 @@ tbody tr:nth-child(odd) th {
  */
 
 .message {
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   padding: 1rem;
   color: #717171;
   background-color: #f9f9f9;
@@ -346,7 +350,7 @@ tbody tr:nth-child(odd) th {
 /* Meta data line below post title */
 .post-date {
   display: block;
-  margin-top: -.5rem;
+  margin-top: -.25rem;
   margin-bottom: 1rem;
   color: #9a9a9a;
 }
