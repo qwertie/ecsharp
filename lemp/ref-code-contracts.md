@@ -1,5 +1,5 @@
 ---
-title: LeMP Macro Reference: Code Contracts
+title: "LeMP Macro Reference: Code Contracts"
 tagline: Standard macros in the LeMP namespace
 layout: article
 date: 17 Mar 2016
@@ -32,7 +32,7 @@ The condition on `requires` includes an underscore `_` that refers to the argume
 		}
 	}
 
-**Implementation detail**: Code contracts are provided by just three macros in a single module, because it is difficult to modularize them due to technical limitations. The first macro, internally named `ContractsOnMethod`, deals with contract attributes on methods and constructors. The second, `ContractsOnLambda`, deals with anonymous functions, and the third, `ContractsOnProperty`, deals with properties. All three macros provide access to the same set of contract attributes. This section (unlike other sections in this document) describes the _attributes_ rather than the macros, since the latter is merely an implementation detail.
+**Implementation details**: Code contracts are provided by just three macros in a single module, because it is difficult to modularize them due to technical limitations of LeMP (specifically, the fact that LeMP is _not_ designed to treat attributes as macros, and because it has limited mechanisms for ordering and conflict resolution between different macros). The first macro, internally named `ContractsOnMethod`, deals with contract attributes on methods and constructors. The second, `ContractsOnLambda`, deals with anonymous functions, and the third, `ContractsOnProperty`, deals with properties. All three macros provide access to the same set of contract attributes. This section (unlike other sections in this document) describes the _attributes_ rather than the macros, since the latter is merely an implementation detail.
 
 Modes
 -----
@@ -45,12 +45,17 @@ You must manually import the MS Code Contracts namespace:
 
 	using System.Diagnostics.Contracts;
 
-You can write these methods yourself or use the methods in Loyc.Essentials.dll, in the `Loyc.MiniContract` namespace. On the other hand, if you enable "MS Code Contracts Rewriter" mode, the contract attributes will 
+If you enable "MS Code Contracts Rewriter" mode, the contract attributes will 
 
 1. Omit the second string argument (in order to allow the MS rewriter to choose the error string)
 2. Call other contract methods as appropriate, e.g. `[ensures]` calls `Contract.Ensures`
 
-### #set \#haveContractRewriter ###
+In standalone mode, code contract attributes rely on helper macros such as `on_return` to work. For more information, please see [on_return, on_throw, on_throw_catch, on_finally](ref-on_star.html).
+
+Configuration
+-------------
+
+### \#set #haveContractRewriter ###
 
 	#set #haveContractRewriter;         // enable MS Code Contract Rewriter mode
 	#set #haveContractRewriter = true;  // enable MS Code Contract Rewriter mode
@@ -58,14 +63,43 @@ You can write these methods yourself or use the methods in Loyc.Essentials.dll, 
 
 	Uses the #set macro to set a flag to indicate that your build process includes the Microsoft Code Contracts binary rewriter. In that case,
 
-- [requires(condition)] will be rewritten as `Contract.Requires(condition)` instead of Contract.Requires(condition, s) where s is a string that includes the method name and condition.
-- [ensures(condition)] will be rewritten as `Contract.Ensures(condition)` instead of `on_return(return_value) { Contract.Assert(condition, s); }`.
-- [ensuresOnThrow(condition)] will be rewritten as Contract.EnsuresOnThrow(condition) instead of `on_throw(__exception__) { Contract.Assert(condition, s); }`.
+- `[requires(condition)]` will be rewritten as 
+
+		Contract.Requires(condition) // instead of 
+		Contract.Assert(condition, s) // where s is a string that includes the condition.
+		
+- `[ensures(condition)]` will be rewritten as 
+
+		Contract.Ensures(condition) // instead of 
+		on_return(return_value) { Contract.Assert(condition, s); }
+		
+- `[ensuresOnThrow<E>(condition)]` will be rewritten as 
+
+		Contract.EnsuresOnThrow<E>(condition) // instead of 
+		on_throw(E __exception__) { 
+			if (!condition) throw new InvalidOperationException(
+				"Postcondition failed after throwing an exception: condition", __exception__); 
+		}`
+		
 - Other attributes are not affected, except `notnull` which is really an alias for `requires` or `ensures`.
 
 ### notnull, [notnull] ###
 
-	The word attribute `notnull` can indicates that either a 
+	The word attribute `notnull` can indicates that the argument or return value to which it is attached must not be null. For example,
+	
+	notnull string Double(notnull string s) => s + s;
+
+Produces the following by default:
+
+	string Double(string s)
+	{
+		Contract.Assert(s != null, "Precondition failed: s != null");
+		on_return(return_value, {
+			Contract.Assert(return_value != null, "Postcondition failed: return_value != null");
+		});
+		return s + s;
+	}
+
 
 ### TODO ###
 

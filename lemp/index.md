@@ -96,7 +96,7 @@ I like to create a lot of small data types, rather than using a few huge ones. A
 public class Person {
 	public string Name;
 	public DateTime DateOfBirth;
-	public List<Person> SubItems;
+	public List<Person> Children;
 };
 ~~~
 
@@ -140,7 +140,7 @@ public class Person
 	public this(
 		public string Name           { get; private set; },
 		public DateTime DateOfBirth  { get; private set; },
-		public List<Person> SubItems { get; private set; })
+		public List<Person> Children { get; private set; })
 	{
 		// TODO: Add validation code
 	}
@@ -170,7 +170,13 @@ Download & Installation
 
 Please visit the [installation page](install.html).
 
-See also: [Version History](version-history.html)
+More links
+----------
+
+- [Download & installation](install.html)
+- [FAQ](faq.html)
+- [Version history](version-history.html)
+- [Source code](https://github.com/qwertie/Loyc/tree/master/Main/LeMP)
 
 Help wanted
 -----------

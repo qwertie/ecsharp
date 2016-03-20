@@ -7,6 +7,7 @@
   //Display: run-in; // only works in IE so I'll nest tagline in post-date
 }
 
+/* A note on the right side */
 .sidebox {
   border: 1px dotted rgb(127, 127, 127);
   padding: 4px 3px 4px 6px; // top right bottom left
@@ -20,7 +21,22 @@
   max-width: 50%;
   width: 35%;
 }
-.sidebox ul { padding:0em 0em 0em 1.3em; margin:0em; } /*TRBL*/
+.sidebox ul { padding:0em 0em 0em 1.3em; margin:0em; } /* compact, used for TOC */
+
+/* side-by-side elements */
+.sbs {
+    display: table;
+    table-layout: fixed;
+    width:100%;
+    margin:10px 0px 10px 0px; /* top & bottom */
+}
+.sbs > *, .sbs > pre {
+    display: table-cell;
+    width:50%;
+    padding: 5px;
+    border: 1px solid lightgray;
+    margin: 0px; /* margin doesn't work in table cells */
+}
 
 /* Magic! auto-styling external links */
 a[href^="http://"]:after,
