@@ -2,6 +2,7 @@
 title: "LeMP Home Page"
 layout: page
 tagline: "the Lexical Macro Processor for C#"
+toc: true
 ---
 ## Introduction ##
 
@@ -9,9 +10,9 @@ tagline: "the Lexical Macro Processor for C#"
 
 LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP — a preprocessor built on a parser called Enhanced C# — can make you more productive.
 
-<div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
-
 Design patterns are a valuable conceptual tool for developers, but some of them - especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern) - arguably demonstrate that the language being used isn't powerful enough. When used in conventional languages, many design patterns can _only_ work by convention and _cannot_ be encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).
+
+<div class="sidebox" style="max-width:231px;"><img src="lemp-sidebar.png" style="max-width:100%; max-height:100%;"/></div>
 
 A LISP-style macro processor helps you solve the **repetition-of-boilerplate** problem, and it also provides a framework in which you can run sophisticated algorithms at compile-time (for example, have a look at [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), just one of many macros included with LeMP.)
 
@@ -163,12 +164,14 @@ Learn more about LeMP in these published articles:
 - [Using LeMP as a C# code generator](lemp-code-gen-and-analysis.html)
 - [C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges](pattern-matching.html)
 
-Some use cases and built-in macros (such as Code Contract attributes, `on_return`, `on_finally`, `includeFile`, backing fields, and support for symbol literals) are not yet documented and I will be writing new articles about that in the coming days. Watch this space!
+Macro reference manual
+----------------------
 
-Download & Installation
------------------------
-
-Please visit the [installation page](install.html).
+- [Reference manual: main page](reference.html)
+    - [Built-in macros](ref-builtin-macros.html)
+    - [Code Contracts](ref-code-contracts.html)
+    - [on_return, on_throw, on_throw_catch, on_finally](ref-on_star.html)
+    - [Other macros](ref-other.html)
 
 More links
 ----------

@@ -22,6 +22,11 @@ In either case, the first thing we need is someone to help make a Roslyn back-en
 
 I do not have time to do all of this myself, my TO-DO list is full, so if nobody else volunteers, it won't happen. If you want to do this project, I will happily teach you whatever you need to now about LeMP; learning about Roslyn will be your responsibility, and I only know the basics of writing Visual Studio extensions (having written the syntax highlighter for `*.ecs`).
 
+Task: add LINQ support
+----------------------
+
+The Enhanced C# parser still doesn't support "from x in y" expressions. Edit /Main/Ecs/Parser/EcsParserGrammar.les to add a grammar for LINQ (search for "LINQ" and find the part that needs to be filled in). Remember to ask me for advice.
+
 Task: write VB.NET printer
 --------------------------
 
@@ -74,6 +79,20 @@ IListSource<LNode> statements = EcsLanguageService.Parse(
 3. Copy all files to a second folder, but with all *.cs files replaced by the output of `EcsLanguageService.Parse` (something like `File.WriteAllText(newPath, EcsLanguageService.Value.Print (chars, MessageSink.Console)`). This way you can try compiling the output, to verify that the printer works properly.
 
 Finally, if you could [hire me](https://www.linkedin.com/in/qwertie) to do "consulting" work for you, it would be appreciated since I am currently unemployed. Even though my TO-DO list is full. Making FOSS is a full-time job™.
+
+Task: documentation system
+--------------------------
+
+XML doc comments are really clunky (I can't use `&`? Can't write `List<T>`?!), and the tools for making documentation out of them are equally clunky. Doxygen isn't a great alternative either, since it often misinterprets XML doc comments by assuming you really wanted to use doxygen parsing rules (sometimes an `@` is just an `@`). 
+
+We should allow developers to transition to a new doc comment system by supporting _both_ xml doc comments, and a new system of some kind, perhaps one based on Markdown.
+
+Once comments are associated with nodes in the syntax tree, the next step would be to write a program that scans a directory full of source files and either
+
+1. Builds a tree of namespaces, classes, methods, fields, properties, and events; this tree can be used for lookup by the documentation system, but it would also help with other code analysis tasks.
+2. Alternately, if someone writes a Roslyn back-end, Roslyn will build its own tree of namespaces, classes, methods, fields, properties, and events.
+
+Once this tree exists, you can scan it for doc comments and produce nice HTML and/or Markdown output.
 
 Task: talk to the lonely guy
 ----------------------------

@@ -29,23 +29,23 @@ The condition on `requires` includes an underscore `_` that refers to the argume
 ~~~csharp
 public static double Sqrt(double num)
 {
-	Contract.Assert(num >= 0, "Precondition failed: num >= 0");
-	{
-		var return_value = Math.Sqrt(num);
-		Contract.Assert(return_value >= 0, "Postcondition failed: return_value >= 0");
-		return return_value;
-	}
+  Contract.Assert(num >= 0, "Precondition failed: num >= 0");
+  {
+    var return_value = Math.Sqrt(num);
+    Contract.Assert(return_value >= 0, "Postcondition failed: return_value >= 0");
+    return return_value;
+  }
 }
 ~~~
 
-All the contract attributes allow multiple conditions separated by commas, e.g.
+All contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message. Example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
 [requires(code >= 32, code < 128)]
 static char GetAscii(int code)
 {
-	return (char) code;
+  return (char) code;
 }
 ~~~
 
@@ -131,31 +131,35 @@ All contract attributes
 ### notnull & [notnull] ###
 
 The word attribute `notnull` indicates that the argument or return value to which it is attached must not be null. `notnull` is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole. For example,
-	
+
 	static notnull string Double(notnull string s) => s + s;
 
 produces the following code by default:
 
-	static string Double(string s)
-	{
-		Contract.Assert(s != null, "Precondition failed: s != null");
-		on_return (return_value) {
-			Contract.Assert(return_value != null, "Postcondition failed: return_value != null");
-		}
-		return s + s;
+~~~csharp
+static string Double(string s)
+{
+	Contract.Assert(s != null, "Precondition failed: s != null");
+	on_return (return_value) {
+		Contract.Assert(return_value != null, "Postcondition failed: return_value != null");
 	}
+	return s + s;
+}
+~~~
 	
 This is ultimately expanded to
 
-	static string Double(string s)
+~~~csharp
+static string Double(string s)
+{
+	Contract.Assert(s != null, "Precondition failed: s != null");
 	{
-		Contract.Assert(s != null, "Precondition failed: s != null");
-		{
-			var return_value = s + s;
-			Contract.Assert(return_value != null, "Postcondition failed: return_value != null");
-			return return_value;
-		}
+		var return_value = s + s;
+		Contract.Assert(return_value != null, "Postcondition failed: return_value != null");
+		return return_value;
 	}
+}
+~~~
 
 The normal attribute `[notnull]` is equivalent, e.g. 
 
@@ -228,8 +232,6 @@ public void Save(string fn, string text)
 ### [ensuresOnThrow] ###
 
 Specifies a condition that must be true if the method throws an exception. When `#haveContractRewriter` is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.
-
-All contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message.
 
 <div class='sbs' markdown='1'>
 ~~~csharp
