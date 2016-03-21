@@ -205,23 +205,6 @@ int Z
 
 Creates a backing field for a property. In addition, if the body of the property is empty, a getter is added.
 
-### ColonEquals ###
-
-<div class='sbs' markdown='1'>
-~~~csharp
-A := B;
-~~~
-
-~~~csharp
-// Output of LeMP
-A `:=` B;
-~~~
-</div>
-
-Deprecated.
-
-Declare a variable A and set it to the value of B. Equivalent to "var A = B".
-
 ### concatId ###
 
 <div class='sbs' markdown='1'>
@@ -302,8 +285,8 @@ Documentation [here](ref-code-contracts.html).
 
 ~~~csharp
 Type SomeMethod(Type param) ==> target.Method;
-Type Prop ==> target;
-Type Prop { get ==> target; set ==> target; }
+Type Prop ==> target._;
+Type Prop { get ==> target._; set ==> target._; }
 ~~~
 
 This is really handy for implementing the [adapter pattern](https://en.wikipedia.org/wiki/Adapter_pattern) or the [wrapper pattern](https://en.wikipedia.org/wiki/Decorator_pattern).
@@ -314,7 +297,7 @@ This is really handy for implementing the [adapter pattern](https://en.wikipedia
 ~~~csharp
 Type SomeMethod(Type param) ==> target.Method;
 int Compute(int x) ==> base._;
-Type Prop ==> target; 
+Type Prop ==> target._; 
 Type Prop { get ==> target; set ==> target; }
 ~~~
 
@@ -331,7 +314,7 @@ int Compute(int x)
 Type Prop
 {
   get {
-    return target;
+    return target.Prop;
   }
 }
 Type Prop
@@ -482,7 +465,7 @@ LNode tree = EcsLanguageService.Value.Parse(str, null, ParsingService.Exprs);
 Console.WriteLine(Eval(tree));
 dynamic Eval(LNode code)
 {
-  #dynamic value;
+  dynamic value;
   {
     LNode x, y, z;
     if (code.Calls(CodeSymbols.Add, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
@@ -568,7 +551,7 @@ A = A ?? B;
 
 Assign A = B only when A is null. **Caution**: currently, A is evaluated twice.
 
-### @`?.` ###
+### Null-dot (`?.`) ###
 
 <div class='sbs' markdown='1'>
 ~~~csharp
@@ -659,7 +642,23 @@ var code = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "
 ~~~
 </div>
 
-Macro-based code quote mechanism, to be used as long as a more complete compiler is not availabe. If there is a single parameter that is braces, the braces are stripped out. If there are multiple parameters, or multiple statements in braces, the result is a call to #splice().
+Macro-based code quote mechanism, to be used as long as a more complete compiler is not availabe. If there is a single parameter that is braces, the braces are stripped out. If there are multiple parameters, or multiple statements in braces, the result is a call to `#splice()`. Note that some code, such as the macro processor, recognizes `#splice` as a signal that you want to insert a list of things into an outer list:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+a = 1;
+#splice(b = 2, c = 3);
+d = 4;
+~~~
+
+~~~csharp
+// Output of LeMP
+a = 1;
+b = 2;
+c = 3;
+d = 4;
+~~~
+</div>
 
 The output refers unqualified to `CodeSymbols` and `LNode` so you must have `using Loyc.Syntax` at the top of your file. The substitution operator $(expr) causes the specified expression to be inserted unchanged into the output. `using Loyc.Collections` is also recommended so that you can use `VList<LNode>`, the data type that `LNode` itself uses to store a list of `LNode`s.
 
@@ -727,7 +726,7 @@ The alternate name `replacePP` additionally preprocesses the input and output ar
 
 	scope(exit) { ... }; scope(success) {..}; scope(failure) {...}
 
-An homage to D, equivalent to [`on_finally` et al](ref-on_star.html).
+An homage to D, this is equivalent to [`on_finally` et al](ref-on_star.html).
 
 ### Set or create member ###
 
@@ -828,11 +827,15 @@ Converts an expression to a string (note: original formatting is not preserved.)
 <div class='sbs' markdown='1'>
 ~~~csharp
 x `tree==` y;
+x + 1 `tree==` x + "1";
+x + 777 `tree==` x+777;
 ~~~
 
 ~~~csharp
 // Output of LeMP
 false;
+false + "1";
+false + 777;
 ~~~
 </div>
 
@@ -870,7 +873,7 @@ Tuple<int,string,double> tuple;
 ~~~
 </div>
 
-`#<...>` is a shortcut for `Tuple<...>`, but it isn't really recommended to use it since its meaning is less than obvious.
+`#<...>` is a shortcut for `Tuple<...>` or whatever data type is currently configured for tuples, but it isn't really recommended to use it since its meaning is less than obvious.
 
 ### Tuple deconstruction ###
 
@@ -941,7 +944,7 @@ void Increment()
 ~~~
 </div>
 
-Replaces each symbol in the code that follows with a `static readonly` variable named `sy_X` for each symbol `@@X`.
+Replaces each symbol in the code that follows with a `static readonly` variable named `sy_X` for each symbol `@@X`. The #useSymbols; statement should be placed near the top of a class definition.
 
 ### Multi-using ###
 
