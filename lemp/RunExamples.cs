@@ -57,13 +57,14 @@ namespace LeMPExampleRunner
 					var code = File.ReadAllLines(filename);
 					int numProcessed;
 					using (MessageSink.PushCurrent(MessageSink.Console)) {
+						MessageSink.Current.Write(Severity.Note, "", "Starting {0}", filename);
 						var output = TransformFile(MP, code, out numProcessed);
 						if (output == null)
-							Console.WriteLine("{0}: Processing failed", filename);
+							Console.WriteLine("Processing failed");
 						else if (numProcessed == 0)
-							Console.WriteLine("{0}: No code blocks found marked ~~~exec.", filename);
+							Console.WriteLine("No code blocks found marked ~~~exec.");
 						else {
-							Console.WriteLine("{0}: Processed {1} code blocks.", filename, numProcessed);
+							Console.WriteLine("Processed {0} code blocks.", numProcessed);
 							var outFileName = inPlace ? filename : filename + ".out";
 							Console.WriteLine(" ... Writing {0} ...", outFileName);
 							File.WriteAllText(outFileName, output);
@@ -143,6 +144,8 @@ namespace LeMPExampleRunner
 
 			// Process input with LEMP!
 			var outputCode = Process(MP, inputLines.Join("\n"), inputLine0);
+			if (outputCode == null)
+				return false;
 			if (outputCode.EndsWith("\n")) // remove extra newline
 				outputCode = outputCode.Substring(0, outputCode.Length - 1);
 

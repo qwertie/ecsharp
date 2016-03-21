@@ -167,24 +167,37 @@ The normal attribute `[notnull]` is equivalent, e.g.
 
 ### [requires] & [assert] ###
 
-`[requires(expr)]` and [assert(expr)] specify an expression that must be true at the beginning of the method; `requires` produces a call to `Contract.Assert` or `Contract.Requires` depending on its configuration (described above). The default output is shown below.
+`[requires(expr)]` and [assert(expr)] specify an expression that must be true at the beginning of the method; `requires` produces a call to `Contract.Assert` or `Contract.Requires` depending on its configuration (described above). Example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-int Positive([requires(_>0)] int a,
-             [assert(_>0)] int b)
+[assert(!_reentrant)]
+[requires(!string.IsNullOrEmpty(handlerKey))]
+int ProcessEvent(string handlerKey)
 {
-	return a + b;
+	_reentrant = true;
+	on_finally { _reentrant = false; }
+	
+	Action a = handlerDict[handlerKey];
+	if (a != null)
+		Log(a());
 }
 ~~~
 
 ~~~csharp
 // Output of LeMP
-int Positive(int a, int b)
+int ProcessEvent(string handlerKey)
 {
-  Contract.Assert(a > 0, "Precondition failed: a > 0");
-  System.Diagnostics.Debug.Assert(b > 0, "Assertion failed in `Positive`: b > 0");
-  return a + b;
+  System.Diagnostics.Debug.Assert(!_reentrant, "Assertion failed in `ProcessEvent`: !_reentrant");
+  Contract.Assert(!string.IsNullOrEmpty(handlerKey), "Precondition failed: !#string.IsNullOrEmpty(handlerKey)");
+  _reentrant = true;
+  try {
+    Action a = handlerDict[handlerKey];
+    if (a != null)
+      Log(a());
+  } finally {
+    _reentrant = false;
+  }
 }
 ~~~
 </div>
