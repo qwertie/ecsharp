@@ -22,8 +22,8 @@ namespace Loyc.Ecs.Parser
 		// var, dynamic, trait, alias, where, assembly, module.
 		// Does not include partial, because any Id can be a word attribute.
 		ContextualKeyword = TokenKind.Id + 1,
-		@base     = TokenKind.Id + 2,
-		@this     = TokenKind.Id + 3,
+		Base      = TokenKind.Id + 2,
+		This      = TokenKind.Id + 3,
 		Literal   = TokenKind.Literal,
 		Comma     = TokenKind.Separator,
 		Semicolon = TokenKind.Separator + 1,
@@ -36,48 +36,48 @@ namespace Loyc.Ecs.Parser
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
 		
-		@break    = TokenKind.OtherKeyword + 1,
-		@case     = TokenKind.OtherKeyword + 2,
-		@checked  = TokenKind.OtherKeyword + 3,
-		@class    = TokenKind.OtherKeyword + 4,
-		@continue = TokenKind.OtherKeyword + 5,
-		@default  = TokenKind.OtherKeyword + 6,
-		@delegate = TokenKind.OtherKeyword + 7,
-		@do       = TokenKind.OtherKeyword + 8,
-		@enum     = TokenKind.OtherKeyword + 9,
-		@event    = TokenKind.OtherKeyword + 10,
-		@fixed    = TokenKind.OtherKeyword + 11,
-		@for      = TokenKind.OtherKeyword + 12,
-		@foreach  = TokenKind.OtherKeyword + 13,
-		@goto     = TokenKind.OtherKeyword + 14,
-		@if       = TokenKind.OtherKeyword + 15,
-		@interface= TokenKind.OtherKeyword + 16,
-		@lock     = TokenKind.OtherKeyword + 17,
-		@namespace= TokenKind.OtherKeyword + 18,
-		@return   = TokenKind.OtherKeyword + 19,
-		@struct   = TokenKind.OtherKeyword + 20,
-		@switch   = TokenKind.OtherKeyword + 21,
-		@throw    = TokenKind.OtherKeyword + 22,
-		@try      = TokenKind.OtherKeyword + 23,
-		@unchecked= TokenKind.OtherKeyword + 24,
-		@using    = TokenKind.OtherKeyword + 25,
-		@while    = TokenKind.OtherKeyword + 26,
+		Break    = TokenKind.OtherKeyword + 1,
+		Case     = TokenKind.OtherKeyword + 2,
+		Checked  = TokenKind.OtherKeyword + 3,
+		Class    = TokenKind.OtherKeyword + 4,
+		Continue = TokenKind.OtherKeyword + 5,
+		Default  = TokenKind.OtherKeyword + 6,
+		Delegate = TokenKind.OtherKeyword + 7,
+		Do       = TokenKind.OtherKeyword + 8,
+		Enum     = TokenKind.OtherKeyword + 9,
+		Event    = TokenKind.OtherKeyword + 10,
+		Fixed    = TokenKind.OtherKeyword + 11,
+		For      = TokenKind.OtherKeyword + 12,
+		Foreach  = TokenKind.OtherKeyword + 13,
+		Goto     = TokenKind.OtherKeyword + 14,
+		If       = TokenKind.OtherKeyword + 15,
+		Interface= TokenKind.OtherKeyword + 16,
+		Lock     = TokenKind.OtherKeyword + 17,
+		Namespace= TokenKind.OtherKeyword + 18,
+		Return   = TokenKind.OtherKeyword + 19,
+		Struct   = TokenKind.OtherKeyword + 20,
+		Switch   = TokenKind.OtherKeyword + 21,
+		Throw    = TokenKind.OtherKeyword + 22,
+		Try      = TokenKind.OtherKeyword + 23,
+		Unchecked= TokenKind.OtherKeyword + 24,
+		Using    = TokenKind.OtherKeyword + 25,
+		While    = TokenKind.OtherKeyword + 26,
 
-		@operator = TokenKind.OtherKeyword + 32,
-		@sizeof   = TokenKind.OtherKeyword + 33,
-		@typeof   = TokenKind.OtherKeyword + 34,
+		Operator = TokenKind.OtherKeyword + 32,
+		Sizeof   = TokenKind.OtherKeyword + 33,
+		Typeof   = TokenKind.OtherKeyword + 34,
 
-		@else     = TokenKind.OtherKeyword + 40,
-		@catch    = TokenKind.OtherKeyword + 41,
-		@finally  = TokenKind.OtherKeyword + 42,
+		Else     = TokenKind.OtherKeyword + 40,
+		Catch    = TokenKind.OtherKeyword + 41,
+		Finally  = TokenKind.OtherKeyword + 42,
 
-		@in       = TokenKind.OtherKeyword + 48,
-		@as       = TokenKind.OtherKeyword + 49,
-		@is       = TokenKind.OtherKeyword + 50,
+		In       = TokenKind.OtherKeyword + 48,
+		As       = TokenKind.OtherKeyword + 49,
+		Is       = TokenKind.OtherKeyword + 50,
 
-		@new       = TokenKind.OtherKeyword + 56,
-		@out       = TokenKind.OtherKeyword + 57,
-		@stackalloc= TokenKind.OtherKeyword + 58,
+		New       = TokenKind.OtherKeyword + 56,
+		Out       = TokenKind.OtherKeyword + 57,
+		Stackalloc= TokenKind.OtherKeyword + 58,
 
 		PPif       = TokenKind.Other + 64,
 		PPelse     = TokenKind.Other + 65,
@@ -179,8 +179,8 @@ namespace Loyc.Ecs.Parser
 				case TT.Id:
 				case TT.ContextualKeyword:
 					return EcsNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
-				case TT.@base: return "base";
-				case TT.@this: return "this";
+				case TT.Base: return "base";
+				case TT.This: return "this";
 				case TT.Literal:
 					return EcsNodePrinter.PrintLiteral(t.Value, t.Style);
 				case TT.Comma: return ",";
@@ -203,45 +203,45 @@ namespace Loyc.Ecs.Parser
 						Debug.Fail("Unexpected value for " + t.Type());
 						return (t.Value ?? "(null)").ToString();
 					}
-				case TT.@break:     return "break";    
-				case TT.@case:    	return "case";     
-				case TT.@checked:	return "checked";  
-				case TT.@class:		return "class";    
-				case TT.@continue:	return "continue"; 
-				case TT.@default:	return "default";  
-				case TT.@delegate:	return "delegate"; 
-				case TT.@do:		return "do";       
-				case TT.@enum:		return "enum";     
-				case TT.@event:		return "event";    
-				case TT.@fixed:		return "fixed";    
-				case TT.@for:		return "for";      
-				case TT.@foreach:	return "foreach";  
-				case TT.@goto:		return "goto";     
-				case TT.@if:		return "if";       
-				case TT.@interface:	return "interface";
-				case TT.@lock:		return "lock";     
-				case TT.@namespace:	return "namespace";
-				case TT.@return:	return "return";   
-				case TT.@struct:	return "struct";   
-				case TT.@switch:	return "switch";   
-				case TT.@throw:		return "throw";    
-				case TT.@try:		return "try";      
-				case TT.@unchecked:	return "unchecked";
-				case TT.@using:		return "using";    
-				case TT.@while:		return "while";    
+				case TT.Break:     return "break";    
+				case TT.Case:    	return "case";     
+				case TT.Checked:	return "checked";  
+				case TT.Class:		return "class";    
+				case TT.Continue:	return "continue"; 
+				case TT.Default:	return "default";  
+				case TT.Delegate:	return "delegate"; 
+				case TT.Do:		return "do";       
+				case TT.Enum:		return "enum";     
+				case TT.Event:		return "event";    
+				case TT.Fixed:		return "fixed";    
+				case TT.For:		return "for";      
+				case TT.Foreach:	return "foreach";  
+				case TT.Goto:		return "goto";     
+				case TT.If:		return "if";       
+				case TT.Interface:	return "interface";
+				case TT.Lock:		return "lock";     
+				case TT.Namespace:	return "namespace";
+				case TT.Return:	return "return";   
+				case TT.Struct:	return "struct";   
+				case TT.Switch:	return "switch";   
+				case TT.Throw:		return "throw";    
+				case TT.Try:		return "try";      
+				case TT.Unchecked:	return "unchecked";
+				case TT.Using:		return "using";    
+				case TT.While:		return "while";    
 										   
-				case TT.@operator:  return "operator"; 
-				case TT.@sizeof:    return "sizeof";   
-				case TT.@typeof:    return "typeof";   
-				case TT.@else:	    return "else";     
-				case TT.@catch:     return "catch";       
-				case TT.@finally:  	return "finally";  
-				case TT.@in:       	return "in";       
-				case TT.@as:       	return "as";       
-				case TT.@is:       	return "is";       
-				case TT.@new:      	return "new";      
-				case TT.@out:      	return "out";
-				case TT.@stackalloc:return "stackalloc";
+				case TT.Operator:  return "operator"; 
+				case TT.Sizeof:    return "sizeof";   
+				case TT.Typeof:    return "typeof";   
+				case TT.Else:	    return "else";     
+				case TT.Catch:     return "catch";       
+				case TT.Finally:  	return "finally";  
+				case TT.In:       	return "in";       
+				case TT.As:       	return "as";       
+				case TT.Is:       	return "is";       
+				case TT.New:      	return "new";      
+				case TT.Out:      	return "out";
+				case TT.Stackalloc:return "stackalloc";
 
 				case TT.PPif       : return "#if";
 				case TT.PPelse     : return "#else";

@@ -476,6 +476,9 @@ namespace Loyc.Ecs
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
 			Stmt("public static rule EmailAddress Parse(T x)\n{\n}",
 				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.List(F.Var(T, x)), F.Braces())));
+			// Currently we're not trying to treat this as a keyword
+			Stmt("dynamic Foo();", F.Fn(_("dynamic"), Foo, F.List()));
+			Stmt("dynamic x;", F.Var(_("dynamic"), x));
 		}
 
 		[Test]

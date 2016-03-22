@@ -35,103 +35,6 @@ namespace Loyc.Ecs.Parser
 
 	@[partial] class EcsParser
 	{
-		// (1) detects method/property/variable (and similar: trait, alias)
-		// (2) detects and skips word attributes (not including `this` in `this int x`).
-		enum StmtCat { MethodOrPropOrVar = 0; KeywordStmt = 1; IdStmt = 2; ThisConstructor = 3; OtherStmt = 4; };
-		fn DetectStatementCategory(out wordAttrCount::int)::StmtCat
-		{
-			// Scan past identifiers and extra AttrKeywords at the beginning of the statement
-			wordAttrCount = 0;
-			wordsStartAt::int = InputPosition;
-			haveNew::bool = LA0 == TT.@new; // "new" keyword is the most annoying wrinkle
-			if (haveNew || LA0 == TT.Id || LA0 == TT.ContextualKeyword) {
-				isAttrKw::bool = haveNew;
-				do {
-					Skip();
-					if (isAttrKw) { 
-						wordsStartAt = InputPosition;
-					} else {
-						wordAttrCount++;
-					};
-					haveNew |= (isAttrKw = (LA0 == TT.@new));
-				} while ((isAttrKw |= LA0 == TT.AttrKeyword || LA0 == TT.@new)
-					|| LA0 == TT.Id || LA0 == TT.ContextualKeyword);
-			};
-			
-			// At this point we've skipped over all simple identifiers.
-			// Now decide: what kind of statement do we appear to have?
-			consecutive::int = InputPosition - wordsStartAt;
-			if (LA0 != TT.Substitute) { // "$"
-				if (LA0 == TT.TypeKeyword) {
-					// A built-in data type, which cannot be a word-attribute
-					var LA1 = LA(1);
-					if (LA1 == TT.Id || LA1 == TT.ContextualKeyword) {
-						return StmtCat.MethodOrPropOrVar;
-					} else {
-						consecutive++;
-					}
-				} else if (LA0 == TT.(noMacro(this))) {
-					if LA(1) == TT.LParen && LA(2) == TT.RParen {
-						la3::TT = LA(3);
-						if la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn {
-							return StmtCat.ThisConstructor;
-						} else {
-							return StmtCat.OtherStmt;
-						};
-					} else if (consecutive != 0) {
-						// Should be a this[] property (there could be a type 
-						// param like this<T>[] so looking at LA(1) won't help)
-						InputPosition--;
-						return StmtCat.MethodOrPropOrVar;
-					}
-				} else if (LT0.Kind == TokenKind.OtherKeyword) {
-					if (LA0 != TT.@if) {
-						if (LA0 == TT.@namespace || LA0 == TT.@class || LA0 == TT.@struct 
-						    || LA0 == TT.@interface || LA0 == TT.@enum  || LA0 == TT.@using
-						    || LA0 == TT.@event     || LA0 == TT.@case  || LA0 == TT.@switch 
-						    || LA0 == TT.@while     || LA0 == TT.@fixed || LA0 == TT.@for   
-						    || LA0 == TT.@foreach   || LA0 == TT.@goto  || LA0 == TT.@lock 
-						    || LA0 == TT.@delegate && LA(1) != TT.LParen
-						    || LA0 == TT.@do  || LA0 == TT.(noMacro(@return)) || LA0 ==  TT.(noMacro(break)) 
-						    || LA0 == TT.@try || LA0 == TT.(noMacro(@continue)) || LA0 ==  TT.(noMacro(throw))
-						    || (LA0 == TT.@checked || LA0 == TT.@unchecked) && LA(1) == TT.LBrace)
-						{
-							return StmtCat.KeywordStmt;
-						};
-					};
-				} else if (consecutive == 0) {
-					return StmtCat.OtherStmt;
-				};
-
-				if (consecutive >= 2) {
-					InputPosition = wordsStartAt;
-					return StmtCat.MethodOrPropOrVar;
-				} else if ((LA0 == TT.LParen || LA0 == TT.Set) && !haveNew) {
-					InputPosition = wordsStartAt;
-					return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
-				};
-			};
-
-			// Worst case: need arbitrary lookahead to detect var/property/method
-			InputPosition = wordsStartAt;
-			using (new SavePosition(this, 0)) {
-				if (Scan_DataType(false) && Scan_ComplexNameDecl() && 
-					(LA0 == TT.Set || LA0 == TT.Semicolon || LA0 == TT.LBrace || 
-					 LA0 == TT.LParen || LA0 == TT.LBrack || LA0 == TT.Comma)) {
-					return StmtCat.MethodOrPropOrVar;
-				};
-			};
-			if (haveNew) {
-				if (LA(-1) == TT.@new) {
-					InputPosition--;
-				} else {
-					// count 'new' as a word attribute, to trigger an error if it shouldn't be there
-					wordAttrCount++;
-				}
-			};
-			return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
-		};
-
 		@[LL(2), Verbosity(1), AddCsLineDirectives(false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
@@ -261,7 +164,7 @@ namespace Loyc.Ecs.Parser
 			{r::LNode;}
 			(	t:="$" e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(S.Substitute, e, t.StartIndex, e.Range.EndIndex);}
-			|	op:=TT.@operator t:=AnyOperator
+			|	op:=TT.Operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
 			|	t:=(TT.Id|TT.TypeKeyword)
 				{r = F.Id(t);}
@@ -333,7 +236,7 @@ namespace Loyc.Ecs.Parser
 				//       x as Foo ? (y) : z  // Parsed OK
 				//       x as Foo?(y)        // Syntax error, ':' expected
 				t:="?" (&!{@[Local]afterAsOrIs} | &!(TT.Id | TT.TypeKeyword | TT.Literal | "(" | "{" 
-				                               | TT.@new | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
+				                               | TT.New | "+" | "-" | "*" | "&" | "!" | "~" | "==>" | "++,--" 
 				                               | "$" | "@" | UnusualId))
 				       {e = F.Of(F.Id(t), e, e.Range.StartIndex, t.EndIndex); result=true;}
 			|	// Standard C# fails to parse "x as Foo * y", which suggests I can 
@@ -384,7 +287,7 @@ namespace Loyc.Ecs.Parser
 		// `this` with optional <type arguments>
 		token ComplexThisDecl(allowed::bool)::LNode @{
 			{if (!allowed) {Error("'this' is not allowed in this location.");};}
-			t:=TT.(noMacro(this))    {$result = F.Id(t);}
+			t:=TT.This    {$result = F.Id(t);}
 			TParamsDecl(ref result)?
 		};
 
@@ -483,9 +386,9 @@ namespace Loyc.Ecs.Parser
 			{r::LNode;}
 			(	t:=("$"|".") e:=Atom {e=AutoRemoveParens(e);}
 				{r = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex);}
-			|	op:=TT.@operator t:=AnyOperator
+			|	op:=TT.Operator t:=AnyOperator
 				{r = F.Attr(_triviaUseOperatorKeyword, F.Id(t.Value -> Symbol, op.StartIndex, t.EndIndex));}
-			|	t:=(TT.Id | TT.TypeKeyword | TT.(noMacro(this)) | TT.(noMacro(base)))
+			|	t:=(TT.Id | TT.TypeKeyword | TT.This | TT.Base)
 				{r = F.Id(t);}
 			|	t:=UnusualId
 				{r = F.Id(t);}
@@ -495,15 +398,15 @@ namespace Loyc.Ecs.Parser
 			|	r=BracedBlock       // {...}
 			|	r=NewExpr           // new ...
 			|	r=TokenLiteral
-			|	t:=(TT.@checked | TT.@unchecked)
+			|	t:=(TT.Checked | TT.Unchecked)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, ExprListInside(args), t.StartIndex, rp.EndIndex);}
-			|	t:=(TT.@typeof | TT.(noMacro(@default)) | TT.@sizeof)
+			|	t:=(TT.Typeof | TT.Default | TT.Sizeof)
 				args:="(" rp:=")"
 				{r = F.Call(t.Value -> Symbol, TypeInside(args), t.StartIndex, rp.EndIndex);}
-			|	t:=TT.@delegate args:="(" ")" block:="{" rb:="}"
+			|	t:=TT.Delegate args:="(" ")" block:="{" rb:="}"
 				{r = F.Call(S.Lambda, F.List(ExprListInside(args, false, true).ToVList()), F.Braces(StmtListInside(block).ToVList(), block.StartIndex, rb.EndIndex), t.StartIndex, rb.EndIndex);}
-			|	t:=TT.@is dt:=DataType
+			|	t:=TT.Is dt:=DataType
 				{r = F.Call(S.Is, dt, t.StartIndex, dt.Range.EndIndex);}
 			|	error {r = Error("Invalid expression. Expected (parentheses), {braces}, identifier, literal, or $substitution.");} (greedy(~(","|";")))* 
 				/*hack, avoid long analysis time*/ (_ =>{})
@@ -526,7 +429,7 @@ namespace Loyc.Ecs.Parser
 				endIndex::int; 
 				var list = (new WList!LNode());
 			}
-			op:=TT.@new
+			op:=TT.New
 			(	// new [] { ... }  <=>  #new(@`[]`(), ...)
 				&{(count=CountDims(LT($LI), false)) > 0}
 				lb:="[" rb:="]" 
@@ -667,15 +570,15 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule PrimaryExpr_NewStyleCast(e::LNode)::LNode @{
-			&{@[Hoist] Down($LI) && Up(LA0 == TT.@as || LA0 == TT.@using || LA0 == TT.PtrArrow)}
+			&{@[Hoist] Down($LI) && Up(LA0 == TT.As || LA0 == TT.Using || LA0 == TT.PtrArrow)}
 			lp:="(" rp:=")"
 			(=>
 				{Down(lp);}
 				{kind::Symbol;}
 				{attrs::WList!LNode = null;}
 				( "->"      {kind = S.Cast;} 
-				| TT.@as    {kind = S.As;}
-				| TT.@using {kind = S.UsingCast;})
+				| TT.As    {kind = S.As;}
+				| TT.Using {kind = S.UsingCast;})
 				NormalAttributes(ref attrs)
 				AttributeKeywords(ref attrs)
 				type:=DataType EOF
@@ -752,14 +655,14 @@ namespace Loyc.Ecs.Parser
 			(	// Infix operator
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
 				op:=( "**"|"*"|"/,%"|"+"|"-"|"~"|".."|"<"|">"|"<=,>="|"==,!="
-				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.@in )
+				    | "&"|"|"|"^"|"&&"|"||,^^"|"??"|"="|"??="|"=>"|TT.BQString|TT.In )
 				rhs:=Expr(prec)
 				{e = SetOperatorStyle(F.Call(op.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 			|	// is, as, or using cast (special case: #usingCast instead of #using)
 				&{@[Local] context.CanParse(prec=InfixPrecedenceOf($LA))}
-				op:=(TT.@is | TT.@as | TT.@using)
+				op:=(TT.Is | TT.As | TT.Using)
 				rhs:=DataType(true)
-				{var opSym = op.Type() == TT.@using ? S.UsingCast : (op.Value -> Symbol);}
+				{var opSym = op.Type() == TT.Using ? S.UsingCast : (op.Value -> Symbol);}
 				{e = SetOperatorStyle(F.Call(opSym, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex));}
 				FinishPrimaryExpr(ref e)
 			|	// Shift operators (two LT or GT in a row)
@@ -869,16 +772,15 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[#static, #readonly] _var::Symbol = GSymbol.Get("var");
-		@[#static, #readonly] _dynamic::Symbol = GSymbol.Get("dynamic");
 		
 		@[private] fn MaybeRecognizeVarAsKeyword(ref type::LNode)
 		{
-			// Recognize "var" and "dynamic" (but not @var and @dynamic) as contextual keywords.
+			// Recognize "var" (but not @var) as a contextual keyword.
 			rng::SourceRange;
 			name::Symbol = type.Name;
-			if (name == _var || name == _dynamic) && type.IsId
+			if (name == _var) && type.IsId
 				&& (rng=type.Range).Source.Text.TryGet(rng.StartIndex, '\0') != '@' {
-				type = type.WithName(name == _var ? S.Missing : S.Dynamic);
+				type = type.WithName(S.Missing);
 			}; 
 		};
 
@@ -939,7 +841,7 @@ namespace Loyc.Ecs.Parser
 		token AttributeContents(ref attrs::WList!LNode) @{
 			{attrTarget::Token = default(Token);}
 			greedy(
-				attrTarget=(TT.Id|TT.ContextualKeyword|TT.(noMacro(return))) ":"
+				attrTarget=(TT.Id|TT.ContextualKeyword|TT.Return) ":"
 			)?
 			// Use gate (=>) to avoid hoisting predicate DetectVarDecl(allowUnassignedVarDecl)
 			(_ => ExprList(attrs = attrs ?? `new` WList!LNode(), allowTrailingComma: true, allowUnassignedVarDecl: true))
@@ -969,7 +871,7 @@ namespace Loyc.Ecs.Parser
 		};
 		@[recognizer(fn Scan_TParamAttributeKeywords())]
 		token TParamAttributeKeywords(ref attrs::WList!LNode) @{
-			(	t:=(TT.AttrKeyword|TT.@in)
+			(	t:=(TT.AttrKeyword|TT.In)
 				{(attrs = attrs ?? `new` WList!LNode()).Add(F.Id(t));}
 			)*
 		};
@@ -1044,24 +946,24 @@ namespace Loyc.Ecs.Parser
 				t::Token;
 			}
 			[	t=TT.AttrKeyword {attrs.Add(F.Id(t));}
-			|	(t=(TT.Id|TT.(noMacro(@this))|TT.@new) | t=UnusualId)
+			|	(t=(TT.Id|TT.This|TT.New) | t=UnusualId)
 				&(	// Detect a word attribute before a var decl, function decl, 
 					// property decls, alias decls, or trait decls.
 					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|UnusualId)
 				|	// t is a word attribute in `t this(...)` but not `t this[...]`
-					TT.(noMacro(this)) "("
+					TT.This "("
 				|	// If the word is followed by an atribute keyword, it must be a word attribute
-					(TT.AttrKeyword | TT.@new)
+					(TT.AttrKeyword | TT.New)
 				|	// Most statements that begin with a keyword allow word attributes
-					TT.@checked "{" "}" | TT.@unchecked "{" "}" | TT.(noMacro(@default)) ":" | TT.@using "("
-				|	( TT.@namespace | TT.@class | TT.@struct | TT.@interface | TT.@enum 
-					| TT.@delegate | TT.@event | TT.@case | TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.@do 
-					| TT.@fixed | TT.@for | TT.@foreach | TT.@goto | TT.@lock | TT.(noMacro(return))
-					| TT.@switch | TT.(noMacro(throw)) | TT.@try | TT.@while )
+					TT.Checked "{" "}" | TT.Unchecked "{" "}" | TT.Default ":" | TT.Using "("
+				|	( TT.Namespace | TT.Class | TT.Struct | TT.Interface | TT.Enum 
+					| TT.Delegate | TT.Event | TT.Case | TT.Break | TT.Continue | TT.Do 
+					| TT.Fixed | TT.For | TT.Foreach | TT.Goto | TT.Lock | TT.Return
+					| TT.Switch | TT.Throw | TT.Try | TT.While )
 				)
 				{
 					node::LNode;
-					if (t.Type() == TT.@new || t.Type() == TT.(noMacro(@this))) {
+					if (t.Type() == TT.New || t.Type() == TT.This) {
 						node = F.Id(t)
 					} else {
 						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
@@ -1136,7 +1038,7 @@ namespace Loyc.Ecs.Parser
 				for (; oldPosition < InputPosition; oldPosition++) {
 					word::Token = _tokens[oldPosition];
 					wordAttr::LNode;
-					if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.@new) {
+					if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.New) {
 						wordAttr = F.Id(word);
 					} else {
 						wordAttr = F.Attr(_triviaWordAttribute, F.Id("#" + word.Value.ToString(), word.StartIndex, word.EndIndex));
@@ -1165,6 +1067,103 @@ namespace Loyc.Ecs.Parser
 					throw (new Exception("Parser bug"));
 				};
 			})
+		};
+
+		// (1) detects method/property/variable (and similar: trait, alias)
+		// (2) detects and skips word attributes (not including `this` in `this int x`).
+		enum StmtCat { MethodOrPropOrVar = 0; KeywordStmt = 1; IdStmt = 2; ThisConstructor = 3; OtherStmt = 4; };
+		fn DetectStatementCategory(out wordAttrCount::int)::StmtCat
+		{
+			// Scan past identifiers and extra AttrKeywords at the beginning of the statement
+			wordAttrCount = 0;
+			wordsStartAt::int = InputPosition;
+			haveNew::bool = LA0 == TT.New; // "new" keyword is the most annoying wrinkle
+			if (haveNew || LA0 == TT.Id || LA0 == TT.ContextualKeyword) {
+				isAttrKw::bool = haveNew;
+				do {
+					Skip();
+					if (isAttrKw) { 
+						wordsStartAt = InputPosition;
+					} else {
+						wordAttrCount++;
+					};
+					haveNew |= (isAttrKw = (LA0 == TT.New));
+				} while ((isAttrKw |= LA0 == TT.AttrKeyword || LA0 == TT.New)
+					|| LA0 == TT.Id || LA0 == TT.ContextualKeyword);
+			};
+			
+			// At this point we've skipped over all simple identifiers.
+			// Now decide: what kind of statement do we appear to have?
+			consecutive::int = InputPosition - wordsStartAt;
+			if (LA0 != TT.Substitute) { // "$"
+				if (LA0 == TT.TypeKeyword) {
+					// A built-in data type, which cannot be a word-attribute
+					var LA1 = LA(1);
+					if (LA1 == TT.Id || LA1 == TT.ContextualKeyword) {
+						return StmtCat.MethodOrPropOrVar;
+					} else {
+						consecutive++;
+					}
+				} else if (LA0 == TT.This) {
+					if LA(1) == TT.LParen && LA(2) == TT.RParen {
+						la3::TT = LA(3);
+						if la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn {
+							return StmtCat.ThisConstructor;
+						} else {
+							return StmtCat.OtherStmt;
+						};
+					} else if (consecutive != 0) {
+						// Should be a this[] property (there could be a type 
+						// param like this<T>[] so looking at LA(1) won't help)
+						InputPosition--;
+						return StmtCat.MethodOrPropOrVar;
+					}
+				} else if (LT0.Kind == TokenKind.OtherKeyword) {
+					if (LA0 != TT.If) {
+						if (LA0 == TT.Namespace || LA0 == TT.Class || LA0 == TT.Struct 
+						    || LA0 == TT.Interface || LA0 == TT.Enum  || LA0 == TT.Using
+						    || LA0 == TT.Event     || LA0 == TT.Case  || LA0 == TT.Switch 
+						    || LA0 == TT.While     || LA0 == TT.Fixed || LA0 == TT.For   
+						    || LA0 == TT.Foreach   || LA0 == TT.Goto  || LA0 == TT.Lock 
+						    || LA0 == TT.Delegate && LA(1) != TT.LParen
+						    || LA0 == TT.Do  || LA0 == TT.Return || LA0 ==  TT.Break 
+						    || LA0 == TT.Try || LA0 == TT.Continue || LA0 ==  TT.Throw
+						    || (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
+						{
+							return StmtCat.KeywordStmt;
+						};
+					};
+				} else if (consecutive == 0) {
+					return StmtCat.OtherStmt;
+				};
+
+				if consecutive >= 2 {
+					InputPosition -= 2;
+					return StmtCat.MethodOrPropOrVar;
+				} else if ((LA0 == TT.LParen || LA0 == TT.Set) && !haveNew) {
+					InputPosition = wordsStartAt;
+					return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
+				};
+			};
+
+			// Worst case: need arbitrary lookahead to detect var/property/method
+			InputPosition = wordsStartAt;
+			using (new SavePosition(this, 0)) {
+				if (Scan_DataType(false) && Scan_ComplexNameDecl() && 
+					(LA0 == TT.Set || LA0 == TT.Semicolon || LA0 == TT.LBrace || 
+					 LA0 == TT.LParen || LA0 == TT.LBrack || LA0 == TT.Comma)) {
+					return StmtCat.MethodOrPropOrVar;
+				};
+			};
+			if (haveNew) {
+				if (LA(-1) == TT.New) {
+					InputPosition--;
+				} else {
+					// count 'new' as a word attribute, to trigger an error if it shouldn't be there
+					wordAttrCount++;
+				}
+			};
+			return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
 		};
 
 		// Methods, properties, variables, and things that look like them (trait & alias)
@@ -1215,7 +1214,7 @@ namespace Loyc.Ecs.Parser
 				{showWordAttrErrorFor = "block-call statement"; addAttrs = true;}
 			/	result:LabelStmt(startIndex) 
 				{addAttrs = true;}
-			/	&(DataType TT.(noMacro(@this))) // property this[]
+			/	&(DataType TT.This) // property this[]
 				DataType => result:MethodOrPropertyOrVar(startIndex, attrs)
 			/	result:ExprStatement() 
 				{showWordAttrErrorFor = "expression"; addAttrs = true;}
@@ -1241,7 +1240,7 @@ namespace Loyc.Ecs.Parser
 				{showWordAttrErrorFor = "if statement"; addAttrs = true;}
 			/	result:BracedBlock(null, null, startIndex)
 				{showWordAttrErrorFor = "braced-block statement"; addAttrs = true;}
-			/	&("~" (TT.Id|TT.ContextualKeyword|TT.(noMacro(@this))) "(" ")" "{" "}")
+			/	&("~" (TT.Id|TT.ContextualKeyword|TT.This) "(" ")" "{" "}")
 				result:Destructor(startIndex, attrs)
 				{showWordAttrErrorFor = "destructor";}
 			/	";" {$result = F.Id(S.Missing, startIndex, $";".EndIndex);}
@@ -1253,7 +1252,7 @@ namespace Loyc.Ecs.Parser
 			/	result:AssemblyOrModuleAttribute(startIndex, attrs)
 				{showWordAttrErrorFor = "assembly or module attribute";}
 			/	result:OperatorCastMethod(startIndex, attrs) {attrs.Clear();}
-			/	ths:TT.(noMacro(@this))
+			/	ths:TT.This
 				&(DataType ComplexNameDecl)
 				{attrs.Add(F.Id(ths));}
 				result:MethodOrPropertyOrVar(startIndex, attrs)
@@ -1273,7 +1272,7 @@ namespace Loyc.Ecs.Parser
 
 		rule ExprStatement::LNode @{
 			result:Expr(ContinueExpr)
-			(	(EOF | TT.@else | TT.@while | TT.@catch | TT.@finally) => 
+			(	(EOF | TT.Else | TT.While | TT.Catch | TT.Finally) => 
 				{result = F.Call(S.Result, result, result.Range.StartIndex, result.Range.EndIndex);}
 			|	";"
 			|	error {result = Error("Syntax error in expression at '{0}'; possibly missing semicolon", LT(0).SourceText(SourceFile.Text));}
@@ -1292,7 +1291,7 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 
 		@[private] rule SpaceDecl(startIndex::int)::LNode @{
-			t:=(TT.@namespace | TT.@class | TT.@struct | TT.@interface)
+			t:=(TT.Namespace | TT.Class | TT.Struct | TT.Interface)
 			{var kind = t.Value -> Symbol;}
 			r:=RestOfSpaceDecl(startIndex, kind)
 			{return r;}
@@ -1324,7 +1323,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		rule UsingDirective(startIndex::int, attrs::VList!LNode)::LNode @{
-			t:TT.@using
+			t:TT.Using
 			(	// C# 6 "using static"
 				&{Is($LI, S.Static)} static_:TT.AttrKeyword
 				nsName:ExprStart(true) end:";"
@@ -1355,7 +1354,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule EnumDecl(startIndex::int)::LNode @{
-			t:=TT.@enum
+			t:=TT.Enum
 			name:=ComplexNameDecl
 			bases:=BaseListOpt
 			(	end:=";"
@@ -1435,8 +1434,8 @@ namespace Loyc.Ecs.Parser
 				F.Call(S.Where, constraints, where.StartIndex, constraints.Last.Range.EndIndex)));}
 		};
 		@[private] rule WhereConstraint::LNode @{
-			(	t:=(TT.@class | TT.@struct) {return F.Id(t);}
-			|	n:=TT.@new &{LT($LI).Count == 0} lp:="(" rp:=")"  
+			(	t:=(TT.Class | TT.Struct) {return F.Id(t);}
+			|	n:=TT.New &{LT($LI).Count == 0} lp:="(" rp:=")"  
 				{return F.Call(S.New, n.StartIndex, rp.EndIndex);}
 			|	t:=DataType                 {return t;} )
 		};
@@ -1538,7 +1537,7 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule OperatorCastMethod(startIndex::int, attrs::VList!LNode)::LNode @{
 			{r::LNode;}
-			op:=TT.@operator type:=DataType
+			op:=TT.Operator type:=DataType
 			{var name = F.Attr(_triviaUseOperatorKeyword, F.Id(S.Cast, op.StartIndex, op.EndIndex));}
 			r=MethodArgListAndBody(startIndex, attrs, S.Fn, type, name)
 			{return r;}
@@ -1548,7 +1547,7 @@ namespace Loyc.Ecs.Parser
 			lp:="(" rp:=")"
 			WhereClausesOpt(ref name)
 			{var(r::LNode, baseCall::LNode = null); }
-			(	":" target:=(TT.(noMacro(this)) | TT.(noMacro(base))) baselp:="(" baserp:=")"
+			(	":" target:=(TT.This | TT.Base) baselp:="(" baserp:=")"
 				{
 					baseCall = F.Call(target.Value -> Symbol, ExprListInside(baselp), target.StartIndex, baserp.EndIndex);
 					if (kind != S.Constructor) {
@@ -1639,9 +1638,9 @@ namespace Loyc.Ecs.Parser
 				n=(TT.Id|TT.ContextualKeyword)
 				&("(" ")" ("{" | ";"))
 			/	&{_spaceName != S.Fn || LA($LI+3) == TT.LBrace}
-				n=TT.(noMacro(@this))
+				n=TT.This
 				&("(" ")" ("{" | ";"))
-			/	n=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@this)))
+			/	n=(TT.Id|TT.ContextualKeyword|TT.This)
 				&("(" ")" ":")
 			)
 			{name::LNode = F.Id(n.Value -> Symbol, n.StartIndex, n.EndIndex);}
@@ -1651,7 +1650,7 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule Destructor(startIndex::int, attrs::VList!LNode)::LNode @{
 			tilde:="~"
-			n:=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@this)))
+			n:=(TT.Id|TT.ContextualKeyword|TT.This)
 			{	var name = n.Value -> Symbol;
 				if name != _spaceName {
 					Error("Unexpected destructor '{0}'", name);
@@ -1666,14 +1665,14 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 
 		@[private] rule DelegateDecl(startIndex::int, attrs::VList!LNode)::LNode @{
-			TT.@delegate type:=DataType name:=ComplexNameDecl
+			TT.Delegate type:=DataType name:=ComplexNameDecl
 			r:=MethodArgListAndBody(startIndex, attrs, S.Delegate, type, name)
 			{return r.WithAttrs(attrs);}
 		};
 
 		@[private] rule EventDecl(startIndex::int)::LNode @{
 			{r::LNode;}
-			TT.@event type:=DataType name:=ComplexNameDecl
+			TT.Event type:=DataType name:=ComplexNameDecl
 			(	default 
 				{var parts = (new VList!LNode(type, name));}
 				( "," parts+=ComplexNameDecl )*
@@ -1692,13 +1691,13 @@ namespace Loyc.Ecs.Parser
 		// Labels, default:, case expr: ----------------------------------------
 
 		rule LabelStmt(startIndex::int)::LNode @{
-			id:=(TT.Id|TT.ContextualKeyword|TT.(noMacro(@default))) end:=":"
+			id:=(TT.Id|TT.ContextualKeyword|TT.Default) end:=":"
 			{return F.Call(S.Label, F.Id(id), startIndex, end.EndIndex);} 
 		};
 
 		rule CaseStmt(startIndex::int)::LNode @{
 			{var cases = VList!LNode.Empty;}
-			kw:=TT.@case cases+=ExprStart2(true) 
+			kw:=TT.Case cases+=ExprStart2(true) 
 			        ("," cases+=ExprStart2(true))* end:=":"
 			{return F.Call(S.Case, cases, startIndex, end.EndIndex);}
 		};
@@ -1749,7 +1748,7 @@ namespace Loyc.Ecs.Parser
 		// break, continue, return, throw --------------------------------------
 
 		@[private] rule ReturnBreakContinueThrow(startIndex::int)::LNode @{
-			kw:=(TT.(noMacro(break)) | TT.(noMacro(continue)) | TT.(noMacro(return)) | TT.(noMacro(throw)))
+			kw:=(TT.Break | TT.Continue | TT.Return | TT.Throw)
 			e:=ExprOrNull(false) end:=";"
 			{
 				if e != null (return F.Call(kw.Value -> Symbol, e, startIndex, end.EndIndex))
@@ -1760,7 +1759,7 @@ namespace Loyc.Ecs.Parser
 		// goto, goto case -----------------------------------------------------
 
 		@[private] rule GotoStmt(startIndex::int)::LNode @{
-			TT.@goto e:=ExprOrNull(false) end:=";"
+			TT.Goto e:=ExprOrNull(false) end:=";"
 			{
 				if e != null (return F.Call(S.Goto, e, startIndex, end.EndIndex))
 				else         (return F.Call(S.Goto,    startIndex, end.EndIndex));
@@ -1769,8 +1768,8 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule GotoCaseStmt(startIndex::int)::LNode @{
 			{e::LNode = null;}
-			TT.@goto TT.@case
-			(	def:=TT.(noMacro(default))
+			TT.Goto TT.Case
+			(	def:=TT.Default
 				{e = F.Id(S.Default, def.StartIndex, def.EndIndex);}
 			|	e=ExprOpt(false) )
 			end:=";"
@@ -1780,7 +1779,7 @@ namespace Loyc.Ecs.Parser
 		// checked & unchecked -------------------------------------------------
 
 		@[private] rule CheckedOrUncheckedStmt(startIndex::int)::LNode @{
-			kw:=(TT.@checked | TT.@unchecked)
+			kw:=(TT.Checked | TT.Unchecked)
 			bb:=BracedBlock
 			{return F.Call(kw.Value -> Symbol, bb, startIndex, bb.Range.EndIndex);}
 		};
@@ -1788,7 +1787,7 @@ namespace Loyc.Ecs.Parser
 		// do-while & while ----------------------------------------------------
 
 		@[private] rule DoStmt(startIndex::int)::LNode @{
-			TT.@do block:=Stmt TT.@while p:="(" ")" end:=";"
+			TT.Do block:=Stmt TT.While p:="(" ")" end:=";"
 			{
 				var parts = (new WList!LNode { block });
 				SingleExprInside(p, "while (...)", parts);
@@ -1797,7 +1796,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule WhileStmt(startIndex::int)::LNode @{
-			TT.@while p:="(" ")" block:=Stmt
+			TT.While p:="(" ")" block:=Stmt
 			{
 				var cond = SingleExprInside(p, "while (...)");
 				return F.Call(S.While, cond, block, startIndex, block.Range.EndIndex);
@@ -1807,7 +1806,7 @@ namespace Loyc.Ecs.Parser
 		// for & foreach -------------------------------------------------------
 
 		@[private] rule ForStmt(startIndex::int)::LNode @{
-			TT.@for p:="(" ")" block:=Stmt
+			TT.For p:="(" ")" block:=Stmt
 			(_* => {Down(p);})
 				init:=ExprOpt(true) ";" cond:=ExprOpt(false) ";" inc:=ExprOpt(false)
 			(EOF => {Up();})
@@ -1818,7 +1817,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule ForEachStmt(startIndex::int)::LNode @{
-			TT.@foreach p:="(" ")" 
+			TT.Foreach p:="(" ")" 
 			block:=Stmt
 			(_ => {Down(p);})
 				var:=VarIn
@@ -1829,12 +1828,12 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule VarIn::LNode @{
 			{var::LNode;}
-			(	&(Atom TT.@in)
+			(	&(Atom TT.In)
 				var=Atom
 			/	pair:=VarDeclStart
 				{var = F.Call(S.Var, pair.A, pair.B, pair.A.Range.StartIndex, pair.B.Range.EndIndex);}
 			)
-			TT.@in
+			TT.In
 			{return var;}
 		};
 
@@ -1842,8 +1841,8 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule IfStmt(startIndex::int)::LNode @{
 			{else::LNode = null;}
-			TT.@if p:="(" ")" then:=Stmt 
-			greedy(TT.@else else=Stmt)?
+			TT.If p:="(" ")" then:=Stmt 
+			greedy(TT.Else else=Stmt)?
 			{
 				var cond = SingleExprInside(p, "if (...)");
 				if else == null (return F.Call(S.If, cond, then,       startIndex, then.Range.EndIndex))
@@ -1852,7 +1851,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule SwitchStmt(startIndex::int)::LNode @{
-			TT.@switch p:="(" ")" block:=Stmt
+			TT.Switch p:="(" ")" block:=Stmt
 			{
 				var expr = SingleExprInside(p, "switch (...)");
 				return F.Call(S.Switch, expr, block, startIndex, block.Range.EndIndex);
@@ -1862,7 +1861,7 @@ namespace Loyc.Ecs.Parser
 		// using, lock, fixed --------------------------------------------------
 
 		@[private] rule UsingStmt(startIndex::int)::LNode @{
-			TT.@using p:="(" ")" block:=Stmt
+			TT.Using p:="(" ")" block:=Stmt
 			{
 				var expr = SingleExprInside(p, "using (...)");
 				return F.Call(S.UsingStmt, expr, block, startIndex, block.Range.EndIndex);
@@ -1870,7 +1869,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule LockStmt(startIndex::int)::LNode @{
-			TT.@lock p:="(" ")" block:=Stmt
+			TT.Lock p:="(" ")" block:=Stmt
 			{
 				var expr = SingleExprInside(p, "lock (...)");
 				return F.Call(S.Lock, expr, block, startIndex, block.Range.EndIndex);
@@ -1878,7 +1877,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule FixedStmt(startIndex::int)::LNode @{
-			TT.@fixed p:="(" ")" block:=Stmt
+			TT.Fixed p:="(" ")" block:=Stmt
 			{
 				var expr = SingleExprInside(p, "lock (...)");
 				return F.Call(S.Fixed, expr, block, startIndex, block.Range.EndIndex);
@@ -1888,11 +1887,11 @@ namespace Loyc.Ecs.Parser
 		// try -----------------------------------------------------------------
 
 		@[private] rule TryStmt(startIndex::int)::LNode @{
-			TT.@try header:=Stmt
+			TT.Try header:=Stmt
 			{var parts = (new VList!LNode { header });}
 			{varExpr::LNode; whenExpr::LNode;}
 			greedy[
-				kw:=TT.@catch
+				kw:=TT.Catch
 				( p:="(" ")" { varExpr = SingleExprInside(p, "catch (...)", null, true); }
 				/            { varExpr = MissingHere(); } )
 				( &{Is($LI, _when)} TT.ContextualKeyword
@@ -1902,7 +1901,7 @@ namespace Loyc.Ecs.Parser
 				{parts.Add(F.Call(S.Catch, varExpr, whenExpr, handler, kw.StartIndex, handler.Range.EndIndex));}
 			]*
 			greedy[
-				kw:=TT.@finally handler:Stmt
+				kw:=TT.Finally handler:Stmt
 				{parts.Add(F.Call(S.Finally, handler, kw.StartIndex, handler.Range.EndIndex));}
 			]*
 			{

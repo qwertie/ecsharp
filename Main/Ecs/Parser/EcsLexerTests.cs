@@ -28,14 +28,14 @@ namespace Loyc.Ecs.Parser
 				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.Not), 
 				_("hello"), _(","), WS, _("world"), _("!"));
 			Case(@"this is""just""1 lexer test '!'",
-				A(TT.@this, TT.Spaces, TT.@is, TT.Literal, TT.Literal, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.Literal),
+				A(TT.This, TT.Spaces, TT.Is, TT.Literal, TT.Literal, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.Literal),
 				S.This, WS, S.Is, "just", 1, WS, _("lexer"), WS, _("test"), WS, '!');
 			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, _(":"), 30);
 			Case(@"c+='0'", A(TT.Id, TT.CompoundSet, TT.Literal), _("c"), _("+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
-			Case(@"finally@@{`boom!` @@bam;}", A(TT.@finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Literal, TT.Semicolon, TT.RBrace),
+			Case(@"finally@@{`boom!` @@bam;}", A(TT.Finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Literal, TT.Semicolon, TT.RBrace),
 				S.Finally, _("@"), _("@"), null, _("boom!"), WS, _("bam"), _(";"), null);
 		}
 
@@ -43,7 +43,7 @@ namespace Loyc.Ecs.Parser
 		public void TestIdentifiers()
 		{
 			Case("abc_123/_0",   A(TT.Id, TT.DivMod, TT.Id),         _("abc_123"), _("/"), _("_0"));
-			Case("is@is",        A(TT.@is, TT.Id),                   S.Is, _("is"));
+			Case("is@is",        A(TT.Is, TT.Id),                   S.Is, _("is"));
 			Case(@"\u0041\U00000062\u0063", A(TT.Id),                _("Abc"));
 			Case("No#error",     A(TT.Id),                           _("No#error"));
 			Case("@#error!@fail",A(TT.Id, TT.Id),                    _("#error!"), _("fail"));
@@ -226,10 +226,10 @@ namespace Loyc.Ecs.Parser
 		public void TestKeywords()
 		{
 			Case("public static int @default=default(stackalloc)as this",
-				A(TT.AttrKeyword, TT.Spaces, TT.AttrKeyword, TT.Spaces, TT.TypeKeyword, TT.Spaces, TT.Id, TT.Set, TT.@default, TT.LParen, TT.@stackalloc, TT.RParen, TT.@as, TT.Spaces, TT.@this),
+				A(TT.AttrKeyword, TT.Spaces, TT.AttrKeyword, TT.Spaces, TT.TypeKeyword, TT.Spaces, TT.Id, TT.Set, TT.Default, TT.LParen, TT.Stackalloc, TT.RParen, TT.As, TT.Spaces, TT.This),
 				S.Public, WS, S.Static, WS, S.Int32, WS, _("default"), _("="), S.Default, null, S.StackAlloc, null, S.As, WS, S.This);
 			Case("case'\0':return'x';",
-				A(TT.@case, TT.Literal, TT.Colon, TT.@return, TT.Literal, TT.Semicolon),
+				A(TT.Case, TT.Literal, TT.Colon, TT.Return, TT.Literal, TT.Semicolon),
 				S.Case, '\0', _(":"), S.Return, 'x', _(";"));
 		}
 

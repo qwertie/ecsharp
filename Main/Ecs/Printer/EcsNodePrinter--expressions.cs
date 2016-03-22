@@ -765,12 +765,7 @@ namespace Loyc.Ecs
 			PrintType(elemType, EP.Primary.LeftContext(ContinueExpr));
 			
 			_out.Write('[', true);
-			bool first = true;
-			foreach (var arg in cons.Args) {
-				if (first) first = false;
-				else WriteThenSpace(',', SpaceOpt.AfterComma);
-				PrintExpr(arg, StartExpr, 0);
-			}
+			PrintArgs(cons.Args, 0, false);
 			_out.Write(']', true);
 
 			// Write the brackets for the inner array types

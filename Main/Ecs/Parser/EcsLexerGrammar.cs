@@ -1831,7 +1831,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 316 "EcsLexerGrammar.les"
-							_type = TT.@as;
+							_type = TT.As;
 							#line 316 "EcsLexerGrammar.les"
 							_value = S.As;
 							#line default
@@ -1989,7 +1989,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 317 "EcsLexerGrammar.les"
-									_type = TT.@base;
+									_type = TT.Base;
 									#line 317 "EcsLexerGrammar.les"
 									_value = S.Base;
 									#line default
@@ -2036,7 +2036,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 319 "EcsLexerGrammar.les"
-										_type = TT.@break;
+										_type = TT.Break;
 										#line 319 "EcsLexerGrammar.les"
 										_value = S.Break;
 										#line default
@@ -2095,7 +2095,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 321 "EcsLexerGrammar.les"
-									_type = TT.@case;
+									_type = TT.Case;
 									#line 321 "EcsLexerGrammar.les"
 									_value = S.Case;
 									#line default
@@ -2116,7 +2116,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 322 "EcsLexerGrammar.les"
-										_type = TT.@catch;
+										_type = TT.Catch;
 										#line 322 "EcsLexerGrammar.les"
 										_value = S.Catch;
 										#line default
@@ -2167,7 +2167,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 324 "EcsLexerGrammar.les"
-												_type = TT.@checked;
+												_type = TT.Checked;
 												#line 324 "EcsLexerGrammar.les"
 												_value = S.Checked;
 												#line default
@@ -2198,7 +2198,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 325 "EcsLexerGrammar.les"
-										_type = TT.@class;
+										_type = TT.Class;
 										#line 325 "EcsLexerGrammar.les"
 										_value = S.Class;
 										#line default
@@ -2253,7 +2253,7 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													#line 327 "EcsLexerGrammar.les"
-													_type = TT.@continue;
+													_type = TT.Continue;
 													#line 327 "EcsLexerGrammar.les"
 													_value = S.Continue;
 													#line default
@@ -2332,7 +2332,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 329 "EcsLexerGrammar.les"
-												_type = TT.@default;
+												_type = TT.Default;
 												#line 329 "EcsLexerGrammar.les"
 												_value = S.Default;
 												#line default
@@ -2368,7 +2368,7 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													#line 330 "EcsLexerGrammar.les"
-													_type = TT.@delegate;
+													_type = TT.Delegate;
 													#line 330 "EcsLexerGrammar.les"
 													_value = S.Delegate;
 													#line default
@@ -2466,7 +2466,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 332 "EcsLexerGrammar.les"
-							_type = TT.@do;
+							_type = TT.Do;
 							#line 332 "EcsLexerGrammar.les"
 							_value = S.Do;
 							#line default
@@ -2529,7 +2529,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 333 "EcsLexerGrammar.les"
-										_type = TT.@else;
+										_type = TT.Else;
 										#line 333 "EcsLexerGrammar.les"
 										_value = S.Else;
 										#line default
@@ -2554,7 +2554,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 334 "EcsLexerGrammar.les"
-										_type = TT.@enum;
+										_type = TT.Enum;
 										#line 334 "EcsLexerGrammar.les"
 										_value = S.Enum;
 										#line default
@@ -2582,7 +2582,7 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											#line 335 "EcsLexerGrammar.les"
-											_type = TT.@event;
+											_type = TT.Event;
 											#line 335 "EcsLexerGrammar.les"
 											_value = S.Event;
 											#line default
@@ -2763,7 +2763,7 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													#line 339 "EcsLexerGrammar.les"
-													_type = TT.@finally;
+													_type = TT.Finally;
 													#line 339 "EcsLexerGrammar.les"
 													_value = S.Finally;
 													#line default
@@ -2790,7 +2790,7 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											#line 340 "EcsLexerGrammar.les"
-											_type = TT.@fixed;
+											_type = TT.Fixed;
 											#line 340 "EcsLexerGrammar.les"
 											_value = S.Fixed;
 											#line default
@@ -2856,7 +2856,7 @@ namespace Loyc.Ecs.Parser
 													Skip();
 													Skip();
 													#line 342 "EcsLexerGrammar.les"
-													_type = TT.@foreach;
+													_type = TT.Foreach;
 													#line 342 "EcsLexerGrammar.les"
 													_value = S.ForEach;
 													#line default
@@ -2873,7 +2873,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 343 "EcsLexerGrammar.les"
-									_type = TT.@for;
+									_type = TT.For;
 									#line 343 "EcsLexerGrammar.les"
 									_value = S.For;
 									#line default
@@ -2929,7 +2929,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 344 "EcsLexerGrammar.les"
-									_type = TT.@goto;
+									_type = TT.Goto;
 									#line 344 "EcsLexerGrammar.les"
 									_value = S.Goto;
 									#line default
@@ -2977,7 +2977,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 345 "EcsLexerGrammar.les"
-							_type = TT.@if;
+							_type = TT.If;
 							#line 345 "EcsLexerGrammar.les"
 							_value = S.If;
 							#line default
@@ -3052,7 +3052,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														#line 347 "EcsLexerGrammar.les"
-														_type = TT.@interface;
+														_type = TT.Interface;
 														#line 347 "EcsLexerGrammar.les"
 														_value = S.Interface;
 														#line default
@@ -3121,7 +3121,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 350 "EcsLexerGrammar.les"
-							_type = TT.@in;
+							_type = TT.In;
 							#line 350 "EcsLexerGrammar.les"
 							_value = S.In;
 							#line default
@@ -3133,7 +3133,7 @@ namespace Loyc.Ecs.Parser
 							Skip();
 							Skip();
 							#line 351 "EcsLexerGrammar.les"
-							_type = TT.@is;
+							_type = TT.Is;
 							#line 351 "EcsLexerGrammar.les"
 							_value = S.Is;
 							#line default
@@ -3158,7 +3158,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 352 "EcsLexerGrammar.les"
-									_type = TT.@lock;
+									_type = TT.Lock;
 									#line 352 "EcsLexerGrammar.les"
 									_value = S.Lock;
 									#line default
@@ -3235,7 +3235,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														#line 354 "EcsLexerGrammar.les"
-														_type = TT.@namespace;
+														_type = TT.Namespace;
 														#line 354 "EcsLexerGrammar.les"
 														_value = S.Namespace;
 														#line default
@@ -3264,7 +3264,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 355 "EcsLexerGrammar.les"
-								_type = TT.@new;
+								_type = TT.New;
 								#line 355 "EcsLexerGrammar.les"
 								_value = S.New;
 								#line default
@@ -3361,7 +3361,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														#line 358 "EcsLexerGrammar.les"
-														_type = TT.@operator;
+														_type = TT.Operator;
 														#line 358 "EcsLexerGrammar.les"
 														_value = S.Operator;
 														#line default
@@ -3726,7 +3726,7 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											#line 367 "EcsLexerGrammar.les"
-											_type = TT.@return;
+											_type = TT.Return;
 											#line 367 "EcsLexerGrammar.les"
 											_value = S.Return;
 											#line default
@@ -3889,7 +3889,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 371 "EcsLexerGrammar.les"
-												_type = TT.@sizeof;
+												_type = TT.Sizeof;
 												#line 371 "EcsLexerGrammar.les"
 												_value = S.Sizeof;
 												#line default
@@ -3936,7 +3936,7 @@ namespace Loyc.Ecs.Parser
 																Skip();
 																Skip();
 																#line 372 "EcsLexerGrammar.les"
-																_type = TT.@stackalloc;
+																_type = TT.Stackalloc;
 																#line 372 "EcsLexerGrammar.les"
 																_value = S.StackAlloc;
 																#line default
@@ -4020,7 +4020,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 375 "EcsLexerGrammar.les"
-												_type = TT.@struct;
+												_type = TT.Struct;
 												#line 375 "EcsLexerGrammar.les"
 												_value = S.Struct;
 												#line default
@@ -4055,7 +4055,7 @@ namespace Loyc.Ecs.Parser
 												Skip();
 												Skip();
 												#line 376 "EcsLexerGrammar.les"
-												_type = TT.@switch;
+												_type = TT.Switch;
 												#line 376 "EcsLexerGrammar.les"
 												_value = S.Switch;
 												#line default
@@ -4092,7 +4092,7 @@ namespace Loyc.Ecs.Parser
 									Skip();
 									Skip();
 									#line 377 "EcsLexerGrammar.les"
-									_type = TT.@this;
+									_type = TT.This;
 									#line 377 "EcsLexerGrammar.les"
 									_value = S.This;
 									#line default
@@ -4113,7 +4113,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 378 "EcsLexerGrammar.les"
-										_type = TT.@throw;
+										_type = TT.Throw;
 										#line 378 "EcsLexerGrammar.les"
 										_value = S.Throw;
 										#line default
@@ -4152,7 +4152,7 @@ namespace Loyc.Ecs.Parser
 								Skip();
 								Skip();
 								#line 380 "EcsLexerGrammar.les"
-								_type = TT.@try;
+								_type = TT.Try;
 								#line 380 "EcsLexerGrammar.les"
 								_value = S.Try;
 								#line default
@@ -4201,7 +4201,7 @@ namespace Loyc.Ecs.Parser
 											Skip();
 											Skip();
 											#line 381 "EcsLexerGrammar.les"
-											_type = TT.@typeof;
+											_type = TT.Typeof;
 											#line 381 "EcsLexerGrammar.les"
 											_value = S.Typeof;
 											#line default
@@ -4298,7 +4298,7 @@ namespace Loyc.Ecs.Parser
 														Skip();
 														Skip();
 														#line 384 "EcsLexerGrammar.les"
-														_type = TT.@unchecked;
+														_type = TT.Unchecked;
 														#line 384 "EcsLexerGrammar.les"
 														_value = S.Unchecked;
 														#line default
@@ -4389,7 +4389,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 387 "EcsLexerGrammar.les"
-										_type = TT.@using;
+										_type = TT.Using;
 										#line 387 "EcsLexerGrammar.les"
 										_value = S.UsingStmt;
 										#line default
@@ -4544,7 +4544,7 @@ namespace Loyc.Ecs.Parser
 										Skip();
 										Skip();
 										#line 391 "EcsLexerGrammar.les"
-										_type = TT.@while;
+										_type = TT.While;
 										#line 391 "EcsLexerGrammar.les"
 										_value = S.While;
 										#line default
