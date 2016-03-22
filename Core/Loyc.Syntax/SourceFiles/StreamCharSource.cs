@@ -43,7 +43,7 @@
 	/// 3. The decoder must produce at least one character from a group of 
 	///    8 bytes (StreamCharSource.MaxSeqSize).
 	/// </remarks>
-	class StreamCharSource : ListSourceBase<char>, ICharSource
+	public class StreamCharSource : ListSourceBase<char>, ICharSource
 	{
 		protected Stream _stream;            // stream from which data is read
 		protected byte[] _buf;               // input buffer
