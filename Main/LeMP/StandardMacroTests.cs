@@ -1040,6 +1040,15 @@ namespace LeMP
 				Assert.IsTrue(msgs.List.Count > 0);
 			}
 			// And now some situations where it SHOULD add a handler or two.
+			TestEcs(@"
+				public static void Main(string[] args) {
+					on_return { bye(); }
+					hi();
+				}", 
+				@"public static void Main(string[] args) {
+					hi();
+					bye();
+				}");
 			TestEcs(@"void Foo() { F(); on_return() { Console.WriteLine(); } G(); }",
 			        @"void Foo() { F(); G(); Console.WriteLine(); }");
 			TestEcs(@"void Foo(bool c) { on_return() { G(); H(); } if (c) return; F(); }",
@@ -1599,6 +1608,12 @@ namespace LeMP
 			TestEcs(@"#set Flag; a(); static if (#get(Flag, false)) b();
 			                          static if (#get(Nada, false)) c(); d();",
 			        @"a(); b(); d();");
+			TestEcs(@"#set #inputFile = ""Foo.cs"";
+				static if (#get(#inputFile) `tree==` ""Foo.cs"")
+					WeAreInFoo();
+				else
+					ThisIsNotFoo();
+				", "WeAreInFoo();");
 		}
 
 		[Test]

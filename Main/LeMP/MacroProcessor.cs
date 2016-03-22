@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Loyc.Collections;
-using Loyc;
-using Loyc.Syntax;
 using System.Threading;
-using Loyc.Threading;
 using System.Threading.Tasks;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Threading;
+using LeMP.Prelude;
 
 /// <summary>The lexical macro processor. Main classes: <see cref="LeMP.Compiler"/> and <see cref="LeMP.MacroProcessor"/>.</summary>
 namespace LeMP
@@ -43,9 +44,11 @@ namespace LeMP
 	/// #import statements). The macro processor should be configured with any 
 	/// needed macros like this:
 	/// <code>
+	///   var prelude = typeof(LeMP.Prelude.BuiltinMacros); // the default prelude
 	///   var MP = new MacroProcessor(prelude, sink);
-	///   MP.AddMacros(typeof(LeMP.Prelude.BuiltinMacros).Assembly);
-	///   MP.PreOpenedNamespaces.Add((Symbol) "LeMP.Prelude");
+	///   MP.AddMacros(typeof(LeMP.StandardMacros).Assembly);
+	///   MP.PreOpenedNamespaces.Add((Symbol) "LeMP.Prelude"); // already done for you
+	///   MP.PreOpenedNamespaces.Add((Symbol) "LeMP");
 	/// </code>
 	/// In order for the input code to have access to macros, two steps are 
 	/// necessary: you have to add the macro classes with <see cref="AddMacros"/>
@@ -88,15 +91,19 @@ namespace LeMP
 		public MacroProcessor(Type prelude, IMessageSink sink)
 		{
 			_sink = sink;
-			if (prelude != null)
-				AddMacros(prelude);
+			AddMacros(prelude ?? typeof(BuiltinMacros));
 			AbortTimeout = TimeSpan.FromSeconds(30);
+			PreOpenedNamespaces.Add((Symbol)"LeMP.Prelude");
 		}
 
-		MMap<Symbol, List<MacroInfo>> _macros = new MMap<Symbol, List<MacroInfo>>();
-		internal MMap<Symbol, List<MacroInfo>> Macros { get { return _macros; } }
+		MMap<Symbol, VList<MacroInfo>> _macros = new MMap<Symbol, VList<MacroInfo>>();
+		internal MMap<Symbol, VList<MacroInfo>> Macros { get { return _macros; } }
 
-		public MSet<Symbol> PreOpenedNamespaces = new MSet<Symbol>();
+		/// <summary>Macros in these namespaces will be available without an explicit 
+		/// import command (#importMacros). By default this list has one item: 
+		/// @@LeMP.Prelude (i.e. (Symbol)"LeMP.Prelude")</summary>
+		public ICollection<Symbol> PreOpenedNamespaces { get { return _preOpenedNamespaces; } }
+		internal MSet<Symbol> _preOpenedNamespaces = new MSet<Symbol>();
 
 		/// <summary>Default values of scoped properties. This map is empty by 
 		/// default.</summary>
@@ -140,16 +147,11 @@ namespace LeMP
 			return any;
 		}
 
-		internal static void AddMacro(MMap<Symbol, List<MacroInfo>> macros, MacroInfo info)
+		internal static void AddMacro(MMap<Symbol, VList<MacroInfo>> macros, MacroInfo info)
 		{
-			List<MacroInfo> cases;
-			if (!macros.TryGetValue(info.Name, out cases)) {
-				macros[info.Name] = cases = new List<MacroInfo>();
-				cases.Add(info);
-			} else {
-				if (!cases.Any(existing => existing.Macro == info.Macro))
-					cases.Add(info);
-			}
+			var cases = macros[info.Name, VList<MacroInfo>.Empty];
+			if (!cases.Any(existing => existing.Macro == info.Macro))
+				macros[info.Name] = cases.Add(info);
 		}
 
 		internal static IEnumerable<MacroInfo> GetMacros(Type type, Symbol @namespace, IMessageSink sink, object instance = null)
@@ -182,6 +184,8 @@ namespace LeMP
 
 		#endregion
 
+		/// <summary>Processes a list of nodes directly on the current thread.</summary>
+		/// <remarks>Note: <c>AbortTimeout</c> doesn't work when using this overload.</remarks>
 		public VList<LNode> ProcessSynchronously(VList<LNode> stmts)
 		{
 			return new MacroProcessorTask(this).ProcessRoot(stmts);

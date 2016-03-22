@@ -20,35 +20,28 @@ namespace Loyc.LLParserGenerator
 	{
 		public static void Main(params string[] args)
 		{
-			IDictionary<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
+			MMap<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 			if (args.Length != 0) {
-				BMultiMap<string,string> options = new BMultiMap<string,string>();
-
-				var argList = args.ToList();
-				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
-				if (!options.ContainsKey("nologo"))
-					Console.WriteLine("LLLPG/LeMP macro compiler");
-
-				string _;
-				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _) || args.Length == 0) {
-					LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
-					return;
-				}
-
 				Severity minSeverity = Severity.Note;
 				#if DEBUG
 				minSeverity = Severity.Debug;
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				LeMP.Compiler c = LeMP.Compiler.ProcessArguments(options, filter, typeof(LeMP.Prelude.Les.Macros), argList);
-				LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
-				if (c != null) {
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-					c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
-					c.AddMacros(Assembly.GetExecutingAssembly());
-					c.AddMacros(typeof(LeMP.Prelude.BuiltinMacros).Assembly);
-					c.Run();
+				LeMP.Compiler c = new LeMP.Compiler(filter, typeof(LeMP.Prelude.BuiltinMacros));
+				var argList = args.ToList();
+				var options = c.ProcessArguments(argList, false, true);
+				if (options != null) {
+					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, 
+						KnownOptions.With("nologo", Pair.Create("","")));
+					if (c != null) {
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
+						c.AddMacros(typeof(LeMP.StandardMacros).Assembly);
+						c.AddMacros(Assembly.GetExecutingAssembly());
+						c.Run();
+					}
 				}
 			} else {
 				LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));

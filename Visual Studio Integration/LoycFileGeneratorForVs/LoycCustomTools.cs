@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using LeMP;
+using Loyc.Syntax.Les;
 
 namespace Loyc.VisualStudio
 {
@@ -169,11 +170,7 @@ namespace Loyc.VisualStudio
 
 		public virtual void Configure(global::LeMP.Compiler c)
 		{
-			c.AddMacros(typeof(Loyc.LLPG.Macros).Assembly);                   // LLLPG.exe
-			c.AddMacros(typeof(global::LeMP.Prelude.BuiltinMacros).Assembly); // LeMP.exe
-			c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);        // LeMP.StdMacros.dll
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
-			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+			c.AddMacros(typeof(Loyc.LLPG.Macros).Assembly); // LLLPG.exe
 		}
 
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
@@ -183,15 +180,6 @@ namespace Loyc.VisualStudio
 				string inputFolder = Path.GetDirectoryName(inputFilePath);
  				Environment.CurrentDirectory = inputFolder; // --macros should be relative to file being processed
 
-				var options = new BMultiMap<string, string>();
-				var argList = G.SplitCommandLineArguments(defaultNamespace);
-				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
-
-				string _;
-				var KnownOptions = LeMP.Compiler.KnownOptions;
-				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _))
-					LeMP.Compiler.ShowHelp(KnownOptions);
-				
 				// Originally I wrote a conversion from IVsGeneratorProgress to
  				// IMessageSink so that errors could be reported immediately and
 				// directly to Visual Studio. This broke in a bizarre way when I
@@ -210,34 +198,45 @@ namespace Loyc.VisualStudio
 				
 				var sourceFile = new InputOutput((UString)inputFileContents, inputFilePath);
 
+				Compiler.KnownOptions["no-out-header"] = Pair.Create("", "Remove explanatory comment from output file");
+				Compiler.KnownOptions.Remove("parallel");   // not applicable to single file
+				Compiler.KnownOptions.Remove("noparallel"); // not applicable to single file
+				Compiler.KnownOptions.Remove("outext");     // not allowed by IVsSingleFileGenerator
+
 				var c = new Compiler(sink, sourceFile) { 
 					AbortTimeout = TimeSpan.FromSeconds(10),
 					Parallel = false // only one file, parallel doesn't help
 				};
 
-				if (c.ProcessArguments(options))
+				var argList = G.SplitCommandLineArguments(defaultNamespace);
+				var options = c.ProcessArguments(argList, true, false);
+				if (argList.Count > 0)
+					sink.Write(Severity.Error, "Command line", "'{0}': expected options only (try --help).", argList[0]);
+
+				string _;
+				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _))
 				{
-					if (options.ContainsKey("no-out-header"))
-					{
-						options.Remove("no-out-header", 1);
-						c.NoOutHeader = true;
-					}
-					LeMP.Compiler.WarnAboutUnknownOptions(options, sink, KnownOptions);
-					if (c != null)
-					{
-						if (inputFilePath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
-							c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
-						Configure(c);
-						c.Run();
-
-						// Report errors
-						foreach (var msg in sink.List)
-							ReportErrorToVS(progressCallback, msg.Severity, msg.Context, msg.Format, msg.Args);
-
-						return Encoding.UTF8.GetBytes(c.Output.ToString());
-					}
+					var ms = new MemoryStream();
+					LeMP.Compiler.ShowHelp(LeMP.Compiler.KnownOptions, new StreamWriter(ms), false);
+					return ms.GetBuffer();
 				}
-				return null;
+
+				LeMP.Compiler.WarnAboutUnknownOptions(options, sink, LeMP.Compiler.KnownOptions);
+				
+				if (options.ContainsKey("no-out-header"))
+					c.NoOutHeader = true;
+				
+				if (c.InLang == LesLanguageService.Value || inputFilePath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
+					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+						
+				Configure(c);
+				c.Run();
+
+				// Report errors
+				foreach (var msg in sink.List)
+					ReportErrorToVS(progressCallback, msg.Severity, msg.Context, msg.Format, msg.Args);
+
+				return Encoding.UTF8.GetBytes(c.Output.ToString());
 			} finally {
 				Environment.CurrentDirectory = oldCurDir;
 			}

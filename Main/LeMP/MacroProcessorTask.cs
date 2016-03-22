@@ -94,7 +94,7 @@ namespace LeMP
 		MacroProcessor _parent;
 		IMessageSink _sink { get { return _parent.Sink; } }
 		int MaxExpansions { get { return _parent.MaxExpansions; } }
-		MMap<Symbol, List<MacroInfo>> _macros;
+		MMap<Symbol, VList<MacroInfo>> _macros;
 		MSet<Symbol> _macroNamespaces; // A list of namespaces that contain macros
 		MMap<object, object> _rootScopedProperties;
 		
@@ -134,7 +134,8 @@ namespace LeMP
 				});
 				thread.Start();
 				if (thread.Join(timeout)) {
-					onProcessed(io);
+					if (ex == null && onProcessed != null)
+						onProcessed(io);
 				} else {
 					io.Output = new VList<LNode>(F.Id("processing_thread_timed_out"));
 					thread.Abort();
@@ -172,11 +173,6 @@ namespace LeMP
 			PreProcess(ref stmts, null, true, true, false);
 			return stmts;
 		}
-		public LNode ProcessRoot(LNode stmt)
-		{
-			VList<LNode> empty = new VList<LNode>();
-			return PreProcess(ref empty, null, true, true, false);
-		}
 
 		// This is called either at the root node, or by a macro that wants to 
 		// preprocess its children (see IMacroContext.PreProcess()).
@@ -201,7 +197,7 @@ namespace LeMP
 					_ancestorStack = new DList<LNode>();
 				_s = new CurNodeState();
 				if (asRoot || resetOpenNamespaces) {
-					var namespaces = !reentrant || resetOpenNamespaces ? _parent.PreOpenedNamespaces.Clone() : _curScope.OpenNamespaces.Clone();
+					var namespaces = !reentrant || resetOpenNamespaces ? _parent._preOpenedNamespaces.Clone() : _curScope.OpenNamespaces.Clone();
 					var properties = asRoot ? _rootScopedProperties.Clone() : _curScope.ScopedProperties;
 					newScope = true;
 					_curScope = new Scope(namespaces, properties, this, true);
@@ -320,7 +316,7 @@ namespace LeMP
 				return Sink.IsEnabled(type);
 			}
 
-			public IReadOnlyDictionary<Symbol, List<MacroInfo>> AllKnownMacros { get { return _task._macros; } }
+			public IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get { return _task._macros; } }
 
 			#endregion
 		}
@@ -405,7 +401,7 @@ namespace LeMP
 
 		public int GetApplicableMacros(ICollection<Symbol> openNamespaces, Symbol name, ICollection<MacroInfo> found)
 		{
-			List<MacroInfo> candidates;
+			VList<MacroInfo> candidates;
 			if (_macros.TryGetValue(name, out candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
@@ -420,7 +416,7 @@ namespace LeMP
 		}
 		public int GetApplicableMacros(Symbol @namespace, Symbol name, ICollection<MacroInfo> found)
 		{
-			List<MacroInfo> candidates;
+			VList<MacroInfo> candidates;
 			if (_macros.TryGetValue(name, out candidates)) {
 				int count = 0;
 				foreach (var info in candidates) {
@@ -517,9 +513,10 @@ namespace LeMP
 		}
 
 		[LexicalMacro("#getScopedProperty(keyLiteral, defaultCode);", 
-			"Replaces the current node with the value of a scoped property. The key must be a literal. "+
+			"Replaces the current node with the value of a scoped property. The key must be a literal or an identifier. "+
+			"If the key is an identifier, it is treated as a symbol instead, e.g. `KEY` is equivalent to `@@KEY`. "+
 			"If the scoped property is an LNode, the code it represents is expanded in-place. "+
-			"If the scoped property is anything else, its value is inserted as a literal."+
+			"If the scoped property is anything else, its value is inserted as a literal. "+
 			"If the property does not exist, the second parameter is used instead. "+
 			"The second parameter is optional; if there is no second parameter and the "+
 			"requested property does not exist, an error is printed.",
@@ -864,7 +861,7 @@ namespace LeMP
 				maxSeverity = Severity.Warning;
 			if (maxSeverity < Severity.Note)
 				maxSeverity = Severity.Note;
-			if (accepted == 0 && _sink.IsEnabled(maxSeverity) && rejected.Any(r => r.Msgs.Count == 0))
+			if (accepted == 0 && input.IsCall && _sink.IsEnabled(maxSeverity) && rejected.Any(r => r.Msgs.Count == 0))
 			{
 				_sink.Write(maxSeverity, input, "{0} macro(s) saw the input and declined to process it: {1}", 
 					results.Count, rejected.Select(r => QualifiedName(r.Macro.Macro.Method)).Join(", "));
