@@ -6,6 +6,29 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v1.7.1: Mar 22, 2016 ###
+
+- Unveiled the [Macro Reference Manual](reference.html)
+- Added macros: `includeFile` (aka `#include`), `#set` (aka `#setScopedProperty`), `#snippet` (aka `#setScopedPropertyQuote`), `#get` (aka `#getScopedProperty`), and `replacePP` (`replace` plus preprocessing of initial parameters).
+- `MacroProcessorTask` introduces two global-scoped Symbols, `#inputFolder` and `#inputFile`.
+- Eliminated `#haveContractRewriter` and `#setAssertMethod` macros, since you can now just use `#set #haveContractRewriter` and `#snippet #assertMethod = AssertMethod;`
+- Renamed `on_error_catch` to `on_throw_catch` so that it's made of keywords.
+- Code contracts:
+    - Introduced `[ensuresFinally]`, which checks a postcondition in `finally`
+    - Changed Contract Attribute error messages to match MS Code Contracts
+    - Code contract attributes now support lambda functions
+- Changed public interface of `LeMP.Compiler` to make it a bit more flexible and easier to use
+- `ParsingService`: added global language "registration" feature.
+- Loyc.Essentials: added `TryGetValue` extension method for `IReadOnlyDictionary`.
+- Misc., e.g. renamed some members of `Loyc.Ecs.Parser.TokenType`
+- Bug fix to `IMacroContext`: made macro dictionary _fully_ immutable
+
+### v1.7.0: Mar 18, 2016 ###
+
+- Renamed `Localize.From` => `Localize.Localized` and made it an extension method
+- Forwarding macro `==>` now recognizes `_` as name of current method/property (synonym of `#`).
+- Refactored EC# parser.
+
 ### v1.6.0: Mar 9, 2016 ###
 
 - Factored standard macros into their own assembly

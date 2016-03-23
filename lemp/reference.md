@@ -8,14 +8,13 @@ Look up by category
 -------------------
 
 - Bulk code generation
-    - Algebraic Data Types ([see article](pattern-matching.html#algebraic-data-types))
-    - `unroll` ([see article](avoid-tedium-with-LeMP.html#unroll))
-    - `replace` ([see article](avoid-tedium-with-LeMP.html#replace))
+    - [`unroll`](ref-other.html#unroll) ([see article](avoid-tedium-with-LeMP.html#unroll))
+    - [`replace`](ref-other.html#replace) ([see article](avoid-tedium-with-LeMP.html#replace))
+    - [Algebraic Data Types](ref-other.html#alt-class-algebraic-data-type) ([see article](pattern-matching.html#algebraic-data-types))
 - Pattern matching
-    - `matchCode`: Syntax tree matching ([see article](lemp-code-gen-and-analysis.html#pattern-matching-using-matchcode))
-    - `match`: Object pattern matching ([see
+    - [`matchCode`](ref-other.html#matchcode): Syntax tree matching ([see article](lemp-code-gen-and-analysis.html#pattern-matching-using-matchcode))
+    - [`match`](ref-other.html#match): Object pattern matching ([see
  article](pattern-matching.html#pattern-matching))
-    - `includeFile`
 - [Code Contracts](ref-code-contracts.html)
     - [notnull](ref-code-contracts.html#notnull--notnull)
     - [[requires] & [assert]](ref-code-contracts.html#requires--assert)
@@ -34,6 +33,7 @@ Look up by category
     - `this` constructors
     - [Easy method forwarding](ref-other.html#method-forwarding)
     - `in` and in-range operator combinations
+    - `includeFile`
     - `namespace` without braces
     - `??=`
     - `static if` and `static_if`

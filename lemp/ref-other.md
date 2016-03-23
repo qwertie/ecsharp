@@ -1,16 +1,21 @@
 ---
-title: "LeMP Macro Reference: Other"
-tagline: Standard macros in the LeMP namespace
+title: "LeMP Macro Reference: Standard Macros"
 layout: article
 date: 20 Mar 2016
 toc: true
 ---
 
+## LeMP namespace ##
+
+**Note**: the LeMP namespace is normally imported automatically for you.
+
 ### assert ###
 
 	assert(condition);
 
-Translates `assert(expr)` to `System.Diagnostics.Debug.Assert(expr, "Assertion failed in Class.MethodName: expr")`. You can change the assert method with `#snippet` as shown in the following example:
+Translates `assert(expr)` to `System.Diagnostics.Debug.Assert(expr, "Assertion failed in Class.MethodName: expr")`.
+
+You can change the assert method with `#snippet` as shown in the following example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
@@ -222,7 +227,7 @@ ab;
 
 Concatenates identifiers and/or literals to produce an identifier. For example, the output of ``a `##` b`` is `ab`.
 
-**Note**: concatId cannot be used directly as a variable or method name unless you use `$(out concatId(...))`.
+**Note**: `concatId` cannot be used directly as a variable or method name unless you use `$(out concatId(...))`.
 
 ### this-constructors ###
 
@@ -279,7 +284,7 @@ int Square(int x) => x * x;
 
 ### Contract attributes ###
 
-Documentation [here](ref-code-contracts.html).
+See documentation [here](ref-code-contracts.html).
 
 ### Method Forwarding ###
 
@@ -297,7 +302,7 @@ This is really handy for implementing the [adapter pattern](https://en.wikipedia
 ~~~csharp
 Type SomeMethod(Type param) ==> target.Method;
 int Compute(int x) ==> base._;
-Type Prop ==> target._; 
+Type Property ==> target._; 
 Type Prop { get ==> target; set ==> target; }
 ~~~
 
@@ -329,7 +334,7 @@ Type Prop
 ~~~
 </div>
 
-### in-range operator combination ###
+### in-range operator combinations ###
 
 <div class='sbs' markdown='1'>
 ~~~csharp
@@ -555,14 +560,14 @@ Assign A = B only when A is null. **Caution**: currently, A is evaluated twice.
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-if (a.b?.c.d) {
+if (a.b?.c.d ?? false) {
   Good();
 }
 ~~~
 
 ~~~csharp
 // Output of LeMP
-if (a.b != null ? a.b.c.d : null) {
+if ((a.b != null ? a.b.c.d : null) ?? false) {
   Good();
 }
 ~~~
@@ -924,10 +929,10 @@ Produces variations of a block of code, by replacing an identifier left of `in` 
 #useSymbols;
 void Increment()
 {
-  if (dict.Contains(@@Foo))
-    dict[@@Foo]++;
+  if (dict.Contains(@@Counter))
+    dict[@@Counter]++;
   else
-    dict[@@Foo] = 1;
+    dict[@@Counter] = 1;
 }
 ~~~
 
