@@ -22,6 +22,6 @@ version: (I changed Hyde not to display this)
 url:     "http://loyc.net"               # Used by the Atom feed
 baseurl: ""                              # grep "site.baseurl" to see how it is used
 github:
-  repo:  https://github.com/qwertie/Loyc # "GitHub project" link on sidebar
+  repo:  https://github.com/qwertie/ecsharp # "GitHub project" link on sidebar
   user: qwertie                          # For comments system (not Hyde)
   project: loyc                          # For comments system (not Hyde)
