@@ -1,6 +1,6 @@
 {% if page.redirectDomain %}
 <h1 id="redirectDomain">This page has moved to <a href="http://{{ page.redirectDomain }}{{ page.url }}">{{ page.redirectDomain }}</a>.</h1>
-<small id="redirectDomain2" style="visibility: hidden;">GitHub doesn't support HTTP redirects, so you'll be redirected via Javascript in 5 seconds.<br/><br/>
+<small id="redirectDomain2" style="visibility: collapse;">GitHub doesn't support HTTP redirects, so you'll be redirected via Javascript in 5 seconds.<br/><br/>
 </small>
 <script>
 if (window.location.href.indexOf('http://{{ page.redirectDomain }}') != 0) {
@@ -9,7 +9,7 @@ if (window.location.href.indexOf('http://{{ page.redirectDomain }}') != 0) {
 	}, 5000);
 	document.getElementById("redirectDomain2").style.visibility = "visible";
 } else {
-	document.getElementById("redirectDomain").style.visibility = "hidden";
+	document.getElementById("redirectDomain").style.visibility = "collapse";
 }
 </script>
 {% endif %}
