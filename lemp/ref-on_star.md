@@ -4,6 +4,7 @@ tagline: Standard macros in the LeMP namespace
 layout: article
 date: 20 Mar 2016
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 Introduction

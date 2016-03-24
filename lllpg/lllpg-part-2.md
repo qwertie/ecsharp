@@ -3,6 +3,7 @@ title: "LLLPG Part 2: Learning how to parse"
 layout: article
 date: 26 Nov 2013 (updated 6 Mar 2016)
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 ## Introduction

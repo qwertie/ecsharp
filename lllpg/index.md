@@ -2,6 +2,7 @@
 title: "LLLPG Home Page"
 layout: page
 tagline: "The LL(k) Parser Generator for Coders"
+redirectDomain: ecsharp.net
 ---
 
 ![Logo](lllpg-logo.png)

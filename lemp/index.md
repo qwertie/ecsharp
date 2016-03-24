@@ -3,6 +3,7 @@ title: "LeMP Home Page"
 layout: page
 tagline: "the Lexical Macro Processor for C#"
 toc: true
+redirectDomain: ecsharp.net
 ---
 ## Introduction ##
 
@@ -16,8 +17,8 @@ Design patterns are a valuable conceptual tool for developers, but some of them 
 
 A LISP-style macro processor helps you solve the **repetition-of-boilerplate** problem, and it also provides a framework in which you can run sophisticated algorithms at compile-time (for example, have a look at [LLLPG](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), just one of many macros included with LeMP.)
 
-Example: Making simple classes
-------------------------------
+Examples
+--------
 
 It's not just design patterns. Any code pattern that involves unnecessary repetition is a sign of weakness in your programming language.
 

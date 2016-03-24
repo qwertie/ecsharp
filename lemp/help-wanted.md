@@ -2,6 +2,7 @@
 title:  "LeMP: Help Wanted"
 layout: article
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 Task: copy comments to output

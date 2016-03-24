@@ -1,6 +1,7 @@
 ---
 title: LLLPG FAQ
 layout: article
+redirectDomain: ecsharp.net
 ---
 
 ### Q. What are the advantages of LLLPG over other tools?

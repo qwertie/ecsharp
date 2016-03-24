@@ -4,6 +4,7 @@ layout: article
 date: 25 Feb 2014
 tagline: "The ambivalent world of ambiguity, the slash, greedy and nongreedy. At the end, in lieu of refreshments, there will be an API reference."
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 Welcome to part 4

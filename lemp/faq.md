@@ -2,6 +2,7 @@
 title: LeMP FAQ
 layout: article
 tagline: "not a real FAQ: nobody's asking questions yet"
+redirectDomain: ecsharp.net
 ---
 
 ### Q. How do I invoke LeMP programmatically? ###

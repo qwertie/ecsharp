@@ -3,6 +3,7 @@ title: "LeMP Macro Reference: Standard Macros"
 layout: article
 date: 20 Mar 2016
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 ## LeMP namespace ##
@@ -60,7 +61,7 @@ void DrawLine(Color c) {
 }
 ~~~
 
-Expands a short description of an 'algebraic data type' (a.k.a. disjoint union) into a set of classes with a common base class. All data members are read-only, and for each member (e.g. `Item1` and `Item2` above), a `With()` method is generated to let users create modified versions. For more information, see the [article about pattern matching and ADTs](pattern-matching.html). Example:`
+Expands a short description of an 'algebraic data type' (a.k.a. disjoint union) into a set of classes with a common base class. All data members are read-only, and for each member (e.g. `Item1` and `Item2` above), a `With()` method is generated to let users create modified versions. Example:`
 
 <div class='sbs' markdown='1'>
 ~~~csharp

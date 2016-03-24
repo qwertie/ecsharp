@@ -3,6 +3,7 @@ title: "LLLPG Part 3: Beyond the basics"
 layout: article
 date: 23 Feb 2014
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 Welcome to part 3

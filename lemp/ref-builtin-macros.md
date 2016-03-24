@@ -3,6 +3,7 @@ title: "LeMP Reference: Built-in macros"
 layout: article
 date: 20 Mar 2016
 toc: true
+redirectDomain: ecsharp.net
 ---
 
 **Note**: The `#` character in macro names has two meanings. Usually it means "this macro produces no direct output and will disappear from the output file." The other meaning is "this is one of the global macros that is always available and cannot be un-imported."
