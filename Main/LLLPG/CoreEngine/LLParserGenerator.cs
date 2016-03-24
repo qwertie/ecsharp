@@ -16,8 +16,8 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
 	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
-	/// LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
-	/// project (http://loyc.net).
+	/// LLLPG is an LL(k) parser generator under the umbrella of the Loyc 
+	/// initiative (http://loyc.net). Home page: http://ecsharp.net/lllpg or http://lllpg.com
 	/// <para/>
 	/// LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
 	/// designed for parsing computer languages, not natural languages. It also

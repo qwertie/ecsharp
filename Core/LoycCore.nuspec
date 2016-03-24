@@ -4,10 +4,10 @@
 <package >
   <metadata>
     <id>LoycCore</id>
-    <version>1.6.1</version>
+    <version>1.7.1</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
-    <projectUrl>http://core.loyc.net</projectUrl>
+    <projectUrl>http://core.ecsharp.net</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Core libraries to "fill in the gaps" in the .NET Base Class Library.</summary>
