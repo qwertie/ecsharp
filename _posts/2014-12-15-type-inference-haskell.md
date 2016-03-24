@@ -2,7 +2,7 @@
 title: Parsing & type inference (Algorithm W in Haskell), and thoughts about Union types
 layout: post
 ---
-For a university class I had to implement type inference for a toy lambda calculus (first an untyped one, then a typed one). A parser was provided, but it was very bare-bones so I decided to make my own using Parsec. (Sadly, returning to university has slowed my work on [Loyc](http://loyc.net), but I digress.)
+For a university class I had to implement type inference for a toy lambda calculus (first an untyped one, then a typed one). A parser was provided, but it was very bare-bones so I decided to make my own using Parsec. (Sadly, returning to university has slowed my work on [Loyc](http://loyc.net) / [EC#](http://ecsharp.net)), but I digress.)
 
 There are few Parsec examples available in which there is a separate lexer and parser, so if you're looking for a two-stage Parsec parser, you've come to the right place. My lexer+parser is probably significantly larger than necessary though, because I don't know all the tricks of the Parsec trade. Two-stage parsers are apparently harder to write, but I heard they have better performance.
 

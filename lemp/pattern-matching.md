@@ -12,7 +12,7 @@ _March 7, 2016_
 Introduction
 ------------
 
-This article will teach you how to use some of the "functional" features of the open-source Enhanced C# + LeMP project: pattern matching, algebraic data types, tuples and numeric ranges. To download the Visual Studio extension or learn more about LeMP, visit the [LeMP home page](http://loyc.net/lemp).
+This article will teach you how to use some of the "functional" features of the open-source Enhanced C# + LeMP project: pattern matching, algebraic data types, tuples and numeric ranges. To download the Visual Studio extension or learn more about LeMP, visit the [LeMP home page](http://ecsharp.net/lemp).
 
 Pattern matching!
 -----------------

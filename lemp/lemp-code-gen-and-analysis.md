@@ -775,7 +775,7 @@ Learn more about LeMP!
 
 You can learn about some other LeMP capabilities in the [previous article](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part), and I plan to write another article soon, this time about pattern matching with `match` (as opposed to `matchCode` which you saw in this article).
 
-In addition to LeMP macros, you'll find that the `LNode` class has numerous useful methods for querying and modifying Loyc trees. See the [`LNode` class reference](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html). You can search for any class or method you've seen in the search box above the [Code Documentation](http://loyc.net/doc/code/), or browse through the [Loyc namespace](http://loyc.net/doc/code/namespaceLoyc.html) to find out what else is available.
+In addition to LeMP macros, you'll find that the `LNode` class has numerous useful methods for querying and modifying Loyc trees. See the [`LNode` class reference](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html). You can search for any class or method you've seen in the search box above the [Code Documentation](http://loyc.net/doc/code/), or browse through the [Loyc namespace](http://loyc.net/doc/code/namespaceLoyc.html) to find out what else is available.
 
 Conclusion
 ----------

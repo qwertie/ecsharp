@@ -7,7 +7,7 @@ layout: article
 
 - LLLPG home page officially opens!
 - LLLPG: Added `...` as synonym for `..`; `...` is preferred since character ranges are inclusive
-- Changes to LLLPG itself are minimal, but [LeMP](http://loyc.net/lemp) has been updated to v1.5.1, which includes a richer set of macros (not really related to parsing), such as macros for pattern matching and algebraic data types.
+- Changes to LLLPG itself are minimal, but [LeMP](http://ecsharp.net/lemp) has been updated to v1.5.1, which includes a richer set of macros (not really related to parsing), such as macros for pattern matching and algebraic data types.
 
 ### LLLPG v1.4.0 (Aug 25, 2015) ### 
 
@@ -26,8 +26,8 @@ layout: article
 - Implemented VS syntax highlighter for Enhanced C# in Visual Studio 2010 to 2015
 - LLLPG: Added `listInitializer: var _ = new List<T>()` option
 - Added Demo Window to LeMP. Renamed `LllpgForVisualStudio.exe` => `LoycFileGeneratorForVS.exe`
-- `ILexer<Token>` now has a type parameter; `NextToken()` now returns [`Maybe<Token>`](http://loyc.net/doc/code/structLoyc_1_1Maybe_3_01T_01_4.html) instead of `Token?` so that `Token` is not required to be a struct.
-- Added [`BaseILexer<CharSrc,Token>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html), and installed it as the new base class of LesLexer
+- `ILexer<Token>` now has a type parameter; `NextToken()` now returns [`Maybe<Token>`](http://ecsharp.net/doc/code/structLoyc_1_1Maybe_3_01T_01_4.html) instead of `Token?` so that `Token` is not required to be a struct.
+- Added [`BaseILexer<CharSrc,Token>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseILexer_3_01CharSrc_00_01Token_01_4.html), and installed it as the new base class of LesLexer
 - Added `BaseLexer.ErrorSink` property; default behavior is still to throw `FormatException`
 - LLLPG Bug fix: `SavePosition` now prefixed by value of `inputClass` option.
 - LLLPG Bug fix: `result:Terminal` did not automatically `return result`.

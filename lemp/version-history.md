@@ -5,7 +5,7 @@ layout: article
 redirectDomain: ecsharp.net
 ---
 
-See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
+See also: version history of [LoycCore](http://core.ecsharp.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
 ### v1.7.1: Mar 22, 2016 ###
 

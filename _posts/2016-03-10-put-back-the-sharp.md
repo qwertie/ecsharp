@@ -3,7 +3,7 @@ title: "Putting the `#` back in operator names?"
 layout: post
 ---
 
-A while ago I [removed the `#` that LES/EC# adds at the beginning of all operator names](http://loyc.net/2014/in-operator-names-to-be-removed.html). Having written quite a few macros now, I am starting to think that was sort-of a mistake. The reasons for removing it seemed good, but one of the reasons turned out to be kind of bogus.
+A while ago I [removed the `#` that LES/EC# adds at the beginning of all operator names](http://ecsharp.net/2014/in-operator-names-to-be-removed.html). Having written quite a few macros now, I am starting to think that was sort-of a mistake. The reasons for removing it seemed good, but one of the reasons turned out to be kind of bogus.
 
 I had thought "well, operators should really just be thought of as ordinary functions... they're not really as special as mainstream languages lead us to believe... so why should their name have any clear indication of their specialness?" I've encountered a couple of problems with this:
 

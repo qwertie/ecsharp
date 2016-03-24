@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.7-->
+﻿<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -129,7 +129,7 @@ Inheritance diagram for Loyc.Collections.SparseAList&lt; T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A sparse A-List that implements ISparseList{T}.</p>
-<p>An <a href="http://core.loyc.net/collections/alists-part3.html">article</a> about this class is available. </p>
+<p>An <a href="http://core.ecsharp.net/collections/alists-part3.html">article</a> about this class is available. </p>
 <p>The sparse A-List is implemented similarly to a normal A-List; the main difference is that leaf nodes have a list of (int, T) pairs rather than a list of T values. The integers represent the relative index of each T value, as an offset from the beginning of the node. This allows an arbitrary amount of empty space to exist between each T value in the list, making it sparse. </p>
 <p><code>SparseAList</code> is a precise sparse list, meaning that you can rely on it to keep track of which indexes are "set" and which are "empty" (the <a class="el" href="classLoyc_1_1Collections_1_1SparseAList_3_01T_01_4.html#a3cec92d157b427f0c8a4d3fd1e35f68c" title="Determines whether a value exists at the specified index.">IsSet</a> method tells you which). </p>
 <p>TODO: Add support for A-List tree observers (IAListTreeObserver(K,T)) </p>

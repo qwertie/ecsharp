@@ -12,4 +12,4 @@ LoycCore is a set of useful libraries for many kinds of .NET developers, startin
 [Loyc.Syntax](https://github.com/qwertie/LoycCore/wiki/Loyc.Syntax).dll: Contains a parser for Loyc Expression Syntax (LES), and various interfaces and base classes for Loyc Languages and for users of LLLPG. Many programs other than compilers need to parse "expressions" and LES provides a good balance between power and simplicity.
 [Loyc.Utilities](https://github.com/qwertie/LoycCore/wiki/Loyc.Utilities).dll: Additional functionality that is either (A) not important enough to be placed in Loyc.Essentials.dll or (B) takes Loyc.Collections.dll as a dependency.
 
-LoycCore will have its own home page at http://core.loyc.net and I have created a NuGet package for these libraries called LoycCore.
+LoycCore will have its own home page at http://core.loyc.net [2016 edit: now http://core.ecsharp.net] and I have created a NuGet package for these libraries called LoycCore.

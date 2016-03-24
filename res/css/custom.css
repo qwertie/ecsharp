@@ -44,7 +44,7 @@ a[href^="https://"]:after {
   content: url(/res/icon_external_link.png);
   margin: 0 0 0 3px;
 }
-a[href*="loyc.net/"]:after,
+a[href*="ecsharp.net/"]:after,
 a[href*="//localhost"]:after {
   content: '';
   margin: 0;

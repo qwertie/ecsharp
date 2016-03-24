@@ -420,7 +420,7 @@ The bug in the [SFG][6] custom tool (LllpgForVisualStudio.exe 1.0) that involved
 
 has been fixed in 1.1.0, so error messages will appear in the normal error list instead of on message boxes.
 
-For more articles about LLLPG, return to the [home page](http://loyc.net/lllpg). Here's a list of topics that are covered in future articles:
+For more articles about LLLPG, return to the [home page](http://ecsharp.net/lllpg). Here's a list of topics that are covered in future articles:
 
 * **What does LL(k) mean, anyway?**
 * **Requirements on the base class** ([BaseLexer][27] and [BaseParser][28]).
@@ -448,7 +448,7 @@ So that's it! Hope you like my parser generator, folks, and I'll be happy to ans
 * Feb. 23, 2014: [Part 3](lllpg-part-3.html) published with LLLPG 1.1.0 and multiple new demos.
 * Feb. 25, 2014: [Part 4](lllpg-part-4.html) published.
 * June 19, 2015: [Part 5](lllpg-part-5.html) published.
-* March 3, 2016: LLLPG updated with new version of LeMP - please visit the new [LeMP home page](http://loyc.net/lemp).
+* March 3, 2016: LLLPG updated with new version of LeMP - please visit the new [LeMP home page](http://ecsharp.net/lemp).
 
 [2]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
 [3]: http://en.wikipedia.org/wiki/Parsing

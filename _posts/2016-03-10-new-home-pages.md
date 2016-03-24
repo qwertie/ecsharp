@@ -17,4 +17,4 @@ And now that LeMP has a compelling library of standard macros for C#...
 - A clone of D's `scope(failure)` & `scope(exit)`
 - And more
 
-I've been writing articles about these features, and added a new [LeMP Home Page](/lemp) to tie everything together. Enjoy! Maybe it's a bit OCD but I also put together a version history for [LLLPG](http://loyc.net/lllpg/version-history.html), [LeMP](http://loyc.net/lemp/version-history.html) and [for the Core Libraries](http://core.loyc.net/version-history).
+I've been writing articles about these features, and added a new [LeMP Home Page](/lemp) to tie everything together. Enjoy! Maybe it's a bit OCD but I also put together a version history for [LLLPG](http://ecsharp.net/lllpg/version-history.html), [LeMP](http://loyc.net/lemp/version-history.html) and [for the Core Libraries](http://core.ecsharp.net/version-history).

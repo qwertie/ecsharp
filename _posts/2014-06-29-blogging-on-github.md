@@ -128,7 +128,7 @@ I decided to use the Poole-based "Hyde" theme, so I downloaded [`hyde-master.zip
         description: "Blah blah blah" # shown under the title
         tagline: "Blah blah blah"     # shown in title bar beside the title
         version: "1.2.3"              # "Currently v1.2.3"
-        url:     "http://loyc.net"    # Used by the Atom feed
+        url:     "http://ecsharp.net" # Used by the Atom feed
         baseurl: ""                   # URL of site relative to domain
         github:
           repo:  https://github.com/user/Proj # "GitHub project" link on sidebar

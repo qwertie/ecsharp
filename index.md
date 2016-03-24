@@ -38,7 +38,7 @@ Loyc is in its infancy, and probably will remain so until I attract either (A) v
 - [SIL](https://github.com/qwertie/ecsharp/wiki/Standard-Imperative-Language) (Standard Imperative Language): not yet started
 - Visual studio integration: When you write a lexer & parser, you can get syntax highlighting almost for free.
 
-At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.loyc.net](http://core.loyc.net). The dependence tree of existing libraries is
+At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.ecsharp.net](http://core.ecsharp.net). The dependence tree of existing libraries is
 
      Loyc.Essentials.dll  (Collection interfaces, collection adaptors, extension 
               ^            methods, UString, important utility classes, and more)

@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.7-->
+﻿<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -121,7 +121,7 @@ Inheritance diagram for Loyc.Collections.Impl.InternalList&lt; T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>A compact auto-enlarging array structure that is intended to be used within other data structures. It should only be used internally in "private" or "protected" members of low-level code. </p>
-<p>An <a href="http://core.loyc.net/collections/internal-list.html">article</a> about this class is available. </p>
+<p>An <a href="http://core.ecsharp.net/collections/internal-list.html">article</a> about this class is available. </p>
 <p><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1InternalList.html" title="Contains static methods to help manage raw arrays with even less overhead than InternalList{T}. ">InternalList</a> is a struct, not a class, in order to save memory; and for maximum performance, it asserts rather than throwing an exception when an incorrect array index is used. Besides that, it has an InternalArray property that provides access to the internal array. For all these reasons one should not expose it in a public API, and it should only be used when performance trumps all other concerns. </p>
 <p>Passing this structure by value is dangerous because changes to a copy of the structure may or may not be reflected in the original list. It's best not to pass it around at all, but if you must pass it, pass it by reference. </p>
 <p>Also, do not use the default contructor. Always specify an initial capacity or copy InternalList.Empty so that _array gets a value. This is required because methods such as Add(), Insert() and <a class="el" href="structLoyc_1_1Collections_1_1Impl_1_1InternalList_3_01T_01_4.html#a95e91f931cbf4cde071db2f53e8b5f7b" title="Makes the list larger or smaller, depending on whether newSize is larger or smaller than Count...">Resize()</a> assume _array is not null. </p>

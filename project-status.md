@@ -7,7 +7,7 @@ Help wanted!
 
 ## Loyc .NET core libraries, Loyc trees, and LES
 
-See [status at core.loyc.net](http://core.loyc.net/project-status.html).
+See [status at core.ecsharp.net](http://core.ecsharp.net/project-status.html).
 
 ## Enhanced C#: the project to add numerous features to C#  
 
@@ -39,7 +39,7 @@ so that `A` is evaluated only once. However, this would require me to create a c
 (Of course, this particular feature was added to C# 6, so the macro could be removed, but there are other macros too that are 'hurting' because C# doesn't allow variable declarations inside expressions.)
 
 - Lexical Macro Processor (LeMP.MacroProcessor class, plus helper class LeMP.Compiler):
-    - Simple lexical macros are done. [`IMacroContext`](http://loyc.net/doc/code/interfaceLeMP_1_1IMacroContext.html) is done. Currently macros do not support "hygiene", and they have no access to type information (i.e. there are no symbol tables). Macro names can be overloaded; if two macros have the same name, that's fine if exactly one of the macros returns a non-null result.
+    - Simple lexical macros are done. [`IMacroContext`](http://ecsharp.net/doc/code/interfaceLeMP_1_1IMacroContext.html) is done. Currently macros do not support "hygiene", and they have no access to type information (i.e. there are no symbol tables). Macro names can be overloaded; if two macros have the same name, that's fine if exactly one of the macros returns a non-null result.
     - TODO: design a more powerful macro system.
 - Standard Macros (designed to convert simple EC# code to plain C# code. this is not an exhaustive list):
     - Done: LES to C# macros (LeMP.Prelude.Les.Macros class): Contains numerous macros to convert LES code that resembles C# into syntax trees understood by the C# printer, e.g. the LES expression "class X { two::int; };" is converted to the syntax tree "#class(X, #(), { #var(#int, two); });" which is recognized by the C# printer as a class declaration.

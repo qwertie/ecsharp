@@ -36,7 +36,7 @@ New features of LLLPG 1.3.2
 - Automatic return value: when you use `$result` or the `result:` label in a rule, LLLPG automatically creates a variable called `result` to hold the return value of the current rule, and it adds a `return result` statement at the end of the method.
 - implicit LLLPG blocks: instead of writing `LLLPG(lexer) { /* rules */ }`, with braces around the rules, you are now allowed to write `LLLPG(lexer); /* rules */`, so  you won't be pressured to indent the rules so much.
 - `any` command and `inline` rules: Details below.
-- The new base class [`BaseParserForList<Token,int>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) is easier to use than the old base class `BaseParser<Token>`.
+- The new base class [`BaseParserForList<Token,int>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) is easier to use than the old base class `BaseParser<Token>`.
 - LLLPG will now insert `#line` directives in the code for grammar actions. While useful for compiler errors, this feature turned out to be disorienting when debugging; to convert the `#line` directives into comments, attach the following attribute before the `LLLPG` command: `[AddCsLineDirectives(false)]`.
 
 Using LLLPG with an "external" API
@@ -44,7 +44,7 @@ Using LLLPG with an "external" API
 
 You can use the `inputSource` and `inputClass` options to designate an object to which LLLPG should send all its API calls. `inputClass` should be the data type of the object that `inputSource` refers to. For example, if you specify `inputSource(src)`, LLLPG will translate a grammar fragment like `'+'|'-'` into code like `src.Match('+','-')`. Without the `inputSource` option, this would have just been `Match('+','-')`.
 
-Loyc.Syntax.dll (included with LLLPG 1.3) has [`LexerSource`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html) and [`LexerSource<C>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource_3_01CharSrc_01_4.html) types, which are derived from [`BaseLexer`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) and provide the LLLPG Lexer API. When using these options, a lexer will look something like this:
+Loyc.Syntax.dll (included with LLLPG 1.3) has [`LexerSource`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html) and [`LexerSource<C>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource_3_01CharSrc_01_4.html) types, which are derived from [`BaseLexer`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) and provide the LLLPG Lexer API. When using these options, a lexer will look something like this:
 
     using Loyc;
     using Loyc.Syntax.Lexing;
@@ -66,7 +66,7 @@ Loyc.Syntax.dll (included with LLLPG 1.3) has [`LexerSource`](http://loyc.net/do
       }
     }
 
-`LexerSource` accepts any implementation of (`ICharSource`](http://loyc.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html); `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. [`UString`](http://loyc.net/doc/code/structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89) is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
+`LexerSource` accepts any implementation of (`ICharSource`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html); `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. [`UString`](http://loyc.net/doc/code/structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89) is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://loyc.net/doc/code/structLoyc_1_1UString.html] for details.)
 
 Automatic Value Saver
 ---------------------
@@ -176,7 +176,7 @@ In summary, if `Foo` represents a rule, token type, or a character, the followin
 - `x+=Foo`: add the value of `Foo` to the existing list variable `x` (i.e. `x.Add(Foo())`, if `Foo` is a rule)
 - `x:=Foo`: create a variable `x` in the current scope with `Foo` as its value (i.e. `var x = Foo();` if `Foo` is a rule).
 - `x:Foo`: create a variable called `x` of the appropriate type at the beginning of the method and set `x` to it here. If `Foo` is a token or character, use the `terminalType` code-generation option to control the declared type of `x` (e.g. `LLLPG(parser(terminalType: Token))`) If you use the label `x` in more than once place, LLLPG will create only one (non-list) variable called `x`.
-- `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.loyc.net/collections/dlist.html))
+- `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.ecsharp.net/collections/dlist.html))
 
 You can only use these operators on "primitive" grammar elements: terminal sets and rule references. For example, `digits:(('0'..'9')*)` and `digits+:(('0'..'9')*)` are illegal; but `(digits+:('0'..'9'))*` is legal.
 
@@ -469,7 +469,7 @@ Here I've multiplied my precedence levels by 10, to make it easy to add more pre
 
 How does it work? Lower values of `prec` represent lower precedence levels, with 0 representing the outermost expression. After matching an operator with a certain precedence level, `Expr` calls itself with a raised "precedence floor", in which low-precedence operators will no longer match, but high-precedence operators still match.
 
-Let's work through the expression "`- 6 * 5 > 4 - 3 - 2`". At first, `Expr(0)` is called, and `PrefixExpr` matches `-6`. At this point, any infix operator can be matched. After matching `*`, `Expr(50)` is called, which matches `5` and then returns (as it cannot match `>`), and `Expr(0)` calls `Op` to create an [`LNode`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) that represents the subexpression `-6 * 5`. Next, `>` is matched, so `Expr(30)` is called.
+Let's work through the expression "`- 6 * 5 > 4 - 3 - 2`". At first, `Expr(0)` is called, and `PrefixExpr` matches `-6`. At this point, any infix operator can be matched. After matching `*`, `Expr(50)` is called, which matches `5` and then returns (as it cannot match `>`), and `Expr(0)` calls `Op` to create an [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) that represents the subexpression `-6 * 5`. Next, `>` is matched, so `Expr(30)` is called.
 
 `Expr(30)` matches `4`, and then it sees `-` so it checks whether `prec < 40`. This is true, so it calls `Expr(40)`. `Expr(40)` matches `3` and then it sees the second `-`. This time `prec < 40` is _false_ so it returns. `Expr(30)` calls `Op` to create the subexpression `4.0 - 3.0`.
 
@@ -538,7 +538,7 @@ In virtually all programming languages, it is possible to insert an intermediate
 
     {  w  =  (  x  +  y  )  *  z  >>  (  -  1  )  ;  }
 
-and then I use a "lexer wrapper" called [`TokensToTree`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html) which converts this to a tree with children under the opening brackets, like this:
+and then I use a "lexer wrapper" called [`TokensToTree`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html) which converts this to a tree with children under the opening brackets, like this:
 
     {  }
     |
@@ -548,14 +548,14 @@ and then I use a "lexer wrapper" called [`TokensToTree`](http://loyc.net/doc/cod
                |               |
                +--- x  +  y    +---  -  1
 
-A token's children are stored in the Value property as type [TokenTree](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.loyc.net/collections/dlist.html) and returned by the [`Children`](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
+A token's children are stored in the Value property as type [TokenTree](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.ecsharp.net/collections/dlist.html) and returned by the [`Children`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
 
 Why would you want to do this? There are a couple of reasons:
 
 1. It allows the parser to "instantly" skip past the contents of an expression in parenthesis, to see what comes afterward. Consider the C# expression `(List<T> L) => L.Count`: this is parsed in a completely different way than `(List < T > L) + L.Count`! To avoid the need for unlimited lookahead, I felt that preprocessing into an expression tree was worthwhile in my [EC# parser](https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les).
 2. Some have found it useful for implementing a [macro system that allows syntax extensions](http://disnetdev.com/papers/sweetjs.pdf).
 
-The preprocessing step itself is simple; you can either use the existing [`TokensToTree`](https://github.com/qwertie/Loyc/blob/master/Core/Loyc.Syntax/Lexing/TokensToTree.cs) class (if your lexer implements [ILexer](http://loyc.net/doc/code/interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html) and produces [Token](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html) structures), or copy and modify the existing code. (In hindsight I think it would have been better to make the closing bracket a child of the opening bracket, because currently LLLPG tends to give error messages about "EOF" when it's not really EOF, it's just the end of a stream of child tokens.)
+The preprocessing step itself is simple; you can either use the existing [`TokensToTree`](https://github.com/qwertie/Loyc/blob/master/Core/Loyc.Syntax/Lexing/TokensToTree.cs) class (if your lexer implements [ILexer](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1Lexing_1_1ILexer.html) and produces [Token](http://loyc.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html) structures), or copy and modify the existing code. (In hindsight I think it would have been better to make the closing bracket a child of the opening bracket, because currently LLLPG tends to give error messages about "EOF" when it's not really EOF, it's just the end of a stream of child tokens.)
 
 So how do you use LLLPG with a token tree? Well, LLLPG doesn't directly support token trees, so it will see only the sequence of tokens at the current "level" of the tree, e.g. `w  =  (  )  *  z  >>  (  )  ;`. For example, consider the [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax) parser. Normally you invoke it with code like `LesLanguageService.Value.Parse("code")`, but you could construct the full parsing pipeline manually, like this:
 
@@ -590,7 +590,7 @@ Initially the `LesParser` starts at the "top level" of the token tree, and in th
         InputPosition = pair.B;
     }
 
-(After writing this, I decided to add these methods to [`BaseParserForList`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html) so that you call them from your own parsers if you want.)
+(After writing this, I decided to add these methods to [`BaseParserForList`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html) so that you call them from your own parsers if you want.)
 
 In the grammar, parenthesis and braces are handled like this:
 
@@ -644,7 +644,7 @@ And inside brackets, indentation is ignored, so this is allowed:
 
 By far the easiest way to handle this kind of language is to insert a preprocessor (postprocessor?) step, after the lexer and before the parser. Loyc.Syntax.dll includes a preprocessor for this purpose, called `IndentTokenGenerator`. Here's how to use it:
 
-1. Use `BaseILexer<CharSrc, Token>` as the base class of your lexer instead of `BaseLexer<CharSrc>` or `BaseLexer`. This will implement the `ILexer<Token>` interface for you, which is required by `IndentTokenGenerator`. As with `BaseLexer`, you're required to call `AfterNewline()` after reading each newline from the file (see [BaseILexer's documentation](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) for details)
+1. Use `BaseILexer<CharSrc, Token>` as the base class of your lexer instead of `BaseLexer<CharSrc>` or `BaseLexer`. This will implement the `ILexer<Token>` interface for you, which is required by `IndentTokenGenerator`. As with `BaseLexer`, you're required to call `AfterNewline()` after reading each newline from the file (see [BaseILexer's documentation](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) for details)
 2. If you use the standard `Token` type (`Loyc.Syntax.Lexing.Token`), you can wrap your lexer in an `IndentTokenGenerator`, like this:
 
         /// given class YourLexerClass : BaseILexer<ICharSource,Token> { ... }
@@ -668,9 +668,9 @@ By far the easiest way to handle this kind of language is to insert a preprocess
         List<Token> tokens = wrapr.Buffered().ToList();
         var parser = new YourParserClass(tokens);
     
-    See the [documentation of IndentTokenGenerator](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
+    See the [documentation of IndentTokenGenerator](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
 
-    If you're not using the standard `Token` type, you can use [IndentTokenGenerator<Tok>](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
+    If you're not using the standard `Token` type, you can use [IndentTokenGenerator<Tok>](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
 
 Shortening your code with LeMP
 ------------------------------

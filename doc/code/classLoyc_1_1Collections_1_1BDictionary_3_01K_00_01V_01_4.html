@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.7-->
+﻿<!-- HTML header for doxygen 1.8.7-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -128,7 +128,7 @@ Inheritance diagram for Loyc.Collections.BDictionary&lt; K, V &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>An sorted dictionary that is efficient for all operations and offers indexed access to its list of key-value pairs. </p>
-<p>An <a href="http://core.loyc.net/collections/alists-part2.html">article</a> about the BList classes is available. </p>
+<p>An <a href="http://core.ecsharp.net/collections/alists-part2.html">article</a> about the BList classes is available. </p>
 <p>The keys must be comparable (ordered); if the type does not implement <code>IComparable</code> or <code>IComparable(T)</code>, you must provide a Comparison(T) delegate to perform comparisons. </p>
 <p>This class offers the following additional features beyond what's offered by the standard SortedDictionary{T} class: indexed access, a find-nearest- key operation called <a class="el" href="classLoyc_1_1Collections_1_1BDictionary_3_01K_00_01V_01_4.html#ae3bf29909ffdae5d619d75bf9b19bccd" title="Finds the lowest index of an item with a key that is equal to or greater than the specified key...">FindLowerBound</a> (similar to lower_bound in C++), observability, fast cloning, freezability, fast cloning of an arbitrary range of items in a large collection, enumeration of part of the list (not just the entire list), and reverse enumeration, and a few compound operations. </p>
 <p>Duplicate keys are not allowed in a BDictionary. If you would like to be able to associate multiple values with a single key, use BMultiMap{K,V} instead. </p>

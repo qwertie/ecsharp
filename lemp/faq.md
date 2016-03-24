@@ -7,7 +7,7 @@ redirectDomain: ecsharp.net
 
 ### Q. How do I invoke LeMP programmatically? ###
 
-A. There are two ways. Either you can use  [`MacroProcessor`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/MacroProcessor.cs) directly, or you can use [`Compiler`](http://loyc.net/doc/code/classLeMP_1_1Compiler.html) (see [Compiler.cs](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Compiler.cs)), which is a wrapper around it. `Compiler` is designed to read and write files on disk based mainly on command-line arguments, while `MacroProcessor` is designed mainly to process Loyc trees.
+A. There are two ways. Either you can use  [`MacroProcessor`](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/MacroProcessor.cs) directly, or you can use [`Compiler`](http://ecsharp.net/doc/code/classLeMP_1_1Compiler.html) (see [Compiler.cs](https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Compiler.cs)), which is a wrapper around it. `Compiler` is designed to read and write files on disk based mainly on command-line arguments, while `MacroProcessor` is designed mainly to process Loyc trees.
 
 **How to use `Compiler`:**
 

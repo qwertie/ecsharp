@@ -15,13 +15,13 @@ safe: true
 lsi: false
 
 # Poole/Hyde settings
-title:       "Loyc"                      # shown in large text
-tagline:     "Language of your choice"   # shown in title bar beside title
+title:       "Enhanced C#"               # shown in large text
+tagline:     "And the LeMP"              # shown in title bar beside title
 description: "Language of your choice"   # shown under the title
 version: (I changed Hyde not to display this)
-url:     "http://loyc.net"               # Used by the Atom feed
+url:     "http://ecsharp.net"            # Used by the Atom feed
 baseurl: ""                              # grep "site.baseurl" to see how it is used
 github:
   repo:  https://github.com/qwertie/ecsharp # "GitHub project" link on sidebar
   user: qwertie                          # For comments system (not Hyde)
-  project: loyc                          # For comments system (not Hyde)
+  project: ecsharp                       # For comments system (not Hyde)
