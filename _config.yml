@@ -15,9 +15,9 @@ safe: true
 lsi: false
 
 # Poole/Hyde settings
-title:       "Enhanced C#"               # shown in large text
-tagline:     "And the LeMP"              # shown in title bar beside title
-description: "Language of your choice"   # shown under the title
+title:       "Enhanced&nbsp;C#"          # shown in large text
+tagline:     ""                          # shown in title bar beside title
+description: "and the LeMP"              # shown under the title
 version: (I changed Hyde not to display this)
 url:     "http://ecsharp.net"            # Used by the Atom feed
 baseurl: ""                              # grep "site.baseurl" to see how it is used

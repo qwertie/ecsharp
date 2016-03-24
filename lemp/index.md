@@ -7,8 +7,6 @@ redirectDomain: ecsharp.net
 ---
 ## Introduction ##
 
-<img src='ecs.png' style='float:left; padding:4px; border:1px #ccc; margin:8px;' alt='E C sharp logo'/>
-
 LeMP is a new open-source LISP-style macro processor for C#, comparable to [sweet.js](http://sweetjs.org/) for Javascript. Are you a good developer, but reluctant to "buy into" commercial tools such as PostSharp to enhance your productivity? If so, LeMP — a preprocessor built on a parser called Enhanced C# — can make you more productive.
 
 Design patterns are a valuable conceptual tool for developers, but some of them - especially complex ones like the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern), or ones that require lots of boilerplate like [Decorator](https://en.wikipedia.org/wiki/Decorator_pattern) - arguably demonstrate that the language being used isn't powerful enough. When used in conventional languages, many design patterns can _only_ work by convention and _cannot_ be encapsulated in a library or component, so they involve repetition and thus violate the DRY principle (don't repeat yourself).

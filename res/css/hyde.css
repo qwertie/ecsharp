@@ -74,12 +74,13 @@ html {
   color: #fff;
 }
 
-/* About section */
+/* About section & site title */
 .sidebar-about h1 {
   color: #fff;
   margin-top: 0;
-  font-family: sans-serif;
-  font-size: 3.25rem;
+  font-family: Arial Narrow,Arial,sans-serif; 
+  font-weight: normal;
+  font-size: 3rem;
 }
 
 /* Sidebar nav */
