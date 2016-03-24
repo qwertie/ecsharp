@@ -1,9 +1,10 @@
 ---
 title: "Installing LeMP"
 layout: article
+redirectDomain: ecsharp.net
 ---
 
-First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub, or download and extract the [repository's zip file](https://github.com/qwertie/Loyc/archive/master.zip), because I haven't yet figured out how to do that magic auto-installation via NuGet.
+First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub, or just download the [latest release](https://github.com/qwertie/ecsharp/releases). If you cloned the repo, browse to the `Lib\LeMP` folder. If you downloaded the latest release, unzip it to a new folder of your choice, and go there.
 
 ![](lemp-install-1.png)
 
@@ -11,7 +12,7 @@ First, clone the [Loyc respository](https://github.com/qwertie/Loyc) from GitHub
 
 For very esoteric reasons (long story short: blame Microsoft), LeMP/LLLPG are distributed in two separate parts: the Single-File Generator (Custom Tool), and the syntax highlighter.
 
-So, browse to the `Lib\LeMP` folder and run `Lib\LeMP\LoycFileGeneratorForVs.exe` to install the LeMP & LLLPG Custom Tools (a.k.a. Single-File Generators). Make sure your version of Visual Studio is listed, and click Register (install).
+So, run `Lib\LeMP\LoycFileGeneratorForVs.exe` to install the LeMP & LLLPG Custom Tools (a.k.a. Single-File Generators). Make sure your version of Visual Studio is listed, and click Register (install).
 
 ![](lemp-install-2.png)
 
@@ -21,7 +22,7 @@ To install syntax highlighting for `.ecs` and `.les` files, run `Lib\LeMP\LoycSy
 
 ![](lemp-install-3.png)
 
-Finally, create a new C# project in Visual Studio (or open an existing one), and then create a new text file named `example.ecs`:
+To try it out, create a new C# project in Visual Studio (or open an existing one), and then create a new text file named `example.ecs`:
 
 ![](lemp-add-file-1.png)
 ![](lemp-add-file-2.png)
@@ -35,7 +36,7 @@ using System.Linq;
 using System.Windows;
 namespace Loyc.Ecs {
    class Person {
-      public Person(public readonly string Name, public int WeightLb, public int Age) {}
+      public this(public readonly string Name, public int WeightLb, public int Age) {}
    }
 }
 ~~~
