@@ -64,6 +64,6 @@ var searchData=
   ['rot90_3c_20t_2c_20m_20_3e',['Rot90&lt; T, M &gt;',['../classLoyc_1_1Geometry_1_1PointExt.html#a486c0696f02d1c19df5095cae2cf9ba8',1,'Loyc::Geometry::PointExt']]],
   ['rule',['Rule',['../classLoyc_1_1LLParserGenerator_1_1Rule.html',1,'Loyc::LLParserGenerator']]],
   ['ruleref',['RuleRef',['../classLoyc_1_1LLParserGenerator_1_1RuleRef.html',1,'Loyc::LLParserGenerator']]],
-  ['run',['Run',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
+  ['run',['Run',['../classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95',1,'LeMP.Compiler.Run()'],['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12',1,'Loyc.LLParserGenerator.LLParserGenerator.Run()']]],
   ['runtests',['RunTests',['../classLoyc_1_1MiniTest_1_1RunTests.html',1,'Loyc::MiniTest']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: LeMP.IMacroContext Interface Reference</title>
+<title>Enhanced C#: LeMP.IMacroContext Interface Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">Loyc
+   <div id="projectname">Enhanced C#
    </div>
    <div id="projectbrief">Language of your choice: library documentation</div>
   </td>
@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>This interface provides services offered by the lexical macro processor (<a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a>). 
  <a href="interfaceLeMP_1_1IMacroContext.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/LeMP/IMacroContext.cs'>/Core/Loyc.Syntax/LeMP/IMacroContext.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LeMP/IMacroContext.cs'>/Core/Loyc.Syntax/LeMP/IMacroContext.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for LeMP.IMacroContext:</div>
@@ -141,10 +141,10 @@ Properties</h2></td></tr>
 <tr class="memitem:ada43164412ec526c6e8d081cbb43b5c1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#ada43164412ec526c6e8d081cbb43b5c1">DropRemainingNodes</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ada43164412ec526c6e8d081cbb43b5c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets a value that indicates whether to drop all remaining node after the current one when the current macro returns. This property has no effect if the macro rejects the input by returning null. <a href="#ada43164412ec526c6e8d081cbb43b5c1">More...</a><br /></td></tr>
 <tr class="separator:ada43164412ec526c6e8d081cbb43b5c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b238d762291f03e3249d022b40a5343"><td class="memItemLeft" align="right" valign="top">IReadOnlyDictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <br class="typebreak" />
-List&lt; <a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#a0b238d762291f03e3249d022b40a5343">AllKnownMacros</a><code> [get]</code></td></tr>
-<tr class="memdesc:a0b238d762291f03e3249d022b40a5343"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets information about all macros registered with the macro processor, including macros whose namespace has not been opened with <code>#importMacros</code>. <a href="#a0b238d762291f03e3249d022b40a5343">More...</a><br /></td></tr>
-<tr class="separator:a0b238d762291f03e3249d022b40a5343"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7f39549b84ec729a461c784f3a3a0ab"><td class="memItemLeft" align="right" valign="top">IReadOnlyDictionary&lt; <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, <br class="typebreak" />
+VList&lt; <a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLeMP_1_1IMacroContext.html#ab7f39549b84ec729a461c784f3a3a0ab">AllKnownMacros</a><code> [get]</code></td></tr>
+<tr class="memdesc:ab7f39549b84ec729a461c784f3a3a0ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets information about all macros registered with the macro processor, including macros whose namespace has not been opened with <code>#importMacros</code>. <a href="#ab7f39549b84ec729a461c784f3a3a0ab">More...</a><br /></td></tr>
+<tr class="separator:ab7f39549b84ec729a461c784f3a3a0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -213,7 +213,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">input</td><td>The node or node list to process.</td></tr>
     <tr><td class="paramname">asRoot</td><td>If false, the nodes are treated as children of the current node (using the current list of ancestors as a basis), otherwise the nodes are processed alone as if they were a separate file.</td></tr>
-    <tr><td class="paramname">resetOpenNamespaces</td><td>If false, the set of open namespaces stays the same; if true it is cleared to the set of pre-opened namespaces (MacroProcessor.PreOpenedNamespaces).</td></tr>
+    <tr><td class="paramname">resetOpenNamespaces</td><td>If false, the set of open namespaces stays the same; if true it is cleared to the set of pre-opened namespaces (<a class="el" href="classLeMP_1_1MacroProcessor.html#ac7d649b15f5b12c664854825151a5fc1" title="Macros in these namespaces will be available without an explicit import command (#importMacros). By default this list has one item: @LeMP.Prelude (i.e. (Symbol)&quot;LeMP.Prelude&quot;)">MacroProcessor.PreOpenedNamespaces</a>).</td></tr>
   </table>
   </dd>
 </dl>
@@ -241,7 +241,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Property Documentation</h2>
-<a class="anchor" id="a0b238d762291f03e3249d022b40a5343"></a>
+<a class="anchor" id="ab7f39549b84ec729a461c784f3a3a0ab"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -249,7 +249,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">IReadOnlyDictionary&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, List&lt;<a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a>&gt; &gt; LeMP.IMacroContext.AllKnownMacros</td>
+          <td class="memname">IReadOnlyDictionary&lt;<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>, VList&lt;<a class="el" href="classLeMP_1_1MacroInfo.html">MacroInfo</a>&gt; &gt; LeMP.IMacroContext.AllKnownMacros</td>
         </tr>
       </table>
   </td>
@@ -456,7 +456,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 18 2016 22:22:37 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 24 2016 09:04:46 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

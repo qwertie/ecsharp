@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: Loyc.Syntax.Les.LesPrecedence Class Reference</title>
+<title>Enhanced C#: Loyc.Syntax.Les.LesPrecedence Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">Loyc
+   <div id="projectname">Enhanced C#
    </div>
    <div id="projectbrief">Language of your choice: library documentation</div>
   </td>
@@ -99,12 +99,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Contains <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> objects that represent the precedence levels of LES. 
  <a href="classLoyc_1_1Syntax_1_1Les_1_1LesPrecedence.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Core/Loyc.Syntax/LES/LesPrecedence.cs'>/Core/Loyc.Syntax/LES/LesPrecedence.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Syntax/LES/LesPrecedence.cs'>/Core/Loyc.Syntax/LES/LesPrecedence.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html" title="A four-byte tuple that represents the precedence and miscibility of an operator.">Precedence</a> objects that represent the precedence levels of LES.</p>
 <p>In LES, the precedence of an operator is decided based simply on the text of the operator. The precedence of each one-character operator is predefined; the precedence of any operator with two or more characters is decided based on the last character, or the first and last character; the middle characters, if any, do not affect precedence. </p>
-<p>The LES precedence table is designed to be comparable with popular programming languages, with a couple of "corrections" that I felt were appropriate; for example, in LES, <code>x ^ 7 != 0</code> is parsed <code>(x ^ 7) != 0</code>, rather than <code>x ^ (7 != 0)</code> as in the C family of languages. Similarly, <code>x &gt;&gt; 1 + y</code> is parsed <code>(x &gt;&gt; 1) + y</code> rather than <code>x &gt;&gt; (1 + y)</code>. Shifting is often used as a substitute for multiplication and division, so it has the same precedence. </p>
+<p>The LES precedence table is designed to match most programming languages. </p>
 <p>As a nod to functional languages, the arrow operator "-&gt;" is right- associative and has a precedence below '*' so that <code>int * int -&gt; int</code> parses as <code>(int * int) -&gt; int</code> rather than <code>int * (int -&gt; int)</code> as in the C family of languages. </p>
 <p>An operator consists of a sequence of the following characters: </p><pre>
    ~ ! % ^ &amp; * \ - + = | &lt; &gt; / ? : . $
@@ -288,7 +288,7 @@ static readonly <a class="el" href="structLoyc_1_1Syntax_1_1Precedence.html">Pre
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 18 2016 22:22:49 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 24 2016 09:04:58 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

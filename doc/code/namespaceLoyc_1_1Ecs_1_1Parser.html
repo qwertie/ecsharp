@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: Package Loyc.Ecs.Parser</title>
+<title>Enhanced C#: Package Loyc.Ecs.Parser</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">Loyc
+   <div id="projectname">Enhanced C#
    </div>
    <div id="projectbrief">Language of your choice: library documentation</div>
   </td>
@@ -143,9 +143,9 @@ Enumerations</h2></td></tr>
 <br />
 &#160;&#160;<b>Id</b> = TokenKind.Id, 
 <b>ContextualKeyword</b> = TokenKind.Id + 1, 
-<b>base</b> = TokenKind.Id + 2, 
+<b>Base</b> = TokenKind.Id + 2, 
 <br />
-&#160;&#160;<b>this</b> = TokenKind.Id + 3, 
+&#160;&#160;<b>This</b> = TokenKind.Id + 3, 
 <b>Literal</b> = TokenKind.Literal, 
 <b>Comma</b> = TokenKind.Separator, 
 <br />
@@ -161,56 +161,56 @@ Enumerations</h2></td></tr>
 <b>AttrKeyword</b> = TokenKind.AttrKeyword, 
 <b>TypeKeyword</b> = TokenKind.TypeKeyword, 
 <br />
-&#160;&#160;<b>break</b> = TokenKind.OtherKeyword + 1, 
-<b>case</b> = TokenKind.OtherKeyword + 2, 
-<b>checked</b> = TokenKind.OtherKeyword + 3, 
+&#160;&#160;<b>Break</b> = TokenKind.OtherKeyword + 1, 
+<b>Case</b> = TokenKind.OtherKeyword + 2, 
+<b>Checked</b> = TokenKind.OtherKeyword + 3, 
 <br />
-&#160;&#160;<b>class</b> = TokenKind.OtherKeyword + 4, 
-<b>continue</b> = TokenKind.OtherKeyword + 5, 
-<b>default</b> = TokenKind.OtherKeyword + 6, 
+&#160;&#160;<b>Class</b> = TokenKind.OtherKeyword + 4, 
+<b>Continue</b> = TokenKind.OtherKeyword + 5, 
+<b>Default</b> = TokenKind.OtherKeyword + 6, 
 <br />
-&#160;&#160;<b>delegate</b> = TokenKind.OtherKeyword + 7, 
-<b>do</b> = TokenKind.OtherKeyword + 8, 
-<b>enum</b> = TokenKind.OtherKeyword + 9, 
+&#160;&#160;<b>Delegate</b> = TokenKind.OtherKeyword + 7, 
+<b>Do</b> = TokenKind.OtherKeyword + 8, 
+<b>Enum</b> = TokenKind.OtherKeyword + 9, 
 <br />
-&#160;&#160;<b>event</b> = TokenKind.OtherKeyword + 10, 
-<b>fixed</b> = TokenKind.OtherKeyword + 11, 
-<b>for</b> = TokenKind.OtherKeyword + 12, 
+&#160;&#160;<b>Event</b> = TokenKind.OtherKeyword + 10, 
+<b>Fixed</b> = TokenKind.OtherKeyword + 11, 
+<b>For</b> = TokenKind.OtherKeyword + 12, 
 <br />
-&#160;&#160;<b>foreach</b> = TokenKind.OtherKeyword + 13, 
-<b>goto</b> = TokenKind.OtherKeyword + 14, 
-<b>if</b> = TokenKind.OtherKeyword + 15, 
+&#160;&#160;<b>Foreach</b> = TokenKind.OtherKeyword + 13, 
+<b>Goto</b> = TokenKind.OtherKeyword + 14, 
+<b>If</b> = TokenKind.OtherKeyword + 15, 
 <br />
-&#160;&#160;<b>interface</b> = TokenKind.OtherKeyword + 16, 
-<b>lock</b> = TokenKind.OtherKeyword + 17, 
-<b>namespace</b> = TokenKind.OtherKeyword + 18, 
+&#160;&#160;<b>Interface</b> = TokenKind.OtherKeyword + 16, 
+<b>Lock</b> = TokenKind.OtherKeyword + 17, 
+<b>Namespace</b> = TokenKind.OtherKeyword + 18, 
 <br />
-&#160;&#160;<b>return</b> = TokenKind.OtherKeyword + 19, 
-<b>struct</b> = TokenKind.OtherKeyword + 20, 
-<b>switch</b> = TokenKind.OtherKeyword + 21, 
+&#160;&#160;<b>Return</b> = TokenKind.OtherKeyword + 19, 
+<b>Struct</b> = TokenKind.OtherKeyword + 20, 
+<b>Switch</b> = TokenKind.OtherKeyword + 21, 
 <br />
-&#160;&#160;<b>throw</b> = TokenKind.OtherKeyword + 22, 
-<b>try</b> = TokenKind.OtherKeyword + 23, 
-<b>unchecked</b> = TokenKind.OtherKeyword + 24, 
+&#160;&#160;<b>Throw</b> = TokenKind.OtherKeyword + 22, 
+<b>Try</b> = TokenKind.OtherKeyword + 23, 
+<b>Unchecked</b> = TokenKind.OtherKeyword + 24, 
 <br />
-&#160;&#160;<b>using</b> = TokenKind.OtherKeyword + 25, 
-<b>while</b> = TokenKind.OtherKeyword + 26, 
-<b>operator</b> = TokenKind.OtherKeyword + 32, 
+&#160;&#160;<b>Using</b> = TokenKind.OtherKeyword + 25, 
+<b>While</b> = TokenKind.OtherKeyword + 26, 
+<b>Operator</b> = TokenKind.OtherKeyword + 32, 
 <br />
-&#160;&#160;<b>sizeof</b> = TokenKind.OtherKeyword + 33, 
-<b>typeof</b> = TokenKind.OtherKeyword + 34, 
-<b>else</b> = TokenKind.OtherKeyword + 40, 
+&#160;&#160;<b>Sizeof</b> = TokenKind.OtherKeyword + 33, 
+<b>Typeof</b> = TokenKind.OtherKeyword + 34, 
+<b>Else</b> = TokenKind.OtherKeyword + 40, 
 <br />
-&#160;&#160;<b>catch</b> = TokenKind.OtherKeyword + 41, 
-<b>finally</b> = TokenKind.OtherKeyword + 42, 
-<b>in</b> = TokenKind.OtherKeyword + 48, 
+&#160;&#160;<b>Catch</b> = TokenKind.OtherKeyword + 41, 
+<b>Finally</b> = TokenKind.OtherKeyword + 42, 
+<b>In</b> = TokenKind.OtherKeyword + 48, 
 <br />
-&#160;&#160;<b>as</b> = TokenKind.OtherKeyword + 49, 
-<b>is</b> = TokenKind.OtherKeyword + 50, 
-<b>new</b> = TokenKind.OtherKeyword + 56, 
+&#160;&#160;<b>As</b> = TokenKind.OtherKeyword + 49, 
+<b>Is</b> = TokenKind.OtherKeyword + 50, 
+<b>New</b> = TokenKind.OtherKeyword + 56, 
 <br />
-&#160;&#160;<b>out</b> = TokenKind.OtherKeyword + 57, 
-<b>stackalloc</b> = TokenKind.OtherKeyword + 58, 
+&#160;&#160;<b>Out</b> = TokenKind.OtherKeyword + 57, 
+<b>Stackalloc</b> = TokenKind.OtherKeyword + 58, 
 <b>PPif</b> = TokenKind.Other + 64, 
 <br />
 &#160;&#160;<b>PPelse</b> = TokenKind.Other + 65, 
@@ -288,7 +288,7 @@ Enumerations</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 18 2016 22:22:42 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 24 2016 09:04:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

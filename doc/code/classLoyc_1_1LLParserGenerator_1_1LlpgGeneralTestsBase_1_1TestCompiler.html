@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler Class Reference</title>
+<title>Enhanced C#: Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">Loyc
+   <div id="projectname">Enhanced C#
    </div>
    <div id="projectbrief">Language of your choice: library documentation</div>
   </td>
@@ -96,7 +96,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <hr/><b>Source file</b>:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LLLPG/Tests/LlpgGeneralTestsBase.cs'>/Main/LLLPG/Tests/LlpgGeneralTestsBase.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/Tests/LlpgGeneralTestsBase.cs'>/Main/LLLPG/Tests/LlpgGeneralTestsBase.cs</a></li>
 </ul>
 <div class="dynheader">
 Inheritance diagram for Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler:</div>
@@ -105,7 +105,7 @@ Inheritance diagram for Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler
   <img src="classLoyc_1_1LLParserGenerator_1_1LlpgGeneralTestsBase_1_1TestCompiler.png" usemap="#Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler_map" alt=""/>
   <map id="Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler_map" name="Loyc.LLParserGenerator.LlpgGeneralTestsBase.TestCompiler_map">
 <area href="classLeMP_1_1TestCompiler.html" title="A simple version of Compiler that takes a single input and produces a StringBuilder. Pre-opens LeMP.Prelude namespace." alt="LeMP.TestCompiler" shape="rect" coords="0,56,360,80"/>
-<area href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on a set of source files." alt="LeMP.Compiler" shape="rect" coords="0,0,360,24"/>
+<area href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line..." alt="LeMP.Compiler" shape="rect" coords="0,0,360,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -119,17 +119,23 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TestCompiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> text, string fileName=&quot;&quot;)</td></tr>
 <tr class="separator:a549b66b5267920ff5e2b604894952c4b inherit pub_methods_classLeMP_1_1TestCompiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLeMP_1_1Compiler"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLeMP_1_1Compiler')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLeMP_1_1Compiler.html">LeMP.Compiler</a></td></tr>
-<tr class="memitem:a8f9154e00a0900fb08c5a728822f5172 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f9154e00a0900fb08c5a728822f5172"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> (BMultiMap&lt; string, string &gt; options)</td></tr>
-<tr class="separator:a8f9154e00a0900fb08c5a728822f5172 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bc8025419b1af94f56ee09be1cff0cd inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bc8025419b1af94f56ee09be1cff0cd"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Compiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude=null, bool registerEcsAndLes=true)</td></tr>
 <tr class="separator:a6bc8025419b1af94f56ee09be1cff0cd inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83ac2f0dc822e66263ff249bd9993539 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a83ac2f0dc822e66263ff249bd9993539"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Compiler</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, Type prelude, IEnumerable&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt; sourceFiles)</td></tr>
 <tr class="separator:a83ac2f0dc822e66263ff249bd9993539 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ca005b126cd7d544e66c8d2e2099c59 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top">BMultiMap&lt; string, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#a6ca005b126cd7d544e66c8d2e2099c59">ProcessArguments</a> (IList&lt; string &gt; args, bool warnAboutUnknownOptions, bool autoOpenInputFiles, IList&lt; string &gt; inputFiles=null)</td></tr>
+<tr class="memdesc:a6ca005b126cd7d544e66c8d2e2099c59 inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes command-line arguments to build a BMultiMap and sends those options to the other overload of this method. <a href="#a6ca005b126cd7d544e66c8d2e2099c59">More...</a><br /></td></tr>
+<tr class="separator:a6ca005b126cd7d544e66c8d2e2099c59 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabdf7a3e5e1746b75e6a3bf79d326aa7 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#aabdf7a3e5e1746b75e6a3bf79d326aa7">ProcessArguments</a> (BMultiMap&lt; string, string &gt; options, bool warnAboutUnknownOptions, IList&lt; string &gt; inputFiles=null)</td></tr>
+<tr class="memdesc:aabdf7a3e5e1746b75e6a3bf79d326aa7 inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes all standard command-line arguments from KnownOptions, except &ndash;help. <a href="#aabdf7a3e5e1746b75e6a3bf79d326aa7">More...</a><br /></td></tr>
+<tr class="separator:aabdf7a3e5e1746b75e6a3bf79d326aa7 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a654ac835942ac0ea7e2fbb7180cf812b inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#a654ac835942ac0ea7e2fbb7180cf812b">AddStdMacros</a> ()</td></tr>
+<tr class="memdesc:a654ac835942ac0ea7e2fbb7180cf812b inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds standard macros from LeMP.StdMacros.dll, and adds the namespaces <a class="el" href="namespaceLeMP.html" title="The lexical macro processor. Main classes: LeMP.Compiler and LeMP.MacroProcessor.">LeMP</a> and <a class="el" href="namespaceLeMP_1_1Prelude.html" title="Defines prelude macros, which are predefined macros that normally do not have to be explicitly import...">LeMP.Prelude</a> to the pre-opened namespace list. <a href="#a654ac835942ac0ea7e2fbb7180cf812b">More...</a><br /></td></tr>
+<tr class="separator:a654ac835942ac0ea7e2fbb7180cf812b inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3631a985a8996576b04da7d1d253b35 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#af3631a985a8996576b04da7d1d253b35">CompleteInputOutputOptions</a> ()</td></tr>
-<tr class="memdesc:af3631a985a8996576b04da7d1d253b35 inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills in all fields of Files that are still null, based on the command-line options. <a href="#af3631a985a8996576b04da7d1d253b35">More...</a><br /></td></tr>
+<tr class="memdesc:af3631a985a8996576b04da7d1d253b35 inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills in all fields of Files that are still null, based on the command-line options. Calling this is optional, since <a class="el" href="classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95" title="Runs the MacroProcessor on all input Files.">Run()</a> calls it anyway. <a href="#af3631a985a8996576b04da7d1d253b35">More...</a><br /></td></tr>
 <tr class="separator:af3631a985a8996576b04da7d1d253b35 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38c6d9eaa6e0b76a1ad35766d2a1f4b8 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38c6d9eaa6e0b76a1ad35766d2a1f4b8"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CompleteInputOutputOptions</b> (<a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> file)</td></tr>
@@ -137,8 +143,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> 
 <tr class="memitem:ab5ae93ed647a9c97d12f0efd939a6099 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab5ae93ed647a9c97d12f0efd939a6099"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddMacros</b> (Assembly assembly)</td></tr>
 <tr class="separator:ab5ae93ed647a9c97d12f0efd939a6099 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af396bd24b88fb769ece1fdb00d2fda95 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af396bd24b88fb769ece1fdb00d2fda95"></a>
-<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Run</b> ()</td></tr>
+<tr class="memitem:af396bd24b88fb769ece1fdb00d2fda95 inherit pub_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#af396bd24b88fb769ece1fdb00d2fda95">Run</a> ()</td></tr>
+<tr class="memdesc:af396bd24b88fb769ece1fdb00d2fda95 inherit pub_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the <a class="el" href="classLeMP_1_1MacroProcessor.html" title="Encapsulates the LeMP engine, a simple LISP-style macro processor, suitable for running LLLPG and oth...">MacroProcessor</a> on all input Files. <a href="#af396bd24b88fb769ece1fdb00d2fda95">More...</a><br /></td></tr>
 <tr class="separator:af396bd24b88fb769ece1fdb00d2fda95 inherit pub_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
@@ -179,14 +185,14 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>OutExt</b></td></tr
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>ForceInLang</b></td></tr>
 <tr class="separator:a4d62e3af4cf74788a1ac21c229e87c7e inherit pub_attribs_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_attribs_classLeMP_1_1Compiler"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classLeMP_1_1Compiler')"><img src="closed.png" alt="-"/>&#160;Public static fields inherited from <a class="el" href="classLeMP_1_1Compiler.html">LeMP.Compiler</a></td></tr>
+<tr class="memitem:ae6ab9ac1244b5d5d96ac2e200dbc1829 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6ab9ac1244b5d5d96ac2e200dbc1829"></a>
+static InvertibleSet&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TwoArgOptions</b> = new InvertibleSet&lt;string&gt;(new[] { &quot;macros&quot; })</td></tr>
+<tr class="separator:ae6ab9ac1244b5d5d96ac2e200dbc1829 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af288ac4c89b6b200f3ac7ae08b598871 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top">static Dictionary&lt; char, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ShortOptions</b></td></tr>
 <tr class="separator:af288ac4c89b6b200f3ac7ae08b598871 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27dc563d3f8fef18f06560bab0ba6c5e inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top">static MMap&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a><br class="typebreak" />
 &lt; string, string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>KnownOptions</b></td></tr>
 <tr class="separator:a27dc563d3f8fef18f06560bab0ba6c5e inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6ab9ac1244b5d5d96ac2e200dbc1829 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6ab9ac1244b5d5d96ac2e200dbc1829"></a>
-static InvertibleSet&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TwoArgOptions</b> = new InvertibleSet&lt;string&gt;(new[] { &quot;macros&quot; })</td></tr>
-<tr class="separator:ae6ab9ac1244b5d5d96ac2e200dbc1829 inherit pub_static_attribs_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_classLeMP_1_1Compiler"><td colspan="2" onclick="javascript:toggleInherit('properties_classLeMP_1_1Compiler')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLeMP_1_1Compiler.html">LeMP.Compiler</a></td></tr>
 <tr class="memitem:a6a7a7756504c49b72e87986d35ff0d37 inherit properties_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a7a7756504c49b72e87986d35ff0d37"></a>
 <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Sink</b><code> [get, set]</code></td></tr>
@@ -211,17 +217,17 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:a4725d64828926296d81c577e06e44b0b inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4725d64828926296d81c577e06e44b0b"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Main</b> (string[] args)</td></tr>
 <tr class="separator:a4725d64828926296d81c577e06e44b0b inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e572b4501234b500510818b86a2eb3f inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e572b4501234b500510818b86a2eb3f"></a>
-static <a class="el" href="classLeMP_1_1Compiler.html">Compiler</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ProcessArguments</b> (BMultiMap&lt; string, string &gt; options, <a class="el" href="classLoyc_1_1SeverityMessageFilter.html">SeverityMessageFilter</a> sink, Type prelude, List&lt; string &gt; inputFiles)</td></tr>
-<tr class="separator:a4e572b4501234b500510818b86a2eb3f inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70da1e11566662d0eacd8b7f7f73f7ab inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70da1e11566662d0eacd8b7f7f73f7ab"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WarnAboutUnknownOptions</b> (BMultiMap&lt; string, string &gt; options, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, IDictionary&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt; knownOptions)</td></tr>
 <tr class="separator:a70da1e11566662d0eacd8b7f7f73f7ab inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2dc3f00b951ed0cb53b49a519f1b46f7 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2dc3f00b951ed0cb53b49a519f1b46f7"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ShowHelp</b> (IEnumerable&lt; KeyValuePair&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt;&gt; knownOptions, TextWriter @out=null)</td></tr>
-<tr class="separator:a2dc3f00b951ed0cb53b49a519f1b46f7 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad1408eb29462dd1f1d2c4536414fd63 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad1408eb29462dd1f1d2c4536414fd63"></a>
-static List&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>OpenSourceFiles</b> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, IEnumerable&lt; string &gt; fileNames)</td></tr>
+<tr class="memitem:a819e5bf2c6525088c5554c4ebc4236fa inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a819e5bf2c6525088c5554c4ebc4236fa"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>MaybeShowHelp</b> (ICollection&lt; KeyValuePair&lt; string, string &gt;&gt; options, ICollection&lt; KeyValuePair&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt;&gt; knownOptions, TextWriter @out=null)</td></tr>
+<tr class="separator:a819e5bf2c6525088c5554c4ebc4236fa inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac1e0f35747b1115e840d6a86e07a51e inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac1e0f35747b1115e840d6a86e07a51e"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ShowHelp</b> (IEnumerable&lt; KeyValuePair&lt; string, <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; string, string &gt;&gt;&gt; knownOptions, TextWriter @out=null, bool includeUsageLine=true)</td></tr>
+<tr class="separator:aac1e0f35747b1115e840d6a86e07a51e inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad1408eb29462dd1f1d2c4536414fd63 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memItemLeft" align="right" valign="top">static List&lt; <a class="el" href="classLeMP_1_1InputOutput.html">InputOutput</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeMP_1_1Compiler.html#aad1408eb29462dd1f1d2c4536414fd63">OpenSourceFiles</a> (<a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink, IEnumerable&lt; string &gt; fileNames)</td></tr>
+<tr class="memdesc:aad1408eb29462dd1f1d2c4536414fd63 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens a set of source files by file name, and creates a text file for each. <a href="#aad1408eb29462dd1f1d2c4536414fd63">More...</a><br /></td></tr>
 <tr class="separator:aad1408eb29462dd1f1d2c4536414fd63 inherit pub_static_methods_classLeMP_1_1Compiler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classLeMP_1_1TestCompiler"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classLeMP_1_1TestCompiler')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classLeMP_1_1TestCompiler.html">LeMP.TestCompiler</a></td></tr>
 <tr class="memitem:aba188e80c68bc96f0ea718920942f362 inherit pro_methods_classLeMP_1_1TestCompiler"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba188e80c68bc96f0ea718920942f362"></a>
@@ -232,7 +238,7 @@ override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 18 2016 22:22:45 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 24 2016 09:04:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

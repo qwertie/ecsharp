@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>Loyc: Loyc.LLParserGenerator.LLParserGenerator Class Reference</title>
+<title>Enhanced C#: Loyc.LLParserGenerator.LLParserGenerator Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">Loyc
+   <div id="projectname">Enhanced C#
    </div>
    <div id="projectbrief">Language of your choice: library documentation</div>
   </td>
@@ -106,16 +106,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers. 
  <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LLLPG/CoreEngine/AnalysisVisitors.cs'>/Main/LLLPG/CoreEngine/AnalysisVisitors.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LLLPG/CoreEngine/LLParserGenerator.cs'>/Main/LLLPG/CoreEngine/LLParserGenerator.cs</a></li>
-<li><a href='https://github.com/qwertie/Loyc/tree/master/Main/LLLPG/CoreEngine/PredictionTree.cs'>/Main/LLLPG/CoreEngine/PredictionTree.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/CoreEngine/AnalysisVisitors.cs'>/Main/LLLPG/CoreEngine/AnalysisVisitors.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/CoreEngine/LLParserGenerator.cs'>/Main/LLLPG/CoreEngine/LLParserGenerator.cs</a></li>
+<li><a href='https://github.com/qwertie/ecsharp/tree/master/Main/LLLPG/CoreEngine/PredictionTree.cs'>/Main/LLLPG/CoreEngine/PredictionTree.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Encapsulates LLLPG, the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> LL Parser Generator, which generates LL(k) recursive-descent parsers.</p>
 <p>LLLPG is a new LL(k) parser generator under the umbrella of the <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> project (<a href="http://loyc.net">http://loyc.net</a>). </p>
 <p>LLLPG generates recursive-descent parsers for LL(k) grammars. It is designed for parsing computer languages, not natural languages. It also it supports "syntactic predicates" which are zero-width syntactic assertions, and "semantic predicates" which are arbitrary expressions. </p>
 <p>The <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html" title="Encapsulates LLLPG, the Loyc LL Parser Generator, which generates LL(k) recursive-descent parsers...">LLParserGenerator</a> class is the core engine. It generates parsers in the form of a <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> tree, which can be printed out as C# code. Look at the documentation of the <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator.html#a2287db28b2b9044187ab4c62207bcd12" title="Generates a braced block of code {...} for the grammar described by the rules that were previously ad...">Run()</a> method for an overview of how the LLLPG engine works. </p>
-<p>Note: the input to LLLPG is usually provided in the form of LES/EC# source code. In that case, there is no need to use this class directly. The source code of Program.Main shows how to invoke LLLPG as a macro via the <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on a set of source files.">LeMP.Compiler</a>. </p>
+<p>Note: the input to LLLPG is usually provided in the form of LES/EC# source code. In that case, there is no need to use this class directly. The source code of Program.Main shows how to invoke LLLPG as a macro via the <a class="el" href="classLeMP_1_1Compiler.html" title="A class that helps you invoke MacroProcessor on on a set of source files, given a set of command-line...">LeMP.Compiler</a>. </p>
 <p>For more information about how to use LLLPG, read <a href="http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp">http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp</a> </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -567,7 +567,7 @@ approximate" lookahead still has problems with certain cases involving nested al
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Mar 18 2016 22:22:44 for Loyc by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 24 2016 09:04:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
