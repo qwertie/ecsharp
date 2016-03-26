@@ -2,43 +2,35 @@
 layout: default
 title: Home
 ---
-# <center>The Power of Choice</center>
+Enhanced C# + LeMP
+==================
 
-Coders are constrained in the way they express themselves by the language they are using. Different languages have different strengths and weaknesses, but expert coders are often unable to choose a programming language or library with the combination of strengths they desire. There are many scenarios that produce this result...
+Enhanced C# is a programming language that is backward-compatible with C#. Currently, only the front-end of EC# is complete; this front end is known as [_LeMP_](/lemp). LeMP is, in fact, language-agnostic and can support _any_ programming language for which a parser and printer has been written based on [Loyc trees](http://loyc.net/loyc-trees), but so far no volunteers have stepped forward to write parsers or printers for other languages.
 
-- You're working on a large project based on Language X. You probably have to keep using Language X, no matter how weak it is for the task at hand.
-- The best library for doing T is written in Language X, but you also need to do Y and X doesn't support Y very well.
-- You've chosen language X and realize later that you need a good library for doing T. Sadly, none of the libraries for doing T in X are any good.
-- Your code _might_, _just might_ need to run in a web browser. Now you can only use Javascript, or one of a handful of languages that transpile to Javascript.
-- You're not writing code for the browser, but you want to re-use code that _was_ designed for the browser. There's a strong pull toward Javascript, but it might not be the right fit for the new code you want to write.
-- Your code needs high performance, but needs to interoperate with a slower language like Ruby, Python, etc. Now your design is highly constrained because it's hard to trade data between the two languages, due to fundamental mismatches between data types and memory management schemes. And if you don't choose C/C++, interoperability may be very hard in a language that doesn't understand C header files.
-- You want a language with strong support for A, B and C, but no language exists that is strong in all three areas at the same time.
-- You find a language that is excellent for A, B, and C, and start using it for a new project, only to discover that its IDE/Intellisense/Debugger/third party libraries are crap.
-- You want to use two libraries related to the same topic (whether it's graphics, GIS, math, persistence, GUIs...), written in the same language, but it's painful because the two libraries use completely different interfaces and conventions.
+Since only the front-end is done, one uses LeMP as a C# preprocessor. Currently there is a Single-File Generator (a.k.a. Custom Tool) in Visual Studio that converts a single \*.ecs file to plain C# whenever you save it. Typically, then, you'll write projects that are mostly C#, with EC# used only when its benefits are big enough to outweigh the drawbacks of using a C# preprocessor.
 
-Loyc is about finding ways to bring the world's programming languages closer together, looking for ways to solve problems like these with as little code as possible, and making developers more productive by giving them options they've never had before.
+It's possible to use a modified build process, but more convenient not to; instead, just place both the \*.ecs and \*.out.cs files in source control. This has the advantage that you don't have to modify your build server, and those without LeMP installed can still compile your projects.
 
-# About Loyc
+EC# and LeMP are part of the [Loyc initiative](http://loyc.net).
 
-Language of Your Choice (Loyc) is a group of projects related to cross-language interoperability:
+Why a new language?
+-------------------
 
-- Code analysis and transformation
-- (_future_) Transforming source code between different languages
-- (_future_) Writing libraries (or entire programs) in multiple programming languages
-- (_future_) IDEs (code completion lists, various kinds of code visualization, intellisense)
+I see new general-purpose language projects popping up all the time, and I don't like it. In my opinion there's no point in just making a language that is "better than C++" or "better than Java" or "better than C#", because _several languages fitting these descriptions already exist_, and many of them are even stable. Enhanced C# is really a gimmick — it's not the best language I could create, and it's not intended to be. I'm developing it because I think that backward compatibility is a potential fruitful way to put more power in the hands of developers. Switching languages is a risky business maneuver, and a potentially difficult one if you already have a C# code base. The cost and perceived risk of switching largely explains why there is slow uptake of nice languages like D, Rust, Nemerle and even Ceylon. Languages perceived to be obscure, like Nim, Plaid, or Dyvil, don't stand a chance.
 
-Loyc is in its infancy, and probably will remain so until I attract either (A) volunteers to work on its components, or (B) a major sponsor. Current and potential Loyc projects include:
+That's why Enhanced C# tries very hard to be backward compatible with C#. I don't think 100% compatibility is necessary, but it's important to make sure that the number of changes required to make the EC# compiler happy is very close to zero. If you find any existing C# isn't handled properly by EC#, it's probably just a bug - please file a bug report.
 
-- [Enhanced C#](https://github.com/qwertie/ecsharp/wiki/Enhanced-C%23): a starting point for the Loyc framework, EC# will add new operators and many other new features to C#, starting with a LISP-inspired macro system (LeMP).
-- [LeMP](/lemp) (Lexical Macro Processor): a LISP-style macro preprocessor that operates on Loyc trees
-- [Loyc trees](https://github.com/qwertie/ecsharp/wiki/Loyc-trees): a generic in-memory representation for syntax trees of any language.
-- [LES](https://github.com/qwertie/ecsharp/wiki/Loyc-Expression-Syntax) (Loyc Expression Syntax): a superset of JSON, LES is an C-like interchange format for Loyc trees, suitable for representing normal programming languages, DSLs, configuration files, and intermediate representations.
-- [LLLPG](/lllpg) (Loyc LL(k) Parser Generator): The parser generator being used to parse Enhanced C# and LES
-- [MLSL](http://loyc.net/2014/design-elements-of-mlsl.html) (Multi-Language Standard Library): not yet started
-- [SIL](https://github.com/qwertie/ecsharp/wiki/Standard-Imperative-Language) (Standard Imperative Language): not yet started
-- Visual studio integration: When you write a lexer & parser, you can get syntax highlighting almost for free.
+Plus, the fact that EC# converts to plain C# means that if you decide to stop using EC#, you can always discard your EC# code and just use the C# code. EC# doesn't yet preserve comments and blank lines, but all it would take is one volunteer willing to [write a little code](/lemp/help-wanted.html#Task-copy-comments-to-output).
 
-At the moment, Loyc is limited to the .NET platform. Loyc has several general-purpose "core" libraries that you can read about at [core.ecsharp.net](http://core.ecsharp.net). The dependence tree of existing libraries is
+Learn More
+----------
+
+To learn more about the features currently available in Enhanced C#, please visit the [LeMP home page](/lemp).
+
+Dependency tree
+---------------
+
+The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
 
      Loyc.Essentials.dll  (Collection interfaces, collection adaptors, extension 
               ^            methods, UString, important utility classes, and more)

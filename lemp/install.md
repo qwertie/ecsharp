@@ -22,12 +22,12 @@ To install syntax highlighting for `.ecs` and `.les` files, run `Lib\LeMP\LoycSy
 
 ![](lemp-install-3.png)
 
-To try it out, create a new C# project in Visual Studio (or open an existing one), and then create a new text file named `example.ecs`:
+To try it out, create a new C# project in Visual Studio (or open an existing one), and then create a new text file named `example.ecs` (or simply rename an existing file, e.g. Program.cs to Program.ecs):
 
 ![](lemp-add-file-1.png)
 ![](lemp-add-file-2.png)
 
-Finally, open the *Properties* panel and change the *Custom Tool* option to **_LeMP_**. An output file called `example.out.cs` should appear under `example.ecs`. To make sure it's all working fine, paste a little code in the new file, e.g.
+Finally, open the *Properties* panel and change the *Custom Tool* option to **_LeMP_**. An output file called `example.out.cs` should appear under `example.ecs`. If you started with an empty file, paste a little code in it to make sure it works, e.g.
 
 ~~~csharp
 using System;
