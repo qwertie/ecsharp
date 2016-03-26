@@ -2,8 +2,8 @@
 layout: default
 title: Home
 ---
-Enhanced C# + LeMP
-==================
+Welcome
+=======
 
 Enhanced C# is a programming language that is backward-compatible with C#. Currently, only the front-end of EC# is complete; this front end is known as [_LeMP_](/lemp). LeMP is, in fact, language-agnostic and can support _any_ programming language for which a parser and printer has been written based on [Loyc trees](http://loyc.net/loyc-trees), but so far no volunteers have stepped forward to write parsers or printers for other languages.
 
