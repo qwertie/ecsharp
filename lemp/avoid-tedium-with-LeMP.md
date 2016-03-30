@@ -337,14 +337,14 @@ This macro, also known as [`SetOrCreateMember`](https://github.com/qwertie/ecsha
 ~~~csharp
 /// Input
 string _existingField;
-public float SetUpSquare(set string _existingField, 
-						 private int _createNewField,
-						 float num) { return num*num; }
+public float Example(set string _existingField, 
+                     private int _createNewField,
+                     float num) { return num*num; }
 
 /// Output
 string _existingField;
 private int _createNewField;
-public float SetUpFields(string existingField, int createNewField, float num)
+public float Example(string existingField, int createNewField, float num)
 {
 	_existingField = existingField;
 	_createNewField = createNewField;

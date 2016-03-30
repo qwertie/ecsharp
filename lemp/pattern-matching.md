@@ -207,7 +207,7 @@ internal static int Compare<T>(T a, T b) where T:IComparable<T>
 	if (a != null)
 		return a.CompareTo(b);
 	else if (b != null)
-		return -a.CompareTo(a);
+		return -b.CompareTo(a);
 	else
 		return 0;
 }
@@ -292,7 +292,7 @@ public alt class BinaryTree<T> where T: IComparable<T>
 		if (a != null)
 			return a.CompareTo(b);
 		else if (b != null)
-			return -a.CompareTo(a);
+			return -b.CompareTo(a);
 		else
 			return 0;
 	}
@@ -337,7 +337,7 @@ Just remember that the nested `alt`s are _not_ nested classes; in the output, ea
 Finally, you can use `alt class` to produce immutable classes with only one "case", like this:
 
 ~~~
-public abstract alt class Rectangle {
+public alt class Rectangle {
 	alt this(int X, int Y, int Width, int Height);
 }
 ~~~
