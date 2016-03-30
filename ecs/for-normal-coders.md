@@ -1,14 +1,16 @@
 ---
 title: "Learn Enhanced C#"
-tagline: An article for ordinary coders
+tagline: An article for ordinary C# coders
+date: 30 Mar 2016
 layout: page
 toc: true
+commentIssueId: 28
 ---
 
 Introduction
 ------------
 
-Enhanced C# (EC#) is a new programming language intended to supercharge C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my [EC# for PL Nerds] series.
+Enhanced C# (EC#) is a new programming language intended to supercharge C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my [EC# for PL Nerds](for-programming-language-pundits.html) series.
 
 EC# tries to be about 99.9% backward compatible with C#, and in fact compiles itself down to plain C#; eventually it would be nice to have a proper .NET compiler, but some may find it's _more_ useful without one, because compiling to C# means perfect interoperability with existing code. Take any existing C# project and you can add Enhanced C# to it, without even breaking the builds of other team members. And if you decide you don't want to use it anymore, you can just throw away the Enhanced C# code and keep the generated C# code.
 
@@ -23,7 +25,7 @@ Through EC#, I planned to enhance C# with the following categories of features:
 
 It's okay if you have no idea what the items on the list mean. Trust me though, it's good stuff. Only items #1, #5 and #6 are actually implemented, so that's what I'll be talking about in this article.
 
-EC# is\* a grand plan to transform C# into a much more powerful and more succinct language. The plan has a lot of stuff that doesn't exist yet, but I focused on some of my most-wanted features first, so I hope you'll find that EC# is already powerful enough for a variety of useful tasks where plain C# falls short.
+EC# is a grand plan to transform C# into a much more powerful and more succinct language\*. The plan has a lot of stuff that doesn't exist yet, but I focused on some of my most-wanted features first, so I hope you'll find that EC# is already powerful enough for a variety of useful tasks where plain C# falls short.
 
 Safe navigation operator and lambda methods
 -------------------------------------------
@@ -32,29 +34,37 @@ When I originally wrote this article, the `?.` operator did not exist, but I add
 
 > In certain cases, this operator is a huge time saver. For example, what if "DBConnection", "PersonTable", and "FirstRow" in the following line might all return null?
 >
->    var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
+> ~~~ecsharp
+>     var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
+> ~~~
 >
 > In plain C#, it's a giant pain in the butt to check if each object is null:
 >
->    string firstName = null;
->    var dbc = DBConnection;
->    if (dbc != null) {
->       var pt = dbc.Tables.Get("Person");
->       if (pt != null) {
->         var fr = pt.FirstRow;
->         if (fr != null)
->           firstName = fr.Name;
->       }
->    }
->
+> ~~~ecsharp
+>     string firstName = null;
+>     var dbc = DBConnection;
+>     if (dbc != null) {
+>        var pt = dbc.Tables.Get("Person");
+>        if (pt != null) {
+>          var fr = pt.FirstRow;
+>          if (fr != null)
+>            firstName = fr.Name;
+>        }
+>     }
+> ~~~
+> 
 > But with the safe navigation operator it's easy. The above code only needs one line in EC#:
 >
+> ~~~ecsharp
 >    var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
+> ~~~
 
 Similarly, when I wrote this article, I planned to support "lambda" methods and properties like
 
-    static int Square(int x) => x*x;
-    public string Address => _address;
+~~~ecsharp
+static int Square(int x) => x*x;
+public string Address => _address;
+~~~
 
 And I planned to implement so-called string interpolation like `$"Hello $_name!"`. C# 6 got all of these features, with exactly the same syntax I was using (or, in the case of string interpolation, planning to use). We can only hope that MS eventually adds all the features of EC# to plain C#!
 
@@ -63,69 +73,84 @@ Triple-quoted strings
 
 C# has a concept of "verbatim" strings, which allow newlines inside the string:
 
-    namespace Foo {
-       class Foo {
-          static string ThreeLines() { 
-             return @"Line one
-                Line two
-                Line three";
-          }
-       }
-    }
+~~~csharp
+namespace Foo {
+   class Foo {
+	  static string ThreeLines() { 
+		 return @"Line one
+			Line two
+			Line three";
+	  }
+   }
+}
+~~~
 
 But you might not like how this works. First of all, any indentation of the second line is included in the string. Writing the string so that lines two and three are _not_ indented looks _very_ ugly:
 
-    namespace Foo {
-       class Foo {
-          static string ThreeLines() { 
-             return @"Line one
-    Line two
-    Line three";
-          }
-       }
-    }
+~~~csharp
+namespace Foo {
+   class Foo {
+	  static string ThreeLines() { 
+		 return @"Line one
+Line two
+Line three";
+	  }
+   }
+}
+~~~
 
 Secondly, the newlines in the string depend on the text file format: so a UNIX-style C# file will have "\n" newlines, but a Windows-style C# file will have "\r\n" newlines. Source control repositories may change the format automatically, so that the "same" source file contains a "different" string after it passes from one system to another through source control.
 
 Thus, verbatim strings aren't ideal for representing typical multiline strings. That's why Enhanced C# introduces triple-quoted strings:
 
-   class Foo {
-      static string ThreeLines() { 
-         return """Line one
-            Line two
-            Line three""";
-      }
+~~~csharp
+class Foo {
+   static string ThreeLines() { 
+      return """Line one
+         Line two
+         Line three""";
    }
+}
+~~~
 
 Newlines in a triple-quoted string are always treated as \n characters, no matter whether the text file actually contains Unix (\n), Windows (\r\n) or Mac (\r) line endings. The indentation of the starting line (the line with the opening triple quote) is remembered, and other lines of the string are allowed to begin with the same indentation characters plus up to _three_ additional spaces, or _one_ additional tab. Therefore, in this example, "Line two" and "Line three" start with _no_ space characters.
 
 Why are _three_ spaces allowed? It's the minimum number of spaces required to allow the first line to line up with subsequent lines:
 
-    string GetMarkdown() 
-    {
-       return 
-          """- This is the first line, which lines up with the second.
-             - This is the second line. None of the leading spaces count.
-               - This line counts as having two spaces at the beginning""";
-    }
+~~~csharp
+string GetMarkdown() 
+{
+   return 
+      """- This is the first line, which lines up with the second.
+         - This is the second line. None of the leading spaces count.
+           - This line counts as having two spaces at the beginning""";
+}
+~~~
 
 Triple-quoted strings support escape sequences, but they are slightly different than in normal strings. Ordinary C-style escape sequences are not interpreted, so these two strings are identical, each with 7 characters:
 
-    string nab1 = @"\n\a\b\";
-    string nab2 = """\n\a\b\""";
+~~~csharp
+string nab1 = @"\n\a\b\";
+string nab2 = """\n\a\b\""";
+~~~
 
 Escape sequences in triple-quoted strings have the format \x/ instead of \x, so these two strings are equivalent:
 
-    string newline1 = "Line1\r\nLine2";
-    string newline2 = """Line1\r/\n/Line2""";
+~~~csharp
+string newline1 = "Line1\r\nLine2";
+string newline2 = """Line1\r/\n/Line2""";
+~~~
 
 To use three quotes in a row inside a triple-quoted string, you can use an escape sequence to avoid closing the string. These two strings are equivalent:
 
-   string quotes1 = "  \"\"\"   ";
-   string quotes2 = """  ""\"/   """;
+~~~csharp
+string quotes1 = "  \"\"\"   ";
+string quotes2 = """  ""\"/   """;
+~~~
 
 Triple-quoted strings are useful for printing menus and usage notes, e.g.
 
+~~~csharp
 class Program {
    public static void Main(string[] args)
    {
@@ -144,6 +169,7 @@ class Program {
             Console.WriteLine(new string('*', Math.Abs(12 - Math.Abs(i)) * 2));
    }
 }
+~~~
 
 In this example, the lines of the menu are indented by two spaces, since "1" and "2" are indented five spaces beyond the indentation level of the first line, and the first three spaces are ignored.
 
@@ -165,15 +191,21 @@ Enhanced C# has a LISP-style macro system called LeMP (Lexical Macro Processor).
 
 You'll see what LeMP is capable of in the following sections. Every feature you see from now on will be a LeMP macro, _not_ a built-in feature of Enhanced C#, although in some cases Enhanced C# has a syntactic feature that makes the macro easier to use. For example, the Enhanced C# parser recognizes these patterns:
 
-    foo { code1; }
-    foo (expression) { code2; }
+~~~csharp
+foo { code1; }
+foo (expression) { code2; }
+~~~
 
 It translates these patterns to a syntax tree in which the last argument to `foo` is in braces:
 
-    foo ({ code1; });
-    foo (expression, { code2; });
+~~~csharp
+foo ({ code1; });
+foo (expression, { code2; });
+~~~
 
 Other examples are `@@symbols`, tuples like `(1, "two", 3.0)`, and the method forwarding operator `==>`. In all these cases, the _syntax_ is built into Enhanced C# itself, but since there is no complete EC# compiler yet, a macro is required to make these features work.
+
+Ideally, certain features in macros shouldn't _really_ be implemented as macros, and have "corner cases" that don't work, but could work properly as part of the EC# compiler that hasn't been written yet. I have implemented as many features as possible as macros, as a procrastication technique so I can do the "proper compiler" later, and also so I could find out just how much can be accomplished with macros alone. Many features can't be implemented with lexical macros, but on the other hand, many can.
 
 Method forwarding
 -----------------
@@ -182,39 +214,47 @@ Do you write wrapper classes sometimes, or implement the [decorator pattern](htt
 
 For example, if you need to write a wrapper for this interface:
 
-    interface IFoo
-    {
-       void MethodA(A objectA);
-       long MethodB(A objectA, B objectB);
-       string PropertyP { get; }
-       object PropertyQ { get; set; }
-    }
+~~~csharp
+interface IFoo
+{
+   void MethodA(A objectA);
+   long MethodB(A objectA, B objectB);
+   string PropertyP { get; }
+   object PropertyQ { get; set; }
+}
+~~~
 
-You coul do it like this:
+You could do it like this:
 
-    class FooWrapper : WrapperBase<IFoo>, IFoo 
-    {
-       public FooWrapper(IFoo obj) : base(obj) {}
-       void MethodA(A objectA) ==> _obj._;
-       long MethodB(A objectA, B objectB) ==> _obj._;
-       string PropertyP ==> _obj._;
-       object PropertyQ { get ==> _obj._; set ==> _obj._; }
-    }
+~~~csharp
+class FooWrapper : WrapperBase<IFoo>, IFoo 
+{
+   public FooWrapper(IFoo obj) : base(obj) {}
+   void MethodA(A objectA) ==> _obj._;
+   long MethodB(A objectA, B objectB) ==> _obj._;
+   string PropertyP ==> _obj._;
+   object PropertyQ { get ==> _obj._; set ==> _obj._; }
+}
+~~~
 
 This is derived from `Loyc.WrapperBase<T>` in Loyc.Essentials.dll, an abstract class that helps you implement wrappers by automatically forwarding calls to `Equals()`, `GetHashCode()` and `ToString()`. It stores the original object in a field called `_obj`. That part of it has nothing to do with Enhanced C#.
 
 After that you see the forwarding operator in action:
 
-    long MethodB(A objectA, B objectB) ==> _obj._;
+~~~csharp
+long MethodB(A objectA, B objectB) ==> _obj._;
+~~~
 
 I think that writing wrappers is common enough to justify a little bit of syntactic sugar, so Enhanced C# defines a forwarding operator `==>` (I could have written the forwarding macro without changing the EC# parser, it would have just had to rely on a less elegant syntax).
 
 After `==>` you specify the name of the target method or property. The underscore `_` refers to the name of the _current_ method or property, in this case `MethodB`. So the output code is:
 
-    long MethodB(A objectA, B objectB)
-    {
-       return _obj.MethodB(objectA, objectB);
-    }
+~~~csharp
+long MethodB(A objectA, B objectB)
+{
+   return _obj.MethodB(objectA, objectB);
+}
+~~~
 
 **Note:** forwarding is not currently implemented for `event`s.
 
@@ -223,23 +263,29 @@ The quick binding operator
 
 The new quick-binding operator allows you to create a variable any time you need one:
 
-   if (DBConnection.Tables.Get("Person")::table != null) {
-      foreach (var row in table)
-         Process(row);
-   }
+~~~csharp
+if (DBConnection.Tables.Get("Person")::table != null) {
+  foreach (var row in table)
+     Process(row);
+}
+~~~
 
 `::table` creates a variable called "table" to hold the return value of `DBConnection.Tables.Get("Person")`.
 
 It makes your workflow easier. Imagine that you just wrote
 
-   if (DBConnection.Tables.Get("Person") != null)
-      foreach (var row in |
+~~~csharp
+if (DBConnection.Tables.Get("Person") != null)
+  foreach (var row in |
+~~~
 
 And then you realize: "wait, I need that table again!". This happens to me a lot, and over the years I've become adept at quickly rewriting the code as
 
+~~~csharp
    var table = DBConnection.Tables.Get("Person");
    if (table != null)
       foreach (var row in table|
+~~~
 
 but I think you'll agree that it's far more convient to add "::table" than to 
 
@@ -256,20 +302,28 @@ Namespace aliases are simple identifiers, so if the expression before `::` is no
 
 You could write
 
-    new List<int>()::list;
+~~~csharp
+new List<int>()::list;
+~~~
 
 instead of 
     
-    var list = new List<int>();
+~~~csharp
+var list = new List<int>();
+~~~
 
 but `::` is not intended to be used this way. Instead it is meant to appear "inline" so you can create a variable and immediately do something with it, like this:
 
+~~~csharp
     Foo(new List<int>()::list);
+~~~
 
-A key feature of the new operator is its high precedence. In EC# you could write code like this:
+A key feature of the new operator is its high precedence. In EC# you _could_ write code like this:
 
+~~~csharp
     if ((var table = DBConnection.Tables.Get("Person")) != null)
       ...
+~~~
 
 but this approach requires parenthesis, since `var table = ... != null` would be parsed as `var table = (... != null)`. You don't want that, so you add parentheses. But this isn't very convenient, and the parentheses make the code slightly harder to read. In contrast, `::` binds as tightly as `.` does, so extra parenthesis are rarely needed.
 
@@ -277,13 +331,17 @@ To explain why I think we need this operator, I will use a math analogy. Math-sp
 
 The quick-bind operator also promotes efficient code by nudging you toward the "pit of success". For example, in the past you might have written:
 
-    if (AdjacencyList.Count > 1)
-       pairs += AdjacencyList.Count - 1;
+~~~csharp
+if (AdjacencyList.Count > 1)
+   pairs += AdjacencyList.Count - 1;
+~~~
 
 But in EC# it might be easier to write:
 
-    if (AdjacencyList.Count::c > 1)
-       pairs += c - 1;
+~~~csharp
+if (AdjacencyList.Count::c > 1)
+   pairs += c - 1;
+~~~
 
 And there's a reasonable chance this code is faster. `AdjacencyList` might be a property that reaches into some data structure to retrieve the list, and the `Count` property might be a virtual or interface method. Unless the JIT can be certain that `AdjacencyList.Count` is pure (has no side effects), the JIT cannot avoid evaluating it twice.
 
@@ -293,25 +351,33 @@ Of course, with variable declarations embedded in expressions like this, they ca
 
 `::` always creates a variable. It cannot change an existing variable.
 
-    int ab;
-    if ((a + b)::ab > y) // ERROR
+~~~csharp
+int ab;
+if ((a + b)::ab > y) // ERROR
+~~~
 
 The variable created by `::` is mutable. My first draft of EC# said that the variables would be immutable, but that's impossible to enforce without writing a complete compiler. 
 
 When I originally designed the `::` operator, it survived beyond the `if` statement itself, which I felt was better, because it made the operator useful in more situations:
 
-    if (Computation(x)::y != 0) {}
-    Trace.WriteLine(y); // OK
+~~~csharp
+if (Computation(x)::y != 0) {}
+Trace.WriteLine(y); // OK
+~~~
 
 Now I'm second-guessing myself though, for two reasons. The first reason is that when you declare a variable in a for-loop, it stops existing at the end of that loop:
 
-    for (var y = Computation(x); y != 0; ...) {...}
-    Trace.WriteLine(y); // ERROR
+~~~csharp
+for (var y = Computation(x); y != 0; ...) {...}
+Trace.WriteLine(y); // ERROR
+~~~
 
 Second, and more importantly, I consider Enhanced C# to be a series of feature requests for regular C#. I want these features in C# 7 and 8, but I'm guessing the C# team wouldn't allow the variable to survive beyond the end of the "if" statement or other location. If (to my surprise) they do allow the variable to survive, no harm done - the Enhanced C# code you write today will rarely be broken by such a change. But if it _is_ broken - like in this example:
 
-    if (Expression::x > 0) {...}
-    if (Expression::x < 0) {...}
+~~~csharp
+if (Expression::x > 0) {...}
+if (Expression::x < 0) {...}
+~~~
 
 you could simply enclose the first `if`-statement in braces to fix the error.
 
@@ -320,20 +386,22 @@ Creating 'out' variables in-situ
 
 EC# also lets you create variables as targets of "out" or "ref" variables. This example speaks for itself:
 
-   Dictionary<string,Form> _views;
+~~~csharp
+Dictionary<string,Form> _views;
 
-   // Shows a window corresponding to the specified key, or
-   // creates a new window for the key if one doesn't exist yet.
-   Form GetAndShow(string key)
-   {
-      if (_views.TryGetValue(key, out Form form))
-         form.BringToFront();
-      else {
-         _views[key] = form = new MyForm(key);
-         form.Show();
-      }
-      return form;
+// Shows a window corresponding to the specified key, or
+// creates a new window for the key if one doesn't exist yet.
+Form GetAndShow(string key)
+{
+   if (_views.TryGetValue(key, out Form form))
+      form.BringToFront();
+   else {
+      _views[key] = form = new MyForm(key);
+      form.Show();
    }
+   return form;
+}
+~~~
 
 This feature was planned to be added to C# 6, but strangely they removed the feature from the final compiler.
 
@@ -341,8 +409,10 @@ Because EC# doesn't have a complete compiler, it lacks access to type informatio
 
 `ref` variables are supported too, and require an explicit initializer, e.g.
 
-    FunctionThatTakesARefVariable(ref int newInt = 5);
-    Console.WriteLine("Afterward, our variable is {0}.", newInt);
+~~~csharp
+FunctionThatTakesARefVariable(ref int newInt = 5);
+Console.WriteLine("Afterward, our variable is {0}.", newInt);
+~~~
 
 Code Contracts
 --------------
@@ -351,7 +421,9 @@ Microsoft introduced [Code Contracts](http://research.microsoft.com/en-us/projec
 
 Enhanced C# introduces its [own code contracts](http://ecsharp.net/lemp/ref-code-contracts.html), which are designed to work together with, or separately from, Microsoft Code Contracts. The single most handy contract is `notnull`:
 
-    [field] notnull string Foo { get; set; }
+~~~csharp
+[field] notnull string Foo { get; set; }
+~~~
 
 This creates a contract in the `set { }` part that requires `value != null`, and a second contract in the `get { }` part that ensures the backing field is not `null`.
 
@@ -371,56 +443,64 @@ The same concept exists in other languages too, such as LISP. Symbols are more c
 
 The second point is more important. A lot of times people use one or more boolean flags or integers rather than a descriptive enum because it is inconvenient to define one. Usually you don't want to define the enum right beside the method that needs it, because the caller would have to qualify the name excessively:
 
-    class DatabaseManager {
-       ...
-       public static DatabaseConnection Open(string command, MaintainConnection option);
-       public enum MaintainConnection {
-          CloseImmediately, KeepOpen
-       }
-       ...
+~~~csharp
+class DatabaseManager {
+    ...
+    public static DatabaseConnection Open(string command, MaintainConnection option);
+    public enum MaintainConnection {
+       CloseImmediately, KeepOpen
     }
-    // later...
-    var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImmediately);
+    ...
+}
+// later...
+var c = DatabaseManager.Open("...", DatabaseManager.MaintainConnection.CloseImmediately);
+~~~
 
-Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But it is inconvenient to maintain and document an `enum` located _outside_ the class. So to avoid the hassle, you replace "MaintainConnection option" with "bool maintainConnection" and you're done.
+Isn't that horrible? You don't want your clients to have to double-qualify the name like this. But it is inconvenient to maintain and document an `enum` located _outside_ the class. So to avoid the hassle, you replace `MaintainConnection option` with `bool maintainConnection` and you're done.
 
 Symbols make this easier. They are written with `@@DoubleAtSigns`. The above code would be written like this in EC#:
 
-    class DatabaseManager {
-       ...
-       public static DatabaseConnection Open(string command, 
-          [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
-       ...
-    }
-    // later...
-    void Open() {
-       var c = DatabaseManager.Open("...", @@CloseImmediately);
-    }
+~~~csharp
+class DatabaseManager {
+   ...
+   public static DatabaseConnection Open(string command, 
+      [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
+   ...
+}
+// later...
+void Open() {
+   var c = DatabaseManager.Open("...", @@CloseImmediately);
+}
+~~~
 
 The `[requires]` attribute is one of the code contracts mentioned in the previous section; the underscore `_` is a shortcut that refers to "the current parameter", i.e. `option`.
 
 There's one more wrinkle. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. That macro is called `#useSymbols`, and you need to write `#useSymbols;` near the top of any class that uses symbols. For example:
 
-    class DatabaseManager {
-       #useSymbols;
-       public static DatabaseConnection Open(string command, 
-          [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
-       ...
-    }
+~~~csharp
+class DatabaseManager {
+   #useSymbols;
+   public static DatabaseConnection Open(string command, 
+      [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
+   ...
+}
+~~~
 
 `#useSymbols`'s job is to create static fields to hold each symbol that you use:
 
-    class DatabaseManager
-    {
-       static readonly Symbol sy_CloseImmediately = (Symbol) "CloseImmediately", 
-                              sy_KeepOpen = (Symbol) "KeepOpen";
-       public static DatabaseConnection Open(string command, Symbol option)
-       {
-          Contract.Assert(option.IsOneOf(sy_CloseImmediately, sy_KeepOpen), 
-             "Precondition failed: option.IsOneOf(sy_CloseImmediately, sy_KeepOpen)");
-       }
-       ...
-    }
+~~~csharp
+class DatabaseManager
+{
+   static readonly Symbol sy_CloseImmediately = (Symbol) "CloseImmediately", 
+                          sy_KeepOpen = (Symbol) "KeepOpen";
+   public static DatabaseConnection Open(string command, Symbol option)
+   {
+      Contract.Assert(option.IsOneOf(sy_CloseImmediately, sy_KeepOpen), 
+         "Precondition failed: option.IsOneOf(sy_CloseImmediately, sy_KeepOpen)");
+   }
+   ...
+}
+~~~
 
 The `Symbol` type can be found in Loyc.Essentials.dll (part of LoycCore on NuGet) in the `Loyc` namespace.
 
@@ -433,27 +513,31 @@ If you write a lot of try-finally blocks, this one is for you.
 
 C# has `using (...)`, which is great, but it requires an object that implements `IDisposable`, and sometimes the thing you want to do doesn't really work that way. For example, let's say you want to set a static property when entering a method, and revert to the old value when leaving the method:
 
-    void Method()
-    {
-       var oldValue = SomeBclClass.StaticProperty;
-       SomeBclClass.StaticProperty = newValue;
-       try {
-          10 lines of code;
-       } finally {
-          SomeBclClass.StaticProperty = oldValue;
-       }
-    }
+~~~csharp
+void Method()
+{
+   var oldValue = SomeBclClass.StaticProperty;
+   SomeBclClass.StaticProperty = newValue;
+   try {
+      10 lines of code;
+   } finally {
+      SomeBclClass.StaticProperty = oldValue;
+   }
+}
+~~~
 
 This is the kind of thing where `on_finally` is useful. The above code can be rewritten like so:
 
-    void Method()
-    {
-      var oldValue = SomeBclClass.StaticProperty;
-      SomeBclClass.StaticProperty = newValue;
-      on_finally { SomeBclClass.StaticProperty = oldValue; }
+~~~csharp
+void Method()
+{
+  var oldValue = SomeBclClass.StaticProperty;
+  SomeBclClass.StaticProperty = newValue;
+  on_finally { SomeBclClass.StaticProperty = oldValue; }
 
-       10 lines of code;
-    }
+   10 lines of code;
+}
+~~~
 
 `on_finally` groups together the code that sets and restores the value of the property, it eliminates two lines of code, and it removes the indentation on those `10 lines of code`.
 
@@ -468,28 +552,36 @@ Sometimes you want to return multiple values from a function. Traditionally this
 
 Tuple classes were added in .NET 4, but there is no special support for them in C#. To make a tuple in EC#, simply write a list of values in parenthesis:
 
-   var tuple = (1, "2", 3.0);
-   int one = tuple.Item1;
-   string two = tuple.Item2;
+~~~csharp
+var tuple = (1, "2", 3.0);
+int one = tuple.Item1;
+string two = tuple.Item2;
+~~~
 
 EC# is not committed to a special syntax for expressing the type of a tuple; the traditional type-declaration syntax is recommended. For example, here is a method that returns a list of values together with the index of each value:
 
-   public static IEnumerable<Tuple<T, int>> WithIndexes(this IEnumerable<T> list)
-   {
-      int i = 0;
-      foreach(T value in list)
-         yield return (value, i++);
-   }
+~~~csharp
+public static IEnumerable<Tuple<T, int>> WithIndexes(this IEnumerable<T> list)
+{
+   int i = 0;
+   foreach(T value in list)
+      yield return (value, i++);
+}
+~~~
 
 If you prefer [Pairs](http://ecsharp.net/doc/code/structLoyc_1_1Pair_3_01T1_00_01T2_01_4.html) over tuples of two, you can use [`#setTupleType(2, Pair);`](http://ecsharp.net/lemp/ref-other.html#settupletype) to accomplish that.
 
 The real power of tuples is that you can easily "unpack" them in EC#. If a function returns a pair of things (even if that function was written in "plain" C#), you can write:
 
-    (var firstThing, var secondThing) = FunctionThatReturnsAPair();
+~~~csharp
+(var firstThing, var secondThing) = FunctionThatReturnsAPair();
+~~~
 
 There are few shortcuts for _lists_ of tuples; for example you can't currently write code as elegant as
 
-    list.WithIndexes().ForEach(((var item, int i)) => Console.WriteLine($"list[$i] = $item"));
+~~~csharp
+list.WithIndexes().ForEach(((var item, int i)) => Console.WriteLine($"list[$i] = $item"));
+~~~
 
 However, this is valid EC# _syntax_, which means someone could implement this feature as a macro if they so desired.
 
@@ -504,39 +596,43 @@ I'll just explain this briefly with an example. Let's suppose your class has a b
 
 That's where `unroll` and `replace` come in. Let's say the task has something to do with, I don't now, serialization:
 
-    unroll ((PropX, DefValueX) in 
-            ((PropA, DefValueA), 
-             (PropB, DefValueB),
-             (PropC, DefValueC),
-             (PropD, DefValueD)))
-    {
-       replace(SavePropX => concatId(Save, PropX));
-       void SavePropX(SerialBox serializer)
-       {
-          if (PropX != DefValueX) {
-             serializer.Write(nameof(PropX));
-             serializer.Write(PropX);
-          }
-       }
-    }
+~~~csharp
+unroll ((PropX, DefValueX) in 
+        ((PropA, DefValueA), 
+         (PropB, DefValueB),
+         (PropC, DefValueC),
+         (PropD, DefValueD)))
+{
+   replace(SavePropX => concatId(Save, PropX));
+   void SavePropX(SerialBox serializer)
+   {
+      if (PropX != DefValueX) {
+         serializer.Write(nameof(PropX));
+         serializer.Write(PropX);
+      }
+   }
+}
+~~~
 
 This generates four methods, called `SavePropA`, `SavePropB`, `SavePropC`, and `SavePropD`:
 
-    void SavePropA(SerialBox serializer)
-    {
-       if (PropA != DefValueA) {
-          serializer.Write("PropA");
-          serializer.Write(PropA);
-       }
-    }
-    void SavePropB(SerialBox serializer)
-    {
-       if (PropB != DefValueB) {
-          serializer.Write("PropB");
-          serializer.Write(PropB);
-       }
-    }
-    // and so on
+~~~csharp
+void SavePropA(SerialBox serializer)
+{
+   if (PropA != DefValueA) {
+      serializer.Write("PropA");
+      serializer.Write(PropA);
+   }
+}
+void SavePropB(SerialBox serializer)
+{
+   if (PropB != DefValueB) {
+      serializer.Write("PropB");
+      serializer.Write(PropB);
+   }
+}
+// and so on
+~~~
 
 How does it work?
 
@@ -553,35 +649,43 @@ In general, outer macros run before inner macros (this is the opposite of the ev
 
 This is an easy one, it lets you do a series of operations on an object:
 
-    with (Foo()) {
-       .Bar();
-       .Property = 0;
-       Foo(.Baz(.Property));
-    }
+~~~csharp
+with (Foo()) {
+   .Bar();
+   .Property = 0;
+   Foo(.Baz(.Property));
+}
+~~~
 
 This produces output like
 
-    {
-       var tmp_0 = Foo();
-       tmp_0.Bar();
-       tmp_0.Property = 0;
-       Foo(tmp_0.Baz(tmp_0.Property));
-    }
+~~~csharp
+{
+   var tmp_0 = Foo();
+   tmp_0.Bar();
+   tmp_0.Property = 0;
+   Foo(tmp_0.Baz(tmp_0.Property));
+}
+~~~
 
 DSLs, "Record" types, disjoint unions and pattern matching
 ----------------------------------------------------------
 
 It would be straightforward to write a macro that would let you write "one liner" type definitions, like
 
-   public record Point(int X, int Y);
+~~~csharp
+public record Point(int X, int Y);
+~~~
 
 If there's demand, I could write an article about that. This could be considered an example of a [DSL](https://en.wikipedia.org/wiki/Domain-specific_language), and since DSLs are all the rage these days, I could write an article about "how to write a DSL in Enhanced C#" - if there's demand for such an article. Dear reader, what DSL would you like to see built on top of C#, that you _can't_ write due to limitations of C# language as it is today?
 
 LeMP comes with a more flexible mechanism for building types quickly, but it uses three lines of code instead of one. It's called the alt class:
 
-   public alt class Point {
-      alt this(int X, int Y);
-   }
+~~~csharp
+public alt class Point {
+   alt this(int X, int Y);
+}
+~~~
 
 This creates an immutable type (in this case `Point`) with the public properties you asked for (in this case `X` and `Y`). The syntax may seem a bit mysterious at first - "what's `alt this` supposed to mean?" you may ask. Well, "alt class" is really designed to produce entire class hierarchies rather than simple types; the latter is an afterthought (and as a consequence, it currently only builds classes, not structs, though it would be straightforward to remove this limitation.) So `this` refers to the _current_ class, as opposed to a _subclass_. A [section](http://ecsharp.net/lemp/pattern-matching.html#algebraic-data-types) of my previous article explains this in more detail.
 
@@ -601,54 +705,60 @@ Text parsers
 
 Regexes are pretty convenient, but if you'd like an alternative to regexes that is more readable and is compiled at compile-time, consider [LLLPG](http://ecsharp.net/lllpg). This example parses integers:
 
-    LLLPG(lexer(inputSource(src), inputClass(LexerSource)))
-    {
-       public static rule int ParseInteger(string input) 
-       @{
-          {var src = (LexerSource)input;}
-          ' '* // skip spaces
-          '-'?
-          (d:'0'..'9' {$result = $result * 10 + ($d - '0');})+ 
-          {if ($'-' != 0) return -$result;}
-          EOF
-          // LLLPG returns $result automatically
-       };
-    }
+~~~csharp
+LLLPG(lexer(inputSource(src), inputClass(LexerSource)))
+{
+   public static rule int ParseInteger(string input) 
+   @{
+      {var src = (LexerSource)input;}
+      ' '* // skip spaces
+      '-'?
+      (d:'0'..'9' {$result = $result * 10 + ($d - '0');})+ 
+      {if ($'-' != 0) return -$result;}
+      EOF
+      // LLLPG returns $result automatically
+   };
+}
+~~~
 
 Building classes quickly
 ------------------------
 
 I don't know about you, but I write a lot of "simple" classes and structs, particularly the kind known as "plain-old data" or POD, meaning, little groups of fields like this:
 
-    class FullAddress {
-       public string Address;
-       public string City;
-       public string Province;
-       public string Country;
-       public string PostalCode;
-    
-       public FullAddress(string address, string city, string province, 
-                          string country, string postalCode = "") {
-          Address = address;
-          City = city;
-          Province = province;
-          Country = country;
-          PostalCode = postalCode;
-       }
-    }
+~~~csharp
+class FullAddress {
+   public string Address;
+   public string City;
+   public string Province;
+   public string Country;
+   public string PostalCode;
+
+   public FullAddress(string address, string city, string province, 
+                      string country, string postalCode = "") {
+      Address = address;
+      City = city;
+      Province = province;
+      Country = country;
+      PostalCode = postalCode;
+   }
+}
+~~~
 
 You don't have to write classes like this very many times before you start to get annoyed at having to repeat the same information over and over: each of "address", "city", "province", "country" and "postalCode" are repeated four times with varying case, "string" is stated ten times, and "FullAddress" is repeated twice (three times if you add a default constructor).
 
 In EC# you get the same effect with much shorter code:
 
-    class FullAddress {
-       public this(
-          public string Address,
-          public string City,
-          public string Province,
-          public string Country,
-          public string PostalCode) {}
-    }
+~~~csharp
+class FullAddress {
+   public this(
+      public string Address,
+      public string City,
+      public string Province,
+      public string Country,
+      public string PostalCode) {}
+}
+~~~
 
 There are two bits of new syntax here:
 
@@ -657,59 +767,69 @@ There are two bits of new syntax here:
 
 By marking each parameter as `public`, you are instructing EC# to create a `public` field which is set to the value of the parameter. The constructor is replaced with the same code you saw earlier:
 
-       public string Address;
-       public string City;
-       public string Province;
-       public string Country;
-       public string PostalCode;
-    
-       public FullAddress(string address, string city, string province, 
+~~~csharp
+public string Address;
+public string City;
+public string Province;
+public string Country;
+public string PostalCode;
+
+public FullAddress(string address, string city, string province, 
                    string country, string postalCode = "") {
-          Address = address;
-          City = city;
-          Province = province;
-          Country = country;
-          PostalCode = postalCode;
-       }
+   Address = address;
+   City = city;
+   Province = province;
+   Country = country;
+   PostalCode = postalCode;
+}
+~~~
 
 You can create properties in the same way:
 
-    public this(
-       public string Address    { get; private set; },
-       public string City       { get; private set; },
-       public string Province   { get; private set; },
-       public string Country    { get; private set; },
-       public string PostalCode { get; private set; } = "") {}
+~~~csharp
+public this(
+   public string Address    { get; private set; },
+   public string City       { get; private set; },
+   public string Province   { get; private set; },
+   public string Country    { get; private set; },
+   public string PostalCode { get; private set; } = "") {}
+~~~
 
 You can also write an "update" function that changes existing fields or properties, using "set" parameters:
 
-    public void SetAddress(set string address, set string city, 
-                           set string province, set string country, 
-                           set string postalCode = "") { }
+~~~csharp
+public void SetAddress(set string address, set string city, 
+                       set string province, set string country, 
+                       set string postalCode = "") { }
+~~~
 
 This produces
 
-    public void SetAddress(string address, string city, string province, string country, string postalCode = "")
-    {
-       this.address = address;
-       this.city = city;
-       this.province = province;
-       this.country = country;
-       this.postalCode = postalCode;
-    }
+~~~csharp
+public void SetAddress(string address, string city, string province, string country, string postalCode = "")
+{
+   this.address = address;
+   this.city = city;
+   this.province = province;
+   this.country = country;
+   this.postalCode = postalCode;
+}
+~~~
 
 The `set` prefix is required on each field/property that you want to set, otherwise the parameter has no special behavior. For example, as a convenience we might accept a separate building number:
 
-       public void SetAddress(
-          int buildingNumber,
-          string streetName,
-          set string City,
-          set string Province,
-          set string Country,
-          set string PostalCode)
-       {
-          Address = buildingNumber + " " + streetName;
-       }
+~~~csharp
+public void SetAddress(
+   int buildingNumber,
+   string streetName,
+   set string City,
+   set string Province,
+   set string Country,
+   set string PostalCode)
+{
+   Address = buildingNumber + " " + streetName;
+}
+~~~
 
 Easter eggs
 -----------
