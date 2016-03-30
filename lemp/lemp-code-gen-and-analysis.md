@@ -789,6 +789,6 @@ LeMP is a useful code generation and code analysis tool. QED. Let me know if you
 Help wanted
 -----------
 
-I would like someone to [help make a Roslyn back-end for LeMP](help-wanted.html). 
+I would like someone to [help make a Roslyn back-end for LeMP](/help-wanted.html). 
 
 P.S. a shout out to the [srclib](https://srclib.org/) project. I wish I had time to implement the Visual Studio version!
