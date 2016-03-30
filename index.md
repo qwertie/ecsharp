@@ -25,7 +25,9 @@ Plus, the fact that EC# converts to plain C# means that if you decide to stop us
 Learn More
 ----------
 
-To learn more about the features currently available in Enhanced C#, please visit the [LeMP home page](/lemp).
+To learn more about Enhanced C#, please read ["Enhanced C# for ordinary coders"](/ecs/for-normal-coders.html). If you _still_ want to learn more after that, you can graduate to ["Enhanced C# for Programming Language Nerds"](/ecs/for-programming-language-pundits.html).
+
+Most of the features currently available in Enhanced C# are implemented as LeMP macros. To learn about all these features, please visit the [LeMP home page](/lemp).
 
 Dependency tree
 ---------------
@@ -66,4 +68,4 @@ The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
     Note: Baadia is a prototype boxes-and-arrows diagram maker. It doesn't belong 
       in this repo, but I haven't got around to separating it into its own repo.
 
-Loyc is a concept with many parts and potential parts, and I am looking for volunteers to help create these parts. You can reach me at `gmail.com`, with account name `qwertie256`.
+To talk to me, you can either leave an [issue on GitHub](https://github.com/qwertie/ecsharp/issues) or email me at `gmail.com`, with account name `qwertie256`.
