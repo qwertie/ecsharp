@@ -12,7 +12,7 @@ Introduction
 
 Enhanced C# (EC#) is a new programming language intended to supercharge C# with powerful features inspired by lesser-known languages such as LISP and D. I created it alone; it is not affiliated with or endorsed by Microsoft. This article is for normal developers; if you really know your stuff, you might also want to read my [EC# for PL Nerds](for-programming-language-pundits.html) series.
 
-EC# tries to be about 99.9% backward compatible with C#, and in fact compiles itself down to plain C#; eventually it would be nice to have a proper .NET compiler, but some may find it's _more_ useful without one, because compiling to C# means perfect interoperability with existing code. Take any existing C# project and you can add Enhanced C# to it, without even breaking the builds of other team members. And if you decide you don't want to use it anymore, you can just throw away the Enhanced C# code and keep the generated C# code.
+EC# tries to be about 99.9% backward compatible with C#, and in fact compiles itself down to plain C#; eventually it would be nice to have a proper .NET compiler that produces CIL/MSIL, but some may find it's _more_ useful without one, because compiling to C# means perfect interoperability with existing code. Take any existing C# project and you can add Enhanced C# to it, without even breaking the builds of other team members. And if you decide you don't want to use it anymore, you can just throw away the Enhanced C# code and keep the generated C# code.
 
 Through EC#, I planned to enhance C# with the following categories of features:
 
@@ -32,31 +32,31 @@ Safe navigation operator and lambda methods
 
 When I originally wrote this article, the `?.` operator did not exist, but I added it to Enhanced C#. Now that C# 6.0 has this operator, all I have to do is disable the code transformation in EC# that supported it.
 
-> In certain cases, this operator is a huge time saver. For example, what if "DBConnection", "PersonTable", and "FirstRow" in the following line might all return null?
+> In certain cases, this operator is a huge time saver. For example, what if "DBConnection", "PersonTable", and "FirstRow" in the following line might all return `null`?
 >
 > ~~~ecsharp
->     var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
+> var firstName = DBConnection.Tables.Get("Person").FirstRow.Name;
 > ~~~
 >
 > In plain C#, it's a giant pain in the butt to check if each object is null:
 >
 > ~~~ecsharp
->     string firstName = null;
->     var dbc = DBConnection;
->     if (dbc != null) {
->        var pt = dbc.Tables.Get("Person");
->        if (pt != null) {
->          var fr = pt.FirstRow;
->          if (fr != null)
->            firstName = fr.Name;
->        }
->     }
+> string firstName = null;
+> var dbc = DBConnection;
+> if (dbc != null) {
+>    var pt = dbc.Tables.Get("Person");
+>    if (pt != null) {
+>      var fr = pt.FirstRow;
+>      if (fr != null)
+>        firstName = fr.Name;
+>    }
+> }
 > ~~~
 > 
 > But with the safe navigation operator it's easy. The above code only needs one line in EC#:
 >
 > ~~~ecsharp
->    var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
+> var firstName = DBConnection?.Tables.Get("Person")?.FirstRow?.Name;
 > ~~~
 
 Similarly, when I wrote this article, I planned to support "lambda" methods and properties like
@@ -543,7 +543,7 @@ void Method()
 
 Actually, I often find myself wanting to save or use the _old_ value of something just before I _change_ the value of something. I feel like there should be some way to write `SomeBclClass.StaticProperty` only twice, instead of three times, and in the past I have suggested a ["slide operator"](http://loyc.net/2010/i-want-slide-operator.html) as the solution. But such an operator is not currently implemented; so if you like this idea, feel free to write it as a user-defined macro. Ask me how.
 
-`on_finally` is actually part of a group of related macros. The others are [`on_return`, `on_throw` and `on_throw_catch`](http://ecsharp.net/lemp/ref-on_star.html).
+`on_finally`, which works like the `defer` statement in Swift and the `scope(exit)` statement in D, is actually part of a group of related macros. The others are [`on_return`, `on_throw` and `on_throw_catch`](http://ecsharp.net/lemp/ref-on_star.html).
 
 Tuples and deconstruction
 -------------------------
@@ -858,31 +858,33 @@ Suffice it to say, the list of things I want goes on for a long time, but I can'
 The End?
 --------
 
-\* In the beginning of this article I used the _present tense_ when I said EC# was a grand plan to transform C# into a much more powerful and more succinct language. That was the plan over three years ago when I started writing this article. But over those years, as I have published articles about the component parts and dependencies of Enhanced C# - [Loyc Core](http://core.ecsharp.net), [Loyc trees](http://loyc.net/loyc-trees), and so forth - I have become increasingly aware of how deeply indifferent people are toward improving the foundations of .NET software.
+\* In the beginning of this article I used the _present tense_ when I said EC# was a grand plan to transform C# into a much more powerful and more succinct language. That was the plan over three years ago when I started writing this article. But over those years, as I have published articles about the component parts and dependencies of Enhanced C# - [Loyc Core](http://core.ecsharp.net), [Loyc trees](http://loyc.net/loyc-trees), and so forth - I have become increasingly aware of how deeply indifferent most people are toward improving the foundations of .NET software.
 
 Perhaps Jon Skeet put it best, when I emailed him two weeks ago about LeMP and Enhanced C#. He told me why _he_ wouldn't use it:
 
 > I really don't want my code to be in a language that hardly anyone else knows - and which could conflict with future releases of C#. It's definitely an interesting project, and I could imagine people using it for hobby projects where it didn't really matter much if the whole thing went to pot (e.g. if you became unable to work on it) but I wouldn't want to use it for anything important due to those concerns.
 
-People won't use it (or even blog about it, apparently) because it isn't popular. And it isn't popular because people won't use it. Classic chicken and egg. Plus, as Jon has pointed out, since Microsoft isn't paying me, I'm not improving the _real_ C#. And although it has always been open source, he has presumed that no one would be willing to maintain it if I died tomorrow. Sadly, all signs point to "yes".
+People won't use it (or even blog about it, apparently) because it isn't popular. And it isn't popular because people won't use it. Classic chicken and egg. Plus, as Jon has pointed out, since Microsoft isn't paying me, I'm not improving the _real_ C#. Since Microsoft isn't paying me, my [libraries](http://core.ecsharp.net) do not improve the _real_ BCL. And although it has always been open source, he has presumed that no one would be willing to maintain it if I died tomorrow. Sadly, that's probably true.
 
-The slow uptake of [Nemerle](http://nemerle.org/About) I could understand; historically (if not right now) a lot of its documentation was in Russian, its wiki was a mess, it wasn't made by Microsoft and you couldn't easily migrate your C# code base to Nemerle. I could even understand the slow uptake of F#; as soon as it came out I tried to use it, but was immediately baffled by many of its syntax elements. A couple of years later I tried again, only to be thwarted by cryptic error messages while trying to write what I thought was a simple constructor. So syntactically, I found F# substantially harder than OCaml (with which I also have little experience), and I think ordinary C# and VB developers would have a hard time using it. Plus, no Windows Forms designer.
+The slow uptake of [Nemerle](http://nemerle.org/About) I could _somewhat_ understand; historically (if not right now) a lot of its documentation was in Russian, its wiki was a mess, it wasn't made by Microsoft and you couldn't easily migrate your C# code base to Nemerle. I could even understand the slow uptake of F#; as soon as it came out I tried to use it, but was immediately baffled by many of its syntax elements. A couple of years later I tried again, only to be thwarted by cryptic error messages while trying to write what I thought was a simple constructor. So syntactically, I found F# substantially harder than OCaml (with which I also have little experience), and I think ordinary C# and VB developers would have a hard time using it. Plus, no Windows Forms designer?
 
-But honestly, it took me by surprise that backward compatibility with C#, and the fact it translates to plain C#, hasn't convinced at least a _few_ people to use Enhanced C#, let alone improve it.
+But honestly, it took me by surprise that backward compatibility with C#, and the fact it translates to plain C#, hasn't convinced at least a _few_ people to use LeMP / Enhanced C#, let alone improve it.
 
-This article represents my last chance. I've published [articles about the underlying ideas](http://www.codeproject.com/Articles/606610/LLLPG-cplusLoycplustrees-cplusandplusLES-cpluso), I've published articles about [the parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), I've published articles about the [macro processor](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part), and of course I've documented (if not promoted) [related technologies](http://loyc.net/les), my [collection types](http://core.ecsharp.net/collections) and all the rest of the [class libraries](http://ecsharp.net/doc/code). And I already published a whole [web site](http://ecsharp.net/lemp) and [reference manual](http://ecsharp.net/lemp/reference.html) for EC#'s macro engine. But as far as I can tell, no one but me has blogged about any of this, and other than me, I only have one confirmed user of my libraries. From where I sit, this whole project has been a failure of epic proportions.
+This article represents my last chance. I started out publishing [articles about the underlying ideas](http://www.codeproject.com/Articles/606610/LLLPG-cplusLoycplustrees-cplusandplusLES-cpluso), I've published articles about [the parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), I've published articles about the [macro processor](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part), and of course I've documented (if not promoted) [related technologies](http://loyc.net/les), my [collection types](http://core.ecsharp.net/collections) and all the rest of the [class libraries](http://ecsharp.net/doc/code). And I already published a whole [web site](http://ecsharp.net/lemp) and [reference manual](http://ecsharp.net/lemp/reference.html) for EC#'s macro engine. But as far as I can tell, no one but me has blogged about any of this, and other than me, I only have one confirmed user of my libraries. From where I sit, this whole project has been a failure of epic proportions.
 
-I keep hoping that by working harder and publishing new articles and putting a new spin on things, I could stir up some interest in my work, but experience has taught me that coders don't give a ʞɔnɟ. Encouraging comments are appreciated, and every, oh, every year or so I get two or three of those, but what I really want is developers using this stuff, asking me questions, filing bug reports, telling me what their needs are and [hacking on the source code](http://ecsharp.net/help-wanted.html).
+Just to illustrate: I wrote a benchmark pitting C# versus C++ on CodeProject and ultimately got 522,000 views. Later, after months of work, I published a complex and feature-rich data structure I had built and it got - wait, WTF? It disappeared from CodeProject completely now! Anyway, I published a three-article series also available [here](http://core.ecsharp.net/collections/), and as I recall it got well under 10,000 views. I published an article about [using the _old_ version of ICSharpCode.TextEditor](http://www.codeproject.com/Articles/30936/Using-ICSharpCode-TextEditor) and it got 215,000 views; I published my first article on LeMP ten months ago, and it earned just 11,000. After republishing several new versions of my [LLLPG article](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) over the last couple of years, I did manage to rack up nearly 193,000 views - wait a minute, it was under 100,000 last time I checked! Okay, so that's good news... but so far I'm not aware of any actual _users_.
 
-So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.1% of C# developers to use it, I've just been wasting years of my life. So, what'll it be? Should I quit now? I'm leaning toward "yes" (I'd still fix bugs and answer your questions, of course). There's this thing out there called WebAssembly, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
+I keep hoping that by working harder and publishing new articles and putting a new spin on things, I could stir up some interest in my work, but experience has taught me that the vast majority of coders don't give a ʞɔnɟ. Encouraging comments are appreciated, and every, oh, every year or so I get three or four of those (thanks Jonathan and Kerry!), but what I really want is developers using this stuff, asking me questions, filing bug reports, telling me what their needs are and [hacking on the source code](http://ecsharp.net/help-wanted.html).
 
-It isn't just programming languages, either. I've worked on International Auxiliary Languages and noticed that the common man's reaction ranges from indifference to outright hostility. I found strong evidence that the religion I grew up in is not true, but I'm fairly sure most members wouldn't respond well if I told _them_ that. I've been trying to support the fight against corruption in U.S. politics, but while many people recognize the problem (or something similar to it), getting them to rally around a solution that would _actually_ work seems, well, unworkable. The list goes on, and the bottom line seems to be, I was born on the wrong planet.
+So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.01% of C# developers to use it, I've just been wasting years of my life. So, what'll it be? Should I quit now? I'm leaning toward "yes" (I'd still fix bugs and answer your questions, of course). There's this thing out there called WebAssembly, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
 
-And yet... I would like so much to make a difference. If only someone would let me.
+It isn't just programming languages, either. I've worked on International Auxiliary Languages and noticed that the common man's reaction ranges from indifference to outright hostility. I found strong evidence that the religion I grew up in is not true, but I'm fairly sure most members wouldn't respond well if I told _them_ that. I've been trying to support the fight against corruption in U.S. politics, but while many people _vaguely_ recognize the problem, getting them to rally around a solution that would _actually_ work seems, well, unworkable. The list goes on, and the bottom line seems to be, I was born on the wrong planet. My kind is not welcome here.
+
+And yet... I would like so much to make a difference. If only someone would enable me to.
 
 Exercises for the reader
 ------------------------
 
-It is possible to port some of the features of [C omega](http://research.microsoft.com/en-us/um/cambridge/projects/comega/doc/comega_whatis.htm) to Enhanced C#. Anyone up for it? Ask me how to write a macro.
+It should be possible to port some of the features of [C omega](http://research.microsoft.com/en-us/um/cambridge/projects/comega/doc/comega_whatis.htm) to Enhanced C#. Anyone up for it? Ask me how to write a macro.
 
 See [here](http://ecsharp.net/help-wanted) if you'd like to help develop Enhanced C#.
