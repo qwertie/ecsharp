@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Loyc.MiniTest;
-using Loyc;
 using System.Diagnostics;
+using Loyc.MiniTest;
+using Loyc.Ecs.Parser;
+using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
 
-namespace Loyc.Ecs.Parser
+namespace Loyc.Ecs.Tests
 {
 	using TT = TokenType;
-	using Loyc.Syntax.Lexing;
-	using Loyc.Utilities;
 
 	[TestFixture]
 	public class EcsLexerTests
@@ -77,9 +75,17 @@ namespace Loyc.Ecs.Parser
 			Case(@"`Testing`""Testing""'!'", A(TT.BQString, TT.Literal, TT.Literal), _("Testing"), "Testing", '!');
 			Case(@"`\a\b\f\v\`\'\""`""\a\b\f\v\`\'\""""'\0'", A(TT.BQString, TT.Literal, TT.Literal),
 				_("\a\b\f\v`\'\""), "\a\b\f\v`\'\"", '\0');
+			Case("@\"\n\"", A(TT.Literal), "\n");
 			Case(@"'''Triple-quoted!'''", A(TT.Literal), "Triple-quoted!");
 			Case(@"""""""Triple\n/-quoted!""""""", A(TT.Literal), "Triple\n-quoted!");
-			Case("@\"\n\"", A(TT.Literal), "\n");
+			Case("    \"\"\"Triple\n"+
+			     "    -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			Case("    \"\"\"Triple\n"+
+			     "      -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			Case("\t\"\"\"Triple\n"+
+			     "\t\t-quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			Case("    \"\"\"Triple\n"+
+			     "        -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n -quoted!");
 		}
 
 		[Test]

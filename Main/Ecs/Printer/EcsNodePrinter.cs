@@ -1031,9 +1031,9 @@ namespace Loyc.Ecs
 				np.PrintSimpleIdent((Symbol)np._n.Value, 0, true);
 			}),
 			P<TokenTree> (np => {
-				np._out.Write("@[", true);
+				np._out.Write("@{", true);
 				np._out.Write(((TokenTree)np._n.Value).ToString(Ecs.Parser.TokenExt.ToString), true);
-				np._out.Write(" ]", true);
+				np._out.Write(" }", true);
 			}));
 		
 		void PrintValueToString(string suffix)
@@ -1220,7 +1220,7 @@ namespace Loyc.Ecs
 	[Flags]
 	public enum NewlineOpt
 	{
-		Default = BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace 
+		Default = BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes
 			| AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr,
 		BeforeSpaceDefBrace       = 0x000001, // Newline before opening brace of type definition
 		BeforeMethodBrace         = 0x000002, // Newline before opening brace of method body

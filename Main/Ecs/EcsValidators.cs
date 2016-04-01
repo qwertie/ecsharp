@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Collections;
 using Loyc.Math;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
@@ -62,10 +63,23 @@ namespace Loyc.Ecs
 			return self.Name == name && IsSimpleSymbolWPA(self, p);
 		}
 
-		/// <summary>Returns true iff the specified node has one of the names 
-		/// #struct, #class, #enum, #interface, #namespace, #alias, #trait
-		/// and its tree structure is valid for a space statement.</summary>
-		public static Symbol SpaceStatementKind(LNode n, Pedantics p = Pedantics.Lax)
+		/// <summary>Returns the space kind, which is one of the names #struct, 
+		/// #class, #enum, #interface, #namespace, #alias, #trait, or null if the 
+		/// node Name or structure is not valid for a space statement.</summary>
+		public static Symbol SpaceDefinitionKind(LNode n, Pedantics p = Pedantics.Lax)
+		{
+			LNode name, bases, body;
+			return SpaceDefinitionKind(n, out name, out bases, out body, p);
+		}
+		
+		/// <summary>Returns the space kind, which is one of the names #struct, 
+		/// #class, #enum, #interface, #namespace, #alias, #trait, or null if the 
+		/// node Name or structure is not valid for a space statement.</summary>
+		/// <param name="n">The node to examine.</param>
+		/// <param name="name">Name of the space.</param>
+		/// <param name="bases">bases.Args will be the list of base types.</param>
+		/// <param name="body">A braced block of statements holding the contents of the space.</param>
+		public static Symbol SpaceDefinitionKind(LNode n, out LNode name, out LNode bases, out LNode body, Pedantics p = Pedantics.Lax)
 		{
 			// All space declarations and space definitions have the form
 			// #spacetype(Name, #(BaseList), { ... }) and the syntax
@@ -80,9 +94,10 @@ namespace Loyc.Ecs
 			// - #(BaseList) can be missing (@``); the bases can be any expressions
 			// - the arguments do not have attributes
 			var type = n.Name;
-			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(n, p) && Range.IsInRange(n.ArgCount, 2, 3))
-			{
-				LNode name = n.Args[0], bases = n.Args[1], body = n.Args[2, null];
+			if (SpaceDefinitionStmts.Contains(type) && HasSimpleHeadWPA(n, p) && Range.IsInRange(n.ArgCount, 2, 3)) {
+				name = n.Args[0];
+				bases = n.Args[1];
+				body = n.Args[2, null];
 				if (type == S.Alias) {
 					if (!CallsWPAIH(name, S.Assign, 2, p))
 						return null;
@@ -102,50 +117,94 @@ namespace Loyc.Ecs
 					if (CallsWPAIH(body, S.Braces, p))
 						return type;
 				}
+			} else {
+				name = bases = body = null;
 			}
 			return null;
 		}
 
-		/// <summary>Returns true iff the given node has a valid syntax tree for
-		/// a method definition, a constructor, or (when orDelegate is true) a 
-		/// delegate definition.</summary>
-		public static bool IsMethodDefinition(LNode n, bool orDelegate, Pedantics p = Pedantics.Lax) // method declarations (no body) also count
+		/// <summary>If the given node has a valid syntax tree for a method definition,
+		/// a constructor, or (when orDelegate is true) a delegate definition, gets
+		/// the definition kind (#fn, #cons, or #delegate).</summary>
+		public static Symbol MethodDefinitionKind(LNode n, bool allowDelegate, Pedantics p = Pedantics.Lax)
 		{
-			var def = n.Name;
-			if ((def != S.Fn && def != S.Delegate && def != S.Constructor) || !HasSimpleHeadWPA(n, p))
-				return false;
-			if (!Range.IsInRange(n.ArgCount, 3, def == S.Delegate ? 3 : 4))
-				return false;
+			LNode retType, methodName, argList, body;
+			return MethodDefinitionKind(n, out retType, out methodName, out argList, out body, allowDelegate, p);
+		}
+		
+		/// <summary>If the given node has a valid syntax tree for a method definition,
+		/// a constructor, or (when orDelegate is true) a delegate definition, gets
+		/// the definition kind (#fn, #cons, or #delegate).</summary>
+		/// <param name="retType">Return type of the method (if it's a constructor, this will be the empty identifier).</param>
+		/// <param name="name">Name of the method.</param>
+		/// <param name="args">args.Args is the argument list of the method.</param>
+		/// <param name="body">The method body, or null if there is no method body. 
+		/// The method body calls <see cref="CodeSymbols.Braces"/> if the method is a 
+		/// non-lambda-style method.</param>
+		/// <remarks>
+		/// Method declarations (no body) also count.
+		/// <para/>
+		/// A destructor counts as a #fn with a method name that calls the ~ operator.
+		/// </remarks>
+		public static Symbol MethodDefinitionKind(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, bool allowDelegate, Pedantics p = Pedantics.Lax)
+		{
+			retType = name = args = body = null;
+			var kind = n.Name;
+			if ((kind != S.Fn && kind != S.Delegate && kind != S.Constructor) || !HasSimpleHeadWPA(n, p))
+				return null;
+			if (!Range.IsInRange(n.ArgCount, 3, kind == S.Delegate ? 3 : 4))
+				return null;
 
-			LNode retType = n.Args[0], name = n.Args[1], args = n.Args[2], body = n.Args[3, null];
-			if (def == S.Constructor && !retType.IsIdNamed(S.Missing))
-				return false;
+			retType = n.Args[0];
+			name = n.Args[1];
+			args = n.Args[2];
+			body = n.Args[3, null];
+			if (kind == S.Constructor && !retType.IsIdNamed(S.Missing))
+				return null;
 			// Note: the parser doesn't require that the argument list have a 
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.AltList, p))
-				return false;
-			if (def == S.Constructor && (body != null && !CallsWPAIH(body, S.Braces, p) && !CallsWPAIH(body, S.Forward, 1, p)))
-				return false;
+				return null;
+			if (kind == S.Constructor && 
+				( (body != null && !CallsWPAIH(body, S.Braces, p) && !CallsWPAIH(body, S.Forward, 1, p))
+				|| !retType.IsIdNamed(S.Missing)))
+				return null;
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition, p)) {
-				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs, p);
+				return IsComplexIdentifier(retType, ICI.Default | ICI.AllowAttrs, p) ? kind : null;
 			} else {
 				// Check for a destructor
 				return retType.IsIdNamed(S.Missing)
 					&& CallsWPAIH(name, S._Destruct, 1, p) 
-					&& IsSimpleIdentifier(name.Args[0], p);
+					&& IsSimpleIdentifier(name.Args[0], p) ? kind : null;
 			}
 		}
 
+		/// <summary>Returns true iff the given node has a valid syntax tree for a property definition.</summary>
 		public static bool IsPropertyDefinition(LNode n, Pedantics p = Pedantics.Lax)
 		{
+			LNode retType, name, args, body, initialValue;
+			return IsPropertyDefinition(n, out retType, out name, out args, out body, out initialValue, p);
+		}
+		
+		/// <summary>Returns true iff the given node has a valid syntax tree for 
+		/// a property definition, and gets the component parts of the definition.</summary>
+		/// <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+		public static bool IsPropertyDefinition(LNode n, out LNode retType, out LNode name, out LNode args, out LNode body, out LNode initialValue, Pedantics p = Pedantics.Lax)
+		{
 			var argCount = n.ArgCount;
-			if (!CallsMinWPAIH(n, S.Property, 4, p) || n.ArgCount > 5)
+			if (!CallsMinWPAIH(n, S.Property, 4, p) || n.ArgCount > 5) {
+				retType = name = args = body = initialValue = null;
 				return false;
+			}
 
-			LNode retType = n.Args[0], name = n.Args[1], args = n.Args[2], body = n.Args[3, null];
+			retType = n.Args[0];
+			name = n.Args[1];
+			args = n.Args[2];
+			body = n.Args[3];
+			initialValue = n.Args[4, null];
 			return IsComplexIdentifier(retType, ICI.Default, p) &&
 			       IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition, p) &&
-				   (args.IsIdNamed(S.Missing) || args.Calls(S.AltList));
+			       (args.IsIdNamed(S.Missing) || args.Calls(S.AltList));
 		}
 
 		public static bool IsEventDefinition(LNode n, Pedantics p) { return EventDefinitionType(n, p) != EventDef.Invalid; }

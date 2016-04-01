@@ -727,7 +727,8 @@ namespace Loyc.Ecs.Parser
 
 		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
 		@[private] rule DetectVarDecl(allowUnassigned::bool) @{
-			VarDeclStart (("="|":=") NoUnmatchedColon | &{@[Local] allowUnassigned} (","|EOF) | "{")
+			&{@[Local] Is($LI, _var)} (TT.ContextualKeyword|TT.TypeKeyword) TT.Id
+		/	VarDeclStart (("="|":=") NoUnmatchedColon | &{@[Local] allowUnassigned} (","|EOF) | "{")
 		};
 		@[private] rule NoUnmatchedColon @{
 			// There's currently no way to run actions inside a recognizer, which 
@@ -1023,9 +1024,9 @@ namespace Loyc.Ecs.Parser
 			{startIndex::int = LT0.StartIndex;}
 			NormalAttributes(ref _stmtAttrs)
 			AttributeKeywords(ref _stmtAttrs)
-			(_* =>
+			(=>
 			{	// Analysis is tough for LLLPG here, especially the question "is
-				// this a var/prop/method or something else?", but also things
+				// this a var/prop/method or something else?", but also questions
 				// like "is this a `this` constructor, `this[...]` prop, or just 
 				// an expression that starts with `this`?", so I've written custom
 				// prediction analysis (DetectStatementCategory), which doubles as 
@@ -1069,9 +1070,23 @@ namespace Loyc.Ecs.Parser
 			})
 		};
 
-		// (1) detects method/property/variable (and similar: trait, alias)
+		// Statement categories distinguished by DetectStatementCategory
+		enum StmtCat { 
+			MethodOrPropOrVar = 0; // method, property, or variable declaration 
+			KeywordStmt = 1;       // declarative like struct/enum/event, or executable like while/for/try 
+			IdStmt = 2;            // a statement that starts with an Id and doesn't allow keyword attributes;
+			                       // in certain cases it's also used for stmts that start with "$" or a type keyword
+			ThisConstructor = 3;   // a constructor named 'this'
+			OtherStmt = 4;         // everything else (word attributes not allowed)
+		};
+
+		// Originally I let LLLPG distinguish the statement types, but when the 
+		// parser was mature, LLLPG's analysis took from 10 to 40 seconds and it 
+		// generated 5000 lines of code to distinguish the various cases.
+		// This custom code...
+		// (1) detects method/property/variable (and lookalikes: trait, alias) and
+		//     distinguishes certain other cases out of convenience.
 		// (2) detects and skips word attributes (not including `this` in `this int x`).
-		enum StmtCat { MethodOrPropOrVar = 0; KeywordStmt = 1; IdStmt = 2; ThisConstructor = 3; OtherStmt = 4; };
 		fn DetectStatementCategory(out wordAttrCount::int)::StmtCat
 		{
 			// Scan past identifiers and extra AttrKeywords at the beginning of the statement
@@ -1095,63 +1110,85 @@ namespace Loyc.Ecs.Parser
 			// At this point we've skipped over all simple identifiers.
 			// Now decide: what kind of statement do we appear to have?
 			consecutive::int = InputPosition - wordsStartAt;
-			if (LA0 != TT.Substitute) { // "$"
-				if (LA0 == TT.TypeKeyword) {
-					// A built-in data type, which cannot be a word-attribute
-					var LA1 = LA(1);
-					if (LA1 == TT.Id || LA1 == TT.ContextualKeyword) {
-						return StmtCat.MethodOrPropOrVar;
+			if (LA0 == TT.TypeKeyword) {
+				// We can treat this as if it were one additional identifier, 
+				// although it cannot be treated as a word attribute.
+				InputPosition++;
+				consecutive++;
+			} else if (LA0 == TT.Substitute) {
+				// We can treat this as if it were one additional identifier, 
+				// although it cannot be treated as a word attribute.
+				var la1 = LA(1);
+				if (LA(1) == TT.LParen && LA(2) == TT.RParen) {
+					InputPosition += 3;
+				} else {
+					InputPosition++;
+				};
+				consecutive++;
+			} else if (LA0 == TT.This) {
+				if LA(1) == TT.LParen && LA(2) == TT.RParen {
+					la3::TT = LA(3);
+					if la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn {
+						return StmtCat.ThisConstructor;
 					} else {
-						consecutive++;
-					}
-				} else if (LA0 == TT.This) {
-					if LA(1) == TT.LParen && LA(2) == TT.RParen {
-						la3::TT = LA(3);
-						if la3 == TT.Colon || la3 == TT.LBrace || la3 == TT.Semicolon && _spaceName != S.Fn {
-							return StmtCat.ThisConstructor;
-						} else {
-							return StmtCat.OtherStmt;
-						};
-					} else if (consecutive != 0) {
-						// Should be a this[] property (there could be a type 
-						// param like this<T>[] so looking at LA(1) won't help)
-						InputPosition--;
-						return StmtCat.MethodOrPropOrVar;
-					}
-				} else if (LT0.Kind == TokenKind.OtherKeyword) {
-					if (LA0 != TT.If) {
-						if (LA0 == TT.Namespace || LA0 == TT.Class || LA0 == TT.Struct 
-						    || LA0 == TT.Interface || LA0 == TT.Enum  || LA0 == TT.Using
-						    || LA0 == TT.Event     || LA0 == TT.Case  || LA0 == TT.Switch 
-						    || LA0 == TT.While     || LA0 == TT.Fixed || LA0 == TT.For   
-						    || LA0 == TT.Foreach   || LA0 == TT.Goto  || LA0 == TT.Lock 
-						    || LA0 == TT.Delegate && LA(1) != TT.LParen
-						    || LA0 == TT.Do  || LA0 == TT.Return || LA0 ==  TT.Break 
-						    || LA0 == TT.Try || LA0 == TT.Continue || LA0 ==  TT.Throw
-						    || (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
-						{
-							return StmtCat.KeywordStmt;
-						};
+						return StmtCat.OtherStmt;
 					};
-				} else if (consecutive == 0) {
-					return StmtCat.OtherStmt;
-				};
-
-				if consecutive >= 2 {
-					InputPosition -= 2;
+				} else if (consecutive != 0) {
+					// Appears to be a this[] property (there could be a type 
+					// param, like this<T>[], so we can't check if LA(1) is "[")
+					InputPosition--;
 					return StmtCat.MethodOrPropOrVar;
-				} else if ((LA0 == TT.LParen || LA0 == TT.Set) && !haveNew) {
-					InputPosition = wordsStartAt;
-					return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
+				}
+			} else if (LT0.Kind == TokenKind.OtherKeyword) {
+				if (LA0 != TT.If) {
+					if (EasilyDetectedKeywordStatements.Contains(LA0)
+						|| LA0 == TT.Delegate && LA(1) != TT.LParen
+						|| (LA0 == TT.Checked || LA0 == TT.Unchecked) && LA(1) == TT.LBrace)
+					{
+						return StmtCat.KeywordStmt;
+					};
 				};
+			} else if (consecutive == 0) {
+				return StmtCat.OtherStmt;
+			};
+
+			// At this point we know it's not a "keyword statement" or "this constructor",
+			// so it's either MethodOrPropOrVar, which allows word attributes, or 
+			// something else that prohibits them (IdStmt or OtherStmt).
+			if consecutive >= 2 {
+				// We know it's MethodOrPropOrVar, but where do the word attributes end?
+				likelyStart::int = wordsStartAt + consecutive - 2; // most likely location
+				if (ExpectedAfterTypeAndName.Contains(LA0)) {
+					InputPosition = likelyStart;
+				} else {
+					// We must distinguish among these three cases:
+					// 1. IEnumerator IEnumerable.GetEnumerator()
+					//    ^likelyStart(correct)  ^InputPosition
+					// 2. alias              Map<K,V> = Dictionary <K,V>;
+					//    ^likelyStart(correct) ^InputPosition
+					// 3. partial    Namespace.Class Method()
+					//    ^likelyStart(too low) ^InputPosition
+					InputPosition = likelyStart + 1;
+					if (Scan_ComplexNameDecl() && ExpectedAfterTypeAndName.Contains(LA0)) {
+						InputPosition = likelyStart;
+					} else {
+						InputPosition = likelyStart + 1;
+					};
+				};
+				return StmtCat.MethodOrPropOrVar;
+			};
+			
+			InputPosition = wordsStartAt;
+
+			// Optimization
+			if (LA0 == TT.LParen || LA0 == TT.Set) && !haveNew {
+				return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
 			};
 
 			// Worst case: need arbitrary lookahead to detect var/property/method
 			InputPosition = wordsStartAt;
 			using (new SavePosition(this, 0)) {
-				if (Scan_DataType(false) && Scan_ComplexNameDecl() && 
-					(LA0 == TT.Set || LA0 == TT.Semicolon || LA0 == TT.LBrace || 
-					 LA0 == TT.LParen || LA0 == TT.LBrack || LA0 == TT.Comma)) {
+				if (Scan_DataType(false) && Scan_ComplexNameDecl() && ExpectedAfterTypeAndName.Contains(LA0)) {
 					return StmtCat.MethodOrPropOrVar;
 				};
 			};
@@ -1165,6 +1202,19 @@ namespace Loyc.Ecs.Parser
 			};
 			return consecutive != 0 ? StmtCat.IdStmt : StmtCat.OtherStmt;
 		};
+
+		@[static, readonly] ExpectedAfterTypeAndName::HashSet!TT = (new HashSet!TT { 
+			TT.Set; TT.Semicolon; TT.LBrace; TT.LParen; TT.LBrack; TT.LambdaArrow; TT.Forward; TT.Comma
+		});
+		@[static, readonly] EasilyDetectedKeywordStatements::HashSet!TT = (new HashSet!TT { 
+			TT.Namespace; TT.Class; TT.Struct; 
+			TT.Interface; TT.Enum ; TT.Using ;
+			TT.Event    ; TT.Case ; TT.Switch; 
+			TT.While    ; TT.Fixed; TT.For;
+			TT.Foreach  ; TT.Goto ; TT.Lock;
+			TT.Return   ; TT.Try  ; TT.Do; 
+			TT.Continue ; TT.Break; TT.Throw;
+		});
 
 		// Methods, properties, variables, and things that look like them (trait & alias)
 		rule MethodOrPropertyOrVarStmt(startIndex::int, attrs::VList!LNode)::LNode @{
@@ -1203,6 +1253,7 @@ namespace Loyc.Ecs.Parser
 		};
 
 		// Statements that start with an Id and don't allow keyword attributes
+		// This may also be called for expression-statements start with "$" or a type keyword
 		rule IdStmt(startIndex::int, attrs::VList!LNode, hasWordAttrs::bool)::LNode @{
 			{
 				addAttrs::bool = false;              // causes attrs to be added to result
@@ -1819,22 +1870,19 @@ namespace Loyc.Ecs.Parser
 		@[private] rule ForEachStmt(startIndex::int)::LNode @{
 			TT.Foreach p:="(" ")" 
 			block:=Stmt
-			(_ => {Down(p);})
-				var:=VarIn
-				list:=ExprStart(false)
-			(EOF => {Up();})
-			{return F.Call(S.ForEach, var, list, block, startIndex, block.Range.EndIndex);}
+			(=> {Down(p);}
+				[ &VarIn var:VarIn ]?
+				// Use => to remove some unwanted complexity in the prediction decision of VarIn
+				(=> expr:=ExprStart(false)
+					{return F.Call(S.ForEach, var ?? F.Missing, expr, block, startIndex, block.Range.EndIndex);}
+					(EOF => {Up();}))
+			)
 		};
 
 		@[private] rule VarIn::LNode @{
-			{var::LNode;}
-			(	&(Atom TT.In)
-				var=Atom
-			/	pair:=VarDeclStart
-				{var = F.Call(S.Var, pair.A, pair.B, pair.A.Range.StartIndex, pair.B.Range.EndIndex);}
-			)
+			pair:=VarDeclStart
+			{$result = F.Call(S.Var, pair.A, pair.B, pair.A.Range.StartIndex, pair.B.Range.EndIndex);}
 			TT.In
-			{return var;}
 		};
 
 		// if-else -------------------------------------------------------------

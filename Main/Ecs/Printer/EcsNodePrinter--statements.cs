@@ -243,7 +243,7 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintSpaceDefinition(Ambiguity flags)
 		{
 			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
-			var kind = EcsValidators.SpaceStatementKind(_n, Pedantics);
+			var kind = EcsValidators.SpaceDefinitionKind(_n, Pedantics);
 			if (kind == null)
 				return SPResult.Fail;
 
@@ -435,7 +435,7 @@ namespace Loyc.Ecs
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
 			// S.Fn, S.Delegate: #fn(#int32, Square, #(int x), { return x * x; });
-			if (!EcsValidators.IsMethodDefinition(_n, true, Pedantics))
+			if (EcsValidators.MethodDefinitionKind(_n, true, Pedantics) == null)
 				return SPResult.Fail;
 
 			LNode retType = _n.Args[0], name = _n.Args[1];

@@ -200,7 +200,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EcsPrinterAndParserTests.cs" />
+    <Compile Include="Tests\ECSharpFeatureTests.cs" />
+    <Compile Include="Tests\BugsAndCornerCases.cs" />
+    <Compile Include="Tests\EcsParserTests.cs" />
+    <Compile Include="Tests\EcsPrinterAndParserTests.cs" />
     <Compile Include="EcsPrecedence.cs" />
     <Compile Include="EcsValidators.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
@@ -210,7 +213,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsLexerGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="Parser\EcsLexerTests.cs" />
+    <Compile Include="Tests\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
     <Compile Include="Parser\EcsParserGrammar.cs">
       <AutoGen>True</AutoGen>
@@ -224,6 +227,11 @@
     <Compile Include="Printer\EcsNodePrinter.cs" />
     <Compile Include="Printer\NodePrinterWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\EcsPrinterTests.cs" />
+    <Compile Include="Tests\PlainCSharpTests.cs" />
+    <Compile Include="Tests\AmbiguityTests.cs" />
+    <Compile Include="Tests\PrinterFocusedTests.cs" />
+    <Compile Include="Tests\ToDoTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
