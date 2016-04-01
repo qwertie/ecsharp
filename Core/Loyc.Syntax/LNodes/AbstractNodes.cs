@@ -59,11 +59,6 @@ namespace Loyc.Syntax
 		public override bool IsIdNamed(string name)         { return Name.Name == name; }
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Value(selector(n))); }
-		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
-		{
-			return replaceRoot ? selector(this) ?? this : this;
-		}
 	}
 	
 	/// <summary>Base class of all nodes that represent literal values such as 123 and "foo".</summary>
@@ -108,11 +103,6 @@ namespace Loyc.Syntax
 		}
 		
 		public sealed override int Max { get { return -2; } }
-		public override LNode Select(Func<LNode, LNode> selector) { return WithAttrs(n => Maybe.Value(selector(n))); }
-		public override LNode ReplaceRecursive(Func<LNode, LNode> selector, bool replaceRoot = true)
-		{
-			return replaceRoot ? selector(this) ?? this : this;
-		}
 	}
 	
 	/// <summary>Base class of all nodes that represent calls such as <c>f(x)</c>, 
@@ -161,8 +151,16 @@ namespace Loyc.Syntax
 				return false;
 			return Equals(Target, b.Target, compareStyles);
 		}
+
+		// Hashcode computation can be costly for call nodes, so cache the result.
+		// (Equality testing can be even more expensive when two trees are equal,
+		// but I see no way to optimize that part)
+		protected int _hashCode = -1;
 		protected internal override int GetHashCode(int recurse, int styleMask)
 		{
+			if (_hashCode != -1)
+				return _hashCode;
+
 			VList<LNode> args = Args, attrs = Attrs;
 			int hash = (args.Count << 3) + attrs.Count;
 			if (recurse > 0) {
@@ -174,7 +172,7 @@ namespace Loyc.Syntax
 				for (int i = 0, c = System.Math.Min(args.Count, recurse << 2); i < c; i++)
 					hash = (hash * 1013) + args[i].GetHashCode(recurse - 1, styleMask);
 			}
-			return hash += (int)Style & styleMask;
+			return _hashCode = (hash += (int)Style & styleMask);
 		}
 
 		public override bool Calls(Symbol name, int argCount)    { return Name == name && ArgCount == argCount; }
@@ -183,30 +181,24 @@ namespace Loyc.Syntax
 		public override bool Calls(string name)                  { return Name.Name == name; }
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
 		public override bool CallsMin(string name, int argCount) { return Name.Name == name && ArgCount >= argCount; }
-		public override bool HasSimpleHead() { var t = Target; return !t.IsCall && !t.HasAttrs; }
+		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
-		public override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
+
+		public sealed override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
 		{
 			VList<LNode> args = Args, newArgs = args.WhereSelect(selector);
 			if (args == newArgs)
 				return this;
 			return WithArgs(newArgs);
 		}
-		public sealed override LNode Select(Func<LNode, LNode> selector)
+		public sealed override LNode Select(Func<LNode, Maybe<LNode>> selector, ReplaceOpt options = ReplaceOpt.ProcessAttrs)
 		{
-			LNode result = WithAttrs(n => Maybe.Value(selector(n)));
-			LNode target = selector(Target);
-			var args = Args.SmartSelect(selector);
-			return result.With(target, args);
-		}
-		public override LNode ReplaceRecursive(Func<LNode, LNode> matcher, bool replaceRoot = true)
-		{
-			Func<LNode, LNode> selector = null; selector = node =>
-			{
-				LNode @new = matcher(node);
-				return @new ?? node.Select(selector);
-			};
-			return replaceRoot ? matcher(this) ?? Select(selector) : Select(selector);
+			var node = (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
+			LNode target = node.Target, newTarget = selector(node.Target).Or(EmptySplice);
+			if (newTarget != null && newTarget != target)
+				return node.With(newTarget, Args.WhereSelect(selector));
+			else
+				return node.WithArgs(selector);
 		}
 	}
 }

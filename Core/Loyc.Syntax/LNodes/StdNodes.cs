@@ -9,6 +9,7 @@ using System.Text;
 using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc;
+using System.Diagnostics;
 
 namespace Loyc.Syntax
 {
@@ -54,6 +55,13 @@ namespace Loyc.Syntax
 			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdIdNode(_name, this);
 			return new StdIdNodeWithAttrs(attrs, _name, this);
+		}
+		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
+		{
+			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
 		}
 	}
 
@@ -157,6 +165,13 @@ namespace Loyc.Syntax
 			if (attrs.Count == 0) return new StdLiteralNode(_value, this);
 			return new StdLiteralNodeWithAttrs(attrs, _value, this);
 		}
+		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
+		{
+			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
+		}
 	}
 
 
@@ -247,6 +262,7 @@ namespace Loyc.Syntax
 		public override bool HasSimpleHead()                     { return true; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { return true; }
 	}
+
 	internal class StdSimpleCallNodeWithAttrs : StdSimpleCallNode
 	{
 		protected VList<LNode> _attrs;
@@ -268,16 +284,12 @@ namespace Loyc.Syntax
 			if (attrs.Count == 0) return new StdSimpleCallNode(_name, _args, this);
 			return new StdSimpleCallNodeWithAttrs(attrs, _name, _args, this);
 		}
-		
-		// Hashcode computation can be costly for call nodes, so cache the result.
-		// (Equality testing can be even more expensive when two trees are equal,
-		// but I see no way to optimize that part)
-		protected int _hashCode;
-		public override int GetHashCode()
+		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
 		{
-			if (_hashCode == 0)
-				return _hashCode = base.GetHashCode();
-			return _hashCode;
+			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
 		}
 	}
 
@@ -316,6 +328,7 @@ namespace Loyc.Syntax
 			return new StdComplexCallNodeWithAttrs(attrs, _target, _args, this);
 		}
 	}
+
 	internal class StdComplexCallNodeWithAttrs : StdComplexCallNode
 	{
 		protected VList<LNode> _attrs;
@@ -332,6 +345,13 @@ namespace Loyc.Syntax
 			if (attrs == Attrs) return this;
 			if (attrs.Count == 0) return new StdComplexCallNode(_target, _args, this);
 			return new StdComplexCallNodeWithAttrs(attrs, _target, _args, this);
+		}
+		public override LNode WithAttrs(Func<LNode, Maybe<LNode>> selector)
+		{
+			var newAttrs = Attrs.WhereSelect(selector);
+			if (newAttrs == Attrs)
+				return this;
+			return WithAttrs(newAttrs);
 		}
 	}
 }
