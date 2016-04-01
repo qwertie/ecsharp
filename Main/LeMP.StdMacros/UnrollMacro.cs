@@ -77,9 +77,9 @@ namespace LeMP
 
 				if (body.Calls(S.Braces)) {
 					foreach (LNode stmt in body.Args)
-						output.Add(ctx.Replace(stmt));
+						output.Add(ctx.Replace(stmt).Value);
 				} else
-					output.Add(ctx.Replace(body));
+					output.Add(ctx.Replace(body).Value);
 			}
 
 			foreach (var r in replacements)
@@ -90,11 +90,11 @@ namespace LeMP
 		}
 		class UnrollCtx // helper class for unroll
 		{
-			Func<LNode, LNode> _replace;
+			Func<LNode, Maybe<LNode>> _replace;
 			public UnrollCtx() { _replace = Replace; } // optimization
 			public InternalList<Triplet<Symbol, LNode, int>> Replacements;
 
-			public LNode Replace(LNode node) {
+			public Maybe<LNode> Replace(LNode node) {
 				TokenTree tt;
 				if (node.IsId) {
 					Symbol name = node.Name;
@@ -102,7 +102,7 @@ namespace LeMP
 						if (Replacements[i].A == name) {
 							Replacements.InternalArray[i].C++;
 							var repl = Replacements[i].B;
-							return repl.WithAttrs(node.Attrs.SmartSelect(_replace).AddRange(repl.Attrs));
+							return repl.WithAttrs(node.Attrs.WhereSelect(_replace).AddRange(repl.Attrs));
 						}
 					return node;
 				} else if ((tt = node.Value as TokenTree) != null) {

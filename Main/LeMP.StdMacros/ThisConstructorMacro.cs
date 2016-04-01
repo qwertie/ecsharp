@@ -22,7 +22,7 @@ namespace LeMP
 			{
 				var anc = context.Ancestors;
 				LNode space = anc.TryGet(anc.Count - 3, LNode.Missing), typeName;
-				Symbol type = EcsValidators.SpaceStatementKind(space);
+				Symbol type = EcsValidators.SpaceDefinitionKind(space);
 				if (type != null && anc[anc.Count - 2] == space.Args[2]) {
 					typeName = space.Args[0];
 					return cons.WithArgChanged(1, F.Id(KeyNameComponentOf(typeName)));

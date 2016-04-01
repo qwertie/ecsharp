@@ -97,8 +97,8 @@ namespace LeMP
 		{
 			string name = propName.Name;
 			char first = name.FirstOrDefault();
-			char lower;
-			if ((lower = char.ToLowerInvariant(first)) != first)
+			char lower = char.ToLowerInvariant(first);
+			if (lower != first)
 				name = lower + name.Substring(1);
 			return GSymbol.Get("_" + name);
 		}

@@ -23,6 +23,22 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestUseBlockExpressions()
+		{
+			// Check that it doesn't do anything when there's nothing to do.
+			TestEcs("#useStatementExpressions; " +
+				"void F() { { x } } " +
+				"int P { get { return _p; } set { _p = value; } } " +
+				"int _x = 0;",
+				"void F() { { x } } " +
+				"int P { get { return _p; } set { _p = value; } } " +
+				"int _x = 0;");
+			TestEcs("#useStatementExpressions; " +
+				"",
+				"");
+		}
+
+		[Test]
 		public void TestUsingMulti()
 		{
 			TestEcs("using System.Collections;", 
@@ -110,15 +126,18 @@ namespace LeMP
 		[Test]
 		public void TestNullDot()
 		{
-			TestBoth(@"a = b.c?.d;", @"a = b.c?.d;",
+			TestBoth(@"#importMacros(LeMP.CSharp6); a = b.c?.d;", 
+			         @"#importMacros(LeMP.CSharp6); a = b.c?.d;",
 			          "a = b.c != null ? b.c.d : null;");
-			TestEcs(@"a = b.c?.d.e;",
+			TestEcs(@"#importMacros(LeMP.CSharp6); a = b.c?.d.e;",
 			         "a = b.c != null ? b.c.d.e : null;");
-			TestBoth(@"a = b?.c[d];", @"a = b?.c[d];",
+			TestBoth(@"#importMacros(LeMP.CSharp6); a = b?.c[d];", 
+			         @"#importMacros(LeMP.CSharp6); a = b?.c[d];",
 			          "a = b != null ? b.c[d] : null;");
-			TestEcs(@"a = b?.c?.d();",
+			TestEcs(@"#importMacros(LeMP.CSharp6); a = b?.c?.d();",
 			         "a = b != null ? b.c != null ? b.c.d() : null : null;");
-			TestBoth(@"return a.b?.c().d!x;", @"return a.b?.c().d<x>;",
+			TestBoth(@"#importMacros(LeMP.CSharp6); return a.b?.c().d!x;", 
+			         @"#importMacros(LeMP.CSharp6); return a.b?.c().d<x>;",
 			          "return a.b != null ? a.b.c().d<x> : null;");
 		}
 
@@ -1760,7 +1779,7 @@ namespace LeMP
 		{
 			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Current);
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			lemp.AddMacros(typeof(LeMP.StandardMacros));
+			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));

@@ -7,12 +7,13 @@ using Loyc.Syntax;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
 
-namespace LeMP
+namespace LeMP.CSharp6
 {
-	public partial class StandardMacros
+	[ContainsMacros]
+	public class NullDotMacro
 	{
 		[LexicalMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "?.", "??.")]
-		public static LNode NullDot(LNode node, IMessageSink sink)
+		public static LNode NullDot(LNode node, IMacroContext sink)
 		{
 			if (!node.Calls(S.NullDot, 2))
 				return null;
@@ -74,5 +75,7 @@ namespace LeMP
 			} else // (1)
 				return F.Dot(prefix, suffix);
 		}
+
+		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LeMP.CSharp6"));
 	}
 }

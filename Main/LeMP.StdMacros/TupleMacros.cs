@@ -105,12 +105,6 @@ namespace LeMP
 			return null;
 		}
 
-		static LNode TempVarDecl(LNode value, out LNode tmpId)
-		{
-			tmpId = LNode.Id(NextTempName(), value);
-			return F.Var(F.Missing, tmpId, value);
-		}
-
 		// In EC# we should support cases like "if (Foo[(a, b) = expr]) {...}"
 		// This macro targets plain C# where that is not possible.
 		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", 

@@ -1,0 +1,162 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Ecs;
+
+namespace LeMP
+{
+	partial class StandardMacros
+	{
+		static readonly Symbol __runSequence = (Symbol)"#runSequence";
+
+		[LexicalMacro("#useBlockExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", 
+			"Enables the use of \"block expressions\" and the quick-binding operator `::` in the code that follows. "
+			+"#useBlockExpressions expects to be used in a declaration context, "
+			+"e.g. at class or namespace level, not within a function.",
+			"#useBlockExpressions", Mode = MacroMode.NoReprocessing)]
+		public static LNode useBlockExpressions(LNode node, IMacroContext context)
+		{
+			(var args, var body) = context.GetArgsAndBody(true);
+			if (args.Count > 0)
+				context.Write(Severity.Error, node[1], "#useSpecialExpressions does not support arguments.");
+
+			context.DropRemainingNodes = true;
+			body = context.PreProcess(body);
+
+			bool hasBlockExprs;
+			return F.Call(S.Splice, body.Select(stmt => {
+				
+				// Optimization: scan find out whether this construct has any block 
+				// expressions. If not, skip it.
+				/*hasBlockExprs = false;
+				stmt.ReplaceRecursive(new Func<LNode, Maybe<LNode>>(n => {
+					if (!hasBlockExprs)
+						hasBlockExprs = n.IsCall && (
+							(n.Calls(S.ColonColon, 2) && n.Args[1].IsId) ||
+							(n.Calls(S.Var, 2) && n.AttrNamed(S.Out) != null) ||
+							(n.Calls(S.In, 2) && n.Args[1].Calls(S.Braces)));
+					return hasBlockExprs ? n : null;
+				}));
+				if (!hasBlockExprs)
+					return stmt;
+				*/
+				return EliminateBlockExprs(stmt, true);
+			}));
+		}
+
+		struct BlockExprEliminator
+		{
+			public this(public IMacroContext Context) {}
+
+			private static LNode EliminateBlockExprs(LNode stmt, bool isDeclContext)
+			{
+				LNode retType, name, argList, bases, body, initValue;
+				if (EcsValidators.SpaceDefinitionKind(stmt, out name, out bases, out body) != null) {
+					return body == null ? stmt : stmt.WithArgChanged(2, EliminateBlockExprs(body, true));
+				} else if (EcsValidators.MethodDefinitionKind(stmt, out retType, out name, out argList, out body, true) != null) {
+					return body == null ? stmt : stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
+					if (initValue != null)
+						stmt = stmt.WithArgChanged(4, EliminateBlockExprsInExecStmt(initValue, true));
+					stmt = stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+					return stmt;
+				} else if (stmt.CallsMin(S.Var, 2)) {
+					var vars = stmt.Args;
+					for (int i = 1; i < vars.Count; i++) {
+						stmt = stmt.WithArgChanged(i, var =>
+						{
+							if (var.Calls(S.Assign, 2))
+								return var.WithArgChanged(1, expr => EliminateBlockExprsInExecStmt(expr, true));
+							return var;
+						});
+					}
+					return stmt;
+				} else if (!stmt.Calls(S.Braces) && !isDeclContext) {
+					return EliminateBlockExprsInExecStmt(stmt, false);
+				} else
+					return stmt;
+			}
+
+			static LNode EliminateBlockExprsInExecStmt(LNode stmt, bool isFieldInitializer)
+			{
+				if (!stmt.IsCall)
+					return stmt;
+				matchCode (stmt) {
+					case { { $(..._); } }: // braced block
+						return stmt.WithArgs(substmt => EliminateBlockExprs(substmt, false));
+					case { while ($cond) $block; }:
+					case { do $block; while($cond); }:
+					case { for ($init; $cond; $inc) $block; }:
+					case { if ($cond) $(...blocks); }: // `blocks` includes else clause, if any 
+					case $target($(...args)):
+						if (target.IsId && args.Count > 0 && args.Last.Calls(S.Braces) &&
+							 ( stmt.Name.Name.StartsWith("#") 
+							|| stmt.BaseStyle == NodeStyle.Special)) {
+						return EliminateBlockExprsIn(stmt, target, -1, args.WithoutLast(1), args.Last);
+					default:
+						return EliminateBlockExprsIn(stmt, stmt.Target, stmt.Args);
+					}
+				}
+				return stmt;
+			}
+
+			static LNode EliminateBlocksExprsIn(LNode stmt, LNode target, VList<LNode> args, LNode loopCondition = null, LNode innerBlock = null)
+			{
+			
+			}
+
+			static LNode BubbleUpBlocks(LNode expr)
+			{
+				if (!expr.IsCall)
+					return expr;
+
+				matchCode (expr) {
+					// A variable declaration with no initializer and an `out` attribute attached
+					case { [$(...(attrs [#.NodeNamed(S.Out)] != null)]
+						   $varType $(varName [#.IsId]); }:
+						if ($varType.IsIdNamed(S.Missing))
+							Context.Write(Severity.Error, expr, "The data type of this variable declaration must be stated explicitly.");
+						return quote( #runSequence($(expr.WithoutAttrNamed(S.Out)), $varName) );
+
+					// A variable declaration with an initializer (may have a `ref` attribute 
+					// attached, which should be transferred to the final expression)
+					case [$(...attrs)] $varType $varName = $value,
+						 [$(...attrs)] $(value [IsQuickBindLhs(#)]) :: $(varName [#.IsId]):
+						return ConvertVarDeclToRunSequence(varType ?? F.Missing, varName, initValue);
+					case [$(...attrs)] $lhs in $(...(block && block.Calls(S.Braces))):
+						return expr.WithTarget(__runSequence);
+					default:
+				}
+				if (expr.Calls(S.In, 2))
+			}
+
+			static LNode ConvertVarDeclToRunSequence(LNode varType, LNode varName, LNode initValue)
+			{
+				initValue = BubbleUpBlocks(initValue);
+				varType ??= F.Missing;
+				LNode @ref, node = attrs.WithoutNodeNamed(S.Ref, out @ref);
+				matchCode(initValue)
+				{
+					case #runSequence($(...stmts), $resultValue):
+						var newVarDecl = quote { [$(...attrs)] $varType $varName = $resultValue; };
+						return initValue.WithArgs(stmts.Add(newVarDecl).Add(varName));
+								
+					default:
+						var newVarDecl = quote { [$(...attrs)] $varType $varName = $initValue; };
+						return quote( #runSequence($newVarDecl, $varName) );
+				}
+			}
+			static bool IsQuickBindLhs(LNode value)
+			{
+				if (!value.IsId)
+					return true;
+				return char.IsUpper(value.Name.Name.TryGet(0, '\0'));
+ 			}
+		}
+	}
+}

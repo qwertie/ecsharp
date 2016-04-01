@@ -62,7 +62,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssertMacro.ecs</DependentUpon>
     </Compile>
-    <Compile Include="AttrMacroRegistrar.cs" />
     <Compile Include="BackingFieldMacro.cs" />
     <Compile Include="CodeQuoteMacro.cs" />
     <Compile Include="ContractsMacro.out.cs">

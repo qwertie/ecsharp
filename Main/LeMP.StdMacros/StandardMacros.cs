@@ -21,7 +21,16 @@ namespace LeMP
 		[ThreadStatic]
 		internal static int _nextTempCounter = 0; // next tmp variable
 		public static int NextTempCounter { get { return _nextTempCounter; } }
-		public static Symbol NextTempName() { return GSymbol.Get("tmp_" + _nextTempCounter++); }
+
+		public static Symbol NextTempName(string prefix = "tmp_")
+		{
+			return GSymbol.Get(prefix + _nextTempCounter++);
+		}
+		static LNode TempVarDecl(LNode value, out LNode tmpId, string prefix = "tmp_")
+		{
+			tmpId = LNode.Id(NextTempName(prefix), value);
+			return F.Var(F.Missing, tmpId, value);
+		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
 
