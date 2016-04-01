@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Math;
 
 namespace Loyc.Collections
 {
@@ -10,6 +11,10 @@ namespace Loyc.Collections
 		public static ArraySlice<T> Slice<T>(this T[] list, int start, int length = int.MaxValue)
 		{
 			return new ArraySlice<T>(list, start, length);
+		}
+		public static ArraySlice<T> Slice<T>(this T[] list, NumRange<int, MathI> range)
+		{
+			return new ArraySlice<T>(list, range.Lo, range.Count);
 		}
 	}
 

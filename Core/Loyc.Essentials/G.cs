@@ -25,6 +25,27 @@ namespace Loyc
 			b = tmp;
 		}
 
+		public static bool IsOneOf<T>(this T value, T item1, T item2) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2);
+		}
+		public static bool IsOneOf<T>(this T value, T item1, T item2, T item3) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null || item3 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3);
+		}
+		public static bool IsOneOf<T>(this T value, T item1, T item2, T item3, T item4) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null || item3 == null || item4 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3) || value.Equals(item4);
+		}
 		public static bool IsOneOf<T>(this T value, params T[] set) where T : IEquatable<T>
 		{
 			if (value == null) {
