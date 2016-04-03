@@ -594,7 +594,7 @@ Replace and unroll
 
 If, for some reason, you are forced to write several methods that are identical except for one data type, or several classes that are identical except for one thing, then `replace`, `unroll` and code snippets might be for you.
 
-I'll just explain this briefly with an example. Let's suppose your class has a bunch of properties and that for some reason you are required to write a separate method that does some task for each property. Why would you need so many separate methods? I don't know. It's a code smell. But sometimes in the real world, you get yourself in odd situations and you find yourself having to do repetitive tasks. So let's just say you've landed in one of these situations, you're writing repetitive code, and there's no alternative. 
+I'll just explain this briefly with an example. Let's suppose your class has a bunch of properties and that for some reason you are required to write a separate method that does some task for each property. Why would you need so many separate methods? I don't know. It's a code smell. But sometimes in the real world, you get yourself in situations where you need to do repetitive tasks or write repetitive code. So let's just say you've landed in one of these situations, you're writing repetitive code, and there's no alternative. 
 
 That's where `unroll` and `replace` come in. Let's say the task has something to do with, I don't now, serialization:
 
@@ -645,6 +645,32 @@ How does it work?
 In general, outer macros run before inner macros (this is the opposite of the evaluation order of normal methods). So `unroll` runs before `replace`, and `concatId` runs last. Since `unroll` runs before `concatId`, one of the things it does is to change the second argument of `concatId(Save, PropX)` into `PropA`, `PropB`, or whatever, so that the final output is `SavePropA`, `SavePropB`, etc.
 
 `replace` and `unroll` are also useful for implementing `INotifyPropertyChanged`. See [here](http://ecsharp.net/lemp/avoid-tedium-with-LeMP.html#unroll) for an example.
+
+If you need to insert _identical_ code in several classes or several functions, you might find the `#snippet` statement useful for this purpose. `#snippet` saves a code snippet in the current lexical scope, and then you can explicitly insert that snippet with `#get`. This works a bit differently than `replace`: `replace` is an active find-and-replace operation, whereas `#snippet` just associates a key with a value. For example:
+
+~~~csharp
+#snippet #disposeMethod = {
+    // See https://msdn.microsoft.com/en-us/library/b1yfkh5e%28v=vs.110%29.aspx
+    public void Dispose() {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    partial void Dispose(bool disposing);
+};
+
+// later
+class Foo : IDisposable {
+    #get(#disposeMethod);
+    
+    partial void Dispose(bool disposing) {
+        if (disposing && _handle != null)
+            _handle.Dispose();
+        ...
+    }
+}
+~~~
+
+Currently, no "parameters" are supported to customize instances of the code, so use `replace` for that. By the way, there's an `includeFile("filename.ecs")` macro, so an advantage of snippets is that you can save them in a separate file and load them into multiple source files.
 
 "With" statement
 ----------------
@@ -878,7 +904,7 @@ Just to illustrate: I wrote a benchmark pitting C# versus C++ on CodeProject and
 
 I keep hoping that by working harder and publishing new articles and putting a new spin on things, I could stir up some interest in my work, but experience has taught me that the vast majority of coders don't give a ʞɔnɟ. Encouraging comments are appreciated, and every, oh, every year or so I get three or four of those (thanks Jonathan and Kerry!), but what I really want is developers using this stuff, asking me questions, filing bug reports, telling me what their needs are and [hacking on the source code](http://ecsharp.net/help-wanted.html).
 
-So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.01% of C# developers to use it, I'll just be wasting my life. So, what'll it be? Should I quit now? I'm leaning toward "yes" (I'd still fix bugs and answer your questions, of course). There's this thing out there called WebAssembly, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
+So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.01% of C# developers to use it, I'll just be wasting my life. So, what'll it be? Should I quit now? I'm leaning toward "yes" (I'd still fix bugs and answer your questions, of course). I'd like to start a WebAssembly project focused on cross-language interop, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
 
 It isn't just programming languages, either. I've worked on International Auxiliary Languages and noticed that the common man's reaction ranges from indifference to outright hostility. I found strong evidence that the religion I grew up in is not true, but I'm fairly sure most members wouldn't respond well if I told _them_ that. I've been trying to support the fight against corruption in U.S. politics, but while many people _vaguely_ recognize the problem, getting them to rally around a solution that would _actually_ work seems, well, unworkable. The list goes on, and the bottom line seems to be, I was born on the wrong planet. My kind is not welcome here.
 

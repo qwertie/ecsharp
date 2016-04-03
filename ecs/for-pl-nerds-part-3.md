@@ -6,7 +6,7 @@ toc: true
 
 Although I'd like EC# to be an extensible language, C# is far from an ideal starting point for an extensible syntax; when you try to add stuff to C#, it tends to become ambiguous and you may lose backward compatibility. Therefore, the EC# parser is not extensible; instead, I selected a set of syntax changes that are useful for many purposes, while preserving almost total backward compatibility. For example, the new backquoted strings (`foo`) are considered to be operators, and users can define custom operators through this mechanism as long as they surround them with backquotes.
 
-Grammatically, EC# is a very different language from C# except that it "just so happens" to accept virtually all valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists for DSLs, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (just add a semicolon at the end).
+Grammatically, EC# is a very different language from C# except that it "just so happens" to accept virtually all valid C# code. EC# is an expression-based language with two different syntactic styles, "expression style" and "statement style" (it also allows raw token lists for DSLs, but I'll skip those in this article). For any statement there is an equivalent expression in "expression style" (which may or may not use "prefix notation"). And of course, you can put an expression anywhere that a statement is allowed (usually, all you need is to add a semicolon at the end).
 
 As I mentioned before, EC# syntax is "generalized C#"; the parser accepts almost anything that looks vaguely like C# code, as well as some other stuff that doesn't look like C# at all.
 
@@ -68,7 +68,7 @@ Most of the time, EC# expression syntax is the same as C#, with operators like +
 
 However, at the beginning of every expression there can be a "preamble", so an EC# subexpression is parsed differently at the beginning than "in the middle". The "expression preamble" has the following parts which are all optional and must be provided in order:
 
-1. a single word followed by a colon, e.g. foo:. In statement context, the parser considers it a label (which becomes a separate statement in the Loyc tree); in all other situations it is interpreted as a named argument.
+1. a single word followed by a colon, e.g. `foo:`. In statement context, the parser considers it a label (which becomes a separate statement in the Loyc tree); in all other situations it is interpreted as a named argument. Note that we can't treat `:` as a normal binary operator due to the nullable-type ambiguity. If ":" were treated as an operator, `(Foo ? x = z : y)` would ambiguously be either a conditional expression or a variable declaration that uses the ":" operator on the right side.
 2. a list of attributes, e.g. [x, y] or [x] [y] (the two styles are equivalent). "Macros as attributes", which have the form [[m(args)]], can also appear here; they are parsed like attributes but behave like a method call that takes the remainder of the expression as an argument.
 3. either
   3a. a list of modifier keywords (such as public or ref)

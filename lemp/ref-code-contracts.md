@@ -61,6 +61,8 @@ static char GetAscii(int code)
 ~~~
 </div>
 
+**Note:** It is thought that eventually we would like to use `_` for "don't care"; for example `Foo(out _)` would mean "use a dummy variable to hold this output parameter" and `(_, x, y) = tuple` would ignore the first value from a tuple. Therefore, using `_` for "current parameter" or "current return value" would be inconsistent. I propose to use `#` instead. In fact, this is already supported; for example you can write `[requires(# != null)]` rather than `[requires(_ != null)]`, and similarly for method forwarding you can write `void Foo() ==> target.#` rather than `void Foo() ==> target._`. In fact, the only thing stopping me from using `#` throughout the documentation is that C# developers are not used to seeing `#` as an identifier, and acquiring new users is such a massive struggle.
+
 **Implementation details**: Code contracts are provided by just three macros in a single module, because it is difficult to modularize them due to technical limitations of LeMP (specifically, the fact that LeMP is _not_ designed to treat attributes as macros, and because it has limited mechanisms for ordering and conflict resolution between different macros). The first macro, internally named `ContractsOnMethod`, deals with contract attributes on methods and constructors. The second, `ContractsOnLambda`, deals with anonymous functions, and the third, `ContractsOnProperty`, deals with properties. All three macros provide access to the same set of contract attributes. This section (unlike other sections in this document) describes the _attributes_ rather than the macros, since the latter is merely an implementation detail.
 
 Modes

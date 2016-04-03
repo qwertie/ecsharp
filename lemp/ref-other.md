@@ -952,6 +952,14 @@ void Increment()
 
 Replaces each symbol in the code that follows with a `static readonly` variable named `sy_X` for each symbol `@@X`. The #useSymbols; statement should be placed near the top of a class definition.
 
+### unless ###
+
+~~~exec
+unless (Fingers.Cold && Fingers.Dead) { Hold(Gun); }
+~~~
+
+Executes a block of statements when the specified condition is false.
+
 ### Multi-using ###
 
 <div class='sbs' markdown='1'>

@@ -1,9 +1,9 @@
-//css_ref ../../Loyc/Lib/LeMP/Loyc.Essentials.dll;
-//css_ref ../../Loyc/Lib/LeMP/Loyc.Collections.dll;
-//css_ref ../../Loyc/Lib/LeMP/Loyc.Syntax.dll;
-//css_ref ../../Loyc/Lib/LeMP/Loyc.Ecs.dll;
-//css_ref ../../Loyc/Lib/LeMP/LeMP.exe;
-//css_ref ../../Loyc/Lib/LeMP/LeMP.StdMacros.dll;
+//css_ref ../../ecsharp/Lib/LeMP/Loyc.Essentials.dll;
+//css_ref ../../ecsharp/Lib/LeMP/Loyc.Collections.dll;
+//css_ref ../../ecsharp/Lib/LeMP/Loyc.Syntax.dll;
+//css_ref ../../ecsharp/Lib/LeMP/Loyc.Ecs.dll;
+//css_ref ../../ecsharp/Lib/LeMP/LeMP.exe;
+//css_ref ../../ecsharp/Lib/LeMP/LeMP.StdMacros.dll;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
