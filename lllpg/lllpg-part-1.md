@@ -186,7 +186,7 @@ This example demonstrates some new things:
 
 If you're only interested in the parser generator, please skip this section, because right now I'd like to discuss the fancy technology that LLLPG is built on. In fact, you can skip most of the rest of the article and go straight to [part 2][12].
 
-So here's the deal. I designed a language called Enhanced C#. It's supposed to be about 99.9% backward compatible with C#, and the parser is about 95% complete (LINQ support is missing, but C# 6 syntax is available.) There is no EC# compiler yet, but there is a _printer_; instead you use the parser + LeMP + printer and feed the output to the plain C# compiler. With a few lines of code, you can parse a block of EC# code and print it out again:
+So here's the deal. I designed a language called Enhanced C#. It's supposed to be about 99.9% backward compatible with C#, and the parser is about 95% complete (LINQ support is missing, but C# 6 syntax is available.) There is no EC# compiler yet, but there is a _parser_ and a _printer_; so you use the parser + LeMP + printer and feed the output to the plain C# compiler. With a few lines of code, you can parse a block of EC# code and print it out again:
 
     using (LNode.PushPrinter(Ecs.EcsNodePrinter.Printer))
     using (ParsingService.PushCurrent(Ecs.Parser.EcsLanguageService.Value))
@@ -251,7 +251,7 @@ At long last the bootstrapping is complete, so you can write LLLPG parsers in EC
 
 ### Enhanced C# (EC#)
 
-As I mentioned, Enhanced C# is a language based on C# whose compiler doesn't exist yet (I'm looking for volunteers to help build the compiler, stay tuned.) The parser does exist, though, so I can talk about some of the new syntax that EC# supports. Actually there is quite a bit of new syntax in EC#; let me just tell you about the syntax that is relevant to LLLPG.
+As I mentioned, Enhanced C# is a language based on C# whose compiler doesn't exist yet (I'm looking for [volunteers to help](http://ecsharp.net/help-wanted.html).) The parser does exist, though, so I can talk about some of the new syntax that EC# supports. Actually there is quite a bit of new syntax in EC#; let me just tell you about the syntax that is relevant to LLLPG.
 
 #### Token literals
 
@@ -274,6 +274,8 @@ The parser actually sees these as property or method declarations. LLLPG's `ECSh
 
     #rule(void, Foo, (), "Bar");
     #rule(int, Foo, (#var(int, x),), ('F', 'o', 'o', { return x; }));
+
+(A separate macro recognizes the LES-specific syntax for rules and produces this common form.)
 
 The main LLLPG macro is in charge of turning this into the final output:
 

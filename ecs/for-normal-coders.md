@@ -395,13 +395,14 @@ Dictionary<string,Form> _views;
 // creates a new window for the key if one doesn't exist yet.
 Form GetAndShow(string key)
 {
-   if (_views.TryGetValue(key, out Form form))
+   if (_views.TryGetValue(key, out Form form)) {
       form.BringToFront();
-   else {
+      return form;
+   } else {
       _views[key] = form = new MyForm(key);
       form.Show();
+      return form;
    }
-   return form;
 }
 ~~~
 
@@ -533,9 +534,9 @@ This is the kind of thing where `on_finally` is useful. The above code can be re
 ~~~csharp
 void Method()
 {
-  var oldValue = SomeBclClass.StaticProperty;
-  SomeBclClass.StaticProperty = newValue;
-  on_finally { SomeBclClass.StaticProperty = oldValue; }
+   var oldValue = SomeBclClass.StaticProperty;
+   SomeBclClass.StaticProperty = newValue;
+   on_finally { SomeBclClass.StaticProperty = oldValue; }
 
    10 lines of code;
 }
@@ -900,7 +901,7 @@ But honestly, it took me by surprise that backward compatibility with C#, and th
 
 This article represents my last chance. I started out publishing [articles about the underlying ideas](http://www.codeproject.com/Articles/606610/LLLPG-cplusLoycplustrees-cplusandplusLES-cpluso), I've published articles about [the parser generator](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), I've published articles about the [macro processor](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part), and of course I've documented (if not promoted) [related technologies](http://loyc.net/les), my [collection types](http://core.ecsharp.net/collections) and all the rest of the [class libraries](http://ecsharp.net/doc/code). And I already published a whole [web site](http://ecsharp.net/lemp) and [reference manual](http://ecsharp.net/lemp/reference.html) for EC#'s macro engine. But as far as I can tell, no one but me has blogged about any of this, and other than me, I only have one confirmed user of my libraries. From where I sit, this whole project has been a failure of epic proportions.
 
-Just to illustrate: I wrote a benchmark pitting C# versus C++ on CodeProject and ultimately got 522,000 views. Later, after months of work, I published a complex and feature-rich [data structure](http://cdn.codeproject.com/Articles/568095/The-List-Trifecta-Part) I had built and it got only a couple thousand views at first, with not quite 12,000 views trickling in over the last three years, and no comments. I published an article about [using the _old_ version of ICSharpCode.TextEditor](http://www.codeproject.com/Articles/30936/Using-ICSharpCode-TextEditor) and it got 215,000 views; I published my first article on LeMP ten months ago, and it earned just 11,000. After republishing several new versions of my [LLLPG article](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) over the last couple of years, I did manage to rack up nearly 193,000 views - really? It was under 100,000 last time I checked! So that's good news... but so far I'm not aware of any actual _users_.
+Just to illustrate: I wrote a benchmark pitting C# versus C++ on CodeProject and ultimately got 522,000 views. Later, after months of work, I published a complex and feature-rich [data structure](http://cdn.codeproject.com/Articles/568095/The-List-Trifecta-Part) I had built and it got only a couple thousand views at first, with not quite 12,000 views trickling in over the last three years, and not a single comment. No supporters, no detractors, pure indifference. I published an article about [using the _old_ version of ICSharpCode.TextEditor](http://www.codeproject.com/Articles/30936/Using-ICSharpCode-TextEditor) and it got 215,000 views; I published my first article on LeMP ten months ago, and it earned just 11,000. After republishing several new versions of my [LLLPG article](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp) over the last couple of years, I did manage to rack up nearly 193,000 views - really? It was under 100,000 last time I checked! So that's good news... but so far I'm not aware of any actual _users_.
 
 I keep hoping that by working harder and publishing new articles and putting a new spin on things, I could stir up some interest in my work, but experience has taught me that the vast majority of coders don't give a ʞɔnɟ. Encouraging comments are appreciated, and every, oh, every year or so I get three or four of those (thanks Jonathan and Kerry!), but what I really want is developers using this stuff, asking me questions, filing bug reports, telling me what their needs are and [hacking on the source code](http://ecsharp.net/help-wanted.html).
 

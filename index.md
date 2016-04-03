@@ -37,13 +37,13 @@ The dependence tree of Enhanced C#, LeMP, and other .NET Loyc libraries is
      Loyc.Essentials.dll  (Collection interfaces, collection adaptors, extension 
               ^            methods, UString, important utility classes, and more)
               |
-     Loyc.Collections.dll (Handy mutable and immutable collections: RVList/RWList, 
-            ^   ^      AList/BList/BMultiMap/SparseAList, Set/Map/MSet/MMap, ...)
+     Loyc.Collections.dll (Handy mutable and immutable collections: VList/WList, 
+            ^   ^      AList/BList/BMultiMap/SparseAList, Set/Map/MSet/MMap, DList)
             |   |      
             |   +-----------------+
             |                     |     
             |                     |
-      Loyc.Utilities.dll    Loyc.Syntax.dll (LES, Loyc trees, helper types for LLLPG)
+      Loyc.Utilities.dll    Loyc.Syntax.dll (Loyc trees, LES, helper types for LLLPG)
     (more utility classes)     ^       ^ 
             ^        ^         |       |
             |        |         |       |
