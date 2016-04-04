@@ -13,6 +13,12 @@ namespace Loyc.Syntax.Les
 	public class LesParserTests : LesPrinterAndParserTests
 	{
 		[Test]
+		public void EmptyInput()
+		{
+			Test(Mode.Stmt, 0, "");
+		}
+
+		[Test]
 		public void ParseErrors()
 		{
 			MessageHolder msgs;

@@ -1089,8 +1089,10 @@ namespace Loyc.Syntax
 		public virtual bool Calls(string name, int argCount)       { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(Symbol name)                     { Debug.Assert(!IsCall); return false; }
 		public virtual bool Calls(string name)                     { Debug.Assert(!IsCall); return false; }
-		public virtual bool CallsMin(Symbol name, int argCount)    { Debug.Assert(!IsCall); return false; }
-		public virtual bool CallsMin(string name, int argCount)    { Debug.Assert(!IsCall); return false; }
+		/// <summary>Returns true if this is a call with the specified name and the specified minimum number of arguments.</summary>
+		public virtual bool CallsMin(Symbol name, int minArgCount) { Debug.Assert(!IsCall); return false; }
+		/// <summary>Returns true if this is a call with the specified name and the specified minimum number of arguments.</summary>
+		public virtual bool CallsMin(string name, int minArgCount) { Debug.Assert(!IsCall); return false; }
 		/// <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal.</summary>
 		public virtual bool HasSimpleHead()                        { Debug.Assert(!IsCall); return true; }
 		/// <summary>Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes.</summary>

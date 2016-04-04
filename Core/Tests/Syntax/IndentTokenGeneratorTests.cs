@@ -16,6 +16,7 @@ namespace Loyc.Syntax.Lexing
 		[Test]
 		public void BasicTests()
 		{
+			Test(@"", @"");
 			Test(@"
 				test1
 				test2;
