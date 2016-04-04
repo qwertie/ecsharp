@@ -429,12 +429,6 @@ namespace LeMP.Prelude.Les
 		{
 			return IfUnless(node, false, sink);
 		}
-		[LexicalMacro("unless Condition {Then...}; unless Condition {Then...} else {Else...}",
-			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
-		public static LNode @unless(LNode node, IMessageSink sink)
-		{
-			return IfUnless(node, true, sink);
-		}
 		public static LNode IfUnless(LNode node, bool isUnless, IMessageSink sink)
 		{
 			var args = node.Args;

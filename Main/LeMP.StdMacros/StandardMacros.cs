@@ -368,5 +368,12 @@ namespace LeMP
 			}
 			return null;
 		}
+
+		[LexicalMacro("unless (Condition) {Then...}; /* LES only */ unless Condition {Then...} else {Else...}",
+			"If 'Condition' is false, runs the 'Then' code; otherwise, runs the 'Else' code, if any.")]
+		public static LNode @unless(LNode node, IMessageSink sink)
+		{
+			return LeMP.Prelude.Les.Macros.IfUnless(node, true, sink);
+		}
 	}
 }
