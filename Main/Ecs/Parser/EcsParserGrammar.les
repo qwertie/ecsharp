@@ -1155,10 +1155,12 @@ namespace Loyc.Ecs.Parser
 		@[static, readonly] ExpectedAfterTypeAndName_InStmt::HashSet!TT = (new HashSet!TT { 
 			TT.Set; TT.LBrace; TT.LParen; TT.LBrack; 
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma;
+			TT.At; // @{...} token literal (property)
 		});
 		@[static, readonly] ExpectedAfterTypeAndName_InExpr::HashSet!TT = (new HashSet!TT { 
 			TT.Set; TT.LBrace;
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma; TT.EOF;
+			TT.At; // @{...} token literal (property)
 		});
 		@[static, readonly] ExpectedAfterTypeAndName::array!(HashSet!TT) = (new @`[]`() {
 			ExpectedAfterTypeAndName_InExpr;

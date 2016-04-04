@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Ecs.Parser;
 using Loyc.MiniTest;
 using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Ecs.Tests
@@ -52,6 +54,12 @@ namespace Loyc.Ecs.Tests
 			// Currently we're not trying to treat this as a keyword
 			Stmt("dynamic Foo();", F.Fn(_("dynamic"), Foo, F.List()));
 			Stmt("dynamic x;", F.Var(_("dynamic"), x));
+
+			Token[] token = new[] { new Token((int)TokenType.Literal, 0, 0, 0, 'a') };
+			var tree = new TokenTree(F.File, (ICollection<Token>)token);
+			Stmt("LLLPG(lexer) {\n  public rule a @{ 'a' };\n}", 
+				F.Call(_("LLLPG"), _("lexer"), F.Braces(
+					Attr(F.Public, F.Property(_("rule"), a, F.Literal(tree))))).SetBaseStyle(NodeStyle.Special));
 		}
 
 		[Test]
