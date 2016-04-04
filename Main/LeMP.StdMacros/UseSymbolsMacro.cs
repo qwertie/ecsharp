@@ -42,7 +42,7 @@ namespace LeMP
 			VList<LNode> output = args_body.B.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
 				var sym = n.Value as Symbol;
 				if (n.IsLiteral && sym != null)
-					return symbols[sym] = LNode.Id(prefix + EcsNodePrinter.SanitizeIdentifier(sym.Name));
+					return symbols[sym] = LNode.Id(prefix + EcsValidators.SanitizeIdentifier(sym.Name));
 				return null;
 			}));
 

@@ -27,7 +27,7 @@ namespace Loyc.Ecs
 		public enum Pedantics {
 			IgnoreWeirdAttributes = 1, IgnoreIllegalParentheses = 2,
 			Lax = IgnoreWeirdAttributes | IgnoreIllegalParentheses
-		}; 
+		};
 
 		// These are validators for printing purposes: they check that each node 
 		// that shouldn't have attributes, doesn't; if attributes are present in
@@ -528,6 +528,76 @@ namespace Loyc.Ecs
 			if (name.IsCall)
 				return KeyNameComponentOf(name.Target);
 			return name.Name;
+		}
+
+		public static bool IsPlainCsIdentStartChar(char c)
+		{
+ 			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || (c > 128 && char.IsLetter(c));
+		}
+		public static bool IsPlainCsIdentContChar(char c)
+		{
+			return IsPlainCsIdentStartChar(c) || (c >= '0' && c <= '9');
+		}
+		public static bool IsIdentStartChar(char c)
+		{
+			return IsPlainCsIdentStartChar(c) || c == '#';
+		}
+		public static bool IsIdentContChar(char c)
+		{
+			return IsIdentStartChar(c) || (c >= '0' && c <= '9') || c == '\'';
+		}
+		public static bool IsPlainCsIdentifier(string text)
+		{
+			if (text == "")
+				return false;
+			if (!IsPlainCsIdentStartChar(text[0]))
+				return false;
+			for (int i = 1; i < text.Length; i++)
+				if (!IsPlainCsIdentContChar(text[0]))
+					return false;
+			return true;
+		}
+
+		/// <summary>Eliminates punctuation and special characters from a string so
+		/// that the string can be used as a plain C# identifier, e.g. 
+		/// "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
+		/// <remarks>The empty string "" becomes "__empty__", ASCII punctuation becomes 
+		/// "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
+		/// and all other characters become "Xxx" where xx is the hexadecimal 
+		/// representation of the code point. Designed for the Unicode BMP only.</remarks>
+		public static string SanitizeIdentifier(string id)
+		{
+			if (id == "")
+				return "__empty__";
+			int i = 0;
+			if (IsPlainCsIdentStartChar(id[0])) {
+				for (i = 1; i < id.Length; i++)
+					if (!IsPlainCsIdentStartChar(id[i]) && !char.IsDigit(id[i]))
+						break;
+			}
+			if (i >= id.Length)
+				return id; // it's a normal identifier, do not change
+			
+			var sb = new StringBuilder(id.Left(i));
+			for (; i < id.Length; i++) {
+				char c = id[i];
+				if (IsPlainCsIdentStartChar(c))
+					sb.Append(c);
+				else if (c >= '0' && c <= '9') {
+					if (i == 0) sb.Append('_');
+					sb.Append(c);
+				} else {
+					char prefix = '_';
+					string ent = G.BareHtmlEntityNameForAscii(c);
+					if (ent == null || (c < 256 && ent.Length > 5)) {
+						prefix = 'x';
+						ent = ((int)c).ToString("X2");
+					}
+					sb.Append(prefix);
+					sb.Append(ent);
+				}
+			}
+			return sb.ToString();
 		}
 	}
 }

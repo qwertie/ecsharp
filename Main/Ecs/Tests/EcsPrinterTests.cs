@@ -88,15 +88,6 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void SanitizeIdentifierTests()
-		{
-			AreEqual("I_aposd",  EcsNodePrinter.SanitizeIdentifier("I'd"));
-			AreEqual("_123",     EcsNodePrinter.SanitizeIdentifier("123"));
-			AreEqual("_plus5",   EcsNodePrinter.SanitizeIdentifier("+5" ));
-			AreEqual("__empty__",EcsNodePrinter.SanitizeIdentifier(""   ));
-			AreEqual("_lt_gt",   EcsNodePrinter.SanitizeIdentifier("<>"));
-		}
-		[Test]
 		public void StaticMethods()
 		{
 			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));

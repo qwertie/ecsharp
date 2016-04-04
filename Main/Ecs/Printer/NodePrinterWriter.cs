@@ -17,8 +17,8 @@ namespace Loyc.Ecs
 		{
 			if (_newlinePending)
 				Newline();
-			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
-				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
+			if ((EcsValidators.IsIdentContChar(_lastCh) || _lastCh == '#')
+				&& (EcsValidators.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
 			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+') 
 			      || (_lastCh == '-' && nextCh == '-')

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Syntax;
 using Loyc.Collections;
+using Loyc.Ecs;
 
 namespace Loyc.LLParserGenerator
 {
@@ -182,7 +183,7 @@ namespace Loyc.LLParserGenerator
 		}
 		static string LiteralToIdent(object literal)
 		{
-			return Ecs.EcsNodePrinter.SanitizeIdentifier((literal ?? "null").ToString());
+			return EcsValidators.SanitizeIdentifier((literal ?? "null").ToString());
 		}
 
 		// Step 3

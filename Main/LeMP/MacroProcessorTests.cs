@@ -193,8 +193,6 @@ namespace LeMP
 				 "if (x < 0) { Negative(); } else { NonNeg(); }");
 			Test("if  x < 0  { Negative(); } else if (x > 0) { Positive(); } else { Zero(); };",
 				 "if (x < 0) { Negative(); } else if((x > 0)){ Positive(); } else { Zero(); }");
-			Test("unless input.IsLowPriority { Process(input); };",
-			     "if  (!input.IsLowPriority) { Process(input); }");
 			Test("if  input.IsLowPriority  { WhoCares(); } else while (!input.EOF)  { input.Read(); };",
 				 "if (input.IsLowPriority) { WhoCares(); } else while((!input.EOF)) { input.Read(); }");
 			Test("switch  x  { case 0; break; default; break; }",

@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -2347,8 +2347,8 @@ namespace Loyc.Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -2363,6 +2363,12 @@ namespace Loyc.Ecs.Parser
 									else
 										goto stop;
 								}
+							} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								la1 = LA(1);
+								if (PrefixExpr_set0.Contains((int) la1))
+									goto match1;
+								else
+									goto stop;
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -2370,8 +2376,8 @@ namespace Loyc.Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match3;
