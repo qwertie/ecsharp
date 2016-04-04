@@ -35,35 +35,6 @@ namespace Loyc.Ecs.Tests
 			Stmt("break; // leave loop", stmt);
 		}
 
-		[Test(Fails = "Left broken because LLLPG is too slow to analyze the grammar")]
-		public void Await()
-		{
-			Expr("await x ** 2", F.Call(S.Exp, F.Call(await, x), F.Literal(2)));
-			Expr("await Foo.x", F.Call(await, F.Dot(Foo, x)));
-			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(await, F.Dot(Foo, x))));
-
-			Expr("await ++x", F.Call(await, F.Call(S.PreInc, x)));
-			Expr("await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
-			// Uh-oh, it looks like the parsing of this should depend on whether the
-			// enclosing function has the `async` keyword or not. If it does, it 
-			// should parse as `await((a).b)`, otherwise it should be `(await(a)).b`.
-			// But EC# doesn't change modes in this way, so it's always parsed as
-			// `await((a).b)`
-			Expr("await(a).b", F.Call(await, F.Dot(F.InParens(a), b)));
-			// @await is treated slightly differently, but currently the node Name is 
-			// "await" either way. Should it be #await when the @ sign is absent?
-			Expr("@await(a).b", F.Dot(F.Call(await, a), b));
-		}
-		
-		[Test(Fails = "Stuff that is intentionally left broken for the time being")]
-		public void TODO()
-		{
-			Stmt("var a = (Foo ? b = c as Foo? : 0);", 
-				F.Var(F.Missing, F.Call(S.Assign, a, F.InParens(
-					F.Call(S.QuestionMark, Foo,
-						F.Call(S.Assign, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))), zero)))));
-		}
-
 		/* Not planning to implement 'if' clauses, for now
 		[Test]
 		public void BraceInIfClause()

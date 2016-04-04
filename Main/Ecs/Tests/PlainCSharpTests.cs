@@ -95,19 +95,6 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CsAnonymousLambdaFunctions()
-		{
-			Stmt("delegate(T a) {\n  return a;\n};", 
-				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle));
-			Expr("a => a + 1",              F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
-			Expr("1 + a => 2 + b => c",     F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
-			Expr("(Foo a) => a",            F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
-			Expr("(Foo a, Foo b) => a(b)",  F.Call(S.Lambda, F.Tuple(F.Var(Foo,a), F.Var(Foo,b)), F.Call(a, b)));
-			Expr("(Foo a, Foo b) => a ?? b", F.Call(S.Lambda, F.Tuple(F.Var(Foo,a), F.Var(Foo,b)), F.Call(S.NullCoalesce, a, b)));
-			Expr("(Foo a, Foo b) => {\n  a(b);\n}", F.Call(S.Lambda, F.Tuple(F.Var(Foo,a), F.Var(Foo,b)), F.Braces(F.Call(a, b))));
-		}
-
-		[Test]
 		public void CsSimpleExpressions()
 		{
 			Expr("a + b",        F.Call(S.Add, a, b));
@@ -155,7 +142,20 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void SpecialOperators()
+		public void CsAnonymousLambdaFunctions()
+		{
+			Stmt("delegate(T a) {\n  return a;\n};",
+				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle));
+			Expr("a => a + 1", F.Call(S.Lambda, a, F.Call(S.Add, a, one)));
+			Expr("1 + a => 2 + b => c", F.Call(S.Add, one, F.Call(S.Lambda, a, F.Call(S.Add, two, F.Call(S.Lambda, b, c)))));
+			Expr("(Foo a) => a", F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
+			Expr("(Foo a, Foo b) => a(b)", F.Call(S.Lambda, F.Tuple(F.Var(Foo, a), F.Var(Foo, b)), F.Call(a, b)));
+			Expr("(Foo a, Foo b) => a ?? b", F.Call(S.Lambda, F.Tuple(F.Var(Foo, a), F.Var(Foo, b)), F.Call(S.NullCoalesce, a, b)));
+			Expr("(Foo a, Foo b) => {\n  a(b);\n}", F.Call(S.Lambda, F.Tuple(F.Var(Foo, a), F.Var(Foo, b)), F.Braces(F.Call(a, b))));
+		}
+
+		[Test]
+		public void CsSpecialOperators()
 		{
 			Expr("x++",              F.Call(S.PostInc, x));
 			Expr("x--",              F.Call(S.PostDec, x));
@@ -166,11 +166,11 @@ namespace Loyc.Ecs.Tests
 			Expr("Foo[]",            F.Call(S.IndexBracks, Foo)); // "Foo[]" means #of(#`[]`, Foo) only in a type context
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x as Foo",         F.Call(S.As, x, Foo));
-			Expr("x using Foo",      F.Call(S.UsingCast, x, Foo));
+			Expr("x is Foo",         F.Call(S.Is, x, Foo));
 		}
 
 		[Test]
-		public void CallStyleOperators()
+		public void CsCallStyleOperators()
 		{
 			Expr("checked(a + b)",        F.Call(S.Checked, F.Call(S.Add, a, b)));
 			Expr("unchecked(a << b)",     F.Call(S.Unchecked, F.Call(S.Shl, a, b)));
@@ -191,14 +191,10 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void OperatorNew()
+		public void CsOperatorNew()
 		{
 			Expr("new Foo(x)",            F.Call(S.New, F.Call(Foo, x)));
 			Expr("new Foo(x) { a }",      F.Call(S.New, F.Call(Foo, x), a));
-			Expr("new Foo(x) { [a] b = c }", 
-			                              F.Call(S.New, F.Call(Foo, x), Attr(a, F.Assign(b, c))));
-			Option(Mode.PrintBothParseFirst, "#new([#foo] Foo(x), a);", "new Foo(x) { a };", 
-			                              F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
 			Expr("new Foo()",             F.Call(S.New, F.Call(Foo)));
 			Expr("new Foo { a }",         F.Call(S.New, F.Call(Foo), a));      // new Foo() { a } would also be ok
 			Expr("new int[] { a, b }",    F.Call(S.New, F.Call(F.Of(S.Array, S.Int32)), a, b));
@@ -247,6 +243,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("continue outer;",    F.Call(S.Continue, _("outer")));
 			Stmt("goto end;",          F.Call(S.Goto, _("end")));
 			Stmt("goto case 1;",       F.Call(S.GotoCase, one));
+			Stmt("goto case default;", F.Call(S.GotoCase, _(S.Default)));
 			Stmt("return;",            F.Call(S.Return));
 			Stmt("return 1;",          F.Call(S.Return, one));
 			Stmt("throw;",             F.Call(S.Throw));
@@ -592,6 +589,34 @@ namespace Loyc.Ecs.Tests
 			Stmt("[assembly: Foo]", F.Call(S.Assembly, Foo));
 			Stmt("{\n  [assembly: CLSCompliant(false)]\n  Foo;\n}", 
 				F.Braces(F.Call(S.Assembly, F.Call(_("CLSCompliant"), F.@false)), Foo));
+		}
+
+		[Test]
+		public void CSharp5Await()
+		{
+			// "async" is just an ordinary word attribute so it is already supported
+			Stmt("async Task Foo()\n{\n}", F.Attr(WordAttr("async"), F.Fn(_("Task"), Foo, F.List(), F.Braces())));
+
+			Expr("await x ** 2", F.Call(S.Exp, F.Call(await, x), F.Literal(2)));
+			Expr("await Foo.x", F.Call(await, F.Dot(Foo, x)));
+			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(await, F.Dot(Foo, x))));
+
+			Expr("await ++x", F.Call(await, F.Call(S.PreInc, x)));
+
+			// Parsing this successfully is not worth the hassle...
+			//Expr("await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
+			// ... but we do support this:
+			Expr("@await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
+			
+			// Uh-oh, it looks like the parsing of this should depend on whether the
+			// enclosing function has the `async` keyword or not. If it does, it 
+			// should parse as `await((a).b)`, otherwise it should be `(await(a)).b`.
+			// But EC# doesn't change modes in this way, so it's always parsed as
+			// `await((a).b)`
+			Expr("await(a).b", F.Call(await, F.Dot(F.InParens(a), b)));
+			// @await is treated slightly differently, but currently the node Name is 
+			// "await" either way. Should it be #await when the @ sign is absent?
+			Expr("@await(a).b", F.Dot(F.Call(await, a), b));
 		}
 
 		[Test]

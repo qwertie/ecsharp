@@ -35,9 +35,6 @@ namespace Loyc.Ecs.Parser
 
 		public IListSource<Token> TokensRoot { get { return _tokensRoot; } }
 
-		static readonly Severity _Error = Severity.Error;
-		static readonly Severity _Warning = Severity.Warning;
-
 		protected LNode _triviaWordAttribute;
 		protected LNode _triviaUseOperatorKeyword;
 		protected LNode _triviaForwardedProperty;
@@ -62,22 +59,57 @@ namespace Loyc.Ecs.Parser
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
+			_tentative = new TentativeState(false);
+		}
+
+		// Normally we use prediction analysis to distinguish expressions from
+		// variable declarations, but as it turns out, that task is too complex 
+		// when parsing expressions. Instead we'll try parsing as an expression
+		// first and, if errors occur, parse as a variable decl instead. For 
+		// this purpose we need a mode in which errors are not printed out.
+		// And since parsing contexts can be nested, we need a way to save and
+		// restore state. TentativeState is used to save and restore error state,
+		// and TentativeResult encapsulates the result of a tentative parse.
+		protected TentativeState _tentative;
+		public struct TentativeState
+		{
+			public readonly bool DeferErrors;
+			public MessageHolder DeferredErrors;
+			public int LocalErrorCount;
+			public TentativeState(bool deferErrors)
+			{
+				DeferErrors = deferErrors;
+				DeferredErrors = null;
+				LocalErrorCount = 0;
+			}
+		}
+		public struct TentativeResult
+		{
+			public LNode Result;
+			public int OldPosition;   // position before parsing
+			public int InputPosition; // position after parsing
+			public MessageHolder Errors;
+			public TentativeResult(int oldPosition)
+			{
+				this = default(TentativeResult);
+				OldPosition = oldPosition;
+			}
 		}
 
 		public IListSource<LNode> ParseExprs()
 		{
-			var list = new WList<LNode>();
+			var list = new VList<LNode>();
 			try {
-				ExprList(list);
+				ExprList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
-			var list = new WList<LNode>();
+			var list = new VList<LNode>();
 			try {
-				StmtList(list);
+				StmtList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
@@ -99,7 +131,7 @@ namespace Loyc.Ecs.Parser
 			ErrorSink.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
-		#region Methods required by base class and by LLLPG
+		#region Methods/properties of LLLPG and base class overrides
 
 		protected sealed override int EofInt() { return 0; }
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
@@ -108,21 +140,30 @@ namespace Loyc.Ecs.Parser
 			bool fail;
 			return _tokens.TryGet(InputPosition + i, out fail);
 		}
-		protected LNode Error(string message, params object[] args)
+
+		protected override string ToString(int type_)
 		{
-			Error(0, message, args);
-			if (args.Length > 0)
-				message = string.Format(message, args);
-			return F.Call(S.Error, F.Literal(message));
+			var type = (TokenType)type_;
+			return type.ToString();
 		}
-		protected void Error(LNode node, string message, params object[] args)
+
+		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
+		protected TT LA(int i)
 		{
-			ErrorSink.Write(_Error, node, message, args);
+			bool fail;
+			return _tokens.TryGet(InputPosition + i, out fail).Type();
 		}
-		protected void Error(Token token, string message, params object[] args)
+		new const TokenType EOF = TT.EOF;
+
+		#endregion
+
+		#region Error handling
+
+		UString CurrentTokenText()
 		{
-			ErrorSink.Write(_Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
+			return LT(0).SourceText(SourceFile.Text);
 		}
+
 		protected override void Error(int lookaheadIndex, string message)
 		{
 			Error(lookaheadIndex, message, EmptyArray<object>.Value);
@@ -131,7 +172,26 @@ namespace Loyc.Ecs.Parser
 		{
 			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
 			SourcePos pos = _sourceFile.IndexToLine(iPos);
-			ErrorSink.Write(_Error, pos, message, args);
+			CurrentSink(true).Write(Severity.Error, pos, message, args);
+		}
+		protected LNode Error(string message, params object[] args)
+		{
+			Error(0, message, args);
+			if (_tentative.DeferErrors)
+				return F.Missing;
+			else {
+				if (args.Length > 0)
+					message = string.Format(message, args);
+				return F.Call(S.Error, F.Literal(message));
+			}
+		}
+		protected void Error(LNode node, string message, params object[] args)
+		{
+			CurrentSink(true).Write(Severity.Error, node, message, args);
+		}
+		protected void Error(Token token, string message, params object[] args)
+		{
+			CurrentSink(true).Write(Severity.Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
@@ -144,20 +204,15 @@ namespace Loyc.Ecs.Parser
 			else
 				return _tokens[_tokens.Count - 1].EndIndex;
 		}
-		protected override string ToString(int type_)
+		public IMessageSink CurrentSink(bool incErrorCount)
 		{
-			var type = (TokenType)type_;
-			return type.ToString();
+			if (incErrorCount)
+				_tentative.LocalErrorCount++;
+			if (_tentative.DeferErrors)
+				return _tentative.DeferredErrors = _tentative.DeferredErrors ?? new MessageHolder();
+			return base.ErrorSink;
 		}
 		
-		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
-		protected TT LA(int i)
-		{
-			bool fail;
-			return _tokens.TryGet(InputPosition + i, out fail).Type();
-		}
-		new const TokenType EOF = TT.EOF;
-
 		#endregion
 
 		#region Down & Up
@@ -199,11 +254,15 @@ namespace Loyc.Ecs.Parser
 
 		#region Other parsing helpers: ExprListInside, etc.
 
-		protected LNode SingleExprInside(Token group, string stmtType, WList<LNode> list = null, bool allowUnassignedVarDecl = false)
+		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl = false)
 		{
-			list = list ?? new WList<LNode>();
+			VList<LNode> list = default(VList<LNode>);
+			return SingleExprInside(group, stmtType, allowUnassignedVarDecl, ref list);
+		}
+		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl, ref VList<LNode> list)
+		{
 			int oldCount = list.Count;
-			AppendExprsInside(group, list, false, allowUnassignedVarDecl);
+			list = AppendExprsInside(group, list, false, allowUnassignedVarDecl);
 			if (list.Count != oldCount + 1)
 			{
 				if (list.Count <= oldCount) {
@@ -218,41 +277,39 @@ namespace Loyc.Ecs.Parser
 			}
 			return list[0];
 		}
-		protected WList<LNode> AppendExprsInside(Token group, WList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected VList<LNode> AppendExprsInside(Token group, VList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			if (Down(group.Children)) {
-				ExprList(list, allowTrailingComma, allowUnassignedVarDecl);
+				ExprList(ref list, allowTrailingComma, allowUnassignedVarDecl);
 				return Up(list);
 			}
 			return list;
 		}
-		protected WList<LNode> AppendInitializersInside(Token group, WList<LNode> list)
+		protected void AppendInitializersInside(Token group, ref VList<LNode> list)
 		{
 			if (Down(group.Children)) {
-				InitializerList(list);
+				InitializerList(ref list);
+				Up();
+			}
+		}
+		protected VList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		{
+			return AppendExprsInside(t, new VList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
+		}
+		private VList<LNode> StmtListInside(Token t)
+		{
+			var list = new VList<LNode>();
+			if (Down(t.Children)) {
+				StmtList(ref list);
 				return Up(list);
 			}
 			return list;
-		}
-		protected WList<LNode> AppendStmtsInside(Token group, WList<LNode> list)
-		{
-			if (Down(group.Children)) {
-				StmtList(list);
-				return Up(list);
-			}
-			return list;
-		}
-		protected WList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
-		{
-			return AppendExprsInside(t, new WList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
-		}
-		private WList<LNode> StmtListInside(Token t)
-		{
-			return AppendStmtsInside(t, new WList<LNode>());
  		}
-		private WList<LNode> InitializerListInside(Token t)
+		private VList<LNode> InitializerListInside(Token t)
 		{
-			return AppendInitializersInside(t, new WList<LNode>());
+			var list = VList<LNode>.Empty;
+			AppendInitializersInside(t, ref list);
+			return list;
  		}
 
 		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3

@@ -30,14 +30,6 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CastAmbiguityBug()
-		{
-			Expr("@`*`((Foo), x)", F.Call(S.Mul, F.InParens(Foo), x));
-			Expr("@`&`((Foo), x)", F.Call(S.AndBits, F.InParens(Foo), x));
-			Expr("@`~`((Foo), x)", F.Call(S.NotBits, F.InParens(Foo), x));
-		}
-
-		[Test]
 		public void BugFixes()
 		{
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
@@ -46,7 +38,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("([#partial]\n#var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
 			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
-			Stmt("partial Foo.T x {\n  get;\n}",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
+			Stmt("partial Foo.T x\n{\n  get;\n}",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone()\n{\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
 			Stmt("Foo<a> IDictionary<a,b>.Keys\n{\n}",
@@ -86,24 +78,17 @@ namespace Loyc.Ecs.Tests
 			Expr(@"a ? b : c",       F.Call(S.QuestionMark, a, b, c));
 			Expr(@"a ? b + x : c + x",  F.Call(S.QuestionMark, a, F.Call(S.Add, b, x), F.Call(S.Add, c, x)));
 			Expr(@"a ? b = x : (c = x)",F.Call(S.QuestionMark, a, F.Assign(b, x), F.InParens(F.Assign(c, x))));
-			// A prefix operator can appear on the right-hand side of any infix/
-			// prefix operator regardless of the precedence of the two operators.
 			Expr(@"++$x",            F.Call(S.PreInc, F.Call(S.Substitute, x))); // easy
 			Expr(@"++--x",           F.Call(S.PreInc, F.Call(S.PreDec, x)));     // easy
-			Expr(@"$(++x)",          F.Call(S.Substitute, F.Call(S.PreInc, x)));
+			// Note: It was decided not to bother supporting `$++x`, or even
+			// `$...x` which would be more convenient than writing `$(...x)`
+			Expr(@"$(++x)", F.Call(S.Substitute, F.Call(S.PreInc, x)));
 			Expr(@".(~x)",           F.Call(S.Dot, F.Call(S.NotBits, x)));
-			// Note: an analagous rule does NOT exist for suffix operators because 
-			// (1) x++ and x-- do not need this rule to work in expressions 
-			//     like "x++--.Foo" because ++, --, and . have the same precedence
-			//     and can be used together already with no special rule.
-			// (2) The other suffix operator, the `backtick`, does not use this rule
-			//     because input like "a `foo`.x" would be ambiguous: it could be 
-			//     parsed as "(a `foo`).x" or as "a `foo` (.x)"
 			Expr(@"x++.Foo",        F.Dot(F.Call(S.PostInc, x), Foo));
 			Expr(@"x++.Foo()",      F.Call(F.Dot(F.Call(S.PostInc, x), Foo)));
 			Expr(@"x++--.Foo",      F.Dot(F.Call(S.PostDec, F.Call(S.PostInc, x)), Foo));
-			// Due to its high precedence, the argument of a the $ operator must 
-			// be in parens unless it is trivial.
+			// Due to the high precedence of `$`, its argument must be in parens
+			// unless it is trivial.
 			Expr(@"$x",             F.Call(S.Substitute, x));
 			Expr(@"$(x++)",         F.Call(S.Substitute, F.Call(S.PostInc, x)));
 			Expr(@"$(Foo(x))",      F.Call(S.Substitute, F.Call(Foo, x)));
@@ -121,9 +106,14 @@ namespace Loyc.Ecs.Tests
 			Expr("x / a is Foo? / b", F.Call(S.Div, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			// The printer prints x(as Foo)(a, b), which is a bit hard to fix, so don't test the printer here
 			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b).SetBaseStyle(NodeStyle.OldStyle), Mode.ParserTest);
-			Expr("x / a as Foo < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
 			Expr("x / a as Foo? < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
 			Expr("x / a is Foo? < b", F.Call(S.LT, F.Call(S.Is, F.Call(S.Div, x, a), F.Of(_(S.QuestionMark), Foo)), b));
+		}
+		
+		[Test(Fails = "Failure caused by a bug in LLLPG")]
+		public void IsAsChallenges2()
+		{
+			Expr("x / a as Foo < b", F.Call(S.LT, F.Call(S.As, F.Call(S.Div, x, a), Foo), b));
 		}
 
 		[Test]
@@ -152,7 +142,6 @@ namespace Loyc.Ecs.Tests
 			Expr("#result(a * b)",       F.Result(F.Call(S.Mul, a, b)));
 			Stmt("{\n  a * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
 			Stmt("Foo* a = x;",          F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
-			Expr("@`*`<Foo> a = x",      F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
 			// Ambiguity between bitwise not and destructor declarations
 			Expr("~Foo()",               F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("@`~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));

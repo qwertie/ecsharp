@@ -53,13 +53,14 @@ namespace Loyc.Ecs.Tests
 		{
 			Expr("a. 2",         F.Dot(a, two));
 			Expr("a::b.c. 2",    F.Dot(F.Call(S.ColonColon, a, b), c, two));
-			Expr("b using Foo",  F.Call(S.UsingCast, b, Foo));
 			Expr("1 `Foo` 2",    F.Call(Foo, F.Literal(1), F.Literal(2)));
 			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)",     F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
 			Expr("x(->a + b)",   F.Call(S.Cast, x, F.Call(S.Add, a, b)).SetStyle(NodeStyle.Alternate));
+			Expr("x as Foo",     F.Call(S.As, x, Foo));
 			Expr("x(as Foo)",    F.Call(S.As, x, Foo).SetStyle(NodeStyle.Alternate));
+			Expr("x using Foo",  F.Call(S.UsingCast, x, Foo));
 			Expr("x(using Foo)", F.Call(S.UsingCast, x, Foo).SetStyle(NodeStyle.Alternate));
 			// Printer detects a possible ambiguity between multiplication and a pointer declaration?
 			Stmt("a `*` b ? c : 0;", F.Call(S.QuestionMark, F.Call(S.Mul, a, b), c, zero));
@@ -160,6 +161,10 @@ namespace Loyc.Ecs.Tests
 			Expr("new int[[Foo] x, x][]", F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), Attr(Foo, x), x)));
 			Stmt("goto case 1;",       F.Call(S.GotoCase, one));
 			Stmt("goto case [Foo] 1;", F.Call(S.GotoCase, Attr(Foo, one)));
+			Expr("new Foo(x) { [a] b = c }",
+										  F.Call(S.New, F.Call(Foo, x), Attr(a, F.Assign(b, c))));
+			Option(Mode.PrintBothParseFirst, "#new([#foo] Foo(x), a);", "new Foo(x) { a };",
+										  F.Call(S.New, Attr(fooKW, F.Call(Foo, x)), a), p => p.DropNonDeclarationAttributes = true);
 		}
 
 		[Test]
@@ -206,6 +211,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("a = b `Foo` c;", F.Assign(a, Operator(F.Call(Foo, b, c))));
 			Stmt("a = b `Foo` c**x;", F.Assign(a, Operator(F.Call(Foo, b, F.Call(S.Exp, c, x)))));
 		}
+
 
 		[Test]
 		public void EcsAliasStmts()
@@ -270,12 +276,11 @@ namespace Loyc.Ecs.Tests
 			args[3] = F.Call(S.DoWhile, F.Call(a), c);
 			Stmt("[Foo]\nfoo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo]\nfoo public using (Foo) {\n  a(Foo);\n}", Attr(args));
+			Stmt("[Foo, #foo]\npublic using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
 			args[3] = F.Call(S.For, a, b, c, x);
 			Stmt("[Foo]\nfoo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
-			if (this is EcsNodePrinterTests)
-				Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args));
+			Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args), Mode.PrinterTest);
 			args[1] = fooKW;
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args));
@@ -384,20 +389,21 @@ namespace Loyc.Ecs.Tests
 			// An unassigned variable is allowed when an expression has attributes, such as 'out'
 			Stmt("Foo(out List<Foo> x);", F.Call(Foo, F.Attr(_(S.Out), F.Var(F.Of(_("List"), Foo), x))));
 			Stmt("Foo([x] List<Foo> x);", F.Call(Foo, F.Attr(x,        F.Var(F.Of(_("List"), Foo), x))));
-			// Allow "var" and type keywords like "int" even in places where 
-			// unassigned variable declarations are normally prohibited. This is 
-			// allowed to provide extra flexibility to macros that need them.
-			// Note that non-keyword types like "Foo x" are still not allowed.
+			// Allow "var" even in places where unassigned variable declarations 
+			// are normally prohibited. This is allowed just for extra 
+			// flexibility in case a macro needs it.
+			//   Note that other types like "Foo x" are still not allowed.
 			// Rationale: "List<T> x" is not allowed in arbitrary locations 
 			// because it is parsed as "(List < T) > x" for backward compatibility 
 			// with C#. We don't allow "Foo x" so that (1) non-generic types 
 			// aren't "more priveleged" - usable in more places than generic
 			// types - and (2) so that macro authors are more likely to notice 
 			// the parsing problem. In case a macro author _really needs_ to 
-			// allow an unassigned variable declaration, they can support 
-			// "var x" and "var Foo x" (and manually remove the keyword attribute 
-			// #var from the latter declaration).
-			Stmt("Foo(var x, int x);", F.Call(Foo, F.Var(F.Missing, x), F.Var(F.Int32, x)));
+			// allow an unassigned variable declaration in a place that doesn't
+			// normally allow it, they can support "var x" and "var Foo x" (and 
+			// manually remove the keyword attribute #var from the latter 
+			// declaration).
+			Stmt("Foo(var x);", F.Call(Foo, F.Var(F.Missing, x)));
 		}
 
 		[Test]
@@ -407,6 +413,26 @@ namespace Loyc.Ecs.Tests
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get))), F.Braces()));
 			Stmt("Foo(x, int Foo { get; } = 0);", F.Call(Foo, x,
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get), zero)));
+		}
+
+		[Test]
+		public void EcsAsPlusArguments()
+		{
+			Expr("x as Foo(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), Mode.ParserTest);
+			// Not sure why the printer changes syntax for "as Foo" but not "is Foo".
+			// The output is valid either way so I m not looking into it too closely.
+			Expr("x(as Foo)(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), Mode.PrinterTest);
+			Expr("x is Foo(a, b)", F.Call(F.Call(S.Is, x, Foo), a, b));
+			Expr("(x as Foo)(a, b)", F.Call(F.Call(S.As, x, Foo), a, b), p => p.SetPlainCSharpMode(), Mode.PrinterTest);
+			Expr("x as Foo(a, b) in c", F.Call(S.In, F.Call(F.Call(S.As, x, Foo), a, b), c), Mode.ParserTest);
+			
+			// This doesn't parse because `?` is assumed not to be part of the 
+			// type if it is followed by `(`, and that's OK, since disambiguating 
+			// is hard and has virtually no benefit.
+			Expr("x as Foo?(a, b) in c", F.Call(S.QuestionMark, F.Call(S.As, x, Foo), F.Call(S.In, F.Tuple(a, b), c), F.Missing), 
+				Mode.ParserTest | Mode.ExpectAndDropParserError);
+			// Here's a version that does parse OK
+			Expr("x(as Foo?)(a, b) in c", F.Call(S.In, F.Call(Alternate(F.Call(S.As, x, F.Of(S.QuestionMark, Foo))), a, b), c));
 		}
 
 		[Test]

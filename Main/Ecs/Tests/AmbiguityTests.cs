@@ -20,8 +20,9 @@ namespace Loyc.Ecs.Tests
 			Stmt("(Foo).x;", F.Dot(F.InParens(Foo), x));
 			Stmt("(Foo) - x;", F.Call(S.Sub, F.InParens(Foo), x));
 			Stmt("(Foo) + x;", F.Call(S.Add, F.InParens(Foo), x));
-			Stmt("(Foo) *x;", F.Call(S.Cast, F.Call(S._Dereference, x), Foo));
-			Stmt("(Foo) &x;", F.Call(S.Cast, F.Call(S._AddressOf, x), Foo));
+			Stmt("(Foo) * x;", F.Call(S.Mul, F.InParens(Foo), x));
+			Stmt("(Foo) & x;", F.Call(S.AndBits, F.InParens(Foo), x));
+			Stmt("@`~`((Foo), x);", F.Call(S.NotBits, F.InParens(Foo), x));
 			Stmt("(Foo) ~x;", F.Call(S.Cast, F.Call(S.NotBits, x), Foo));
 			Stmt("(Foo) x(a);", F.Call(S.Cast, F.Call(x, a).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) `x` a;", F.Call(x, F.InParens(Foo), a).SetStyle(NodeStyle.Operator));
@@ -155,5 +156,51 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Call(S.If, a, F.Call(S.While, Foo, F.Call(S.If, b, F.Call(c))), F.Call(x));
 			Stmt("if (a)\n  while (Foo)\n    @#if(b, c());\nelse\n  x();", stmt);
 		}
+
+		[Test]
+		public void ExprOrVarDeclAmbiguity()
+		{
+			Expr("Foo<x> a = b", F.Var(F.Of(Foo, x), a.Name, b));
+			Expr("@`*`<Foo> a = x", F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
+			Expr("Foo? x = c ? a : b", F.Var(F.Of(_(S.QuestionMark), Foo), x.Name, F.Call(S.QuestionMark, c, a, b)));
+
+			Expr("Foo ? b = c as Foo? : 0",
+				F.Call(S.QuestionMark, Foo,
+					F.Call(S.Assign, b, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name))),
+					zero));
+
+			// Hardest case. If `??` could be a prefix operator then this would 
+			// be able to parse as both a var decl and an expression.
+			Expr("Foo ? b = c as Foo? ?? x : 0",
+				F.Call(S.QuestionMark, Foo,
+					F.Call(S.Assign, b, F.Call(S.NullCoalesce, F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name)), x)),
+					zero));
+		}
+
+		/*The premise of the test is invalid, since `x as Foo?(x)` is a parse error
+		[Test]
+		public void QuestionMarkAmbiguity()
+		{
+			Expr("x as Foo?(a, b) in c",
+				F.Call(S.In, F.Call(F.Call(S.As, x, F.Of(S.QuestionMark, Foo)), a, b), c));
+			Expr("x as Foo ? (a, b) in c : c",
+				F.Call(S.QuestionMark, F.Call(S.As, x, Foo), F.Call(S.In, F.Tuple(a, b), c), c));
+
+			// The ultimate ambiguity. In fact this could parse successfully as
+			// both a variable declaration AND as an expression. The "expression"
+			// interpretation takes priority by default...
+			Expr("Foo ? b = c as Foo? (x) : 0",
+				F.Call(S.QuestionMark, Foo,
+					F.Call(S.Assign, b,
+						F.Call(F.Call(S.As, c, F.Of(S.QuestionMark, Foo.Name)), x)),
+					zero));
+			// But given a change of context, the variable decl interpretation
+			// becomes the default instead.
+			Expr("(Foo? b = c as Foo? (x) : 0) => {}",
+				F.Call(S.Lambda,
+					F.Var(F.Of(S.QuestionMark, Foo.Name), b,
+						F.Call(S.QuestionMark, F.Call(S.As, c, Foo), F.InParens(x), zero)),
+					F.Braces()));
+		}*/
 	}
 }

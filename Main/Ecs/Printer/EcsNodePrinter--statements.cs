@@ -669,9 +669,13 @@ namespace Loyc.Ecs
 			LNode usingStatic = name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags, usingStatic));
 
-			if (name == S.GotoCase)
+			if (name == S.GotoCase) {
 				_out.Write("goto case", true);
-			else if (name == S.Import)
+				if (_n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
+					_out.Write("default", true);
+					return SPResult.NeedSemicolon;
+				}
+			} else if (name == S.Import)
 				_out.Write(usingStatic != null ? "using static" : "using", true);
 			else
 				WriteOperatorName(name);
