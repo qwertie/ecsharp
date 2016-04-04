@@ -33,6 +33,9 @@ namespace LeMP
 			LNode varDecl, bracedHandler = ValidateOnStmt(node, context, out rest, out varDecl);
 			if (bracedHandler == null)
 				return null;
+
+			rest = context.PreProcess(rest);
+			bracedHandler = context.PreProcess(bracedHandler);
 			
 			// Get/construct the declaration of the var to return, and get its name
 			LNode varName;
@@ -76,7 +79,8 @@ namespace LeMP
 			else if (!foundReturn)
 				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
 			
-			return rest.AsLNode(S.Splice);
+			// Block reprocessing of `rest` because we already preprocessed it
+			return quote(#noLexicalMacros($(...rest)));
 		}
 
 		static bool DetectMissingVoidReturn(IMacroContext context, LNode lastStmt) 

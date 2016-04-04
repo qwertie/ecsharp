@@ -35,6 +35,7 @@ namespace Loyc.Tests
 			RunTests.Run(new EcsLexerTests());
 			RunTests.Run(new EcsParserTests());
 			RunTests.Run(new EcsNodePrinterTests());
+			RunTests.Run(new EcsValidatorTests());
 		}
 		public static void Test_LeMP()
 		{

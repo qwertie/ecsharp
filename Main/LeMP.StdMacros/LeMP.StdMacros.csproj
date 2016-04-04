@@ -104,12 +104,26 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>ContractsMacro.out.cs</LastGenOutput>
     </None>
+    <None Include="SaveAndRestoreMacro.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SaveAndRestoreMacro.out.cs</LastGenOutput>
+    </None>
+    <Compile Include="SaveAndRestoreMacro.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SaveAndRestoreMacro.ecs</DependentUpon>
+    </Compile>
     <Compile Include="SetOrCreateMemberMacro.cs" />
     <Compile Include="StandardMacros.cs" />
     <Compile Include="ThisConstructorMacro.cs" />
     <Compile Include="TupleMacros.cs" />
     <Compile Include="UnrollMacro.cs" />
     <Compile Include="UseSymbolsMacro.cs" />
+    <Compile Include="UseVarDeclExpressions.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UseVarDeclExpressions.ecs</DependentUpon>
+    </Compile>
     <Compile Include="UsingMultiMacro.out.cs">
       <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -135,6 +149,10 @@
       <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
+    <None Include="UseVarDeclExpressions.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>UseVarDeclExpressions.out.cs</LastGenOutput>
+    </None>
     <None Include="UsingMultiMacro.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>UsingMultiMacro.out.cs</LastGenOutput>

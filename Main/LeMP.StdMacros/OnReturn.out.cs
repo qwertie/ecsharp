@@ -1,4 +1,4 @@
-// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from OnReturn.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,12 +21,15 @@ namespace LeMP
 		static readonly Symbol __result__ = (Symbol) "__result__";
 		static readonly Symbol __retexpr__ = (Symbol) "<returned expr>";
 		static readonly LNode Id__result__ = LNode.Id((Symbol) "__result__");
-		[LexicalMacro("on_return (result) { Console.WriteLine(result); }", "In the code that follows this macro, all return statements are replaced by a block that runs a copy of this code and then returns. " + "For example, the code `{ on_return(r) { r++; } Foo(); return Math.Abs(x); }` is replaced by " + "`{ Foo(); { var r = Math.Abs(x); r++; return r; } }`. Because this is a lexical macro, it " + "lets you do things that you shouldn't be allowed to do. For example, `{ on_return { x++; } int x=0; return; }` " + "will compile although the `on_return` block shouldn't be allowed to access `x`. Please don't do that, because if this were a built-in language feature, it wouldn't be allowed.")] public static LNode on_return(LNode node, IMacroContext context)
+		[LexicalMacro("on_return (result) { Console.WriteLine(result); }", "In the code that follows this macro, all return statements are replaced by a block that runs a copy of this code and then returns. " + "For example, the code `{ on_return(r) { r++; } Foo(); return Math.Abs(x); }` is replaced by " + "`{ Foo(); { var r = Math.Abs(x); r++; return r; } }`. Because this is a lexical macro, it " + "lets you do things that you shouldn't be allowed to do. For example, `{ on_return { x++; } int x=0; return; }` " + "will compile although the `on_return` block shouldn't be allowed to access `x`. Please don't do that, because if this were a built-in language feature, it wouldn't be allowed.")]
+		public static LNode on_return(LNode node, IMacroContext context)
 		{
 			VList<LNode> rest;
 			LNode varDecl, bracedHandler = ValidateOnStmt(node, context, out rest, out varDecl);
 			if (bracedHandler == null)
 				return null;
+			rest = context.PreProcess(rest);
+			bracedHandler = context.PreProcess(bracedHandler);
 			LNode varName;
 			if (varDecl == null) {
 				varName = Id__result__;
@@ -65,7 +68,7 @@ namespace LeMP
 				rest.Add(bracedHandler.Args.AsLNode(S.Braces));
 			else if (!foundReturn)
 				context.Write(Severity.Warning, node, "'on_return': no 'return' statements were found in this context, so this macro had no effect.");
-			return rest.AsLNode(S.Splice);
+			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(rest));
 		}
 		static bool DetectMissingVoidReturn(IMacroContext context, LNode lastStmt)
 		{

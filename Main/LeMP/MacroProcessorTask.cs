@@ -214,7 +214,8 @@ namespace LeMP
 						_ancestorStack.PushLast(splice);
 					}
 					list = ApplyMacrosToList(list, maxExpansions, areAttributesOrIsTarget);
-					_ancestorStack.PopLast();
+					if (asRoot)
+						_ancestorStack.PopLast();
 					Debug.Assert(_ancestorStack.Count == oldStackCount);
 					return splice;
 				}

@@ -18,18 +18,29 @@ namespace LeMP
 	[ContainsMacros]
 	public partial class StandardMacros
 	{
+		// Start counting temporary vars at 10 to avoid name collisions with 
+		// things that were manually named, for example "tmp_2"
 		[ThreadStatic]
-		internal static int _nextTempCounter = 0; // next tmp variable
+		internal static int _nextTempCounter = 10;
 		public static int NextTempCounter { get { return _nextTempCounter; } }
 
 		public static Symbol NextTempName(string prefix = "tmp_")
 		{
 			return GSymbol.Get(prefix + _nextTempCounter++);
 		}
-		static LNode TempVarDecl(LNode value, out LNode tmpId, string prefix = "tmp_")
+		static LNode TempVarDecl(LNode value, out LNode tmpId, string prefix)
 		{
 			tmpId = LNode.Id(NextTempName(prefix), value);
 			return F.Var(F.Missing, tmpId, value);
+		}
+		static LNode TempVarDecl(LNode value, out LNode tmpId)
+		{
+			string prefix = value.Name.Name;
+			if (!EcsValidators.IsPlainCsIdentifier(prefix))
+				prefix = "tmp_";
+			else
+				prefix += "_";
+			return TempVarDecl(value, out tmpId, prefix);
 		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
@@ -73,7 +84,11 @@ namespace LeMP
 				} else
 					return false;
 			}
-			return !char.IsUpper(value.Name.Name.TryGet(0, '\0'));
+			if (value.IsId)
+				return !char.IsUpper(value.Name.Name.TryGet(0, '\0'));
+			if (value.IsLiteral)
+				return true;
+			return false;
 		}
 
 		// quote @{ Hope.For(777, $cash) } => F.Call(F.Dot(F.Id("Hope"), F.Id("For")), F.Literal(777), cash)
@@ -374,6 +389,19 @@ namespace LeMP
 		public static LNode @unless(LNode node, IMessageSink sink)
 		{
 			return LeMP.Prelude.Les.Macros.IfUnless(node, true, sink);
+		}
+
+		[LexicalMacro("#runSequence { Stmts; };",
+			"Allows #runSequence at brace-scope without the use of #useVarDeclExpressions",
+			"#runSequence")]
+		public static LNode runSequence(LNode node, IMacroContext context)
+		{
+			if (context.Parent.Calls(S.Braces)) { 
+				if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
+					return node.WithArgs(node.Args[0].Args);
+				return node.WithTarget(S.Splice);
+			}
+			return Reject(context, node, "#useVarDeclExpressions is required to make #runSequence work");
 		}
 	}
 }

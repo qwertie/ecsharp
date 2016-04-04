@@ -26,16 +26,114 @@ namespace LeMP
 		public void TestUseBlockExpressions()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
-			TestEcs("#useStatementExpressions; " +
+			TestEcs("#useVarDeclExpressions; " +
 				"void F() { { x } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
 				"int _x = 0;",
 				"void F() { { x } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
 				"int _x = 0;");
-			TestEcs("#useStatementExpressions; " +
-				"",
-				"");
+			
+			// Check basic functionality, including nesting
+			TestEcs(@"#useVarDeclExpressions;
+				void f() {
+					Foo(new List<int>()::list);
+					if (DBConnection.Tables.Get(""Person"")::table != null) {
+						Process(table);
+						if (AdjacencyList.Count::c > 1)
+							pairs += c - 1;
+					}
+				}",
+				@"void f() {
+					{
+						var table = DBConnection.Tables.Get(""Person"");
+						if (table != null) {
+							Process(table);
+							{
+								var c = AdjacencyList.Count;
+								if (c > 1)
+									pairs += c - 1;
+							}
+						}
+					}
+					var list = new List<int>();
+					Foo(list);
+				}");
+
+			// Test a nested run sequence
+			TestEcs(@"#useVarDeclExpressions;
+				void f() {
+					Foo(#runSequence(Debug.Assert(X()::x > 0), x));
+				}",
+				@"void f() {
+					var x = X();
+					Debug.Assert(x > 0);
+					Foo(x);
+				}");
+
+			// Test with some args being sequences and others not
+			var n = StandardMacros.NextTempCounter;
+			TestEcs(@"#useVarDeclExpressions;
+				void f() {
+					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d), e);
+				}",
+				@"void f() {
+					var a_1 = a;
+					PrepareB();
+					var GetB_2 = GetB();
+					var c_3 = c;
+					var d = D();
+					Foo(a_1, GetB_2, c_3, d, e);
+				}"
+				.Replace("a_1", "a_" + n)
+				.Replace("GetB_2", "GetB_" + (n+1))
+				.Replace("c_2", "c_" + (n+2)));
+
+			// Test field initializers
+			TestEcs(@"#useVarDeclExpressions;
+				static double nine = Math.Sqrt(9)::three * three;
+				Pair<Symbol,Symbol> p = Pair.Create(""foo""(->Symbol)::str, str);
+				", @"
+				static double nine = nine_initializer();
+				static double nine_initializer() {
+					double three = Math.Sqrt(9);
+					return three * three;
+				}
+				Pair<Symbol,Symbol> p = p_initializer();
+				static Pair<Symbol,Symbol> p_initializer() {
+					string str = ""foo""(->Symbol);
+					return Pair.Create(str, str);
+				}
+				");
+		}
+
+		[Test]
+		public void TestUnless()
+		{
+			TestBoth("unless input.IsLowPriority { Process(input); };",
+			       "unless (input.IsLowPriority) { Process(input); }",
+			         "if  (!input.IsLowPriority) { Process(input); }");
+		}
+
+		[Test]
+		public void TestSaveAndRestore()
+		{
+			TestEcs("saveAndRestore(Foo.Bar); F();",
+				"var oldBar_1 = Foo.Bar; try { F(); } finally { Foo.Bar = oldBar_1; }"
+				.Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
+			TestEcs("saveAndRestore(Foo.Bar = 5); F();",
+				"var oldBar_1 = Foo.Bar; Foo.Bar = 5; try { F(); } finally { Foo.Bar = oldBar_1; }"
+				.Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
+			TestEcs("void f() { saveAndRestore(Foo.Bar = 5); F(); }",
+				@"void f() {
+					var oldBar_1 = Foo.Bar; 
+					Foo.Bar = 5; 
+					try { 
+						F();
+					} finally {
+						Foo.Bar = oldBar_1;
+					}
+				}".Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
 		}
 
 		[Test]
@@ -170,10 +268,11 @@ namespace LeMP
 			        "var a = foo.Item1; var b = foo.Item2; c = foo.Item3;");
 			int n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b.c.d) = Foo;",
-			        "var tmp_"+n+" = Foo; a = tmp_"+n+".Item1; b.c.d = tmp_"+n+".Item2;");
+			        "var Foo_"+n+" = Foo; a = Foo_"+n+".Item1; b.c.d = Foo_"+n+".Item2;");
 			n = StandardMacros.NextTempCounter;
 			TestEcs("(a, b, c, d) = X.Y();",
-			        "var tmp_"+n+" = X.Y(); a = tmp_"+n+".Item1; b = tmp_"+n+".Item2; c = tmp_"+n+".Item3; d = tmp_"+n+".Item4;");
+			        "var tmp_1 = X.Y(); a = tmp_1.Item1; b = tmp_1.Item2; c = tmp_1.Item3; d = tmp_1.Item4;"
+					.Replace("tmp_1", "tmp_"+n));
 		}
 
 		[Test]
@@ -270,15 +369,15 @@ namespace LeMP
 				}", @"
 					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && 2.Equals(code.Args[1].Value))
 						Weird();");
-			int n = StandardMacros.NextTempCounter;
 			TestEcs(@"matchCode(Get.Var) {
 					case Do($stuff): Do(stuff);
 				}", @"{
-						var tmp_"+n+@" = Get.Var;
+						var tmp_1 = Get.Var;
 						LNode stuff;
-						if (tmp_"+n+@".Calls((Symbol) ""Do"", 1) && (stuff = tmp_5.Args[0]) != null)
+						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null)
 							Do(stuff);
-					}");
+					}"
+				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
 			TestEcs(@"matchCode(code) { 
 					$(lit && #.IsLiteral) => Literal(); 
 					$(id[#.IsId]) => Id(); 
@@ -341,7 +440,6 @@ namespace LeMP
 						Tuple(args);
 					}
 				}");
-			n = StandardMacros.NextTempCounter;
 			TestEcs(@"matchCode(code) { 
 					case $x = $y:
 						Assign(x, y);
@@ -352,23 +450,23 @@ namespace LeMP
 					default:
 						Other();
 				}", @"{
-					LNode op          = null, tmp_"+n+@" = null, x, x_ = null, y = null;
+					LNode op          = null, tmp_1 = null, x, x_ = null, y = null;
 					VList<LNode> attrs;
 					if (code.Calls(CodeSymbols.Assign, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
 						Assign(x, y);
 					else if ( 
 						(attrs = code.Attrs).IsEmpty | true && code.Calls(CodeSymbols.Assign, 2) && 
-						(x = code.Args[0]) != null && (tmp_"+n+@" = code.Args[1]) != null && tmp_"+n+@".Calls(CodeSymbols.Add, 2) && 
-						(x_ = tmp_"+n+@".Args[0]) != null && x_.Equals(x) && 1.Equals(tmp_"+n+ @".Args[1].Value) || 
+						(x = code.Args[0]) != null && (tmp_1 = code.Args[1]) != null && tmp_1.Calls(CodeSymbols.Add, 2) && 
+						(x_ = tmp_1.Args[0]) != null && x_.Equals(x) && 1.Equals(tmp_1.Args[1].Value) || 
 						(attrs = code.Attrs).IsEmpty | true && code.Args.Count == 2 && (op = code.Target) != null && 
 						(x = code.Args[0]) != null && (y = code.Args[1]) != null) {
 						Handle(attrs);
 						Handle(x, y);
 					} else
 						Other();
-				}");
+				}"
+				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
 			// Ideally this generated code would use a tmp_n variable, but I'll accept the current output
-			n = StandardMacros.NextTempCounter;
 			TestEcs(@"
 				matchCode(classDecl) {
 				case {
@@ -720,12 +818,12 @@ namespace LeMP
 					}",
 				@"do {
 					if (obj is Shape) {
-						Shape tmp_1 = (Shape)obj;
-						if (ShapeType.Circle.Equals(tmp_1.Item1)) {
-							var size = tmp_1.Item2;
-							var tmp_2 = tmp_1.Location;
-							if (tmp_2 is Point<int>) {
-								Point<int> p = (Point<int>)tmp_2;
+						Shape tmp_A = (Shape)obj;
+						if (ShapeType.Circle.Equals(tmp_A.Item1)) {
+							var size = tmp_A.Item2;
+							var tmp_B = tmp_A.Location;
+							if (tmp_B is Point<int>) {
+								Point<int> p = (Point<int>)tmp_B;
 								var x = p.Item1; 
 								var y = p.Item2; 
 								if (x > y) {
@@ -740,7 +838,8 @@ namespace LeMP
 						break;
 					}
 				} while(false);"
-				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n + 1)));
+				.Replace("tmp_A", "tmp_" + n)
+				.Replace("tmp_B", "tmp_" + (n + 1)));
 
 			n = StandardMacros.NextTempCounter;
 			TestEcs(@"
@@ -781,12 +880,12 @@ namespace LeMP
 				Point<int> p;
 				do
 					if (obj is Shape) {
-						Shape tmp_1 = (Shape)obj;
-						if (ShapeType.Circle.Equals(tmp_1.Item1)) {
-							size = tmp_1.Item2;
-							var tmp_2 = tmp_1.Location;
-							if (tmp_2 is Point<int>) {
-								p = (Point<int>)tmp_2;
+						Shape tmp_A = (Shape)obj;
+						if (ShapeType.Circle.Equals(tmp_A.Item1)) {
+							size = tmp_A.Item2;
+							var tmp_B = tmp_A.Location;
+							if (tmp_B is Point<int>) {
+								p = (Point<int>)tmp_B;
 								x = p.Item1; 
 								y = p.Item2; 
 								if (x > y) {
@@ -797,7 +896,8 @@ namespace LeMP
 						}
 					}
 				while(false);"
-				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n + 1)));
+				.Replace("tmp_A", "tmp_" + n)
+				.Replace("tmp_B", "tmp_" + (n + 1)));
 			
 			// Test two patterns on one case
 			TestEcs(@"
@@ -844,7 +944,7 @@ namespace LeMP
 						}
 					}
 				while(false);"
-				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
+				.Replace("tmp_1", "tmp_" + n));
 
 			// Bug fix: This combination didn't work
 			n = StandardMacros.NextTempCounter;
@@ -864,7 +964,7 @@ namespace LeMP
 						}
 					}
 				while(false);"
-				.Replace("tmp_1", "tmp_" + n).Replace("tmp_2", "tmp_" + (n+1)));
+				.Replace("tmp_1", "tmp_" + n));
 		}
 
 		[Test]
@@ -912,7 +1012,8 @@ namespace LeMP
 			TestEcs(@"class Point { 
 				public Point(public int X, public int Y) {}
 				public this(set int X, set int Y) {}
-			}", @"class Point {
+			}", @"
+			class Point {
 				public int X;
 				public int Y;
 				public Point(int x, int y) { X = x; Y = y; }
@@ -927,6 +1028,14 @@ namespace LeMP
 				public Foo Foo {get; private set;} 
 				int _bar {get;}
 				void Prop(Foo foo, int bar = 0) { Foo = foo; _bar = bar; }");
+			TestEcs(@"class Point { 
+				public Point(public int X, public int Y) : base(X + 1, Y + 1) {}
+			}", @"
+			class Point {
+				public int X;
+				public int Y;
+				public Point(int x, int y) : base(x + 1, y + 1) { X = x; Y = y; }
+			}");
 		}
 		
 		/*[Test(Fails = "Macro not implemented")]
@@ -1037,6 +1146,28 @@ namespace LeMP
 			        @"{ if (true) { var __result__ = 5; Log(""return""); return __result__; } else { Log(""return""); return; } }");
 			TestEcs(@"on_return(int r) { r++; } return 5;",
 			        @"{ int r = 5; r++; return r; }");
+			Test(@"// EC# parser: macro claimed 'no return statements were found in this context'
+				// I think we need preprocessing on the code below on_return.
+				fn TentativeExpr()::LNode {
+					_deferErrors = true;
+					on_return {
+						_deferErrors = false;
+						if ResetIgnoredErrors() { return @null; };
+					};
+					return Expr(ContinueExpr);
+				};", LesLanguageService.Value,
+				@"
+				LNode TentativeExpr() {
+					_deferErrors = true;
+					{
+						var __result__ = Expr(ContinueExpr);
+						_deferErrors = false;
+						if (ResetIgnoredErrors()) {
+							return null;
+						}
+						return __result__;
+					}
+				}", EcsLanguageService.Value);
 		}
 
 		[Test]

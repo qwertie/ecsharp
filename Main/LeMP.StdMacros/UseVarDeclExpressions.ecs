@@ -1,0 +1,307 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Syntax;
+using Loyc.Collections;
+using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Ecs;
+
+namespace LeMP
+{
+	partial class StandardMacros
+	{
+		static readonly Symbol __runSequence = (Symbol) "#runSequence";
+
+		[LexicalMacro("#useVarDeclExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", 
+			"Enables the use of variable-declaration expressions, #runSequence, and the quick-binding operator `::` in the code that follows. "
+			+"Technically this allows any executable code in an expression context, such as while and for-loops, "
+			+"but its name comes from the fact that it is usually used to allow variable declarations. "
+			+"#useVarDeclExpressions expects to be used in a declaration context, "
+			+"e.g. at class or namespace level, not within a function.",
+			"#useVarDeclExpressions", Mode = MacroMode.NoReprocessing)]
+		public static LNode useVarDeclExpressions(LNode node, IMacroContext context)
+		{
+			(var args, var body) = context.GetArgsAndBody(true);
+			if (args.Count > 0)
+				context.Write(Severity.Error, node[1], "#useVarDeclExpressions does not support arguments.");
+
+			context.DropRemainingNodes = true;
+			body = context.PreProcess(body);
+
+			var ers = new EliminateRunSequences(context);
+			return ers.EliminateBlockExprs(body, true).AsLNode(S.Splice);
+		}
+
+		class EliminateRunSequences
+		{
+			public this(public IMacroContext Context) {}
+			
+			public VList<LNode> EliminateBlockExprs(VList<LNode> stmts, bool isDeclContext)
+			{
+				return stmts.SmartSelect(stmt => {
+					// Optimization: scan find out whether this construct has any block 
+					// expressions. If not, skip it.
+					/*hasBlockExprs = false;
+					stmt.ReplaceRecursive(new Func<LNode, Maybe<LNode>>(n => {
+						if (!hasBlockExprs)
+							hasBlockExprs = n.IsCall && (
+								(n.Calls(S.ColonColon, 2) && n.Args[1].IsId) ||
+								(n.Calls(S.Var, 2) && n.AttrNamed(S.Out) != null) ||
+								(n.Calls(S.In, 2) && n.Args[1].Calls(S.Braces)));
+						return hasBlockExprs ? n : null;
+					}));
+					if (!hasBlockExprs)
+						return stmt;
+					*/
+					return EliminateBlockExprs(stmt, isDeclContext);
+				});
+			}
+
+			public LNode EliminateBlockExprs(LNode stmt, bool isDeclContext)
+			{
+				LNode retType, name, argList, bases, body, initValue;
+				if (EcsValidators.SpaceDefinitionKind(stmt, out name, out bases, out body) != null) {
+					// Space definition: class, struct, etc.
+					return body == null ? stmt : stmt.WithArgChanged(2, EliminateBlockExprs(body, true));
+				} else if (EcsValidators.MethodDefinitionKind(stmt, out retType, out name, out argList, out body, true) != null) {
+					// Method definition
+					return body == null ? stmt : stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
+					// Property definition
+					stmt = stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+					if (initValue != null) {
+						var initMethod = EliminateRunSeqFromInitializer(retType, name, ref initValue);
+						if (initMethod != null) {
+							stmt = stmt.WithArgChanged(4, initValue);
+							return quote(#splice($stmt, $initMethod));
+						}
+					}
+					return stmt;
+				} else if (!isDeclContext) {
+					return EliminateBlockExprsInExecStmt(stmt);
+				} else if (stmt.CallsMin(S.Var, 2)) {
+					// Eliminate blocks from field member
+					var results = new List<LNode> { stmt };
+					var vars = stmt.Args;
+					var varType = vars[0];
+					for (int i = 1; i < vars.Count; i++) {
+						matchCode(vars[i]) {
+							case $(ref name) = $(ref initValue):
+								var initMethod = EliminateRunSeqFromInitializer(varType, name, ref initValue);
+								if (initMethod != null) {
+									results.Add(initMethod);
+									vars[i] = vars[i].WithArgChanged(1, initValue);
+								}
+						}
+					}
+					if (results.Count > 1) {
+						results[0] = stmt.WithArgs(vars);
+						return LNode.List(results).AsLNode(S.Splice);
+					}
+					return stmt;
+				} else
+					return stmt;
+			}
+
+			LNode EliminateBlockExprsInExecBlock(LNode stmt)
+			{
+				stmt = EliminateBlockExprsInExecStmt(stmt);
+				if (stmt.Calls(S.Splice))
+					return stmt.WithTarget(S.Braces);
+				return stmt;
+			}
+
+			LNode EliminateBlockExprsInExecStmt(LNode stmt)
+			{
+				if (!stmt.IsCall)
+					return stmt;
+				matchCode (stmt) {
+					case { { $(..._); } }: // braced block
+						return stmt.WithArgs(EliminateBlockExprs(stmt.Args, false));
+					case { if ($cond) $(...blocks); }: // `blocks` includes else clause, if any 
+						return ProcessBlockCallStmt(stmt, 1);
+					// TODO
+					// case { while ($cond) $block; }: 
+					// case { do $block; while($cond); }:
+					// case { for ($init; $cond; $inc) $block; }:
+					default:
+						if (stmt.HasSpecialName && stmt.ArgCount >= 1 && stmt.Args.Last.Calls(S.Braces)) {
+							return ProcessBlockCallStmt(stmt, stmt.ArgCount - 1);
+						} else {
+							// Ordinary expression statement
+							stmt = BubbleUpBlocks(stmt);
+							if (stmt.CallsMin(__runSequence, 1))
+								return stmt.Args.AsLNode(S.Splice);
+						}
+				}
+				return stmt;
+			}
+
+			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
+			{
+				List<LNode> childStmts = stmt.Slice(childStmtsStartAt).ToList();
+				LNode partialStmt = stmt.WithArgs(stmt.Args.First(childStmtsStartAt));
+				VList<LNode> advanceSequence;
+				if (ProcessBlockCallStmt(ref partialStmt, out advanceSequence, childStmts)) {
+					stmt = partialStmt.PlusArgs(childStmts);
+					if (advanceSequence.Count != 0)
+						return quote {{ $(...advanceSequence); $stmt; }};
+					return stmt; // only the child statements changed
+				} else
+					return stmt; // no changes
+			}
+			/// Returns true if anything changed.
+			bool ProcessBlockCallStmt(ref LNode partialStmt, out VList<LNode> advanceSequence, List<LNode> childStmts)
+			{
+				// Process the child statement(s)
+				bool childChanged = false;
+				for (int i = 0; i < childStmts.Count; i++) {
+					var oldChild = childStmts[i];
+					childStmts[i] = EliminateBlockExprsInExecBlock(oldChild);
+					childChanged |= (oldChild != childStmts[i]);
+				}
+
+				// Process the normal arguments
+				(advanceSequence, partialStmt) = BubbleUp_GeneralCall2(partialStmt);
+				return childChanged || !advanceSequence.IsEmpty;
+			}
+
+			/// Eliminates run sequence(s) in a field initializer expression.
+			/// If any are found, a method is returned to encapsulate the 
+			/// initialization code.
+			LNode EliminateRunSeqFromInitializer(LNode retType, LNode fieldName, ref LNode expr)
+			{
+				expr = BubbleUpBlocks(expr);
+				if (expr.CallsMin(__runSequence, 1)) {
+					var statements = expr.Args.WithoutLast(1);
+					var finalResult = expr.Args.Last;
+					
+					LNode methodName = F.Id(KeyNameComponentOf(fieldName).Name + "_initializer");
+					expr = quote( $methodName() );
+					return quote {
+						static $retType $methodName() {
+							$(...statements);
+							return $finalResult;
+						}
+					};
+				} else
+					return null; // most common case
+			}
+
+			LNode BubbleUpBlocks(LNode expr)
+			{
+				if (!expr.IsCall)
+					return expr;
+
+				matchCode (expr) {
+				case #runSequence($(...args)):
+					if (args.Count == 1 && args[0].Calls(S.Braces))
+						return expr.WithArgs(args[0].Args);
+					return expr;
+
+				case { { $(..._); } }: // braced block
+					Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+					return expr;
+
+				// A variable declaration with no initializer and an `out` attribute attached
+				case { [$(...(attrs [#.NodeNamed(S.Out) != null]))]
+						$varType $(varName [#.IsId]); }:
+					if (varType.IsIdNamed(S.Missing))
+						Context.Write(Severity.Error, expr, "The data type of this variable declaration must be stated explicitly.");
+					return quote( #runSequence($(expr.WithoutAttrNamed(S.Out)), $varName) );
+
+				// A variable declaration with an initializer (may have a `ref` attribute 
+				// attached, which should be transferred to the final expression)
+				case [$(...attrs)] $varType $varName = $value,
+				     [$(...attrs)] $(value [IsQuickBindLhs(#)]) :: $(varName [#.IsId]):
+					return ConvertVarDeclToRunSequence(attrs, varType ?? F.Missing, varName, value);
+				}
+
+				if (expr.IsCall)
+					return BubbleUp_GeneralCall(expr);
+				else
+					return expr;
+			}
+
+			LNode BubbleUp_GeneralCall(LNode expr)
+			{
+				(var combinedSequence, expr) = BubbleUp_GeneralCall2(expr);
+				if (combinedSequence.Count != 0)
+					return quote( #runSequence($(...combinedSequence), expr) );
+				else
+					return expr;
+			}
+			Pair<VList<LNode>, LNode> BubbleUp_GeneralCall2(LNode expr)
+			{
+				var target = expr.Target;
+				var args = expr.Args;
+				var combinedSequence = LNode.List();
+					
+				target = BubbleUpBlocks(target);
+				if (target.CallsMin(__runSequence, 1)) {
+					combinedSequence = target.Args.WithoutLast(1);
+					expr = expr.WithTarget(target.Args.Last);
+				}
+
+				args = args.SmartSelect(arg => BubbleUpBlocks(arg));
+				int lastRunSeq = args.LastIndexWhere(a => a.CallsMin(__runSequence, 1));
+				if (lastRunSeq >= 0) {
+					if (lastRunSeq > 0 && 
+						(  args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or))
+						|| args.Count == 3 && target.IsIdNamed(S.QuestionMark))) {
+						Context.Write(Severity.Error, expr, 
+							"#useVarDeclExpressions is not designed to support sequences or variable declarations on the right-hand side of the `&&`, `||` or `?` operators. The generated code may be incorrect.");
+					}
+
+					var argsW = args.ToList();
+					for (int i = lastRunSeq - 1; i >= 0; i--) {
+						if (!argsW[i].CallsMin(__runSequence, 1) && !argsW[i].IsLiteral) {
+							// Create a temporary variable to hold this argument
+							LNode tmpVarName, tmpVarDecl = TempVarDecl(argsW[i], out tmpVarName);
+							argsW[i] = quote( #runSequence($tmpVarDecl, $tmpVarName) );
+						}
+					}
+
+					for (int i = 0; i <= lastRunSeq; i++) {
+						LNode arg = argsW[i];
+						if (arg.CallsMin(__runSequence, 1)) {
+							combinedSequence.AddRange(arg.Args.WithoutLast(1));
+							argsW[i] = arg.Args.Last;
+						}
+					}
+
+					expr = expr.WithArgs(LNode.List(argsW));
+				}
+
+				return Pair.Create(combinedSequence, expr);
+			}
+
+			LNode ConvertVarDeclToRunSequence(VList<LNode> attrs, LNode varType, LNode varName, LNode initValue)
+			{
+				initValue = BubbleUpBlocks(initValue);
+				varType ??= F.Missing;
+				LNode @ref;
+				attrs = attrs.WithoutNodeNamed(S.Ref, out @ref);
+				matchCode(initValue)
+				{
+					case #runSequence($(...stmts), $resultValue):
+						var newVarDecl = quote { [$(...attrs)] $varType $varName = $resultValue; };
+						return initValue.WithArgs(stmts.Add(newVarDecl).Add(varName));
+								
+					default: // usual case
+						var newVarDecl = quote { [$(...attrs)] $varType $varName = $initValue; };
+						return quote( #runSequence($newVarDecl, $varName) );
+				}
+			}
+
+			static bool IsQuickBindLhs(LNode value)
+			{
+				if (!value.IsId)
+					return true;
+				return char.IsUpper(value.Name.Name.TryGet(0, '\0'));
+ 			}
+		}
+	}
+}
