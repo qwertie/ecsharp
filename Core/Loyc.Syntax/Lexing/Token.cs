@@ -315,10 +315,10 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Gets the original source text for a token if available, under the 
 		/// assumption that the specified source file correctly specifies where the
 		/// token came from. If the token is synthetic, returns <see cref="UString.Null"/>.</summary>
-		public UString SourceText(ICharSource file)
+		public UString SourceText(ICharSource chars)
 		{
-			if ((uint)StartIndex <= (uint)file.Count)
-				return file.Slice(StartIndex, Length);
+			if ((uint)StartIndex <= (uint)chars.Count)
+				return chars.Slice(StartIndex, Length);
 			return UString.Null;
 		}
 		public UString SourceText(ILexer<Token> l) { return SourceText(l.SourceFile.Text); }

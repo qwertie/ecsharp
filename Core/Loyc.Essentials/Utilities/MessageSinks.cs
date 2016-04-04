@@ -110,24 +110,28 @@ namespace Loyc
 	}
 
 	/// <summary>Discards all messages. However, there is a Count property that 
-	/// increases by one with each message received.</summary>
+	/// increases by one with each message received, as well as an ErrorCount.</summary>
 	public sealed class NullMessageSink : IMessageSink, ICount
 	{
-		int _count;
-		public int Count { get { return _count; } set { _count = value; } }
+		int _count, _errorCount;
+		public int Count { get { return _errorCount; } }
+		public int ErrorCount { get { return _count; } }
 		public bool IsEmpty { get { return _count == 0; } }
+		public void ResetCountersToZero() { _count = _errorCount = 0; }
 
 		public void Write(Severity type, object context, string format)
 		{
 			_count++;
+			if (type >= Severity.Error)
+				_errorCount++;
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
-			_count++;
+			Write(type, context, format);
 		}
 		public void Write(Severity type, object context, string format, params object[] args)
 		{
-			_count++;
+			Write(type, context, format);
 		}
 		/// <summary>Always returns false.</summary>
 		public bool IsEnabled(Severity type)
@@ -221,6 +225,7 @@ namespace Loyc
 		{
 			get { return _messages = _messages ?? new List<LogMessage>(); }
 		}
+
 		public void WriteListTo(IMessageSink sink)
 		{
 			foreach (LogMessage msg in List)
