@@ -43,7 +43,7 @@
 	/// 3. The decoder must produce at least one character from a group of 
 	///    8 bytes (StreamCharSource.MaxSeqSize).
 	/// </remarks>
-	class StreamCharSource : ListSourceBase<char>, ICharSource
+	public class StreamCharSource : ListSourceBase<char>, ICharSource
 	{
 		protected Stream _stream;            // stream from which data is read
 		protected byte[] _buf;               // input buffer
@@ -69,7 +69,9 @@
 		protected uint _eofPosition = 0;
 		protected Decoder _decoder;
 
-		public StreamCharSource(Stream stream) : this(stream, UTF8Encoding.Default.GetDecoder(), DefaultBufSize) { }
+		// Microsoft fail! UTF8Encoding.Default cannot decode UTF8, see
+		// https://startbigthinksmall.wordpress.com/2009/01/20/utf8encodingdefault-encodingutf8-net-c/
+		public StreamCharSource(Stream stream) : this(stream, Encoding.UTF8.GetDecoder(), DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Decoder decoder) : this(stream, decoder, DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Encoding encoding) : this(stream, encoding.GetDecoder(), DefaultBufSize) { }
 		public StreamCharSource(Stream stream, Decoder decoder, int bufSize)
@@ -153,7 +155,7 @@
 			_stream.Position = _blkOffsets[i].B;
 			int bytesToRead = (int)(_blkOffsets[i+1].B - _blkOffsets[i].B);
 			if (_stream.Read(_buf, 0, bytesToRead) != bytesToRead)
-				throw new Exception(Localize.From("Result of {0} changed unexpectedly", "stream.Read"));
+				throw new Exception(Localize.Localized("Result of {0} changed unexpectedly", "stream.Read"));
 			_decoder.Reset();
 			// We already read this region before so we should't have to increase 
 			// the buffer size... UNLESS we were using the other buffer last time!
@@ -161,7 +163,7 @@
 				_blk = new char[_blk2.Length];
 			int cc = _decoder.GetChars(_buf, 0, bytesToRead, _blk, 0, true);
 			if (cc != _blkLen)
-				throw new Exception(Localize.From("Result of {0} changed unexpectedly", "decoder.GetChars"));
+				throw new Exception(Localize.Localized("Result of {0} changed unexpectedly", "decoder.GetChars"));
 		}
 
 		private int GetBlockIndex(int charIndex)
@@ -215,7 +217,7 @@
 				while((cc = _decoder.GetCharCount(_buf, amtProcessed, n)) == 0) {
 					n++;
 					if (amtProcessed + n == _buf.Length)
-						throw new ArgumentException(Localize.From("StreamCharSource cannot use the supplied decoder because it can produce single characters from byte sequences longer than {0} characters", MaxSeqSize));
+						throw new ArgumentException(Localize.Localized("StreamCharSource cannot use the supplied decoder because it can produce single characters from byte sequences longer than {0} characters", MaxSeqSize));
 				}
 				try {
 					_blkLen += AutoResizeAndGetChars(_buf.Slice(amtProcessed, n), ref _blk, _blkLen, _blkLen + cc, true);
@@ -223,7 +225,7 @@
 				} catch(Exception exc) { 
 					// assume index-out-of-range encountered. Note that this exception 
 					// may never happen even if the decoder is incompatible.
-					throw new ArgumentException(Localize.From("StreamCharSource cannot use the supplied decoder because it seems to divide characters on bit boundaries"), exc);
+					throw new ArgumentException(Localize.Localized("StreamCharSource cannot use the supplied decoder because it seems to divide characters on bit boundaries"), exc);
 				}
 
 				// compute & record location of end of block

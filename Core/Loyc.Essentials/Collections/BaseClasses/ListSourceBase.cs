@@ -42,7 +42,7 @@ namespace Loyc.Collections.Impl
 		}
 		protected int ThrowIndexOutOfRange(int index)
 		{
-			throw new IndexOutOfRangeException(string.Format(
+			throw new IndexOutOfRangeException(Localize.Localized(
 				"Index out of range: {0}[{1} of {2}]", GetType().Name, index, Count));
 		}
 

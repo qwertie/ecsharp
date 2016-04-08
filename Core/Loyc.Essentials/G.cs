@@ -25,6 +25,27 @@ namespace Loyc
 			b = tmp;
 		}
 
+		public static bool IsOneOf<T>(this T value, T item1, T item2) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2);
+		}
+		public static bool IsOneOf<T>(this T value, T item1, T item2, T item3) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null || item3 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3);
+		}
+		public static bool IsOneOf<T>(this T value, T item1, T item2, T item3, T item4) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null || item3 == null || item4 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3) || value.Equals(item4);
+		}
 		public static bool IsOneOf<T>(this T value, params T[] set) where T : IEquatable<T>
 		{
 			if (value == null) {
@@ -142,12 +163,12 @@ namespace Loyc
 		public static void Require(bool condition)
 		{
 			if (!condition)
-				throw new Exception(Localize.From("A required condition was false"));
+				throw new Exception("A required condition was false".Localized());
 		}
 		public static void Require(bool condition, string msg)
 		{
 			if (!condition)
-				throw new Exception(Localize.From("Error: {0}", msg));
+				throw new Exception("Error: {0}".Localized(msg));
 		}
 
 		public static bool TryParseHex(UString s, out int value)
@@ -168,6 +189,7 @@ namespace Loyc
 					value = value * 16 + digit;
 			}
 		}
+		/// <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
 		public static int HexDigitValue(char c)
 		{
 			if (c >= '0' && c <= '9')
@@ -190,13 +212,15 @@ namespace Loyc
 			else
 				return -1;
 		}
+		/// <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
 		public static char HexDigitChar(int value)
 		{
-			Debug.Assert((uint)value < 16);
 			if ((uint)value < 10)
 				return (char)('0' + value);
-			else
+			else if ((uint)value < 16)
 				return (char)('A' - 10 + value);
+			else
+				return '?';
 		}
 
 		public static string EscapeCStyle(UString s, EscapeC flags = EscapeC.Default)

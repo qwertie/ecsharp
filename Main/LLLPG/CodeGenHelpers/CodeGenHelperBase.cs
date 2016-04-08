@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 
 		protected int _setNameCounter = 0;
 		protected LNodeFactory F;
-		protected RWList<LNode> _classBody;
+		protected WList<LNode> _classBody;
 		protected Rule _currentRule;
 		Dictionary<IPGTerminalSet, Symbol> _setDeclNames;
 
@@ -113,7 +113,7 @@ namespace Loyc.LLParserGenerator
 				} else if ((q = _definedAliases.Where(pair => replacement.Equals(pair.Value))).Any())
 					sink.Write(Severity.Warning, replacement, "Aliases '{0}' and '{1}' have the same replacement value", q.First().Key, alias);
 				_definedAliases[alias] = replacement;
-				return LNode.Call(S.Splice, RVList<LNode>.Empty); // erase alias from output
+				return LNode.Call(S.Splice, VList<LNode>.Empty); // erase alias from output
 			}
 			return null;
 		}
@@ -124,7 +124,7 @@ namespace Loyc.LLParserGenerator
 		public virtual char? ExampleChar(IPGTerminalSet set) { return null; }
 		public abstract string Example(IPGTerminalSet set);
 
-		public virtual void Begin(RWList<LNode> classBody, ISourceFile sourceFile)
+		public virtual void Begin(WList<LNode> classBody, ISourceFile sourceFile)
 		{
 			_classBody = classBody;
 			F = new LNodeFactory(sourceFile);
@@ -331,7 +331,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Debug.Assert(branchSets.Length == branchCode.Length);
 
-			RWList<LNode> stmts = new RWList<LNode>();
+			WList<LNode> stmts = new WList<LNode>();
 			for (int i = 0; i < branchSets.Length; i++)
 			{
 				if (casesToInclude.Contains(i))
@@ -352,9 +352,9 @@ namespace Loyc.LLParserGenerator
 				AddSwitchHandler(defaultBranch, stmts);
 			}
 
-			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToRVList()));
+			return F.Call(S.Switch, (LNode)laVar, F.Braces(stmts.ToVList()));
 		}
-		private void AddSwitchHandler(LNode branch, RWList<LNode> stmts)
+		private void AddSwitchHandler(LNode branch, WList<LNode> stmts)
 		{
 			stmts.SpliceAdd(branch, S.Splice);
 			if (EndMayBeReachable(branch))
@@ -364,68 +364,10 @@ namespace Loyc.LLParserGenerator
 		// Decides whether to add a "break" at the end of a switch case.
 		internal protected static bool EndMayBeReachable(LNode stmt)
 		{
-			// The goal of this code is to avoid the dreaded compiler warning 
-			// "Unreachable code detected". We're conservative, to avoid a compiler 
-			// error about a missing "break". This is just a heuristic since we 
-			// don't have access to proper reachability analysis.
-			if (stmt.CallsMin(S.Braces, 1))
-				return EndMayBeReachable(stmt.Args.Last);
-			if (!stmt.HasSpecialName)
-				return true;
-
-			if (stmt.Calls(S.Goto, 1))
-				return false;
-			else if (stmt.Calls(S.Continue) || stmt.Calls(S.Break))
-				return false;
-			else if (stmt.Calls(S.Return))
-				return false;
-			else if (stmt.Calls(S.GotoCase, 1))
-				return false;
-
-			LNode body;
-			if (stmt.Calls(S.If, 2))
-				return true;
-			else if (stmt.Calls(S.If, 3))
-			{
-				return EndMayBeReachable(stmt.Args[1])
-					|| EndMayBeReachable(stmt.Args[2]);
-			}
-			else if (stmt.CallsMin(S.Switch, 2) && (body = stmt.Args[1]).CallsMin(S.Braces, 2))
-			{
-				// for a switch statement, assume it exits normally if a break 
-				// statement is the last statement of any of the cases, or if
-				// there is no "default" case.
-				bool beforeCase = true;
-				bool hasDefaultCase = false;
-				for (int i = body.ArgCount - 1; i > 0; i--)
-				{
-					var substmt = body.Args[i];
-					if (beforeCase && substmt.Calls(S.Break))
-						return true;
-					if (substmt.Calls(S.Label, 1) && substmt.Args[0].IsIdNamed(S.Default))
-						hasDefaultCase = beforeCase = true;
-					else
-						beforeCase = substmt.Calls(S.Case);
-				}
-				return hasDefaultCase == false;
-			}
-			else if (stmt.Calls(S.For) || stmt.Calls(S.While) || stmt.Calls(S.DoWhile))
-			{
-				return true;
-			}
-			else if (stmt.CallsMin(S.Try, 1))
-			{
-				return EndMayBeReachable(stmt.Args[0]);
-			}
-			else if (stmt.ArgCount >= 1)
-			{
-				Debug.Assert(stmt.HasSpecialName);
-				return EndMayBeReachable(stmt.Args.Last);
-			}
-			return true;
+			return LeMP.StandardMacros.NextStatementMayBeReachable(stmt);
 		}
 
-		public virtual LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody)
+		public virtual LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody)
 		{
 			return rule.CreateMethod(methodBody);
 		}
@@ -439,7 +381,7 @@ namespace Loyc.LLParserGenerator
 
 			LNode method = rule.GetMethodSignature();
 			LNode retType = method.Args[0], name = method.Args[1], args = method.Args[2];
-			RVList<LNode> forwardedArgs = ForwardedArgList(args);
+			VList<LNode> forwardedArgs = ForwardedArgList(args);
 			
 			LNode lookahead = F.Id("lookaheadAmt");
 			Debug.Assert(args.Calls(S.AltList));
@@ -453,7 +395,7 @@ namespace Loyc.LLParserGenerator
 			);
 			return method.WithArgs(retType, rule.TryWrapperName, args, body);
 		}
-		static RVList<LNode> ForwardedArgList(LNode args)
+		static VList<LNode> ForwardedArgList(LNode args)
 		{
 			// translates an argument list like (int x, string y) to { x, y }
 			return args.Args.SmartSelect(arg => VarName(arg) ?? arg);

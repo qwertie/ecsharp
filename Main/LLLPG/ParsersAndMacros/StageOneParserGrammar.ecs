@@ -16,8 +16,6 @@ namespace Loyc.LLParserGenerator
 
 	internal partial class StageOneParser
 	{
-		static readonly TT EOF = TT.EOF;
-
 		[FullLLk] [Verbosity(3)]
 		LLLPG(parser(laType(TT), matchType(int), allowSwitch(true), terminalType(Token)))
 		{
@@ -30,7 +28,7 @@ namespace Loyc.LLParserGenerator
 			// Operators of LLLPG in order of precedence:
 			alias("."   = TT.Dot);
 			alias("-"   = TT.Minus);
-			alias(".."  = TT.DotDot);
+			alias("..." = TT.DotDotDot);
 			alias("~"   = TT.InvertSet);
 			alias("&"   = TT.And);
 			alias("&!"  = TT.AndNot);
@@ -89,7 +87,7 @@ namespace Loyc.LLParserGenerator
 				}
 			];
 			private rule LNode SeqExpr() @[
-				{var seq = RVList<LNode>.Empty;}
+				{var seq = LNode.List();}
 				(seq+=LoopExpr ","?)*
 				{
 					if (seq.Count == 1) return seq[0];
@@ -131,7 +129,7 @@ namespace Loyc.LLParserGenerator
 			
 			private rule LNode RangeExpr() @[
 				a:=PrimaryExpr 
-				( op:=".." b:=PrimaryExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op:="..." b:=PrimaryExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				{return a;}
 			];
 			

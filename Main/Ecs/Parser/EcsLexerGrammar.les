@@ -4,11 +4,10 @@ import System.Collections.Generic;
 import System.Linq;
 import System.Text;
 import Loyc;
-import Loyc.LLParserGenerator;
 import Loyc.Syntax;
 import Loyc.Syntax.Lexing;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using S = CodeSymbols;
@@ -196,7 +195,9 @@ namespace Ecs.Parser
 		@[private] token At        @{ '@' { _type = TT.At;    _value = _At; } };
 
 		@[k(3), private] token Operator  @{
-		( ".."  { _type = TT.DotDot; _value = _DotDot; }
+		( "..."  { _type = TT.DotDot; _value = _DotDotDot; }
+		/ "..<"  { _type = TT.DotDot; _value = _DotDot; }
+		/ ".."  { _type = TT.DotDot; _value = _DotDot; }
 		/ "."   { _type = TT.Dot; _value = _Dot; }
 		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
 		/ ">="  { _type = TT.LEGE; _value = _GE; }
@@ -251,6 +252,7 @@ namespace Ecs.Parser
 		@[static, readonly] _Semicolon::Symbol = GSymbol.Get(";");
 		@[static, readonly] _At::Symbol = GSymbol.Get("@");
 		@[static, readonly] _DotDot::Symbol = GSymbol.Get("..");
+		@[static, readonly] _DotDotDot::Symbol = GSymbol.Get("...");
 		@[static, readonly] _Dot::Symbol = GSymbol.Get(".");
 		@[static, readonly] _ShrSet::Symbol = GSymbol.Get(">>=");
 		@[static, readonly] _GE::Symbol = GSymbol.Get(">=");
@@ -408,6 +410,7 @@ namespace Ecs.Parser
 			/ "module"                (EndId=>{_type=TT.ContextualKeyword; _value = _module;})
 			/ "from"                  (EndId=>{_type=TT.ContextualKeyword; _value = _from;})
 			/ "where"                 (EndId=>{_type=TT.ContextualKeyword; _value = _where;})
+			/ "when"                  (EndId=>{_type=TT.ContextualKeyword; _value = _when;})
 			/ "select"                (EndId=>{_type=TT.ContextualKeyword; _value = _select;})
 			/ "join"                  (EndId=>{OtherContextualKeyword();})
 			/ "on"                    (EndId=>{OtherContextualKeyword();})
@@ -432,6 +435,7 @@ namespace Ecs.Parser
 		@[static, readonly] _await::Symbol = GSymbol.Get("await");
 		
 		@[static, readonly] _where::Symbol = GSymbol.Get("where");
+		@[static, readonly] _when::Symbol = GSymbol.Get("when");
 		@[static, readonly] _select::Symbol = GSymbol.Get("select");
 		@[static, readonly] _from::Symbol = GSymbol.Get("from");
 		@[static, readonly] _join::Symbol = GSymbol.Get("join");

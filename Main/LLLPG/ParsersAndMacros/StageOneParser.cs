@@ -32,7 +32,7 @@ namespace Loyc.LLParserGenerator
 		HostOperator= TokenKind.Operator,
 		Alt         = TokenKind.Operator + 1, // |
 		Slash       = TokenKind.Operator + 2, // /
-		DotDot      = TokenKind.Operator + 3, // .. or :
+		DotDotDot   = TokenKind.Operator + 3, // .. or ...
 		InvertSet   = TokenKind.Operator + 4, // ~
 		Plus        = TokenKind.Operator + 5, // +
 		Star        = TokenKind.Operator + 6, // *
@@ -184,7 +184,8 @@ namespace Loyc.LLParserGenerator
 		static readonly Dictionary<Symbol,TT> _tokenNameTable = new Dictionary<Symbol,TT> {
 			{S.OrBits,   TT.Alt},
 			{S.Div,      TT.Slash},
-			{S.DotDot,   TT.DotDot},
+			{S.DotDot,   TT.DotDotDot},
+			{S.DotDotDot,TT.DotDotDot},
 			{S.Colon,    TT.Assignment},
 			{_AddColon,  TT.Assignment},
 			{_ColonSet,  TT.Assignment},
@@ -262,13 +263,13 @@ namespace Loyc.LLParserGenerator
 		
 		#region Tree structure handling
 
-		RVList<LNode> ParseArgList(Token group)
+		VList<LNode> ParseArgList(Token group)
 		{
 			var ch = group.Children;
 			if (ch != null)
-				return new RVList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
+				return new VList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
 			else
-				return RVList<LNode>.Empty;
+				return VList<LNode>.Empty;
 		}
 		
 		LNode ParseParens(Token p, int endIndex)
@@ -287,7 +288,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var ch = p.Children;
 			if (ch == null)
-				return F.Braces(RVList<LNode>.Empty, p.StartIndex, endIndex);
+				return F.Braces(VList<LNode>.Empty, p.StartIndex, endIndex);
 			else {
 				var mode = singleExpr ? ParsingService.Exprs : ParsingService.Stmts;
 				return F.Braces(

@@ -30,18 +30,19 @@ namespace Loyc.Collections
 	/// <para/>
 	/// See the remarks of <see cref="VListBlock{T}"/> for more information
     /// about VLists. Items are normally added to, and removed from, the front of a 
-	/// FVList or to the back of an RVList; adding, removing or changing items at any 
-	/// other position is inefficient. You can call ToRVList() to convert a FVList to 
-	/// its equivalent RVList, which is a reverse-order view of the same list that 
-	/// shares the same memory.</remarks>
+	/// FVList or to the back of a VList; adding, removing or changing items at any 
+	/// other position is inefficient. You can call ToVList() to convert a FVList to 
+	/// its equivalent VList, which is a reverse-order view of the same list that 
+	/// shares the same memory.
+	/// </remarks>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
 	public struct FVList<T> : IListAndListSource<T>, ICloneable<FVList<T>>, ICloneable
 	{
 		// BTW: Normally the invariant (_localCount == 0) == (_block == null) holds.
 		// However, sometimes FVList is used internally to reference a mutable FWList 
-		// or RWList. In that case it is possible that _block != null but the block
-		// is empty. RVList, in contrast, is not normally used to refer to a mutable 
+		// or WList. In that case it is possible that _block != null but the block
+		// is empty. VList, in contrast, is not normally used to refer to a mutable 
 		// list so it can always assume (_localCount == 0) == (_block == null).
 
 		internal VListBlock<T> _block;
@@ -205,41 +206,41 @@ namespace Loyc.Collections
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
 		public FVList<T> Push(T item) { return Add(item); }
 
-		/// <summary>Returns this list as an RVList, which effectively reverses the
+		/// <summary>Returns this list as a VList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>This is a trivial operation; the RVList shares the same memory.</remarks>
-		public static explicit operator RVList<T>(FVList<T> list)
+		/// <remarks>This is a trivial operation; the VList shares the same memory.</remarks>
+		public static explicit operator VList<T>(FVList<T> list)
 		{
-			return new RVList<T>(list._block, list._localCount);
+			return new VList<T>(list._block, list._localCount);
 		}
-		/// <summary>Returns this list as an RVList, which effectively reverses the
+		/// <summary>Returns this list as a VList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <returns>This is a trivial operation; the RVList shares the same memory.</returns>
-		public RVList<T> ToRVList()
+		/// <returns>This is a trivial operation; the VList shares the same memory.</returns>
+		public VList<T> ToVList()
 		{
-			return new RVList<T>(_block, _localCount);
+			return new VList<T>(_block, _localCount);
 		}
 
 		/// <summary>Returns this list as a FWList.</summary>
 		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
-		public static explicit operator FWList<T>(FVList<T> list) { return list.ToWList(); }
+		public static explicit operator FWList<T>(FVList<T> list) { return list.ToFWList(); }
 		/// <summary>Returns this list as a FWList.</summary>
 		/// <remarks>The list contents are not copied until you modify the FWList.</remarks>
-		public FWList<T> ToWList()
+		public FWList<T> ToFWList()
 		{
 			return new FWList<T>(_block, _localCount, false);
 		}
 
-		/// <summary>Returns this list as a RWList, which effectively reverses the
+		/// <summary>Returns this list as a WList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
-		public static explicit operator RWList<T>(FVList<T> list) { return list.ToRWList(); }
-		/// <summary>Returns this list as a RWList, which effectively reverses the
+		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
+		public static explicit operator WList<T>(FVList<T> list) { return list.ToWList(); }
+		/// <summary>Returns this list as a WList, which effectively reverses the
 		/// order of the elements.</summary>
-		/// <remarks>The list contents are not copied until you modify the RWList.</remarks>
-		public RWList<T> ToRWList()
+		/// <remarks>The list contents are not copied until you modify the WList.</remarks>
+		public WList<T> ToWList()
 		{
-			return new RWList<T>(_block, _localCount, false);
+			return new WList<T>(_block, _localCount, false);
 		}
 
 		/// <summary>Returns the FVList converted to an array.</summary>
@@ -279,7 +280,7 @@ namespace Loyc.Collections
 		/// {
 		///     var output = FVList&lt;int&gt;.Empty;
 		///     // Enumerate tail-to-head
-		///     foreach (int n in (RVList&lt;int&gt;)input)
+		///     foreach (int n in (VList&lt;int&gt;)input)
 		///         if (n >= 0)
 		///             output.SmartAdd(n, input);
 		///     return output;
@@ -446,7 +447,7 @@ namespace Loyc.Collections
 			T _current;
 
 			public Enumerator(FVList<T> list) { _tail = list; _current = default(T); }
-			public Enumerator(RVList<T> list) { _tail = (FVList<T>)list; _current = default(T); }
+			public Enumerator(VList<T> list) { _tail = (FVList<T>)list; _current = default(T); }
 
 			#region IEnumerator<T> Members
 
@@ -497,7 +498,7 @@ namespace Loyc.Collections
 		public T TryGet(int index, out bool fail)
 		{
 			T value = default(T);
-			fail = !_block.FGet(index, _localCount, ref value);
+			fail = _block == null || !_block.FGet(index, _localCount, ref value);
 			return value;
 		}
 
@@ -587,12 +588,12 @@ namespace Loyc.Collections
 		/// <returns>A list formed from transforming all items in the list</returns>
 		/// <remarks>
 		/// This is my attempt to make an optimized multi-purpose routine for
-		/// transforming a FVList or RVList. It is slightly cumbersome to use,
+		/// transforming a FVList or VList. It is slightly cumbersome to use,
 		/// but allows you to do several common operations in one transformer
 		/// method.
 		/// <para/>
 		/// The VListTransformer method takes two arguments: an item and its index 
-		/// in the FVList or RVList. It can modify the item if desired, and then it
+		/// in the FVList or VList. It can modify the item if desired, and then it
 		/// returns a XfAction value, which indicates the action to take. Most
 		/// often you will return XfAction.Drop, XfAction.Keep, XfAction.Change, 
 		/// which, repectively, drop the item from the output list, copy the item 
@@ -621,7 +622,7 @@ namespace Loyc.Collections
 		/// to get a third call, if it wants.
 		/// <para/>
 		/// XfAction.Repeat is best explained by example. In the following
-		/// examples, assume "list" is an RVList holding the numbers (1, 2, 3):
+		/// examples, assume "list" is a VList holding the numbers (1, 2, 3):
 		/// <example>
 		/// output = list.Transform((i, ref n) => {
 		///     // This example produces (1, 1, 2, 2, 3, 3)
@@ -654,7 +655,7 @@ namespace Loyc.Collections
 		/// });
 		/// </example>
 		/// And now for some examples using XfAction.Keep, XfAction.Drop and
-		/// XfAction.Change. Assume list is an RVList holding the following 
+		/// XfAction.Change. Assume list is a VList holding the following 
 		/// integers: (-1, 2, -2, 13, 5, 8, 9)
 		/// <example>
 		/// output = list.Transform((i, ref n) =>
@@ -1069,7 +1070,7 @@ namespace Loyc.Collections
 			//                          XfAction.Drop, XfAction.Keep);
 			// 
 			// ...should produce a result of (4, 20, 1) as a FVList, which is 
-			// equivalent to the RVList (1, 20, 4).
+			// equivalent to the VList (1, 20, 4).
 			
 			// Tests on 1-item lists
 			TestTransform(1, new int[] {},   0, XfAction.Drop);
@@ -1123,7 +1124,7 @@ namespace Loyc.Collections
 			
 			Assert.AreEqual(counter, actions.Length);
 			
-			ExpectList(result.ToRVList(), expect);
+			ExpectList(result.ToVList(), expect);
 			
 			Assert.That(result.WithoutFirst(result.Count - commonTailLength)
 			         == list.WithoutFirst(list.Count - commonTailLength));

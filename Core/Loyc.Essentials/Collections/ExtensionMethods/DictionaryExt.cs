@@ -28,6 +28,15 @@ namespace Loyc.Collections
 				return defaultValue;
 			return value;
 		}
+		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
+		public static V TryGetValue<K, V>(this IReadOnlyDictionary<K, V> dict, K key, V defaultValue)
+		{
+			V value;
+			if (key == null || !dict.TryGetValue(key, out value))
+				return defaultValue;
+			return value;
+		}
+
 		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
 		/// not throw an exception when <c>key==null</c> (it simply returns NoValue),
 		/// and it returns the result as <see cref="Maybe{V}"/> instead of storing
@@ -39,6 +48,15 @@ namespace Loyc.Collections
 				return Maybe<V>.NoValue;
 			return value;
 		}
+		/// <inheritdoc cref="TryGetValue{K,V}(IDictionary{K,V},K)"/>
+		public static Maybe<V> TryGetValue<K, V>(this IReadOnlyDictionary<K, V> dict, K key)
+		{
+			V value;
+			if (key == null || !dict.TryGetValue(key, out value))
+				return Maybe<V>.NoValue;
+			return value;
+		}
+
 		/// <summary>Same as IDictionary.TryGetValue() except that this method does 
 		/// not throw an exception when <c>key==null</c> (it simply returns false).</summary>
 		public static bool TryGetValueSafe<K, V>(this IDictionary<K, V> dict, K key, out V value)
@@ -51,5 +69,4 @@ namespace Loyc.Collections
 			}
 		}
 	}
-
 }

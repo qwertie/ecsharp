@@ -142,26 +142,26 @@ namespace Loyc
 		/// a named placeholder can provide an important clue. The localization  
 		/// system is invoked as follows:
 		/// <code>
-		/// string msg = Localize.From("{man's name} meets {woman's name}.",
+		/// string msg = "{man's name} meets {woman's name}.".Localized(
 		///		"man's name", mansName, "woman's name", womansName);
 		/// </code>
 		/// The placeholder names are not case sensitive.
 		/// 
 		/// You can use numeric placeholders, alignment and formatting codes also:
 		/// <code>
-		/// string msg = Localize.From("You need to run {km,6:###.00} km to reach {0}",
-		///		cityName, "KM", 2.9);
+		/// string msg = "You need to run {dist,6:###.00} km to reach {0}".Localized(
+		///		cityName, "dist", 2.9);
 		/// </code>
 		/// This method will ignore the first N+1 arguments in args, where {N}
 		/// is the largest numeric placeholder. It is assumed that the placeholder 
 		/// name ends at the first comma or colon; hence the placeholder in this 
-		/// example is called "km", not "km,6:###.00".
-		/// 
+		/// example is called "dist", not "dist,6:###.00".
+		/// <para/>
 		/// If a placeholder name is not found in the argument list then it is not
 		/// replaced with a number before the call to string.Format, so a 
 		/// FormatException will occur.
 		/// </remarks>
-		public static string Format(this string format, params object[] args)
+		public static string FormatCore(this string format, params object[] args)
 		{
 			format = EliminateNamedArgs(format, args);
 			return string.Format(format, args);

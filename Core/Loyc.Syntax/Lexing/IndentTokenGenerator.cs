@@ -186,7 +186,7 @@ namespace Loyc.Syntax.Lexing
 		protected int CurrentIndent { get { return _curIndent; } }
 		protected IListSource<int> OuterIndents { get { return _outerIndents; } }
 
-		InternalDList<Token> _pending = InternalDList<Token>.Empty; // generated tokens
+		InternalDList<Token> _pending = InternalDList<Token>.Empty; // generated and deferred tokens
 		int _curLine, _curIndent; // _cur* variables are updated after each newline
 		UString _curIndentString;
 		TokenCategory _curCat;
@@ -234,6 +234,7 @@ namespace Loyc.Syntax.Lexing
 				_curCat = nextCat;
 				return _current = next;
 			} else {
+				// EOF
 				if (!_eofHandledAlready) {
 					_eofHandledAlready = true;
 					TokenCategory nextCat = TokenCategory.Other;
@@ -467,7 +468,7 @@ namespace Loyc.Syntax.Lexing
 	/// classified as an EOL indent trigger (EolIndentTriggers), and the parser 
 	/// should 
 	/// 1. recognize non-block statements separately from block statements,
-	/// 2. expect a colon to be followed by either an indented block of a non-block 
+	/// 2. expect a colon to be followed by either an indented block or a non-block 
 	///    statement, but
 	/// 3. recognize a non-block "statement" as a <i>list</i> of statements 
 	///    separated by semicolons, with an optional semicolon at the end.
@@ -593,7 +594,7 @@ namespace Loyc.Syntax.Lexing
 		}
 		protected override IEnumerator<Token> MakeDedentToken(Token tokenBeforeDedent, ref Maybe<Token> tokenAfterDedent)
 		{
-			return Range.Single(DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex)).GetEnumerator();
+			return ListExt.Single(DedentToken.WithStartIndex(tokenBeforeDedent.EndIndex)).GetEnumerator();
 		}
 		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
 		{

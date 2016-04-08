@@ -45,7 +45,7 @@ namespace Loyc.Syntax
 		{
 			return _obj.LineToIndex(lineNo);
 		}
-		public int LineToIndex(LineAndPos pos)
+		public int LineToIndex(LineAndCol pos)
 		{
 			if (pos is SourcePosAndIndex)
 				return (pos as SourcePosAndIndex).OriginalIndex;

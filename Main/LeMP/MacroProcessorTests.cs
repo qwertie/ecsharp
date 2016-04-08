@@ -7,18 +7,40 @@ using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
 using Loyc;
-using LeMP.Prelude;
 using S = Loyc.Syntax.CodeSymbols;
+using Loyc.Ecs;
 
 namespace LeMP.Test
 {
 	[ContainsMacros]
-	public class Macros
+	public class TestMacros
 	{
 		[LexicalMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
 		public static LNode Identity(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Splice);
+		}
+		[LexicalMacro("priorityTest(x, y)", "Change first argument to 'hi'", 
+			"priorityTest", "priorityTestPCB", Mode = MacroMode.PriorityOverride | MacroMode.Passive)]
+		public static LNode priorityTestHi(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount >= 1 && !node[0].IsIdNamed("hi"))
+				return node.WithArgChanged(0, LNode.Id("hi"));
+			return null;
+		}
+		[LexicalMacro("priorityTest(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenAfter | MacroMode.Passive)]
+		public static LNode priorityTest(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithArgs(node[1], node[0]);
+			return null;
+		}
+		[LexicalMacro("priorityTestPCB(x, y)", "Swap arg 0 and arg 1", Mode = MacroMode.ProcessChildrenBefore | MacroMode.Passive)]
+		public static LNode priorityTestPCB(LNode node, IMessageSink sink)
+		{
+			if (node.ArgCount == 2)
+				return node.WithArgs(node[1], node[0]);
+			return null;
 		}
 	}
 }
@@ -29,19 +51,17 @@ namespace LeMP
 	public class TestCompiler : Compiler
 	{
 		public TestCompiler(IMessageSink sink, ICharSource text, string fileName = "")
-			: base(sink, typeof(LeMP.Prelude.Macros), new[] { new InputOutput(text, fileName) }) 
+			: base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(text, fileName) }) 
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			MacroProcessor.AddMacros(typeof(LeMP.StandardMacros));
-			MacroProcessor.AddMacros(typeof(LeMP.Test.Macros));
-			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
+			MacroProcessor.AddMacros(typeof(LeMP.Test.TestMacros));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 		}
 			
 		public StringBuilder Output;
-		public RVList<LNode> Results;
+		public VList<LNode> Results;
 			
 		protected override void WriteOutput(InputOutput io)
 		{
@@ -57,7 +77,7 @@ namespace LeMP
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF)
 		{
-			using (LNode.PushPrinter(new Ecs.EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
+			using (LNode.PushPrinter(new EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
@@ -119,13 +139,13 @@ namespace LeMP
 				"{ Foo x; int y; }", 2);
 			Test("{ x::Foo; y::int; }",
 				"{ Foo x; @int y; }", 1);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"[@static] @void Main() { @var(x::@int = @default(@int)); }", 1);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { @int x = @default(@int); }", 2);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { int x = default(@int); }", 3);
-			Test("@[static] def Main()::void { var x::int = `default` int; }",
+			Test("@[static] fn Main()::void { var x::int = `default` int; }",
 				"static void Main() { int x = default(int); }", 4);
 		}
 
@@ -173,8 +193,6 @@ namespace LeMP
 				 "if (x < 0) { Negative(); } else { NonNeg(); }");
 			Test("if  x < 0  { Negative(); } else if (x > 0) { Positive(); } else { Zero(); };",
 				 "if (x < 0) { Negative(); } else if((x > 0)){ Positive(); } else { Zero(); }");
-			Test("unless input.IsLowPriority { Process(input); };",
-			     "if  (!input.IsLowPriority) { Process(input); }");
 			Test("if  input.IsLowPriority  { WhoCares(); } else while (!input.EOF)  { input.Read(); };",
 				 "if (input.IsLowPriority) { WhoCares(); } else while((!input.EOF)) { input.Read(); }");
 			Test("switch  x  { case 0; break; default; break; }",
@@ -302,6 +320,19 @@ namespace LeMP
 		{
 			Test("prop x::int { get { return 0; } set; };",
 				"int x { get ({ return 0; }, set); }");
+		}
+
+		[Test]
+		public void PriorityTest()
+		{
+			Test("import_macros LeMP.Test; priorityTest(0, 1);",
+			                              "priorityTest(1, hi);");
+			Test("{ import_macros LeMP.Test; foo0(); priorityTest(0, 2); foo(); }",
+				 "{                          foo0(); priorityTest(2, hi); foo(); }");
+			Test("{ import_macros LeMP.Test; priorityTest(0, x::int = 3); foo(); }",
+				 "{                          priorityTest(int x = 3, hi); foo(); }");
+			Test("{ import_macros LeMP.Test; priorityTestPCB(0, x::int = 4); foo2(); }",
+				 "{                          priorityTestPCB(int x = 4, hi); foo2(); }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);

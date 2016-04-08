@@ -17,25 +17,21 @@ namespace Loyc
 	/// as of June 2015, no one has made any translation tables). Use it like
 	/// this:
 	/// <code>
-	/// string result = Localize.From("Hello, {0}", userName);
+	/// string result = "Hello, {0}".Localized(userName);
 	/// </code>
-	/// If you use this facility frequently in a given class, you may want
-	/// to shorten your typing using a static variable:
-	/// <code>
-	/// protected static readonly FormatterDelegate L = Localize.From;
-	/// </code>
-	/// Then you can simply write L("Hello, {0}", userName) instead. Either way,
-	/// whatever localizer is installed will look up the text in its database and
+	/// If no localizer is installed, the format string is left unchanged.
+	/// <para/>
+	/// Whatever localizer is installed will look up the text in its database and
 	/// return a translation. If no translation to the end user's language is
 	/// available, an appropriate default translation should be returned: either the
 	/// original text, or a translation to some default language, e.g. English.
 	/// <para/>
 	/// Alternately, assuming you have the ability to change the table of
 	/// translations, you can use a Symbol in your code and call the other overload
-	/// of From() to look up the text that should be shown to the end user:
+	/// of Localize() to look up the text that should be shown to the end user:
 	/// <code>
-	/// string result = Localize.From((Symbol)"MY_STRING"));
-	/// string result = Localize.From(@@MY_STRING); // EC# syntax
+	/// string result = ((Symbol)"MY_STRING").Localized();
+	/// string result = @@MY_STRING.Localized();  // Enhanced C# with #useSymbols
 	/// </code>
 	/// This is most useful for long strings or paragraphs of text, but I expect
 	/// that some projects, as a policy, will use symbols for all localizable text.
@@ -44,16 +40,16 @@ namespace Loyc
 	/// variable argument list is empty. It is possible to perform formatting
 	/// separately, for example:
 	/// <code>
-	/// Console.WriteLine(Localize.From("{0} is {0:X} in hexadecimal"), N);
+	/// Console.WriteLine("{0} is {0:X} in hexadecimal".Localized(), N);
 	/// </code>
 	/// Here, writeline performs the formatting instead. However, Localize's
-	/// default formatter, Strings.Format, has an extra feature that the standard 
-	/// formatter does not: named arguments. Here is an example:
+	/// default formatter, StringExt.FormatCore, has an extra feature that the 
+	/// standard formatter does not: named arguments. Here is an example:
 	/// <code>
 	/// ...
-	/// string verb = Localize.From(IsFileLoaded ? "parse" : "load");
+	/// string verb = (IsFileLoaded ? "parse" : "load").Localized();
 	/// MessageBox.Show(
-	///     Localize.From("Not enough memory to {load/parse} '{filename}'."
+	///     "Not enough memory to {load/parse} '{filename}'.".Localized(
 	///       {Message}", "load/parse", verb, "filename", FileName));
 	/// }
 	/// </code>
@@ -72,6 +68,7 @@ namespace Loyc
 	/// become "Could not {1} the file: {3}" and then be passed to string.Format.
 	/// 
 	/// <h3>Design rationale</h3>
+	/// 
 	/// Many developers don't want to spend time writing internationalization or
 	/// localization code, and are tempted to write code that is only for one
 	/// language. It's no wonder, because it's a relative pain in the neck.
@@ -92,10 +89,10 @@ namespace Loyc
 	///   the code, in turn, can't tell what the string says and has to load up
 	///   the resource file to find out.
 	/// * It is nontrivial to change the localization manager; for instance, what if
-	///   someone wants to store translations in an .ini or .xml file rather than
-	///   inside the assembly? What if the user wants to centralize all
+	///   someone wants to store translations in an .ini, .xml or .les file rather 
+	///   than inside the assembly? What if the user wants to centralize all
 	///   translations for a set of assemblies, rather than having separate
-	///   resources in each assembly?
+	///   resources in each assembly? 
 	/// * Keeping in mind that the guy in charge of translation is typically
 	///   different than the guys writing most of the code, it makes sense to keep
 	///   translations separate from everything else.
@@ -104,10 +101,10 @@ namespace Loyc
 	/// localization by making it dead-easy to do. By default it is not connected to
 	/// any translator (it just passes strings through), so people who are only
 	/// writing a program for a one-language market can easily make their code
-	/// "multiligual-ready" without doing any extra work, since Localize.From() is
-	/// no harder to type than String.Format().
+	/// "multiligual-ready" without doing any extra work, since `.Localized()` is
+	/// no harder to type than `string.Format()`.
 	/// <p/>
-	/// The translation system itself is separate, and connected to Localize by a
+	/// The translation system itself is separate, and connected to `Localized` by a
 	/// delegate, for two reasons:
 	/// <ol>
 	/// <li>Multiple translation systems are possible. This class should be suitable
@@ -122,20 +119,20 @@ namespace Loyc
 	/// many different individuals--not one big team--of programmers will create
 	/// and maintain features. By centralizing this translation facility, it should
 	/// be straightforward for a single multilingual individual to translate the
-	/// text of many Loyc extensions made by many different people.
+	/// text of many modules made by many different people.
 	/// <p/>
-	/// To facilitate this, I propose that in addition to a translator, a Loyc
-	/// extension should be made to figure out all the strings/symbols for which
-	/// translations are needed. To do this it would scan source code (at compile
-	/// time) for calls to methods in this class and generate a list of strings and
-	/// symbols needing translation. It would also have to detect certain calls that
-	/// perform translation implicity, such as ISimpleMessageSink.Write(). See
+	/// To facilitate this, I propose that in addition to a translator, a program
+	/// should be made to figure out all the strings/symbols for which translations 
+	/// are needed. To do this it would scan source code (at compile time) for 
+	/// calls to methods in this class and generate a list of strings and symbols 
+	/// needing translation. It would also have to detect certain calls that
+	/// perform translation implicity, such as IMessageSink.Write(). See
 	/// <see cref="LocalizableAttribute"/>.
 	/// </remarks>
 	public static class Localize
 	{
 		public static ThreadLocalVariable<LocalizerDelegate> _localizer = new ThreadLocalVariable<LocalizerDelegate>(Passthru);
-		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.Format);
+		public static ThreadLocalVariable<FormatterDelegate> _formatter = new ThreadLocalVariable<FormatterDelegate>(StringExt.FormatCore);
 
 		/// <summary>Localizer method (thread-local)</summary>
 		public static LocalizerDelegate Localizer
@@ -162,7 +159,7 @@ namespace Loyc
             return msg ?? (msgId == null ? null : msgId.Name);
 		}
 
-		#region Main Localize.From() methods
+		#region Main Localize() methods
 
 		/// <summary>
         /// This is the heart of the Localize class, which localizes and formats a
@@ -177,7 +174,7 @@ namespace Loyc
         /// after the Localizer is called. If args is null or empty then Formatter
         /// is not called.</param>
         /// <returns>The translated and formatted string.</returns>
-		public static string From(Symbol resourceId, [Localizable] string message, params object[] args)
+		public static string Localized(this Symbol resourceId, [Localizable] string message, params object[] args)
 		{
 			string localized = Localizer(resourceId, message);
 			if (args == null || args.Length == 0)
@@ -185,89 +182,86 @@ namespace Loyc
 			else
 				return Formatter(localized, args);
 		}
-		public static string From(Symbol resourceId, params object[] args)
-			{ return From(resourceId, null, args); }
-		public static string From([Localizable] string message, params object[] args)
-			{ return From(null, message, args); }
+		public static string Localized(this Symbol resourceId, params object[] args)
+			{ return Localized(resourceId, null, args); }
+		public static string Localized([Localizable] this string message, params object[] args)
+			{ return Localized(null, message, args); }
 
 		#endregion
 
-		#region Versions of Localize.From() specialized for 0, 1 or 2 arguments
+		#region Versions of Localize() specialized for 0, 1 or 2 arguments
 
-		public static string From(Symbol resourceId)
-			{ return From(resourceId, null, null); }
-		public static string From([Localizable] string message)
-			{ return From(null, message, null); }
-		public static string From(Symbol resourceId, [Localizable] string message)
-			{ return From(resourceId, message, null); }
+		public static string Localized(this Symbol resourceId)
+			{ return Localized(resourceId, null, null); }
+		public static string Localized([Localizable] this string message)
+			{ return Localized(null, message, null); }
+		public static string Localized(this Symbol resourceId, [Localizable] string message)
+			{ return Localized(resourceId, message, null); }
 
 		static ScratchBuffer<object[]> _1arg = new ScratchBuffer<object[]>(() => new object[1]);
 		static ScratchBuffer<object[]> _2args = new ScratchBuffer<object[]>(() => new object[2]);
 
-		public static string From(Symbol resourceId, object arg1)
+		public static string Localized(this Symbol resourceId, object arg1)
 		{
 			object[] buf = _1arg.Value;
 			buf[0] = arg1;
-			return From(resourceId, null, buf);
+			var result = Localized(resourceId, null, buf);
+			buf[0] = null;
+			return result;
 		}
-		public static string From([Localizable] string message, object arg1)
+		public static string Localized([Localizable] this string message, object arg1)
 		{
 			object[] buf = _1arg.Value;
 			buf[0] = arg1;
-			return From(null, message, buf); 
+			var result = Localized(null, message, buf); 
+			buf[0] = null;
+			return result;
 		}
-		public static string From(Symbol resourceId, [Localizable] string message, object arg1)
+		public static string Localized(this Symbol resourceId, [Localizable] string message, object arg1)
 		{
 			object[] buf = _1arg.Value;
 			buf[0] = arg1;
-			return From(resourceId, message, buf); 
+			var result = Localized(resourceId, message, buf); 
+			buf[0] = null;
+			return result;
 		}
 
-		public static string From(Symbol resourceId, object arg1, object arg2)
+		public static string Localized(this Symbol resourceId, object arg1, object arg2)
 		{
 			object[] buf = _2args.Value;
 			buf[0] = arg1;
 			buf[1] = arg2;
-			return From(resourceId, null, buf);
+			var result = Localized(resourceId, null, buf);
+			buf[0] = buf[1] = null;
+			return result;
 		}
-		public static string From([Localizable] string message, object arg1, object arg2)
+		public static string Localized([Localizable] this string message, object arg1, object arg2)
 		{
 			object[] buf = _2args.Value;
 			buf[0] = arg1;
 			buf[1] = arg2;
-			return From(null, message, buf); 
+			var result = Localized(null, message, buf); 
+			buf[0] = buf[1] = null;
+			return result;
 		}
-		public static string From(Symbol resourceId, [Localizable] string message, object arg1, object arg2)
+		public static string Localized(this Symbol resourceId, [Localizable] string message, object arg1, object arg2)
 		{
 			object[] buf = _2args.Value;
 			buf[0] = arg1;
 			buf[1] = arg2;
-			return From(resourceId, message, buf);
+			var result = Localized(resourceId, message, buf);
+			buf[0] = buf[1] = null;
+			return result;
 		}
 
 		#endregion
-	}
-	/// <summary>Contains Localize() extension methods for strings.</summary>
-	/// <remarks>This would be part of the <see cref="Loyc.Localize"/> class except that 
-	/// the Localize class is not allowed to have a member that is also named 
-	/// Localize.</remarks>
-	public static class LocalizeExt
-	{
-		public static string Localize([Localizable] this string message, params object[] args)
-			{ return Loyc.Localize.From(null, message, args); }
-		public static string Localize([Localizable] this string message)
-			{ return Loyc.Localize.From(message); }
-		public static string Localize([Localizable] this string message, object arg1)
-			{ return Loyc.Localize.From(message, arg1); }
-		public static string Localize([Localizable] this string message, object arg1, object arg2)
-			{ return Loyc.Localize.From(message, arg1, arg2); }
 	}
 
 	/// <summary>
 	/// I plan to use this attribute someday to gather all the localizable strings 
 	/// in an application. This attribute should be applied to a string function 
-	/// parameter if the method calls Localize() or Localize.From using that 
-	/// parameter as the format string.
+	/// parameter if the method calls Localized() using that parameter as the 
+	/// format string.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field)]
 	public class LocalizableAttribute : System.Attribute { }

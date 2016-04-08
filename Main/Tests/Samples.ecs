@@ -1,0 +1,222 @@
+﻿#importMacros(Loyc.LLPG);
+using System(, .Collections(, .Generic), .Text, .Linq);
+using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing, .Les), .Ecs);
+using TT = Loyc.Syntax.Les.TokenType;
+
+namespace Samples {
+	using ADT;
+
+	[TestFixture]
+	partial class Samples : Assert
+	{
+		public static void Run()
+		{
+			RunTests.Run(new Samples());
+		}
+		[Test] public void ContainsTest()
+		{
+			var tree = Node.New(5, Node.New(1, null, Leaf.New(3)), Node.New(9, Leaf.New(7), null));
+			for (int i = 0; i <= 12; i++)
+				if (tree.Contains(i))
+					Console.Write(" {0}",i);
+			Console.WriteLine(" were found");
+		}
+		[Test] public void RangeTest()
+		{
+			IsTrue(5 in 4..6);
+			IsTrue(6 in 5...6);
+			IsFalse(5 in 4..5);
+			IsFalse(4 in 4..3);
+			AreEqual(10, (1..5).Sum());
+			AreEqual(15, (1...5).Sum());
+			AreEqual(0, (1..1).Sum());
+			AreEqual(0, (1...0).Sum());
+		}
+		/*[Test]*/ public void PrintAllTheNames()
+		{
+			try {
+				PlayPen.PrintAllTheNames(@"..\..\Main\LeMP.StdMacros");
+			} catch {}
+		}
+		[Test] public void SExprTest()
+		{
+			LNode @using = SExprParser.Parse("(#import (. System Collections))");
+			Console.WriteLine(EcsLanguageService.Value.Print(@using));
+			LNode assign = SExprParser.Parse("(= x (+ x 2))");
+			Console.WriteLine(EcsLanguageService.Value.Print(assign));
+		}
+		static void FavoriteNumberGame()
+		{
+			Console.Write("What's your favorite number? ");
+			match(int.Parse(Console.ReadLine())) {
+				case 7, 777: Console.WriteLine("You lucky bastard!");
+				case 5, 10: Console.WriteLine("I have that many fingers too!");
+				case 0, 1: Console.WriteLine("What? Nobody picks that!");
+				case 2, 3: Console.WriteLine("Yeah, I guess you deal with those a lot.");
+				case 12: Console.WriteLine("I prefer a baker's dozen.");
+				case 666, 13: Console.WriteLine("Isn't that bad luck though?");
+				case 1..<10: Console.WriteLine("Kind of boring, don't you think?");
+				case 11, 13, 17, 19, 23, 29: Console.WriteLine("A prime choice.");
+				case 10...99: Console.WriteLine("Well... it's got two digits, I'll give you that much.");
+				case ...-1: Console.WriteLine("Oh, don't be so negative.");
+				default: Console.WriteLine("What are you, high? Like that number?");
+			}
+		}
+	}
+}
+namespace ADT
+{
+	// Example of ADT from "C# Gets Pattern Matching & Algebraic Data Types"
+	public alt class BinaryTree<T> where T: IComparable<T>
+	{
+		alt this(T Value);
+		alt Node(BinaryTree<T> Left, BinaryTree<T> Right)
+		{
+			public alt this()
+			{
+				if (Left == null && Right == null) throw new ArgumentNullException("Both children");
+			}
+			public override bool Contains(T item)
+			{
+				int cmp = Compare(item, Value);
+				if (cmp < 0)
+					return Left != null && Left.Contains(item);
+				else if (cmp > 0)
+					return Right != null && Right.Contains(item);
+				else
+					return true;
+			}
+		}
+	
+		public virtual bool Contains(T item)
+		{
+			return Compare(Value, item) == 0;
+		}
+		internal static int Compare(T a, T b)
+		{	// It's null's fault that this method exists.
+			if (a != null)
+				return a.CompareTo(b);
+			else if (b != null)
+				return -a.CompareTo(a);
+			else
+				return 0;
+		}
+	}
+	public static class Leaf {
+		public static BinaryTree<T> New<T>(T item) 
+			where T: IComparable<T> 
+			{ return new BinaryTree<T>(item); }
+	}
+
+	public abstract alt class Rectangle {
+		alt this(int X, int Y, int Width, int Height);
+	}
+	public abstract alt class Widget {
+		alt this(Rectangle Location) {
+			if (Location == null) throw new ArgumentNullException("Location");
+		}
+		alt Button(string Text) { }
+		alt TextBox(string Text) { }
+		abstract alt StringListWidget(string[] subItems) {
+			alt ComboBox();
+			alt ListBox();
+		}
+		public abstract alt Container() {
+			alt TabControl(TabPage[] Children);
+			alt Panel(Widget[] Children) {
+				alt TabPage(string Title);
+			}
+		}
+	}
+}
+
+// Example from LLLPG article #5
+struct EmailAddress
+{
+  public EmailAddress(public UString UserName, public UString Domain) {}
+  public override string ToString() { return UserName + "@" + Domain; }
+
+  LLLPG (lexer(inputSource(src), inputClass(LexerSource)));
+  // LexerSource provides the APIs expected by LLLPG. This is
+  // static to avoid reallocating the helper object for each email.
+  [ThreadStatic] static LexerSource<UString> src;
+
+  static rule UsernameChars(LexerSource<UString> src) @{
+    ('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
+    '*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
+  };
+  static rule DomainCharSeq(LexerSource<UString> src) @{
+           ('a'..'z'|'A'..'Z'|'0'..'9')
+    ( '-'? ('a'..'z'|'A'..'Z'|'0'..'9') )*
+  };
+
+  /// <summary>Parses email addresses according to RFC 5322, not including 
+  /// quoted usernames or non-ASCII addresses (TODO: support Unicode).</summary>
+  /// <exception cref="FormatException">The input is not a legal email address.</exception>
+  public static rule EmailAddress Parse(UString email)
+  {
+    if (src == null)
+      src = new LexerSource<UString>(email, "", 0, false);
+    else
+      src.Reset(email, "", 0, false); // re-use old object
+    
+    @{ UsernameChars(src) ('.' UsernameChars(src))* };
+    int at = src.InputPosition;
+    UString userName = email.Substring(0, at);
+    
+    @[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+    UString domain = email.Substring(at + 1);
+    return new EmailAddress(userName, domain);
+  }
+
+
+}
+
+// Parser for S-expressions => Loyc trees
+// It doesn't support attributes - it's really just an example
+public partial class SExprParser : BaseParserForList<Token, int>
+{
+	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null) 
+	{ 
+		var lexer = LesLanguageService.Value.Tokenize(sexpr, filename, msgs);
+		var withoutComments = new WhitespaceFilter(lexer).Buffered();
+		var parser = new SExprParser(withoutComments, lexer.SourceFile, msgs);
+		return parser.Atom();
+	}
+
+	protected LNodeFactory F;
+	public SExprParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink, int startIndex = 0) 
+		: base(tokens, default(Token), file, startIndex)
+	{
+		ErrorSink = messageSink;
+	}
+	protected override void Reset(IList<Token> list, Token eofToken, ISourceFile file, int startIndex = 0)
+	{
+		base.Reset(list, eofToken, file, startIndex);
+		F = new LNodeFactory(file);
+	}
+	protected override string ToString(int tokenType)
+	{
+		return ((TT)tokenType).ToString();
+	}
+
+	LLLPG (parser(laType(TT), matchType(int), terminalType(Token), allowSwitch(true)));
+	alias("(" = TT.LParen);
+	alias(")" = TT.RParen);
+	alias("." = TT.Dot);
+		
+	rule LNode Atom() @{
+		result:List
+	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Colon|TT.Not|TT.BQString) 
+		         { $result=F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);}
+	|	t:TT.Literal { $result=F.Literal(t.Value, t.StartIndex, t.EndIndex);}
+	};
+	rule LNode List() @{
+		("("|TT.SpaceLParen) ")"
+		{return F.List(VList<LNode>.Empty, $"(".StartIndex, $")".EndIndex);}
+	|	{var parts = VList<LNode>.Empty;}
+		("("|TT.SpaceLParen) target:Atom [parts+=Atom]* ")" 
+		{return F.Call($target, $parts, $"(".StartIndex, $")".EndIndex);}
+	};
+}
+

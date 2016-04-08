@@ -40,18 +40,18 @@ namespace Loyc.Syntax.Les {
 		alias("{" = TT.LBrace);
 		alias("}" = TT.RBrace);
 
-		@[public] rule StmtList()::RVList!LNode @{
+		@[public] rule StmtList()::VList!LNode @{
 			{endMarker := TT.Semicolon;}
 			result:ExprList(ref endMarker)
 		};
-		@[public] fn ExprList(list::RVList!LNode = default(RVList!LNode))::RVList!LNode {
+		@[public] fn ExprList(list::VList!LNode = default(VList!LNode))::VList!LNode {
 			endMarker := default(TT);
 			return (ExprList(ref endMarker, list));
 		};
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		@[public] rule ExprList(ref endMarker::TokenType, list::RVList!LNode = default(RVList!LNode))::RVList!LNode @{
+		@[public] rule ExprList(ref endMarker::TokenType, list::VList!LNode = default(VList!LNode))::VList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
@@ -95,7 +95,7 @@ namespace Loyc.Syntax.Les {
 			(	e:Expr(StartStmt)
 			/	// Superexpression
 				id:=TT.Id // identifier
-				{args := RVList!LNode.Empty;}
+				{args := VList!LNode.Empty;}
 				args+=Expr(P.SuperExpr)
 				[	{
 						if (LA0->TT == TT.LParen) {
@@ -153,13 +153,13 @@ namespace Loyc.Syntax.Les {
 				}
 			|	// ! operator (generic #of)
 				"!"
-				{args := (new RVList!LNode { e }); endIndex::int;}
+				{args := (new VList!LNode { e }); endIndex::int;}
 				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
 				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
 				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);}
 			|	// Indexer / square brackets
-				{args := (new RVList!LNode { e });}
+				{args := (new VList!LNode { e });}
 				"[" args=ExprList(args) c:="]"
 				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
 			)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Syntax;
 using Loyc.Collections;
+using Loyc.Ecs;
 
 namespace Loyc.LLParserGenerator
 {
@@ -137,7 +138,7 @@ namespace Loyc.LLParserGenerator
 				return;
 			if (primType == null) {
 				primType = F.Object;
-				_sink.Write(Severity.Error, pred, Localize.From("The type of this expression is unknown (did you set LLLPG's 'terminalType'  option?)"));
+				_sink.Write(Severity.Error, pred, Localize.Localized("The type of this expression is unknown (did you set LLLPG's 'terminalType'  option?)"));
 			}
 			LNode type = primType, oldType;
 			if (pred.VarIsList)
@@ -145,7 +146,7 @@ namespace Loyc.LLParserGenerator
 			if (!_newVarInitializers.ContainsKey(varName))
 				_newVarInitializers[varName] = Pair.Create(type, _codeGen.MakeInitializedVarDecl(primType, pred.VarIsList, varName));
 			else if (!(oldType = _newVarInitializers[varName].A).Equals(type))
-				_sink.Write(Severity.Error, pred, Localize.From(
+				_sink.Write(Severity.Error, pred, Localize.Localized(
 					"Type mismatch: Variable '{0}' was generated earlier with type {1}, but this predicate expects {2}.",
 					varName, oldType, type));
 			pred.ResultSaver = Pred.GetStandardResultSaver(F.Id(varName),
@@ -170,7 +171,7 @@ namespace Loyc.LLParserGenerator
 				return LiteralToVarName(label.Value);
 			} else if (label.Calls(S.Dot, 2))
 				return GSymbol.Get("tok__" + label.Args[1].Name);
-			else if (label.Calls(S.DotDot, 2))
+			else if (label.Calls(S.DotDot, 2) || label.Calls(S.DotDotDot, 2))
 				return GSymbol.Get(PickVarNameForLNode(label[0]).Name + "_" + PickVarNameForLNode(label[1]).Name);
 			else // can't return null
 				return GSymbol.Get(label.GetHashCode().ToString());
@@ -182,7 +183,7 @@ namespace Loyc.LLParserGenerator
 		}
 		static string LiteralToIdent(object literal)
 		{
-			return Ecs.EcsNodePrinter.SanitizeIdentifier((literal ?? "null").ToString());
+			return EcsValidators.SanitizeIdentifier((literal ?? "null").ToString());
 		}
 
 		// Step 3

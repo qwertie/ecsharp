@@ -11,49 +11,41 @@ using Loyc.Collections;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Syntax.Tests;
-using Ecs.Parser;
+using Loyc.Ecs.Parser;
 
 namespace Loyc.LLParserGenerator
 {
 	/// <summary>Entry point of LLLPG.exe, with QuickRun() method to help invoke LLLPG programmatically.</summary>
-	public class LLLPG // Avoid name collision with 'Program' class in LinqPad
+	public class Program // Avoid name collision with 'Program' class in LinqPad
 	{
 		public static void Main(params string[] args)
 		{
-			IDictionary<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
+			MMap<string, Pair<string, string>> KnownOptions = LeMP.Compiler.KnownOptions;
 			if (args.Length != 0) {
-				BMultiMap<string,string> options = new BMultiMap<string,string>();
-
-				var argList = args.ToList();
-				UG.ProcessCommandLineArguments(argList, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
-				if (!options.ContainsKey("nologo"))
-					Console.WriteLine("LLLPG/LeMP macro compiler");
-
-				string _;
-				if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _) || args.Length == 0) {
-					LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
-					return;
-				}
-
 				Severity minSeverity = Severity.Note;
 				#if DEBUG
 				minSeverity = Severity.Debug;
 				#endif
 				var filter = new SeverityMessageFilter(MessageSink.Console, minSeverity);
 
-				LeMP.Compiler c = LeMP.Compiler.ProcessArguments(options, filter, typeof(LeMP.Prelude.Les.Macros), argList);
-				LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, KnownOptions);
-				if (c != null) {
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-					c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
-					c.AddMacros(Assembly.GetExecutingAssembly());
-					c.AddMacros(typeof(LeMP.Prelude.Macros).Assembly);
-					c.Run();
+				LeMP.Compiler c = new LeMP.Compiler(filter, typeof(LeMP.Prelude.BuiltinMacros));
+				var argList = args.ToList();
+				var options = c.ProcessArguments(argList, false, true);
+				if (options != null) {
+					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, 
+						KnownOptions.With("nologo", Pair.Create("","")));
+					if (c != null) {
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+						c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
+						c.AddMacros(typeof(LeMP.StandardMacros).Assembly);
+						c.AddMacros(Assembly.GetExecutingAssembly());
+						c.Run();
+					}
 				}
 			} else {
 				LeMP.Compiler.ShowHelp(KnownOptions.OrderBy(p => p.Key));
-				Tests();
-				Ecs.Program.Main(args); // do EC# tests
+				Test_LLLPG();
 			}
 		}
 
@@ -80,7 +72,7 @@ namespace Loyc.LLParserGenerator
 			return c.Output.ToString();
 		}
 
-		static void Tests()
+		public static void Test_LLLPG()
 		{
 			Console.WriteLine("Running tests... (a small number of them are broken)");
 
@@ -88,24 +80,12 @@ namespace Loyc.LLParserGenerator
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
-			RunTests.Run(new IntSetTests());
-			//RunTests.Run(new LNodeTests());
 			RunTests.Run(new LlpgParserTests());
 			RunTests.Run(new LlpgGeneralTests());
-			RunTests.Run(new Loyc.Syntax.Lexing.TokenTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesLexerTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesParserTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
-			RunTests.Run(new LexerSourceTests_Calculator());
-			RunTests.Run(new ParserSourceTests_Calculator());
-			RunTests.Run(new LeMP.MacroProcessorTests());
-			RunTests.Run(new LeMP.StandardMacroTests());
 			RunTests.Run(new LlpgCoreTests());
 			RunTests.Run(new LlpgAutoValueSaverVisitorTests());
 			RunTests.Run(new LlpgTestLargerExamples());
 			RunTests.Run(new LlpgBugsAndSlugs());
-			RunTests.Run(new Loyc.Syntax.Lexing.TokensToTreeTests());
-			RunTests.Run(new Loyc.Syntax.Les.LesPrinterTests());
 		}
 	}
 }

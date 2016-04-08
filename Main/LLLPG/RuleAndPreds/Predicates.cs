@@ -7,7 +7,6 @@ using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using Loyc.Collections;
-using Loyc.Math;
 using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
@@ -70,7 +69,7 @@ namespace Loyc.LLParserGenerator
 			if (@operator == S.AddSet)
 				return result => F.Call(F.Dot(lhs, _Add), result);
 			else if (@operator == S.QuickBindSet)
-				return result => F.Call(S.Var, F._Missing, F.Call(S.Assign, lhs, result));
+				return result => F.Call(S.Var, F.Missing, F.Call(S.Assign, lhs, result));
 			else if (@operator.Name.EndsWith(":"))
 				return null;
 			else
@@ -152,7 +151,7 @@ namespace Loyc.LLParserGenerator
 		public static Pred SetVar(string varName, Pred pred) {
 			pred.ResultSaver = res => {
 				// #var(@``, $varName($res))
-				return F.Var(F._Missing, varName, res);
+				return F.Var(F.Missing, varName, res);
 			};
 			return pred;
 		}
@@ -183,7 +182,7 @@ namespace Loyc.LLParserGenerator
 			return clone;
 		}
 
-		internal virtual void DiscardAnalysisResult() {}
+		internal virtual void DiscardAnalysisResult() { }
 		
 		public string ToStringWithPosition()
 		{
@@ -205,6 +204,9 @@ namespace Loyc.LLParserGenerator
 		{
 			get { return Basis != LNode.Missing ? Basis.Range.Start : (object)this; }
 		}
+
+		//internal PredA _analytic;
+		//internal PredA Analytic { get { return _analytic ?? PredA.FromPred(this); } }
 	}
 
 	/// <summary>Represents a nonterminal, which is a reference to a rule.</summary>
@@ -213,7 +215,7 @@ namespace Loyc.LLParserGenerator
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public RuleRef(LNode basis, Rule rule) : base(basis) { Rule = rule; }
 		public new Rule Rule;
-		public RVList<LNode> Params = RVList<LNode>.Empty; // Params.Args is a list of parameters
+		public VList<LNode> Params = VList<LNode>.Empty; // Params.Args is a list of parameters
 		public bool? IsInline = null; // was inlining requested with "inline:Rule"?
 		public override bool IsNullable
 		{
@@ -332,7 +334,7 @@ namespace Loyc.LLParserGenerator
 			var contents2 = contents as Alts;
 			if (contents2 != null && contents2.PreAction == null && contents2.PostAction == null) {
 				if (contents2.Mode == LoopMode.Opt || contents2.Mode == LoopMode.Star)
-					throw new ArgumentException(Localize.From("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
+					throw new ArgumentException(Localize.Localized("{0} predicate cannot directly contain {1} predicate", ToStr(mode), ToStr(contents2.Mode)));
 				Arms = contents2.Arms;
 				Greedy = greedy ?? contents2.Greedy;
 				_divisions = contents2._divisions.Clone();
@@ -546,7 +548,7 @@ namespace Loyc.LLParserGenerator
 
 		/// <summary>Computed by <see cref="LLParserGenerator.PredictionAnalysisVisitor"/>.</summary>
 		internal LLParserGenerator.PredictionTree PredictionTree;
-		internal override void DiscardAnalysisResult() { PredictionTree = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); PredictionTree = null; }
 
 		/// <summary>After LLParserGenerator detects ambiguity, this method helps 
 		/// decide whether to report it.</summary>
@@ -652,8 +654,8 @@ namespace Loyc.LLParserGenerator
 			foreach (var div in _divisions)
 			{
 				if (div.Slash &&
-					MathEx.IsInRange(armA, div.Left, div.Right - 1) &&
- 					MathEx.IsInRange(armB, div.Left, div.Right - 1) &&
+					Loyc.Range.IsInRange(armA, div.Left, div.Right - 1) &&
+					Loyc.Range.IsInRange(armB, div.Left, div.Right - 1) &&
 					(armA < div.Mid) != (armB < div.Mid))
 					return true;
 			}
@@ -902,7 +904,7 @@ namespace Loyc.LLParserGenerator
 		public object Pred;
 
 		public bool? Prematched;
-		internal override void DiscardAnalysisResult() { Prematched = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); Prematched = null; }
 
 		public override bool IsNullable
 		{
@@ -946,7 +948,7 @@ namespace Loyc.LLParserGenerator
 		new public IPGTerminalSet Set;
 		
 		public bool? Prematched;
-		internal override void DiscardAnalysisResult() { Prematched = null; }
+		internal override void DiscardAnalysisResult() { base.DiscardAnalysisResult(); Prematched = null; }
 
 		public TerminalPred(LNode basis, char ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), true); }
 		public TerminalPred(LNode basis, int ch) : base(basis) { Set = new PGIntSet(new IntRange(ch), false); }

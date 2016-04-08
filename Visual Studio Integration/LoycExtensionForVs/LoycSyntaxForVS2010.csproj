@@ -33,34 +33,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ecs">
-      <HintPath>..\..\Lib\LLLPG\Ecs.exe</HintPath>
-    </Reference>
-    <Reference Include="LeMP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Collections, Version=1.5.5905.28008, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\Lib\LLLPG\LeMP.exe</HintPath>
+      <HintPath>..\..\Lib\LeMP\Loyc.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="LLLPG, Version=0.9.2.0, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\Lib\LLLPG\LLLPG.exe</HintPath>
+    <Reference Include="Loyc.Ecs">
+      <HintPath>..\..\Lib\LeMP\Loyc.Ecs.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Collections, Version=1.0.5102.28007, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Essentials, Version=1.5.5905.28006, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Collections.dll</HintPath>
+      <HintPath>..\..\Lib\LeMP\Loyc.Essentials.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Essentials, Version=1.0.5102.28005, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Syntax, Version=1.5.5905.28009, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Essentials.dll</HintPath>
+      <HintPath>..\..\Lib\LeMP\Loyc.Syntax.dll</HintPath>
     </Reference>
-    <Reference Include="Loyc.Syntax, Version=1.0.5102.28008, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
+    <Reference Include="Loyc.Utilities, Version=1.5.5905.28010, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Syntax.dll</HintPath>
-    </Reference>
-    <Reference Include="Loyc.Utilities, Version=1.0.5102.28008, Culture=neutral, PublicKeyToken=b1460dff8a28f7a7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\LLLPG\Loyc.Utilities.dll</HintPath>
+      <HintPath>..\..\Lib\LeMP\Loyc.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility">
       <Private>False</Private>

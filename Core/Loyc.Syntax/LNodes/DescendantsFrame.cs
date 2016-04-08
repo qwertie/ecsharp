@@ -46,7 +46,7 @@ namespace Loyc.Syntax
 	public struct DescendantsFrame : IEnumeratorFrame<DescendantsFrame, LNode>, ICloneable<DescendantsFrame>
 	{
 		LNode _node;
-		RVList<LNode> _children;
+		VList<LNode> _children;
 		NodeScanMode _mode;
 		int _step, _index;
 		
@@ -54,7 +54,7 @@ namespace Loyc.Syntax
 		{
 			_node = node;
 			_mode = mode;
-			_children = RVList<LNode>.Empty;
+			_children = VList<LNode>.Empty;
 			_step = _index = 0;
 		}
 

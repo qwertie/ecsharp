@@ -6,10 +6,10 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ecs</RootNamespace>
-    <AssemblyName>Ecs</AssemblyName>
+    <RootNamespace>Loyc.Ecs</RootNamespace>
+    <AssemblyName>Loyc.Ecs</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -65,7 +65,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <NoWarn>1591,1573</NoWarn>
-    <DocumentationFile>..\..\Bin\Release.NET4\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET4\Loyc.Ecs.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -124,7 +124,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OutputPath>..\..\Bin\Release.NET3\</OutputPath>
     <DefineConstants>TRACE;DotNet3</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET3\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET3\Loyc.Ecs.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -175,13 +175,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <OutputPath>..\..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>..\..\Bin\Release.NET45\Ecs.XML</DocumentationFile>
+    <DocumentationFile>..\..\Bin\Release.NET45\Loyc.Ecs.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591,1573</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -197,8 +200,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EcsPrinterAndParserTests.cs" />
+    <Compile Include="Parser\EcsParserGrammar.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EcsParserGrammar.les</DependentUpon>
+    </Compile>
+    <Compile Include="Tests\ECSharpFeatureTests.cs" />
+    <Compile Include="Tests\BugsAndCornerCases.cs" />
+    <Compile Include="Tests\EcsParserTests.cs" />
+    <Compile Include="Tests\EcsPrinterAndParserTests.cs" />
     <Compile Include="EcsPrecedence.cs" />
+    <Compile Include="EcsValidators.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
     <Compile Include="Parser\EcsLexerGrammar.cs">
@@ -206,21 +218,21 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsLexerGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="Parser\EcsLexerTests.cs" />
+    <Compile Include="Tests\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
-    <Compile Include="Parser\EcsParserGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EcsParserGrammar.les</DependentUpon>
-    </Compile>
     <Compile Include="Parser\EcsPreprocessor.cs" />
     <Compile Include="Parser\TokenType.cs" />
     <Compile Include="Printer\EcsNodePrinter--expressions.cs" />
     <Compile Include="Printer\EcsNodePrinter--statements.cs" />
     <Compile Include="Printer\EcsNodePrinter.cs" />
     <Compile Include="Printer\NodePrinterWriter.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\EcsPrinterTests.cs" />
+    <Compile Include="Tests\EcsValidatorTests.cs" />
+    <Compile Include="Tests\PlainCSharpTests.cs" />
+    <Compile Include="Tests\AmbiguityTests.cs" />
+    <Compile Include="Tests\PrinterFocusedTests.cs" />
+    <Compile Include="Tests\ToDoTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
@@ -235,10 +247,6 @@
       <Project>{55EF5FD4-A4EB-46D2-92CA-B3FA317F4C38}</Project>
       <Name>Loyc.Syntax</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
-      <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
-      <Name>Loyc.Utilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
@@ -249,7 +257,7 @@
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
-      <CustomToolNamespace>--timeout=20</CustomToolNamespace>
+      <CustomToolNamespace>--timeout=10</CustomToolNamespace>
       <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
     </None>
   </ItemGroup>

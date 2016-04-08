@@ -114,7 +114,7 @@ namespace Loyc.LLParserGenerator
 				else if (expr.Calls(_Gate, 1) || expr.Calls(_EqGate, 1))
 				{
 					// => foo (LES-based parser artifact)
-					return new Gate(expr, new Seq(F._Missing),
+					return new Gate(expr, new Seq(F.Missing),
 					                      NodeToPred(expr.Args[0], Context.GateRight))
 					                      { IsEquivalency = expr.Calls(_EqGate) };
 				}

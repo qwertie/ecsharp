@@ -10,18 +10,18 @@ using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 
 /// <summary>Enhanced C# parser</summary>
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 	using EP = EcsPrecedence;
 	using S = CodeSymbols;
 	using Loyc.Collections.Impl;
 
-	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees 
+	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees
 	/// (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
 	/// You can use <see cref="EcsLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
-	/// to easily parse a text string (holding zero or more EC# statements) into a 
+	/// to easily parse a text string (holding zero or more EC# statements) into a
 	/// Loyc tree. One does not normally use this class directly.
 	/// </remarks>
 	public partial class EcsParser : BaseParser<Token>
@@ -29,14 +29,11 @@ namespace Ecs.Parser
 		protected LNodeFactory F;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
-		// index into source text of the first token at the current depth (inside 
+		// index into source text of the first token at the current depth (inside
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 
-		public IListSource<Token> TokenTree { get { return _tokensRoot; } }
-
-		static readonly Severity _Error = Severity.Error;
-		static readonly Severity _Warning = Severity.Warning;
+		public IListSource<Token> TokensRoot { get { return _tokensRoot; } }
 
 		protected LNode _triviaWordAttribute;
 		protected LNode _triviaUseOperatorKeyword;
@@ -47,7 +44,7 @@ namespace Ecs.Parser
 		{
 			ErrorSink = messageSink;
 			Reset(tokens, file);
-			
+
 			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
 			_triviaUseOperatorKeyword = F.Id(S.TriviaUseOperatorKeyword);
 			_triviaForwardedProperty = F.Id(S.TriviaForwardedProperty);
@@ -62,22 +59,57 @@ namespace Ecs.Parser
 			_sourceFile = file;
 			F = new LNodeFactory(file);
 			InputPosition = 0; // reads LT(0)
+			_tentative = new TentativeState(false);
+		}
+
+		// Normally we use prediction analysis to distinguish expressions from
+		// variable declarations, but as it turns out, that task is too complex
+		// when parsing expressions. Instead we'll try parsing as an expression
+		// first and, if errors occur, parse as a variable decl instead. For
+		// this purpose we need a mode in which errors are not printed out.
+		// And since parsing contexts can be nested, we need a way to save and
+		// restore state. TentativeState is used to save and restore error state,
+		// and TentativeResult encapsulates the result of a tentative parse.
+		protected TentativeState _tentative;
+		public struct TentativeState
+		{
+			public readonly bool DeferErrors;
+			public MessageHolder DeferredErrors;
+			public int LocalErrorCount;
+			public TentativeState(bool deferErrors)
+			{
+				DeferErrors = deferErrors;
+				DeferredErrors = null;
+				LocalErrorCount = 0;
+			}
+		}
+		public struct TentativeResult
+		{
+			public LNode Result;
+			public int OldPosition;   // position before parsing
+			public int InputPosition; // position after parsing
+			public MessageHolder Errors;
+			public TentativeResult(int oldPosition)
+			{
+				this = default(TentativeResult);
+				OldPosition = oldPosition;
+			}
 		}
 
 		public IListSource<LNode> ParseExprs()
 		{
-			var list = new RWList<LNode>();
+			var list = new VList<LNode>();
 			try {
-				ExprList(list);
+				ExprList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
 
 		public IListSource<LNode> ParseStmtsGreedy()
 		{
-			var list = new RWList<LNode>();
+			var list = new VList<LNode>();
 			try {
-				StmtList(list);
+				StmtList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
@@ -99,7 +131,7 @@ namespace Ecs.Parser
 			ErrorSink.Write(Severity.Critical, pos, "Bug: unhandled exception in parser - " + ex.ExceptionMessageAndType());
 		}
 
-		#region Methods required by base class and by LLLPG
+		#region Methods/properties of LLLPG and base class overrides
 
 		protected sealed override int EofInt() { return 0; }
 		protected sealed override int LA0Int { get { return _lt0.TypeInt; } }
@@ -108,28 +140,58 @@ namespace Ecs.Parser
 			bool fail;
 			return _tokens.TryGet(InputPosition + i, out fail);
 		}
-		protected LNode Error(string message, params object[] args)
+
+		protected override string ToString(int type_)
 		{
-			Error(InputPosition, message, args);
-			if (args.Length > 0)
-				message = string.Format(message, args);
-			return F.Call(S.Error, F.Literal(message));
+			var type = (TokenType)type_;
+			return type.ToString();
 		}
-		protected void Error(LNode node, string message, params object[] args)
+
+		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
+		protected TT LA(int i)
 		{
-			ErrorSink.Write(_Error, node, message, args);
+			bool fail;
+			return _tokens.TryGet(InputPosition + i, out fail).Type();
 		}
-		protected void Error(Token token, string message, params object[] args)
+		new const TokenType EOF = TT.EOF;
+
+		#endregion
+
+		#region Error handling
+
+		UString CurrentTokenText()
 		{
-			ErrorSink.Write(_Error, token.Range(_sourceFile), message, args);
+			return LT(0).SourceText(SourceFile.Text);
 		}
+
 		protected override void Error(int lookaheadIndex, string message)
 		{
 			Error(lookaheadIndex, message, EmptyArray<object>.Value);
 		}
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{
-            Error(LT(lookaheadIndex), message, args);
+			int iPos = GetTextPosition(InputPosition + lookaheadIndex);
+			SourcePos pos = _sourceFile.IndexToLine(iPos);
+			CurrentSink(true).Write(Severity.Error, pos, message, args);
+		}
+		protected LNode Error(string message, params object[] args)
+		{
+			Error(0, message, args);
+			if (_tentative.DeferErrors)
+				return F.Missing;
+			else {
+				if (args.Length > 0)
+					message = string.Format(message, args);
+				return F.Call(S.Error, F.Literal(message));
+			}
+		}
+		protected void Error(LNode node, string message, params object[] args)
+		{
+			CurrentSink(true).Write(Severity.Error, node, message, args);
+		}
+		protected void Error(Token token, string message, params object[] args)
+		{
+			CurrentSink(true).Write(Severity.Error, _sourceFile.IndexToLine(token.StartIndex), message, args);
 		}
 		protected int GetTextPosition(int tokenPosition)
 		{
@@ -142,24 +204,19 @@ namespace Ecs.Parser
 			else
 				return _tokens[_tokens.Count - 1].EndIndex;
 		}
-		protected override string ToString(int type_)
+		public IMessageSink CurrentSink(bool incErrorCount)
 		{
-			var type = (TokenType)type_;
-			return type.ToString();
+			if (incErrorCount)
+				_tentative.LocalErrorCount++;
+			if (_tentative.DeferErrors)
+				return _tentative.DeferredErrors = _tentative.DeferredErrors ?? new MessageHolder();
+			return base.ErrorSink;
 		}
-		
-		protected TT LA0 { [DebuggerStepThrough] get { return _lt0.Type(); } }
-		protected TT LA(int i)
-		{
-			bool fail;
-			return _tokens.TryGet(InputPosition + i, out fail).Type();
-		}
-		new const TokenType EOF = TT.EOF;
 
 		#endregion
 
 		#region Down & Up
-		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
+		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z,
 		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
 		// So the parser calls something like Down(lparen) to begin parsing inside,
 		// then it calls Up() to return to the parent tree.
@@ -192,16 +249,20 @@ namespace Ecs.Parser
 			_tokens = pair.A;
 			InputPosition = pair.B;
 		}
-		
+
 		#endregion
 
 		#region Other parsing helpers: ExprListInside, etc.
 
-		protected LNode SingleExprInside(Token group, string stmtType, RWList<LNode> list = null, bool allowUnassignedVarDecl = false)
+		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl = false)
 		{
-			list = list ?? new RWList<LNode>();
+			VList<LNode> list = default(VList<LNode>);
+			return SingleExprInside(group, stmtType, allowUnassignedVarDecl, ref list);
+		}
+		protected LNode SingleExprInside(Token group, string stmtType, bool allowUnassignedVarDecl, ref VList<LNode> list)
+		{
 			int oldCount = list.Count;
-			AppendExprsInside(group, list, false, allowUnassignedVarDecl);
+			list = AppendExprsInside(group, list, false, allowUnassignedVarDecl);
 			if (list.Count != oldCount + 1)
 			{
 				if (list.Count <= oldCount) {
@@ -216,41 +277,39 @@ namespace Ecs.Parser
 			}
 			return list[0];
 		}
-		protected RWList<LNode> AppendExprsInside(Token group, RWList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		protected VList<LNode> AppendExprsInside(Token group, VList<LNode> list, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			if (Down(group.Children)) {
-				ExprList(list, allowTrailingComma, allowUnassignedVarDecl);
+				ExprList(ref list, allowTrailingComma, allowUnassignedVarDecl);
 				return Up(list);
 			}
 			return list;
 		}
-		protected RWList<LNode> AppendInitializersInside(Token group, RWList<LNode> list)
+		protected void AppendInitializersInside(Token group, ref VList<LNode> list)
 		{
 			if (Down(group.Children)) {
-				InitializerList(list);
+				InitializerList(ref list);
+				Up();
+			}
+		}
+		protected VList<LNode> ExprListInside(Token t, bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
+		{
+			return AppendExprsInside(t, new VList<LNode>(), allowTrailingComma, allowUnassignedVarDecl);
+		}
+		private VList<LNode> StmtListInside(Token t)
+		{
+			var list = new VList<LNode>();
+			if (Down(t.Children)) {
+				StmtList(ref list);
 				return Up(list);
 			}
 			return list;
-		}
-		protected RWList<LNode> AppendStmtsInside(Token group, RWList<LNode> list)
-		{
-			if (Down(group.Children)) {
-				StmtList(list);
-				return Up(list);
-			}
-			return list;
-		}
-		protected RWList<LNode> ExprListInside(Token t, bool allowTrailingComma = false)
-		{
-			return AppendExprsInside(t, new RWList<LNode>(), allowTrailingComma);
-		}
-		private RWList<LNode> StmtListInside(Token t)
-		{
-			return AppendStmtsInside(t, new RWList<LNode>());
  		}
-		private RWList<LNode> InitializerListInside(Token t)
+		private VList<LNode> InitializerListInside(Token t)
 		{
-			return AppendInitializersInside(t, new RWList<LNode>());
+			var list = VList<LNode>.Empty;
+			AppendInitializersInside(t, ref list);
+			return list;
  		}
 
 		// Counts the number of array dimensions, e.g. [] => 1, [,,] => 3
@@ -296,11 +355,11 @@ namespace Ecs.Parser
 			{ (int)TT.LT, EP.Compare },
 			{ (int)TT.GT, EP.Compare },
 			{ (int)TT.LEGE, EP.Compare },
-			{ (int)TT.@is, EP.Compare },
-			{ (int)TT.@as, EP.Compare },
-			{ (int)TT.@using, EP.Compare },
+			{ (int)TT.Is, EP.Compare },
+			{ (int)TT.As, EP.Compare },
+			{ (int)TT.Using, EP.Compare },
 			{ (int)TT.EqNeq, EP.Equals },
-			{ (int)TT.@in, EP.Equals },
+			{ (int)TT.In, EP.Equals },
 			{ (int)TT.AndBits, EP.AndBits },
 			{ (int)TT.XorBits, EP.XorBits },
 			{ (int)TT.OrBits, EP.OrBits },

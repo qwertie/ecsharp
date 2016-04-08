@@ -52,7 +52,7 @@ namespace Loyc.Utilities
 		public void SetTag(Symbol key, ValueT val)
 		{
 			if (key == null)
-				throw new ArgumentException(Localize.From("SetTag: key is null"));
+				throw new ArgumentException(Localize.Localized("SetTag: key is null"));
 			
 			int count = Count;
 			KeyValuePair<Symbol, ValueT> kvp;

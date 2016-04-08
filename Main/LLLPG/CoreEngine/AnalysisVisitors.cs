@@ -22,9 +22,10 @@ namespace Loyc.LLParserGenerator
 		/// </summary>
 		/// <remarks>
 		/// This class primarily does prediction analysis. It generates prediction
-		/// trees, which <see cref="GenerateCodeVisitor"/> then uses to generate 
-		/// code. It relies on the #region "Prediction analysis" in 
-		/// <see cref="LLParserGenerator"/> for the lowest-level analysis tasks.
+		/// trees, placed in the <see cref="Alts.PredictionTree"/> field, which 
+		/// <see cref="GenerateCodeVisitor"/> then uses to generate code. It relies 
+		/// on the #region "Prediction analysis" in <see cref="LLParserGenerator"/> 
+		/// for the lowest-level analysis tasks.
 		/// </remarks>
 		protected class PredictionAnalysisVisitor : RecursivePredVisitor
 		{
@@ -82,7 +83,7 @@ namespace Loyc.LLParserGenerator
 					EzStopwatch TEMP = new EzStopwatch(true);
 					alts.PredictionTree = ComputePredictionTree(firstSets);
 					if (TEMP.Millisec > 500)
-						LLPG.Output(Warning, alts, "Bug? This took a long time to analyze: " + TEMP.Millisec + "ms");
+						LLPG.Output(Warning, alts, "Slug? This took a long time to analyze: " + TEMP.Millisec + "ms");
 				} catch (System.Threading.ThreadAbortException) {
 					LLPG.Output(Error, alts, "ThreadAbortException in rule '" + _currentRule.Name + "'"); // user diagnostic
 					throw;

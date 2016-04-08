@@ -55,7 +55,7 @@ namespace Loyc.Math
 		public static readonly IRationalMath<T> RationalMath = Get() as IRationalMath<T>;
 		public static readonly IFloatMath<T> FloatMath = Get() as IFloatMath<T>;
 		public static readonly IComplexMath<T> ComplexMath = Get() as IComplexMath<T>;
-		public static readonly INumConverter<T> NumConverter = Get() as INumConverter<T>;
+		public static readonly IConvertTo<T> NumConverter = Get() as IConvertTo<T>;
 		public static readonly IOrdered<T> Ordered = Get() as IOrdered<T>;
 		public static readonly IIncrementer<T> Inrementer = Get() as IIncrementer<T>;
 		public static readonly IBitwise<T> Bitwise = Get() as IBitwise<T>;

@@ -15,7 +15,7 @@
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/>.
 	/// </summary>
 	/// <remarks>
-	/// You can read <a href="http://core.loyc.net/collections/">articles</a> about
+	/// You can read <a href="http://core.ecsharp.net/collections/">articles</a> about
 	/// the AList family of data structures online.
 	/// <para/>
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/> are excellent data 
@@ -272,11 +272,11 @@
 		{
 			string name = GetType().NameWithGenericArgs();
 			if (_freezeMode == FrozenForListChanging)
-				throw new InvalidOperationException(Localize.From("Cannot insert or remove items in {0} during a ListChanging event.", name));
+				throw new InvalidOperationException(Localize.Localized("Cannot insert or remove items in {0} during a ListChanging event.", name));
 			else if (_freezeMode == FrozenForConcurrency)
-				throw new ConcurrentModificationException(Localize.From("{0} was accessed concurrently while being modified.", name));
+				throw new ConcurrentModificationException(Localize.Localized("{0} was accessed concurrently while being modified.", name));
 			else if (_freezeMode == Frozen)
-				throw new ReadOnlyException(Localize.From("Cannot modify {0} when it is frozen.", name));
+				throw new ReadOnlyException(Localize.Localized("Cannot modify {0} when it is frozen.", name));
 			else
 				throw new InvalidStateException();
 		}

@@ -10,23 +10,15 @@ namespace Loyc.Collections
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	/// <remarks>
 	/// This base class is used in the same way one would use protected inheritance 
-	/// in C++: it provides the derived class with access to a FWList/RWList, but it
+	/// in C++: it provides the derived class with access to a FWList/WList, but it
 	/// does not allow users of the derived class to access the list.
 	/// <para/>
-	/// I plan to use this base class as an optimization, to implement ITags in 
-	/// Loyc AST nodes. It is important that AST nodes, which are immutable, use as 
-	/// little memory as possible so that copies can be made as quickly as possible
-	/// (and so that Loyc isn't a memory hog). By using WListProtected as a base 
-	/// class, AST nodes can have extra attributes attached to them without 
-	/// allocating a separate heap object that would have to be cloned every time 
-	/// the node's immutable attributes change. Consequently, nodes use 12 bytes 
-	/// less memory and can be copied faster.
-	/// <para/>
-	/// Besides that, WListProtected provides an extra byte of storage in UserByte 
-	/// that AstNode uses to optimize access to a tag without enlarging the object.
+	/// I had planned to use this base class as an optimization to help implement
+	/// Loyc trees, but I didn't end up using it. Still, it could be useful someday
+	/// as a base class of a memory-critical class that wants a mutable WList.
 	/// <para/>
 	/// By default, the list will act like a FWList. If you want the list to act 
-	/// like an RWList instead, override AdjustWListIndex and GetWListEnumerator 
+	/// like an WList instead, override AdjustWListIndex and GetWListEnumerator 
 	/// as follows:
 	/// <code>
 	///	protected override int AdjustWListIndex(int index, int size) 
@@ -93,12 +85,12 @@ namespace Loyc.Collections
 			}
 		}
 
-		/// <summary>This method implements the difference between FWList and RWList:
-		/// In FWList it returns <c>index</c>, but in RWList it returns 
+		/// <summary>This method implements the difference between FWList and WList:
+		/// In FWList it returns <c>index</c>, but in WList it returns 
 		/// <c>Count-size-index</c>.</summary>
 		/// <param name="index">Index to adjust</param>
 		/// <param name="size">Number of elements being accessed or removed</param>
-		/// <remarks>Solely as an optimization, FWList and RWList also have separate 
+		/// <remarks>Solely as an optimization, FWList and WList also have separate 
 		/// versions of this[], InsertAt and RemoveAt.</remarks>
 		protected virtual int AdjustWListIndex(int index, int size) { return index; }
 
@@ -127,7 +119,7 @@ namespace Loyc.Collections
 
 		#region IList<T>/ICollection<T> Members
 
-		/// <summary>Gets an item from a FWList or RWList at the specified index.</summary>
+		/// <summary>Gets an item from a FWList or WList at the specified index.</summary>
 		protected T GetAt(int index)
 		{
 			int v_index = AdjustWListIndex(index, 1);
@@ -135,7 +127,7 @@ namespace Loyc.Collections
 				throw new IndexOutOfRangeException();
 			return GetAtDff(v_index);
 		}
-		/// <summary>Sets an item in a FWList or RWList at the specified index.</summary>
+		/// <summary>Sets an item in a FWList or WList at the specified index.</summary>
 		protected void SetAt(int index, T value)
 		{
 			int v_index = AdjustWListIndex(index, 1);
@@ -146,7 +138,7 @@ namespace Loyc.Collections
 		}
 		
 		/// <summary>Inserts an item at the "front" of the list, 
-		/// which is index 0 for FWList, or Count for RWList.</summary>
+		/// which is index 0 for FWList, or Count for WList.</summary>
 		protected void Add(T item)
 		{
  			VListBlock<T>.MuAdd(this, item);
@@ -200,7 +192,7 @@ namespace Loyc.Collections
 		protected void CopyTo(T[] array, int arrayIndex)
 		{
 			if (Count > array.Length - arrayIndex)
-				throw new ArgumentException(Localize.From("CopyTo: Insufficient space in supplied array"));
+				throw new ArgumentException(Localize.Localized("CopyTo: Insufficient space in supplied array"));
 			IEnumerator<T> e = GetIEnumerator();
 			while (e.MoveNext())
 				array[arrayIndex++] = e.Current;
@@ -230,8 +222,8 @@ namespace Loyc.Collections
 			{ return GetVListEnumerator(); }
 		protected FVList<T>.Enumerator GetVListEnumerator()
 			{ return new FVList<T>.Enumerator(InternalVList); }
-		protected RVList<T>.Enumerator GetRVListEnumerator()
-			{ return new RVList<T>.Enumerator(InternalVList); }
+		protected VList<T>.Enumerator GetRVListEnumerator()
+			{ return new VList<T>.Enumerator(InternalVList); }
 
 		#endregion
 
@@ -272,7 +264,7 @@ namespace Loyc.Collections
 				// Inserting a copy of the list into itself requires some care...
 				if (distanceFromFront == 0) {
 					// this sublist won't change during the insert
-					if (isRWList) items = InternalVList.ToRVList();
+					if (isRWList) items = InternalVList.ToVList();
 					else          items = InternalVList;
 				} else
 					items = ToFVList();     // get an immutable version
@@ -281,7 +273,7 @@ namespace Loyc.Collections
 			VListBlock<T>.MuAddEmpty(this, count);
 			VListBlock<T>.MuMove(this, count, 0, distanceFromFront);
 			if (isRWList) {
-				// Add items in forward order for RWList
+				// Add items in forward order for WList
 				for (int i = 0; i < count; i++)
 					SetAtDff(distanceFromFront + count - 1 - i, items[i]);
 			} else {
@@ -324,9 +316,9 @@ namespace Loyc.Collections
 			get { return Block == null ? 0 : Block.ChainLength; }
 		}
 
-		/// <summary>Returns this list as a FVList; if this is a RWList, the order 
+		/// <summary>Returns this list as a FVList; if this is a WList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the FWList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or WList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
 		protected FVList<T> ToFVList()
@@ -337,23 +329,23 @@ namespace Loyc.Collections
 				return InternalVList;
 		}
 
-		/// <summary>Returns this list as an RVList; if this is a FWList, the order 
+		/// <summary>Returns this list as a VList; if this is a FWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the FWList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or WList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		protected RVList<T> ToRVList()
+		protected VList<T> ToVList()
 		{
 			if (IsOwner)
-				return VListBlock<T>.EnsureImmutable(Block, LocalCount).ToRVList();
+				return VListBlock<T>.EnsureImmutable(Block, LocalCount).ToVList();
 			else
-				return InternalVList.ToRVList();
+				return InternalVList.ToVList();
 		}
 
 		#endregion
 	}
 
-	/// <summary>Shared base class of FWList and RWList.</summary>
+	/// <summary>Shared base class of FWList and WList.</summary>
 	/// <typeparam name="T">The type of elements in the list</typeparam>
 	[DebuggerTypeProxy(typeof(CollectionDebugView<>)),
 	 DebuggerDisplay("Count = {Count}")]
@@ -413,21 +405,21 @@ namespace Loyc.Collections
 		/// <summary>Synonym for Add(); adds an item to the front of the list.</summary>
 		public void Push(T item) { Add(item); }
 
-		/// <summary>Returns this list as a FVList; if this is a RWList, the order 
+		/// <summary>Returns this list as a FVList; if this is a WList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the FWList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or WList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
 		public static explicit operator FVList<T>(WListBase<T> list) { return list.ToFVList(); }
 		public new FVList<T> ToFVList() { return base.ToFVList(); }
 
-		/// <summary>Returns this list as an RVList; if this is a FWList, the order 
+		/// <summary>Returns this list as a VList; if this is a FWList, the order 
 		/// of the elements is reversed at the same time.</summary>
-		/// <remarks>This operation marks the items of the FWList or RWList as 
+		/// <remarks>This operation marks the items of the FWList or WList as 
 		/// immutable. You can still modify the list afterward, but some or all
 		/// of the list may have to be copied.</remarks>
-		public static explicit operator RVList<T>(WListBase<T> list) { return list.ToRVList(); }
-		public new RVList<T> ToRVList() { return base.ToRVList(); }
+		public static explicit operator VList<T>(WListBase<T> list) { return list.ToVList(); }
+		public new VList<T> ToVList() { return base.ToVList(); }
 
 		#endregion
 	}

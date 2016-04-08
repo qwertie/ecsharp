@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Loyc.Collections
 {
 	/// <summary>Extension/helper methods for ranges.</summary>
-	public static partial class Range
+	public static partial class RangeExt
 	{
 		/// <summary>Advances by the specified number of elements.</summary>
 		/// <param name="count">Number of items to remove from the beginning of the

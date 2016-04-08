@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LLLPG version: 1.4.0.0
+// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.4.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,7 +21,7 @@ namespace Loyc.Syntax.Les
 	#pragma warning disable 162, 642
 	public partial class LesParser
 	{
-		public RVList<LNode> ExprList(RVList<LNode> list = default(RVList<LNode>))
+		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
 		{
 			var endMarker = default(TT);
 			return (ExprList(ref endMarker, list));
@@ -36,14 +36,14 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		public RVList<LNode> StmtList()
+		public VList<LNode> StmtList()
 		{
-			RVList<LNode> result = default(RVList<LNode>);
+			VList<LNode> result = default(VList<LNode>);
 			var endMarker = TT.Semicolon;
 			result = ExprList(ref endMarker);
 			return result;
 		}
-		public RVList<LNode> ExprList(ref TokenType endMarker, RVList<LNode> list = default(RVList<LNode>))
+		public VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
 		{
 			TT la0;
 			LNode e = default(LNode);
@@ -141,7 +141,7 @@ namespace Loyc.Syntax.Les
 		{
 			TT la0, la1;
 			Token at = default(Token);
-			RVList<LNode> attrs = default(RVList<LNode>);
+			VList<LNode> attrs = default(VList<LNode>);
 			LNode e = default(LNode);
 			Token t = default(Token);
 			// Line 91: greedy((TT.At)? TT.LBrack ExprList TT.RBrack)?
@@ -246,7 +246,7 @@ namespace Loyc.Syntax.Les
 				{
 					var id = MatchAny();
 					// line 98
-					var args = RVList<LNode>.Empty;
+					var args = VList<LNode>.Empty;
 					args.Add(Expr(P.SuperExpr));
 					// Line 100: (Particle)*
 					for (;;) {
@@ -369,7 +369,7 @@ namespace Loyc.Syntax.Les
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
-			RVList<LNode> list = default(RVList<LNode>);
+			VList<LNode> list = default(VList<LNode>);
 			// Line 148: ( TT.LParen ExprList TT.RParen | TT.Not (TT.LParen ExprList TT.RParen / Expr) | TT.LBrack ExprList TT.RBrack )
 			la0 = (TT) LA0;
 			if (la0 == TT.LParen) {
@@ -386,7 +386,7 @@ namespace Loyc.Syntax.Les
 			} else if (la0 == TT.Not) {
 				Skip();
 				// line 156
-				var args = new RVList<LNode> { 
+				var args = new VList<LNode> { 
 					e
 				};
 				int endIndex;
@@ -408,7 +408,7 @@ namespace Loyc.Syntax.Les
 				e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);
 			} else {
 				// line 162
-				var args = new RVList<LNode> { 
+				var args = new VList<LNode> { 
 					e
 				};
 				Match((int) TT.LBrack);

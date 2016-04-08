@@ -79,7 +79,7 @@ namespace Util.Collections
 		{
 			if ((uint)index < (uint)_list.Count) {
 				if (_owner != null) {
-					var chgList = Range.Single(value);
+					var chgList = ListExt.Single(value);
 					_owner.OnListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Replace, index, 0, chgList));
 				}
 				return _list.TrySet(index, value);
@@ -91,7 +91,7 @@ namespace Util.Collections
 			if ((uint)index > (uint)_list.Count)
 				throw new ArgumentOutOfRangeException("index");
 			if (_owner != null) {
-				var chgList = Range.Single(item);
+				var chgList = ListExt.Single(item);
 				_owner.OnListChanging(this, new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, chgList));
 			}
 			_list.Insert(index, item);

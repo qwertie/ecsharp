@@ -52,7 +52,7 @@ namespace Loyc
 		public static readonly NoValue Value = new NoValue();
 		public override string ToString()
 		{
-			return Localize.From("(No value)");
+			return "(No value)".Localized();
 		}
 	}
 }

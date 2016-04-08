@@ -198,6 +198,10 @@ namespace Loyc.Math
 		public static FPI8 operator --(FPI8 a) { a.N -= Unit; return a; }
 		
 		public FPI8 Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public FPI8 Floor() { return Prescaled(N & ~Mask); }
+		public FPI8 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{
@@ -501,6 +505,10 @@ namespace Loyc.Math
 		public static FPI16 operator --(FPI16 a) { a.N -= Unit; return a; }
 		
 		public FPI16 Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public FPI16 Floor() { return Prescaled(N & ~Mask); }
+		public FPI16 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{
@@ -799,6 +807,10 @@ namespace Loyc.Math
 		public static FPI23 operator --(FPI23 a) { a.N -= Unit; return a; }
 		
 		public FPI23 Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public FPI23 Floor() { return Prescaled(N & ~Mask); }
+		public FPI23 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{
@@ -1111,6 +1123,10 @@ namespace Loyc.Math
 		public static FPL16 operator --(FPL16 a) { a.N -= Unit; return a; }
 		
 		public FPL16 Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public FPL16 Floor() { return Prescaled(N & ~Mask); }
+		public FPL16 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{
@@ -1423,6 +1439,10 @@ namespace Loyc.Math
 		public static FPL32 operator --(FPL32 a) { a.N -= Unit; return a; }
 		
 		public FPL32 Abs() { return Prescaled(N >= 0 ? N : -N); }
+
+		public FPL32 Floor() { return Prescaled(N & ~Mask); }
+		public FPL32 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
 		{

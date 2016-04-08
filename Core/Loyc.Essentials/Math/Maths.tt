@@ -40,6 +40,17 @@ namespace Loyc.Math
 		public T Zero       { get { return <#=T.Zero()#>; } }
 		public T One        { get { return <#=T.One()#>; } }
 
+<#		if (T.IsInt) { #>
+		public T Floor(T a)               { return a; }
+		public T Ceiling(T a)             { return a; }
+<#		} else if (T.IsFloat) { #>
+		public T Floor(T a)               { return (T)System.Math.Floor(a); }
+		public T Ceiling(T a)             { return (T)System.Math.Ceiling(a); }
+<#		} else { #>
+		public T Floor(T a)               { return a.Floor(); }
+		public T Ceiling(T a)             { return a.Ceiling(); }
+<#		} #>
+
 		#endregion
 
 		#region <#= T.IsSigned ? "ISignedMath" : "IMath" #>
@@ -76,7 +87,7 @@ namespace Loyc.Math
 		                   <#if(!T.IsSigned||T.WholeBits<31){#> t < (int)T.MinValue ? T.MinValue : <#}#>(T)t; }
 		public T Clip(long t)   { return<#if(T.WholeBits<63){#> t > (long)T.MaxValue ? T.MaxValue : <#}#>
 		                   <#if(!T.IsSigned||T.WholeBits<63){#> t < (long)T.MinValue ? T.MinValue : <#}#>(T)t; }
-		public T Clip(double t) { return (T)MathEx.InRange(t, (double)0, (double)T.MaxValue); }
+		public T Clip(double t) { return (T)Range.PutInRange(t, (double)0, (double)T.MaxValue); }
 <#		} #>
 <#		} #>
 

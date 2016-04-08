@@ -12,26 +12,26 @@ namespace Loyc.Math
 		[Test]
 		public void TestInRange()
 		{
-			Assert.IsFalse(MathEx.IsInRange(1, 2, 5));
-			Assert.IsTrue(MathEx.IsInRange(2, 2, 5));
-			Assert.IsTrue(MathEx.IsInRange(3, 2, 5));
-			Assert.IsTrue(MathEx.IsInRange(4, 2, 5));
-			Assert.IsTrue(MathEx.IsInRange(5, 2, 5));
-			Assert.IsFalse(MathEx.IsInRange(6, 2, 5));
-			Assert.IsFalse(MathEx.IsInRange(2, 5, 2));
-			Assert.IsFalse(MathEx.IsInRange(3, 5, 2));
-			Assert.IsFalse(MathEx.IsInRange(5, 5, 2));
+			Assert.IsFalse(Range.IsInRange(1, 2, 5));
+			Assert.IsTrue(Range.IsInRange(2, 2, 5));
+			Assert.IsTrue(Range.IsInRange(3, 2, 5));
+			Assert.IsTrue(Range.IsInRange(4, 2, 5));
+			Assert.IsTrue(Range.IsInRange(5, 2, 5));
+			Assert.IsFalse(Range.IsInRange(6, 2, 5));
+			Assert.IsFalse(Range.IsInRange(2, 5, 2));
+			Assert.IsFalse(Range.IsInRange(3, 5, 2));
+			Assert.IsFalse(Range.IsInRange(5, 5, 2));
 		}
 		[Test]
 		public void InRange()
 		{
-			Assert.AreEqual(2, MathEx.InRange(-1, 2, 5));
-			Assert.AreEqual(2, MathEx.InRange(1, 2, 5));
-			Assert.AreEqual(2, MathEx.InRange(2, 2, 5));
-			Assert.AreEqual(3, MathEx.InRange(3, 2, 5));
-			Assert.AreEqual(4, MathEx.InRange(4, 2, 5));
-			Assert.AreEqual(5, MathEx.InRange(5, 2, 5));
-			Assert.AreEqual(5, MathEx.InRange(6, 2, 5));
+			Assert.AreEqual(2, Range.PutInRange(-1, 2, 5));
+			Assert.AreEqual(2, Range.PutInRange(1, 2, 5));
+			Assert.AreEqual(2, Range.PutInRange(2, 2, 5));
+			Assert.AreEqual(3, Range.PutInRange(3, 2, 5));
+			Assert.AreEqual(4, Range.PutInRange(4, 2, 5));
+			Assert.AreEqual(5, Range.PutInRange(5, 2, 5));
+			Assert.AreEqual(5, Range.PutInRange(6, 2, 5));
 		}
 		[Test]
 		public void IsPrime()

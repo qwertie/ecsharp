@@ -50,11 +50,20 @@ namespace Loyc.Syntax
 		
 		public static readonly Symbol Braces = GSymbol.Get("{}"); //!< "{}" Creates a scope.
 		public static readonly Symbol IndexBracks = GSymbol.Get("_[]"); //!< "_[]" indexing operator
-		                                                          //!< foo[1] <=> @`[]`(foo, 1) and int[] <=> #of(@`[]`, int)
+		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> #of(@`[]`, Foo)
 		public static readonly Symbol Array = GSymbol.Get("[]");  //!< Used for list/array literals. Not used for attributes.
 		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`[]`)
 		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("[,]"); //!< "[,]" int[,] <=> #of(@`[,]`, int)
 
+		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
+		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
+		                              // async is a normal contextual attribute so it needs no special parser support.
+		public static readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
+		public static readonly Symbol NullIndexBracks = GSymbol.Get("?[]"); //!< "?[]" indexing operator of C# 6
+		                              //!< @`?[]`(foo, #(1, A)) <=> foo?[1, A] (TENTATIVE, may be changed later)
+		public static readonly Symbol InitializerAssignment = GSymbol.Get("[]="); //!< @`[]=`(0, 1, x) <=> [0, 1]=x
+		                              // (TENTATIVE, and only supported in 'new' initializer blocks)
+		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
 		///     <c>#class(Derived, #(Base, IEnumerable), {...})</c>.
 		/// For a time, #tuple was used for this purpose; the problem is that a
@@ -69,7 +78,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>
 		public static readonly Symbol Dot = GSymbol.Get(".");              //!< "." binary dot operator, e.g. string.Join
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); //!< "#namedArg" Named argument e.g. #namedarg(x, 0) <=> x: 0
-		public static readonly Symbol New = GSymbol.Get("#new");           //!< "#new": new Foo(x) { a } <=> #new(Foo(x), a)
+		public static readonly Symbol New = GSymbol.Get("#new");           //!< "#new": new Foo(x) { a } <=> #new(Foo(x), a);  new[] { ... } <=> #new(@`[]`(), ...)
 		public static readonly Symbol Out = GSymbol.Get("#out");           //!< "#out": out x <=> [#out] x
 		public static readonly Symbol Ref = GSymbol.Get("#ref");           //!< "#ref": ref int x <=> [#ref] #var(#int, x)
 		public static readonly Symbol Sizeof = GSymbol.Get("#sizeof");     //!< "#sizeof" sizeof(int) <=> #sizeof(int)
@@ -103,14 +112,14 @@ namespace Loyc.Syntax
 		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
 		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     //!< e.g. #doWhile(x++, condition); <=> do x++; while(condition);
 		public static readonly Symbol While = GSymbol.Get("#while");         //!< e.g. #while(condition,{...}); <=> while(condition) {...}
-		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...}
+		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...} (note: use #import or CodeSymbols.Import for a using directive)
 		public static readonly Symbol For = GSymbol.Get("#for");             //!< e.g. #for(int i = 0, i < Count, i++, {...}); <=> for(int i = 0; i < Count; i++) {...}
 		public static readonly Symbol ForEach = GSymbol.Get("#foreach");     //!< e.g. #foreach(#var(@``, n), list, {...}); <=> foreach(var n in list) {...}
 		public static readonly Symbol Label = GSymbol.Get("#label");         //!< e.g. #label(success) <=> success:
 		public static readonly Symbol Case = GSymbol.Get("#case");           //!< e.g. #case(10, 20) <=> case 10, 20:
 		public static readonly Symbol Return = GSymbol.Get("#return");       //!< e.g. #return(x);  <=> return x;   [#yield] #return(x) <=> yield return x;
-		public static readonly Symbol Continue = GSymbol.Get("#continue");   //!< e.g. #continue;   <=> continue;
-		public static readonly Symbol Break = GSymbol.Get("#break");         //!< e.g. #break;      <=> break;
+		public static readonly Symbol Continue = GSymbol.Get("#continue");   //!< e.g. #continue(); <=> continue;
+		public static readonly Symbol Break = GSymbol.Get("#break");         //!< e.g. #break();    <=> break;
 		public static readonly Symbol Goto = GSymbol.Get("#goto");           //!< e.g. #goto(label) <=> goto label;
 		public static readonly Symbol GotoCase = GSymbol.Get("#gotoCase");   //!< e.g. #gotoCase(expr) <=> goto case expr;
 		public static readonly Symbol Throw = GSymbol.Get("#throw");         //!< e.g. #throw(expr);  <=> throw expr;
@@ -119,8 +128,8 @@ namespace Loyc.Syntax
 		public static readonly Symbol Fixed = GSymbol.Get("#fixed");         //!< e.g. #fixed(#var(@`*`(#int32), x = &y), stmt); <=> fixed(int* x = &y) stmt;
 		public static readonly Symbol Lock = GSymbol.Get("#lock");           //!< e.g. #lock(obj, stmt); <=> lock(obj) stmt;
 		public static readonly Symbol Switch = GSymbol.Get("#switch");       //!< e.g. #switch(n, { ... }); <=> switch(n) { ... }
-		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, {...})); <=> try {...} catch {...}
-		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), {...})
+		public static readonly Symbol Try = GSymbol.Get("#try");             //!< e.g. #try({...}, #catch(@``, @``, {...})); <=> try {...} catch {...}
+		public static readonly Symbol Catch = GSymbol.Get("#catch");         //!< "#catch"   catch clause of #try statement: #catch(#var(Exception,e), whenExpr, {...})
 		public static readonly Symbol Finally = GSymbol.Get("#finally");     //!< "#finally" finally clause of #try statement: #finally({...})
 		
 		// Space definitions
@@ -137,7 +146,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Var = GSymbol.Get("#var");           //!< e.g. #var(#int32, x = 0, y = 1, z); #var(@``, x = 0) <=> var x = 0;
 		public static readonly Symbol Event = GSymbol.Get("#event");       //!< e.g. #event(EventHandler, Click, { }) <=> event EventHandler Click { }
 		public static readonly Symbol Delegate = GSymbol.Get("#delegate"); //!< e.g. #delegate(#int32, Foo, #tuple()); <=> delegate int Foo();
-		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, { get; }) <=> int Foo { get; }
+		public static readonly Symbol Property = GSymbol.Get("#property"); //!< e.g. #property(#int32, Foo, @``, { get; }) <=> int Foo { get; }
 
 		// Misc
 		public static readonly Symbol Where = GSymbol.Get("#where");       //!< "#where" e.g. class Foo<T> where T:class, Foo {} <=> #class(#of(Foo, [#where(#class, Foo)] T), #(), {});
@@ -148,7 +157,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol Explicit = GSymbol.Get("#explicit"); //!< e.g. [#explicit] #fn(#int32, [#operator] #cast, (Foo a,))
 		public static readonly Symbol Missing = GSymbol.Empty;             //!< Indicates that a syntax element was omitted, e.g. Foo(, y) => Foo(@``, y)
 		public static readonly Symbol Splice = GSymbol.Get("#splice");     //!< When a macro returns #splice(a, b, c), the argument list (a, b, c) is spliced into the surrounding code.
-		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); //!< e.g. [assembly: Foo] <=> [Foo] #assembly;
+		public static readonly Symbol Assembly = GSymbol.Get("#assembly"); //!< e.g. [assembly: Foo] <=> #assembly(Foo);
 		public static readonly Symbol Module = GSymbol.Get("#module");     //!< e.g. [module: Foo] <=> [Foo] #module;
 		public static readonly Symbol Import = GSymbol.Get("#import");     //!< e.g. using System; <=> #import(System);
 		//!< #import is used instead of #using because the using(...) {...} statement already uses #using
@@ -187,17 +196,18 @@ namespace Loyc.Syntax
 		public static readonly Symbol BadCode = GSymbol.Get("#badCode");
 
 		// Enhanced C# stuff (node names)
-		public static readonly Symbol NullDot = GSymbol.Get("?.");      //!< "?."  safe navigation ("null dot") operator
-		public static readonly Symbol Exp = GSymbol.Get("**");          //!< "**"  exponent operator
-		public static readonly Symbol In = GSymbol.Get("#in");          //!< "#in" membership test operator
-		public static readonly Symbol Substitute = GSymbol.Get(@"$");   //!< "$"   substitution operator
-		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$"); //!< Alias for Substitude
-		public static readonly Symbol DotDot = GSymbol.Get("..");       //!< ".." Binary range operator
+		public static readonly Symbol NullDot = GSymbol.Get("?.");       //!< "?."  safe navigation ("null dot") operator
+		public static readonly Symbol Exp = GSymbol.Get("**");           //!< "**"  exponent operator
+		public static readonly Symbol In = GSymbol.Get("#in");           //!< "#in" membership test operator
+		public static readonly Symbol Substitute = GSymbol.Get(@"$");    //!< "$"   substitution operator
+		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$");  //!< Alias for Substitude
+		public static readonly Symbol DotDot = GSymbol.Get("..");        //!< ".." Binary range operator (exclusive)
+		public static readonly Symbol DotDotDot = GSymbol.Get("...");    //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
 		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)
 		public static readonly Symbol Fn = GSymbol.Get("#fn");           //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
-		public static readonly Symbol Cons = GSymbol.Get("#cons");       //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
+		public static readonly Symbol Constructor = GSymbol.Get("#cons");//!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
 		public static readonly Symbol Forward = GSymbol.Get("==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}

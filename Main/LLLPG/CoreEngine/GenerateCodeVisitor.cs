@@ -30,8 +30,8 @@ namespace Loyc.LLParserGenerator
 			Rule _currentRule;
 			Pred _currentPred;
 			HashSet<string> _labelsInUse = new HashSet<string>(); // for deduplication of goto-labels
-			RWList<LNode> _classBody; // Location where we generate terminal sets
-			RWList<LNode> _target; // List of statements in method being generated
+			WList<LNode> _classBody; // Location where we generate terminal sets
+			WList<LNode> _target; // List of statements in method being generated
 			ulong _laVarsNeeded;
 			// # of alts using gotos -- a counter is used to make unique labels
 			int _separatedMatchCounter = 0, _stopLabelCounter = 0;
@@ -50,7 +50,7 @@ namespace Loyc.LLParserGenerator
 			{
 				CGH.BeginRule(rule);
 				_currentRule = rule;
-				_target = new RWList<LNode>();
+				_target = new WList<LNode>();
 				_laVarsNeeded = 0;
 				_separatedMatchCounter = _stopLabelCounter = 0;
 				_recognizerMode = rule.IsRecognizer;
@@ -73,7 +73,7 @@ namespace Loyc.LLParserGenerator
 					_classBody.SpliceAdd(method, S.Splice);
 				}
 
-				method = CGH.CreateRuleMethod(rule, _target.ToRVList());
+				method = CGH.CreateRuleMethod(rule, _target.ToVList());
 				_classBody.SpliceAdd(method, S.Splice);
 			}
 
@@ -118,7 +118,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 
-			void VisitWithNewTarget(Pred toBeVisited, RWList<LNode> target)
+			void VisitWithNewTarget(Pred toBeVisited, WList<LNode> target)
 			{
 				var old = _target;
 				_target = target;
@@ -197,10 +197,10 @@ namespace Loyc.LLParserGenerator
 						continue;
 					}
 
-					var codeForThisArm = new RWList<LNode>();
+					var codeForThisArm = new WList<LNode>();
 					VisitWithNewTarget(alts.Arms[i], codeForThisArm);
 
-					matchingCode[i].A = F.Braces(codeForThisArm.ToRVList());
+					matchingCode[i].A = F.Braces(codeForThisArm.ToVList());
 					if (timesUsed[i] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A)) {
 						separateCount++;
 						matchingCode[i].B = alts.Arms[i].ChooseGotoLabel() 
@@ -215,9 +215,9 @@ namespace Loyc.LLParserGenerator
 				// we generate it later, on-demand.
 				if (userDefinedError) {
 					int i = alts.Arms.Count;
-					var errorHandler = new RWList<LNode>();
+					var errorHandler = new WList<LNode>();
 					VisitWithNewTarget(alts.ErrorBranch, errorHandler);
-					matchingCode[i].A = F.Braces(errorHandler.ToRVList());
+					matchingCode[i].A = F.Braces(errorHandler.ToVList());
 					if (timesUsed[ErrorAlt] > 1 && !SimpleEnoughToRepeat(matchingCode[i].A)) {
 						matchingCode[i].B = "error";
 						separateCount++;
@@ -267,7 +267,7 @@ namespace Loyc.LLParserGenerator
 
 				if (loopType == S.For) {
 					// (...)* => for (;;) {}
-					code = F.Call(S.For, F._Missing, F._Missing, F._Missing, code);
+					code = F.Call(S.For, F.Missing, F.Missing, F.Missing, code);
 				} else if (loopType == S.DoWhile) {
 					// (...)? becomes "do {...} while(false);" IF the exit branch is NOT the default.
 					// If the exit branch is the default, then no loop and no "break" is needed.
@@ -319,9 +319,9 @@ namespace Loyc.LLParserGenerator
 				return code.ArgCount == 1 && !code.Args[0].Calls(S.If) && code.ArgNamed(S.Braces) == null;
 			}
 
-			private RWList<LNode> GenerateExtraMatchingCode(Pair<LNode, string>[] matchingCode, int separateCount, ref Symbol loopType)
+			private WList<LNode> GenerateExtraMatchingCode(Pair<LNode, string>[] matchingCode, int separateCount, ref Symbol loopType)
 			{
-				var extraMatching = new RWList<LNode>();
+				var extraMatching = new WList<LNode>();
 				if (separateCount != 0) {
 					for (int i = 0; i < matchingCode.Length; i++) {
 						if (matchingCode[i].B != null) // split out this case
@@ -377,7 +377,7 @@ namespace Loyc.LLParserGenerator
 			private LNode GetExitStmt(Symbol haveLoop)
 			{
 				if (haveLoop == null || haveLoop == S.DoWhile)
-					return F._Missing;
+					return F.Missing;
 				if (haveLoop == S.For)
 					return F.Call(S.Break);
 				return F.Call(S.Goto, F.Id(haveLoop));
@@ -429,7 +429,7 @@ namespace Loyc.LLParserGenerator
 				// break out of the switch(). In that case, add "stop:" after the
 				// switch() and use "goto stop" instead of "break".
 
-				RWList<LNode> block = new RWList<LNode>();
+				WList<LNode> block = new WList<LNode>();
 				LNode laVar = null;
 				MSet<int> switchCases = new MSet<int>();
 				IPGTerminalSet[] branchSets = null;
@@ -479,7 +479,7 @@ namespace Loyc.LLParserGenerator
 				}
 
 				block.Add(code);
-				return F.Braces(block.ToRVList());
+				return F.Braces(block.ToVList());
 			}
 
 			private LNode GenerateIfElseChain(PredictionTree tree, LNode[] branchCode, ref LNode laVar, MSet<int> switchCases)

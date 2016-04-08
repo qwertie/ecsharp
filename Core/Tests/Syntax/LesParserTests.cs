@@ -13,14 +13,20 @@ namespace Loyc.Syntax.Les
 	public class LesParserTests : LesPrinterAndParserTests
 	{
 		[Test]
+		public void EmptyInput()
+		{
+			Test(Mode.Stmt, 0, "");
+		}
+
+		[Test]
 		public void ParseErrors()
 		{
 			MessageHolder msgs;
 			// Expected ';'
-			msgs = Test(Mode.Stmt, 2, "a = ) b c 1", F.Call(S.Assign, a, F._Missing));
+			msgs = Test(Mode.Stmt, 2, "a = ) b c 1", F.Call(S.Assign, a, F.Missing));
 			ExpectMessageContains(msgs, "';'");
 			// Missing subexpression
-			msgs = Test(Mode.Stmt, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F._Missing));
+			msgs = Test(Mode.Stmt, 1, @"a ** b + ;", F.Call(S.Add, F.Call(S.Exp, a, b), F.Missing));
 			ExpectMessageContains(msgs, "expected a particle");
 			// Invalid call
 			msgs = Test(Mode.Stmt, 1, "x = Foo ();", F.Call(S.Assign, x, Foo));
