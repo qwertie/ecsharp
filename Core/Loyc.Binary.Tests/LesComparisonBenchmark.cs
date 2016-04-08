@@ -1,4 +1,4 @@
-﻿using Ecs.Parser;
+﻿using Loyc.Ecs;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;

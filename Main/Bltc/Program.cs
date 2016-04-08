@@ -59,7 +59,7 @@ namespace Bltc
                 {
                     using (var writer = new StreamWriter(fs))
                     {
-                        writer.Write(LesLanguageService.Value.PrintMultiple(nodes));
+						writer.Write(LesLanguageService.Value.Print(nodes));
                     }
                 }
             }
