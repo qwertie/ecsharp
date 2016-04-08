@@ -9,16 +9,16 @@ using Loyc.Syntax.Lexing;
 namespace Loyc.Syntax
 {
 	/// <summary>
-	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
-	/// Generator). Note: this is the old (harder to use) base class design. You 
+	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser
+	/// Generator). Note: this is the old (harder to use) base class design. You
 	/// should use <see cref="BaseParserForList{Token,MatchType}"/> instead.
 	/// </summary>
-	public abstract class BaseParser<Token, MatchType> 
+	public abstract class BaseParser<Token, MatchType>
 		where MatchType : IEquatable<MatchType>
 	{
 		protected static HashSet<MatchType> NewSet(params MatchType[] items) { return new HashSet<MatchType>(items); }
 
-		protected BaseParser(ISourceFile file = null, int startIndex = 0) { 
+		protected BaseParser(ISourceFile file = null, int startIndex = 0) {
 			EOF = EofInt();
 			_sourceFile = file;
 			_inputPosition = startIndex;
@@ -77,18 +77,18 @@ namespace Loyc.Syntax
 		/// These strings are used in error messages.</summary>
 		protected abstract string ToString(MatchType tokenType);
 
-		/// <summary>Converts a lookahead token index to a character index (used 
+		/// <summary>Converts a lookahead token index to a character index (used
 		/// for error reporting).</summary>
 		/// <remarks>
-		/// The default implementation does this by trying to cast 
+		/// The default implementation does this by trying to cast
 		/// <c>LT(lookaheadIndex)</c> to <c>ISimpleToken{MatchType}</c>. Returns -1
 		/// on failure.
 		/// <para/>
-		/// The <c>StartIndex</c> reported by an EOF token is assumed not 
-		/// to be trustworthy: this method will ensure that the character index 
+		/// The <c>StartIndex</c> reported by an EOF token is assumed not
+		/// to be trustworthy: this method will ensure that the character index
 		/// returned for EOF is at least as large as <c>SourceFile.Text.Count</c>
-		/// if a <see cref="SourceFile"/> was provided, or, otherwise, at least as 
-		/// large as the last token in the file, by scanning backward to find the 
+		/// if a <see cref="SourceFile"/> was provided, or, otherwise, at least as
+		/// large as the last token in the file, by scanning backward to find the
 		/// last token in the file.
 		/// </remarks>
 		protected virtual int LaIndexToCharIndex(int lookaheadIndex)
@@ -100,7 +100,7 @@ namespace Loyc.Syntax
 			if (token.Type.Equals(EOF)) {
 				if (SourceFile != null)
 					charIdx = System.Math.Max(SourceFile.Text.Count, charIdx);
-				else 
+				else
 					for (int li = lookaheadIndex; li > lookaheadIndex-100;  li--) {
 						var token2 = LT(li) as ISimpleToken<MatchType>;
 						if (!token2.Type.Equals(EOF)) {
@@ -112,39 +112,60 @@ namespace Loyc.Syntax
 			return charIdx;
 		}
 
-		/// <summary>Converts a lookahead token index to a <see cref="SourcePos"/>
+        /// <summary>Converts a lookeahead token index to a <see cref="SourceRange"/>
+        /// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
+        protected virtual SourceRange LaIndexToSourceRange(int lookaheadIndex)
+        {
+            var startIndex = LaIndexToCharIndex(lookaheadIndex);
+            var endIndex = LaIndexToCharIndex(lookaheadIndex + 1);
+
+            if (startIndex < 0)
+	        {
+		        return new SourceRange(SourceFile);
+	        }
+            else if (endIndex < 0)
+            {
+                return new SourceRange(SourceFile, startIndex, 1);
+            }
+            else
+            {
+                return new SourceRange(SourceFile, startIndex, endIndex - startIndex);
+            }
+        }
+
+        /// <summary>Converts a lookahead token index to a <see cref="SourceRange"/>
 		/// object using <see cref="LaIndexToCharIndex"/> and <see cref="SourceFile"/>.</summary>
-		/// <remarks>If the derived class initialized <c>SourceFile</c> to null, 
+		/// <remarks>If the derived class initialized <c>SourceFile</c> to null,
 		/// returns "At index {0}" where {0} is the character index.</remarks>
-		protected virtual object LaIndexToSourcePos(int lookaheadIndex)
+		protected virtual object LaIndexToContext(int lookaheadIndex)
 		{
 			int charIdx = LaIndexToCharIndex(lookaheadIndex);
 			if (SourceFile == null)
 				return Localize.Localized("At index {0}", charIdx);
 			else
-				return SourceFile.IndexToLine(charIdx);
+				return LaIndexToSourceRange(lookaheadIndex);
 		}
 
 		/// <summary>Records an error or throws an exception.</summary>
 		/// <param name="lookaheadIndex">Location of the error relative to the
-		/// current <c>InputPosition</c>. When called by BaseParser, lookaheadIndex 
+		/// current <c>InputPosition</c>. When called by BaseParser, lookaheadIndex
 		/// is always equal to 0.</param>
 		/// <remarks>
 		/// The default implementation throws a <see cref="FormatException"/>.
 		/// When overriding this method, you can convert the lookaheadIndex
 		/// to a <see cref="SourcePos"/> using the expression
 		/// <c>SourceFile.IndexToLine(LT(lookaheadIndex).StartIndex)</c>. This only
-		/// works if an <c>ISourceFile</c> object was provided to the constructor of 
+		/// works if an <c>ISourceFile</c> object was provided to the constructor of
 		/// this class, and <c>Token</c> implements <see cref="ISimpleToken"/>.
 		/// </remarks>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), message);
+			ErrorSink.Write(Severity.Error, LaIndexToContext(lookaheadIndex), message);
 		}
 		/// <inheritdoc cref="Error(int,string)"/>
 		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
 		{
-			ErrorSink.Write(Severity.Error, LaIndexToSourcePos(lookaheadIndex), format, args);
+			ErrorSink.Write(Severity.Error, LaIndexToContext(lookaheadIndex), format, args);
 		}
 
 		protected void Skip()
@@ -387,13 +408,13 @@ namespace Loyc.Syntax
 		}
 	}
 	/// <summary>
-	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser 
-	/// Generator). Note: this is the old (harder to use) base class. You should 
+	/// An base class designed for parsers that use LLLPG (Loyc LL(k) Parser
+	/// Generator). Note: this is the old (harder to use) base class. You should
 	/// use <see cref="BaseParserForList{Token, LaType}"/> instead. This class is
 	/// now an alias for BaseParser{Token,int}.
 	/// </summary>
 	public abstract class BaseParser<Token> : BaseParser<Token, Int32>
 	{
-		protected BaseParser(ISourceFile file = null, int startIndex = 0) : base(file, startIndex) {} 
+		protected BaseParser(ISourceFile file = null, int startIndex = 0) : base(file, startIndex) {}
 	}
 }

@@ -17,11 +17,11 @@ namespace Loyc.Ecs.Parser
 	using S = CodeSymbols;
 	using Loyc.Collections.Impl;
 
-	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees 
+	/// <summary>Parses Enhanced C# code into a sequence of Loyc trees
 	/// (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
 	/// You can use <see cref="EcsLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
-	/// to easily parse a text string (holding zero or more EC# statements) into a 
+	/// to easily parse a text string (holding zero or more EC# statements) into a
 	/// Loyc tree. One does not normally use this class directly.
 	/// </remarks>
 	public partial class EcsParser : BaseParser<Token>
@@ -29,7 +29,7 @@ namespace Loyc.Ecs.Parser
 		protected LNodeFactory F;
 		protected IListSource<Token> _tokensRoot;
 		protected IListSource<Token> _tokens;
-		// index into source text of the first token at the current depth (inside 
+		// index into source text of the first token at the current depth (inside
 		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
 		protected int _startTextIndex = 0;
 
@@ -44,7 +44,7 @@ namespace Loyc.Ecs.Parser
 		{
 			ErrorSink = messageSink;
 			Reset(tokens, file);
-			
+
 			_triviaWordAttribute = F.Id(S.TriviaWordAttribute);
 			_triviaUseOperatorKeyword = F.Id(S.TriviaUseOperatorKeyword);
 			_triviaForwardedProperty = F.Id(S.TriviaForwardedProperty);
@@ -63,9 +63,9 @@ namespace Loyc.Ecs.Parser
 		}
 
 		// Normally we use prediction analysis to distinguish expressions from
-		// variable declarations, but as it turns out, that task is too complex 
+		// variable declarations, but as it turns out, that task is too complex
 		// when parsing expressions. Instead we'll try parsing as an expression
-		// first and, if errors occur, parse as a variable decl instead. For 
+		// first and, if errors occur, parse as a variable decl instead. For
 		// this purpose we need a mode in which errors are not printed out.
 		// And since parsing contexts can be nested, we need a way to save and
 		// restore state. TentativeState is used to save and restore error state,
@@ -212,11 +212,11 @@ namespace Loyc.Ecs.Parser
 				return _tentative.DeferredErrors = _tentative.DeferredErrors ?? new MessageHolder();
 			return base.ErrorSink;
 		}
-		
+
 		#endregion
 
 		#region Down & Up
-		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
+		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z,
 		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
 		// So the parser calls something like Down(lparen) to begin parsing inside,
 		// then it calls Up() to return to the parent tree.
@@ -249,7 +249,7 @@ namespace Loyc.Ecs.Parser
 			_tokens = pair.A;
 			InputPosition = pair.B;
 		}
-		
+
 		#endregion
 
 		#region Other parsing helpers: ExprListInside, etc.

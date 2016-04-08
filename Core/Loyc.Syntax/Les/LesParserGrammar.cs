@@ -183,7 +183,7 @@ namespace Loyc.Syntax.Les
 						at = MatchAny();
 					// line 92
 					if (at.Type() == default(TT)) {
-						ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['");
+						ErrorSink.Write(Severity.Warning, LaIndexToContext(0), "Attribute: expected '@['");
 					}
 					t = Match((int) TT.LBrack);
 					attrs = ExprList();
