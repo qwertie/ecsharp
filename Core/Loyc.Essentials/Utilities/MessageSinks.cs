@@ -65,37 +65,43 @@ namespace Loyc
 			} else
 				color = Console.ForegroundColor;
 
-			msgTypeText = implicitText ? null : Localize.From(msgType.ToString());
+			msgTypeText = implicitText ? null : msgType.ToString().Localized();
 			_lastColor = color;
 			return color;
 		}
 
 		public void Write(Severity type, object context, string format)
 		{
-			WriteCore(type, context, Localize.From(format));
+			WriteCore(type, context, format.Localized());
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
-			WriteCore(type, context, Localize.From(format, arg0, arg1));
+			WriteCore(type, context, format.Localized(arg0, arg1));
 		}
 		public void Write(Severity type, object context, string format, params object[] args)
 		{
-			WriteCore(type, context, Localize.From(format, args));
+			WriteCore(type, context, format.Localized(args));
 		}
 		void WriteCore(Severity type, object context, string text)
+		{
+			string typeText;
+			var color = PickColor(type, out typeText);
+			if (typeText != null)
+				text = typeText + ": " + text;
+			WriteColoredMessage(color, context, text);
+		}
+		public static void WriteColoredMessage(ConsoleColor color, object context, string text)
 		{
 			string loc = MessageSink.LocationString(context);
 			if (!string.IsNullOrEmpty(loc))
 				Console.Write(loc + ": ");
 
-			string typeText;
 			ConsoleColor oldColor = Console.ForegroundColor;
-			Console.ForegroundColor = PickColor(type, out typeText);
-			if (typeText != null)
-				text = typeText + ": " + text;
+			Console.ForegroundColor = color;
 			Console.WriteLine(text);
 			Console.ForegroundColor = oldColor;
 		}
+
 		/// <summary>Always returns true.</summary>
 		public bool IsEnabled(Severity type)
 		{
@@ -104,24 +110,28 @@ namespace Loyc
 	}
 
 	/// <summary>Discards all messages. However, there is a Count property that 
-	/// increases by one with each message received.</summary>
+	/// increases by one with each message received, as well as an ErrorCount.</summary>
 	public sealed class NullMessageSink : IMessageSink, ICount
 	{
-		int _count;
-		public int Count { get { return _count; } set { _count = value; } }
+		int _count, _errorCount;
+		public int Count { get { return _errorCount; } }
+		public int ErrorCount { get { return _count; } }
 		public bool IsEmpty { get { return _count == 0; } }
+		public void ResetCountersToZero() { _count = _errorCount = 0; }
 
 		public void Write(Severity type, object context, string format)
 		{
 			_count++;
+			if (type >= Severity.Error)
+				_errorCount++;
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
-			_count++;
+			Write(type, context, format);
 		}
 		public void Write(Severity type, object context, string format, params object[] args)
 		{
-			_count++;
+			Write(type, context, format);
 		}
 		/// <summary>Always returns false.</summary>
 		public bool IsEnabled(Severity type)
@@ -135,15 +145,15 @@ namespace Loyc
 	{
 		public void Write(Severity type, object context, string format)
 		{
-			WriteCore(type, context, Localize.From(format));
+			WriteCore(type, context, Localize.Localized(format));
 		}
 		public void Write(Severity type, object context, string format, object arg0, object arg1 = null)
 		{
-			WriteCore(type, context, Localize.From(format, arg0, arg1));
+			WriteCore(type, context, Localize.Localized(format, arg0, arg1));
 		}
 		public void Write(Severity type, object context, string format, params object[] args)
 		{
-			WriteCore(type, context, Localize.From(format, args));
+			WriteCore(type, context, Localize.Localized(format, args));
 		}
 		public void WriteCore(Severity type, object context, string text)
 		{
@@ -183,7 +193,7 @@ namespace Loyc
 		{
 			get {
 				try {
-					return Localize.From(Format, _args);
+					return Localize.Localized(Format, _args);
 				} catch {
 					return Format;
 				}
@@ -215,6 +225,7 @@ namespace Loyc
 		{
 			get { return _messages = _messages ?? new List<LogMessage>(); }
 		}
+
 		public void WriteListTo(IMessageSink sink)
 		{
 			foreach (LogMessage msg in List)

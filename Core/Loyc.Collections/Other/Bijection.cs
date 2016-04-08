@@ -136,7 +136,7 @@ namespace Loyc.Collections
 		private void CheckSync()
 		{
 			if (_map.Count != _inverse._map.Count)
-				throw new InvalidStateException(Localize.From("{0}: out of sync! ({1}!={2})",
+				throw new InvalidStateException(Localize.Localized("{0}: out of sync! ({1}!={2})",
 					GetType().NameWithGenericArgs(), _map.Count, _inverse._map.Count));
 		}
 

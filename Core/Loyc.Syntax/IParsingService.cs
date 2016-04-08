@@ -127,15 +127,82 @@ namespace Loyc.Syntax
 			set { _current.Value = value; }
 		}
 
+		#region Management of registered languages
+
+		// Thread safe: since this is an immutable reference type, we can replace it atomically
+		static Map<string, IParsingService> _registeredLanguages = 
+			Map<string, IParsingService>.Empty.With("les", LesLanguageService.Value);
+
+		/// <summary>Dictionary of registered parsing services, keyed by file extension 
+		/// (without leading dots). The default dictionary contains one pair: 
+		/// <c>("les", LesLanguageService.Value)</c></summary>
+		public static IReadOnlyDictionary<string, IParsingService> RegisteredLanguages
+		{
+			get { return _registeredLanguages; }
+		}
+		
+		/// <summary>Registers a parsing service.</summary>
+		/// <param name="service">Service to register.</param>
+		/// <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
+		/// <returns>The number of new file extensions registered, or 0 if none.</returns>
+		/// <remarks>This method does not replace existing registrations.</remarks>
+		public static int Register(IParsingService service, IEnumerable<string> fileExtensions = null)
+		{
+			CheckParam.IsNotNull("service", service);
+			fileExtensions = fileExtensions ?? service.FileExtensions;
+			int oldCount = _registeredLanguages.Count;
+			foreach (var fileExt_ in service.FileExtensions) {
+				var fileExt = fileExt_; // make writable
+				if (fileExt.StartsWith("."))
+					fileExt = fileExt.Substring(1);
+				_registeredLanguages = _registeredLanguages.With(fileExt, service, false);
+			}
+			return _registeredLanguages.Count - oldCount;
+		}
+
+		/// <summary>Unregisters a language service.</summary>
+		/// <param name="service">Service to unregister</param>
+		/// <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
+		/// <returns>The number of file extensions unregistered, or 0 if none.</returns>
+		/// <remarks>The service for a file extension is not removed unless the given service reference is equal to the registered service.</remarks>
+		public static int Unregister(IParsingService service, IEnumerable<string> fileExtensions = null)
+		{
+			CheckParam.IsNotNull("service", service);
+			fileExtensions = fileExtensions ?? service.FileExtensions;
+			int oldCount = _registeredLanguages.Count;
+			foreach (var fileExt in fileExtensions)
+				if (_registeredLanguages.TryGetValue(fileExt, null) == service)
+					_registeredLanguages = _registeredLanguages.Without(fileExt);
+			return oldCount - _registeredLanguages.Count;
+		}
+
+		/// <summary>Finds the language service associated with the longest matching registered file extension.</summary>
+		/// <remarks>Returns null if there is no registered language service for the filename's extension.</remarks>
+		public static IParsingService GetServiceForFileName(string filename)
+		{
+			return RegisteredLanguages
+				.Where(pair => ExtensionMatches(pair.Key, filename))
+				.MaxOrDefault(pair => pair.Key.Length).Value;
+		}
+		static bool ExtensionMatches(string ext, string fn)
+		{
+			return fn.Length > ext.Length && fn[fn.Length - ext.Length - 1] == '.' && fn.EndsWith(ext, StringComparison.OrdinalIgnoreCase);
+		}
+
+		#endregion
+
+		#region Management of "current" language
+
 		/// <summary>Sets the current language service, returning a value suitable 
 		/// for use in a C# using statement, which will restore the old service.</summary>
 		/// <param name="newValue">new value of Current</param>
 		/// <example><code>
 		/// LNode code;
 		/// using (var old = ParsingService.PushCurrent(LesLanguageService.Value))
-		///     code = ParsingService.Current.ParseSingle("This is les code;");
+		///     code = ParsingService.Current.ParseSingle("This `is` LES_code;");
 		/// </code></example>
 		public static PushedCurrent PushCurrent(IParsingService newValue) { return new PushedCurrent(newValue); }
+
 		/// <summary>Returned by <see cref="PushCurrent(IParsingService)"/>.</summary>
 		public struct PushedCurrent : IDisposable
 		{
@@ -143,6 +210,8 @@ namespace Loyc.Syntax
 			public PushedCurrent(IParsingService @new) { OldValue = Current; Current = @new; }
 			public void Dispose() { Current = OldValue; }
 		}
+
+		#endregion
 
 		public static string Print(this IParsingService self, LNode node)
 		{
@@ -170,9 +239,9 @@ namespace Loyc.Syntax
 		{
 			LNode node = e.TryGet(0, null);
 			if (node == null)
-				throw new InvalidOperationException(Localize.From("ParseSingle: result was empty."));
+				throw new InvalidOperationException(Localize.Localized("ParseSingle: result was empty."));
 			if (e.TryGet(1, null) != null) // don't call Count because e is typically Buffered()
-				throw new InvalidOperationException(Localize.From("ParseSingle: multiple parse results."));
+				throw new InvalidOperationException(Localize.Localized("ParseSingle: multiple parse results."));
 			return node;
 		}
 		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, Symbol inputType = null)
@@ -186,7 +255,7 @@ namespace Loyc.Syntax
 		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, Symbol inputType = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, msgs, inputType);
+				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingService.File);
 		}
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
 		{
@@ -209,7 +278,7 @@ namespace Loyc.Syntax
 			}
 			return sb.ToString();
 		}
-		public static string PrintMultiple(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public static string Print(this IParsingService service, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
 		{
 			return PrintMultiple(service.Printer, nodes, msgs, mode, indentString, lineSeparator);
 		}

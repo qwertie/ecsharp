@@ -244,9 +244,9 @@
       <Project>{E49944DB-0330-45C6-9EC5-BDBE1102AE07}</Project>
       <Name>Ecs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LeMP\LeMP.csproj">
-      <Project>{e960917a-f32c-469f-91da-0b75342fa5bc}</Project>
-      <Name>LeMP</Name>
+    <ProjectReference Include="..\LeMP.StdMacros\LeMP.StdMacros.csproj">
+      <Project>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</Project>
+      <Name>LeMP.StdMacros</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">
       <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
@@ -263,6 +263,10 @@
     <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">
       <Project>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</Project>
       <Name>Loyc.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LeMP\LeMP.csproj">
+      <Project>{E960917A-F32C-469F-91DA-0B75342FA5BC}</Project>
+      <Name>LeMP</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

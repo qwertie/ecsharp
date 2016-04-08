@@ -128,17 +128,17 @@ namespace Loyc.LLParserGenerator
 		/// the rule name.</summary>
 		/// <param name="methodBody">The parsing code that was generated for this rule.</param>
 		/// <returns>A method.</returns>
-		public LNode CreateMethod(RVList<LNode> methodBody)
+		public LNode CreateMethod(VList<LNode> methodBody)
 		{
 			LNode method = GetMethodSignature();
-			var parts = method.Args.ToRWList();
+			var parts = method.Args.ToWList();
 			if (parts[0].IsIdNamed(S.Missing))
 				parts[0] = F.Id(Name);
 			Debug.Assert(parts.Count == 3);
 			if (IsRecognizer)
 				methodBody.Add(F.Call(S.Return, F.True));
 			parts.Add(F.Braces(methodBody));
-			return method.WithArgs(parts.ToRVList());
+			return method.WithArgs(parts.ToVList());
 		}
 
 		public static Alts operator |(Rule a, Pred b) { return (Alts)((RuleRef)a | b); }

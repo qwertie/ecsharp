@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using Loyc.Syntax;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	/// <summary>Helper class of <see cref="EcsNodePrinter"/></summary>
 	internal class EcsNodePrinterWriter : Loyc.Syntax.Les.DefaultNodePrinterWriter
@@ -17,8 +17,8 @@ namespace Ecs
 		{
 			if (_newlinePending)
 				Newline();
-			if ((EcsNodePrinter.IsIdentContChar(_lastCh) || _lastCh == '#')
-				&& (EcsNodePrinter.IsIdentContChar(nextCh) || nextCh == '@'))
+			if ((EcsValidators.IsIdentContChar(_lastCh) || _lastCh == '#')
+				&& (EcsValidators.IsIdentContChar(nextCh) || nextCh == '@'))
 				_out.Write(' ');
 			else if ((_lastCh == '#' && nextCh == '#') || (_lastCh == '+' && nextCh == '+') 
 			      || (_lastCh == '-' && nextCh == '-')

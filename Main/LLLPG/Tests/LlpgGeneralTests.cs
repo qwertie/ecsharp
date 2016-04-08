@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 using Loyc.MiniTest;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Utilities;
 using Loyc.Collections;
-using Ecs.Parser;
-using System.Diagnostics;
 using Loyc.Syntax.Les;
+using Loyc.Ecs;
 
 namespace Loyc.LLParserGenerator
 {
@@ -1836,7 +1836,7 @@ namespace Loyc.LLParserGenerator
 		public void TestListInitializer()
 		{
 			Test(@"
-				LLLPG (lexer(terminalType: int, listInitializer: var _ = new RVList<T>()));
+				LLLPG (lexer(terminalType: int, listInitializer: var _ = new VList<T>()));
 				public rule int ParseInt() @[
 					' '* (digits+:'0'..'9')+
 					{return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));}
@@ -1844,7 +1844,7 @@ namespace Loyc.LLParserGenerator
 					public int ParseInt()
 					{
 						int la0;
-						var digits = new RVList<int>();
+						var digits = new VList<int>();
 						for (;;) {
 							la0 = LA0;
 							if (la0 == ' ')

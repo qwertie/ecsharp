@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ecs.Parser;
+using Loyc.Ecs;
 using Loyc.MiniTest;
 
 namespace Loyc.LLParserGenerator
@@ -43,10 +43,10 @@ namespace Loyc.LLParserGenerator
 								src = new LexerSource<UString>(email, """", 0, false);
 							else
 								src.Reset(email, """", 0, false);
-							@[ UsernameChars(src) ('.' UsernameChars(src))* ];
+							@{ UsernameChars(src) ('.' UsernameChars(src))* };
 							int at = src.InputPosition;
 							UString userName = email.Substring(0, at);
-							@[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+							@{ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF };
 							UString domain = email.Substring(at + 1);
 							return new EmailAddress(userName, domain);
 						}

@@ -44,8 +44,8 @@ Note: the versions of these libraries for .NET 3.5 depend on the compatibility l
 Links
 -----
 
-- [Home Page](http://core.loyc.net)
-- [Reference Documentation](http://loyc.net/doc/code/)
+- [Home Page](http://core.ecsharp.net)
+- [Reference Documentation](http://ecsharp.net/doc/code/)
 - [Source code](http://github.com/qwertie/LoycCore)
 - [Wiki](https://github.com/qwertie/LoycCore/wiki)
 - [Blog](http://loyc.net/blog)

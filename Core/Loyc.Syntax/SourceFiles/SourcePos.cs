@@ -10,12 +10,12 @@ namespace Loyc.Syntax
 	/// <summary>Holds a line number (Line) and a position in the line (PosInLine).
 	/// This class isn't really needed in Loyc but is separated from SourcePos 
 	/// in case anyone might want position without a filename.</summary>
-	/// <remarks>Numbering starts at one for both numbers. Line=0 signifies 
-	/// nowhere in particular.</remarks>
-	public class LineAndPos
+	/// <remarks>Numbering starts at one for both Line and PosInLine. 
+	/// Line=0 signifies nowhere in particular, or an unknown location.</remarks>
+	public class LineAndCol
 	{
-		protected LineAndPos() { }
-		public LineAndPos(int Line, int PosInLine)
+		protected LineAndCol() { }
+		public LineAndCol(int Line, int PosInLine)
 			{ _line = Line; _posInLine = PosInLine; }// this.FileName = FileName; }
 
 		protected int _line;
@@ -33,7 +33,7 @@ namespace Loyc.Syntax
 
 		public override bool Equals(object obj)
 		{
-			LineAndPos other = obj as LineAndPos;
+			LineAndCol other = obj as LineAndCol;
 			if (other == null)
 				return false;
 			return other._line == _line && other._posInLine == _posInLine;
@@ -42,7 +42,7 @@ namespace Loyc.Syntax
 		{
 			return (_line << 4) ^ _posInLine;
 		}
-		public static LineAndPos Nowhere = new LineAndPos();
+		public static LineAndCol Nowhere = new LineAndCol();
 	}
 
 	/// <summary>Holds a filename (FileName), a line number (Line) and a position in 
@@ -51,7 +51,7 @@ namespace Loyc.Syntax
 	/// Line and column numbering both start at one (1). Line=0 signifies nowhere 
 	/// in particular. Instances are immutable.
 	/// </remarks>
-	public class SourcePos : LineAndPos
+	public class SourcePos : LineAndCol
 	{
 		protected SourcePos() { }
 		public SourcePos(string FileName, int Line, int PosInLine)

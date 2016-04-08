@@ -95,9 +95,9 @@ namespace Loyc.Syntax.Les
 					else {
 						_value = sb.ToString();
 						if (sb.Length == 0)
-							Error(_startPosition, Localize.From("Empty character literal"));
+							Error(_startPosition, Localize.Localized("Empty character literal"));
 						else
-							Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", sb.Length));
+							Error(_startPosition, Localize.Localized("Character literal has {0} characters (there should be exactly one)", sb.Length));
 					}
 				}
 			}
@@ -145,6 +145,9 @@ namespace Loyc.Syntax.Les
 		/// following a newline is ignored as long as it matches this string. 
 		/// For example, if the text following a newline is "\t\t Foo" and this
 		/// string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
+		/// <param name="ecsTQIndents">Enable EC# triple-quoted string indent
+		/// rules, which allow an additional one tab or three spaces of indent.
+		/// (It hasn't been decided whether to support this in LES.)</param>
 		/// <returns>The decoded string</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.
 		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These 
@@ -160,17 +163,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString))
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool ecsTQIndents = false)
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, ecsTQIndents);
 			return sb.ToString();
 		}
 		
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString))
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool ecsTQIndents = false)
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFront(out fail);
@@ -179,8 +182,8 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation))
-				onError(sourceText.InternalStart, Localize.From("String literal did not end properly"));
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, ecsTQIndents))
+				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 		
 		/// <summary>Parses a normal or triple-quoted string whose starting quotes 
@@ -191,7 +194,7 @@ namespace Loyc.Syntax.Les
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString))
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool ecsTQIndents = false)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
@@ -206,7 +209,7 @@ namespace Loyc.Syntax.Les
 					}
 					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
 						// This backslash was ignored by UnescapeChar
-						onError(i0, Localize.From(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+						onError(i0, Localize.Localized(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
 					}
 					sb.Append(c);
 				} else {
@@ -240,9 +243,22 @@ namespace Loyc.Syntax.Les
 							}
 							// Inside a triple-quoted string, the indentation following a newline 
 							// is ignored, as long as it matches the indentation of the first line.
-							UString src = sourceText.Clone(), ind = indentation;
-							while (src.PopFront(out fail) == ind.PopFront(out fail) && !fail)
+							UString src = sourceText, ind = indentation;
+							int sp;
+							while ((sp = src.PopFront(out fail)) == ind.PopFront(out fail) && !fail)
 								sourceText = src;
+							if (ecsTQIndents) {
+								// Allow an additional one tab or three spaces
+								if (sp == '\t')
+									sourceText = src;
+								else if (sp == ' ') { 
+									sourceText = src;
+									if (src.PopFront(out fail) == ' ')
+										sourceText = src;
+									if (src.PopFront(out fail) == ' ')
+										sourceText = src;
+								}
+							}
 						}
 					}
 					
@@ -443,7 +459,7 @@ namespace Loyc.Syntax.Les
 		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol suffix, ref string error)
 		{
 			if (source.IsEmpty) {
-				error = Localize.From("Syntax error in integer literal");
+				error = Localize.Localized("Syntax error in integer literal");
 				return CG.Cache(0);
 			}
 			// Parse the integer
@@ -451,7 +467,7 @@ namespace Loyc.Syntax.Les
 			bool overflow = !G.TryParseUInt(ref source, out unsigned, numberBase, G.ParseFlag.SkipUnderscores);
 			if (!source.IsEmpty) {
 				// I'm not sure if this can ever happen
-				error = Localize.From("Syntax error in integer literal");
+				error = Localize.Localized("Syntax error in integer literal");
 			}
 
 			// If no suffix, automatically choose int, uint, long or ulong
@@ -490,7 +506,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			if (overflow)
-				error = Localize.From("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
+				error = Localize.Localized("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
 			return value;
 		}
 
@@ -511,7 +527,7 @@ namespace Loyc.Syntax.Les
 				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
 					return isNegative ? -d : d;
 			}
-			error = Localize.From("Syntax error in float literal");
+			error = Localize.Localized("Syntax error in float literal");
 			return null;
 		}
 
@@ -521,9 +537,9 @@ namespace Loyc.Syntax.Les
 			{
 				float result = G.TryParseFloat(ref source, radix, G.ParseFlag.SkipUnderscores);
 				if (float.IsNaN(result))
-					error = Localize.From("Syntax error in '{0}' literal", "float");
+					error = Localize.Localized("Syntax error in '{0}' literal", "float");
 				else if (float.IsInfinity(result))
-					error = Localize.From("Overflow in '{0}' literal", "float");
+					error = Localize.Localized("Overflow in '{0}' literal", "float");
 				if (isNegative)
 					result = -result;
 				return result;
@@ -538,9 +554,9 @@ namespace Loyc.Syntax.Les
 
 				double result = G.TryParseDouble(ref source, radix, G.ParseFlag.SkipUnderscores);
 				if (double.IsNaN(result))
-					error = Localize.From("Syntax error in '{0}' literal", type);
+					error = Localize.Localized("Syntax error in '{0}' literal", type);
 				else if (double.IsInfinity(result))
-					error = Localize.From("Overflow in '{0}' literal", type);
+					error = Localize.Localized("Overflow in '{0}' literal", type);
 				if (isNegative)
 					result = -result;
 				if (typeSuffix == _M)

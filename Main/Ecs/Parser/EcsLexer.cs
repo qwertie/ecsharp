@@ -13,7 +13,7 @@ using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 
-namespace Ecs.Parser
+namespace Loyc.Ecs.Parser
 {
 	using TT = TokenType;
 
@@ -103,9 +103,9 @@ namespace Ecs.Parser
 				if (s.Length == 1)
 					_value = CG.Cache(s[0]);
 				else if (s.Length == 0)
-					Error(_startPosition, Localize.From("Empty character literal"));
+					Error(_startPosition, "Empty character literal".Localized());
 				else
-					Error(_startPosition, Localize.From("Character literal has {0} characters (there should be exactly one)", s.Length));
+					Error(_startPosition, "Character literal has {0} characters (there should be exactly one)".Localized(s.Length));
 			}
 		}
 
@@ -162,7 +162,7 @@ namespace Ecs.Parser
 				return sb.ToString();
 			} else {
 				// triple-quoted or normal string: let LES lexer handle it
-				return LesLexer.UnescapeQuotedString(ref source, onError, indentation);
+				return LesLexer.UnescapeQuotedString(ref source, onError, indentation, true);
 			}
 		}
 

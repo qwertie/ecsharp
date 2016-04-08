@@ -113,7 +113,7 @@ namespace Loyc.Syntax
 			else
 				return _lineOffsets[lineNo];
 		}
-		public int LineToIndex(LineAndPos pos)
+		public int LineToIndex(LineAndCol pos)
 		{
 			int lineIndex = LineToIndex(pos.Line);
 			if (pos.PosInLine > 0)

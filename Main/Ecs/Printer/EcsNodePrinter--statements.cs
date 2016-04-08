@@ -11,10 +11,10 @@ using Loyc.Utilities;
 using Loyc.Math;
 using Loyc.Collections;
 using S = Loyc.Syntax.CodeSymbols;
-using EP = Ecs.EcsPrecedence;
+using EP = Loyc.Ecs.EcsPrecedence;
 using Loyc.Syntax.Lexing;
 
-namespace Ecs
+namespace Loyc.Ecs
 {
 	// This file: code for printing statements
 	public partial class EcsNodePrinter
@@ -32,19 +32,20 @@ namespace Ecs
 		// | Block stmt with or  | for (...) {...}        | Check BlockStmts list     |
 		// |   without args      | try {...} catch {...}  |                           |
 		// | Label stmt          | case 2: ... label:     | IsLabelStmt()             |
-		// | Block or list       | { ... } or #{ ... }    | Name in (S.List,S.Braces) |
+		// | Block or list       | { ... }                | Name is S.Braces          |
 		// | Expression stmt     | x += y;                | When none of the above    |
+		// | Assembly attribute  | [assembly: Foo]        | Name is S.Assembly        |
 
 		// Space definitions are containers for other definitions
-		static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
+		internal static readonly HashSet<Symbol> SpaceDefinitionStmts = new HashSet<Symbol>(new[] {
 			S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
 		});
 		// Definition statements define types, spaces, methods, properties, events and variables
 		static readonly HashSet<Symbol> OtherDefinitionStmts = new HashSet<Symbol>(new[] {
-			S.Var, S.Fn, S.Cons, S.Delegate, S.Event, S.Property
+			S.Var, S.Fn, S.Constructor, S.Delegate, S.Event, S.Property
 		});
 		// Simple statements have the syntax "keyword;" or "keyword expr;"
-		static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
+		internal static readonly HashSet<Symbol> SimpleStmts = new HashSet<Symbol>(new[] {
 			S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
 		});
 		// Block statements take block(s) as arguments
@@ -60,7 +61,12 @@ namespace Ecs
 
 		//static readonly HashSet<Symbol> StmtsWithWordAttrs = AllNonExprStmts;
 
-		public enum SPResult { Fail, Complete, NeedSemicolon, NeedSuffixTrivia };
+		/// <summary>Result from statement printer</summary>
+		public enum SPResult {
+			Fail,              // input tree did not have the expected format
+			NeedSemicolon,     // caller should print semicolon & suffix trivia
+			NeedSuffixTrivia   // caller should print suffix trivia
+		};
 		delegate SPResult StatementPrinter(EcsNodePrinter @this, Ambiguity flags);
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters = StatementPrinters_();
 		static Dictionary<Symbol, StatementPrinter> StatementPrinters_()
@@ -80,6 +86,7 @@ namespace Ecs
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
+			d[S.Assembly] = OpenDelegate<StatementPrinter>("AutoPrintAssemblyAttribute");
 			return d;
 		}
 		static void AddAll(Dictionary<Symbol,StatementPrinter> d, HashSet<Symbol> names, string handlerName)
@@ -102,7 +109,7 @@ namespace Ecs
 			if ((flags & Ambiguity.ElseClause) == 0)
 				_out.BeginStatement();
 
-			if (AllowChangeParenthesis || !_n.IsParenthesizedExpr())
+			if (AllowChangeParentheses || !_n.IsParenthesizedExpr())
 			{
 				var style = _n.BaseStyle;
 				StatementPrinter printer;
@@ -114,8 +121,7 @@ namespace Ecs
 					{
 						var result = printer(this, flags | Ambiguity.NoParenthesis);
 						if (result != SPResult.Fail) {
-							if (result != SPResult.Complete)
-								PrintSuffixTrivia(result == SPResult.NeedSemicolon);
+							PrintSuffixTrivia(result == SPResult.NeedSemicolon);
 							return;
 						}
 					}
@@ -128,8 +134,7 @@ namespace Ecs
 				for (int i = 0, c = attrs.Count; i < c; i++)
 				{
 					var a = attrs[i];
-					if ((a.Name == S.TriviaMacroAttribute && AutoPrintMacroAttribute()) ||
-						(a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty()))
+					if (a.Name == S.TriviaForwardedProperty && AutoPrintForwardedProperty())
 						return;
 				}
 			}
@@ -138,17 +143,6 @@ namespace Ecs
 			PrintSuffixTrivia(true);
 		}
 
-		private bool AutoPrintMacroAttribute()
-		{
-			var argCount = _n.ArgCount;
-			if (argCount < 1)
-				return false;
-
-			// TODO
-			// _out.Write("[[", true);
-			// _out.Write("]]", true);
-			return false;
-		}
 		private bool AutoPrintMacroBlockCall(Ambiguity flags)
 		{
 			var argCount = _n.ArgCount;
@@ -159,6 +153,8 @@ namespace Ecs
 			{
 				var body = _n.Args[0];
 				if (!CallsWPAIH(body, S.Braces))
+					return false;
+				if (_n.BaseStyle == NodeStyle.PrefixNotation && !PreferPlainCSharp)
 					return false;
 
 				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
@@ -174,12 +170,11 @@ namespace Ecs
 			}
 			else if (argCount > 1)
 			{
-				if (AvoidMacroSyntax)
-					return false;
-
 				var body = _n.Args[argCount - 1];
 				// If the body calls anything other than S.Braces, don't use macro-call notation.
 				if (!CallsWPAIH(body, S.Braces))
+					return false;
+				if (AvoidMacroSyntax || _n.BaseStyle == NodeStyle.PrefixNotation)
 					return false;
 
 				G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
@@ -189,7 +184,7 @@ namespace Ecs
 				else
 					PrintSimpleIdent(_n.Name, 0);
 
-				PrintArgList(_n, ParenFor.MacroCall, argCount - 1, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
+				PrintArgList(_n.Args.WithoutLast(1), ParenFor.MacroCall, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 
 				PrintBracedBlockOrStmt(body, flags, NewlineOpt.BeforeExecutableBrace);
 				return true;
@@ -198,7 +193,7 @@ namespace Ecs
 		}
 		private bool AutoPrintForwardedProperty()
 		{
-			if (!IsForwardedProperty())
+			if (!EcsValidators.IsForwardedProperty(_n, Pedantics))
 				return false;
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, Ambiguity.NoParenthesis));
@@ -248,22 +243,24 @@ namespace Ecs
 		public SPResult AutoPrintSpaceDefinition(Ambiguity flags)
 		{
 			// Spaces: S.Struct, S.Class, S.Trait, S.Enum, S.Alias, S.Interface, S.Namespace
-			if (!IsSpaceStatement())
+			var kind = EcsValidators.SpaceDefinitionKind(_n, Pedantics);
+			if (kind == null)
 				return SPResult.Fail;
 
 			var ifClause = GetIfClause();
 
 			int ai;
 			var old_n = _n;
-			if (_n.Name == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
+			if (kind == S.Alias && (ai = _n.Attrs.IndexWhere(a => a.IsIdNamed(S.FilePrivate))) > -1) {
 				// Cause "[#filePrivate] #alias x = y;" to print as "using x = y;"
 				_n = _n.WithAttrs(_n.Attrs.RemoveAt(ai)).WithTarget(S.UsingStmt);
+				kind = S.UsingStmt;
 			}
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
 
 			LNode name = _n.Args[0], bases = _n.Args[1], body = _n.Args[2, null];
-			WriteOperatorName(_n.Name);
+			WriteOperatorName(kind);
 			
 			_n = old_n;
 			
@@ -290,7 +287,7 @@ namespace Ecs
 			if (body == null)
 				return SPResult.NeedSemicolon;
 
-			if (_n.Name == S.Enum)
+			if (kind == S.Enum)
 				PrintEnumBody(body);
 			else
 				PrintBracedBlock(body, NewlineOpt.BeforeSpaceDefBrace, false, KeyNameComponentOf(name));
@@ -301,19 +298,10 @@ namespace Ecs
 		/// this method identifies the base name component, which in this example 
 		/// is Bar. This is used, for example, to identify the expected name for
 		/// a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
-		/// <remarks>It is not verified that name is a complex identifier. There
-		/// is no error detection but in some cases an empty name may be returned, 
-		/// e.g. for input like <c>Foo."Hello"</c>.</remarks>
+		/// <remarks>This was moved to EcsValidators.</remarks>
 		public static Symbol KeyNameComponentOf(LNode name)
 		{
-			// global::Foo<int>.Bar<T> is structured (((global::Foo)<int>).Bar)<T>
-			// So if #of, get first arg (which cannot itself be #of), then if #dot, 
-			// get second arg.
-			if (name.CallsMin(S.Of, 1))
-				name = name.Args[0];
-			if (name.CallsMin(S.Dot, 1))
-				name = name.Args.Last;
-			return name.Name;
+			return EcsValidators.KeyNameComponentOf(name);
 		}
 
 		void AutoPrintIfClause(LNode ifClause)
@@ -415,7 +403,7 @@ namespace Ecs
 			if (name == S.If && (flags & Ambiguity.ElseClause) != 0)
 			{
 				using (With(stmt))
-					if (OtherBlockStmtType() == S.If)
+					if (EcsValidators.OtherBlockStmtType(_n, Pedantics) == S.If)
 					{
 						PrintStmt(flags & (Ambiguity.FinalStmt | Ambiguity.ElseClause));
 						return false;
@@ -447,13 +435,13 @@ namespace Ecs
 		public SPResult AutoPrintMethodDefinition(Ambiguity flags)
 		{
 			// S.Fn, S.Delegate: #fn(#int32, Square, #(int x), { return x * x; });
-			if (!IsMethodDefinition(true))
+			if (EcsValidators.MethodDefinitionKind(_n, true, Pedantics) == null)
 				return SPResult.Fail;
 
 			LNode retType = _n.Args[0], name = _n.Args[1];
 			LNode args = _n.Args[2];
 			LNode body = _n.Args[3, null];
-			bool isConstructor = _n.Name == S.Cons;
+			bool isConstructor = _n.Name == S.Constructor;
 			bool isDestructor = !isConstructor && name.Calls(S._Destruct, 1);
 			
 			LNode firstStmt = null;
@@ -486,7 +474,7 @@ namespace Ecs
 			var ifClause = PrintTypeAndName(isConstructor || isDestructor, isCastOperator, 
 				isConstructor && !name.IsIdNamed(S.This) ? AttrStyle.IsConstructor : AttrStyle.IsDefinition);
 
-			PrintArgList(args, ParenFor.MethodDecl, args.ArgCount, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
+			PrintArgList(args.Args, ParenFor.MethodDecl, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
 	
 			PrintWhereClauses(name);
 			
@@ -545,18 +533,22 @@ namespace Ecs
 			}
 			return ifClause;
 		}
-		private void PrintArgList(LNode args, ParenFor kind, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgList(VList<LNode> args, ParenFor kind, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
 			WriteOpenParen(kind);
-			PrintArgs(args, argCount, flags, omitMissingArguments, separator);
+			PrintArgs(args, flags, omitMissingArguments, separator);
 			WriteCloseParen(kind);
 		}
-		private void PrintArgs(LNode args, int argCount, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		private void PrintArgs(LNode args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
 		{
-			for (int i = 0; i < argCount; i++)
+			PrintArgs(args.Args, flags, omitMissingArguments, separator);
+		}
+		private void PrintArgs(VList<LNode> args, Ambiguity flags, bool omitMissingArguments, char separator = ',')
+		{
+			for (int i = 0; i < args.Count; i++)
 			{
-				var arg = args.Args[i];
-				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && argCount > 1;
+				var arg = args[i];
+				bool missing = omitMissingArguments && IsSimpleSymbolWPA(arg, S.Missing) && args.Count > 1;
 				if (i != 0)
 					WriteThenSpace(separator, missing ? SpaceOpt.MissingAfterComma : SpaceOpt.AfterComma);
 				if (!missing)
@@ -597,19 +589,40 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintProperty(Ambiguity flags)
 		{
-			// S.Property: 
-			// #property(int, Foo, { 
+			// For S.Property (#property), _n typically looks like this: 
+			// #property(int, Foo, @``, { 
 			//     get({ return _foo; });
 			//     set({ _foo = value; });
 			// });
-			if (!IsPropertyDefinition())
+			if (!EcsValidators.IsPropertyDefinition(_n, Pedantics))
 				return SPResult.Fail;
 
 			var ifClause = PrintTypeAndName(false);
 
 			PrintWhereClauses(_n.Args[1]);
 
-			return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
+			// Detect if property has argument list (T this[...] {...})
+			if (_n.Args[2].Calls(S.AltList))
+			{
+				// Do what PrintArgList does, only with [] instead of ()
+				Space(SpaceOpt.BeforeMethodDeclArgList);
+				_out.Write('[', true);
+				WriteInnerSpace(ParenFor.MethodDecl);
+				PrintArgs(_n.Args[2].Args, flags | Ambiguity.AllowUnassignedVarDecl, false);
+				WriteInnerSpace(ParenFor.MethodDecl);
+				_out.Write(']', true);
+			}
+
+			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null], ifClause);
+			if (_n.Args.Count >= 5) {
+				var initializer = _n.Args[4];
+				if (!initializer.IsIdNamed(S.Missing)) {
+					PrintInfixWithSpace(S.Assign, EcsPrecedence.Assign, 0);
+					PrintExpr(initializer, StartExpr, flags);
+					return SPResult.NeedSemicolon;
+				}
+			}
+			return spr;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -628,14 +641,14 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintEvent(Ambiguity flags)
 		{
-			var eventType = EventDefinitionType();
-			if (eventType == EventDef.Invalid)
+			var eventType = EcsValidators.EventDefinitionType(_n, Pedantics);
+			if (eventType == EcsValidators.EventDef.Invalid)
 				return SPResult.Fail;
 
 			var ifClause = PrintTypeAndName(false, false, AttrStyle.IsDefinition, "event ");
-			if (eventType == EventDef.WithBody)
+			if (eventType == EcsValidators.EventDef.WithBody)
 				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
-			else {
+			else { // EcsValidators.EventDef.List
 				for (int i = 2, c = _n.ArgCount; i < c; i++)
 				{
 					WriteThenSpace(',', SpaceOpt.AfterComma);
@@ -648,17 +661,22 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintSimpleStmt(Ambiguity flags)
 		{
-			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw
-			if (!IsSimpleKeywordStmt())
+			// S.Break, S.Continue, S.Goto, S.GotoCase, S.Return, S.Throw, S.Import
+			if (!EcsValidators.IsSimpleExecutableKeywordStmt(_n, Pedantics))
 				return SPResult.Fail;
 
-			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
-
 			var name = _n.Name;
-			if (name == S.GotoCase)
+			LNode usingStatic = name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags, usingStatic));
+
+			if (name == S.GotoCase) {
 				_out.Write("goto case", true);
-			else if (name == S.Import)
-				_out.Write("using", true);
+				if (_n.ArgCount == 1 && _n.Args[0].IsIdNamed(S.Default)) {
+					_out.Write("default", true);
+					return SPResult.NeedSemicolon;
+				}
+			} else if (name == S.Import)
+				_out.Write(usingStatic != null ? "using static" : "using", true);
 			else
 				WriteOperatorName(name);
 
@@ -676,7 +694,7 @@ namespace Ecs
 		public SPResult AutoPrintTwoArgBlockStmt(Ambiguity flags)
 		{
 			// S.Do, S.Fixed, S.Lock, S.Switch, S.UsingStmt, S.While
-			var type = TwoArgBlockStmtType();
+			var type = EcsValidators.TwoArgBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;
 
@@ -708,7 +726,7 @@ namespace Ecs
 		public SPResult AutoPrintOtherBlockStmt(Ambiguity flags)
 		{
 			// S.If, S.For, S.ForEach, S.Checked, S.Unchecked, S.Try
-			var type = OtherBlockStmtType();
+			var type = EcsValidators.OtherBlockStmtType(_n, Pedantics);
 			if (type == null)
 				return SPResult.Fail;
 
@@ -752,13 +770,12 @@ namespace Ecs
 			if (type == S.For)
 			{
 				_out.Write("for", true);
-				PrintArgList(_n, ParenFor.KeywordCall, 3, flags, true, ';');
+				PrintArgList(_n.Args.First(3), ParenFor.KeywordCall, flags, true, ';');
 				PrintBracedBlockOrStmt(_n.Args[3], flags);
 			}
 			else if (type == S.ForEach)
 			{
 				_out.Write("foreach", true);
-				
 				WriteOpenParen(ParenFor.KeywordCall);
 				PrintExpr(_n.Args[0], EP.Equals.LeftContext(StartStmt), Ambiguity.AllowUnassignedVarDecl | Ambiguity.ForEachInitializer);
 				_out.Space();
@@ -781,9 +798,20 @@ namespace Ecs
 					LNode first = clause.Args[0], second = clause.Args[1, null];
 					
 					WriteOperatorName(clause.Name);
-					if (second != null && !IsSimpleSymbolWPA(first, S.Missing))
-						PrintWithinParens(ParenFor.KeywordCall, first, Ambiguity.AllowUnassignedVarDecl);
-					braces = PrintBracedBlockOrStmt(second ?? first, flags);
+					if (clause.Name == S.Finally)
+						braces = PrintBracedBlockOrStmt(clause.Args[0], flags);
+					else { // catch
+						var eVar = clause.Args[0];
+						if (!eVar.IsIdNamed(S.Missing))
+							PrintWithinParens(ParenFor.KeywordCall, eVar, Ambiguity.AllowUnassignedVarDecl);
+						var when = clause.Args[1];
+						if (!when.IsIdNamed(S.Missing)) {
+							Space(SpaceOpt.Default);
+							_out.Write("when", true);
+							PrintWithinParens(ParenFor.KeywordCall, when);
+						}
+						braces = PrintBracedBlockOrStmt(clause.Args[2], flags);
+					}
 				}
 			}
 			else if (type == S.Checked) // includes S.Unchecked
@@ -798,7 +826,7 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintLabelStmt(Ambiguity flags)
 		{
-			if (!IsLabelStmt())
+			if (!EcsValidators.IsLabelStmt(_n, Pedantics))
 				return SPResult.Fail;
 
 			_out.BeginLabel();
@@ -828,11 +856,23 @@ namespace Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintBlockOfStmts(Ambiguity flags)
 		{
-			if (!IsBlockOfStmts(_n))
+			if (!_n.Calls(S.Braces))
 				return SPResult.Fail;
 
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowKeywordAttrs, flags));
 			PrintBracedBlock(_n, 0);
+			return SPResult.NeedSuffixTrivia;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public SPResult AutoPrintAssemblyAttribute(Ambiguity flags)
+		{
+			Debug.Assert(_n.Calls(S.Assembly));
+			PrintAttrs(StartStmt, AttrStyle.NoKeywordAttrs, flags);
+			_out.Write("[assembly:", true);
+			Space(SpaceOpt.Default);
+			PrintArgs(_n, flags, false);
+			_out.Write(']', true);
 			return SPResult.NeedSuffixTrivia;
 		}
 	}

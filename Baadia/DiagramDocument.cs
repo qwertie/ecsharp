@@ -61,7 +61,7 @@ namespace BoxDiagrams
 				if (@do) {
 					AddShapeCore(newShape, true);
 				} else {
-					RemoveShapesCore(Range.Single(newShape), @do);
+					RemoveShapesCore(ListExt.Single(newShape), @do);
 				}
 			}, true);
 		}
@@ -71,7 +71,7 @@ namespace BoxDiagrams
 			newShape.OnBeingAdded(this);
 			_core.Shapes.Add(newShape);
 			if (AfterShapesAdded != null && @do)
-				AfterShapesAdded(Range.Single(newShape));
+				AfterShapesAdded(ListExt.Single(newShape));
 		}
 
 		private void RemoveShapesCore(IReadOnlyCollection<Shape> shapes, bool @do)

@@ -65,10 +65,10 @@ namespace LeMP
 	[Flags]
 	public enum MacroMode
 	{
-		/// <summary>The macro's result (including children) is not processed further.</summary>
-		NoReprocessing = 0,
 		/// <summary>The macro's result is reprocessed directly (this is the default behavior).</summary>
-		Normal = 1,
+		Normal = 0,
+		/// <summary>The macro's result (including children) is not processed further.</summary>
+		NoReprocessing = 1,
 		/// <summary>The macro's result is not reprocessed, but the result's children are processed.</summary>
 		ProcessChildrenAfter = 2,
 		/// <summary>The result is pre-processed before calling the macro, and not processed afterward.</summary>
@@ -81,15 +81,19 @@ namespace LeMP
 		/// <remarks>Tyically this option is used by macros that splice together the list of <see cref="IMacroContext.RemainingNodes"/> into their own result.</remarks>
 		DropRemainingListItems = 32,
 		/// <summary>Lowest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
-		FallbackMin = 0x100,
+		PriorityFallbackMin = 0x100,
 		/// <summary>Low priority. If this macro is ambiguous with another macro that doesn't have this flag nor FallbackMin, the results produced by the other macro are used (note: only one priority flag can be used at a time).</summary>
-		Fallback = 0x300,
+		PriorityFallback = 0x300,
+		/// <summary>Used to order behavior of standard macros.</summary>
+		PriorityInternalFallback = 0x400,
 		/// <summary>Normal priority (this is the default and does not need to be specified.)</summary>
-		NormalPriority = 0x500,
+		PriorityNormal = 0x500,
+		/// <summary>Used to order behavior of standard macros.</summary>
+		PriorityInternalOverride = 0x600,
 		/// <summary>High priority. If this macro is ambiguous with another macro that doesn't have this flag nor OverrideAll, this macro takes precedence (note: only one priority flag can be used at a time).</summary>
-		Override = 0x700,
+		PriorityOverride = 0x700,
 		/// <summary>Highest priority. If this macro is ambiguous with another macro that doesn't have this flag, the results produced by this macro are used (note: only one priority flag can be used at a time).</summary>
-		OverrideMax = 0x900,
+		PriorityOverrideMax = 0x900,
 		/// <summary>For internal use to isolate the priority of a macro.</summary>
 		PriorityMask = 0xF00,
 	}

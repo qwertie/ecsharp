@@ -71,7 +71,7 @@ namespace Loyc.LLParserGenerator
 		/// code at class level when needed.</param>
 		/// <param name="sourceFile">the suggested <see cref="ISourceFile"/> to 
 		/// assign to generated code snippets.</param>
-		void Begin(RWList<LNode> classBody, ISourceFile sourceFile);
+		void Begin(WList<LNode> classBody, ISourceFile sourceFile);
 
 		/// <summary>Notifies the snippet generator that code generation is 
 		/// starting for a new rule.</summary>
@@ -201,8 +201,8 @@ namespace Loyc.LLParserGenerator
 		/// LLParserGenerator inside the method.</param>
 		/// <returns>A method definition for the rule.</returns>
 		/// <remarks>To generate the default method, simply call 
-		/// <see cref="Rule.CreateMethod(RVList{LNode})"/>.</remarks>
-		LNode CreateRuleMethod(Rule rule, RVList<LNode> methodBody);
+		/// <see cref="Rule.CreateMethod(VList{LNode})"/>.</remarks>
+		LNode CreateRuleMethod(Rule rule, VList<LNode> methodBody);
 
 		/// <summary>Generates the try-wrapper for a recognizer rule.</summary>
 		/// <remarks>

@@ -14,13 +14,7 @@ namespace Loyc.Syntax.Les
 	/// is decided based on the last character, or the first and last character;
 	/// the middle characters, if any, do not affect precedence.
 	/// <para/>
-	/// The LES precedence table is designed to be comparable with popular
-	/// programming languages, with a couple of "corrections" that I felt were 
-	/// appropriate; for example, in LES, <c>x ^ 7 != 0</c> is parsed 
-	/// <c>(x ^ 7) != 0</c>, rather than <c>x ^ (7 != 0)</c> as in the C family
-	/// of languages. Similarly, <c>x >> 1 + y</c> is parsed <c>(x >> 1) + y</c>
-	/// rather than <c>x >> (1 + y)</c>. Shifting is often used as a substitute
-	/// for multiplication and division, so it has the same precedence.
+	/// The LES precedence table is designed to match most programming languages.
 	/// <para/>
 	/// As a nod to functional languages, the arrow operator "->" is right-
 	/// associative and has a precedence below '*' so that <c>int * int -> int</c>

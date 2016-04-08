@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Ecs.Parser;
 using Loyc.Collections;
 using Loyc.MiniTest;
 using Loyc.Syntax;
 using Loyc.Syntax.Les;
+using Loyc.Ecs;
 
 namespace Loyc.LLParserGenerator
 {

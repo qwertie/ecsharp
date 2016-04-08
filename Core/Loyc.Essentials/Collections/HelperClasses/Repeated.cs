@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Loyc.Collections
 {
-	public static partial class Range
+	public static partial class ListExt
 	{
 		/// <summary>Returns a helper object that stores one value, but acts like 
 		/// a read-only list that repeats the value the specified number of times.</summary>

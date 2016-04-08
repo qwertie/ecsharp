@@ -1,17 +1,10 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Pook
- * Date: 4/12/2011
- * Time: 8:53 PM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Loyc.Math;
+
 namespace Loyc.Collections
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Diagnostics;
-
 	public static partial class LCExt
 	{
 		public static ListSlice<T> Slice<T>(this IList<T> list, int start, int length = int.MaxValue)
@@ -21,6 +14,14 @@ namespace Loyc.Collections
 		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, int start, int length = int.MaxValue)
 		{
 			return new ListSlice<T>(list, start, length);
+		}
+		public static ListSlice<T> Slice<T>(this IList<T> list, NumRange<int,MathI> range)
+		{
+			return new ListSlice<T>(list, range.Lo, range.Count);
+		}
+		public static ListSlice<T> Slice<T>(this IListAndListSource<T> list, NumRange<int,MathI> range)
+		{
+			return new ListSlice<T>(list, range.Lo, range.Count);
 		}
 	}
 
@@ -224,7 +225,7 @@ namespace Loyc.Collections
 		
 		public void Clear()
 		{
-			for (int i = Math.Min(_start+_count, _list.Count)-1; i >= _start; i--)
+			for (int i = System.Math.Min(_start+_count, _list.Count)-1; i >= _start; i--)
 				_list.RemoveAt(i);
 		}
 		
@@ -241,7 +242,7 @@ namespace Loyc.Collections
 				if ((uint)arrayIndex >= (uint)count)
 					throw new ArgumentOutOfRangeException("arrayIndex");
 				else
-					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
+					throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, count));
 			}
 			
 			for (int i = 0; i < count; i++)
@@ -430,7 +431,7 @@ namespace Loyc.Collections
 				if ((uint)arrayIndex >= (uint)count)
 					throw new ArgumentOutOfRangeException("arrayIndex");
 				else
-					throw new ArgumentException(Localize.From("CopyTo: array is too small ({0} < {1})", space, count));
+					throw new ArgumentException("CopyTo: array is too small ({0} < {1})".Localized(space, count));
 			}
 			
 			for (int i = 0; i < count; i++)

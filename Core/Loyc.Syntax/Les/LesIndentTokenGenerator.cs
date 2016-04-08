@@ -121,7 +121,7 @@ namespace Loyc.Syntax.Les
 				// Here, two dedents are generated. If the first dedent deletes 
 				// the colon, the second one will not see the colon and will not
 				// be aware that it should suppress a semicolon.
-				return Range.Single(new Token((int)TokenType.Dedent, next.StartIndex, 0, 0, null)).GetEnumerator();
+				return ListExt.Single(new Token((int)TokenType.Dedent, next.StartIndex, 0, 0, null)).GetEnumerator();
 			} else {
 				return ((IEnumerable<Token>)new Token[] { 
 					new Token((int)TokenType.Dedent,    next.StartIndex, 0, 0, null),

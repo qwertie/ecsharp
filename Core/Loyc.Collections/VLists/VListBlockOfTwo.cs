@@ -29,7 +29,7 @@ namespace Loyc.Collections
 		}
 		/// <summary>Initializes a block with two items.</summary>
 		/// <remarks>The secondItem is added second, so it will occupy position [0]
-		/// of a FVList or position [1] of an RVList.</remarks>
+		/// of a FVList or position [1] of a VList.</remarks>
 		public VListBlockOfTwo(T firstItem, T secondItem, bool mutable)
 		{
 			_1 = firstItem;

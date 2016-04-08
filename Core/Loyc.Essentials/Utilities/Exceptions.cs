@@ -15,8 +15,8 @@ namespace Loyc
 	[Serializable]
 	public class InvalidStateException : InvalidOperationException
 	{
-		public InvalidStateException() : base(Localize.From("This object is in an invalid state.")) { }
-		public InvalidStateException(string msg) : base(msg) { }
+		public InvalidStateException() : this(null) { }
+		public InvalidStateException(string msg) : base(msg ?? "This object is in an invalid state.".Localized()) { }
 		public InvalidStateException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -32,8 +32,8 @@ namespace Loyc
 	[Serializable]
 	public class ConcurrentModificationException : InvalidOperationException
 	{
-		public ConcurrentModificationException() : base(Localize.From("A concurrect access was detected during modification.")) { }
-		public ConcurrentModificationException(string msg) : base(msg) { }
+		public ConcurrentModificationException() : this(null) { }
+		public ConcurrentModificationException(string msg) : base(msg ?? "A concurrect access was detected during modification.".Localized()) { }
 		public ConcurrentModificationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -41,8 +41,8 @@ namespace Loyc
 	[Serializable]
 	public class ReadOnlyException : InvalidOperationException
 	{
-		public ReadOnlyException() : base(Localize.From("An attempt was made to modify a read-only object.")) { }
-		public ReadOnlyException(string msg) : base(msg) { }
+		public ReadOnlyException() : this(null) { }
+		public ReadOnlyException(string msg) : base(msg ?? "An attempt was made to modify a read-only object.".Localized()) { }
 		public ReadOnlyException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -59,7 +59,7 @@ namespace Loyc
 		public static int IsNotNegative(string argName, int value)
 		{
 			if (value < 0)
-				throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' should not be negative.", argName, value));
+				throw new ArgumentOutOfRangeException(argName, @"Argument ""{0}"" value '{1}' should not be negative.".Localized(argName, value));
 			return value;
 		}
 		public static int IsInRange(string paramName, int value, int min, int max)
@@ -74,7 +74,7 @@ namespace Loyc
 		}
 		public static void ThrowOutOfRange(string argName, int value, int min, int max)
 		{
-			throw new ArgumentOutOfRangeException(argName, Localize.From(@"Argument ""{0}"" value '{1}' is not within the expected range ({2}...{3})", argName, value, min, max)); 
+			throw new ArgumentOutOfRangeException(argName, @"Argument ""{0}"" value '{1}' is not within the expected range ({2}...{3})".Localized(argName, value, min, max)); 
 		}
 		public static void ThrowArgumentNull(string argName)
 		{
@@ -83,12 +83,12 @@ namespace Loyc
 		public static void Arg(string argName, bool condition, object argValue)
 		{
 			if (!condition)
-				throw new ArgumentException(Localize.From("Invalid argument ({0} = '{1}')", argName, argValue));
+				throw new ArgumentException("Invalid argument ({0} = '{1}')".Localized(argName, argValue));
 		}
 		public static void Arg(string argName, bool condition)
 		{
 			if (!condition)
-				throw new ArgumentException(Localize.From("Invalid value for '{0}'", argName));
+				throw new ArgumentException("Invalid value for '{0}'".Localized(argName));
 		}
 	}
 }
@@ -100,8 +100,8 @@ namespace Loyc.Collections
 	[Serializable]
 	public class EnumerationException : InvalidOperationException
 	{
-		public EnumerationException() : base(Localize.From("The collection was modified after enumeration started.")) { }
-		public EnumerationException(string msg) : base(msg) { }
+		public EnumerationException() : this(null) { }
+		public EnumerationException(string msg) : base(msg ?? "The collection was modified after enumeration started.".Localized()) { }
 		public EnumerationException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -110,8 +110,8 @@ namespace Loyc.Collections
 	[Serializable]
 	public class KeyAlreadyExistsException : InvalidOperationException
 	{
-		public KeyAlreadyExistsException() : base(Localize.From("The item or key being added already exists in the collection.")) { }
-		public KeyAlreadyExistsException(string msg) : base(msg) { }
+		public KeyAlreadyExistsException() : this(null) { }
+		public KeyAlreadyExistsException(string msg) : base(msg ?? "The item or key being added already exists in the collection.".Localized()) { }
 		public KeyAlreadyExistsException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 
@@ -120,8 +120,8 @@ namespace Loyc.Collections
 	[Serializable]
 	public class EmptySequenceException : InvalidOperationException
 	{
-		public EmptySequenceException() : base(Localize.From("Failed to access the sequence because it is empty.")) { }
-		public EmptySequenceException(string msg) : base(msg) { }
+		public EmptySequenceException() : this(null) { }
+		public EmptySequenceException(string msg) : base(msg ?? "Failed to access the sequence because it is empty.".Localized()) { }
 		public EmptySequenceException(string msg, Exception innerException) : base(msg, innerException) { }
 	}
 }

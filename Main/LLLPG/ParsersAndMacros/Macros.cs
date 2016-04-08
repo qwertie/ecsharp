@@ -159,7 +159,7 @@ namespace Loyc.LLPG
 
 		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"rule", "token", Mode = MacroMode.NoReprocessing)]
+			"rule", "token", Mode = MacroMode.NoReprocessing | MacroMode.Passive)]
 		public static LNode rule(LNode node, IMacroContext context)
 		{
 			bool isToken;
@@ -179,7 +179,7 @@ namespace Loyc.LLPG
 				if (LeMP.Prelude.Les.Macros.IsComplexId(name))
 					name = F.Call(name); // def requires an argument list
 				
-				RVList<LNode> args = name.Args;
+				VList<LNode> args = name.Args;
 				name = name.Target;
 				
 				LNode newBody = ParseRuleBody(node.Args[1], context);
@@ -204,13 +204,13 @@ namespace Loyc.LLPG
 
 		[LexicalMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
 			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
-			"#fn", "#property", Mode = MacroMode.Passive)]
+			"#fn", "#property", Mode = MacroMode.Passive | MacroMode.NoReprocessing)]
 		public static LNode ECSharpRule(LNode node, IMacroContext context)
 		{
 			// This will be called for all methods and properties, so we have to 
 			// examine it for the earmarks of a rule definition.
 			bool isProp;
-			if (!(isProp = node.Calls(S.Property, 3)) && !node.Calls(S.Fn, 4))
+			if (!(isProp = node.Calls(S.Property, 4)) && !node.Calls(S.Fn, 4))
 				return null;
 			LNode returnType = node.Args[0];
 			bool isToken;
@@ -231,11 +231,13 @@ namespace Loyc.LLPG
 			//node = context.PreProcessChildren();
 
 			LNode name = node.Args[1];
-			LNode args = isProp ? F.List() : node.Args[2];
+			LNode args = node.Args[2];
+			if (args.IsIdNamed(S.Missing)) // @``
+				args = F.List(); // output will be a #fn, which does not allow @`` as its arg list
 			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
-					new RVList<LNode> { returnType, name, args, newBody }, 
+					new VList<LNode> { returnType, name, args, newBody }, 
 					node.Range, node.Style).WithAttrs(attrs);
 			else
 				return null;
@@ -278,10 +280,11 @@ namespace Loyc.LLPG
 			}
 		}
 
-		[LexicalMacro("LLLPG Helper {Body...}", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).",
-			Mode = MacroMode.Normal | MacroMode.ProcessChildrenBefore)]
-		public static LNode run_LLLPG(LNode node, IMessageSink sink)
+		[LexicalMacro("run_LLLPG(helper literal, {Body...})", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).")]
+		public static LNode run_LLLPG(LNode node, IMacroContext context)
 		{
+			node = context.PreProcessChildren();
+
 			IPGCodeGenHelper helper;
 			LNode body;
 			bool hasBraces = true;
@@ -289,9 +292,9 @@ namespace Loyc.LLPG
 				|| (helper = node.Args[0].Value as IPGCodeGenHelper) == null 
 				|| !(hasBraces = (body = node.Args[1]).Calls(S.Braces)))
 			{
-				string msg = Localize.From("Expected run_LLLPG(helper_object, {...}).");
-				if (hasBraces) msg = " " + Localize.From("An auxiliary macro is required to supply the helper object.");
-				sink.Write(Severity.Note, node, msg);
+				string msg = Localize.Localized("Expected run_LLLPG(helper_object, {...}).");
+				if (hasBraces) msg = " " + Localize.Localized("An auxiliary macro is required to supply the helper object.");
+				context.Write(Severity.Note, node, msg);
 				return null;
 			}
 			helper = helper ?? new GeneralCodeGenHelper();
@@ -301,7 +304,7 @@ namespace Loyc.LLPG
 
 			// Let helper preprocess the code if it wants to
 			foreach (var stmt in body.Args) {
-				var stmt2 = helper.VisitInput(stmt, sink) ?? stmt;
+				var stmt2 = helper.VisitInput(stmt, context) ?? stmt;
 				if (stmt2.Calls(S.Splice))
 					stmts.AddRange(stmt2.Args);
 				else
@@ -318,11 +321,11 @@ namespace Loyc.LLPG
 					LNode methodBody = stmt.Args.Last;
 
 					// basis has the form #fn(ReturnType, Name, #(Args))
-					var rule = MakeRuleObject(isToken, ref basis, sink);
+					var rule = MakeRuleObject(isToken, ref basis, context);
 					if (rule != null) {
 						var prev = rules.FirstOrDefault(pair => pair.A.Name == rule.Name);
 						if (prev.A != null)
-							sink.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
+							context.Write(Severity.Error, rule.Basis, "The rule name «{0}» was used before at {1}", rule.Name, prev.A.Basis.Range.Start);
 						else {
 							rules.Add(Pair.Create(rule, methodBody));
 							stmts[i] = null; // remove processed rules from the list
@@ -330,21 +333,21 @@ namespace Loyc.LLPG
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))
-						sink.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+						context.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
 				}
 			}
 
 			if (rules.Count == 0)
-				sink.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
+				context.Write(Severity.Warning, node, "No grammar rules were found in LLLPG block");
 
 			// Parse the rule definitions (now that we know the names of all the 
 			// rules, we can decide if an Id refers to a rule; if not, it's assumed
 			// to refer to a terminal).
-			new StageTwoParser(helper, sink).Parse(rules);
+			new StageTwoParser(helper, context).Parse(rules);
 			
 			// Process the grammar & generate code
-			var lllpg = new LLParserGenerator(helper, sink);
-			ApplyOptions(node, lllpg, sink); // Read attributes such as [DefaultK(3)]
+			var lllpg = new LLParserGenerator(helper, context);
+			ApplyOptions(node, lllpg, context); // Read attributes such as [DefaultK(3)]
 			foreach (var pair in rules)
 				lllpg.AddRule(pair.A);
 			
@@ -453,12 +456,12 @@ namespace Loyc.LLPG
 		private static void ReadOption<T>(IMessageSink sink, LNode attr, Action<T> setter, T? defaultValue) where T:struct
 		{
 			if (attr.ArgCount > 1 || (attr.ArgCount == 0 && defaultValue == null))
-				sink.Write(Severity.Error, attr, Localize.From("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
+				sink.Write(Severity.Error, attr, Localize.Localized("{0}: one parameter expected", Signature(attr, typeof(T), defaultValue)));
 			else if (attr.ArgCount == 1) {
 				if (attr.Args[0].Value is T)
 					setter((T)attr.Args[0].Value);
 				else
-					sink.Write(Severity.Error, attr, Localize.From("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
+					sink.Write(Severity.Error, attr, Localize.Localized("{0}: literal of type «{1}» expected", Signature(attr, typeof(T), defaultValue), typeof(T).Name));
 			} else
 				setter(defaultValue.Value);
 		}

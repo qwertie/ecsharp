@@ -61,6 +61,7 @@ namespace Loyc
 			return T1Comparer.Equals(A, rhs.A) &&
 				T2Comparer.Equals(B, rhs.B);
 		}
+		public static implicit operator KeyValuePair<T1, T2>(Pair<T1, T2> p) { return new KeyValuePair<T1, T2>(p.A, p.B); }
 		public static bool operator ==(Pair<T1, T2> a, Pair<T1, T2> b) { return a.Equals(b); }
 		public static bool operator !=(Pair<T1, T2> a, Pair<T1, T2> b) { return !a.Equals(b); }
 		public override bool Equals(object obj)

@@ -16,8 +16,8 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
 	/// LL(k) recursive-descent parsers.</summary>
 	/// <remarks>
-	/// LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
-	/// project (http://loyc.net).
+	/// LLLPG is an LL(k) parser generator under the umbrella of the Loyc 
+	/// initiative (http://loyc.net). Home page: http://ecsharp.net/lllpg or http://lllpg.com
 	/// <para/>
 	/// LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
 	/// designed for parsing computer languages, not natural languages. It also
@@ -31,7 +31,7 @@ namespace Loyc.LLParserGenerator
 	/// <para/>
 	/// Note: the input to LLLPG is usually provided in the form of LES/EC# source code.
 	/// In that case, there is no need to use this class directly. The source code of
-	/// <see cref="LLLPG.Main"/> shows how to invoke LLLPG as a macro via the 
+	/// <see cref="Program.Main"/> shows how to invoke LLLPG as a macro via the 
 	/// <see cref="LeMP.Compiler"/>.
 	/// <para/>
 	/// For more information about how to use LLLPG, read
@@ -438,7 +438,7 @@ namespace Loyc.LLParserGenerator
 		#region Run()
 
 		protected ISourceFile _sourceFile;
-		protected RWList<LNode> _classBody;
+		protected WList<LNode> _classBody;
 
 		/// <summary>Generates a braced block of code {...} for the grammar 
 		/// described by the rules that were previously added to this object 
@@ -755,7 +755,7 @@ namespace Loyc.LLParserGenerator
 			var pav = new PredictionAnalysisVisitor(this);
 			foreach (var rule in rules) {
 				if (Verbosity > 0) Output(Verbose, null, 
-					Localize.From("Doing prediction analysis for rule '{0}'", rule.Name));
+					Localize.Localized("Doing prediction analysis for rule '{0}'", rule.Name));
 				pav.Analyze(rule);
 			}
 
@@ -767,7 +767,7 @@ namespace Loyc.LLParserGenerator
 			// Generate output code
 			_sourceFile = sourceFile;
 			var F = new LNodeFactory(_sourceFile);
-			_classBody = new RWList<LNode>();
+			_classBody = new WList<LNode>();
 			_helper.Begin(_classBody, _sourceFile);
 
 			var generator = new GenerateCodeVisitor(this);
@@ -779,7 +779,7 @@ namespace Loyc.LLParserGenerator
 			
 			_helper.Done();
 
-			return F.Braces(_classBody.ToRVList());
+			return F.Braces(_classBody.ToVList());
 		}
 
 		private void PrintVerboseStats(IEnumerable<Rule> rules)
@@ -791,7 +791,7 @@ namespace Loyc.LLParserGenerator
 				if (rule.IsToken)
 					tokens++;
 				else {
-					Output(Verbose, rule.Pred, Localize.From("Follow set of '{0}': {1}",
+					Output(Verbose, rule.Pred, Localize.Localized("Follow set of '{0}': {1}",
 						rule.Name, rule.EndOfRule.FollowSet.Select(p => p.ToStringWithPosition()).Join(", ")));
 					if (Verbosity >= 2) {
 						var end = new KthSet(rule.EndOfRule, ExitAlt, _helper.EmptySet);
@@ -811,13 +811,13 @@ namespace Loyc.LLParserGenerator
 						}
 						casesStr = string.Concat(cases.Select(c => "\n  " + c.ToString()));
 
-						Output(Verbose, rule.Pred, Localize.From(message,
+						Output(Verbose, rule.Pred, Localize.Localized(message,
 							rule.Name, followSet.Set, followSet.Cases.Count, cases.Count, casesStr));
 					}
 				}
 			}
-			Output(Verbose, null, Localize.From("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
-			Output(Verbose, null, Localize.From("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
+			Output(Verbose, null, Localize.Localized("{0} rule(s) are using Token mode. This mode assumes the follow set could be anything.", tokens));
+			Output(Verbose, null, Localize.Localized("{0} rule(s) are private. Private rules should only be called from other rules.", privates));
 		}
 
 		#endregion
@@ -1012,7 +1012,7 @@ namespace Loyc.LLParserGenerator
 				try {
 					_result = result;
 					_currentPos = position;
-					_andPreds = RVList<AndPred>.Empty;
+					_andPreds = VList<AndPred>.Empty;
 					Visit(position.Pred);
 					Debug.Assert(_stackDepth == 0);
 				} finally {
@@ -1020,7 +1020,7 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			KthSet _result;
-			RVList<AndPred> _andPreds;
+			VList<AndPred> _andPreds;
 			GrammarPos _currentPos;
 			HashSet<Pred> _followSetVisited = new HashSet<Pred>();
 			int _stackDepth;

@@ -174,7 +174,7 @@ namespace MiniTestRunner.TestDomain
 			});
 			if (clash == null)
 				return null;
-			return Range.Single(clash);
+			return ListExt.Single(clash);
 		}
 	}
 }

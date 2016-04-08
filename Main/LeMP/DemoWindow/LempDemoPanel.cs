@@ -12,6 +12,7 @@ using LeMP;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
+using Loyc.Syntax.Les;
 using Loyc.Utilities;
 
 namespace TextEditor
@@ -113,11 +114,14 @@ namespace TextEditor
 
 		private void RunLeMP(IList<string> args, string inputCode, string inputPath)
 		{
-			var options = new BMultiMap<string, string>();
-			UG.ProcessCommandLineArguments(args, options, "", LeMP.Compiler.ShortOptions, LeMP.Compiler.TwoArgOptions);
-
-			string _;
 			var KnownOptions = LeMP.Compiler.KnownOptions;
+			var sink = MessageSink.FromDelegate(WriteMessage);
+			var sourceFile = new InputOutput((UString)inputCode, inputPath);
+			var c = new Compiler(sink, sourceFile);
+			var options = c.ProcessArguments(args, true, false);
+			if (args.Count != 0)
+				sink.Write(Severity.Error, "Command line", "'{0}': Opening other source files is not supported", args[0]);
+			string _;
 			if (options.TryGetValue("help", out _) || options.TryGetValue("?", out _)) {
 				var ms = new MemoryStream();
 				LeMP.Compiler.ShowHelp(LeMP.Compiler.KnownOptions, new StreamWriter(ms));
@@ -125,45 +129,31 @@ namespace TextEditor
 				_outFileName = null;
 				ShowOutput(output);
 			} else {
-				var sink = MessageSink.FromDelegate(WriteMessage);
-				var sourceFile = new InputOutput((UString)inputCode, Path.GetFileName(inputPath));
+				if (inputPath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
+					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 
-				var c = new Compiler(sink, sourceFile);
-				c.Files = new List<InputOutput> { sourceFile };
-				c.Parallel = false; // only one file, parallel doesn't help
-
-				if (LeMP.Compiler.ProcessArguments(c, options)) {
-					LeMP.Compiler.WarnAboutUnknownOptions(options, sink, KnownOptions);
-
-					c.AddMacros(typeof(global::LeMP.StandardMacros).Assembly);
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
-					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-					if (inputPath.EndsWith(".les", StringComparison.OrdinalIgnoreCase))
-						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
-
-					LempStarted = true;
-					new Thread(() => {
-						try {
-							c.Run();
-							// Must get OutFileName after calling Run()
-							_outFileName = sourceFile.OutFileName;
-							ShowOutput(c.Output.ToString());
-						} finally { LempStarted = false; }
-					}).Start();
-				}
+				LempStarted = true;
+				new Thread(() => {
+					try {
+						c.Run();
+						// Must get OutFileName after calling Run()
+						_outFileName = sourceFile.OutFileName;
+						ShowOutput(c.Output.ToString());
+					} finally { LempStarted = false; }
+				}).Start();
 			}
 		}
 		
 		class Compiler : global::LeMP.Compiler
 		{
 			public Compiler(IMessageSink sink, InputOutput file)
-				: base(sink, typeof(global::LeMP.Prelude.Macros), new [] { file }) { }
+				: base(sink, typeof(global::LeMP.Prelude.BuiltinMacros), new [] { file }) { }
 
 			public StringBuilder Output = new StringBuilder();
 
 			protected override void WriteOutput(InputOutput io)
 			{
-				RVList<LNode> results = io.Output;
+				VList<LNode> results = io.Output;
 
 				using (LNode.PushPrinter(io.OutPrinter)) {
 					Output.AppendFormat("// Generated from {1} by LeMP {2}.{0}", NewlineString,
@@ -184,7 +174,7 @@ namespace TextEditor
 		{
 			string msg = fmt;
 			try {
-				msg = Localize.From(fmt, args);
+				msg = Localize.Localized(fmt, args);
 			} catch { }
 			
 			var pos = GetSourcePos(ctx);

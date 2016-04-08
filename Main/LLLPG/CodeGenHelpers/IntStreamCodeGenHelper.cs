@@ -45,7 +45,7 @@ namespace Loyc.LLParserGenerator
 				set = PGIntSet.AllExceptEOF;
 			} else if (expr.IsIdNamed(_EOF)) {
 				set = PGIntSet.EOF;
-			} else if (expr.Calls(S.DotDot, 2)) {
+			} else if (expr.Calls(S.DotDot, 2) || expr.Calls(S.DotDotDot, 2)) {
 				int? from = ConstValue(expr.Args[0], ref isInt);
 				int? to   = ConstValue(expr.Args[1], ref isInt);
 				if (from == null || to == null) {
@@ -159,7 +159,7 @@ namespace Loyc.LLParserGenerator
 			return
 				F.Attr(F.Id(S.Static), F.Id(S.Readonly),
 					F.Var(SetType, setName,
-						ApiCall(method, new RVList<LNode>(args.Select(a => F.Literal(a))), true)));
+						ApiCall(method, new VList<LNode>(args.Select(a => F.Literal(a))), true)));
 		}
 
 		public override LNode GenerateMatchExpr(IPGTerminalSet set_, bool savingResult, bool recognizerMode)
@@ -169,7 +169,7 @@ namespace Loyc.LLParserGenerator
 			LNode call;
 			var type = set.ChooseMatchType(2, 4);
 			if (type != PGIntSet.Match.Set) {
-				var args = new RWList<LNode>();
+				var args = new WList<LNode>();
 				if (type == PGIntSet.Match.Ranges) {
 					// Use MatchRange or MatchExceptRange
 					foreach (var r in set) {
@@ -193,7 +193,7 @@ namespace Loyc.LLParserGenerator
 					var target = recognizerMode
 						? (set.IsInverted ? _TryMatchExcept : _TryMatch)
 						: (set.IsInverted ? _MatchExcept : _Match);
-					call = ApiCall(target, args.ToRVList());
+					call = ApiCall(target, args.ToVList());
 				}
 			} else {
 				var setName = GenerateSetDecl(set);

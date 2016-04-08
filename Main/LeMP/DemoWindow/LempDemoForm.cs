@@ -16,16 +16,13 @@ namespace TextEditor
 	public partial class LempDemoForm : Form
 	{
 		string DemoText =
-			"using System;\n" +
-			"using System.Collections.Generic;\n" +
-			"using Loyc;\n" +
-			"using Loyc.Collections;\n" +
-			"using Loyc.Syntax;\n" +
-			"using Loyc.Syntax.Lexing;\n\n" +
-			"replace (W => Console.WriteLine);\n" +
+			"using System(, .Collections.Generic);\n" +
+			"using Loyc(, .Collections, .Syntax, .Syntax.Lexing);\n" +
+			"namespace Example;\n" +
+			"replace (w => Console.WriteLine);\n\n" +
 			"public class Program {\n" +
 			"	public static void Main(string[] args) {\n" +
-			"		W(\"Hello, World!\");\n" +
+			"		w(\"Hello, World!\");\n" +
 			"	}\n" +
 			"}\n";
 

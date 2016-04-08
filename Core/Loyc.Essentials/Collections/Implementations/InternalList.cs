@@ -13,7 +13,7 @@ namespace Loyc.Collections.Impl
 	/// "private" or "protected" members of low-level code.
 	/// </summary>
 	/// <remarks>
-	/// An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
+	/// An <a href="http://core.ecsharp.net/collections/internal-list.html">article</a>
 	/// about this class is available.
 	/// <para/>
 	/// InternalList is a struct, not a class, in order to save memory; and for 

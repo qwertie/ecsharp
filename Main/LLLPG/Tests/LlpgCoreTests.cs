@@ -6,7 +6,7 @@ using Loyc.MiniTest;
 using Loyc.Utilities;
 using Loyc.Syntax;
 using S = Loyc.Syntax.CodeSymbols;
-using Ecs;
+using Loyc.Ecs;
 using Loyc.Collections;
 
 namespace Loyc.LLParserGenerator
@@ -36,12 +36,12 @@ namespace Loyc.LLParserGenerator
 		protected static TerminalPred AnyNode { get { return NotSym(); } }
 		protected static AndPred And(LNode test) { return Pred.And(test); }
 		protected static AndPred And(Pred test) { return Pred.And(test); }
-		protected static AndPred And(string expr) { return Pred.And(Expr(expr)); }
+		protected static AndPred And(string ident) { return Pred.And(LNode.Id(ident)); }
 		protected static AndPred AndNot(LNode test) { return Pred.AndNot(test); }
 		protected static AndPred AndNot(Pred test) { return Pred.AndNot(test); }
-		protected static AndPred AndNot(string expr) { return Pred.AndNot(Expr(expr)); }
+		protected static AndPred AndNot(string ident) { return Pred.AndNot(LNode.Id(ident)); }
 		protected static RuleRef Call(Rule rule, params LNode[] args) { 
-			return new RuleRef(null, rule) { Params = new RVList<LNode>(args) };
+			return new RuleRef(null, rule) { Params = new VList<LNode>(args) };
 		}
 
 		protected static Seq Seq(string s) { return Pred.Seq(s); }
@@ -55,7 +55,7 @@ namespace Loyc.LLParserGenerator
 
 		protected static LNode Stmt(string code)
 		{
-			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F._Missing);
+			return F.Attr(F.Trivia(S.TriviaRawTextBefore, code), F.Missing);
 		}
 		protected static LNode Expr(string code)
 		{
@@ -1965,7 +1965,7 @@ namespace Loyc.LLParserGenerator
 			Rule NTokens = Rule("NTokens", 
 				Set("x", 0) + Opt(And(Expr("x < max")) + Plus(Set("[^\n\r ]"))) +
 				             Star(And(Expr("x < max")) + C(' ') + Star(Set("[^\n\r ]")) + Stmt("x++"), true));
-			NTokens.Basis = F.Fn(F.Void, F._Missing, F.List(F.Var(F.Int32, "max")));
+			NTokens.Basis = F.Fn(F.Void, F.Missing, F.List(F.Var(F.Int32, "max")));
 			Rule Line = Rule("Line", SetVar("c", Set("[0-9]")) + Call(NTokens, Expr("c - '0'")) + Opt(Set("[\n\r]")));
 
 			_pg.AddRules(NTokens, Line);

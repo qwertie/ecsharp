@@ -143,7 +143,7 @@ namespace Loyc.VisualStudio
 		}
 		protected void AppendMessage(StringBuilder str, LogMessage mhmsg)
 		{
-			str.Append(Localize.From(mhmsg.Severity.ToString()));
+			str.Append(mhmsg.Severity.ToString().Localized());
 			str.Append(": ");
 			str.AppendFormat(mhmsg.Format, mhmsg.Args);
 		}

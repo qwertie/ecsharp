@@ -29,7 +29,7 @@ namespace LeMP
 		
 		/// <summary>Returns a list of ancestors of the current node being 
 		/// processed. Normally Ancestors[0] is a #splice node that contains a list 
-		/// of all top-level statements in the file, and Parents.Last() is the
+		/// of all top-level statements in the file, and Ancestors.Last() is the
 		/// current node.</summary>
 		/// <remarks>You would expect that Ancestors[N] would contain Ancestors[N+1]
 		/// as part of the attributes, target or arguments, but this is not always
@@ -54,11 +54,11 @@ namespace LeMP
 		/// This method only processes children once. If this method is called 
 		/// again for the same node, it returns a cached result.
 		/// <para/>
-		/// If the currently-running macro fails the result may be thrown away
+		/// If the currently-running macro fails, the result may be thrown away
 		/// and the effort of processing the children will have been wasted. If
-		/// the macro succeeds a its <see cref="LexicalMacro"/> attribute does not 
-		/// include <c>Mode = MacroMode.NoReprocessing</c>, the children will 
-		/// (normally) be processed again after the macro returns.
+		/// the macro succeeds, and its <see cref="LexicalMacro"/> attribute uses
+		/// the default <c>MacroMode.Normal</c> processing mode, the children 
+		/// will (normally) be processed again after the macro returns.
 		/// </remarks>
 		LNode PreProcessChildren();
 
@@ -105,14 +105,14 @@ namespace LeMP
 		/// stays the same; if true it is cleared to the set of pre-opened 
 		/// namespaces (<see cref="MacroProcessor.PreOpenedNamespaces"/>).</param>
 		/// <remarks>The node(s)</remarks>
-		RVList<LNode> PreProcess(RVList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
-		/// <inheritdoc cref="PreProcess(RVList{LNode}, bool, bool, bool)"/>
+		VList<LNode> PreProcess(VList<LNode> input, bool asRoot = false, bool resetOpenNamespaces = false, bool areAttributes = false);
+		/// <inheritdoc cref="PreProcess(VList{LNode}, bool, bool, bool)"/>
 		LNode PreProcess(LNode input, bool asRoot = false, bool resetOpenNamespaces = false, bool isTarget = false);
 
 		/// <summary>Gets information about all macros registered with the macro 
 		/// processor, including macros whose namespace has not been opened with
 		/// <c>#importMacros</c>.</summary>
-		IReadOnlyDictionary<Symbol, List<MacroInfo>> AllKnownMacros { get; }
+		IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get; }
 	}
 
 	/// <summary>Standard extension methods for <see cref="IMacroContext"/>.</summary>
@@ -146,7 +146,7 @@ namespace LeMP
 		/// current sequence of nodes, it can set the DropRemainingNodes property 
 		/// to true and then simply incorporate RemainingNodes into its own output
 		/// (if you need to return multiple statements from your macro, use 
-		/// <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a RVList{LNode} to an 
+		/// <c>list.AsLNode(CodeSymbols.Splice)</c> to convert a VList{LNode} to an 
 		/// LNode.)
 		/// <para/>
 		/// This extension method helps you by detecting whether the current node
@@ -160,17 +160,17 @@ namespace LeMP
 		/// <c>ctx.DropRemainingNodes</c> to true and uses <c>ctx.RemainingNodes</c>
 		/// as the second list. Otherwise the second list is left blank.
 		/// </remarks>
-		public static Pair<RVList<LNode>, RVList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
+		public static Pair<VList<LNode>, VList<LNode>> GetArgsAndBody(this IMacroContext ctx, bool orRemainingNodes)
 		{
 			var node = ctx.CurrentNode();
 			var args = node.Args;
 			LNode last = null;
-			RVList<LNode> body = new RVList<LNode>();
+			VList<LNode> body = new VList<LNode>();
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {
 				body = last.Args;
 				args = args.WithoutLast(1);
 			} else if (orRemainingNodes) {
-				body = new RVList<LNode>(ctx.RemainingNodes);
+				body = new VList<LNode>(ctx.RemainingNodes);
 				ctx.DropRemainingNodes = true;
 			}
 			return Pair.Create(args, body);
@@ -184,7 +184,7 @@ namespace LeMP
 		/// #namedArg(option2, v2)</c> in EC# or <c>@:(option1, v1), @:(option2, v2)</c> in LES.
 		/// This function recognizes both forms.
 		/// </remarks>
-		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(RVList<LNode> optionList)
+		public static IEnumerable<KeyValuePair<Symbol, LNode>> GetOptions(VList<LNode> optionList)
 		{
 			foreach (var option in optionList) {
 				if ((option.Calls(CodeSymbols.NamedArg, 2) || option.Calls(CodeSymbols.Colon, 2)) && option.Args[0].IsId)
@@ -209,18 +209,19 @@ namespace LeMP
 			NamespaceSym = @namespace; Name = name; Macro = macro; Info = info;
 			Mode = info.Mode;
 			if ((Mode & MacroMode.PriorityMask) == 0)
-				Mode |= MacroMode.NormalPriority;
+				Mode |= MacroMode.PriorityNormal;
 		}
 		public Symbol NamespaceSym { get; private set; }
 		public Symbol Name { get; private set; }
 		public LexicalMacro Macro { get; private set; }
 		public LexicalMacroAttribute Info { get; private set; }
 		public MacroMode Mode { get; private set; }
+		public MacroMode Priority { get { return Mode & MacroMode.PriorityMask; } }
 
-		/// <summary>Compare priorities of two macros.</summary>
+		/// <summary>Compare priorities of two macros. Will sort in descending order.</summary>
 		public int CompareTo(MacroInfo other)
 		{
-			return (Mode & MacroMode.PriorityMask).CompareTo(other.Mode & MacroMode.PriorityMask);
+			return other.Priority.CompareTo(Priority);
 		}
 	}
 }

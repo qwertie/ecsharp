@@ -142,7 +142,7 @@ namespace Loyc.Collections.Impl
 				}
 				return;
 			}
-			throw new InvalidOperationException(Localize.From("KeylessHashtable is full"));
+			throw new InvalidOperationException(Localize.Localized("KeylessHashtable is full"));
 		}
 
 		public sealed override void Add(uint hashCode, T value)

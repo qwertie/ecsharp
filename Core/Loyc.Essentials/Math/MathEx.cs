@@ -11,69 +11,6 @@ namespace Loyc.Math
 	/// </summary>
 	public static class MathEx
 	{
-		#region IsInRange and InRange
-		public static bool IsInRange(this int n, int min, int max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(this long n, long min, long max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(this double n, double min, double max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange(this float n, float min, float max)
-		{
-			return n >= min && n <= max;
-		}
-		public static bool IsInRange<T>(this T n, T min, T max) where T : IComparable<T>
-		{
-			return n.CompareTo(min) >= 0 && n.CompareTo(max) <= 0;
-		}
-		public static int InRange(this int n, int min, int max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static long InRange(this long n, long min, long max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static double InRange(this double n, double min, double max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static float InRange(this float n, float min, float max)
-		{
-			if (n < min)
-				return min;
-			if (n > max)
-				return max;
-			return n;
-		}
-		public static T InRange<T>(this T n, T min, T max) where T : IComparable<T>
-		{
-			if (n.CompareTo(min) <= 0)
-				return min;
-			if (n.CompareTo(max) >= 0)
-				return max;
-			return n;
-		}
-		#endregion
-
 		#region Sign
 		/// <summary>Returns the sign of a number (-1 for negative, 1 for positive, 0 for zero).</summary>
 		public static int Sign<T>(T num) where T:IComparable<T>
@@ -490,7 +427,7 @@ namespace Loyc.Math
 		public static int Log2Floor(long x)
 		{
 			if (x < 0)
-				throw new ArgumentException(Localize.From("Log2Floor({0}) called", x));
+				throw new ArgumentException("Log2Floor({0}) called".Localized(x));
 			return Log2Floor((ulong)x);
 		}
 		/// <summary>Gets the next higher power of 2, e.g. 4=>8, 13=>16.</summary>

@@ -27,7 +27,7 @@ namespace Loyc.Collections
 		/// <summary>The local array (elements [0.._localCount - 1] are in use).
 		/// _array[_localCount-1] is the "front" of the list according to the
 		/// terminology of a FVList, but it's the back of the list in the
-		/// terminology of a RVList.</summary>
+		/// terminology of a VList.</summary>
 		/// <remarks>
 		/// The method descriptions here use the terminology of a FVList, so if
 		/// we're talking about _array[i], and i is increasing, then we are getting
@@ -158,7 +158,7 @@ namespace Loyc.Collections
 				// find that _localCount is normally being read from the return
 				// value of VListBlock<T>.Add() or some other function that is
 				// guaranteed to call Add(). This is thread-safe (assuming the
-				// end-user is using independent FVList or RVList instances in
+				// end-user is using independent FVList or VList instances in
 				// different threads and not trying to work with VListBlocks
 				// directly) because no other thread will modify the _localCount of
 				// the block returned by Add(). That's because either it is a

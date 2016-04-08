@@ -42,7 +42,7 @@ namespace Loyc.Syntax
 		{
 			get {
 				if (EndIndex <= StartIndex) return "";
-				if (StartIndex >= _source.Text.Count) return Localize.From("(not available)");
+				if (StartIndex >= _source.Text.Count) return Localize.Localized("(not available)");
 				return Source.Text.Slice(StartIndex, EndIndex - StartIndex);
 			}
 		}

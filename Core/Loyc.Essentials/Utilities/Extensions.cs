@@ -61,7 +61,7 @@ namespace Loyc
 			do {
 				if (inner != ex) {
 					msg.Append(lineSeparator);
-					msg.Append(Localize.From("Inner exception: "));
+					msg.Append("Inner exception: ".Localized());
 				}
 				msg.AppendFormat("{0} ({1})", ex.Message, ex.GetType().Name);
 				if (inner.InnerException == null)
@@ -91,7 +91,7 @@ namespace Loyc
 					if ((ex = ex.InnerException) == null)
 						break;
 					sb.Append("\n\n");
-					sb.Append(Localize.From("Inner exception:"));
+					sb.Append("Inner exception:".Localized());
 					sb.Append(' ');
 				}
 			} catch { }

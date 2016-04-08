@@ -15,9 +15,9 @@ namespace Loyc.Syntax
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
 		/// with <c>block</c> as the only item.</summary>
-		public static RVList<LNode> AsList(this LNode block, Symbol braces)
+		public static VList<LNode> AsList(this LNode block, Symbol braces)
 		{
-			return block.Calls(braces) ? block.Args : new RVList<LNode>(block);
+			return block.Calls(braces) ? block.Args : new VList<LNode>(block);
 		}
 
 		/// <summary>Converts a list of LNodes to a single LNode by using the list 
@@ -26,7 +26,7 @@ namespace Loyc.Syntax
 		/// <param name="listIdentifier">Target of the node that is created if <c>list</c>
 		/// does not contain exactly one item. Typical values include "{}" and "#splice".</param>
 		/// <remarks>This is the reverse of the operation performed by <see cref="AsList(LNode,Symbol)"/>.</remarks>
-		public static LNode AsLNode(this RVList<LNode> list, Symbol listIdentifier)
+		public static LNode AsLNode(this VList<LNode> list, Symbol listIdentifier)
 		{
 			if (list.Count == 1)
 				return list[0];
@@ -40,30 +40,30 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public static RVList<LNode> WithSpliced(this RVList<LNode> list, int index, LNode node, Symbol listName)
+		public static VList<LNode> WithSpliced(this VList<LNode> list, int index, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.InsertRange(index, node.Args);
 			else
 				return list.Insert(index, node);
 		}
-		public static RVList<LNode> WithSpliced(this RVList<LNode> list, LNode node, Symbol listName)
+		public static VList<LNode> WithSpliced(this VList<LNode> list, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.AddRange(node.Args);
 			else
 				return list.Add(node);
 		}
-		public static void SpliceInsert(this RWList<LNode> list, int index, LNode node, Symbol listName)
+		public static void SpliceInsert(this WList<LNode> list, int index, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.InsertRange(index, node.Args);
 			else
 				list.Insert(index, node);
 		}
-		public static void SpliceAdd(this RWList<LNode> list, LNode node, Symbol listName)
+		public static void SpliceAdd(this WList<LNode> list, LNode node, Symbol listName = null)
 		{
-			if (node.Calls(listName))
+			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.AddRange(node.Args);
 			else
 				list.Add(node);
@@ -81,14 +81,26 @@ namespace Loyc.Syntax
 		}
 		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode removedAttr)
 		{
-			var a = self.Attrs;
-			for (int i = 0, c = a.Count; i < c; i++)
-				if (a[i].Name == name) {
-					removedAttr = a[i];
-					return self.WithAttrs(a.RemoveAt(i));
+			var a = self.Attrs.WithoutNodeNamed(name, out removedAttr);
+			if (removedAttr != null)
+				return self.WithAttrs(a);
+			else
+				return self;
+		}
+		public static VList<LNode> WithoutNodeNamed(this VList<LNode> a, Symbol name)
+		{
+			LNode _;
+			return WithoutNodeNamed(a, name, out _);
+		}
+		public static VList<LNode> WithoutNodeNamed(this VList<LNode> list, Symbol name, out LNode removedNode)
+		{
+			removedNode = null;
+			for (int i = 0, c = list.Count; i < c; i++)
+				if (list[i].Name == name) {
+					removedNode = list[i];
+					return list.RemoveAt(i);
 				}
-			removedAttr = null;
-			return self;
+			return list;
 		}
 		public static LNode WithoutOuterParens(this LNode self)
 		{
@@ -99,7 +111,7 @@ namespace Loyc.Syntax
 		{
 			return self.Args.NodeNamed(name);
 		}
-		public static int IndexWithName(this RVList<LNode> self, Symbol name)
+		public static int IndexWithName(this VList<LNode> self, Symbol name)
 		{
 			int i = 0;
 			foreach (LNode node in self)
@@ -109,7 +121,7 @@ namespace Loyc.Syntax
 					i++;
 			return -1;
 		}
-		public static LNode NodeNamed(this RVList<LNode> self, Symbol name)
+		public static LNode NodeNamed(this VList<LNode> self, Symbol name)
 		{
 			foreach (LNode node in self)
 				if (node.Name == name)
@@ -130,9 +142,11 @@ namespace Loyc.Syntax
 		/// <param name="candidate">A node that you want to compare with a 'pattern'.</param>
 		/// <param name="pattern">A syntax tree that may contain placeholders. A 
 		/// placeholder is a call to the $ operator with one parameter, which must 
-		/// be a simple identifier (otherwise the $ operator is treated literally as
-		/// something that must exist in <c>candidate</c>). The subtree in 
-		/// <c>candidate</c> corresponding to the placeholder is saved in <c>captures</c>.</param>
+		/// be either (A) a simple identifier, or (B) the ".." operator with a simple
+		/// identifier as its single parameter. Otherwise, the $ operator is treated 
+		/// literally as something that must exist in <c>candidate</c>). The subtree 
+		/// in <c>candidate</c> corresponding to the placeholder is saved in 
+		/// <c>captures</c>.</param>
 		/// <param name="captures">A table that maps placeholder names from 
 		/// <c>pattern</c> to subtrees in <c>candidate</c>. You can set your map to 
 		/// null and a map will be created for you if necessary. If you already have
@@ -144,7 +158,8 @@ namespace Loyc.Syntax
 		/// Attributes in patterns are not yet supported.
 		/// <para/>
 		/// This method supports multi-part captures, which are matched to 
-		/// placeholders whose identifier has a #params attribute (for example, if 
+		/// placeholders whose identifier either (A) has a #params attribute or
+		/// (B) has the unary ".." operator applied to it (for example, if 
 		/// the placeholder is called p, this is written as <c>$(params p)</c> in 
 		/// EC#.) A placeholder that looks like this can match multiple arguments or
 		/// multiple statements in the <c>candidate</c> (or <i>no</i> arguments, or
@@ -162,19 +177,19 @@ namespace Loyc.Syntax
 		/// In EC#, the quote(...) macro can be used to create the LNode object for 
 		/// a pattern.
 		/// </remarks>
-		public static bool MatchesPattern(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out RVList<LNode> unmatchedAttrs)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
 			// [$capture] (...)
 			if (!AttributesMatch(candidate, pattern, ref captures, out unmatchedAttrs))
 				return false;
 
-			// $capture
-			LNode sub;
-			if (pattern.Calls(S.Substitute, 1) && (sub = pattern.Args.Last).IsId)
+			// $capture or $(..capture)
+			LNode sub = GetCaptureIdentifier(pattern);
+			if (sub != null)
 			{
 				captures = captures ?? new MMap<Symbol, LNode>();
 				AddCapture(captures, sub.Name, candidate);
-				unmatchedAttrs = RVList<LNode>.Empty; // The attrs (if any) were captured
+				unmatchedAttrs = VList<LNode>.Empty; // The attrs (if any) were captured
 				return true;
 			}
 
@@ -210,20 +225,20 @@ namespace Loyc.Syntax
 			} else // kind == Id
 				return true;
 		}
-		public static bool MatchesPattern(LNode candidate, LNode pattern, out MMap<Symbol, LNode> captures)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out MMap<Symbol, LNode> captures)
 		{
-			RVList<LNode> unmatchedAttrs = RVList<LNode>.Empty;
+			VList<LNode> unmatchedAttrs = VList<LNode>.Empty;
 			captures = null;
 			return MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs);
 		}
 
 		static void AddCapture(MMap<Symbol, LNode> captures, LNode cap, Slice_<LNode> items)
 		{
-			Debug.Assert(cap.Calls(S.Substitute, 1) && cap.Args.Last.IsId);
+			LNode capId = GetCaptureIdentifier(cap);
 			if (items.Count == 1)
-				AddCapture(captures, cap.Args.Last.Name, items[0]);
+				AddCapture(captures, capId.Name, items[0]);
 			else
-				AddCapture(captures, cap.Args.Last.Name, F.Call(S.Splice, items));
+				AddCapture(captures, capId.Name, F.Call(S.Splice, items));
 		}
 		static void AddCapture(MMap<Symbol, LNode> captures, Symbol capName, LNode candidate)
 		{
@@ -231,9 +246,9 @@ namespace Loyc.Syntax
 			captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
 		}
 
-		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref RVList<LNode> trivia)
+		static bool MatchesPatternNested(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, ref VList<LNode> trivia)
 		{
-			RVList<LNode> unmatchedAttrs;
+			VList<LNode> unmatchedAttrs;
 			if (!MatchesPattern(candidate, pattern, ref captures, out unmatchedAttrs))
 				return false;
 			if (unmatchedAttrs.Any(a => !a.IsTrivia))
@@ -242,7 +257,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out RVList<LNode> unmatchedAttrs)
+		static bool AttributesMatch(LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out VList<LNode> unmatchedAttrs)
 		{
 			if (pattern.HasPAttrs())
 				throw new NotImplementedException("TODO: attributes in patterns are not yet supported");
@@ -251,9 +266,23 @@ namespace Loyc.Syntax
 		}
 		static bool IsParamsCapture(LNode p)
 		{
-			return p.Calls(S.Substitute, 1) && p.Args.Last.AttrNamed(S.Params) != null;
+			return p.Calls(S.Substitute, 1) 
+				&& (p.Args.Last.AttrNamed(S.Params) != null || p.Args.Last.Calls(S.DotDot, 1))
+				&& GetCaptureIdentifier(p) != null;
 		}
-		static bool MatchThenParams(RVList<LNode> cArgs, RVList<LNode> pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref RVList<LNode> attrs)
+		static LNode GetCaptureIdentifier(LNode pattern)
+		{
+			if (pattern.Calls(S.Substitute, 1)) {
+				var arg = pattern.Args.Last;
+				if (arg.Calls(S.DotDot, 1))
+					arg = arg.Args[0];
+				if (arg.IsId)
+					return arg;
+			}
+			return null;
+		}
+
+		static bool MatchThenParams(VList<LNode> cArgs, VList<LNode> pArgs, LNode paramsCap, ref MMap<Symbol, LNode> captures, ref VList<LNode> attrs)
 		{
 			// This helper function of MatchesPattern() is called when pArgs is followed 
 			// by a $(params capture). cArgs is the list of candidate.Args that have not 
@@ -278,7 +307,7 @@ namespace Loyc.Syntax
 			return true;
 		}
 
-		static bool CaptureGroup(ref int c, ref int p, RVList<LNode> cArgs, RVList<LNode> pArgs, ref MMap<Symbol, LNode> captures, ref RVList<LNode> attrs)
+		static bool CaptureGroup(ref int c, ref int p, VList<LNode> cArgs, VList<LNode> pArgs, ref MMap<Symbol, LNode> captures, ref VList<LNode> attrs)
 		{
 			Debug.Assert(IsParamsCapture(pArgs[p]));
 			// The goal now is to find a sequence of nodes in cArgs that matches

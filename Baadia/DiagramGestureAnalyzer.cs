@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Geometry;
 using Loyc.Math;
@@ -772,7 +773,7 @@ namespace BoxDiagrams
 			{
 				PointT p0 = points[i - 1], p1 = points[i], p2 = points[i + 1];
 				VectorT v1 = p1.Sub(p0), v2 = p2.Sub(p1);
-				if (v1.Dot(v2) < 0 && MathEx.IsInRange(
+				if (v1.Dot(v2) < 0 && Range.IsInRange(
 					MathEx.Mod(v1.AngleDeg() - v2.AngleDeg(), 360), 150, 210))
 				{
 					reversals.Add(i);

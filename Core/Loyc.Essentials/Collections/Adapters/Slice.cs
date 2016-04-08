@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Math;
 
 namespace Loyc.Collections
 {
@@ -18,6 +19,11 @@ namespace Loyc.Collections
 		public static IRange<T> AsRange<T>(this IRange<T> list)
 		{
 			return list;
+		}
+
+		public static IRange<T> Slice<T>(this IListSource<T> list, NumRange<int, MathI> range)
+		{
+			return list.Slice(range.Lo, range.Count);
 		}
 	}
 
