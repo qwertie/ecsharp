@@ -1,6 +1,8 @@
 README
 ======
 
+[![Join the chat at https://gitter.im/qwertie/ecsharp](https://badges.gitter.im/qwertie/ecsharp.svg)](https://gitter.im/qwertie/ecsharp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This repository holds several tools for enhancing .NET and C# development:
 
 - The Loyc .NET Core libraries, a set of libraries whose theme is "stuff that 
