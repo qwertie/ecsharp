@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,7 +17,8 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("matchCode (var) { case ...: ... }; // In LES, use a => b instead of case a: b", "Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. " + "`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. " + "`break` is not required or recognized at the end of each case's handler (code block). " + "Use `$(...x)` to gather zero or more parameters into a list `x`. " + "Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.")] public static LNode matchCode(LNode node, IMacroContext context)
+		[LexicalMacro("matchCode (var) { case ...: ... }; // In LES, use a => b instead of case a: b", "Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. " + "`case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. " + "`break` is not required or recognized at the end of each case's handler (code block). " + "Use `$(...x)` to gather zero or more parameters into a list `x`. " + "Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.")]
+		public static LNode matchCode(LNode node, IMacroContext context)
 		{
 			var args_body = context.GetArgsAndBody(true);
 			VList<LNode> args = args_body.Item1, body = args_body.Item2;

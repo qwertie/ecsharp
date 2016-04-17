@@ -100,7 +100,7 @@
             "private" or "protected" members of low-level code.
             </summary>
             <remarks>
-            An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/internal-list.html">article</a>
             about this class is available.
             <para/>
             InternalList is a struct, not a class, in order to save memory; and for 
@@ -541,6 +541,60 @@
             to make it easier to create custom versions of Loyc.Essentials with parts 
             removed.
             </remarks>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.RemoveRange``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>Removes <c>count</c> items from <c>list</c> starting at the specified <c>index</c>.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.List{``0},System.Int32)">
+            <summary>Resizes a list by removing items from the list (if it is too 
+            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Resize``1(System.Collections.Generic.IList{``0},System.Int32)">
+            <summary>Resizes a list by removing items from the list (if it is too 
+            long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.Zip``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+            <summary>Returns a sequence of length <c>Min(a.Count(), b.Count())</c> 
+            of items from <c>a</c> and <c>b</c> paired together. The output is
+            produced lazily, so infinite input sequences are supported.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)">
+            <summary>Returns a sequence that has the same length as the first sequence,
+            with items from the first and second sequence paired together.</summary>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLeft``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1,System.Func{``0,``1,``2})">
+            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLeft``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``1)"/>
+            in which a user-defined function is used to combine the items from the two lists.</summary>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+            <param name="resultSelector">A function that combines items from the two lists.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+            <summary>Returns a sequence as long as the longer of two sequences.
+            Items from the first and second sequence are initially paired together, and when
+            one sequence ends, the other sequence's remaining values are paired 
+            with a default value.</summary>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)">
+            <summary>Returns a sequence as long as the longer of two sequences.
+            Items from the first and second sequence are initially paired together, 
+            and when one sequence ends, the other sequence's remaining values are 
+            paired with a default value provided as a parameter.</summary>
+            <param name="defaultA">If the first sequence <c>a</c> is shorter than the 
+            second sequence, the remaining items of the second sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+            <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+            first sequence, the remaining items of the first sequence are paired with 
+            this value. Otherwise, this value is not used.</param>
+        </member>
+        <member name="M:Loyc.Collections.ListExt.ZipLonger``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1,System.Func{``0,``1,``2})">
+            <summary>An alternate version of <see cref="M:Loyc.Collections.ListExt.ZipLonger``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},``0,``1)"/>
+            in which a user-defined function is used to combine the items from the two lists.</summary>
+            <param name="resultSelector">A function that combines items from the two lists.</param>
         </member>
         <member name="M:Loyc.Collections.ListExt.RangeArray(System.Int32)">
             <summary>Returns an array of Length <c>count</c> containing the numbers 0 through <c>count-1</c>.</summary>
@@ -1083,7 +1137,7 @@
             A compact auto-enlarging list that efficiently supports supports insertions 
             at the beginning or end of the list.
             </summary><remarks>
-            An <a href="http://core.loyc.net/collections/dlist.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/dlist.html">article</a>
             about this class is available.
             </remarks>
             <seealso cref="T:Loyc.Collections.Impl.InternalDList`1"/>
@@ -4188,10 +4242,6 @@
             </summary>
         </member>
         <member name="M:Loyc.MiniTest.Assert.Fail(System.String,System.Object[])">
-            <summary>Fails a test via StopTestHandler, which, by default, 
-            throws an AssertionException.</summary>
-        </member>
-        <member name="M:Loyc.MiniTest.Assert.Fail(System.String)">
             <summary>Fails a test by invoking <see cref="F:Loyc.MiniTest.Assert.StopTestHandler"/>.Value(), 
             which, by default, throws an AssertionException.</summary>
         </member>
@@ -4480,6 +4530,26 @@
         <member name="T:Loyc.G">
             <summary>Contains global functions that don't belong in any specific class.</summary>
         </member>
+        <member name="M:Loyc.G.With``1(``0,System.Action{``0})">
+            <summary>Calls <c>action(obj)</c>, then returns the same object.</summary>
+            <returns>obj</returns>
+            <remarks>
+            This is the plain-C# equivalent of the <c>with(obj)</c> statement. Compared
+            to the Enhanced C# statement, <c>With()</c> is disadvantageous since it 
+            requires a memory allocation to create the closure in many cases, as well
+            as a delegate invocation that probably will not be inlined.
+            <para/>
+            Caution: you cannot mutate mutable structs with this method. Call the 
+            other overload of this method if you will be modifying a mutable struct.
+            </remarks>
+            <example>
+            Foo(new Person() { Name = "John Doe" }.With(p => p.Commit(dbConnection)));
+            </example>
+        </member>
+        <member name="M:Loyc.G.With``1(``0,System.Func{``0,``0})">
+            <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
+            of this method, except that the action has a return value.</summary>
+        </member>
         <member name="M:Loyc.G.ToComparison``1">
             <summary>Gets a <see cref="T:System.Comparison`1"/> for the specified type.</summary>
             <remarks>This method is optimized and does not allocate on every call.</remarks>
@@ -4499,8 +4569,8 @@
             <returns>A string that can be used as a filename. If the output string would otherwise be empty, returns "_".</returns>
         </member>
         <member name="M:Loyc.G.Verify(System.Boolean)">
-            <summary>Same as Debug.Assert except that the argument is evaluated 
-            even in a Release build.</summary>
+            <summary>Same as <c>Debug.Assert</c> except that the argument is 
+            evaluated even in a Release build.</summary>
         </member>
         <member name="M:Loyc.G.HexDigitValue(System.Char)">
             <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
@@ -5241,7 +5311,7 @@
         </member>
         <member name="T:Loyc.NullMessageSink">
             <summary>Discards all messages. However, there is a Count property that 
-            increases by one with each message received.</summary>
+            increases by one with each message received, as well as an ErrorCount.</summary>
         </member>
         <member name="M:Loyc.NullMessageSink.IsEnabled(Loyc.Severity)">
             <summary>Always returns false.</summary>
@@ -5367,6 +5437,8 @@
             This class is useful mainly as an alternative to standard boxing. When you 
             box a structure in C#, you lose access to the members of that structure.
             This class, in contrast, provides access to the "boxed" value.
+            This type is different from the standard <c>Tuple{T}</c> in that the 
+            <see cref="F:Loyc.Holder`1.Value"/> is a mutable field.
             </remarks>
         </member>
         <member name="F:Loyc.Holder`1.Value">

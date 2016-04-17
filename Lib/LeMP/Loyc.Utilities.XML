@@ -150,7 +150,7 @@
             <summary>Computes the intersection point between two lines, rays or 
             line segments.</summary>
             <remarks>This method is implemented based on the other overload,
-            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+            <see cref="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@,Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.LineType,System.Single@)"/>.
             </remarks>
         </member>
         <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Single},Loyc.Geometry.BoundingBox{System.Single})">
@@ -276,7 +276,7 @@
             <summary>Computes the intersection point between two lines, rays or 
             line segments.</summary>
             <remarks>This method is implemented based on the other overload,
-            <see cref="!:ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+            <see cref="M:Loyc.Geometry.LineMath.ComputeIntersection(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@,Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.LineType,System.Double@)"/>.
             </remarks>
         </member>
         <member name="M:Loyc.Geometry.LineMath.ClipTo(Loyc.Geometry.LineSegment{System.Double},Loyc.Geometry.BoundingBox{System.Double})">

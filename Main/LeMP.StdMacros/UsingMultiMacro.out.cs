@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -18,7 +18,8 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", "Generates multiple using-statements from a single one.", "#import", Mode = MacroMode.Passive | MacroMode.Normal)] public static LNode UsingMulti(LNode stmt, IMacroContext context)
+		[LexicalMacro("using System(, .Collections.Generic, .Linq, .Text);", "Generates multiple using-statements from a single one.", "#import", Mode = MacroMode.Passive | MacroMode.Normal)]
+		public static LNode UsingMulti(LNode stmt, IMacroContext context)
 		{
 			{
 				LNode multiNamespace;

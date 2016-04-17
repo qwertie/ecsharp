@@ -11,7 +11,7 @@
             (O(log N)), batch insertion and deletion, observability, fast cloning, 
             freezability, and fast splitting and joining of large collections.
             </summary>
-            An <a href="http://core.loyc.net/collections/alists-part1.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/alists-part1.html">article</a>
             about this class is available.
             <para/>
             <typeparam name="T">Type of each element in the list</typeparam>
@@ -225,7 +225,7 @@
             <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.BList`1"/>.
             </summary>
             <remarks>
-            You can read <a href="http://core.loyc.net/collections/">articles</a> about
+            You can read <a href="http://core.ecsharp.net/collections/">articles</a> about
             the AList family of data structures online.
             <para/>
             <see cref="T:Loyc.Collections.AList`1"/> and <see cref="T:Loyc.Collections.BList`1"/> are excellent data 
@@ -2268,7 +2268,7 @@
             indexed access to its list of key-value pairs.
             </summary>
             <remarks>
-            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/alists-part2.html">article</a>
             about the BList classes is available.
             <para/>
             The keys must be comparable (ordered); if the type does not implement
@@ -2433,7 +2433,7 @@
             indexed access to its list.
             </summary>
             <remarks>
-            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/alists-part2.html">article</a>
             about the BList classes is available.
             <para/>
             When you need a sorted list of items, there's nothing quite like a BList. BList offers
@@ -2652,7 +2652,7 @@
             single key. Note: both keys and values must be comparable.
             </summary>
             <remarks>
-            An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/alists-part2.html">article</a>
             about the BList classes is available.
             <para/>
             Often when people want to be able to associate multiple values with a 
@@ -2854,7 +2854,7 @@
         <member name="T:Loyc.Collections.SparseAList`1">
             <summary>A sparse A-List that implements <see cref="T:Loyc.Collections.ISparseList`1"/>.</summary>
             <remarks>
-            An <a href="http://core.loyc.net/collections/alists-part3.html">article</a>
+            An <a href="http://core.ecsharp.net/collections/alists-part3.html">article</a>
             about this class is available.
             <para/>
             The sparse A-List is implemented similarly to a normal A-List; the main 

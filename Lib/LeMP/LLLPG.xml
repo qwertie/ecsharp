@@ -508,8 +508,8 @@
             <summary>Encapsulates LLLPG, the Loyc LL Parser Generator, which generates
             LL(k) recursive-descent parsers.</summary>
             <remarks>
-            LLLPG is a new LL(k) parser generator under the umbrella of the Loyc 
-            project (http://loyc.net).
+            LLLPG is an LL(k) parser generator under the umbrella of the Loyc 
+            initiative (http://loyc.net). Home page: http://ecsharp.net/lllpg or http://lllpg.com
             <para/>
             LLLPG generates recursive-descent parsers for LL(k) grammars. It is 
             designed for parsing computer languages, not natural languages. It also
@@ -1486,6 +1486,14 @@
         <member name="M:Loyc.LLPG.Macros.LLLPG_parser(Loyc.Syntax.LNode,LeMP.IMacroContext)">
             <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
             into a <see cref="T:Loyc.LLParserGenerator.GeneralCodeGenHelper"/> object.</summary>
+        </member>
+        <member name="M:Loyc.LLPG.Macros.LllpgMacro(Loyc.Syntax.LNode,LeMP.IMacroContext,Loyc.Symbol,System.Func{Loyc.Syntax.LNode,Loyc.LLParserGenerator.IPGCodeGenHelper},System.Boolean)">
+            <summary>This method helps do the stage-one transform from <c>LLLPG (config) {...}</c>
+            to <c>run_LLLPG (helper literal) {...}</c> and also invokes the ANTLR-style 
+            parser if the second argument is a token literal. If <c>node[0]</c> 
+            calls <c>expectedConfigNode</c> then the delegate is called to 
+            construct a code generation helper object; otherwise, this method has 
+            no effect and returns null.</summary>
         </member>
     </members>
 </doc>

@@ -1,4 +1,4 @@
-// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,7 +17,8 @@ namespace LeMP
 {
 	partial class StandardMacros
 	{
-		[LexicalMacro("x in lo..hi; x in lo...hi; x in ..hi; x in lo..._; x in range", "Converts an 'in' expression to a normal C# expression using the following rules " + "(keeping in mind that the EC# parser treats `..<` as an alias for `..`):\n" + "1. `x in _..hi` and `x in ..hi` become `x.IsInRangeExcl(hi)`\n" + "2. `x in _...hi` and `x in ...hi` become `x.IsInRangeIncl(hi)`\n" + "3. `x in lo.._` and `x in lo..._` become simply `x >= lo`\n" + "4. `x in lo..hi` becomes `x.IsInRangeExcludeHi(lo, hi)`\n" + "5. `x in lo...hi` becomes `x.IsInRange(lo, hi)`\n" + "6. `x in range` becomes `range.Contains(x)`\n" + "The first applicable rule is used.", "#in")] public static LNode In(LNode node, IMacroContext context)
+		[LexicalMacro("x in lo..hi; x in lo...hi; x in ..hi; x in lo..._; x in range", "Converts an 'in' expression to a normal C# expression using the following rules " + "(keeping in mind that the EC# parser treats `..<` as an alias for `..`):\n" + "1. `x in _..hi` and `x in ..hi` become `x.IsInRangeExcl(hi)`\n" + "2. `x in _...hi` and `x in ...hi` become `x.IsInRangeIncl(hi)`\n" + "3. `x in lo.._` and `x in lo..._` become simply `x >= lo`\n" + "4. `x in lo..hi` becomes `x.IsInRangeExcludeHi(lo, hi)`\n" + "5. `x in lo...hi` becomes `x.IsInRange(lo, hi)`\n" + "6. `x in range` becomes `range.Contains(x)`\n" + "The first applicable rule is used.", "#in")]
+		public static LNode In(LNode node, IMacroContext context)
 		{
 			{
 				LNode range, x;
@@ -58,7 +59,8 @@ namespace LeMP
 		static LNode Range_UntilInclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilInclusive")));
 		static LNode Range_UntilExclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilExclusive")));
 		static LNode Range_Everything = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "Everything"))));
-		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "..")] public static LNode RangeExcl(LNode node, IMacroContext context)
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "..")]
+		public static LNode RangeExcl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;
 			{
@@ -76,7 +78,8 @@ namespace LeMP
 			}
 			return null;
 		}
-		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "...")] public static LNode RangeIncl(LNode node, IMacroContext context)
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "...")]
+		public static LNode RangeIncl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;
 			{

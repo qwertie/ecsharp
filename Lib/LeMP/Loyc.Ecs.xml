@@ -4,143 +4,18 @@
         <name>Loyc.Ecs</name>
     </assembly>
     <members>
-        <member name="M:Loyc.Ecs.EcsPrinterAndParserTests.ConstructorAmbiguities">
-            <summary>Tests handling of the constructor ambiguity</summary>
+        <member name="T:Loyc.Ecs.Parser.EcsParser">
+            <summary>Parses Enhanced C# code into a sequence of Loyc trees 
+            (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
             <remarks>
-            Constructors look like ordinary method calls. In fact, EC# parsing
-            rules do not allow the parser to look at the argument list to 
-            determine whether a method is a constructor, and method bodies are
-            not required on methods. Furthermore, the parser does not 
-            distinguish between executable and non-executable contexts. So
-            it's impossible to tell whether
-            <code>
-            Foo(x);
-            Foo(x, y) { }
-            </code>
-            is a pair of constructors, or a method call plus a macro call. To 
-            resolve this conundrum, the parser keeps track of the name of the 
-            current class, for the sole purpose of detecting the constructor. 
-            The printer, meanwhile, must detect a method call that may be 
-            mistaken for a constructor and reformat it as <c>(Foo(x))</c>. Also, 
-            when a constructor definition is printed, it must use prefix 
-            notation if the name does not match the enclosing class:
-            <code>
-            #cons(@``, Foo, #(int x), { ... });
-            </code>
-            When the constructor is called 'this', this(x) is assumed to be a 
-            constructor, but that creates a new problem in EC# because you will 
-            be allowed to call a constructor inside a constructor body:
-            <code>
-            this(int x) { this(x, x); }
-            </code>
-            This parses successfully because the parser will not allow 
-            constructor definitions inside methods. The printer, in turn, will
-            track whether it is in a space definition or not. It can print a
-            constructor that is directly within a space definition, but in other
-            contexts will use prefix notation to ensure that round-tripping 
-            succeeds. When the syntax tree contains a method call to 'this' 
-            (which is stored as #this internally), it may have to be enclosed 
-            in parens or shown as `#this` to avoid ambiguity.
-            <para/>
-            Finally, a constructor with the wrong name can still be parsed if
-            it calls some other constructor with a colon:
-            <code>
-            class Foo { Fub() : base() { } }
-            </code>
-            </remarks>
-        </member>
-        <member name="M:Loyc.Ecs.EcsPrinterAndParserTests.WordAttributes">
-            <summary>Demonstrates where word attributes are allowed and where they are not allowed.</summary>
-            <remarks>
-            Reasons for disallowing non-keyword attributes (known as "word attributes"):
-            <para/>
-            - On expressions, consider: "partial X();"
-              Ambiguity: is this a method declaration, or a method call X() with an attribute?
-            - On expressions, consider: "partial x = 0;"
-              Ambiguity: is this a variable declaration, or an assignment "x = 0" with an attribute?
-            - On the "if" statement, consider "Foo X if (x) { get; }":
-              Ambiguity: is it a conditionally-defined property or a regular "if" statement?
-            - On constructors, consider "partial X() {}"
-              Ambiguity: is this a constructor or a method that returns type "partial"?
-              However: we can allow word attributes on a new-style constructor named "this"
-            - On forwarded accessors, consider "foo get ==> X;"
-              Ambiguity: is this a property forwarded to X with return type "foo", or is it
-              a getter forwarded to X with "foo" as a word attribute?
-            <para/>
-            Reasons for disallowing "new":
-            <para/>
-            - On expressions, consider: <c>new Foo();</c> or <c>new Foo[10] = x;</c>
-              Ambiguity: does this create a new Foo, or is it just a call to method Foo with "new" as an attribute?
-              Ambiguity: does this create a new array, or is it just a call to an indexer on the variable Foo?
-            <para/>
-            Word attributes should be allowed on "return", to allow "yield return".
-            </remarks>
-        </member>
-        <member name="T:Loyc.Ecs.EcsNodePrinterTests">
-            <summary>EC# node printer tests</summary>
-        </member>
-        <member name="T:Loyc.Ecs.EcsParserTests">
-            <summary>EC# parser tests</summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "T:Loyc.Ecs.EcsPrecedence" -->
-        <member name="T:Loyc.Ecs.EcsValidators">
-            <summary>
-            A class filled with methods for checking whether a node has the correct 
-            <see cref="P:Loyc.Syntax.LNode.Name"/> and structure. For example, <c>IsPropertyDefinition(node)</c>
-            checks whether <c>node</c> meets the requirements for being a property 
-            definition, such as having a Name equal to #property, and having name 
-            and return value that are complex identifiers.
-            </summary>
-            <remarks>This class also has useful helper functions, such as <see cref="M:Loyc.Ecs.EcsValidators.KeyNameComponentOf(Loyc.Syntax.LNode)"/>.
-            </remarks>
-        </member>
-        <member name="T:Loyc.Ecs.EcsValidators.Pedantics">
-            <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
-        </member>
-        <member name="M:Loyc.Ecs.EcsValidators.SpaceStatementKind(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
-            <summary>Returns true iff the specified node has one of the names 
-            #struct, #class, #enum, #interface, #namespace, #alias, #trait
-            and its tree structure is valid for a space statement.</summary>
-        </member>
-        <member name="M:Loyc.Ecs.EcsValidators.IsMethodDefinition(Loyc.Syntax.LNode,System.Boolean,Loyc.Ecs.EcsValidators.Pedantics)">
-            <summary>Returns true iff the given node has a valid syntax tree for
-            a method definition, a constructor, or (when orDelegate is true) a 
-            delegate definition.</summary>
-        </member>
-        <member name="M:Loyc.Ecs.EcsValidators.IsPrintableTypeParam(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
-            <summary>Checks if 'n' is a legal type parameter definition.</summary>
-            <remarks>A type parameter definition must be a simple symbol with at 
-            most one #in or #out attribute, and at most one #where attribute with
-            an argument list consisting of complex identifiers.</remarks>
-        </member>
-        <member name="M:Loyc.Ecs.EcsValidators.KeyNameComponentOf(Loyc.Syntax.LNode)">
-            <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
-            this method identifies the base name component, which in this example 
-            is Bar. This is used, for example, to identify the expected name for
-            a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
-            <remarks>It is not verified that name is a complex identifier. There
-            is no error detection but in some cases an empty name may be returned, 
-            e.g. for input like <c>Foo."Hello"</c>.</remarks>
-        </member>
-        <member name="T:Loyc.Ecs.EcsLanguageService">
-            <summary>The <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> property provides easy access to the lexer, 
-            parser and printer for Enhanced C#.</summary>
-            <remarks>
-            EC# overview: https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Ecs
+            You can use <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/>
+            to easily parse a text string (holding zero or more EC# statements) into a 
+            Loyc tree. One does not normally use this class directly.
             </remarks>
         </member>
         <member name="T:Loyc.Ecs.Parser.EcsLexer">
             <summary>Lexer for EC# source code (see <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>).</summary>
             <seealso cref="T:Loyc.Syntax.Lexing.TokensToTree"/>
-        </member>
-        <member name="T:Loyc.Ecs.Parser.EcsParser">
-            <summary>Parses Enhanced C# code into a sequence of Loyc trees 
-            (<see cref="T:Loyc.Syntax.LNode"/>), one per top-level statement.</summary>
-            <remarks>
-            You can use <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> with <see cref="M:Loyc.Syntax.ParsingService.Parse(Loyc.Syntax.IParsingService,Loyc.UString,Loyc.IMessageSink,Loyc.Symbol)"/>
-            to easily parse a text string (holding zero or more EC# statements) into a 
-            Loyc tree. One does not normally use this class directly.
-            </remarks>
         </member>
         <member name="T:Loyc.Ecs.Parser.EcsPreprocessor">
             <summary>Handles EC# processor directives.</summary>
@@ -198,6 +73,187 @@
             to its source file, so this method cannot return the original string.
             <para/>
             The results are undefined if the token was not produced by <see cref="T:Loyc.Ecs.Parser.EcsLexer"/>.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Ecs.Tests.EcsPrinterAndParserTests">
+            <summary>Tests shared between the printer and the parser. Both tests 
+            together verify round-tripping from AST -> text -> AST.</summary>
+            <remarks>Note that the other kind of round-tripping, text -> AST -> text, 
+            is not fully verified (and is not designed to be supported, as the 
+            printer is not designed to preserve spacing and the parser is not 
+            designed to save spacing information.)
+            <para/>
+            NOTE: The reason why this is a partial class, rather than a base class
+            of the other test files, is that there are two derived classes, one
+            for the printer and one for the parser. We couldn't do that if we had
+            _separate_ classes for each test file.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Ecs.Tests.EcsPrinterAndParserTests.EcsWordAttributes">
+            <summary>Demonstrates where word attributes are allowed and where they are not allowed.</summary>
+            <remarks>
+            Reasons for disallowing non-keyword attributes (known as "word attributes"):
+            <para/>
+            - On expressions, consider: "partial X();"
+              Ambiguity: is this a method declaration, or a method call X() with an attribute?
+            - On expressions, consider: "partial x = 0;"
+              Ambiguity: is this a variable declaration, or an assignment "x = 0" with an attribute?
+            - On the "if" statement, consider "Foo X if (x) { get; }":
+              Ambiguity: is it a conditionally-defined property or a regular "if" statement?
+            - On constructors, consider "partial X() {}"
+              Ambiguity: is this a constructor or a method that returns type "partial"?
+              However: we can allow word attributes on a new-style constructor named "this"
+            - On forwarded accessors, consider "foo get ==> X;"
+              Ambiguity: is this a property forwarded to X with return type "foo", or is it
+              a getter forwarded to X with "foo" as a word attribute?
+            <para/>
+            Reasons for disallowing "new":
+            <para/>
+            - On expressions, consider: <c>new Foo();</c> or <c>new Foo[10] = x;</c>
+              Ambiguity: does this create a new Foo, or is it just a call to method Foo with "new" as an attribute?
+              Ambiguity: does this create a new array, or is it just a call to an indexer on the variable Foo?
+            <para/>
+            Word attributes should be allowed on "return", to allow "yield return".
+            </remarks>
+        </member>
+        <member name="M:Loyc.Ecs.Tests.EcsPrinterAndParserTests.ConstructorAmbiguities">
+            <summary>Tests handling of the constructor ambiguity</summary>
+            <remarks>
+            Constructors look like ordinary method calls. In fact, EC# parsing
+            rules do not allow the parser to look at the argument list to 
+            determine whether a method is a constructor, and method bodies are
+            not required on methods. Furthermore, the parser does not 
+            distinguish between executable and non-executable contexts. So
+            it's impossible to tell whether
+            <code>
+            Foo(x);
+            Foo(x, y) { }
+            </code>
+            is a pair of constructors, or a method call plus a macro call. To 
+            resolve this conundrum, the parser keeps track of the name of the 
+            current class, for the sole purpose of detecting the constructor. 
+            The printer, meanwhile, must detect a method call that may be 
+            mistaken for a constructor and reformat it as <c>(Foo(x))</c>. Also, 
+            when a constructor definition is printed, it must use prefix 
+            notation if the name does not match the enclosing class:
+            <code>
+            #cons(@``, Foo, #(int x), { ... });
+            </code>
+            When the constructor is called 'this', this(x) is assumed to be a 
+            constructor, but that creates a new problem in EC# because you will 
+            be allowed to call a constructor inside a constructor body:
+            <code>
+            this(int x) { this(x, x); }
+            </code>
+            This parses successfully because the parser will not allow 
+            constructor definitions inside methods. The printer, in turn, will
+            track whether it is in a space definition or not. It can print a
+            constructor that is directly within a space definition, but in other
+            contexts will use prefix notation to ensure that round-tripping 
+            succeeds. When the syntax tree contains a method call to 'this' 
+            (which is stored as #this internally), it may have to be enclosed 
+            in parens or shown as `#this` to avoid ambiguity.
+            <para/>
+            Finally, a constructor with the wrong name can still be parsed if
+            it calls some other constructor with a colon:
+            <code>
+            class Foo { Fub() : base() { } }
+            </code>
+            </remarks>
+        </member>
+        <member name="T:Loyc.Ecs.Tests.EcsParserTests">
+            <summary>EC# parser tests</summary>
+        </member>
+        <member name="T:Loyc.Ecs.Tests.EcsNodePrinterTests">
+            <summary>EC# node printer tests</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Loyc.Ecs.EcsPrecedence" -->
+        <member name="T:Loyc.Ecs.EcsValidators">
+            <summary>
+            A class filled with methods for checking whether a node has the correct 
+            <see cref="P:Loyc.Syntax.LNode.Name"/> and structure. For example, <c>IsPropertyDefinition(node)</c>
+            checks whether <c>node</c> meets the requirements for being a property 
+            definition, such as having a Name equal to #property, and having name 
+            and return value that are complex identifiers.
+            </summary>
+            <remarks>This class also has useful helper functions, such as <see cref="M:Loyc.Ecs.EcsValidators.KeyNameComponentOf(Loyc.Syntax.LNode)"/>.
+            </remarks>
+        </member>
+        <member name="T:Loyc.Ecs.EcsValidators.Pedantics">
+            <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.SpaceDefinitionKind(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Returns the space kind, which is one of the names #struct, 
+            #class, #enum, #interface, #namespace, #alias, #trait, or null if the 
+            node Name or structure is not valid for a space statement.</summary>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.SpaceDefinitionKind(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Returns the space kind, which is one of the names #struct, 
+            #class, #enum, #interface, #namespace, #alias, #trait, or null if the 
+            node Name or structure is not valid for a space statement.</summary>
+            <param name="n">The node to examine.</param>
+            <param name="name">Name of the space.</param>
+            <param name="bases">bases.Args will be the list of base types.</param>
+            <param name="body">A braced block of statements holding the contents of the space.</param>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.MethodDefinitionKind(Loyc.Syntax.LNode,System.Boolean,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>If the given node has a valid syntax tree for a method definition,
+            a constructor, or (when orDelegate is true) a delegate definition, gets
+            the definition kind (#fn, #cons, or #delegate).</summary>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.MethodDefinitionKind(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,System.Boolean,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>If the given node has a valid syntax tree for a method definition,
+            a constructor, or (when orDelegate is true) a delegate definition, gets
+            the definition kind (#fn, #cons, or #delegate).</summary>
+            <param name="retType">Return type of the method (if it's a constructor, this will be the empty identifier).</param>
+            <param name="name">Name of the method.</param>
+            <param name="args">args.Args is the argument list of the method.</param>
+            <param name="body">The method body, or null if there is no method body. 
+            The method body calls <see cref="F:Loyc.Syntax.CodeSymbols.Braces"/> if the method is a 
+            non-lambda-style method.</param>
+            <remarks>
+            Method declarations (no body) also count.
+            <para/>
+            A destructor counts as a #fn with a method name that calls the ~ operator.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsPropertyDefinition(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Returns true iff the given node has a valid syntax tree for a property definition.</summary>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsPropertyDefinition(Loyc.Syntax.LNode,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Syntax.LNode@,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Returns true iff the given node has a valid syntax tree for 
+            a property definition, and gets the component parts of the definition.</summary>
+            <remarks>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.IsPrintableTypeParam(Loyc.Syntax.LNode,Loyc.Ecs.EcsValidators.Pedantics)">
+            <summary>Checks if 'n' is a legal type parameter definition.</summary>
+            <remarks>A type parameter definition must be a simple symbol with at 
+            most one #in or #out attribute, and at most one #where attribute with
+            an argument list consisting of complex identifiers.</remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.KeyNameComponentOf(Loyc.Syntax.LNode)">
+            <summary>Given a complex name such as <c>global::Foo&lt;int>.Bar&lt;T></c>,
+            this method identifies the base name component, which in this example 
+            is Bar. This is used, for example, to identify the expected name for
+            a constructor based on the class name, e.g. <c>Foo&lt;T></c> => Foo.</summary>
+            <remarks>It is not verified that name is a complex identifier. There
+            is no error detection but in some cases an empty name may be returned, 
+            e.g. for input like <c>Foo."Hello"</c>.</remarks>
+        </member>
+        <member name="M:Loyc.Ecs.EcsValidators.SanitizeIdentifier(System.String)">
+            <summary>Eliminates punctuation and special characters from a string so
+            that the string can be used as a plain C# identifier, e.g. 
+            "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
+            <remarks>The empty string "" becomes "__empty__", ASCII punctuation becomes 
+            "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
+            and all other characters become "Xxx" where xx is the hexadecimal 
+            representation of the code point. Designed for the Unicode BMP only.</remarks>
+        </member>
+        <member name="T:Loyc.Ecs.EcsLanguageService">
+            <summary>The <see cref="F:Loyc.Ecs.EcsLanguageService.Value"/> property provides easy access to the lexer, 
+            parser and printer for Enhanced C#.</summary>
+            <remarks>
+            EC# overview: https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Ecs
             </remarks>
         </member>
         <member name="T:Loyc.Ecs.EcsNodePrinter">
@@ -345,7 +401,7 @@
         </member>
         <member name="P:Loyc.Ecs.EcsNodePrinter.AllowConstructorAmbiguity">
             <summary>Causes the ambiguity between constructors and method calls to
-            be ignored; see <see cref="M:Loyc.Ecs.EcsPrinterAndParserTests.ConstructorAmbiguities"/>.</summary>
+            be ignored; see <see cref="!:EcsPrinterAndParserTests.ConstructorAmbiguities()"/>.</summary>
         </member>
         <member name="P:Loyc.Ecs.EcsNodePrinter.AvoidMacroSyntax">
             <summary>Prints statements like "foo (...) bar()" in the equivalent form
@@ -442,15 +498,6 @@
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.NoParenthesis">
             <summary>Avoids printing illegal opening paren at statement level</summary>
-        </member>
-        <member name="M:Loyc.Ecs.EcsNodePrinter.SanitizeIdentifier(System.String)">
-            <summary>Eliminates punctuation and special characters from a string so
-            that the string can be used as a plain C# identifier, e.g. 
-            "I'd" => "I_aposd", "123" => "_123", "+5" => "_plus5".</summary>
-            <remarks>The empty string "" becomes "__empty__", ASCII punctuation becomes 
-            "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl",
-            and all other characters become "Xxx" where xx is the hexadecimal 
-            representation of the code point. Designed for the Unicode BMP only.</remarks>
         </member>
         <member name="T:Loyc.Ecs.ICI">
             <summary>Flags for <see cref="M:Loyc.Ecs.EcsNodePrinter.IsComplexIdentifier(Loyc.Syntax.LNode,Loyc.Ecs.ICI)"/>.</summary>
