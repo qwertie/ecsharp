@@ -68,7 +68,7 @@ static int Square(int x) => x*x;
 public string Address => _address;
 ~~~
 
-And I planned to implement so-called string interpolation like `$"Hello $_name!"`. C# 6 got all of these features, with exactly the same syntax I was using (or, in the case of string interpolation, planning to use). We can only hope that MS eventually adds all the features of EC# to plain C#!
+And I planned to implement so-called string interpolation like `$"Hello $_name!"`. C# 6 got all of these features, and we can only hope that MS eventually adds all the features of EC# to plain C#!
 
 Triple-quoted strings
 ---------------------
@@ -182,9 +182,21 @@ EC# has binary literals. For example, `0b1111_1111` is 255. Also, any number (no
 
 It also has binary and hex float literals. For example, `0b0101.11p+0` is 5.75, while `0x5.Cp+0` is _also_ 5.75. Why the `p+0`? The `p+0` suffix tells the lexer that the stuff after the decimal point is a floating-point number and not a member access. Remember, theoretically you could define an extension method on `int` so that `0x5.C()` is a valid method call. Therefore `0x5.C` requires the `p+0` suffix to "prove" that it is a number and not a member of the number.
 
-Okay, that makes sense. But why `p+0`? This syntax comes directly from Java, which [also has hex float literals](https://blogs.oracle.com/darcy/entry/hexadecimal_floating_point_literals). It's actually an exponent, which indicates a power of two by which to shift the value of the number. For example, while `0x4.0p+0` is four, `0x4.0p+1` is eight, `0x4.0p+2` is sixteen, and `0x4.0p-1` is two.
+Okay, that makes sense. But why `p+0`? This syntax comes directly from Java and C99, which [also have hex float literals](https://blogs.oracle.com/darcy/entry/hexadecimal_floating_point_literals). It's actually an exponent, which indicates a power of two by which to shift the value of the number. For example, while `0x4.0p+0` is four, `0x4.0p+1` is eight, `0x4.0p+2` is sixteen, and `0x4.0p-1` is two.
 
 Currently, the shorter Java syntax `0x5.Cp0` (without the `+`) is also allowed. Technically this could be a problem since "Cp0" could (technically) refer to an extension method, but it seems too unlikely to worry about it. After all, I'm only going for 99.9% backward compatibility.
+
+`#` and `$`
+-----------
+
+In the following sections you'll occasionally see two punctuation marks that are rarely used in plain C#, `#` and `$`.
+
+- `$` has two purposes. First, it represents _substitution_, as in `quote { class $name {} }`, which creates a syntax tree that represents a class, with the name of the class given by an existing variable called `name`. Second, it is used for _deconstruction_; currently this is used to create variables in `match` or `matchCode`, but we're considering whether to use it more generally for variable creation (as a shortcut for `var`).
+- `#` represents the "current thing":
+    - When used with the method forwarding operator `==>`, it's a shortcut for the name of the current method or property.
+    - When used with the contract attributes (e.g. `[require(# > 0)] int param`), it refers to the current parameter or return value.
+    - When used inside the braces of `with (expression) {...}`, `#` refers to value of the `expression`.
+    - When used in `matchCode`, it's a shortcut for the "current" syntax tree within a `$(...)` expression.
 
 Lexical Macros
 --------------
@@ -205,7 +217,7 @@ foo ({ code1; });
 foo (expression, { code2; });
 ~~~
 
-Other examples are `@@symbols`, tuples like `(1, "two", 3.0)`, and the method forwarding operator `==>`. In all these cases, the _syntax_ is built into Enhanced C# itself, but since there is no complete EC# compiler yet, a macro is required to make these features work.
+Other examples are `@@symbols`, tuples like `(1, "two", 3.0)`, and the "substitution" operator `$`, and the method forwarding operator `==>`. In all these cases, the _syntax_ is built into Enhanced C# itself, but since there is no complete EC# compiler yet, a macro is required to make these features work.
 
 Ideally, certain features in macros shouldn't _really_ be implemented as macros, and have "corner cases" that don't work, but could work properly as part of the EC# compiler that hasn't been written yet. I have implemented as many features as possible as macros, as a procrastication technique so I can do the "proper compiler" later, and also so I could find out just how much can be accomplished with macros alone. Many features can't be implemented with lexical macros, but on the other hand, many can.
 
@@ -232,10 +244,10 @@ You could do it like this:
 class FooWrapper : WrapperBase<IFoo>, IFoo 
 {
    public FooWrapper(IFoo obj) : base(obj) {}
-   void MethodA(A objectA) ==> _obj._;
-   long MethodB(A objectA, B objectB) ==> _obj._;
-   string PropertyP ==> _obj._;
-   object PropertyQ { get ==> _obj._; set ==> _obj._; }
+   void MethodA(A objectA) ==> _obj.#;
+   long MethodB(A objectA, B objectB) ==> _obj.#;
+   string PropertyP ==> _obj.#;
+   object PropertyQ { get ==> _obj.#; set ==> _obj.#; }
 }
 ~~~
 
@@ -244,12 +256,12 @@ This is derived from `Loyc.WrapperBase<T>` in Loyc.Essentials.dll, an abstract c
 After that you see the forwarding operator in action:
 
 ~~~csharp
-long MethodB(A objectA, B objectB) ==> _obj._;
+long MethodB(A objectA, B objectB) ==> _obj.#;
 ~~~
 
 I think that writing wrappers is common enough to justify a little bit of syntactic sugar, so Enhanced C# defines a forwarding operator `==>` (I could have written the forwarding macro without changing the EC# parser, it would have just had to rely on a less elegant syntax).
 
-After `==>` you specify the name of the target method or property. The underscore `_` refers to the name of the _current_ method or property, in this case `MethodB`. So the output code is:
+After `==>` you specify the name of the target method or property. The hash mark `#` refers to the name of the _current_ method or property, in this case `MethodB`. So the output code is:
 
 ~~~csharp
 long MethodB(A objectA, B objectB)
@@ -383,6 +395,24 @@ if (Expression::x < 0) {...}
 
 you could simply enclose the first `if`-statement in braces to fix the error.
 
+**Note**: considering that `match` and `matchCode` use `$` to create variables, e.g.
+
+~~~csharp
+dynamic Eval(LNode code)
+{
+  dynamic value;
+  matchCode(code) {
+    case $x + $y:
+      return Eval(x) + Eval(y);
+    case $x == $y:
+      return Eval(x) == Eval(y);
+    case $x ? $y : $z:
+      return Eval(x) ? Eval(y) : Eval(z);
+    ...
+~~~
+
+We are considering whether to introduce a new binary `$` operator to be the quick-bind operator, rather than `::`.
+
 Creating 'out' variables in-situ
 --------------------------------
 
@@ -467,7 +497,7 @@ Symbols make this easier. They are written with `@@DoubleAtSigns`. The above cod
 class DatabaseManager {
    ...
    public static DatabaseConnection Open(string command, 
-      [requires(_.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
+      [requires(#.IsOneOf(@@CloseImmediately, @@KeepOpen))] Symbol option) {...}
    ...
 }
 // later...
@@ -476,7 +506,7 @@ void Open() {
 }
 ~~~
 
-The `[requires]` attribute is one of the code contracts mentioned in the previous section; the underscore `_` is a shortcut that refers to "the current parameter", i.e. `option`.
+The `[requires]` attribute is one of the code contracts mentioned in the previous section; the hash mark `#` is a shortcut that refers to "the current parameter", i.e. `option`.
 
 There's one more wrinkle. Since Enhanced C# isn't a "real" compiler yet, it needs a macro to enable this feature. That macro is called `#useSymbols`, and you need to write `#useSymbols;` near the top of any class that uses symbols. For example:
 
@@ -895,7 +925,7 @@ Perhaps Jon Skeet put it best, when I emailed him two weeks ago about LeMP and E
 
 People won't use it (or even blog about it, apparently) because it isn't popular. And it isn't popular because people won't use it. Classic chicken and egg. Plus, as Jon has pointed out, since Microsoft isn't paying me, I'm not improving the _real_ C#. Since Microsoft isn't paying me, my [libraries](http://core.ecsharp.net) do not improve the _real_ BCL. And although it has always been open source, he has presumed that no one would be willing to maintain it if I died tomorrow. Sadly, that's probably true.
 
-The slow uptake of [Nemerle](http://nemerle.org/About) I could _somewhat_ understand; historically (if not right now) a lot of its documentation was in Russian, its wiki was a mess, it wasn't made by Microsoft and you couldn't easily migrate your C# code base to Nemerle. I could even understand the slow uptake of F#; as soon as it came out I tried to use it, but was immediately baffled by many of its syntax elements. A couple of years later I tried again, only to be thwarted by cryptic error messages while trying to write what I thought was a simple constructor. So syntactically, I found F# substantially harder than OCaml (with which I also have little experience), and I think ordinary C# and VB developers would have a hard time using it. Plus, no Windows Forms designer?
+The slow uptake of [Nemerle](http://nemerle.org/About) I could _partly_ understand, though it certainly deserves more users than it got. Anyway, historically a lot of its documentation was in Russian only, its wiki was a mess, it wasn't made by Microsoft and you couldn't easily migrate your C# code base to Nemerle. I could even understand the slow uptake of F#; as soon as it came out I tried to use it, but was immediately baffled by many of its syntax elements. A couple of years later I tried again, only to be thwarted by cryptic error messages while trying to write what I thought was a simple constructor. So syntactically, I found F# substantially harder than OCaml (with which I also have little experience), and I think ordinary C# and VB developers would have a hard time using it. Plus, no Windows Forms designer?
 
 But honestly, it took me by surprise that backward compatibility with C#, and the fact it translates to plain C#, hasn't convinced at least a _few_ people to use LeMP / Enhanced C#, let alone improve it.
 
@@ -905,7 +935,7 @@ Just to illustrate: I wrote a benchmark pitting C# versus C++ on CodeProject and
 
 I keep hoping that by working harder and publishing new articles and putting a new spin on things, I could stir up some interest in my work, but experience has taught me that the vast majority of coders don't give a ʞɔnɟ. Encouraging comments are appreciated, and every, oh, every year or so I get three or four of those (thanks Jonathan and Kerry!), but what I really want is developers using this stuff, asking me questions, filing bug reports, telling me what their needs are and [hacking on the source code](http://ecsharp.net/help-wanted.html).
 
-So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.01% of C# developers to use it, I'll just be wasting my life. So, what'll it be? Should I quit now? I'm leaning toward "yes" (I'd still fix bugs and answer your questions, of course). I'd like to start a WebAssembly project focused on cross-language interop, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
+So yes, EC# _could_ transform C# into a much more powerful and more succinct language. But if I can't get 1%, or even 0.01% of C# developers to use it, I'll just be wasting my life. So, what'll it be? Should I quit now? If I do, I'd still fix bugs and answer your questions, of course. I'd like to start a WebAssembly project focused on cross-language interop, and there are other parts of the [Loyc initiative](http://loyc.net) that are largely unexplored. One thing's for sure: regardless of what I do with my life, it's going to be **extremely** hard to break through the apathy barrier and make a difference in the world.
 
 It isn't just programming languages, either. I've worked on International Auxiliary Languages and noticed that the common man's reaction ranges from indifference to outright hostility. I found strong evidence that the religion I grew up in is not true, but I'm fairly sure most members wouldn't respond well if I told _them_ that. I've been trying to support the fight against corruption in U.S. politics, but while many people _vaguely_ recognize the problem, getting them to rally around a solution that would _actually_ work seems, well, unworkable. The list goes on, and the bottom line seems to be, I was born on the wrong planet. My kind is not welcome here.
 

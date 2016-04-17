@@ -5,7 +5,7 @@ layout: article
 
 This is an article series for people that like to learn about programming languages. It is especially recommended if you're interested in adding features to Enhanced C#, either by writing macros or by helping to make the compiler. Everyone else should read the [article for normal coders](for-normal-coders.html).
 
-Note: the following is a draft. It is not complete and it is not up-to-date.
+Note: the following is a draft. It is not complete or up-to-date; most of it was written in 2012-2013.
 
 - [Part 1](for-pl-nerds-part-1.html)
 - [Part 2](for-pl-nerds-part-2.html)
