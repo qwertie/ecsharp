@@ -18,5 +18,19 @@ namespace Loyc.Ecs.Tests
 			AreEqual("__empty__",EcsValidators.SanitizeIdentifier(""   ));
 			AreEqual("_lt_gt",   EcsValidators.SanitizeIdentifier("<>"));
 		}
+
+		[Test]
+		public void IsPlainCsIdentifierTests()
+		{
+			IsTrue(EcsValidators.IsPlainCsIdentifier("x"));
+			IsTrue(EcsValidators.IsPlainCsIdentifier("aAzZ_"));
+			IsTrue(EcsValidators.IsPlainCsIdentifier("_19aAzZ"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier("19aAzZ"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier("_<>_"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier("I'd"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier("C#"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier("#5"));
+			IsFalse(EcsValidators.IsPlainCsIdentifier(""));
+		}
 	}
 }

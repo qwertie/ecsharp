@@ -573,9 +573,9 @@ namespace Loyc.Ecs.Tests
 			var stmt = F.Call(S.Event, F.Of(EventHandler, T), _("Click"));
 			Stmt("event EventHandler<T> Click;", stmt);
 			Expr("#event(EventHandler<T>, Click)", stmt);
-			stmt = F.Call(S.Event, EventHandler, a, b);
+			stmt = F.Call(S.Event, EventHandler, F.List(a, b));
 			Stmt("event EventHandler a, b;", stmt);
-			Expr("#event(EventHandler, a, b)", stmt);
+			Expr("#event(EventHandler, #(a, b))", stmt);
 			stmt = F.Call(S.Event, EventHandler, a, F.Braces(
 				AsStyle(NodeStyle.Special, F.Call(add, F.Braces())),
 				AsStyle(NodeStyle.Special, F.Call(remove, F.Braces()))));
@@ -592,7 +592,7 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
-		public void CSharp5Await()
+		public void CSharp5AsyncAwait()
 		{
 			// "async" is just an ordinary word attribute so it is already supported
 			Stmt("async Task Foo()\n{\n}", F.Attr(WordAttr("async"), F.Fn(_("Task"), Foo, F.List(), F.Braces())));

@@ -57,9 +57,10 @@ namespace Loyc.Ecs.Tests
 
 			Token[] token = new[] { new Token((int)TokenType.Literal, 0, 0, 0, 'a') };
 			var tree = new TokenTree(F.File, (ICollection<Token>)token);
-			Stmt("LLLPG(lexer) {\n  public rule a @{ 'a' };\n}", 
-				F.Call(_("LLLPG"), _("lexer"), F.Braces(
-					Attr(F.Public, F.Property(_("rule"), a, F.Literal(tree))))).SetBaseStyle(NodeStyle.Special));
+			var lexer = F.Call(_("LLLPG"), _("lexer"), F.Braces(
+					Attr(F.Public, F.Property(_("rule"), a, F.Literal(tree))))).SetBaseStyle(NodeStyle.Special);
+			Stmt("LLLPG (lexer) {\n  public rule a @{ 'a' };\n}", lexer, Mode.ParserTest);
+			Stmt("LLLPG (lexer) {\n  public rule a => @{ 'a' };\n}", lexer);
 		}
 
 		[Test]

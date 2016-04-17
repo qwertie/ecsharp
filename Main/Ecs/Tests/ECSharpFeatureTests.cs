@@ -436,6 +436,17 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void BlockCallsWithTokenLiteral()
+		{
+			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
+			var xTreeNode = F.Literal(new TokenTree(F.File, xToken));
+			// Not yet supported by printer
+			Stmt("get @{ x };", F.Call(S.get, xTreeNode));
+			Stmt("Foo(x) @{ x };", F.Call(Foo, x, xTreeNode));
+			Stmt("Foo = get @{ x } + 1;", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(S.get, xTreeNode), one)));
+		}
+
+		[Test]
 		public void EcsMiscTests()
 		{
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));

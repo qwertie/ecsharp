@@ -71,6 +71,8 @@ namespace Loyc.Ecs.Tests
 			Expr("#event(EventHandler, a + b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, F.Call(S.Add, a, b), F.Braces());
 			Expr("#event(EventHandler, a + b, {\n})", stmt);
+			stmt = F.Call(S.Event, EventHandler, F.List(a, b), F.Braces());
+			Stmt("event EventHandler a, b\n{\n}", stmt, Mode.ExpectAndDropParserError);
 		}
 
 		[Test]

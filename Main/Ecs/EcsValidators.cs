@@ -207,32 +207,37 @@ namespace Loyc.Ecs
 			       (args.IsIdNamed(S.Missing) || args.Calls(S.AltList));
 		}
 
-		public static bool IsEventDefinition(LNode n, Pedantics p) { return EventDefinitionType(n, p) != EventDef.Invalid; }
-
-		public enum EventDef { Invalid, WithBody, List };
-		internal static EventDef EventDefinitionType(LNode _n, Pedantics p)
+		public static bool IsEventDefinition(LNode n, Pedantics p)
 		{
-			// EventDef.WithBody: #event(EventHandler, Click, { ... })
-			// EventDef.List:     #event(EventHandler, Click, DoubleClick, RightClick)
-			if (!CallsMinWPAIH(_n, S.Event, 2, p))
-				return EventDef.Invalid;
+			LNode type, name, body;
+			return IsEventDefinition(n, out type, out name, out body, p);
+		}
 
-			LNode type = _n.Args[0], name = _n.Args[1];
-			if (!IsComplexIdentifier(type, ICI.Default, p) ||
-				!IsSimpleIdentifier(name, p))
-				return EventDef.Invalid;
+		internal static bool IsEventDefinition(LNode node, out LNode type, out LNode name, out LNode body, Pedantics p)
+		{
+			// Syntax should either be
+			//   #event(EventHandler, Click, {...}), or
+			//   #event(EventHandler, #(Click, DoubleClick)),
+			// but we can also parse
+			//   #event(EventHandler, #(Click, DoubleClick), {...})
+			type = name = body = null;
+			int argCount = node.ArgCount;
+			if (!CallsMinWPAIH(node, S.Event, 2, p) || argCount > 3)
+				return false;
 
-			int argCount = _n.ArgCount;
+			type = node.Args[0];
+			name = node.Args[1];
+			if (!IsComplexIdentifier(type, ICI.Default, p))
+				return false;
+			if (!IsComplexIdentifier(name, ICI.Default, p) && 
+				!(name.CallsMin(S.AltList, 1) && name.Args.All(a => IsComplexIdentifier(a, ICI.Default, p))))
+				return false;
+
 			if (argCount == 3) {
-				var body = _n.Args[2];
-				if (CallsWPAIH(body, S.Braces, p) || CallsWPAIH(body, S.Forward, p))
-					return EventDef.WithBody;
-			}
-
-			for (int i = 2; i < argCount; i++)
-				if (!IsSimpleIdentifier(_n.Args[i], p))
-					return EventDef.Invalid;
-			return EventDef.List;
+				body = node.Args[2];
+				return CallsWPAIH(body, S.Braces, p) || CallsWPAIH(body, S.Forward, p);
+			} else
+				return argCount == 2;
 		}
 
 		public static bool IsVariableDecl(LNode _n, bool allowMultiple, bool allowNoAssignment, Pedantics p) // for printing purposes
@@ -553,7 +558,7 @@ namespace Loyc.Ecs
 			if (!IsPlainCsIdentStartChar(text[0]))
 				return false;
 			for (int i = 1; i < text.Length; i++)
-				if (!IsPlainCsIdentContChar(text[0]))
+				if (!IsPlainCsIdentContChar(text[i]))
 					return false;
 			return true;
 		}

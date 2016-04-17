@@ -138,7 +138,7 @@ namespace Loyc.Ecs.Parser
 
 		// LLLPG is unaware of this overload, but when I write DataType(),
 		// it unwittingly invokes it.
-		fn DataType(afterAsOrIs::bool = false)::LNode {
+		@[public] fn DataType(afterAsOrIs::bool = false)::LNode {
 			brack::opt!Token;
 			var type = DataType(afterAsOrIs, out brack);
 			if (brack != null) {
@@ -406,8 +406,8 @@ namespace Loyc.Ecs.Parser
 			|	t:=TT.Literal
 				{r = F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 			|	r=ExprInParensAuto  // (...)
-			|	r=BracedBlock       // {...}
 			|	r=NewExpr           // new ...
+			|	r=BracedBlock       // {...}
 			|	r=TokenLiteral
 			|	t:=(TT.Checked | TT.Unchecked)
 				args:="(" rp:=")"
@@ -572,7 +572,7 @@ namespace Loyc.Ecs.Parser
 				t:="++,--"      {e = F.Call(t.Value == S.PreInc ? S.PostInc : S.PostDec, e, e.Range.StartIndex, t.EndIndex);}
 			|	// <Type parameters>
 				&(TParams (~(TT.Id|TT.ContextualKeyword)|EOF)) ("<"|"!"|"." "[") => TParams(ref e)
-			|	bb:=BracedBlock 
+			|	bb:=BracedBlockOrTokenLiteral
 				{	if (!e.IsCall || e.BaseStyle == NodeStyle.Operator) {
 						e = F.Call(e, bb, e.Range.StartIndex, bb.Range.EndIndex)
 					} else {
@@ -889,6 +889,10 @@ namespace Loyc.Ecs.Parser
 			["," {isTuple = true;}]? EOF
 			{return isTuple ? F.Tuple(list, startIndex, endIndex) : F.InParens(e, startIndex, endIndex);}
 		};
+		@[private] rule BracedBlockOrTokenLiteral(spaceName::Symbol = @null, target::Symbol = @null, startIndex::int = -1)::LNode
+		@{	result:BracedBlock(spaceName, target, startIndex)
+		|	result:TokenLiteral
+		};
 		@[private] rule BracedBlock(spaceName::Symbol = @null, target::Symbol = @null, startIndex::int = -1)::LNode
 		@{
 			{	var oldSpace = _spaceName;
@@ -963,8 +967,9 @@ namespace Loyc.Ecs.Parser
 		//
 		// BTW: "word attributes" are not really "contextual keywords" in the C# 
 		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "dynamic", "module" 
-		// and "assembly" ("var" and "dynamic" are not contextual keywords in C# 
+		// only true contextual keywords in EC# are "var", "module", "assembly",
+		// "from" (LINQ), "trait", "alias", and "when"; others like "partial" and "yield" are not
+		// and the  ("var" and "dynamic" are not contextual keywords in C# 
 		// in the same way; in EC#, "var" is identified as a keyword by the 
 		// parser, but in C# it is identified during semantic analysis.)
 		//
@@ -1784,22 +1789,23 @@ namespace Loyc.Ecs.Parser
 		@[private] fn MethodBodyOrForward()::LNode { _::LNode; return MethodBodyOrForward(@false, out _); };
 		@[private] rule MethodBodyOrForward(isProperty::bool, out propInitializer::LNode, isExpression::bool = false)::LNode @{
 			{propInitializer = null;}
-			(	op:="==>" e:=ExprStart(true)  StmtSemicolon(isExpression) {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
-			|	op:="=>"  e:=ExprStart(false) StmtSemicolon(isExpression) {return e;} // C# 6 lambda-style function
-			|	e:=TokenLiteral               StmtSemicolon(isExpression) {return e;}
+			(	op:="==>" e:=ExprStart(true)  SemicolonIf(!isExpression) {return F.Call(S.Forward, e, op.StartIndex, e.Range.EndIndex);}
+			|	op:="=>"  e:=ExprStart(false) SemicolonIf(!isExpression) {return e;} // C# 6 lambda-style function
+			|	e:=TokenLiteral               [&{!isExpression} ";"]?    {return e;}
 			|	body:=BracedBlock(S.Fn)
 				// TODO: figure out why the hell LLLPG thinks there's an ambiguity here
 				greedy[	// C# 6 property initializer
 					&{@[Local] isProperty} "=" propInitializer=ExprStart(false) 
-					StmtSemicolon(isExpression)
+					SemicolonIf(!isExpression)
 				]?
 				{ return body; }
 			)
 		};
-		@[private] rule StmtSemicolon(isExpression::bool) @{
-			(";"|","|EOF) =>             // remember that ')','}',']' counts as EOF
-			(	&{@[Local] isExpression} // no semicolon needed on expression form
-			/	";")
+		@[private] token SemicolonIf(isStatement::bool) @{
+			(";"|","|EOF) =>            // remember that ')','}',']' counts as EOF
+			(	&{isStatement} ";"
+			/	{if isStatement {Error(0, "Expected ';' to end statement");};}
+			)
 		};
 
 		fn IsArrayType(type::LNode)::bool 
@@ -1864,17 +1870,18 @@ namespace Loyc.Ecs.Parser
 		};
 
 		@[private] rule EventDecl(startIndex::int)::LNode @{
-			{r::LNode;}
+			// Event names can be complex identifiers in case they are explicit interface impls (IFoo.Event)
 			TT.Event type:=DataType name:=ComplexNameDecl
-			(	default 
-				{var parts = (new VList!LNode(type, name));}
-				( "," parts+=ComplexNameDecl )*
-				end:=";"         
-				{r = F.Call(S.Event, parts, startIndex, end.EndIndex);}
+			[	{var parts = (new VList!LNode(name));}
+				( "," parts+=ComplexNameDecl )+
+				{name = F.List(parts, name.Range.StartIndex, parts.Last.Range.EndIndex);}
+			]?
+			(	";"
+				{$result = F.Call(S.Event, type, name, startIndex, $";".EndIndex);}
 			|	body:=BracedBlock(S.Fn)
-				{r = F.Call(S.Event, type, name, body, startIndex, body.Range.EndIndex);}
+				{if name.Calls(S.AltList) {Error("A body is not allowed when defining multiple events.")};}
+				{$result = F.Call(S.Event, type, name, body, startIndex, body.Range.EndIndex);}
 			)
-			{return r;}
 		};
 
 		// ---------------------------------------------------------------------
