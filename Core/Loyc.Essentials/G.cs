@@ -60,6 +60,32 @@ namespace Loyc
 			return false;
 		}
 
+		/// <summary>Calls <c>action(obj)</c>, then returns the same object.</summary>
+		/// <returns>obj</returns>
+		/// <remarks>
+		/// This is the plain-C# equivalent of the <c>with(obj)</c> statement. Compared
+		/// to the Enhanced C# statement, <c>With()</c> is disadvantageous since it 
+		/// requires a memory allocation to create the closure in many cases, as well
+		/// as a delegate invocation that probably will not be inlined.
+		/// <para/>
+		/// Caution: you cannot mutate mutable structs with this method. Call the 
+		/// other overload of this method if you will be modifying a mutable struct.
+		/// </remarks>
+		/// <example>
+		/// Foo(new Person() { Name = "John Doe" }.With(p => p.Commit(dbConnection)));
+		/// </example>
+		public static T With<T>(this T obj, Action<T> action)
+		{
+			action(obj);
+			return obj;
+		}
+		/// <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
+		/// of this method, except that the action has a return value.</summary>
+		public static T With<T>(this T obj, Func<T, T> action)
+		{
+			return action(obj);
+		}
+
 		public static readonly object BoxedFalse = false;      //!< Singleton false cast to object.
 		public static readonly object BoxedTrue = true;        //!< Singleton true cast to object.
 		public static readonly object BoxedVoid = new @void(); //!< Singleton void cast to object.
@@ -153,8 +179,8 @@ namespace Loyc
 		public static Pair<T1, T2> Pair<T1, T2>(T1 a, T2 b) { return new Pair<T1, T2>(a, b); }
 		public static Triplet<T1, T2, T3> Triplet<T1, T2, T3>(T1 a, T2 b, T3 c) { return new Triplet<T1, T2, T3>(a, b, c); }
 
-		/// <summary>Same as Debug.Assert except that the argument is evaluated 
-		/// even in a Release build.</summary>
+		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 
+		/// evaluated even in a Release build.</summary>
 		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);
