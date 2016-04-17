@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug.NET4</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{94BC16E0-2F14-4747-82F8-CFA22AD558CA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -15,7 +13,6 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -43,10 +40,8 @@
     <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.NET4|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,7 +52,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
     <NoWarn>1591, 1573</NoWarn>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -83,6 +78,8 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.Net35|AnyCPU'">
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
@@ -100,10 +97,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug.NET45\</OutputPath>
     <DefineConstants>TRACE;DEBUG;Loyc,DotNet4,CSharp4</DefineConstants>
@@ -112,10 +111,13 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release.NET45|AnyCPU'">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <OutputPath>..\Bin\Release.NET45\</OutputPath>
     <DefineConstants>TRACE;Loyc,DotNet4,CSharp4</DefineConstants>
     <DocumentationFile>..\Bin\Release.NET4\Loyc.Utilities.XML</DocumentationFile>
@@ -125,22 +127,17 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
@@ -236,11 +233,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj">
-      <Project>{7aeeae63-a63b-4b28-8db8-0b06b00d1e6a}</Project>
+      <Project>{7AEEAE63-A63B-4B28-8DB8-0B06B00D1E6A}</Project>
       <Name>Loyc.Collections</Name>
     </ProjectReference>
     <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj">
-      <Project>{df642fb7-25eb-424d-8e92-6c046f42d4a9}</Project>
+      <Project>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</Project>
       <Name>Loyc.Essentials</Name>
     </ProjectReference>
   </ItemGroup>
