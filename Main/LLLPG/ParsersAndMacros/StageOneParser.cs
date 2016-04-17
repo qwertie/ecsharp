@@ -28,6 +28,7 @@ namespace Loyc.LLParserGenerator
 		Literal     = TokenKind.Literal,
 		Dot         = TokenKind.Dot,
 		Assignment  = TokenKind.Assignment, // = += := $=
+		Colon       = TokenKind.Assignment + 1,
 		
 		HostOperator= TokenKind.Operator,
 		Alt         = TokenKind.Operator + 1, // |
@@ -42,6 +43,7 @@ namespace Loyc.LLParserGenerator
 		Bang        = TokenKind.Operator + 10, // !
 		AndNot      = TokenKind.Operator + 11, // &!
 		Minus       = TokenKind.Operator + 12, // -
+		StartColon  = TokenKind.Operator + 12, // ::= to mark rule start
 
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
@@ -52,8 +54,10 @@ namespace Loyc.LLParserGenerator
 		Default     = TokenKind.OtherKeyword + 4,
 		Any         = TokenKind.OtherKeyword + 5,
 		In          = TokenKind.OtherKeyword + 6,
-		
-		Separator   = TokenKind.Separator,
+		Returns     = TokenKind.OtherKeyword + 7,
+
+		Semicolon   = TokenKind.Separator,
+		Comma       = TokenKind.Separator + 1,
 		OtherToken  = TokenKind.Other,
 		LParen      = TokenKind.LParen,
 		RParen      = TokenKind.RParen,
@@ -98,7 +102,7 @@ namespace Loyc.LLParserGenerator
 		[ThreadStatic]
 		static StageOneParser _parser;
 
-		public static LNode ParseTokenTree(TokenTree tokens, IMessageSink sink, LNode basis)
+		public static LNode ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{
 			return StageOneParser.Parse(tokens, tokens.File, sink);
 		}
@@ -113,7 +117,7 @@ namespace Loyc.LLParserGenerator
 			return _parser.Parse();
 		}
 
-		public StageOneParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null)
+		internal StageOneParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null)
 		{
 			ErrorSink = messageSink;
 			Reset(tokens, file, hostLanguage);
@@ -159,8 +163,8 @@ namespace Loyc.LLParserGenerator
 				return _tokens[_tokens.Count - 1].EndIndex;
 		}
 		
-		TokenType LA0 { get { return _lt0.Type(); } }
-		TokenType LA(int i) { return LT(i).Type(); }
+		protected TokenType LA0 { get { return _lt0.Type(); } }
+		protected TokenType LA(int i) { return LT(i).Type(); }
 		
 		#endregion
 		
@@ -186,7 +190,7 @@ namespace Loyc.LLParserGenerator
 			{S.Div,      TT.Slash},
 			{S.DotDot,   TT.DotDotDot},
 			{S.DotDotDot,TT.DotDotDot},
-			{S.Colon,    TT.Assignment},
+			{S.Colon,    TT.Colon},
 			{_AddColon,  TT.Assignment},
 			{_ColonSet,  TT.Assignment},
 			{S.NotBits,  TT.InvertSet},
@@ -207,6 +211,11 @@ namespace Loyc.LLParserGenerator
 			{S.In,       TT.In},
 			{_Default,   TT.Default},
 			{S.Default,  TT.Default},
+			{S.Comma,    TT.Comma},
+
+			// Used by AntlrStyleParser
+			{GSymbol.Get("::="), TT.StartColon},
+			{GSymbol.Get("returns"), TT.Returns}
 		};
 		
 		static IListSource<Token> ReclassifyTokens(IListSource<Token> oldList)
@@ -225,9 +234,8 @@ namespace Loyc.LLParserGenerator
 			if (token.Kind != TokenKind.Literal &&
 				token.Value != null) do
 			{
-				TT newType_;
 				if (i < list.Count && token.EndIndex >= list[i].StartIndex) {
-					// Detect the two-token combinations &!, <=>, :=, $=
+					// Detect the two-token combinations &!, <=>, :=, $=, ::=
 					if (token.Value == S.AndBits && list[i].Value == S.Not) { // &!
 						i++;
 						token = token.WithValue(_AndNot);
@@ -252,7 +260,14 @@ namespace Loyc.LLParserGenerator
 						newType = TT.Assignment;
 						break;
 					}
+					if (token.Value == S.ColonColon && list[i].Value == S.Assign) { // ::=
+						i++;
+						token = token.WithValue(S.Colon);
+						newType = TT.StartColon;
+						break;
+					}
 				}
+				TT newType_;
 				if (_tokenNameTable.TryGetValueSafe(token.Value as Symbol, out newType_))
 					newType = newType_;
 			} while(false);
@@ -263,13 +278,18 @@ namespace Loyc.LLParserGenerator
 		
 		#region Tree structure handling
 
-		VList<LNode> ParseArgList(Token group)
+		protected VList<LNode> ParseHostArgList(Token group, ParsingMode mode)
 		{
 			var ch = group.Children;
-			if (ch != null)
-				return new VList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, ParsingService.Exprs));
-			else
+			if (ch != null) {
+				return new VList<LNode>(_hostLanguage.Parse(ch, ch.File, ErrorSink, mode));
+			} else
 				return VList<LNode>.Empty;
+		}
+
+		protected LNode ParseHostBraces(Token p, int endIndex, ParsingMode mode)
+		{
+			return F.Braces(ParseHostArgList(p, mode), p.StartIndex, endIndex);
 		}
 		
 		LNode ParseParens(Token p, int endIndex)
@@ -280,20 +300,7 @@ namespace Loyc.LLParserGenerator
 			else {
 				var newList = ReclassifyTokens(ch);
 				G.Verify(Down(newList));
-				return Up(Expr());
-			}
-		}
-		
-		LNode ParseBraces(Token p, int endIndex, bool singleExpr)
-		{
-			var ch = p.Children;
-			if (ch == null)
-				return F.Braces(VList<LNode>.Empty, p.StartIndex, endIndex);
-			else {
-				var mode = singleExpr ? ParsingService.Exprs : ParsingService.Stmts;
-				return F.Braces(
-					_hostLanguage.Parse(ch, ch.File, ErrorSink, mode), 
-					p.StartIndex, endIndex);
+				return Up(GrammarExpr());
 			}
 		}
 

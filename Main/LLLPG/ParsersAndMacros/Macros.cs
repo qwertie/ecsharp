@@ -72,34 +72,26 @@ namespace Loyc.LLPG
 		[LexicalMacro("LLLPG lexer {Body...}", "Runs LLLPG in lexer mode (via IntStreamCodeGenHelper)", "LLLPG", Mode = MacroMode.Normal)]
 		public static LNode LLLPG_lexer(LNode node, IMacroContext context)
 		{
-			var p = context.GetArgsAndBody(true);
-			var args = p.A;
-			var body = p.B;
-			LNode lexerCfg;
-			if (args.Count != 1 || (lexerCfg = args[0]).Name != _lexer)
-				return null;
-
-			// Scan options in lexer(...) node
-			var helper = new IntStreamCodeGenHelper();
-			foreach (var option in MacroContext.GetOptions(lexerCfg.Args))
+			return LllpgMacro(node, context, _lexer, lexerCfg =>
 			{
-				LNode value = option.Value;
-				string key = (option.Key ?? (Symbol)"??").Name;
-				switch (key.ToLowerInvariant())
-				{
-					case "inputsource":     helper.InputSource = value; break;
-					case "inputclass":      helper.InputClass = value; break;
-					case "terminaltype":    helper.TerminalType = value; break;
-					case "settype":         helper.SetType = value; break;
-					case "listinitializer": helper.SetListInitializer(value); break;
-					default:
-						context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
-							"inputSource: var, inputClass: type, terminalType: type, setType: type, listInitializer: var _ = new List<T>()", key);
-						break;
+				var helper = new IntStreamCodeGenHelper();
+				foreach (var option in MacroContext.GetOptions(lexerCfg.Args)) {
+					LNode value = option.Value;
+					string key = (option.Key ?? (Symbol)"??").Name;
+					switch (key.ToLowerInvariant()) {
+						case "inputsource": helper.InputSource = value; break;
+						case "inputclass": helper.InputClass = value; break;
+						case "terminaltype": helper.TerminalType = value; break;
+						case "settype": helper.SetType = value; break;
+						case "listinitializer": helper.SetListInitializer(value); break;
+						default:
+							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: " +
+								"inputSource: var, inputClass: type, terminalType: type, setType: type, listInitializer: var _ = new List<T>()", key);
+							break;
+					}
 				}
-			}
-
-			return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
+				return helper;
+			});
 		}
 
 		/// <summary>Helper macro that translates <c>parser</c> in <c>LLLPG(parser, {...})</c> 
@@ -108,18 +100,11 @@ namespace Loyc.LLPG
 			Mode = MacroMode.Normal)]
 		public static LNode LLLPG_parser(LNode node, IMacroContext context)
 		{
-			var p = context.GetArgsAndBody(true);
-			var args = p.A;
-			var body = p.B;
-			LNode parserCfg = null;
-			if (args.Count > 0) {
-				if ((parserCfg = args[0]).Name != _parser || args.Count > 1)
-					return null;
-			}
-			
-			// Scan options in parser(...) node
-			var helper = new GeneralCodeGenHelper();
-			if (parserCfg != null) {
+			return LllpgMacro(node, context, _parser, parserCfg => {
+				// Scan options in parser(...) node
+				var helper = new GeneralCodeGenHelper();
+				if (parserCfg == null)
+					return helper;
 				foreach (var option in MacroContext.GetOptions(parserCfg.Args)) {
 					LNode value = option.Value;
 					string key = (option.Key ?? (Symbol)"??").Name;
@@ -152,9 +137,41 @@ namespace Loyc.LLPG
 							break;
 					}
 				}
+				return helper;
+			}, isDefault: true);
+		}
+
+		/// <summary>This method helps do the stage-one transform from <c>LLLPG (config) {...}</c>
+		/// to <c>run_LLLPG (helper literal) {...}</c> and also invokes the ANTLR-style 
+		/// parser if the second argument is a token literal. If <c>node[0]</c> 
+		/// calls <c>expectedConfigNode</c> then the delegate is called to 
+		/// construct a code generation helper object; otherwise, this method has 
+		/// no effect and returns null.</summary>
+		public static LNode LllpgMacro(LNode node, IMacroContext context, 
+			Symbol expectedCodeGenMode, Func<LNode, IPGCodeGenHelper> makeCodeGenHelper, bool isDefault = false)
+		{
+			VList<LNode> args, body;
+			LNode tokenTree = null, codeGenOptions = null;
+
+			if (node.ArgCount >= 1 && (tokenTree = node.Args.Last).Value is TokenTree) {
+				args = node.Args.WithoutLast(1);
+				body = VList<LNode>.Empty;
+			} else {
+				tokenTree = null;
+				var p = context.GetArgsAndBody(orRemainingNodes: true);
+				args = p.A;
+				body = p.B;
 			}
 
-			return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
+			if ((args.Count == 1 && (codeGenOptions = args[0]).Name == expectedCodeGenMode)
+				|| (args.Count == 0 && isDefault))
+			{
+				if (tokenTree != null)
+					body = AntlrStyleParser.ParseTokenTree(tokenTree.Value as TokenTree, context.Sink);
+				IPGCodeGenHelper helper = makeCodeGenHelper(codeGenOptions);
+				return node.WithTarget(_run_LLLPG).WithArgs(F.Literal(helper), F.Braces(body));
+			}
+			return null;
 		}
 
 		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
@@ -167,7 +184,10 @@ namespace Loyc.LLPG
 				node = context.PreProcessChildren();
 				LNode sig = node.Args[0];
 				// Ugh. Because the rule has been macro-processed, "rule X::Y ..." 
-				// has become "rule #var(Y,X) ...". Reverse this transform.
+				// has become "rule #var(Y,X) ...". We must allow this, because in 
+				// case of something like "rule X(arg::int)::Y" we actually do want
+				// the argument to become `#var(int, arg)`; so just reverse the
+				// transform that we didn't want.
 				if (sig.Calls(S.Var, 2))
 					sig = F.Call(S.ColonColon, sig.Args[1], sig.Args[0]);
 
@@ -219,12 +239,10 @@ namespace Loyc.LLPG
 			var attrs = node.Attrs;
 			LNode lastAttr = null;
 			if (!retValIsRule) {
-				if (attrs.IsEmpty)
+				int i_rule = attrs.IndexWhere(n => n.IsIdNamed(_hash_token) || n.IsIdNamed(_hash_rule));
+				if (i_rule == -1)
 					return null;
-				lastAttr = attrs.Last;
-				if (!(isToken = lastAttr.IsIdNamed(_hash_token)) && !lastAttr.IsIdNamed(_hash_rule))
-					return null;
-				attrs.RemoveAt(attrs.Count - 1);
+				attrs.RemoveAt(i_rule);
 			} else
 				returnType = F.Void;
 
@@ -236,6 +254,7 @@ namespace Loyc.LLPG
 				args = F.List(); // output will be a #fn, which does not allow @`` as its arg list
 			LNode newBody = ParseRuleBody(node.Args.Last, context);
 			if (newBody != null)
+				// #rule($returnType, $name, $args, $newBody)
 				return LNode.Call(isToken ? _hash_token : _hash_rule, 
 					new VList<LNode> { returnType, name, args, newBody }, 
 					node.Range, node.Style).WithAttrs(attrs);
@@ -251,7 +270,7 @@ namespace Loyc.LLPG
 				return null;
 
 			if (ruleTokens != null)
-				return StageOneParser.ParseTokenTree(ruleTokens, sink, ruleBody);
+				return StageOneParser.ParseTokenTree(ruleTokens, sink);
 			else {
 				if (ruleBody.Args.Any(stmt => stmt.Value is TokenTree))
 					ruleBody = ruleBody.With(S.Tuple, ruleBody.Args.SmartSelect(stmt => ParseStmtInRule(stmt, sink)));
@@ -262,22 +281,9 @@ namespace Loyc.LLPG
 		private static LNode ParseStmtInRule(LNode stmt, IMessageSink sink)
 		{
 			if (stmt.Value is TokenTree)
-				return StageOneParser.ParseTokenTree((TokenTree)stmt.Value, sink, stmt);
+				return StageOneParser.ParseTokenTree((TokenTree)stmt.Value, sink);
 			else
 				return F.Braces(stmt);
-		}
-
-		// This macro is used to translate a single token tree or rule body
-		[LexicalMacro("LLLPG_stage1(@[...])", "The LLLPG stage-1 parser converts a token tree into a Loyc tree suitable for input into stage 2.")]
-		public static LNode LLLPG_stage1(LNode node, IMessageSink sink)
-		{
-			LNode result;
-			if (node.ArgCount == 1 && (result = ParseRuleBody(node.Args[0], sink)) != null)
-				return result;
-			else {
-				sink.Write(Severity.Error, node, "Expected one argument of the form @[...] or {... @[...]; ...}");
-				return null;
-			}
 		}
 
 		[LexicalMacro("run_LLLPG(helper literal, {Body...})", "Runs the Loyc LL(k) Parser Generator on the specified Body, with a Helper object supplied by an auxiliary macro named LLLPG(...).")]
@@ -426,6 +432,7 @@ namespace Loyc.LLPG
 						ReadOption<bool>(sink, attr, v => rule.IsExternal = v, true);
 						break;
 					case "#inline": case "inline": case "Inline":
+					case "#fragment": case "fragment":
 						ReadOption<bool>(sink, attr, v => rule.IsInline = v, true);
 						break;
 					case "k": case "K": case "LL":

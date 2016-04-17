@@ -1,0 +1,125 @@
+﻿#importMacros (Loyc.LLPG);
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Syntax;
+using Loyc.Syntax.Lexing;
+
+namespace Loyc.LLParserGenerator
+{
+	using S = CodeSymbols;
+	using TT = TokenType;
+	using VList_LNode = VList<LNode>; // work around parsing bug. TODO remove
+
+	internal class AntlrStyleParser : StageOneParser
+	{
+		[ThreadStatic]
+		static AntlrStyleParser _parser;
+
+		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
+		{
+			return Parse(tokens, tokens.File, sink);
+		}
+		public new static VList<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		{
+			if (_parser == null)
+				_parser = new AntlrStyleParser(tokenTree, file, messages);
+			else {
+				_parser.Reset(tokenTree, file);
+				_parser.ErrorSink = messages;
+			}
+			return _parser.ParseRules();
+		}
+
+		private AntlrStyleParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) 
+			: base(tokens, file, messageSink, hostLanguage) {}
+
+		LNode ParseHostReturnType(Token paren)
+		{
+			var list = ParseHostArgList(paren, ParsingMode.FormalArgs);
+			if (list.Count != 1)
+				Error(-1, "LLLPG: Expected a single variable declaration (or data type) '{0}'", ToString(paren.TypeInt));
+			LNode result;
+			if (list.Count > 0)
+				result = list[0];
+			else
+				result = LNode.Missing;
+			if (result.Calls(S.Var, 2)) {
+				if (!result[1].IsIdNamed("result"))
+					ErrorSink.Write(Severity.Error, result[1], "LLLPG requires that the result of a rule be called 'result'");
+				return result[0];
+			} else
+				return result;
+		}
+		
+		[FullLLk, AddCsLineDirectives(false)]
+		LLLPG (parser(laType: TT, matchType: int, allowSwitch: true,
+		              terminalType: Token, listInitializer: VList<T> _ = VList<T>.Empty));
+
+		alias("(" = TT.LParen);
+		alias(")" = TT.RParen);
+		alias("[" = TT.LBrack);
+		alias("]" = TT.RBrack);
+		alias("{" = TT.LBrace);
+		alias("}" = TT.RBrace);
+		alias(":" = TT.Colon);
+		alias("::=" = TT.StartColon);
+		alias(";" = TT.Semicolon);
+
+		// The output is essentially #rule($returnType, $name, $args, $grammarExpr)
+		rule LNode Rule() @{
+			{
+				var attrs = LNode.List();
+				var args = LNode.List();
+				LNode retType = null;
+			}
+			// Attributes
+			[ "[" "]"        {attrs = ParseHostArgList($"[", ParsingMode.Exprs);} ]*
+			[ TT.AttrKeyword {attrs.Add(F.Id($(TT.AttrKeyword)));}                ]*
+			
+			ruleName:=TT.Id
+			[	"[" "]"              { args = ParseHostArgList($"[", ParsingMode.FormalArgs); }
+				(TT.Returns "[" "]") { retType = ParseHostReturnType($"["); }
+			|	"(" ")"              { args = ParseHostArgList($"(", ParsingMode.FormalArgs); }
+				(TT.Returns "(" ")") { retType = ParseHostReturnType($"("); }
+			]?
+
+			// Ignore ANTLR stuff
+			[	id:=TT.Id 
+				{
+					string id2 = id.Value.ToString();
+					bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "init", "after");
+					Error(-1, isAntlrThing
+						? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)."
+						: "Syntax error (expected ':' to begin the rule)");
+				}
+				["{" "}" | TT.Id]?
+			]?
+			( ":"|"::=" | error {Error(0, "Expected ':' or '::='");} TT.Assignment? )
+			GrammarExpr
+			";"
+			{
+				return quote(
+					// run_LLLPG preprocesses its children (in case any macros want to 
+					// help generate the grammar) but certain macros (e.g. the one for 
+					// tuples) interfere with the tree in $Expr, so use `#noLexicalMacros`
+					// to block macro processing. After run_LLLPG performs codegen, it 
+					// allows macros to run on the result, so the `#noLexicalMacros` here
+					// doesn't block macros in grammar actions.
+					#noLexicalMacros(
+						[$(...attrs)]
+						#rule($(retType ?? F.Void), $(F.Id(ruleName)), #($(...args)), $($GrammarExpr))
+					)
+				);
+			}
+		};
+
+		public rule VList_LNode ParseRules() @{ (result+:Rule)+ EOF };
+
+		// Tell LLLPG about the base class rule Expr, which is used for rule bodies
+		extern rule LNode GrammarExpr() @{ nongreedy(_)+ };
+	}
+}

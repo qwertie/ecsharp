@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.6.1.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -27,29 +27,29 @@ namespace Loyc.LLParserGenerator
 		}
 		public LNode Parse()
 		{
-			var e = Expr();
+			var e = GrammarExpr();
 			Match((int) EOF);
-			#line 50 "StageOneParserGrammar.ecs"
+			#line 51 "StageOneParserGrammar.ecs"
 			return e;
 			#line default
 		}
-		LNode Expr()
+		protected LNode GrammarExpr()
 		{
 			TT la0;
 			var a = SlashExpr();
-			// Line 70: (TT.Alt SlashExpr)*
+			// Line 58: (TT.Alt SlashExpr)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Alt) {
 					var op = MatchAny();
 					var b = SlashExpr();
-					#line 70 "StageOneParserGrammar.ecs"
+					#line 58 "StageOneParserGrammar.ecs"
 					Infix(ref a, (Symbol) op.Value, b);
 					#line default
 				} else
 					break;
 			}
-			#line 71 "StageOneParserGrammar.ecs"
+			#line 59 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
@@ -57,56 +57,56 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			var a = GateExpr();
-			// Line 75: (TT.Slash GateExpr)*
+			// Line 63: (TT.Slash GateExpr)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Slash) {
 					var op = MatchAny();
 					var b = GateExpr();
-					#line 75 "StageOneParserGrammar.ecs"
+					#line 63 "StageOneParserGrammar.ecs"
 					Infix(ref a, (Symbol) op.Value, b);
 					#line default
 				} else
 					break;
 			}
-			#line 76 "StageOneParserGrammar.ecs"
+			#line 64 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
 		LNode GateExpr()
 		{
 			TT la0;
-			#line 79 "StageOneParserGrammar.ecs"
+			#line 67 "StageOneParserGrammar.ecs"
 			Token? altType = null;
 			#line default
-			// Line 80: ((TT.Default|TT.Error))?
+			// Line 68: ((TT.Default|TT.Error))?
 			la0 = (TT) LA0;
 			if (la0 == TT.Default || la0 == TT.Error)
 				altType = MatchAny();
 			var a = SeqExpr();
-			// Line 82: (TT.Arrow GateExpr)?
+			// Line 70: (TT.Arrow GateExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Arrow) {
 				var op = MatchAny();
 				var b = GateExpr();
-				#line 82 "StageOneParserGrammar.ecs"
+				#line 70 "StageOneParserGrammar.ecs"
 				Infix(ref a, (Symbol) op.Value, b);
 				#line default
 			}
-			#line 84 "StageOneParserGrammar.ecs"
+			#line 72 "StageOneParserGrammar.ecs"
 			if (altType != null)
 				a = F.Call((Symbol) altType.Value.Value, a, altType.Value.StartIndex, altType.Value.EndIndex);
-			#line 86 "StageOneParserGrammar.ecs"
+			#line 74 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
 		LNode SeqExpr()
 		{
 			TT la0;
-			#line 90 "StageOneParserGrammar.ecs"
+			#line 78 "StageOneParserGrammar.ecs"
 			var seq = LNode.List();
 			#line default
-			// Line 91: (LoopExpr (TT.Separator)?)*
+			// Line 79: (LoopExpr (TT.Comma)?)*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.And:
@@ -124,9 +124,9 @@ namespace Loyc.LLParserGenerator
 				case TT.Nongreedy:
 					{
 						seq.Add(LoopExpr());
-						// Line 91: (TT.Separator)?
+						// Line 79: (TT.Comma)?
 						la0 = (TT) LA0;
-						if (la0 == TT.Separator)
+						if (la0 == TT.Comma)
 							Skip();
 					}
 					break;
@@ -135,110 +135,110 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 		stop:;
-			#line 93 "StageOneParserGrammar.ecs"
+			#line 81 "StageOneParserGrammar.ecs"
 			if (seq.Count == 1)
 				return seq[0];
 			else if (seq.IsEmpty)
 				return F.Tuple();
-			#line 95 "StageOneParserGrammar.ecs"
+			#line 83 "StageOneParserGrammar.ecs"
 			return F.Tuple(seq, seq[0].Range.StartIndex, seq.Last.Range.EndIndex);
 			#line default
 		}
 		LNode LoopExpr()
 		{
 			TT la0;
-			#line 99 "StageOneParserGrammar.ecs"
+			#line 87 "StageOneParserGrammar.ecs"
 			LNode a;
 			#line default
-			// Line 100: ((TT.Greedy|TT.Nongreedy) AssignExpr | AssignExpr)
+			// Line 88: ((TT.Greedy|TT.Nongreedy) AssignExpr | AssignExpr)
 			la0 = (TT) LA0;
 			if (la0 == TT.Greedy || la0 == TT.Nongreedy) {
 				var loopMod = MatchAny();
 				a = AssignExpr();
-				#line 101 "StageOneParserGrammar.ecs"
+				#line 89 "StageOneParserGrammar.ecs"
 				a = F.Call((Symbol) loopMod.Value, a, loopMod.StartIndex, a.Range.EndIndex);
 				#line default
 			} else
 				a = AssignExpr();
-			// Line 104: ( TT.Star | TT.Plus | TT.QMark )?
+			// Line 92: ( TT.Star | TT.Plus | TT.QMark )?
 			la0 = (TT) LA0;
 			if (la0 == TT.Star) {
 				var op = MatchAny();
-				#line 104 "StageOneParserGrammar.ecs"
+				#line 92 "StageOneParserGrammar.ecs"
 				a = F.Call(_SufStar, a, a.Range.StartIndex, op.EndIndex);
 				#line default
 			} else if (la0 == TT.Plus) {
 				var op = MatchAny();
-				#line 105 "StageOneParserGrammar.ecs"
+				#line 93 "StageOneParserGrammar.ecs"
 				a = F.Call(_SufPlus, a, a.Range.StartIndex, op.EndIndex);
 				#line default
 			} else if (la0 == TT.QMark) {
 				var op = MatchAny();
-				#line 106 "StageOneParserGrammar.ecs"
+				#line 94 "StageOneParserGrammar.ecs"
 				a = F.Call(_SufOpt, a, a.Range.StartIndex, op.EndIndex);
 				#line default
 			}
-			#line 108 "StageOneParserGrammar.ecs"
+			#line 96 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
 		LNode AssignExpr()
 		{
 			TT la0;
-			#line 112 "StageOneParserGrammar.ecs"
+			#line 100 "StageOneParserGrammar.ecs"
 			Token op;
 			#line default
 			var a = PrefixExpr();
-			// Line 114: (TT.Bang)*
+			// Line 102: (TT.Bang)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Bang) {
 					op = MatchAny();
-					#line 114 "StageOneParserGrammar.ecs"
+					#line 102 "StageOneParserGrammar.ecs"
 					a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);
 					#line default
 				} else
 					break;
 			}
-			// Line 115: ((TT.Assignment|TT.HostOperator) AssignExpr)?
+			// Line 103: ((TT.Assignment|TT.Colon|TT.HostOperator) AssignExpr)?
 			la0 = (TT) LA0;
-			if (la0 == TT.Assignment || la0 == TT.HostOperator) {
+			if (la0 == TT.Assignment || la0 == TT.Colon || la0 == TT.HostOperator) {
 				op = MatchAny();
 				var b = AssignExpr();
-				#line 115 "StageOneParserGrammar.ecs"
+				#line 103 "StageOneParserGrammar.ecs"
 				Infix(ref a, (Symbol) op.Value, b);
 				#line default
 			}
-			#line 116 "StageOneParserGrammar.ecs"
+			#line 104 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
 		LNode PrefixExpr()
 		{
 			TT la0;
-			// Line 120: ( TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | TT.AndNot PrefixExprOrBraces | RangeExpr )
+			// Line 108: ( TT.InvertSet PrefixExpr | TT.And PrefixExprOrBraces | TT.AndNot PrefixExprOrBraces | RangeExpr )
 			la0 = (TT) LA0;
 			if (la0 == TT.InvertSet) {
 				var op = MatchAny();
 				var r = PrefixExpr();
-				#line 120 "StageOneParserGrammar.ecs"
+				#line 108 "StageOneParserGrammar.ecs"
 				return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);
 				#line default
 			} else if (la0 == TT.And) {
 				var op = MatchAny();
 				var r = PrefixExprOrBraces();
-				#line 121 "StageOneParserGrammar.ecs"
+				#line 109 "StageOneParserGrammar.ecs"
 				return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);
 				#line default
 			} else if (la0 == TT.AndNot) {
 				var op = MatchAny();
 				var r = PrefixExprOrBraces();
-				#line 122 "StageOneParserGrammar.ecs"
+				#line 110 "StageOneParserGrammar.ecs"
 				return F.Call(_AndNot, r, op.StartIndex, r.Range.EndIndex);
 				#line default
 			} else {
 				var r = RangeExpr();
-				#line 123 "StageOneParserGrammar.ecs"
+				#line 111 "StageOneParserGrammar.ecs"
 				return r;
 				#line default
 			}
@@ -246,17 +246,17 @@ namespace Loyc.LLParserGenerator
 		LNode PrefixExprOrBraces()
 		{
 			TT la0;
-			// Line 126: (TT.LBrace TT.RBrace / PrefixExpr)
+			// Line 114: (TT.LBrace TT.RBrace / PrefixExpr)
 			la0 = (TT) LA0;
 			if (la0 == TT.LBrace) {
 				var lb = MatchAny();
 				var rb = Match((int) TT.RBrace);
-				#line 126 "StageOneParserGrammar.ecs"
-				return ParseBraces(lb, rb.EndIndex, true);
+				#line 114 "StageOneParserGrammar.ecs"
+				return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);
 				#line default
 			} else {
 				var e = PrefixExpr();
-				#line 127 "StageOneParserGrammar.ecs"
+				#line 115 "StageOneParserGrammar.ecs"
 				return e;
 				#line default
 			}
@@ -265,16 +265,16 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			var a = PrimaryExpr();
-			// Line 132: (TT.DotDotDot PrimaryExpr)?
+			// Line 120: (TT.DotDotDot PrimaryExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.DotDotDot) {
 				var op = MatchAny();
 				var b = PrimaryExpr();
-				#line 132 "StageOneParserGrammar.ecs"
+				#line 120 "StageOneParserGrammar.ecs"
 				Infix(ref a, (Symbol) op.Value, b);
 				#line default
 			}
-			#line 133 "StageOneParserGrammar.ecs"
+			#line 121 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
@@ -283,24 +283,24 @@ namespace Loyc.LLParserGenerator
 			TT la0, la1;
 			Token tok__Any = default(Token);
 			Token tok__Id = default(Token);
-			// Line 137: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr / ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)* )
+			// Line 125: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr / ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)* )
 			la0 = (TT) LA0;
 			if (la0 == TT.Minus) {
 				Skip();
 				var e = PrimaryExpr();
-				#line 137 "StageOneParserGrammar.ecs"
+				#line 125 "StageOneParserGrammar.ecs"
 				return F.Call(S._Negate, e);
 				#line default
 			} else if (la0 == TT.Any) {
-				#line 138 "StageOneParserGrammar.ecs"
+				#line 126 "StageOneParserGrammar.ecs"
 				LNode e, id;
 				#line default
 				tok__Any = MatchAny();
 				tok__Id = Match((int) TT.Id);
-				#line 139 "StageOneParserGrammar.ecs"
+				#line 127 "StageOneParserGrammar.ecs"
 				id = F.Id(tok__Id);
 				#line default
-				// Line 140: (TT.In PrimaryExpr / )
+				// Line 128: (TT.In PrimaryExpr / )
 				do {
 					la0 = (TT) LA0;
 					if (la0 == TT.In) {
@@ -326,7 +326,7 @@ namespace Loyc.LLParserGenerator
 					break;
 				match2:
 					{
-						#line 141 "StageOneParserGrammar.ecs"
+						#line 129 "StageOneParserGrammar.ecs"
 						e = id;
 						#line default
 					}
@@ -335,13 +335,13 @@ namespace Loyc.LLParserGenerator
 				return e;
 			} else {
 				var a = Atom();
-				// Line 147: greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*
+				// Line 135: greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} TT.LParen TT.RParen)*
 				for (;;) {
 					la0 = (TT) LA0;
 					if (la0 == TT.Dot) {
 						var op = MatchAny();
 						var b = Atom();
-						#line 147 "StageOneParserGrammar.ecs"
+						#line 135 "StageOneParserGrammar.ecs"
 						Infix(ref a, (Symbol) op.Value, b);
 						#line default
 					} else if (la0 == TT.LParen) {
@@ -350,8 +350,8 @@ namespace Loyc.LLParserGenerator
 							if (la1 == TT.RParen) {
 								var lp = MatchAny();
 								var rp = MatchAny();
-								#line 151 "StageOneParserGrammar.ecs"
-								a = F.Call(a, ParseArgList(lp), a.Range.StartIndex, rp.EndIndex);
+								#line 139 "StageOneParserGrammar.ecs"
+								a = F.Call(a, ParseHostArgList(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);
 								#line default
 							} else
 								break;
@@ -360,23 +360,23 @@ namespace Loyc.LLParserGenerator
 					} else
 						break;
 				}
-				#line 153 "StageOneParserGrammar.ecs"
+				#line 141 "StageOneParserGrammar.ecs"
 				return a;
 				#line default
 			}
 		}
 		LNode Atom()
 		{
-			#line 157 "StageOneParserGrammar.ecs"
+			#line 145 "StageOneParserGrammar.ecs"
 			LNode e;
 			#line default
-			// Line 158: ( (TT.Id|TT.In) | TT.Literal | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
+			// Line 146: ( (TT.Id|TT.In) | TT.Literal | TT.LParen TT.RParen | TT.LBrace TT.RBrace | TT.LBrack TT.RBrack &((TT.QMark|TT.Star)) )
 			switch ((TT) LA0) {
 			case TT.Id:
 			case TT.In:
 				{
 					var t = MatchAny();
-					#line 159 "StageOneParserGrammar.ecs"
+					#line 147 "StageOneParserGrammar.ecs"
 					e = F.Id(t);
 					#line default
 				}
@@ -384,7 +384,7 @@ namespace Loyc.LLParserGenerator
 			case TT.Literal:
 				{
 					var t = MatchAny();
-					#line 161 "StageOneParserGrammar.ecs"
+					#line 149 "StageOneParserGrammar.ecs"
 					e = F.Literal(t);
 					#line default
 				}
@@ -393,7 +393,7 @@ namespace Loyc.LLParserGenerator
 				{
 					var lp = MatchAny();
 					var rp = Match((int) TT.RParen);
-					#line 162 "StageOneParserGrammar.ecs"
+					#line 150 "StageOneParserGrammar.ecs"
 					e = ParseParens(lp, rp.EndIndex);
 					#line default
 				}
@@ -402,8 +402,8 @@ namespace Loyc.LLParserGenerator
 				{
 					var lb = MatchAny();
 					var rb = Match((int) TT.RBrace);
-					#line 163 "StageOneParserGrammar.ecs"
-					e = ParseBraces(lb, rb.EndIndex, false);
+					#line 151 "StageOneParserGrammar.ecs"
+					e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Stmts);
 					#line default
 				}
 				break;
@@ -412,21 +412,21 @@ namespace Loyc.LLParserGenerator
 					var lb = MatchAny();
 					var rb = Match((int) TT.RBrack);
 					Check(Try_Atom_Test0(0), "(TT.QMark|TT.Star)");
-					#line 165 "StageOneParserGrammar.ecs"
+					#line 153 "StageOneParserGrammar.ecs"
 					e = ParseParens(lb, rb.EndIndex);
 					#line default
 				}
 				break;
 			default:
 				{
-					#line 167 "StageOneParserGrammar.ecs"
+					#line 155 "StageOneParserGrammar.ecs"
 					e = F.Id(S.Missing, LT0.StartIndex, LT0.StartIndex);
 					Error(0, "LLLPG: Expected an identifier, literal, or expression in parenthesis");
 					#line default
 				}
 				break;
 			}
-			#line 171 "StageOneParserGrammar.ecs"
+			#line 159 "StageOneParserGrammar.ecs"
 			return e;
 			#line default
 		}

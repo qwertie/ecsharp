@@ -213,6 +213,11 @@
     <Compile Include="CoreEngine\KthSet.cs" />
     <Compile Include="CoreEngine\LLParserGenerator.cs" />
     <Compile Include="CoreEngine\PredictionTree.cs" />
+    <Compile Include="ParsersAndMacros\AntlrStyleParserGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AntlrStyleParserGrammar.ecs</DependentUpon>
+    </Compile>
     <Compile Include="ParsersAndMacros\AutoValueSaverVisitor.cs" />
     <Compile Include="ParsersAndMacros\Macros.cs" />
     <Compile Include="ParsersAndMacros\StageOneParser.cs" />
@@ -271,6 +276,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenSourceKey.snk" />
+    <None Include="ParsersAndMacros\AntlrStyleParserGrammar.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>AntlrStyleParserGrammar.out.cs</LastGenOutput>
+    </None>
     <None Include="ParsersAndMacros\StageOneParserGrammar.ecs">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=5</CustomToolNamespace>

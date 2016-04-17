@@ -35,6 +35,21 @@ namespace Loyc.LLParserGenerator
 					MatchRange('0', '9');
 				}");
 		}
+
+		[Test]
+		public void SimpleMatchingAntlrStyle()
+		{
+			Test(@"
+			LLLPG lexer @{
+				[public] Foo : 'x' '0'..'9' '0'..'9';
+			};", @"
+				public void Foo()
+				{
+					Match('x');
+					MatchRange('0', '9');
+					MatchRange('0', '9');
+				}");
+		}
 		
 		[Test]
 		public void SimpleAltsOptStar()
@@ -1832,6 +1847,49 @@ namespace Loyc.LLParserGenerator
 					}
 				}", null, EcsLanguageService.Value);
 		}
+
+		[Test]
+		public void TestAntlrStyle()
+		{
+			Test(@"
+				LLLPG (lexer(inputSource(src), inputClass(LexerSource))) @{
+					public static ParseInt[string input] returns [int result] :
+						{var src = (LexerSource)input;}
+						( d:='0'..'9' {$result = $result * 10 + (d - '0');} )+;
+					// You can also use BNF-style ::=
+					[LL(3), AnotherAttribute()]
+					public static ParseVoid(string input) returns (void) ::=
+						{var src = (LexerSource)input;}
+						""void"";
+				};", @"
+				public static int ParseInt(string input)
+				{
+					int la0;
+					int result = 0;
+					var src = (LexerSource)input;
+					var d = src.MatchRange('0', '9');
+					result = result * 10 + (d - '0');
+					for (;;) {
+						la0 = src.LA0;
+						if (la0 >= '0' && la0 <= '9') {
+							var d = src.MatchAny();
+							result = result * 10 + (d - '0');
+						} else
+							break;
+					}
+					return result;
+				}
+				[AnotherAttribute()]
+				public static void ParseVoid(string input)
+				{
+					var src = (LexerSource)input;
+					src.Match('v');
+					src.Match('o');
+					src.Match('i');
+					src.Match('d');
+				}", null, EcsLanguageService.Value);
+		}
+
 		[Test]
 		public void TestListInitializer()
 		{

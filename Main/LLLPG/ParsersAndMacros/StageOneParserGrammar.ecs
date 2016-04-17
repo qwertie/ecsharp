@@ -17,7 +17,7 @@ namespace Loyc.LLParserGenerator
 	internal partial class StageOneParser
 	{
 		[FullLLk] [Verbosity(3)]
-		LLLPG(parser(laType(TT), matchType(int), allowSwitch(true), terminalType(Token)))
+		LLLPG (parser(laType: TT, matchType: int, allowSwitch: true, terminalType: Token))
 		{
 			alias("("   = TT.LParen);
 			alias(")"   = TT.RParen);
@@ -33,11 +33,12 @@ namespace Loyc.LLParserGenerator
 			alias("&"   = TT.And);
 			alias("&!"  = TT.AndNot);
 			alias(":="  = TT.Assignment);
+			alias(":"   = TT.Colon);
 			alias("+"   = TT.Plus);
 			alias("*"   = TT.Star);
 			alias("?"   = TT.QMark);
 			alias("!"   = TT.Bang);
-			alias(","   = TT.Separator);
+			alias(","   = TT.Comma);
 			alias("=>,<=>" = TT.Arrow);
 			alias("|"   = TT.Alt);
 			alias("/"   = TT.Slash);
@@ -47,25 +48,12 @@ namespace Loyc.LLParserGenerator
 				a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
 			}
 
-			public rule LNode Parse @[ e:=Expr EOF {return e;} ];
-			
-			/*
-			LLLPG(lexer(...)) @{
-				Spaces: (' '|'\t')*;
-				SLComment:
-					"//" (~('\r'|'\n'))*
-					{_value = WhitespaceTag.Value;};
-			};
-			rule Rule() @{
-				(	lb:="[" rb:="]" {return ParseBraces(lb, rb.EndIndex, true);} )?
-				ids+:TT.Id ":" Expr ";"
-			};
-			*/
+			public rule LNode Parse @[ e:=GrammarExpr EOF {return e;} ];
 			
 			////////////////////////////////////////////////////////////////////
 
 			// Top-level rule body expression: a | b | ...
-			private rule LNode Expr() @[
+			protected rule LNode GrammarExpr() @[
 				a:=SlashExpr
 				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*
 				{return a;}
@@ -112,7 +100,7 @@ namespace Loyc.LLParserGenerator
 				{Token op;}
 				a:=PrefixExpr
 				( op="!" {a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);} )*
-				( op=(":="|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
+				( op=(":="|":"|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				{return a;}
 			];
 			
@@ -123,7 +111,7 @@ namespace Loyc.LLParserGenerator
 			|	r:=RangeExpr  {return r;}
 			];
 			private rule LNode PrefixExprOrBraces() @
-			[	lb:="{" rb:="}" {return ParseBraces(lb, rb.EndIndex, true);}
+			[	lb:="{" rb:="}" {return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);}
 			/	e:=PrefixExpr   {return e;}
 			];
 			
@@ -148,7 +136,7 @@ namespace Loyc.LLParserGenerator
 					|	// rule call: no spaces between identifier and '('
 						&{a.Range.EndIndex == LT($LI).StartIndex}
 						lp:="(" rp:=")"
-						{a = F.Call(a, ParseArgList(lp), a.Range.StartIndex, rp.EndIndex);}
+						{a = F.Call(a, ParseHostArgList(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);}
 					)*
 					{return a;}
 				];
@@ -160,7 +148,7 @@ namespace Loyc.LLParserGenerator
 				|	t:=TT.Literal
 					{e = F.Literal(t);}
 				|	lp:="(" rp:=")"     {e = ParseParens(lp, rp.EndIndex);}
-				|	lb:="{" rb:="}"     {e = ParseBraces(lb, rb.EndIndex, false);}
+				|	lb:="{" rb:="}"     {e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Stmts);}
 				|	lb:="[" rb:="]"
 					&("?"|"*")          {e = ParseParens(lb, rb.EndIndex);}
 				|	error {
