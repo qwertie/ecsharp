@@ -14,18 +14,18 @@ namespace LeMP
 	{
 		static readonly Symbol __runSequence = (Symbol) "#runSequence";
 
-		[LexicalMacro("#useVarDeclExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", 
-			"Enables the use of variable-declaration expressions, #runSequence, and the quick-binding operator `::` in the code that follows. "
+		[LexicalMacro("#useSequenceExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", 
+			"Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows."
 			+"Technically this allows any executable code in an expression context, such as while and for-loops, "
 			+"but its name comes from the fact that it is usually used to allow variable declarations. "
 			+"#useVarDeclExpressions expects to be used in a declaration context, "
 			+"e.g. at class or namespace level, not within a function.",
-			"#useVarDeclExpressions", Mode = MacroMode.NoReprocessing)]
-		public static LNode useVarDeclExpressions(LNode node, IMacroContext context)
+			"#useSequenceExpressions", Mode = MacroMode.NoReprocessing)]
+		public static LNode useSequenceExpressions(LNode node, IMacroContext context)
 		{
 			(var args, var body) = context.GetArgsAndBody(true);
 			if (args.Count > 0)
-				context.Write(Severity.Error, node[1], "#useVarDeclExpressions does not support arguments.");
+				context.Write(Severity.Error, node[1], "#useSequenceExpressions does not support arguments.");
 
 			context.DropRemainingNodes = true;
 			body = context.PreProcess(body);
@@ -70,7 +70,12 @@ namespace LeMP
 					return body == null ? stmt : stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
 				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
 					// Property definition
-					stmt = stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+					stmt = stmt.WithArgChanged(3, 
+						body.WithArgs(part => {
+							if (part.ArgCount == 1 && part[0].Calls(S.Braces))
+								part = part.WithArgChanged(0, EliminateBlockExprs(part[0], false));
+							return part;
+						}));
 					if (initValue != null) {
 						var initMethod = EliminateRunSeqFromInitializer(retType, name, ref initValue);
 						if (initMethod != null) {
@@ -87,7 +92,8 @@ namespace LeMP
 					var vars = stmt.Args;
 					var varType = vars[0];
 					for (int i = 1; i < vars.Count; i++) {
-						matchCode(vars[i]) {
+						var var = vars[i];
+						matchCode (var) {
 							case $(ref name) = $(ref initValue):
 								var initMethod = EliminateRunSeqFromInitializer(varType, name, ref initValue);
 								if (initMethod != null) {
@@ -131,7 +137,7 @@ namespace LeMP
 							return ProcessBlockCallStmt(stmt, stmt.ArgCount - 1);
 						} else {
 							// Ordinary expression statement
-							stmt = BubbleUpBlocks(stmt);
+							stmt = BubbleUpBlocks(stmt, true);
 							if (stmt.CallsMin(__runSequence, 1))
 								return stmt.Args.AsLNode(S.Splice);
 						}
@@ -190,7 +196,7 @@ namespace LeMP
 					return null; // most common case
 			}
 
-			LNode BubbleUpBlocks(LNode expr)
+			LNode BubbleUpBlocks(LNode expr, bool isStmtLevel = false)
 			{
 				if (!expr.IsCall)
 					return expr;
@@ -198,11 +204,12 @@ namespace LeMP
 				matchCode (expr) {
 				case #runSequence($(...args)):
 					if (args.Count == 1 && args[0].Calls(S.Braces))
-						return expr.WithArgs(args[0].Args);
+						expr = expr.WithArgs(args[0].Args);
 					return expr;
 
 				case { { $(..._); } }: // braced block
-					Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+					if (!isStmtLevel)
+						Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 					return expr;
 
 				// A variable declaration with no initializer and an `out` attribute attached
@@ -229,7 +236,7 @@ namespace LeMP
 			{
 				(var combinedSequence, expr) = BubbleUp_GeneralCall2(expr);
 				if (combinedSequence.Count != 0)
-					return quote( #runSequence($(...combinedSequence), expr) );
+					return quote( #runSequence($(...combinedSequence), $expr) );
 				else
 					return expr;
 			}

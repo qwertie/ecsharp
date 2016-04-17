@@ -23,10 +23,22 @@ namespace LeMP
 		}
 
 		[Test]
+		public void TestWeirdForeachBug()
+		{
+			TestEcs(@"{
+				foreach(var x in y) {}
+				WriteLine(""wtf"");
+			}", @"{ // transient bug made WriteLine move outside the braces
+				foreach(var x in y) {}
+				WriteLine(""wtf"");
+			}");
+		}
+
+		[Test]
 		public void TestUseBlockExpressions()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
-			TestEcs("#useVarDeclExpressions; " +
+			TestEcs("#useSequenceExpressions; " +
 				"void F() { { x } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
 				"int _x = 0;",
@@ -35,7 +47,7 @@ namespace LeMP
 				"int _x = 0;");
 			
 			// Check basic functionality, including nesting
-			TestEcs(@"#useVarDeclExpressions;
+			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(new List<int>()::list);
 					if (DBConnection.Tables.Get(""Person"")::table != null) {
@@ -45,6 +57,8 @@ namespace LeMP
 					}
 				}",
 				@"void f() {
+					var list = new List<int>();
+					Foo(list);
 					{
 						var table = DBConnection.Tables.Get(""Person"");
 						if (table != null) {
@@ -61,7 +75,7 @@ namespace LeMP
 				}");
 
 			// Test a nested run sequence
-			TestEcs(@"#useVarDeclExpressions;
+			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(#runSequence(Debug.Assert(X()::x > 0), x));
 				}",
@@ -73,7 +87,7 @@ namespace LeMP
 
 			// Test with some args being sequences and others not
 			var n = StandardMacros.NextTempCounter;
-			TestEcs(@"#useVarDeclExpressions;
+			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d), e);
 				}",
@@ -90,7 +104,7 @@ namespace LeMP
 				.Replace("c_2", "c_" + (n+2)));
 
 			// Test field initializers
-			TestEcs(@"#useVarDeclExpressions;
+			TestEcs(@"#useSequenceExpressions;
 				static double nine = Math.Sqrt(9)::three * three;
 				Pair<Symbol,Symbol> p = Pair.Create(""foo""(->Symbol)::str, str);
 				", @"
@@ -105,6 +119,15 @@ namespace LeMP
 					return Pair.Create(str, str);
 				}
 				");
+
+			// Test lambda method
+			TestEcs(@"#useSequenceExpressions;
+				static double Nine() = Math.Sqrt(9)::three * three;
+				", @"
+				static double Nine() {
+					double three = Math.Sqrt(9);
+					return three * three;
+				}");
 		}
 
 		[Test]
@@ -279,25 +302,35 @@ namespace LeMP
 		public void WithTest()
 		{
 			int n = StandardMacros.NextTempCounter;
-			TestEcs("with (foo) { .bar = .baz(); }",
-			        "{ var tmp_"+n+" = foo; tmp_"+n+".bar = tmp_"+n+".baz(); }");
+			TestEcs("with (foo) { .bar = .baz(#); }",
+			        "{ var tmp_1 = foo; tmp_1.bar = tmp_1.baz(tmp_1); }".Replace("tmp_1", "tmp_" + n));
+			
 			// Ignore note about 'declined to process... with'
 			using (MessageSink.PushCurrent(_msgHolder)) {
 				n = StandardMacros.NextTempCounter;
-				TestEcs(@"with (jekyll) { 
-							.A = 1; 
-							with(mr.hyde()) { x = .F(x); }
-							with(.B + .C(.D));
-						}", string.Format(@"{{
-							var tmp_{0} = jekyll;
-							tmp_{0}.A = 1;
-							{{
-								var tmp_{1} = mr.hyde();
-								x = tmp_{1}.F(x);
-							}}
-							with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
-						}}", n + 1, n));
+				TestEcs(@"
+					with (jekyll) { 
+						.A = 1; 
+						with(mr.hyde()) { x = .F(x); }
+						with(.B + .C(.D));
+					}", @"{
+						var tmp_{0} = jekyll;
+						tmp_{0}.A = 1;
+						{
+							var tmp_{1} = mr.hyde();
+							x = tmp_{1}.F(x);
+						}
+						with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
+					}".Replace("{0}", (n + 1).ToString()).Replace("{1}", (n).ToString()));
 			}
+
+			TestEcs(@"#useSequenceExpressions; {
+					Foo(with (new Person(""John Doe"")) { .Commit(dbConnection); });
+				}", @"
+				var tmp_{0} = new Person(""John Doe"");
+				tmp_{0}.Commit(dbConnection);
+				Foo(tmp_{0});
+				".Replace("{0}", StandardMacros.NextTempCounter.ToString()));
 		}
 
 		[Test]

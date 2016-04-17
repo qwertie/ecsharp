@@ -1,4 +1,4 @@
-// Generated from UseVarDeclExpressions.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -19,14 +19,14 @@ namespace LeMP
 	partial class StandardMacros
 	{
 		static readonly Symbol __runSequence = (Symbol) "#runSequence";
-		[LexicalMacro("#useVarDeclExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", "Enables the use of variable-declaration expressions, #runSequence, and the quick-binding operator `::` in the code that follows. " + "Technically this allows any executable code in an expression context, such as while and for-loops, " + "but its name comes from the fact that it is usually used to allow variable declarations. " + "#useVarDeclExpressions expects to be used in a declaration context, " + "e.g. at class or namespace level, not within a function.", "#useVarDeclExpressions", Mode = MacroMode.NoReprocessing)]
-		public static LNode useVarDeclExpressions(LNode node, IMacroContext context)
+		[LexicalMacro("#useSequenceExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", "Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows." + "Technically this allows any executable code in an expression context, such as while and for-loops, " + "but its name comes from the fact that it is usually used to allow variable declarations. " + "#useVarDeclExpressions expects to be used in a declaration context, " + "e.g. at class or namespace level, not within a function.", "#useSequenceExpressions", Mode = MacroMode.NoReprocessing)]
+		public static LNode useSequenceExpressions(LNode node, IMacroContext context)
 		{
 			var tmp_0 = context.GetArgsAndBody(true);
 			var args = tmp_0.Item1;
 			var body = tmp_0.Item2;
 			if (args.Count > 0)
-				context.Write(Severity.Error, node[1], "#useVarDeclExpressions does not support arguments.");
+				context.Write(Severity.Error, node[1], "#useSequenceExpressions does not support arguments.");
 			context.DropRemainingNodes = true;
 			body = context.PreProcess(body);
 			var ers = new EliminateRunSequences(context);
@@ -53,7 +53,11 @@ namespace LeMP
 				} else if (EcsValidators.MethodDefinitionKind(stmt, out retType, out name, out argList, out body, true) != null) {
 					return body == null ? stmt : stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
 				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
-					stmt = stmt.WithArgChanged(3, EliminateBlockExprs(body, false));
+					stmt = stmt.WithArgChanged(3, body.WithArgs(part => {
+						if (part.ArgCount == 1 && part[0].Calls(S.Braces))
+							part = part.WithArgChanged(0, EliminateBlockExprs(part[0], false));
+						return part;
+					}));
 					if (initValue != null) {
 						var initMethod = EliminateRunSeqFromInitializer(retType, name, ref initValue);
 						if (initMethod != null) {
@@ -71,14 +75,12 @@ namespace LeMP
 					var vars = stmt.Args;
 					var varType = vars[0];
 					for (int i = 1; i < vars.Count; i++) {
-						{
-							var tmp_1 = vars[i];
-							if (tmp_1.Calls(CodeSymbols.Assign, 2) && (name = tmp_1.Args[0]) != null && (initValue = tmp_1.Args[1]) != null) {
-								var initMethod = EliminateRunSeqFromInitializer(varType, name, ref initValue);
-								if (initMethod != null) {
-									results.Add(initMethod);
-									vars[i] = vars[i].WithArgChanged(1, initValue);
-								}
+						var @var = vars[i];
+						if (@var.Calls(CodeSymbols.Assign, 2) && (name = @var.Args[0]) != null && (initValue = @var.Args[1]) != null) {
+							var initMethod = EliminateRunSeqFromInitializer(varType, name, ref initValue);
+							if (initMethod != null) {
+								results.Add(initMethod);
+								vars[i] = vars[i].WithArgChanged(1, initValue);
 							}
 						}
 					}
@@ -112,7 +114,7 @@ namespace LeMP
 					} else if (stmt.HasSpecialName && stmt.ArgCount >= 1 && stmt.Args.Last.Calls(S.Braces)) {
 						return ProcessBlockCallStmt(stmt, stmt.ArgCount - 1);
 					} else {
-						stmt = BubbleUpBlocks(stmt);
+						stmt = BubbleUpBlocks(stmt, true);
 						if (stmt.CallsMin(__runSequence, 1))
 							return stmt.Args.AsLNode(S.Splice);
 					}
@@ -140,9 +142,9 @@ namespace LeMP
 					childStmts[i] = EliminateBlockExprsInExecBlock(oldChild);
 					childChanged |= (oldChild != childStmts[i]);
 				}
-				var tmp_2 = BubbleUp_GeneralCall2(partialStmt);
-				advanceSequence = tmp_2.Item1;
-				partialStmt = tmp_2.Item2;
+				var BubbleUp_GeneralCall2_1 = BubbleUp_GeneralCall2(partialStmt);
+				advanceSequence = BubbleUp_GeneralCall2_1.Item1;
+				partialStmt = BubbleUp_GeneralCall2_1.Item2;
 				return childChanged || !advanceSequence.IsEmpty;
 			}
 			LNode EliminateRunSeqFromInitializer(LNode retType, LNode fieldName, ref LNode expr)
@@ -157,26 +159,27 @@ namespace LeMP
 				} else
 					return null;
 			}
-			LNode BubbleUpBlocks(LNode expr)
+			LNode BubbleUpBlocks(LNode expr, bool isStmtLevel = false)
 			{
 				if (!expr.IsCall)
 					return expr;
 				{
-					LNode tmp_3 = null, value, varName, varType = null;
+					LNode tmp_2 = null, value, varName, varType = null;
 					VList<LNode> args, attrs;
 					if (expr.Calls((Symbol) "#runSequence")) {
 						args = expr.Args;
 						if (args.Count == 1 && args[0].Calls(S.Braces))
-							return expr.WithArgs(args[0].Args);
+							expr = expr.WithArgs(args[0].Args);
 						return expr;
 					} else if (expr.Calls(CodeSymbols.Braces)) {
-						Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+						if (!isStmtLevel)
+							Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 						return expr;
 					} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 						if (varType.IsIdNamed(S.Missing))
 							Context.Write(Severity.Error, expr, "The data type of this variable declaration must be stated explicitly.");
 						return LNode.Call((Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName));
-					} else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_3 = expr.Args[1]) != null && tmp_3.Calls(CodeSymbols.Assign, 2) && (varName = tmp_3.Args[0]) != null && (value = tmp_3.Args[1]) != null || (attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
+					} else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_2 = expr.Args[1]) != null && tmp_2.Calls(CodeSymbols.Assign, 2) && (varName = tmp_2.Args[0]) != null && (value = tmp_2.Args[1]) != null || (attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
 						return ConvertVarDeclToRunSequence(attrs, varType ?? F.Missing, varName, value);
 				}
 				if (expr.IsCall)
@@ -186,11 +189,11 @@ namespace LeMP
 			}
 			LNode BubbleUp_GeneralCall(LNode expr)
 			{
-				var tmp_4 = BubbleUp_GeneralCall2(expr);
-				var combinedSequence = tmp_4.Item1;
-				expr = tmp_4.Item2;
+				var BubbleUp_GeneralCall2_3 = BubbleUp_GeneralCall2(expr);
+				var combinedSequence = BubbleUp_GeneralCall2_3.Item1;
+				expr = BubbleUp_GeneralCall2_3.Item2;
 				if (combinedSequence.Count != 0)
-					return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(combinedSequence).Add(LNode.Id((Symbol) "expr")));
+					return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(combinedSequence).Add(expr));
 				else
 					return expr;
 			}

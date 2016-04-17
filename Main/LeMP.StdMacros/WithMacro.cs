@@ -29,6 +29,8 @@ namespace LeMP
 				stmt.ReplaceRecursive(expr => {
 					if (expr.Calls(S.Dot, 1))
 						return expr.WithArgs(new VList<LNode>(tmp, expr.Args.Last));
+					else if (expr.IsIdNamed("#"))
+						return tmp;
 					return null;
 				}));
 			stmts.Insert(0, F.Var(null, tmp.Name, fn.Args[0]));

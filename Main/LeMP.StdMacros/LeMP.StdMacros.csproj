@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7D8B626C-F7FA-44E1-9A25-E00C81AF0364}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -118,12 +116,12 @@
     <Compile Include="ThisConstructorMacro.cs" />
     <Compile Include="TupleMacros.cs" />
     <Compile Include="UnrollMacro.cs" />
-    <Compile Include="UseSymbolsMacro.cs" />
-    <Compile Include="UseVarDeclExpressions.out.cs">
-      <AutoGen>True</AutoGen>
+    <Compile Include="UseSequenceExpressions.out.cs">
+      <DependentUpon>UseSequenceExpressions.ecs</DependentUpon>
       <DesignTime>True</DesignTime>
-      <DependentUpon>UseVarDeclExpressions.ecs</DependentUpon>
+      <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="UseSymbolsMacro.cs" />
     <Compile Include="UsingMultiMacro.out.cs">
       <DependentUpon>UsingMultiMacro.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -149,9 +147,9 @@
       <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
-    <None Include="UseVarDeclExpressions.ecs">
+    <None Include="UseSequenceExpressions.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>UseVarDeclExpressions.out.cs</LastGenOutput>
+      <LastGenOutput>UseSequenceExpressions.out.cs</LastGenOutput>
     </None>
     <None Include="UsingMultiMacro.ecs">
       <Generator>LeMP</Generator>
