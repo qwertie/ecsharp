@@ -473,7 +473,7 @@ namespace LeMP
 				if (!_curScope.OpenNamespaces.Remove(sym))
 					context.Write(Severity.Debug, arg, "Namespace not found to remove: {0}", sym);
 			}
-			return null;
+			return LNode.Call(S.Splice);
 		}
 		[LexicalMacro("#noLexicalMacros(expr)", 
 			"Suppresses macro invocations inside the specified expression. The word `#noLexicalMacros` is removed from the output. Note: `noMacro` (in LeMP.Prelude) is a shortened synonym for this macro.",
@@ -482,7 +482,7 @@ namespace LeMP
 		{
 			if (!node.IsCall)
 				return null;
-			return node.WithTarget(S.Splice);
+			return node.Args.AsLNode(S.Splice);
 		}
 
 		[LexicalMacro("#setScopedProperty(keyLiteral, valueLiteral);", 

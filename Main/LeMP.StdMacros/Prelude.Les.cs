@@ -782,13 +782,20 @@ namespace LeMP.Prelude.Les
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
 		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public static LNode ColonColon(LNode node, IMessageSink sink)
+		public static LNode ColonColon(LNode node, IMessageSink context)
 		{
 			var a = node.Args;
 			if (a.Count == 2) {
-				var r = node.With(S.Var, a[1], a[0]);
-				r.BaseStyle = NodeStyle.Operator;
-				return r;
+				if (a[0].IsId) {
+					var r = node.With(S.Var, a[1], a[0]);
+					r.BaseStyle = NodeStyle.Operator;
+					return r;
+				} else if (a[0].CallsMin(S.Tuple, 1)) {
+					var r = node.With(S.Var, new VList<LNode>(a[1]).AddRange(a[0].Args));
+					r.BaseStyle = NodeStyle.Operator;
+					return r;
+				} else
+					return Reject(context, node, "Expected a variable name or tuple to the left of `::`");
 			}
 			return null;
 		}
