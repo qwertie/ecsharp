@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -31,7 +31,8 @@ namespace LeMP
 			Reject(context, literal, "Expected a literal of type {0}.".Localized(typeof(T).Name));
 			return false;
 		}
-		[LexicalMacro("notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + "[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; " + "[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}", "Generates Contract checks in a method.\n\n" + "- [requires(expr)] and [assert(expr)] specify an expression that must be true at the beginning of the method; assert conditions are checked in debug builds only, while \"requires\" conditions are checked in all builds. The condition can include an underscore `_` that refers to the argument that the attribute is attached to, if any.\n" + "- [ensures(expr)] and [ensuresAssert(expr)] specify an expression that must be true if-and-when the method returns normally. assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the return value of the method.\n" + "- [ensuresFinally(expr)] specifies an expression that must be true when the method exits, whether by exception or by a normal return. This is implemented by wrapping the method in a try-finally block.\n" + "- [ensuresOnThrow(expr)] and [ensuresOnThrow<ExceptionType>(expr)] specify a condition that must be true if the method throws an exception. When #haveContractRewriter is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.\n" + "- notnull is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole.\n" + "\nAll contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message.", "#fn", "#cons", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)] public static LNode ContractsOnMethod(LNode fn, IMacroContext context)
+		[LexicalMacro("notnull T method(notnull T arg) {...}; T method([requires(expr)] T arg) {...}; " + "[requires(expr)] T method(...) {...}; [ensures(expr)] T method(...) {...}; " + "[ensuresOnThrow(expr)] T method(...) {...}; [ensuresOnThrow<Exception>(expr)] T method(...) {...}", "Generates Contract checks in a method.\n\n" + "- [requires(expr)] and [assert(expr)] specify an expression that must be true at the beginning of the method; assert conditions are checked in debug builds only, while \"requires\" conditions are checked in all builds. The condition can include an underscore `_` that refers to the argument that the attribute is attached to, if any.\n" + "- [ensures(expr)] and [ensuresAssert(expr)] specify an expression that must be true if-and-when the method returns normally. assert conditions are checked in debug builds only. The condition can include an underscore `_` that refers to the return value of the method.\n" + "- [ensuresFinally(expr)] specifies an expression that must be true when the method exits, whether by exception or by a normal return. This is implemented by wrapping the method in a try-finally block.\n" + "- [ensuresOnThrow(expr)] and [ensuresOnThrow<ExceptionType>(expr)] specify a condition that must be true if the method throws an exception. When #haveContractRewriter is false, underscore `_` refers to the thrown exception object; this is not available in the MS Code Contracts Rewriter.\n" + "- notnull is equivalent to [requires(_ != null)] if applied to an argument, and [ensures(_ != null)] if applied to the method as a whole.\n" + "\nAll contract attributes (except notnull) can specify multiple expressions separated by commas, to produce multiple checks, each with its own error message.", "#fn", "#cons", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnMethod(LNode fn, IMacroContext context)
 		{
 			LNode oldFn = fn;
 			if (fn.ArgCount >= 4) {
@@ -55,7 +56,8 @@ namespace LeMP
 			return null;
 		}
 		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
-		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + "([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", "Generates Contract checks in a lambda function. See the documentation of " + "ContractsOnMethod for more information about the contract attributes.", "=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)] public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
+		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + "([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", "Generates Contract checks in a lambda function. See the documentation of " + "ContractsOnMethod for more information about the contract attributes.", "=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
 		{
 			LNode oldFn = fn;
 			if (fn.ArgCount == 2) {
@@ -77,7 +79,8 @@ namespace LeMP
 			return null;
 		}
 		static readonly LNode Id_value = LNode.Id(CodeSymbols.value);
-		[LexicalMacro("notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + "T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + "[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", "Generates contract checks in a property. You can apply contract attributes to " + "the property itself, to the getter, to the setter, or all three. When the [requires] " + "or [assert] attributes are applied to the property itself, they are treated as if " + "they were applied to the getter; but when the [ensures], [ensuresAssert], notnull, " + "and [ensuresOnThrow] attributes are applied to the property itself, they are treated " + "as if they were applied to both the getter and the setter separately.", "#property", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)] public static LNode ContractsOnProperty(LNode prop, IMacroContext context)
+		[LexicalMacro("notnull T Prop {...}; T this[[requires(expr)] T arg] {...}; " + "T Prop { [requires(expr)] set; }; [ensures(expr)] T Prop {...}; " + "[ensuresOnThrow(expr)] T Prop {...}; [ensuresOnThrow<Exception>(expr)] T Prop {...}", "Generates contract checks in a property. You can apply contract attributes to " + "the property itself, to the getter, to the setter, or all three. When the [requires] " + "or [assert] attributes are applied to the property itself, they are treated as if " + "they were applied to the getter; but when the [ensures], [ensuresAssert], notnull, " + "and [ensuresOnThrow] attributes are applied to the property itself, they are treated " + "as if they were applied to both the getter and the setter separately.", "#property", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		public static LNode ContractsOnProperty(LNode prop, IMacroContext context)
 		{
 			LNode oldProp = prop;
 			if (prop.ArgCount == 4) {
@@ -193,7 +196,8 @@ namespace LeMP
 		static readonly Symbol __notnull = (Symbol) "#notnull";
 		static readonly LNode Id_return_value = LNode.Id((Symbol) "return_value");
 		static readonly LNode Id__exception__ = LNode.Id((Symbol) "__exception__");
-		[Flags] enum ContractAppliesTo
+		[Flags]
+		enum ContractAppliesTo
 		{
 			Getter = 1, Setter = 2, Both = 3, Neither = 0
 		}

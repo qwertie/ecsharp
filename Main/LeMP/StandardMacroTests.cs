@@ -23,18 +23,6 @@ namespace LeMP
 		}
 
 		[Test]
-		public void TestWeirdForeachBug()
-		{
-			TestEcs(@"{
-				foreach(var x in y) {}
-				WriteLine(""wtf"");
-			}", @"{ // transient bug made WriteLine move outside the braces
-				foreach(var x in y) {}
-				WriteLine(""wtf"");
-			}");
-		}
-
-		[Test]
 		public void TestUseBlockExpressions()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
