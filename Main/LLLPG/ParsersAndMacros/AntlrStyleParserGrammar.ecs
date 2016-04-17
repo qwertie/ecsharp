@@ -12,7 +12,6 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 	using TT = TokenType;
-	using VList_LNode = VList<LNode>; // work around parsing bug. TODO remove
 
 	internal class AntlrStyleParser : StageOneParser
 	{
@@ -117,7 +116,7 @@ namespace Loyc.LLParserGenerator
 			}
 		};
 
-		public rule VList_LNode ParseRules() @{ (result+:Rule)+ EOF };
+		public rule VList<LNode> ParseRules() @{ (result+:Rule)+ EOF };
 
 		// Tell LLLPG about the base class rule Expr, which is used for rule bodies
 		extern rule LNode GrammarExpr() @{ nongreedy(_)+ };

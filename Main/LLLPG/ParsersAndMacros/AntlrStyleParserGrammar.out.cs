@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -17,10 +17,10 @@ namespace Loyc.LLParserGenerator
 {
 	using S = CodeSymbols;
 	using TT = TokenType;
-	using VList_LNode = VList<LNode>;
 	internal class AntlrStyleParser : StageOneParser
 	{
-		[ThreadStatic] static AntlrStyleParser _parser;
+		[ThreadStatic]
+		static AntlrStyleParser _parser;
 		public new static VList<LNode> ParseTokenTree(TokenTree tokens, IMessageSink sink)
 		{
 			return Parse(tokens, tokens.File, sink);
@@ -62,64 +62,64 @@ namespace Loyc.LLParserGenerator
 			Token lit_lpar = default(Token);
 			Token lit_lsqb = default(Token);
 			Token tok__AttrKeyword = default(Token);
-			// line 75
+			// line 74
 			var attrs = LNode.List();
 			var args = LNode.List();
 			LNode retType = null;
-			// Line 80: (TT.LBrack TT.RBrack)*
+			// Line 79: (TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrack) {
 					lit_lsqb = MatchAny();
 					Match((int) TT.RBrack);
-					// line 80
+					// line 79
 					attrs = ParseHostArgList(lit_lsqb, ParsingMode.Exprs);
 				} else
 					break;
 			}
-			// Line 81: (TT.AttrKeyword)*
+			// Line 80: (TT.AttrKeyword)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.AttrKeyword) {
 					tok__AttrKeyword = MatchAny();
-					// line 81
+					// line 80
 					attrs.Add(F.Id(tok__AttrKeyword));
 				} else
 					break;
 			}
 			var ruleName = Match((int) TT.Id);
-			// Line 84: (TT.LBrack TT.RBrack TT.Returns TT.LBrack TT.RBrack | TT.LParen TT.RParen TT.Returns TT.LParen TT.RParen)?
+			// Line 83: (TT.LBrack TT.RBrack TT.Returns TT.LBrack TT.RBrack | TT.LParen TT.RParen TT.Returns TT.LParen TT.RParen)?
 			la0 = (TT) LA0;
 			if (la0 == TT.LBrack) {
 				lit_lsqb = MatchAny();
 				Match((int) TT.RBrack);
-				// line 84
+				// line 83
 				args = ParseHostArgList(lit_lsqb, ParsingMode.FormalArgs);
 				Match((int) TT.Returns);
 				lit_lsqb = Match((int) TT.LBrack);
 				Match((int) TT.RBrack);
-				// line 85
+				// line 84
 				retType = ParseHostReturnType(lit_lsqb);
 			} else if (la0 == TT.LParen) {
 				lit_lpar = MatchAny();
 				Match((int) TT.RParen);
-				// line 86
+				// line 85
 				args = ParseHostArgList(lit_lpar, ParsingMode.FormalArgs);
 				Match((int) TT.Returns);
 				lit_lpar = Match((int) TT.LParen);
 				Match((int) TT.RParen);
-				// line 87
+				// line 86
 				retType = ParseHostReturnType(lit_lpar);
 			}
-			// Line 91: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
+			// Line 90: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				var id = MatchAny();
-				// line 93
+				// line 92
 				string id2 = id.Value.ToString();
 				bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "init", "after");
 				Error(-1, isAntlrThing ? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)." : "Syntax error (expected ':' to begin the rule)");
-				// Line 99: (TT.LBrace TT.RBrace | TT.Id)?
+				// Line 98: (TT.LBrace TT.RBrace | TT.Id)?
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrace) {
 					Skip();
@@ -127,14 +127,14 @@ namespace Loyc.LLParserGenerator
 				} else if (la0 == TT.Id)
 					Skip();
 			}
-			// Line 101: ((TT.Colon|TT.StartColon))
+			// Line 100: ((TT.Colon|TT.StartColon))
 			la0 = (TT) LA0;
 			if (la0 == TT.Colon || la0 == TT.StartColon)
 				Skip();
 			else {
-				// line 101
+				// line 100
 				Error(0, "Expected ':' or '::='");
-				// Line 101: (TT.Assignment)?
+				// Line 100: (TT.Assignment)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Assignment) {
 					la1 = (TT) LA(1);
@@ -144,15 +144,15 @@ namespace Loyc.LLParserGenerator
 			}
 			got_GrammarExpr = GrammarExpr();
 			Match((int) TT.Semicolon);
-			// line 105
+			// line 104
 			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(LNode.Call(LNode.List(attrs), (Symbol) "#rule", LNode.List(retType ?? F.Void, F.Id(ruleName), LNode.Call(CodeSymbols.AltList, LNode.List(args)), got_GrammarExpr))));
 		}
-		public VList_LNode ParseRules()
+		public VList<LNode> ParseRules()
 		{
 			TT la0;
-			VList_LNode result = default(VList_LNode);
+			VList<LNode> result = default(VList<LNode>);
 			result.Add(Rule());
-			// Line 120: (Rule)*
+			// Line 119: (Rule)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.AttrKeyword || la0 == TT.Id || la0 == TT.LBrack)

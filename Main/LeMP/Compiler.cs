@@ -214,7 +214,7 @@ namespace LeMP
 		public bool ProcessArguments(BMultiMap<string, string> options, bool warnAboutUnknownOptions, IList<string> inputFiles = null)
 		{
 			Compiler c = this;
-			string value, _;
+			string value;
 			var filter = c.Sink as SeverityMessageFilter ?? new SeverityMessageFilter(c.Sink, Severity.Note);
 
 			if (warnAboutUnknownOptions)
