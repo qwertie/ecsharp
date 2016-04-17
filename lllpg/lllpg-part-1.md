@@ -182,6 +182,30 @@ This example demonstrates some new things:
 * Instead of `rule`, I used `token` instead. Actually, in this example there is no difference whatsoever between `rule` and `token`; both generate the same code. I guess this was the wrong time to introduce `token`, since I can't demonstrate the difference yet. Anyway, there's this "token" mode, and it's called `token` because it usually makes more sense to use it in lexers than parsers. But, er, you can use it in parsers too. I dunno, maybe it needs a new name.
 * LLLPG uses a `switch` statement if it suspects the code could be more efficient that way. Here it used  `switch()` to match `Op()`. However, it tries to balance code size with speed. It does not use switch cases for `Id()` because it would need 53 "`case`" labels to match it (26 uppercase + 26 lowercase + `'_'`), which seems excessive.
 
+## ANTLR-like syntax mode
+
+As of LLLPG 1.7.3, an ANTLR-like syntax mode has been added that makes it easier to port grammars between ANTLR and LLLPG. This mode is used by writing code like
+
+    class MyParser : BaseParserForList {
+        [/* general options */]
+        LLLPG (/* code generation options */) @{
+            /* ANTLR-style rules */
+            myRule [ArgType argument] returns [ReturnType result] : grammar ;
+        };
+    }
+
+In this mode, the LLLPG block can _only_ contain rules (not ordinary C# methods and fields).
+
+Although the outline of each rule uses an ANTLR-like syntax, there are still substantial differences:
+
+- The grammar inside each rule still follows LLLPG syntax rules, which are slightly different from ANTLR, e.g. you have to write `R(arg)` instead of `R[arg]` to pass an argument to rule `R`. In fact, because you have to use round brackets anyway, you're also allowed to write `myRule(ArgType argument) : grammar`, using round brackets instead of square ones.
+- The grammar follows LLLPG semantic rules as well, so there is no LL(\*), and while I'm sure there are other subtle differences, I can't tell you what they are because I am not an expert in ANTLR.
+- LLLPG allows attributes in front of each rule.
+- Multiple return values are not supported; consider using `Tuple<A,B>` instead, as LeMP supports tuple syntax like `return (1, "two");`. You can also use `out` parameters, of course.
+- The [`options`](https://theantlrguy.atlassian.net/wiki/display/ANTLR3/Rule+and+subrule+options) clause is not supported, but you can use `[k(constant)]` to set the lookahead for a rule. LLLPG does not support automatic backtracking or memoization, and the `greedy` option is a property of loops, not rules.
+- `scope` clauses are not supported; you can manage scopes with ordinary C# code.
+- The `catch` and `finally` clauses are not currently supported; I presume the grammar actions `{on_finally {...}}` or `{on_throw_catch (Exception e) {...}}` have the same effect.
+
 ## The LeMP processing model
 
 If you're only interested in the parser generator, please skip this section, because right now I'd like to discuss the fancy technology that LLLPG is built on. In fact, you can skip most of the rest of the article and go straight to [part 2][12].
