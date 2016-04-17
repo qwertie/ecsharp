@@ -200,7 +200,7 @@ namespace Loyc.Collections
 		/// <summary>Gets the highest index at which a condition is true, or -1 if nowhere.</summary>
 		public static int LastIndexWhere<T>(this IReadOnlyList<T> source, Func<T, bool> pred)
 		{
-			for (int i = source.Count-1; i > 0; i--)
+			for (int i = source.Count-1; i >= 0; i--)
 				if (pred(source[i]))
 					return i;
 			return -1;
