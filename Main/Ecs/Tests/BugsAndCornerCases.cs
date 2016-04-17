@@ -61,6 +61,9 @@ namespace Loyc.Ecs.Tests
 					Attr(F.Public, F.Property(_("rule"), a, F.Literal(tree))))).SetBaseStyle(NodeStyle.Special);
 			Stmt("LLLPG (lexer) {\n  public rule a @{ 'a' };\n}", lexer, Mode.ParserTest);
 			Stmt("LLLPG (lexer) {\n  public rule a => @{ 'a' };\n}", lexer);
+			// 2016-04 bug: ForEachStmt failed to call Up() before returning
+			Stmt("{\n  foreach (var x in Foo) {\n  }\n  Foo();\n}", 
+				F.Braces(F.Call(S.ForEach, F.Vars(F.Missing, x), Foo, F.Braces()), F.Call(Foo)));
 		}
 
 		[Test]

@@ -2023,8 +2023,8 @@ namespace Loyc.Ecs.Parser
 				[ &VarIn var:VarIn ]?
 				// Use => to remove some unwanted complexity in the prediction decision of VarIn
 				(=> expr:=ExprStart(false)
-					{return F.Call(S.ForEach, var ?? F.Missing, expr, block, startIndex, block.Range.EndIndex);}
-					(EOF => {Up();}))
+				(EOF => {return Up(
+					F.Call(S.ForEach, var ?? F.Missing, expr, block, startIndex, block.Range.EndIndex));}))
 			)
 		};
 

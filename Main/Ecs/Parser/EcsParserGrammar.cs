@@ -1,4 +1,4 @@
-// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from EcsParserGrammar.les by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -3993,8 +3993,8 @@ namespace Loyc.Ecs.Parser
 			// Line 1712: (&{isArray} &{Down($LI) && Up(HasNoSemicolons())} TT.LBrace TT.RBrace / ExprStart)
 			la0 = LA0;
 			if (la0 == TT.LBrace) {
-				if (isArray) {
-					if (Down(0) && Up(HasNoSemicolons())) {
+				if (Down(0) && Up(HasNoSemicolons())) {
+					if (isArray) {
 						la1 = LA(1);
 						if (la1 == TT.RBrace) {
 							var lb = MatchAny();
@@ -4514,9 +4514,7 @@ namespace Loyc.Ecs.Parser
 			}
 			var expr = ExprStart(false);
 			// line 2026
-			return F.Call(S.ForEach, @var ?? F.Missing, expr, block, startIndex, block.Range.EndIndex);
-			// line 2027
-			Up();
+			return Up(F.Call(S.ForEach, @var ?? F.Missing, expr, block, startIndex, block.Range.EndIndex));
 		}
 		LNode VarIn()
 		{

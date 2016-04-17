@@ -28,12 +28,12 @@ namespace Loyc.Ecs.Tests
 			var treeified = new TokensToTree(preprocessed, false);
 			var sink = (mode & Mode.ExpectAndDropParserError) != 0 ? new MessageHolder() : (IMessageSink)MessageSink.Console;
 			var parser = new EcsParser(treeified.Buffered(), lexer.SourceFile, sink);
-			LNode result = exprMode ? parser.ExprStart(false) : parser.Stmt();
+			LNode result = exprMode ? parser.ExprStart(false) : LNode.List(parser.ParseStmtsGreedy()).AsLNode(S.Splice);
 
-			AreEqual(TokenType.EOF, parser.LT0.Type());
+			AreEqual(TokenType.EOF, parser.LT0.Type(), string.Format("Parser stopped before EOF at [{0}] in {1}", parser.LT0.StartIndex, text));
 			AreEqual(expected, result);
 			if (sink is MessageHolder)
-				GreaterOrEqual(((MessageHolder)sink).List.Count, 1);
+				GreaterOrEqual(((MessageHolder)sink).List.Count, 1, "Expected an error but got none for "+text);
 		}
 
 		[Test]

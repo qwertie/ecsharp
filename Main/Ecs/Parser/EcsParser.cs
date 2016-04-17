@@ -111,9 +111,9 @@ namespace Loyc.Ecs.Parser
 			try {
 				StmtList(ref list);
 			} catch (Exception ex) { UnhandledException(ex); }
+			ExpectEOF();
 			return list;
 		}
-
 		public IEnumerator<LNode> ParseStmtsLazy()
 		{
 			while (LA0 != EOF) {
@@ -122,6 +122,14 @@ namespace Loyc.Ecs.Parser
 				catch (Exception ex) { UnhandledException(ex); break; }
 				yield return stmt;
 			}
+			ExpectEOF();
+		}
+		private void ExpectEOF()
+		{
+			if (_parents.Count != 0)
+				throw new InvalidStateException("Bug: EC# parser parent stack not empty"); // Failed to call Up?
+			if (LA0 != TT.EOF)
+				Error(0, "Expected end of file");
 		}
 
 		void UnhandledException(Exception ex)
