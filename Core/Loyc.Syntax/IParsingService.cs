@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 		bool HasTokenizer { get; }
 
 		/// <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
-		/// <param name="file">Text to be tokenized (e.g. <see cref="UString"/>)</param>
+		/// <param name="text">Text to be tokenized (e.g. <see cref="UString"/>)</param>
 		/// <param name="fileName">File name to be associated with any errors that occur.</param>
 		/// <param name="msgs">Error messages are sent to this object.</param>
 		/// <remarks>
@@ -42,16 +42,16 @@ namespace Loyc.Syntax
 		/// should not remove comments, although it may skip spaces and perhaps
 		/// newlines. If there is a preprocessor, it should not run.
 		/// </remarks>
-		ILexer<Token> Tokenize(ICharSource file, string fileName, IMessageSink msgs);
+		ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs);
 
 		/// <summary>Parses a source file into one or more Loyc trees.</summary>
-		/// <param name="file">input file or string.</param>
+		/// <param name="text">input file or string.</param>
 		/// <param name="msgs">output sink for error and warning messages.</param>
 		/// <param name="inputType">Indicates the kind of input: <c>Exprs</c> (one 
 		/// or more expressions, typically seprated by commas but this is language-
 		/// defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
 		/// entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
-		IListSource<LNode> Parse(ICharSource file, string fileName, IMessageSink msgs, ParsingMode inputType = null);
+		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
@@ -243,9 +243,9 @@ namespace Loyc.Syntax
 			var e = parser.Parse(expr, msgs, inputType);
 			return Single(e);
 		}
-		public static LNode ParseSingle(this IParsingService parser, ICharSource file, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
+		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
-			var e = parser.Parse(file, fileName, msgs, inputType);
+			var e = parser.Parse(text, fileName, msgs, inputType);
 			return Single(e);
 		}
 		static LNode Single(IListSource<LNode> e)
