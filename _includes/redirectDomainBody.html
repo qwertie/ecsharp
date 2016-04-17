@@ -1,6 +1,6 @@
 {% if page.redirectDomain %}
 <h1 id="redirectDomain">This page has moved to <a href="http://{{ page.redirectDomain }}{{ page.url }}">{{ page.redirectDomain }}</a>.</h1>
-<small id="redirectDomain2" style="display: none;">GitHub doesn't support HTTP redirects, so you'll be redirected via Javascript in 5 seconds.<br/><br/>
+<small id="redirectDomain2" style="display: none;">GitHub doesn't support HTTP redirects, so you'll be redirected via JavaScript in 5 seconds.<br/><br/>
 </small>
 <script>
 if (window.location.href.indexOf('http://{{ page.redirectDomain }}') != 0) {

@@ -71,7 +71,7 @@ Other built-in macros (LeMP.Prelude namespace)
 
 	noMacro(Code)
 
-Pass code through to the output language, without macro processing.
+Alias for `#noLexicalMacros`. Passes code through to the output language, without macro processing.
 
 ### #get ###
 
