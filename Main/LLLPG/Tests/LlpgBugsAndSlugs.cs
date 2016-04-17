@@ -41,7 +41,7 @@ namespace Loyc.LLParserGenerator
 			");
 		}
 
-		[Test] public void Regression_2015_01_AndPredBug()
+		[Test] public void Regression_2016_01_AndPredBug()
 		{
 			Test(@"LLLPG (parser(terminalType: Token, laType: TT)) {
 					token AndPredBug() @{
