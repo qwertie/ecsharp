@@ -44,12 +44,12 @@ namespace Loyc.Syntax.Les
 			var lexer = new LesLexer(text, fileName, msgs);
 			return new LesIndentTokenGenerator(new WhitespaceFilter(lexer));
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
 		}
@@ -57,7 +57,7 @@ namespace Loyc.Syntax.Les
 		[ThreadStatic]
 		static LesParser _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -67,9 +67,9 @@ namespace Loyc.Syntax.Les
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = inputType == ParsingService.Exprs;
+			bool exprMode = inputType == ParsingMode.Exprs;
 			char _ = '\0';
-			if (inputType == ParsingService.Exprs || file.Text.TryGet(255, ref _)) {
+			if (inputType == ParsingMode.Exprs || file.Text.TryGet(255, ref _)) {
 				LesParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new LesParser(input, file, msgs);
@@ -77,7 +77,7 @@ namespace Loyc.Syntax.Les
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
 				}
-				if (inputType == ParsingService.Exprs)
+				if (inputType == ParsingMode.Exprs)
 					return parser.ExprList();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();

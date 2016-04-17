@@ -43,13 +43,13 @@ namespace LeMP
 			GetFnAndClassName(context, out @class, out fn);
 			var ps = ParsingService.Current;
 			if (fn == null)
-				return @class == null ? null : ps.Print(@class, null, ParsingService.Exprs);
+				return @class == null ? null : ps.Print(@class, null, ParsingMode.Exprs);
 			else if (@class == null)
-				return ps.Print(fn, null, ParsingService.Exprs);
+				return ps.Print(fn, null, ParsingMode.Exprs);
 			else {
 				while (fn.CallsMin(S.Dot, 2))
 					fn = fn.Args.Last;
-				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingService.Exprs), ps.Print(fn, null, ParsingService.Exprs));
+				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Exprs), ps.Print(fn, null, ParsingMode.Exprs));
 			}
 		}
 		static readonly LNode defaultAssertMethod = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Diagnostics"))), LNode.Id((Symbol) "Debug"))), LNode.Id((Symbol) "Assert")));
@@ -64,7 +64,7 @@ namespace LeMP
 				foreach (var condition in node.Args) {
 					string name = GetFnAndClassNameString(context) ?? "";
 					var ps = ParsingService.Current;
-					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", name, ps.Print(condition, context.Sink, ParsingService.Exprs)));
+					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", name, ps.Print(condition, context.Sink, ParsingMode.Exprs)));
 					var assertFn = GetAssertMethod(context);
 					if (assertFn.IsIdNamed(node.Name))
 						return null;

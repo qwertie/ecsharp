@@ -23,13 +23,13 @@ namespace LeMP.Prelude
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
 
-		[LexicalMacro("noMacro(Code)", "Pass code through to the output language, without macro processing.",
+		[LexicalMacro("noMacro(Code)", "Alias for `#noLexicalMacros`. Passes code through to the output language, without macro processing.",
 			Mode = MacroMode.NoReprocessing)]
 		public static LNode noMacro(LNode node, IMacroContext sink)
 		{
 			if (!node.IsCall)
 				return null;
-			return node.WithTarget(S.Splice);
+			return node.Args.AsLNode(S.Splice);
 		}
 
 		static readonly Symbol _hash_set = (Symbol)"#set";
@@ -106,7 +106,7 @@ namespace LeMP.Prelude
 						F.Braces(group.OrderBy(mi => mi.Macro.Method.Name).Select(mi =>
 						{
 							StringBuilder descr = new StringBuilder(string.Format("\n\t\t### {0} ###\n",
-								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingService.Exprs)));
+								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingMode.Exprs)));
 							if (!string.IsNullOrWhiteSpace(mi.Info.Syntax))
 								descr.Append("\n\t\t\t").Append(mi.Info.Syntax.Replace("\n", "\n\t\t")).Append("\n");
 							if (!string.IsNullOrWhiteSpace(mi.Info.Description))

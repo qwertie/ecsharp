@@ -250,7 +250,7 @@ namespace LeMP
 		{
 			if (node.ArgCount != 1)
 				return null; // reject
-			return F.Literal(ParsingService.Current.Print(node.Args[0], context.Sink, ParsingService.Exprs));
+			return F.Literal(ParsingService.Current.Print(node.Args[0], context.Sink, ParsingMode.Exprs));
 		}
 		
 		#endregion

@@ -20,7 +20,7 @@ namespace Loyc.Syntax
 	/// The simplest way to print is with <c>Print(LNode, IMessageSink)</c>
 	/// <para/>
 	/// The ToString() method should return a string that indicates the 
-	/// programming language represented by this object, e.g. "LES 1.0 parser".
+	/// programming language represented by this object, e.g. "Enhanced C#".
 	/// </remarks>
 	public interface IParsingService
 	{
@@ -51,14 +51,14 @@ namespace Loyc.Syntax
 		/// or more expressions, typically seprated by commas but this is language-
 		/// defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
 		/// entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
-		IListSource<LNode> Parse(ICharSource file, string fileName, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(ICharSource file, string fileName, IMessageSink msgs, ParsingMode inputType = null);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
 		/// <param name="msgs">output sink for error and warning messages.</param>
-		/// <param name="inputType">Indicates how the input should be interpreted:
-		/// <see cref="ParsingService.File"/>, <see cref="ParsingService.Exprs"/> or
-		/// <see cref="ParsingService.Stmts"/>. The default input type should be
+		/// <param name="inputType">Indicates how the input should be interpreted,
+		/// e.g. <see cref="ParsingMode.File"/>, <see cref="ParsingMode.Exprs"/> or
+		/// <see cref="ParsingMode.Stmts"/>. The default input type should be
 		/// File.</param>
 		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
 		/// <remarks>
@@ -67,7 +67,7 @@ namespace Loyc.Syntax
 		/// sends the results to the parser. If possible, the output is computed 
 		/// lazily.
 		/// </remarks>
-		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null);
+		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null);
 
 		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
 		/// <remarks>
@@ -79,7 +79,7 @@ namespace Loyc.Syntax
 		/// </remarks>
 		/// <exception cref="NotSupportedException">This feature is not supported 
 		/// by this parsing service.</exception>
-		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, Symbol inputType);
+		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, ParsingMode inputType);
 
 		/// <summary>Gets a printer delegate that you can use with 
 		/// <see cref="LNode.Printer"/> and <see cref="LNode.PushPrinter"/>,
@@ -93,31 +93,44 @@ namespace Loyc.Syntax
 		/// they are sent here. If this is null, messages shall be sent to
 		/// <see cref="MessageSink.Current"/>.</param>
 		/// <param name="mode">Language-defined configuration. It is suggested 
-		/// that the printing service should accept ParsingService.Exprs, 
-		/// ParsingService.Stmts and ParsingService.File as possible printing 
-		/// modes.</param>
+		/// that the printing service should accept the members of 
+		/// <see cref="ParsingMode"/> (e.g. ParsingMode.Stmts) as possible 
+		/// printing modes.</param>
 		/// <param name="indentString">Indent character for multi-line nodes</param>
 		/// <param name="lineSeparator">Newline string for multi-line nodes</param>
 		string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 	}
 	
-	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
-	public static class ParsingService
+	public class ParsingMode : Symbol
 	{
+		private ParsingMode(Symbol prototype) : base(prototype) { }
+		public static new readonly SymbolPool<ParsingMode> Pool 
+		                     = new SymbolPool<ParsingMode>(p => new ParsingMode(p));
+
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input 
 		/// as a single expression or expression list (which, in most languages, 
 		/// is comma-separated).</summary>
-		public static readonly Symbol Exprs = GSymbol.Get("Exprs");
+		public static readonly ParsingMode Exprs = Pool.Get("Exprs");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
 		/// as a list of statements. If the language makes a distinction between 
 		/// executable and declaration contexts, this refers to the executable 
 		/// context.</summary>
-		public static readonly Symbol Stmts = GSymbol.Get("Stmts");
+		public static readonly ParsingMode Stmts = Pool.Get("Stmts");
+		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
+		/// as a list of types (or a single type, if a list is not supported).</summary>
+		public static readonly ParsingMode Types = Pool.Get("Types");
+		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
+		/// as a formal argument list (parameter names with types).</summary>
+		public static readonly ParsingMode FormalArgs = Pool.Get("FormalArgList");
 		/// <summary>Tells <see cref="IParsingService.Parse"/> to treat the input
 		/// as a complete source file (this should be the default, i.e. null will
 		/// do the same thing).</summary>
-		public static readonly Symbol File = GSymbol.Get("File");
+		public static readonly ParsingMode File = Pool.Get("File");
+	}
 
+	/// <summary>Extension methods for <see cref="IParsingService"/>.</summary>
+	public static class ParsingService
+	{
 		static ThreadLocalVariable<IParsingService> _current = new ThreadLocalVariable<IParsingService>();
 		/// <summary>Gets or sets the active language service on this thread. If 
 		/// no service has been assigned on this thread, returns <see cref="LesLanguageService.Value"/>.</summary>
@@ -221,16 +234,16 @@ namespace Loyc.Syntax
 		{
 			return parser.Tokenize(input, "", msgs ?? MessageSink.Current);
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			return parser.Parse(input, "", msgs ?? MessageSink.Current, inputType);
 		}
-		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, Symbol inputType = null)
+		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			var e = parser.Parse(expr, msgs, inputType);
 			return Single(e);
 		}
-		public static LNode ParseSingle(this IParsingService parser, ICharSource file, string fileName, IMessageSink msgs = null, Symbol inputType = null)
+		public static LNode ParseSingle(this IParsingService parser, ICharSource file, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			var e = parser.Parse(file, fileName, msgs, inputType);
 			return Single(e);
@@ -244,7 +257,7 @@ namespace Loyc.Syntax
 				throw new InvalidOperationException(Localize.Localized("ParseSingle: multiple parse results."));
 			return node;
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType);
 		}
@@ -252,10 +265,10 @@ namespace Loyc.Syntax
 		{
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
-		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, Symbol inputType = null)
+		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingService.File);
+				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingMode.File);
 		}
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
 		{

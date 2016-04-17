@@ -26,7 +26,7 @@ namespace Loyc.Ecs
 
 		readonly string[] _fileExtensions = _fileExtensionsNormal;
 		readonly LNodePrinter _printer = EcsNodePrinter.Printer;
-		readonly string _name = "Enhanced C# (alpha)";
+		readonly string _name = "Enhanced C# (beta)";
 
 		private EcsLanguageService(bool printPlainCSharp)
 		{
@@ -62,12 +62,12 @@ namespace Loyc.Ecs
 		{
 			return new EcsLexer(text, fileName, msgs);
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			var preprocessed = new EcsPreprocessor(input);
 			var treeified = new TokensToTree(preprocessed, false);
@@ -77,7 +77,7 @@ namespace Loyc.Ecs
 		[ThreadStatic]
 		static EcsParser _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, Symbol inputType = null)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -87,9 +87,10 @@ namespace Loyc.Ecs
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = inputType == ParsingService.Exprs;
 			char _ = '\0';
-			if (inputType == ParsingService.Exprs || file.Text.TryGet(255, ref _)) {
+			if (inputType == ParsingMode.FormalArgs)
+				inputType = ParsingMode.Exprs;
+			if (inputType == ParsingMode.Exprs || inputType == ParsingMode.Types || file.Text.TryGet(255, ref _)) {
 				EcsParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new EcsParser(input, file, msgs);
@@ -97,8 +98,10 @@ namespace Loyc.Ecs
 					parser.ErrorSink = msgs ?? MessageSink.Current;
 					parser.Reset(input, file);
 				}
-				if (inputType == ParsingService.Exprs)
+				if (inputType == ParsingMode.Exprs)
 					return parser.ParseExprs();
+				else if (inputType == ParsingMode.Types)
+					return LNode.List(parser.DataType());
 				else
 					return parser.ParseStmtsGreedy();
 			} else {

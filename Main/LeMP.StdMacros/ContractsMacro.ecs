@@ -50,7 +50,7 @@ namespace LeMP
 			// we should try to search quickly. Luckily, LNode methods like 
 			// n.WithArgChanged(i,N) do not allocate a new node if the new value 
 			// equals the old value (if n[i] == N).
-			LNode fnArgs, oldFn = fn;
+			LNode oldFn = fn;
 			if (fn.ArgCount >= 4) {
 				var rw = new CodeContractRewriter(fn.Args[0], fn.Args[1], context);
 				
@@ -129,7 +129,7 @@ namespace LeMP
 		{
 			// Performance note: one should keep in mind that this macro usually 
 			// has no effect. It looks for contracts and usually finds none.
-			LNode propArgs, oldProp = prop;
+			LNode oldProp = prop;
 			if (prop.ArgCount == 4) {
 				LNode braces = prop[3];
 				var oldBraces = braces;
@@ -489,8 +489,8 @@ namespace LeMP
 					methodName = methodName.Args.Last;
 				var ps = ParsingService.Current;
 				return F.Literal(string.Format(formatStr,
-					ps.Print(methodName, Context.Sink, ParsingService.Exprs),
-					ps.Print(condition, Context.Sink, ParsingService.Exprs)));
+					ps.Print(methodName, Context.Sink, ParsingMode.Exprs),
+					ps.Print(condition, Context.Sink, ParsingMode.Exprs)));
 			}
 
 			// For properties only

@@ -641,21 +641,28 @@ namespace Loyc.Ecs
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public SPResult AutoPrintEvent(Ambiguity flags)
 		{
-			var eventType = EcsValidators.EventDefinitionType(_n, Pedantics);
-			if (eventType == EcsValidators.EventDef.Invalid)
+			LNode type, name, body;
+			if (!EcsValidators.IsEventDefinition(_n, out type, out name, out body, Pedantics))
 				return SPResult.Fail;
 
-			var ifClause = PrintTypeAndName(false, false, AttrStyle.IsDefinition, "event ");
-			if (eventType == EcsValidators.EventDef.WithBody)
-				return AutoPrintBodyOfMethodOrProperty(_n.Args[2, null], ifClause);
-			else { // EcsValidators.EventDef.List
-				for (int i = 2, c = _n.ArgCount; i < c; i++)
-				{
-					WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.Args[i], ContinueExpr);
+			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, 0));
+			_out.Write("event ", true);
+			PrintType(type, ContinueExpr, Ambiguity.AllowPointer);
+			_out.Space();
+
+			if (name.Calls(S.AltList)) {
+				bool first = true;
+				foreach (var name2 in name.Args) {
+					if (first)
+						first = false;
+					else
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					PrintExpr(name2, ContinueExpr);
 				}
-				return SPResult.NeedSemicolon;
-			}
+			} else
+				PrintExpr(name, ContinueExpr);
+
+			return AutoPrintBodyOfMethodOrProperty(body, null);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -667,7 +674,8 @@ namespace Loyc.Ecs
 
 			var name = _n.Name;
 			LNode usingStatic = name == S.Import && _n.AttrCount > 0 && _n.Attrs.Last.IsIdNamed(S.Static) ? _n.Attrs.Last : null;
-			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags, usingStatic));
+			var allowAttrs = (name == S.Import ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
+			G.Verify(0 == PrintAttrs(StartStmt, allowAttrs, flags, usingStatic));
 
 			if (name == S.GotoCase) {
 				_out.Write("goto case", true);
@@ -698,7 +706,8 @@ namespace Loyc.Ecs
 			if (type == null)
 				return SPResult.Fail;
 
-			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.AllowWordAttrs, flags));
+			var allowAttrs = (_n.Name == S.UsingStmt ? AttrStyle.AllowKeywordAttrs : AttrStyle.AllowWordAttrs);
+			G.Verify(0 == PrintAttrs(StartStmt, allowAttrs, flags));
 
 			if (type == S.DoWhile)
 			{

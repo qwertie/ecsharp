@@ -143,7 +143,7 @@ namespace Loyc.Ecs
 		{
 			this.Node = node;
 			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
-			if (mode == ParsingService.Exprs)
+			if (mode == ParsingMode.Exprs)
 				style = NodeStyle.Expression;
 
 			switch (style & NodeStyle.BaseStyleMask) {
