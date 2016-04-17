@@ -561,14 +561,14 @@ namespace Loyc.Syntax
 
 		// List creation with null check (even in release builds)
 		public static VList<LNode> List() { return new VList<LNode>(); }
-		public static VList<LNode> List(LNode list_0) {
-			if (list_0 == null) throw new ArgumentNullException("list_0");
-			return new VList<LNode>(list_0);
+		public static VList<LNode> List(LNode item_0) {
+			if (item_0 == null) throw new ArgumentNullException("item_0");
+			return new VList<LNode>(item_0);
 		}
-		public static VList<LNode> List(LNode list_0, LNode list_1) {
-			if (list_0 == null) throw new ArgumentNullException("list_0");
-			if (list_1 == null) throw new ArgumentNullException("list_1");
-			return new VList<LNode>(list_0, list_1);
+		public static VList<LNode> List(LNode item_0, LNode item_1) {
+			if (item_0 == null) throw new ArgumentNullException("item_0");
+			if (item_1 == null) throw new ArgumentNullException("item_1");
+			return new VList<LNode>(item_0, item_1);
 		}
 		public static VList<LNode> List(params LNode[] list) { return List(new VList<LNode>(list)); }
 		public static VList<LNode> List(IEnumerable<LNode> list) { return List(new VList<LNode>(list)); }

@@ -362,7 +362,7 @@ namespace Loyc.Geometry
 		/// <summary>Computes the intersection point between two lines, rays or 
 		/// line segments.</summary>
 		/// <remarks>This method is implemented based on the other overload,
-		/// <see cref="ComputeIntersection(LineSegment P, LineType pType, out T pFrac, LineSegment Q, LineType qType, out T qFrac)"/>.
+		/// <see cref="ComputeIntersection(LineSegment, LineType, out T, LineSegment, LineType, out T)"/>.
 		/// </remarks>
 		public static Point? ComputeIntersection(this LineSegment P, LineType pType, LineSegment Q, LineType qType)
 		{
@@ -383,7 +383,7 @@ namespace Loyc.Geometry
 			if (p.X < bbox.X1) sides |= 1;
 			if (p.X > bbox.X2) sides |= 2;
 			if (p.Y < bbox.Y1) sides |= 4;
-			if (p.Y < bbox.Y2) sides |= 8;
+			if (p.Y > bbox.Y2) sides |= 8;
 			return sides;
 		}
 
