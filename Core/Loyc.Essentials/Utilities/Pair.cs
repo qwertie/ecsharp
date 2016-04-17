@@ -159,6 +159,8 @@ namespace Loyc
 	/// This class is useful mainly as an alternative to standard boxing. When you 
 	/// box a structure in C#, you lose access to the members of that structure.
 	/// This class, in contrast, provides access to the "boxed" value.
+	/// This type is different from the standard <c>Tuple{T}</c> in that the 
+	/// <see cref="Value"/> is a mutable field.
 	/// </remarks>
 	public class Holder<T> : IHasValue<T>
 	{

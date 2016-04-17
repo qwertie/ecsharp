@@ -204,6 +204,7 @@ namespace Loyc.Collections
 			return (uint)index < (uint)list.Count ? list[index] : Maybe<T>.NoValue;
 		}
 
+		/// <summary>Removes <c>count</c> items from <c>list</c> starting at the specified <c>index</c>.</summary>
 		public static void RemoveRange<T>(this IList<T> list, int index, int count)
 		{
 			if (index < 0)
@@ -216,6 +217,9 @@ namespace Loyc.Collections
 				Resize(list, list.Count - count);
 			}
 		}
+		
+		/// <summary>Resizes a list by removing items from the list (if it is too 
+		/// long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
 		public static void Resize<T>(this List<T> list, int newSize)
 		{
 			int dif = newSize - list.Count;
@@ -228,6 +232,9 @@ namespace Loyc.Collections
 				while (++dif != 0);
 			}
 		}
+
+		/// <summary>Resizes a list by removing items from the list (if it is too 
+		/// long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
 		public static void Resize<T>(this IList<T> list, int newSize)
 		{
 			int dif = newSize - list.Count;
@@ -240,6 +247,7 @@ namespace Loyc.Collections
 				while (++dif != 0);
 			}
 		}
+
 		public static void MaybeEnlarge<T>(this List<T> list, int minSize)
 		{
 			int dif = minSize - list.Count;
@@ -253,6 +261,9 @@ namespace Loyc.Collections
 				list.Add(default(T));
 		}
 
+		/// <summary>Returns a sequence of length <c>Min(a.Count(), b.Count())</c> 
+		/// of items from <c>a</c> and <c>b</c> paired together. The output is
+		/// produced lazily, so infinite input sequences are supported.</summary>
 		public static IEnumerable<Pair<A, B>> Zip<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
 			IEnumerator<A> ea = a.GetEnumerator();
@@ -260,6 +271,12 @@ namespace Loyc.Collections
 			while (ea.MoveNext() && eb.MoveNext())
 				yield return new Pair<A, B>(ea.Current, eb.Current);
 		}
+
+		/// <summary>Returns a sequence that has the same length as the first sequence,
+		/// with items from the first and second sequence paired together.</summary>
+		/// <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+		/// first sequence, the remaining items of the first sequence are paired with 
+		/// this value. Otherwise, this value is not used.</param>
 		public static IEnumerable<Pair<A, B>> ZipLeft<A, B>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB)
 		{
 			IEnumerator<A> ea = a.GetEnumerator();
@@ -271,15 +288,38 @@ namespace Loyc.Collections
 				yield return new Pair<A, B>(ea.Current, defaultB);
 			while (ea.MoveNext());
 		}
+		
+		/// <summary>An alternate version of <see cref="ZipLeft{A, B}(IEnumerable{A}, IEnumerable{B}, B)"/>
+		/// in which a user-defined function is used to combine the items from the two lists.</summary>
+		/// <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+		/// first sequence, the remaining items of the first sequence are paired with 
+		/// this value. Otherwise, this value is not used.</param>
+		/// <param name="resultSelector">A function that combines items from the two lists.</param>
 		public static IEnumerable<C> ZipLeft<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, B defaultB, Func<A, B, C> resultSelector)
 		{
 			foreach (var pair in ZipLeft(a, b, defaultB))
 				yield return resultSelector(pair.A, pair.B);
 		}
+
+		/// <summary>Returns a sequence as long as the longer of two sequences.
+		/// Items from the first and second sequence are initially paired together, and when
+		/// one sequence ends, the other sequence's remaining values are paired 
+		/// with a default value.</summary>
 		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
 			return ZipLonger(a, b, default(A), default(B));
 		}
+		
+		/// <summary>Returns a sequence as long as the longer of two sequences.
+		/// Items from the first and second sequence are initially paired together, 
+		/// and when one sequence ends, the other sequence's remaining values are 
+		/// paired with a default value provided as a parameter.</summary>
+		/// <param name="defaultA">If the first sequence <c>a</c> is shorter than the 
+		/// second sequence, the remaining items of the second sequence are paired with 
+		/// this value. Otherwise, this value is not used.</param>
+		/// <param name="defaultB">If the second sequence <c>b</c> is shorter than the 
+		/// first sequence, the remaining items of the first sequence are paired with 
+		/// this value. Otherwise, this value is not used.</param>
 		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB)
 		{
 			IEnumerator<A> ea = a.GetEnumerator();
@@ -295,6 +335,10 @@ namespace Loyc.Collections
 					yield return new Pair<A, B>(defaultA, eb.Current);
 				while (eb.MoveNext());
 		}
+
+		/// <summary>An alternate version of <see cref="ZipLonger{A, B}(IEnumerable{A}, IEnumerable{B}, A, B)"/>
+		/// in which a user-defined function is used to combine the items from the two lists.</summary>
+		/// <param name="resultSelector">A function that combines items from the two lists.</param>
 		public static IEnumerable<C> ZipLonger<A, B, C>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB, Func<A, B, C> resultSelector)
 		{
 			foreach (var pair in ZipLonger(a, b, defaultA, defaultB))
