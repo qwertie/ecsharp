@@ -45,7 +45,7 @@ namespace Loyc.VisualStudio
 	{
 		protected override string DefaultExtension()
 		{
-			return ".out.cs";
+			return _requestedExtension ?? ".out.cs";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -65,7 +65,7 @@ namespace Loyc.VisualStudio
 	{
 		protected override string DefaultExtension()
 		{
-			return ".out.ecs";
+			return _requestedExtension ?? ".out.ecs";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -84,7 +84,7 @@ namespace Loyc.VisualStudio
 	{
 		protected override string DefaultExtension()
 		{
-			return ".out.les";
+			return _requestedExtension ?? ".out.les";
 		}
 		protected override byte[] Generate(string inputFilePath, string inputFileContents, string defaultNamespace, IVsGeneratorProgress progressCallback)
 		{
@@ -136,6 +136,7 @@ namespace Loyc.VisualStudio
 	{
 		public LeMPCustomTool() { } // exists for a breakpoint
 
+		protected string _requestedExtension;
 		protected override abstract string DefaultExtension();
 
 		class Compiler : global::LeMP.Compiler
@@ -201,7 +202,6 @@ namespace Loyc.VisualStudio
 				Compiler.KnownOptions["no-out-header"] = Pair.Create("", "Remove explanatory comment from output file");
 				Compiler.KnownOptions.Remove("parallel");   // not applicable to single file
 				Compiler.KnownOptions.Remove("noparallel"); // not applicable to single file
-				Compiler.KnownOptions.Remove("outext");     // not allowed by IVsSingleFileGenerator
 
 				var c = new Compiler(sink, sourceFile) { 
 					AbortTimeout = TimeSpan.FromSeconds(10),
@@ -210,7 +210,9 @@ namespace Loyc.VisualStudio
 
 				var argList = G.SplitCommandLineArguments(defaultNamespace);
 				var options = c.ProcessArguments(argList, true, false);
-				if (argList.Count > 0)
+				// Note: if default namespace is left blank, VS uses the namespace 
+				// from project settings. Don't show an error in that case.
+				if (argList.Count > 1 || (argList.Count == 1 && options.Count > 0))
 					sink.Write(Severity.Error, "Command line", "'{0}': expected options only (try --help).", argList[0]);
 
 				string _;
@@ -230,6 +232,7 @@ namespace Loyc.VisualStudio
 					c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						
 				Configure(c);
+				_requestedExtension = c.OutExt;
 				c.Run();
 
 				// Report errors
