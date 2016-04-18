@@ -93,36 +93,36 @@ namespace Loyc.Syntax.Tests
 		int _startIndex;
 		object _value;
 
-		extern token Newline() @[ '\n' | '\r' '\n'? ];
+		extern token Newline() @{ '\n' | '\r' '\n'? };
 
 		public override token Maybe<Token> NextToken()
 		{
-			@[ (' '|'\t'|Newline)* ];  // Skip spaces between tokens
+			@{ (' '|'\t'|Newline)* };  // Skip spaces between tokens
 			_startIndex = this.InputPosition;
 			_value = null;
-			@[ { _tokenType = TT.Num;    } Num
+			@{ { _tokenType = TT.Num;    } Num
 			 | { _tokenType = TT.Id;     } Id
 			 | { _tokenType = TT.Num;    } ".nan" { _value = double.NaN; }
 			 | { _tokenType = TT.Num;    } ".inf" { _value = double.PositiveInfinity; }
 			 | any punctuation // matches any of the punctuation rules
 			 | error           // error branch - if input matches none of the above
 			   (_ { _tokenType = TT.Unknown; } | { return NoValue.Value; }) 
-			 ];
+			 };
 			_current = new Token((int)_tokenType, _startIndex, this.InputPosition - _startIndex, _value);
 			return _current;
 		}
 		
-		private token Id() @[
+		private token Id() @{
 			('a'..'z'|'A'..'Z'|'_')
 			('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
 			{ _value = this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString(); }
-		];
-		private token Num() @[
+		};
+		private token Num() @{
 			(dot:'.')?
 			'0'..'9'+
 			(&{dot == 0} '.' '0'..'9'+)?
 			{ _value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString(), CultureInfo.InvariantCulture); }
-		];
+		};
 
 		unroll ((TEXT, TOKEN_NAME, TOKEN_KIND) in OPERATOR_TOKEN_LIST) {
 			extern inline punctuation rule TOKEN_NAME() { 

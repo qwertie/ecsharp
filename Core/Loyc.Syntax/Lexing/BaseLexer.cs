@@ -36,9 +36,9 @@ namespace Loyc.Syntax.Lexing
 	/// <see cref="AfterNewline()"/> for you. It is possible to have LLLPG treat 
 	/// this method as a rule, and tell LLLPG the meaning of the rule like this:
 	/// <code>
-	///	  extern token Newline @[ '\r' '\n'? | '\n' ];
+	///	  extern token Newline @{ '\r' '\n'? | '\n' };
 	///	  // BaseLexer also defines a Spaces() method, which behaves like this:
-	///	  extern token Spaces  @[ (' '|'\t')* ]; 
+	///	  extern token Spaces  @{ (' '|'\t')* }; 
 	/// </code>
 	/// The <c>extern</c> modifier tells LLLPG not to generate code for the
 	/// rule, but the rule must still have a body so that LLLPG can perform 
@@ -659,7 +659,7 @@ namespace Loyc.Syntax.Lexing
 				sb.Append("EOF");
 			else if (c >= 0 && c < 0xFFFC) {
 				sb.Append('\'');
-				G.EscapeCStyle((char)c, sb, EscapeC.Default | EscapeC.SingleQuotes);
+				ParseHelpers.EscapeCStyle((char)c, sb, EscapeC.Default | EscapeC.SingleQuotes);
 				sb.Append('\'');
 			} else
 				sb.Append(c);

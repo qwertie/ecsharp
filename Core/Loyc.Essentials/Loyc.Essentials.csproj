@@ -264,6 +264,7 @@
     <Compile Include="Utilities\MessageSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\MiscInterfaces.cs" />
+    <Compile Include="Utilities\ParseHelpers.cs" />
     <Compile Include="Utilities\Pair.cs" />
     <Compile Include="Utilities\PushedTLV.cs" />
     <Compile Include="Utilities\Range.out.cs">

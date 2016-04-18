@@ -1,7 +1,8 @@
-// Generated from ParserSourceTest.ecs by LeMP custom tool. LLLPG version: 1.3.1.0
+// Generated from ParserSourceTest.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
@@ -16,9 +17,11 @@ using Loyc.MiniTest;
 namespace Loyc.Syntax.Tests
 {
 	using TT = CalcTokenType;
-	[TestFixture] public class ParserSourceTests_Calculator : Assert
+	[TestFixture]
+	public class ParserSourceTests_Calculator : Assert
 	{
-		[Test] public void SimpleTests()
+		[Test]
+		public void SimpleTests()
 		{
 			AreEqual(2, Calculator.Calculate("2"));
 			AreEqual(25, Calculator.Calculate("25"));
@@ -26,7 +29,8 @@ namespace Loyc.Syntax.Tests
 			AreEqual(0.25, Calculator.Calculate(".25"));
 			AreEqual(5, Calculator.Calculate("x=5"));
 		}
-		[Test] public void MoreTests()
+		[Test]
+		public void MoreTests()
 		{
 			AreEqual(5, Calculator.Calculate("2+3"));
 			AreEqual(5, Calculator.Calculate(" 2+3 "));
@@ -37,7 +41,8 @@ namespace Loyc.Syntax.Tests
 			AreEqual(25, Calculator.Calculate("5(2+3)"));
 			AreEqual(25, Calculator.Calculate("5(2+3)"));
 		}
-		[Test] public void SumTest()
+		[Test]
+		public void SumTest()
 		{
 			AreEqual(15, Calculator.Calculate("1;2;3;4;5 +"));
 			AreEqual(14, Calculator.Calculate("1*1; 2*2; 3*3 +"));

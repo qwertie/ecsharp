@@ -1,7 +1,8 @@
-// Generated from LexerSourceTest.ecs by LeMP custom tool. LLLPG version: 1.3.2.0
+// Generated from LexerSourceTest.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
@@ -17,7 +18,8 @@ using Loyc.MiniTest;
 namespace Loyc.Syntax.Tests
 {
 	using TT = CalcTokenType;
-	[TestFixture] public class LexerSourceTests_Calculator : TestHelpers
+	[TestFixture]
+	public class LexerSourceTests_Calculator : TestHelpers
 	{
 		static Token T(TT type, object value = null)
 		{
@@ -29,7 +31,8 @@ namespace Loyc.Syntax.Tests
 			var _ = b.Count;
 			return b;
 		}
-		[Test] public void SimpleTests()
+		[Test]
+		public void SimpleTests()
 		{
 			ExpectList(Lex("2"), T(TT.Num, 2d));
 			ExpectList(Lex("25"), T(TT.Num, 25d));
@@ -38,7 +41,8 @@ namespace Loyc.Syntax.Tests
 			ExpectList(Lex("x"), T(TT.Id, "x"));
 			ExpectList(Lex("Foo_7"), T(TT.Id, "Foo_7"));
 		}
-		[Test] public void MoreTests()
+		[Test]
+		public void MoreTests()
 		{
 			ExpectList(Lex("x *+ y"), T(TT.Id, "x"), T(TT.Mul), T(TT.Add), T(TT.Id, "y"));
 			ExpectList(Lex(" 20 ; 40 - 5/0.25"), T(TT.Num, 20d), T(TT.Semicolon), T(TT.Num, 40d), T(TT.Sub), T(TT.Num, 5d), T(TT.Div), T(TT.Num, 0.25));
@@ -136,12 +140,13 @@ namespace Loyc.Syntax.Tests
 							#line 129 "LexerSourceTest.ecs"
 							_tokenType = TT.Shr;
 							#line default
-						} else {
+						} else if (la1 == -1) {
 							Skip();
 							#line 129 "LexerSourceTest.ecs"
 							_tokenType = TT.GT;
 							#line default
-						}
+						} else
+							goto error;
 					}
 					break;
 				case '<':
@@ -153,12 +158,13 @@ namespace Loyc.Syntax.Tests
 							#line 129 "LexerSourceTest.ecs"
 							_tokenType = TT.Shl;
 							#line default
-						} else {
+						} else if (la1 == -1) {
 							Skip();
 							#line 129 "LexerSourceTest.ecs"
 							_tokenType = TT.LT;
 							#line default
-						}
+						} else
+							goto error;
 					}
 					break;
 				case '=':

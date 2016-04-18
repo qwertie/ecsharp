@@ -4,6 +4,7 @@ using Loyc.Math;
 using System.Collections;
 using Loyc.Threading;
 using System.Text;
+using Loyc.Syntax;
 
 namespace Loyc.MiniTest
 {
@@ -402,7 +403,7 @@ namespace Loyc.MiniTest
 				
 				int TailLength = "-----------".Length;
 				var prefix = b.Left(b_i);
-				int i_adjusted = G.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
+				int i_adjusted = ParseHelpers.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
 				msg.Append(' ', 2);
 				msg.Append('-', TailLength + i_adjusted);
 				msg.Append("^\n");
@@ -423,7 +424,7 @@ namespace Loyc.MiniTest
 					dif_i = maxw / 2; // "...middle..."
 				}
 			}
-			return "\"" + G.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
+			return "\"" + ParseHelpers.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
 		}
 		static string StringifyObject(object obj)
 		{

@@ -80,8 +80,8 @@ namespace Loyc.Syntax.Tests
 		// modern interpreters that create a syntax tree and interpret that. 
 		// (A modern interpreter avoids the cost of parsing the code repeatedly 
 		// when the code contains loops.)
-		LLLPG (parser(laType = TT, matchType = int, 
-		              inputSource = Src, inputClass = ParserSource<Token>));
+		LLLPG (parser(laType: TT, matchType: int, 
+		              inputSource: Src, inputClass: ParserSource<Token>));
 
 		alias(">>" = TT.Shr);
 		alias("<<" = TT.Shl);
@@ -97,7 +97,7 @@ namespace Loyc.Syntax.Tests
 		alias("(" = TT.LParen);
 		alias(")" = TT.RParen);
 
-		private rule double Atom() @[
+		private rule double Atom() @{
 			( t:=TT.Id  { $result = Vars[(string) t.Value]; }
 			| t:=TT.Num { $result = (double) t.Value; }
 			| "(" result=Expr ")"
@@ -105,41 +105,41 @@ namespace Loyc.Syntax.Tests
 			)
 			greedy // see footnote below
 			[ "^" Atom { $result = System.Math.Pow(result, $Atom); } ]*
-		];
-		private rule double Term() @[
+		};
+		private rule double Term() @{
 			// Supports "mathy" expressions like 3(x-1)(x+1)
 			result:=Atom
 			[ rest:=Atom { result *= rest; } ]*
 			{ return result; }
-		];
+		};
 		rule double PrefixExpr() @
-			[ "-" r:=Term { return -r; }
+			{ "-" r:=Term { return -r; }
 			| r:=Term     { return r; }
-			];
-		rule double MulExpr() @[ 
+			};
+		rule double MulExpr() @{
 			result:=PrefixExpr
 			(op:=("*"|"/") rhs:=PrefixExpr { result = Do(result, op, rhs); })*
 			{ return result; }
-		];
-		rule double AddExpr() @[
+		};
+		rule double AddExpr() @{
 			result:=MulExpr
 			(op:=("+"|"-") rhs:=MulExpr { result = Do(result, op, rhs); })*
 			{ return result; }
-		];
-		rule double AssignExpr() @[
+		};
+		rule double AssignExpr() @{
 			// LLLPG recognizes $result as defining the method's return value
 			( t:=TT.Id "=" result:AssignExpr { Vars[t.Value.ToString()] = $result; }
 			| result:AddExpr )
-		];
-		rule double ExprSequence() @[
+		};
+		rule double ExprSequence() @{
 			result:AssignExpr (";" result:AssignExpr)*
-		];
-		rule double Expr() @[
+		};
+		rule double Expr() @{
 			// One final trick to make the API work harder: use backtracking to 
 			// implement a postfix "+" that adds all preceding expressions
 			( &(ExprSequence "+") 
 			  result:AssignExpr (";" n:AssignExpr { $result += n; })* "+"
 			/ result:ExprSequence )
-		];
+		};
 	}
 } // end namespace

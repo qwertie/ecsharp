@@ -6,6 +6,7 @@ using Loyc.Collections.Impl;
 using System.Diagnostics;
 using Loyc.Utilities;
 using Loyc.Collections;
+using Loyc.Syntax;
 
 namespace Loyc.LLParserGenerator
 {
@@ -111,7 +112,7 @@ namespace Loyc.LLParserGenerator
 
 				for(;;) {
 					int lo, hi;
-					if (!G.TryParseInt(s, ref i, out lo)) {
+					if (!ParseHelpers.TryParseInt(s, ref i, out lo)) {
 						if (i + 1 == s.Length && lo == 0)
 							success = true;
 						break;
@@ -119,7 +120,7 @@ namespace Loyc.LLParserGenerator
 					hi = lo;
 					if (s[i] == '.' && s[i + 1] == '.') {
 						i += 2;
-						if (!G.TryParseInt(s, ref i, out hi)) break;
+						if (!ParseHelpers.TryParseInt(s, ref i, out hi)) break;
 					}
 					if (s[i] == ',')
 						i++;
@@ -136,7 +137,7 @@ namespace Loyc.LLParserGenerator
 		private static int ParseChar(string s, ref int i) // used by TryParse
 		{
 			int oldi = i;
-			char c = G.UnescapeChar(s, ref i);
+			char c = ParseHelpers.UnescapeChar(s, ref i);
 			if (c == '\\' && i == oldi+1) {
 				c = s[i++];
 				if (c == '$')
@@ -667,8 +668,8 @@ namespace Loyc.LLParserGenerator
 			if (c < 32 || c == '\\' || c == ']') {
 				if (c <= -1)
 					sb.Append(@"\$");
-				else 
-					sb.Append(G.EscapeCStyle(((char)c).ToString(), EscapeC.Control | EscapeC.ABFV, ']'));
+				else
+					sb.Append(ParseHelpers.EscapeCStyle(((char)c).ToString(), EscapeC.Control | EscapeC.ABFV, ']'));
 			} else if (c == '-' || c == '^' && sb.Length == 1) {
 				sb.Append('\\');
 				sb.Append((char)c);

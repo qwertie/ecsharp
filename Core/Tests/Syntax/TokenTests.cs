@@ -60,7 +60,7 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		static Pair<K, V> P<K, V>(K key, V value)
-			{ return G.Pair(key, value); }
+			{ return Pair.Create(key, value); }
 		private void TestToLNode(ISourceFile file, IList<Pair<Token, string>> pairs)
 		{
 			for (int i = 0; i < pairs.Count; i++)

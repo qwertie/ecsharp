@@ -203,13 +203,13 @@ namespace Loyc.Syntax.Les
 					return false;
 				int i0 = sourceText.InternalStart;
 				if (!isTripleQuoted) {
-					char c = G.UnescapeChar(ref sourceText);
+					char c = ParseHelpers.UnescapeChar(ref sourceText);
 					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1) {
 						return c == quoteType; // end of string
 					}
 					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
 						// This backslash was ignored by UnescapeChar
-						onError(i0, Localize.Localized(@"Unrecognized escape sequence '\{0}' in string", G.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+						onError(i0, Localize.Localized(@"Unrecognized escape sequence '\{0}' in string", ParseHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
 					}
 					sb.Append(c);
 				} else {
@@ -217,7 +217,7 @@ namespace Loyc.Syntax.Les
 					int c;
 					if (sourceText[2, '\0'] == '/') {
 						// Detect escape sequence
-						c = G.UnescapeChar(ref sourceText);
+						c = ParseHelpers.UnescapeChar(ref sourceText);
 						if (sourceText.InternalStart > i0 + 1)
 							G.Verify(sourceText.PopFront(out fail) == '/');
 					} else {
@@ -464,7 +464,7 @@ namespace Loyc.Syntax.Les
 			}
 			// Parse the integer
 			ulong unsigned;
-			bool overflow = !G.TryParseUInt(ref source, out unsigned, numberBase, G.ParseFlag.SkipUnderscores);
+			bool overflow = !ParseHelpers.TryParseUInt(ref source, out unsigned, numberBase, ParseNumberFlag.SkipUnderscores);
 			if (!source.IsEmpty) {
 				// I'm not sure if this can ever happen
 				error = Localize.Localized("Syntax error in integer literal");
@@ -535,7 +535,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (typeSuffix == _F)
 			{
-				float result = G.TryParseFloat(ref source, radix, G.ParseFlag.SkipUnderscores);
+				float result = ParseHelpers.TryParseFloat(ref source, radix, ParseNumberFlag.SkipUnderscores);
 				if (float.IsNaN(result))
 					error = Localize.Localized("Syntax error in '{0}' literal", "float");
 				else if (float.IsInfinity(result))
@@ -552,7 +552,7 @@ namespace Loyc.Syntax.Les
 					type = "decimal";
 				}
 
-				double result = G.TryParseDouble(ref source, radix, G.ParseFlag.SkipUnderscores);
+				double result = ParseHelpers.TryParseDouble(ref source, radix, ParseNumberFlag.SkipUnderscores);
 				if (double.IsNaN(result))
 					error = Localize.Localized("Syntax error in '{0}' literal", type);
 				else if (double.IsInfinity(result))

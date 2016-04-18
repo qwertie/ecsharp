@@ -7,7 +7,7 @@ using System.Collections;
 namespace Loyc
 {
 	/// <summary>Extension methods for strings, such as <see cref="SplitAt"/>, 
-	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="Format"/> and <see cref="USlice"/>.</summary>
+	/// <see cref="Left"/>, <see cref="Right"/>, <see cref="Format"/> and <see cref="Slice"/>.</summary>
 	public static partial class StringExt
 	{
 		/// <summary>Gets the substrings to the left and right of a dividing character.</summary>
@@ -116,7 +116,7 @@ namespace Loyc
 			return sb.ToString();
 		}
 
-		public static UString USlice(this string str, int start, int count = int.MaxValue)
+		public static UString Slice(this string str, int start, int count = int.MaxValue)
 		{
 			return new UString(str, start, count);
 		}

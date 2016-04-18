@@ -23,9 +23,9 @@ namespace Loyc.Syntax.Lexing
 	/// <see cref="AfterNewline()"/> for you. It is possible to have LLLPG treat 
 	/// this method as a rule, and tell LLLPG the meaning of the rule like this:
 	/// <code>
-	///	  extern token Newline @[ '\r' '\n'? | '\n' ];
+	///	  extern token Newline @{ '\r' '\n'? | '\n' };
 	///	  // BaseLexer also defines a Spaces() method, which behaves like this:
-	///	  extern token Spaces  @[ (' '|'\t')* ]; 
+	///	  extern token Spaces  @{ (' '|'\t')* }; 
 	///	</code>
 	/// The <c>extern</c> modifier tells LLLPG not to generate code for the
 	///	rule, but the rule must still have a body so that LLLPG can perform 

@@ -34,15 +34,15 @@ namespace Loyc
 		[Test]
 		public void Find()
 		{
-			UString eek = "eekeekeekeek".USlice(3);
-			AreEqual(eek.Find("eekee".USlice(0, 3)), (UString)"eekeekeek");
-			AreEqual(eek.Find("eekee".USlice(2, 3)), (UString)"keekeek");
+			UString eek = "eekeekeekeek".Slice(3);
+			AreEqual(eek.Find("eekee".Slice(0, 3)), (UString)"eekeekeek");
+			AreEqual(eek.Find("eekee".Slice(2, 3)), (UString)"keekeek");
 			AreEqual(eek.Find("KEE", false), (UString)"");
 			AreEqual(eek.Find("KEE", true), (UString)"keekeek");
-			UString nowaldo = "1234567890waldo!".USlice(1, 13);
+			UString nowaldo = "1234567890waldo!".Slice(1, 13);
 			AreEqual(nowaldo.Find("waldo"), (UString)"");
 			AreEqual(nowaldo.Find("waldo").InternalStart, nowaldo.InternalStop);
-			UString waldo = "1234567890waldo!".USlice(1, 14);
+			UString waldo = "1234567890waldo!".Slice(1, 14);
 			AreEqual(waldo.Find("waldo"), (UString)"waldo");
 			AreEqual(waldo.Find("waldo").InternalStart, 10);
 		}
@@ -50,8 +50,8 @@ namespace Loyc
 		[Test]
 		public void Replace()
 		{
-			UString no = "__no__".USlice(2, 2), yes = "_Yes___".USlice(1, 3);
-			UString No = "__No__".USlice(2, 2), nos = "noNoNoNoNoN_".USlice(1, 9);
+			UString no = "__no__".Slice(2, 2), yes = "_Yes___".Slice(1, 3);
+			UString No = "__No__".Slice(2, 2), nos = "noNoNoNoNoN_".Slice(1, 9);
 			AreEqual(nos.ReplaceOne(no, yes, false), nos);
 			AreEqual(nos.ReplaceOne(No, yes, false), (UString)"oYesNoNoNo");
 			AreEqual(nos.Replace(No, yes, false, 2), (UString)"oYesYesNoNo");

@@ -45,7 +45,7 @@ namespace Loyc.Tests
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do? (Esc to quit)");
 				for (int i = 0; i < menu.Count; i++)
-					Console.WriteLine(G.HexDigitChar(i+1) + ". " + menu[i].Key);
+					Console.WriteLine(ParseHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
 				Console.WriteLine("Space. Run all tests");
 
 				ConsoleKeyInfo k;
@@ -59,7 +59,7 @@ namespace Loyc.Tests
 						menu[i].Value();
 					}
 				} else {
-					int i = G.HexDigitValue(k.KeyChar);
+					int i = ParseHelpers.HexDigitValue(k.KeyChar);
 					if (i > 0 && i <= menu.Count)
 						menu[i - 1].Value();
 				}
@@ -82,6 +82,7 @@ namespace Loyc.Tests
 			MiniTest.RunTests.Run(new DequeTests<DList<int>>(delegate() { return new DList<int>(); }));
 			MiniTest.RunTests.Run(new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }));
 			MiniTest.RunTests.Run(new GTests());
+			MiniTest.RunTests.Run(new ParseHelpersTests());
 		}
 		public static void Loyc_Collections()
 		{

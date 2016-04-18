@@ -162,10 +162,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Essentials\ExtensionsTests.cs" />
+    <Compile Include="Essentials\GTests.cs" />
     <Compile Include="Essentials\HashTagsTests.cs" />
     <Compile Include="Essentials\ListExtTests.cs" />
     <Compile Include="Essentials\LocalizeTests.cs" />
     <Compile Include="Essentials\MathExTests.cs" />
+    <Compile Include="Essentials\ParseHelpersTests.cs" />
     <Compile Include="Essentials\SymbolTests.cs" />
     <Compile Include="Essentials\ThreadExTests.cs" />
     <Compile Include="Essentials\UStringTests.cs" />

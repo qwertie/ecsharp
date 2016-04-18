@@ -552,15 +552,15 @@ namespace Loyc.Syntax.Les
 				_out.Write(quoteType, false);
 				_out.Write(quoteType, false);
 			} else {
-				_out.Write(G.EscapeCStyle(text, EscapeC.Control, quoteType), false);
+				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}
 
 		static Pair<RuntimeTypeHandle,Action<LesNodePrinter, object, NodeStyle>> P<T>(Action<LesNodePrinter, object, NodeStyle> handler) 
-			{ return G.Pair(typeof(T).TypeHandle, handler); }
+			{ return Pair.Create(typeof(T).TypeHandle, handler); }
 		static Pair<K,V> P<K,V>(K key, V value) 
-			{ return G.Pair(key, value); }
+			{ return Pair.Create(key, value); }
 		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
 		{
 			var d = new Dictionary<K,V>();
