@@ -53,6 +53,13 @@ namespace Loyc.LLParserGenerator
 			} else
 				return result;
 		}
+
+		static readonly Symbol _init = (Symbol)"init";
+		bool Is(int li, Symbol value)
+		{
+			var lt = LT(li);
+			return lt.Value == value;
+		}
 		
 		[FullLLk, AddCsLineDirectives(false)]
 		LLLPG (parser(laType: TT, matchType: int, allowSwitch: true,
@@ -81,26 +88,34 @@ namespace Loyc.LLParserGenerator
 			
 			ruleName:=TT.Id
 			[	"[" "]"              { args = ParseHostArgList($"[", ParsingMode.FormalArgs); }
-				(TT.Returns "[" "]") { retType = ParseHostReturnType($"["); }
+				[ TT.Returns "[" "]" { retType = ParseHostReturnType($"["); } ]?
 			|	"(" ")"              { args = ParseHostArgList($"(", ParsingMode.FormalArgs); }
-				(TT.Returns "(" ")") { retType = ParseHostReturnType($"("); }
+				[ TT.Returns "(" ")" { retType = ParseHostReturnType($"("); } ]?
 			]?
+
+			{Token? initBrace = null;}
+			[	&{Is($LI,_init)} TT.Id initBrace="{" initRB:"}"	]?
 
 			// Ignore ANTLR stuff
 			[	id:=TT.Id 
 				{
 					string id2 = id.Value.ToString();
-					bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "init", "after");
+					bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "after");
 					Error(-1, isAntlrThing
 						? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)."
 						: "Syntax error (expected ':' to begin the rule)");
 				}
 				["{" "}" | TT.Id]?
 			]?
-			( ":"|"::=" | error {Error(0, "Expected ':' or '::='");} TT.Assignment? )
-			GrammarExpr
+			
+			( ":"|"::=" | error {Error(0, "Expected ':' or '::=' to begin the rule");} greedy[TT.Assignment]? )
+			gExpr:=GrammarExpr
 			";"
 			{
+				if (initBrace != null) {
+					var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Stmts);
+					gExpr = quote(($initAction, $($gExpr)));
+				}
 				return quote(
 					// run_LLLPG preprocesses its children (in case any macros want to 
 					// help generate the grammar) but certain macros (e.g. the one for 
@@ -110,7 +125,7 @@ namespace Loyc.LLParserGenerator
 					// doesn't block macros in grammar actions.
 					#noLexicalMacros(
 						[$(...attrs)]
-						#rule($(retType ?? F.Void), $(F.Id(ruleName)), #($(...args)), $($GrammarExpr))
+						#rule($(retType ?? F.Void), $(F.Id(ruleName)), #($(...args)), $($gExpr))
 					)
 				);
 			}

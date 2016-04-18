@@ -66,15 +66,15 @@ namespace Loyc.LLParserGenerator
 		/// The original linear approximate lookahead fails to predict the 
 		/// following case correctly:
 		/// <code>
-		///     Foo ==> @[ ('a' 'b' | 'c' 'd') ';' 
-		///              | 'a' 'd'             ';' ];
+		///     Foo  @{ ('a' 'b' | 'c' 'd') ';' 
+		///           | 'a' 'd'             ';' };
 		/// </code>
 		/// LLLPG has no problem with this case. However, LLLPG's "somewhat
 		/// approximate" lookahead still has problems with certain cases involving
 		/// nested alternatives. Here's a case that it can't handle:
 		/// <code>
-		///     Foo ==> @[ ('a' 'b' | 'b' 'a') ';' 
-		///              | ('a' 'a' | 'b' 'b') ';' ];
+		///     Foo @{ ('a' 'b' | 'b' 'a') ';' 
+		///          | ('a' 'a' | 'b' 'b') ';' };
 		/// </code>
 		/// Basically here's what goes wrong: LLLPG detects that both alternatives
 		/// can start with 'a' or 'b'. The way it normally builds a prediction tree
@@ -469,9 +469,9 @@ namespace Loyc.LLParserGenerator
 		/// Let's look at a simple example of the prediction code generated for a rule 
 		/// called "Foo":
 		/// <code>
-		/// // rule a @[ 'a' | 'A' ];
-		/// // rule b @[ 'b' | 'B' ];
-		/// // public rule Foo @[ a | b ];
+		/// // rule a @{ 'a' | 'A' };
+		/// // rule b @{ 'b' | 'B' };
+		/// // public rule Foo @{ a | b };
 		/// public void Foo()
 		/// {
 		///   var la0 = LA0;
@@ -489,7 +489,7 @@ namespace Loyc.LLParserGenerator
 		/// Alternatively, you can select the default using the 'default' keyword,
 		/// which controls the <see cref="Alts.DefaultArm"/> property, e.g.
 		/// <code>
-		/// // public rule Foo ==> @[ default a | b ];
+		/// // public rule Foo @{ default a | b };
 		/// public void Foo()
 		/// {
 		///   int la0;
@@ -510,7 +510,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// Here's another example:
 		/// <code>
-		/// // public rule Foo ==> @[ (a | b? 'c')* ];
+		/// // public rule Foo @{ (a | b? 'c')* };
 		/// public void Foo()
 		/// {
 		///   int la0;
@@ -558,7 +558,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// Here's an example that needs more than one character of lookahead:
 		/// <code>
-		/// // public rule Foo ==> @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+		/// // public rule Foo @{ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' };
 		/// public void Foo()
 		/// {
 		///   int la0, la1;
@@ -601,7 +601,7 @@ namespace Loyc.LLParserGenerator
 		/// <para/>
 		/// In some cases, LA(0) is irrelevant. Consider this example:
 		/// <code>
-		/// // public rule Foo ==> @[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
+		/// // public rule Foo @{ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' };
 		/// public void Foo()
 		/// {
 		///   int la0, la1;
@@ -917,8 +917,8 @@ namespace Loyc.LLParserGenerator
 			/// <remarks>
 			/// For example, given
 			/// <code>
-			///		rule X @[ 'a' Y 'z' ];
-			///		rule Y @[ 'a'..'y' 'b'..'z' ];
+			///		rule X @{ 'a' Y 'z' };
+			///		rule Y @{ 'a'..'y' 'b'..'z' };
 			/// </code>
 			/// The position before the sequence <c>'a' Y 'z'</c> is equivalent to 
 			/// the position before 'a', so the result points to 'a' rather than to
@@ -967,18 +967,18 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>
 		/// For example, given
 		/// <code>
-		///		rule X @[ 'x' Y '0'..'9' 'x' ];
-		///		rule Y @[.('y' | Z)? ];
-		///		rule Z @[ ('z' | '0'..'9' '0'..'9'*) ];
+		///		rule X @{ 'x' Y '0'..'9' 'x' };
+		///		rule Y @{.('y' | Z)? };
+		///		rule Z @{ ('z' | '0'..'9' '0'..'9'*) };
 		/// </code>
 		/// If the dot (.) represents the current position, then this class 
 		/// computes the possible <see cref="Transition"/>s, which are as follows:
 		/// <code>
 		///     Transition.Set   Transition.Position
-		///     'y'              rule Y @[ ('y' | Z)?.];                 (EndOfRule)
-		///     '0'..'9'         rule X @[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
-		///     'z'              rule Z @[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
-		///     '0'..'9'         rule Z @[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
+		///     'y'              rule Y @{ ('y' | Z)?.};                 (EndOfRule)
+		///     '0'..'9'         rule X @{ 'x' Y '0'..'9'.'x' };         (TerminalPred)
+		///     'z'              rule Z @{ ('z' | '0'..'9' '0'..'9'*).}; (EndOfRule)
+		///     '0'..'9'         rule Z @{ ('z' | '0'..'9'.'0'..'9'*) }; (Alts)
 		/// </code>
 		/// Notice that there can be duplicate sets--different destinations for the
 		/// same input character. This means that there is an LL(1) ambiguity. The
@@ -1263,7 +1263,7 @@ namespace Loyc.LLParserGenerator
 				StringBuilder temp = new StringBuilder();
 				foreach (var set in seq)
 					temp.Append(_helper.ExampleChar(set));
-				result.Append(G.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
+				result.Append(ParseHelpers.EscapeCStyle(temp.ToString(), EscapeC.Control, '»'));
 			} else {
 				result.Append(seq.Select(set => _helper.Example(set)).Join(" "));
 			}
