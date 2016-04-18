@@ -750,7 +750,7 @@ namespace Loyc.Ecs.Parser
 					result.Result = F.Missing;
 				} else {
 					hasInitializer::bool;
-					result.Result = VarDeclExpr(out hasInitializer).PlusAttrs(attrs);
+					result.Result = VarDeclExpr(out hasInitializer, attrs);
 					if (!hasInitializer && !allowUnassigned) {
 						Error(-1, "An unassigned variable declaration is not allowed in this context");
 					};
@@ -828,7 +828,8 @@ namespace Loyc.Ecs.Parser
 			return result.Result;
 		};
 		
-		@[private] rule VarDeclExpr(out hasInitializer::bool)::LNode @{
+		@[private] rule VarDeclExpr(out hasInitializer::bool, VList<LNode> attrs)::LNode @{
+			[ t:=TT.This {attrs.Add(F.Id(t));} ]?
 			pair:=VarDeclStart
 			{var(type::LNode = pair.Item1, name::LNode = pair.Item2);}
 			(	// A property is allowed whereever an initialized variable is 
@@ -843,6 +844,7 @@ namespace Loyc.Ecs.Parser
 					hasInitializer = @true;
 				}
 			)
+			{$result = $result.PlusAttrs(attrs);}
 		};
 
 		@[private] rule VarDeclStart::Pair!(LNode, LNode) @{
@@ -1346,6 +1348,7 @@ namespace Loyc.Ecs.Parser
 			// Worst case: need arbitrary lookahead to detect var/property/method
 			InputPosition = wordsStartAt;
 			using (new SavePosition(this, 0)) {
+				TryMatch(TT.This->int); // skip 'this' attribute for extension methods
 				if (Scan_DataType(false) && Scan_ComplexNameDecl() && ExpectedAfterTypeAndName[mode->int].Contains(LA0)) {
 					return StmtCat.MethodOrPropOrVar;
 				};
@@ -1471,10 +1474,10 @@ namespace Loyc.Ecs.Parser
 			/	result:AssemblyOrModuleAttribute(startIndex, attrs)
 				{showWordAttrErrorFor = "assembly or module attribute";}
 			/	result:OperatorCastMethod(startIndex, attrs) {attrs.Clear();}
-			/	ths:TT.This
-				&(DataType ComplexNameDecl)
-				{attrs.Add(F.Id(ths));}
-				result:MethodOrPropertyOrVar(startIndex, attrs)
+//			/	ths:TT.This
+//				&(DataType ComplexNameDecl)
+//				{attrs.Add(F.Id(ths));}
+//				result:MethodOrPropertyOrVar(startIndex, attrs)
 			/	error 
 				{$result = Error("Statement expected, but got '{0}'", CurrentTokenText());}
 				ScanToEndOfStmt
@@ -1673,11 +1676,12 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 
 		@[private] rule MethodOrPropertyOrVar(startIndex::int, attrs::VList!LNode)::LNode @{
-			{hasThis::bool;}
+			{isExtensionMethod::bool = false; isNamedThis::bool;}
+			[ t:=TT.This {attrs.Add(F.Id(t)); isExtensionMethod = true;} ]?
 			type:=DataType
-			name:ComplexNameDecl(true, out hasThis)
+			name:ComplexNameDecl(!isExtensionMethod, out isNamedThis)
 			(	// Variable declaration statement
-				&{!hasThis}
+				&{!isNamedThis}
 				{MaybeRecognizeVarAsKeyword(ref type);}
 				{var parts = LNode.List(type);}
 				{var isArray = IsArrayType(type);}
@@ -1687,7 +1691,7 @@ namespace Loyc.Ecs.Parser
 				end:=";"
 				{$result = F.Call(S.Var, parts, type.Range.StartIndex, end.EndIndex);}
 			/	// Method declaration/definition
-				&{!hasThis}
+				&{!isNamedThis}
 				result:MethodArgListAndBody(startIndex, attrs, S.Fn, type, name)
 				{return $result;} // don't add attributes again
 			|	// Property definition

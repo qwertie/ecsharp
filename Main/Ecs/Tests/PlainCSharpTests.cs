@@ -592,6 +592,14 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void ExtensionMethod()
+		{
+			// 2016-04 OMG how did I forget to test this? So of course extension methods broke _again_
+			Stmt("Foo Method(this Foo x) { }", F.Fn(Foo, _("Method"), F.List(F.Attr(F.@this, F.Var(Foo, x))), F.Braces()));
+			Stmt("Foo Method(this Foo<T> x) { }", F.Fn(Foo, _("Method"), F.List(F.Attr(F.@this, F.Var(F.Of(Foo, T), x))), F.Braces()));
+		}
+
+		[Test]
 		public void CSharp5AsyncAwait()
 		{
 			// "async" is just an ordinary word attribute so it is already supported
