@@ -97,7 +97,7 @@ namespace LeMP
 			for (int i = 0; i < a.Length; i++) {
 				char c = a[i];
 
-				var slice = a.USlice(i);
+				var slice = a.Slice(i);
 				for (int cp = 0; cp < commentPrefixes.Length; cp++) {
 					if (slice.StartsWith(commentPrefixes[cp])) {
 						do ++i; while (i < a.Length && (c = a[i]) != '\n' && c != '\r');

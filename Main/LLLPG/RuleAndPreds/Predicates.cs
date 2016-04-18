@@ -11,6 +11,7 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
 {
+	using System.Diagnostics.Contracts;
 	using S = Loyc.Syntax.CodeSymbols;
 
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
@@ -776,7 +777,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
-			G.Require(!(predictor is Gate) && !(match is Gate),
+			Contract.Assert(!(predictor is Gate) && !(match is Gate),
 				"A gate '=>' cannot contain another gate");
 			Predictor = predictor;
 			Match = match;
@@ -800,8 +801,8 @@ namespace Loyc.LLParserGenerator
 		/// decisions, e.g. in this example the gate is intended to ensure that the
 		/// caller will not call Number unless LA0 is ('.'|'0'..'9'):
 		/// <code>
-		/// token Number  @[ '.'|'0'..'9' =>
-		///                  '0'..'9'* ('.' '0'..'9'+)? ];
+		/// token Number  @{ '.'|'0'..'9' =>
+		///                  '0'..'9'* ('.' '0'..'9'+)? };
 		/// </code>
 		/// Notice that the predictor is, in general, shorter than the match side.
 		/// It could potentially confuse the caller if the follow set of the 
@@ -824,9 +825,9 @@ namespace Loyc.LLParserGenerator
 			//     Match is nullable.
 			// Here's an example from the test suite:
 			//
-			//     token Number ==> @[ ('0'..'9' | '.' '0'..'9') =>
-			//                         '0'..'9'* ('.' '0'..'9'+)? ];
-			//     token Tokens ==> @[ (Number / _)* ];
+			//     token Number @{ ('0'..'9' | '.' '0'..'9') =>
+			//                     '0'..'9'* ('.' '0'..'9'+)? };
+			//     token Tokens @{ (Number / _)* };
 			//
 			// If Number is called directly, then yes, it is nullable. However,
 			// if Number is private and only invoked by Tokens, then we *still* 

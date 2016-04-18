@@ -543,7 +543,7 @@ namespace Loyc.Ecs
 			return d;
 		}
 		static Pair<K,V> P<K,V>(K key, V value) 
-			{ return G.Pair(key, value); }
+			{ return Pair.Create(key, value); }
 		static Dictionary<K,V> Dictionary<K,V>(params Pair<K,V>[] input)
 		{
 			var d = new Dictionary<K,V>();
@@ -996,7 +996,7 @@ namespace Loyc.Ecs
 						_out.Write(text[i], false);
 				}
 			} else {
-				_out.Write(G.EscapeCStyle(text, EscapeC.Control, quoteType), false);
+				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}

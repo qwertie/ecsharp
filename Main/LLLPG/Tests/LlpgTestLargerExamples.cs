@@ -50,14 +50,14 @@ namespace Loyc.LLParserGenerator
 							UString domain = email.Substring(at + 1);
 							return new EmailAddress(userName, domain);
 						}
-						static rule UsernameChars(LexerSource<UString> src) @[
+						static rule UsernameChars(LexerSource<UString> src) @{
 							('a'..'z'|'A'..'Z'|'0'..'9'|'!'|'#'|'$'|'%'|'&'|'\''|
 							'*'|'+'|'/'|'='|'?'|'^'|'_'|'`'|'{'|'|'|'}'|'~'|'-')+
-						];
-						static rule DomainCharSeq(LexerSource<UString> src) @[
+						};
+						static rule DomainCharSeq(LexerSource<UString> src) @{
 								   ('a'..'z'|'A'..'Z'|'0'..'9')
 							[ '-'? ('a'..'z'|'A'..'Z'|'0'..'9') ]*
-						];
+						};
 					}
 				}";
 			string expectedOutput = @"
@@ -664,7 +664,7 @@ namespace Loyc.LLParserGenerator
 
 					LLLPG(parser(laType: string, terminalType: StringToken));
 
-					public rule LNode Expr(int prec = 0) @[
+					public rule LNode Expr(int prec = 0) @{
 						( '''-''' r:=Expr(50) { $result = F.Call((Symbol)'''-''', r, 
 														$'''-'''.StartIndex, r.Range.EndIndex); }
 						/ result:Atom )
@@ -690,26 +690,26 @@ namespace Loyc.LLParserGenerator
 						|   '''.''' rhs:Atom 
 							{ $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
 						)*
-					];
-					rule LNode PrefixExpr() @[
+					};
+					rule LNode PrefixExpr() @{
 						( '''-''' r:=PrefixExpr { $result = F.Call((Symbol)'''-''', r, 
 														$'''-'''.StartIndex, r.Range.EndIndex); }
 						/ result:PrimaryExpr )
-					];
-					rule LNode PrimaryExpr() @[
+					};
+					rule LNode PrimaryExpr() @{
 						result:Atom
 						(	'''(''' Expr ''')''' { $result = F.Call($result, $Expr, $result.Range.StartIndex); }
 						|	'''.''' rhs:Atom { $result = F.Dot ($result, $rhs,  $result.Range.StartIndex); }
 						)*
-					];
-					rule LNode Atom() @[
+					};
+					rule LNode Atom() @{
 						'''(''' result:Expr ''')''' { $result = F.InParens($result); }
 					/	_ { 
 							double n; 
 							$result = double.TryParse($_.Type, out n) 
 									? F.Literal(n) : F.Id($_.Type);
 						}
-					];
+					};
 				}";
 			string expectedOutput = @"
 				using Loyc;

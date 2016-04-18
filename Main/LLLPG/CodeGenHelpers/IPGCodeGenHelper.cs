@@ -212,7 +212,7 @@ namespace Loyc.LLParserGenerator
 		/// try-wrapper, if it is needed by the grammar. For example, the 
 		/// recognizer version of this rule:
 		/// <code>
-		///   rule Hello @[ "hi" { _foo++; } ];
+		///   rule Hello @{ "hi" { _foo++; } };
 		/// </code>
 		/// is this pair of methods:
 		/// <code>

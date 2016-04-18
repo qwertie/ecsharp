@@ -180,7 +180,7 @@ namespace Loyc.LLParserGenerator
 		{
 			Rule a = Rule("a", C('a') | 'A');
 			Rule b = Rule("b", C('b') | 'B');
-			// public rule Foo @[ (a | b? 'c')* ];
+			// public rule Foo @{ (a | b? 'c')* };
 			Rule Foo = Rule("Foo", Star(a | Opt(b) + 'c'));
 			_pg.AddRules(a, b, Foo);
 			LNode result = _pg.Run(_file);
@@ -226,7 +226,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example1()
 		{
-			// public rule Foo @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+			// public rule Foo @{ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' };
 			Rule Foo = Rule("Foo", Plus(R('a','z')) | 'x' + R('0','9') + R('0','9'));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(_file);
@@ -269,7 +269,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example2()
 		{
-			// rule Foo @[ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* ];
+			// rule Foo @{ (('a'|'A') 'A' | 'a'..'z' 'a'..'z')* };
 			Rule Foo = Rule("Foo", Star((C('a')|'A') + 'A' | R('a','z') + R('a','z')));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -311,7 +311,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void LL2Example3()
 		{
-			// rule Foo @[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
+			// rule Foo @{ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' };
 			Rule Foo = Rule("Foo", Star(Set("[aA]") + 'A') + R('a','z') + R('a','z'));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -348,8 +348,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void MatchInvertedSet()
 		{
-			// public rule Except @[ ~'a' ~('a'..'z') ];
-			// public rule String @[ '"' ~('"'|'\n')* '"' ];
+			// public rule Except @{ ~'a' ~('a'..'z') };
+			// public rule String @{ '"' ~('"'|'\n')* '"' };
 			
 			Rule Except = Rule("Except", Set("[^a]") + Set("[^a-z]"));
 			Rule String = Rule("String", '"' + Star(Set("[^\"\n]")) + '"');
@@ -457,7 +457,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void FullLL2()
 		{
-			// FullLL2 @[ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' ];
+			// FullLL2 @{ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' };
 			Rule Nope = Rule("FullLL2", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
 			
@@ -543,14 +543,14 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ActionsTest()
 		{
-			// public rule Foo @[
+			// public rule Foo @{
 			//     { StartRule; }
 			//     ( { BeforeA; } 'A' { AfterA; }
 			//     / { BeforeSeq; } ('1' { After1; } { Before2; } '2' '3') { AfterSeq; }
 			//     / { BeforeOpt; } (greedy('?')? { AfterOpt; }) _
 			//     )*
 			//     { EndRule; }
-			// ];
+			// };
 			// without actions: ('A' | ('1' '2' '3') | '?'? .)*
 			Alts qmark;
 			Rule Foo = Rule("Foo",
@@ -604,7 +604,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void ActionsTest2()
 		{
-			// public rule Foo @[ ({a1} 'a' {a2} | {b1} 'b' {b2}) ];
+			// public rule Foo @{ ({a1} 'a' {a2} | {b1} 'b' {b2}) };
 			Rule Foo = Rule("Foo", Act("a1", C('a'), "a2") | Act("b1", C('b'), "b2"));
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -719,13 +719,13 @@ namespace Loyc.LLParserGenerator
 			//   rule int Number()
 			//   {
 			//      int n = 0;
-			//      @[ (c:='0'..'9' { n = checked((n * 10) + (c - '0')); })+ ];
+			//      @{ (c:='0'..'9' { n = checked((n * 10) + (c - '0')); })+ };
 			//      return n;
 			//   }
-			//   rule int AddNumbers() @[
+			//   rule int AddNumbers() @{
 			//      total := Number ('+' total+=Number | '-' total-=Number)*
 			//      { return total; }
-			//   ];
+			//   };
 			//
 			// Since the C# parser doesn't exist yet, this is done the hard way...
 			var n = F.Id("n");
@@ -835,7 +835,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void MLComment()
 		{
-			// public rule MLComment() @[ '/' '*' nongreedy(_)* '*' '/' ];
+			// public rule MLComment() @{ '/' '*' nongreedy(_)* '*' '/' };
 			Rule MLComment = Rule("MLComment", C('/') + '*' + Star(AnyCh,false) + '*' + '/', Token, 2);
 			_pg.AddRule(MLComment);
 			LNode result = _pg.Run(F.File);
@@ -873,7 +873,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPredMatching()
 		{
-			// public rule MLComment() @[ '/' '*' nongreedy(_)* '*' '/' ];
+			// public rule MLComment() @{ '/' '*' nongreedy(_)* '*' '/' };
 			Rule Foo = Rule("Foo", And(F.Id("a")) + 'a' | And(F.Id("b")) + 'b');
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -897,9 +897,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void AndPred1()
 		{
-			// public rule Foo @[ (&a (Letter|Digit) | &b Digit | '_' ];
-			// public set Letter @[ 'a'..'z' | 'A'..'Z' ];
-			// public set Digit @[ '0'..'9' ];
+			// public rule Foo @{ (&a (Letter|Digit) | &b Digit | '_' };
+			// public set Letter @{ 'a'..'z' | 'A'..'Z' };
+			// public set Digit @{ '0'..'9' };
 			Rule Foo = Rule("Foo", And(F.Id("a")) + Set("[a-zA-Z0-9]") | And(F.Id("b")) + Set("[0-9]") | '_');
 			_pg.AddRule(Foo);
 			LNode result = _pg.Run(F.File);
@@ -1097,7 +1097,7 @@ namespace Loyc.LLParserGenerator
 			// Note: "++" and "+=" must come before "+" so that they have higher 
 			// priority. LLPG doesn't implement a "longer match automatically wins" 
 			// rule; the user must prioritize manually.
-			// token MoreOrLess() @[ "+=" | "++" | "--" | '+' | '-' ];
+			// token MoreOrLess() @{ "+=" | "++" | "--" | '+' | '-' };
 			_pg.AddRule(Rule("MoreOrLess", Seq("+=") / Seq("++") / Seq("--") / C('+') / C('-'), Token));
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"
@@ -1132,7 +1132,7 @@ namespace Loyc.LLParserGenerator
 		public void NullableStarError1()
 		{
 			Rule Bad = Rule("Bad", Star(Opt(Set("[0-9]")) + Opt(Set("[a-z]"))));
-			// rule Bad @[ ('0'..'9'? '0'..'9'?)* ];
+			// rule Bad @{ ('0'..'9'? '0'..'9'?)* };
 			// ERROR IS EXPECTED.
 			_pg.AddRule(Bad);
 			_expectingOutput = true;
@@ -1143,9 +1143,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void NullableStarError2()
 		{
-			// rule Number @[ ('0'..'9')* ('.' ('0'..'9')+)? ];
-			// rule WS     @[ (' '|'\t')+ ];
-			// rule Tokens @[ (Number / WS)* ];
+			// rule Number @{ ('0'..'9')* ('.' ('0'..'9')+)? };
+			// rule WS     @{ (' '|'\t')+ };
+			// rule Tokens @{ (Number / WS)* };
 			// ERROR IS EXPECTED in Tokens: Arm #1 of this loop is nullable.
 			Rule Number = Rule("Number", Star(Set("[0-9]")) + Opt(C('.') + Plus(Set("[0-9]"))), Token);
 			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
@@ -1169,7 +1169,7 @@ namespace Loyc.LLParserGenerator
 			// defective. TODO: think of a way to detect a left-recursive grammar
 			// (whether directly or indirectly recursive) and print an error.
 
-			// rule A @[ A? ('a'|'A') ];
+			// rule A @{ A? ('a'|'A') };
 			RuleRef ARef = new RuleRef(null, null);
 			Rule A = Rule("A", Opt(ARef) + Set("[aA]"), Token);
 			A.K = 3;
@@ -1230,9 +1230,9 @@ namespace Loyc.LLParserGenerator
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			
-			// rule Id() @[ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* ];
-			// rule Twin() @[ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' ];
-			// token Token() @[ Twin / Id ];
+			// rule Id() @{ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* };
+			// rule Twin() @{ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' };
+			// token Token() @{ Twin / Id };
 			var la = F.Call(S.Substitute, F.Id("LA"));
 			var li = F.Call(S.Substitute, F.Id("LI"));
 			var isLetter = F.Call(F.Dot(F.Char, F.Id("IsLetter")), la);
@@ -1305,12 +1305,12 @@ namespace Loyc.LLParserGenerator
 			// is ungrammatical, the default branch is invoked; therefore, changing 
 			// the default branch implies changing how unexpected input is handled.
 			
-			//	rule Default2 @[ [
+			//	rule Default2 @{ [
 			//		('a'|'A') 'x' | default ("BAT" | "bat") '!' | 'b'..'z' 'b'..'z' 
-			//	]* '.'];
-			//	rule Default3 @[ [
+			//	]* '.' };
+			//	rule Default3 @{ [
 			//		('a'|'A') 'x' | ("BAT" | "bat") '!' | default 'b'..'z' 'b'..'z' 
-			//	]* '.'];
+			//	]* '.' };
 			Alts star1 = Star(Set("[aA]") + 'x' 
 			                | (Seq("BAT") | Seq("bat")) + '!'
 			                | Set("[b-z]") + Set("[b-z]"));
@@ -1672,7 +1672,7 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SimpleGateTest()
 		{
-			// rule Foo @[ ('a' &{cond} / _+ => "abc") 'd' ];
+			// rule Foo @{ ('a' &{cond} / _+ => "abc") 'd' };
 			Rule Foo = Rule("Foo", ((C('a') + And(F.Id("cond"))) / Gate(Plus(AnyCh), Seq("abc"))) + 'd', Start);
 			Rule Bar = Rule("Bar", Gate(C('b'), Seq("bar")) / Set("[a-z]"), Token);
 			_pg.AddRule(Foo);
@@ -1722,9 +1722,9 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void CrossRuleGateTest()
 		{
-			// token Number @[ ('0'..'9' | '.' '0'..'9') =>
-			//                     '0'..'9'* ('.' '0'..'9'+)? ];
-			// token Tokens @[ (Number / _)* ];
+			// token Number @{ ('0'..'9' | '.' '0'..'9') =>
+			//                  '0'..'9'* ('.' '0'..'9'+)? };
+			// token Tokens @{ (Number / _)* };
 			var number = Rule("Number", Gate(Set("[0-9]") | '.' + Set("[0-9]"), 
 			                            Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]")))), Token);
 			var tokens = Rule("Tokens", Star(number / AnyCh), Token);
@@ -1807,8 +1807,8 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred1()
 		{
-			// token Number @[ &('0'..'9'|'.')
-			//                 '0'..'9'* ('.' '0'..'9'+)? ];
+			// token Number @{ &('0'..'9'|'.')
+			//                 '0'..'9'* ('.' '0'..'9'+)? };
 			Rule number = Rule("Number", And(Set("[0-9.]")) + Star(Set("[0-9]")) + Opt('.' + Plus(Set("[0-9]"))), Token);
 			_pg.AddRule(number);
 			LNode result = _pg.Run(_file);
@@ -1857,10 +1857,10 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void SynPred2()
 		{
-			// public rule Tokens   @[ (&Int => Int / Float / Id)* ];
-			// private token Float  @[ '0'..'9'* '.' '0'..'9'+ ];
-			// private token Int    @[ '0'..'9'+ ];
-			// private token Id     @[ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* ];
+			// public rule Tokens   @{ (&Int => Int / Float / Id)* };
+			// private token Float  @{ '0'..'9'* '.' '0'..'9'+ };
+			// private token Int    @{ '0'..'9'+ };
+			// private token Id     @{ ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '_' | '0'..'9')* };
 			Rule Float, Int, Id;
 			_pg.AddRule(Float = Rule("Float", Star(Set("[0-9]")) + '.' + Plus(Set("[0-9]"), true), Private));
 			_pg.AddRule(Int = Rule("Int", Plus(Set("[0-9]"), true), Private));
@@ -2019,16 +2019,16 @@ namespace Loyc.LLParserGenerator
 		[Test]
 		public void IfElseAmbig()
 		{
-			//private token IfStmt @[ 
+			//private token IfStmt @{ 
 			//	// "if" "(" Expr ")" Stmt ("else" Stmt)?
 			//	TT.If TT.LParen Expr TT.RParen Stmt (TT.Else Stmt)?
-			//];
-			//private token Stmt @[
+			//};
+			//private token Stmt @{
 			//	IfStmt | Expr TT.Semicolon
-			//];
-			//private token Expr @[
+			//};
+			//private token Expr @{
 			//	Id | Literal
-			//];
+			//};
 			Rule Expr = Rule("Expr", Sym("Id") | Sym("Literal"));
 			Rule Stmt = Rule("Stmt", Sym(""), Start);
 			Rule IfStmt = Rule("IfStmt", Sym("If") + Sym("LParen") + Expr + Sym("RParen") + Stmt 

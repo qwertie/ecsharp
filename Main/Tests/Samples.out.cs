@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -21,13 +21,15 @@ using TT = Loyc.Syntax.Les.TokenType;
 namespace Samples
 {
 	using ADT;
-	[TestFixture] partial class Samples : Assert
+	[TestFixture]
+	partial class Samples : Assert
 	{
 		public static void Run()
 		{
 			RunTests.Run(new Samples());
 		}
-		[Test] public void ContainsTest()
+		[Test]
+		public void ContainsTest()
 		{
 			var tree = Node.New(5, Node.New(1, null, Leaf.New(3)), Node.New(9, Leaf.New(7), null));
 			for (int i = 0; i <= 12; i++)
@@ -35,7 +37,8 @@ namespace Samples
 					Console.Write(" {0}", i);
 			Console.WriteLine(" were found");
 		}
-		[Test] public void RangeTest()
+		[Test]
+		public void RangeTest()
 		{
 			IsTrue(5.IsInRangeExcludeHi(4, 6));
 			IsTrue(6.IsInRange(5, 6));
@@ -53,7 +56,8 @@ namespace Samples
 			} catch {
 			}
 		}
-		[Test] public void SExprTest()
+		[Test]
+		public void SExprTest()
 		{
 			LNode @using = SExprParser.Parse("(#import (. System Collections))");
 			Console.WriteLine(EcsLanguageService.Value.Print(@using));
@@ -169,7 +173,8 @@ namespace ADT
 		{
 			return new BinaryTree<T>(newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public T Item1
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public T Item1
 		{
 			get {
 				return Value;
@@ -227,13 +232,15 @@ namespace ADT
 		{
 			return new Node<T>(Value, Left, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public BinaryTree<T> Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public BinaryTree<T> Item2
 		{
 			get {
 				return Left;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public BinaryTree<T> Item3
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public BinaryTree<T> Item3
 		{
 			get {
 				return Right;
@@ -297,25 +304,29 @@ namespace ADT
 		public abstract Rectangle WithY(int newValue);
 		public abstract Rectangle WithWidth(int newValue);
 		public abstract Rectangle WithHeight(int newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item1
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public int Item1
 		{
 			get {
 				return X;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public int Item2
 		{
 			get {
 				return Y;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item3
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public int Item3
 		{
 			get {
 				return Width;
 			}
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public int Item4
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public int Item4
 		{
 			get {
 				return Height;
@@ -336,7 +347,8 @@ namespace ADT
 			private set;
 		}
 		public abstract Widget WithLocation(Rectangle newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Rectangle Item1
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public Rectangle Item1
 		{
 			get {
 				return Location;
@@ -362,7 +374,8 @@ namespace ADT
 		{
 			return new Button(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public string Item2
 		{
 			get {
 				return Text;
@@ -388,7 +401,8 @@ namespace ADT
 		{
 			return new TextBox(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public string Item2
 		{
 			get {
 				return Text;
@@ -408,7 +422,8 @@ namespace ADT
 		}
 		public abstract override Widget WithLocation(Rectangle newValue);
 		public abstract StringListWidget WithsubItems(string[] newValue);
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string[] Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public string[] Item2
 		{
 			get {
 				return subItems;
@@ -469,7 +484,8 @@ namespace ADT
 		{
 			return new TabControl(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public TabPage[] Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public TabPage[] Item2
 		{
 			get {
 				return Children;
@@ -495,7 +511,8 @@ namespace ADT
 		{
 			return new Panel(Location, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public Widget[] Item2
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public Widget[] Item2
 		{
 			get {
 				return Children;
@@ -525,7 +542,8 @@ namespace ADT
 		{
 			return new TabPage(Location, Children, newValue);
 		}
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public string Item3
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		public string Item3
 		{
 			get {
 				return Title;
@@ -546,7 +564,8 @@ struct EmailAddress
 	{
 		return UserName + "@" + Domain;
 	}
-	[ThreadStatic] static LexerSource<UString> src;
+	[ThreadStatic]
+	static LexerSource<UString> src;
 	static readonly HashSet<int> UsernameChars_set0 = LexerSource.NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', '-', '/', '9', '=', '=', '?', '?', 'A', 'Z', '^', '~');
 	static void UsernameChars(LexerSource<UString> src)
 	{

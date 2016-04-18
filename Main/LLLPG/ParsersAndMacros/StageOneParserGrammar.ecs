@@ -48,22 +48,22 @@ namespace Loyc.LLParserGenerator
 				a = F.Call(op, a, b, a.Range.StartIndex, b.Range.EndIndex);
 			}
 
-			public rule LNode Parse @[ e:=GrammarExpr EOF {return e;} ];
+			public rule LNode Parse @{ e:=GrammarExpr EOF {return e;} };
 			
 			////////////////////////////////////////////////////////////////////
 
 			// Top-level rule body expression: a | b | ...
-			protected rule LNode GrammarExpr() @[
+			protected rule LNode GrammarExpr() @{
 				a:=SlashExpr
 				( op:="|" b:=SlashExpr {Infix(ref a, (Symbol) op.Value, b);} )*
 				{return a;}
-			];
-			private rule LNode SlashExpr() @[
+			};
+			private rule LNode SlashExpr() @{
 				a:=GateExpr 
 				( op:="/" b:=GateExpr {Infix(ref a, (Symbol) op.Value, b);} )*
 				{return a;}
-			];
-			private rule LNode GateExpr() @[
+			};
+			private rule LNode GateExpr() @{
 				{Token? altType = null;}
 				(altType=(TT.Default|TT.Error))?
 				a:=SeqExpr
@@ -73,8 +73,8 @@ namespace Loyc.LLParserGenerator
 						a = F.Call((Symbol) altType.Value.Value, a, altType.Value.StartIndex, altType.Value.EndIndex);
 					return a;
 				}
-			];
-			private rule LNode SeqExpr() @[
+			};
+			private rule LNode SeqExpr() @{
 				{var seq = LNode.List();}
 				(seq+=LoopExpr ","?)*
 				{
@@ -82,8 +82,8 @@ namespace Loyc.LLParserGenerator
 					else if (seq.IsEmpty) return F.Tuple();
 					return F.Tuple(seq, seq[0].Range.StartIndex, seq.Last.Range.EndIndex);
 				}
-			];
-			private rule LNode LoopExpr() @[
+			};
+			private rule LNode LoopExpr() @{
 				{LNode a;}
 				(	loopMod:=(TT.Greedy|TT.Nongreedy) a=AssignExpr 
 					{a = F.Call((Symbol) loopMod.Value, a, loopMod.StartIndex, a.Range.EndIndex);}
@@ -94,35 +94,35 @@ namespace Loyc.LLParserGenerator
 				|	op:="?" {a = F.Call(_SufOpt,  a, a.Range.StartIndex, op.EndIndex);}
 				)?
 				{return a;}
-			];
+			};
 			
-			private rule LNode AssignExpr() @[
+			private rule LNode AssignExpr() @{
 				{Token op;}
 				a:=PrefixExpr
 				( op="!" {a = F.Call(_SufBang, a, a.Range.StartIndex, op.EndIndex);} )*
 				( op=(":="|":"|TT.HostOperator) b:=AssignExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				{return a;}
-			];
+			};
 			
 			private rule LNode PrefixExpr() @
-			[	op:="~"       r:=PrefixExpr         {return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);}
+			{	op:="~"       r:=PrefixExpr         {return F.Call(S.NotBits, r, op.StartIndex, r.Range.EndIndex);}
 			|	op:="&"       r:=PrefixExprOrBraces {return F.Call(S.AndBits, r, op.StartIndex, r.Range.EndIndex);}
 			|	op:=("&!")    r:=PrefixExprOrBraces {return F.Call(_AndNot,   r, op.StartIndex, r.Range.EndIndex);}
 			|	r:=RangeExpr  {return r;}
-			];
+			};
 			private rule LNode PrefixExprOrBraces() @
-			[	lb:="{" rb:="}" {return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);}
+			{	lb:="{" rb:="}" {return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);}
 			/	e:=PrefixExpr   {return e;}
-			];
+			};
 			
-			private rule LNode RangeExpr() @[
+			private rule LNode RangeExpr() @{
 				a:=PrimaryExpr 
 				( op:="..." b:=PrimaryExpr {Infix(ref a, (Symbol) op.Value, b);} )?
 				{return a;}
-			];
+			};
 			
 			private rule LNode PrimaryExpr() @
-				[	"-" e:=PrimaryExpr {return F.Call(S._Negate, e);}
+				{	"-" e:=PrimaryExpr {return F.Call(S._Negate, e);}
 				|	{LNode e, id;}
 					TT.Any TT.Id {id = F.Id($(TT.Id));}
 					( TT.In e=PrimaryExpr
@@ -135,13 +135,15 @@ namespace Loyc.LLParserGenerator
 						op:="." b:=Atom {Infix(ref a, (Symbol)op.Value, b);}
 					|	// rule call: no spaces between identifier and '('
 						&{a.Range.EndIndex == LT($LI).StartIndex}
-						lp:="(" rp:=")"
+						(	lp:"(" rp:")"
+						|	lp:"[" rp:"]"
+						)
 						{a = F.Call(a, ParseHostArgList(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);}
 					)*
 					{return a;}
-				];
+				};
 
-			private rule LNode Atom() @[
+			private rule LNode Atom() @{
 				{LNode e;}
 				(	t:=(TT.Id|TT.In)
 					{e = F.Id(t);}
@@ -157,7 +159,7 @@ namespace Loyc.LLParserGenerator
 					}
 				)
 				{return e;}
-			];
+			};
 		}
 	}
 }

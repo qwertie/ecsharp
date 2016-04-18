@@ -227,7 +227,7 @@ namespace Loyc.Ecs.Parser
 
 				var digits = text.Substring(2, len);
 				int code;
-				if (G.TryParseHex(digits, out code) && code <= 0x0010FFFF) {
+				if (ParseHelpers.TryParseHex(digits, out code) && code <= 0x0010FFFF) {
 					if (code >= 0x10000) {
 						parsed.Append((char)(0xD800 + ((code - 0x10000) >> 10)));
 						parsed.Append((char)(0xDC00 + ((code - 0x10000) & 0x3FF)));

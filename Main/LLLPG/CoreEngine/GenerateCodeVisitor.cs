@@ -151,7 +151,7 @@ namespace Loyc.LLParserGenerator
 			// prediction. We generate a for(;;) loop for (...)*, and in certain 
 			// cases, we generates a do...while(false) loop for (...)?.
 			//
-			// rule Foo ==> @[ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' ];
+			// rule Foo @{ (('a'|'A') 'A')* 'a'..'z' 'a'..'z' };
 			// public void Foo()
 			// {
 			//     int la0, la1;

@@ -164,7 +164,7 @@ struct EmailAddress
     int at = src.InputPosition;
     UString userName = email.Substring(0, at);
     
-    @[ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF ];
+    @{ '@' DomainCharSeq(src) ('.' DomainCharSeq(src))* EOF };
     UString domain = email.Substring(at + 1);
     return new EmailAddress(userName, domain);
   }

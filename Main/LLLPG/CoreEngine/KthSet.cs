@@ -23,8 +23,8 @@ namespace Loyc.LLParserGenerator
 		/// For example, suppose the grammar is as follows (where "strings" are
 		/// actually aliases for tokens):
 		/// <code>
-		///     rule For   @[ "for" ($id "in" $collection | $id '=' range) ];
-		///     rule Range @[ start ".." stop ];
+		///     rule For   @{ "for" ($id "in" $collection | $id '=' range) };
+		///     rule Range @{ start ".." stop };
 		/// </code>
 		/// If the starting position is right after "for", then <see cref="ComputeNextSet"/>
 		/// will generate two <see cref="Cases"/>, one at <c>$id."in" $collection</c> 
@@ -97,8 +97,8 @@ namespace Loyc.LLParserGenerator
 		/// <remarks>
 		/// For example, suppose the grammar is
 		/// <code>
-		///		rule X ==> @[ 'a' Y 'z' ];
-		///		rule Y ==> @[ 'a'..'y' 'b'..'z' ];
+		///		rule X @{ 'a' Y 'z' };
+		///		rule Y @{ 'a'..'y' 'b'..'z' };
 		/// </code>
 		/// If the previous position is represented by the dot in <c>'a'.Y 'z'</c>,
 		/// i.e. before Y, then <see cref="ComputeNextSet"/> will compute a Transition

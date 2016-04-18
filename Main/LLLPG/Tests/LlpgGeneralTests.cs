@@ -328,12 +328,12 @@ namespace Loyc.LLParserGenerator
 		{
 			string input = @"LLLPG (lexer)
 				{
-					rule VowelOrNot() @[ 
+					rule VowelOrNot() @{ 
 						('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
-					];
-					rule ConsonantOrNot @[ 
+					};
+					rule ConsonantOrNot @{
 						default ('A'|'E'|'I'|'O'|'U') {Other();} / 'A'..'Z' {Consonant();}
-					];
+					};
 				}";
 			DualLanguageTest(input, input, @"
 				void VowelOrNot()
@@ -388,12 +388,12 @@ namespace Loyc.LLParserGenerator
 		{
 			DualLanguageTest(@"
 			LLLPG parser(laType(Symbol), allowSwitch(@false)) {
-				public rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
-				public rule Stmts @[ Stmt* ];
+				public rule Stmt @{ @@Number (@@print @@DQString | @@goto @@Number) @@Newline };
+				public rule Stmts @{ Stmt* };
 			}", @"
 			LLLPG(parser(laType(Symbol), allowSwitch(false))) {
-				public rule Stmt @[ @@Number (@@print @@DQString | @@goto @@Number) @@Newline ];
-				public rule Stmts @[ Stmt* ];
+				public rule Stmt @{ @@Number (@@print @@DQString | @@goto @@Number) @@Newline };
+				public rule Stmts @{ Stmt* };
 			}", @"
 				public void Stmt()
 				{
@@ -1861,6 +1861,7 @@ namespace Loyc.LLParserGenerator
 					public static ParseVoid(string input) returns (void) ::=
 						{var src = (LexerSource)input;}
 						""void"";
+					public static ParseVoid2[string input] @init { BeforeParse(); } ::= ParseVoid[input];
 				};", @"
 				public static int ParseInt(string input)
 				{
@@ -1887,6 +1888,11 @@ namespace Loyc.LLParserGenerator
 					src.Match('o');
 					src.Match('i');
 					src.Match('d');
+				}
+				public static void ParseVoid2(string input)
+				{
+					BeforeParse();
+					ParseVoid(input);
 				}", null, EcsLanguageService.Value);
 		}
 

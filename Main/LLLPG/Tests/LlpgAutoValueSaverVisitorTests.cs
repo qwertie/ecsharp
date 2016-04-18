@@ -12,7 +12,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// Two explicit labels
 			Test(@"LLLPG (parser(terminalType: Symbol)) {
-					rule Foo() @[ a:A a2:A {Checkpoint($a); Checkpoint($a2);} ];
+					rule Foo() @{ a:A a2:A {Checkpoint($a); Checkpoint($a2);} };
 				};", @"
 					void Foo()
 					{
@@ -25,7 +25,7 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Explicit label for list type
 			Test(@"LLLPG (lexer) {
-					rule CountHashes()::int @[ h+:'#'* {return $h.Count;} ];
+					rule CountHashes()::int @{ h+:'#'* {return $h.Count;} };
 				};", @"
 					int CountHashes()
 					{
@@ -46,8 +46,8 @@ namespace Loyc.LLParserGenerator
 		{
 			// Implicit rule reference
 			Test(@"LLLPG (lexer) {
-					rule Start @[ Foo(7) {f($Foo);} ];
-					rule Foo(x::int)::int @[ {return x;} ];
+					rule Start @{ Foo(7) {f($Foo);} };
+					rule Foo(x::int)::int @{ {return x;} };
 				};", @"
 					void Start()
 					{
@@ -61,7 +61,7 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Implicit rule references
 			Test(@"LLLPG (parser(terminalType: Token)) {
-					rule Foo() @[ (A C | B C) {Blah($B, $C);} ];
+					rule Foo() @{ (A C | B C) {Blah($B, $C);} };
 				};", @"
 					void Foo()
 					{
@@ -84,7 +84,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// Implicit terminal reference in semantic predicate
 			Test(@"LLLPG (parser(terminalType: char)) {
-					token Foo() @[ Op (&{$Op == '$'} '$')? ];
+					token Foo() @{ Op (&{$Op == '$'} '$')? };
 				};", @"
 					void Foo()
 					{
@@ -100,7 +100,7 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Implicit terminal reference
 			Test(@"LLLPG (lexer) {
-					rule Foo() @[ _ (&{$_ == '$'} '$')? ];
+					rule Foo() @{ _ (&{$_ == '$'} '$')? };
 				};", @"
 					void Foo()
 					{
@@ -116,8 +116,8 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Implicit rule reference and implicit terminal reference
 			Test(@"LLLPG (lexer) {
-					rule Main @[ Percent? {if ($Percent != null) {Yay();}} ];
-					rule Percent()::opt!char @[ '%' {return $'%' -> char;} ];
+					rule Main @{ Percent? {if ($Percent != null) {Yay();}} };
+					rule Percent()::opt!char @{ '%' {return $'%' -> char;} };
 				};", @"
 					void Main()
 					{
@@ -142,7 +142,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// Implicit $B should be a separate variable from explicit $b.
 			Test(@"LLLPG (parser(terminalType: object)) {
-					rule Foo() @[ {x::int;} a:A (b+:B)* C B x=B {Blah(a, b, $B);} ];
+					rule Foo() @{ {x::int;} a:A (b+:B)* C B x=B {Blah(a, b, $B);} };
 				};", @"
 					void Foo()
 					{
@@ -166,8 +166,8 @@ namespace Loyc.LLParserGenerator
 					}");
 			// c+:C* should be parsed as (c+:C)*
 			Test(@"LLLPG (parser(terminalType: Token)) {
-					rule Foo() @[ A C      {FunWith($C);}
-					            | B c+:C*  {FunWith($c);} ];
+					rule Foo() @{ A C      {FunWith($C);}
+					            | B c+:C*  {FunWith($c);} };
 				};", @"
 					void Foo()
 					{
@@ -195,7 +195,7 @@ namespace Loyc.LLParserGenerator
 					}");
 			// Unused labels should be unsubstituted
 			Test(@"LLLPG (parser(terminalType: object)) {
-					rule Foo() @[ c:C {Dollar($B, $C);} ];
+					rule Foo() @{ c:C {Dollar($B, $C);} };
 				};", @"
 					void Foo()
 					{

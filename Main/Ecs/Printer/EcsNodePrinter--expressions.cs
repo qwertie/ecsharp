@@ -115,28 +115,28 @@ namespace Loyc.Ecs
 			var call = OpenDelegate<OperatorPrinter>("AutoPrintCallOperator");
 			
 			foreach (var p in PrefixOperators)
-				d.Add(p.Key, G.Pair(p.Value, prefix));
+				d.Add(p.Key, Pair.Create(p.Value, prefix));
 			foreach (var p in InfixOperators)
 				if (d.ContainsKey(p.Key))
-					d[p.Key] = G.Pair(p.Value, both); // both prefix and infix
+					d[p.Key] = Pair.Create(p.Value, both); // both prefix and infix
 				else
-					d.Add(p.Key, G.Pair(p.Value, infix));
+					d.Add(p.Key, Pair.Create(p.Value, infix));
 			foreach (var p in CastOperators)
-				d[p.Key] = G.Pair(p.Value, cast);
+				d[p.Key] = Pair.Create(p.Value, cast);
 			foreach (var op in ListOperators)
-				d[op] = G.Pair(Precedence.MaxValue, list);
+				d[op] = Pair.Create(Precedence.MaxValue, list);
 			foreach (var p in SpecialCaseOperators) {
 				var handler = p.Key == S.Of || p.Key == S.Dot ? ident : other;
-				d.Add(p.Key, G.Pair(p.Value, handler));
+				d.Add(p.Key, Pair.Create(p.Value, handler));
 			}
 			// Other special cases
-			d.Add(S.New, G.Pair(EP.Primary, @new));
-			d.Add(S.Lambda, G.Pair(EP.Lambda, anonfn));
+			d.Add(S.New, Pair.Create(EP.Primary, @new));
+			d.Add(S.Lambda, Pair.Create(EP.Lambda, anonfn));
 			foreach (var op in CallOperators)
-				d.Add(op, G.Pair(Precedence.MaxValue, call));
+				d.Add(op, Pair.Create(Precedence.MaxValue, call));
 
 			var rawText = OpenDelegate<OperatorPrinter>("PrintRawText");
-			d[S.RawText] = G.Pair(EP.Substitute, rawText);
+			d[S.RawText] = Pair.Create(EP.Substitute, rawText);
 
 			return d;
 		}

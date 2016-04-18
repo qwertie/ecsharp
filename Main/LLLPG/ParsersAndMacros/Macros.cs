@@ -25,9 +25,9 @@ namespace Loyc.LLPG
 	///   class Foo { 
 	///     [DefaultK(2)] LLLPG lexer
 	///     {
-	///       private rule Int  @[ '0'..'9'+ ];
-	///       private rule Id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
-	///       token Token  @[ Int | Id ];
+	///       private rule Int  @{ '0'..'9'+ };
+	///       private rule Id   @{ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* };
+	///       token Token  @{ Int | Id };
 	///     };
 	///   };
 	/// </code>
@@ -112,10 +112,11 @@ namespace Loyc.LLPG
 						case "inputsource": helper.InputSource = value; break;
 						case "inputclass":  helper.InputClass = value; break;
 						case "terminaltype":helper.TerminalType = value; break;
+						case "settype":     helper.SetType = value;   break;
+						case "listinitializer": helper.SetListInitializer(value); break;
 						case "latype":      helper.LaType = value;    break;
 						case "matchtype":   // alternate name
 						case "matchcast":   helper.MatchCast = value; break;
-						case "settype":     helper.SetType = value;   break;
 						case "allowswitch":
 							if (value.Value is bool)
 								helper.AllowSwitch = (bool)value.Value;
@@ -127,9 +128,6 @@ namespace Loyc.LLPG
 								helper.CastLA = (bool)value.Value;
 							else
 								context.Write(Severity.Error, value, "CastLA: expected literal boolean argument.");
-							break;
-						case "listinitializer":
-							helper.SetListInitializer(value);
 							break;
 						default:
 							context.Write(Severity.Error, value, "Unrecognized option '{0}'. Available options: "+
@@ -175,7 +173,7 @@ namespace Loyc.LLPG
 		}
 
 		[LexicalMacro("rule Name Body; rule Name::Type Body; rule Name(Args...)::Type Body",
-			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
+			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @{...} or a code block that contains token literals {...@[...]...}.",
 			"rule", "token", Mode = MacroMode.NoReprocessing | MacroMode.Passive)]
 		public static LNode rule(LNode node, IMacroContext context)
 		{
@@ -222,8 +220,8 @@ namespace Loyc.LLPG
 		//    return false;
 		//}
 
-		[LexicalMacro("rule Name() @[...]; rule Name @[...]; rule Type Name() @[...]; rule Type Name @[...]",
-			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @[...] or a code block that contains token literals {...@[...]...}.",
+		[LexicalMacro("rule Name() @{...}; rule Name @{...}; rule Type Name() @{...}; rule Type Name @{...}",
+			"Declares a rule for use inside an LLLPG block. The 'Body' can be a token literal @{...} or a code block that contains top-level token literals {...@{...};...}.",
 			"#fn", "#property", Mode = MacroMode.Passive | MacroMode.NoReprocessing)]
 		public static LNode ECSharpRule(LNode node, IMacroContext context)
 		{
@@ -265,7 +263,7 @@ namespace Loyc.LLPG
 		private static LNode ParseRuleBody(LNode ruleBody, IMessageSink sink)
 		{
 			TokenTree ruleTokens;
-			// Expecting @[...] or {...}
+			// Expecting @{...} or {...}
 			if ((ruleTokens = ruleBody.Value as TokenTree) == null && !ruleBody.Calls(S.Braces))
 				return null;
 
@@ -339,7 +337,7 @@ namespace Loyc.LLPG
 					}
 				} else {
 					if (stmt.Calls(_rule) || stmt.Calls(_token))
-						context.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @[...])");
+						context.Write(Severity.Error, stmt, "A rule should have the form rule(Name(Args)::ReturnType, @{...})");
 				}
 			}
 
