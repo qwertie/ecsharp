@@ -441,6 +441,8 @@ namespace Loyc.Threading
 	/// thread creation, it only works if you use <see cref="ThreadEx"/> instead 
 	/// of standard threads.
 	/// <para/>
+	/// TODO: figure out how to support .NET's ExecutionContext
+	/// <para/>
 	/// ThreadLocalVariable implements thread-local variables using a dictionary 
 	/// that maps thread IDs to values.
 	/// <para/>

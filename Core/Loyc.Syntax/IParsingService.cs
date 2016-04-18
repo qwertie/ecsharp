@@ -22,6 +22,7 @@ namespace Loyc.Syntax
 	/// The ToString() method should return a string that indicates the 
 	/// programming language represented by this object, e.g. "Enhanced C#".
 	/// </remarks>
+	/// <seealso cref="ParsingService"/>
 	public interface IParsingService
 	{
 		/// <summary>Standard file extensions for this language, without leading 
