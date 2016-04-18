@@ -11,7 +11,8 @@ using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 
 /// <summary>Defines prelude macros for LES, which are predefined macros that 
-/// normally do not have to be explicitly imported before use.</summary>
+/// normally do not have to be explicitly imported before use. Their job is to
+/// convert LES to C# constructs.</summary>
 namespace LeMP.Prelude.Les
 {
 	/// <summary>Defines the core, predefined constructs of LeMP for LES.</summary>
@@ -808,24 +809,6 @@ namespace LeMP.Prelude.Les
 				if (name.Calls(S.ColonColon, 2))
 					return node.With(S.Var, name.Args[1], F.Call(S.Assign, name.Args[0], value));
 			}
-			return null;
-		}
-		[LexicalMacro("Name := Value", "Defines a variable or field in the current scope.", ":=")]
-		public static LNode ColonEquals(LNode node, IMessageSink sink)
-		{
-			var a = node.Args;
-			if (a.Count == 2) {
-				LNode name = a[0], value = a[1];
-				return node.With(S.Var, F.Missing, F.Call(S.Assign, name, value));
-			}
-			return null;
-		}
-		[LexicalMacro("Value=:Name", "Defines a variable or field in the current scope.", "=:")]
-		public static LNode QuickBind(LNode node, IMessageSink sink)
-		{
-			var a = node.Args;
-			if (a.Count == 2)
-				return node.With(S.Var, new VList<LNode>(F.Missing, F.Call(S.Assign, a[1], a[0])));
 			return null;
 		}
 		

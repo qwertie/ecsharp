@@ -387,8 +387,8 @@ namespace LeMP
 				_remainingNodes = null;
 				Preprocessed = null;
 				MaxExpansions = maxExpansions;
-				Debug.Assert(!IsTarget || !IsAttribute);
 				IsTarget = isTargetNode;
+				Debug.Assert(!IsTarget || !IsAttribute);
 				DropRemainingNodesRequested = false;
 			}
 			public void BeforeApplyMacros()
