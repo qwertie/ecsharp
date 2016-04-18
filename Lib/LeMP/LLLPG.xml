@@ -427,7 +427,7 @@
             try-wrapper, if it is needed by the grammar. For example, the 
             recognizer version of this rule:
             <code>
-              rule Hello @[ "hi" { _foo++; } ];
+              rule Hello @{ "hi" { _foo++; } };
             </code>
             is this pair of methods:
             <code>
@@ -585,8 +585,8 @@
             For example, suppose the grammar is as follows (where "strings" are
             actually aliases for tokens):
             <code>
-                rule For   @[ "for" ($id "in" $collection | $id '=' range) ];
-                rule Range @[ start ".." stop ];
+                rule For   @{ "for" ($id "in" $collection | $id '=' range) };
+                rule Range @{ start ".." stop };
             </code>
             If the starting position is right after "for", then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/>
             will generate two <see cref="F:Loyc.LLParserGenerator.LLParserGenerator.KthSet.Cases"/>, one at <c>$id."in" $collection</c> 
@@ -601,8 +601,8 @@
             <remarks>
             For example, suppose the grammar is
             <code>
-            	rule X ==> @[ 'a' Y 'z' ];
-            	rule Y ==> @[ 'a'..'y' 'b'..'z' ];
+            	rule X @{ 'a' Y 'z' };
+            	rule Y @{ 'a'..'y' 'b'..'z' };
             </code>
             If the previous position is represented by the dot in <c>'a'.Y 'z'</c>,
             i.e. before Y, then <see cref="M:Loyc.LLParserGenerator.LLParserGenerator.ComputeNextSet(Loyc.LLParserGenerator.LLParserGenerator.KthSet,System.Boolean)"/> will compute a Transition
@@ -638,15 +638,15 @@
             The original linear approximate lookahead fails to predict the 
             following case correctly:
             <code>
-                Foo ==> @[ ('a' 'b' | 'c' 'd') ';' 
-                         | 'a' 'd'             ';' ];
+                Foo  @{ ('a' 'b' | 'c' 'd') ';' 
+                      | 'a' 'd'             ';' };
             </code>
             LLLPG has no problem with this case. However, LLLPG's "somewhat
             approximate" lookahead still has problems with certain cases involving
             nested alternatives. Here's a case that it can't handle:
             <code>
-                Foo ==> @[ ('a' 'b' | 'b' 'a') ';' 
-                         | ('a' 'a' | 'b' 'b') ';' ];
+                Foo @{ ('a' 'b' | 'b' 'a') ';' 
+                     | ('a' 'a' | 'b' 'b') ';' };
             </code>
             Basically here's what goes wrong: LLLPG detects that both alternatives
             can start with 'a' or 'b'. The way it normally builds a prediction tree
@@ -745,9 +745,9 @@
              Let's look at a simple example of the prediction code generated for a rule 
              called "Foo":
              <code>
-             // rule a @[ 'a' | 'A' ];
-             // rule b @[ 'b' | 'B' ];
-             // public rule Foo @[ a | b ];
+             // rule a @{ 'a' | 'A' };
+             // rule b @{ 'b' | 'B' };
+             // public rule Foo @{ a | b };
              public void Foo()
              {
                var la0 = LA0;
@@ -765,7 +765,7 @@
              Alternatively, you can select the default using the 'default' keyword,
              which controls the <see cref="F:Loyc.LLParserGenerator.Alts.DefaultArm"/> property, e.g.
              <code>
-             // public rule Foo ==> @[ default a | b ];
+             // public rule Foo @{ default a | b };
              public void Foo()
              {
                int la0;
@@ -786,7 +786,7 @@
              <para/>
              Here's another example:
              <code>
-             // public rule Foo ==> @[ (a | b? 'c')* ];
+             // public rule Foo @{ (a | b? 'c')* };
              public void Foo()
              {
                int la0;
@@ -834,7 +834,7 @@
              <para/>
              Here's an example that needs more than one character of lookahead:
              <code>
-             // public rule Foo ==> @[ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' ];
+             // public rule Foo @{ 'a'..'z'+ | 'x' '0'..'9' '0'..'9' };
              public void Foo()
              {
                int la0, la1;
@@ -877,7 +877,7 @@
              <para/>
              In some cases, LA(0) is irrelevant. Consider this example:
              <code>
-             // public rule Foo ==> @[ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' ];
+             // public rule Foo @{ '(' 'a'..'z'* ')' | '(' '0'..'9'+ ')' };
              public void Foo()
              {
                int la0, la1;
@@ -1006,8 +1006,8 @@
             <remarks>
             For example, given
             <code>
-            	rule X @[ 'a' Y 'z' ];
-            	rule Y @[ 'a'..'y' 'b'..'z' ];
+            	rule X @{ 'a' Y 'z' };
+            	rule Y @{ 'a'..'y' 'b'..'z' };
             </code>
             The position before the sequence <c>'a' Y 'z'</c> is equivalent to 
             the position before 'a', so the result points to 'a' rather than to
@@ -1026,18 +1026,18 @@
             <remarks>
             For example, given
             <code>
-            	rule X @[ 'x' Y '0'..'9' 'x' ];
-            	rule Y @[.('y' | Z)? ];
-            	rule Z @[ ('z' | '0'..'9' '0'..'9'*) ];
+            	rule X @{ 'x' Y '0'..'9' 'x' };
+            	rule Y @{.('y' | Z)? };
+            	rule Z @{ ('z' | '0'..'9' '0'..'9'*) };
             </code>
             If the dot (.) represents the current position, then this class 
             computes the possible <see cref="T:Loyc.LLParserGenerator.LLParserGenerator.Transition"/>s, which are as follows:
             <code>
                 Transition.Set   Transition.Position
-                'y'              rule Y @[ ('y' | Z)?.];                 (EndOfRule)
-                '0'..'9'         rule X @[ 'x' Y '0'..'9'.'x' ];         (TerminalPred)
-                'z'              rule Z @[ ('z' | '0'..'9' '0'..'9'*).]; (EndOfRule)
-                '0'..'9'         rule Z @[ ('z' | '0'..'9'.'0'..'9'*) ]; (Alts)
+                'y'              rule Y @{ ('y' | Z)?.};                 (EndOfRule)
+                '0'..'9'         rule X @{ 'x' Y '0'..'9'.'x' };         (TerminalPred)
+                'z'              rule Z @{ ('z' | '0'..'9' '0'..'9'*).}; (EndOfRule)
+                '0'..'9'         rule Z @{ ('z' | '0'..'9'.'0'..'9'*) }; (Alts)
             </code>
             Notice that there can be duplicate sets--different destinations for the
             same input character. This means that there is an LL(1) ambiguity. The
@@ -1331,8 +1331,8 @@
             decisions, e.g. in this example the gate is intended to ensure that the
             caller will not call Number unless LA0 is ('.'|'0'..'9'):
             <code>
-            token Number  @[ '.'|'0'..'9' =>
-                             '0'..'9'* ('.' '0'..'9'+)? ];
+            token Number  @{ '.'|'0'..'9' =>
+                             '0'..'9'* ('.' '0'..'9'+)? };
             </code>
             Notice that the predictor is, in general, shorter than the match side.
             It could potentially confuse the caller if the follow set of the 
@@ -1453,9 +1453,9 @@
               class Foo { 
                 [DefaultK(2)] LLLPG lexer
                 {
-                  private rule Int  @[ '0'..'9'+ ];
-                  private rule Id   @[ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ];
-                  token Token  @[ Int | Id ];
+                  private rule Int  @{ '0'..'9'+ };
+                  private rule Id   @{ 'a'..'z'|'A'..'Z' ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* };
+                  token Token  @{ Int | Id };
                 };
               };
             </code>

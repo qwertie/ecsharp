@@ -579,9 +579,9 @@
             <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline"/> for you. It is possible to have LLLPG treat 
             this method as a rule, and tell LLLPG the meaning of the rule like this:
             <code>
-              extern token Newline @[ '\r' '\n'? | '\n' ];
+              extern token Newline @{ '\r' '\n'? | '\n' };
               // BaseLexer also defines a Spaces() method, which behaves like this:
-              extern token Spaces  @[ (' '|'\t')* ]; 
+              extern token Spaces  @{ (' '|'\t')* }; 
             </code>
             The <c>extern</c> modifier tells LLLPG not to generate code for the
             rule, but the rule must still have a body so that LLLPG can perform 
@@ -1017,9 +1017,9 @@
             <see cref="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline"/> for you. It is possible to have LLLPG treat 
             this method as a rule, and tell LLLPG the meaning of the rule like this:
             <code>
-              extern token Newline @[ '\r' '\n'? | '\n' ];
+              extern token Newline @{ '\r' '\n'? | '\n' };
               // BaseLexer also defines a Spaces() method, which behaves like this:
-              extern token Spaces  @[ (' '|'\t')* ]; 
+              extern token Spaces  @{ (' '|'\t')* }; 
             </code>
             The <c>extern</c> modifier tells LLLPG not to generate code for the
             rule, but the rule must still have a body so that LLLPG can perform 
@@ -1967,6 +1967,7 @@
             The ToString() method should return a string that indicates the 
             programming language represented by this object, e.g. "Enhanced C#".
             </remarks>
+            <seealso cref="T:Loyc.Syntax.ParsingService"/>
         </member>
         <member name="P:Loyc.Syntax.IParsingService.FileExtensions">
             <summary>Standard file extensions for this language, without leading 

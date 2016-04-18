@@ -2640,6 +2640,8 @@
             thread creation, it only works if you use <see cref="T:Loyc.Threading.ThreadEx"/> instead 
             of standard threads.
             <para/>
+            TODO: figure out how to support .NET's ExecutionContext
+            <para/>
             ThreadLocalVariable implements thread-local variables using a dictionary 
             that maps thread IDs to values.
             <para/>
@@ -4359,6 +4361,175 @@
             MiniTestRunner.
             </remarks>
         </member>
+        <member name="T:Loyc.Syntax.ParseHelpers">
+            <summary>Static methods that help with common parsing jobs, such as 
+            parsing integers, floats, and strings with C escape sequences.</summary>
+            <remarks>This class also contains a few inverse methods, e.g. 
+            <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/> is the inverse of the
+            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String)"/>.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.HexDigitValue(System.Char)">
+            <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.HexDigitChar(System.Int32)">
+            <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String)">
+            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String,System.Int32,System.Int32,System.Boolean)">
+            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+            <param name="removeUnnecessaryBackslashes">Causes the backslash before 
+            an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeChar(System.String,System.Int32@)">
+            <summary>Unescapes a single character of a string, e.g. 
+            <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
+            character at 'index' if it is not a backslash, or if it is a 
+            backslash but no escape sequence could be discerned.</summary>
+            <exception cref="T:System.IndexOutOfRangeException">The index was invalid.</exception>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)">
+            <summary>Tries to parse a string to an integer. Unlike <see cref="M:System.Int32.TryParse(System.String,System.Int32@)"/>,
+            this method allows parsing to start at any point in the string, it 
+            allows non-numeric data after the number, and it can parse numbers that
+            are not in base 10.</summary>
+            <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
+            <param name="index">Location at which to start parsing</param>
+            <param name="flags"><see cref="T:Loyc.Syntax.ParseNumberFlag"/>s that affect parsing behavior.</param>
+            <param name="skipSpaces">Whether to skip spaces before parsing. Only 
+            the ' ' and '\t' characters are treated as spaces. No space is allowed 
+            between '-' and the digits of a negative number, even with this flag.</param>
+            <returns>True if a number was found starting at the specified index
+            and it was successfully converted to a number, or false if not.</returns>
+            <remarks>
+            This method never throws. If parsing fails, index is left unchanged, 
+            except that spaces are still skipped if you set the skipSpaces flag. 
+            If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
+            in the output number. If the input number cannot fit in 'result', the 
+            return value is false but index increases anyway, and 'result' is a 
+            bitwise truncated version of the number.
+            <para/>
+            When parsing input such as "12.34", the parser stops and returns true
+            at the dot (with a result of 12 in this case).
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int32@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(Loyc.UString@,System.Int64@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <inheritdoc cref="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Low-level method that identifies the parts of a float literal
+            of arbitrary base (typically base 2, 10, or 16) with no prefix or 
+            suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
+            <param name="radix">Base of the number to parse; must be between 2
+            and 36.</param>
+            <param name="mantissa">Integer magnitude of the number.</param>
+            <param name="exponentBase2">Base-2 exponent to apply, as specified by
+            the 'p' suffix, or 0 if there is no 'p' suffix..</param>
+            <param name="exponentBase10">Base-10 exponent to apply, as specified by
+            the 'e' suffix, or 0 if there is no 'e' suffix..</param>
+            <param name="exponentBaseR">Base-radix exponent to apply. This number
+            is based on the front part of the number only (not including the 'p' or
+            'e' suffix). Negative values represent digits after the decimal point,
+            while positive numbers represent 64-bit overflow. For example, if the
+            input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
+            <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
+            <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
+            overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
+            with <c>exponentBaseR=3</c>.</param>
+            <param name="numDigits">Set to the number of digits in the number, not 
+            including the exponent part.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <remarks>
+            The syntax required is
+            <code>
+              ( '+'|'-' )?
+              ( Digits ('.' Digits?)? | '.' Digits )
+              ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
+              ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
+            </code>
+            where Digits refers to one digits in the requested base, possibly 
+            including underscores or spaces if the flags allow it; similarly, 
+            DecimalDigits refers to base-10 digits and is also affected by the
+            flags.
+            <para/>
+            Returns false if there was an error interpreting the input.
+            <para/>
+            To keep the parser relatively simple, it does not roll back in case of 
+            error the way the int parser does. For example, given the input "23p", 
+            the 'p' is consumed and causes the method to return false, even though
+            the parse could have been successful if it had ignored the 'p'.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses the parts of a floating-point string. See the other 
+            overload for details.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="negative">true if the string began with '-'.</param>
+            <param name="mantissa">Integer magnitude of the number.</param>
+            <param name="exponentBase2">Base-2 exponent to apply.</param>
+            <param name="exponentBase10">Base-10 exponent to apply.</param>
+            <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+            <remarks>
+            This method is a wrapper around the other overload that combines 
+            the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
+            depending on the radix. For example, when radix=10, this method 
+            adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
+            </remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseDouble(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses a string to a double-precision float, returning NaN on 
+            failure or an infinity value on overflow.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.TryParseFloat(Loyc.UString@,System.Int32,Loyc.Syntax.ParseNumberFlag)">
+            <summary>Parses a string to a single-precision float, returning NaN on 
+            failure or an infinity value on overflow.</summary>
+            <param name="radix">Base of the number to parse; must be 2 (binary), 
+            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
+            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(System.String,System.Int32)">
+            <summary>Gets the index of the first non-space character after the specified index.</summary>
+            <remarks>Only ' ' and '\t' are treated as spaces. If the index is invalid, it is returned unchanged.</remarks>
+        </member>
+        <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(Loyc.UString)">
+            <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.EscapeC">
+            <summary>Flags to control <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/>.</summary>
+        </member>
+        <member name="T:Loyc.Syntax.ParseNumberFlag">
+            <summary>Flags that can be used with 
+            <see cref="!:ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)"/>
+            </summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInFront">
+            <summary>Skip spaces before the number. Without this flag, spaces make parsing fail.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipSpacesInsideNumber">
+            <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.StopBeforeOverflow">
+            <summary>Changes overflow handling behavior when parsing an integer,
+            so that the result does not overflow (wrap), and the digit(s) at the 
+            end of the string, that would have caused overflow, are ignored. In 
+            this case, the return value is still false.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.SkipUnderscores">
+            <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.ParseNumberFlag.AllowCommaDecimalPoint">
+            <summary>Whether to treat comma as a decimal point when parsing a float. 
+            The dot '.' is always treated as a decimal point.</summary>
+        </member>
         <member name="T:Loyc.UString">
             <summary>UString is a slice of a string. It is a wrapper around string that 
             provides a <see cref="T:Loyc.Collections.IBRange`1"/> of 21-bit UCS-4 characters. "U" stands for 
@@ -4529,6 +4700,8 @@
         </member>
         <member name="T:Loyc.G">
             <summary>Contains global functions that don't belong in any specific class.</summary>
+            <remarks>Note: helper methods for parsing and printing tokens and hex 
+            digits have been moved to <see cref="T:Loyc.Syntax.ParseHelpers"/>.</remarks>
         </member>
         <member name="M:Loyc.G.With``1(``0,System.Action{``0})">
             <summary>Calls <c>action(obj)</c>, then returns the same object.</summary>
@@ -4572,179 +4745,21 @@
             <summary>Same as <c>Debug.Assert</c> except that the argument is 
             evaluated even in a Release build.</summary>
         </member>
-        <member name="M:Loyc.G.HexDigitValue(System.Char)">
-            <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
-        </member>
-        <member name="M:Loyc.G.HexDigitChar(System.Int32)">
-            <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
-        </member>
-        <member name="M:Loyc.G.UnescapeCStyle(System.String)">
-            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-        </member>
-        <member name="M:Loyc.G.UnescapeCStyle(System.String,System.Int32,System.Int32,System.Boolean)">
-            <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-            <param name="removeUnnecessaryBackslashes">Causes the backslash before 
-            an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-        </member>
-        <member name="M:Loyc.G.UnescapeChar(System.String,System.Int32@)">
-            <summary>Unescapes a single character of a string, e.g. 
-            <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
-            character at 'index' if it is not a backslash, or if it is a 
-            backslash but no escape sequence could be discerned.</summary>
-            <exception cref="T:System.IndexOutOfRangeException">The index was invalid.</exception>
-        </member>
+        <!-- Badly formed XML comment ignored for member "M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)" -->
         <member name="M:Loyc.G.PushTLV``1(Loyc.Threading.ThreadLocalVariable{``0},``0)">
             <summary>Helper function for a using statement that temporarily 
             modifies a thread-local variable.</summary>
             <param name="variable">Variable to change</param>
             <param name="newValue">New value</param>
             <example>
-            // Temporarily change the target of compiler error messages
-            using (var _ = G.PushTLV(CompilerOutput.Writer, CustomWriter))
+            // Temporarily change the method used to convert tokens to strings
+            using (G.PushTLV(Token.ToStringStrategyTLV, t => /* TODO */))
             {
-            	Warning.Write(SourcePos.Nowhere, "This message will go to a custom writer");
+                Token t = new Token(...);
+                Console.WriteLine(t.ToString());
             }
-            Warning.Write(SourcePos.Nowhere, "But this message will go to the original one");
             </example>
         </member>
-        <member name="M:Loyc.G.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)">
-            <summary>Tries to parse a string to an integer. Unlike <see cref="M:System.Int32.TryParse(System.String,System.Int32@)"/>,
-            this method allows parsing to start at any point in the string, it 
-            allows non-numeric data after the number, and it can parse numbers that
-            are not in base 10.</summary>
-            <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
-            <param name="index">Location at which to start parsing</param>
-            <param name="flags"><see cref="T:Loyc.G.ParseFlag"/>s that affect parsing behavior.</param>
-            <param name="skipSpaces">Whether to skip spaces before parsing. Only 
-            the ' ' and '\t' characters are treated as spaces. No space is allowed 
-            between '-' and the digits of a negative number, even with this flag.</param>
-            <returns>True if a number was found starting at the specified index
-            and it was successfully converted to a number, or false if not.</returns>
-            <remarks>
-            This method never throws. If parsing fails, index is left unchanged, 
-            except that spaces are still skipped if you set the skipSpaces flag. 
-            If base>36, parsing can succeed but digits above 35 (Z) cannot occur 
-            in the output number. If the input number cannot fit in 'result', the 
-            return value is false but index increases anyway, and 'result' is a 
-            bitwise truncated version of the number.
-            <para/>
-            When parsing input such as "12.34", the parser stops and returns true
-            at the dot (with a result of 12 in this case).
-            </remarks>
-        </member>
-        <member name="M:Loyc.G.TryParseInt(Loyc.UString@,System.Int32@,System.Int32,Loyc.G.ParseFlag)">
-            <inheritdoc cref="M:Loyc.G.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
-        </member>
-        <member name="M:Loyc.G.TryParseInt(Loyc.UString@,System.Int64@,System.Int32,Loyc.G.ParseFlag)">
-            <inheritdoc cref="M:Loyc.G.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)"/>
-        </member>
-        <member name="T:Loyc.G.ParseFlag">
-            <summary>Flags that can be used with the overload of TryParseAt() 
-            that parses unsigned integers.</summary>
-        </member>
-        <member name="F:Loyc.G.ParseFlag.SkipSpacesInFront">
-            <summary>Skip spaces before the number. Without this flag, spaces make parsing fail.</summary>
-        </member>
-        <member name="F:Loyc.G.ParseFlag.SkipSpacesInsideNumber">
-            <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
-        </member>
-        <member name="F:Loyc.G.ParseFlag.StopBeforeOverflow">
-            <summary>Changes overflow handling behavior when parsing an integer,
-            so that the result does not overflow (wrap), and the digit(s) at the 
-            end of the string, that would have caused overflow, are ignored. In 
-            this case, the return value is still false.</summary>
-        </member>
-        <member name="F:Loyc.G.ParseFlag.SkipUnderscores">
-            <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
-        </member>
-        <member name="F:Loyc.G.ParseFlag.AllowCommaDecimalPoint">
-            <summary>Whether to treat comma as a decimal point when parsing a float. 
-            The dot '.' is always treated as a decimal point.</summary>
-        </member>
-        <member name="M:Loyc.G.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,System.Int32@,Loyc.G.ParseFlag)">
-            <summary>Low-level method that identifies the parts of a float literal
-            of arbitrary base (typically base 2, 10, or 16) with no prefix or 
-            suffix, such as <c>2.Cp0</c> (which means 2.75 in base 16).</summary>
-            <param name="radix">Base of the number to parse; must be between 2
-            and 36.</param>
-            <param name="mantissa">Integer magnitude of the number.</param>
-            <param name="exponentBase2">Base-2 exponent to apply, as specified by
-            the 'p' suffix, or 0 if there is no 'p' suffix..</param>
-            <param name="exponentBase10">Base-10 exponent to apply, as specified by
-            the 'e' suffix, or 0 if there is no 'e' suffix..</param>
-            <param name="exponentBaseR">Base-radix exponent to apply. This number
-            is based on the front part of the number only (not including the 'p' or
-            'e' suffix). Negative values represent digits after the decimal point,
-            while positive numbers represent 64-bit overflow. For example, if the
-            input is <c>12.3456</c> with <c>radix=10</c>, the output will be 
-            <c>mantissa=123456</c> and <c>exponentBaseR=-4</c>. If the input is 
-            <c>0123_4567_89AB_CDEF_1234.5678</c> with <c>radix=16</c>, the mantissa 
-            overflows, and the result is <c>mantissa = 0x1234_5678_9ABC_DEF1</c> 
-            with <c>exponentBaseR=3</c>.</param>
-            <param name="numDigits">Set to the number of digits in the number, not 
-            including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-            <remarks>
-            The syntax required is
-            <code>
-              ( '+'|'-' )?
-              ( Digits ('.' Digits?)? | '.' Digits )
-              ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
-              ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
-            </code>
-            where Digits refers to one digits in the requested base, possibly 
-            including underscores or spaces if the flags allow it; similarly, 
-            DecimalDigits refers to base-10 digits and is also affected by the
-            flags.
-            <para/>
-            Returns false if there was an error interpreting the input.
-            <para/>
-            To keep the parser relatively simple, it does not roll back in case of 
-            error the way the int parser does. For example, given the input "23p", 
-            the 'p' is consumed and causes the method to return false, even though
-            the parse could have been successful if it had ignored the 'p'.
-            </remarks>
-        </member>
-        <member name="M:Loyc.G.TryParseFloatParts(Loyc.UString@,System.Int32,System.Boolean@,System.UInt64@,System.Int32@,System.Int32@,System.Int32@,Loyc.G.ParseFlag)">
-            <summary>Parses the parts of a floating-point string. See the other 
-            overload for details.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="negative">true if the string began with '-'.</param>
-            <param name="mantissa">Integer magnitude of the number.</param>
-            <param name="exponentBase2">Base-2 exponent to apply.</param>
-            <param name="exponentBase10">Base-10 exponent to apply.</param>
-            <param name="numDigits">Set to the number of digits in the number, not including the exponent part.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-            <remarks>
-            This method is a wrapper around the other overload that combines 
-            the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10'
-            depending on the radix. For example, when radix=10, this method 
-            adds <c>exponentBaseR</c> to <c>exponentBase10</c>.
-            </remarks>
-        </member>
-        <member name="M:Loyc.G.TryParseDouble(Loyc.UString@,System.Int32,Loyc.G.ParseFlag)">
-            <summary>Parses a string to a double-precision float, returning NaN on 
-            failure or an infinity value on overflow.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-        </member>
-        <member name="M:Loyc.G.TryParseFloat(Loyc.UString@,System.Int32,Loyc.G.ParseFlag)">
-            <summary>Parses a string to a single-precision float, returning NaN on 
-            failure or an infinity value on overflow.</summary>
-            <param name="radix">Base of the number to parse; must be 2 (binary), 
-            4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
-            <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
-        </member>
-        <member name="M:Loyc.G.SkipSpaces(System.String,System.Int32)">
-            <summary>Gets the index of the first non-space character after the specified index.</summary>
-            <remarks>Only ' ' and '\t' are treated as spaces. If the index is invalid, it is returned unchanged.</remarks>
-        </member>
-        <member name="M:Loyc.G.SkipSpaces(Loyc.UString)">
-            <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:Loyc.G.BareHtmlEntityNameForAscii(System.Char)" -->
         <member name="T:Loyc.EzStopwatch">
             <summary>
             A wrapper around <see cref="T:System.Diagnostics.Stopwatch"/> with a more convenient interface,
@@ -5446,7 +5461,7 @@
         </member>
         <member name="T:Loyc.StringExt">
             <summary>Extension methods for strings, such as <see cref="M:Loyc.StringExt.SplitAt(System.String,System.Char)"/>, 
-            <see cref="M:Loyc.StringExt.Left(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.Right(System.String,System.Int32)"/>, <see cref="!:Format"/> and <see cref="M:Loyc.StringExt.USlice(System.String,System.Int32,System.Int32)"/>.</summary>
+            <see cref="M:Loyc.StringExt.Left(System.String,System.Int32)"/>, <see cref="M:Loyc.StringExt.Right(System.String,System.Int32)"/>, <see cref="!:Format"/> and <see cref="M:Loyc.StringExt.Slice(System.String,System.Int32,System.Int32)"/>.</summary>
         </member>
         <member name="M:Loyc.StringExt.SplitAt(System.String,System.Char)">
             <summary>Gets the substrings to the left and right of a dividing character.</summary>
