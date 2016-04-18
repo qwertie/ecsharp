@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.4.1.0
+// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.7.3.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -144,52 +144,21 @@ namespace Loyc.Syntax.Les
 			VList<LNode> attrs = default(VList<LNode>);
 			LNode e = default(LNode);
 			Token t = default(Token);
-			// Line 91: greedy((TT.At)? TT.LBrack ExprList TT.RBrack)?
-			do {
-				la0 = (TT) LA0;
-				if (la0 == TT.At) {
-					la1 = (TT) LA(1);
-					if (la1 == TT.LBrack)
-						goto match1;
-				} else if (la0 == TT.LBrack) {
-					switch ((TT) LA(1)) {
-					case TT.Assignment:
-					case TT.At:
-					case TT.BQString:
-					case TT.Colon:
-					case TT.Comma:
-					case TT.Dot:
-					case TT.Id:
-					case TT.LBrace:
-					case TT.LBrack:
-					case TT.Literal:
-					case TT.LParen:
-					case TT.NormalOp:
-					case TT.Not:
-					case TT.PrefixOp:
-					case TT.PreOrSufOp:
-					case TT.RBrack:
-					case TT.Semicolon:
-					case TT.SpaceLParen:
-						goto match1;
-					}
-				}
-				break;
-			match1:
-				{
-					// Line 91: (TT.At)?
-					la0 = (TT) LA0;
-					if (la0 == TT.At)
-						at = MatchAny();
+			// Line 91: (TT.At TT.LBrack ExprList TT.RBrack)?
+			la0 = (TT) LA0;
+			if (la0 == TT.At) {
+				la1 = (TT) LA(1);
+				if (la1 == TT.LBrack) {
+					at = MatchAny();
 					// line 92
 					if (at.Type() == default(TT)) {
 						ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['");
 					}
-					t = Match((int) TT.LBrack);
+					t = MatchAny();
 					attrs = ExprList();
 					Match((int) TT.RBrack);
 				}
-			} while (false);
+			}
 			// Line 95: (Expr / TT.Id Expr (Particle)*)
 			do {
 				switch ((TT) LA0) {
