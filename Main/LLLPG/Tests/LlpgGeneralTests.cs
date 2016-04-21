@@ -1849,7 +1849,7 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
-		public void TestAntlrStyle()
+		public void AntlrStyle()
 		{
 			Test(@"
 				LLLPG (lexer(inputSource(src), inputClass(LexerSource))) @{
@@ -1906,16 +1906,17 @@ namespace Loyc.LLParserGenerator
 				@members { Statement1(); Statement2(); }
 				
 				{int _depth = 0;}
-				public ScanParens : 
+				public ScanParens returns [int] : 
 				[ '(' {_depth++;} 
 				| ')' {_depth--;} 
 				| ~('('|')')
-				]*;
+				]*
+				{return _depth;};
 			};", @"
 				Statement1();
 				Statement2();
 				int _depth = 0;
-				public void ScanParens()
+				public int ScanParens()
 				{
 					TT la0;
 					for (;;) {
@@ -1932,6 +1933,7 @@ namespace Loyc.LLParserGenerator
 						else
 							break;
 					}
+					return _depth;
 				}", 
 				null, EcsLanguageService.Value);
 		}

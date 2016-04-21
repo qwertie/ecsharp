@@ -95,7 +95,7 @@ namespace Loyc.Syntax
 		/// <see cref="MessageSink.Current"/>.</param>
 		/// <param name="mode">Language-defined configuration. It is suggested 
 		/// that the printing service should accept the members of 
-		/// <see cref="ParsingMode"/> (e.g. ParsingMode.Stmts) as possible 
+		/// <see cref="ParsingMode"/> (e.g. ParsingMode.Statements) as possible 
 		/// printing modes.</param>
 		/// <param name="indentString">Indent character for multi-line nodes</param>
 		/// <param name="lineSeparator">Newline string for multi-line nodes</param>

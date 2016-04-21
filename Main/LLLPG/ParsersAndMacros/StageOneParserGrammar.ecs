@@ -111,7 +111,7 @@ namespace Loyc.LLParserGenerator
 			|	r:=RangeExpr  {return r;}
 			};
 			private rule LNode PrefixExprOrBraces() @
-			{	lb:="{" rb:="}" {return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);}
+			{	lb:="{" rb:="}" {return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Expressions);}
 			/	e:=PrefixExpr   {return e;}
 			};
 			
@@ -138,7 +138,7 @@ namespace Loyc.LLParserGenerator
 						(	lp:"(" rp:")"
 						|	lp:"[" rp:"]"
 						)
-						{a = F.Call(a, ParseHostCode(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);}
+						{a = F.Call(a, ParseHostCode(lp, ParsingMode.Expressions), a.Range.StartIndex, rp.EndIndex);}
 					)*
 					{return a;}
 				};
@@ -150,7 +150,7 @@ namespace Loyc.LLParserGenerator
 				|	t:=TT.Literal
 					{e = F.Literal(t);}
 				|	lp:="(" rp:=")"     {e = ParseParens(lp, rp.EndIndex);}
-				|	lb:="{" rb:="}"     {e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Stmts);}
+				|	lb:="{" rb:="}"     {e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Statements);}
 				|	lb:="[" rb:="]"
 					&("?"|"*")          {e = ParseParens(lb, rb.EndIndex);}
 				|	error {

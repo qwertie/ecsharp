@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.4.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -115,40 +115,77 @@ namespace Loyc.LLParserGenerator
 				}
 			}
 			var ruleName = Match((int) TT.Id);
-			// Line 99: (TT.LBrack TT.RBrack (TT.Returns TT.LBrack TT.RBrack)? | TT.LParen TT.RParen (TT.Returns TT.LParen TT.RParen)?)?
+			// Line 99: (TT.LBrack TT.RBrack | TT.LParen TT.RParen)?
 			la0 = (TT) LA0;
 			if (la0 == TT.LBrack) {
 				lit_lsqb = MatchAny();
 				Match((int) TT.RBrack);
 				// line 99
 				args = ParseHostCode(lit_lsqb, ParsingMode.FormalArguments);
-				// Line 100: (TT.Returns TT.LBrack TT.RBrack)?
-				la0 = (TT) LA0;
-				if (la0 == TT.Returns) {
-					Skip();
-					lit_lsqb = Match((int) TT.LBrack);
-					Match((int) TT.RBrack);
-					// line 100
-					retType = ParseHostReturnType(lit_lsqb);
-				}
 			} else if (la0 == TT.LParen) {
 				lit_lpar = MatchAny();
 				Match((int) TT.RParen);
-				// line 101
+				// line 100
 				args = ParseHostCode(lit_lpar, ParsingMode.FormalArguments);
-				// Line 102: (TT.Returns TT.LParen TT.RParen)?
-				la0 = (TT) LA0;
-				if (la0 == TT.Returns) {
-					Skip();
-					lit_lpar = Match((int) TT.LParen);
-					Match((int) TT.RParen);
-					// line 102
-					retType = ParseHostReturnType(lit_lpar);
-				}
 			}
-			// line 105
+			// Line 102: ((TT.Returns TT.LBrack TT.RBrack)? | (TT.Returns TT.LParen TT.RParen)?)?
+			do {
+				switch ((TT) LA0) {
+				case TT.Returns:
+					{
+						la1 = (TT) LA(1);
+						if (la1 == TT.LBrack)
+							goto match1;
+						else {
+							// Line 103: (TT.Returns TT.LParen TT.RParen)?
+							la0 = (TT) LA0;
+							if (la0 == TT.Returns) {
+								Skip();
+								lit_lpar = Match((int) TT.LParen);
+								Match((int) TT.RParen);
+								// line 103
+								retType = ParseHostReturnType(lit_lpar);
+							}
+						}
+					}
+					break;
+				case TT.Id:
+					{
+						switch ((TT) LA(1)) {
+						case TT.Colon:
+						case TT.Id:
+						case TT.LBrace:
+						case TT.StartColon:
+							goto match1;
+						}
+					}
+					break;
+				case TT.Colon:
+				case TT.StartColon:
+					{
+						la1 = (TT) LA(1);
+						if (la1 != (TT) EOF)
+							goto match1;
+					}
+					break;
+				}
+				break;
+			match1:
+				{
+					// Line 102: (TT.Returns TT.LBrack TT.RBrack)?
+					la0 = (TT) LA0;
+					if (la0 == TT.Returns) {
+						Skip();
+						lit_lsqb = Match((int) TT.LBrack);
+						Match((int) TT.RBrack);
+						// line 102
+						retType = ParseHostReturnType(lit_lsqb);
+					}
+				}
+			} while (false);
+			// line 106
 			Token? initBrace = null;
-			// Line 106: (&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
+			// Line 107: (&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				if (Is(0, _init)) {
@@ -160,15 +197,15 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			}
-			// Line 109: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
+			// Line 110: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				var id = MatchAny();
-				// line 111
+				// line 112
 				string id2 = id.Value.ToString();
 				bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "after");
 				Error(-1, isAntlrThing ? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)." : "Syntax error (expected ':' to begin the rule)");
-				// Line 117: (TT.LBrace TT.RBrace | TT.Id)?
+				// Line 118: (TT.LBrace TT.RBrace | TT.Id)?
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrace) {
 					Skip();
@@ -176,14 +213,14 @@ namespace Loyc.LLParserGenerator
 				} else if (la0 == TT.Id)
 					Skip();
 			}
-			// Line 120: ((TT.Colon|TT.StartColon))
+			// Line 121: ((TT.Colon|TT.StartColon))
 			la0 = (TT) LA0;
 			if (la0 == TT.Colon || la0 == TT.StartColon)
 				Skip();
 			else {
-				// line 120
+				// line 121
 				Error(0, "Expected ':' or '::=' to begin the rule");
-				// Line 120: greedy(TT.Assignment)?
+				// Line 121: greedy(TT.Assignment)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Assignment) {
 					la1 = (TT) LA(1);
@@ -193,7 +230,7 @@ namespace Loyc.LLParserGenerator
 			}
 			var gExpr = GrammarExpr();
 			Match((int) TT.Semicolon);
-			// line 124
+			// line 125
 			if (initBrace != null) {
 				var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Statements);
 				gExpr = LNode.Call(CodeSymbols.Tuple, LNode.List(initAction, gExpr));
@@ -206,14 +243,14 @@ namespace Loyc.LLParserGenerator
 			TT la0;
 			Token lit_lpar = default(Token);
 			Token target = default(Token);
-			// Line 146: (TT.Id)?
+			// Line 147: (TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id)
 				target = MatchAny();
 			lit_lpar = Match((int) TT.LParen);
 			Match((int) TT.RParen);
 			Match((int) TT.Semicolon);
-			// line 148
+			// line 149
 			var args = ParseHostCode(lit_lpar, ParsingMode.Expressions);
 			return F.Call(F.Id(target), args);
 		}
@@ -221,7 +258,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la0;
 			Token lit_lcub = default(Token);
-			// Line 155: (&{Is($LI, _members)} TT.Id)?
+			// Line 156: (&{Is($LI, _members)} TT.Id)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				Check(Is(0, _members), "Is($LI, _members)");
@@ -229,11 +266,11 @@ namespace Loyc.LLParserGenerator
 			}
 			lit_lcub = Match((int) TT.LBrace);
 			Match((int) TT.RBrace);
-			// Line 156: (TT.Semicolon)?
+			// Line 157: (TT.Semicolon)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Semicolon)
 				Skip();
-			// line 158
+			// line 159
 			var args = ParseHostCode(lit_lcub, ParsingMode.Declarations);
 			return args.AsLNode(S.Splice);
 		}
@@ -241,7 +278,7 @@ namespace Loyc.LLParserGenerator
 		{
 			TT la1;
 			VList<LNode> result = default(VList<LNode>);
-			// Line 165: ( Rule | HostCall | HostBlock )
+			// Line 166: ( Rule | HostCall | HostBlock )
 			switch ((TT) LA0) {
 			case TT.AttrKeyword:
 			case TT.LBrack:
@@ -272,6 +309,7 @@ namespace Loyc.LLParserGenerator
 								}
 								break;
 							case TT.Colon:
+							case TT.Returns:
 							case TT.StartColon:
 								result.Add(Rule());
 								break;
@@ -301,6 +339,7 @@ namespace Loyc.LLParserGenerator
 								break;
 							case TT.Colon:
 							case TT.Id:
+							case TT.Returns:
 							case TT.StartColon:
 								result.Add(Rule());
 								break;
@@ -355,7 +394,7 @@ namespace Loyc.LLParserGenerator
 				result.Add(HostBlock());
 				break;
 			}
-			// Line 165: ( Rule | HostCall | HostBlock )*
+			// Line 166: ( Rule | HostCall | HostBlock )*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.AttrKeyword:
@@ -387,6 +426,7 @@ namespace Loyc.LLParserGenerator
 									}
 									break;
 								case TT.Colon:
+								case TT.Returns:
 								case TT.StartColon:
 									result.Add(Rule());
 									break;
@@ -416,6 +456,7 @@ namespace Loyc.LLParserGenerator
 									break;
 								case TT.Colon:
 								case TT.Id:
+								case TT.Returns:
 								case TT.StartColon:
 									result.Add(Rule());
 									break;
