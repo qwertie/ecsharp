@@ -30,7 +30,7 @@ namespace Loyc.LLParserGenerator
 				_parser.Reset(tokenTree, file);
 				_parser.ErrorSink = messages;
 			}
-			return _parser.ParseRules();
+			return _parser.RulesAndStuff();
 		}
 
 		private AntlrStyleParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) 
@@ -38,7 +38,7 @@ namespace Loyc.LLParserGenerator
 
 		LNode ParseHostReturnType(Token paren)
 		{
-			var list = ParseHostArgList(paren, ParsingMode.FormalArgs);
+			var list = ParseHostCode(paren, ParsingMode.FormalArguments);
 			if (list.Count != 1)
 				Error(-1, "LLLPG: Expected a single variable declaration (or data type) '{0}'", ToString(paren.TypeInt));
 			LNode result;
@@ -55,6 +55,9 @@ namespace Loyc.LLParserGenerator
 		}
 
 		static readonly Symbol _init = (Symbol)"init";
+		static readonly Symbol _members = (Symbol)"members";
+		static readonly Symbol _token = (Symbol)"token";
+		static readonly Symbol _rule = (Symbol)"rule";
 		bool Is(int li, Symbol value)
 		{
 			var lt = LT(li);
@@ -82,14 +85,20 @@ namespace Loyc.LLParserGenerator
 				var args = LNode.List();
 				LNode retType = null;
 			}
+
 			// Attributes
-			[ "[" "]"        {attrs = ParseHostArgList($"[", ParsingMode.Exprs);} ]*
+			[ "[" "]"        {attrs = ParseHostCode($"[", ParsingMode.Exprs);} ]*
 			[ TT.AttrKeyword {attrs.Add(F.Id($(TT.AttrKeyword)));}                ]*
 			
+			{bool isToken  = false;}
+			[	&{Is($LI,_token)} TT.Id {isToken = true;}
+			|	&{Is($LI,_rule)}  TT.Id
+			]?
+
 			ruleName:=TT.Id
-			[	"[" "]"              { args = ParseHostArgList($"[", ParsingMode.FormalArgs); }
+			[	"[" "]"              { args = ParseHostCode($"[", ParsingMode.FormalArguments); }
 				[ TT.Returns "[" "]" { retType = ParseHostReturnType($"["); } ]?
-			|	"(" ")"              { args = ParseHostArgList($"(", ParsingMode.FormalArgs); }
+			|	"(" ")"              { args = ParseHostCode($"(", ParsingMode.FormalArguments); }
 				[ TT.Returns "(" ")" { retType = ParseHostReturnType($"("); } ]?
 			]?
 
@@ -116,22 +125,48 @@ namespace Loyc.LLParserGenerator
 					var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Stmts);
 					gExpr = quote(($initAction, $($gExpr)));
 				}
+				var rule = isToken ? F.Id("#token") : F.Id("#rule");
 				return quote(
 					// run_LLLPG preprocesses its children (in case any macros want to 
 					// help generate the grammar) but certain macros (e.g. the one for 
-					// tuples) interfere with the tree in $Expr, so use `#noLexicalMacros`
+					// tuples) interfere with the tree in $gExpr, so use `#noLexicalMacros`
 					// to block macro processing. After run_LLLPG performs codegen, it 
 					// allows macros to run on the result, so the `#noLexicalMacros` here
 					// doesn't block macros in grammar actions.
 					#noLexicalMacros(
 						[$(...attrs)]
-						#rule($(retType ?? F.Void), $(F.Id(ruleName)), #($(...args)), $($gExpr))
+						$rule($(retType ?? F.Void), $(F.Id(ruleName)), #($(...args)), $($gExpr))
 					)
 				);
 			}
 		};
 
-		public rule VList<LNode> ParseRules() @{ (result+:Rule)+ EOF };
+		// Supports alias("..." = Token) statements
+		rule LNode HostCall() @{
+			[target:TT.Id]? "(" ")" ";"
+			{
+				var args = ParseHostCode($"(", ParsingMode.Exprs);
+				return F.Call(F.Id($target), args);
+			}
+		};
+		
+		// Inserts code into output. In ANTLR you write @members {...}
+		rule LNode HostBlock() @{
+			[&{Is($LI,_members)} TT.Id]?
+			"{" "}" ";"?
+			{
+				var args = ParseHostCode($"{", ParsingMode.Declarations);
+				return args.AsLNode(S.Splice);
+			}
+		};
+
+		[LL(4)]
+		public rule VList<LNode> RulesAndStuff() @{ 
+			( result+:Rule
+			| result+:HostCall
+			| result+:HostBlock )+
+			EOF
+		};
 
 		// Tell LLLPG about the base class rule Expr, which is used for rule bodies
 		extern rule LNode GrammarExpr() @{ nongreedy(_)+ };

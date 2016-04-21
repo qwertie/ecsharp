@@ -221,7 +221,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// This grammar used to crash LLLPG with a NullReferenceException.
 			// The output doesn't seem quite right; probably because of the left recursion.
-			Test(@"[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true), castLA(@false)) {
+			Test(@"@[FullLLk] LLLPG parser(laType(TT), matchType(int), allowSwitch(@true), castLA(@false)) {
 				private rule Atom @{
 					TT.Id (TT.LParen TT.RParen)?
 				};

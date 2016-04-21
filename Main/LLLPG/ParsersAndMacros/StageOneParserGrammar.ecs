@@ -138,7 +138,7 @@ namespace Loyc.LLParserGenerator
 						(	lp:"(" rp:")"
 						|	lp:"[" rp:"]"
 						)
-						{a = F.Call(a, ParseHostArgList(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);}
+						{a = F.Call(a, ParseHostCode(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);}
 					)*
 					{return a;}
 				};

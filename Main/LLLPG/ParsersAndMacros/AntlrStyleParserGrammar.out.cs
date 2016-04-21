@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -33,14 +33,14 @@ namespace Loyc.LLParserGenerator
 				_parser.Reset(tokenTree, file);
 				_parser.ErrorSink = messages;
 			}
-			return _parser.ParseRules();
+			return _parser.RulesAndStuff();
 		}
 		private AntlrStyleParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) : base(tokens, file, messageSink, hostLanguage)
 		{
 		}
 		LNode ParseHostReturnType(Token paren)
 		{
-			var list = ParseHostArgList(paren, ParsingMode.FormalArgs);
+			var list = ParseHostCode(paren, ParsingMode.FormalArguments);
 			if (list.Count != 1)
 				Error(-1, "LLLPG: Expected a single variable declaration (or data type) '{0}'", ToString(paren.TypeInt));
 			LNode result;
@@ -56,6 +56,9 @@ namespace Loyc.LLParserGenerator
 				return result;
 		}
 		static readonly Symbol _init = (Symbol) "init";
+		static readonly Symbol _members = (Symbol) "members";
+		static readonly Symbol _token = (Symbol) "token";
+		static readonly Symbol _rule = (Symbol) "rule";
 		bool Is(int li, Symbol value)
 		{
 			var lt = LT(li);
@@ -68,66 +71,84 @@ namespace Loyc.LLParserGenerator
 			Token lit_lpar = default(Token);
 			Token lit_lsqb = default(Token);
 			Token tok__AttrKeyword = default(Token);
-			// line 81
+			// line 84
 			var attrs = LNode.List();
 			var args = LNode.List();
 			LNode retType = null;
-			// Line 86: (TT.LBrack TT.RBrack)*
+			// Line 90: (TT.LBrack TT.RBrack)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrack) {
 					lit_lsqb = MatchAny();
 					Match((int) TT.RBrack);
-					// line 86
-					attrs = ParseHostArgList(lit_lsqb, ParsingMode.Exprs);
+					// line 90
+					attrs = ParseHostCode(lit_lsqb, ParsingMode.Expressions);
 				} else
 					break;
 			}
-			// Line 87: (TT.AttrKeyword)*
+			// Line 91: (TT.AttrKeyword)*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.AttrKeyword) {
 					tok__AttrKeyword = MatchAny();
-					// line 87
+					// line 91
 					attrs.Add(F.Id(tok__AttrKeyword));
 				} else
 					break;
 			}
+			// line 93
+			bool isToken = false;
+			// Line 94: (&{Is($LI, _token)} TT.Id | &{Is($LI, _rule)} TT.Id)?
+			la0 = (TT) LA0;
+			if (la0 == TT.Id) {
+				if (Is(0, _token)) {
+					la1 = (TT) LA(1);
+					if (la1 == TT.Id) {
+						Skip();
+						// line 94
+						isToken = true;
+					}
+				} else if (Is(0, _rule)) {
+					la1 = (TT) LA(1);
+					if (la1 == TT.Id)
+						Skip();
+				}
+			}
 			var ruleName = Match((int) TT.Id);
-			// Line 90: (TT.LBrack TT.RBrack (TT.Returns TT.LBrack TT.RBrack)? | TT.LParen TT.RParen (TT.Returns TT.LParen TT.RParen)?)?
+			// Line 99: (TT.LBrack TT.RBrack (TT.Returns TT.LBrack TT.RBrack)? | TT.LParen TT.RParen (TT.Returns TT.LParen TT.RParen)?)?
 			la0 = (TT) LA0;
 			if (la0 == TT.LBrack) {
 				lit_lsqb = MatchAny();
 				Match((int) TT.RBrack);
-				// line 90
-				args = ParseHostArgList(lit_lsqb, ParsingMode.FormalArgs);
-				// Line 91: (TT.Returns TT.LBrack TT.RBrack)?
+				// line 99
+				args = ParseHostCode(lit_lsqb, ParsingMode.FormalArguments);
+				// Line 100: (TT.Returns TT.LBrack TT.RBrack)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Returns) {
 					Skip();
 					lit_lsqb = Match((int) TT.LBrack);
 					Match((int) TT.RBrack);
-					// line 91
+					// line 100
 					retType = ParseHostReturnType(lit_lsqb);
 				}
 			} else if (la0 == TT.LParen) {
 				lit_lpar = MatchAny();
 				Match((int) TT.RParen);
-				// line 92
-				args = ParseHostArgList(lit_lpar, ParsingMode.FormalArgs);
-				// Line 93: (TT.Returns TT.LParen TT.RParen)?
+				// line 101
+				args = ParseHostCode(lit_lpar, ParsingMode.FormalArguments);
+				// Line 102: (TT.Returns TT.LParen TT.RParen)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Returns) {
 					Skip();
 					lit_lpar = Match((int) TT.LParen);
 					Match((int) TT.RParen);
-					// line 93
+					// line 102
 					retType = ParseHostReturnType(lit_lpar);
 				}
 			}
-			// line 96
+			// line 105
 			Token? initBrace = null;
-			// Line 97: (&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
+			// Line 106: (&{Is($LI, _init)} TT.Id TT.LBrace TT.RBrace)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				if (Is(0, _init)) {
@@ -139,15 +160,15 @@ namespace Loyc.LLParserGenerator
 					}
 				}
 			}
-			// Line 100: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
+			// Line 109: (TT.Id (TT.LBrace TT.RBrace | TT.Id)?)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Id) {
 				var id = MatchAny();
-				// line 102
+				// line 111
 				string id2 = id.Value.ToString();
 				bool isAntlrThing = id2.IsOneOf("scope", "throws", "options", "after");
 				Error(-1, isAntlrThing ? "LLLPG does not support ANTLR rule directives ('scope', 'throws', 'options', etc.)." : "Syntax error (expected ':' to begin the rule)");
-				// Line 108: (TT.LBrace TT.RBrace | TT.Id)?
+				// Line 117: (TT.LBrace TT.RBrace | TT.Id)?
 				la0 = (TT) LA0;
 				if (la0 == TT.LBrace) {
 					Skip();
@@ -155,14 +176,14 @@ namespace Loyc.LLParserGenerator
 				} else if (la0 == TT.Id)
 					Skip();
 			}
-			// Line 111: ((TT.Colon|TT.StartColon))
+			// Line 120: ((TT.Colon|TT.StartColon))
 			la0 = (TT) LA0;
 			if (la0 == TT.Colon || la0 == TT.StartColon)
 				Skip();
 			else {
-				// line 111
+				// line 120
 				Error(0, "Expected ':' or '::=' to begin the rule");
-				// Line 111: greedy(TT.Assignment)?
+				// Line 120: greedy(TT.Assignment)?
 				la0 = (TT) LA0;
 				if (la0 == TT.Assignment) {
 					la1 = (TT) LA(1);
@@ -172,26 +193,287 @@ namespace Loyc.LLParserGenerator
 			}
 			var gExpr = GrammarExpr();
 			Match((int) TT.Semicolon);
-			// line 115
+			// line 124
 			if (initBrace != null) {
-				var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Stmts);
+				var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Statements);
 				gExpr = LNode.Call(CodeSymbols.Tuple, LNode.List(initAction, gExpr));
 			}
-			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(LNode.Call(LNode.List(attrs), (Symbol) "#rule", LNode.List(retType ?? F.Void, F.Id(ruleName), LNode.Call(CodeSymbols.AltList, LNode.List(args)), gExpr))));
+			var rule = isToken ? F.Id("#token") : F.Id("#rule");
+			return LNode.Call((Symbol) "#noLexicalMacros", LNode.List(LNode.Call(LNode.List(attrs), rule, LNode.List(retType ?? F.Void, F.Id(ruleName), LNode.Call(CodeSymbols.AltList, LNode.List(args)), gExpr))));
 		}
-		public VList<LNode> ParseRules()
+		LNode HostCall()
 		{
 			TT la0;
-			VList<LNode> result = default(VList<LNode>);
-			result.Add(Rule());
-			// Line 134: (Rule)*
-			for (;;) {
-				la0 = (TT) LA0;
-				if (la0 == TT.AttrKeyword || la0 == TT.Id || la0 == TT.LBrack)
-					result.Add(Rule());
-				else
-					break;
+			Token lit_lpar = default(Token);
+			Token target = default(Token);
+			// Line 146: (TT.Id)?
+			la0 = (TT) LA0;
+			if (la0 == TT.Id)
+				target = MatchAny();
+			lit_lpar = Match((int) TT.LParen);
+			Match((int) TT.RParen);
+			Match((int) TT.Semicolon);
+			// line 148
+			var args = ParseHostCode(lit_lpar, ParsingMode.Expressions);
+			return F.Call(F.Id(target), args);
+		}
+		LNode HostBlock()
+		{
+			TT la0;
+			Token lit_lcub = default(Token);
+			// Line 155: (&{Is($LI, _members)} TT.Id)?
+			la0 = (TT) LA0;
+			if (la0 == TT.Id) {
+				Check(Is(0, _members), "Is($LI, _members)");
+				Skip();
 			}
+			lit_lcub = Match((int) TT.LBrace);
+			Match((int) TT.RBrace);
+			// Line 156: (TT.Semicolon)?
+			la0 = (TT) LA0;
+			if (la0 == TT.Semicolon)
+				Skip();
+			// line 158
+			var args = ParseHostCode(lit_lcub, ParsingMode.Declarations);
+			return args.AsLNode(S.Splice);
+		}
+		public VList<LNode> RulesAndStuff()
+		{
+			TT la1;
+			VList<LNode> result = default(VList<LNode>);
+			// Line 165: ( Rule | HostCall | HostBlock )
+			switch ((TT) LA0) {
+			case TT.AttrKeyword:
+			case TT.LBrack:
+				result.Add(Rule());
+				break;
+			case TT.Id:
+				{
+					if (Is(0, _members)) {
+						if (Is(0, _token) || Is(0, _rule)) {
+							switch ((TT) LA(1)) {
+							case TT.Id:
+							case TT.LBrack:
+								result.Add(Rule());
+								break;
+							case TT.LParen:
+								{
+									switch ((TT) LA(3)) {
+									case TT.Colon:
+									case TT.Id:
+									case TT.Returns:
+									case TT.StartColon:
+										result.Add(Rule());
+										break;
+									default:
+										result.Add(HostCall());
+										break;
+									}
+								}
+								break;
+							case TT.Colon:
+							case TT.StartColon:
+								result.Add(Rule());
+								break;
+							default:
+								result.Add(HostBlock());
+								break;
+							}
+						} else {
+							switch ((TT) LA(1)) {
+							case TT.LBrack:
+								result.Add(Rule());
+								break;
+							case TT.LParen:
+								{
+									switch ((TT) LA(3)) {
+									case TT.Colon:
+									case TT.Id:
+									case TT.Returns:
+									case TT.StartColon:
+										result.Add(Rule());
+										break;
+									default:
+										result.Add(HostCall());
+										break;
+									}
+								}
+								break;
+							case TT.Colon:
+							case TT.Id:
+							case TT.StartColon:
+								result.Add(Rule());
+								break;
+							default:
+								result.Add(HostBlock());
+								break;
+							}
+						}
+					} else if (Is(0, _token) || Is(0, _rule)) {
+						la1 = (TT) LA(1);
+						if (la1 == TT.Id || la1 == TT.LBrack)
+							result.Add(Rule());
+						else if (la1 == TT.LParen) {
+							switch ((TT) LA(3)) {
+							case TT.Colon:
+							case TT.Id:
+							case TT.Returns:
+							case TT.StartColon:
+								result.Add(Rule());
+								break;
+							default:
+								result.Add(HostCall());
+								break;
+							}
+						} else
+							result.Add(Rule());
+					} else {
+						la1 = (TT) LA(1);
+						if (la1 == TT.LBrack)
+							result.Add(Rule());
+						else if (la1 == TT.LParen) {
+							switch ((TT) LA(3)) {
+							case TT.Colon:
+							case TT.Id:
+							case TT.Returns:
+							case TT.StartColon:
+								result.Add(Rule());
+								break;
+							default:
+								result.Add(HostCall());
+								break;
+							}
+						} else
+							result.Add(Rule());
+					}
+				}
+				break;
+			case TT.LParen:
+				result.Add(HostCall());
+				break;
+			default:
+				result.Add(HostBlock());
+				break;
+			}
+			// Line 165: ( Rule | HostCall | HostBlock )*
+			for (;;) {
+				switch ((TT) LA0) {
+				case TT.AttrKeyword:
+				case TT.LBrack:
+					result.Add(Rule());
+					break;
+				case TT.Id:
+					{
+						if (Is(0, _members)) {
+							if (Is(0, _token) || Is(0, _rule)) {
+								switch ((TT) LA(1)) {
+								case TT.Id:
+								case TT.LBrack:
+									result.Add(Rule());
+									break;
+								case TT.LParen:
+									{
+										switch ((TT) LA(3)) {
+										case TT.Colon:
+										case TT.Id:
+										case TT.Returns:
+										case TT.StartColon:
+											result.Add(Rule());
+											break;
+										default:
+											result.Add(HostCall());
+											break;
+										}
+									}
+									break;
+								case TT.Colon:
+								case TT.StartColon:
+									result.Add(Rule());
+									break;
+								default:
+									result.Add(HostBlock());
+									break;
+								}
+							} else {
+								switch ((TT) LA(1)) {
+								case TT.LBrack:
+									result.Add(Rule());
+									break;
+								case TT.LParen:
+									{
+										switch ((TT) LA(3)) {
+										case TT.Colon:
+										case TT.Id:
+										case TT.Returns:
+										case TT.StartColon:
+											result.Add(Rule());
+											break;
+										default:
+											result.Add(HostCall());
+											break;
+										}
+									}
+									break;
+								case TT.Colon:
+								case TT.Id:
+								case TT.StartColon:
+									result.Add(Rule());
+									break;
+								default:
+									result.Add(HostBlock());
+									break;
+								}
+							}
+						} else if (Is(0, _token) || Is(0, _rule)) {
+							la1 = (TT) LA(1);
+							if (la1 == TT.Id || la1 == TT.LBrack)
+								result.Add(Rule());
+							else if (la1 == TT.LParen) {
+								switch ((TT) LA(3)) {
+								case TT.Colon:
+								case TT.Id:
+								case TT.Returns:
+								case TT.StartColon:
+									result.Add(Rule());
+									break;
+								default:
+									result.Add(HostCall());
+									break;
+								}
+							} else
+								result.Add(Rule());
+						} else {
+							la1 = (TT) LA(1);
+							if (la1 == TT.LBrack)
+								result.Add(Rule());
+							else if (la1 == TT.LParen) {
+								switch ((TT) LA(3)) {
+								case TT.Colon:
+								case TT.Id:
+								case TT.Returns:
+								case TT.StartColon:
+									result.Add(Rule());
+									break;
+								default:
+									result.Add(HostCall());
+									break;
+								}
+							} else
+								result.Add(Rule());
+						}
+					}
+					break;
+				case TT.LParen:
+					result.Add(HostCall());
+					break;
+				case TT.LBrace:
+					result.Add(HostBlock());
+					break;
+				default:
+					goto stop;
+				}
+			}
+		stop:;
 			Match((int) EOF);
 			return result;
 		}

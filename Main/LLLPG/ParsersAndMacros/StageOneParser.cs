@@ -278,7 +278,7 @@ namespace Loyc.LLParserGenerator
 		
 		#region Tree structure handling
 
-		protected VList<LNode> ParseHostArgList(Token group, ParsingMode mode)
+		protected VList<LNode> ParseHostCode(Token group, ParsingMode mode)
 		{
 			var ch = group.Children;
 			if (ch != null) {
@@ -289,7 +289,7 @@ namespace Loyc.LLParserGenerator
 
 		protected LNode ParseHostBraces(Token p, int endIndex, ParsingMode mode)
 		{
-			return F.Braces(ParseHostArgList(p, mode), p.StartIndex, endIndex);
+			return F.Braces(ParseHostCode(p, mode), p.StartIndex, endIndex);
 		}
 		
 		LNode ParseParens(Token p, int endIndex)

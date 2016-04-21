@@ -452,8 +452,8 @@ namespace Loyc.LLParserGenerator
 		{
 			Test(@"LLLPG lexer {
 				rule NTokens(max::int) @[ 
-					{x:=0;} (&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
-					greedy  (&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
+					{var x=0;} (&{x < max}               ~('\n'|'\r'|' ')+  {x++;})?
+					greedy     (&{x < max} greedy(' ')+ (~('\n'|'\r'|' '))* {x++;})*
 				];
 				rule Line @[ c:='0'..'9' NTokens(c - '0') ('\n'|'\r')? ];
 			}", 
@@ -1861,7 +1861,7 @@ namespace Loyc.LLParserGenerator
 					public static ParseVoid(string input) returns (void) ::=
 						{var src = (LexerSource)input;}
 						""void"";
-					public static ParseVoid2[string input] @init { BeforeParse(); } ::= ParseVoid[input];
+					public static token ParseVoid2[string input] @init { BeforeParse(); } ::= ParseVoid[input];
 				};", @"
 				public static int ParseInt(string input)
 				{
@@ -1894,6 +1894,46 @@ namespace Loyc.LLParserGenerator
 					BeforeParse();
 					ParseVoid(input);
 				}", null, EcsLanguageService.Value);
+		}
+
+		[Test]
+		public void AntlrStyleWithHostCode()
+		{
+			Test(@"
+			LLLPG (parser(laType: TT)) @{
+				alias('(' = TT.LParen);
+				alias(')' = TT.RParen);
+				@members { Statement1(); Statement2(); }
+				
+				{int _depth = 0;}
+				public ScanParens : 
+				[ '(' {_depth++;} 
+				| ')' {_depth--;} 
+				| ~('('|')')
+				]*;
+			};", @"
+				Statement1();
+				Statement2();
+				int _depth = 0;
+				public void ScanParens()
+				{
+					TT la0;
+					for (;;) {
+						la0 = (TT) LA0;
+						if (la0 == TT.LParen) {
+							Skip();
+							_depth++;
+						} else if (la0 == TT.RParen) {
+							Skip();
+							_depth--;
+						// Strange, I thought we got rid of such redundant checks?
+						} else if (!(la0 == (TT) EOF || la0 == TT.LParen || la0 == TT.RParen))
+							Skip();
+						else
+							break;
+					}
+				}", 
+				null, EcsLanguageService.Value);
 		}
 
 		[Test]
