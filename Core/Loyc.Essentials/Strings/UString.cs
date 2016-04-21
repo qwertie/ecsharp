@@ -559,5 +559,26 @@ namespace Loyc
 			else
 				return new Pair<UString, UString>(this, UString.Null);
 		}
+
+		public static StringBuilder Append(StringBuilder sb, UString s)
+		{
+			if (s._count == s._str.Length)
+				return sb.Append(s);
+			else {
+				sb.EnsureCapacity(sb.Length + s.Length);
+				for (int i = s._start; i < s._start + s._count; i++)
+					sb.Append(s[i]);
+				return sb;
+			}
+		}
+
+		public static UString operator+(UString a, UString b)
+		{
+			if (b.Count == 0)
+				return a;
+			if (a.Count == 0)
+				return b;
+			return Append(Append(new StringBuilder(a.Count + b.Count), a), b).ToString();
+		}
 	}
 }

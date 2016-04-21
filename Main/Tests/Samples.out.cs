@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -562,7 +562,7 @@ struct EmailAddress
 	}
 	public override string ToString()
 	{
-		return UserName + "@" + Domain;
+		return (UserName + "@" + Domain).ToString();
 	}
 	[ThreadStatic]
 	static LexerSource<UString> src;

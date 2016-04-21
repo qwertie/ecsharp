@@ -134,7 +134,7 @@ namespace ADT
 struct EmailAddress
 {
   public EmailAddress(public UString UserName, public UString Domain) {}
-  public override string ToString() { return UserName + "@" + Domain; }
+  public override string ToString() { return (UserName + "@" + Domain).ToString(); }
 
   LLLPG (lexer(inputSource(src), inputClass(LexerSource)));
   // LexerSource provides the APIs expected by LLLPG. This is

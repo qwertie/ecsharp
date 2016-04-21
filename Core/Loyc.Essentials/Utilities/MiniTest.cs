@@ -403,7 +403,7 @@ namespace Loyc.MiniTest
 				
 				int TailLength = "-----------".Length;
 				var prefix = b.Left(b_i);
-				int i_adjusted = ParseHelpers.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
+				int i_adjusted = ParseHelpers.EscapeCStyle(prefix, EscapeC.Control | EscapeC.DoubleQuotes, '"').Length;
 				msg.Append(' ', 2);
 				msg.Append('-', TailLength + i_adjusted);
 				msg.Append("^\n");
