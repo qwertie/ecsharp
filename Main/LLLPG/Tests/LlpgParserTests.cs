@@ -171,7 +171,7 @@ namespace Loyc.LLParserGenerator
 			foreach (var tuple in ruleTuples)
 			{
 				string ruleName = tuple.Item1, inputExpr = tuple.Item2;
-				var node = LesLanguageService.Value.ParseSingle(inputExpr, MessageSink.Console, ParsingMode.Exprs);
+				var node = LesLanguageService.Value.ParseSingle(inputExpr, MessageSink.Console, ParsingMode.Expressions);
 				var rule = new Rule(node, GSymbol.Get(ruleName), null);
 				rules.Add(Pair.Create(rule, node));
 			}

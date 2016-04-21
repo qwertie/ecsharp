@@ -106,7 +106,7 @@ namespace LeMP.Prelude
 						F.Braces(group.OrderBy(mi => mi.Macro.Method.Name).Select(mi =>
 						{
 							StringBuilder descr = new StringBuilder(string.Format("\n\t\t### {0} ###\n",
-								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingMode.Exprs)));
+								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingMode.Expressions)));
 							if (!string.IsNullOrWhiteSpace(mi.Info.Syntax))
 								descr.Append("\n\t\t\t").Append(mi.Info.Syntax.Replace("\n", "\n\t\t")).Append("\n");
 							if (!string.IsNullOrWhiteSpace(mi.Info.Description))

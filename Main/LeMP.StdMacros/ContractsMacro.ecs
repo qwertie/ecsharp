@@ -489,8 +489,8 @@ namespace LeMP
 					methodName = methodName.Args.Last;
 				var ps = ParsingService.Current;
 				return F.Literal(string.Format(formatStr,
-					ps.Print(methodName, Context.Sink, ParsingMode.Exprs),
-					ps.Print(condition, Context.Sink, ParsingMode.Exprs)));
+					ps.Print(methodName, Context.Sink, ParsingMode.Expressions),
+					ps.Print(condition, Context.Sink, ParsingMode.Expressions)));
 			}
 
 			// For properties only

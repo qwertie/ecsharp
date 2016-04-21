@@ -1,4 +1,4 @@
-// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from AssertMacro.ecs by LeMP custom tool. LeMP version: 1.7.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -43,13 +43,13 @@ namespace LeMP
 			GetFnAndClassName(context, out @class, out fn);
 			var ps = ParsingService.Current;
 			if (fn == null)
-				return @class == null ? null : ps.Print(@class, null, ParsingMode.Exprs);
+				return @class == null ? null : ps.Print(@class, null, ParsingMode.Expressions);
 			else if (@class == null)
-				return ps.Print(fn, null, ParsingMode.Exprs);
+				return ps.Print(fn, null, ParsingMode.Expressions);
 			else {
 				while (fn.CallsMin(S.Dot, 2))
 					fn = fn.Args.Last;
-				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Exprs), ps.Print(fn, null, ParsingMode.Exprs));
+				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Expressions), ps.Print(fn, null, ParsingMode.Expressions));
 			}
 		}
 		static readonly LNode defaultAssertMethod = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "System"), LNode.Id((Symbol) "Diagnostics"))), LNode.Id((Symbol) "Debug"))), LNode.Id((Symbol) "Assert")));
@@ -65,7 +65,7 @@ namespace LeMP
 				foreach (var condition in node.Args) {
 					string name = GetFnAndClassNameString(context) ?? "";
 					var ps = ParsingService.Current;
-					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", name, ps.Print(condition, context.Sink, ParsingMode.Exprs)));
+					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
 					var assertFn = GetAssertMethod(context);
 					if (assertFn.IsIdNamed(node.Name))
 						return null;

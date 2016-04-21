@@ -67,9 +67,9 @@ namespace Loyc.Syntax.Les
 			// compromise I'll check if the source file is larger than a 
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
-			bool exprMode = inputType == ParsingMode.Exprs;
+			bool exprMode = inputType == ParsingMode.Expressions;
 			char _ = '\0';
-			if (inputType == ParsingMode.Exprs || file.Text.TryGet(255, ref _)) {
+			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
 				LesParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new LesParser(input, file, msgs);
@@ -77,7 +77,7 @@ namespace Loyc.Syntax.Les
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
 				}
-				if (inputType == ParsingMode.Exprs)
+				if (inputType == ParsingMode.Expressions)
 					return parser.ExprList();
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();

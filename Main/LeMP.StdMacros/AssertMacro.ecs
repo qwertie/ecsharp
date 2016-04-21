@@ -39,14 +39,14 @@ namespace LeMP
 			GetFnAndClassName(context, out @class, out fn);
 			var ps = ParsingService.Current;
 			if (fn == null)
-				return @class == null ? null : ps.Print(@class, null, ParsingMode.Exprs);
+				return @class == null ? null : ps.Print(@class, null, ParsingMode.Expressions);
 			else if (@class == null)
-				return ps.Print(fn, null, ParsingMode.Exprs);
+				return ps.Print(fn, null, ParsingMode.Expressions);
 			else {
 				while (fn.CallsMin(S.Dot, 2))
 					fn = fn.Args.Last;
-				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Exprs),
-				                                ps.Print(fn, null, ParsingMode.Exprs));
+				return string.Format("{0}.{1}", ps.Print(@class, null, ParsingMode.Expressions),
+				                                ps.Print(fn, null, ParsingMode.Expressions));
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace LeMP
 					string name = GetFnAndClassNameString(context) ?? "";
 					var ps = ParsingService.Current;
 					LNode condStr = F.Literal(string.Format("Assertion failed in `{0}`: {1}", 
-						name, ps.Print(condition, context.Sink, ParsingMode.Exprs)));
+						name, ps.Print(condition, context.Sink, ParsingMode.Expressions)));
 				
 					var assertFn = GetAssertMethod(context);
 					if (assertFn.IsIdNamed(node.Name))

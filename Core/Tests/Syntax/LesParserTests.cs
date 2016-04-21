@@ -117,7 +117,7 @@ namespace Loyc.Syntax.Les
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = LesLanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Exprs : ParsingMode.Stmts).ToList();
+			var results = LesLanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements).ToList();
 			for (int i = 0; i < expected.Length; i++)
 				AreEqual(expected[i], results[i]);
 			AreEqual(expected.Length, results.Count);

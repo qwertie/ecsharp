@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -252,7 +252,7 @@ namespace Loyc.LLParserGenerator
 				var lb = MatchAny();
 				var rb = Match((int) TT.RBrace);
 				#line 114 "StageOneParserGrammar.ecs"
-				return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Exprs);
+				return ParseHostBraces(lb, rb.EndIndex, ParsingMode.Expressions);
 				#line default
 			} else {
 				var e = PrefixExpr();
@@ -379,7 +379,7 @@ namespace Loyc.LLParserGenerator
 							rp = Match((int) TT.RBrack);
 						}
 						#line 141 "StageOneParserGrammar.ecs"
-						a = F.Call(a, ParseHostArgList(lp, ParsingMode.Exprs), a.Range.StartIndex, rp.EndIndex);
+						a = F.Call(a, ParseHostCode(lp, ParsingMode.Expressions), a.Range.StartIndex, rp.EndIndex);
 						#line default
 					}
 				}
@@ -426,7 +426,7 @@ namespace Loyc.LLParserGenerator
 					var lb = MatchAny();
 					var rb = Match((int) TT.RBrace);
 					#line 153 "StageOneParserGrammar.ecs"
-					e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Stmts);
+					e = ParseHostBraces(lb, rb.EndIndex, ParsingMode.Statements);
 					#line default
 				}
 				break;

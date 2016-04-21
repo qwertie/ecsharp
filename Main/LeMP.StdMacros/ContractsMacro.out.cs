@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -384,7 +384,7 @@ namespace LeMP
 				while (methodName.CallsMin(S.Dot, 2))
 					methodName = methodName.Args.Last;
 				var ps = ParsingService.Current;
-				return F.Literal(string.Format(formatStr, ps.Print(methodName, Context.Sink, ParsingMode.Exprs), ps.Print(condition, Context.Sink, ParsingMode.Exprs)));
+				return F.Literal(string.Format(formatStr, ps.Print(methodName, Context.Sink, ParsingMode.Expressions), ps.Print(condition, Context.Sink, ParsingMode.Expressions)));
 			}
 			public void PrependStmtsToGetterOrSetter(ref LNode braces, int getterIndex, LNode getter)
 			{

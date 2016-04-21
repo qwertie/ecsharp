@@ -83,7 +83,7 @@ namespace Loyc.Syntax.Les
 			p.Writer = w;
 			p.Errors = errors;
 
-			if (object.Equals(mode, NodeStyle.Expression) || mode == ParsingMode.Exprs)
+			if (object.Equals(mode, NodeStyle.Expression) || mode == ParsingMode.Expressions)
 				p.Print(node, 0, StartStmt, "");
 			else
 				p.Print(node, 0, StartStmt, ";");
