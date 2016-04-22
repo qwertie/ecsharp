@@ -88,9 +88,9 @@ namespace Loyc.Ecs
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
 			char _ = '\0';
-			if (inputType == ParsingMode.FormalArguments)
-				inputType = ParsingMode.Expressions;
-			if (inputType == ParsingMode.Expressions || inputType == ParsingMode.Types || file.Text.TryGet(255, ref _)) {
+			if (file.Text.TryGet(255, ref _) || inputType == ParsingMode.FormalArguments || 
+				inputType == ParsingMode.Types || inputType == ParsingMode.Expressions)
+			{
 				EcsParser parser = _parser;
 				if (parser == null)
 					_parser = parser = new EcsParser(input, file, msgs);
@@ -99,12 +99,16 @@ namespace Loyc.Ecs
 					parser.Reset(input, file);
 				}
 				if (inputType == ParsingMode.Expressions)
-					return parser.ParseExprs();
+					return parser.ParseExprs(false, allowUnassignedVarDecl: false);
+				else if (inputType == ParsingMode.FormalArguments)
+					return parser.ParseExprs(false, allowUnassignedVarDecl: true);
 				else if (inputType == ParsingMode.Types)
 					return LNode.List(parser.DataType());
 				else
 					return parser.ParseStmtsGreedy();
-			} else {
+			}
+			else
+			{
 				var parser = new EcsParser(input, file, msgs);
 				return parser.ParseStmtsLazy().Buffered();
 			}

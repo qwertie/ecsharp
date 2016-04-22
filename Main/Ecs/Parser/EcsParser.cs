@@ -96,11 +96,11 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 
-		public IListSource<LNode> ParseExprs()
+		public IListSource<LNode> ParseExprs(bool allowTrailingComma = false, bool allowUnassignedVarDecl = false)
 		{
 			var list = new VList<LNode>();
 			try {
-				ExprList(ref list);
+				ExprList(ref list, allowTrailingComma, allowUnassignedVarDecl);
 			} catch (Exception ex) { UnhandledException(ex); }
 			return list;
 		}
