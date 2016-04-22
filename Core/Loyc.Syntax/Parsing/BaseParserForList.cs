@@ -46,7 +46,7 @@ namespace Loyc.Syntax
 		/// <param name="list">A list of tokens that the derived class will parse.</param>
 		/// <param name="eofToken">A token value to return when the input position 
 		/// reaches the end of the token list. Ideally <c>eofToken.StartIndex</c>
-		/// should contain the position of EOF, but the base class method
+		/// would contain the position of EOF, but the base class method
 		/// <see cref="BaseParser{Tok,MT}.LaIndexToCharIndex"/> does not trust this
 		/// value, and will ensure that the character index returned for EOF is at 
 		/// least as large as the character index of the last token in the file. 
@@ -56,7 +56,7 @@ namespace Loyc.Syntax
 		/// <param name="file">A source file object that will be returned by the 
 		/// <see cref="SourceFile"/> property. By default, this object is used to 
 		/// get the file name, line number and column number shown in parser errors. 
-		/// If you are using <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
+		/// If your lexer uses <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
 		/// you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
 		/// property. The <see cref="SourceFile"/> property (in this class) will 
 		/// return this value. If this parameter is null, then by default, error 

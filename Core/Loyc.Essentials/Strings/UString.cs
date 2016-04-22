@@ -318,7 +318,6 @@ namespace Loyc
 		public static bool operator !=(UString x, UString y) { return !x.Equals(y); }
 		public static explicit operator string(UString s) { return s._str.Substring(s._start, s._count); }
 		public static implicit operator UString(string s) { return new UString(s); }
-		public static implicit operator UString(StringSlice s) { return new UString(s.InternalString, s.InternalStart, s.Count); }
 
 		/// <summary>Synonym for Slice()</summary>
 		public UString Substring(int start, int count)

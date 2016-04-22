@@ -171,7 +171,9 @@ namespace Loyc.Collections
 			return slice;
 		}
 
+		public static explicit operator string(StringSlice s) { return s.ToString(); }
 		public static implicit operator StringSlice(UString s) { return new StringSlice(s.InternalString, s.InternalStart, s.Length); }
+		public static implicit operator UString(StringSlice s) { return new UString(s.InternalString, s.InternalStart, s.Count); }
 		public static implicit operator StringSlice(string s)  { return new StringSlice(s); }
 
 		#region GetHashCode, Equals, ToString

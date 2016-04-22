@@ -144,15 +144,15 @@ namespace Loyc.Syntax
 			return true;
 		}
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-		public static string UnescapeCStyle(string s)
+		public static string UnescapeCStyle(UString s)
 		{
-			return UnescapeCStyle(s, 0, s.Length, false);
+			return UnescapeCStyle(s.InternalString, s.InternalStart, s.Length, false);
 		}
 
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
 		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
 		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes)
+		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes = false)
 		{
 			StringBuilder s2 = new StringBuilder(length);
 			for (int i = index; i < index + length; ) {
