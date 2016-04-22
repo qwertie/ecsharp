@@ -17,6 +17,9 @@ namespace Loyc.Syntax
 		/// is beyond the end of the file, this should retun the final position in 
 		/// the file.</remarks>
 		SourcePos IndexToLine(int index);
+		
+		/// <summary>Gets the file name used in results returned by <see cref="IndexToLine(int)"/>.</summary>
+		string FileName { get; }
 	}
 
 	/// <summary>

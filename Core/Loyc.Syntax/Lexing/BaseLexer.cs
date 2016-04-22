@@ -119,8 +119,17 @@ namespace Loyc.Syntax.Lexing
 			Reset(CharSource, FileName, 0, SourceFile != null);
 		}
 
-		/// <summary>Throws FormatException when it receives an error. Non-errors
+		/// <summary>Throws LogException when it receives an error. Non-errors
 		/// are sent to <see cref="MessageSink.Current"/>.</summary>
+		public static readonly IMessageSink LogExceptionErrorSink = MessageSink.FromDelegate(
+			(sev, location, fmt, args) => {
+				LogMessage msg = new LogMessage(sev, location, fmt, args);
+				if (sev >= Severity.Error)
+					throw new LogException(msg);
+				else
+					msg.WriteTo(MessageSink.Current);
+			});
+		[Obsolete("Please use LogExceptionErrorSink instead")]
 		public static readonly IMessageSink FormatExceptionErrorSink = MessageSink.FromDelegate(
 			(sev, location, fmt, args) => { 
 				if (sev >= Severity.Error)
@@ -131,11 +140,11 @@ namespace Loyc.Syntax.Lexing
 
 		private IMessageSink _errorSink;
 		/// <summary>Gets or sets the object to which error messages are sent. The
-		/// default object is <see cref="FormatExceptionErrorSink"/>, which throws
-		/// <see cref="FormatException"/> if an error occurs.</summary>
+		/// default object is <see cref="LogExceptionErrorSink"/>, which throws
+		/// an exception if an error occurs.</summary>
 		public IMessageSink ErrorSink
 		{
-			get { return _errorSink ?? FormatExceptionErrorSink; }
+			get { return _errorSink ?? LogExceptionErrorSink; }
 			set { _errorSink = value; }
 		}
 
@@ -147,7 +156,7 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		private string _fileName;
-		protected string FileName 
+		public string FileName 
 		{ 
 			get { return _fileName; }
 		}
@@ -239,7 +248,7 @@ namespace Loyc.Syntax.Lexing
 		/// <summary>Default newline parser that matches '\n' or '\r' unconditionally.</summary>
 		/// <remarks>
 		/// You can use this implementation in an LLLPG lexer with "extern", like so:
-		/// <c>extern rule Newline @[ '\r' + '\n'? | '\n' ];</c>
+		/// <c>extern rule Newline @{ '\r' + '\n'? | '\n' };</c>
 		/// By using this implementation everywhere in the grammar in which a 
 		/// newline is allowed (even inside comments and strings), you can ensure
 		/// that <see cref="AfterNewline()"/> is called, so that the line number
@@ -575,7 +584,7 @@ namespace Loyc.Syntax.Lexing
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(0, "An expected condition was false: {0}", expectedDescr);
+				Error(0, "Syntax error. A required condition was not met: '{0}'", expectedDescr);
 		}
 
 		/// <summary>This method is called to handle errors that occur during lexing.</summary>

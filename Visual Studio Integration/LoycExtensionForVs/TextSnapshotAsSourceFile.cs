@@ -73,6 +73,7 @@ namespace Loyc.VisualStudio
 			var line = _ss.GetLineFromPosition(index);
 			return new SourcePos("", line.LineNumber + 1, index - line.Start.Position + 1);
 		}
+
 		public int LineToIndex(LineAndCol pos)
 		{
 			if (pos.Line <= 0)
@@ -92,7 +93,7 @@ namespace Loyc.VisualStudio
 			return line.Start.Position;
 		}
 
-		string ISourceFile.FileName
+		string IIndexToLine.FileName
 		{
 			get { return ""; }
 		}

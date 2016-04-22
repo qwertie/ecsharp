@@ -66,6 +66,10 @@ namespace Loyc.Syntax.Lexing
 		void IDisposable.Dispose() { _e.Dispose(); }
 		void IEnumerator.Reset() { _e.Reset(); }
 
+		public string FileName
+		{
+			get { return SourceFile.FileName; }
+		}
 		public SourcePos IndexToLine(int index)
 		{
 			return SourceFile.IndexToLine(index);

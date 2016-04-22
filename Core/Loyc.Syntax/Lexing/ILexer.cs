@@ -70,6 +70,10 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { return Lexer.InputPosition; }
 		}
+		public string FileName
+		{
+			get { return Lexer.FileName; }
+		}
 		public SourcePos IndexToLine(int index)
 		{
 			return Lexer.IndexToLine(index);
@@ -91,10 +95,11 @@ namespace Loyc.Syntax.Lexing
 
 		protected void WriteError(int index, string msg, params object[] args)
 		{
+			LogMessage lm = new LogMessage(Severity.Error, SourceFile.IndexToLine(index), msg, args);
 			if (ErrorSink == null)
-				throw new FormatException(MessageSink.FormatMessage(Severity.Error, SourceFile.IndexToLine(index), msg, args));
+				throw new LogException(lm);
 			else
-				ErrorSink.Write(Severity.Error, SourceFile.IndexToLine(index), msg, args);
+				lm.WriteTo(ErrorSink);
 		}
 	}
 }

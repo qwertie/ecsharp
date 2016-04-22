@@ -18,14 +18,35 @@ namespace Loyc.Syntax
 	{
 		protected static HashSet<MatchType> NewSet(params MatchType[] items) { return new HashSet<MatchType>(items); }
 
+		/// <summary>Initializes the base class.</summary>
+		/// <param name="file">A source file object that will be returned by the 
+		/// <see cref="SourceFile"/> property. By default, this object is used to 
+		/// get the file name, line number and column number shown in parser errors. 
+		/// If your lexer uses <see cref="BaseLexer"/> or <see cref="LexerSource"/>, 
+		/// you can get this object from the <see cref="BaseLexer{C}.SourceFile"/> 
+		/// property. The <see cref="SourceFile"/> property (in this class) will 
+		/// return this value. If this parameter is null, then by default, error 
+		/// messages will only show the character index instead of the file, line 
+		/// number and column number.</param>
+		/// <param name="startIndex">The initial value of <see cref="InputPosition"/>.</param>
 		protected BaseParser(ISourceFile file = null, int startIndex = 0) { 
 			EOF = EofInt();
 			_sourceFile = file;
 			_inputPosition = startIndex;
 		}
 
-		/// <summary>Throws FormatException when it receives an error. Non-errors
+		/// <summary>Throws LogException when it receives an error. Non-errors
 		/// are sent to <see cref="MessageSink.Current"/>.</summary>
+		public static readonly IMessageSink LogExceptionErrorSink = MessageSink.FromDelegate(
+			(sev, location, fmt, args) =>
+			{
+				LogMessage msg = new LogMessage(sev, location, fmt, args);
+				if (sev >= Severity.Error)
+					throw new LogException(msg);
+				else
+					msg.WriteTo(MessageSink.Current);
+			});
+		[Obsolete("Please use LogExceptionErrorSink instead")]
 		public static readonly IMessageSink FormatExceptionErrorSink = MessageSink.FromDelegate(
 			(sev, location, fmt, args) =>
 			{
@@ -37,11 +58,11 @@ namespace Loyc.Syntax
 
 		private IMessageSink _errorSink;
 		/// <summary>Gets or sets the object to which error messages are sent. The
-		/// default object is <see cref="FormatExceptionErrorSink"/>, which throws
-		/// <see cref="FormatException"/> if an error occurs.</summary>
+		/// default object is <see cref="LogExceptionErrorSink"/>, which throws
+		/// an exception if an error occurs.</summary>
 		public IMessageSink ErrorSink
 		{
-			get { return _errorSink ?? FormatExceptionErrorSink; }
+			get { return _errorSink ?? LogExceptionErrorSink; }
 			set { _errorSink = value; }
 		}
 
@@ -383,7 +404,7 @@ namespace Loyc.Syntax
 		protected virtual void Check(bool expectation, string expectedDescr = "")
 		{
 			if (!expectation)
-				Error(0, Localize.Localized("An expected condition was false: {0}", expectedDescr));
+				Error(0, Localize.Localized("Syntax error. A required condition was not met: '{0}'", expectedDescr));
 		}
 	}
 	/// <summary>

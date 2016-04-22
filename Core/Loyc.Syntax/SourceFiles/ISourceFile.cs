@@ -13,7 +13,6 @@ namespace Loyc.Syntax
 	public interface ISourceFile : IIndexPositionMapper
 	{
 		ICharSource Text { get; }
-		string FileName { get; }
 	}
 
 	/// <summary>A default implementation of ISourceFile based on <see cref="IndexPositionMapper"/>.</summary>

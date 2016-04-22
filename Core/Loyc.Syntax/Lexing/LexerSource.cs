@@ -154,29 +154,10 @@ namespace Loyc.Syntax.Lexing
 		protected override void Error_Renamed(int lookaheadIndex, string format)
 			{ Error(lookaheadIndex, format); }
 		public new virtual void Error(int lookaheadIndex, string format)
-			{ Error(lookaheadIndex, format, (object[])null); }
-		public new virtual void Error(int lookaheadIndex, string format, params object[] args) 
-		{
-			int index = InputPosition + lookaheadIndex;
-			SourcePos pos;
-			if (SourceFile == null)
-				pos = new SourcePos(FileName, LineNumber, index - LineStartAt + 1);
-			else
-				pos = SourceFile.IndexToLine(index);
-
-			if (ErrorSink != null) {
-				if (args != null)
-					ErrorSink.Write(Severity.Error, pos, format, args);
-				else
-					ErrorSink.Write(Severity.Error, pos, format);
-			} else {
-				string msg;
-				if (args != null)
-					msg = Localize.Localized(format, args);
-				else
-					msg = Localize.Localized(format);
-				throw new FormatException(pos + ": " + msg);
-			}
+			{ Error(lookaheadIndex, format, EmptyArray<object>.Value); }
+		public new virtual void Error(int lookaheadIndex, string format, params object[] args) {
+			// That's right, this method is not any different, we're just making it public
+			base.Error(lookaheadIndex, format, args);
 		}
 
 		/// <inheritdoc/>

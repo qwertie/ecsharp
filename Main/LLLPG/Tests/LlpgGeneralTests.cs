@@ -1852,7 +1852,7 @@ namespace Loyc.LLParserGenerator
 		public void AntlrStyle()
 		{
 			Test(@"
-				LLLPG (lexer(inputSource(src), inputClass(LexerSource))) @{
+				LLLPG (lexer(inputSource: src, inputClass: LexerSource)) @{
 					public static ParseInt[string input] returns [int result] :
 						{var src = (LexerSource)input;}
 						( d:='0'..'9' {$result = $result * 10 + (d - '0');} )+;
@@ -1861,7 +1861,7 @@ namespace Loyc.LLParserGenerator
 					public static ParseVoid(string input) returns (void) ::=
 						{var src = (LexerSource)input;}
 						""void"";
-					public static token ParseVoid2[string input] @init { BeforeParse(); } ::= ParseVoid[input];
+					public static ParseVoid2[string input] @init { BeforeParse(); } ::= ParseVoid[input];
 				};", @"
 				public static int ParseInt(string input)
 				{
@@ -1894,6 +1894,7 @@ namespace Loyc.LLParserGenerator
 					BeforeParse();
 					ParseVoid(input);
 				}", null, EcsLanguageService.Value);
+
 		}
 
 		[Test]

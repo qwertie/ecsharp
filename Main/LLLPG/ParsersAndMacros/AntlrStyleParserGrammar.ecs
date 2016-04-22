@@ -40,7 +40,7 @@ namespace Loyc.LLParserGenerator
 		{
 			var list = ParseHostCode(paren, ParsingMode.FormalArguments);
 			if (list.Count != 1)
-				Error(-1, "LLLPG: Expected a single variable declaration (or data type) '{0}'", ToString(paren.TypeInt));
+				Error(-1, "LLLPG: Expected a single variable declaration (or data type) after '{0}'", ToString(paren.TypeInt));
 			LNode result;
 			if (list.Count > 0)
 				result = list[0];
@@ -77,6 +77,7 @@ namespace Loyc.LLParserGenerator
 		alias(":" = TT.Colon);
 		alias("::=" = TT.StartColon);
 		alias(";" = TT.Semicolon);
+		alias("@" = TT.At);
 
 		// The output is essentially #rule($returnType, $name, $args, $grammarExpr)
 		rule LNode Rule() @{
@@ -87,8 +88,9 @@ namespace Loyc.LLParserGenerator
 			}
 
 			// Attributes
-			[ "[" "]"        {attrs = ParseHostCode($"[", ParsingMode.Expressions);} ]*
-			[ TT.AttrKeyword {attrs.Add(F.Id($(TT.AttrKeyword)));}                ]*
+			[ "@"?           // LES expects @ before attributes
+			  "[" "]"        {attrs.AddRange(ParseHostCode($"[", ParsingMode.Expressions));} ]*
+			[ TT.AttrKeyword {attrs.Add(F.Id($(TT.AttrKeyword)));} ]*
 			
 			{bool isToken  = false;}
 			[	&{Is($LI,_token)} TT.Id {isToken = true;}
@@ -118,9 +120,15 @@ namespace Loyc.LLParserGenerator
 				["{" "}" | TT.Id]?
 			]?
 			
-			( ":"|"::=" | error {Error(0, "Expected ':' or '::=' to begin the rule");} greedy[TT.Assignment]? )
-			gExpr:=GrammarExpr
-			";"
+			(	// ANTLR style
+				( ":"|"::=" | error {Error(0, "Expected ':' or '::=' to begin the rule");} greedy[TT.Assignment]? )
+				gExpr:GrammarExpr
+				";"
+			|	// also allow EC#/LES style, although support is incomplete as the return type must be "returns [...]"
+				"@" "{"
+				gExpr:GrammarExpr
+				"}" ";"?
+			)
 			{
 				if (initBrace != null) {
 					var initAction = ParseHostBraces(initBrace.Value, initRB.EndIndex, ParsingMode.Statements);

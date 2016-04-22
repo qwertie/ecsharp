@@ -44,6 +44,7 @@ namespace Loyc.LLParserGenerator
 		AndNot      = TokenKind.Operator + 11, // &!
 		Minus       = TokenKind.Operator + 12, // -
 		StartColon  = TokenKind.Operator + 12, // ::= to mark rule start
+		At          = TokenKind.Operator + 13, // @
 
 		AttrKeyword = TokenKind.AttrKeyword,
 		TypeKeyword = TokenKind.TypeKeyword,
@@ -214,6 +215,7 @@ namespace Loyc.LLParserGenerator
 			{S.Comma,    TT.Comma},
 
 			// Used by AntlrStyleParser
+			{GSymbol.Get("@"), TT.At},
 			{GSymbol.Get("::="), TT.StartColon},
 			{GSymbol.Get("returns"), TT.Returns}
 		};
