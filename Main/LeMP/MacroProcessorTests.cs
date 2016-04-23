@@ -245,9 +245,7 @@ namespace LeMP
 		[Test]
 		public void CorePreludeOperators()
 		{
-			Test("static x := (new List!int(100));",
-			     "static var x = new List<int>(100);");
-			Test(@"x = y `cast` int; x = y `as` string;",
+			Test(@"x = y -> int; x = y `as` string;",
 			     "x = (int)y; x = y as string;");
 			Test(@"var zero = default(int);",
 			     "var zero = default(int);");

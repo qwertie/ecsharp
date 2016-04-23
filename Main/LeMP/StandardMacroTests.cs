@@ -23,7 +23,14 @@ namespace LeMP
 		}
 
 		[Test]
-		public void TestUseBlockExpressions()
+		public void ColonEquals()
+		{
+			TestEcs("x := new List<int>(100);",
+			     "var x = new List<int>(100);");
+		}
+
+		[Test]
+		public void TestUseBlockExpressions_Basics()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
 			TestEcs("#useSequenceExpressions; " +
@@ -58,8 +65,6 @@ namespace LeMP
 							}
 						}
 					}
-					var list = new List<int>();
-					Foo(list);
 				}");
 
 			// Test a nested run sequence
@@ -77,20 +82,24 @@ namespace LeMP
 			var n = StandardMacros.NextTempCounter;
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
-					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d), e);
-				}",
-				@"void f() {
+					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d) + 1, e);
+				}", @"
+				void f() {
 					var a_1 = a;
 					PrepareB();
 					var GetB_2 = GetB();
 					var c_3 = c;
 					var d = D();
-					Foo(a_1, GetB_2, c_3, d, e);
-				}"
-				.Replace("a_1", "a_" + n)
+					Foo(a_1, GetB_2, c_3, d + 1, e);
+				}
+				".Replace("a_1", "a_" + n)
 				.Replace("GetB_2", "GetB_" + (n+1))
-				.Replace("c_2", "c_" + (n+2)));
+				.Replace("c_3", "c_" + (n+2)));
+		}
 
+		[Test]
+		public void TestUseBlockExpressions_FieldInitializers()
+		{
 			// Test field initializers
 			TestEcs(@"#useSequenceExpressions;
 				static double nine = Math.Sqrt(9)::three * three;
@@ -98,19 +107,35 @@ namespace LeMP
 				", @"
 				static double nine = nine_initializer();
 				static double nine_initializer() {
-					double three = Math.Sqrt(9);
+					var three = Math.Sqrt(9);
 					return three * three;
 				}
 				Pair<Symbol,Symbol> p = p_initializer();
 				static Pair<Symbol,Symbol> p_initializer() {
-					string str = ""foo""(->Symbol);
+					var str = ""foo""(->Symbol);
 					return Pair.Create(str, str);
 				}
 				");
+		}
 
+		[Test]
+		public void TestUseBlockExpressions_InLoops()
+		{
+			// TODO
+		}
+
+		[Test]
+		public void TestUseBlockExpressions_InOtherConstructs()
+		{
+			// TODO
+		}
+
+		[Test]
+		public void TestUseBlockExpressions_LambdaMethod()
+		{
 			// Test lambda method
 			TestEcs(@"#useSequenceExpressions;
-				static double Nine() = Math.Sqrt(9)::three * three;
+				static double Nine => Math.Sqrt(9)::three * three;
 				", @"
 				static double Nine() {
 					double three = Math.Sqrt(9);

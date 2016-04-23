@@ -390,18 +390,5 @@ namespace LeMP
 		{
 			return LeMP.Prelude.Les.Macros.IfUnless(node, true, sink);
 		}
-
-		[LexicalMacro("#runSequence { Stmts; };",
-			"Allows #runSequence at brace-scope without the use of #useVarDeclExpressions",
-			"#runSequence")]
-		public static LNode runSequence(LNode node, IMacroContext context)
-		{
-			if (context.Parent.Calls(S.Braces)) { 
-				if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
-					return node.WithArgs(node.Args[0].Args);
-				return node.WithTarget(S.Splice);
-			}
-			return Reject(context, node, "#useVarDeclExpressions is required to make #runSequence work");
-		}
 	}
 }
