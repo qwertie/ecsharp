@@ -280,7 +280,8 @@ namespace Loyc.MiniTest
 				case StopReason.Inconclusive: throw new InconclusiveException(msg);
 				case StopReason.Success: throw new SuccessException(msg);
 			}
-			throw new TestException(msg);
+			Console.Error.WriteLine(msg);
+			return;
 		}
 
 		/// <summary>Fails a test by invoking <see cref="StopTestHandler"/>.Value(), 
@@ -309,7 +310,7 @@ namespace Loyc.MiniTest
 		/// throws a SuccessException.</summary>
 		public static void Success(string format, params object[] args)
 		{
-			StopTestHandler.Value(StopReason.Inconclusive, format, args);
+			StopTestHandler.Value(StopReason.Success, format, args);
 		}
 
 		/// <summary>Short for Fail("").</summary>
