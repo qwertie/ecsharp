@@ -151,7 +151,7 @@ namespace LeMP
 				return argList;
 			}
 			else
-				return F.Call(LNode_List, list.Select(item => QuoteOne(item, substitutions)));
+				return F.Call(LNode_List, list.SmartSelect(item => QuoteOne(item, substitutions)));
 		}
 
 		private static LNode VarArgExpr(LNode arg)

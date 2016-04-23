@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 1.7.3.0
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 1.7.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -74,7 +74,7 @@ namespace LeMP
 							foreach (var where in parentWheres)
 								wheres.Add(where);
 							if (wheres.Count > oldCount) {
-								arg = arg.WithAttrs(arg.Attrs.Where(a => !a.Calls(S.Where)).Add(LNode.Call(S.Where, LNode.List(wheres))));
+								arg = arg.WithAttrs(arg.Attrs.SmartWhere(a => !a.Calls(S.Where)).Add(LNode.Call(S.Where, LNode.List(wheres))));
 								_genericArgs[i] = arg;
 								changed = true;
 							}

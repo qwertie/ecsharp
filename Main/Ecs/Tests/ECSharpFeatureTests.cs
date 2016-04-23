@@ -447,6 +447,12 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void EcsEasterEgg()
+		{
+			Expr("Foo!x.a", F.Dot(F.Of(Foo, x), a), Mode.ParserTest);
+		}
+
+		[Test]
 		public void EcsMiscTests()
 		{
 			Stmt("using static Foo.x;", Attr(F.Id(S.Static), F.Call(S.Import, F.Dot(Foo, x))));

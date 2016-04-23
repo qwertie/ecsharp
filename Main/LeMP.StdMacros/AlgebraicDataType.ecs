@@ -82,7 +82,8 @@ namespace LeMP
 							foreach (var where in parentWheres)
 								wheres.Add(where);
 							if (wheres.Count > oldCount) {
-								arg = arg.WithAttrs(arg.Attrs.Where(a => !a.Calls(S.Where)).Add(LNode.Call(S.Where, LNode.List(wheres))));
+								arg = arg.WithAttrs(arg.Attrs.SmartWhere(a => !a.Calls(S.Where))
+								                    .Add(LNode.Call(S.Where, LNode.List(wheres))));
 								_genericArgs[i] = arg;
 								changed = true;
 							}

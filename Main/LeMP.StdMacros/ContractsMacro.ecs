@@ -165,8 +165,8 @@ namespace LeMP
 
 					// Now create separate lists of contract attributes for the getter and the setter
 					if (cAttrs.Count != 0) {
-						getterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
-						setterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
+						getterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
+						setterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
 					}
 				}
 				
@@ -312,7 +312,7 @@ namespace LeMP
 			// removed.
 			internal VList<LNode> Process(VList<LNode> attributes, LNode variableName, bool isPropSetter = false)
 			{
-				return attributes.Where(attr => {
+				return attributes.SmartWhere(attr => {
 					LNode exceptionType = null;
 					var mode = GetContractAttrMode(attr, out exceptionType);
 					if (mode != null) {

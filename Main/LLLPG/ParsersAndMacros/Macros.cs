@@ -235,7 +235,6 @@ namespace Loyc.LLPG
 			bool retValIsRule = (isToken = returnType.IsIdNamed(_token)) || returnType.IsIdNamed(_rule);
 			
 			var attrs = node.Attrs;
-			LNode lastAttr = null;
 			if (!retValIsRule) {
 				int i_rule = attrs.IndexWhere(n => n.IsIdNamed(_hash_token) || n.IsIdNamed(_hash_rule));
 				if (i_rule == -1)

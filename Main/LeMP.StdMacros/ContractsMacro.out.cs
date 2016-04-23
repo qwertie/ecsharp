@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.4.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.7.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -115,8 +115,8 @@ namespace LeMP
 						}
 					}
 					if (cAttrs.Count != 0) {
-						getterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
-						setterAttrs = cAttrs.Where(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
+						getterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Getter) != 0);
+						setterAttrs = cAttrs.SmartWhere(a => (PropertyContractInterpretation(a) & ContractAppliesTo.Setter) != 0);
 					}
 				}
 				var sharedPrependStmts = rw.PrependStmts;
@@ -249,7 +249,7 @@ namespace LeMP
 			}
 			internal VList<LNode> Process(VList<LNode> attributes, LNode variableName, bool isPropSetter = false)
 			{
-				return attributes.Where(attr => {
+				return attributes.SmartWhere(attr => {
 					LNode exceptionType = null;
 					var mode = GetContractAttrMode(attr, out exceptionType);
 					if (mode != null) {

@@ -1,7 +1,8 @@
-// Generated from LinqToCollections.ecs by LeMP custom tool. LLLPG version: 1.3.0.0
+// Generated from LinqToCollections.ecs by LeMP custom tool. LeMP version: 1.7.5.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 using System;
@@ -51,6 +52,22 @@ namespace Loyc.Collections
 		{
 			int last = list.Count - 1;
 			return last < 0 ? defaultValue : list[last];
+		}
+		public static IList<T> Skip<T>(this IList<T> list, int start)
+		{
+			return list.Slice(start);
+		}
+		public static IList<T> Take<T>(this IList<T> list, int count)
+		{
+			return list.Slice(0, count);
+		}
+		public static IListSource<T> Skip<T>(this IListSource<T> list, int start)
+		{
+			return list.Slice(start);
+		}
+		public static IListSource<T> Take<T>(this IListSource<T> list, int count)
+		{
+			return list.Slice(0, count);
 		}
 	}
 }

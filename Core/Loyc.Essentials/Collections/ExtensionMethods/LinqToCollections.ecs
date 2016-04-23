@@ -16,16 +16,31 @@ namespace Loyc.Collections
 	public static class LinqToCollections
 	{
 		unroll (List in (IList<T>, IReadOnlyList<T>)) {
-			public static int Count<T>(this List list) { return list.Count; }
-			public static T Last<T>(this List list) {
+			public static int Count<T>(this List list)
+			{
+				return list.Count;
+			}
+			public static T Last<T>(this List list)
+			{
 				int last = list.Count - 1;
 				if (last < 0)
 					throw new EmptySequenceException();
 				return list[last];
 			}
-			public static T LastOrDefault<T>(this List list, T defaultValue = default(T)) {
+			public static T LastOrDefault<T>(this List list, T defaultValue = default(T))
+			{
 				int last = list.Count - 1;
 				return last < 0 ? defaultValue : list[last];
+			}
+		}
+		unroll (List in (IList<T>, IListSource<T>)) {
+			public static List Skip<T>(this List list, int start)
+			{
+				return list.Slice(start);
+			}
+			public static List Take<T>(this List list, int count)
+			{
+				return list.Slice(0, count);
 			}
 		}
 	}
