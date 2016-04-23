@@ -245,7 +245,8 @@ namespace Loyc.Ecs
 
 		/// <summary>Prefers plain C# syntax for certain other things (not covered
 		/// by the other options), even when the syntax tree requests a different 
-		/// style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.</summary>
+		/// style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x,
+		/// and @`at-identifiers` are sanitized.</summary>
 		public bool PreferPlainCSharp { get; set; }
 
 		/// <summary>Controls the locations where spaces should be emitted.</summary>
@@ -931,13 +932,8 @@ namespace Loyc.Ecs
 				return;
 			}
 
-			if (name.Name == "") {
-				_out.Write(inSymbol ? "``" : "@``", true);
-				return;
-			}
-
 			// Check if this is a 'normal' identifier and not a keyword:
-			char first = name.Name[0];
+			char first = name.Name.TryGet(0, '\0');
 			if (first == '#' && !inSymbol) {
 				// Check for keywords like #this and #int32 that should be printed without '#'
 				if (name == S.This && ((flags & Ambiguity.IsCallTarget) == 0 || (flags & Ambiguity.AllowThisAsCallTarget) != 0)) {
@@ -955,12 +951,20 @@ namespace Loyc.Ecs
 				}
 			}
 
+			if (PreferPlainCSharp && !inSymbol) {
+				if (!EcsValidators.IsPlainCsIdentifier(name.Name))
+					name = (Symbol)EcsValidators.SanitizeIdentifier(name.Name);
+			}
+
+			if (name.Name == "") {
+				_out.Write(inSymbol ? "``" : "@``", true);
+				return;
+			}
+
 			// Detect special characters that demand backquotes
 			for (int i = 0; i < name.Name.Length; i++)
 			{
 				char c = name.Name[i];
-				// NOTE: I tried printing things like @* without backquotes, but
-				// then @* <Foo> printed like @*<Foo>, which lexes wrong. 
 				if (!EcsValidators.IsIdentContChar(c)) {
 					// Backquote required for this identifier.
 					if (!inSymbol)
