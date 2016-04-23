@@ -18,6 +18,8 @@ using System.Diagnostics;
 using System.Threading;
 using Loyc.MiniTest;
 using Loyc.Collections;
+using System.Linq;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
@@ -135,6 +137,8 @@ namespace Loyc.Collections
 		/// Does not compare the contents of the lists.</summary>
 		public override bool Equals(object rhs_)
 		{
+			if (rhs_ == null)
+				return false;
 			try {
 				VList<T> rhs = (VList<T>)rhs_;
 				return this == rhs;
@@ -502,18 +506,18 @@ namespace Loyc.Collections
 
 		#region Optimized LINQ-like methods
 
-        /// <summary>Applies a filter to a list, to exclude zero or more
-        /// items.</summary>
-        /// <param name="keep">A function that chooses which items to include
-        /// (exclude items by returning false).</param>
-        /// <returns>The list after filtering has been applied. The original list
-        /// structure is not modified.</returns>
+		/// <summary>Applies a filter to a list, to exclude zero or more
+		/// items.</summary>
+		/// <param name="keep">A function that chooses which items to include
+		/// (exclude items by returning false).</param>
+		/// <returns>The list after filtering has been applied. The original list
+		/// structure is not modified.</returns>
 		/// <remarks>
 		/// If the predicate keeps the first N items it is passed, those N items are
 		/// typically not copied, but shared between the existing list and the new 
 		/// one.
 		/// </remarks>
-		public VList<T> Where(Predicate<T> keep)
+		public VList<T> SmartWhere(Func<T, bool> keep)
 		{
 			if (_localCount == 0)
 				return this;
@@ -527,16 +531,21 @@ namespace Loyc.Collections
 		/// <returns>The list after filtering has been applied. The original list
 		/// structure is not modified.</returns>
 		/// <remarks>
-		/// This is a smart function. If the filter does not modify the first N 
-		/// items it is passed, those N items are typically not copied, but shared 
-		/// between the existing list and the new one.
+		/// This is a smart function. If the filter keeps the first N items it is 
+		/// passed, those N items are typically not copied, but shared between the 
+		/// existing list and the new one.
 		/// </remarks>
 		public VList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
-			if (_localCount == 0)
-				return this;
-			else
-				return (VList<T>)_block.WhereSelect(_localCount, filter, null);
+			return Transform((int i, ref T item) => {
+				var maybe = filter(item);
+				if (!maybe.HasValue)
+					return XfAction.Drop;
+				else if (VListBlock<T>.EqualityComparer.Equals(item, item = maybe.Value))
+					return XfAction.Keep;
+				else
+					return XfAction.Change;
+			});
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -548,7 +557,7 @@ namespace Loyc.Collections
 		/// doesn't do anything. If the map function returns the first N items
 		/// unmodified, those N items are typically not copied, but shared between
 		/// the existing list and the new one. This is useful for functional code
-		/// that sometimes processes a list without modifying it at all.
+		/// that often processes a list without modifying it at all.
 		/// </remarks>
 		public VList<T> SmartSelect(Func<T, T> map)
 		{
@@ -558,14 +567,33 @@ namespace Loyc.Collections
 				return (VList<T>)_block.SmartSelect(_localCount, map, null);
 		}
 
-		/// <summary>Maps a list to another list of the same length.</summary>
+		/// <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
+		/// <param name="map">A function that transforms each item in the list to a list of items.</param>
+		/// <returns>A list that contains all the items returned from `map`.</returns>
+		/// <remarks>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If, for the first N items, the `map` returns a 
+		/// list of length 1, and that one item is the same item that was passed 
+		/// in, then those N items are typically not copied, but shared between
+		/// the existing list and the new one. This is useful for functional code
+		/// that often processes a list without modifying it at all.
+		/// </remarks>
+		public VList<T> SmartSelectMany(Func<T, IList<T>> map)
+		{
+			if (_localCount == 0)
+				return this;
+			else
+				return (VList<T>)_block.SelectMany(_localCount, map, true, null);
+		}
+
+		/*/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
 		/// original VList structure is not modified.</returns>
 		public VList<Out> Select<Out>(Func<T, Out> map)
 		{
 			return (VList<Out>)VListBlock<T>.Select<Out>(_block, _localCount, map, null);
-		}
+		}*/
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
@@ -580,7 +608,7 @@ namespace Loyc.Collections
 	}
 
 	[TestFixture]
-	public class RVListTests
+	public class VListTests : TestHelpers
 	{
 		[Test]
 		public void SimpleTests()
@@ -706,22 +734,6 @@ namespace Loyc.Collections
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
 		}
 
-		private static void ExpectList<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			for (int i = 0; i < expected.Length; i++)
-				Assert.AreEqual(expected[i], list[i]);
-		}
-		private static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			int i = 0;
-			foreach (T item in list) {
-				Assert.AreEqual(expected[i], item);
-				i++;
-			}
-		}
-
 		[Test]
 		public void TestInsertRemove()
 		{
@@ -836,16 +848,16 @@ namespace Loyc.Collections
 			Assert.AreEqual(array.Length, 0);
 
 			array = list.Add(1).ToArray();
-			ExpectList(array, 1);
+			ExpectList(array.AsListSource(), 1);
 
 			array = list.Add(2).ToArray();
-			ExpectList(array, 1, 2);
+			ExpectList(array.AsListSource(), 1, 2);
 
 			array = list.Add(3).ToArray();
-			ExpectList(array, 1, 2, 3);
+			ExpectList(array.AsListSource(), 1, 2, 3);
 
 			array = list.AddRange(new int[] { 4, 5, 6, 7, 8 }).ToArray();
-			ExpectList(array, 1, 2, 3, 4, 5, 6, 7, 8);
+			ExpectList(array.AsListSource(), 1, 2, 3, 4, 5, 6, 7, 8);
 		}
 
 		[Test]
@@ -968,6 +980,83 @@ namespace Loyc.Collections
 				return XfAction.Repeat;
 			});
 			ExpectList(output, 10, 100, 1000, 20, 200, 30, 300);
+		}
+
+		Random _r = new Random();
+
+		[Test]
+		public void SelectManyTests()
+		{
+			// Plan: make a series of lists of different lengths and transform them
+			// semi-randomly, but do the same transformation on a regular list. Then
+			// ensure that the VList came out the same as the plain List. 
+			//
+			// Note: this test isn't included in FVListTests because the FVList.Smart
+			// methods act in "reverse order" compared to the LINQ methods Select/Where/etc.
+			// so the results wouldn't be the same between List<int> and FVList<int>.
+			int initialLength = 0, trial = -1;
+			string subtest = "";
+			int same = 0, pattern = 0;
+			try {
+				for (initialLength = 0; initialLength < 100; initialLength++) {
+					trial = -1;
+					VList<int> vlist = VList<int>.Empty;
+					List<int> list = new List<int>();
+					for (int i = 0; i < initialLength; i++) {
+						vlist.Add(i);
+						list.Add(i);
+					}
+
+					// First, ensure that if the list is not changed, the same list comes out
+					subtest = "unchanged";
+					Assert.AreEqual(vlist, vlist.SmartSelect(i => i));
+					Assert.IsTrue(vlist == vlist.SmartSelect(i => i));
+					Assert.AreEqual(vlist, vlist.SmartWhere(i => true));
+					Assert.IsTrue(vlist == vlist.SmartWhere(i => true));
+					Assert.AreEqual(vlist, vlist.SmartSelectMany(i => new[] { i }));
+					Assert.IsTrue(vlist == vlist.SmartSelectMany(i => new[] { i }));
+
+					for (trial = 0; trial < (initialLength.IsInRange(1, 10) ? 4 : 1); trial++) {
+						// Number of items to keep the same at the beginning of the transform
+						same = initialLength == 0 ? 0 : _r.Next(8) % initialLength;
+						pattern = _r.Next();
+						int index = 0;
+						Func<int, int> select = n => ++index <= same ? n : n + 1000;
+						Func<int, bool> where = n => ++index <= same * 2 || ((pattern >> (index & 31)) & 1) == 0;
+						Func<int, IList<int>> selectMany = n =>
+						{
+							var @out = new List<int>();
+							if (index < same)
+								@out.Add(n);
+							else {
+								for (int i = 0; i < ((pattern >> (index & 15)) & 3); i++)
+									@out.Add(index * 1000 + i);
+							}
+							index++;
+							return @out;
+						};
+						subtest = "SmartSelect";
+						var expectS = list.Select(select); index = 0;
+						var resultS = vlist.SmartSelect(select); index = 0;
+						ExpectList(resultS, expectS);
+						subtest = "SmartWhere";
+						var expectW = list.Where(where); index = 0;
+						var resultW = vlist.SmartWhere(where); index = 0;
+						ExpectList(resultW, expectW);
+						subtest = "SmartSelectMany";
+						var expectM = list.SelectMany(selectMany); index = 0;
+						var resultM = vlist.SmartSelectMany(selectMany); index = 0;
+						ExpectList(resultM, expectM);
+					}
+				}
+			} catch (Exception e) {
+				e.Data["subtest"] = subtest;
+				e.Data["initialLength"] = initialLength;
+				e.Data["trial"] = trial;
+				e.Data["same"] = same;
+				e.Data["pattern"] = pattern;
+				throw;
+			}
 		}
 	}
 }

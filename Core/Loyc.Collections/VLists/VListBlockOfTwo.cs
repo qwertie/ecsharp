@@ -155,7 +155,7 @@ namespace Loyc.Collections
 
 		#region LINQ-like methods
 
-		public override FVList<T> Where(int localCount, Predicate<T> keep, WListProtected<T> forWList)
+		public override FVList<T> Where(int localCount, Func<T, bool> keep, WListProtected<T> forWList)
 		{
 			// Optimization
 			
@@ -183,7 +183,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		public override FVList<T> WhereSelect(int _localCount, Func<T, Maybe<T>> map, WListProtected<T> forWList)
+		/*public override FVList<T> WhereSelect(int _localCount, Func<T, Maybe<T>> map, WListProtected<T> forWList)
 		{	// Optimization
 			Maybe<T> item, item2;
 
@@ -213,7 +213,7 @@ namespace Loyc.Collections
 				else 
 					return MakeResult(item.Value, item2.Value, forWList);
 			}
-		}
+		}*/
 
 		public override FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
 		{	// Optimization

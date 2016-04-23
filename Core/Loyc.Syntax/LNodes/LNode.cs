@@ -657,7 +657,7 @@ namespace Loyc.Syntax
 		/// a parent can only specify a single source file, while children can come
 		/// from several source files.)
 		/// </remarks>
-		[DebuggerDisplay("ToString()")]
+		[DebuggerDisplay("{ToString()}")]
 		public virtual SourceRange Range { get { return (SourceRange)RAS; } }
 		/// <summary>Returns the source file (shortcut for <c><see cref="Range"/>.Source</c>).</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -1076,7 +1076,7 @@ namespace Loyc.Syntax
 
 		public VList<LNode> PAttrs()
 		{
-			return Attrs.Where(a => !a.IsTrivia);
+			return Attrs.SmartWhere(a => !a.IsTrivia);
 		}
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]

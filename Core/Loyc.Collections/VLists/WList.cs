@@ -139,7 +139,7 @@ namespace Loyc.Collections
 		/// last or "tail" items in a WList), those N items are typically not 
 		/// copied, but shared between the existing list and the new one.
 		/// </remarks>
-		public WList<T> Where(Predicate<T> filter)
+		public WList<T> Where(Func<T,bool> filter)
 		{
 			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
@@ -159,10 +159,15 @@ namespace Loyc.Collections
 		/// </remarks>
 		public WList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
-			WList<T> newList = new WList<T>();
-			if (LocalCount != 0)
-				Block.WhereSelect(LocalCount, filter, newList);
-			return newList;
+			return Transform((int i, ref T item) => {
+				var maybe = filter(item);
+				if (!maybe.HasValue)
+					return XfAction.Drop;
+				else if (VListBlock<T>.EqualityComparer.Equals(item, item = maybe.Value))
+					return XfAction.Keep;
+				else
+					return XfAction.Change;
+			});
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -184,7 +189,7 @@ namespace Loyc.Collections
 			return newList;
 		}
 
-		/// <summary>Maps a list to another list of the same length.</summary>
+		/*/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
 		/// original VList structure is not modified.</returns>
@@ -193,7 +198,7 @@ namespace Loyc.Collections
 			WList<Out> newList = new WList<Out>();
 			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
 			return newList;
-		}
+		}*/
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
@@ -293,7 +298,7 @@ namespace Loyc.Collections
 	}
 	
 	[TestFixture]
-	public class RWListTests
+	public class WListTests
 	{
 		[Test]
 		public void SimpleTests()
@@ -629,13 +634,6 @@ namespace Loyc.Collections
 			WList<int> two = one.Clone();       two.Add(2);
 			WList<int> thr = two.Clone();       thr.Add(1);
 			ExpectList(thr, 3, 2, 1);
-
-			ExpectList(one.Select(delegate(int i) { return i + 1; }), 4);
-			ExpectList(two.Select(delegate(int i) { return i + 1; }), 4, 3);
-			ExpectList(thr.Select(delegate(int i) { return i + 1; }), 4, 3, 2);
-			ExpectList(two.Select(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0);
-			ExpectList(thr.Select(delegate(int i) { return i == 3 ? 3 : 0; }), 3, 0, 0);
-			ExpectList(thr.Select(delegate(int i) { return i == 1 ? 0 : i; }), 3, 2, 0);
 
 			Assert.That(one.SmartSelect(delegate(int i) { return i; }).ToVList() == one.ToVList());
 			Assert.That(two.SmartSelect(delegate(int i) { return i; }).ToVList() == two.ToVList());

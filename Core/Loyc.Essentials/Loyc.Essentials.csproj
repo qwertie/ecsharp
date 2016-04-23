@@ -151,7 +151,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="..\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Collections\BaseClasses\BaseDictionary.cs" />
     <Compile Include="Collections\BaseClasses\EnumeratorBase.cs" />
     <Compile Include="Collections\BaseClasses\ListExBase.cs" />

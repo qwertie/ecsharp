@@ -6,18 +6,23 @@ using Loyc.MiniTest;
 
 namespace Loyc.Collections.Impl
 {
-	/// <summary>Helpers methods for unit tests for Loyc collection classes.</summary>
+	/// <summary>Helpers methods for unit tests, especially used by Loyc collection 
+	/// classes but sometimes useful in other cases.</summary>
 	public class TestHelpers : Assert
 	{
 		protected static void ExpectList<T>(IListSource<T> list, params T[] expected)
 		{
 			ExpectList(list, expected as IList<T>, false);
 		}
-		protected static void ExpectList<T>(IListSource<T> list, bool useEnumerator, params T[] expected)
+		/// <summary>
+		/// When testing a buggy collection type, the enumerator might behave 
+		/// differently than the indexer, so this alternate comparer is provided.
+		/// </summary>
+		protected static void ExpectListByEnumerator<T>(IListSource<T> list, params T[] expected)
 		{
-			ExpectList(list, expected as IList<T>, useEnumerator);
+			ExpectList(list, expected as IList<T>, true);
 		}
-		protected static void ExpectList<T>(IListSource<T> list, IList<T> expected, bool useEnumerator)
+		protected static void ExpectList<T>(IListSource<T> list, IList<T> expected, bool useEnumerator = false)
 		{
 			Assert.AreEqual(expected.Count, list.Count);
 			if (useEnumerator)

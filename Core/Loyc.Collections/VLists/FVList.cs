@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Loyc.MiniTest;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Collections
 {
@@ -133,6 +134,8 @@ namespace Loyc.Collections
 		/// Does not compare the contents of the lists.</summary>
 		public override bool Equals(object rhs_)
 		{
+			if (rhs_ == null)
+				return false;
 			try {
 				FVList<T> rhs = (FVList<T>)rhs_;
 				return this == rhs;
@@ -528,7 +531,7 @@ namespace Loyc.Collections
 		/// last items in a FVList), those N items are typically not copied, but 
 		/// shared between the existing list and the new one.
 		/// </remarks>
-		public FVList<T> Where(Predicate<T> filter)
+		public FVList<T> Where(Func<T, bool> filter)
 		{
 			if (_localCount == 0)
 				return this;
@@ -549,10 +552,15 @@ namespace Loyc.Collections
 		/// </remarks>
 		public FVList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
-			if (_localCount == 0)
-				return this;
-			else
-				return _block.WhereSelect(_localCount, filter, null);
+			return Transform((int i, ref T item) => {
+				var maybe = filter(item);
+				if (!maybe.HasValue)
+					return XfAction.Drop;
+				else if (VListBlock<T>.EqualityComparer.Equals(item, item = maybe.Value))
+					return XfAction.Keep;
+				else
+					return XfAction.Change;
+			});
 		}
 		
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -560,11 +568,14 @@ namespace Loyc.Collections
 		/// <returns>The list after the map function is applied to each item. The 
 		/// original FVList structure is not modified.</returns>
 		/// <remarks>
+		/// Note: the items are passed to `map` in "reverse" order (Last is first)
+		/// because the function needs to find out at what point the tail changes.
+		/// <para/>
 		/// This method is called "Smart" because of what happens if the map
 		/// doesn't do anything. If the map function returns the first N items
 		/// unmodified, those N items are typically not copied, but shared between
 		/// the existing list and the new one. This is useful for functional code
-		/// that sometimes processes a list without modifying it at all.
+		/// that often processes a list without modifying it at all.
 		/// </remarks>
 		public FVList<T> SmartSelect(Func<T, T> map)
 		{
@@ -573,15 +584,37 @@ namespace Loyc.Collections
 			else
 				return _block.SmartSelect(_localCount, map, null);
 		}
+
+		/// <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
+		/// <param name="map">A function that transforms each item in the list to a list of items.</param>
+		/// <returns>A list that contains all the items returned from `map`.</returns>
+		/// <remarks>
+		/// Note: the items are passed to `map` in "reverse" order (Last is first)
+		/// because the function needs to find out at what point the tail changes.
+		/// <para/>
+		/// This method is called "Smart" because of what happens if the map
+		/// doesn't do anything. If, for the first N items, the `map` returns a 
+		/// list of length 1, and that one item is the same item that was passed 
+		/// in, then those N items are typically not copied, but shared between
+		/// the existing list and the new one. This is useful for functional code
+		/// that often processes a list without modifying it at all.
+		/// </remarks>
+		public FVList<T> SmartSelectMany(Func<T, IList<T>> map)
+		{
+			if (_localCount == 0)
+				return this;
+			else
+				return _block.SelectMany(_localCount, map, false, null);
+		}
 		
-		/// <summary>Maps a list to another list of the same length.</summary>
+		/*/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
 		/// original FVList structure is not modified.</returns>
 		public FVList<Out> Select<Out>(Func<T, Out> map)
 		{
 			return VListBlock<T>.Select<Out>(_block, _localCount, map, null);
-		}
+		}*/
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
@@ -694,7 +727,7 @@ namespace Loyc.Collections
 	}
 
 	[TestFixture]
-	public class VListTests
+	public class FVListTests : TestHelpers
 	{
 		[Test]
 		public void SimpleTests()
@@ -820,22 +853,6 @@ namespace Loyc.Collections
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
 		}
 
-		private static void ExpectList<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			for (int i = 0; i < expected.Length; i++)
-				Assert.AreEqual(expected[i], list[i]);
-		}
-		private static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
-		{
-			Assert.AreEqual(expected.Length, list.Count);
-			int i = 0;
-			foreach (T item in list) {
-				Assert.AreEqual(expected[i], item);
-				i++;
-			}
-		}
-
 		[Test]
 		public void TestInsertRemove()
 		{
@@ -953,16 +970,16 @@ namespace Loyc.Collections
 			Assert.AreEqual(array.Length, 0);
 
 			array = list.Add(1).ToArray();
-			ExpectList(array, 1);
+			ExpectList(array.AsListSource(), 1);
 
 			array = list.Add(2).ToArray();
-			ExpectList(array, 2, 1);
+			ExpectList(array.AsListSource(), 2, 1);
 			
 			array = list.Add(3).ToArray();
-			ExpectList(array, 3, 2, 1);
+			ExpectList(array.AsListSource(), 3, 2, 1);
 
 			array = list.AddRange(new int[] { 8, 7, 6, 5, 4 }).ToArray();
-			ExpectList(array, 8, 7, 6, 5, 4, 3, 2, 1);
+			ExpectList(array.AsListSource(), 8, 7, 6, 5, 4, 3, 2, 1);
 		}
 
 		[Test]
@@ -1036,13 +1053,6 @@ namespace Loyc.Collections
 			FVList<int> two = one.Clone().Add(2);
 			FVList<int> thr = two.Clone().Add(1);
 			ExpectList(thr, 1, 2, 3);
-
-			ExpectList(one.Select(delegate(int i) { return i+1; }), 4);
-			ExpectList(two.Select(delegate(int i) { return i+1; }), 3, 4);
-			ExpectList(thr.Select(delegate(int i) { return i+1; }), 2, 3, 4);
-			ExpectList(two.Select(delegate(int i) { return i==3 ? 3 : 0; }), 0, 3);
-			ExpectList(thr.Select(delegate(int i) { return i==3 ? 3 : 0; }), 0, 0, 3);
-			ExpectList(thr.Select(delegate(int i) { return i==1 ? 0 : i; }), 0, 2, 3);
 
 			Assert.That(one.SmartSelect(delegate(int i) { return i; }) == one);
 			Assert.That(two.SmartSelect(delegate(int i) { return i; }) == two);
@@ -1127,7 +1137,7 @@ namespace Loyc.Collections
 			ExpectList(result.ToVList(), expect);
 			
 			Assert.That(result.WithoutFirst(result.Count - commonTailLength)
-			         == list.WithoutFirst(list.Count - commonTailLength));
+			           == list.WithoutFirst(list.Count - commonTailLength));
 		}
 	}
 }

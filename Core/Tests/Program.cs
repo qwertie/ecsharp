@@ -103,10 +103,10 @@ namespace Loyc.Tests
 			MiniTest.RunTests.Run(new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345));
 			MiniTest.RunTests.Run(new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345));
 			MiniTest.RunTests.Run(new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345));
-			MiniTest.RunTests.Run(new RWListTests());
 			MiniTest.RunTests.Run(new WListTests());
-			MiniTest.RunTests.Run(new RVListTests());
+			MiniTest.RunTests.Run(new FWListTests());
 			MiniTest.RunTests.Run(new VListTests());
+			MiniTest.RunTests.Run(new FVListTests());
 			MiniTest.RunTests.Run(new MapTests());
 			MiniTest.RunTests.Run(new SparseAListTests(true, seed, 8, 4));
 			MiniTest.RunTests.Run(new SparseAListTests());

@@ -118,8 +118,8 @@ namespace Loyc.Collections.Tests
 			ExpectList(list2, 1, 3, 1, 3);
 			for (int i = 0; i < Count(list); i++)
 				list2.Insert(i, At(list, i));
-			ExpectList(list2, false, 1, 2, 4, 1, 3, 1, 3);
-			ExpectList(list2, true,  1, 2, 4, 1, 3, 1, 3);
+			ExpectList            (list2, 1, 2, 4, 1, 3, 1, 3);
+			ExpectListByEnumerator(list2, 1, 2, 4, 1, 3, 1, 3);
 
 			// Clear list with Remove()
 			Assert.That(list.Remove(1));
@@ -135,17 +135,17 @@ namespace Loyc.Collections.Tests
 		public void BasicWorkout2()
 		{
 			var list = _newList(0);
-			ExpectList(list, true);
+			ExpectListByEnumerator(list);
 
 			list = _newList(10);
 			for (int i = 0; i < 10; i++)
 				((IList<int>)list)[i] = (i+1)*2;
-			ExpectList(list, true, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+			ExpectListByEnumerator(list, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
 			
 			// CopyTo()
 			var array = new int[Count(list)+2];
 			list.CopyTo(array, 2);
-			ExpectList(array.AsListSource(), true, 0, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
+			ExpectListByEnumerator(array.AsListSource(), 0, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20);
 
 			// IndexOf(), Contains()
 			Assert.That(list.Contains(2));
@@ -201,8 +201,8 @@ namespace Loyc.Collections.Tests
 
 				if ((i & (i - 1)) == 0) // when i is a power of 2
 				{
-					ExpectList(list, false, list2.ToArray());
-					ExpectList(list, true, list2.ToArray());
+					ExpectList(list, list2);
+					ExpectListByEnumerator(list, list2.ToArray());
 					
 					if (_testExceptions)
 						AssertThrows<IndexOutOfRangeException>(delegate() { list.RemoveAt(Count(list)); });
@@ -216,8 +216,8 @@ namespace Loyc.Collections.Tests
 			}
 
 			i = 0;
-			ExpectList(clone, false, clone2);
-			ExpectList(clone, true, clone2);
+			ExpectList(clone, clone2);
+			ExpectListByEnumerator(clone, clone2);
 		}
 
 		// Note: list is passed by reference in case ListT is a value type (InternalList)

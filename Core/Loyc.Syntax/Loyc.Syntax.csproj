@@ -142,6 +142,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Les\LesIndentTokenGenerator.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />

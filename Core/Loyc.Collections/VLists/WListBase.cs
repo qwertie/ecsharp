@@ -229,7 +229,7 @@ namespace Loyc.Collections
 
 		#region Helper methods for derived class to use
 
-		protected void AddRange(IEnumerator<T> items)
+		protected internal void AddRange(IEnumerator<T> items)
 		{
 			while(items.MoveNext())
 				Add(items.Current);
@@ -250,7 +250,7 @@ namespace Loyc.Collections
 			VListBlock<T>.MuRemoveFront(this, count);
 		}
 
-		protected void AddRangeBase(IList<T> items, bool isRWList)
+		internal void AddRangeBase(IList<T> items, bool isRWList)
 		{
 			InsertRangeAtDff(0, items, isRWList);
 		}

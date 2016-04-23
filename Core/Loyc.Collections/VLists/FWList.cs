@@ -145,7 +145,7 @@ namespace Loyc.Collections
 		/// last or "tail" items in a FWList), those N items are typically not 
 		/// copied, but shared between the existing list and the new one.
 		/// </remarks>
-		public FWList<T> Where(Predicate<T> keep)
+		public FWList<T> SmartWhere(Func<T, bool> keep)
 		{
 			FWList<T> newList = new FWList<T>();
 			if (LocalCount != 0)
@@ -166,10 +166,15 @@ namespace Loyc.Collections
 		/// </remarks>
 		public FWList<T> WhereSelect(Func<T,Maybe<T>> filter)
 		{
-			FWList<T> newList = new FWList<T>();
-			if (LocalCount != 0)
-				Block.WhereSelect(LocalCount, filter, newList);
-			return newList;
+			return Transform((int i, ref T item) => {
+				var maybe = filter(item);
+				if (!maybe.HasValue)
+					return XfAction.Drop;
+				else if (VListBlock<T>.EqualityComparer.Equals(item, item = maybe.Value))
+					return XfAction.Keep;
+				else
+					return XfAction.Change;
+			});
 		}
 
 		/// <summary>Maps a list to another list of the same length.</summary>
@@ -191,7 +196,7 @@ namespace Loyc.Collections
 			return newList;
 		}
 
-		/// <summary>Maps a list to another list of the same length.</summary>
+		/*/// <summary>Maps a list to another list of the same length.</summary>
 		/// <param name="map">A function that transforms each item in the list.</param>
 		/// <returns>The list after the map function is applied to each item. The 
 		/// original VList structure is not modified.</returns>
@@ -200,7 +205,7 @@ namespace Loyc.Collections
 			FWList<Out> newList = new FWList<Out>();
 			VListBlock<T>.Select<Out>(Block, LocalCount, map, newList);
 			return newList;
-		}
+		}*/
 
 		/// <summary>Transforms a list (combines filtering with selection and more).</summary>
 		/// <param name="x">Method to apply to each item in the list</param>
@@ -272,7 +277,7 @@ namespace Loyc.Collections
 	}
 	
 	[TestFixture]
-	public class WListTests
+	public class FWListTests
 	{
 		[Test]
 		public void SimpleTests()
