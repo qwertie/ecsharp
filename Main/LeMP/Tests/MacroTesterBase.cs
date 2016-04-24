@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Loyc;
+using Loyc.Collections;
+using Loyc.Ecs;
+using Loyc.MiniTest;
+using Loyc.Syntax;
+using Loyc.Syntax.Les;
+
+namespace LeMP.Tests
+{
+	public class MacroTesterBase
+	{
+		protected MessageHolder _msgHolder;
+
+		[SetUp]
+		public void SetUp() {
+			MessageSink.Current = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+			_msgHolder = new MessageHolder();
+		}
+
+		protected void TestLes(string input, string outputLes, int maxExpand = 0xFFFF)
+		{
+			Test(input, LesLanguageService.Value, outputLes, LesLanguageService.Value, maxExpand);
+		}
+		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF)
+		{
+			Test(input, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+		}
+		protected void TestBoth(string inputLes, string inputEcs, string outputEcs, int maxExpand = 0xFFFF)
+		{
+			Test(inputLes, LesLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+			Test(inputEcs, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+		}
+		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
+		{
+			var lemp = NewLemp(maxExpand);
+			using (ParsingService.PushCurrent(inLang))
+			{
+				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Current));
+				var results = lemp.ProcessSynchronously(inputCode);
+				var expectCode = outLang.Parse(expected, MessageSink.Current);
+				if (!results.SequenceEqual(expectCode))
+				{	// TEST FAILED, print error
+					string resultStr = results.Select(n => outLang.Print(n)).Join("\n");
+					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
+									TestCompiler.StripExtraWhitespace(resultStr));
+				}
+			}
+		}
+		protected MacroProcessor NewLemp(int maxExpand)
+		{
+			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Current);
+			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
+			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
+			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+			lemp.MaxExpansions = maxExpand;
+			return lemp;
+		}
+	}
+}

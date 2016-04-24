@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LeMP;
+using LeMP.Tests;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Ecs.Tests;
@@ -40,7 +41,19 @@ namespace Loyc.Tests
 		public static void Test_LeMP()
 		{
 			RunTests.Run(new MacroProcessorTests());
-			RunTests.Run(new StandardMacroTests());
+			RunTests.Run(new PreludeMacroTests());
+			RunTests.Run(new SmallerMacroTests());
+			RunTests.Run(new TestAlgebraicDataTypes());
+			RunTests.Run(new TestCodeContractMacros());
+			RunTests.Run(new TestCodeQuoteMacro());
+			RunTests.Run(new TestMacroCombinations());
+			RunTests.Run(new TestMatchCodeMacro());
+			RunTests.Run(new TestMatchMacro());
+			RunTests.Run(new TestOnFinallyReturnThrowMacros());
+			RunTests.Run(new TestReplaceMacro());
+			RunTests.Run(new TestSequenceExpressionMacro());
+			RunTests.Run(new TestSetOrCreateMemberMacro());
+			RunTests.Run(new TestUnrollMacro());
 		}
 	}
 }
