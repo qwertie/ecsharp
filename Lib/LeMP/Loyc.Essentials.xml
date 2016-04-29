@@ -514,17 +514,6 @@
             <summary>Helper class for treating a collection of a derived type as a collection of a base type or interface.</summary>
             <see cref="M:Loyc.Collections.LCExt.UpCast``2(System.Collections.Generic.IReadOnlyCollection{``0})"/>
         </member>
-        <member name="T:Loyc.Collections.LinqToCollections">
-            <summary>
-            Work in progress. This class will enhance LINQ-to-Objects with 
-            type-preserving and/or higher-performance extension methods.
-            </summary><remarks>
-            For example, the <see cref="!:Enumerable.Last(IEnumerable&lt;T&gt;)"/> extension 
-            method scans the entire list before returning the last item, while 
-            <see cref="!:Last(IReadOnlyList&lt;T&gt;)"/> and <see cref="!:Last(IList&lt;T&gt;)"/> simply
-            return the last item directly.
-            </remarks>
-        </member>
         <member name="T:Loyc.Collections.ListExt">
             <summary>Extension methods and helper methods for <see cref="T:System.Collections.Generic.List`1"/>,
             <see cref="T:System.Collections.Generic.IList`1"/>, <see cref="T:System.Collections.Generic.IReadOnlyList`1"/>, arrays, 
@@ -4366,7 +4355,7 @@
             parsing integers, floats, and strings with C escape sequences.</summary>
             <remarks>This class also contains a few inverse methods, e.g. 
             <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/> is the inverse of the
-            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String)"/>.</remarks>
+            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString)"/>.</remarks>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.HexDigitValue(System.Char)">
             <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
@@ -4374,7 +4363,7 @@
         <member name="M:Loyc.Syntax.ParseHelpers.HexDigitChar(System.Int32)">
             <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String)">
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString)">
             <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String,System.Int32,System.Int32,System.Boolean)">

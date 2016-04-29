@@ -1068,14 +1068,14 @@
             need to parse many small strings in a row. If that's your goal, you 
             should set the <c>newSourceFile</c> parameter to false if possible.</remarks>
         </member>
-        <member name="F:Loyc.Syntax.Lexing.BaseLexer`1.FormatExceptionErrorSink">
-            <summary>Throws FormatException when it receives an error. Non-errors
+        <member name="F:Loyc.Syntax.Lexing.BaseLexer`1.LogExceptionErrorSink">
+            <summary>Throws LogException when it receives an error. Non-errors
             are sent to <see cref="P:Loyc.MessageSink.Current"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.Lexing.BaseLexer`1.ErrorSink">
             <summary>Gets or sets the object to which error messages are sent. The
-            default object is <see cref="F:Loyc.Syntax.Lexing.BaseLexer`1.FormatExceptionErrorSink"/>, which throws
-            <see cref="T:System.FormatException"/> if an error occurs.</summary>
+            default object is <see cref="F:Loyc.Syntax.Lexing.BaseLexer`1.LogExceptionErrorSink"/>, which throws
+            an exception if an error occurs.</summary>
         </member>
         <member name="M:Loyc.Syntax.Lexing.BaseLexer`1.Skip">
             <summary>Increments InputPosition. Called by LLLPG when prediction 
@@ -1097,7 +1097,7 @@
             <summary>Default newline parser that matches '\n' or '\r' unconditionally.</summary>
             <remarks>
             You can use this implementation in an LLLPG lexer with "extern", like so:
-            <c>extern rule Newline @[ '\r' + '\n'? | '\n' ];</c>
+            <c>extern rule Newline @{ '\r' + '\n'? | '\n' };</c>
             By using this implementation everywhere in the grammar in which a 
             newline is allowed (even inside comments and strings), you can ensure
             that <see cref="M:Loyc.Syntax.Lexing.BaseLexer`1.AfterNewline"/> is called, so that the line number
@@ -1623,14 +1623,27 @@
             should use <see cref="T:Loyc.Syntax.BaseParserForList`2"/> instead.
             </summary>
         </member>
-        <member name="F:Loyc.Syntax.BaseParser`2.FormatExceptionErrorSink">
-            <summary>Throws FormatException when it receives an error. Non-errors
+        <member name="M:Loyc.Syntax.BaseParser`2.#ctor(Loyc.Syntax.ISourceFile,System.Int32)">
+            <summary>Initializes the base class.</summary>
+            <param name="file">A source file object that will be returned by the 
+            <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/> property. By default, this object is used to 
+            get the file name, line number and column number shown in parser errors. 
+            If your lexer uses <see cref="T:Loyc.Syntax.Lexing.BaseLexer"/> or <see cref="T:Loyc.Syntax.Lexing.LexerSource"/>, 
+            you can get this object from the <see cref="P:Loyc.Syntax.Lexing.BaseLexer`1.SourceFile"/> 
+            property. The <see cref="P:Loyc.Syntax.BaseParser`2.SourceFile"/> property (in this class) will 
+            return this value. If this parameter is null, then by default, error 
+            messages will only show the character index instead of the file, line 
+            number and column number.</param>
+            <param name="startIndex">The initial value of <see cref="P:Loyc.Syntax.BaseParser`2.InputPosition"/>.</param>
+        </member>
+        <member name="F:Loyc.Syntax.BaseParser`2.LogExceptionErrorSink">
+            <summary>Throws LogException when it receives an error. Non-errors
             are sent to <see cref="P:Loyc.MessageSink.Current"/>.</summary>
         </member>
         <member name="P:Loyc.Syntax.BaseParser`2.ErrorSink">
             <summary>Gets or sets the object to which error messages are sent. The
-            default object is <see cref="F:Loyc.Syntax.BaseParser`2.FormatExceptionErrorSink"/>, which throws
-            <see cref="T:System.FormatException"/> if an error occurs.</summary>
+            default object is <see cref="F:Loyc.Syntax.BaseParser`2.LogExceptionErrorSink"/>, which throws
+            an exception if an error occurs.</summary>
         </member>
         <member name="P:Loyc.Syntax.BaseParser`2.SourceFile">
             <summary>The <see cref="T:Loyc.Syntax.ISourceFile"/> object that was provided to the constructor, if any.</summary>
@@ -1741,7 +1754,7 @@
             <param name="list">A list of tokens that the derived class will parse.</param>
             <param name="eofToken">A token value to return when the input position 
             reaches the end of the token list. Ideally <c>eofToken.StartIndex</c>
-            should contain the position of EOF, but the base class method
+            would contain the position of EOF, but the base class method
             <see cref="M:Loyc.Syntax.BaseParser`2.LaIndexToCharIndex(System.Int32)"/> does not trust this
             value, and will ensure that the character index returned for EOF is at 
             least as large as the character index of the last token in the file. 
@@ -1751,7 +1764,7 @@
             <param name="file">A source file object that will be returned by the 
             <see cref="T:Loyc.Syntax.SourceFile"/> property. By default, this object is used to 
             get the file name, line number and column number shown in parser errors. 
-            If you are using <see cref="T:Loyc.Syntax.Lexing.BaseLexer"/> or <see cref="T:Loyc.Syntax.Lexing.LexerSource"/>, 
+            If your lexer uses <see cref="T:Loyc.Syntax.Lexing.BaseLexer"/> or <see cref="T:Loyc.Syntax.Lexing.LexerSource"/>, 
             you can get this object from the <see cref="P:Loyc.Syntax.Lexing.BaseLexer`1.SourceFile"/> 
             property. The <see cref="T:Loyc.Syntax.SourceFile"/> property (in this class) will 
             return this value. If this parameter is null, then by default, error 
@@ -2003,8 +2016,8 @@
             lexer returned by Tokenize() and begins parsing.</summary>
             <param name="msgs">output sink for error and warning messages.</param>
             <param name="inputType">Indicates how the input should be interpreted,
-            e.g. <see cref="F:Loyc.Syntax.ParsingMode.File"/>, <see cref="F:Loyc.Syntax.ParsingMode.Exprs"/> or
-            <see cref="F:Loyc.Syntax.ParsingMode.Stmts"/>. The default input type should be
+            e.g. <see cref="F:Loyc.Syntax.ParsingMode.File"/>, <see cref="F:Loyc.Syntax.ParsingMode.Expressions"/> or
+            <see cref="F:Loyc.Syntax.ParsingMode.Statements"/>. The default input type should be
             File.</param>
             <exception cref="T:System.NotSupportedException">HasTokenizer is false.</exception>
             <remarks>
@@ -2040,27 +2053,33 @@
             <see cref="P:Loyc.MessageSink.Current"/>.</param>
             <param name="mode">Language-defined configuration. It is suggested 
             that the printing service should accept the members of 
-            <see cref="T:Loyc.Syntax.ParsingMode"/> (e.g. ParsingMode.Stmts) as possible 
+            <see cref="T:Loyc.Syntax.ParsingMode"/> (e.g. ParsingMode.Statements) as possible 
             printing modes.</param>
             <param name="indentString">Indent character for multi-line nodes</param>
             <param name="lineSeparator">Newline string for multi-line nodes</param>
         </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Exprs">
+        <member name="F:Loyc.Syntax.ParsingMode.Expressions">
             <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input 
             as a single expression or expression list (which, in most languages, 
             is comma-separated).</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParsingMode.Stmts">
+        <member name="F:Loyc.Syntax.ParsingMode.Statements">
             <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
             as a list of statements. If the language makes a distinction between 
             executable and declaration contexts, this refers to the executable 
             context.</summary>
         </member>
+        <member name="F:Loyc.Syntax.ParsingMode.Declarations">
+            <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
+            as a list of statements. If the language makes a distinction between 
+            executable and declaration contexts, this refers to the declaration
+            context, in which types, methods, and properties are recognized.</summary>
+        </member>
         <member name="F:Loyc.Syntax.ParsingMode.Types">
             <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
             as a list of types (or a single type, if a list is not supported).</summary>
         </member>
-        <member name="F:Loyc.Syntax.ParsingMode.FormalArgs">
+        <member name="F:Loyc.Syntax.ParsingMode.FormalArguments">
             <summary>Tells <see cref="M:Loyc.Syntax.IParsingService.Parse(Loyc.Collections.ICharSource,System.String,Loyc.IMessageSink,Loyc.Syntax.ParsingMode)"/> to treat the input
             as a formal argument list (parameter names with types).</summary>
         </member>
@@ -3463,6 +3482,9 @@
             Line and PosInLine are zero (signifying an unknown location). If index 
             is beyond the end of the file, this should retun the final position in 
             the file.</remarks>
+        </member>
+        <member name="P:Loyc.Syntax.IIndexToLine.FileName">
+            <summary>Gets the file name used in results returned by <see cref="M:Loyc.Syntax.IIndexToLine.IndexToLine(System.Int32)"/>.</summary>
         </member>
         <member name="T:Loyc.Syntax.IIndexPositionMapper">
             <summary>

@@ -411,7 +411,8 @@
         <member name="P:Loyc.Ecs.EcsNodePrinter.PreferPlainCSharp">
             <summary>Prefers plain C# syntax for certain other things (not covered
             by the other options), even when the syntax tree requests a different 
-            style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.</summary>
+            style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x,
+            and @`at-identifiers` are sanitized.</summary>
         </member>
         <member name="P:Loyc.Ecs.EcsNodePrinter.SpaceOptions">
             <summary>Controls the locations where spaces should be emitted.</summary>

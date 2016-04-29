@@ -1596,7 +1596,14 @@
             performance. But in that case, this class cannot be used.</remarks>
         </member>
         <member name="T:Loyc.Collections.Impl.TestHelpers">
-            <summary>Helpers methods for unit tests for Loyc collection classes.</summary>
+            <summary>Helpers methods for unit tests, especially used by Loyc collection 
+            classes but sometimes useful in other cases.</summary>
+        </member>
+        <member name="M:Loyc.Collections.Impl.TestHelpers.ExpectListByEnumerator``1(Loyc.Collections.IListSource{``0},``0[])">
+            <summary>
+            When testing a buggy collection type, the enumerator might behave 
+            differently than the indexer, so this alternate comparer is provided.
+            </summary>
         </member>
         <member name="T:Loyc.Collections.Impl.InternalSet`1">
             <summary>A hash-trie data structure for use inside other data structures.</summary>
@@ -3952,7 +3959,7 @@
         <member name="T:Loyc.Collections.FVList`1.Enumerator">
             <summary>Enumerator for FVList; also used by FWList.</summary>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.Where(System.Predicate{`0})">
+        <member name="M:Loyc.Collections.FVList`1.Where(System.Func{`0,System.Boolean})">
             <summary>Applies a filter to a list, to exclude zero or more items.</summary>
             <param name="filter">A function that chooses which items to include
             (exclude items by returning false).</param>
@@ -3983,18 +3990,31 @@
             <returns>The list after the map function is applied to each item. The 
             original FVList structure is not modified.</returns>
             <remarks>
+            Note: the items are passed to `map` in "reverse" order (Last is first)
+            because the function needs to find out at what point the tail changes.
+            <para/>
             This method is called "Smart" because of what happens if the map
             doesn't do anything. If the map function returns the first N items
             unmodified, those N items are typically not copied, but shared between
             the existing list and the new one. This is useful for functional code
-            that sometimes processes a list without modifying it at all.
+            that often processes a list without modifying it at all.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.FVList`1.Select``1(System.Func{`0,``0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original FVList structure is not modified.</returns>
+        <member name="M:Loyc.Collections.FVList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IList{`0}})">
+            <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
+            <param name="map">A function that transforms each item in the list to a list of items.</param>
+            <returns>A list that contains all the items returned from `map`.</returns>
+            <remarks>
+            Note: the items are passed to `map` in "reverse" order (Last is first)
+            because the function needs to find out at what point the tail changes.
+            <para/>
+            This method is called "Smart" because of what happens if the map
+            doesn't do anything. If, for the first N items, the `map` returns a 
+            list of length 1, and that one item is the same item that was passed 
+            in, then those N items are typically not copied, but shared between
+            the existing list and the new one. This is useful for functional code
+            that often processes a list without modifying it at all.
+            </remarks>
         </member>
         <member name="M:Loyc.Collections.FVList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -4114,7 +4134,7 @@
             <summary>Gets an item from the list at the specified index; returns 
             defaultValue if the index is not valid.</summary>
         </member>
-        <member name="M:Loyc.Collections.FWList`1.Where(System.Predicate{`0})">
+        <member name="M:Loyc.Collections.FWList`1.SmartWhere(System.Func{`0,System.Boolean})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
             <param name="keep">A function that chooses which items to include
@@ -4152,12 +4172,6 @@
             typically not copied, but shared between the existing list and the 
             new one.
             </remarks>
-        </member>
-        <member name="M:Loyc.Collections.FWList`1.Select``1(System.Func{`0,``0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original VList structure is not modified.</returns>
         </member>
         <member name="M:Loyc.Collections.FWList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -4313,7 +4327,7 @@
             but this is unlikely. FVList's Enumerator doesn't have this problem 
             because it enumerates in the other direction.</remarks>
         </member>
-        <member name="M:Loyc.Collections.VList`1.Where(System.Predicate{`0})">
+        <member name="M:Loyc.Collections.VList`1.SmartWhere(System.Func{`0,System.Boolean})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
             <param name="keep">A function that chooses which items to include
@@ -4333,9 +4347,9 @@
             <returns>The list after filtering has been applied. The original list
             structure is not modified.</returns>
             <remarks>
-            This is a smart function. If the filter does not modify the first N 
-            items it is passed, those N items are typically not copied, but shared 
-            between the existing list and the new one.
+            This is a smart function. If the filter keeps the first N items it is 
+            passed, those N items are typically not copied, but shared between the 
+            existing list and the new one.
             </remarks>
         </member>
         <member name="M:Loyc.Collections.VList`1.SmartSelect(System.Func{`0,`0})">
@@ -4348,14 +4362,21 @@
             doesn't do anything. If the map function returns the first N items
             unmodified, those N items are typically not copied, but shared between
             the existing list and the new one. This is useful for functional code
-            that sometimes processes a list without modifying it at all.
+            that often processes a list without modifying it at all.
             </remarks>
         </member>
-        <member name="M:Loyc.Collections.VList`1.Select``1(System.Func{`0,``0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original VList structure is not modified.</returns>
+        <member name="M:Loyc.Collections.VList`1.SmartSelectMany(System.Func{`0,System.Collections.Generic.IList{`0}})">
+            <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
+            <param name="map">A function that transforms each item in the list to a list of items.</param>
+            <returns>A list that contains all the items returned from `map`.</returns>
+            <remarks>
+            This method is called "Smart" because of what happens if the map
+            doesn't do anything. If, for the first N items, the `map` returns a 
+            list of length 1, and that one item is the same item that was passed 
+            in, then those N items are typically not copied, but shared between
+            the existing list and the new one. This is useful for functional code
+            that often processes a list without modifying it at all.
+            </remarks>
         </member>
         <member name="M:Loyc.Collections.VList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
@@ -4379,7 +4400,7 @@
             <summary>Gets an item from the list at the specified index; returns 
             defaultValue if the index is not valid.</summary>
         </member>
-        <member name="M:Loyc.Collections.WList`1.Where(System.Predicate{`0})">
+        <member name="M:Loyc.Collections.WList`1.Where(System.Func{`0,System.Boolean})">
             <summary>Applies a filter to a list, to exclude zero or more
             items.</summary>
             <param name="filter">A function that chooses which items to include
@@ -4416,12 +4437,6 @@
             typically not copied, but shared between the existing list and the 
             new one.
             </remarks>
-        </member>
-        <member name="M:Loyc.Collections.WList`1.Select``1(System.Func{`0,``0})">
-            <summary>Maps a list to another list of the same length.</summary>
-            <param name="map">A function that transforms each item in the list.</param>
-            <returns>The list after the map function is applied to each item. The 
-            original VList structure is not modified.</returns>
         </member>
         <member name="M:Loyc.Collections.WList`1.Transform(Loyc.Collections.VListTransformer{`0})">
             <summary>Transforms a list (combines filtering with selection and more).</summary>
