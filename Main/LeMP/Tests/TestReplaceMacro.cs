@@ -8,7 +8,7 @@ using Loyc.MiniTest;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class ReplaceMacroTests : MacroTesterBase
+	public class TestReplaceMacro : MacroTesterBase
 	{
 		[Test]
 		public void TestReplace_basics()

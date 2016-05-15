@@ -7,7 +7,7 @@ using Loyc.MiniTest;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	class MacroCombinationTests : MacroTesterBase
+	public class TestMacroCombinations : MacroTesterBase
 	{
 		[Test]
 		public void TestThisConstructorAndCreateMember()

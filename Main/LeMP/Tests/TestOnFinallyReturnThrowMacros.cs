@@ -10,7 +10,7 @@ using Loyc.Syntax.Les;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class OnFinallyReturnThrowTests : MacroTesterBase
+	public class TestOnFinallyReturnThrowMacros : MacroTesterBase
 	{
 		[Test]
 		public void Test_on_finally()
@@ -79,6 +79,12 @@ namespace LeMP.Tests
 						return __result__;
 					}
 				}", EcsLanguageService.Value);
+		}
+
+		[Test]
+		public void Test_on_return_InSwitch()
+		{
+			Assert.Inconclusive("Write this test: `on_return` prior to `case _:`");
 		}
 
 		[Test]
