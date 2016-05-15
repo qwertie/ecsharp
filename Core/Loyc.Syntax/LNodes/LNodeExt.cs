@@ -79,6 +79,22 @@ namespace Loyc.Syntax
 			LNode _;
 			return WithoutAttrNamed(self, name, out _);
 		}
+		public static VList<LNode> Without(this VList<LNode> list, LNode node)
+		{
+			int i = list.Count;
+			foreach (var item in list.ToFVList()) {
+				i--;
+				if (item == node) {
+					Debug.Assert(list[i] == node);
+					return list.RemoveAt(i);
+				}
+			}
+			return list;
+		}
+		public static LNode WithoutAttr(this LNode self, LNode node)
+		{
+			return self.WithAttrs(self.Attrs.Without(node));
+		}
 		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode removedAttr)
 		{
 			var a = self.Attrs.WithoutNodeNamed(name, out removedAttr);

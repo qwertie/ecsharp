@@ -109,7 +109,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol OrBitsSet = GSymbol.Get("|=");        //!< "|=" set-bits operator
 
 		// Executable statements
-		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(x,y,z); I wanted it to be the conditional operator too, but the semantics are a bit different
+		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(c,x,y) and #if(c,x); I wanted it to be the conditional operator too, but the semantics are a bit different
 		public static readonly Symbol DoWhile = GSymbol.Get("#doWhile");     //!< e.g. #doWhile(x++, condition); <=> do x++; while(condition);
 		public static readonly Symbol While = GSymbol.Get("#while");         //!< e.g. #while(condition,{...}); <=> while(condition) {...}
 		public static readonly Symbol UsingStmt = GSymbol.Get("#using");     //!< e.g. #using(expr, {...}); <=> using(expr) {...} (note: use #import or CodeSymbols.Import for a using directive)
