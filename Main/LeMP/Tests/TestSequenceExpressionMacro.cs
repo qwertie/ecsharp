@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Ecs;
 using Loyc.MiniTest;
 
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class SequenceExpressionMacroTests : MacroTesterBase
+	public class TestSequenceExpressionMacro : MacroTesterBase
 	{
 		[Test]
 		public void TestBasics()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
 			TestEcs("#useSequenceExpressions; " +
-				"void F() { { x } } " +
+				"void F() { { f(); } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
-				"int _x = 0;",
-				"void F() { { x } } " +
+				"int _x = externAlias::something;",
+				"void F() { { f(); } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
-				"int _x = 0;");
+				"int _x = externAlias::something;");
 			
-			// Check basic functionality, including nesting
+			// Check basic functionality, including if-statement and nesting
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(new List<int>()::list);
@@ -75,6 +76,17 @@ namespace LeMP.Tests
 				".Replace("a_1", "a_" + n)
 				.Replace("GetB_2", "GetB_" + (n+1))
 				.Replace("c_3", "c_" + (n+2)));
+
+			// Test #if with #runSequence as body
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					if (c) #runSequence(A(), B());
+					if (c) #runSequence(A(), B()); else #runSequence(X(), Y());
+				}",
+				@"void f() {
+					if (c) { A(); B(); }
+					if (c) { A(); B(); } else { X(); Y(); }
+				}");
 		}
 
 		[Test]
@@ -98,10 +110,81 @@ namespace LeMP.Tests
 		}
 
 		[Test]
-		public void TestInLoops()
+		public void TestAssignmentsAndLValues()
+		{
+			// Straightforward cases
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					Foo(A::a.B[C] = D);
+					Foo(A.B::b[C] = D);
+					Foo(A.B[C::c] = D);
+				}", @"
+				void f() {
+					var a = A;
+					Foo(a.B[C] = D);
+					var b = A.B;
+					Foo(b[C] = D);
+					var c = C;
+					Foo(A.B[c] = D);
+				}"
+				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
+			
+			// Tricky cases: must take into account that LHS is an lvalue
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					Foo(A.B[C] + D::d1);
+					Foo(A.B[C] = D::d2);
+				}", @"
+				void f() {
+					var tmp_1 = A.B[C];
+					var d1 = D;
+					Foo(tmp_1 + d1);
+					var C_2 = C;
+					var d2 = D;
+					Foo(A.B[C_2] = d2);
+				}".Replace("tmp_1", "tmp_"+(StandardMacros.NextTempCounter))
+				  .Replace("C_2", "C_"+(StandardMacros.NextTempCounter+1)));
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					Foo(A.B[C::c] + D::d1);
+					Foo(A.B[C::c] = D::d2);
+				}", @"
+				void f() {
+					var c = C;
+					// A better implementation would put A.B in a temporary 
+					// before it does c = C, but the current impl can't tell 
+					// if A.B[c] is an lvalue or not, so it acts cautiously
+					// (if A.B is an lvalue and a struct, it shouldn't be replaced)
+					var tmp_1 = A.B[c];
+					var d1 = D;
+					Foo(tmp_1 + d1);
+					var c = C;
+					var d2 = D;
+					Foo(A.B[c] = d2);
+				}".Replace("tmp_1", "tmp_"+(StandardMacros.NextTempCounter))
+				  .Replace("c_2", "c_"+(StandardMacros.NextTempCounter+1)));
+
+			// ref and out expressions are also lvalues
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					Foo(out A, ref B.C[D], out F(x).Y);
+					Foo(out A, ref B.C[D], out F(x).Y, 0, E()::e);
+				}", @"
+				void f() {
+					Foo(out A, ref B.C[D], out F(x).Y);
+					var D_1 = D;
+					var x_2 = x;
+					var e = E();
+					Foo(out A, ref B.C[D_1], out F(x_2).Y, 0, e);
+				}".Replace("D_1", "D_"+(StandardMacros.NextTempCounter))
+				  .Replace("x_2", "x_"+(StandardMacros.NextTempCounter+1)));
+		}
+
+		[Test]
+		public void TestInWhileLoop()
 		{
 			TestEcs(@"#useSequenceExpressions;
-				void f(int min) {
+				void f() {
 					Before();
 					while (_min > Foo()::foo.Bar + foo.Baz)
 						Console.WriteLine(foo.ToString());
@@ -110,19 +193,163 @@ namespace LeMP.Tests
 					for (;;) {
 						var _min_1 = _min;
 						var foo = Foo();
-						if (_min_1 > foo.Bar + foo.Baz > 0)
-							Console.WriteLine(foo.Reprocess());
+						if (_min_1 > foo.Bar + foo.Baz)
+							Console.WriteLine(foo.ToString());
 						else
 							break;
 					}
 				}"
 				.Replace("_min_1", "_min_"+StandardMacros.NextTempCounter));
+
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					while (_min > Foo().Bar)
+						Console.WriteLine(""({0}, {1})"", foo.Property::p.Item1, p.Item2);
+					After();
+				}", @"void f() {
+					while (_min > Foo().Bar) {
+						var p = foo.Property;
+						Console.WriteLine(""({0}, {1})"", p.Item1, p.Item2);
+					}
+					After();
+				}"
+				.Replace("_min_1", "_min_"+StandardMacros.NextTempCounter));
+
+			// It's only a test. Don't actually write code this way
+			Test(@"#useSequenceExpressions;
+				void f() {
+					Console.WriteLine(""Please press a digit."");
+					while (#runSequence(#var(char, key), {
+							while (!char.IsDigit(key = Console.ReadKey(true)::k.KeyChar)) 
+								if (k.Key == ConsoleKey.Escape) { key = '\0'; break; }
+						}, key) != '\0')
+						Console.WriteLine(""You pressed ({0}, {1})"", foo.Property::p.Item1, p.Item2);
+					Console.WriteLine(""Okay bye!"");
+				}", EcsLanguageService.Value, 
+				@"void f() {
+					Console.WriteLine(""Please press a digit."");
+					for (;;) {
+						char key;
+						{
+							for (;;) {
+								var k = Console.ReadKey(true);
+								if (!char.IsDigit(key = k.KeyChar))
+									{if (k.Key == ConsoleKey.Escape) { key = '\0'; break; }}
+								else
+									break;
+							}
+						}
+						if (key != '\0') {
+							var p = foo.Property;
+							Console.WriteLine(""You pressed ({0}, {1})"", p.Item1, p.Item2);
+						} else
+							break;
+					}
+					Console.WriteLine(""Okay bye!"");
+				}".Replace("_min_1", "_min_"+StandardMacros.NextTempCounter),
+				EcsLanguageService.WithPlainCSharpPrinter);
 		}
 
 		[Test]
-		public void TestInOtherConstructs()
+		public void TestInDoWhileLoop()
 		{
-			// TODO
+			TestEcs(@"#useSequenceExpressions;
+				void f(IEnumerator<Point> e) {
+					do 
+						dict[e.Current::c.X] = c.Y;
+					while(e.MoveNext() > 0);
+				}", @"
+				void f(IEnumerator<Point> e) {
+					do {
+						var c = e.Current;
+						dict[c.X] = c.Y;
+					} while(e.MoveNext() > 0);
+				}");
+
+			TestEcs(@"#useSequenceExpressions;
+				static void f() {
+					do #runSequence(F(), x) = 0;
+					while(Bool()::b);
+				}", @"
+				static void f() {
+					for(bool continue_1 = true; continue_1;) {
+						F();
+						x = 0;
+						var b = Bool();
+						continue_1 = b;
+					}
+				}".Replace("continue_1", "continue_" + StandardMacros.NextTempCounter));
+		}
+
+		[Test]
+		public void TestInForLoop()
+		{
+			// Sequence in initializer
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					for (int i = Foo()::foo.Count - 1; i >= 0; i--)
+						foo[i]++;
+				}", @"
+				void f() {
+					{
+						var foo = Foo();
+						for (int i = foo.Count - 1; i >= 0; i--) 
+							foo[i]++;
+					}
+				}");
+
+			// Sequence in condition
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					for (int i = 0; i < List.Count::c; i++)
+						foo[c - i]++;
+				}", @"
+				void f() {
+					for (int i = 0; ; i++) {
+						var i_1 = i;
+						var c = List.Count;
+						if (i_1 < c)
+							foo[c - i]++;
+						else
+							break;
+					}
+				}".Replace("i_1", "i_"+StandardMacros.NextTempCounter));
+
+			// Sequence in increment expression
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					for (int i = 0; i < list.Count; i += Foo()::f.x + f.y)
+						Body();
+				}", @"
+				void f() {
+					for (int i = 0; i < list.Count;) {
+						Body();
+						var f = Foo();
+						i += f.x + f.y;
+					}
+				}");
+
+			// Sequences everywhere
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					for (Init(I()::i, i); C(i)::c; #runSequence(inc1(), inc2()))
+						A(B()::b, c);
+				}", @"
+				void f() {
+					{
+						var i = I();
+						for (Init(i, i);;) {
+							var c = C(i);
+							if (c) {
+								var b = B();
+								A(b, c);
+								inc1();
+								inc2();
+							} else
+								break;
+						}
+					}
+				}");
 		}
 
 		[Test]
@@ -130,11 +357,132 @@ namespace LeMP.Tests
 		{
 			// Test lambda method
 			TestEcs(@"#useSequenceExpressions;
-				static double Nine => Math.Sqrt(9)::three * three;
-				", @"
-				static double Nine() {
-					double three = Math.Sqrt(9);
-					return three * three;
+				void f() => Math{
+					for (int i = 0; i < list.Count; i += Foo()::f.x + f.y)
+						Body();
+				}", @"
+				void f() {
+					for (int i = 0; i < list.Count;) {
+						Body();
+						var f = Foo();
+						i += f.x + f.y;
+					}
+				}");
+		}
+
+		[Test]
+		public void TestInOtherConstructs()
+		{
+			// foreach and return
+			TestEcs(@"#useSequenceExpressions;
+				int f() {
+					foreach (var x in GetList()::list)
+						#runSequence(x.Reset(), x.ParentList = list);
+					return GetList()::L.Capacity - L.Count;
+				}", @"
+				int f(IEnumerator<Point> e) {
+					{
+						var list = GetList();
+						foreach (var x in list) {
+							x.Reset();
+							x.ParentList = list;
+						}
+					}
+					var L = GetList();
+					return L.Capacity - L.Count;
+				}");
+			
+			// using
+			TestEcs(@"#useSequenceExpressions;
+				void f(object x) {
+					using (Foo()::f.PushState())
+						f.SetState(GetState()::s, s.Bar);
+				}", @"
+				void f() {
+					{
+						var f = Foo();
+						using (f.PushState()) {
+							var s = GetState();
+							f.SetState(s, s.Bar);
+						}
+					}
+				}");
+
+			// lock
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					lock (Foo()::f)
+						f.Bar::b.Baz(b);
+				}", @"
+				void f() {
+					{
+						var f = Foo();
+						lock (f) {
+							var b = f.Bar;
+							b.Baz(b);
+						}
+					}
+				}");
+			
+			// switch
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					switch (Foo()::f) {
+					case 777:
+						#runSequence(Lucky(), Me());
+					}
+				}", @"
+				void f() {
+					{
+						var f = Foo();
+						switch (f) {
+						case 777:
+							Lucky();
+							Me();
+						}
+					}
+				}");
+
+			// try/catch/finally/throw
+			// Note: `::` is not currently supported in the `when` clause
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					try
+						#runSequence(F(), G());
+					catch (IgnoreException ex) when (true)
+						#runSequence(Console.WriteLine(""nothing serious""), #return(false));
+					finally
+						#runSequence(X(), Y());
+					return true;
+				}", @"
+				void f() {
+					try {
+						F();
+						G();
+					} catch (IgnoreException ex) when (true) {
+						Console.WriteLine(""nothing serious"")
+						return false;
+					} finally {
+						X();
+						Y();
+					}
+					return true;
+				}");
+			
+			// fixed
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					fixed (int* x = &list[CurrentIndex::i])
+						*x = Foo::o.a + o.b;
+				}", @"
+				void f() {
+					{
+						var i = CurrentIndex;
+						fixed (int* x = &list[i]) {
+							var o = Foo;
+							*x = o.a + o.b;
+						}
+					}
 				}");
 		}
 	}
