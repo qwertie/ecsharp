@@ -227,9 +227,7 @@ namespace LeMP.Tests
 				Symbol status = S_OK ?? S_Good;
 				Symbol Err() { return S_Bad ?? S_Error; }");
 			TestLes("@[Attr] #useSymbols; @@`->`;",
-				@"@[Attr, #static, #readonly] #var(Symbol, sy__dash_gt = #cast(""->"", Symbol)); sy__dash_gt;");
-			TestLes("@[Attr] #useSymbols; @@#notnull;",
-				@"@[Attr, #static, #readonly] #var(Symbol, sy__numnotnull = #cast(""#notnull"", Symbol)); sy__numnotnull;");
+				@"@[Attr, #static, #readonly] #var(Symbol, @sy_-> = #cast(""->"", Symbol)); @sy_->;");
 		}
 
 

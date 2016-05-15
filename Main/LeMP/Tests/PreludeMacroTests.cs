@@ -8,8 +8,15 @@ using Loyc.MiniTest;
 namespace LeMP.Tests
 {
 	[TestFixture]
-	public class PreludeMacroTests : MacroTesterBase
+	public class PreludeMacroTests
 	{
+		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
+
+		private void Test(string input, string output, int maxExpand = 0xFFFF)
+		{
+			TestCompiler.Test(input, output, _sink, maxExpand);
+		}
+
 		[Test]
 		public void CorePreludeExecutableStatements()
 		{
@@ -152,13 +159,6 @@ namespace LeMP.Tests
 		{
 			Test("prop x::int { get { return 0; } set; };",
 				"int x { get ({ return 0; }, set); }");
-		}
-
-		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
-
-		private void Test(string input, string output, int maxExpand = 0xFFFF)
-		{
-			TestCompiler.Test(input, output, _sink, maxExpand);
 		}
 	}
 }

@@ -36,7 +36,7 @@ namespace LeMP.Tests
 		}
 		protected void Test(string input, IParsingService inLang, string expected, IParsingService outLang, int maxExpand = 0xFFFF)
 		{
-			var lemp = NewLemp(maxExpand);
+			var lemp = NewLemp(maxExpand, inLang);
 			using (ParsingService.PushCurrent(inLang))
 			{
 				var inputCode = new VList<LNode>(inLang.Parse(input, MessageSink.Current));
@@ -47,17 +47,19 @@ namespace LeMP.Tests
 					string resultStr = results.Select(n => outLang.Print(n)).Join("\n");
 					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
 									TestCompiler.StripExtraWhitespace(resultStr));
+					Console.WriteLine("Output code is different, though it prints the same...?");
 				}
 			}
 		}
-		protected MacroProcessor NewLemp(int maxExpand)
+		protected virtual MacroProcessor NewLemp(int maxExpand, IParsingService inLang)
 		{
 			var lemp = new MacroProcessor(typeof(LeMP.Prelude.BuiltinMacros), MessageSink.Current);
 			lemp.AddMacros(typeof(LeMP.Prelude.Les.Macros));
 			lemp.AddMacros(typeof(LeMP.StandardMacros).Assembly);
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP"));
 			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
-			lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
+			if (inLang.FileExtensions.Any(e => e == "les"))
+				lemp.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 			lemp.MaxExpansions = maxExpand;
 			return lemp;
 		}
