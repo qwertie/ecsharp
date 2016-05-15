@@ -355,32 +355,41 @@ namespace LeMP.Tests
 		[Test]
 		public void TestLambdaMethod()
 		{
-			// Test lambda method
+			// Test lambda-style method
 			TestEcs(@"#useSequenceExpressions;
-				void f() => Math{
-					for (int i = 0; i < list.Count; i += Foo()::f.x + f.y)
-						Body();
-				}", @"
+				int fSquare(int x) => f(x)::fx * fx;
+				", @"
+				int fSquare(int x) {
+					var fx = f(x);
+					return fx * fx;
+				}");
+
+			// Test lambda function
+			TestEcs(@"#useSequenceExpressions;
 				void f() {
-					for (int i = 0; i < list.Count;) {
-						Body();
-						var f = Foo();
-						i += f.x + f.y;
-					}
+					Func<int,int> fSquare = (int x) => f(x)::fx * fx;
+				}
+				", @"
+				void f() {
+					Func<int,int> fSquare = (int x) => {
+						var fx = f(x);
+						return fx * fx;
+					};
 				}");
 		}
 
 		[Test]
-		public void TestInOtherConstructs()
+		public void TestInForeachLoop()
 		{
-			// foreach and return
+			// foreach
 			TestEcs(@"#useSequenceExpressions;
 				int f() {
+					Before();
 					foreach (var x in GetList()::list)
 						#runSequence(x.Reset(), x.ParentList = list);
-					return GetList()::L.Capacity - L.Count;
 				}", @"
-				int f(IEnumerator<Point> e) {
+				int f() {
+					Before();
 					{
 						var list = GetList();
 						foreach (var x in list) {
@@ -388,13 +397,25 @@ namespace LeMP.Tests
 							x.ParentList = list;
 						}
 					}
+				}");
+		}
+
+		[Test]
+		public void TestInSimpleKeywordStatements()
+		{
+			// return
+			TestEcs(@"#useSequenceExpressions;
+				int f() {
+					return GetList()::L.Capacity - L.Count;
+				}", @"
+				int f() {
 					var L = GetList();
 					return L.Capacity - L.Count;
 				}");
-			
+
 			// using
 			TestEcs(@"#useSequenceExpressions;
-				void f(object x) {
+				void f() {
 					using (Foo()::f.PushState())
 						f.SetState(GetState()::s, s.Bar);
 				}", @"
@@ -423,7 +444,7 @@ namespace LeMP.Tests
 						}
 					}
 				}");
-			
+
 			// switch
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
@@ -442,6 +463,49 @@ namespace LeMP.Tests
 						}
 					}
 				}");
+		}
+
+		[Test]
+		public void TestInTryCatchFinally()
+		{
+			// try-finally
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					try
+						#runSequence(F(), G());
+					finally
+						#runSequence(X(), Y());
+					return true;
+				}", @"
+				void f() {
+					try {
+						F();
+						G();
+					} finally {
+						X();
+						Y();
+					}
+					return true;
+				}");
+
+			// try-catch
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					try {
+						#runSequence(F(), G());
+					} catch (Exception ex) {
+						PrintInfo(ex.GetType()::t, t.Name + "": "" + ex.Message);
+					}
+				}", @"
+				void f() {
+					try {
+						F();
+						G();
+					} catch (Exception ex) {
+						var t = ex.GetType();
+						PrintInfo(t, t.Name + "": "" + ex.Message);
+					}
+				}");
 
 			// try/catch/finally/throw
 			// Note: `::` is not currently supported in the `when` clause
@@ -451,7 +515,9 @@ namespace LeMP.Tests
 						#runSequence(F(), G());
 					catch (IgnoreException ex) when (true)
 						#runSequence(Console.WriteLine(""nothing serious""), #return(false));
-					finally
+					catch {
+						#runSequence(Who(), Cares());
+					}  finally
 						#runSequence(X(), Y());
 					return true;
 				}", @"
@@ -460,16 +526,33 @@ namespace LeMP.Tests
 						F();
 						G();
 					} catch (IgnoreException ex) when (true) {
-						Console.WriteLine(""nothing serious"")
+						Console.WriteLine(""nothing serious"");
 						return false;
+					} catch {
+						Who();
+						Cares();
 					} finally {
 						X();
 						Y();
 					}
 					return true;
 				}");
-			
-			// fixed
+		}
+
+		[Test]
+		public void TestInFixed()
+		{
+			TestEcs(@"#useSequenceExpressions;
+				void f() {
+					fixed (_)
+						Foo::o.a = o.b;
+				}", @"
+				void f() {
+					fixed (_) {
+						var o = Foo;
+						o.a = o.b;
+					}
+				}");
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					fixed (int* x = &list[CurrentIndex::i])
@@ -479,11 +562,12 @@ namespace LeMP.Tests
 					{
 						var i = CurrentIndex;
 						fixed (int* x = &list[i]) {
+							var x_1 = x;
 							var o = Foo;
-							*x = o.a + o.b;
+							*x_1 = o.a + o.b;
 						}
 					}
-				}");
+				}".Replace("x_1", "x_"+StandardMacros.NextTempCounter));
 		}
 	}
 }

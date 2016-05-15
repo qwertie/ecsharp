@@ -9,11 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
+using S = Loyc.Syntax.CodeSymbols;
 namespace LeMP
 {
 	partial class StandardMacros
@@ -84,7 +85,7 @@ namespace LeMP
 				if (EcsValidators.SpaceDefinitionKind(stmt, out name, out bases, out body) != null) {
 					return body == null ? stmt : stmt.WithArgChanged(2, EliminateSequenceExpressions(body, true));
 				} else if (EcsValidators.MethodDefinitionKind(stmt, out retType, out name, out argList, out body, true) != null) {
-					return body == null ? stmt : stmt.WithArgChanged(3, EliminateSequenceExpressions(body, false));
+					return body == null ? stmt : stmt.WithArgChanged(3, EliminateSequenceExpressionsInLambdaExpr(body, retType));
 				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
 					stmt = stmt.WithArgChanged(3, body.WithArgs(part => {
 						if (part.ArgCount == 1 && part[0].Calls(S.Braces))
@@ -125,16 +126,36 @@ namespace LeMP
 				} else
 					return stmt;
 			}
+			LNode EliminateSequenceExpressionsInLambdaExpr(LNode expr, LNode retType)
+			{
+				var stmt = EliminateSequenceExpressions(expr, false);
+				if (stmt.Calls(__numrunSequence)) {
+					stmt = stmt.WithTarget(S.Braces);
+					if (!retType.IsIdNamed(S.Void)) {
+						if (retType.IsIdNamed(S.Missing) && stmt.Args.Last.IsCall)
+							Context.Write(Severity.Warning, expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
+						stmt = stmt.WithArgChanged(stmt.Args.Count - 1, LNode.Call(CodeSymbols.Return, LNode.List(stmt.Args.Last)));
+					}
+				}
+				return stmt;
+			}
 			LNode EliminateSequenceExpressionsInExecStmt(LNode stmt)
 			{
 				{
-					LNode block, cond, inc, init, initValue, name, tmp_1, type;
+					LNode block, collection, cond, inc, init, initValue, loopVar, name, tmp_1, tmp_2, type;
 					VList<LNode> attrs;
 					if (stmt.Calls(CodeSymbols.Braces))
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
-					else if (stmt.CallsMin(CodeSymbols.If, 1))
+					else if (stmt.CallsMin(CodeSymbols.If, 1) || stmt.Calls(CodeSymbols.UsingStmt, 2) || stmt.Calls(CodeSymbols.Lock, 2) || stmt.Calls(CodeSymbols.Switch, 2))
 						return ProcessBlockCallStmt(stmt, 1);
-					else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.While, 2) && (cond = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
+					else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Fixed, 2) && (init = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
+						init = EliminateSequenceExpressionsInExecStmt(init);
+						block = EliminateSequenceExpressionsInChildStmt(block);
+						if (init.CallsMin(__numrunSequence, 1)) {
+							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(init.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.Fixed, LNode.List(init.Args.Last, block)))).SetStyle(NodeStyle.Statement);
+						} else
+							return stmt.WithArgChanged(1, block);
+					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.While, 2) && (cond = stmt.Args[0]) != null && (block = stmt.Args[1]) != null) {
 						cond = BubbleUpBlocks(cond);
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						if (cond.CallsMin(__numrunSequence, 1)) {
@@ -152,46 +173,31 @@ namespace LeMP
 							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id(CodeSymbols.Bool), LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, LNode.Literal(true))))), continue_N, LNode.Missing, LNode.Call(CodeSymbols.Braces, LNode.List(bodyStmts)).SetStyle(NodeStyle.Statement)));
 						} else
 							return stmt.WithArgChanged(0, block);
-					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.For, 4) && (init = stmt.Args[0]) != null && (cond = stmt.Args[1]) != null && (inc = stmt.Args[2]) != null && (block = stmt.Args[3]) != null) {
-						var init_apos = EliminateSequenceExpressionsInExecStmt(init);
-						var cond_apos = BubbleUpBlocks(cond);
-						var inc_apos = BubbleUpBlocks(inc);
+					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.For, 4) && (init = stmt.Args[0]) != null && (cond = stmt.Args[1]) != null && (inc = stmt.Args[2]) != null && (block = stmt.Args[3]) != null)
+						return ESEInForLoop(stmt, attrs, init, cond, inc, block);
+					else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.ForEach, 3) && (tmp_1 = stmt.Args[0]) != null && tmp_1.Calls(CodeSymbols.Var, 2) && (type = tmp_1.Args[0]) != null && (loopVar = tmp_1.Args[1]) != null && (collection = stmt.Args[1]) != null && (block = stmt.Args[2]) != null) {
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						if (init_apos != init || cond_apos != cond || inc_apos != inc) {
-							var preInit = VList<LNode>.Empty;
-							if (init_apos.CallsMin(__numrunSequence, 1)) {
-								preInit.AddRange(init_apos.Args.WithoutLast(1));
-								init = init_apos.Args.Last;
-							}
-							if (inc_apos.CallsMin(__numrunSequence, 1)) {
-								var blockStmts = block.AsList(S.Braces).AddRange(inc_apos.Args);
-								block = blockStmts.AsLNode(S.Braces);
-								inc = F.Missing;
-							}
-							if (cond_apos.CallsMin(__numrunSequence, 1)) {
-								var preCond = cond_apos.Args.WithoutLast(1);
-								cond = cond_apos.Args.Last;
-								stmt = LNode.Call(CodeSymbols.For, LNode.List(init, LNode.Missing, inc, LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preCond).Add(LNode.Call(CodeSymbols.If, LNode.List(cond, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.Statement)));
-							} else {
-								stmt = LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(init, cond, inc, block));
-							}
-							if (preInit.Count != 0) {
-								stmt = LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preInit).Add(stmt)).SetStyle(NodeStyle.Statement);
-							}
-							return stmt;
+						collection = BubbleUpBlocks(collection);
+						if (collection.CallsMin(__numrunSequence, 1)) {
+							return LNode.Call(LNode.List(attrs), CodeSymbols.Braces, LNode.List().AddRange(collection.Args.WithoutLast(1)).Add(LNode.Call(CodeSymbols.ForEach, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(type, loopVar)), collection.Args.Last, block)))).SetStyle(NodeStyle.Statement);
 						} else {
-							return stmt.WithArgChanged(3, block);
+							return stmt.WithArgChanged(stmt.Args.Count - 1, block);
 						}
-					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Var, 2) && (type = stmt.Args[0]) != null && (tmp_1 = stmt.Args[1]) != null && tmp_1.Calls(CodeSymbols.Assign, 2) && (name = tmp_1.Args[0]) != null && (initValue = tmp_1.Args[1]) != null) {
-						initValue = BubbleUpBlocks(initValue);
-						{
-							LNode last;
-							VList<LNode> stmts;
-							if (initValue.CallsMin((Symbol) "#runSequence", 1) && (last = initValue.Args[initValue.Args.Count - 1]) != null) {
-								stmts = initValue.Args.WithoutLast(1);
-								return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
+					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.Var, 2) && (type = stmt.Args[0]) != null && (tmp_2 = stmt.Args[1]) != null && tmp_2.Calls(CodeSymbols.Assign, 2) && (name = tmp_2.Args[0]) != null && (initValue = tmp_2.Args[1]) != null) {
+						var initValue_apos = BubbleUpBlocks(initValue);
+						if (initValue_apos != initValue) {
+							{
+								LNode last;
+								VList<LNode> stmts;
+								if (initValue_apos.CallsMin((Symbol) "#runSequence", 1) && (last = initValue_apos.Args[initValue_apos.Args.Count - 1]) != null) {
+									stmts = initValue_apos.Args.WithoutLast(1);
+									return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(stmts).Add(LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, last))))));
+								} else
+									return LNode.Call(LNode.List(attrs), CodeSymbols.Var, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, initValue_apos))));
 							}
 						}
+					} else if (stmt.CallsMin(S.Try, 2)) {
+						return ESEInTryStmt(stmt);
 					} else if (stmt.HasSpecialName && stmt.ArgCount >= 1 && stmt.Args.Last.Calls(S.Braces)) {
 						return ProcessBlockCallStmt(stmt, stmt.ArgCount - 1);
 					} else {
@@ -199,6 +205,51 @@ namespace LeMP
 					}
 				}
 				return stmt;
+			}
+			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, LNode init, LNode cond, LNode inc, LNode block)
+			{
+				var init_apos = EliminateSequenceExpressionsInExecStmt(init);
+				var cond_apos = BubbleUpBlocks(cond);
+				var inc_apos = BubbleUpBlocks(inc);
+				block = EliminateSequenceExpressionsInChildStmt(block);
+				if (init_apos != init || cond_apos != cond || inc_apos != inc) {
+					var preInit = VList<LNode>.Empty;
+					if (init_apos.CallsMin(__numrunSequence, 1)) {
+						preInit.AddRange(init_apos.Args.WithoutLast(1));
+						init = init_apos.Args.Last;
+					}
+					if (inc_apos.CallsMin(__numrunSequence, 1)) {
+						var blockStmts = block.AsList(S.Braces).AddRange(inc_apos.Args);
+						block = blockStmts.AsLNode(S.Braces);
+						inc = F.Missing;
+					}
+					if (cond_apos.CallsMin(__numrunSequence, 1)) {
+						var preCond = cond_apos.Args.WithoutLast(1);
+						cond = cond_apos.Args.Last;
+						stmt = LNode.Call(CodeSymbols.For, LNode.List(init, LNode.Missing, inc, LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preCond).Add(LNode.Call(CodeSymbols.If, LNode.List(cond, block, LNode.Call(CodeSymbols.Break))))).SetStyle(NodeStyle.Statement)));
+					} else {
+						stmt = LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(init, cond, inc, block));
+					}
+					if (preInit.Count != 0) {
+						stmt = LNode.Call(CodeSymbols.Braces, LNode.List().AddRange(preInit).Add(stmt)).SetStyle(NodeStyle.Statement);
+					}
+					return stmt;
+				} else {
+					return stmt.WithArgChanged(3, block);
+				}
+			}
+			LNode ESEInTryStmt(LNode stmt)
+			{
+				var args = stmt.Args.ToWList();
+				args[0] = EliminateSequenceExpressionsInChildStmt(args[0]);
+				for (int i = 1; i < args.Count; i++) {
+					var part = args[i];
+					if (part.Calls(S.Finally, 1) || part.Calls(S.Catch, 3)) {
+						int lasti = part.ArgCount - 1;
+						args[i] = part.WithArgChanged(lasti, EliminateSequenceExpressionsInChildStmt(part.Args[lasti]));
+					}
+				}
+				return stmt.WithArgs(args.ToVList());
 			}
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
 			{
@@ -221,9 +272,9 @@ namespace LeMP
 					childStmts[i] = EliminateSequenceExpressionsInChildStmt(oldChild);
 					childChanged |= (oldChild != childStmts[i]);
 				}
-				var BubbleUp_GeneralCall2_2 = BubbleUp_GeneralCall2(partialStmt);
-				advanceSequence = BubbleUp_GeneralCall2_2.Item1;
-				partialStmt = BubbleUp_GeneralCall2_2.Item2;
+				var BubbleUp_GeneralCall2_3 = BubbleUp_GeneralCall2(partialStmt);
+				advanceSequence = BubbleUp_GeneralCall2_3.Item1;
+				partialStmt = BubbleUp_GeneralCall2_3.Item2;
 				return childChanged || !advanceSequence.IsEmpty;
 			}
 			LNode EliminateSequenceExpressionsInChildStmt(LNode stmt)
@@ -265,15 +316,17 @@ namespace LeMP
 					}
 				}
 				{
-					LNode tmp_3, value, varName, varType;
+					LNode args, code, tmp_4, value, varName, varType;
 					VList<LNode> attrs;
-					if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_3 = expr.Args[1]) != null && tmp_3.Calls(CodeSymbols.Assign, 2) && (varName = tmp_3.Args[0]) != null && (value = tmp_3.Args[1]) != null)
+					if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_4 = expr.Args[1]) != null && tmp_4.Calls(CodeSymbols.Assign, 2) && (varName = tmp_4.Args[0]) != null && (value = tmp_4.Args[1]) != null)
 						if (stmtContext)
 							result = expr;
 						else
 							result = ConvertVarDeclToRunSequence(attrs, varType, varName, value);
 					else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
 						result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
+					else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Lambda, 2) && (args = expr.Args[0]) != null && (code = expr.Args[1]) != null)
+						result = expr.WithArgChanged(1, EliminateSequenceExpressionsInLambdaExpr(code, F.Missing));
 					else if (expr.Calls(__numrunSequence))
 						result = expr;
 					else
@@ -286,9 +339,9 @@ namespace LeMP
 			}
 			LNode BubbleUp_GeneralCall(LNode expr)
 			{
-				var BubbleUp_GeneralCall2_4 = BubbleUp_GeneralCall2(expr);
-				var combinedSequence = BubbleUp_GeneralCall2_4.Item1;
-				expr = BubbleUp_GeneralCall2_4.Item2;
+				var BubbleUp_GeneralCall2_5 = BubbleUp_GeneralCall2(expr);
+				var combinedSequence = BubbleUp_GeneralCall2_5.Item1;
+				expr = BubbleUp_GeneralCall2_5.Item2;
 				if (combinedSequence.Count != 0)
 					return LNode.Call((Symbol) "#runSequence", LNode.List().AddRange(combinedSequence).Add(expr));
 				else

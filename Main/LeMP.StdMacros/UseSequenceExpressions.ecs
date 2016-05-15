@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Collections;
-using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
+using S = Loyc.Syntax.CodeSymbols;
 
 namespace LeMP
 {
@@ -101,7 +102,7 @@ namespace LeMP
 					return body == null ? stmt : stmt.WithArgChanged(2, EliminateSequenceExpressions(body, true));
 				} else if (EcsValidators.MethodDefinitionKind(stmt, out retType, out name, out argList, out body, true) != null) {
 					// Method definition
-					return body == null ? stmt : stmt.WithArgChanged(3, EliminateSequenceExpressions(body, false));
+					return body == null ? stmt : stmt.WithArgChanged(3, EliminateSequenceExpressionsInLambdaExpr(body, retType));
 				} else if (EcsValidators.IsPropertyDefinition(stmt, out retType, out name, out argList, out body, out initValue)) {
 					// Property definition
 					stmt = stmt.WithArgChanged(3, 
@@ -145,13 +146,43 @@ namespace LeMP
 					return stmt;
 			}
 
+			LNode EliminateSequenceExpressionsInLambdaExpr(LNode expr, LNode retType)
+			{
+				var stmt = EliminateSequenceExpressions(expr, false);
+				if (stmt.Calls(_#runSequence)) {
+					stmt = stmt.WithTarget(S.Braces);
+					if (!retType.IsIdNamed(S.Void)) {
+						if (retType.IsIdNamed(S.Missing) && stmt.Args.Last.IsCall)
+							Context.Write(Severity.Warning, expr, "This lambda must be converted to a braced block, but in LeMP it's not possible to tell whether the return keyword is needed. The output assumes `return` is required.");
+						stmt = stmt.WithArgChanged(stmt.Args.Count-1, 
+							quote { return $(stmt.Args.Last); });
+					}
+				}
+				return stmt;
+			}
+
 			LNode EliminateSequenceExpressionsInExecStmt(LNode stmt)
 			{
 				matchCode (stmt) {
 					case { { $(..._); } }: // braced block
 						return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, false));
-					case { if ($_) $(..._); }: // `blocks` includes else clause, if any 
+					case { if ($_) $(..._); },
+					     { using ($_) $_;   }, 
+					     { lock ($_) $_;    },
+					     { switch ($_) $_;  }:
 						return ProcessBlockCallStmt(stmt, 1);
+					case { [$(...attrs)] fixed ($init) $block;   }:
+						init = EliminateSequenceExpressionsInExecStmt(init);
+						block = EliminateSequenceExpressionsInChildStmt(block);
+						if (init.CallsMin(_#runSequence, 1)) {
+							return quote {
+								[$(...attrs)] {
+									$(...init.Args.WithoutLast(1));
+									fixed ($(init.Args.Last)) $block;
+								}
+							}
+						} else
+							return stmt.WithArgChanged(1, block);
 					case { [$(...attrs)] while ($cond) $block; }:
 						cond = BubbleUpBlocks(cond);
 						block = EliminateSequenceExpressionsInChildStmt(block);
@@ -181,58 +212,35 @@ namespace LeMP
 						} else 
 							return stmt.WithArgChanged(0, block);
 					case { [$(...attrs)] for ($init; $cond; $inc) $block; }:
-						// TODO: handle multi-int and multi-inc
-						var init' = EliminateSequenceExpressionsInExecStmt(init);
-						var cond' = BubbleUpBlocks(cond);
-						var inc'  = BubbleUpBlocks(inc);
+						return ESEInForLoop(stmt, attrs, init, cond, inc, block);
+					case { [$(...attrs)] foreach ($type $loopVar in $collection) $block; }:
 						block = EliminateSequenceExpressionsInChildStmt(block);
-						if (init' != init || cond' != cond || inc' != inc) {
-							var preInit = VList<LNode>.Empty;
-							if (init'.CallsMin(_#runSequence, 1)) {
-								preInit.AddRange(init'.Args.WithoutLast(1));
-								init = init'.Args.Last;
-							}
-							if (inc'.CallsMin(_#runSequence, 1)) {
-								var blockStmts = block.AsList(S.Braces).AddRange(inc'.Args);
-								block = blockStmts.AsLNode(S.Braces);
-								inc = F.Missing;
-							}
-							if (cond'.CallsMin(_#runSequence, 1)) {
-								var preCond = cond'.Args.WithoutLast(1);
-								cond = cond'.Args.Last;
-								stmt = quote {
-									for ($init; ; $inc) { 
-										$(...preCond);
-										if ($cond)
-											$block;
-										else
-											break;
-									}
-								};
-							} else {
-								stmt = quote { 
-									[$(...attrs)] for ($init; $cond; $inc) 
+						collection = BubbleUpBlocks(collection);
+						if (collection.CallsMin(_#runSequence, 1)) {
+							return quote { 
+								[$(...attrs)] {
+									$(...collection.Args.WithoutLast(1));
+									foreach ($type $loopVar in $(collection.Args.Last)) 
 										$block;
-								};
-							}
-							if (preInit.Count != 0) {
-								stmt = quote {{
-									$(...preInit);
-									$stmt;
-								}};
-							}
-							return stmt;
+								}
+							};
 						} else {
-							return stmt.WithArgChanged(3, block);
+							return stmt.WithArgChanged(stmt.Args.Count - 1, block);
 						}
 					case { [$(...attrs)] $type $name = $initValue; }:
-						initValue = BubbleUpBlocks(initValue);
-						matchCode (initValue) {
-							case #runSequence($(...stmts), $last):
-								return quote(#runSequence($(...stmts), [$(...attrs)] $type $name = $last));
+						var initValue' = BubbleUpBlocks(initValue);
+						if (initValue' != initValue) {
+							matchCode (initValue') {
+								case #runSequence($(...stmts), $last):
+									return quote(#runSequence($(...stmts), [$(...attrs)] $type $name = $last));
+								default:
+									return quote { [$(...attrs)] $type $name = $initValue'; };
+							}
 						}
 					default:
-						if (stmt.HasSpecialName && stmt.ArgCount >= 1 && stmt.Args.Last.Calls(S.Braces)) {
+						if (stmt.CallsMin(S.Try, 2)) {
+							return ESEInTryStmt(stmt);
+						} else if (stmt.HasSpecialName && stmt.ArgCount >= 1 && stmt.Args.Last.Calls(S.Braces)) {
 							return ProcessBlockCallStmt(stmt, stmt.ArgCount - 1);
 						} else {
 							// Ordinary expression statement
@@ -240,6 +248,70 @@ namespace LeMP
 						}
 				}
 				return stmt;
+			}
+
+			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, LNode init, LNode cond, LNode inc, LNode block)
+			{
+				// TODO: handle multi-int and multi-inc
+				var init' = EliminateSequenceExpressionsInExecStmt(init);
+				var cond' = BubbleUpBlocks(cond);
+				var inc'  = BubbleUpBlocks(inc);
+				block = EliminateSequenceExpressionsInChildStmt(block);
+				if (init' != init || cond' != cond || inc' != inc) {
+					var preInit = VList<LNode>.Empty;
+					if (init'.CallsMin(_#runSequence, 1)) {
+						preInit.AddRange(init'.Args.WithoutLast(1));
+						init = init'.Args.Last;
+					}
+					if (inc'.CallsMin(_#runSequence, 1)) {
+						var blockStmts = block.AsList(S.Braces).AddRange(inc'.Args);
+						block = blockStmts.AsLNode(S.Braces);
+						inc = F.Missing;
+					}
+					if (cond'.CallsMin(_#runSequence, 1)) {
+						var preCond = cond'.Args.WithoutLast(1);
+						cond = cond'.Args.Last;
+						stmt = quote {
+							for ($init; ; $inc) { 
+								$(...preCond);
+								if ($cond)
+									$block;
+								else
+									break;
+							}
+						};
+					} else {
+						stmt = quote { 
+							[$(...attrs)] for ($init; $cond; $inc) 
+								$block;
+						};
+					}
+					if (preInit.Count != 0) {
+						stmt = quote {{
+							$(...preInit);
+							$stmt;
+						}};
+					}
+					return stmt;
+				} else {
+					return stmt.WithArgChanged(3, block);
+				}
+			}
+
+			LNode ESEInTryStmt(LNode stmt)
+			{
+				var args = stmt.Args.ToWList();
+				// Process `try` part
+				args[0] = EliminateSequenceExpressionsInChildStmt(args[0]);
+				// Process `catch` and `finally` clauses (`when` clause not supported)
+				for (int i = 1; i < args.Count; i++) {
+					var part = args[i];
+					if (part.Calls(S.Finally, 1) || part.Calls(S.Catch, 3)) {
+						int lasti = part.ArgCount - 1;
+						args[i] = part.WithArgChanged(lasti, EliminateSequenceExpressionsInChildStmt(part.Args[lasti]));
+					}
+				}
+				return stmt.WithArgs(args.ToVList());
 			}
 
 			LNode ProcessBlockCallStmt(LNode stmt, int childStmtsStartAt)
@@ -256,7 +328,7 @@ namespace LeMP
 					return stmt; // no changes
 			}
 			
-			// This is called to process the "front" of a block call, e.g.
+			// This is called to process the two parts of a block call, e.g.
 			// #if(cond, {T}, {F}) => partialStmt = #if(cond); childStmts = {{T}, {F}}
 			// Returns true if anything changed (i.e. sequence expr detected)
 			bool ProcessBlockCallStmt2(ref LNode partialStmt, out VList<LNode> advanceSequence, List<LNode> childStmts)
@@ -346,6 +418,9 @@ namespace LeMP
 					case [$(...attrs)] $(value [IsQuickBindLhs(#)]) :: $(varName [#.IsId]):
 						result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
 					
+					case [$(...attrs)] $args => $code:
+						result = expr.WithArgChanged(1, EliminateSequenceExpressionsInLambdaExpr(code, F.Missing));
+
 					default:
 						if (expr.Calls(_#runSequence))
 							result = expr;

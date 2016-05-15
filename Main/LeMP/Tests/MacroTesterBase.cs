@@ -47,7 +47,9 @@ namespace LeMP.Tests
 					string resultStr = results.Select(n => outLang.Print(n)).Join("\n");
 					Assert.AreEqual(TestCompiler.StripExtraWhitespace(expected),
 									TestCompiler.StripExtraWhitespace(resultStr));
-					Console.WriteLine("Output code is different, though it prints the same...?");
+					// In some tests, the text is equal even though the trees are different,
+					// typically because of differences in #trivia attributes between the two.
+					Console.WriteLine(); // it's OK, but print a hint that this occurred.
 				}
 			}
 		}
