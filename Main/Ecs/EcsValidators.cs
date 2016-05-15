@@ -22,6 +22,9 @@ namespace Loyc.Ecs
 	{
 		static readonly HashSet<Symbol> SimpleStmts = EcsNodePrinter.SimpleStmts;
 		static readonly HashSet<Symbol> SpaceDefinitionStmts = EcsNodePrinter.SpaceDefinitionStmts;
+		static readonly HashSet<Symbol> OperatorIdentifiers = EcsNodePrinter.OperatorIdentifiers;
+		static readonly HashSet<Symbol> AssignmentOperators = EcsNodePrinter.SymbolSet(
+			"=", "*=", "-=", "+=", "/=", "%=", ">>=", "<<=", "^=", "&=", "|=", "??=", ":=");
 
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {
@@ -71,7 +74,7 @@ namespace Loyc.Ecs
 			LNode name, bases, body;
 			return SpaceDefinitionKind(n, out name, out bases, out body, p);
 		}
-		
+
 		/// <summary>Returns the space kind, which is one of the names #struct, 
 		/// #class, #enum, #interface, #namespace, #alias, #trait, or null if the 
 		/// node Name or structure is not valid for a space statement.</summary>
@@ -165,8 +168,8 @@ namespace Loyc.Ecs
 			// particular format, so the printer doesn't either.
 			if (!CallsWPAIH(args, S.AltList, p))
 				return null;
-			if (kind == S.Constructor && 
-				( (body != null && !CallsWPAIH(body, S.Braces, p) && !CallsWPAIH(body, S.Forward, 1, p))
+			if (kind == S.Constructor &&
+				((body != null && !CallsWPAIH(body, S.Braces, p) && !CallsWPAIH(body, S.Forward, 1, p))
 				|| !retType.IsIdNamed(S.Missing)))
 				return null;
 			if (IsComplexIdentifier(name, ICI.Default | ICI.NameDefinition, p)) {
@@ -238,6 +241,21 @@ namespace Loyc.Ecs
 				return CallsWPAIH(body, S.Braces, p) || CallsWPAIH(body, S.Forward, p);
 			} else
 				return argCount == 2;
+		}
+
+		public static bool IsVariableDeclExpr(LNode expr, out LNode type, out LNode name, out LNode initialValue)
+		{
+			type = name = initialValue = null;
+			if (expr.Calls(S.Var, 2)) {
+				type = expr.Args[0];
+				name = expr.Args[1];
+				if (name.Calls(S.Assign, 2)) {
+					initialValue = name.Args[1];
+					name = name.Args[0];
+				}
+				return name.IsId || name.Calls(S.Substitute, 1);
+			}
+			return false;
 		}
 
 		public static bool IsVariableDecl(LNode _n, bool allowMultiple, bool allowNoAssignment, Pedantics p) // for printing purposes
@@ -372,7 +390,7 @@ namespace Loyc.Ecs
 		{
 			if (!CallsMinWPAIH(n, S.Of, 1, p))
 				return false;
-			
+
 			ICI childFlags = ICI.InOf;
 			if (nameDefinition)
 				childFlags = (childFlags | ICI.NameDefinition | ICI.DisallowDotted | ICI.DisallowOf);
@@ -482,8 +500,8 @@ namespace Loyc.Ecs
 		{
 			var name = _n.Name;
 			int argC = _n.ArgCount;
-			return _n.IsCall && SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n, p) && 
-				(argC == 1 || (argC > 1 && name == S.Import) || 
+			return _n.IsCall && SimpleStmts.Contains(_n.Name) && HasSimpleHeadWPA(_n, p) &&
+				(argC == 1 || (argC > 1 && name == S.Import) ||
 				(argC == 0 && (name == S.Break || name == S.Continue || name == S.Return || name == S.Throw)));
 		}
 
@@ -496,9 +514,9 @@ namespace Loyc.Ecs
 
 		public static bool IsNamedArgument(LNode _n, Pedantics p = Pedantics.Lax)
 		{
- 			return CallsWPAIH(_n, S.NamedArg, 2, p) && IsSimpleSymbolWPA(_n.Args[0], p);
+			return CallsWPAIH(_n, S.NamedArg, 2, p) && IsSimpleSymbolWPA(_n.Args[0], p);
 		}
-		
+
 		public static bool IsResultExpr(LNode n, Pedantics p = Pedantics.Lax)
 		{
 			return CallsWPAIH(n, S.Result, 1, p) && !HasPAttrs(n, p);
@@ -537,7 +555,7 @@ namespace Loyc.Ecs
 
 		public static bool IsPlainCsIdentStartChar(char c)
 		{
- 			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || (c > 128 && char.IsLetter(c));
+			return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || (c > 128 && char.IsLetter(c));
 		}
 		public static bool IsPlainCsIdentContChar(char c)
 		{
@@ -561,6 +579,15 @@ namespace Loyc.Ecs
 				if (!IsPlainCsIdentContChar(text[i]))
 					return false;
 			return true;
+		}
+
+		public static bool IsAssignmentOperator(Symbol opName)
+		{
+			return opName != null && AssignmentOperators.Contains(opName);
+		}
+		public static bool IsOperator(Symbol opName)
+		{
+			return opName != null && OperatorIdentifiers.Contains(opName);
 		}
 
 		/// <summary>Eliminates punctuation and special characters from a string so

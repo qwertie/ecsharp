@@ -478,10 +478,10 @@ namespace Loyc.Ecs
 		internal static readonly HashSet<Symbol> OperatorIdentifiers = SymbolSet(
 			// >>, << and ** are special: the lexer provides them as two separate tokens
 			"~", "!", "%", "^", "&", "&&", "*", "**", "+", "++", 
-			"-", "--", "=", "==", "!=", /*"{}", "[]",*/ "|", "||", @"\", 
+			"-", "--", "==", "!=", /*"{}", "[]",*/ "|", "||", @"\", 
 			";", ":", ",", ".", "..", "<", "<<", ">", ">>", "/", 
-			"?", "??", "?.", "??=", "%=", "^=", "&=", "*=", "-=", 
-			"+=", "|=", "<=", ">=", "=>", "==>", "->", "$", ">>=", "<<="
+			"?", "??", "?.", "<=", ">=", "=>", "==>", "->", "$",
+			"=", "*=", "-=", "+=", "/=", "%=", ">>=", "<<=", "^=", "&=", "|=", "??=", ":="
 		);
 
 		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(
@@ -524,7 +524,6 @@ namespace Loyc.Ecs
 			"unchecked", "using", "while", "enum", "struct", "class", "interface", 
 			"namespace", "trait", "alias", "event", "delegate", "goto case");
 
-		
 		internal static HashSet<Symbol> SymbolSet(params string[] input)
 		{
 			return new HashSet<Symbol>(input.Select(s => GSymbol.Get(s)));
