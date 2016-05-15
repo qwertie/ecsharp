@@ -42,7 +42,7 @@ namespace Loyc.Collections
 			_count = count;
 			if (start < list.Min) throw new ArgumentException("The start index was below Min.");
 			if (count < 0) throw new ArgumentException("The count was below zero.");
-			if (start + count - 1 > _list.Max)
+			if ((long)start + count - 1 > _list.Max)
 				_count = (int)System.Math.Max((long)_list.Max + 1 - start, 0); // use long to avoid overflow if start==int.MaxValue && Max<0
 		}
 
