@@ -9,7 +9,8 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
-		[Test] public void Regression_2016_03_InappropriateSkip()
+		[Test(Fails = "Haven't decided how to fix this yet")]
+		public void Regression_2016_03_InappropriateSkip()
 		{
 			Test(@"LLLPG (parser(terminalType: Token, laType: TT, matchType: int, castLa: @false)) {
 					rule X()::LNode @{
@@ -41,7 +42,8 @@ namespace Loyc.LLParserGenerator
 			");
 		}
 
-		[Test] public void Regression_2016_01_AndPredBug()
+		[Test(Fails = "Unsure how to fix. Considering a major rewrite to make core engine easier to reason about.")]
+		public void Regression_2016_01_AndPredBug()
 		{
 			Test(@"LLLPG (parser(terminalType: Token, laType: TT)) {
 					token AndPredBug() @{

@@ -232,6 +232,10 @@
             <returns>Returns a transformed tree (or null if the macros did not 
             change the syntax tree at any level).</returns>
         </member>
+        <member name="T:LeMP.Tests.SmallerMacroTests">
+            <summary>Combined test suite for all the "smaller" macros that don't need 
+            a lot of testing.</summary>
+        </member>
         <member name="T:LeMP.TestCompiler">
             <summary>A simple version of Compiler that takes a single input and produces 
             a StringBuilder. Pre-opens LeMP.Prelude namespace.</summary>
