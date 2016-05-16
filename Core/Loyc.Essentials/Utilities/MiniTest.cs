@@ -275,7 +275,7 @@ namespace Loyc.MiniTest
 
 			switch (reason)
 			{
-				case StopReason.Fail: throw new AssertionException(msg);
+				case StopReason.Fail:   throw new AssertionException(msg);
 				case StopReason.Ignore: throw new IgnoreException(msg);
 				case StopReason.Inconclusive: throw new InconclusiveException(msg);
 				case StopReason.Success: throw new SuccessException(msg);

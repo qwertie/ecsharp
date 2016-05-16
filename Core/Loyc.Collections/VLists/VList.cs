@@ -723,17 +723,6 @@ namespace Loyc.Collections
 			Assert.That(list3 == list2);
 		}
 
-		private void AssertThrows<Type>(Action @delegate)
-		{
-			try {
-				@delegate();
-			} catch (Exception exc) {
-				Assert.IsInstanceOf<Type>(exc);
-				return;
-			}
-			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
-		}
-
 		[Test]
 		public void TestInsertRemove()
 		{
