@@ -3,7 +3,15 @@ title: LLLPG Version History
 layout: article
 ---
 
-### LLLPG v1.5.1 (March 5, 2015) ### 
+_Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
+
+### LLLPG v1.7.5 (April, 2016) ### 
+
+- Added optional ANTLR-style rule syntax (usage: `LLLPG (/*options*/) @{ /*ANTLR-style rules*/ };`) (introduced in v1.7.3, completed in 1.7.5). LLLPG-style rules (`rule R(args) @{...}`) are supported in a limited way when using ANTLR-style syntax mode
+- `BaseParser`/`BaseLexer` now throw `LogException` instead of `FormatException` by default
+- Shift `FileName` property from `ISourceFile` to base interface `IIndexToLine`
+
+### LLLPG v1.5.1 (March 5, 2016) ### 
 
 - LLLPG home page officially opens!
 - LLLPG: Added `...` as synonym for `..`; `...` is preferred since character ranges are inclusive

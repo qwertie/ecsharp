@@ -7,6 +7,40 @@ redirectDomain: ecsharp.net
 
 See also: version history of [LoycCore](http://core.ecsharp.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v1.7.6: May 17, 2016 ###
+
+- Completed `#useSequenceExpressions`, which enables 
+  - the quick-bind operator `::`
+  - in-situ declaration of `out` and `ref` variables as in `int.TryParse(s, out int x)` (**note:** data type is mandatory due to limitations of LeMP)
+  - `#runSequence`, which runs a sequence of statements inside an expression, and is designed to be used by other macros in the future.
+- `SetOrCreateMember` macro: refactored; bug fix: added logic to support constructors that call other constructors.
+
+- Bug fix: `EcsLanguageService.Print` wouldn't use plain C# mode
+
+### v1.7.5: April 29, 2016 ###
+
+- EC# printer now sanitizes identifiers in plain C# mode (e.g. `foo'` => `foo_apos`)
+- Renamed `ParsingMode.Exprs` => `Expressions`, `ParsingMode.Stmts` => `Statements`
+
+### v1.7.4: April 18, 2016 ###
+
+- `with` macro now recognizes `#` as the "current object"
+- Added `saveAndRestore()` macro
+- Changed `on_return` to preprocess the code that follows it
+- Reclassified `unless` as a standard macro (LeMP namespace)
+- EC# parser: enabled support for C# 5 await
+- EC# parser: block-call expressions now allow a token literal @{}, not just braces (for LLLPG ANTLR mode)
+- EC# parser: Refactored, and completely changed the strategy of how to distinguish which expressions are variable declarations. Changed Loyc tree for event declarations. 
+- EC# parsing fix: extension methods were broken because test suite didn't test them
+- Bug fix: `(Foo) * x` is now parsed as a multiplication (TODO: change `(int) * x` to be parsed as a cast)
+- Bug fix: printer now supports `goto case default;`
+
+### v1.7.2: April 1, 2016 ###
+
+- Changed EC# triple-quoted strings to allow up to three extra spaces or one extra tab after the initial indent.
+- Changed public interface of `LeMP.Compiler` to make it a bit more flexible and easier to use
+- `NullDotMacro` moved into `LeMP.CSharp6` namespace, which disables it by default.
+
 ### v1.7.1: Mar 22, 2016 ###
 
 - Unveiled the [Macro Reference Manual](reference.html)
