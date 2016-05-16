@@ -60,6 +60,18 @@ namespace LeMP
 
 		class EliminateRunSequences
 		{
+			// This is an internal signal attached to #runSequence that that it is 
+			// not necessary to create a temporary variable to hold a copy of 
+			// earlier parts of the outer expression, because the sequence has no
+			// potentially-relevant side effects.
+			static readonly LNode _trivia_pure = LNode.Id("#trivia_pure");
+
+			// This is an internal signal that it is not necessary to create a temporary 
+			// variable to hold a copy of a value because that value is already a copy. 
+			// e.g. this prevents an extra temporary from being created for `C` in
+			// `A.B[C::c] = D::d` (otherwise `D::d` would cause `c` to get copied to a temporary.)
+			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
+			
 			public this(public IMacroContext Context) {}
 			LNode[] _arrayOf1 = new LNode[1];
 			
@@ -393,7 +405,7 @@ namespace LeMP
 
 				LNode result = null;
 				if (!stmtContext) {
-					matchCode (expr) {
+				 	matchCode (expr) {
 					case { { $(..._); } }: // braced block
 						Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 						result = expr;
@@ -403,10 +415,9 @@ namespace LeMP
 							$varType $(varName [#.IsId]); }:
 						if (varType.IsIdNamed(S.Missing))
 							Context.Write(Severity.Error, expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
-						result = quote( #runSequence($(expr.WithoutAttrNamed(S.Out)), $varName) );
-					}
-				}
-				matchCode (expr) {
+						result = quote( [$_trivia_pure] 
+							#runSequence($(expr.WithoutAttrNamed(S.Out)), out $varName) );
+
 					// A variable declaration with an initializer (may have a `ref` attribute 
 					// attached, which should be transferred to the final expression)
 					case [$(...attrs)] $varType $varName = $value:
@@ -414,7 +425,10 @@ namespace LeMP
 							result = expr; // no-op
 						else
 							result = ConvertVarDeclToRunSequence(attrs, varType, varName, value);
-					
+					}
+				}
+				if (result == null) {
+					matchCode (expr) {
 					case [$(...attrs)] $(value [IsQuickBindLhs(#)]) :: $(varName [#.IsId]):
 						result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
 					
@@ -426,6 +440,7 @@ namespace LeMP
 							result = expr;
 						else
 							result = BubbleUp_GeneralCall(expr);
+					}
 				}
 
 				// #runSequences can be nested by the user or produced by BubbleUp_GeneralCall,
@@ -474,6 +489,10 @@ namespace LeMP
 
 				int lastRunSeq = args.LastIndexWhere(a => a.CallsMin(_#runSequence, 1));
 				if (lastRunSeq >= 0) {
+					// last index of #runSequence that is not marked pure
+					int lastRunSeqImpure = args.First(lastRunSeq+1).LastIndexWhere(a => 
+						a.CallsMin(_#runSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null);
+
 					if (lastRunSeq > 0 && 
 						(  args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or))
 						|| args.Count == 3 && target.IsIdNamed(S.QuestionMark))) {
@@ -489,7 +508,7 @@ namespace LeMP
 								combinedSequence.AddRange(arg.Args.WithoutLast(1));
 								argsW[i] = arg = arg.Args.Last;
 							}
-							if (i < lastRunSeq) {
+							if (i < lastRunSeqImpure) {
 								if (i == 0 && (expr.CallsMin(S.IndexBracks, 1) || expr.CallsMin(S.NullIndexBracks, 1))) {
 									// Consider foo[#runSequence(f(), i)]. In case this appears in
 									// an lvalue context and `foo` is a struct, we cannot store `foo` in 
@@ -514,12 +533,6 @@ namespace LeMP
 
 				return Pair.Create(combinedSequence, expr);
 			}
-
-			// This is an internal signal that it is not necessary to create a temporary 
-			// variable to hold a copy of a value because that value is already a copy. 
-			// e.g. this prevents an extra temporary from being created for `C` in
-			// `A.B[C::c] = D::d` (otherwise `D::d` would cause `c` to get copied to a temporary.)
-			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
 
 			// Creates a temporary for an LValue (left side of `=`, or `ref` parameter)
 			// e.g. f(x).Foo becomes f(x_N).Foo, and `var x_N = x` is added to `stmtSequence`,
@@ -557,6 +570,8 @@ namespace LeMP
 				LNode @ref;
 				attrs = attrs.WithoutNodeNamed(S.Ref, out @ref);
 				var varName' = varName.PlusAttr(_trivia_isTmpVar);
+				if (@ref != null)
+					varName' = varName'.PlusAttr(@ref);
 				matchCode(initValue)
 				{
 					case #runSequence($(...stmts), $resultValue):

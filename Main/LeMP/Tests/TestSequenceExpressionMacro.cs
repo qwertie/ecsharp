@@ -569,5 +569,27 @@ namespace LeMP.Tests
 					}
 				}".Replace("x_1", "x_"+StandardMacros.NextTempCounter));
 		}
+
+		[Test]
+		public void TestRefVarDecl()
+		{
+			TestEcs(@"#useSequenceExpressions;
+				void f() { Foo(ref int x = 5); }", @"
+				void f() {
+					int x = 5;
+					Foo(ref x);
+				}");
+		}
+
+		[Test]
+		public void TestOutVarDecl()
+		{
+			TestEcs(@"#useSequenceExpressions;
+				static int? Parse(string s) => int.Parse(s, out int x) ? (int?)x : null;", @"
+				static int? Parse(string s) {
+					int x;
+					return int.Parse(s, out x) ? (int?)x : null;
+				}");
+		}
 	}
 }

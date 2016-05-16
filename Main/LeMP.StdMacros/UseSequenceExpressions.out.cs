@@ -58,6 +58,8 @@ namespace LeMP
 		}
 		class EliminateRunSequences
 		{
+			static readonly LNode _trivia_pure = LNode.Id("#trivia_pure");
+			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
 			public IMacroContext Context;
 			public EliminateRunSequences(IMacroContext context)
 			{
@@ -303,7 +305,7 @@ namespace LeMP
 				LNode result = null;
 				if (!stmtContext) {
 					{
-						LNode varName, varType;
+						LNode tmp_4, value, varName, varType;
 						VList<LNode> attrs;
 						if (expr.Calls(CodeSymbols.Braces)) {
 							Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
@@ -311,26 +313,27 @@ namespace LeMP
 						} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 							if (varType.IsIdNamed(S.Missing))
 								Context.Write(Severity.Error, expr, "#useSequenceExpressions: the data type of this variable declaration cannot be inferred and must be stated explicitly.");
-							result = LNode.Call((Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName));
-						}
+							result = LNode.Call(LNode.List(_trivia_pure), (Symbol) "#runSequence", LNode.List(expr.WithoutAttrNamed(S.Out), varName.PlusAttrs(LNode.List(LNode.Id(CodeSymbols.Out)))));
+						} else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_4 = expr.Args[1]) != null && tmp_4.Calls(CodeSymbols.Assign, 2) && (varName = tmp_4.Args[0]) != null && (value = tmp_4.Args[1]) != null)
+							if (stmtContext)
+								result = expr;
+							else
+								result = ConvertVarDeclToRunSequence(attrs, varType, varName, value);
 					}
 				}
-				{
-					LNode args, code, tmp_4, value, varName, varType;
-					VList<LNode> attrs;
-					if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (tmp_4 = expr.Args[1]) != null && tmp_4.Calls(CodeSymbols.Assign, 2) && (varName = tmp_4.Args[0]) != null && (value = tmp_4.Args[1]) != null)
-						if (stmtContext)
+				if (result == null) {
+					{
+						LNode args, code, value, varName;
+						VList<LNode> attrs;
+						if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
+							result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
+						else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Lambda, 2) && (args = expr.Args[0]) != null && (code = expr.Args[1]) != null)
+							result = expr.WithArgChanged(1, EliminateSequenceExpressionsInLambdaExpr(code, F.Missing));
+						else if (expr.Calls(__numrunSequence))
 							result = expr;
 						else
-							result = ConvertVarDeclToRunSequence(attrs, varType, varName, value);
-					else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.ColonColon, 2) && (value = expr.Args[0]) != null && IsQuickBindLhs(value) && (varName = expr.Args[1]) != null && varName.IsId)
-						result = ConvertVarDeclToRunSequence(attrs, F.Missing, varName, value);
-					else if ((attrs = expr.Attrs).IsEmpty | true && expr.Calls(CodeSymbols.Lambda, 2) && (args = expr.Args[0]) != null && (code = expr.Args[1]) != null)
-						result = expr.WithArgChanged(1, EliminateSequenceExpressionsInLambdaExpr(code, F.Missing));
-					else if (expr.Calls(__numrunSequence))
-						result = expr;
-					else
-						result = BubbleUp_GeneralCall(expr);
+							result = BubbleUp_GeneralCall(expr);
+					}
 				}
 				if (result.Calls(__numrunSequence))
 					return result.WithArgs(EliminateSequenceExpressions(result.Args, false));
@@ -367,6 +370,7 @@ namespace LeMP
 				}
 				int lastRunSeq = args.LastIndexWhere(a => a.CallsMin(__numrunSequence, 1));
 				if (lastRunSeq >= 0) {
+					int lastRunSeqImpure = args.First(lastRunSeq + 1).LastIndexWhere(a => a.CallsMin(__numrunSequence, 1) && a.AttrNamed(_trivia_pure.Name) == null);
 					if (lastRunSeq > 0 && (args.Count == 2 && (target.IsIdNamed(S.And) || target.IsIdNamed(S.Or)) || args.Count == 3 && target.IsIdNamed(S.QuestionMark))) {
 						Context.Write(Severity.Error, target, "#useSequenceExpressions is not designed to support sequences or variable declarations on the right-hand side of the `&&`, `||` or `?` operators. The generated code will be incorrect.");
 					}
@@ -378,7 +382,7 @@ namespace LeMP
 								combinedSequence.AddRange(arg.Args.WithoutLast(1));
 								argsW[i] = arg = arg.Args.Last;
 							}
-							if (i < lastRunSeq) {
+							if (i < lastRunSeqImpure) {
 								if (i == 0 && (expr.CallsMin(S.IndexBracks, 1) || expr.CallsMin(S.NullIndexBracks, 1))) {
 								} else {
 									if (isAssignment || arg.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
@@ -396,7 +400,6 @@ namespace LeMP
 				}
 				return Pair.Create(combinedSequence, expr);
 			}
-			static readonly LNode _trivia_isTmpVar = LNode.Id("#trivia_isTmpVar");
 			LNode MaybeCreateTemporaryForLValue(LNode expr, ref VList<LNode> stmtSequence)
 			{
 				{
@@ -429,6 +432,8 @@ namespace LeMP
 				LNode @ref;
 				attrs = attrs.WithoutNodeNamed(S.Ref, out @ref);
 				var varName_apos = varName.PlusAttr(_trivia_isTmpVar);
+				if (@ref != null)
+					varName_apos = varName_apos.PlusAttr(@ref);
 				{
 					LNode resultValue;
 					VList<LNode> stmts;
