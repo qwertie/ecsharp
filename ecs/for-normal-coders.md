@@ -312,7 +312,7 @@ I also think this is more readable. If you're reading a function that has lots o
 
 The `::` operator itself already existed in C# before, but some of you may never have used it. It's used for namespace aliases, most notably [extern alias](https://msdn.microsoft.com/en-us/library/ms173212.aspx?f=255&MSPPError=-2147217396), to resolve naming conflicts between different assemblies. I've simply re-used it in Enhanced C#. Please note that you can still use `::` for its _original_ purpose, even in Enhanced C#.
 
-Namespace aliases are simple identifiers, so if the expression before `::` is not a simple identifier, `::` can be used to create variables instead. **Note:** that this feature is currently implemented by LeMP, which doesn't know what namespace aliases have been defined. Instead it assumes that only _lowercase_ identifiers are namespace aliases and that _uppercase_ identifiers are values. For example `alias::Foo.Bar` will be treated as a reference to a namespace alias, while `Prop::Foo.Bar` will be treated as a variable declaration.
+Namespace aliases are simple identifiers, so if the expression before `::` is not a simple identifier, `::` can be used to create variables instead. **Note:** currently, the implementation of the `::` isn't very smart; it doesn't disambiguate the two meanings of `::` by checking what namespace aliases have been defined. Instead it assumes that only _lowercase_ identifiers are namespace aliases and that _uppercase_ identifiers are values. For example `alias::Foo.Bar` will be treated as a reference to a namespace called `alias`, while `Prop::Foo.Bar` will be treated as a variable declaration. A smarter implementation should come in the future.
 
 You could write
 
@@ -332,7 +332,7 @@ but `::` is not intended to be used this way. Instead it is meant to appear "inl
     Foo(new List<int>()::list);
 ~~~
 
-A key feature of the new operator is its high precedence. In EC# you _could_ write code like this:
+A key feature of the new operator is its high precedence. In EC# you _can_ write code like this:
 
 ~~~csharp
     if ((var table = DBConnection.Tables.Get("Person")) != null)

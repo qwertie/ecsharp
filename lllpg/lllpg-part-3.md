@@ -11,30 +11,32 @@ Welcome to part 3
 
 _New to LLLPG? Start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)._
 
-There are lots of things left to cover, so let's get started. LLLPG 1.1.0 is being released at the same time as this article, and has some minor improvements (see History at the bottom). Plus, the zip file now has four demos (VS2010+ projects), not just one:
+There are lots of things left to cover, so let's get started. LLLPG 1.1.0 was released at the same time as this article; it came with four demos:
 
 - CalcExample-Standalone: Expression calculator with no dependencies
-- CalcExample-UsingLoycLibs: Expression calculator that uses `BaseLexer` and `BaseParser` from Loyc.Syntax.dll
+- CalcExample-UsingLoycLibs: Expression calculator that uses `BaseLexer` and `BaseParserForList` from Loyc.Syntax.dll
 - CalcExample-UsingLoycTrees: Expression calculator whose parser produces Loyc trees instead of calculating a result directly.
-- EnhancedC#Parser: I ripped the C# parser used by LLLPG out of Ecs.exe and dropped it into this demo program.
+- EnhancedC#Parser: I ripped the C# parser used by LLLPG out of Ecs.exe and dropped it into this demo program (so the parser is _not_ up-to-date, but good enough for a demo).
 
-The other download link is a new build of the LES syntax highlighter for VS2010 (no EC# highlighter is available yet.) An (imperfect but good) [LES syntax highlighter for Notepad++](https://sourceforge.net/apps/mediawiki/notepad-plus/index.php?title=User_Defined_Language_Files) is also available on the list of user-defined languages. 
+Many features have been added since this article was published, most of which are discussed in [Part 5](lllpg-part-5.html).
 
 ## A brief overview of the Loyc libraries
 
 When writing a parser, you have to decide whether you'll use the Loyc runtime libraries or not; the main advantage of _not_ using them is that you won't have to distribute the 3 Loyc DLLs with your application. But they contain a lot of useful stuff, so have a look and see if you like them.
 
-The important library for parsers based on LLLPG is _Loyc.Syntax.dll_, which depends on _Loyc.Essentials.dll_ and _Loyc.Collections.dll_. These DLLs have documentation for most of the classes they contain, automatically available to VS IntelliSense through _Loyc.Syntax.xml_, _Loyc.Essentials.xml_ and _Loyc.Collections.xml_, although the best documentation is the [source code](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/).
+The important library for parsers based on LLLPG is _Loyc.Syntax.dll_, which depends on _Loyc.Essentials.dll_ and _Loyc.Collections.dll_. These DLLs have documentation for most of the classes they contain, automatically available to VS IntelliSense through _Loyc.Syntax.xml_, _Loyc.Essentials.xml_ and _Loyc.Collections.xml_.
 
-I am only now starting to write [overview articles](http://loyc-etc.blogspot.ca/2014/01/using-loycessentials-introduction.html) about these libraries. So in brief, let me just say very briefly what these libraries are for and what they contain.
+In brief, let me just say very briefly what these libraries are for and what they contain.
 
 **Loyc.Essentials.dll** is a library of general-purpose code that supplements the .NET BCL (standard libraries). It contains the following categories of stuff:
 
-- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections.
+- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections such as [InternalList](http://core.ecsharp.net/collections/internal-list.html). You can [learn more in the docs](http://ecsharp.net/doc/code/namespaceLoyc_1_1Collections.html), but you'll be looking at Loyc.Essentials.dll and Loyc.Collections.dll combined.
 - Geometry: simple generic geometric interfaces and classes, e.g. `Point<T>` and `Vector<T>`
 - Math: generic math interfaces that allow arithmetic to be performed in generic code. Also includes fixed-point types, 128-bit integer math, and handy extra math functions in `MathEx`.
-- Other utilities: [message sinks](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/MessageSinks.cs) ([`IMessageSink`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/IMessageSink.cs)), object tags ([`ITags`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/ITags.cs), [`HashTags`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/HashTags.cs)), [`ICloneable<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/ICloneable.cs), [interface adapter generation](http://www.codeproject.com/Articles/87991/Dynamic-interfaces-in-any-NET-language),  [`Symbol`](http://www.codeproject.com/Articles/34753/Symbols-as-extensible-enums), threading stuff, a miniture clone of NUnit ([`MiniTest`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/MiniTest.cs), [`RunTests`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/RunTests.cs)), [`EzStopwatch`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/EzStopwatch.cs), [`WeakReference<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/WeakReference.cs), extra general-purpose exception types derived from `InvalidOperationException` (e.g. `InvalidStateException`, `ReadOnlyException`) and miscellaneous low-level functionality and extension methods.
-`Compatibility`: a very small amount of .NET 4.5 stuff, backported to .NET 4.0.
+- Other utilities: message sinks ([`IMessageSink`](http://ecsharp.net/doc/code/interfaceLoyc_1_1IMessageSink.html)), [`Symbol`](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), threading stuff, a miniture clone of NUnit ([`MiniTest`](https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Essentials/Utilities/MiniTest.cs), [`RunTests`](http://ecsharp.net/doc/code/classLoyc_1_1MiniTest_1_1RunTests.html)), and miscellaneous ["global" functions] and extension methods.
+`Compatibility`: a very small amount of .NET 4.5 stuff, backported to .NET 4.0 when using the .NET 4 build.
+
+Loyc.Essentials also defines [`ICharSource`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html) (defined in Loyc.Essentials.dll), a standard interface for a source of characters, which is used by lexers. `string` converts implicitly to [`UString`](http://ecsharp.net/doc/code/structLoyc_1_1UString.html) which is a string slice structure that implements `ICharSource`. The `Slice(start, count)` extension method can also get slices of strings.
 
 **Note**: the Loyc.Essentials API is not 100% stable yet (feedback welcome). Also, since Loyc.Essentials already contains a lot of LINQy stuff, I intend to incorporate the core functionality of [Linq to Collections](http://twistedoakstudios.com/blog/Post1585_linq-to-collections-beyond-ienumerablet) eventually but have only written parts of it so far.
 
@@ -44,27 +46,24 @@ The [`G` class](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials
 
 **Loyc.Collections.dll** is a library of data structures, mostly rather complex ones, currently all written by me:
 
-- [VLists](http://www.codeproject.com/Articles/26171/VList-data-structures-in-C): this data structure is notable because Loyc nodes (`LNode`s) use `RVList<LNode>` for their arguments and attributes. This is an implementation detail that ideally you wouldn't have to know about; but C# has no [`typedef`s](http://en.wikipedia.org/wiki/Typedef) that I could use to hide the type, and since VLists are `struct`s, if you treat them as `IList<T>` they will be boxed, and you don't really want that.
-- [ALists](http://www.codeproject.com/Articles/568095/The-List-Trifecta-Part-1), including the B+tree-like data structures `BList<T>`, `BDictionary<K,V>`, and my favorite, `BMultiMap<K,V>`, plus the new [`SparseAList<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/ALists/SparseAList.cs) which I intend to use in syntax highlighters.
-- [CPTrie](http://www.codeproject.com/Articles/61230/CPTrie-A-sorted-data-structure-for-NET), a memory-efficient data structure for large integer sets, and large sets or dictionaries of strings with long common prefixes.
-- Mutable/immutable fast-cloning hash trees based on [`InternalSet<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/InternalSet.cs): [`Set<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/Set.cs), [`MSet<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/MSet.cs), [`Map<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/Map.cs) and [`MMap<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/MMap.cs). This is perhaps my favorite data structure of all, though I haven't written an article about it yet.
-- [`InvertibleSet<T>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Sets/InvertibleSet.cs) is a set that can be inverted so that it has conceptually infinite size, containing everything that is not in a given finite list.
-- [`Bijection<K1,K2>`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Collections/Other/Bijection.cs): A bijection is a one-to-one function and its inverse. It is implemented with a pair of `IDictionaries`, one that maps `K1` to `K2` and another that maps `K2` to `K1`. You can choose the underlying dictionary type.
+- [VLists](http://www.codeproject.com/Articles/26171/VList-data-structures-in-C): this data structure is notable because Loyc nodes (`LNode`s) use `VList<LNode>` for their arguments and attributes. This is an implementation detail that ideally you wouldn't have to know about; but C# has no [`typedef`s](http://en.wikipedia.org/wiki/Typedef) that I could use to hide the type, and since VLists are `struct`s, if you treat them as `IList<T>` they will be boxed, and you don't really want that.
+- [ALists](http://core.ecsharp.net/collections/alists-part1.html), including the B+tree-like data structures `BList<T>`, `BDictionary<K,V>`, and my favorite, `BMultiMap<K,V>`, plus the new [`SparseAList<T>`](http://core.ecsharp.net/collections/alists-part3.html) which I use in my syntax highlighter.
+- [`Bijection<K1,K2>`](http://ecsharp.net/doc/code/classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html): A dictionary that goes in both directions.
+- [And more!](http://core.ecsharp.net/collections/)
 
-**Loyc.Syntax.dll** provides the foundations for LLLPG and contains the reference implementation of [LES](http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES), the syntax tree interchange format:
+**Loyc.Syntax.dll** provides the foundations for LLLPG and contains the reference implementation of [LES, the syntax tree interchange format](http://loyc.net/les):
 
-- [`BaseLexer`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/Lexing/BaseLexer.cs) is the recommended base class for lexers created with LLLPG.
-- [`BaseParser<Token>`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/BaseParser.cs) is designed for parsers created with LLLPG.
-- [`ICharSource`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Collections/Interfaces/ICharSource.cs) (defined in Loyc.Essentials.dll) is the standard source of characters for lexers.
--  [`ISourceFile`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/SourceFiles/ISourceFile.cs) encapsulates an `ICharSource`, a file name string, and a mapping to translate character indexes to (line, column) pairs and back. It is derived from [`IIndexPositionMapper`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/SourceFiles/IIndexPositionMapper.cs).
-- `SourceRange` is a triple (`ISourceFile Source`, `int StartIndex`, `int Length`) that represents a range of characters in a source file.
-- `SourcePos` is a (filename, line, column) triple. While `SourceRange` is a struct so it can be stored compactly, `SourcePos` is assumed to be used much less often, and it is a class so it can be derived from `LineAndPos` which is a (line, column) pair.
-- `IndexPositionMapper` provides mapping from `SourceRange` to `SourcePos` and back, but you don't usually need to use this class because this translation is a built-in feature of `BaseLexer`. In your lexer, you **must** call `AfterNewline()` at each newline in order for index-position mapping to work correctly.
-- [`LNode`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/Nodes/LNode.cs) is a Loyc Node or (synonymously) a [Loyc Tree](https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc_trees). [`LNodeFactory`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/Nodes/LNodeFactory.cs) is commonly used to help construct `LNode`s.
-- `LesLanguageService.Value` provides an LES parser and printer, neither of which are fully complete yet. It implements [`IParsingService`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/IParsingService.cs).
-- `SourceFileWithLineRemaps` is a helper class for languages that have a `#line` directive.
-- [`Precedence`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/Precedence.cs): a simple but flexible standard representation for the concept of operator precedence and "miscibility".
-- [`CodeSymbols`](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/CodeSymbols.cs) is a `static class` filled with standard `Symbol`s used in Loyc trees for operators (`Add` for +, `Sub` for -, `Mul` for *, `Set` for =, `Eq` for `==`, ...), statements (`Class` for `#class`, `Enum` for #enum, `ForEach` for #foreach, ...), modifiers (`Private` for #private, `Static` for #static, `Virtual` for #virtual, ...), types (`Void` for `#void`, `Int32` for `#int32`, Double for `#double`, ...), trivia (`TriviaInParens` for `#trivia_inParens`, ...), and so on.
+- [`BaseLexer`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html) is the recommended base class for lexers created with LLLPG. [`BaseParserForList<Token,MatchType>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) is the recommended base class for parsers.
+- [`StreamCharSource`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1StreamCharSource.html) is an implementation of `ICharSource` designed for parsing a file without storing the whole thing in memory.
+-  [`ISourceFile`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1ISourceFile.html) encapsulates an `ICharSource`, a file name string, and a mapping to translate character indexes to (line, column) pairs and back. It is derived from [`IIndexPositionMapper`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html).
+- [`SourceRange`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1SourceRange.html) is a triple (`ISourceFile Source`, `int StartIndex`, `int Length`) that represents a range of characters in a source file.
+- `SourcePos` is a (filename, line, column) triple. While `SourceRange` is a struct so it can be stored compactly, `SourcePos` is assumed to be used much less often, and it is a class so it can be derived from `LineAndCol` which is a (line, column) pair.
+- `IndexPositionMapper` provides mapping from `SourceRange` to `SourcePos` and back, but you don't often _need_ this class because `BaseLexer` already keeps track of the current line number (and where it started). In your lexer, you **must** call `AfterNewline()` at each newline in order for index-position mapping to work correctly.
+- [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) is a Loyc Node or (synonymously) a [Loyc Tree](https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc_trees). [`LNodeFactory`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNodeFactory.html) is commonly used to help construct `LNode`s.
+- `LesLanguageService.Value` provides an LES parser and printer, neither of which are fully complete yet. It implements [`IParsingService`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1IParsingService.html).
+- [`SourceFileWithLineRemaps`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html) is a helper class for languages that have a `#line` directive.
+- [`Precedence`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Precedence.html): a simple but flexible standard representation for the concept of operator precedence and "miscibility".
+- [`CodeSymbols`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1CodeSymbols.html) is a `static class` filled with standard `Symbol`s used in Loyc trees for operators (`Add` for +, `Sub` for -, `Mul` for *, `Set` for =, `Eq` for `==`, ...), statements (`Class` for `#class`, `Enum` for #enum, `ForEach` for #foreach, ...), modifiers (`Private` for #private, `Static` for #static, `Virtual` for #virtual, ...), types (`Void` for `#void`, `Int32` for `#int32`, Double for `#double`, ...), trivia (`TriviaInParens` for `#trivia_inParens`, ...), and so on.
 
 The Loyc libraries contain only "safe", verifiable code.
 
@@ -110,16 +109,19 @@ In your *.ecs or *.les input file, the syntax for invoking LLLPG is to use one o
 
 LES requires the semicolon while EC# does not. Also, LES files permit `LLLPG lexer {...}` and `LLLPG parser {...}` without parenthesis, which (due to the syntax rules of LES) is exactly equivalent to `LLLPG(lexer) {...}` or `LLLPG(parser) {...}`.
 
-Only one option is currently available for `lexer`:
+The following options are available for both `lexer` and `parser`:
 
-- `setType(type)`: data type for large sets. When you write a set with more than four elements, such as `'a'|'e'|'i'|'o'|'u'|'y'`, LLLPG generates a set object and uses `set.Contains(la0)` for prediction and `Match(set)` for matching, e.g. instead of `Match('a', 'e', 'i', 'o', 'u', 'y')` it generates a set with a statement like `static HashSet<int> RuleName_set0 = NewSet('a', 'e', 'i', 'o', 'u', 'y');` and then calls `Match(RuleName_set0)`. The default is `HashSet<int>`.
+- `inputSource: v` and `inputClass: T`: used by `static` lexers/parsers and parsers in `struct`s. See part 5 for more information.
+- `terminalType: T`: data type of terminals. This is used by the colon operator, e.g. `x:Terminal`, which becomes `x = Match(Terminal)` in the output, declares a variable `x` of this type to store the terminal.
+- `setType: T`: data type for large sets. When you write a set with more than four elements, such as `'a'|'e'|'i'|'o'|'u'|'y'`, LLLPG generates a set object and uses `set.Contains(la0)` for prediction and `Match(set)` for matching, e.g. instead of `Match('a', 'e', 'i', 'o', 'u', 'y')` it generates a set with a statement like `static HashSet<int> RuleName_set0 = NewSet('a', 'e', 'i', 'o', 'u', 'y');` and then calls `Match(RuleName_set0)`. The default is `HashSet<int>`.
+- `listInitializer: e`: Sets the data type of lists declared automatically when you use the `+:` operator. An initializer like `Type x = expr` causes `Type` to be used as the list type and `expr` as the initialization expression. The `Type` can have a type parameter `T` that is replaced with the appropriate item type. The default is `listInitializer: List<T> = new List<T>()`.
 
-The following options are available for `parser`:
+The following options are available only for `parser`:
 
-- `setType(type)`: data type for large sets (works the same as for `lexer`)
-- `laType(type)`: data type of `la0`, `la1`, etc. Typically this is the name of an `enum` that you are using to represent token types (default: `int`).
-- `matchType(type)` or `matchCast(type)`: causes a cast to be added to all token types passed to `Match`. For example, if you use `matchCast(int)` option, it will change calls like `Match('+', '-')` into `Match((int) '+', (int) '-')`. `matchCast` is a synonym for `matchType`.
-- `allowSwitch(bool)`: whether to allow `switch` statements (default: `true`). In C#, switch cases must be constants, so certain `laType` data types like `Symbol` are incompatible with `switch`. Therefore, this option can be used to prevent `switch` statements from being generated. Requires a boolean literal `true` or `false` (`@true` or `@false` in LES).
+- `laType: T`: data type of `la0`, `la1`, etc. Typically this is the name of an `enum` that you are using to represent token types (default: `int`). For lexers, `laType` is always `int` (not `char`, because -1 is used for EOF).
+- `matchCast: T`: causes a cast to be added to all token types passed to `Match`. For example, if you use `matchCast: int` option, it will change calls like `Match('+', '-')` into `Match((int) '+', (int) '-')`. `matchCast` is a synonym for `matchType`.
+- `allowSwitch: bool`: whether to allow `switch` statements (default: `true`). In C#, switch cases must be constants, so certain `laType` data types like `Symbol` are incompatible with `switch`. Therefore, this option can be used to prevent `switch` statements from being generated. Requires a boolean literal `true` or `false` (`@true` or `@false` in LES).
+- `castLa: bool`: whether to cast the result of `LA0` and `LA(i)` to `laType` (the default is `true`)
 
 The above options apply to the `lexer` or `parser` helper object, which controls code generation and defines how terminals are interpreted:
 
@@ -138,90 +140,80 @@ In addition to the `lexer` and `parser` options, you can add one or more of the 
 
 The typical outline of an EC# grammar file looks like this. You'll start by defining token types and a lexer...
 
-	using System;
-	using System.Text;
-	using System.Linq;
-	using System.Collections.Generic;
-	using System.Diagnostics;
+	using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
 	using Loyc;               // optional (for IMessageSink, Symbol, etc.)
 	using Loyc.Collections;   // optional (many handy interfaces & classes)
-	using Loyc.Syntax.Lexing; // optional (for BaseLexer)
-	using Loyc.Syntax;        // optional (for BaseParser<Token>, LNode)
+	using Loyc.Syntax.Lexing; // For BaseLexer
+	using Loyc.Syntax;        // For BaseParser<Token> and LNode
 
-	namespace MyLanguage
-	{
-		using TT = TokenType; // Abbreviate TokenType as TT
+	namespace MyLanguage; // Braces around the rest of the file are optional
 
-		public enum TokenType
-		{
-			EOF = -1,
-			Unknown = 0,
-			Spaces = 1, 
-			Newline = 2,
-			Number = 3,
-			/* add more token names here */
-		}
+    using TT = TokenType; // Abbreviate TokenType as TT
 
-		// Optional: define a class/struct for Tokens, or use Loyc.Syntax.Lexing.Token.
-		// In the latter case, define a "public static TokenType Type(this Token t)" 
-		// extension method and define your TokenTypes based on TokenKind. Example:
-		// http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Syntax/LES/TokenType.cs
-		public struct Token {
-			public TokenType Type;
-			public int StartIndex;
-			/* add additional members here */
-		}
+    public enum TokenType
+    {
+        EOF = -1,
+        Unknown = 0,
+        Spaces = 1, 
+        Newline = 2,
+        Number = 3,
+        /* add more token names here */
+    }
 
-		class MyLexer : BaseLexer
-		{
-			// If using the Loyc libraries: BaseLexer reads character data from an
-			// ICharSource. The string wrapper StringSlice implements ICharSource.
-			public MyLexer(string text, string fileName = "") 
-				: this((StringSlice)text, fileName) { }
-			public MyLexer(ICharSource text, string fileName = "") 
-				: base(text, fileName) { }
-			
-			// Error handler that may be called by LLLPG or BaseLexer. LLLPG requires 
-			// many other methods and properties provided by the base class.
-			protected override void Error(int lookahead, string message)
-			{
-				Console.WriteLine("At index {0}: {1}", InputPosition + lookahead, message);
-			}
+    // Optional: define a class/struct for Tokens, or use Loyc.Syntax.Lexing.Token.
+    // In the latter case, define a "public static TokenType Type(this Token t)" 
+    // extension method and define your TokenTypes based on TokenKind. Example:
+    // https://github.com/qwertie/LoycCore/blob/master/Loyc.Syntax/LES/TokenType.cs
+    public struct Token {
+        public TokenType Type;
+        public int StartIndex;
+        /* add additional members here */
+    }
 
-			// Loyc.Syntax: ISourceFile.IndexToLine(i) converts index to line/column
-			public new ISourceFile SourceFile { get { return base.SourceFile; } }
+    class MyLexer : BaseLexer
+    {
+        // If using the Loyc libraries: BaseLexer reads character data from an
+        // ICharSource. The string wrapper UString implements ICharSource.
+        public MyLexer(string text, string fileName = "") 
+            : this((UString)text, fileName) { }
+        public MyLexer(ICharSource text, string fileName = "") 
+            : base(text, fileName) { }
+        
+        // Error handler that may be called by LLLPG or BaseLexer. LLLPG requires 
+        // many other methods and properties provided by the base class.
+        protected override void Error(int lookahead, string message)
+        {
+            Console.WriteLine("At index {0}: {1}", InputPosition + lookahead, message);
+        }
 
-			LLLPG (lexer)
-			{
-				private TokenType _type;
-				private int _startIndex;
-				
-				public token Token NextToken()
-				{
-					_startIndex = InputPosition;
-					@[ { _type = TT.Spaces; }  (' '|'\t')+
-					 | { _type = TT.Newline; } Newline
-					 | { _type = TT.Number; }  Number
-					 | ...
-					 | error _?
-					   { _type = TT.Unknown; Error(0, "Unrecognized token"); }
-					 ];
-					return new Token() { 
-						Type = _type, StartIndex = _startIndex, ...
-					};
-				}
+        LLLPG (lexer)
+        {
+            private TokenType _type;
+            private int _startIndex;
+            
+            public token Token NextToken()
+            {
+                _startIndex = InputPosition;
+                @{ { _type = TT.Spaces; }  (' '|'\t')+
+                 | { _type = TT.Newline; } Newline
+                 | { _type = TT.Number; }  Number
+                 | error _?
+                   { _type = TT.Unknown; Error(0, "Unrecognized token"); }
+                 };
+                return new Token() { 
+                    Type = _type, StartIndex = _startIndex, ...
+                };
+            }
 
-				// 'extern' suppresses code generation, so the code of Newline is
-				// inherited from BaseLexer but LLLPG still knows what's in it.
-				extern token Newline @[ '\r' '\n'? | '\n' ];
+            // 'extern' suppresses code generation, so the code of Newline is
+            // inherited from BaseLexer but LLLPG still knows what's in it.
+            extern token Newline @[ '\r' '\n'? | '\n' ];
 
-				private token Number() @[
-					'0'..'9'+ ('.' '0'..'9'+)?
-				];
-				...
-			}
-		}
-	}
+            private token Number() @[
+                '0'..'9'+ ('.' '0'..'9'+)?
+            ];
+        }
+    }
 
 `BaseLexer` only requires you to define an `Error()` method. `BaseParser<Token>` requires more work because: 
 
@@ -235,9 +227,6 @@ So here's a typical outline for a parser:
 	{
 		public partial class MyParser : BaseParser<Token>
 		{
-			ISourceFile _sourceFile;
-			List<Token> _tokens;
-			
 			public MyParser(ICharSource text, string fileName)
 			{
 				// Grab all tokens from the lexer and ignore spaces

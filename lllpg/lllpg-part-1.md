@@ -184,7 +184,7 @@ This example demonstrates some new things:
 
 ## ANTLR-like syntax mode
 
-As of LLLPG 1.7.3, an ANTLR-like syntax mode has been added that makes it easier to port grammars between ANTLR and LLLPG. This mode is used by writing code like
+As of LLLPG 1.7.4, an ANTLR-like syntax mode has been added that makes it easier to port grammars between ANTLR and LLLPG. This mode is used by writing code like
 
     class MyParser : BaseParserForList {
         [/* general options */]
@@ -198,13 +198,23 @@ In this mode, the LLLPG block can _only_ contain rules (not ordinary C# methods 
 
 Although the outline of each rule uses an ANTLR-like syntax, there are still substantial differences:
 
-- The grammar inside each rule still follows LLLPG syntax rules, which are slightly different from ANTLR, e.g. you have to write `R(arg)` instead of `R[arg]` to pass an argument to rule `R`. In fact, because you have to use round brackets anyway, you're also allowed to write `myRule(ArgType argument) : grammar`, using round brackets instead of square ones.
-- The grammar follows LLLPG semantic rules as well, so there is no LL(\*), and while I'm sure there are other subtle differences, I can't tell you what they are because I am not an expert in ANTLR.
+- The grammar inside each rule still follows LLLPG syntax and semantic rules, which are slightly different from ANTLR. Most notably, semantic predicates (`{...}?` in ANTLR, `&{...}` in LLLPG) and gates (`=>`) work differently in the two systems. In LLLPG, semantic predicates are zero-width assertions that are handled somewhat like ordinary tokens, whereas in ANTLR... it's complicated, [I'll let Bart explain](http://stackoverflow.com/questions/3056441/what-is-a-semantic-predicate-in-antlr#answer-3056517). Also, keep in mind there is no LL(\*) in LLLPG.
 - LLLPG allows attributes in front of each rule.
 - Multiple return values are not supported; consider using `Tuple<A,B>` instead, as LeMP supports tuple syntax like `return (1, "two");`. You can also use `out` parameters, of course.
 - The [`options`](https://theantlrguy.atlassian.net/wiki/display/ANTLR3/Rule+and+subrule+options) clause is not supported, but you can use `[k(constant)]` to set the lookahead for a rule. LLLPG does not support automatic backtracking or memoization, and the `greedy` option is a property of loops, not rules.
-- `scope` clauses are not supported; you can manage scopes with ordinary C# code.
+- `scope` clauses are not supported; you can manage scopes with ordinary C# code. `throws` and `after` are not supported either.
 - The `catch` and `finally` clauses are not currently supported; I presume the grammar actions `{on_finally {...}}` or `{on_throw_catch (Exception e) {...}}` have the same effect.
+
+Also note:
+
+- The `@init` clause is supported but it is not needed; the following rules are equivalent:
+
+        rule1 @init { Action(); }: X | Y;
+        rule2 : { Action(); } (X | Y);
+
+- Conventionally LLLPG uses round brackets for argument lists, e.g. you would write `R(777)` to pass `777` as the first argument of rule `R`. ANTLR requires `R[777]` instead. Because of this difference, ANTLR rule signatures use square brackets too (`R[int num] : ...`). In order to accommodate ANTLR, LLLPG now allows argument lists to use square brackets, but if you prefer round brackets, LLLPG allows them on the formal argument list in ANTLR mode (e.g. `R(int num) returns (int) : ...`).
+- In any case, the return type always needs to be in brackets (square or round).
+- The rest of these articles will use traditional LLLPG notation, which is designed to resemble method declarations.
 
 ## The LeMP processing model
 
