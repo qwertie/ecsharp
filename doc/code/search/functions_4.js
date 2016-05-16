@@ -21,5 +21,6 @@ var searchData=
   ['exitwritelock',['ExitWriteLock',['../structLoyc_1_1Threading_1_1TinyReaderWriterLock.html#adb718ea24f67215d191eaa22a79a6655',1,'Loyc::Threading::TinyReaderWriterLock']]],
   ['expandtoinclude_3c_20rect_2c_20point_2c_20t_20_3e',['ExpandToInclude&lt; Rect, Point, T &gt;',['../classLoyc_1_1Geometry_1_1RectangleExt.html#a5a0486ef740b28432f3edb9e8fa26ae0',1,'Loyc.Geometry.RectangleExt.ExpandToInclude&lt; Rect, Point, T &gt;(this Rect a, Point b)'],['../classLoyc_1_1Geometry_1_1RectangleExt.html#a1bd7db7b5cbdbedbc3c014a5d22e90fa',1,'Loyc.Geometry.RectangleExt.ExpandToInclude&lt; Rect, Point, T &gt;(this Rect a, IEnumerable&lt; Point &gt; bs)']]],
   ['expect',['Expect',['../classLoyc_1_1MiniTest_1_1Assert.html#aee14f41372f5cb2f93b315f5916fa33e',1,'Loyc::MiniTest::Assert']]],
+  ['expectlistbyenumerator_3c_20t_20_3e',['ExpectListByEnumerator&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102',1,'Loyc::Collections::Impl::TestHelpers']]],
   ['exprcomplexity',['ExprComplexity',['../classLoyc_1_1LLParserGenerator_1_1PGIntSet.html#a3a92d7d6d89c2598442d768e5376762a',1,'Loyc::LLParserGenerator::PGIntSet']]]
 ];

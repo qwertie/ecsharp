@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ici',['ICI',['../namespaceLoyc_1_1Ecs.html#a26c2f30acf269ea309847823fdedfb36',1,'Loyc::Ecs']]]
+  ['escapec',['EscapeC',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af',1,'Loyc::Syntax']]]
 ];

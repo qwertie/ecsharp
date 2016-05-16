@@ -122,6 +122,7 @@ Inheritance diagram for Loyc.Threading.ThreadLocalVariable&lt; T &gt;:</div>
 </dl>
 <p>Note: this was written before .NET 4 (which has ThreadLocal{T}). Unlike ThreadLocal{T}, this class supports propagation from parent to child threads when used with <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html" title="Creates and controls a thread, and fills in a gap in the .NET framework by propagating thread-local v...">ThreadEx</a>. </p>
 <p>This class exists to solve two problems. First, the [ThreadStatic] attribute is not supported in the .NET Compact Framework. Second, and more importantly, .NET does not propagate thread-local variables when creating new threads, which is a huge problem if you want to implement the <a href="http://loyc-etc.blogspot.com/2010/08/pervasive-services-and-di.html">Ambient Service Pattern</a>. This class copies the T value from a parent thread to a child thread, but because .NET provides no way to hook into thread creation, it only works if you use <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html" title="Creates and controls a thread, and fills in a gap in the .NET framework by propagating thread-local v...">ThreadEx</a> instead of standard threads. </p>
+<p>TODO: figure out how to support .NET's ExecutionContext </p>
 <p>ThreadLocalVariable implements thread-local variables using a dictionary that maps thread IDs to values. </p>
 <p>Variables of this type are typically static and they must NOT be marked with the [ThreadStatic] attribute. </p>
 <p>ThreadLocalVariable(of T) is less convenient than the [ThreadStatic] attribute, but ThreadLocalVariable works with <a class="el" href="classLoyc_1_1Threading_1_1ThreadEx.html" title="Creates and controls a thread, and fills in a gap in the .NET framework by propagating thread-local v...">ThreadEx</a> to propagate the value of the variable from parent threads to child threads, and you can install a propagator function to customize the way the variable is copied (e.g. in case you need a deep copy). </p>
@@ -301,7 +302,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>_fallbackValue</b></td><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:59 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

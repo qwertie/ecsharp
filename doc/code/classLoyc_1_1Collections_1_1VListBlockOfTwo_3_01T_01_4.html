@@ -197,12 +197,9 @@ override bool&#160;</td><td class="memItemRight" valign="bottom"><b>RGet</b> (in
 <tr class="memitem:a96d824cfedf7b153d81f87207ee2be43"><td class="memItemLeft" align="right" valign="top">override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html#a96d824cfedf7b153d81f87207ee2be43">MuClear</a> (int localCountWithMutables)</td></tr>
 <tr class="memdesc:a96d824cfedf7b153d81f87207ee2be43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears all mutable items in this chain, and clears the mutable flag. If this block owns mutable items in prior blocks, they are cleared too. <a href="#a96d824cfedf7b153d81f87207ee2be43">More...</a><br /></td></tr>
 <tr class="separator:a96d824cfedf7b153d81f87207ee2be43"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a3657c7e57f0673683847e6d7e70d4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1a3657c7e57f0673683847e6d7e70d4c"></a>
-override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int localCount, Predicate&lt; T &gt; keep, WListProtected&lt; T &gt; forWList)</td></tr>
-<tr class="separator:a1a3657c7e57f0673683847e6d7e70d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e14f89413a11d18f2a88f64aeb1aea7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e14f89413a11d18f2a88f64aeb1aea7"></a>
-override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WhereSelect</b> (int _localCount, Func&lt; T, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
-<tr class="separator:a4e14f89413a11d18f2a88f64aeb1aea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18d318a12135786211ae5f08cf839c77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18d318a12135786211ae5f08cf839c77"></a>
+override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Where</b> (int localCount, Func&lt; T, bool &gt; keep, WListProtected&lt; T &gt; forWList)</td></tr>
+<tr class="separator:a18d318a12135786211ae5f08cf839c77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1747f948b4cf883f36f5ebfe3b4d963"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1747f948b4cf883f36f5ebfe3b4d963"></a>
 override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SmartSelect</b> (int _localCount, Func&lt; T, T &gt; map, WListProtected&lt; T &gt; forWList)</td></tr>
 <tr class="separator:ab1747f948b4cf883f36f5ebfe3b4d963"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -216,6 +213,9 @@ override FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 <tr class="memitem:ae17c0d5f329010962f4b9087a48ecbc6 inherit pub_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae17c0d5f329010962f4b9087a48ecbc6"></a>
 FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRange</b> (int localCount, int distanceFromFront, int count)</td></tr>
 <tr class="separator:ae17c0d5f329010962f4b9087a48ecbc6 inherit pub_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4f45d0c4e28cfabee3bef45177de504 inherit pub_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab4f45d0c4e28cfabee3bef45177de504"></a>
+virtual FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SelectMany</b> (int _localCount, Func&lt; T, IList&lt; T &gt;&gt; map, bool isRList, WListProtected&lt; T &gt; forWList)</td></tr>
+<tr class="separator:ab4f45d0c4e28cfabee3bef45177de504 inherit pub_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -299,9 +299,6 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:a23667ab1b986e42c8b12829562dd001f inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static T[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a23667ab1b986e42c8b12829562dd001f">ToArray</a> (VListBlock&lt; T &gt; self, int localCount, bool isRList)</td></tr>
 <tr class="memdesc:a23667ab1b986e42c8b12829562dd001f inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts any kind of FVList to an array, quickly. <a href="#a23667ab1b986e42c8b12829562dd001f">More...</a><br /></td></tr>
 <tr class="separator:a23667ab1b986e42c8b12829562dd001f inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a923aceb523b4819646f88092b173feb9 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a923aceb523b4819646f88092b173feb9"></a>
-static FVList&lt; Out &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Select&lt; Out &gt;</b> (VListBlock&lt; T &gt; _block, int _localCount, Func&lt; T, Out &gt; map, WListProtected&lt; Out &gt; forWList)</td></tr>
-<tr class="separator:a923aceb523b4819646f88092b173feb9 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af613016ac9ecb1f638d1acbc00d40e83 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">static FVList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af613016ac9ecb1f638d1acbc00d40e83">Transform</a> (VListBlock&lt; T &gt; _block, int _localCount, VListTransformer&lt; T &gt; x, bool isRList, WListProtected&lt; T &gt; forWList)</td></tr>
 <tr class="memdesc:af613016ac9ecb1f638d1acbc00d40e83 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms a list (combines filtering with selection and more). <a href="#af613016ac9ecb1f638d1acbc00d40e83">More...</a><br /></td></tr>
 <tr class="separator:af613016ac9ecb1f638d1acbc00d40e83 inherit pub_static_methods_classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -604,7 +601,7 @@ const int&#160;</td><td class="memItemRight" valign="bottom"><b>ImmCountMask</b>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:52 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:52 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

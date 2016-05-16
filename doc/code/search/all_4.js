@@ -2,10 +2,11 @@ var searchData=
 [
   ['datalist',['DataList',['../classLoyc_1_1ExceptionExt.html#a0156c141548bbffc7271142e116c9390',1,'Loyc.ExceptionExt.DataList(this Exception ex)'],['../classLoyc_1_1ExceptionExt.html#a1133d55c63723bcf29bb2e77a068edf8',1,'Loyc.ExceptionExt.DataList(this Exception ex, string linePrefix, string keyValueSeparator, string newLine)']]],
   ['datatype',['DataType',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8aaa2aaa59ac1a7c24e5e86c068bda3d20',1,'Loyc::Syntax']]],
+  ['declarations',['Declarations',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a22c66547bb2611e350997c0ff4eca94b',1,'Loyc::Syntax::ParsingMode']]],
   ['decodeat',['DecodeAt',['../structLoyc_1_1UString.html#a6dd742be02e7fbff30e8d8332e8f3815',1,'Loyc::UString']]],
   ['dedenttoken',['DedentToken',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html#ae97da793c8bded2f1fc43624096c0484',1,'Loyc::Syntax::Lexing::IndentTokenGenerator']]],
   ['deepcomparer',['DeepComparer',['../classLoyc_1_1Syntax_1_1LNode_1_1DeepComparer.html',1,'Loyc::Syntax::LNode']]],
-  ['default',['Default',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408',1,'Loyc.Syntax.CodeSymbols.Default()'],['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67',1,'Loyc.Syntax.Default()']]],
+  ['default',['Default',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1e7b1ab4fa682b89e50e70efdd736408',1,'Loyc.Syntax.CodeSymbols.Default()'],['../classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67',1,'Loyc.Syntax.LNode.Default()'],['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a7a1920d61156abc05a60135aefe8bc67',1,'Loyc.Syntax.Default()']]],
   ['defaultarm',['DefaultArm',['../classLoyc_1_1LLParserGenerator_1_1Alts.html#aa42f5797f460395295450b35e15b91e9',1,'Loyc::LLParserGenerator::Alts']]],
   ['defaultcomparer',['DefaultComparer',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSet_3_01T_01_4.html#aac7d404cb5692f28823c7688bbb921eb',1,'Loyc::Collections::Impl::InternalSet&lt; T &gt;']]],
   ['defaulterrorbranch',['DefaultErrorBranch',['../classLoyc_1_1LLParserGenerator_1_1DefaultErrorBranch.html',1,'Loyc::LLParserGenerator']]],

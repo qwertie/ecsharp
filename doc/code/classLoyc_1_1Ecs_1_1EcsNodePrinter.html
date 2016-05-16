@@ -199,7 +199,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:a0dc60a9291182d3136c6de03535172a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints statements like "foo (...) bar()" in the equivalent form "foo (..., bar())" instead. Does not affect foo {...} because property and event definitions require this syntax (get {...}, set {...}). <a href="#a0dc60a9291182d3136c6de03535172a2">More...</a><br /></td></tr>
 <tr class="separator:a0dc60a9291182d3136c6de03535172a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa14f90a1768baad85a17ce8f5ffe0e4d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d">PreferPlainCSharp</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aa14f90a1768baad85a17ce8f5ffe0e4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x. <a href="#aa14f90a1768baad85a17ce8f5ffe0e4d">More...</a><br /></td></tr>
+<tr class="memdesc:aa14f90a1768baad85a17ce8f5ffe0e4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x, and &lt;tt&gt;at-identifiers are sanitized. <a href="#aa14f90a1768baad85a17ce8f5ffe0e4d">More...</a><br /></td></tr>
 <tr class="separator:aa14f90a1768baad85a17ce8f5ffe0e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af766fcf997102d3c880581a48176e233"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceLoyc_1_1Ecs.html#af6777f19c2bd33b3656b36d293a61a40">SpaceOpt</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#af766fcf997102d3c880581a48176e233">SpaceOptions</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:af766fcf997102d3c880581a48176e233"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls the locations where spaces should be emitted. <a href="#af766fcf997102d3c880581a48176e233">More...</a><br /></td></tr>
@@ -223,7 +223,7 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>EcsNodePrinter</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1Syntax_1_1Les_1_1INodePrinterWriter.html">INodePrinterWriter</a> target)</td></tr>
 <tr class="separator:a6df84d44e2e8271bc3291a9724e1daa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15e3f6bc884f4444ba9c256479eafb4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html">EcsNodePrinter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a15e3f6bc884f4444ba9c256479eafb4f">SetPlainCSharpMode</a> ()</td></tr>
-<tr class="memdesc:a15e3f6bc884f4444ba9c256479eafb4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#a15e3f6bc884f4444ba9c256479eafb4f">More...</a><br /></td></tr>
+<tr class="memdesc:a15e3f6bc884f4444ba9c256479eafb4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x, and <tt>at-identifiers are sanitized.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true. <a href="#a15e3f6bc884f4444ba9c256479eafb4f">More...</a><br /></td></tr>
 <tr class="separator:a15e3f6bc884f4444ba9c256479eafb4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -325,7 +325,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
+<p>Sets <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a1cd257f323ababaa140f6b6f7a960e25" title="Permits extra parentheses to express precedence, instead of resorting to prefix notation (defaults to...">AllowChangeParentheses</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d" title="Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(->int) becomes (int) x, and <tt>at-identifiers are sanitized.">PreferPlainCSharp</a> and <a class="el" href="classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a4714af6d028eaed4b180b10500c21b99" title="Suppresses printing of all attributes that are not on declaration or definition statements (such as c...">DropNonDeclarationAttributes</a> to true.</p>
 <dl class="section return"><dt>Returns</dt><dd>this.</dd></dl>
 
 </div>
@@ -617,7 +617,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 </table>
 </div><div class="memdoc">
 
-<p>Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x.</p>
+<p>Prefers plain C# syntax for certain other things (not covered by the other options), even when the syntax tree requests a different style, e.g. EC# cast operators are blocked so x(-&gt;int) becomes (int) x, and &lt;tt&gt;at-identifiers are sanitized.</p>
 
 </div>
 </div>
@@ -669,7 +669,7 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

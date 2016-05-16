@@ -19,7 +19,7 @@ var searchData=
   ['neq',['Neq',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a23ace55f57437a7a52ba75034c31baf8',1,'Loyc::Syntax::CodeSymbols']]],
   ['nestedenumerable_3c_20frame_2c_20t_20_3e',['NestedEnumerable&lt; Frame, T &gt;',['../structLoyc_1_1Collections_1_1NestedEnumerable_3_01Frame_00_01T_01_4.html',1,'Loyc::Collections']]],
   ['nestedenumerator_3c_20frame_2c_20t_20_3e',['NestedEnumerator&lt; Frame, T &gt;',['../structLoyc_1_1Collections_1_1NestedEnumerator_3_01Frame_00_01T_01_4.html',1,'Loyc::Collections']]],
-  ['new',['new',['../classLoyc_1_1SymbolPool.html#ae3716a61f58bea5d9b3e34d59dcb33c0',1,'Loyc.SymbolPool.new()'],['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9c864c30f57909ba8d419e1eea49e00a',1,'Loyc.Syntax.CodeSymbols.New()']]],
+  ['new',['New',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9c864c30f57909ba8d419e1eea49e00a',1,'Loyc.Syntax.CodeSymbols.New()'],['../classLoyc_1_1SymbolPool.html#ae3716a61f58bea5d9b3e34d59dcb33c0',1,'Loyc.SymbolPool.new()']]],
   ['newitems',['NewItems',['../structLoyc_1_1Collections_1_1ListChangeInfo_3_01T_01_4.html#ac4c6e57862945546517346437e7feb17',1,'Loyc::Collections::ListChangeInfo&lt; T &gt;']]],
   ['newline',['Newline',['../classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#abae963fe4011bda74065554b7f606f0e',1,'Loyc.Syntax.Lexing.BaseLexer&lt; CharSrc &gt;.Newline()'],['../classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource_3_01CharSrc_01_4.html#a9e7173693770a153cbe0aa90c59ef0ae',1,'Loyc.Syntax.Lexing.LexerSource&lt; CharSrc &gt;.Newline()']]],
   ['newlineoptions',['NewlineOptions',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#af046ec4a06e1270685460547238cc950',1,'Loyc::Ecs::EcsNodePrinter']]],

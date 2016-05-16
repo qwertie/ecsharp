@@ -143,14 +143,16 @@ Nested classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:a81a37ef2627b1262a173c450312b04f1"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1">FormatExceptionErrorSink</a></td></tr>
-<tr class="memdesc:a81a37ef2627b1262a173c450312b04f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current. <a href="#a81a37ef2627b1262a173c450312b04f1">More...</a><br /></td></tr>
+<tr class="memitem:a550e2ea84ea58c6216476641d3aba267"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a550e2ea84ea58c6216476641d3aba267">LogExceptionErrorSink</a></td></tr>
+<tr class="memdesc:a550e2ea84ea58c6216476641d3aba267"><td class="mdescLeft">&#160;</td><td class="mdescRight">Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Current. <a href="#a550e2ea84ea58c6216476641d3aba267">More...</a><br /></td></tr>
+<tr class="separator:a550e2ea84ea58c6216476641d3aba267"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81a37ef2627b1262a173c450312b04f1"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FormatExceptionErrorSink</b></td></tr>
 <tr class="separator:a81a37ef2627b1262a173c450312b04f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:aabc8daddf91eb4f85683aabd69e8368c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#aabc8daddf91eb4f85683aabd69e8368c">ErrorSink</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aabc8daddf91eb4f85683aabd69e8368c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1" title="Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.">FormatExceptionErrorSink</a>, which throws FormatException if an error occurs. <a href="#aabc8daddf91eb4f85683aabd69e8368c">More...</a><br /></td></tr>
+<tr class="memdesc:aabc8daddf91eb4f85683aabd69e8368c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a550e2ea84ea58c6216476641d3aba267" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Current.">LogExceptionErrorSink</a>, which throws an exception if an error occurs. <a href="#aabc8daddf91eb4f85683aabd69e8368c">More...</a><br /></td></tr>
 <tr class="separator:aabc8daddf91eb4f85683aabd69e8368c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93f4b9a3662e980b526022a658b2b1a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a93f4b9a3662e980b526022a658b2b1a5">SourceFile</a><code> [get]</code></td></tr>
 <tr class="memdesc:a93f4b9a3662e980b526022a658b2b1a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a> object that was provided to the constructor, if any. <a href="#a93f4b9a3662e980b526022a658b2b1a5">More...</a><br /></td></tr>
@@ -167,8 +169,8 @@ Properties</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:ac15d4a87becf2dde120b3235f15a7345"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac15d4a87becf2dde120b3235f15a7345"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BaseParser</b> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int startIndex=0)</td></tr>
+<tr class="memitem:ac15d4a87becf2dde120b3235f15a7345"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#ac15d4a87becf2dde120b3235f15a7345">BaseParser</a> (<a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a> file=null, int startIndex=0)</td></tr>
+<tr class="memdesc:ac15d4a87becf2dde120b3235f15a7345"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the base class. <a href="#ac15d4a87becf2dde120b3235f15a7345">More...</a><br /></td></tr>
 <tr class="separator:ac15d4a87becf2dde120b3235f15a7345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab21aacbe6e9cc43a801b21c8830d5aa5"><td class="memItemLeft" align="right" valign="top">abstract MatchType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#ab21aacbe6e9cc43a801b21c8830d5aa5">EofInt</a> ()</td></tr>
 <tr class="memdesc:ab21aacbe6e9cc43a801b21c8830d5aa5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value used for EOF (normally 0) <a href="#ab21aacbe6e9cc43a801b21c8830d5aa5">More...</a><br /></td></tr>
@@ -297,6 +299,50 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>_inputPosition</b></td
 MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr>
 <tr class="separator:a85254a12f7e3aca0b9ab34663d6a268d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="ac15d4a87becf2dde120b3235f15a7345"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.BaseParser </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html">ISourceFile</a>&#160;</td>
+          <td class="paramname"><em>file</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>startIndex</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes the base class.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file</td><td>A source file object that will be returned by the <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a> property. By default, this object is used to get the file name, line number and column number shown in parser errors. If your lexer uses BaseLexer or LexerSource, you can get this object from the BaseLexer{C}.SourceFile property. The <a class="el" href="classLoyc_1_1Syntax_1_1SourceFile.html">SourceFile</a> property (in this class) will return this value. If this parameter is null, then by default, error messages will only show the character index instead of the file, line number and column number.</td></tr>
+    <tr><td class="paramname">startIndex</td><td>The initial value of <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#ac74a81e15edf2f0ce08ce217c1a75203" title="Current position of the next token to be parsed.">InputPosition</a>.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ab21aacbe6e9cc43a801b21c8830d5aa5"></a>
 <div class="memitem">
@@ -508,7 +554,36 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <div class="line">                    MessageSink.Current.Write(sev, location, fmt, args);</div>
 <div class="line">            })</div>
 </div><!-- fragment -->
-<p>Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.</p>
+</div>
+</div>
+<a class="anchor" id="a550e2ea84ea58c6216476641d3aba267"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> Loyc.Syntax.BaseParser&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, MatchType &gt;.LogExceptionErrorSink</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= MessageSink.FromDelegate(</div>
+<div class="line">            (sev, location, fmt, args) =&gt;</div>
+<div class="line">            {</div>
+<div class="line">                LogMessage msg = <span class="keyword">new</span> LogMessage(sev, location, fmt, args);</div>
+<div class="line">                <span class="keywordflow">if</span> (sev &gt;= <a class="code" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a>.Error)</div>
+<div class="line">                    <span class="keywordflow">throw</span> <span class="keyword">new</span> LogException(msg);</div>
+<div class="line">                <span class="keywordflow">else</span></div>
+<div class="line">                    msg.WriteTo(MessageSink.Current);</div>
+<div class="line">            })</div>
+</div><!-- fragment -->
+<p>Throws <a class="el" href="classLoyc_1_1LogException.html" title="An exception that includes a &quot;context&quot; object as part of a LogMessage structure, typically used to in...">LogException</a> when it receives an error. Non-errors are sent to MessageSink.Current.</p>
 
 </div>
 </div>
@@ -531,7 +606,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 </table>
 </div><div class="memdoc">
 
-<p>Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a81a37ef2627b1262a173c450312b04f1" title="Throws FormatException when it receives an error. Non-errors are sent to MessageSink.Current.">FormatExceptionErrorSink</a>, which throws FormatException if an error occurs.</p>
+<p>Gets or sets the object to which error messages are sent. The default object is <a class="el" href="classLoyc_1_1Syntax_1_1BaseParser_3_01Token_00_01MatchType_01_4.html#a550e2ea84ea58c6216476641d3aba267" title="Throws LogException when it receives an error. Non-errors are sent to MessageSink.Current.">LogExceptionErrorSink</a>, which throws an exception if an error occurs.</p>
 
 </div>
 </div>
@@ -627,7 +702,7 @@ MatchType&#160;</td><td class="memItemRight" valign="bottom"><b>EOF</b></td></tr
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

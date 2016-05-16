@@ -90,7 +90,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
-<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1G-members.html">List of all members</a>  </div>
@@ -106,21 +105,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Contains global functions that don't belong in any specific class.</p>
+<p>Note: helper methods for parsing and printing tokens and hex digits have been moved to <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html" title="Static methods that help with common parsing jobs, such as parsing integers, floats, and strings with C escape sequences.">Loyc.Syntax.ParseHelpers</a>.</p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
-Public Types</h2></td></tr>
-<tr class="memitem:aca73b19d9bbc9032dcd639c20a3aff65"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> { <br />
-&#160;&#160;<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a043a760100cdfb3fea08aa42659395fa">ParseFlag.SkipSpacesInFront</a> = 1, 
-<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a1677c5167d3956aa0281d3682d5496a4">ParseFlag.SkipSpacesInsideNumber</a> = 2, 
-<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65ada1c5c9727a3933ee8789e1cddabd51e">ParseFlag.StopBeforeOverflow</a> = 4, 
-<br />
-&#160;&#160;<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a462bc2573b61295f9c4f2448bf0e287d">ParseFlag.SkipUnderscores</a> = 8, 
-<a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a166071b852bb59eee7b5a242f6060161">ParseFlag.AllowCommaDecimalPoint</a> = 8
-<br />
- }</td></tr>
-<tr class="memdesc:aca73b19d9bbc9032dcd639c20a3aff65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that can be used with the overload of TryParseAt() that parses unsigned integers. <a href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">More...</a><br /></td></tr>
-<tr class="separator:aca73b19d9bbc9032dcd639c20a3aff65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:a1df19485effa125b7a2fde8c4ac9b437"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1df19485effa125b7a2fde8c4ac9b437"></a>
@@ -141,9 +127,24 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5026487dcc499e0485cc2e81fc983e94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5026487dcc499e0485cc2e81fc983e94"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Swap&lt; T &gt;</b> (ref T a, ref T b)</td></tr>
 <tr class="separator:a5026487dcc499e0485cc2e81fc983e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d8b56d6db235a19182226b216fd9c1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d8b56d6db235a19182226b216fd9c1f"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T &gt;</b> (this T value, T item1, T item2)</td></tr>
+<tr class="separator:a1d8b56d6db235a19182226b216fd9c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8245c7f7ee9a5569ef00985f7fb37486"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8245c7f7ee9a5569ef00985f7fb37486"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T &gt;</b> (this T value, T item1, T item2, T item3)</td></tr>
+<tr class="separator:a8245c7f7ee9a5569ef00985f7fb37486"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a87f434ad0a51b8acd0dbe27429b174"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a87f434ad0a51b8acd0dbe27429b174"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T &gt;</b> (this T value, T item1, T item2, T item3, T item4)</td></tr>
+<tr class="separator:a6a87f434ad0a51b8acd0dbe27429b174"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab51335b79764197ef0b8bb5b31c4afde"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab51335b79764197ef0b8bb5b31c4afde"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOneOf&lt; T &gt;</b> (this T value, params T[] set)</td></tr>
 <tr class="separator:ab51335b79764197ef0b8bb5b31c4afde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b552ab7f99afe75149723e7c996b36d"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a8b552ab7f99afe75149723e7c996b36d">With&lt; T &gt;</a> (this T obj, Action&lt; T &gt; action)</td></tr>
+<tr class="memdesc:a8b552ab7f99afe75149723e7c996b36d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls <code>action(obj)</code>, then returns the same object. <a href="#a8b552ab7f99afe75149723e7c996b36d">More...</a><br /></td></tr>
+<tr class="separator:a8b552ab7f99afe75149723e7c996b36d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2449794f23bbac4ec1b6029269795bef"><td class="memItemLeft" align="right" valign="top">static T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a2449794f23bbac4ec1b6029269795bef">With&lt; T &gt;</a> (this T obj, Func&lt; T, T &gt; action)</td></tr>
+<tr class="memdesc:a2449794f23bbac4ec1b6029269795bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>action(obj)</code>. This is similar to the other overload of this method, except that the action has a return value. <a href="#a2449794f23bbac4ec1b6029269795bef">More...</a><br /></td></tr>
+<tr class="separator:a2449794f23bbac4ec1b6029269795bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9d9d90722d454664467ed0dc58a58fe"><td class="memItemLeft" align="right" valign="top">static Comparison&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab9d9d90722d454664467ed0dc58a58fe">ToComparison&lt; T &gt;</a> ()</td></tr>
 <tr class="memdesc:ab9d9d90722d454664467ed0dc58a58fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a Comparison{T} for the specified type. <a href="#ab9d9d90722d454664467ed0dc58a58fe">More...</a><br /></td></tr>
 <tr class="separator:ab9d9d90722d454664467ed0dc58a58fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,130 +163,97 @@ static List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:a4dada93256dc937f5f387c075aad2e45"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4dada93256dc937f5f387c075aad2e45">MakeValidFileName</a> (string text, char?replacement= '_', bool fancy=true)</td></tr>
 <tr class="memdesc:a4dada93256dc937f5f387c075aad2e45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces characters in <code>text</code> that are not allowed in file names with the specified replacement character. <a href="#a4dada93256dc937f5f387c075aad2e45">More...</a><br /></td></tr>
 <tr class="separator:a4dada93256dc937f5f387c075aad2e45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aefea007ba5b6fbeda3160dd75ac9b09e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aefea007ba5b6fbeda3160dd75ac9b09e"></a>
-static <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; T1, T2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Pair&lt; T1, T2 &gt;</b> (T1 a, T2 b)</td></tr>
-<tr class="separator:aefea007ba5b6fbeda3160dd75ac9b09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a356dfa7c27281273fffa74813072bc32"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a356dfa7c27281273fffa74813072bc32"></a>
-static Triplet&lt; T1, T2, T3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Triplet&lt; T1, T2, T3 &gt;</b> (T1 a, T2 b, T3 c)</td></tr>
-<tr class="separator:a356dfa7c27281273fffa74813072bc32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a754325bf38a1453e93d22aba69a9f412"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a754325bf38a1453e93d22aba69a9f412">Assert</a> (bool condition)</td></tr>
+<tr class="memdesc:a754325bf38a1453e93d22aba69a9f412"><td class="mdescLeft">&#160;</td><td class="mdescRight">In .NET 4+, this is an alias for Contract.Assert(). <a href="#a754325bf38a1453e93d22aba69a9f412">More...</a><br /></td></tr>
+<tr class="separator:a754325bf38a1453e93d22aba69a9f412"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fa3efc8ac4ae234d201596fb80d5656"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4fa3efc8ac4ae234d201596fb80d5656">Assert</a> (bool condition, string userMessage)</td></tr>
+<tr class="memdesc:a4fa3efc8ac4ae234d201596fb80d5656"><td class="mdescLeft">&#160;</td><td class="mdescRight">In .NET 4+, this is an alias for Contract.Assert(). <a href="#a4fa3efc8ac4ae234d201596fb80d5656">More...</a><br /></td></tr>
+<tr class="separator:a4fa3efc8ac4ae234d201596fb80d5656"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ce38fca60499fd9c5a5c4428fa12437"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4ce38fca60499fd9c5a5c4428fa12437">Verify</a> (bool condition)</td></tr>
-<tr class="memdesc:a4ce38fca60499fd9c5a5c4428fa12437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as Debug.Assert except that the argument is evaluated even in a Release build. <a href="#a4ce38fca60499fd9c5a5c4428fa12437">More...</a><br /></td></tr>
+<tr class="memdesc:a4ce38fca60499fd9c5a5c4428fa12437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>Debug.Assert</code> except that the argument is evaluated even in a Release build. <a href="#a4ce38fca60499fd9c5a5c4428fa12437">More...</a><br /></td></tr>
 <tr class="separator:a4ce38fca60499fd9c5a5c4428fa12437"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc2da6dc947caa02b460959f78b51872"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc2da6dc947caa02b460959f78b51872"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Require</b> (bool condition)</td></tr>
-<tr class="separator:afc2da6dc947caa02b460959f78b51872"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf89badb6156e2e8ad70c8f62b02c0e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf89badb6156e2e8ad70c8f62b02c0e2"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Require</b> (bool condition, string msg)</td></tr>
-<tr class="separator:adf89badb6156e2e8ad70c8f62b02c0e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66ff334f285a123062a42b6a81460c61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66ff334f285a123062a42b6a81460c61"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseHex</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int value)</td></tr>
-<tr class="separator:a66ff334f285a123062a42b6a81460c61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ade9492f448e12cd1144125ad9811a9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ade9492f448e12cd1144125ad9811a9"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseHex</b> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int value)</td></tr>
-<tr class="separator:a8ade9492f448e12cd1144125ad9811a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11cc44a5b02545f5c6908bd5be8d216f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a11cc44a5b02545f5c6908bd5be8d216f">HexDigitValue</a> (char c)</td></tr>
-<tr class="memdesc:a11cc44a5b02545f5c6908bd5be8d216f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit. <a href="#a11cc44a5b02545f5c6908bd5be8d216f">More...</a><br /></td></tr>
-<tr class="separator:a11cc44a5b02545f5c6908bd5be8d216f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a3174d2915e39fe93f855c027b91ae7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a3174d2915e39fe93f855c027b91ae7"></a>
-static int&#160;</td><td class="memItemRight" valign="bottom"><b>Base36DigitValue</b> (char c)</td></tr>
-<tr class="separator:a6a3174d2915e39fe93f855c027b91ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abaa91c08a145887137e586183d519cb0"><td class="memItemLeft" align="right" valign="top">static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#abaa91c08a145887137e586183d519cb0">HexDigitChar</a> (int value)</td></tr>
-<tr class="memdesc:abaa91c08a145887137e586183d519cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15. <a href="#abaa91c08a145887137e586183d519cb0">More...</a><br /></td></tr>
-<tr class="separator:abaa91c08a145887137e586183d519cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2282a9a5f50bfbbc7e6346c843820997"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2282a9a5f50bfbbc7e6346c843820997"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>EscapeCStyle</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, EscapeC flags=EscapeC.Default)</td></tr>
-<tr class="separator:a2282a9a5f50bfbbc7e6346c843820997"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d382c801683419d58a51fc7a73225a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d382c801683419d58a51fc7a73225a3"></a>
-static string&#160;</td><td class="memItemRight" valign="bottom"><b>EscapeCStyle</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s, EscapeC flags, char quoteType)</td></tr>
-<tr class="separator:a9d382c801683419d58a51fc7a73225a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abff741b7316b82f42be4b91472f0fb52"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abff741b7316b82f42be4b91472f0fb52"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>EscapeCStyle</b> (char c, StringBuilder @out, EscapeC flags=EscapeC.Default, char quoteType= '\0')</td></tr>
-<tr class="separator:abff741b7316b82f42be4b91472f0fb52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf8fa9a85ed7a48ec22ed41fe7cdc982"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#abf8fa9a85ed7a48ec22ed41fe7cdc982">UnescapeCStyle</a> (string s)</td></tr>
-<tr class="memdesc:abf8fa9a85ed7a48ec22ed41fe7cdc982"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes "<br />
-". <a href="#abf8fa9a85ed7a48ec22ed41fe7cdc982">More...</a><br /></td></tr>
-<tr class="separator:abf8fa9a85ed7a48ec22ed41fe7cdc982"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f7984f3899791718e61f3a98ee56fd6"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a0f7984f3899791718e61f3a98ee56fd6">UnescapeCStyle</a> (string s, int index, int length, bool removeUnnecessaryBackslashes)</td></tr>
-<tr class="memdesc:a0f7984f3899791718e61f3a98ee56fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes "<br />
-". <a href="#a0f7984f3899791718e61f3a98ee56fd6">More...</a><br /></td></tr>
-<tr class="separator:a0f7984f3899791718e61f3a98ee56fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3b70f77e824ae35b4459060e6df79f6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3b70f77e824ae35b4459060e6df79f6"></a>
-static char&#160;</td><td class="memItemRight" valign="bottom"><b>UnescapeChar</b> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
-<tr class="separator:ae3b70f77e824ae35b4459060e6df79f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a255423cb4071fee1f4aeb2cf6bcb0e8c"><td class="memItemLeft" align="right" valign="top">static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a255423cb4071fee1f4aeb2cf6bcb0e8c">UnescapeChar</a> (string s, ref int i)</td></tr>
-<tr class="memdesc:a255423cb4071fee1f4aeb2cf6bcb0e8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unescapes a single character of a string, e.g. <code>int = 3; UnescapeChar("foo\\n", ref i) == '<br />
-'</code>. Returns the character at 'index' if it is not a backslash, or if it is a backslash but no escape sequence could be discerned. <a href="#a255423cb4071fee1f4aeb2cf6bcb0e8c">More...</a><br /></td></tr>
-<tr class="separator:a255423cb4071fee1f4aeb2cf6bcb0e8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f141a2afffa9cd6acaba42333b40caf"><td class="memItemLeft" align="right" valign="top">static PushedTLV&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a8f141a2afffa9cd6acaba42333b40caf">PushTLV&lt; T &gt;</a> (ThreadLocalVariable&lt; T &gt; variable, T newValue)</td></tr>
-<tr class="memdesc:a8f141a2afffa9cd6acaba42333b40caf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function for a using statement that temporarily modifies a thread-local variable. <a href="#a8f141a2afffa9cd6acaba42333b40caf">More...</a><br /></td></tr>
-<tr class="separator:a8f141a2afffa9cd6acaba42333b40caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1658ba5cbcc4e8e96f2f8c4373125a56"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a1658ba5cbcc4e8e96f2f8c4373125a56">TryParseInt</a> (string s, ref int index, out int result, int radix=10, bool skipSpaces=true)</td></tr>
-<tr class="memdesc:a1658ba5cbcc4e8e96f2f8c4373125a56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tries to parse a string to an integer. Unlike Int32.TryParse(string, out int), this method allows parsing to start at any point in the string, it allows non-numeric data after the number, and it can parse numbers that are not in base 10. <a href="#a1658ba5cbcc4e8e96f2f8c4373125a56">More...</a><br /></td></tr>
-<tr class="separator:a1658ba5cbcc4e8e96f2f8c4373125a56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7fe3dc5209b78fa16ed3ab7d8ffa7b3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7fe3dc5209b78fa16ed3ab7d8ffa7b3b"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a7fe3dc5209b78fa16ed3ab7d8ffa7b3b">TryParseInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out int result, int radix=10, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="separator:a7fe3dc5209b78fa16ed3ab7d8ffa7b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad71beb4505d0a2bcbf606e672ca38be1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad71beb4505d0a2bcbf606e672ca38be1"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad71beb4505d0a2bcbf606e672ca38be1">TryParseInt</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> input, out long result, int radix=10, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="separator:ad71beb4505d0a2bcbf606e672ca38be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad88547e3856b249d103d2c1a26ea47cb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad88547e3856b249d103d2c1a26ea47cb"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</b> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> s, out ulong result, int radix=10, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="separator:ad88547e3856b249d103d2c1a26ea47cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34c9cfddc19b02d2982647642e31c5a8"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">TryParseFloatParts</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, out bool negative, out ulong mantissa, out int exponentBaseR, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="memdesc:a34c9cfddc19b02d2982647642e31c5a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level method that identifies the parts of a float literal of arbitrary base (typically base 2, 10, or 16) with no prefix or suffix, such as <code>2.Cp0</code> (which means 2.75 in base 16). <a href="#a34c9cfddc19b02d2982647642e31c5a8">More...</a><br /></td></tr>
-<tr class="separator:a34c9cfddc19b02d2982647642e31c5a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f0563c685e1aaddc387a80c34857f00"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a9f0563c685e1aaddc387a80c34857f00">TryParseFloatParts</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, out bool negative, out ulong mantissa, out int exponentBase2, out int exponentBase10, out int numDigits, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="memdesc:a9f0563c685e1aaddc387a80c34857f00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses the parts of a floating-point string. See the other overload for details. <a href="#a9f0563c685e1aaddc387a80c34857f00">More...</a><br /></td></tr>
-<tr class="separator:a9f0563c685e1aaddc387a80c34857f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae87dc0739a408c2471ba52f87cd36c7e"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ae87dc0739a408c2471ba52f87cd36c7e">TryParseDouble</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="memdesc:ae87dc0739a408c2471ba52f87cd36c7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a string to a double-precision float, returning NaN on failure or an infinity value on overflow. <a href="#ae87dc0739a408c2471ba52f87cd36c7e">More...</a><br /></td></tr>
-<tr class="separator:ae87dc0739a408c2471ba52f87cd36c7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f634cd95ee6cd52744da69891777e59"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a7f634cd95ee6cd52744da69891777e59">TryParseFloat</a> (ref <a class="el" href="structLoyc_1_1UString.html">UString</a> source, int radix, <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a> flags=0)</td></tr>
-<tr class="memdesc:a7f634cd95ee6cd52744da69891777e59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a string to a single-precision float, returning NaN on failure or an infinity value on overflow. <a href="#a7f634cd95ee6cd52744da69891777e59">More...</a><br /></td></tr>
-<tr class="separator:a7f634cd95ee6cd52744da69891777e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab66f847d617d656559b683924deb0d38"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ab66f847d617d656559b683924deb0d38">SkipSpaces</a> (string s, int index)</td></tr>
-<tr class="memdesc:ab66f847d617d656559b683924deb0d38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the index of the first non-space character after the specified index. <a href="#ab66f847d617d656559b683924deb0d38">More...</a><br /></td></tr>
-<tr class="separator:ab66f847d617d656559b683924deb0d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c039bd1435cff8eb408465f28a60473"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#a4c039bd1435cff8eb408465f28a60473">SkipSpaces</a> (<a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
-<tr class="memdesc:a4c039bd1435cff8eb408465f28a60473"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string with any spaces and tabs removed from the beginning. <a href="#a4c039bd1435cff8eb408465f28a60473">More...</a><br /></td></tr>
-<tr class="separator:a4c039bd1435cff8eb408465f28a60473"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1G.html#ad0d8e0cbc602e3f8a0f38500328e6078">BareHtmlEntityNameForAscii</a> (char c)</td></tr>
 <tr class="memdesc:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>.  <a href="#ad0d8e0cbc602e3f8a0f38500328e6078">More...</a><br /></td></tr>
 <tr class="separator:ad0d8e0cbc602e3f8a0f38500328e6078"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a557938338e36e3d8899d416d87bb4c13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a557938338e36e3d8899d416d87bb4c13"></a>
+*&lt;/example &gt; *static PushedTLV&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>PushTLV&lt; T &gt;</b> (ThreadLocalVariable&lt; T &gt; variable, T newValue)</td></tr>
+<tr class="separator:a557938338e36e3d8899d416d87bb4c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Enumeration Documentation</h2>
-<a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65"></a>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a754325bf38a1453e93d22aba69a9f412"></a>
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">Loyc.G.ParseFlag</a></td>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.G.Assert </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>condition</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Flags that can be used with the overload of TryParseAt() that parses unsigned integers.</p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65a043a760100cdfb3fea08aa42659395fa"></a>SkipSpacesInFront&#160;</td><td class="fielddoc">
-<p>Skip spaces before the number. Without this flag, spaces make parsing fail.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65a1677c5167d3956aa0281d3682d5496a4"></a>SkipSpacesInsideNumber&#160;</td><td class="fielddoc">
-<p>Skip spaces inside the number. Without this flag, spaces make parsing stop.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65ada1c5c9727a3933ee8789e1cddabd51e"></a>StopBeforeOverflow&#160;</td><td class="fielddoc">
-<p>Changes overflow handling behavior when parsing an integer, so that the result does not overflow (wrap), and the digit(s) at the end of the string, that would have caused overflow, are ignored. In this case, the return value is still false.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65a462bc2573b61295f9c4f2448bf0e287d"></a>SkipUnderscores&#160;</td><td class="fielddoc">
-<p>Skip underscores inside number. Without this flag, underscores make parsing stop.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aca73b19d9bbc9032dcd639c20a3aff65a166071b852bb59eee7b5a242f6060161"></a>AllowCommaDecimalPoint&#160;</td><td class="fielddoc">
-<p>Whether to treat comma as a decimal point when parsing a float. The dot '.' is always treated as a decimal point.</p>
-</td></tr>
-</table>
+<p>In .NET 4+, this is an alias for Contract.Assert().</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">condition</td><td>A condition that must be true</td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a4fa3efc8ac4ae234d201596fb80d5656"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.G.Assert </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>condition</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>userMessage</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>In .NET 4+, this is an alias for Contract.Assert().</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">condition</td><td>A condition that must be true</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ad0d8e0cbc602e3f8a0f38500328e6078"></a>
 <div class="memitem">
 <div class="memproto">
@@ -310,58 +278,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 
 <p>Gets a bare HTML entity name for an ASCII character, or null if there is no entity name for the given character, e.g. <code>'"'=&gt;"quot"</code>. </p>
 <p>The complete entity name is <code>"&amp;" + GetHtmlEntityNameForAscii(c) + ";"</code>. Some HTML entities have multiple names; this function returns one of them. There is a name in this table for all ASCII punctuation characters. </p>
-
-</div>
-</div>
-<a class="anchor" id="abaa91c08a145887137e586183d519cb0"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static char Loyc.G.HexDigitChar </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</p>
-
-</div>
-</div>
-<a class="anchor" id="a11cc44a5b02545f5c6908bd5be8d216f"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int Loyc.G.HexDigitValue </td>
-          <td>(</td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</p>
 
 </div>
 </div>
@@ -413,115 +329,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A string that can be used as a filename. If the output string would otherwise be empty, returns "_".</dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a8f141a2afffa9cd6acaba42333b40caf"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static PushedTLV&lt;T&gt; Loyc.G.PushTLV&lt; T &gt; </td>
-          <td>(</td>
-          <td class="paramtype">ThreadLocalVariable&lt; T &gt;&#160;</td>
-          <td class="paramname"><em>variable</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>newValue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Helper function for a using statement that temporarily modifies a thread-local variable.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">variable</td><td>Variable to change</td></tr>
-    <tr><td class="paramname">newValue</td><td>New value</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>// Temporarily change the target of compiler error messages using (var _ = G.PushTLV(CompilerOutput.Writer, CustomWriter)) { Warning.Write(SourcePos.Nowhere, "This message will go to a custom writer"); } Warning.Write(SourcePos.Nowhere, "But this message will go to the original one"); </p>
-
-</div>
-</div>
-<a class="anchor" id="ab66f847d617d656559b683924deb0d38"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int Loyc.G.SkipSpaces </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the index of the first non-space character after the specified index.</p>
-<p>Only ' ' and '' are treated as spaces. If the index is invalid, it is returned unchanged.</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">Loyc.G.TryParseFloatParts()</a>, and <a class="el" href="classLoyc_1_1G.html#ad71beb4505d0a2bcbf606e672ca38be1">Loyc.G.TryParseInt()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a4c039bd1435cff8eb408465f28a60473"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="structLoyc_1_1UString.html">UString</a> Loyc.G.SkipSpaces </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns a string with any spaces and tabs removed from the beginning.</p>
 
 </div>
 </div>
@@ -610,489 +417,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 
 </div>
 </div>
-<a class="anchor" id="ae87dc0739a408c2471ba52f87cd36c7e"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static double Loyc.G.TryParseDouble </td>
-          <td>(</td>
-          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>radix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a>&#160;</td>
-          <td class="paramname"><em>flags</em> = <code>0</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Parses a string to a double-precision float, returning NaN on failure or an infinity value on overflow.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">radix</td><td>Base of the number to parse; must be 2 (binary), 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</td></tr>
-    <tr><td class="paramname">flags</td><td>Alters parsing behavior, see ParseFlags.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>References <a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">Loyc.G.TryParseFloatParts()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a7f634cd95ee6cd52744da69891777e59"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static float Loyc.G.TryParseFloat </td>
-          <td>(</td>
-          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>radix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a>&#160;</td>
-          <td class="paramname"><em>flags</em> = <code>0</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Parses a string to a single-precision float, returning NaN on failure or an infinity value on overflow.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">radix</td><td>Base of the number to parse; must be 2 (binary), 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</td></tr>
-    <tr><td class="paramname">flags</td><td>Alters parsing behavior, see ParseFlags.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>References <a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">Loyc.G.TryParseFloatParts()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a34c9cfddc19b02d2982647642e31c5a8"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool Loyc.G.TryParseFloatParts </td>
-          <td>(</td>
-          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>radix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out bool&#160;</td>
-          <td class="paramname"><em>negative</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out ulong&#160;</td>
-          <td class="paramname"><em>mantissa</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>exponentBaseR</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>exponentBase2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>exponentBase10</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>numDigits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a>&#160;</td>
-          <td class="paramname"><em>flags</em> = <code>0</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Low-level method that identifies the parts of a float literal of arbitrary base (typically base 2, 10, or 16) with no prefix or suffix, such as <code>2.Cp0</code> (which means 2.75 in base 16).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">radix</td><td>Base of the number to parse; must be between 2 and 36.</td></tr>
-    <tr><td class="paramname">mantissa</td><td>Integer magnitude of the number.</td></tr>
-    <tr><td class="paramname">exponentBase2</td><td>Base-2 exponent to apply, as specified by the 'p' suffix, or 0 if there is no 'p' suffix..</td></tr>
-    <tr><td class="paramname">exponentBase10</td><td>Base-10 exponent to apply, as specified by the 'e' suffix, or 0 if there is no 'e' suffix..</td></tr>
-    <tr><td class="paramname">exponentBaseR</td><td>Base-radix exponent to apply. This number is based on the front part of the number only (not including the 'p' or 'e' suffix). Negative values represent digits after the decimal point, while positive numbers represent 64-bit overflow. For example, if the input is <code>12.3456</code> with <code>radix=10</code>, the output will be <code>mantissa=123456</code> and <code>exponentBaseR=-4</code>. If the input is <code>0123_4567_89AB_CDEF_1234.5678</code> with <code>radix=16</code>, the mantissa overflows, and the result is <code>mantissa = 0x1234_5678_9ABC_DEF1</code> with <code>exponentBaseR=3</code>.</td></tr>
-    <tr><td class="paramname">numDigits</td><td>Set to the number of digits in the number, not including the exponent part.</td></tr>
-    <tr><td class="paramname">flags</td><td>Alters parsing behavior, see ParseFlags.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>The syntax required is </p><div class="fragment"><div class="line">( <span class="charliteral">&#39;+&#39;</span>|<span class="charliteral">&#39;-&#39;</span> )?</div>
-<div class="line">( Digits (<span class="charliteral">&#39;.&#39;</span> Digits?)? | <span class="charliteral">&#39;.&#39;</span> Digits )</div>
-<div class="line">( (<span class="charliteral">&#39;p&#39;</span>|<span class="charliteral">&#39;P&#39;</span>) (<span class="charliteral">&#39;-&#39;</span>|<span class="charliteral">&#39;+&#39;</span>)? DecimalDigits+ )?</div>
-<div class="line">( (<span class="charliteral">&#39;e&#39;</span>|<span class="charliteral">&#39;E&#39;</span>) (<span class="charliteral">&#39;-&#39;</span>|<span class="charliteral">&#39;+&#39;</span>)? DecimalDigits+ )?</div>
-</div><!-- fragment --><p> where Digits refers to one digits in the requested base, possibly including underscores or spaces if the flags allow it; similarly, DecimalDigits refers to base-10 digits and is also affected by the flags. </p>
-<p>Returns false if there was an error interpreting the input. </p>
-<p>To keep the parser relatively simple, it does not roll back in case of error the way the int parser does. For example, given the input "23p", the 'p' is consumed and causes the method to return false, even though the parse could have been successful if it had ignored the 'p'. </p>
-
-<p>References <a class="el" href="classLoyc_1_1G.html#ab66f847d617d656559b683924deb0d38">Loyc.G.SkipSpaces()</a>, and <a class="el" href="classLoyc_1_1G.html#a1658ba5cbcc4e8e96f2f8c4373125a56">Loyc.G.TryParseInt()</a>.</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1G.html#ae87dc0739a408c2471ba52f87cd36c7e">Loyc.G.TryParseDouble()</a>, <a class="el" href="classLoyc_1_1G.html#a7f634cd95ee6cd52744da69891777e59">Loyc.G.TryParseFloat()</a>, and <a class="el" href="classLoyc_1_1G.html#a9f0563c685e1aaddc387a80c34857f00">Loyc.G.TryParseFloatParts()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a9f0563c685e1aaddc387a80c34857f00"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool Loyc.G.TryParseFloatParts </td>
-          <td>(</td>
-          <td class="paramtype">ref <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td>
-          <td class="paramname"><em>source</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>radix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out bool&#160;</td>
-          <td class="paramname"><em>negative</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out ulong&#160;</td>
-          <td class="paramname"><em>mantissa</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>exponentBase2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>exponentBase10</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>numDigits</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65">ParseFlag</a>&#160;</td>
-          <td class="paramname"><em>flags</em> = <code>0</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Parses the parts of a floating-point string. See the other overload for details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">radix</td><td>Base of the number to parse; must be 2 (binary), 4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</td></tr>
-    <tr><td class="paramname">negative</td><td>true if the string began with '-'.</td></tr>
-    <tr><td class="paramname">mantissa</td><td>Integer magnitude of the number.</td></tr>
-    <tr><td class="paramname">exponentBase2</td><td>Base-2 exponent to apply.</td></tr>
-    <tr><td class="paramname">exponentBase10</td><td>Base-10 exponent to apply.</td></tr>
-    <tr><td class="paramname">numDigits</td><td>Set to the number of digits in the number, not including the exponent part.</td></tr>
-    <tr><td class="paramname">flags</td><td>Alters parsing behavior, see ParseFlags.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This method is a wrapper around the other overload that combines the 'exponentBaseR' parameter with 'exponentBase2' or 'exponentBase10' depending on the radix. For example, when radix=10, this method adds <code>exponentBaseR</code> to <code>exponentBase10</code>. </p>
-
-<p>References <a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">Loyc.G.TryParseFloatParts()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1658ba5cbcc4e8e96f2f8c4373125a56"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool Loyc.G.TryParseInt </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">ref int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">out int&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>radix</em> = <code>10</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>skipSpaces</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tries to parse a string to an integer. Unlike Int32.TryParse(string, out int), this method allows parsing to start at any point in the string, it allows non-numeric data after the number, and it can parse numbers that are not in base 10.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">radix</td><td>Number base, e.g. 10 for decimal and 2 for binary.</td></tr>
-    <tr><td class="paramname">index</td><td>Location at which to start parsing</td></tr>
-    <tr><td class="paramname">flags</td><td><a class="el" href="classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65" title="Flags that can be used with the overload of TryParseAt() that parses unsigned integers.">ParseFlag</a>s that affect parsing behavior.</td></tr>
-    <tr><td class="paramname">skipSpaces</td><td>Whether to skip spaces before parsing. Only the ' ' and '' characters are treated as spaces. No space is allowed between '-' and the digits of a negative number, even with this flag.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if a number was found starting at the specified index and it was successfully converted to a number, or false if not.</dd></dl>
-<p>This method never throws. If parsing fails, index is left unchanged, except that spaces are still skipped if you set the skipSpaces flag. If base&gt;36, parsing can succeed but digits above 35 (Z) cannot occur in the output number. If the input number cannot fit in 'result', the return value is false but index increases anyway, and 'result' is a bitwise truncated version of the number. </p>
-<p>When parsing input such as "12.34", the parser stops and returns true at the dot (with a result of 12 in this case). </p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1G.html#a34c9cfddc19b02d2982647642e31c5a8">Loyc.G.TryParseFloatParts()</a>, and <a class="el" href="classLoyc_1_1G.html#a7fe3dc5209b78fa16ed3ab7d8ffa7b3b">Loyc.G.TryParseInt()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a255423cb4071fee1f4aeb2cf6bcb0e8c"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static char Loyc.G.UnescapeChar </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">ref int&#160;</td>
-          <td class="paramname"><em>i</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Unescapes a single character of a string, e.g. <code>int = 3; UnescapeChar("foo\\n", ref i) == '<br />
-'</code>. Returns the character at 'index' if it is not a backslash, or if it is a backslash but no escape sequence could be discerned.</p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">IndexOutOfRangeException</td><td>The index was invalid.</td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="abf8fa9a85ed7a48ec22ed41fe7cdc982"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static string Loyc.G.UnescapeCStyle </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes "<br />
-".</p>
-
-</div>
-</div>
-<a class="anchor" id="a0f7984f3899791718e61f3a98ee56fd6"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static string Loyc.G.UnescapeCStyle </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>removeUnnecessaryBackslashes</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes "<br />
-".</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">removeUnnecessaryBackslashes</td><td>Causes the backslash before an unrecognized escape sequence to be removed, e.g. "\z" =&gt; "z".</td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="a4ce38fca60499fd9c5a5c4428fa12437"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1115,7 +439,83 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 </table>
 </div><div class="memdoc">
 
-<p>Same as Debug.Assert except that the argument is evaluated even in a Release build.</p>
+<p>Same as <code>Debug.Assert</code> except that the argument is evaluated even in a Release build.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8b552ab7f99afe75149723e7c996b36d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static T Loyc.G.With&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T&#160;</td>
+          <td class="paramname"><em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Action&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calls <code>action(obj)</code>, then returns the same object.</p>
+<dl class="section return"><dt>Returns</dt><dd>obj</dd></dl>
+<p>This is the plain-C# equivalent of the <code>with(obj)</code> statement. Compared to the Enhanced C# statement, <code>With()</code> is disadvantageous since it requires a memory allocation to create the closure in many cases, as well as a delegate invocation that probably will not be inlined. </p>
+<p>Caution: you cannot mutate mutable structs with this method. Call the other overload of this method if you will be modifying a mutable struct. </p>
+<p>Foo(new Person() { Name = "John Doe" }.With(p =&gt; p.Commit(dbConnection))); </p>
+
+</div>
+</div>
+<a class="anchor" id="a2449794f23bbac4ec1b6029269795bef"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static T Loyc.G.With&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this T&#160;</td>
+          <td class="paramname"><em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; T, T &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns <code>action(obj)</code>. This is similar to the other overload of this method, except that the action has a return value.</p>
 
 </div>
 </div>
@@ -1123,7 +523,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>TryParseUInt</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:48 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

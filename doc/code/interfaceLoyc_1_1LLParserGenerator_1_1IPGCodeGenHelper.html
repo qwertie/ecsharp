@@ -418,7 +418,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Generates the try-wrapper for a recognizer rule.</p>
 <p>To generate the default method, simply call <code>rule.CreateTryWrapperForRecognizer()</code>. </p>
-<p>Recognizers consist of two methods: the recognizer itself and the try-wrapper, if it is needed by the grammar. For example, the recognizer version of this rule: </p><div class="fragment"><div class="line">rule Hello @[ <span class="stringliteral">&quot;hi&quot;</span> { &lt;em&gt;foo++; } ];</div>
+<p>Recognizers consist of two methods: the recognizer itself and the try-wrapper, if it is needed by the grammar. For example, the recognizer version of this rule: </p><div class="fragment"><div class="line">rule Hello <span class="stringliteral">&quot;hi&quot;</span> { &lt;em&gt;foo++; } };</div>
 </div><!-- fragment --><p> is this pair of methods: </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> Try_Scan_Hello() {</div>
 <div class="line">  <span class="keyword">using</span> (<span class="keyword">new</span> SavedPosition(<span class="keyword">this</span>))</div>
 <div class="line">    <span class="keywordflow">return</span> Scan_Hello();</div>
@@ -1028,7 +1028,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

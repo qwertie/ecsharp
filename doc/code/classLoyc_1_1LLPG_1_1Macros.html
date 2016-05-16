@@ -107,9 +107,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Example: </p><div class="fragment"><div class="line"><span class="keyword">class </span>Foo { </div>
 <div class="line">  [DefaultK(2)] LLLPG lexer</div>
 <div class="line">  {</div>
-<div class="line">    <span class="keyword">private</span> rule Int  @[ <span class="charliteral">&#39;0&#39;</span>..<span class="charliteral">&#39;9&#39;</span>+ ];</div>
-<div class="line">    <span class="keyword">private</span> rule Id   @[ <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;z&#39;</span>|<span class="charliteral">&#39;A&#39;</span>..<span class="charliteral">&#39;Z&#39;</span> (<span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;z&#39;</span>|<span class="charliteral">&#39;A&#39;</span>..<span class="charliteral">&#39;Z&#39;</span>|<span class="charliteral">&#39;0&#39;</span>..<span class="charliteral">&#39;9&#39;</span>|<span class="charliteral">&#39;_&#39;</span>)* ];</div>
-<div class="line">    token Token  @[ Int | Id ];</div>
+<div class="line">    <span class="keyword">private</span> rule Int <span class="charliteral">&#39;0&#39;</span>..<span class="charliteral">&#39;9&#39;</span>+ };</div>
+<div class="line">    <span class="keyword">private</span> rule Id <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;z&#39;</span>|<span class="charliteral">&#39;A&#39;</span>..<span class="charliteral">&#39;Z&#39;</span> (<span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;z&#39;</span>|<span class="charliteral">&#39;A&#39;</span>..<span class="charliteral">&#39;Z&#39;</span>|<span class="charliteral">&#39;0&#39;</span>..<span class="charliteral">&#39;9&#39;</span>|<span class="charliteral">&#39;_&#39;</span>)* };</div>
+<div class="line">    token Token Int | Id };</div>
 <div class="line">  };</div>
 <div class="line">};</div>
 </div><!-- fragment --><p> Up to three macros are used to invoke LLLPG. </p><ol>
@@ -137,15 +137,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ae102955f76c97cf0f27303b6d616e43d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">LLLPG_parser</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="memdesc:ae102955f76c97cf0f27303b6d616e43d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro that translates <code>parser</code> in <code>LLLPG(parser, {...})</code> into a GeneralCodeGenHelper object. <a href="#ae102955f76c97cf0f27303b6d616e43d">More...</a><br /></td></tr>
 <tr class="separator:ae102955f76c97cf0f27303b6d616e43d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab27ccc42e5eaa88f4bed8f10a87e4e2a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">LllpgMacro</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> expectedCodeGenMode, Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a> &gt; makeCodeGenHelper, bool isDefault=false)</td></tr>
+<tr class="memdesc:ab27ccc42e5eaa88f4bed8f10a87e4e2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This method helps do the stage-one transform from <code>LLLPG (config) {...}</code> to <code>run_LLLPG (helper literal) {...}</code> and also invokes the ANTLR-style parser if the second argument is a token literal. If <code>node[0]</code> calls <code>expectedConfigNode</code> then the delegate is called to construct a code generation helper object; otherwise, this method has no effect and returns null. <a href="#ab27ccc42e5eaa88f4bed8f10a87e4e2a">More...</a><br /></td></tr>
+<tr class="separator:ab27ccc42e5eaa88f4bed8f10a87e4e2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a134fdf8cb9f4367b684aff6c65d33a70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a134fdf8cb9f4367b684aff6c65d33a70"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>rule</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="separator:a134fdf8cb9f4367b684aff6c65d33a70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a321a2dbf24fbcc8ecff9c9aa1e45a70c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a321a2dbf24fbcc8ecff9c9aa1e45a70c"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ECSharpRule</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="separator:a321a2dbf24fbcc8ecff9c9aa1e45a70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac43c66687750df9bb6c8c6f98c8be5d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac43c66687750df9bb6c8c6f98c8be5d2"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>LLLPG_stage1</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> sink)</td></tr>
-<tr class="separator:ac43c66687750df9bb6c8c6f98c8be5d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf5899405f30a7fe63e49971f4de39ea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf5899405f30a7fe63e49971f4de39ea"></a>
 static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>run_LLLPG</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> node, <a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a> context)</td></tr>
 <tr class="separator:adf5899405f30a7fe63e49971f4de39ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -223,7 +223,63 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 
 <p>Helper macro that translates <code>parser</code> in <code>LLLPG(parser, {...})</code> into a GeneralCodeGenHelper object.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLeMP_1_1MacroContext.html#a1536a9346e03f3adc67d822deaf99ace">LeMP.MacroContext.GetOptions()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>, and <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83">Loyc.IMessageSink.Write()</a>.</p>
+<p>References <a class="el" href="classLeMP_1_1MacroContext.html#a1536a9346e03f3adc67d822deaf99ace">LeMP.MacroContext.GetOptions()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431">Loyc.Syntax.LNode.Value</a>, and <a class="el" href="interfaceLoyc_1_1IMessageSink.html#a877aee2f9858d355b0b1876931533f83">Loyc.IMessageSink.Write()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab27ccc42e5eaa88f4bed8f10a87e4e2a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.LLPG.Macros.LllpgMacro </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>node</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLeMP_1_1IMacroContext.html">IMacroContext</a>&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>expectedCodeGenMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html">IPGCodeGenHelper</a> &gt;&#160;</td>
+          <td class="paramname"><em>makeCodeGenHelper</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>isDefault</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>This method helps do the stage-one transform from <code>LLLPG (config) {...}</code> to <code>run_LLLPG (helper literal) {...}</code> and also invokes the ANTLR-style parser if the second argument is a token literal. If <code>node[0]</code> calls <code>expectedConfigNode</code> then the delegate is called to construct a code generation helper object; otherwise, this method has no effect and returns null.</p>
+
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>.</p>
 
 </div>
 </div>
@@ -231,7 +287,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -10,7 +10,6 @@ var searchData=
   ['rectangle3ext',['Rectangle3Ext',['../classLoyc_1_1Geometry_1_1Rectangle3Ext.html',1,'Loyc::Geometry']]],
   ['rectangleext',['RectangleExt',['../classLoyc_1_1Geometry_1_1RectangleExt.html',1,'Loyc::Geometry']]],
   ['recursivepredvisitor',['RecursivePredVisitor',['../classLoyc_1_1LLParserGenerator_1_1RecursivePredVisitor.html',1,'Loyc::LLParserGenerator']]],
-  ['recursiverefa',['RecursiveRefA',['../classLoyc_1_1LLParserGenerator_1_1RecursiveRefA.html',1,'Loyc::LLParserGenerator']]],
   ['recursivereplacementpredvisitor',['RecursiveReplacementPredVisitor',['../classLoyc_1_1LLParserGenerator_1_1RecursiveReplacementPredVisitor.html',1,'Loyc::LLParserGenerator']]],
   ['referencecomparer_3c_20t_20_3e',['ReferenceComparer&lt; T &gt;',['../classLoyc_1_1ReferenceComparer_3_01T_01_4.html',1,'Loyc']]],
   ['regionfoldingstrategy',['RegionFoldingStrategy',['../classTextEditor_1_1RegionFoldingStrategy.html',1,'TextEditor']]],

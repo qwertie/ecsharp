@@ -96,7 +96,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Helpers methods for unit tests for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes. 
+<p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes but sometimes useful in other cases. 
  <a href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Collections/Other/TestHelpers.cs'>/Core/Loyc.Collections/Other/TestHelpers.cs</a></li>
@@ -111,19 +111,19 @@ Inheritance diagram for Loyc.Collections.Impl.TestHelpers:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Helpers methods for unit tests for <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes.</p>
+<div class="textblock"><p>Helpers methods for unit tests, especially used by <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> collection classes but sometimes useful in other cases.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6bbb77af4b425b361cb19b4db27ac40"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, params T[] expected)</td></tr>
 <tr class="separator:ad6bbb77af4b425b361cb19b4db27ac40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a79f9f64e60298da46ac15f44078097e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79f9f64e60298da46ac15f44078097e5"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, bool useEnumerator, params T[] expected)</td></tr>
-<tr class="separator:a79f9f64e60298da46ac15f44078097e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a8ee9b5cf9acc780e711046f08c9647"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a8ee9b5cf9acc780e711046f08c9647"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator)</td></tr>
-<tr class="separator:a9a8ee9b5cf9acc780e711046f08c9647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65c0e28bdd65e95b26aca0c776063102"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html#a65c0e28bdd65e95b26aca0c776063102">ExpectListByEnumerator&lt; T &gt;</a> (IListSource&lt; T &gt; list, params T[] expected)</td></tr>
+<tr class="memdesc:a65c0e28bdd65e95b26aca0c776063102"><td class="mdescLeft">&#160;</td><td class="mdescRight">When testing a buggy collection type, the enumerator might behave differently than the indexer, so this alternate comparer is provided.  <a href="#a65c0e28bdd65e95b26aca0c776063102">More...</a><br /></td></tr>
+<tr class="separator:a65c0e28bdd65e95b26aca0c776063102"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7c56789bcdc182e7161fbde501c6f1e3"></a>
+static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IListSource&lt; T &gt; list, IList&lt; T &gt; expected, bool useEnumerator=false)</td></tr>
+<tr class="separator:a7c56789bcdc182e7161fbde501c6f1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a162f5208e9356cb3ca49597766aee0eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a162f5208e9356cb3ca49597766aee0eb"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ExpectList&lt; T &gt;</b> (IEnumerable&lt; T &gt; list, IEnumerable&lt; T &gt; expected)</td></tr>
 <tr class="separator:a162f5208e9356cb3ca49597766aee0eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,11 +167,8 @@ delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="separator:ad068ea5c6fabb92ad9611e3d461f6257 inherit pub_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_classLoyc_1_1MiniTest_1_1Assert')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html">Loyc.MiniTest.Assert</a></td></tr>
 <tr class="memitem:ad46294b8aedca9287d54fb454b2e50ac inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ad46294b8aedca9287d54fb454b2e50ac">Fail</a> (string format, params object[] args)</td></tr>
-<tr class="memdesc:ad46294b8aedca9287d54fb454b2e50ac inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test via StopTestHandler, which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ad46294b8aedca9287d54fb454b2e50ac">More...</a><br /></td></tr>
+<tr class="memdesc:ad46294b8aedca9287d54fb454b2e50ac inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test by invoking StopTestHandler.Value(), which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ad46294b8aedca9287d54fb454b2e50ac">More...</a><br /></td></tr>
 <tr class="separator:ad46294b8aedca9287d54fb454b2e50ac inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac401ce4915cd1fb10ec9e2399ac7532f inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ac401ce4915cd1fb10ec9e2399ac7532f">Fail</a> (string message)</td></tr>
-<tr class="memdesc:ac401ce4915cd1fb10ec9e2399ac7532f inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test by invoking StopTestHandler.Value(), which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ac401ce4915cd1fb10ec9e2399ac7532f">More...</a><br /></td></tr>
-<tr class="separator:ac401ce4915cd1fb10ec9e2399ac7532f inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0b89ffc89da3bd3511f31edc70709c6 inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ac0b89ffc89da3bd3511f31edc70709c6">Ignore</a> (string format, params object[] args)</td></tr>
 <tr class="memdesc:ac0b89ffc89da3bd3511f31edc70709c6 inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops a test via StopTestHandler, which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1IgnoreException.html" title="Thrown by Assert.Ignore().">IgnoreException</a>. This causes the test to be reported as ignored. <a href="#ac0b89ffc89da3bd3511f31edc70709c6">More...</a><br /></td></tr>
 <tr class="separator:ac0b89ffc89da3bd3511f31edc70709c6 inherit pub_static_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -459,11 +456,48 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memdesc:abd3e880da2ea067fdde7747223fed23f inherit pro_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="mdescLeft">&#160;</td><td class="mdescRight">You may find it useful to derive a test fixture from <a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html" title="The Assert class contains a collection of static methods that mirror the most common assertions used ...">Assert</a> so that you do not need to prefix every test with "Assert."  <a href="#abd3e880da2ea067fdde7747223fed23f">More...</a><br /></td></tr>
 <tr class="separator:abd3e880da2ea067fdde7747223fed23f inherit pro_methods_classLoyc_1_1MiniTest_1_1Assert"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a65c0e28bdd65e95b26aca0c776063102"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.Impl.TestHelpers.ExpectListByEnumerator&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">IListSource&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">params T[]&#160;</td>
+          <td class="paramname"><em>expected</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>When testing a buggy collection type, the enumerator might behave differently than the indexer, so this alternate comparer is provided. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:52 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -10,7 +10,6 @@ var searchData=
   ['alistreverseview_3c_20k_2c_20t_20_3e',['AListReverseView&lt; K, T &gt;',['../structLoyc_1_1Collections_1_1AListReverseView_3_01K_00_01T_01_4.html',1,'Loyc::Collections']]],
   ['alisttreeobserverext',['AListTreeObserverExt',['../classLoyc_1_1Collections_1_1Impl_1_1AListTreeObserverExt.html',1,'Loyc::Collections::Impl']]],
   ['alts',['Alts',['../classLoyc_1_1LLParserGenerator_1_1Alts.html',1,'Loyc::LLParserGenerator']]],
-  ['altsa',['AltsA',['../classLoyc_1_1LLParserGenerator_1_1AltsA.html',1,'Loyc::LLParserGenerator']]],
   ['andpred',['AndPred',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html',1,'Loyc::LLParserGenerator']]],
   ['arrayof4_3c_20t_20_3e',['ArrayOf4&lt; T &gt;',['../classLoyc_1_1Collections_1_1ArrayOf4_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['arrayslice_3c_20t_20_3e',['ArraySlice&lt; T &gt;',['../structLoyc_1_1Collections_1_1ArraySlice_3_01T_01_4.html',1,'Loyc::Collections']]],

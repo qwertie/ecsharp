@@ -105,8 +105,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents the possible interpretations of a single input character, in terms of transitions in the grammar.</p>
-<p>For example, suppose the grammar is as follows (where "strings" are actually aliases for tokens): </p><div class="fragment"><div class="line">rule For   @[ <span class="stringliteral">&quot;for&quot;</span> ($id <span class="stringliteral">&quot;in&quot;</span> $collection | $id <span class="charliteral">&#39;=&#39;</span> range) ];</div>
-<div class="line">rule Range @[ start <span class="stringliteral">&quot;..&quot;</span> stop ];</div>
+<p>For example, suppose the grammar is as follows (where "strings" are actually aliases for tokens): </p><div class="fragment"><div class="line">rule For <span class="stringliteral">&quot;for&quot;</span> ($id <span class="stringliteral">&quot;in&quot;</span> $collection | $id <span class="charliteral">&#39;=&#39;</span> range) };</div>
+<div class="line">rule Range start <span class="stringliteral">&quot;..&quot;</span> stop };</div>
 </div><!-- fragment --><p> If the starting position is right after "for", then ComputeNextSet will generate two Cases, one at <code>$id."in" $collection</code> and another at <code>.'=' stop</code>. In both cases, the Set is $id, so KthSet.Set will also be $id. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -161,7 +161,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -90,7 +90,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
-<a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1ParsingService-members.html">List of all members</a>  </div>
@@ -112,18 +111,6 @@ Nested classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1ParsingService_1_1PushedCurrent.html">PushedCurrent</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#ad80d4b12a09ed5959e56bff1185b60bd" title="Sets the current language service, returning a value suitable for use in a C# using statement...">PushCurrent(IParsingService)</a>. <a href="structLoyc_1_1Syntax_1_1ParsingService_1_1PushedCurrent.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
-Public static fields</h2></td></tr>
-<tr class="memitem:a400fd681b3319ad6da636389297ccecd"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a400fd681b3319ad6da636389297ccecd">Exprs</a> = GSymbol.Get(&quot;Exprs&quot;)</td></tr>
-<tr class="memdesc:a400fd681b3319ad6da636389297ccecd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a single expression or expression list (which, in most languages, is comma-separated). <a href="#a400fd681b3319ad6da636389297ccecd">More...</a><br /></td></tr>
-<tr class="separator:a400fd681b3319ad6da636389297ccecd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af29026fa0925b638573f11459b81d83d"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#af29026fa0925b638573f11459b81d83d">Stmts</a> = GSymbol.Get(&quot;Stmts&quot;)</td></tr>
-<tr class="memdesc:af29026fa0925b638573f11459b81d83d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a list of statements. If the language makes a distinction between executable and declaration contexts, this refers to the executable context. <a href="#af29026fa0925b638573f11459b81d83d">More...</a><br /></td></tr>
-<tr class="separator:af29026fa0925b638573f11459b81d83d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a205ca7d002b3a072e068955f5a609444"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html#a205ca7d002b3a072e068955f5a609444">File</a> = GSymbol.Get(&quot;File&quot;)</td></tr>
-<tr class="memdesc:a205ca7d002b3a072e068955f5a609444"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a complete source file (this should be the default, i.e. null will do the same thing). <a href="#a205ca7d002b3a072e068955f5a609444">More...</a><br /></td></tr>
-<tr class="separator:a205ca7d002b3a072e068955f5a609444"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -155,24 +142,24 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (t
 <tr class="memitem:a2495bf2c629a5177ba80bb64298e9247"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2495bf2c629a5177ba80bb64298e9247"></a>
 static ILexer&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Tokenize</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="structLoyc_1_1UString.html">UString</a> input, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
 <tr class="separator:a2495bf2c629a5177ba80bb64298e9247"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf838e0628ae67b6bde5ae63c677f304"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf838e0628ae67b6bde5ae63c677f304"></a>
-static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Parse</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="structLoyc_1_1UString.html">UString</a> input, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
-<tr class="separator:adf838e0628ae67b6bde5ae63c677f304"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff814aee0d9d2a69af5e21b856f0bbf7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aff814aee0d9d2a69af5e21b856f0bbf7"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSingle</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="structLoyc_1_1UString.html">UString</a> expr, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
-<tr class="separator:aff814aee0d9d2a69af5e21b856f0bbf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4298f9786bba67950763294c20419b92"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4298f9786bba67950763294c20419b92"></a>
-static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSingle</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> file, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
-<tr class="separator:a4298f9786bba67950763294c20419b92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2684a89b71350a2f57b894af9b1cf376"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2684a89b71350a2f57b894af9b1cf376"></a>
-static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Parse</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, Stream stream, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
-<tr class="separator:a2684a89b71350a2f57b894af9b1cf376"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04838886c1e846dabf3d34dea401bf7e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a04838886c1e846dabf3d34dea401bf7e"></a>
+static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Parse</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="structLoyc_1_1UString.html">UString</a> input, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null)</td></tr>
+<tr class="separator:a04838886c1e846dabf3d34dea401bf7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7da5c6471f42cb82d5fe2450ce763661"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7da5c6471f42cb82d5fe2450ce763661"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSingle</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="structLoyc_1_1UString.html">UString</a> expr, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null)</td></tr>
+<tr class="separator:a7da5c6471f42cb82d5fe2450ce763661"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ac63b82c372edbba1618cff33c56bcd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ac63b82c372edbba1618cff33c56bcd"></a>
+static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParseSingle</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a> text, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null)</td></tr>
+<tr class="separator:a0ac63b82c372edbba1618cff33c56bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d80d74b6fe71bc68fdecee41323f467"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d80d74b6fe71bc68fdecee41323f467"></a>
+static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Parse</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, Stream stream, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null)</td></tr>
+<tr class="separator:a0d80d74b6fe71bc68fdecee41323f467"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab30fa906c5c6d23d9781327b829aa9c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab30fa906c5c6d23d9781327b829aa9c1"></a>
 static ILexer&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Tokenize</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, Stream stream, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
 <tr class="separator:ab30fa906c5c6d23d9781327b829aa9c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbc3047df379dd3a61cb03051fa02ed5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbc3047df379dd3a61cb03051fa02ed5"></a>
-static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseFile</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> inputType=null)</td></tr>
-<tr class="separator:afbc3047df379dd3a61cb03051fa02ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afae38350941636911bbcb452d067ac5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afae38350941636911bbcb452d067ac5b"></a>
+static IListSource&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ParseFile</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null, <a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a> inputType=null)</td></tr>
+<tr class="separator:afae38350941636911bbcb452d067ac5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6de23e9463b245c4c3740cd77d0356a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa6de23e9463b245c4c3740cd77d0356a"></a>
 static ILexer&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TokenizeFile</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html">IParsingService</a> parser, string fileName, <a class="el" href="interfaceLoyc_1_1IMessageSink.html">IMessageSink</a> msgs=null)</td></tr>
 <tr class="separator:aa6de23e9463b245c4c3740cd77d0356a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -404,75 +391,6 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (t
 
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a400fd681b3319ad6da636389297ccecd"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.ParsingService.Exprs = GSymbol.Get(&quot;Exprs&quot;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a single expression or expression list (which, in most languages, is comma-separated).</p>
-
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1LesLanguageService.html#a48fa61527ff85e012cc5df982fab4980">Loyc.Syntax.Les.LesLanguageService.Parse()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsLanguageService.html#a5e239bb685d698379b24adb4a2c40eb4">Loyc.Ecs.EcsLanguageService.Parse()</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a205ca7d002b3a072e068955f5a609444"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.ParsingService.File = GSymbol.Get(&quot;File&quot;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a complete source file (this should be the default, i.e. null will do the same thing).</p>
-
-</div>
-</div>
-<a class="anchor" id="af29026fa0925b638573f11459b81d83d"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">readonly <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Syntax.ParsingService.Stmts = GSymbol.Get(&quot;Stmts&quot;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Tells <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html#ae1cb4c16efafeaa0d9c1e06570140a02" title="Parses a source file into one or more Loyc trees.">IParsingService.Parse</a> to treat the input as a list of statements. If the language makes a distinction between executable and declaration contexts, this refers to the executable context.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="adcf957b6612a2e000b487f1efae9e5d9"></a>
 <div class="memitem">
@@ -522,7 +440,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:58 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -112,7 +112,7 @@ Inheritance diagram for Loyc.MiniTest.Assert:</div>
  <div class="center">
   <img src="classLoyc_1_1MiniTest_1_1Assert.png" usemap="#Loyc.MiniTest.Assert_map" alt=""/>
   <map id="Loyc.MiniTest.Assert_map" name="Loyc.MiniTest.Assert_map">
-<area href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html" title="Helpers methods for unit tests for Loyc collection classes." alt="Loyc.Collections.Impl.TestHelpers" shape="rect" coords="0,56,203,80"/>
+<area href="classLoyc_1_1Collections_1_1Impl_1_1TestHelpers.html" title="Helpers methods for unit tests, especially used by Loyc collection classes but sometimes useful in ot..." alt="Loyc.Collections.Impl.TestHelpers" shape="rect" coords="0,56,203,80"/>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
@@ -156,11 +156,8 @@ delegate <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ad46294b8aedca9287d54fb454b2e50ac"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ad46294b8aedca9287d54fb454b2e50ac">Fail</a> (string format, params object[] args)</td></tr>
-<tr class="memdesc:ad46294b8aedca9287d54fb454b2e50ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test via StopTestHandler, which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ad46294b8aedca9287d54fb454b2e50ac">More...</a><br /></td></tr>
+<tr class="memdesc:ad46294b8aedca9287d54fb454b2e50ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test by invoking StopTestHandler.Value(), which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ad46294b8aedca9287d54fb454b2e50ac">More...</a><br /></td></tr>
 <tr class="separator:ad46294b8aedca9287d54fb454b2e50ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac401ce4915cd1fb10ec9e2399ac7532f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ac401ce4915cd1fb10ec9e2399ac7532f">Fail</a> (string message)</td></tr>
-<tr class="memdesc:ac401ce4915cd1fb10ec9e2399ac7532f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fails a test by invoking StopTestHandler.Value(), which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>. <a href="#ac401ce4915cd1fb10ec9e2399ac7532f">More...</a><br /></td></tr>
-<tr class="separator:ac401ce4915cd1fb10ec9e2399ac7532f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0b89ffc89da3bd3511f31edc70709c6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1MiniTest_1_1Assert.html#ac0b89ffc89da3bd3511f31edc70709c6">Ignore</a> (string format, params object[] args)</td></tr>
 <tr class="memdesc:ac0b89ffc89da3bd3511f31edc70709c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops a test via StopTestHandler, which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1IgnoreException.html" title="Thrown by Assert.Ignore().">IgnoreException</a>. This causes the test to be reported as ignored. <a href="#ac0b89ffc89da3bd3511f31edc70709c6">More...</a><br /></td></tr>
 <tr class="separator:ac0b89ffc89da3bd3511f31edc70709c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -843,32 +840,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>DoublesAreEqua
 </table>
 </div><div class="memdoc">
 
-<p>Fails a test via StopTestHandler, which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ac401ce4915cd1fb10ec9e2399ac7532f"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.MiniTest.Assert.Fail </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>message</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
 <p>Fails a test by invoking StopTestHandler.Value(), which, by default, throws an <a class="el" href="classLoyc_1_1MiniTest_1_1AssertionException.html" title="Thrown when an assertion fails during a call to a method of Assert. ">AssertionException</a>.</p>
 
 </div>
@@ -1282,7 +1253,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>DoublesAreEqua
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

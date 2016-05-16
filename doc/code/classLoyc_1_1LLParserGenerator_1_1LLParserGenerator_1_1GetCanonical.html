@@ -89,7 +89,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.LLParserGenerator.LLParserGenerator.GetCanonical Class Reference</div>  </div>
@@ -113,8 +112,6 @@ Inheritance diagram for Loyc.LLParserGenerator.LLParserGenerator.GetCanonical:</
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Computes the "canonical" interpretation of a position for prediction purposes, so that ConsolidateDuplicatePositions can detect duplicates reliably. Call <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical.html#a52af8836f8f2c65b0785b2add390e020" title="Computes the &quot;canonical&quot; interpretation of a position.">Do</a>() to use.</p>
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
-Public Member Functions</h2></td></tr>
 <tr class="memitem:a52af8836f8f2c65b0785b2add390e020"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html">GrammarPos</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical.html#a52af8836f8f2c65b0785b2add390e020">Do</a> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html">GrammarPos</a> input)</td></tr>
 <tr class="memdesc:a52af8836f8f2c65b0785b2add390e020"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the "canonical" interpretation of a position. <a href="#a52af8836f8f2c65b0785b2add390e020">More...</a><br /></td></tr>
 <tr class="separator:a52af8836f8f2c65b0785b2add390e020"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,6 +127,9 @@ override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td cla
 <tr class="memitem:a8062066f71f4eb57b3172eff7b407e4a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8062066f71f4eb57b3172eff7b407e4a"></a>
 override <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VisitOther</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a> pred)</td></tr>
 <tr class="separator:a8062066f71f4eb57b3172eff7b407e4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_methods_classLoyc_1_1LLParserGenerator_1_1PredVisitor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLoyc_1_1LLParserGenerator_1_1PredVisitor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLoyc_1_1LLParserGenerator_1_1PredVisitor.html">Loyc.LLParserGenerator.PredVisitor</a></td></tr>
 <tr class="memitem:a6d7cafe1911859458eb1f30a1783d236 inherit pub_methods_classLoyc_1_1LLParserGenerator_1_1PredVisitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6d7cafe1911859458eb1f30a1783d236"></a>
 <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Visit</b> (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1Pred.html">Pred</a> pred)</td></tr>
@@ -183,8 +183,8 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 </div><div class="memdoc">
 
 <p>Computes the "canonical" interpretation of a position.</p>
-<p>For example, given </p><div class="fragment"><div class="line">rule X @[ <span class="charliteral">&#39;a&#39;</span> Y <span class="charliteral">&#39;z&#39;</span> ];</div>
-<div class="line">rule Y @[ <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;y&#39;</span> <span class="charliteral">&#39;b&#39;</span>..<span class="charliteral">&#39;z&#39;</span> ];</div>
+<p>For example, given </p><div class="fragment"><div class="line">rule X <span class="charliteral">&#39;a&#39;</span> Y <span class="charliteral">&#39;z&#39;</span> };</div>
+<div class="line">rule Y <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;y&#39;</span> <span class="charliteral">&#39;b&#39;</span>..<span class="charliteral">&#39;z&#39;</span> };</div>
 </div><!-- fragment --><p> The position before the sequence <code>'a' Y 'z'</code> is equivalent to the position before 'a', so the result points to 'a' rather than to the sequence itself. </p>
 <p>The position after 'b'..'z' is equivalent to the position before 'z', if Y was called from X. Therefore, given the position after 'b'..'z' (a pointer to <a class="el" href="classLoyc_1_1LLParserGenerator_1_1EndOfRule.html" title="A container for the follow set of a Rule.">EndOfRule</a>), and return address before 'z', this method returns the position before 'z'. </p>
 
@@ -194,7 +194,7 @@ virtual <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td clas
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

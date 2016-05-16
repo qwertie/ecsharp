@@ -18,6 +18,8 @@ var searchData=
   ['prelude',['Prelude',['../namespaceLeMP_1_1Prelude.html',1,'LeMP']]],
   ['syntax',['Syntax',['../namespaceLoyc_1_1Syntax.html',1,'Loyc']]],
   ['test',['Test',['../namespaceLeMP_1_1Test.html',1,'LeMP']]],
+  ['tests',['Tests',['../namespaceLeMP_1_1Tests.html',1,'LeMP']]],
+  ['tests',['Tests',['../namespaceLoyc_1_1Ecs_1_1Tests.html',1,'Loyc::Ecs']]],
   ['threading',['Threading',['../namespaceLoyc_1_1Threading.html',1,'Loyc']]],
   ['utilities',['Utilities',['../namespaceLoyc_1_1Utilities.html',1,'Loyc']]]
 ];

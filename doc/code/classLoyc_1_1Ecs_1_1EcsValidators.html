@@ -114,26 +114,33 @@ Public Types</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a8c95d16c929d085dd0160cdbc1a6170f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is needed by the EC# node printer, but perhaps no one else. <a href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">More...</a><br /></td></tr>
 <tr class="separator:a8c95d16c929d085dd0160cdbc1a6170f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad84b6d076a48dec295fd59214e8c7462"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad84b6d076a48dec295fd59214e8c7462"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>EventDef</b> { <b>Invalid</b>, 
-<b>WithBody</b>, 
-<b>List</b>
- }</td></tr>
-<tr class="separator:ad84b6d076a48dec295fd59214e8c7462"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a1844f801e52ca0f5840327014ec6bc0f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1844f801e52ca0f5840327014ec6bc0f">SpaceStatementKind</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
-<tr class="memdesc:a1844f801e52ca0f5840327014ec6bc0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff the specified node has one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait and its tree structure is valid for a space statement. <a href="#a1844f801e52ca0f5840327014ec6bc0f">More...</a><br /></td></tr>
-<tr class="separator:a1844f801e52ca0f5840327014ec6bc0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbf20ef005eb958fae04c7f27a4e82ed"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#acbf20ef005eb958fae04c7f27a4e82ed">IsMethodDefinition</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, bool orDelegate, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
-<tr class="memdesc:acbf20ef005eb958fae04c7f27a4e82ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition. <a href="#acbf20ef005eb958fae04c7f27a4e82ed">More...</a><br /></td></tr>
-<tr class="separator:acbf20ef005eb958fae04c7f27a4e82ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac969baea4a17b61ecc40f0ff6121c27e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac969baea4a17b61ecc40f0ff6121c27e"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsPropertyDefinition</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memitem:ad5b55389daa158429702e8bd17322cd5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ad5b55389daa158429702e8bd17322cd5">SpaceDefinitionKind</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:ad5b55389daa158429702e8bd17322cd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the space kind, which is one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait, or null if the node Name or structure is not valid for a space statement. <a href="#ad5b55389daa158429702e8bd17322cd5">More...</a><br /></td></tr>
+<tr class="separator:ad5b55389daa158429702e8bd17322cd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a41c3775dfd6f58c2231b34a2c2b7e4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a41c3775dfd6f58c2231b34a2c2b7e4">SpaceDefinitionKind</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> bases, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:a1a41c3775dfd6f58c2231b34a2c2b7e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the space kind, which is one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait, or null if the node Name or structure is not valid for a space statement. <a href="#a1a41c3775dfd6f58c2231b34a2c2b7e4">More...</a><br /></td></tr>
+<tr class="separator:a1a41c3775dfd6f58c2231b34a2c2b7e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa437df0d318ca123757439c1d3ff49f2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#aa437df0d318ca123757439c1d3ff49f2">MethodDefinitionKind</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, bool allowDelegate, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:aa437df0d318ca123757439c1d3ff49f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">If the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition, gets the definition kind (#fn, #cons, or #delegate). <a href="#aa437df0d318ca123757439c1d3ff49f2">More...</a><br /></td></tr>
+<tr class="separator:aa437df0d318ca123757439c1d3ff49f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac537f70aead13a5ef62357c1bc6ec153"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac537f70aead13a5ef62357c1bc6ec153">MethodDefinitionKind</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> args, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body, bool allowDelegate, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:ac537f70aead13a5ef62357c1bc6ec153"><td class="mdescLeft">&#160;</td><td class="mdescRight">If the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition, gets the definition kind (#fn, #cons, or #delegate). <a href="#ac537f70aead13a5ef62357c1bc6ec153">More...</a><br /></td></tr>
+<tr class="separator:ac537f70aead13a5ef62357c1bc6ec153"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac969baea4a17b61ecc40f0ff6121c27e"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#ac969baea4a17b61ecc40f0ff6121c27e">IsPropertyDefinition</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:ac969baea4a17b61ecc40f0ff6121c27e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff the given node has a valid syntax tree for a property definition. <a href="#ac969baea4a17b61ecc40f0ff6121c27e">More...</a><br /></td></tr>
 <tr class="separator:ac969baea4a17b61ecc40f0ff6121c27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58537d0a169f5a40d36892640fc3d80f"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a58537d0a169f5a40d36892640fc3d80f">IsPropertyDefinition</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> retType, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> args, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> body, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> initialValue, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p=Pedantics.Lax)</td></tr>
+<tr class="memdesc:a58537d0a169f5a40d36892640fc3d80f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff the given node has a valid syntax tree for a property definition, and gets the component parts of the definition. <a href="#a58537d0a169f5a40d36892640fc3d80f">More...</a><br /></td></tr>
+<tr class="separator:a58537d0a169f5a40d36892640fc3d80f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c50d67e811f284bdb41d7fe017f0853"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c50d67e811f284bdb41d7fe017f0853"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEventDefinition</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> n, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p)</td></tr>
 <tr class="separator:a9c50d67e811f284bdb41d7fe017f0853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ef045efffbff91142f18006acf492c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ef045efffbff91142f18006acf492c6"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsVariableDeclExpr</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> expr, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> type, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name, out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> initialValue)</td></tr>
+<tr class="separator:a3ef045efffbff91142f18006acf492c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad45f1ac1ccc2b507df54e72127f5d763"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad45f1ac1ccc2b507df54e72127f5d763"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsVariableDecl</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> _n, bool allowMultiple, bool allowNoAssignment, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a> p)</td></tr>
 <tr class="separator:ad45f1ac1ccc2b507df54e72127f5d763"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +177,30 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 <tr class="memitem:a26006ff95c953dff4e4e9768eb5c5863"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">KeyNameComponentOf</a> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> name)</td></tr>
 <tr class="memdesc:a26006ff95c953dff4e4e9768eb5c5863"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a complex name such as <code>global::Foo&lt;int&gt;.Bar&lt;T&gt;</code>, this method identifies the base name component, which in this example is Bar. This is used, for example, to identify the expected name for a constructor based on the class name, e.g. <code>Foo&lt;T&gt;</code> =&gt; Foo. <a href="#a26006ff95c953dff4e4e9768eb5c5863">More...</a><br /></td></tr>
 <tr class="separator:a26006ff95c953dff4e4e9768eb5c5863"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d353ea5c1a4c10853615fe43737783e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d353ea5c1a4c10853615fe43737783e"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsPlainCsIdentStartChar</b> (char c)</td></tr>
+<tr class="separator:a1d353ea5c1a4c10853615fe43737783e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad024d7f7a40166d6c962e545db0be221"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad024d7f7a40166d6c962e545db0be221"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsPlainCsIdentContChar</b> (char c)</td></tr>
+<tr class="separator:ad024d7f7a40166d6c962e545db0be221"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d097217c912d60c11ab4db5d832a4db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4d097217c912d60c11ab4db5d832a4db"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdentStartChar</b> (char c)</td></tr>
+<tr class="separator:a4d097217c912d60c11ab4db5d832a4db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa54e6a8002f3ddf2b03665bf9ba0d2d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa54e6a8002f3ddf2b03665bf9ba0d2d1"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsIdentContChar</b> (char c)</td></tr>
+<tr class="separator:aa54e6a8002f3ddf2b03665bf9ba0d2d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b171996876cda3c549c470373d5d525"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b171996876cda3c549c470373d5d525"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsPlainCsIdentifier</b> (string text)</td></tr>
+<tr class="separator:a9b171996876cda3c549c470373d5d525"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace5cd269b5643e0f847117805383fd51"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace5cd269b5643e0f847117805383fd51"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsAssignmentOperator</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> opName)</td></tr>
+<tr class="separator:ace5cd269b5643e0f847117805383fd51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb6d83d675bdf6677f0c073e1a106b70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb6d83d675bdf6677f0c073e1a106b70"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsOperator</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> opName)</td></tr>
+<tr class="separator:acb6d83d675bdf6677f0c073e1a106b70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a02fefc647ac6f984a5470a2f103f95"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1a02fefc647ac6f984a5470a2f103f95">SanitizeIdentifier</a> (string id)</td></tr>
+<tr class="memdesc:a1a02fefc647ac6f984a5470a2f103f95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eliminates punctuation and special characters from a string so that the string can be used as a plain C# identifier, e.g. "I'd" =&gt; "I_aposd", "123" =&gt; "_123", "+5" =&gt; "_plus5". <a href="#a1a02fefc647ac6f984a5470a2f103f95">More...</a><br /></td></tr>
+<tr class="separator:a1a02fefc647ac6f984a5470a2f103f95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
 <a class="anchor" id="a8c95d16c929d085dd0160cdbc1a6170f"></a>
@@ -187,48 +218,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="acbf20ef005eb958fae04c7f27a4e82ed"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static bool Loyc.Ecs.EcsValidators.IsMethodDefinition </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>orDelegate</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
-          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns true iff the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition.</p>
-
-</div>
-</div>
 <a class="anchor" id="af9674f0329d85ca378bc1326e03e1ab0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -268,6 +257,109 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 
 </div>
 </div>
+<a class="anchor" id="ac969baea4a17b61ecc40f0ff6121c27e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool Loyc.Ecs.EcsValidators.IsPropertyDefinition </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
+          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true iff the given node has a valid syntax tree for a property definition.</p>
+
+</div>
+</div>
+<a class="anchor" id="a58537d0a169f5a40d36892640fc3d80f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool Loyc.Ecs.EcsValidators.IsPropertyDefinition </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>retType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>args</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>body</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>initialValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
+          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true iff the given node has a valid syntax tree for a property definition, and gets the component parts of the definition.</p>
+<p>The body may be anything. If it calls CodeSymbols.Braces, it's a normal body.</p>
+
+</div>
+</div>
 <a class="anchor" id="a26006ff95c953dff4e4e9768eb5c5863"></a>
 <div class="memitem">
 <div class="memproto">
@@ -293,11 +385,11 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 <p>Given a complex name such as <code>global::Foo&lt;int&gt;.Bar&lt;T&gt;</code>, this method identifies the base name component, which in this example is Bar. This is used, for example, to identify the expected name for a constructor based on the class name, e.g. <code>Foo&lt;T&gt;</code> =&gt; Foo.</p>
 <p>It is not verified that name is a complex identifier. There is no error detection but in some cases an empty name may be returned, e.g. for input like <code>Foo."Hello"</code>.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
+<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a92779d545d490e91bdf71816b38f283f">Loyc.Syntax.LNode.CallsMin()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74">Loyc.Syntax.LNode.Target</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1844f801e52ca0f5840327014ec6bc0f"></a>
+<a class="anchor" id="aa437df0d318ca123757439c1d3ff49f2"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -305,7 +397,153 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Ecs.EcsValidators.SpaceStatementKind </td>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Ecs.EcsValidators.MethodDefinitionKind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>allowDelegate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
+          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition, gets the definition kind (#fn, #cons, or #delegate).</p>
+
+</div>
+</div>
+<a class="anchor" id="ac537f70aead13a5ef62357c1bc6ec153"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Ecs.EcsValidators.MethodDefinitionKind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>retType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>args</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>body</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>allowDelegate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
+          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If the given node has a valid syntax tree for a method definition, a constructor, or (when orDelegate is true) a delegate definition, gets the definition kind (#fn, #cons, or #delegate).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">retType</td><td>Return type of the method (if it's a constructor, this will be the empty identifier).</td></tr>
+    <tr><td class="paramname">name</td><td>Name of the method.</td></tr>
+    <tr><td class="paramname">args</td><td>args.Args is the argument list of the method.</td></tr>
+    <tr><td class="paramname">body</td><td>The method body, or null if there is no method body. The method body calls CodeSymbols.Braces if the method is a non-lambda-style method.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Method declarations (no body) also count. </p>
+<p>A destructor counts as a #fn with a method name that calls the ~ operator. </p>
+
+</div>
+</div>
+<a class="anchor" id="a1a02fefc647ac6f984a5470a2f103f95"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static string Loyc.Ecs.EcsValidators.SanitizeIdentifier </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Eliminates punctuation and special characters from a string so that the string can be used as a plain C# identifier, e.g. "I'd" =&gt; "I_aposd", "123" =&gt; "_123", "+5" =&gt; "_plus5".</p>
+<p>The empty string "" becomes "__empty__", ASCII punctuation becomes "_xyz" where xyz is an HTML entity name, e.g. '!' becomes "_excl", and all other characters become "Xxx" where xx is the hexadecimal representation of the code point. Designed for the Unicode BMP only.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad5b55389daa158429702e8bd17322cd5"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Ecs.EcsValidators.SpaceDefinitionKind </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
@@ -329,9 +567,70 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 </table>
 </div><div class="memdoc">
 
-<p>Returns true iff the specified node has one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait and its tree structure is valid for a space statement.</p>
+<p>Returns the space kind, which is one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait, or null if the node Name or structure is not valid for a space statement.</p>
 
-<p>References <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844">Loyc.Syntax.LNode.Args</a>.</p>
+</div>
+</div>
+<a class="anchor" id="a1a41c3775dfd6f58c2231b34a2c2b7e4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> Loyc.Ecs.EcsValidators.SpaceDefinitionKind </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>bases</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">out <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td>
+          <td class="paramname"><em>body</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f">Pedantics</a>&#160;</td>
+          <td class="paramname"><em>p</em> = <code>Pedantics.Lax</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the space kind, which is one of the names #struct, #class, #enum, #interface, #namespace, #alias, #trait, or null if the node Name or structure is not valid for a space statement.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>The node to examine.</td></tr>
+    <tr><td class="paramname">name</td><td>Name of the space.</td></tr>
+    <tr><td class="paramname">bases</td><td>bases.Args will be the list of base types.</td></tr>
+    <tr><td class="paramname">body</td><td>A braced block of statements holding the contents of the space.</td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -339,7 +638,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsForwardedPro
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:53 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

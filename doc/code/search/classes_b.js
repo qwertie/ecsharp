@@ -4,6 +4,7 @@ var searchData=
   ['macroinfo',['MacroInfo',['../classLeMP_1_1MacroInfo.html',1,'LeMP']]],
   ['macroprocessor',['MacroProcessor',['../classLeMP_1_1MacroProcessor.html',1,'LeMP']]],
   ['macros',['Macros',['../classLoyc_1_1LLPG_1_1Macros.html',1,'Loyc::LLPG']]],
+  ['macrotesterbase',['MacroTesterBase',['../classLeMP_1_1Tests_1_1MacroTesterBase.html',1,'LeMP::Tests']]],
   ['map_3c_20k_2c_20v_20_3e',['Map&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1Map_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
   ['mapormmap_3c_20k_2c_20v_20_3e',['MapOrMMap&lt; K, V &gt;',['../classLoyc_1_1Collections_1_1MapOrMMap_3_01K_00_01V_01_4.html',1,'Loyc::Collections']]],
   ['math128',['Math128',['../classLoyc_1_1Math_1_1Math128.html',1,'Loyc::Math']]],

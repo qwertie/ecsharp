@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['nodescanmode',['NodeScanMode',['../namespaceLoyc_1_1Syntax.html#ad4c4676e2fe5b3a9acf9f5b02f88b9c1',1,'Loyc::Syntax']]],
-  ['nodestyle',['NodeStyle',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8',1,'Loyc::Syntax']]]
+  ['macromode',['MacroMode',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721',1,'LeMP']]],
+  ['mode',['Mode',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794',1,'Loyc::Syntax::Les::LesNodePrinter']]]
 ];

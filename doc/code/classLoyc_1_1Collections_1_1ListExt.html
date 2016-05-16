@@ -115,6 +115,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:acf9adef6e512e63471abcc929de56b54"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf9adef6e512e63471abcc929de56b54"></a>
 static ArraySlice&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this T[] list, int start, int length=int.MaxValue)</td></tr>
 <tr class="separator:acf9adef6e512e63471abcc929de56b54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a369c56ee3d6af75d3a081bfb9d0c2b81"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a369c56ee3d6af75d3a081bfb9d0c2b81"></a>
+static ArraySlice&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this T[] list, NumRange&lt; int, <a class="el" href="structLoyc_1_1Math_1_1MathI.html">MathI</a> &gt; range)</td></tr>
+<tr class="separator:a369c56ee3d6af75d3a081bfb9d0c2b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2eb3d43fce242f176748153ffe9b86cd"><td class="memItemLeft" align="right" valign="top">static ReversedList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a2eb3d43fce242f176748153ffe9b86cd">Reverse&lt; T &gt;</a> (this IList&lt; T &gt; list)</td></tr>
 <tr class="memdesc:a2eb3d43fce242f176748153ffe9b86cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an editable reversed view of a list. <a href="#a2eb3d43fce242f176748153ffe9b86cd">More...</a><br /></td></tr>
 <tr class="separator:a2eb3d43fce242f176748153ffe9b86cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,6 +130,9 @@ static IRange&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>A
 <tr class="memitem:a88c01aff7b2084551ffda1331b0387c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88c01aff7b2084551ffda1331b0387c3"></a>
 static IRange&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsRange&lt; T &gt;</b> (this IRange&lt; T &gt; list)</td></tr>
 <tr class="separator:a88c01aff7b2084551ffda1331b0387c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b4a9dcad85a5ca7fafb86e541180354"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6b4a9dcad85a5ca7fafb86e541180354"></a>
+static IRange&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Slice&lt; T &gt;</b> (this IListSource&lt; T &gt; list, NumRange&lt; int, <a class="el" href="structLoyc_1_1Math_1_1MathI.html">MathI</a> &gt; range)</td></tr>
+<tr class="separator:a6b4a9dcad85a5ca7fafb86e541180354"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a0715b078a2c97925f37e828dad0fad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a0715b078a2c97925f37e828dad0fad"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>BinarySearch&lt; T &gt;</b> (this IList&lt; T &gt; list, T value)</td></tr>
 <tr class="separator:a8a0715b078a2c97925f37e828dad0fad"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -196,14 +202,14 @@ static T&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;
 <tr class="memitem:aa231e31bd9e82fe46ccdeb6d2d0cb2a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa231e31bd9e82fe46ccdeb6d2d0cb2a0"></a>
 static <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>TryGet&lt; T &gt;</b> (this IReadOnlyList&lt; T &gt; list, int index)</td></tr>
 <tr class="separator:aa231e31bd9e82fe46ccdeb6d2d0cb2a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e41b63e568e0d11c5a4d93b9ae95598"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveRange&lt; T &gt;</b> (this IList&lt; T &gt; list, int index, int count)</td></tr>
+<tr class="memitem:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a5e41b63e568e0d11c5a4d93b9ae95598">RemoveRange&lt; T &gt;</a> (this IList&lt; T &gt; list, int index, int count)</td></tr>
+<tr class="memdesc:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes <code>count</code> items from <code>list</code> starting at the specified <code>index</code>. <a href="#a5e41b63e568e0d11c5a4d93b9ae95598">More...</a><br /></td></tr>
 <tr class="separator:a5e41b63e568e0d11c5a4d93b9ae95598"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f4a70edc0a116a3c37914b1716195b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9f4a70edc0a116a3c37914b1716195b8"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Resize&lt; T &gt;</b> (this List&lt; T &gt; list, int newSize)</td></tr>
+<tr class="memitem:a9f4a70edc0a116a3c37914b1716195b8"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a9f4a70edc0a116a3c37914b1716195b8">Resize&lt; T &gt;</a> (this List&lt; T &gt; list, int newSize)</td></tr>
+<tr class="memdesc:a9f4a70edc0a116a3c37914b1716195b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resizes a list by removing items from the list (if it is too long) or adding <code>default(T)</code> values to the end (if it is too short). <a href="#a9f4a70edc0a116a3c37914b1716195b8">More...</a><br /></td></tr>
 <tr class="separator:a9f4a70edc0a116a3c37914b1716195b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a196b24b319bc544a44d9325c2bc8827c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a196b24b319bc544a44d9325c2bc8827c"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Resize&lt; T &gt;</b> (this IList&lt; T &gt; list, int newSize)</td></tr>
+<tr class="memitem:a196b24b319bc544a44d9325c2bc8827c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a196b24b319bc544a44d9325c2bc8827c">Resize&lt; T &gt;</a> (this IList&lt; T &gt; list, int newSize)</td></tr>
+<tr class="memdesc:a196b24b319bc544a44d9325c2bc8827c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resizes a list by removing items from the list (if it is too long) or adding <code>default(T)</code> values to the end (if it is too short). <a href="#a196b24b319bc544a44d9325c2bc8827c">More...</a><br /></td></tr>
 <tr class="separator:a196b24b319bc544a44d9325c2bc8827c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d4000f7b34fbd829ff0618e80db0db7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d4000f7b34fbd829ff0618e80db0db7"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MaybeEnlarge&lt; T &gt;</b> (this List&lt; T &gt; list, int minSize)</td></tr>
@@ -211,23 +217,23 @@ static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class
 <tr class="memitem:a130ea1155cd7c970e20b1b3718db7831"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a130ea1155cd7c970e20b1b3718db7831"></a>
 static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>MaybeEnlarge&lt; T &gt;</b> (this IList&lt; T &gt; list, int minSize)</td></tr>
 <tr class="separator:a130ea1155cd7c970e20b1b3718db7831"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac126b64fa61fd78133d7ff9943aded4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac126b64fa61fd78133d7ff9943aded4c"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Zip&lt; A, B &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memitem:ac126b64fa61fd78133d7ff9943aded4c"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#ac126b64fa61fd78133d7ff9943aded4c">Zip&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memdesc:ac126b64fa61fd78133d7ff9943aded4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence of length <code>Min(a.Count(), b.Count())</code> of items from <code>a</code> and <code>b</code> paired together. The output is produced lazily, so infinite input sequences are supported. <a href="#ac126b64fa61fd78133d7ff9943aded4c">More...</a><br /></td></tr>
 <tr class="separator:ac126b64fa61fd78133d7ff9943aded4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ceb39a2537063d2a71a7ec9807e7552"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ZipLeft&lt; A, B &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB)</td></tr>
+<tr class="memitem:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a9ceb39a2537063d2a71a7ec9807e7552">ZipLeft&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB)</td></tr>
+<tr class="memdesc:a9ceb39a2537063d2a71a7ec9807e7552"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence that has the same length as the first sequence, with items from the first and second sequence paired together. <a href="#a9ceb39a2537063d2a71a7ec9807e7552">More...</a><br /></td></tr>
 <tr class="separator:a9ceb39a2537063d2a71a7ec9807e7552"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01d968377b9c352d0c215923ee6fcee1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01d968377b9c352d0c215923ee6fcee1"></a>
-static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ZipLeft&lt; A, B, C &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
+<tr class="memitem:a01d968377b9c352d0c215923ee6fcee1"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a01d968377b9c352d0c215923ee6fcee1">ZipLeft&lt; A, B, C &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
+<tr class="memdesc:a01d968377b9c352d0c215923ee6fcee1"><td class="mdescLeft">&#160;</td><td class="mdescRight">An alternate version of ZipLeft{A, B}(IEnumerable{A}, IEnumerable{B}, B) in which a user-defined function is used to combine the items from the two lists. <a href="#a01d968377b9c352d0c215923ee6fcee1">More...</a><br /></td></tr>
 <tr class="separator:a01d968377b9c352d0c215923ee6fcee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98a05ad8d7cf390774d03e3910da7b49"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a98a05ad8d7cf390774d03e3910da7b49"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ZipLonger&lt; A, B &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memitem:a98a05ad8d7cf390774d03e3910da7b49"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a98a05ad8d7cf390774d03e3910da7b49">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b)</td></tr>
+<tr class="memdesc:a98a05ad8d7cf390774d03e3910da7b49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value. <a href="#a98a05ad8d7cf390774d03e3910da7b49">More...</a><br /></td></tr>
 <tr class="separator:a98a05ad8d7cf390774d03e3910da7b49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a682aba93ad405a19a4957b0a6c5487ce"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a682aba93ad405a19a4957b0a6c5487ce"></a>
-static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ZipLonger&lt; A, B &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB)</td></tr>
+<tr class="memitem:a682aba93ad405a19a4957b0a6c5487ce"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; <a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt; A, B &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a682aba93ad405a19a4957b0a6c5487ce">ZipLonger&lt; A, B &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB)</td></tr>
+<tr class="memdesc:a682aba93ad405a19a4957b0a6c5487ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value provided as a parameter. <a href="#a682aba93ad405a19a4957b0a6c5487ce">More...</a><br /></td></tr>
 <tr class="separator:a682aba93ad405a19a4957b0a6c5487ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae7711a3f1659aa33aaa19aac6b3ad202"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae7711a3f1659aa33aaa19aac6b3ad202"></a>
-static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ZipLonger&lt; A, B, C &gt;</b> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
+<tr class="memitem:ae7711a3f1659aa33aaa19aac6b3ad202"><td class="memItemLeft" align="right" valign="top">static IEnumerable&lt; C &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#ae7711a3f1659aa33aaa19aac6b3ad202">ZipLonger&lt; A, B, C &gt;</a> (this IEnumerable&lt; A &gt; a, IEnumerable&lt; B &gt; b, A defaultA, B defaultB, Func&lt; A, B, C &gt; resultSelector)</td></tr>
+<tr class="memdesc:ae7711a3f1659aa33aaa19aac6b3ad202"><td class="mdescLeft">&#160;</td><td class="mdescRight">An alternate version of ZipLonger{A, B}(IEnumerable{A}, IEnumerable{B}, A, B) in which a user-defined function is used to combine the items from the two lists. <a href="#ae7711a3f1659aa33aaa19aac6b3ad202">More...</a><br /></td></tr>
 <tr class="separator:ae7711a3f1659aa33aaa19aac6b3ad202"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a222092fa78ef95be6c705e5887be371e"><td class="memItemLeft" align="right" valign="top">static int[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1ListExt.html#a222092fa78ef95be6c705e5887be371e">RangeArray</a> (int count)</td></tr>
 <tr class="memdesc:a222092fa78ef95be6c705e5887be371e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an array of Length <code>count</code> containing the numbers 0 through <code>count-1</code>. <a href="#a222092fa78ef95be6c705e5887be371e">More...</a><br /></td></tr>
@@ -659,6 +665,48 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 
 </div>
 </div>
+<a class="anchor" id="a5e41b63e568e0d11c5a4d93b9ae95598"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.ListExt.RemoveRange&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IList&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Removes <code>count</code> items from <code>list</code> starting at the specified <code>index</code>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a76e80f36d06f3472d8bb8a81c03a86be"></a>
 <div class="memitem">
 <div class="memproto">
@@ -693,6 +741,78 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 
 <p>Returns a helper object that stores one value, but acts like a read-only list that repeats the value the specified number of times.</p>
 <dl class="section return"><dt>Returns</dt><dd><code>new Repeated&lt;T&gt;(value, count)</code></dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a9f4a70edc0a116a3c37914b1716195b8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.ListExt.Resize&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this List&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>newSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Resizes a list by removing items from the list (if it is too long) or adding <code>default(T)</code> values to the end (if it is too short).</p>
+
+</div>
+</div>
+<a class="anchor" id="a196b24b319bc544a44d9325c2bc8827c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.ListExt.Resize&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IList&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>newSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Resizes a list by removing items from the list (if it is too long) or adding <code>default(T)</code> values to the end (if it is too short).</p>
 
 </div>
 </div>
@@ -1207,11 +1327,301 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceEqual&
 
 </div>
 </div>
+<a class="anchor" id="ac126b64fa61fd78133d7ff9943aded4c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.Zip&lt; A, B &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a sequence of length <code>Min(a.Count(), b.Count())</code> of items from <code>a</code> and <code>b</code> paired together. The output is produced lazily, so infinite input sequences are supported.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9ceb39a2537063d2a71a7ec9807e7552"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLeft&lt; A, B &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">B&#160;</td>
+          <td class="paramname"><em>defaultB</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a sequence that has the same length as the first sequence, with items from the first and second sequence paired together.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">defaultB</td><td>If the second sequence <code>b</code> is shorter than the first sequence, the remaining items of the first sequence are paired with this value. Otherwise, this value is not used.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a01d968377b9c352d0c215923ee6fcee1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;C&gt; Loyc.Collections.ListExt.ZipLeft&lt; A, B, C &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">B&#160;</td>
+          <td class="paramname"><em>defaultB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; A, B, C &gt;&#160;</td>
+          <td class="paramname"><em>resultSelector</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>An alternate version of ZipLeft{A, B}(IEnumerable{A}, IEnumerable{B}, B) in which a user-defined function is used to combine the items from the two lists.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">defaultB</td><td>If the second sequence <code>b</code> is shorter than the first sequence, the remaining items of the first sequence are paired with this value. Otherwise, this value is not used.</td></tr>
+    <tr><td class="paramname">resultSelector</td><td>A function that combines items from the two lists.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a98a05ad8d7cf390774d03e3910da7b49"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value.</p>
+
+</div>
+</div>
+<a class="anchor" id="a682aba93ad405a19a4957b0a6c5487ce"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;<a class="el" href="classLoyc_1_1Pair.html">Pair</a>&lt;A, B&gt; &gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">A&#160;</td>
+          <td class="paramname"><em>defaultA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">B&#160;</td>
+          <td class="paramname"><em>defaultB</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a sequence as long as the longer of two sequences. Items from the first and second sequence are initially paired together, and when one sequence ends, the other sequence's remaining values are paired with a default value provided as a parameter.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">defaultA</td><td>If the first sequence <code>a</code> is shorter than the second sequence, the remaining items of the second sequence are paired with this value. Otherwise, this value is not used.</td></tr>
+    <tr><td class="paramname">defaultB</td><td>If the second sequence <code>b</code> is shorter than the first sequence, the remaining items of the first sequence are paired with this value. Otherwise, this value is not used.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ae7711a3f1659aa33aaa19aac6b3ad202"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static IEnumerable&lt;C&gt; Loyc.Collections.ListExt.ZipLonger&lt; A, B, C &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; A &gt;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IEnumerable&lt; B &gt;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">A&#160;</td>
+          <td class="paramname"><em>defaultA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">B&#160;</td>
+          <td class="paramname"><em>defaultB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Func&lt; A, B, C &gt;&#160;</td>
+          <td class="paramname"><em>resultSelector</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>An alternate version of ZipLonger{A, B}(IEnumerable{A}, IEnumerable{B}, A, B) in which a user-defined function is used to combine the items from the two lists.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">resultSelector</td><td>A function that combines items from the two lists.</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:50 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:50 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

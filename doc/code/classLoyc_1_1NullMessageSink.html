@@ -97,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Discards all messages. However, there is a Count property that increases by one with each message received. 
+<p>Discards all messages. However, there is a Count property that increases by one with each message received, as well as an ErrorCount. 
  <a href="classLoyc_1_1NullMessageSink.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/MessageSinks.cs'>/Core/Loyc.Essentials/Utilities/MessageSinks.cs</a></li>
@@ -114,13 +114,16 @@ Inheritance diagram for Loyc.NullMessageSink:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Discards all messages. However, there is a Count property that increases by one with each message received.</p>
+<div class="textblock"><p>Discards all messages. However, there is a Count property that increases by one with each message received, as well as an ErrorCount.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ada38c38a32296ebef213ca0167e7c7d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada38c38a32296ebef213ca0167e7c7d0"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get, set]</code></td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:ada38c38a32296ebef213ca0167e7c7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae168320c64f822df3af250736d355db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae168320c64f822df3af250736d355db"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorCount</b><code> [get]</code></td></tr>
+<tr class="separator:aae168320c64f822df3af250736d355db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4d8f48ac29b57158ab6758bc938f972"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4d8f48ac29b57158ab6758bc938f972"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [get]</code></td></tr>
 <tr class="separator:af4d8f48ac29b57158ab6758bc938f972"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,6 +138,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsEmpty</b><code> [ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a967d25862263bb0cac6257a6bf1e6d40"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a967d25862263bb0cac6257a6bf1e6d40"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ResetCountersToZero</b> ()</td></tr>
+<tr class="separator:a967d25862263bb0cac6257a6bf1e6d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a7debbe881d1adc644ae7bfb15f0449"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1NullMessageSink.html#a5a7debbe881d1adc644ae7bfb15f0449">Write</a> (<a class="el" href="namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e">Severity</a> type, object context, string format)</td></tr>
 <tr class="memdesc:a5a7debbe881d1adc644ae7bfb15f0449"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a message to the target that this object represents. <a href="#a5a7debbe881d1adc644ae7bfb15f0449">More...</a><br /></td></tr>
 <tr class="separator:a5a7debbe881d1adc644ae7bfb15f0449"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -233,7 +239,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:48 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

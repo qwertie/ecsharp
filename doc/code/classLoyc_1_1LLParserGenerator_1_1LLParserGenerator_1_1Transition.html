@@ -113,8 +113,8 @@ Inheritance diagram for Loyc.LLParserGenerator.LLParserGenerator.Transition:</di
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents a position in a grammar (<a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html" title="Represents a location in a grammar: a predicate and a &quot;return stack&quot; which is a so-called persistent ...">GrammarPos</a>) plus the set of characters that leads to that position from the previous position. This is a single case in a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1KthSet.html" title="Represents the possible interpretations of a single input character, in terms of transitions in the g...">KthSet</a>.</p>
-<p>For example, suppose the grammar is </p><div class="fragment"><div class="line">rule X ==&gt; @[ <span class="charliteral">&#39;a&#39;</span> Y <span class="charliteral">&#39;z&#39;</span> ];</div>
-<div class="line">rule Y ==&gt; @[ <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;y&#39;</span> <span class="charliteral">&#39;b&#39;</span>..<span class="charliteral">&#39;z&#39;</span> ];</div>
+<p>For example, suppose the grammar is </p><div class="fragment"><div class="line">rule X <span class="charliteral">&#39;a&#39;</span> Y <span class="charliteral">&#39;z&#39;</span> };</div>
+<div class="line">rule Y <span class="charliteral">&#39;a&#39;</span>..<span class="charliteral">&#39;y&#39;</span> <span class="charliteral">&#39;b&#39;</span>..<span class="charliteral">&#39;z&#39;</span> };</div>
 </div><!-- fragment --><p> If the previous position is represented by the dot in <code>'a'.Y 'z'</code>, i.e. before Y, then ComputeNextSet will compute a <a class="el" href="classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1Transition.html" title="Represents a position in a grammar (GrammarPos) plus the set of characters that leads to that positio...">Transition</a> with Set=[a-y] and Position pointing to <code>.'b'..'z'</code>, with a return stack that points to <code>'a' Y.'z'</code> </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -151,7 +151,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:54 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

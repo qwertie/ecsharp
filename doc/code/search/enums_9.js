@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['severity',['Severity',['../namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e',1,'Loyc']]],
-  ['spaceopt',['SpaceOpt',['../namespaceLoyc_1_1Ecs.html#af6777f19c2bd33b3656b36d293a61a40',1,'Loyc::Ecs']]]
+  ['parsenumberflag',['ParseNumberFlag',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91',1,'Loyc::Syntax']]],
+  ['pedantics',['Pedantics',['../classLoyc_1_1Ecs_1_1EcsValidators.html#a8c95d16c929d085dd0160cdbc1a6170f',1,'Loyc::Ecs::EcsValidators']]]
 ];

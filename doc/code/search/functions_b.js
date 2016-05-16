@@ -21,6 +21,7 @@ var searchData=
   ['llinsert',['LLInsert',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a94549dbe55594369a4616f578a0c76c0',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['lllpg_5flexer',['LLLPG_lexer',['../classLoyc_1_1LLPG_1_1Macros.html#a248cff146c92539da7786af63445bc02',1,'Loyc::LLPG::Macros']]],
   ['lllpg_5fparser',['LLLPG_parser',['../classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d',1,'Loyc::LLPG::Macros']]],
+  ['lllpgmacro',['LllpgMacro',['../classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a',1,'Loyc::LLPG::Macros']]],
   ['lnodeprinter',['LNodePrinter',['../namespaceLoyc_1_1Syntax.html#a6ba7daec9d30e5569a3cc8b4b50e507e',1,'Loyc::Syntax']]],
   ['localized',['Localized',['../classLoyc_1_1Localize.html#a43de4c76abc8352800a789b371e15a8e',1,'Loyc::Localize']]],
   ['locationof',['LocationOf',['../classLoyc_1_1MessageSink.html#a749716030611a79449e91102fcb684fe',1,'Loyc::MessageSink']]],

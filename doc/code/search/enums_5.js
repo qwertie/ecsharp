@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['macromode',['MacroMode',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721',1,'LeMP']]],
-  ['mode',['Mode',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794',1,'Loyc::Syntax::Les::LesNodePrinter']]]
+  ['linetype',['LineType',['../namespaceLoyc_1_1Geometry.html#a9fa1ba62aee6d3f5325aa69296b087b6',1,'Loyc::Geometry']]],
+  ['lnodekind',['LNodeKind',['../namespaceLoyc_1_1Syntax.html#af00c062703b2745a9d2ecbe0b7669212',1,'Loyc::Syntax']]],
+  ['loopmode',['LoopMode',['../namespaceLoyc_1_1LLParserGenerator.html#a73e40c77d59d71084e7c77e58b02363b',1,'Loyc::LLParserGenerator']]]
 ];

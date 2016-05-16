@@ -90,6 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -97,6 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected fields</a> &#124;
+<a href="#pro-static-attribs">Protected static fields</a> &#124;
 <a href="classLoyc_1_1Syntax_1_1LNode-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Loyc.Syntax.LNode Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
@@ -150,47 +152,31 @@ Extensibility. <a class="el" href="namespaceLoyc.html" title="Main Loyc namespac
 </ul>
 <p><a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees are comparable to LISP trees, except that "attributes" and position information are added to the tree, and the concept of a "list" is replaced with the concept of a "call", which I feel is a more intuitive notion in most programming languages that are not LISP. </p>
 <p><a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a>'s representation is both an blessing and a curse. The advantage is that <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> nodes can be used for almost any purpose, perhaps even representing data instead of code in some cases. However, there is no guarantee that a given AST follows the structure prescribed by a particular programming language, unless a special validation step is performed after parsing. In this way, <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees are similar to XML trees, only simpler. </p>
-<p>Another major disadvantage is that it is more difficult to interpret a syntax tree correctly: you have to remember that a method definition has the structure <code>#fn(return_type, name, args, body)</code>, so if "node" is a method definition then <code>node.Args[2]</code> represents the return type, for example. In contrast, most compilers have an AST class called <code>MethodDefinition</code> or something, that provides properties such as Name and ReturnType. Once EC# is developed, however, aliases could help avoid this problem by providing a more friendly veneer over the raw nodes. </p>
-<p>For optimization purposes, the node class is a class hierarchy, but most users should only use this class and perhaps the three derived classes <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)...">IdNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;.">LiteralNode</a> and <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>. Some users will also find it useful to use <a class="el" href="classLoyc_1_1Syntax_1_1LNodeFactory.html" title="Contains helper methods for creating LNodes. An LNodeFactory holds a reference to the current source ...">LNodeFactory</a> for generating synthetic code snippets (bits of code that never existed in any source file), although you can also use the methods defined here in this class: Id(), Literal(), Call(), InParens(). </p>
-<p>Normal <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s are "persistent" in the comp-sci sense, which means that a subtree can be shared among multiple syntax trees, and nodes do not know their own parents. This allows a single node to exist at multiple locations in a syntax tree. This makes manipulation of trees convenient, as there is no need to "detach" a node from one place, or duplicate it, before it can be inserted in another place. Immutable nodes can be safely re-used within different source files or multiple versions of one source file in an IDE's "intellisense" or "code completion" engine.</p>
+<p>Another major disadvantage is that it is more difficult to interpret a syntax tree correctly: you have to remember that a method definition has the structure <code>#fn(return_type, name, args, body)</code>, so if "node" is a method definition then <code>node.Args[2]</code> represents the argument list, for example. In contrast, most compilers have an AST class called <code>MethodDefinition</code> or something, that provides properties such as Name and ReturnType. If EC# is ever done, however, aliases could help avoid this problem by providing a more friendly veneer over the raw nodes. </p>
+<p>For optimization purposes, the node class is a class hierarchy, but most users should only use this class. </p>
+<p><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>s are "persistent" in the comp-sci sense, which means that they are immutable, that a subtree can be shared among multiple syntax trees, and that nodes do not know their own parents, which allows a single node to exist at multiple locations in a syntax tree. This makes manipulation of trees convenient, as there is no need to "detach" a node from one place, or duplicate it, before it can be inserted in another place.</p>
 <h3>The reimplementation</h3>
 <p>This implementation has been redesigned (in Subversion, the last version based on the old design is revision 289.) The core concept is the same as described in my blog at <a href="http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html">http://loyc-etc.blogspot.ca/2013/04/the-loyc-tree-and-prefix-notation-in-ec.html</a> except that the concept of a "Head" has mostly been eliminated, although you might see it occasionally because it still has a meaning. The "head" of a node refers either to the Name of a symbol, the Value of a literal, or the Target of a call (i.e. the name of the method being called, which could be an arbitrarily complex node). In the original implementation, it was also possible to have a complex head (a head that is itself a node) even when the node was not a call; this situation was used to represent an expression in parenthesis. </p>
-<p>This didn't quite feel right, so I changed it. Now, only calls can be complex, and the head of a call (the method being called) is called the Target. </p>
-<p>In the new version, there are explicitly three types of nodes: symbols, literals, and calls. There is no longer a Head property, instead there are three separate properties for the three kinds of heads, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> (a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>), <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">Value</a> (an Object), and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> (an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>). Only call nodes have a Target, and only literal nodes have a Value (as an optimization, StdTriviaNode breaks this rule; it can only do this because it represents special attributes that are outside the normal syntax tree, such as comments). <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> nodes have a Name, but I thought it would be useful for some call nodes to also have a Name, which is defined as the name of the Target if the Target is a symbol (if the Target is not a symbol, the Name must be blank.) </p>
-<p>An expression in parenthesis is now represented by a call with a blank name (use IsParenthesizedExpr to detect this case; it is incorrect to test <code><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> == $``</code> because a call with a non-symbol Target also has a blank name.) </p>
-<p>The following differences in implementation have been made: </p><ul>
-<li>
-"Red" and "green" nodes have basically been eliminated, at least for now. </li>
-<li>
-Nodes normally do not contain parent references anymore </li>
-<li>
-Mutable nodes have been eliminated, for now. </li>
-<li>
-There are now three standard subclasses, <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html" title="Base class of all nodes that represent simple identifiers (including special symbols such as #foo)...">IdNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html" title="Base class of all nodes that represent literal values such as 123 and &quot;foo&quot;.">LiteralNode</a> and <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html" title="Base class of all nodes that represent calls such as f(x), operator calls such as x + y...">CallNode</a>, and a node can no longer change between classes after it is created. </li>
-<li>
-An empty Name is now allowed. A literal now has a blank name (instead of #literal) and a method that calls anything other than a simple symbol will also have a blank Name. Note: The <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> property will still never return null. </li>
-<li>
-As mentioned, an expression in parenthesis is represented differently. </li>
-</ul>
+<p>This didn't quite feel right, so I changed it. Now, only calls can be "complex", and the head of a call (the method being called) is called the Target. </p>
+<p>In the new version, there are explicitly three types of nodes: symbols, literals, and calls. There is no longer a Head property, instead there are three separate properties for the three kinds of heads, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a301fe1dbd7fa381ebe2233c265ecfec4" title="Returns the Symbol if IsId. If this node is a call (IsCall) and Target.IsId is true, this property returns Target.Name. In all other cases, the name is GSymbol.Empty. Shall not return null.">Name</a> (a <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a>), <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ab3ba396bab9bfc416f9d9c9929319431" title="Returns the value of a literal node, or NoValue.Value if this node is not a literal (IsLiteral is fal...">Value</a> (an Object), and <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> (an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>). Only call nodes have a Target, and only literal nodes have a Value. Identifier nodes have a Name, but I thought it would be useful for some call nodes to also have a Name, which is defined as the name of the Target if the Target is an identifier (if the Target is not a symbol, the call has no name.) </p>
+<p>An expression in parenthesis is now represented by a call with the #trivia_inParens attribute; use IsParenthesizedExpr to detect the parentheses. </p>
 <p>The problems that motivated a redesign are described at <a href="http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html">http://loyc-etc.blogspot.ca/2013/05/redesigning-loyc-tree-code.html</a> </p>
 <p>One very common use of mutable nodes is building lists of statements, e.g. you might create an empty braced block or an empty loop and then add statements to the body of the block or loop. To do this without mutable nodes, create a mutable WList{LNode} instead and add statements there; once the list is finished, create the braced block or loop afterward. The new design stores arguments and attributes in VList{LNode} objects; you can instantly convert your WList to a VList by calling WListBase{LNode}.ToVList(). </p>
 <p>During the redesign I've decided on some small changes to the representation of certain expressions in EC#. </p><ul>
 <li>
-The '.' operator is now treated more like a normal binary operator; <code>a.b.c</code> is now represented <code>#.(#.(a, b), c)</code> rather than <code>#.(a, b, c)</code> mainly because it's easier that way, and because the second representation doesn't buy anything significant other than a need for special-casing. </li>
+The '.' operator is now treated more like a normal binary operator; <code>a.b.c</code> is now represented <code>((a, b), c)</code> rather than <code>(a, b, c)</code> mainly because it's easier that way, and because the second representation doesn't buy anything significant other than a need for special-casing. </li>
 <li>
 <code>int x = 0</code> will now be represented <code>#var(int, x = 0)</code> rather than <code>#var(int, x(0))</code>. I chose the latter representation initially because it is slightly more convenient, because you can always learn the name of the declared variable by calling <code>var.Args[1].Name</code>. However, I decided that it was more important for the syntax tree to be predictable, with obvious connections between normal and prefix notations. Since I decided that <code>alias X = Y;</code> was to be represented <code>#alias(X = Y, #())</code>, it made sense for the syntax tree of a variable declaration to also resemble its C# syntax. There's another small reason: C++ has both styles <code>Foo x(y)</code> and <code>Foo x = y</code>; if <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> were to ever support C++, it would make sense to use <code>#var(Foo, x(y))</code> and <code>#var(Foo, x = y)</code> for these two cases, and I believe C#'s variable declarations are semantically closer to the latter. (Note: another possibility was #var(int, x) = 0, but I decided this wasn't an improvement, it would just shift the pain around.) </li>
 <li>
-An constructor argument list is required on <em>all</em> types using the #new operator, e.g. <code>new int[] { x }</code> must have an empty set of arguments on int[], i.e. <code>#new(#of(#[],int)(), x)</code>; this rule makes the different kinds of new expressions easier to interpret by making them consistent with each other. </li>
+A constructor argument list is required on <em>all</em> types using the #new operator, e.g. <code>new int[] { x }</code> must have an empty set of arguments on int[], i.e. <code>#new(#of(#[],int)(), x)</code>; this rule makes the different kinds of new expressions easier to interpret by making them consistent with each other. </li>
 <li>
-A missing syntax element is now represented by an empty symbol instead of the symbol #missing. </li>
+A missing syntax element is now represented by the empty identifier instead of the identifier #missing. </li>
 <li>
-I've decided to adopt the "in-expression" generics syntax from Nemerle as an unambiguous alternative to angle brackets: List.[int] means List&lt;int&gt; and the printer will use this syntax in cases where angle brackets are ambiguous. </li>
+I've decided to adopt the "in-expression" generics syntax from Nemerle and the binary ! from D as unambiguous alternatives to angle brackets: List.[int] and List!int mean List&lt;int&gt; and the printer will use one of these in cases where angle brackets are ambiguous. </li>
 <li>
 By popular demand, constructors will be written this(...) instead of new(...), since both D and Nemerle use the latter notation. </li>
 <li>
-The \ and $ characters have been swapped;  now denotes a symbol S, while $S now denotes a substitution. </li>
-<li>
-The \ and $ characters have been swapped;  now denotes a symbol S, while $S now denotes a substitution. Originally EC# was designed just as an extension of C#, so \ made sense as a substitution operator for string interpolation because it doesn't hurt backward compatibility: "Loaded '\(filename)' successfully". But now that my focus has shifted to multi-language interoperability, $ makes more sense, as it is used for string interpolation in at least five other languages and it makes sense to use the same character for both string substitution and code substitution. </li>
+The \ and $ characters have been changed; @S now denotes a symbol S, $S now denotes a substitution, and  doesn't mean anything. Originally EC# was designed just as an extension of C#, so \ made sense as a substitution operator for string interpolation because it doesn't hurt backward compatibility: "Loaded '\(filename)' successfully". But now that my focus has shifted to multi-language interoperability, $ makes more sense, as it is used for string interpolation in at least five other languages and it makes sense to use the same character for both string substitution and code substitution. </li>
 </ul>
 <h3>Important properties</h3>
 <p>The main properties of a node are </p><ol>
@@ -234,13 +220,21 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aec680a7dbb7699e35b109ac15dd9b434" title="Helps you change printers temporarily. Usage in C#: using (LNode.PushPrinter(myPrinter)) { ...">PushPrinter(LNodePrinter)</a>. <a href="structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a65b96869ebac52b05a7acf09d0376dd5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> { <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a93d8912e6db9b22e29f5ed5022fbc990">ReplaceOpt.ReplaceRoot</a> = 1, 
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a4b861eb315e6ceef712815a76d7c2904">ReplaceOpt.ProcessAttrs</a> = 2, 
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67">ReplaceOpt.Default</a> = ReplaceRoot | ProcessAttrs
+ }</td></tr>
+<tr class="separator:a65b96869ebac52b05a7acf09d0376dd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
 <tr class="memitem:acedf66c24bd7f1d22809ab9deb10c937"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acedf66c24bd7f1d22809ab9deb10c937"></a>
 static readonly <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SyntheticSource</b> = new <a class="el" href="classLoyc_1_1Syntax_1_1EmptySourceFile.html">EmptySourceFile</a>(&quot;&lt;Synthetic Code&gt;&quot;)</td></tr>
 <tr class="separator:acedf66c24bd7f1d22809ab9deb10c937"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4b2c33e3c0b733dc9664093608338e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4b2c33e3c0b733dc9664093608338e9"></a>
-static readonly <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Missing</b> = Id(CodeSymbols.Missing)</td></tr>
+<tr class="memitem:aa4b2c33e3c0b733dc9664093608338e9"><td class="memItemLeft" align="right" valign="top">static readonly <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aa4b2c33e3c0b733dc9664093608338e9">Missing</a> = Id(CodeSymbols.Missing)</td></tr>
+<tr class="memdesc:aa4b2c33e3c0b733dc9664093608338e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The empty identifier, used to represent missing information. <a href="#aa4b2c33e3c0b733dc9664093608338e9">More...</a><br /></td></tr>
 <tr class="separator:aa4b2c33e3c0b733dc9664093608338e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa9a240b979b6196a2d1fe898886708f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa9a240b979b6196a2d1fe898886708f"></a>
 static readonly <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InParensTrivia</b> = Id(CodeSymbols.TriviaInParens)</td></tr>
@@ -421,6 +415,9 @@ abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;<
 <tr class="memitem:a269728f0f81f0b4da4a5e3cace4fd40d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a269728f0f81f0b4da4a5e3cace4fd40d"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>PlusArgs</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] args)</td></tr>
 <tr class="separator:a269728f0f81f0b4da4a5e3cace4fd40d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca34a901f21d0df925bf0a868e84b246"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca34a901f21d0df925bf0a868e84b246"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithArgChanged</b> (int index, Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector)</td></tr>
+<tr class="separator:aca34a901f21d0df925bf0a868e84b246"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88be0b59ccd61f4471541cc85ba9424b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88be0b59ccd61f4471541cc85ba9424b"></a>
 <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithArgChanged</b> (int index, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> newValue)</td></tr>
 <tr class="separator:a88be0b59ccd61f4471541cc85ba9424b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -469,21 +466,21 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (<a
 <tr class="memitem:a5cff8a418f30ecad07265da32b1e5011"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cff8a418f30ecad07265da32b1e5011"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Calls</b> (string name)</td></tr>
 <tr class="separator:a5cff8a418f30ecad07265da32b1e5011"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcf78a11db105660bfa6fd6ba3625dc2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abcf78a11db105660bfa6fd6ba3625dc2"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int argCount)</td></tr>
-<tr class="separator:abcf78a11db105660bfa6fd6ba3625dc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6864de502e176884337a17e6f95faf9b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6864de502e176884337a17e6f95faf9b"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>CallsMin</b> (string name, int argCount)</td></tr>
-<tr class="separator:a6864de502e176884337a17e6f95faf9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92779d545d490e91bdf71816b38f283f"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a92779d545d490e91bdf71816b38f283f">CallsMin</a> (<a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name, int minArgCount)</td></tr>
+<tr class="memdesc:a92779d545d490e91bdf71816b38f283f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is a call with the specified name and the specified minimum number of arguments. <a href="#a92779d545d490e91bdf71816b38f283f">More...</a><br /></td></tr>
+<tr class="separator:a92779d545d490e91bdf71816b38f283f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd3ae9b78af912f16995404a2ad7d4c1"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abd3ae9b78af912f16995404a2ad7d4c1">CallsMin</a> (string name, int minArgCount)</td></tr>
+<tr class="memdesc:abd3ae9b78af912f16995404a2ad7d4c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is a call with the specified name and the specified minimum number of arguments. <a href="#abd3ae9b78af912f16995404a2ad7d4c1">More...</a><br /></td></tr>
+<tr class="separator:abd3ae9b78af912f16995404a2ad7d4c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abaffe6461fb891bfaed8f5c4aab40716"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#abaffe6461fb891bfaed8f5c4aab40716">HasSimpleHead</a> ()</td></tr>
 <tr class="memdesc:abaffe6461fb891bfaed8f5c4aab40716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is not a call, or if the call's Target is an Id or a Literal. <a href="#abaffe6461fb891bfaed8f5c4aab40716">More...</a><br /></td></tr>
 <tr class="separator:abaffe6461fb891bfaed8f5c4aab40716"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a4b5b4a0a72fb8cf469bf55afeb6d64e5">HasSimpleHeadWithoutPAttrs</a> ()</td></tr>
 <tr class="memdesc:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if this is not a call, or if the call's Target is an Id or a Literal, and the Target has only trivia attributes. <a href="#a4b5b4a0a72fb8cf469bf55afeb6d64e5">More...</a><br /></td></tr>
 <tr class="separator:a4b5b4a0a72fb8cf469bf55afeb6d64e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf090777711ce93e64005cf57f96f01b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abf090777711ce93e64005cf57f96f01b"></a>
-<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
-<tr class="separator:abf090777711ce93e64005cf57f96f01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5b740ef72d1cfc723de09b376f5097a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa5b740ef72d1cfc723de09b376f5097a"></a>
+virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithAttrs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
+<tr class="separator:aa5b740ef72d1cfc723de09b376f5097a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa75861b5d59d57ed11d9cb4f9afe4101"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa75861b5d59d57ed11d9cb4f9afe4101"></a>
 virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WithArgs</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector)</td></tr>
 <tr class="separator:aa75861b5d59d57ed11d9cb4f9afe4101"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -531,12 +528,15 @@ IRange&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;
 <tr class="memitem:a121c56ed8da7b378583fa3c284ff92d6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a121c56ed8da7b378583fa3c284ff92d6"></a>
 IEnumerator&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnumerator</b> ()</td></tr>
 <tr class="separator:a121c56ed8da7b378583fa3c284ff92d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47e1be6d75a8893c913552f0f4deb0d8"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a47e1be6d75a8893c913552f0f4deb0d8">Select</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector)</td></tr>
-<tr class="memdesc:a47e1be6d75a8893c913552f0f4deb0d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms the attributes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a47e1be6d75a8893c913552f0f4deb0d8" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>. <a href="#a47e1be6d75a8893c913552f0f4deb0d8">More...</a><br /></td></tr>
-<tr class="separator:a47e1be6d75a8893c913552f0f4deb0d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="memItemLeft" align="right" valign="top">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a200e6751ae8d9214f4b20a423bf4f5fb">ReplaceRecursive</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; selector, bool replaceRoot=true)</td></tr>
-<tr class="memdesc:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null. <a href="#a200e6751ae8d9214f4b20a423bf4f5fb">More...</a><br /></td></tr>
-<tr class="separator:a200e6751ae8d9214f4b20a423bf4f5fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af726d256f8c9d004c8cd322bb42e36ea"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af726d256f8c9d004c8cd322bb42e36ea">Select</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; selector, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> options=ReplaceOpt.ProcessAttrs)</td></tr>
+<tr class="memdesc:af726d256f8c9d004c8cd322bb42e36ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transforms the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, parameters, and optionally the attributes of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af726d256f8c9d004c8cd322bb42e36ea" title="Transforms the Target, parameters, and optionally the attributes of an LNode, returning another LNode...">Select()</a> returns <code>this</code>. <a href="#af726d256f8c9d004c8cd322bb42e36ea">More...</a><br /></td></tr>
+<tr class="separator:af726d256f8c9d004c8cd322bb42e36ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad887a82823c62a4b4fc5c8bbc51b0603"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ad887a82823c62a4b4fc5c8bbc51b0603">ReplaceRecursive</a> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt; matcher, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> options=ReplaceOpt.Default)</td></tr>
+<tr class="memdesc:ad887a82823c62a4b4fc5c8bbc51b0603"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a recursive find-and-replace operation, by attempting to replace each child (among <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#ae344d28e9355aa0e75fbc582bedf78f5" title="Returns the attribute list for this node.">Attrs</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#aef941397a7ad3198591a8f1255444844" title="Returns the argument list of this node. Always empty when IsCall==false.">Args</a>) using the specified selector. This method can also be used for simple searching, by giving a selector that always returns null. <a href="#ad887a82823c62a4b4fc5c8bbc51b0603">More...</a><br /></td></tr>
+<tr class="separator:ad887a82823c62a4b4fc5c8bbc51b0603"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3eae4ca2623210ff4d6ae5356211de52"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3eae4ca2623210ff4d6ae5356211de52"></a>
+<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ReplaceRecursive</b> (Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt; matcher, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a> options=ReplaceOpt.Default)</td></tr>
+<tr class="separator:a3eae4ca2623210ff4d6ae5356211de52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -669,12 +669,12 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <tr class="memitem:ac26a0ec013dd0f4a987375272532fda3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac26a0ec013dd0f4a987375272532fda3"></a>
 static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> ()</td></tr>
 <tr class="separator:ac26a0ec013dd0f4a987375272532fda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a902520addb173d3deb35a56513a92558"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a902520addb173d3deb35a56513a92558"></a>
-static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_0)</td></tr>
-<tr class="separator:a902520addb173d3deb35a56513a92558"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf71fafbfd5d19878c4f6356a451d6cf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf71fafbfd5d19878c4f6356a451d6cf"></a>
-static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_0, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> list_1)</td></tr>
-<tr class="separator:aaf71fafbfd5d19878c4f6356a451d6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6507dbd34ea07691c0f9a79fa192e6b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6507dbd34ea07691c0f9a79fa192e6b3"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> item_0)</td></tr>
+<tr class="separator:a6507dbd34ea07691c0f9a79fa192e6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71758922d452a96dac7045bfb1facc20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71758922d452a96dac7045bfb1facc20"></a>
+static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> item_0, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> item_1)</td></tr>
+<tr class="separator:a71758922d452a96dac7045bfb1facc20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a229fc7eb3319ed867bccfe6fd71609a1"></a>
 static VList&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>List</b> (params <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>[] list)</td></tr>
 <tr class="separator:a229fc7eb3319ed867bccfe6fd71609a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -720,8 +720,116 @@ Protected fields</h2></td></tr>
 <tr class="memitem:a6e5771fa4b8aebdcb0f185f1e6dadb94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e5771fa4b8aebdcb0f185f1e6dadb94"></a>
 RangeAndStyle&#160;</td><td class="memItemRight" valign="bottom"><b>RAS</b></td></tr>
 <tr class="separator:a6e5771fa4b8aebdcb0f185f1e6dadb94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
+Protected static fields</h2></td></tr>
+<tr class="memitem:a346d899d547d115845a5793af862682d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a346d899d547d115845a5793af862682d"></a>
+static readonly <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html">CallNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EmptySplice</b> = Call(<a class="el" href="classLoyc_1_1Syntax_1_1CodeSymbols.html#af00cf539b8025430f47cd3ca5d6f6549">CodeSymbols.Splice</a>)</td></tr>
+<tr class="separator:a346d899d547d115845a5793af862682d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Enumeration Documentation</h2>
+<a class="anchor" id="a65b96869ebac52b05a7acf09d0376dd5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">Loyc.Syntax.LNode.ReplaceOpt</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a65b96869ebac52b05a7acf09d0376dd5a93d8912e6db9b22e29f5ed5022fbc990"></a>ReplaceRoot&#160;</td><td class="fielddoc">
+<p>When calling <code>n.ReplaceRecursive</code>, specifies that the selector should be called on <code>n</code> itself, not just its children.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a65b96869ebac52b05a7acf09d0376dd5a4b861eb315e6ceef712815a76d7c2904"></a>ProcessAttrs&#160;</td><td class="fielddoc">
+<p>When calling ReplaceRecursive(Func{LNode, Maybe{LNode}}, ReplaceOpt) or Select(Func{LNode, Maybe{LNode}}, ReplaceOpt), specifies that attributes should be processed rather than left unchanged.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a65b96869ebac52b05a7acf09d0376dd5a7a1920d61156abc05a60135aefe8bc67"></a>Default&#160;</td><td class="fielddoc">
+<p>ReplaceRoot and ProcessAttrs</p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a92779d545d490e91bdf71816b38f283f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool Loyc.Syntax.LNode.CallsMin </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Symbol.html">Symbol</a>&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>minArgCount</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if this is a call with the specified name and the specified minimum number of arguments.</p>
+
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a6631db51103cf661bca67e213cf0364a">Loyc.Syntax.CallNode</a>.</p>
+
+<p>Referenced by <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="abd3ae9b78af912f16995404a2ad7d4c1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool Loyc.Syntax.LNode.CallsMin </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>minArgCount</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if this is a call with the specified name and the specified minimum number of arguments.</p>
+
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a83728872e911f80583b0a768f6b5f5d2">Loyc.Syntax.CallNode</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="aa485882d412623cc3199efe2effecaf1"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1070,7 +1178,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 </div><!-- fragment --> 
 </div>
 </div>
-<a class="anchor" id="a200e6751ae8d9214f4b20a423bf4f5fb"></a>
+<a class="anchor" id="ad887a82823c62a4b4fc5c8bbc51b0603"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1078,16 +1186,16 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNode.ReplaceRecursive </td>
+          <td class="memname"><a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt;<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&gt; Loyc.Syntax.LNode.ReplaceRecursive </td>
           <td>(</td>
-          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
-          <td class="paramname"><em>selector</em>, </td>
+          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt;&#160;</td>
+          <td class="paramname"><em>matcher</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>replaceRoot</em> = <code>true</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a>&#160;</td>
+          <td class="paramname"><em>options</em> = <code>ReplaceOpt.Default</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1097,7 +1205,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1113,11 +1221,9 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <dl class="section return"><dt>Returns</dt><dd>The new node produced after all replacements have occurred.</dd></dl>
 <p>If <code>replaceFunc</code> always returns null (or if <code>replaceRoot</code> is false and the root has no children), <code>ReplaceRecursive</code> returns <code>this</code>.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a8ad5cf1f21e5f01bb556d3ec23fa8381">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#a6e5096b5969ff9f0ca36ca30e47b9aaa">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#a3eb431894b1360783a71d4d7ea8fb457">Loyc.Syntax.IdNode</a>.</p>
-
 </div>
 </div>
-<a class="anchor" id="a47e1be6d75a8893c913552f0f4deb0d8"></a>
+<a class="anchor" id="af726d256f8c9d004c8cd322bb42e36ea"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1125,24 +1231,35 @@ If neither node is a list, a list is created with both nodes as its two Args. </
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNode.Select </td>
+          <td class="memname">virtual <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> Loyc.Syntax.LNode.Select </td>
           <td>(</td>
-          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&#160;</td>
-          <td class="paramname"><em>selector</em></td><td>)</td>
+          <td class="paramtype">Func&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a> &gt;&gt;&#160;</td>
+          <td class="paramname"><em>selector</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5">ReplaceOpt</a>&#160;</td>
+          <td class="paramname"><em>options</em> = <code>ReplaceOpt.ProcessAttrs</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Transforms the attributes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, and parameters of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a47e1be6d75a8893c913552f0f4deb0d8" title="Transforms the attributes, Target, and parameters of an LNode, returning another LNode of the same Ki...">Select()</a> returns <code>this</code>.</p>
-<p>The selector is not allowed to return null.</p>
+<p>Transforms the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, parameters, and optionally the attributes of an <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>, returning another <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a> of the same Kind. If the selector makes no changes, <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#af726d256f8c9d004c8cd322bb42e36ea" title="Transforms the Target, parameters, and optionally the attributes of an LNode, returning another LNode...">Select()</a> returns <code>this</code>.</p>
+<p>The selector is not allowed to return null, but it can return <code>NoValue.Value</code> to delete a parameter or target. If you're wondering why we don't use <code>null</code> for this purpose, it is because the functionality of this method is actually implemented by VList{T}.WhereSelect(Func{T, Maybe{T}}); since T could be a value type, that method cannot use null as a signal to delete items from the collection. </p>
+<p>It is not possible to delete the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a> of a call, and if the selector returns <code>NoValue.Value</code> for the Target, the target is replaced with an empty call to <code>#splice()</code>.</p>
 
-<p>Implemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#a352deaac38864bb5ad96a2908fc08f91">Loyc.Syntax.CallNode</a>, <a class="el" href="classLoyc_1_1Syntax_1_1LiteralNode.html#a9c73e51cd2ab5edebd75979a8c0f1206">Loyc.Syntax.LiteralNode</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html#ad4c7d431fb2d175f2426e8bf2eb2a651">Loyc.Syntax.IdNode</a>.</p>
+<p>Reimplemented in <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#afbd1c05ec418a4df7eed80ae53d43d0a">Loyc.Syntax.CallNode</a>.</p>
 
 </div>
 </div>
@@ -1315,6 +1432,29 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="aa4b2c33e3c0b733dc9664093608338e9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly <a class="el" href="classLoyc_1_1Syntax_1_1IdNode.html">IdNode</a> Loyc.Syntax.LNode.Missing = Id(CodeSymbols.Missing)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The empty identifier, used to represent missing information.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="aef941397a7ad3198591a8f1255444844"></a>
 <div class="memitem">
@@ -1337,7 +1477,7 @@ If neither node is a list, a list is created with both nodes as its two Args. </
 <p>Returns the argument list of this node. Always empty when <code>IsCall==false</code>.</p>
 <p>Depending on the <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html#a6f61573eaf64e0cf5e44e38085311d74" title="Returns the target of a method call, or null if IsCall is false. The target can be a symbol with no n...">Target</a>, Args may represent an actual argument list, or it may represent some other kind of list. For example, if the target is "{}" then Args represents a list of statements in a braced block, and if the target is "&gt;=" then Args represents the two arguments to the "&gt;=" operator. </p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ae102955f76c97cf0f27303b6d616e43d">Loyc.LLPG.Macros.LLLPG_parser()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>, and <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a1844f801e52ca0f5840327014ec6bc0f">Loyc.Ecs.EcsValidators.SpaceStatementKind()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#a7d993d054a056f5333452551e7c0385f">Loyc.Syntax.LNodeExt.AsList()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#ad21004a27b781f5380d402ad0e2cad40">Loyc.LLParserGenerator.CodeGenHelperBase.CallRule()</a>, <a class="el" href="classLoyc_1_1LLParserGenerator_1_1IntStreamCodeGenHelper.html#a4563a4b17e51fc94ffbf89de2116bfcf">Loyc.LLParserGenerator.IntStreamCodeGenHelper.CodeToTerminalPred()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1CallNode.html#ab9b1c60dc97d9864f2abc5af634ab3ce">Loyc.Syntax.CallNode.Equals()</a>, <a class="el" href="classLoyc_1_1Ecs_1_1EcsValidators.html#a26006ff95c953dff4e4e9768eb5c5863">Loyc.Ecs.EcsValidators.KeyNameComponentOf()</a>, <a class="el" href="classLoyc_1_1LLPG_1_1Macros.html#ab27ccc42e5eaa88f4bed8f10a87e4e2a">Loyc.LLPG.Macros.LllpgMacro()</a>, and <a class="el" href="classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a88aa254b7cf196c03245564ac51fc004">Loyc.LLParserGenerator.CodeGenHelperBase.SetListInitializer()</a>.</p>
 
 </div>
 </div>
@@ -1636,7 +1776,7 @@ x.Foo(y)     Call
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:58 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:56 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

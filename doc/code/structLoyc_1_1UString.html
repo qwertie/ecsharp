@@ -306,12 +306,15 @@ static&#160;</td><td class="memItemRight" valign="bottom"><b>operator string</b>
 <tr class="memitem:a3eda0bc6943505a34a5dc0bb66f2c478"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3eda0bc6943505a34a5dc0bb66f2c478"></a>
 static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator UString</b> (string s)</td></tr>
 <tr class="separator:a3eda0bc6943505a34a5dc0bb66f2c478"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7033b3cbe0af0e60307d892326711062"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7033b3cbe0af0e60307d892326711062"></a>
-static implicit&#160;</td><td class="memItemRight" valign="bottom"><b>operator UString</b> (<a class="el" href="structLoyc_1_1Collections_1_1StringSlice.html">StringSlice</a> s)</td></tr>
-<tr class="separator:a7033b3cbe0af0e60307d892326711062"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61374c9791612313b59852db95a0f57b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61374c9791612313b59852db95a0f57b"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>SubstringEqualHelper</b> (string _str, int _start, <a class="el" href="structLoyc_1_1UString.html">UString</a> what, bool ignoreCase=false)</td></tr>
 <tr class="separator:a61374c9791612313b59852db95a0f57b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828e8301c06c2bb16ea74c6a7eb77c20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a828e8301c06c2bb16ea74c6a7eb77c20"></a>
+static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Append</b> (StringBuilder sb, <a class="el" href="structLoyc_1_1UString.html">UString</a> s)</td></tr>
+<tr class="separator:a828e8301c06c2bb16ea74c6a7eb77c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af99245c9cffdbe09b141c5cb6de6c187"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af99245c9cffdbe09b141c5cb6de6c187"></a>
+static <a class="el" href="structLoyc_1_1UString.html">UString</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="structLoyc_1_1UString.html">UString</a> a, <a class="el" href="structLoyc_1_1UString.html">UString</a> b)</td></tr>
+<tr class="separator:af99245c9cffdbe09b141c5cb6de6c187"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a19b13b6171235bfa8b3d8ca12902eb89"></a>
@@ -885,6 +888,8 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <p>Returns the original string.</p>
 <p>Ideally, keep the string private, there would be no way to access its contents beyond the boundaries of the slice. However, the reality in .NET today is that many methods accept "slices" in the form of a triple (string, start index, count). In order to call such an old-style API using a slice, one must be able to extract the internal string and start index values.</p>
 
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#a73edbf5faa20917adedf15c74f2f9a2d">Loyc.Syntax.ParseHelpers.UnescapeCStyle()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a9b79d1b5af451df2387a5b7bd98a0877"></a>
@@ -963,7 +968,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:47 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:48 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -12,7 +12,7 @@ var searchData=
   ['stackalloc',['StackAlloc',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aced5b164655dd05adf2ccd77fc36be83',1,'Loyc::Syntax::CodeSymbols']]],
   ['startindex',['StartIndex',['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#adb2439bbb5836aa96d19b9ab8dc79165',1,'Loyc::Syntax::Lexing::Token']]],
   ['startstmt',['StartStmt',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a8eb92fcb590e7d8b5e458c3b4d4db14c',1,'Loyc::Syntax::Les::LesNodePrinter']]],
-  ['stmts',['Stmts',['../classLoyc_1_1Syntax_1_1ParsingService.html#af29026fa0925b638573f11459b81d83d',1,'Loyc::Syntax::ParsingService']]],
+  ['statements',['Statements',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a0431446a55fe87f7c962ac86e95fe21a',1,'Loyc::Syntax::ParsingMode']]],
   ['struct',['Struct',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a9dc04ea4d1c431a4c2f50a76940b9a71',1,'Loyc::Syntax::CodeSymbols']]],
   ['sub',['Sub',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1394fa1522163796daf48e6920132e25',1,'Loyc::Syntax::CodeSymbols']]],
   ['subset',['SubSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab5cc570ef8dd830c7ec326c91ff12cfd',1,'Loyc::Syntax::CodeSymbols']]],

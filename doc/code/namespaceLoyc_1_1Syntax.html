@@ -189,6 +189,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeVisitor.html">LNodeVisitor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for people that want to implement the visitor pattern with <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">LNode</a>. <a href="classLoyc_1_1Syntax_1_1LNodeVisitor.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html">ParseHelpers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Static methods that help with common parsing jobs, such as parsing integers, floats, and strings with C escape sequences. <a href="classLoyc_1_1Syntax_1_1ParseHelpers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_01_4.html">ParserSource&lt; Token &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for ParserSource{Token, int, IList{Token}}. <a href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +200,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html">ParserSource&lt; Token, MatchType, List &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the LLLPG Parser API, used with the LLLPG options <code>inputSource</code> and <code>inputClass</code>. <a href="classLoyc_1_1Syntax_1_1ParserSource_3_01Token_00_01MatchType_00_01List_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingMode.html">ParsingMode</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1ParsingService.html">ParsingService</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extension methods for <a class="el" href="interfaceLoyc_1_1Syntax_1_1IParsingService.html" title="An interface that encapsulates the lexer, parser, and printer of a programming language, or a non-programming language that can be represented by Loyc trees.">IParsingService</a>. <a href="classLoyc_1_1Syntax_1_1ParsingService.html#details">More...</a><br /></td></tr>
@@ -227,6 +232,33 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:aee9716da50d3d135d672d14a85f6d4af"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">EscapeC</a> { <br />
+&#160;&#160;<b>Minimal</b> = 0, 
+<b>Default</b> = Control | Quotes, 
+<b>Unicode</b> = 2, 
+<br />
+&#160;&#160;<b>NonAscii</b> = 1, 
+<b>Control</b> = 4, 
+<b>ABFV</b> = 8, 
+<br />
+&#160;&#160;<b>DoubleQuotes</b> = 16, 
+<b>SingleQuotes</b> = 32, 
+<b>Quotes</b> = 48
+<br />
+ }</td></tr>
+<tr class="memdesc:aee9716da50d3d135d672d14a85f6d4af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags to control ParseHelpers.EscapeCStyle(UString, EscapeC). <a href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">More...</a><br /></td></tr>
+<tr class="separator:aee9716da50d3d135d672d14a85f6d4af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25067907b6e7b3dc1f4ee3f074de3a91"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">ParseNumberFlag</a> { <br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a043a760100cdfb3fea08aa42659395fa">ParseNumberFlag.SkipSpacesInFront</a> = 1, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a1677c5167d3956aa0281d3682d5496a4">ParseNumberFlag.SkipSpacesInsideNumber</a> = 2, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e">ParseNumberFlag.StopBeforeOverflow</a> = 4, 
+<br />
+&#160;&#160;<a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a462bc2573b61295f9c4f2448bf0e287d">ParseNumberFlag.SkipUnderscores</a> = 8, 
+<a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a166071b852bb59eee7b5a242f6060161">ParseNumberFlag.AllowCommaDecimalPoint</a> = 8
+<br />
+ }</td></tr>
+<tr class="memdesc:a25067907b6e7b3dc1f4ee3f074de3a91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags that can be used with ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag)  <a href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">More...</a><br /></td></tr>
+<tr class="separator:a25067907b6e7b3dc1f4ee3f074de3a91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4c4676e2fe5b3a9acf9f5b02f88b9c1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLoyc_1_1Syntax.html#ad4c4676e2fe5b3a9acf9f5b02f88b9c1">NodeScanMode</a> { <br />
 &#160;&#160;<b>YieldSelf</b> = 1, 
 <b>YieldLocalAttrs</b> = 2, 
@@ -309,6 +341,20 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Loyc.Syntax.dll: contains <a class="el" href="namespaceLoyc.html" title="Main Loyc namespace. This namespace includes all general-purpose code in the Loyc megaproject...">Loyc</a> trees (<a class="el" href="classLoyc_1_1Syntax_1_1LNode.html" title="All nodes in a Loyc syntax tree share this base class.">Loyc.Syntax.LNode</a>), lexing stuff, LLLPG base classes (BaseParser{T} and BaseLexer), the LES parser and printer, data types related to source code management (e.g. <a class="el" href="interfaceLoyc_1_1Syntax_1_1ISourceFile.html" title="Represents a text file with a file name and its textual content, plus the data necessary to convert b...">ISourceFile</a>, <a class="el" href="structLoyc_1_1Syntax_1_1SourceRange.html" title="Holds a reference to a source file (ISourceFile<char>) and the beginning and end indices of a range i...">SourceRange</a>) and other general-purpose code related to the manipulation of syntax. </p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<a class="anchor" id="aee9716da50d3d135d672d14a85f6d4af"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4af">Loyc.Syntax.EscapeC</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Flags to control ParseHelpers.EscapeCStyle(UString, EscapeC).</p>
+
+</div>
+</div>
 <a class="anchor" id="af00c062703b2745a9d2ecbe0b7669212"></a>
 <div class="memitem">
 <div class="memproto">
@@ -413,6 +459,37 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91">Loyc.Syntax.ParseNumberFlag</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Flags that can be used with ParseHelpers.TryParseUInt(UString, out ulong, int, ParseNumberFlag) </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91a043a760100cdfb3fea08aa42659395fa"></a>SkipSpacesInFront&#160;</td><td class="fielddoc">
+<p>Skip spaces before the number. Without this flag, spaces make parsing fail.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91a1677c5167d3956aa0281d3682d5496a4"></a>SkipSpacesInsideNumber&#160;</td><td class="fielddoc">
+<p>Skip spaces inside the number. Without this flag, spaces make parsing stop.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e"></a>StopBeforeOverflow&#160;</td><td class="fielddoc">
+<p>Changes overflow handling behavior when parsing an integer, so that the result does not overflow (wrap), and the digit(s) at the end of the string, that would have caused overflow, are ignored. In this case, the return value is still false.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91a462bc2573b61295f9c4f2448bf0e287d"></a>SkipUnderscores&#160;</td><td class="fielddoc">
+<p>Skip underscores inside number. Without this flag, underscores make parsing stop.</p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a25067907b6e7b3dc1f4ee3f074de3a91a166071b852bb59eee7b5a242f6060161"></a>AllowCommaDecimalPoint&#160;</td><td class="fielddoc">
+<p>Whether to treat comma as a decimal point when parsing a float. The dot '.' is always treated as a decimal point.</p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a6ba7daec9d30e5569a3cc8b4b50e507e"></a>
 <div class="memitem">
@@ -481,7 +558,7 @@ Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 24 2016 09:04:57 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue May 17 2016 01:22:55 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

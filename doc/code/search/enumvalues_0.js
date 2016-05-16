@@ -4,7 +4,7 @@ var searchData=
   ['addifnotpresent',['AddIfNotPresent',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea9ed5e57327e6a026f97d80a241955516',1,'Loyc::Collections']]],
   ['addorreplace',['AddOrReplace',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeabbbe4763739c476985364059d62b8153',1,'Loyc::Collections']]],
   ['addorthrow',['AddOrThrow',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea10b5a86a2450131a5ed04bd2a160c8cd',1,'Loyc::Collections']]],
-  ['allowcommadecimalpoint',['AllowCommaDecimalPoint',['../classLoyc_1_1G.html#aca73b19d9bbc9032dcd639c20a3aff65a166071b852bb59eee7b5a242f6060161',1,'Loyc::G']]],
+  ['allowcommadecimalpoint',['AllowCommaDecimalPoint',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a166071b852bb59eee7b5a242f6060161',1,'Loyc::Syntax']]],
   ['allowduplicates',['AllowDuplicates',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721acaccf488509e944ace72367a515cdda5',1,'LeMP']]],
   ['allowmissingparams',['AllowMissingParams',['../namespaceLoyc_1_1Utilities.html#a0b991347be36ec89ac569a0b7042a6feaf9816e0437185d6237e135560b92e74d',1,'Loyc::Utilities']]],
   ['allowpointer',['AllowPointer',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0ad7759377a99ca6925880857517ef45b9',1,'Loyc::Ecs::EcsNodePrinter']]],
