@@ -5,7 +5,7 @@ layout: article
 redirectDomain: ecsharp.net
 ---
 
-See also: version history of [LoycCore](http://core.ecsharp.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
+See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
 ### v1.7.6: May 17, 2016 ###
 
@@ -14,7 +14,6 @@ See also: version history of [LoycCore](http://core.ecsharp.net/version-history.
   - in-situ declaration of `out` and `ref` variables as in `int.TryParse(s, out int x)` (**note:** data type is mandatory due to limitations of LeMP)
   - `#runSequence`, which runs a sequence of statements inside an expression, and is designed to be used by other macros in the future.
 - `SetOrCreateMember` macro: refactored; bug fix: added logic to support constructors that call other constructors.
-
 - Bug fix: `EcsLanguageService.Print` wouldn't use plain C# mode
 
 ### v1.7.5: April 29, 2016 ###

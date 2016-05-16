@@ -176,7 +176,7 @@ In summary, if `Foo` represents a rule, token type, or a character, the followin
 - `x+=Foo`: add the value of `Foo` to the existing list variable `x` (i.e. `x.Add(Foo())`, if `Foo` is a rule)
 - `x:=Foo`: create a variable `x` in the current scope with `Foo` as its value (i.e. `var x = Foo();` if `Foo` is a rule).
 - `x:Foo`: create a variable called `x` of the appropriate type at the beginning of the method and set `x` to it here. If `Foo` is a token or character, use the `terminalType` code-generation option to control the declared type of `x` (e.g. `LLLPG(parser(terminalType: Token))`) If you use the label `x` in more than once place, LLLPG will create only one (non-list) variable called `x`.
-- `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.ecsharp.net/collections/dlist.html))
+- `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.loyc.net/collections/dlist.html))
 
 You can only use these operators on "primitive" grammar elements: terminal sets and rule references. For example, `digits:(('0'..'9')*)` and `digits+:(('0'..'9')*)` are illegal; but `(digits+:('0'..'9'))*` is legal.
 
@@ -548,7 +548,7 @@ and then I use a "lexer wrapper" called [`TokensToTree`](http://ecsharp.net/doc/
                |               |
                +--- x  +  y    +---  -  1
 
-A token's children are stored in the Value property as type [TokenTree](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.ecsharp.net/collections/dlist.html) and returned by the [`Children`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
+A token's children are stored in the Value property as type [TokenTree](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokenTree.html), which is derived from [`DList<Token>`](http://core.loyc.net/collections/dlist.html) and returned by the [`Children`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a2ddfce45f749139cbd86874638db04f6) property.
 
 Why would you want to do this? There are a couple of reasons:
 

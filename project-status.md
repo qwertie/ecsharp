@@ -7,7 +7,7 @@ Help wanted!
 
 ## Loyc .NET core libraries, Loyc trees, and LES
 
-See [status at core.ecsharp.net](http://core.ecsharp.net/project-status.html).
+See [status at core.loyc.net](http://core.loyc.net/project-status.html).
 
 ## Enhanced C#: the project to add numerous features to C#  
 

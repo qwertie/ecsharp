@@ -30,7 +30,7 @@ This is demonstrated by the "CalcExample-Standalone" example in the [release rep
 
 ### Q. Tell me about the runtime library (LoycCore in NuGet). Why three assemblies? ANTLR only has one!
 
-I found the .NET Framework never had all the facilities I needed, so I made a series of libraries to "fill in the gaps" in the .NET Framework. You can read about them [on their home page](http://core.ecsharp.net/). Basically,
+I found the .NET Framework never had all the facilities I needed, so I made a series of libraries to "fill in the gaps" in the .NET Framework. You can read about them [on their home page](http://core.loyc.net/). Basically,
 
 - Loyc.Essentials.dll contains miscellaneous things I personally can't bear to live without, stuff that comes in handy regardless of what kind of software I'm writing for .NET.
 - Loyc.Syntax.dll contains the actual runtime classes for LLLPG, such as [`BaseLexer`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer.html) and [`BaseParserForList<Token,MatchType>`](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html). It also defines [Loyc trees](https://github.com/qwertie/LoycCore/wiki/Loyc-trees) ([LNode](http://loyc.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html)) and [LES](https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax).
