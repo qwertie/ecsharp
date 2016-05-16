@@ -192,7 +192,7 @@ namespace LeMP
 									$(...init.Args.WithoutLast(1));
 									fixed ($(init.Args.Last)) $block;
 								}
-							}
+							};
 						} else
 							return stmt.WithArgChanged(1, block);
 					case { [$(...attrs)] while ($cond) $block; }:

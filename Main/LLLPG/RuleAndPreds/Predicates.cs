@@ -11,7 +11,6 @@ using Loyc.Collections.Impl;
 
 namespace Loyc.LLParserGenerator
 {
-	using System.Diagnostics.Contracts;
 	using S = Loyc.Syntax.CodeSymbols;
 
 	/// <summary>Represents part of a grammar for the <see cref="LLParserGenerator"/>.</summary>
@@ -777,7 +776,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
-			Contract.Assert(!(predictor is Gate) && !(match is Gate),
+			G.Assert(!(predictor is Gate) && !(match is Gate),
 				"A gate '=>' cannot contain another gate");
 			Predictor = predictor;
 			Match = match;

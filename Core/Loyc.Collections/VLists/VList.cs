@@ -1024,6 +1024,7 @@ namespace Loyc.Collections
 							index++;
 							return @out;
 						};
+						Func<int, IEnumerable<int>> selectManyE = n => selectMany(n);
 						subtest = "SmartSelect";
 						var expectS = list.Select(select); index = 0;
 						var resultS = vlist.SmartSelect(select); index = 0;
@@ -1033,7 +1034,7 @@ namespace Loyc.Collections
 						var resultW = vlist.SmartWhere(where); index = 0;
 						ExpectList(resultW, expectW);
 						subtest = "SmartSelectMany";
-						var expectM = list.SelectMany(selectMany); index = 0;
+						var expectM = list.SelectMany(selectManyE); index = 0;
 						var resultM = vlist.SmartSelectMany(selectMany); index = 0;
 						ExpectList(resultM, expectM);
 					}

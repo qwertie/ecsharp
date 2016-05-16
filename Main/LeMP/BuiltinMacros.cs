@@ -62,7 +62,7 @@ namespace LeMP.Prelude
 						}
 						if (!key.IsId)
 							context.Write(Severity.Error, key, "Invalid key; expected an identifier.");
-						return node.With(newTarget, LNode.Literal(key.Name, key), value);
+						return (LNode)node.With(newTarget, LNode.Literal(key.Name, key), value);
 					});
 				return F.Call(S.Splice, stmts);
 			}
@@ -107,9 +107,9 @@ namespace LeMP.Prelude
 						{
 							StringBuilder descr = new StringBuilder(string.Format("\n\t\t### {0} ###\n",
 								ParsingService.Current.Print(LNode.Id(mi.Name), null, ParsingMode.Expressions)));
-							if (!string.IsNullOrWhiteSpace(mi.Info.Syntax))
+							if (!string.IsNullOrEmpty(mi.Info.Syntax))
 								descr.Append("\n\t\t\t").Append(mi.Info.Syntax.Replace("\n", "\n\t\t")).Append("\n");
-							if (!string.IsNullOrWhiteSpace(mi.Info.Description))
+							if (!string.IsNullOrEmpty(mi.Info.Description))
 								descr.Append("\n\t\t").Append(mi.Info.Description.Replace("\n", "\n\t\t")).Append("\n");
 							descr.Append("\t");
 							LNode line = LNode.Id(mi.Name ?? (Symbol)"<null>");

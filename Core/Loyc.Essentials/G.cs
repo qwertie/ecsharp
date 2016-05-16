@@ -178,6 +178,28 @@ namespace Loyc
 			return changed ? sb.ToString() : text;
 		}
 
+		/// <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
+		/// <param name="condition">A condition that must be true</param>
+		public static void Assert(bool condition)
+		{
+			#if DotNet3
+			if (!condition) throw new InvalidStateException("Assertion failed");
+			#else
+			System.Diagnostics.Contracts.Contract.Assert(condition);
+			#endif
+		}
+		
+		/// <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
+		/// <param name="condition">A condition that must be true</param>
+		public static void Assert(bool condition, string userMessage)
+		{
+			#if DotNet3
+			if (!condition) throw new InvalidStateException(userMessage);
+			#else
+			System.Diagnostics.Contracts.Contract.Assert(condition, userMessage);
+			#endif
+		}
+
 		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 
 		/// evaluated even in a Release build.</summary>
 		public static bool Verify(bool condition)
