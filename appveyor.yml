@@ -1,5 +1,7 @@
 before_build:
-    - nuget restore Loyc-Slim.sln
+    # Restore the main solution for now. NuGet throws a really weird
+    # error when it is instructed to restore Loyc-Slim.sln
+    - nuget restore Loyc.sln
 
 build_script:
     # First, set some environment variables.
