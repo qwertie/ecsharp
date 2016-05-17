@@ -1,8 +1,23 @@
 before_build:
     - nuget restore Loyc-Slim.sln
 
-configuration:
-    - Release.NET45
+build_script:
+    # First, set some environment variables.
+    # SEMVER is set manually. Not sure how this can be automated.
+    - set SEMVER=1.7.1
+    - echo %APPVEYOR_REPO_TAG%
+    # Build packages as SEMVER-ci{build}
+    - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
+    - echo %PKG_VERSION%
 
-build:
-    project: Loyc-Slim.sln
+    # Build the Loyc libraries in release mode, for all possible configurations.
+    - msbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
+    - msbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
+    - msbuild /p:Configuration=Release.NET35 Loyc-Slim.sln
+
+after_build:
+    # Package the LoycCore libraries
+    - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
+    # Okay, so where exactly did NuGet put the LoycCore package?
+    - dir
+    - dir Core
