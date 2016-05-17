@@ -23,6 +23,11 @@ after_build:
 test_script:
     # Do nothing right now.
 
+test:
+    assemblies:
+        # Don't list anything here, and hope that AppVeyor ignores
+        # Core\Loyc.Collections\VLists\Test project\Loyc.Runtime.dll
+
 artifacts:
     - path: '*.nupkg'
       name: nupkgs
