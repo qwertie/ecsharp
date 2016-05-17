@@ -261,8 +261,4 @@
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
-rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
-  </PropertyGroup>
 </Project>
