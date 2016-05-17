@@ -10,11 +10,11 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Ecs.Tests
 {
-	/// <summary>Tests shared between the printer and the parser. Both tests 
+	/// <summary>Tests shared between the printer and the parser. Both tests
 	/// together verify round-tripping from AST -> text -> AST.</summary>
-	/// <remarks>Note that the other kind of round-tripping, text -> AST -> text, 
-	/// is not fully verified (and is not designed to be supported, as the 
-	/// printer is not designed to preserve spacing and the parser is not 
+	/// <remarks>Note that the other kind of round-tripping, text -> AST -> text,
+	/// is not fully verified (and is not designed to be supported, as the
+	/// printer is not designed to preserve spacing and the parser is not
 	/// designed to save spacing information.)
 	/// <para/>
 	/// NOTE: The reason why this is a partial class, rather than a base class
@@ -35,7 +35,7 @@ namespace Loyc.Ecs.Tests
 		protected LNode @lock = F.Id(S.Lock), @if = F.Id(S.If);
 		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
-		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), await = F.Id("await");
+		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), _await = F.Id("await");
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 		protected LNode WordAttr(string name)
@@ -53,9 +53,9 @@ namespace Loyc.Ecs.Tests
 			PrintBothParseFirst = 8, // for Option()
 			ExpectAndDropParserError = 16,
 		};
-		
-		// The tests were originally designed for printer tests, so they take 
-		// an Action<EcsNodePrinter> lambda. But the parser accepts no special 
+
+		// The tests were originally designed for printer tests, so they take
+		// an Action<EcsNodePrinter> lambda. But the parser accepts no special
 		// configuration, so EcsParserTests will just ignore the lambda.
 		protected abstract void Stmt(string text, LNode code, Action<EcsNodePrinter> configure = null, Mode mode = Mode.Both);
 

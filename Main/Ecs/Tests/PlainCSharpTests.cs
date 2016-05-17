@@ -183,7 +183,7 @@ namespace Loyc.Ecs.Tests
 			Expr("typeof(int)",           F.Call(S.Typeof, F.Int32));
 			Expr("typeof(Foo<int>)",      F.Call(S.Typeof, F.Call(S.Of, Foo, F.Int32)));
 			Expr("sizeof(Foo<int>)",      F.Call(S.Sizeof, F.Call(S.Of, Foo, F.Int32)));
-			
+
 			Expr("default(int[])",        F.Call(S.Default,   F.Call(S.Of, _(S.Array), F.Int32)));
 			Expr("typeof(int[])",         F.Call(S.Typeof,    F.Call(S.Of, _(S.Array), F.Int32)));
 			Expr("sizeof(int[])",         F.Call(S.Sizeof,    F.Call(S.Of, _(S.Array), F.Int32)));
@@ -206,7 +206,7 @@ namespace Loyc.Ecs.Tests
 			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
 			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), x, x)));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))), Mode.Both | Mode.ExpectAndDropParserError);
-			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];", 
+			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];",
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F.Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
 		}
@@ -268,7 +268,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void BlockStmts()
 		{
-			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock, 
+			// S.If, S.Checked, S.Do, S.Fixed, S.For, S.ForEach, S.If, S.Lock,
 			// S.Switch, S.Try, S.Unchecked, S.UsingStmt, S.While
 			Stmt("if (Foo)\n  a();",                    F.Call(S.If, Foo, F.Call(a)));
 			Stmt("if (Foo)\n  a();\nelse\n  b();",      F.Call(S.If, Foo, F.Call(a), F.Call(b)));
@@ -278,24 +278,24 @@ namespace Loyc.Ecs.Tests
 			ifStmt = F.Call(S.If, Foo, F.Call(a), F.Call(S.If, x, F.Braces(F.Call(b)), F.Call(c)));
 			Stmt("if (Foo)\n  a();\nelse if (x) {\n  b();\n} else\n  c();", ifStmt);
 
-			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Assign(x, F.Call(a)), 
+			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Assign(x, F.Call(a)),
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
 			Stmt("unchecked {\n  0xbaad * 0xf00d\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
 			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
-			
+
 			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, F.Call(a), c));
 			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));
 			Stmt("do {\n  a\n} while (c);",             F.Call(S.DoWhile, F.Braces(F.Result(a)), c));
 			//TODO
 			//Stmt("do #@{\n  a();\n}; while (c);",       F.Call(S.DoWhile, F.List(F.Call(a)), c), Mode.ParseOnly);
-			
+
 			var amp_b_c = F.Call(S._AddressOf, F.Call(S.PtrArrow, b, c));
 			var int_a_amp_b_c = F.Var(F.Of(_(S._Pointer), F.Int32), a.Name, amp_b_c);
 			Stmt("fixed (int* a = &b->c)\n  Foo(a);",    F.Call(S.Fixed, int_a_amp_b_c, F.Call(Foo, a)));
 			Stmt("fixed (int* a = &b->c) {\n  Foo(a);\n}", F.Call(S.Fixed, int_a_amp_b_c, F.Braces(F.Call(Foo, a))));
 			var stmt = F.Call(S.Fixed, F.Vars(F.Of(_(S._Pointer), F.Int32), F.Assign(x, F.Call(S._AddressOf, Foo))), F.Call(a, x));
 			Stmt("fixed (int* x = &Foo)\n  a(x);", stmt);
-			
+
 			var forArgs = new LNode[] {
 				F.Var(F.Int32, x.Name, F.Literal(0)),
 				F.Call(S.LT, x, F.Literal(10)),
@@ -358,14 +358,14 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void ArrayInitializers()
 		{
-			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
 					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
 					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
 			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S.Array, S.Int32),
 				F.Call(S.Assign, Foo, AsStyle(NodeStyle.OldStyle, F.Call(S.ArrayInit, zero, one, two)))));
 			// TODO: The printer's newline choices are odd. See if we can improve them.
-			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32), 
+			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit,
 					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
 					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
@@ -377,7 +377,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo? a = 0, b;",        F.Vars(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero), b));
 			Stmt("Foo? a = b ? c : null;", F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a,
 			                              F.Call(S.QuestionMark, b, c, F.Literal(null)))));
-			// Note: To simplify the parser, EC# cannot parse the standalone 
+			// Note: To simplify the parser, EC# cannot parse the standalone
 			//       statement "Foo ? a = 0 : b;" - you must use parentheses.
 			Stmt("(Foo? a = 0, b);",      F.Tuple(F.Var(F.Of(_(S.QuestionMark), Foo), F.Call(S.Assign, a, zero)), b));
 			Stmt("(Foo ? a = 0 : b);",    F.InParens(F.Call(S.QuestionMark, Foo, F.Call(S.Assign, a, zero), b)));
@@ -411,7 +411,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("class Foo<in T>\n{\n}", stmt);
 			stmt = Attr(F.Call(S.If, F.Call(S.Eq, F.Call(S.Add, a, b), c)),
 			            F.Call(S.Trait, Foo, F.List(IFoo), F.Braces(public_x)));
-			
+
 			// TODO: reconsider "if" clause
 			//Stmt("trait Foo : IFoo if a + b == c\n{\n"+
 			//	 "  public int x;\n}", stmt);
@@ -482,7 +482,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("class Foo\n{\n  ~Foo()\n  {\n  }\n}", stmt);
 			Expr("#class(Foo, #(), {\n  ~Foo()\n  {\n  }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
 			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), {\n  });\n})", stmt, Mode.ParserTest);
-			// This should be parsed as a destructor despite the fact that 
+			// This should be parsed as a destructor despite the fact that
 			// #result(~(Foo {})) is a potential interpretation.
 			stmt = destructor;
 			Stmt("~Foo()\n{\n}", stmt, Mode.Both | Mode.ExpectAndDropParserError);
@@ -492,7 +492,7 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
 			Stmt("class Foo\n{\n  #fn(@``, -Foo, #(), {\n  });\n}", stmt);
 			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
-			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b); 
+			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
 			stmt = Attr(@static, F.Fn(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
 			Expr("static #fn(bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
@@ -501,8 +501,8 @@ namespace Loyc.Ecs.Tests
 			Expr("static implicit #fn(T, operator`#cast`, #(#var(Foo, a)), {\n})", stmt);
 			stmt = Attr(@static, F.Fn(Foo, F.Of(Foo, F.Call(S.Substitute, T)), F.List()));
 			Stmt(@"static Foo Foo<$T>();", stmt);
-			stmt = Attr(@static, _(S.Explicit), 
-			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)), 
+			stmt = Attr(@static, _(S.Explicit),
+			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
 			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
 			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
 			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #(#var(Bar<T>, b)))", stmt);
@@ -511,7 +511,7 @@ namespace Loyc.Ecs.Tests
 			Expr("#fn(bool, operator`when`, #(#var(Foo, a), #var(Foo, b)), {\n})", stmt);
 
 			stmt = Attr(F.Call(Foo), @static,
-			       F.Fn(Attr(Foo, F.Bool), 
+			       F.Fn(Attr(Foo, F.Bool),
 			             Attr(@operator, _(S.Neq)),
 			             F.List(F.Vars(T, a), F.Vars(T, b)),
 			             F.Braces(F.Result(F.Call(S.Neq, F.Dot(a, x), F.Dot(b, x))))));
@@ -587,7 +587,7 @@ namespace Loyc.Ecs.Tests
 		public void AssemblyAttribute()
 		{
 			Stmt("[assembly: Foo]", F.Call(S.Assembly, Foo));
-			Stmt("{\n  [assembly: CLSCompliant(false)]\n  Foo;\n}", 
+			Stmt("{\n  [assembly: CLSCompliant(false)]\n  Foo;\n}",
 				F.Braces(F.Call(S.Assembly, F.Call(_("CLSCompliant"), F.@false)), Foo));
 		}
 
@@ -605,26 +605,26 @@ namespace Loyc.Ecs.Tests
 			// "async" is just an ordinary word attribute so it is already supported
 			Stmt("async Task Foo()\n{\n}", F.Attr(WordAttr("async"), F.Fn(_("Task"), Foo, F.List(), F.Braces())));
 
-			Expr("await x ** 2", F.Call(S.Exp, F.Call(await, x), F.Literal(2)));
-			Expr("await Foo.x", F.Call(await, F.Dot(Foo, x)));
-			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(await, F.Dot(Foo, x))));
+			Expr("await x ** 2", F.Call(S.Exp, F.Call(_await, x), F.Literal(2)));
+			Expr("await Foo.x", F.Call(_await, F.Dot(Foo, x)));
+			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(_await, F.Dot(Foo, x))));
 
-			Expr("await ++x", F.Call(await, F.Call(S.PreInc, x)));
+			Expr("await ++x", F.Call(_await, F.Call(S.PreInc, x)));
 
 			// Parsing this successfully is not worth the hassle...
 			//Expr("await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
 			// ... but we do support this:
-			Expr("@await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
-			
+			Expr("@await++ + x", F.Call(S.Add, F.Call(S.PostInc, _await), x));
+
 			// Uh-oh, it looks like the parsing of this should depend on whether the
-			// enclosing function has the `async` keyword or not. If it does, it 
+			// enclosing function has the `async` keyword or not. If it does, it
 			// should parse as `await((a).b)`, otherwise it should be `(await(a)).b`.
 			// But EC# doesn't change modes in this way, so it's always parsed as
 			// `await((a).b)`
-			Expr("await(a).b", F.Call(await, F.Dot(F.InParens(a), b)));
-			// @await is treated slightly differently, but currently the node Name is 
+			Expr("await(a).b", F.Call(_await, F.Dot(F.InParens(a), b)));
+			// @await is treated slightly differently, but currently the node Name is
 			// "await" either way. Should it be #await when the @ sign is absent?
-			Expr("@await(a).b", F.Dot(F.Call(await, a), b));
+			Expr("@await(a).b", F.Dot(F.Call(_await, a), b));
 		}
 
 		[Test]
