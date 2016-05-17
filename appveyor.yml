@@ -1,8 +1,8 @@
 before_build:
-    - nuget restore Loyc.sln
+    - nuget restore Loyc-Slim.sln
 
 configuration:
     - Release.NET45
 
 build:
-    project: Loyc.sln
+    project: Loyc-Slim.sln
