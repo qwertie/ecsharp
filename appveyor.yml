@@ -18,6 +18,24 @@ build_script:
 after_build:
     # Package the LoycCore libraries
     - nuget pack -Version %PKG_VERSION% Core\LoycCore.nuspec
-    # Okay, so where exactly did NuGet put the LoycCore package?
-    - dir
-    - dir Core
+    # Package ends up in LoycCore.$SEMVER.nupkg
+
+test_script:
+    # Do nothing right now.
+
+artifacts:
+    - path: '*.nupkg'
+      name: nupkgs
+
+# Uncomment the section below to push the NuGet
+# package whenever a git tag is pushed.
+#deploy:
+#    - provider: NuGet
+#      server:
+#      api_key:
+#          secure: Encrypted key goes here. Use https://ci.appveyor.com/tools/encrypt to encrypt your NuGet API key.
+#      skip_symbols: true
+#      artifact: /.*\.nupkg/
+#      on:
+#          branch: master # Release from master branch only.
+#          appveyor_repo_tag: true # Deploy on tag push only.
