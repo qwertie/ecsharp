@@ -32,7 +32,7 @@ namespace Loyc.LLParserGenerator
 				var argList = args.ToList();
 				var options = c.ProcessArguments(argList, false, true);
 				if (options != null) {
-					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, 
+					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console,
 						KnownOptions.With("nologo", Pair.Create("","")));
 					if (c != null) {
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
@@ -80,13 +80,13 @@ namespace Loyc.LLParserGenerator
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
 
-            return RunTests.RunMany(
-                new LlpgParserTests(),
-                new LlpgGeneralTests(),
-                new LlpgCoreTests(),
-                new LlpgAutoValueSaverVisitorTests(),
-                new LlpgTestLargerExamples(),
-                new LlpgBugsAndSlugs());
+			return RunTests.RunMany(
+				new LlpgParserTests(),
+				new LlpgGeneralTests(),
+				new LlpgCoreTests(),
+				new LlpgAutoValueSaverVisitorTests(),
+				new LlpgTestLargerExamples(),
+				new LlpgBugsAndSlugs());
 		}
 	}
 }

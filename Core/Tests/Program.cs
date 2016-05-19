@@ -21,76 +21,76 @@ using Loyc.Syntax.Tests;
 
 namespace Loyc.Tests
 {
-    /// <summary>
-    /// A class of object that reads input characters,  
-    /// one at a time. These characters are either read
-    /// from a string argument, or from the console
-    /// if no string is given.
-    /// </summary>
-    public class TestInputReader
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class.
-        /// Input is read from the console.
-        /// </summary>
-        public TestInputReader() 
-            : this(null)
-        { }
+	/// <summary>
+	/// A class of object that reads input characters,
+	/// one at a time. These characters are either read
+	/// from a string argument, or from the console
+	/// if no string is given.
+	/// </summary>
+	public class TestInputReader
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class.
+		/// Input is read from the console.
+		/// </summary>
+		public TestInputReader()
+			: this(null)
+		{ }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class
-        /// with the given input argument string.
-        /// </summary>
-        public TestInputReader(string inputArg) 
-        {
-            InputArg = inputArg;
-            inputIndex = -1;
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class
+		/// with the given input argument string.
+		/// </summary>
+		public TestInputReader(string inputArg)
+		{
+			InputArg = inputArg;
+			inputIndex = -1;
+		}
 
-        /// <summary>
-        /// Gets the input argument string.
-        /// </summary>
-        public string InputArg { get; private set; }
+		/// <summary>
+		/// Gets the input argument string.
+		/// </summary>
+		public string InputArg { get; private set; }
 
-        // Describes the index into the input argument
-        // string.
-        private int inputIndex;
+		// Describes the index into the input argument
+		// string.
+		private int inputIndex;
 
-        /// <summary>
-        /// Reads a single character, which is either read
-        /// from the input argument string, or from the console.
-        /// A subzero value represents end-of-input.
-        /// </summary>
-        public int ReadChar()
-        {
-            if (InputArg != null) {
-                inputIndex++;
+		/// <summary>
+		/// Reads a single character, which is either read
+		/// from the input argument string, or from the console.
+		/// A subzero value represents end-of-input.
+		/// </summary>
+		public int ReadChar()
+		{
+			if (InputArg != null) {
+				inputIndex++;
 
-                if (inputIndex >= InputArg.Length)
-                    return -1;
+				if (inputIndex >= InputArg.Length)
+					return -1;
 
-                return (int)InputArg[inputIndex];
-            } else {
-                ConsoleKeyInfo k;
-                Console.WriteLine((k = Console.ReadKey(true)).KeyChar);
+				return (int)InputArg[inputIndex];
+			} else {
+				ConsoleKeyInfo k;
+				Console.WriteLine((k = Console.ReadKey(true)).KeyChar);
 
-                if (k.Key == ConsoleKey.Escape
-                    || k.Key == ConsoleKey.Enter)
-                    return -1;
-                else
-                    return (int)k.KeyChar;
-            }
-        }
-    }
+				if (k.Key == ConsoleKey.Escape
+					|| k.Key == ConsoleKey.Enter)
+					return -1;
+				else
+					return (int)k.KeyChar;
+			}
+		}
+	}
 
 	public class RunCoreTests
 	{
-        public static readonly VList<Pair<string, Func<bool>>> Menu = new VList<Pair<string, Func<bool>>>()
+		public static readonly VList<Pair<string, Func<bool>>> Menu = new VList<Pair<string, Func<bool>>>()
 		{
-            new Pair<string,Func<bool>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
-            new Pair<string,Func<bool>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
-            new Pair<string,Func<bool>>("Run unit tests of Loyc.Syntax.dll",      Loyc_Syntax),
-            new Pair<string,Func<bool>>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
+			new Pair<string,Func<bool>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Func<bool>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
+			new Pair<string,Func<bool>>("Run unit tests of Loyc.Syntax.dll",	  Loyc_Syntax),
+			new Pair<string,Func<bool>>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
 		};
 
 		public static void Main(string[] args)
@@ -98,18 +98,18 @@ namespace Loyc.Tests
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
-            if (!RunMenu(Menu, args))
-                // Let the outside world know that something
-                // went wrong by setting the exit code to
-                // '1'. This is particularly useful for
-                // automated tests (CI).
-                Environment.ExitCode = 1;
+			if (!RunMenu(Menu, args))
+				// Let the outside world know that something
+				// went wrong by setting the exit code to
+				// '1'. This is particularly useful for
+				// automated tests (CI).
+				Environment.ExitCode = 1;
 		}
 
-        public static bool RunMenu(IList<Pair<string, Func<bool>>> menu, params string[] args)
+		public static bool RunMenu(IList<Pair<string, Func<bool>>> menu, params string[] args)
 		{
-            var reader = args.Length > 0 ? new TestInputReader(args[0]) : new TestInputReader();
-            bool anyErrors = false;
+			var reader = args.Length > 0 ? new TestInputReader(args[0]) : new TestInputReader();
+			bool anyErrors = false;
 			for (;;) {
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do? (Esc to quit)");
@@ -117,103 +117,103 @@ namespace Loyc.Tests
 					Console.WriteLine(ParseHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
 				Console.WriteLine("Space. Run all tests");
 
-                int c = reader.ReadChar();
-                if (c < 0)
+				int c = reader.ReadChar();
+				if (c < 0)
 					break;
-                else if ((char)c == ' ') {
+				else if ((char)c == ' ') {
 					for (int i = 0; i < menu.Count; i++) {
 						Console.WriteLine();
 						ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i+1, menu[i].Key);
-                        anyErrors = !menu[i].Value() || anyErrors;
+						anyErrors = !menu[i].Value() || anyErrors;
 					}
 				} else {
-                    int i = ParseHelpers.HexDigitValue((char)c);
+					int i = ParseHelpers.HexDigitValue((char)c);
 					if (i > 0 && i <= menu.Count)
-                        anyErrors = !menu[i - 1].Value() || anyErrors;
+						anyErrors = !menu[i - 1].Value() || anyErrors;
 				}
 			}
-            return !anyErrors;
+			return !anyErrors;
 		}
 
 		public static bool Loyc_Essentials()
 		{
-            return MiniTest.RunTests.RunMany(
-                new ListExtTests(),
-                new MathExTests(),
-                new UStringTests(),
-                new StringExtTests(),
-                new HashTagsTests(),
-                new LocalizeTests(),
-                new SymbolTests(),
-                new ThreadExTests(),
-                new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }),
-                new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }),
-                new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }),
-                new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
-                new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }),
-                new GTests(),
-                new ParseHelpersTests());
+			return MiniTest.RunTests.RunMany(
+				new ListExtTests(),
+				new MathExTests(),
+				new UStringTests(),
+				new StringExtTests(),
+				new HashTagsTests(),
+				new LocalizeTests(),
+				new SymbolTests(),
+				new ThreadExTests(),
+				new ListTests<InternalList<int>>(false, delegate(int n) { var l = InternalList<int>.Empty; l.Resize(n); return l; }),
+				new ListRangeTests<InternalList<int>>(false, delegate() { return InternalList<int>.Empty; }),
+				new ListTests<DList<int>>(false, delegate(int n) { var l = new DList<int>(); l.Resize(n); return l; }),
+				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
+				new ListRangeTests<DList<int>>(false, delegate() { return new DList<int>(); }),
+				new GTests(),
+				new ParseHelpersTests());
 		}
-        public static bool Loyc_Collections()
+		public static bool Loyc_Collections()
 		{
-            // Test with small node sizes as well as the standard node size,
-            // including the minimum size of 3 (the most problematic size).
-            int seed = 237588399;
+			// Test with small node sizes as well as the standard node size,
+			// including the minimum size of 3 (the most problematic size).
+			int seed = 237588399;
 
-            return MiniTest.RunTests.RunMany(
-                new CPTrieTests(),
-                new SimpleCacheTests(),
-                new InvertibleSetTests(),
-                new AListTests(false, seed, 8, 8),
-                new BListTests(false, seed, 3, 3),
-                new BDictionaryTests(false, seed, 6, 6),
-                new SparseAListTests(false, seed, 10, 10),
-                new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
-                new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),
-                new DictionaryTests<BDictionary<object, object>>(true, true),
-                new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }),
-                new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345),
-                new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345),
-                new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345),
-                new WListTests(),
-                new FWListTests(),
-                new VListTests(),
-                new FVListTests(),
-                new MapTests(),
-                new SparseAListTests(true, seed, 8, 4),
-                new SparseAListTests(),
-                new AListTests(),
-                new BListTests(),
-                new BDictionaryTests(),
-                new MSetTests(), // derived from MutableSetTests<MSet<STI>, STI>
-                new SymbolSetTests(), // derived from MutableSetTests<MSet<Symbol>, Symbol>
-                new ImmSetTests(), // tests for Set<T>
-                new MapTests(), // derived from DictionaryTests<MMap<object, object>>
-                new KeylessHashtableTests()
-            );
+			return MiniTest.RunTests.RunMany(
+				new CPTrieTests(),
+				new SimpleCacheTests(),
+				new InvertibleSetTests(),
+				new AListTests(false, seed, 8, 8),
+				new BListTests(false, seed, 3, 3),
+				new BDictionaryTests(false, seed, 6, 6),
+				new SparseAListTests(false, seed, 10, 10),
+				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
+				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),
+				new DictionaryTests<BDictionary<object, object>>(true, true),
+				new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }),
+				new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345),
+				new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345),
+				new ListRangeTests<SparseAList<int>>(false, delegate() { return new SparseAList<int>(); }, 12345),
+				new WListTests(),
+				new FWListTests(),
+				new VListTests(),
+				new FVListTests(),
+				new MapTests(),
+				new SparseAListTests(true, seed, 8, 4),
+				new SparseAListTests(),
+				new AListTests(),
+				new BListTests(),
+				new BDictionaryTests(),
+				new MSetTests(), // derived from MutableSetTests<MSet<STI>, STI>
+				new SymbolSetTests(), // derived from MutableSetTests<MSet<Symbol>, Symbol>
+				new ImmSetTests(), // tests for Set<T>
+				new MapTests(), // derived from DictionaryTests<MMap<object, object>>
+				new KeylessHashtableTests()
+			);
 		}
-        public static bool Loyc_Syntax()
+		public static bool Loyc_Syntax()
 		{
-            return MiniTest.RunTests.RunMany(
-                new TokenTests(),
-                new LesLexerTests(),
-                new LesParserTests(),
-                new LesPrinterTests(),
-                new TokensToTreeTests(),
-                new StreamCharSourceTests(),
-                new LexerSourceTests_Calculator(),
-                new ParserSourceTests_Calculator(),
-                new IndentTokenGeneratorTests());
+			return MiniTest.RunTests.RunMany(
+				new TokenTests(),
+				new LesLexerTests(),
+				new LesParserTests(),
+				new LesPrinterTests(),
+				new TokensToTreeTests(),
+				new StreamCharSourceTests(),
+				new LexerSourceTests_Calculator(),
+				new ParserSourceTests_Calculator(),
+				new IndentTokenGeneratorTests());
 		}
-        public static bool Loyc_Utilities()
+		public static bool Loyc_Utilities()
 		{
-            return MiniTest.RunTests.RunMany(
-                new LineMathTests(),
-                new PointMathTests(),
-                new Loyc.LLParserGenerator.IntSetTests(),
-                new TagsInWListTests(),
-                new UGTests(),
-                new GoInterfaceTests());
+			return MiniTest.RunTests.RunMany(
+				new LineMathTests(),
+				new PointMathTests(),
+				new Loyc.LLParserGenerator.IntSetTests(),
+				new TagsInWListTests(),
+				new UGTests(),
+				new GoInterfaceTests());
 		}
 	}
 }
