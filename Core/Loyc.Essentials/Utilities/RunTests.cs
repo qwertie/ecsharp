@@ -20,11 +20,18 @@ namespace Loyc.MiniTest
 	/// </remarks>
 	public static class RunTests
 	{
-		public static void Run(object o)
+        /// <summary>
+        /// Runs all tests defined by the given object.
+        /// </summary>
+        /// <returns><c>true</c>, if all tests were successful, <c>false</c> otherwise.</returns>
+		public static bool Run(object o)
 		{
 			// run all the tests methods in the given object
 			MethodInfo[] methods = o.GetType().GetMethods();
 			bool any = false;
+            // A boolean that remembers whether any errors have
+            // occurred while running the tests.
+            bool anyErrors = false;
 
 			MethodInfo setup = GetSetup(methods);
 			MethodInfo teardown = GetTeardown(methods);
@@ -58,7 +65,11 @@ namespace Loyc.MiniTest
 						}
 
 						if (!match) {
-							var old = Console.ForegroundColor;
+                            // Remember that an error has occurred.
+                            anyErrors = true;
+							// Let the user know that something went wrong by
+                            // printing some text to the console.
+                            var old = Console.ForegroundColor;
 							Console.ForegroundColor = fails != null ? ConsoleColor.DarkGray : ConsoleColor.Red;
 							Console.WriteLine("{0} while running {1}.{2}:",
 								exc.GetType().Name, o.GetType().Name, method.Name);
@@ -76,7 +87,26 @@ namespace Loyc.MiniTest
 			}
 			if (!any)
 				Console.WriteLine("{0} contains no tests.", o.GetType().NameWithGenericArgs());
+
+            return !anyErrors;
 		}
+
+        /// <summary>
+        /// Runs all tests belonging to the given array
+        /// of objects.
+        /// </summary>
+        /// <returns><c>true</c>, if all tests were successful, <c>false</c> otherwise.</returns>
+        public static bool RunMany(params object[] os)
+        {
+            bool anyErrors = false;
+            foreach (var o in os)
+            {
+                if (!Run(o))
+                    anyErrors = true;
+            }
+            return !anyErrors;
+        }
+
 		private static object IsTest(MethodInfo info)
 		{
 			if (!info.IsStatic && info.IsPublic) {
