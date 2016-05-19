@@ -7,3 +7,7 @@ script:
     # Build the Loyc libraries in release mode, for all possible configurations.
     - xbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
     - xbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
+
+    # Only run the first set of unit tests at the moment.
+    # The other tests are broken.
+    - mono Bin/Release.NET45/Tests.exe 1

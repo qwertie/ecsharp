@@ -23,7 +23,9 @@ after_build:
     # Package ends up in LoycCore.$SEMVER.nupkg
 
 test_script:
-    # Do nothing right now.
+    # Only run the first set of unit tests at the moment.
+    # The other tests are broken.
+    - Bin\Release.NET45\Tests.exe 1
 
 test:
     assemblies:
