@@ -27,11 +27,6 @@ test_script:
     # The other tests are broken.
     - Bin\Release.NET45\Tests.exe 1
 
-test:
-    assemblies:
-        # Don't list anything here, and hope that AppVeyor ignores
-        # Core\Loyc.Collections\VLists\Test project\Loyc.Runtime.dll
-
 assembly_info:
     patch: true
     file: AssemblyVersion.*
