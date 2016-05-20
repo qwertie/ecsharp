@@ -24,7 +24,7 @@ namespace Samples
 	[TestFixture]
 	partial class Samples : Assert
 	{
-		public static bool Run()
+		public static int Run()
 		{
 			return RunTests.Run(new Samples());
 		}

@@ -23,15 +23,14 @@ namespace Loyc.MiniTest
 		/// <summary>
 		/// Runs all tests defined by the given object.
 		/// </summary>
-		/// <returns><c>true</c>, if all tests were successful, <c>false</c> otherwise.</returns>
-		public static bool Run(object o)
+		/// <returns>The number of tests that failed.</returns>
+		public static int Run(object o)
 		{
 			// run all the tests methods in the given object
 			MethodInfo[] methods = o.GetType().GetMethods();
 			bool any = false;
-			// A boolean that remembers whether any errors have
-			// occurred while running the tests.
-			bool anyErrors = false;
+			// A counter that counts the total number of errors.
+			int errorCount = 0;
 
 			MethodInfo setup = GetSetup(methods);
 			MethodInfo teardown = GetTeardown(methods);
@@ -65,8 +64,10 @@ namespace Loyc.MiniTest
 						}
 
 						if (!match) {
-							// Remember that an error has occurred.
-							anyErrors = true;
+							// Increment the error counter if this
+							// failure was unexpected.
+							if (fails == null)
+								errorCount++;
 							// Let the user know that something went wrong by
 							// printing some text to the console.
 							var old = Console.ForegroundColor;
@@ -88,23 +89,17 @@ namespace Loyc.MiniTest
 			if (!any)
 				Console.WriteLine("{0} contains no tests.", o.GetType().NameWithGenericArgs());
 
-			return !anyErrors;
+			return errorCount;
 		}
 
 		/// <summary>
 		/// Runs all tests belonging to the given array
 		/// of objects.
 		/// </summary>
-		/// <returns><c>true</c>, if all tests were successful, <c>false</c> otherwise.</returns>
-		public static bool RunMany(params object[] os)
+		/// <returns>The total number of tests that failed.</returns>
+		public static int RunMany(params object[] os)
 		{
-			bool anyErrors = false;
-			foreach (var o in os)
-			{
-				if (!Run(o))
-					anyErrors = true;
-			}
-			return !anyErrors;
+			return os.Aggregate(0, (errCount, o) => errCount + Run(o));
 		}
 
 		private static object IsTest(MethodInfo info)

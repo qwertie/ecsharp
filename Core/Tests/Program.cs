@@ -23,12 +23,12 @@ namespace Loyc.Tests
 {
 	public class RunCoreTests
 	{
-		public static readonly VList<Pair<string, Func<bool>>> Menu = new VList<Pair<string, Func<bool>>>()
+		public static readonly VList<Pair<string, Func<int>>> Menu = new VList<Pair<string, Func<int>>>()
 		{
-			new Pair<string,Func<bool>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
-			new Pair<string,Func<bool>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
-			new Pair<string,Func<bool>>("Run unit tests of Loyc.Syntax.dll",	  Loyc_Syntax),
-			new Pair<string,Func<bool>>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.Syntax.dll",	  Loyc_Syntax),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.Utilities.dll",   Loyc_Utilities),
 		};
 
 		public static void Main(string[] args)
@@ -36,7 +36,7 @@ namespace Loyc.Tests
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
-            if (!RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null))
+			if (RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null) > 0)
 				// Let the outside world know that something
 				// went wrong by setting the exit code to
 				// '1'. This is particularly useful for
@@ -44,17 +44,17 @@ namespace Loyc.Tests
 				Environment.ExitCode = 1;
 		}
 
-        private static IEnumerator<char> ConsoleChars()
-        {
-            for (ConsoleKeyInfo k; (k = Console.ReadKey(true)).Key != ConsoleKey.Escape 
-                && k.Key != ConsoleKey.Enter;)
-                yield return k.KeyChar;
-        }
-
-        public static bool RunMenu(IList<Pair<string, Func<bool>>> menu, IEnumerator<char> input = null)
+		private static IEnumerator<char> ConsoleChars()
 		{
-            var reader = input ?? ConsoleChars();
-			bool anyErrors = false;
+			for (ConsoleKeyInfo k; (k = Console.ReadKey(true)).Key != ConsoleKey.Escape
+				&& k.Key != ConsoleKey.Enter;)
+				yield return k.KeyChar;
+		}
+
+		public static int RunMenu(IList<Pair<string, Func<int>>> menu, IEnumerator<char> input = null)
+		{
+			var reader = input ?? ConsoleChars();
+			int errorCount = 0;
 			for (;;) {
 				Console.WriteLine();
 				Console.WriteLine("What do you want to do? (Esc to quit)");
@@ -62,26 +62,26 @@ namespace Loyc.Tests
 					Console.WriteLine(ParseHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
 				Console.WriteLine("Space. Run all tests");
 
-                if (!reader.MoveNext())
-                    break;
+				if (!reader.MoveNext())
+					break;
 
-                char c = reader.Current;
+				char c = reader.Current;
 				if (c == ' ') {
 					for (int i = 0; i < menu.Count; i++) {
 						Console.WriteLine();
 						ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i+1, menu[i].Key);
-						anyErrors = !menu[i].Value() || anyErrors;
+						errorCount += menu[i].Value();
 					}
 				} else {
 					int i = ParseHelpers.HexDigitValue(c);
 					if (i > 0 && i <= menu.Count)
-						anyErrors = !menu[i - 1].Value() || anyErrors;
+						errorCount += menu[i - 1].Value();
 				}
 			}
-			return !anyErrors;
+			return errorCount;
 		}
 
-		public static bool Loyc_Essentials()
+		public static int Loyc_Essentials()
 		{
 			return MiniTest.RunTests.RunMany(
 				new ListExtTests(),
@@ -100,7 +100,7 @@ namespace Loyc.Tests
 				new GTests(),
 				new ParseHelpersTests());
 		}
-		public static bool Loyc_Collections()
+		public static int Loyc_Collections()
 		{
 			// Test with small node sizes as well as the standard node size,
 			// including the minimum size of 3 (the most problematic size).
@@ -138,7 +138,7 @@ namespace Loyc.Tests
 				new KeylessHashtableTests()
 			);
 		}
-		public static bool Loyc_Syntax()
+		public static int Loyc_Syntax()
 		{
 			return MiniTest.RunTests.RunMany(
 				new TokenTests(),
@@ -151,7 +151,7 @@ namespace Loyc.Tests
 				new ParserSourceTests_Calculator(),
 				new IndentTokenGeneratorTests());
 		}
-		public static bool Loyc_Utilities()
+		public static int Loyc_Utilities()
 		{
 			return MiniTest.RunTests.RunMany(
 				new LineMathTests(),

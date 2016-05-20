@@ -72,7 +72,7 @@ namespace Loyc.LLParserGenerator
 			return c.Output.ToString();
 		}
 
-		public static bool Test_LLLPG()
+		public static int Test_LLLPG()
 		{
 			Console.WriteLine("Running tests... (a small number of them are broken)");
 
