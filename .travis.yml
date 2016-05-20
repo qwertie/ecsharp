@@ -8,7 +8,8 @@ script:
     - xbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
     - xbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
 
-    # Only run the first and last sets of unit tests at the moment.
-    # The other tests are broken.
+    # Unfortunately, some tests are still broken.
     - mono Bin/Release.NET45/Tests.exe 1
+    - mono Bin/Release.NET45/Tests.exe 2
+    - mono Bin/Release.NET45/Tests.exe 7
     - mono Bin/Release.NET45/Tests.exe 8
