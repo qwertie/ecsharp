@@ -21,68 +21,6 @@ using Loyc.Syntax.Tests;
 
 namespace Loyc.Tests
 {
-	/// <summary>
-	/// A class of object that reads input characters,
-	/// one at a time. These characters are either read
-	/// from a string argument, or from the console
-	/// if no string is given.
-	/// </summary>
-	public class TestInputReader
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class.
-		/// Input is read from the console.
-		/// </summary>
-		public TestInputReader()
-			: this(null)
-		{ }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Loyc.Tests.TestInputReader"/> class
-		/// with the given input argument string.
-		/// </summary>
-		public TestInputReader(string inputArg)
-		{
-			InputArg = inputArg;
-			inputIndex = -1;
-		}
-
-		/// <summary>
-		/// Gets the input argument string.
-		/// </summary>
-		public string InputArg { get; private set; }
-
-		// Describes the index into the input argument
-		// string.
-		private int inputIndex;
-
-		/// <summary>
-		/// Reads a single character, which is either read
-		/// from the input argument string, or from the console.
-		/// A subzero value represents end-of-input.
-		/// </summary>
-		public int ReadChar()
-		{
-			if (InputArg != null) {
-				inputIndex++;
-
-				if (inputIndex >= InputArg.Length)
-					return -1;
-
-				return (int)InputArg[inputIndex];
-			} else {
-				ConsoleKeyInfo k;
-				Console.WriteLine((k = Console.ReadKey(true)).KeyChar);
-
-				if (k.Key == ConsoleKey.Escape
-					|| k.Key == ConsoleKey.Enter)
-					return -1;
-				else
-					return (int)k.KeyChar;
-			}
-		}
-	}
-
 	public class RunCoreTests
 	{
 		public static readonly VList<Pair<string, Func<bool>>> Menu = new VList<Pair<string, Func<bool>>>()
@@ -98,7 +36,7 @@ namespace Loyc.Tests
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
-			if (!RunMenu(Menu, args))
+            if (!RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null))
 				// Let the outside world know that something
 				// went wrong by setting the exit code to
 				// '1'. This is particularly useful for
@@ -106,9 +44,16 @@ namespace Loyc.Tests
 				Environment.ExitCode = 1;
 		}
 
-		public static bool RunMenu(IList<Pair<string, Func<bool>>> menu, params string[] args)
+        private static IEnumerator<char> ConsoleChars()
+        {
+            for (ConsoleKeyInfo k; (k = Console.ReadKey(true)).Key != ConsoleKey.Escape 
+                && k.Key != ConsoleKey.Enter;)
+                yield return k.KeyChar;
+        }
+
+        public static bool RunMenu(IList<Pair<string, Func<bool>>> menu, IEnumerator<char> input = null)
 		{
-			var reader = args.Length > 0 ? new TestInputReader(args[0]) : new TestInputReader();
+            var reader = input ?? ConsoleChars();
 			bool anyErrors = false;
 			for (;;) {
 				Console.WriteLine();
@@ -117,17 +62,18 @@ namespace Loyc.Tests
 					Console.WriteLine(ParseHelpers.HexDigitChar(i+1) + ". " + menu[i].Key);
 				Console.WriteLine("Space. Run all tests");
 
-				int c = reader.ReadChar();
-				if (c < 0)
-					break;
-				else if ((char)c == ' ') {
+                if (!reader.MoveNext())
+                    break;
+
+                char c = reader.Current;
+				if (c == ' ') {
 					for (int i = 0; i < menu.Count; i++) {
 						Console.WriteLine();
 						ConsoleMessageSink.WriteColoredMessage(ConsoleColor.White, i+1, menu[i].Key);
 						anyErrors = !menu[i].Value() || anyErrors;
 					}
 				} else {
-					int i = ParseHelpers.HexDigitValue((char)c);
+					int i = ParseHelpers.HexDigitValue(c);
 					if (i > 0 && i <= menu.Count)
 						anyErrors = !menu[i - 1].Value() || anyErrors;
 				}

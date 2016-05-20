@@ -28,7 +28,7 @@ namespace Loyc.Tests
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
-			if (!RunCoreTests.RunMenu(Menu, args))
+            if (!RunCoreTests.RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null))
 				// Let the outside world know that something
 				// went wrong by setting the exit code to
 				// '1'. This is particularly useful for
