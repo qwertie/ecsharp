@@ -1,0 +1,15 @@
+language: csharp
+solution: Loyc-Slim.sln
+install:
+    # Restore NuGet packages first
+    - nuget restore Loyc-Slim.sln
+script:
+    # Build the Loyc libraries in release mode, for all possible configurations.
+    - xbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
+    - xbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
+
+    # Unfortunately, some tests are still broken.
+    - mono Bin/Release.NET45/Tests.exe 1
+    - mono Bin/Release.NET45/Tests.exe 2
+    - mono Bin/Release.NET45/Tests.exe 7
+    - mono Bin/Release.NET45/Tests.exe 8

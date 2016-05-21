@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<!-- NuGet package specification. 
+<!-- NuGet package specification.
      Run `nuget pack LoycCore.nuspec` to build LoycCore.x.y.z.nupkg -->
 <package >
   <metadata>
     <id>LoycCore</id>
-    <version>1.7.1</version>
+    <version>$version$</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.ecsharp.net</projectUrl>
