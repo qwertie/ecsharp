@@ -9,6 +9,47 @@ namespace Loyc.LLParserGenerator
 	/// <summary>Tests for known slugs (slowness bugs) and fixed bugs (regressions)</summary>
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
+		[Test]
+		public void Regression_2016_05()
+		{
+			// The bug here was thought to relate to `error`, but it turned out
+			// that in EC#, 'token' was treated as 'rule' if there's a return value.
+			Test(@"
+				[AddCsLineDirectives(false)]
+				LLLPG (lexer);
+
+				public override token TT NextToken() @{
+					( '=' '='     {$result = TT.Eq;}
+					/ '='         {$result = TT.Assign;}
+					| error _?    {$result = TT.Invalid;} 
+					)
+				}
+				", @"
+				public override TT NextToken()
+				{
+					int la0, la1;
+					TT result = default(TT);
+					la0 = LA0;
+					if (la0 == '=') {
+						la1 = LA(1);
+						if (la1 == '=') {
+							Skip();
+							Skip();
+							result = TT.Eq;
+						} else {
+							Skip();
+							result = TT.Assign;
+						}
+					} else {
+						la0 = LA0;
+						if (la0 != -1)
+							Skip();
+						result = TT.Invalid;
+					}
+					return result;
+				}", null, Ecs.EcsLanguageService.Value);
+		}
+
 		[Test(Fails = "Haven't decided how to fix this yet")]
 		public void Regression_2016_03_InappropriateSkip()
 		{

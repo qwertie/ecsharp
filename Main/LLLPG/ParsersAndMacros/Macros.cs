@@ -239,6 +239,7 @@ namespace Loyc.LLPG
 				int i_rule = attrs.IndexWhere(n => n.IsIdNamed(_hash_token) || n.IsIdNamed(_hash_rule));
 				if (i_rule == -1)
 					return null;
+				isToken |= attrs[i_rule].IsIdNamed(_hash_token);
 				attrs.RemoveAt(i_rule);
 			} else
 				returnType = F.Void;

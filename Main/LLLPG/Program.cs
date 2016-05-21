@@ -31,10 +31,12 @@ namespace Loyc.LLParserGenerator
 				LeMP.Compiler c = new LeMP.Compiler(filter, typeof(LeMP.Prelude.BuiltinMacros));
 				var argList = args.ToList();
 				var options = c.ProcessArguments(argList, false, true);
-				if (options != null) {
+				if (!LeMP.Compiler.MaybeShowHelp(options, KnownOptions)) {
 					LeMP.Compiler.WarnAboutUnknownOptions(options, MessageSink.Console, 
 						KnownOptions.With("nologo", Pair.Create("","")));
-					if (c != null) {
+					if (c.Files.Count == 0)
+						MessageSink.Console.Write(Severity.Warning, null, "No files specified, stopping.");
+					else {
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 						c.MacroProcessor.PreOpenedNamespaces.Add(Loyc.LLPG.Macros.MacroNamespace);
