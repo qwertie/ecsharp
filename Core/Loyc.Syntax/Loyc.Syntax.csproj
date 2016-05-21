@@ -144,7 +144,7 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Les\LesIndentTokenGenerator.cs" />
+    <Compile Include="LES\LesIndentTokenGenerator.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
     <Compile Include="Lexing\WhitespaceFilter.cs" />
@@ -155,28 +155,28 @@
     <Compile Include="Parsing\BaseParserNoBacktracking.cs" />
     <Compile Include="CodeSymbols.cs" />
     <Compile Include="IParsingService.cs" />
-    <Compile Include="Les\LesLanguageService.cs" />
-    <Compile Include="Les\LesLexer.cs" />
-    <Compile Include="Les\LesLexerGrammar.cs">
+    <Compile Include="LES\LesLanguageService.cs" />
+    <Compile Include="LES\LesLexer.cs" />
+    <Compile Include="LES\LesLexerGrammar.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LesLexerGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="Les\LesNodePrinter.cs" />
-    <Compile Include="Les\INodePrinterWriter.cs" />
-    <Compile Include="Les\LesNodePrinterWriter.cs" />
-    <Compile Include="Les\LesParser.cs">
+    <Compile Include="LES\LesNodePrinter.cs" />
+    <Compile Include="LES\INodePrinterWriter.cs" />
+    <Compile Include="LES\LesNodePrinterWriter.cs" />
+    <Compile Include="LES\LesParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Les\LesParserGrammar.cs">
+    <Compile Include="LES\LesParserGrammar.cs">
       <DependentUpon>LesParserGrammar.les</DependentUpon>
       <SubType>Code</SubType>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="Les\LesPrecedence.cs" />
-    <Compile Include="Les\LesPrecedenceMap.cs" />
-    <Compile Include="Les\TokenType.cs" />
+    <Compile Include="LES\LesPrecedence.cs" />
+    <Compile Include="LES\LesPrecedenceMap.cs" />
+    <Compile Include="LES\TokenType.cs" />
     <Compile Include="Lexing\BaseLexer.cs" />
     <Compile Include="Lexing\ILexer.cs" />
     <Compile Include="Lexing\ILllpgApi.cs" />
@@ -249,11 +249,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Les\LesLexerGrammar.les">
+    <None Include="LES\LesLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>LesLexerGrammar.cs</LastGenOutput>
     </None>
-    <None Include="Les\LesParserGrammar.les">
+    <None Include="LES\LesParserGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>LesParserGrammar.cs</LastGenOutput>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
@@ -261,8 +261,4 @@
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesLexerGrammar.les
-rem $(SolutionDir)..\Lib\LLLPG\LLLPG --verbose $(ProjectDir)LES\LesParserGrammar.les</PreBuildEvent>
-  </PropertyGroup>
 </Project>

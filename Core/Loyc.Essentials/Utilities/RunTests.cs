@@ -7,24 +7,30 @@ using Loyc;
 namespace Loyc.MiniTest
 {
 	/// <summary>
-	/// Searches for test methods and runs them, printing the name of each test to 
+	/// Searches for test methods and runs them, printing the name of each test to
 	/// the console followed by errors (if any) produced by the test.
 	/// </summary>
 	/// <remarks>
-	/// This class finds tests by looking for custom attributes by their string 
+	/// This class finds tests by looking for custom attributes by their string
 	/// name (e.g. "TestAttribute"), so it is compatible with both NUnit.Framework
 	/// and Loyc.MiniTest.
 	/// <para/>
-	/// RunTests is a stripped-down subset of the functionality supported by 
+	/// RunTests is a stripped-down subset of the functionality supported by
 	/// MiniTestRunner.
 	/// </remarks>
 	public static class RunTests
 	{
-		public static void Run(object o)
+		/// <summary>
+		/// Runs all tests defined by the given object.
+		/// </summary>
+		/// <returns>The number of tests that failed.</returns>
+		public static int Run(object o)
 		{
 			// run all the tests methods in the given object
 			MethodInfo[] methods = o.GetType().GetMethods();
 			bool any = false;
+			// A counter that counts the total number of errors.
+			int errorCount = 0;
 
 			MethodInfo setup = GetSetup(methods);
 			MethodInfo teardown = GetTeardown(methods);
@@ -46,7 +52,7 @@ namespace Loyc.MiniTest
 					catch (TargetInvocationException tie)
 					{
 						Exception exc = tie.InnerException;
-						
+
 						// Find out if it matches an expected exception
 						// TODO: look for attribute by string instead
 						object[] attrs = method.GetCustomAttributes(
@@ -58,6 +64,12 @@ namespace Loyc.MiniTest
 						}
 
 						if (!match) {
+							// Increment the error counter if this
+							// failure was unexpected.
+							if (fails == null)
+								errorCount++;
+							// Let the user know that something went wrong by
+							// printing some text to the console.
 							var old = Console.ForegroundColor;
 							Console.ForegroundColor = fails != null ? ConsoleColor.DarkGray : ConsoleColor.Red;
 							Console.WriteLine("{0} while running {1}.{2}:",
@@ -76,7 +88,20 @@ namespace Loyc.MiniTest
 			}
 			if (!any)
 				Console.WriteLine("{0} contains no tests.", o.GetType().NameWithGenericArgs());
+
+			return errorCount;
 		}
+
+		/// <summary>
+		/// Runs all tests belonging to the given array
+		/// of objects.
+		/// </summary>
+		/// <returns>The total number of tests that failed.</returns>
+		public static int RunMany(params object[] os)
+		{
+			return os.Aggregate(0, (errCount, o) => errCount + Run(o));
+		}
+
 		private static object IsTest(MethodInfo info)
 		{
 			if (!info.IsStatic && info.IsPublic) {

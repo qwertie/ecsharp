@@ -15,12 +15,12 @@ namespace Loyc.Tests
 {
 	public class RunMainTests
 	{
-		public static readonly VList<Pair<string, Action>> Menu = RunCoreTests.Menu.AddRange(
-			new Pair<string, Action>[] {
-				new Pair<string,Action>("Run unit tests of Enhanced C#", Test_Ecs),
-				new Pair<string,Action>("Run unit tests of LeMP", Test_LeMP),
-				new Pair<string,Action>("Run unit tests of LLLPG", Loyc.LLParserGenerator.Program.Test_LLLPG),
-				new Pair<string,Action>("LeMP article examples", Samples.Samples.Run),
+		public static readonly VList<Pair<string, Func<int>>> Menu = RunCoreTests.Menu.AddRange(
+			new Pair<string, Func<int>>[] {
+				new Pair<string,Func<int>>("Run unit tests of Enhanced C#", Test_Ecs),
+				new Pair<string,Func<int>>("Run unit tests of LeMP", Test_LeMP),
+				new Pair<string,Func<int>>("Run unit tests of LLLPG", Loyc.LLParserGenerator.Program.Test_LLLPG),
+				new Pair<string,Func<int>>("LeMP article examples", Samples.Samples.Run),
 			});
 
 		public static void Main(string[] args)
@@ -28,32 +28,39 @@ namespace Loyc.Tests
 			// Workaround for MS bug: Assert(false) will not fire in debugger
 			Debug.Listeners.Clear();
 			Debug.Listeners.Add( new DefaultTraceListener() );
-			RunCoreTests.RunMenu(Menu);
+			if (RunCoreTests.RunMenu(Menu, args.Length > 0 ? args[0].GetEnumerator() : null) > 0)
+				// Let the outside world know that something
+				// went wrong by setting the exit code to
+				// '1'. This is particularly useful for
+				// automated tests (CI).
+				Environment.ExitCode = 1;
 		}
 
-		public static void Test_Ecs()
+		public static int Test_Ecs()
 		{
-			RunTests.Run(new EcsLexerTests());
-			RunTests.Run(new EcsParserTests());
-			RunTests.Run(new EcsNodePrinterTests());
-			RunTests.Run(new EcsValidatorTests());
+			return RunTests.RunMany(
+				new EcsLexerTests(),
+				new EcsParserTests(),
+				new EcsNodePrinterTests(),
+				new EcsValidatorTests());
 		}
-		public static void Test_LeMP()
+		public static int Test_LeMP()
 		{
-			RunTests.Run(new MacroProcessorTests());
-			RunTests.Run(new PreludeMacroTests());
-			RunTests.Run(new SmallerMacroTests());
-			RunTests.Run(new TestAlgebraicDataTypes());
-			RunTests.Run(new TestCodeContractMacros());
-			RunTests.Run(new TestCodeQuoteMacro());
-			RunTests.Run(new TestMacroCombinations());
-			RunTests.Run(new TestMatchCodeMacro());
-			RunTests.Run(new TestMatchMacro());
-			RunTests.Run(new TestOnFinallyReturnThrowMacros());
-			RunTests.Run(new TestReplaceMacro());
-			RunTests.Run(new TestSequenceExpressionMacro());
-			RunTests.Run(new TestSetOrCreateMemberMacro());
-			RunTests.Run(new TestUnrollMacro());
+			return RunTests.RunMany(
+				new MacroProcessorTests(),
+				new PreludeMacroTests(),
+				new SmallerMacroTests(),
+				new TestAlgebraicDataTypes(),
+				new TestCodeContractMacros(),
+				new TestCodeQuoteMacro(),
+				new TestMacroCombinations(),
+				new TestMatchCodeMacro(),
+				new TestMatchMacro(),
+				new TestOnFinallyReturnThrowMacros(),
+				new TestReplaceMacro(),
+				new TestSequenceExpressionMacro(),
+				new TestSetOrCreateMemberMacro(),
+				new TestUnrollMacro());
 		}
 	}
 }
