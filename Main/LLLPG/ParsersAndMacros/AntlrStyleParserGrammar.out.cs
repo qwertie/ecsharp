@@ -1,4 +1,4 @@
-// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.5.0
+// Generated from AntlrStyleParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -25,17 +25,17 @@ namespace Loyc.LLParserGenerator
 		{
 			return Parse(tokens, tokens.File, sink);
 		}
-		public new static VList<LNode> Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public new static VList<LNode> Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
 				_parser = new AntlrStyleParser(tokenTree, file, messages);
 			else {
-				_parser.Reset(tokenTree, file);
+				_parser.Reset(tokenTree, default(Token), file);
 				_parser.ErrorSink = messages;
 			}
 			return _parser.RulesAndStuff();
 		}
-		private AntlrStyleParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null) : base(tokens, file, messageSink, hostLanguage)
+		private AntlrStyleParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink) : base(tokens, file, messageSink)
 		{
 		}
 		LNode ParseHostReturnType(Token paren)

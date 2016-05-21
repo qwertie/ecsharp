@@ -1,4 +1,4 @@
-// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.5.0
+// Generated from StageOneParserGrammar.ecs by LeMP custom tool. LeMP version: 1.7.6.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -102,7 +102,7 @@ namespace Loyc.LLParserGenerator
 		}
 		LNode SeqExpr()
 		{
-			TT la0;
+			TT la0, la1;
 			#line 78 "StageOneParserGrammar.ecs"
 			var seq = LNode.List();
 			#line default
@@ -111,27 +111,89 @@ namespace Loyc.LLParserGenerator
 				switch ((TT) LA0) {
 				case TT.And:
 				case TT.AndNot:
-				case TT.Any:
 				case TT.Greedy:
-				case TT.Id:
-				case TT.In:
 				case TT.InvertSet:
-				case TT.LBrace:
-				case TT.LBrack:
-				case TT.Literal:
-				case TT.LParen:
-				case TT.Minus:
 				case TT.Nongreedy:
 					{
-						seq.Add(LoopExpr());
-						// Line 79: (TT.Comma)?
-						la0 = (TT) LA0;
-						if (la0 == TT.Comma)
-							Skip();
+						switch ((TT) LA(1)) {
+						case TT.And:
+						case TT.AndNot:
+						case TT.Any:
+						case TT.Id:
+						case TT.In:
+						case TT.InvertSet:
+						case TT.LBrace:
+						case TT.LBrack:
+						case TT.Literal:
+						case TT.LParen:
+						case TT.Minus:
+							goto matchLoopExpr;
+						default:
+							goto stop;
+						}
 					}
-					break;
+				case TT.Minus:
+					{
+						switch ((TT) LA(1)) {
+						case TT.Any:
+						case TT.Id:
+						case TT.In:
+						case TT.LBrace:
+						case TT.LBrack:
+						case TT.Literal:
+						case TT.LParen:
+						case TT.Minus:
+							goto matchLoopExpr;
+						default:
+							goto stop;
+						}
+					}
+				case TT.Any:
+					{
+						la1 = (TT) LA(1);
+						if (la1 == TT.Id)
+							goto matchLoopExpr;
+						else
+							goto stop;
+					}
+				case TT.Id:
+				case TT.In:
+				case TT.Literal:
+					goto matchLoopExpr;
+				case TT.LParen:
+					{
+						la1 = (TT) LA(1);
+						if (la1 == TT.RParen)
+							goto matchLoopExpr;
+						else
+							goto stop;
+					}
+				case TT.LBrace:
+					{
+						la1 = (TT) LA(1);
+						if (la1 == TT.RBrace)
+							goto matchLoopExpr;
+						else
+							goto stop;
+					}
+				case TT.LBrack:
+					{
+						la1 = (TT) LA(1);
+						if (la1 == TT.RBrack)
+							goto matchLoopExpr;
+						else
+							goto stop;
+					}
 				default:
 					goto stop;
+				}
+			matchLoopExpr:
+				{
+					seq.Add(LoopExpr());
+					// Line 79: (TT.Comma)?
+					la0 = (TT) LA0;
+					if (la0 == TT.Comma)
+						Skip();
 				}
 			}
 		stop:;
@@ -203,11 +265,27 @@ namespace Loyc.LLParserGenerator
 			// Line 103: ((TT.Assignment|TT.Colon|TT.HostOperator) AssignExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.Assignment || la0 == TT.Colon || la0 == TT.HostOperator) {
-				op = MatchAny();
-				var b = AssignExpr();
-				#line 103 "StageOneParserGrammar.ecs"
-				Infix(ref a, (Symbol) op.Value, b);
-				#line default
+				switch ((TT) LA(1)) {
+				case TT.And:
+				case TT.AndNot:
+				case TT.Any:
+				case TT.Id:
+				case TT.In:
+				case TT.InvertSet:
+				case TT.LBrace:
+				case TT.LBrack:
+				case TT.Literal:
+				case TT.LParen:
+				case TT.Minus:
+					{
+						op = MatchAny();
+						var b = AssignExpr();
+						#line 103 "StageOneParserGrammar.ecs"
+						Infix(ref a, (Symbol) op.Value, b);
+						#line default
+					}
+					break;
+				}
 			}
 			#line 104 "StageOneParserGrammar.ecs"
 			return a;
@@ -268,16 +346,30 @@ namespace Loyc.LLParserGenerator
 			// Line 120: (TT.DotDotDot PrimaryExpr)?
 			la0 = (TT) LA0;
 			if (la0 == TT.DotDotDot) {
-				var op = MatchAny();
-				var b = PrimaryExpr();
-				#line 120 "StageOneParserGrammar.ecs"
-				Infix(ref a, (Symbol) op.Value, b);
-				#line default
+				switch ((TT) LA(1)) {
+				case TT.Any:
+				case TT.Id:
+				case TT.In:
+				case TT.LBrace:
+				case TT.LBrack:
+				case TT.Literal:
+				case TT.LParen:
+				case TT.Minus:
+					{
+						var op = MatchAny();
+						var b = PrimaryExpr();
+						#line 120 "StageOneParserGrammar.ecs"
+						Infix(ref a, (Symbol) op.Value, b);
+						#line default
+					}
+					break;
+				}
 			}
 			#line 121 "StageOneParserGrammar.ecs"
 			return a;
 			#line default
 		}
+		static readonly HashSet<int> PrimaryExpr_set0 = NewSet((int) EOF, (int) TT.Alt, (int) TT.And, (int) TT.AndNot, (int) TT.Any, (int) TT.Arrow, (int) TT.Assignment, (int) TT.Bang, (int) TT.Colon, (int) TT.Comma, (int) TT.Default, (int) TT.DotDotDot, (int) TT.Error, (int) TT.Greedy, (int) TT.HostOperator, (int) TT.Id, (int) TT.In, (int) TT.InvertSet, (int) TT.LBrace, (int) TT.LBrack, (int) TT.Literal, (int) TT.LParen, (int) TT.Minus, (int) TT.Nongreedy, (int) TT.Plus, (int) TT.QMark, (int) TT.Slash, (int) TT.Star);
 		LNode PrimaryExpr()
 		{
 			TT la0, la1;
@@ -285,7 +377,7 @@ namespace Loyc.LLParserGenerator
 			Token rp = default(Token);
 			Token tok__Any = default(Token);
 			Token tok__Id = default(Token);
-			// Line 125: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In PrimaryExpr / ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} (TT.LParen TT.RParen | TT.LBrack TT.RBrack))* )
+			// Line 125: ( TT.Minus PrimaryExpr | TT.Any TT.Id (TT.In GateExpr / ) | Atom greedy(TT.Dot Atom | &{a.Range.EndIndex == LT($LI).StartIndex} (TT.LParen TT.RParen | TT.LBrack TT.RBrack))* )
 			la0 = (TT) LA0;
 			if (la0 == TT.Minus) {
 				Skip();
@@ -302,27 +394,16 @@ namespace Loyc.LLParserGenerator
 				#line 127 "StageOneParserGrammar.ecs"
 				id = F.Id(tok__Id);
 				#line default
-				// Line 128: (TT.In PrimaryExpr / )
+				// Line 128: (TT.In GateExpr / )
 				do {
 					la0 = (TT) LA0;
 					if (la0 == TT.In) {
-						switch ((TT) LA(1)) {
-						case TT.Any:
-						case TT.Id:
-						case TT.In:
-						case TT.LBrace:
-						case TT.LBrack:
-						case TT.Literal:
-						case TT.LParen:
-						case TT.Minus:
-							{
-								Skip();
-								e = PrimaryExpr();
-							}
-							break;
-						default:
+						la1 = (TT) LA(1);
+						if (PrimaryExpr_set0.Contains((int) la1)) {
+							Skip();
+							e = GateExpr();
+						} else
 							goto match2;
-						}
 					} else
 						goto match2;
 					break;

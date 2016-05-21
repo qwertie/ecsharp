@@ -1683,22 +1683,20 @@ namespace Loyc.LLParserGenerator
 					{
 						int la0, la1;
 						var x = 0;
-						// Line 2: (( One | Two | Ten ) [ ])*
-						 for (;;) {
+						for (;;) {
 							la0 = LA0;
-							if (la0 == 'o' || la0 == 't') {
-								// Line 0: ( One | Two | Ten )
-								la0 = LA0;
-								if (la0 == 'o')
-									x.Add(One());
-								else {
-									la1 = LA(1);
-									if (la1 == 'w')
-										x.Add(Two());
-									else
-										x.Add(Ten());
-								}
+							if (la0 == 'o') {
+								x.Add(One());
 								Match(' ');
+							} else if (la0 == 't') {
+								la1 = LA(1);
+								if (la1 == 'w') {
+									x.Add(Two());
+									Match(' ');
+								} else {
+									x.Add(Ten());
+									Match(' ');
+								}
 							} else
 								break;
 						}
@@ -1729,6 +1727,72 @@ namespace Loyc.LLParserGenerator
 		}
 
 		[Test]
+		public void TestAnyToken()
+		{
+			Test(@"
+				LLLPG(lexer);
+	
+				rule NextToken @{
+					any token
+				};
+				token L() @{'a'..'z'};
+				token void N() @{'0'..'9'};
+			", @"
+				void NextToken()
+				{
+					int la0;
+					la0 = LA0;
+					if (la0 >= 'a' && la0 <= 'z')
+						L();
+					else
+						N();
+				}
+				void L()
+				{
+					MatchRange('a', 'z');
+				}
+				void N()
+				{
+					MatchRange('0', '9');
+				}
+			", null, EcsLanguageService.Value);
+
+			Test(@"
+				LLLPG(lexer);
+	
+				rule int NextToken @{
+					any token in result:token
+				};
+				token int L() @{result:'a'..'z'};
+				token int N() @{result:'0'..'9'};
+			", @"
+				int NextToken()
+				{
+					int la0;
+					int result = 0;
+					la0 = LA0;
+					if (la0 >= 'a' && la0 <= 'z')
+						result = L();
+					else
+						result = N();
+					return result;
+				}
+				int L()
+				{
+					int result = 0;
+					result = MatchRange('a', 'z');
+					return result;
+				}
+				int N()
+				{
+					int result = 0;
+					result = MatchRange('0', '9');
+					return result;
+				}
+			", null, EcsLanguageService.Value);
+		}
+
+		[Test]
 		public void TestResultVariable()
 		{
 			Test(@"LLLPG (lexer()) {
@@ -1741,6 +1805,7 @@ namespace Loyc.LLParserGenerator
 						result.Add(MatchRange('0', '9'));
 						return result;
 					}");
+
 			Test(@"
 				LLLPG(lexer(inputSource(src), inputClass(LexerSource))) {
 					static rule int ParseInt(string input) {
@@ -1765,8 +1830,9 @@ namespace Loyc.LLParserGenerator
 					}
 					return result;
 				}", null, EcsLanguageService.Value);
+
 			Test(@"LLLPG (lexer()) {
-					rule Digit::int @[ result:'0'..'9' ];
+					rule Digit::int @{ result:'0'..'9' };
 				}", @"
 					int Digit()
 					{

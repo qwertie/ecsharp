@@ -170,7 +170,7 @@ namespace Loyc.LLParserGenerator
 		};
 
 		[LL(4)]
-		public rule VList<LNode> RulesAndStuff() @{ 
+		public rule VList<LNode> RulesAndStuff() @{ // Start rule
 			( result+:Rule
 			| result+:HostCall
 			| result+:HostBlock )+

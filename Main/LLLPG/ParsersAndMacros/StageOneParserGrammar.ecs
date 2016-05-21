@@ -125,7 +125,7 @@ namespace Loyc.LLParserGenerator
 				{	"-" e:=PrimaryExpr {return F.Call(S._Negate, e);}
 				|	{LNode e, id;}
 					TT.Any TT.Id {id = F.Id($(TT.Id));}
-					( TT.In e=PrimaryExpr
+					( TT.In e=GateExpr
 					/ {e = id;})
 					{e = F.Call(_Any, id, e, $(TT.Any).StartIndex, e.Range.EndIndex);}
 					{return e;}

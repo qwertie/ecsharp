@@ -28,7 +28,7 @@ namespace Loyc.LLParserGenerator
 			_sink = sink;
 		}
 
-		HashSet<Symbol> any_in_HashLabels = new HashSet<Symbol>();
+		HashSet<Symbol> any_in_HashLabels = new HashSet<Symbol> { (Symbol)"#token" };
 
 		/// <summary>Given Rules paired with LNodes produced by <see cref="StageOneParser"/>,
 		/// this method translates each LNode into a <see cref="Pred"/> and updates
@@ -241,10 +241,11 @@ namespace Loyc.LLParserGenerator
 			any_in_HashLabels.Add(id2);
 			if (id.Name.StartsWith("#"))
 				any_in_HashLabels.Add(id);
+			bool isToken = id.Name == "#token" || id2.Name == "#token";
 			// Scan the rules looking for ones marked with the specified ID.
 			LNode newExpr = null;
 			foreach (var rul in _rules.Values) {
-				if (rul.Basis.Attrs.Any(attr => attr.Name == id || attr.Name == id2)) {
+				if (isToken ? rul.IsToken : rul.Basis.Attrs.Any(attr => attr.Name == id || attr.Name == id2)) {
 					// Given "any foo in (A foo B)", suppose we find rules Foo1, 
 					// Foo2 & Foo3 having the attribute 'foo'. We're constructing
 					// the grammar fragment (A Foo1 B | A Foo2 B | A Foo3 B)

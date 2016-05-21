@@ -68,7 +68,7 @@ namespace Loyc.LLParserGenerator
 		RBrace      = TokenKind.RBrace,
 	}
 
-	/// <summary>Provides the <c>Type()</c> extension method required by <see cref="Token"/>.</summary>
+	/// <summary>Provides the <c>Type()</c> extension method for <see cref="Token"/>.</summary>
 	internal static class TokenExt
 	{
 		/// <summary>Converts <c>t.TypeInt</c> to <see cref="TokenType"/>.</summary>
@@ -98,7 +98,7 @@ namespace Loyc.LLParserGenerator
 	/// tokens must be interpreted by the host language. Luckily such tokens are 
 	/// always in parenthesis or braces and it's not hard to avoid touching them.
 	/// </remarks>
-	internal partial class StageOneParser : BaseParser<Token>
+	internal partial class StageOneParser : BaseParserForList<Token, int>
 	{
 		[ThreadStatic]
 		static StageOneParser _parser;
@@ -107,67 +107,40 @@ namespace Loyc.LLParserGenerator
 		{
 			return StageOneParser.Parse(tokens, tokens.File, sink);
 		}
-		public static LNode Parse(IListSource<Token> tokenTree, ISourceFile file, IMessageSink messages)
+		public static LNode Parse(IList<Token> tokenTree, ISourceFile file, IMessageSink messages)
 		{
 			if (_parser == null)
 				_parser = new StageOneParser(tokenTree, file, messages);
 			else {
-				_parser.Reset(tokenTree, file);
+				_parser.Reset(tokenTree, default(Token), file);
 				_parser.ErrorSink = messages;
 			}
 			return _parser.Parse();
 		}
 
-		internal StageOneParser(IListSource<Token> tokens, ISourceFile file, IMessageSink messageSink, IParsingService hostLanguage = null)
+		internal StageOneParser(IList<Token> tokens, ISourceFile file, IMessageSink messageSink)
+			: base(ReclassifyTokens(tokens), default(Token), file)
 		{
 			ErrorSink = messageSink;
-			Reset(tokens, file, hostLanguage);
+		}
+		protected override void Reset(IList<Token> tokens, Token eofToken, ISourceFile file, int startIndex = 0)
+		{
+			// Called by base class constructor
+			Debug.Assert(eofToken.Type() == TT.EOF);
+			base.Reset(ReclassifyTokens(tokens), eofToken, file, startIndex);
+			_hostLanguage = ParsingService.Current;
+			_tokensRoot = _tokenList;
+			F = new LNodeFactory(file);
 		}
 
-		public virtual void Reset(IListSource<Token> tokens, ISourceFile file, IParsingService hostLanguage = null)
-		{
-			_hostLanguage = hostLanguage ?? ParsingService.Current;
-			_tokensRoot = _tokens = ReclassifyTokens(tokens);
-			_sourceFile = file;
-			F = new LNodeFactory(file);
-			InputPosition = 0; // reads LT(0)
-		}
+		protected new static TT EOF = TT.EOF;
 
 		protected LNodeFactory F;
-		protected IListSource<Token> _tokensRoot;
-		protected IListSource<Token> _tokens;
-		// index into source text of the first token at the current depth (inside 
-		// parenthesis, etc.). Used if we need to print an error inside empty {} [] ()
-		protected int _startTextIndex = 0;
+		protected IList<Token> _tokensRoot; // only used for debugging
 		protected IParsingService _hostLanguage;
 		
-		#region Methods required by BaseLexer & LLLPG
-		
-		protected override int EofInt() { return (int)TokenType.EOF; } // zero
-		protected override int LA0Int { get { return _lt0.TypeInt; } }
-		protected override Token LT(int i) { return _tokens.TryGet(InputPosition + i, default(Token)); }
+		// Method required by BaseParserForList
 		protected override string ToString(int tokenType) { return ((TT)tokenType).ToString(); }
-		protected override void Error(int li, string message)
-		{
-			int iPos = GetTextPosition(InputPosition + li);
-			ErrorSink.Write(Severity.Error, (_sourceFile ?? EmptySourceFile.Unknown).IndexToLine(iPos), message);
-		}
-		protected int GetTextPosition(int tokenPosition)
-		{
-			bool fail;
-			Token token = _tokens.TryGet(tokenPosition, out fail);
-			if (!fail)
-				return token.StartIndex;
-			else if (_tokens.Count == 0 || tokenPosition < 0)
-				return _startTextIndex;
-			else
-				return _tokens[_tokens.Count - 1].EndIndex;
-		}
-		
-		protected TokenType LA0 { get { return _lt0.Type(); } }
-		protected TokenType LA(int i) { return LT(i).Type(); }
-		
-		#endregion
 		
 		#region Token reclassification
 
@@ -220,7 +193,7 @@ namespace Loyc.LLParserGenerator
 			{GSymbol.Get("returns"), TT.Returns}
 		};
 		
-		static IListSource<Token> ReclassifyTokens(IListSource<Token> oldList)
+		static IList<Token> ReclassifyTokens(IList<Token> oldList)
 		{
 			// Only reclassifies tokens on the current level. Child tokens are untouched.
 			InternalList<Token> newList = new InternalList<Token>(oldList.Count);
@@ -229,7 +202,7 @@ namespace Loyc.LLParserGenerator
 				newList.Add(Reclassify(oldList, ref i));
 			return newList;
 		}
-		private static Token Reclassify(IListSource<Token> list, ref int i)
+		private static Token Reclassify(IList<Token> list, ref int i)
 		{
 			Token token = list[i++];
 			var newType = (TT)token.Kind;
@@ -278,8 +251,6 @@ namespace Loyc.LLParserGenerator
 
 		#endregion
 		
-		#region Tree structure handling
-
 		protected VList<LNode> ParseHostCode(Token group, ParsingMode mode)
 		{
 			var ch = group.Children;
@@ -305,44 +276,5 @@ namespace Loyc.LLParserGenerator
 				return Up(GrammarExpr());
 			}
 		}
-
-		#endregion
-
-		#region Down & Up
-		// These are used to traverse into token subtrees, e.g. given w=(x+y)*z, 
-		// the outer token list is w=()*z, and the 3 tokens x+y are children of '('
-		// So the parser calls something like Down(lparen) to begin parsing inside,
-		// then it calls Up() to return to the parent tree.
-
-		Stack<Pair<IListSource<Token>, int>> _parents = new Stack<Pair<IListSource<Token>, int>>();
-
-		protected bool Down(int li)
-		{
-			return Down(LT(li).Children);
-		}
-		protected bool Down(IListSource<Token> children)
-		{
-			if (children != null) {
-				_parents.Push(Pair.Create(_tokens, InputPosition));
-				_tokens = children;
-				InputPosition = 0;
-				return true;
-			}
-			return false;
-		}
-		protected T Up<T>(T value)
-		{
-			Up();
-			return value;
-		}
-		protected void Up()
-		{
-			Debug.Assert(_parents.Count > 0);
-			var pair = _parents.Pop();
-			_tokens = pair.A;
-			InputPosition = pair.B;
-		}
-
-		#endregion
 	}
 }
