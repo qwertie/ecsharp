@@ -15,7 +15,7 @@
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/>.
 	/// </summary>
 	/// <remarks>
-	/// You can read <a href="http://core.ecsharp.net/collections/">articles</a> about
+	/// You can read <a href="http://core.loyc.net/collections/">articles</a> about
 	/// the AList family of data structures online.
 	/// <para/>
 	/// <see cref="AList{T}"/> and <see cref="BList{T}"/> are excellent data 

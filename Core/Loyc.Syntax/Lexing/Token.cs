@@ -249,38 +249,27 @@ namespace Loyc.Syntax.Lexing
 		public NodeStyle Style { get { return (NodeStyle)((_length & StyleMask) >> StyleShift); } }
 		
 		/// <summary>The parsed value of the token.</summary>
-		/// <remarks>The value is
+		/// <remarks>Recommended ways to use this field:
 		/// <ul>
 		/// <li>For strings: the parsed value of the string (no quotes, escape 
-		/// sequences removed), i.e. a boxed char or string. A backquoted string 
-		/// is converted to a Symbol because it is a kind of operator.</li>
+		/// sequences removed), i.e. a boxed char or a string. A backquoted 
+		/// string in EC#/LES is converted to a <see cref="Symbol"/> because it 
+		/// is a kind of operator.</li>
 		/// <li>For numbers: the parsed value of the number (e.g. 4 => int, 4L => long, 4.0f => float)</li>
 		/// <li>For identifiers: the parsed name of the identifier, as a Symbol 
 		/// (e.g. x => x, @for => for, @`1+1` => <c>1+1</c>)</li>
 		/// <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
 		/// Symbol containing the name of the keyword, with "#" prefix</li>
 		/// <li>For punctuation and operators: the text of the punctuation as a 
-		/// symbol (with '#' in front, if the language conventionally uses this 
-		/// prefix)</li>
-		/// <li>For openers (open paren, open brace, etc.) after the tokens have
-		/// been processed by <see cref="TokensToTree"/>: a TokenTree object.</li>
-		/// <li>For spaces and comments: <see cref="WhitespaceTag.Value"/></li>
+		/// Symbol.</li>
+		/// <li>For openers (open paren, open brace, etc.): null for normal linear
+		/// parsers. If the tokens have been processed by <see cref="TokensToTree"/>,
+		/// this will be a <see cref="TokenTree"/>.</li>
+		/// <li>For spaces and comments: for performance reasons, it is not 
+		/// recommended to extract the text of whitespace from the source file; 
+		/// instead, use <see cref="WhitespaceTag.Value"/></li>
 		/// <li>When no value is needed (because the Type() is enough): null</li>
 		/// </ul>
-		/// For performance reasons, the text of whitespace is not extracted from
-		/// the source file; <see cref="Value"/> is WhitespaceTag.Value for 
-		/// whitespace. Value must be assigned for other types such as 
-		/// identifiers and literals.
-		/// <para/>
-		/// Since the same identifiers and literals are often used more than once 
-		/// in a given source file, an optimized lexer could use a data structure 
-		/// such as a trie or hashtable to cache boxed literals and identifier 
-		/// symbols, and re-use the same values when the same identifiers and 
-		/// literals are encountered multiple times. Done carefully, this avoids 
-		/// the overhead of repeatedly extracting string objects from the source 
-		/// file. If strings must be extracted for some reason (e.g. <c>
-		/// double.TryParse</c> requires an extracted string), at least memory can 
-		/// be saved.
 		/// </remarks>
 		public object Value;
 		

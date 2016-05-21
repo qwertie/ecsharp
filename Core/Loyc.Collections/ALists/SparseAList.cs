@@ -10,7 +10,7 @@ namespace Loyc.Collections
 {
 	/// <summary>A sparse A-List that implements <see cref="ISparseList{T}"/>.</summary>
 	/// <remarks>
-	/// An <a href="http://core.ecsharp.net/collections/alists-part3.html">article</a>
+	/// An <a href="http://core.loyc.net/collections/alists-part3.html">article</a>
 	/// about this class is available.
 	/// <para/>
 	/// The sparse A-List is implemented similarly to a normal A-List; the main 

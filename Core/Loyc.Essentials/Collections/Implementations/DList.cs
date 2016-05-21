@@ -11,7 +11,7 @@
 	/// A compact auto-enlarging list that efficiently supports supports insertions 
 	/// at the beginning or end of the list.
 	/// </summary><remarks>
-	/// An <a href="http://core.ecsharp.net/collections/dlist.html">article</a>
+	/// An <a href="http://core.loyc.net/collections/dlist.html">article</a>
 	/// about this class is available.
 	/// </remarks>
 	/// <seealso cref="InternalDList{T}"/>

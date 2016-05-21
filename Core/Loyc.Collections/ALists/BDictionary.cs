@@ -14,7 +14,7 @@
 	/// indexed access to its list of key-value pairs.
 	/// </summary>
 	/// <remarks>
-	/// An <a href="http://core.ecsharp.net/collections/alists-part2.html">article</a>
+	/// An <a href="http://core.loyc.net/collections/alists-part2.html">article</a>
 	/// about the BList classes is available.
 	/// <para/>
 	/// The keys must be comparable (ordered); if the type does not implement
