@@ -5,7 +5,7 @@ This repository holds several tools for enhancing .NET and C# development:
 
 - The Loyc .NET Core libraries, a set of libraries whose theme is "stuff that 
   should be built into the .NET framework, but isn't." These libraries have their
-  [own repository](http://github.com/qwertie/LoycCore) and [home page](http://core.ecsharp.net),
+  [own repository](http://github.com/qwertie/LoycCore) and [home page](http://core.loyc.net),
   and the Loyc .NET Core repository is the `Core/` folder in this repository.
 
 - [Enhanced C#](http://ecsharp.net) (or EC#) is a liberalization and regularization of the C# language.
