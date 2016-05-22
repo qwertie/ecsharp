@@ -20,7 +20,8 @@ There are lots of things left to cover, so let's get started. LLLPG 1.1.0 was re
 
 Many features have been added since this article was published, most of which are discussed in [Part 5](lllpg-part-5.html).
 
-## A brief overview of the Loyc libraries
+A brief overview of the Loyc libraries
+--------------------------------------
 
 When writing a parser, you have to decide whether you'll use the Loyc runtime libraries or not; the main advantage of _not_ using them is that you won't have to distribute the 3 Loyc DLLs with your application. But they contain a lot of useful stuff, so have a look and see if you like them.
 
@@ -30,7 +31,7 @@ In brief, let me just say very briefly what these libraries are for and what the
 
 **Loyc.Essentials.dll** is a library of general-purpose code that supplements the .NET BCL (standard libraries). It contains the following categories of stuff:
 
-- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections such as [InternalList](http://core.loyc.net/collections/internal-list.html). You can [learn more in the docs](http://ecsharp.net/doc/code/namespaceLoyc_1_1Collections.html), but you'll be looking at Loyc.Essentials.dll and Loyc.Collections.dll combined.
+- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections such as [InternalList](http://core.loyc.net/collections/internal-list.html). You can [learn more in the docs](http://ecsharp.net/doc/code/namespaceLoyc_1_1Collections.html), but note that the documentation shows the collection stuff from both DLLs since it's all in the same namespace, `Loyc.Collections`.
 - Geometry: simple generic geometric interfaces and classes, e.g. `Point<T>` and `Vector<T>`
 - Math: generic math interfaces that allow arithmetic to be performed in generic code. Also includes fixed-point types, 128-bit integer math, and handy extra math functions in `MathEx`.
 - Other utilities: message sinks ([`IMessageSink`](http://ecsharp.net/doc/code/interfaceLoyc_1_1IMessageSink.html)), [`Symbol`](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), threading stuff, a miniture clone of NUnit ([`MiniTest`](https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Essentials/Utilities/MiniTest.cs), [`RunTests`](http://ecsharp.net/doc/code/classLoyc_1_1MiniTest_1_1RunTests.html)), and miscellaneous ["global" functions] and extension methods.
@@ -38,11 +39,9 @@ In brief, let me just say very briefly what these libraries are for and what the
 
 Loyc.Essentials also defines [`ICharSource`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html) (defined in Loyc.Essentials.dll), a standard interface for a source of characters, which is used by lexers. `string` converts implicitly to [`UString`](http://ecsharp.net/doc/code/structLoyc_1_1UString.html) which is a string slice structure that implements `ICharSource`. The `Slice(start, count)` extension method can also get slices of strings.
 
-**Note**: the Loyc.Essentials API is not 100% stable yet (feedback welcome). Also, since Loyc.Essentials already contains a lot of LINQy stuff, I intend to incorporate the core functionality of [Linq to Collections](http://twistedoakstudios.com/blog/Post1585_linq-to-collections-beyond-ienumerablet) eventually but have only written parts of it so far.
-
 [`IMessageSink`](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/Utilities/IMessageSink.cs) serves as a simple, generic logging interface. It is recommended that your parsers report warnings and errors to an `IMessageSink` object. You can use `MessageSink.Console` to print (colored) errors to the console, `MessageSink.Null` to suppress output, and `MessageSink.FromDelegate((type, context, message, args) => {...})` to customize error handling.
 
-The [`G` class](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials/G.cs) has generic number parsers that are handy for lexers, such as `TryParseDouble`, which can parse numbers of any reasonable radix and is therefore useful for hex float literals such as `0xF.Fp+1` (a syntax that represents 31.875).
+The [`ParseHelpers` class](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1ParseHelpers.html) has generic number parsers that are handy for lexers, such as `TryParseDouble`, which can parse numbers of any reasonable radix and is therefore useful for hex float literals such as `0xF.Fp+1` (a syntax that represents 31.875).
 
 **Loyc.Collections.dll** is a library of data structures, mostly rather complex ones, currently all written by me:
 
@@ -58,18 +57,17 @@ The [`G` class](http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Loyc.Essentials
 -  [`ISourceFile`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1ISourceFile.html) encapsulates an `ICharSource`, a file name string, and a mapping to translate character indexes to (line, column) pairs and back. It is derived from [`IIndexPositionMapper`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1IIndexPositionMapper.html).
 - [`SourceRange`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1SourceRange.html) is a triple (`ISourceFile Source`, `int StartIndex`, `int Length`) that represents a range of characters in a source file.
 - `SourcePos` is a (filename, line, column) triple. While `SourceRange` is a struct so it can be stored compactly, `SourcePos` is assumed to be used much less often, and it is a class so it can be derived from `LineAndCol` which is a (line, column) pair.
-- `IndexPositionMapper` provides mapping from `SourceRange` to `SourcePos` and back, but you don't often _need_ this class because `BaseLexer` already keeps track of the current line number (and where it started). In your lexer, you **must** call `AfterNewline()` at each newline in order for index-position mapping to work correctly.
-- [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) is a Loyc Node or (synonymously) a [Loyc Tree](https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Loyc_trees). [`LNodeFactory`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNodeFactory.html) is commonly used to help construct `LNode`s.
-- `LesLanguageService.Value` provides an LES parser and printer, neither of which are fully complete yet. It implements [`IParsingService`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1IParsingService.html).
+- `IndexPositionMapper` provides mapping from `SourceRange` to `SourcePos` and back, but you don't necessarily _need_ this class because `BaseLexer` already keeps track of the current line number (and where it started). In your lexer, you **must** call `AfterNewline()` at each newline in order for index-position mapping to work correctly.
+- [`LNode`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNode.html) is a [Loyc Tree](http://loyc.net/loyc-trees). Parsers commonly use [`LNodeFactory`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNodeFactory.html) to help construct `LNode`s.
+- `LesLanguageService.Value` provides an LES parser and printer. It implements [`IParsingService`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1IParsingService.html).
 - [`SourceFileWithLineRemaps`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1SourceFileWithLineRemaps.html) is a helper class for languages that have a `#line` directive.
 - [`Precedence`](http://ecsharp.net/doc/code/structLoyc_1_1Syntax_1_1Precedence.html): a simple but flexible standard representation for the concept of operator precedence and "miscibility".
-- [`CodeSymbols`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1CodeSymbols.html) is a `static class` filled with standard `Symbol`s used in Loyc trees for operators (`Add` for +, `Sub` for -, `Mul` for *, `Set` for =, `Eq` for `==`, ...), statements (`Class` for `#class`, `Enum` for #enum, `ForEach` for #foreach, ...), modifiers (`Private` for #private, `Static` for #static, `Virtual` for #virtual, ...), types (`Void` for `#void`, `Int32` for `#int32`, Double for `#double`, ...), trivia (`TriviaInParens` for `#trivia_inParens`, ...), and so on.
+- [`CodeSymbols`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1CodeSymbols.html) is a `static class` filled with standard `Symbol`s used in Loyc trees for operators (`Add` for +, `Sub` for -, `Mul` for *, `Assign` for =, `Eq` for `==`, ...), statements (`Class` for `#class`, `Enum` for #enum, `ForEach` for #foreach, ...), modifiers (`Private` for #private, `Static` for #static, `Virtual` for #virtual, ...), types (`Void` for `#void`, `Int32` for `#int32`, Double for `#double`, ...), and so on.
 
 The Loyc libraries contain only "safe", verifiable code.
 
-**Note**: some of the links go to the SourceForge code browser which chops off the right side of the code. To scroll rightward in the code, click any line of code and then hold the right arrow key.
-
-## Configuring LLLPG
+Configuring LLLPG
+-----------------
 
 LLLPG can be invoked either with the custom tool for Visual Studio, or on the command line (or in a pre-build step) by running **LLLPG.exe _filename_**.
 
@@ -80,24 +78,25 @@ The following command-line options are reported by LLLPG --help:
     --help: show this screen
     --inlang=name: Set input language: --inlang=ecs for Enhanced C#, --inlang=les for LES
     --macros=filename.dll: load macros from given assembly
-      (by default, just LEL 'prelude' macros are available)
-    --max-expand=N: stop expanding macros after N expansions.
+    --max-expand=N: stop expanding macros after N nested or iterated expansions.
     --noparallel: Process all files in sequence
+    --nostdmacros: Don't scan LeMP.StdMacros.dll or pre-import LeMP and LeMP.Prelude
     --outext=name: Set output extension and optional suffix:
         .ecs (Enhanced C#), .cs (C#), .les (LES)
       This can include a suffix before the extension, e.g. --outext=.output.cs
       If --outlang is not used, output language is chosen by file extension.
     --outlang=name: Set output language independently of file extension
     --parallel: Process all files in parallel (this is the default)
-    --timeout: Aborts the processing thread(s) after this number of seconds
-      (0=never, default=30)
+    --set:key=literal: Associate a value with a key (use #get(key) to read it back)
+    --snippet:key=code: Associate code with a key (use #get(key) to read it back)
+    --timeout=N: Aborts the processing thread(s) after this many seconds (0=never)
     --verbose: Print extra status messages (e.g. discovered Types, list output files).
-
+  
 Any questions?
 
-A couple of these options, such as `--verbose` and `--timeout=N`, are supported in the LLLPG Custom Tool; you can put command-line options in the "Custom Tool Namespace" field in Visual Studio. The `--outext` option is not supported because Visual Studio requires LLLPG to choose the output file extension before it provides the "Custom Tool Namespace" value; if you want LES output, you can use `LLLPG_Les` as the custom tool name instead of `LLLPG`.
+Some of these options, such as `--verbose` and `--timeout=N`, are supported in the LLLPG Custom Tool; you can put command-line options in the "Custom Tool Namespace" field in Visual Studio.
 
-**Note**: the `[Verbosity(N)]` grammar attribute doesn't work without the `--verbose` option.
+**Note**: in VS, the `[Verbosity(N)]` grammar attribute doesn't work without the `--verbose` option.
 
 In your *.ecs or *.les input file, the syntax for invoking LLLPG is to use one of these statements:
 
@@ -107,7 +106,7 @@ In your *.ecs or *.les input file, the syntax for invoking LLLPG is to use one o
     LLLPG(parser(...options...)) { /* rules */ };
     LLLPG   { /* parser mode is the default */ };
 
-LES requires the semicolon while EC# does not. Also, LES files permit `LLLPG lexer {...}` and `LLLPG parser {...}` without parenthesis, which (due to the syntax rules of LES) is exactly equivalent to `LLLPG(lexer) {...}` or `LLLPG(parser) {...}`.
+(LES requires the semicolon while EC# does not, and LES files permit `LLLPG lexer {...}` and `LLLPG parser {...}` without parenthesis, which (due to the syntax rules of LES) is exactly equivalent to `LLLPG(lexer) {...}` or `LLLPG(parser) {...}`).
 
 The following options are available for both `lexer` and `parser`:
 
@@ -136,232 +135,322 @@ In addition to the `lexer` and `parser` options, you can add one or more of the 
 - `[LL(int)]` (synonyms: `[k(int)]` and `[DefaultK(int)]`): specifies the default maximum number of lookahead characters or tokens in this grammar.
 - `[AddComments(false)]`: by default, a comment line is printed in the output file in front of the code generated for every Alts (branching point: `| / * ?`). `[AddComments(false)]` removes these comments.
 
-## Boilerplate
+Boilerplate
+-----------
 
-The typical outline of an EC# grammar file looks like this. You'll start by defining token types and a lexer...
+"Boilerplate" is repetitive code you must write every time you do a task. Because LLLPG leaves you in charge of defining token types and controlling the overall parsing process, a bit more boilerplate is required in LLLPG than in most parser generators; but the benefit is that there is less magic going on: you can see how everything works, and hopefully learn to control it if you need to.
 
-	using System(, .Text, .Linq, .Collections.Generic, .Diagnostics);
-	using Loyc;               // optional (for IMessageSink, Symbol, etc.)
-	using Loyc.Collections;   // optional (many handy interfaces & classes)
-	using Loyc.Syntax.Lexing; // For BaseLexer
-	using Loyc.Syntax;        // For BaseParser<Token> and LNode
+When parsing a typical programming language, you need two stages (Lexing and Parsing) although some languages, such as JSON, are simple enough to parse in a single stage (lexer and parser combined into a single LLLPG "lexer"), and some languages (such as PHP or Liquid) might benefit from more than two stages. The [Enhanced C#](http://ecsharp.net) parser has four stages: lexer, preprocessor (for `#if`, `#region`, etc.), [tree parser](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html), and main parser).
 
-	namespace MyLanguage; // Braces around the rest of the file are optional
+The official two-stage boilerplate example is included in the [LLLPG-Samples](https://github.com/qwertie/LLLPG-Samples) repository, but let's review a snapshot of it (May 2016). Now, no IntelliSense (code completion) is available in .ecs files, so it can be useful to split your Lexer and Parser classes between two files, and that's what the boilerplate example does. In the Grammars.cs file, IntelliSense will be available and in the Grammars.ecs file you put your grammar code.
 
-    using TT = TokenType; // Abbreviate TokenType as TT
+Typically you start by defining a token types:
 
-    public enum TokenType
+~~~csharp
+public enum TokenType
+{
+    EOF = 0, // End-of-file. Conventional to use 0 so that default(Token) is EOF
+    Newline = 1,
+    Number = 2,
+    /* TODO: add more token names here */
+}
+~~~
+
+The lexing stage produces tokens that are sent to the parser, but how you store tokens is up to you. You could define your own `Token` structure, like this:
+
+~~~csharp
+public struct Token : ISimpleToken<TokenType>
+{
+    public Token(int type, int startIndex, int length, object value = null)
     {
-        EOF = -1,
-        Unknown = 0,
-        Spaces = 1, 
-        Newline = 2,
-        Number = 3,
-        /* add more token names here */
+        Type = type; StartIndex = startIndex; Length = length; Value = value;
     }
+    
+    /// <summary>The category of the token (integer, keyword, etc.) used as
+    /// the primary value for identifying the token in a parser.</summary>
+    TokenType Type { get; set; }
+    /// <summary>Character index where the token starts in the source file.</summary>
+    int StartIndex { get; set; }
+    int Length { get; set; }
+    /// <summary>Value of the token. The meaning of this property is defined
+    /// by the particular implementation of this interface, but typically this 
+    /// property contains a parsed form of the token (e.g. if the token came 
+    /// from the text "3.14", its value might be <c>(double)3.14</c>.</summary>
+    object Value { get; }
+}
+~~~
 
-    // Optional: define a class/struct for Tokens, or use Loyc.Syntax.Lexing.Token.
-    // In the latter case, define a "public static TokenType Type(this Token t)" 
-    // extension method and define your TokenTypes based on TokenKind. Example:
-    // https://github.com/qwertie/LoycCore/blob/master/Loyc.Syntax/LES/TokenType.cs
-    public struct Token {
-        public TokenType Type;
-        public int StartIndex;
-        /* add additional members here */
-    }
+But you can also use the default `Token` in the `Loyc.Syntax.Lexing` namespace in Loyc.Syntax.dll; the boilerplate makes the latter choice. In that case we should define this extension method on it because the default `Token` just uses a raw `int` as the token type:
 
-    class MyLexer : BaseLexer
+~~~csharp
+public static class TokenExt {
+    public static TokenType Type(this Token t) 
+        { return (TokenType)t.TypeInt; }
+}
+~~~
+
+### Boilerplate Lexer ###
+
+Because LLLPG doesn't control the overall lexing and parsing processes (unlike in, for example, ANTLR), you need a little more boilerplate code to indicate how lexing will work. Here's the lexer boilerplate in the Grammars.cs file:
+
+~~~csharp
+partial class Lexer : BaseILexer<ICharSource, Token>
+{
+    // When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
+    // data from an `ICharSource`, which the string wrapper `UString` implements.
+    public Lexer(string text, string fileName = "") 
+        : this((UString)text, fileName) { }
+    public Lexer(ICharSource text, string fileName = "") 
+        : base(text, fileName) { }
+
+    private int _startIndex;
+
+    // Creates a Token
+    private Token T(TokenType type, object value)
     {
-        // If using the Loyc libraries: BaseLexer reads character data from an
-        // ICharSource. The string wrapper UString implements ICharSource.
-        public MyLexer(string text, string fileName = "") 
-            : this((UString)text, fileName) { }
-        public MyLexer(ICharSource text, string fileName = "") 
-            : base(text, fileName) { }
-        
-        // Error handler that may be called by LLLPG or BaseLexer. LLLPG requires 
-        // many other methods and properties provided by the base class.
-        protected override void Error(int lookahead, string message)
-        {
-            Console.WriteLine("At index {0}: {1}", InputPosition + lookahead, message);
-        }
-
-        LLLPG (lexer)
-        {
-            private TokenType _type;
-            private int _startIndex;
-            
-            public token Token NextToken()
-            {
-                _startIndex = InputPosition;
-                @{ { _type = TT.Spaces; }  (' '|'\t')+
-                 | { _type = TT.Newline; } Newline
-                 | { _type = TT.Number; }  Number
-                 | error _?
-                   { _type = TT.Unknown; Error(0, "Unrecognized token"); }
-                 };
-                return new Token() { 
-                    Type = _type, StartIndex = _startIndex, ...
-                };
-            }
-
-            // 'extern' suppresses code generation, so the code of Newline is
-            // inherited from BaseLexer but LLLPG still knows what's in it.
-            extern token Newline @[ '\r' '\n'? | '\n' ];
-
-            private token Number() @[
-                '0'..'9'+ ('.' '0'..'9'+)?
-            ];
-        }
+        return new Token((int)type, _startIndex, InputPosition - _startIndex, value);
     }
 
-`BaseLexer` only requires you to define an `Error()` method. `BaseParser<Token>` requires more work because: 
+    // Gets the text of the current token that has been parsed so far
+    private UString Text()
+    {
+        return CharSource.Slice(_startIndex, InputPosition - _startIndex);
+    }
+}
+~~~
 
-- it doesn't know about your `TokenType`: conversions to '`int`' are required because C# doesn't allow a generic class to _efficiently_ compare unknown enum values or convert them to int. So you must use the `matchType(int)` option, and `BaseParser` requires you to define `EOFInt` while LLLPG itself needs you to define `EOF`.
-- it doesn't know how to get your `TokenType` out of a `Token`, so you must override `LA0Int`.
-- unlike `BaseLexer`, which is based on `ICharSource` (Loyc version) or `IList<char>` (standalone version in the zip file), `BaseParser` isn't in charge of storing the input tokens, because I couldn't decide upon a single reasonable way to manage the input tokens. Therefore your derived class is in charge of storing the list of tokens and overriding `LT(i)` for supplying `Token`s to the base class (which are returned by the `Match(...)` methods.)
+This class is derived from `BaseILexer` rather than `BaseLexer` so that it implements `ILexer<Token>`, which includes `IEnumerator<Token>`. This is useful because it will let us use the `Buffered()` extension method later, which lazily converts `IEnumerator<T>` into `IList<T>`.
 
-So here's a typical outline for a parser:
+And here is the rest of the boilerplate in the Grammars.ecs file, plus a `Newline` and `Number` rule to get you started:
 
-	namespace MyLanguage
-	{
-		public partial class MyParser : BaseParser<Token>
-		{
-			public MyParser(ICharSource text, string fileName)
-			{
-				// Grab all tokens from the lexer and ignore spaces
-				var lexer = new MyLexer(text, fileName);
-				_sourceFile = _lexer.SourceFile;
-				_tokens = new List<Token>();
-				Token t;
-				while ((t = lexer.NextToken()).Type != TT.EOF) {
-					if ((t.Type != TT.Spaces && t.Type != TT.Newline))
-						_tokens.Add(t);
-				}
-			}
+~~~csharp
+partial class Lexer
+{
+    LLLPG (lexer); // Lexer starts here
 
-			#region Methods & properties required by BaseParser and LLLPG
-			// Here are a couple of things required by LLLPG itself (EOF, LA0, 
-			// LA(i)) followed by the helper methods required by BaseParser. 
-			// The difference between "LA" and "LT" is that "LA" refers to the 
-			// lookahead token type (e.g. TT.Num, TT.Add, etc.), while "LT" 
-			// refers to the entire token (that's the Token structure, in this 
-			// example.) LLLPG itself only requires LA, but BaseParser assumes 
-			// that there is also a "Token" struct or class, which is the type 
-			// returned by its Match() methods.
+    public override rule Maybe<Token> NextToken() @{
+        (' '|'\t')* // ignore spaces
+        {_startIndex = InputPosition;}
+        // this is equivalent to (t:Newline / t:Number / ...) { return t; }:
+        ( any token in t:token { return t; } // `any token` requires v1.8.0
+        / EOF { return Maybe<Token>.NoValue; }
+        )
+    }
 
-			const TokenType EOF = TT.EOF;
-			TokenType LA0 { get { return LT0.Type; } }
-			TokenType LA(int offset) { return LT(offset).Type; }
+    private new token Token Newline @{
+        ('\r' '\n'? | '\n') {
+            AfterNewline(); // increment the current LineNumber
+            return T(TT.Newline, WhitespaceTag.Value);
+        }
+    };
+    private token Token Number() @{
+        '0'..'9'+ ('.' '0'..'9'+)? { 
+            var text = Text();
+            return T(TT.Number, ParseHelpers.TryParseDouble(ref text, radix: 10));
+        }
+    };
+    
+    // TODO: define more tokens here
+}
+~~~
 
-			protected override int EofInt() { return (int) EOF; }
-			protected override int LA0Int { get { return (int) LT0.Type; } }
-			protected override Token LT(int i)
-			{
-				i += InputPosition;
-				if (i < _tokens.Count) {
-					return _tokens[i];
-				} else {
-					return new Token { Type = EOF };
-				}
-			}
-			protected override void Error(int lookahead, string message)
-			{
-				int tokenIndex = InputPosition + lookahead, charIndex;
-				if (tokenIndex < _tokens.Count)
-					charIndex = _tokens[tokenIndex].StartIndex;
-				else
-					charIndex = _sourceFile.Text.Count;
-				SourcePos location = _sourceFile.IndexToLine(charIndex);
-				Console.WriteLine("{0}: {1}", location.ToString(), message);
-			}
-			// BaseParser.Match() uses this for constructing error messages.
-			protected override string ToString(int tokenType)
-			{
-				switch ((TT) tokenType) {
-				case TT.Id:     return "identifier";
-				case TT.Num:    return "number";
-				case TT.Set:    return "':='";
-				case TT.LParen: return "'('";
-				case TT.RParen: return "')'";
-				default:        return ((TokenType) tokenType).ToString();
-				}
-			}
+You might want to change this to strip out newlines so that the parser never sees them:
 
-			#endregion
+~~~csharp
+    public override rule Maybe<Token> NextToken() @{
+        (' '|'\t'|Newline)* // ignore spaces and newlines
+        {_startIndex = InputPosition;}
+        ( any token in t:token { return t; } // `any token` requires v1.8.0
+        / EOF { return Maybe<Token>.NoValue; }
+        )
+    }
 
-			LLLPG(parser(laType(TokenType), matchType(int)))
-			{
-				public rule LNode Start() @[...];
-			}
+    // Since our newline rule no longer returns a token, we can use `extern` 
+    // to inherit the implementation of the Newline method in the base class
+    // (but we still need to specify its grammar so LLLPG knows when to call it.)
+    // Notice that this is marked "rule" and not "token" so it is ignored by
+    // the "any token in ..." command above.
+    extern rule Newline @{ '\n' | '\r' '\n'? };
+~~~
+
+### Boilerplate Parser ###
+
+LLLPG 1.4+ requires less boilerplate code than previous versions, but we still need to define 
+
+- A top-level `Parse` method that combines your parser with your lexer
+- A constructor
+- A method that converts a token type integer to a string (for error reporting)
+
+You'll find that code in Grammars.cs:
+
+~~~csharp
+partial class Parser : BaseParserForList<Token, int>
+{
+    public static List<double> Parse(string text, string fileName = "")
+    {
+        var lexer = new Lexer(text, fileName);
+        // Lexer is derived from BaseILexer, which implements IEnumerator<Token>.
+        // Buffered() is an extension method that gathers the output of the 
+        // enumerator into a list so that the parser can consume it.
+        var parser = new Parser(lexer.Buffered(), lexer.SourceFile);
+        return parser.Numbers();
+    }
+    
+    protected Parser(IList<Token> list, ISourceFile file, int startIndex = 0) 
+        : base(list, default(Token) /* EOF token */, file, startIndex) {}
+    
+    // Used for error reporting
+    protected override string ToString(int tokenType) { 
+        return ((TokenType)tokenType).ToString();
+    }
+}
+~~~
+
+`BaseParserForList<Token, int>` is a new base class in LLLPG 1.4+ that assumes your tokens are stored in an `IList<Token>`; `int` is the data type of token types (unfortunately it is not legal to use your `enum TokenType` here because for some reason `TokenType` does not implement `IEquatable<TokenType>` which means that it is impossible for `BaseParserForList` to compare two `TokenTypes` _efficiently_. That's why `int` is used instead.
+
+Finally, you need some kind of grammar. The boilerplate code in Grammars.ecs simply puts numbers into a list:
+
+partial class Parser
+{
+    LLLPG (parser(matchType: int, laType: TokenType, terminalType: Token));
+
+    rule List<double> Numbers @{
+        // $result is special to LLLPG. It's the return value of the rule.
+        {$result = new List<double>();}
+        (n:TT.Number {$result.Add((double)n.Value);})*
+    };
+}
+
+The `laType` option tells LLLPG that your actual token type is `TokenType`. The `matchType: int` option is required because the base class uses `int` instead. And the `terminalType: Token` indicates that when you write something like `n:TT.Number`, the data type of `n` should be `Token`.
+
+### Producing a Loyc syntax tree ###
+
+Normally, you'll use `{actions}` in the grammar to produce syntax tree objects. You can either design your own syntax tree, or use immutable Loyc trees (`LNode`s). Let's try out `LNode`.
+
+`LNode` has `static` methods for constructing nodes, but it's more convenient to use [`LNodeFactory`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1LNodeFactory.html) which keeps track of the current source file ([`ISourceFile`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1ISourceFile.html)) and provides a wider variety of methods for constructing nodes. So let's start by modifying the constructor to create an `LNodeFactory`:
+
+~~~csharp
+    LNodeFactory F;
+
+    protected Parser(IList<Token> list, ISourceFile file, int startIndex = 0)
+        : base(list, default(Token), file, startIndex) { F = new LNodeFactory(file); }
+~~~
+
+Now, let's make a really small "language" that supports addition, subtraction, and "function calls". 
+So let's create add some new token types for that:
+
+~~~csharp
+public enum TokenType
+{
+    EOF = 0,    // End-of-file. If we choose 0, default(Token) is EOF
+    Number = 2, // Number, e.g. 3.3
+	Id = 3,     // Identifier, e.g. foo bar x y
+	LParen = 4, // (
+	RParen = 5, // )
+	Comma = 6,  // ,
+	Add = 10,   // +
+	Sub = 11,   // -
+}
+
+Next, let's expand the lexer to recognize the new tokens `Id`, `LParen`, etc.:
+
+~~~csharp
+	private token Token Id() @{
+		('a'..'z'|'A'..'Z'|'_')
+		('a'..'z'|'A'..'Z'|'_'|'0'..'9')* {
+			return T(TT.Id, (Symbol) Text().ToString());
 		}
-	}
+	};
+
+	private token Token LParen() @{ '(' { return T(TT.LParen, null); } };
+	private token Token RParen() @{ ')' { return T(TT.RParen, null); } };
+	private token Token Comma()  @{ ',' { return T(TT.Comma, null); } };
 	
-It's often more convenient to separate the grammar into a separate file from the other code, because you can't get code completion/IntelliSense in your LLLPG file. Hence, I always mark my parser as `partial` so I can write some of the code in a file that the IDE understands.
+	private token Token Operator()
+	@{	'+' { return T(TT.Add, CodeSymbols.Add); }
+	|	'-' { return T(TT.Sub, CodeSymbols.Sub); }
+	};
+~~~
 
-Normally, you'll use `{actions}` in the grammar to produce syntax tree objects. You can design the syntax tree yourself, or use Loyc trees (`LNode`s). `LNode` has `static` methods for constructing them, but it's more convenient to use `LNodeFactory` which keeps track of the current source file (`ISourceFile`) and provides a wider variety of methods for constructing trees. Here's a small expression parser that contructs `LNode`s (assuming the lexer produces Loyc Tokens):
+Recall that `T()` is a helper method, defined above, for creating a `Token`. You could define a separate rule for each operator, but the code is a bit shorter if you combine all operators into a single token rule.
 
-	public partial class MyParser : BaseParser<Token>
- 	{
-		LNodeFactory F;
+Note that when creating the operator tokens, we set the value to one of the predefined symbols in [`CodeSymbols`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1CodeSymbols.html), because `LNode` uses `Symbol` to represent all identifiers and operator names, so we will use the `Symbol` later when constructing the syntax tree. To specify a `Symbol` that does not exist in `CodeSymbols`, you can cast any `string` to `Symbol` (e.g. `(Symbol)"string"`). The benefit of `Symbol` over `string` is that comparing Symbols is as fast as comparing two integers; this is because `==` is not overloaded: equality is defined as reference equality, as there is only one instance of a given `Symbol`.
 
-		public MyParser(...)
-		{
-			ISourceFile file = ...;
-			F = new LNodeFactory(file);
-		}
+Finally, we need to write a grammar for our new language. In Grammars.ecs, replace the `Parser` class with this code:
 
-		LLLPG (parser(laType(TokenType), matchType(int)))
-		{
-			alias("(" = TT.LParen);
-			alias(")" = TT.RParen);
-			alias("*" = TT.Mul);
-			alias("/" = TT.Div);
-			alias("+" = TT.Add);
-			alias("-" = TT.Sub);
+~~~csharp
+partial class Parser
+{
+    LLLPG (parser(matchType: int, laType: TokenType, terminalType: Token, 
+                  listInitializer: VList<T> _ = new VList<T>()));
 
-			LNode BinOp(Symbol type, LNode lhs, LNode rhs)
-			{
-				return F.Call(type, lhs, rhs, lhs.Range.StartIndex, rhs.Range.EndIndex);
-			}
+    alias("(" = TT.LParen);
+    alias(")" = TT.RParen);
+    alias("+" = TT.Add);
+    alias("-" = TT.Sub);
+    alias("," = TT.Comma);
 
-			public rule LNode Start() @[ e:=AddExpr EOF {return e;} ];
+    rule LNode ExpressionAndEof @{
+        // Usually you should define a rule that checks for EOF at the end,
+		// otherwise bad input like "5 x" can parse successfully (as a literal 5)
+		result:Expression EOF
+    };
 
-			private rule LNode AddExpr() @[
-				e:=MulExpr
-				[ op:=("+"|"-") rhs:=MulExpr {e = BinOp((Symbol) op.Value, e, rhs);} ]*
-				{ return e; }
-			];
+    rule LNode Expression @{
+        result:PrimaryExpr
+        [    // Infix operator
+            op:("+"|"-") PrimaryExpr  {$result = F.Call((Symbol) op.Value, $result, $PrimaryExpr);}
+        ]*
+    };
 
-			private rule LNode MulExpr() @[ 
-				e:=PrefixExpr
-				[ op:=("*"|"/") rhs:=PrefixExpr 
-				  {e = BinOp((Symbol) op.Value, e, rhs);}
-				]*
-				{return e;}
-			];
+    rule LNode PrimaryExpr @{
+        result:Atom
+        [    // Method call
+            "(" ExpressionList ")"   {$result = F.Call($result, $ExpressionList);} 
+        ]*
+    };
 
-			private rule LNode PrefixExpr() @
-				[ minus:="-" e:=Atom {return F.Call(S.Sub, e, minus.StartIndex, e.Range.EndIndex);}
-				| e:=Atom            {return e;}
-				];
+    rule VList<LNode> ExpressionList @{
+        result+:Expression ["," result+:Expression]*
+    };
 
-			private rule LNode Atom() @[
-				{LNode r;}
-				( t:=TT.Id          {r = F.Id(t);}
-				| t:=TT.Num         {r = F.Literal(t);}
-				| "(" r=Expr() ")"
-				| error             {r = F._Missing;}
-				  {Error(0, "Expected identifer, number, or (parens)");}
-				)
-				{return r;}
-			];
-		}
-	}
+    rule LNode Atom
+    @{  t:TT.Number        { return F.Literal(t); }
+    |   t:TT.Id            { return F.Id(t); }
+    |   "(" Expression ")" { return F.InParens($Expression); }
+    |   error {Error(0, "Expected subexpression");} 
+        (_|EOF)            { return F.Missing; }
+    };
+}
+~~~
 
-A complete example is included in the zip file for LLLPG 1.1.0 (note that the '#' symbols printed by the demo are [planned to be removed](http://loyc-etc.blogspot.ca/2014/02/in-operator-names-to-be-removed.html)). By the way, if you have any ideas about how LLLPG could be changed to allow you to construct syntax trees in a more compact or elegant manner, I am open to suggestions.
+I took the liberty of adding a bit of manual error handling in the last rule, as discussed later.
 
-## Rules with parameters and return values
+Finally, you'll need to change the `Parser.Parse` function (in Grammars.cs) to call `Expression` instead of `Numbers`:
+
+~~~csharp
+    public static LNode Parse(string text, string fileName = "")
+    {
+        var lexer = new Lexer(text, fileName);
+        var parser = new Parser(lexer.Buffered(), lexer.SourceFile);
+        return parser.ExpressionAndEof();
+    }
+~~~
+
+Finally, go to `Main()` and change the way the input `line` is printed:
+
+~~~csharp
+    Console.WriteLine(Parser.Parse(line));
+~~~
+
+This will print the `LNode` with the default printer, which produces [LES code](http://loyc.net/les).
+
+You're done! You should now have a working parser that creates Loyc trees.
+
+![example output](SimpleLNodeExample.png)
+
+Rules with parameters and return values
+---------------------------------------
 
 You can add parameters and a return value to any rule, and use parameters when calling any rule:
 
@@ -413,7 +502,7 @@ Here's the code generated for this parser:
 
 There is a difference between `Foo(123)` and `Foo (123)` with a space. `Foo(123)` calls the `Foo` rule with a parameter of 123; `Foo (123)` is equivalent to `Foo 123` so the rule (or terminal) Foo is matched followed by the number 123 (which is "`{`" in ASCII).
 
-## Parameters to recognizers
+### Parameters to recognizers ###
 
 As you learned in the last article, each rule can have a _recognizer form_ which is called by syntactic predicates `&(...)`. The recognizer always has a return type of `bool`, regardless of the return type of the main rule, and any action blocks `{...}` are removed from the recognizer (currently there is no way to keep an action block, sorry.)
 
@@ -515,9 +604,18 @@ Notice that `BarCaller()` calls `Bar(1, 2)`, with two arguments. However, `Scan_
 
 LLLPG will **not notice** that you removed the _first_ parameter rather than the _second_, it will only notice that the recognizer has a _shorter_ parameter list, so it will only remove the _second_ parameter. Also, LLLPG will only remove parameters from calls to the recognizer, not calls to the main rule, so the recognizer cannot accept more arguments than the main rule.
 
-## Saving inputs
+Saving inputs
+-------------
 
-LLLPG recognizes three operators for "assigning" the result of reading a terminal or nonterminal to a variable: =, := and +=. This table how code is generated for these operators:
+LLLPG recognizes five operators for "assigning" a token or return value to a variable: `:`, `=`, `:=`, `+=` and `+:`.
+
+- `:=` uses `var` to creates a variable in-place to hold a token or return value.
+- `:` creates a variable at the top of the method to hold a token or return value. Because the variable is created separately, LLLPG must "guess" the correct data type for the variable. This may require you to specify the `terminalType` operation, and there are situations where you can't use this operator (e.g. LLLPG doesn't understand inheritance, so if you assign the same variable multiple times from different sources, LLLPG expects the type to be identical each time.)
+- `=` Assigns a value to a variable that you have declared manually.
+- `+=` Assumes the left-hand side is a list that you have declared manually; calls `Add` on that list.
+- `+:` Adds a token or return value to a list, but asks LLLPG to create the list.
+
+This table how code is generated for these operators:
 
 <table  border="1" width="640px">
 <tr>
@@ -539,42 +637,62 @@ LLLPG recognizes three operators for "assigning" the result of reading a termina
 <td><code>var x = Foo();</code></td>
 </tr>
 <tr>
+<td><code>:</code></td>
+<td><code>x:Foo</code></td>
+<td><code>// If you use the `terminalType: Token` option
+     <br/>Token x = default(Token); // at top of method
+     <br/>x = Match(Foo); // later</code></td>
+<td><code>// RetType refers to the return type of `Foo`
+     <br/>RetType x = default(RetType); // at top of method
+     <br/>x = Foo(); // later</code></td>
+</tr>
+<tr>
 <td><code>+=</code></td>
-<td><code>x+=Foo</code></td>
-<td><code>x.Add(Match(Foo));</code></td>
-<td><code>x.Add(Foo());</code></td>
+<td><code>lst+=Foo</code></td>
+<td><code>lst.Add(Match(Foo));</code></td>
+<td><code>lst.Add(Foo());</code></td>
+</tr>
+<tr>
+<td><code>+:</code></td>
+<td><code>lst+:Foo</code></td>
+<td><code>// If you use the `terminalType: Token` option
+     <br/>List&lt;Token> x = new List&lt;Token>; // at top of method
+     <br/>lst.Add(Match(Foo)); // later</code></td>
+<td><code>// RetType refers to the return type of `Foo`
+     <br/>List&lt;RetType> x = new List&lt;RetType>; // at top of method
+     <br/>lst.Add(Foo()); // later</code></td>
 </tr>
 </table>
 
 You can match one of a set of terminals, for example `x:=('+'|'-'|'.')` generates code like `var x = Match('+', '-', '.')` (or `var x = Match(set)` for some `set` object, for large sets). However, currently LLLPG does not support matching a list of nonterminals, e.g. `x:=(A()|B())` is not supported.
 
-I'm thinking about adding a feature where you would write simply `Foo` instead of `foo:=Foo` and then write `$Foo` in code later, which retroactively saves the value. For example, instead of writing code like this:
+In LLLPG 1.3.2 I added a feature where you would write simply `Foo` instead of `foo:=Foo` and then write `$Foo` in code later, which _retrospectively_ saves the value returned from `Foo` in an "anonymous" variable. For example, instead of writing code like this:
 
-	private rule LNode IfStmt() @[
-		{LNode @else = null;}
+	private rule LNode IfStmt() @{
+		{LNode els = null;}
 		t:=TT.If "(" cond:=Expr ")" then:=Stmt 
-		greedy(TT.Else @else=Stmt)?
-		{return IfNode(t, cond, then, @else);}
-	];
+		greedy[TT.Else els=Stmt]?
+		{return IfNode(t, cond, then, els);}
+	};
 
 It would be written like this instead:
 
-	private rule LNode IfStmt() @[
-		{LNode @else = null;}
+	private rule LNode IfStmt() @{
 		TT.If "(" Expr ")" Stmt 
-		greedy(TT.Else @else=Stmt)?
-		{return IfNode($TT.If, $Expr, $Stmt, @else);}
-	];
+		greedy[TT.Else els:Stmt]?
+		{return IfNode($(TT.If), $Expr, $Stmt, els);}
+	};
 
-Which would reduce the clutter inside the grammar. This idea (not yet implemented) comes from ANTLR which has something similar (more powerful, in fact). Suggestions?
+This makes the grammar look less cluttered.
 
-## Error handling mechanisms in LLLPG
+Error handling mechanisms in LLLPG
+----------------------------------
 
-Okay, frankly, I haven't 100% figured out the right way to do error handling in a parser, but LLLPG does give you enough flexibility, I think.
+Admittedly, I'm not 100% sure what the right way to do error handling is, but LLLPG does give you enough flexibility, I think.
 
 First of all, when matching a single terminal, LLLPG puts your own code in charge of error handling. For example, if the rule says
 
-	rule PlusMinus @[ '+'|'-' ];
+	rule PlusMinus @{ '+'|'-' };
 
 the generated code is 
 
@@ -589,11 +707,13 @@ So LLLPG is relying on the `Match()` method to decide how to handle errors. If t
 - Print an error, consume one character and continue?
 - Print an error, keep `InputPosition` unchanged and continue?
 
-I'm not sure what the best approach is, but you can handle the situation however you choose. If you have advice about this type of default error handling, please leave a comment.
+I'm not sure what the best approach is, but by default, `BaseLexer` throws a [`LogException`](http://ecsharp.net/doc/code/classLoyc_1_1LogException.html). You can modify the [`ErrorSink`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html#a2e052d761c53ba883b58b03cb7f8e4ff) property to avoid throwing; for example, use [`MessageSink.Console`](http://ecsharp.net/doc/code/classLoyc_1_1MessageSink.html) to write errors to the terminal.
+
+Currently, all the `Match` methods of `BaseLexer`/`BaseILexer` and `BaseParser`/`BaseParserForList` _do not_ consume the current character or token when an error occurs.
 
 For cases that require if/else chains or switch statements, LLLPG's default behavior is optimistic: Quite simply, it assumes there are no erroroneous inputs. When you write
 
-	rule Either @[ 'A' | B ];
+	rule Either @{ 'A' | B };
 
 the output is
   
@@ -609,9 +729,10 @@ the output is
 
 Under the assumption that there are no errors, if the input is not `'A'` then it must be `B`. Therefore, when you are writing a list of alternatives and one of them makes sense as a catch-all or default, you should put it last in the list of alternatives, which will make it the default. You can also specify which branch is the default by writing the word `default` at the beginning of one alternative:
 
-	rule B @[ 'B' ];
-	rule Either @[ default 'A' | B ];
+	rule B @{ 'B' };
+	rule Either @{ default 'A' | B };
 
+    // Output
 	void B()
 	{
 	  Match('B');
@@ -637,9 +758,9 @@ Occasionally these goals are in conflict: you may want a certain arm to have hig
 
 	LLLPG(lexer)
 	{
-		rule ConsonantOrNot @[ 
+		rule ConsonantOrNot @{ 
 			('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
-		];
+		};
 	}
 	
 	void ConsonantOrNot()
@@ -664,10 +785,10 @@ Occasionally these goals are in conflict: you may want a certain arm to have hig
 You can use the `default` keyword to mark the "vowel" arm as the default instead, in which case perhaps we should call it "non-consonant" rather than "vowel":
 
 	LLLPG(lexer) {
-		rule ConsonantOrNot @[ 
+		rule ConsonantOrNot @{ 
 			default ('A'|'E'|'I'|'O'|'U') {Other();} 
 			       / 'A'..'Z' {Consonant();}
-		];
+		};
 	}
 	
 The generated code will be somewhat different:
@@ -701,9 +822,9 @@ The generated code will be somewhat different:
 		} while (false);
 	}");
 
-This code ensures that the first branch matches any character that is not in one of the ranges 'B'..'D', 'F'..'H', 'J'..'N', 'P'..'T', or 'V'..'Z', i.e. the non-consonants (_Note_: this behavior was added in LLLPG 1.0.1; LLLPG 1.0.0 treats `default` as merely reordering the alternatives.)
+This code ensures that the first branch matches any character that is not in one of the ranges 'B'..'D', 'F'..'H', 'J'..'N', 'P'..'T', or 'V'..'Z', i.e. the non-consonants (_Note_: this behavior was added in LLLPG 1.0.1; LLLPG 1.0.0 treated `default` as merely reordering the alternatives.)
 
-Naming a default branch should never change the behavior of the generated parser _when the input is valid_. The default branch is invoked when the input is unexpected, which means it is specifically an error-handling mechanism.
+Specifying a `default` branch should never change the behavior of the generated parser _when the input is valid_. The default branch is invoked when the input is unexpected, which means it is specifically an error-handling mechanism.
 
 **Note**: `(A | B | default C)` is usually, but not always, the same as `(A | B | C)`. Roughly speaking, in the latter case, LLLPG will sometimes let A or B handle invalid input if the code will be simpler that way.
 
@@ -712,11 +833,11 @@ Another error-handling feature is that LLLPG can insert error handlers automatic
 	//[NoDefaultArm]
 	LLLPG(parser)
 	{
-		rule B @[ 'B' ];
-		rule Either @[ ('A' | B)* ];
+		rule B @{ 'B' };
+		rule Either @{ ('A' | B)* };
 	}
 
-
+    // Output
 	void B()
 	{
 	  Match('B');
@@ -749,7 +870,7 @@ When `[NoDefaultArm]` is added, the output changes to
 		 else if (la0 == EOF)
 			break;
 		 else
-			Error(InputPosition + 0, "In rule 'Either', expected one of: (EOF|'A'|'B')");
+			Error(0, "In rule 'Either', expected one of: (EOF|'A'|'B')");
 	  }
 	}
 
@@ -759,20 +880,23 @@ This mode probably isn't good enough for professional grammars so I'm taking sug
 
 	LLLPG(parser)
 	{
-		rule B @[ 'B' ];
-		rule Either @[ ('A' | B | default_error)* ];
+		rule B @{ 'B' };
+		rule Either @{ ['A' | B | default_error]* };
 	}
 
 `default_error` must be used by itself; it does not support, for example, attaching custom actions.
 
-You can customize the error handling for a particular loop using an `error` branch:
+Finally, you can customize the error handling for a particular loop using an `error` branch:
 
-	void Error(string s) { ... }
-	
 	LLLPG
 	{
 		rule B @[ 'B' ];
-		rule Either @[ ('A' | B | error _ {Error(""Anticipita 'A' aŭ B ĉi tie"");})* ];
+		rule Either @{
+            [  'A' 
+            |   B
+            |   error {Error(0, ""Anticipita 'A' aŭ B ĉi tie"");} _
+            ]*
+        };
 	}
 
 In this example I've written a custom error message in [Esperanto](http://en.wikipedia.org/wiki/Esperanto); here's the output:
@@ -847,15 +971,16 @@ Currently you can't (in general) force an and-predicate to be checked as part of
 
 That's it for error handling in LLLPG!
 
-## A random fact
+A random fact
+-------------
 
 _Did you know?_ Unlike ANTLR, LLLPG does not care much about parenthesis when interpreting loops and alternatives separated by `|` or `/`. For example, all of the following rules are interpreted the same way and produce the same code:
 
-    rule Foo1 @[ ["AB" | "A" | "CD" | "C"]*     ];
-    rule Foo2 @[ [("AB" | "A" | "CD" | "C")]*   ];
-    rule Foo3 @[ [("AB" | "A") | ("CD" | "C")]* ];
-    rule Foo4 @[ ["AB" | ("A" | "CD") | "C"]*   ];
-    rule Foo5 @[ ["AB" | ("A" | ("CD" | "C"))]* ];
+    rule Foo1 @{ ["AB" | "A" | "CD" | "C"]*     };
+    rule Foo2 @{ [("AB" | "A" | "CD" | "C")]*   };
+    rule Foo3 @{ [("AB" | "A") | ("CD" | "C")]* };
+    rule Foo4 @{ ["AB" | ("A" | "CD") | "C"]*   };
+    rule Foo5 @{ ["AB" | ("A" | ("CD" | "C"))]* };
 
 The loop (`*`) and all the arms are integrated into a single prediction tree, regardless of how you might fiddle with parenthesis. Knowing this may help you understand error messages and generated code better.
 
@@ -889,7 +1014,8 @@ This happens because a "terminal set" is always a single unit in LLLPG, i.e. mul
 	  }
 	}
 
-## End of part 3
+End of part 3
+-------------
 
 The following topics still remain for future articles:
 
@@ -902,7 +1028,8 @@ The following topics still remain for future articles:
 
 Are you using LLLPG to parse an interesting language? Please leave a comment!
 
-## History
+History
+-------
 
 LLLPG v1.0.1:
 
