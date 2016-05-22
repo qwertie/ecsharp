@@ -6,7 +6,8 @@ toc: true
 redirectDomain: ecsharp.net
 ---
 
-## Introduction
+Introduction
+------------
 
 LLLPG (Loyc LL(k) Parser Generator) is a recursive-decent parser generator for C#, with a feature set slightly better than ANTLR version 2.
 
@@ -26,14 +27,15 @@ As of 2016, Enhanced C# is incomplete; only two components of it are ready (the 
 
 Other design elements of LLLPG include:
 
-* **LL(k) with benefits.** There are several types of parser generators, e.g. LALR(1), PEG, LL(1), LL(k), and LL(\*). Of these, I think PEG (Parsing Expression Grammars,  usually implemented with packrat parsers) and LL(k)/LL(\*) (ANTLR 2 and ANTLR 3/4, respectively) are the most popular for writing new grammars today (some people also use regular expressions, but regexes are much less powerful than "proper" parser generators because they do not support full recursion). In addition to plain LL(k), LLLPG has a few extra, advanced features because some programming languages are difficult to express with an LL(k) grammar alone. LL(k) has two main advantages: potentially high performance (especially as k gets lower), and output that is relatively easy to understand. To be honest, ANTLR 3/4 is more powerful than LLLPG because the lookahead value `k` is unlimited, but unlimited lookahead is not free; if your goal is to write a fast parser, limiting yourself to LL(k) is something you might do anyway. In LLLPG, you can still do unlimited lookahead with a _zero-width assertion_, it's just not automatic; you have to ask for it.
+* **LL(k) with benefits.** There are several types of parser generators, e.g. LALR(1), PEG, LL(1), LL(k), and LL(\*). Of these, I think PEG (Parsing Expression Grammars,  usually implemented with packrat parsers) and LL(k)/LL(\*) (ANTLR 2 and ANTLR 3/4, respectively) are the most popular for writing new grammars today (some people also use regular expressions, but regexes are much less powerful than "proper" parser generators because they do not support full recursion). In addition to plain LL(k), LLLPG has a few extra, advanced features because some programming languages are difficult to express with an LL(k) grammar alone. LL(k) has two main advantages: potentially high performance (especially if k is low), and output that is relatively easy to understand. To be honest, ANTLR 3/4 is more powerful than LLLPG because the lookahead value `k` is unlimited, but unlimited lookahead is not free; if your goal is to write a fast parser, limiting yourself to LL(k) is something you might do anyway. In LLLPG, you can still do unlimited lookahead with a _zero-width assertion_, it's just not automatic; you have to ask for it.
 * **Simple, concise output. Minimal runtime baggage.** LLLPG attempts to generate lightweight parsers, similar to what you would write by hand (slightly more verbose, but not bad). I haven't tried ANTLR 4, but LLLPG usually produces simpler output than ANTLR 3. Plus, unlike ANTLR, LLLPG is designed to not need a runtime library; it can get by with just a single base class (actually two in practice, one for lexers and one for parsers) that you can copy from me, or rewrite yourself, if you enjoy easy work.
 * **Speed over beauty.** LLLPG tries to produce code that is easy-to-follow, but it selectively uses `goto` and `switch` statements to maximize performance.
 * **Exception-free.** Last time I used ANTLR, it still relied on exceptions for backtracking. LLLPG does not; actually, it doesn't do backtracking at all except when you use syntactic predicates, which create special backtracking subparsers called "recognizers".
-* **A focus on prediction.** LLLPG is designed to focus on one job and do it as well as possible: LL(k) prediction analysis. LLLPG doesn't try to do everything for you: it doesn't construct tokens, it doesn't create syntax trees. You're a programmer, and you already have a programming language; so I assume you know enough to design your own `Token` class and syntax tree classes. If I designed and built your syntax trees for you, I figure I'd just be increasing the learning curve: not only would you have to learn how to use LLLPG, you'd have to learn my class library too! No, LLLPG's main goal is to eliminate the most difficult and error-prone part of writing LL(k) parsers by hand: **figuring out which branch to take**, or which method to call. LLLPG still leaves you in charge of the rest. That said, I _have_ designed a universal syntax tree as part of the [Loyc project][9], called the [Loyc tree][10], but LLLPG is not oriented toward helping you use them (later, I may add features for that purpose). Even so, I hope you'll consider using Loyc trees. Internally, LLLPG's implementation uses them heavily.
+* **A focus on prediction.** LLLPG is designed to focus on one job and do it as well as possible: LL(k) prediction analysis. LLLPG doesn't try to do everything for you: it doesn't construct tokens, it doesn't create syntax trees. You're a programmer, and you already have a programming language; so I assume you know enough to design your own `Token` class and syntax tree classes. If I designed and built your syntax trees for you, I figure I'd just be increasing the learning curve: not only would you have to learn how to use LLLPG, you'd have to learn my class library too! No, LLLPG's main goal is to eliminate the most difficult and error-prone part of writing LL(k) parsers by hand: **figuring out which branch to take**, or which method to call. LLLPG still leaves you in charge of the rest. That said, I _have_ designed a universal syntax tree as part of the [Loyc project][9], called the [Loyc tree][10], but LLLPG is not oriented toward helping you use them (someday I may add features for that purpose). Even so, I hope you'll consider using Loyc trees. Internally, LLLPG's implementation uses them heavily.
 * **Balanced between speed and power.** LLLPG supports LL(k), zero-width assertions, and other features that make it more powerful than [Coco/R][11] which only supports LL(1) directly. It is not as powerful as ANTLR, which supports LL(\*) and beyond, but by writing LL(k) grammars rather than LL(\*) grammars, you can theoretically get faster parsers. I can't compete with ANTLR on features; Terrance Parr has been writing ANTLR and its predecessor for almost 20 years now, I think. But, you probably don't _need_ all those advanced features; I believe the feature set I chose is powerful enough for all modern languages, although it doesn't make everything easy. The fact that I wrote the EC# parser in LLLPG is proof of its real-world value.
 
-## "Blah, blah, blah! Show me this thing already!"
+"Blah, blah, blah! Show me this thing already!"
+-----------------------------------------------
 
 Okay, let's get started! Here's a really simple example (EC#):
 
@@ -61,20 +63,21 @@ And the output is:
         }
     }
 
-That's it! So here's some relevant facts to learn at this point (I love bulleted lists, don't you? I wish people would use more of them!):
+That's it! So here's some relevant facts to learn at this point:
 
-* First of all, to keep this example simple and brief I didn't bother with any "`using`" statements, and I didn't wrap this code in a `namespace` or a `class`. My little mini-language doesn't care; the output reflects the input, so the output will likewise not have any "`using`" statements and won't be wrapped in a `class` or a `namespace` either. Garbage in, garbage out. If you want the output to be wrapped in a class declaration, you have to wrap the input in a class declaration.
+* First of all, to keep this example simple and brief I didn't bother with any "`using`" statements, and I didn't wrap this code in a `namespace` or a `class`. LLLPG (or more precisely, the LeMP preprocessor) doesn't care; the output reflects the input, so the output will likewise not have any "`using`" statements and won't be wrapped in a `class` or a `namespace` either. Garbage in, garbage out. If you want the output to be wrapped in a class declaration, you have to wrap the input in a class declaration.
 * The grammar must be wrapped in an `LLLPG` block. Use "`LLLPG (lexer)`" for a lexer and "`LLLPG (parser)`" for a parser. The difference between the two is the treatment of _terminals_ (characters or tokens):
     * Lexer mode understands only integer and character input, but is optimized for this input. It does not accept named constants, only literal numbers and characters, because it can't tell which number a name might refer to (**Edit**: there is now an `alias` statement for naming constants). This mode assumes -1 means EOF (end-of-file). Note that lookahead variables have type `int`, not `char`, because `char` cannot hold -1, the representation of EOF. Luckily, C# doesn't really mind (`char` converts to `int` implicitly, although not the other way around).
     * Parser mode does not understand numbers, only symbols. Theoretically, the parser mode could be used for lexers too; the main problem is that it does not understand the range operator `..`, so you'd have to write monstrosities like `'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'` instead of `'0'..'9'`. Yuck. Parser mode expects you to define a C# symbol called `EOF` that represents end-of-file. In parser mode, a symbol called `Foo` is assumed to be a terminal if there is no rule called `Foo`.
 * Each rule gets converted into a method with the same name. Attributes on the rule, such as `public` or `unsafe` (why are you using unsafe in a parser, smarty pants?) are transferred to the output. Rules support a few attributes, such as `[FullLLk]`, that are understood by LLLPG itself and stripped out of the output. The `private` attribute has a special meaning, and will cause a slightly different interpretation than a rule that is not marked private.
-* LLLPG expects you to define a property called `LA0` that returns the current input character; it also expects an `LA(int k)` method for other lookahead values. As an optimization, LLLPG caches LA0 in a variable (`la0`), in case LA0 is a virtual method call or something like that.
-* The lexer mode expects a method called `MatchRange()` to exist (and both modes expect a series of `Match()` methods for matching particular characters or tokens). This method's job is to test whether the input character matches the specified range, and to emit an error message if not. On mismatch, you can throw an exception, print a message, or whatever suits you. On success,  `MatchRange()` should return the consumed character so that you can store it in a variable if you want.
+* LLLPG expects a property called `LA0` to exist that returns the current input character; it also expects an `LA(int k)` method for other lookahead values.
+* The lexer mode expects a method called `MatchRange()` to exist (and both modes expect a series of `Match()` methods for matching particular characters or tokens). This method's job is to test whether the input character matches the specified range, and to emit an error message if not. On mismatch, you can throw an exception, print a message, or whatever suits you. On success, `MatchRange()` should return the consumed character so that you can store it in a variable if you want. A runtime library is provided that includes all these methods.
 * The `+` operator means "one or more of these". `Digit+` is exactly equivalent to `Digit Digit*`; the `*` means "zero or more of these", and the `*` operator is translated into a for-loop, as you can see in the output (as you probably know, `for (;;)` means "loop indefinitely"; it's equivalent to `while (true)`.)
-* This example also demonstrates the main characteristic of LL(k) parsers: prediction. The `if (la0 >= '0' && la0 <= '9')` statement is performing a task called "prediction", which means, it is deciding which branch to take (`Digit`? or exit the loop?). It must reach across rules to do this: each rule requires an analysis of every other rule it calls, in addition to analysis inside the rule itself. In this case, `Integer` must be intimately familiar with the contents of `Digit`. Which is kind of romantic, when you think about it.
+* This example also demonstrates the main characteristic of LL(k) parsers: prediction. The `if (la0 >= '0' && la0 <= '9')` statement is performing a task called "prediction", which means, it is deciding which branch to take (`Digit`? or exit the loop?). It must reach across rules to do this: each rule requires an analysis of every other rule it calls, in addition to analysis inside the rule itself. In this case, `Integer` must be intimately familiar with the contents of `Digit`. Which is kind of romantic, when you think about it. Or not.
 * The body of the rule is enclosed in `@{...};`. Why not just braces or something else? Because LLLPG is embedded inside another programming language, and it cannot change the syntax of the host language. The construct "`public rule Foo @{...};`" is actually parsed by EC# as a property declaration, except with `@{...}` instead of the usual `{...}`. The `@{...}` is something called a **token literal**, which is a list of tokens (actually a _tree_, which matches pairs of `( ) { } [ ]`). The EC# (or LES) parser gathers up all the tokens and stores them for later. After the entire source file is parsed, the macro processor gives LLLPG a chance to receive the token tree and transform it into something else. LLLPG it runs its _own independent parser_ to process the token tree. Finally, it replaces the `LLLPG` block with normal C# code that it generated. I'll explain this in more detail later.
 
-## Another example
+Another example
+---------------
 
 My next example is almost useful: a simple lexer.
 
@@ -176,13 +179,14 @@ Here's the generated code:
 
 This example demonstrates some new things:
 
-* Notice that the `Letter()` and `Op()` methods simply call  `Skip()`, which means "advance to the next input character". That's because LLLPG has analyzed the grammar and detected that in all the places where `Letter()` or `Op()` is called, the caller has already verified the input! So  `Letter()` and `Op()` don't have to check the input, it's already guaranteed to be correct. This is an optimization called _prematch analysis_. **Note**: For this optimization to work, the rule must be explicitly marked private; otherwise, LLLPG assumes that the rule could be called by code outside the grammar.
-* Similarly, there are statements like `if (la0 == '_') Skip();` rather than `if (la0 == '_') Match('_');`. The user-supplied `Match(x)` method must check whether `LA0` matches `x`, but `Skip()` can skip the check.
+* Notice that the `Letter()` and `Op()` methods simply call  `Skip()`, which means "advance to the next input character". That's because LLLPG has analyzed the grammar and detected that in all the places where `Letter()` or `Op()` is called, the caller has already verified the input! So  `Letter()` and `Op()` don't have to check the input, it's already guaranteed to be correct. This is an optimization called _prematch analysis_. **Note**: For this optimization to work, the rule must be explicitly marked private; otherwise, LLLPG assumes that the rule could be called by code _outside_ the grammar.
+* Similarly, there are statements like `if (la0 == '_') Skip();` rather than `if (la0 == '_') Match('_');`. The user-supplied `Match(x)` method must check whether `LA0` matches `x`, but `Skip()` is faster since it skips the check.
 * The `return` statements in braces are called _actions_. LLLPG parses all actions, but it's important to understand that LLLPG _does not understand them_. For example, I've used a `return` statement, but LLLPG does not understand what the `return` statement does, and it does not take it into account during its analysis of the grammar. In this case, the `return` statement returns from the method early, and LLLPG doesn't know that. But in this case, LLLPG doesn't _need_ to know that (because if it did know, it would generate the same output anyway), so it is safe to use a `return` statement. In more complicated situations, though, you might introduce a bug in your parser by doing unexpected control flow. So, be smart about it.
 * Instead of `rule`, I used `token` instead. Actually, in this example there is no difference whatsoever between `rule` and `token`; both generate the same code. I guess this was the wrong time to introduce `token`, since I can't demonstrate the difference yet. Anyway, there's this "token" mode, and it's called `token` because it usually makes more sense to use it in lexers than parsers. But, er, you can use it in parsers too. I dunno, maybe it needs a new name.
 * LLLPG uses a `switch` statement if it suspects the code could be more efficient that way. Here it used  `switch()` to match `Op()`. However, it tries to balance code size with speed. It does not use switch cases for `Id()` because it would need 53 "`case`" labels to match it (26 uppercase + 26 lowercase + `'_'`), which seems excessive.
 
-## ANTLR-like syntax mode
+ANTLR-like syntax mode
+----------------------
 
 As of LLLPG 1.7.4, an ANTLR-like syntax mode has been added that makes it easier to port grammars between ANTLR and LLLPG. This mode is used by writing code like
 
@@ -216,7 +220,8 @@ Also note:
 - In any case, the return type always needs to be in brackets (square or round).
 - The rest of these articles will use traditional LLLPG notation, which is designed to resemble method declarations.
 
-## The LeMP processing model
+The LeMP processing model
+-------------------------
 
 If you're only interested in the parser generator, please skip this section, because right now I'd like to discuss the fancy technology that LLLPG is built on. In fact, you can skip most of the rest of the article and go straight to [part 2][12].
 
@@ -236,7 +241,7 @@ Since EC# is a superset of C#, LLLPG is able to produce C# code by using the EC#
 
 Earlier you saw a screen shot of LINQPad in which the input to LLLPG was _LES code_. LES is not a programming language, it is just a _syntax_ and nothing else.  One of the core ideas of the [Loyc project][9] is to "modularize" programming languages into a series of re-usable components.  So instead of writing one big compiler for a language, a compiler is built by mixing and matching components. One of those components is the Loyc tree (the `LNode` class in `Loyc.Syntax.dll`). Another component is the LES parser (which is a text representation for Loyc trees). A third component is the EC# parser, a fourth component is the EC# printer, and a fifth component is LeMP, the macro processor.
 
-### Macros
+### Macros ###
 
 Macros are a fundamental feature of [LISP][23] that I am porting over to the wider world of non-LISP languages.
 
@@ -261,7 +266,7 @@ The input, `x::Foo`, is represented as a call to `#::` with two arguments, `x` a
 
 The point is, LLLPG is defined as a "macro" that takes your `LLLPG (lexer) { ... }`; or `LLLPG (parser) { ... }`; statement as input, and returns another syntax tree that represents C# source code. As a macro, it can live in harmony with other macros like the `ColonColon` macro.
 
-### Bootstrapping LLLPG
+### Bootstrapping LLLPG ###
 
 In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I create a parser for EC#? Obviously, I wanted to use LLLPG to write the parser, but without any parser there was no easy way to submit a grammar to LLLPG! After writing the LLLPG core engine and the EC# printer, here's what I did to create the EC# parser:
 
@@ -281,9 +286,10 @@ In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I c
 
 At long last the bootstrapping is complete, so you can write LLLPG parsers in EC#!
 
-## LLLPG's input languages: EC# & LES
+LLLPG's input languages: EC# & LES
+----------------------------------
 
-### Enhanced C# (EC#)
+### Enhanced C# (EC#) ###
 
 As I mentioned, Enhanced C# is a language based on C# whose compiler doesn't exist yet (I'm looking for [volunteers to help](http://ecsharp.net/help-wanted.html).) The parser does exist, though, so I can talk about some of the new syntax that EC# supports. Actually there is quite a bit of new syntax in EC#; let me just tell you about the syntax that is relevant to LLLPG.
 
@@ -371,7 +377,7 @@ Everything in parenthesis is passed to a macro belonging to LLLPG, which (to mak
 
 That's enough information to understand how LLLPG works. Hopefully now you understand the concept of LLLPG as a DSL embedded in EC#.
 
-### Loyc Expression Syntax (LES)
+### Loyc Expression Syntax (LES) ###
 
 When LLLPG was first released, you had to write parsers in LES since the EC# parser hadn't been written, so a large section of this article was devoted to LES - a language that is very comparable to Enhanced C#, but dramatically easier to parse.
 
@@ -383,14 +389,15 @@ All LES-based parsers now need to have the following first line:
 
 Originally this was not required because the LES "prelude" macros were imported automatically. However, the LES prelude could potentially interfere with normal C# code, so it is no longer imported automatically (the macro compiler doesn't know anything about the input language, so it is unaware of whether it should import the macros or not).
 
-## Wrapping up
+Wrapping up
+-----------
 
 Obviously, I've just scratched the surface here, but this is almost enough for an introduction. As a next step, I suggest trying out the demo lexer and parsers included with LLLPG.
 
 To download it or read more articles about LLLPG, return to the [home page](http://ecsharp.net/lllpg). Here's a list of topics that are covered in future articles:
 
 * **What does LL(k) mean, anyway?**
-* **Requirements on the base class** ([BaseLexer][27] and [BaseParser][28]).
+* **Requirements on the base class** ([BaseLexer][27] and [BaseParserForList][28]).
 * **Setting lookahead**: By default, the k in LL(k) is 2: LLLPG makes decisions on at most 2 characters or tokens of lookahead.  Use the `[k(4)]` rule attribute to allow 4 characters of lookahead instead (or the `[DefaultK(4)]` attribute on the whole grammar,  i.e., the `LLLPG` statement). In ambiguous grammars, raising k will enlarge the output size at an alarming rate. Please k responsibly.
 * **Managing ambiguity**: most computer languages are actually somewhat ambiguous. LLLPG will first detect ambiguity and warn  you about it using an example of an ambiguous input ("Alternatives (2, 4) are ambiguous for input such as «0x_»"). Branches are specified in priority order,  and you can suppress warnings by separating branches with `/` (which works the same way as `|`, but slanted). In case of ambiguity with the exit branch,  you can use "`greedy`" or "`nongreedy`" to specify whether looping or exiting, respectively, should have higher priority.
 * **Actions**, denoted `{code;}`, are code snippets inserted into the parser. Actually there's not much to say about them.
@@ -406,7 +413,8 @@ To download it or read more articles about LLLPG, return to the [home page](http
 
 So that's it! Hope you like my parser generator, folks, and I'll be happy to answer your questions. But you probably don't have questions. Because I pretty much covered everything.
 
-## History
+History
+-------
 
 * Oct 7, 2013: LLLPG 0.9 released with this article
 * Nov 19, 2013: Updated LLLPG to 0.91. Updated demo to be a bit cleaner and to eliminate dependencies on Loyc libraries. LLLPG 0.91 contains some bug fixes, a new `alias(X = Y)` command, and eliminates the dependency on `IntSet`. Visual Studio extensions coming soon...
@@ -416,6 +424,7 @@ So that's it! Hope you like my parser generator, folks, and I'll be happy to ans
 * Feb. 25, 2014: [Part 4](lllpg-part-4.html) published.
 * June 19, 2015: [Part 5](lllpg-part-5.html) published.
 * March 3, 2016: LLLPG updated with new version of LeMP - please visit the new [LeMP home page](http://ecsharp.net/lemp).
+* April 29, 2016: Added ANTLR-style input mode for grammars.
 
 See [version history](version-history.html) for a more detailed history.
 
@@ -438,6 +447,6 @@ See [version history](version-history.html) for a more detailed history.
 [21]: https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les
 [22]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/ParsersAndMacros/StageOneParserGrammar.ecs
 [23]: http://en.wikipedia.org/wiki/Lisp_(programming_language)
-[27]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Syntax/Lexing/BaseLexer.cs
-[28]: http://sourceforge.net/p/loyc/code/HEAD/tree/Src/Syntax/BaseParser.cs
+[27]: http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html
+[28]: http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_00_01List_01_4.html
 [29]: http://www.antlr3.org/doc/glossary.html#Linear_approximate_lookahead

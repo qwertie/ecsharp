@@ -1,7 +1,7 @@
 ---
 title: "LLLPG Part 2: Learning how to parse"
 layout: article
-date: 26 Nov 2013 (updated 6 Mar 2016)
+date: 26 Nov 2013 (updated 22 May 2016)
 toc: true
 redirectDomain: ecsharp.net
 ---
@@ -16,55 +16,58 @@ In this article series I will be teaching not just how to use my parser generato
 
 **Note**: The LES syntax highlighter works in Visual Studio 2010 through 2015. The Custom Tool works in VS 2008 through VS 2015, including Express editions, and if you're wondering how it's made, I wrote a [whole article about that][4].
 
-**Note**: In future articles you will see `@[...]` syntax for token literals instead of `@{...}`. `@{...}` is the new style, and `@[...]` is the old style. Both syntaxes are supported in EC#, but in LES, the `@[...]` syntax was replaced with `@{...}` as part of a change that made LES into a superset of JSON.
+**Note**: In some places you'll see `@[...]` syntax for token literals instead of `@{...}`. `@{...}` is the new style, and `@[...]` is the old style. Both syntaxes are supported in EC#, but in LES, the `@[...]` syntax was replaced with `@{...}` as part of a plan to change LES into a superset of JSON.
 
 ![][5]
 
 ## Do you really need a parser generator?
 
-One of the most common introductory examples for any parser generator is an expression parser or calculator, like this calculator bundled with the previous article:
+One of the most common introductory examples for any parser generator is an expression parser or calculator, like this one:
 
-    LLLPG parser(laType(int)) {
-        rule Atom()::double @[
-            { result::double; }
-            ( t:=id           { result = Vars[t.Value -> string]; }
-            | t:=num          { result = t.Value -> double; }
-            | '-' result=Atom { result = -result; }
-            | '(' result=Expr ')'
-            | error           { result = 0;
-              Error(InputPosition, "Expected identifer, number, or (stuff)"); }
-            )
-            { return result; }
-        ];
-        rule MulExpr()::double @[
-            result:=Atom
-            (op:=(mul|div) rhs:=Atom { result = Do(result, op, rhs); })*
-            { return result; }
-        ];
-        rule AddExpr()::double @[
-            result:=MulExpr
-            (op:=(add|sub) rhs:=MulExpr { result = Do(result, op, rhs); })*
-            { return result; }
-        ];
-        rule Expr()::double @[
-            { result::double; }
-            ( t:=id set result=Expr { Vars[t.Value.ToString()] = result; }
-            | result=AddExpr )
-            { return result; }
-        ];
+~~~csharp
+LLLPG parser(laType(int)) {
+    rule Atom()::double @[
+        { result::double; }
+        ( t:=id           { result = Vars[t.Value -> string]; }
+        | t:=num          { result = t.Value -> double; }
+        | '-' result=Atom { result = -result; }
+        | '(' result=Expr ')'
+        | error           { result = 0;
+          Error(InputPosition, "Expected identifer, number, or (stuff)"); }
+        )
+        { return result; }
+    ];
+    rule MulExpr()::double @[
+        result:=Atom
+        (op:=(mul|div) rhs:=Atom { result = Do(result, op, rhs); })*
+        { return result; }
+    ];
+    rule AddExpr()::double @[
+        result:=MulExpr
+        (op:=(add|sub) rhs:=MulExpr { result = Do(result, op, rhs); })*
+        { return result; }
+    ];
+    rule Expr()::double @[
+        { result::double; }
+        ( t:=id set result=Expr { Vars[t.Value.ToString()] = result; }
+        | result=AddExpr )
+        { return result; }
+    ];
+};
+
+def Do(left::double, op::Token, right::double)::double
+{
+    switch op.Type {
+        case add; return left + right;
+        case sub; return left - right;
+        case mul; return left * right;
+        case div; return left / right;
     };
+    return double.NaN;
+};
+~~~
 
-    def Do(left::double, op::Token, right::double)::double
-    {
-        switch op.Type {
-            case add; return left + right;
-            case sub; return left - right;
-            case mul; return left * right;
-            case div; return left / right;
-        };
-        return double.NaN; };
-
-But if expression parsing is all you need, you don't really need a parser generator; there are simpler options for parsing, such as using a [Pratt Parser like this one][6]. If you only need to parse simple text fields like phone numbers, you can use [regular expressions][7]. And even if you need an entire programming language, you don't necessarily need to create your own; for example you could re-use the [LES][8] parser included in Loyc.Syntax.dll, which comes with LLLPG (it's not 100% complete yet, but it's usable enough for LLLPG), and if you don't re-use the parser you might still want to re-use the lexer.
+But if expression parsing is all you need, you don't really need a parser generator; there are simpler options for parsing, such as using a [Pratt Parser like this one][6]. If you only need to parse simple text fields like phone numbers, you can use [regular expressions][7]. And even if you need an entire programming language, you don't necessarily need to create your own; for example you could re-use the [LES][8] parser included in Loyc.Syntax.dll, part of the LoycCore NuGet package, and if you don't re-use the parser you might still want to re-use the lexer.
 
 So before you go writing a parser, especially if it's for something important rather than "for fun", seriously consider whether an existing parser would be good enough. Let me know if you have any questions about LES, Loyc trees, or using the Loyc libraries (_Loyc.Essentials.dll_, _Loyc.Collections.dll_, and so on).
 
@@ -74,17 +77,17 @@ I'll start with a short glossary of standard parsing terminology.
 
 First of all, grammars consist of terminals and nonterminals.
 
-A terminal is an item from the input; when you are defining a lexer, a terminal is a single character, and when you are defining a parser, a terminal is a token from the lexer. More specifically, the grammar is concerned only with the type of the token, not its value. For example one of your token types might be `Number`, and a parser cannot treat a particular number specially; so if you ever need to treat the number "0" differently than other numbers, then your lexer would have to create a special token type for that number (e.g. `Zero`), because the grammar cannot make decisions based on a token's value. **Note**: in LLLPG you can circumvent this rule if you need to, but it won't be pretty.
+A terminal is an item from the input; when you are defining a lexer, a terminal is a single character, and when you are defining a parser, a terminal is a token from the lexer. More specifically, the grammar is concerned only with the type of the token, not its value. For example one of your token types might be `Number`, and a parser cannot treat a particular number specially; so if you ever need to treat the number "0" differently than other numbers, then your lexer would have to create a special token type for that number (e.g. `Zero`), because the grammar cannot make decisions based on a token's value. **Note**: in LLLPG you can circumvent this rule if you need to, but it's not pretty.
 
 A nonterminal is a rule in the grammar. So in this grammar:
 
     token Spaces @[ (' '|'t')+ ];
-      token Id @[
-        ('a'..'z'|'A'..'Z'|'_')
-        ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
-      ];
-      token Int @[ '0'..'9'+ ];
-      token Token @[ Spaces | Id | Int ];
+    token Id @[
+      ('a'..'z'|'A'..'Z'|'_')
+      ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+    ];
+    token Int @[ '0'..'9'+ ];
+    token Token @[ Spaces | Id | Int ];
 
 The nonterminals are `Spaces`, `Id`, `Int` and `Token`, while the terminals are inputs like `'s'`, `'t'`, `'9'`, and so forth.
 
@@ -96,23 +99,27 @@ Traditional literature about parsing assumes that there is a single "Start Rule"
 
 However, LLLPG is more flexible than that. It doesn't limit you to one start rule; instead, LLLPG assumes you might start with _any_ rule that isn't marked `private`. After all, you might want to parse just a subset of the language, such as a method declaration, a single statement, or a single expression.
 
-LLLPG rules express grammars in a somewhat non-standard way. Firstly, LLLPG notation is based on ANTLR notation, which itself is mildly different from EBNF (Extended Backus–Naur Form) notation which, in some circles, is considered more standard. Also, because LLLPG is embedded inside another programming language (LES or EC#), it uses the `@[...]` notation which means "token literal". A token literal is a sequence of tokens that is not interpreted by the host language; the host language merely figures out the boundaries of the "token literal" and saves the tokens so that LLLPG can use them later. So while a rule in EBNF might look like this:
+LLLPG rules express grammars in a somewhat non-standard way. Firstly, LLLPG notation is based on ANTLR notation, which itself is mildly different from EBNF (Extended Backus–Naur Form) notation which, in some circles, is considered more standard. Also, because LLLPG is embedded inside another programming language (LES or EC#), it uses the `@{...}` notation which means "token literal". A token literal is a sequence of tokens that is not interpreted by the host language; the host language merely figures out the boundaries of the "token literal" and saves the tokens so that LLLPG can use them later. So while a rule in EBNF might look like this:
 
     Atom = ['-'], (num | id);
 
 the same rule in LLLPG looks like this:
 
-    rule Atom @[ ('-')? (num | id) ];
+    rule Atom @{ ['-']? (num | id) };
 
-In EBNF, [`Foo]` means Foo is optional, while LLLPG uses `Foo?` to express the same idea. Some versions of EBNF use `{Foo}` to represent a list of zero or more Foos, while LLLPG uses `Foo*` for the same thing.
+LLLPG also has a ANTLR-flavored input mode, and if you're using that then you'd write
 
-In LLLPG, like ANTLR, `{...}` represents a block of normal code (C#), so braces can't also represent a list. In LLLPG 1.0 I decided to support a compromise between the ANTLR and EBNF styles: you are allowed to write [`...]?` or [`...]*` instead of (...)? or (...)*; the ? or * suffix is still required. Thus, square brackets indicate nullability--that the region in square brackets may not consume any input.
+    Atom : ('-')? (num | id);
+
+In EBNF, `[Foo]` means Foo is optional, whereas LLLPG expects `Foo?`, to express the same idea. Some versions of EBNF use `{Foo}` to represent a list of zero or more Foos, while LLLPG uses `Foo*` for the same thing. In LLLPG, like ANTLR, `{...}` represents a block of normal code (C#), which is why braces can't represent a list.
+
+In LLLPG 1.0 I decided to support a compromise between the ANTLR and EBNF styles: you are allowed to write `[...]?` or `[...]*` instead of `(...)?` or `(...)*`; the `?` or `*` suffix is still required. Thus, square brackets indicate _nullability_--the idea that the region in square brackets may not consume any input.
 
 Alternatives and grouping work the same way in LLLPG and EBNF (e.g. `(a | b)`), although LLLPG also has the notation `(a / b)` which I'll explain later.
 
 In addition, some grammar representations do not allow loops, or even optional items. For example, formal "four-tuple" grammars are defined this way. I discuss this further in my blog post, [Grammars: theory vs practice][9].
 
-A "language" is a different concept than a "grammar". A grammar represents some kind of language, but generally there are many possible grammars that could represent the same language. The word "language" refers to the set of sentences that are considered valid; two different grammars represent the same language if they accept or reject the same input (or, looking at the matter in reverse, if you can generate the same set of "sentences" from both grammars). For example, the following four rules all represent a list of digits:
+A "language" is a different concept than a "grammar". A grammar represents some kind of language, but generally there are many possible grammars that could represent the same language. The word "language" refers to the set of sentences that are considered valid; two different grammars represent the same language if they accept and reject the same inputs (or, looking at the matter in reverse, if you can generate the same set of "sentences" from both grammars). For example, the following four rules all represent a list of digits:
 
     rule Digits1 @[ '0'..'9'+ ];
     rule Digits2 @[ '0'..'9'* '0'..'9' ];
@@ -759,7 +766,7 @@ See [part 1][1] for history.
 [6]: http://higherlogics.blogspot.ca/2009/11/extensible-statically-typed-pratt.html
 [7]: http://www.regular-expressions.info/
 [8]: https://github.com/qwertie/LoycCore/wiki/Loyc-Expression-Syntax
-[9]: http://loyc-etc.blogspot.ca/2013/11/grammars-theory-vs-practice.html
+[9]: http://loyc.net/2013/grammars-theory-vs-practice.html
 [10]: http://pdos.csail.mit.edu/papers/parsing%3Apopl04.pdf
 [11]: http://en.wikipedia.org/wiki/LALR_parser
 [13]: http://antlr.org/

@@ -1,7 +1,7 @@
 ---
 title: "LLLPG Part 4: Managing Ambiguity + API reference"
 layout: article
-date: 25 Feb 2014
+date: 25 Feb 2014 (updated 22 May 2016)
 tagline: "The ambivalent world of ambiguity, the slash, greedy and nongreedy. At the end, in lieu of refreshments, there will be an API reference."
 toc: true
 redirectDomain: ecsharp.net
@@ -14,7 +14,8 @@ _New to LLLPG? Start at [part 1](http://www.codeproject.com/Articles/664785/A-Ne
 
 Part 4 is all about nitty-gritty details: how prediction works, a discussion of ambiguity (what it is, common ambiguous situations, and how to deal with them), and a list of APIs that LLLPG calls in generated code.
 
-## FullLLk versus "approximate" LL(k)
+FullLLk versus "approximate" LL(k)
+----------------------------------
 
 First, the short version: try adding `[FullLLk(true)]` to your grammar if you suspect prediction isn't working perfectly.
 
@@ -200,7 +201,8 @@ Full LL(k) mode doesn't always work perfectly, and may make LLLPG run slower, wh
 
 In certain cases, LLLPG reports an ambiguity that doesn't actually exist in a grammar without the `[FullLLk]` option. One example is given by [this blog post](http://loyc-etc.blogspot.ca/2013/12/bogus-ambiguity-warnings-in-lllpg.html) that I wrote while writing the EC# grammar. So if you can't figure out where an ambiguity comes from, try `[FullLLk]`. If you still get the same ambiguity warning after enabling Full LL(k), check over your grammar carefully, because it is probably genuinely ambiguous.
 
-## Ambiguity: introduction
+Ambiguity: introduction
+-----------------------
 
 In the context of a parser generator, _Ambiguity_ refers to the situation in which, for a particular grammar, there can exist more than one potential parse tree for an input. Programming languages are designed to be less ambiguous than human languages, but their grammars generally do have ambiguities anyway. Some ambiguities are normal and expected and there is a standard "solution" to the problem, while others may be unique to the language you are parsing.
 
@@ -272,7 +274,8 @@ In traditional LL(k) parsers, you must define a separate rule for every preceden
 
 **Tip**: when writing your first parser, write it without any important `{actions}`, i.e. don't create a syntax tree at first. Just focus on making a _recognizer_, like the examples above, that simply scans through the input without interpreting it.
 
-## Managing ambiguity, part 1: `token` rules
+Managing ambiguity, part 1: `token` rules
+-----------------------------------------
 
 By declaring a token using `token` instead of `rule`, you're asking LLLPG to simplify its analysis while avoiding warnings about a certain type of ambiguity.
 
@@ -316,7 +319,8 @@ I created `token` mode to avoid warnings like this and the potentially complex a
 
 By convention, when I write a lexer, I mark the top-level token rules with `token`, and I use `rule` for the sub-rules that are called by `token`s.
 
-## Managing ambiguity, part 2: LLLPG's missing feature
+Managing ambiguity, part 2: LLLPG's missing feature
+---------------------------------------------------
 
 In certain ambiguous cases, notably those in which some alternatives are prefixes of others, some parser generators (including ANTLR) have the ability to select the _longest match_ automatically. LLLPG does not have this ability, and you'll notice this problem when writing rules for operators:
 
@@ -349,7 +353,8 @@ Keywords are even more tricky. Let's say you have the keywords `fn`, `for`, `if`
 
 Here I've given `Id` lower priority than the keywords, which will usually work correctly. However, it won't work correctly for an `Id` prefixed by a keyword, such as `form`, which of course will parse as `for` followed by '`m`' as a separate identifier. There is a solution, which I'll show you in the next article, but LLLPG does not solve the problem automatically.
 
-## Managing ambiguity, part 3: the slash operator
+Managing ambiguity, part 3: the slash operator
+----------------------------------------------
 
 The slash operator suppresses the ambiguity warning between two or more alternatives. The warnings you saw for
 
@@ -410,7 +415,8 @@ In a PEG (correct me if I'm wrong), the first branch always takes priority and t
 	  Match('c');
 	}
 
-## Managing ambiguity, part 4: greedy and nongreedy
+Managing ambiguity, part 4: greedy and nongreedy
+------------------------------------------------
 
 LLLPG supports '`greedy`' and '`nongreedy`' loops and optional items. The '`greedy`' 
 and '`nongreedy`' modes refer to the action you prefer to take in case of
@@ -609,7 +615,8 @@ is called from two different places, the follow set is the same in both
 locations: `','|'\n'|'\r'|EOF`. So `nongreedy` works reliably in this example
 because it makes no difference which context `Field` was called from.
 
-## Reference: APIs called by LLLPG
+Reference: APIs called by LLLPG
+-------------------------------
 
 Here's the list of methods that LLLPG expects to exist. The `MatchRange`/`MatchExceptRange` methods are only used in lexers though, and `EOF` is only used in parsers (lexers refer to EOF as -1):
 
@@ -678,7 +685,7 @@ The following data types are parameters that you can change:
 
 And now, here's a brief description of the APIs, with examples.
 
-### NewSet, NewSetOfRanges
+### NewSet, NewSetOfRanges ###
 	
 	static HashSet<MatchType> NewSet(params MatchType[] items);
 	static HashSet<MatchType> NewSetOfRanges(params MatchType[] ranges);
@@ -708,7 +715,7 @@ These are used for large sets, when it would be inappropriate to generate an exp
 		 Skip();
 	}
 
-### LA0, LA(i)
+### LA0, LA(i) ###
 
 	LaType LA0 { get; }
 	LaType LA(int i);
@@ -737,7 +744,7 @@ Obviously, a single function `LA(i)` would have been enough, but `LA(0)` is used
 	  }
 	}
 
-### EOF (parsers only)
+### EOF (parsers only) ###
 
 	static const LaType EOF;
 
@@ -763,13 +770,13 @@ Occasionally LLLPG needs to check for EOF. For example, the default follow set o
 
 In lexers, LLLPG uses `-1` instead of `EOF`.
 
-### Error(i, msg)
+### Error(i, msg) ###
 
 	void Error(int lookaheadIndex, string message);
 
 This method is called by the default error branch with an auto-generated message, as shown in the example above. `lookaheadIndex` is the offset (`LA(lookaheadIndex)`) where the unexpected character or token was encountered (usually 0). Currently, the error message cannot be customized.
 
-### Skip(), MatchAny()
+### Skip(), MatchAny() ###
 
 	void Skip();
 	Token MatchAny();
@@ -791,7 +798,7 @@ Both of these methods advance the current position by one character or token. `S
 		 b = MatchAny();
 	}
 
-### Match
+### Match ###
 
 	Token Match(MatchType a);
 	Token Match(MatchType a, MatchType b);
@@ -819,7 +826,7 @@ Ensures that `LA0` matches the argument(s) given to `Match`, taking any appropri
 	  Match(FiveEvenDigits_set0);
 	}
 
-### MatchRange (lexers only)
+### MatchRange (lexers only) ###
 
 	Token MatchRange(int aLo, int aHi);
 	Token MatchRange(int aLo, int aHi, int bLo, int bHi);
@@ -838,7 +845,7 @@ Matches `LA0` against a range of characters, then increases the input position b
 	  MatchRange('0', '9');
 	}
 
-### MatchExcept
+### MatchExcept ###
 
 	Token MatchExcept();
 	Token MatchExcept(MatchType a);
@@ -873,7 +880,7 @@ When a set is passed to `MatchExcept`, that set will explicitly contain EOF when
 	  MatchExcept(NotA_set1);
 	}
 
-### MatchExceptRange (lexers only)
+### MatchExceptRange (lexers only) ###
 
 	Token MatchExceptRange(int aLo, int aHi);
 	Token MatchExceptRange(int aLo, int aHi, int bLo, int bHi);
@@ -892,7 +899,7 @@ Verifies that `LA0` is not within the specified range(s) of characters, then inc
 	  MatchExceptRange('A', 'Z', 'a', 'z');
 	}
 
-### Check
+### Check ###
 
 	void Check(bool expectation, string expectedDescr);
 
@@ -911,7 +918,7 @@ As explained in the section §"Error handling mechanisms in LLLPG" (part 3), thi
 	  Match('X');
 	}
 
-### SavePosition
+### SavePosition ###
 
 	struct SavePosition : IDisposable
 	{
@@ -944,7 +951,7 @@ This is used for backtracking. `SavePosition` must save the current input positi
 	  return true;
 	}
 
-### TryMatch
+### TryMatch ###
 
 	bool TryMatch(MatchType a);
 	bool TryMatch(MatchType a, MatchType b);
@@ -992,7 +999,7 @@ Tests whether `LA0` matches the argument(s) given to `TryMatch`. Returns true if
 	  return true;
 	}
 
-### TryMatchRange (lexers only)
+### TryMatchRange (lexers only) ###
 
 	bool TryMatchRange(int aLo, int aHi);
 	bool TryMatchRange(int aLo, int aHi, int bLo, int bHi);
@@ -1025,7 +1032,7 @@ Tests whether `LA0` matches one or two ranges of characters. Returns true if `LA
 	  return true;
 	}
 
-### TryMatchExcept
+### TryMatchExcept ###
 
 	bool TryMatchExcept();
 	bool TryMatchExcept(MatchType a);
@@ -1076,7 +1083,7 @@ In addition, all overloads except the last one must test that `LA0` is not `EOF`
 	  return true;
 	}
 
-### TryMatchExceptRange (lexers only)
+### TryMatchExceptRange (lexers only) ###
 
 	bool TryMatchExceptRange(int aLo, int aHi);
 	bool TryMatchExceptRange(int aLo, int aHi, int bLo, int bHi);
@@ -1085,52 +1092,69 @@ Tests whether `LA0` matches one or two ranges of characters. Returns **false** i
 
 I'll skip the example this time: I think by now you get the idea.
 
-## Reference: APIs you must write in classes derived from BaseLexer and BaseParser
+Reference: things you must do when overriding `BaseLexer` and `BaseParser`
+--------------------------------------------------------------------------
 
-This is a summary of information presented in §"Boilerplate" in Part 3.
+### For lexing ###
 
-When writing a lexer, `BaseLexer` (whether in Loyc.Syntax.dll or the standalone example) implements almost all of the APIs required by LLLPG. There's just one that you must write yourself:
+The typical base class for lexing is `BaseLexer`, but you can specialize it as `BaseLexer<UString>`, which should (in theory) give higher perfomance if your input is always a string.
 
-	protected override void Error(int index, string message) {...}
-
-Also, you must call `AfterNewline()` whenever you encounter a newline `('\n' | '\r' '\n'?)` so that the `LineNumber` property is increased by one. `BaseLexer` also contains its own `Newline` rule, which you can incorporate into your lexer with
+In either case, you must call `AfterNewline()` whenever you encounter a newline `('\n' | '\r' '\n'?)` so that the `LineNumber` property is increased by one. `BaseLexer` also contains its own `Newline` rule, which you can incorporate into your lexer with
 
 	// 'extern' suppresses code generation, so the code is inherited 
-	// from BaseLexer, and ('\r' '\n'? | '\n') tells LLLPG what it does.
-	extern token Newline @[ '\r' '\n'? | '\n' ];
+	// from BaseLexer, and `'\r' '\n'? | '\n'` tells LLLPG what it does.
+	extern token Newline @{ '\r' '\n'? | '\n' };
 
-The Loyc version of `BaseLexer` additionally records the locations of all line breaks in its `SourceFile` property (which is `protected`) so you can call `SourceFile.IndexToLine(i).Line` to get the line number of any character that has been tokenized so far.
+`BaseLexer` additionally records the locations of all line breaks in its `SourceFile` property (which is `protected`) so you can call `SourceFile.IndexToLine(i).Line` to get the line number of any character that has been tokenized so far; _this only works properly if you call `AfterNewline` consistently_.
 
-`BaseParser` requires you to override the following methods:
+When LLLPG was first released, you had to override the `abstract` error handler:
 
-	/// Returns the value used for EOF (typically 0)
+~~~csharp
+protected abstract void Error(int lookaheadIndex, string message);
+~~~
+
+But now a default error handler is provided that throws `LogException`, and the normal way to change how errors are reported is _not_ to override `Error()`, but instead to set the `ErrorSink` property, e.g. this causes errors to be printed to the terminal:
+
+~~~csharp
+base.ErrorSink = Loyc.MessageSink.Console;
+~~~
+
+### For parsing ###
+
+When LLLPG was first released, you were expected to use `BaseParser` as your base class, which was tedious because you had to override all these methods:
+
 	protected abstract Int32 EofInt();
-	/// Returns the token type of _lt0 (normally _lt0.TypeInt)
 	protected abstract Int32 LA0Int { get; }
-	/// Returns the token at lookahead i (e.g. Source[InputPosition + i]
-	/// if the tokens come from a list called Source)
 	protected abstract Token LT(int i);
-	/// Records an error or throws an exception. When called by 
-	/// BaseParser, li is always equal to 0.
 	protected abstract void Error(int li, string message);
-	/// Returns a string representation of the specified token type.
-	/// These strings are used in error messages.
 	protected abstract string ToString(Int32 tokenType);
 
-Only one of the above APIs are required by LLLPG itself; the others help `BaseParser` implement the other APIs. In addition to the above, the following three APIs are required by LLLPG and not provided by `BaseParser`:
+Only one of the above APIs are required by LLLPG itself; the others help `BaseParser` implement the other APIs. In addition to the above, you had to implement the following APIs that are required by LLLPG and not provided by `BaseParser`:
 
 	// (typical implementation shown)
 	const TokenType EOF = TokenType.EOF;
 	TokenType LA0 { get { return LT0.Type(); } }
 	TokenType LA(int offset) { return LT(offset).Type(); }
 
-Both `BaseParser` and `BaseLexer` have an `InputPosition` property. `BaseLexer` caches the current character in LA0 when `InputPosition` changes, while `BaseParser` caches the current token in LT0 when `InputPosition` changes. When using `BaseParser` I'm afraid you have to manually write `InputPosition = 0` at the end of your constructor in order to initialize `LT0` (at the moment I'm thinking this is a design mistake and that LT0 should not be cached.)
+Because using `BaseParser` was cumbersome, [`BaseParserForList<Token,MatchType>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) was introduced (and its specialized form `BaseParserForList<Token,MatchType,List>`). `BaseParserForList<Token,MatchType>` manages the list of tokens itself - any list that implements `IList<Token>` is acceptable, and the derived class constructor must pass a list of tokens to the base class, along with a token that represents EOF, and an [`ISourceFile`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Syntax_1_1ISourceFile.html) (which you can get from the `SourceFile` property of `BaseLexer`):
 
-## End of Part 4
+    protected BaseParserForList(IList<Token> list, Token eofToken, ISourceFile file, int startIndex=0);
+
+`BaseParserForList` only requires you to implement a single `abstract` method, to convert `MatchType` to a string. `MatchType` is usually `int` in practise, so your implementation might look like this (if `TokenType` is the name of your token type enum):
+
+	protected override string ToString(int tokenType)
+	{
+	    return ((TokenType)tokenType).ToString();
+	}
+
+All the base classes have an `InputPosition` property. `BaseLexer` caches the current character in `LA0` when `InputPosition` changes, while `BaseParser` caches the current token in `LT0` when `InputPosition` changes.
+
+End of Part 4
+-------------
 
 With part four, I've almost finished writing the documentation of LLLPG. So that just leaves...
 
-- Advanced techniques: tree parsing, keyword parsing, collapsing many precedence levels into a single rule, and other tricks used by the [EC# parser](https://sourceforge.net/p/loyc/code/HEAD/tree/Src/Ecs/Parser/EcsParserGrammar.les).
+- Advanced techniques: tree parsing, keyword parsing, collapsing many precedence levels into a single rule, and other tricks used by the EC# parser.
 - Things you can do with LeMP: other source code manipulators besides LLLPG.
 - A call for volunteers to help me build Enhanced C#.
 

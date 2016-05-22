@@ -1,7 +1,7 @@
 ---
 title: "LLLPG Part 3: Beyond the basics"
 layout: article
-date: 23 Feb 2014
+date: 23 Feb 2014 (updated 22 May 2016)
 toc: true
 redirectDomain: ecsharp.net
 ---
@@ -71,7 +71,7 @@ Configuring LLLPG
 
 LLLPG can be invoked either with the custom tool for Visual Studio, or on the command line (or in a pre-build step) by running **LLLPG.exe _filename_**.
 
-The following command-line options are reported by LLLPG --help:
+The following command-line options are reported by LLLPG --help, but command-line options are rarely necessary.
 
     --forcelang: Specifies that --inlang overrides the input file extension.
       Without this option, known file extensions override --inlang.
@@ -92,8 +92,6 @@ The following command-line options are reported by LLLPG --help:
     --timeout=N: Aborts the processing thread(s) after this many seconds (0=never)
     --verbose: Print extra status messages (e.g. discovered Types, list output files).
   
-Any questions?
-
 Some of these options, such as `--verbose` and `--timeout=N`, are supported in the LLLPG Custom Tool; you can put command-line options in the "Custom Tool Namespace" field in Visual Studio.
 
 **Note**: in VS, the `[Verbosity(N)]` grammar attribute doesn't work without the `--verbose` option.
