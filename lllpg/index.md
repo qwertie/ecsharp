@@ -17,6 +17,9 @@ To learn more, [read the FAQ](faq.html) or the five-part article series about LL
 - [Part 4](lllpg-part-4.html)
 - [Part 5](lllpg-part-5.html)
 
-Or see the original series [on CodeProject](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp). It includes a download link, but to make sure you get the current version, you should go to the [release repo](https://github.com/qwertie/LLLPG-Release) and click "Download ZIP".
+### Download & install ###
 
-- [LLLPG Version history](version-history.html)
+LLLPG is distributed with LeMP and Enhanced C#; please see their [download & installation instructons](http://ecsharp.net/lemp/install.html). Also, please download the [Samples repository](http://github.com/qwertie/LLLPG-Samples) so you'll have some grammars to play with; these demos should compile successfully even before LLLPG is installed.
+
+See also: **[Version history](version-history.html)**
+
