@@ -11,14 +11,7 @@ Welcome to part 3
 
 _New to LLLPG? Start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp)._
 
-There are lots of things left to cover, so let's get started. LLLPG 1.1.0 was released at the same time as this article; it came with four demos:
-
-- CalcExample-Standalone: Expression calculator with no dependencies
-- CalcExample-UsingLoycLibs: Expression calculator that uses `BaseLexer` and `BaseParserForList` from Loyc.Syntax.dll
-- CalcExample-UsingLoycTrees: Expression calculator whose parser produces Loyc trees instead of calculating a result directly.
-- EnhancedC#Parser: I ripped the C# parser used by LLLPG out of Ecs.exe and dropped it into this demo program (so the parser is _not_ up-to-date, but good enough for a demo).
-
-Many features have been added since this article was published, most of which are discussed in [Part 5](lllpg-part-5.html).
+There are lots of things left to cover, so let's get started. LLLPG 1.1.0 was released at the same time as this article; much has changed since then, so this article was mostly rewritten in May 2016. For more detailed info about LLLPG's newest features, see [Part 5](lllpg-part-5.html).
 
 A brief overview of the Loyc libraries
 --------------------------------------
@@ -140,7 +133,7 @@ Boilerplate
 
 When parsing a typical programming language, you need two stages (Lexing and Parsing) although some languages, such as JSON, are simple enough to parse in a single stage (lexer and parser combined into a single LLLPG "lexer"), and some languages (such as PHP or Liquid) might benefit from more than two stages. The [Enhanced C#](http://ecsharp.net) parser has four stages: lexer, preprocessor (for `#if`, `#region`, etc.), [tree parser](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1TokensToTree.html), and main parser).
 
-The official two-stage boilerplate example is included in the [LLLPG-Samples](https://github.com/qwertie/LLLPG-Samples) repository, but let's review a snapshot of it (May 2016). Now, no IntelliSense (code completion) is available in .ecs files, so it can be useful to split your Lexer and Parser classes between two files, and that's what the boilerplate example does. In the Grammars.cs file, IntelliSense will be available and in the Grammars.ecs file you put your grammar code.
+The official two-stage boilerplate example is included in the **[LLLPG-Samples](https://github.com/qwertie/LLLPG-Samples) repository**, but let's review a snapshot of it (May 2016). Now, no IntelliSense (code completion) is available in .ecs files, so it can be useful to split your Lexer and Parser classes between two files, and that's what the boilerplate example does. In the Grammars.cs file, IntelliSense will be available and in the Grammars.ecs file you put your grammar code.
 
 Typically you start by defining a token types:
 
