@@ -3,6 +3,7 @@ title: "LLLPG Home Page"
 layout: page
 tagline: "The LL(k) Parser Generator for Coders"
 redirectDomain: ecsharp.net
+commentIssueId: 35
 ---
 
 ![Logo](lllpg-logo.png)
@@ -21,5 +22,5 @@ To learn more, [read the FAQ](faq.html) or the five-part article series about LL
 
 LLLPG is distributed with LeMP and Enhanced C#; please see their [download & installation instructons](http://ecsharp.net/lemp/install.html). Also, please download the [Samples repository](http://github.com/qwertie/LLLPG-Samples) so you'll have some grammars to play with; these demos should compile successfully even before LLLPG is installed.
 
-See also: **[Version history](version-history.html)**
+### [Version history](version-history.html) ###
 

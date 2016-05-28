@@ -4,6 +4,7 @@ layout: article
 date: 23 Feb 2014 (updated 22 May 2016)
 toc: true
 redirectDomain: ecsharp.net
+commentIssueId: 35
 ---
 
 Welcome to part 3
@@ -24,7 +25,7 @@ In brief, let me just say very briefly what these libraries are for and what the
 
 **Loyc.Essentials.dll** is a library of general-purpose code that supplements the .NET BCL (standard libraries). It contains the following categories of stuff:
 
-- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections such as [InternalList](http://core.loyc.net/collections/internal-list.html). You can [learn more in the docs](http://ecsharp.net/doc/code/namespaceLoyc_1_1Collections.html), but note that the documentation shows the collection stuff from both DLLs since it's all in the same namespace, `Loyc.Collections`.
+- Collection stuff: interfaces, adapters, helper classes, base classes, extension methods, and implementations for simple "core" collections such as [InternalList](http://core.loyc.net/collections/internal-list.html). You can [learn more in the docs](http://ecsharp.net/doc/code/namespaceLoyc_1_1Collections.html), but note that the documentation also shows the collections from Loyc.Collections.dll since it's all in the same namespace, `Loyc.Collections`.
 - Geometry: simple generic geometric interfaces and classes, e.g. `Point<T>` and `Vector<T>`
 - Math: generic math interfaces that allow arithmetic to be performed in generic code. Also includes fixed-point types, 128-bit integer math, and handy extra math functions in `MathEx`.
 - Other utilities: message sinks ([`IMessageSink`](http://ecsharp.net/doc/code/interfaceLoyc_1_1IMessageSink.html)), [`Symbol`](http://ecsharp.net/doc/code/classLoyc_1_1Symbol.html), threading stuff, a miniture clone of NUnit ([`MiniTest`](https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Essentials/Utilities/MiniTest.cs), [`RunTests`](http://ecsharp.net/doc/code/classLoyc_1_1MiniTest_1_1RunTests.html)), and miscellaneous ["global" functions] and extension methods.
@@ -91,11 +92,13 @@ Some of these options, such as `--verbose` and `--timeout=N`, are supported in t
 
 In your *.ecs or *.les input file, the syntax for invoking LLLPG is to use one of these statements:
 
+~~~csharp
     LLLPG(lexer)                 { /* rules */ };
     LLLPG(lexer(...options...))  { /* rules */ };
     LLLPG(parser)                { /* rules */ };
     LLLPG(parser(...options...)) { /* rules */ };
     LLLPG   { /* parser mode is the default */ };
+~~~
 
 (LES requires the semicolon while EC# does not, and LES files permit `LLLPG lexer {...}` and `LLLPG parser {...}` without parenthesis, which (due to the syntax rules of LES) is exactly equivalent to `LLLPG(lexer) {...}` or `LLLPG(parser) {...}`).
 
@@ -335,32 +338,33 @@ public enum TokenType
 {
     EOF = 0,    // End-of-file. If we choose 0, default(Token) is EOF
     Number = 2, // Number, e.g. 3.3
-	Id = 3,     // Identifier, e.g. foo bar x y
-	LParen = 4, // (
-	RParen = 5, // )
-	Comma = 6,  // ,
-	Add = 10,   // +
-	Sub = 11,   // -
+    Id = 3,     // Identifier, e.g. foo bar x y
+    LParen = 4, // (
+    RParen = 5, // )
+    Comma = 6,  // ,
+    Add = 10,   // +
+    Sub = 11,   // -
 }
+~~~
 
 Next, let's expand the lexer to recognize the new tokens `Id`, `LParen`, etc.:
 
 ~~~csharp
-	private token Token Id() @{
-		('a'..'z'|'A'..'Z'|'_')
-		('a'..'z'|'A'..'Z'|'_'|'0'..'9')* {
-			return T(TT.Id, (Symbol) Text().ToString());
-		}
-	};
+    private token Token Id() @{
+        ('a'..'z'|'A'..'Z'|'_')
+        ('a'..'z'|'A'..'Z'|'_'|'0'..'9')* {
+            return T(TT.Id, (Symbol) Text().ToString());
+        }
+    };
 
-	private token Token LParen() @{ '(' { return T(TT.LParen, null); } };
-	private token Token RParen() @{ ')' { return T(TT.RParen, null); } };
-	private token Token Comma()  @{ ',' { return T(TT.Comma, null); } };
-	
-	private token Token Operator()
-	@{	'+' { return T(TT.Add, CodeSymbols.Add); }
-	|	'-' { return T(TT.Sub, CodeSymbols.Sub); }
-	};
+    private token Token LParen() @{ '(' { return T(TT.LParen, null); } };
+    private token Token RParen() @{ ')' { return T(TT.RParen, null); } };
+    private token Token Comma()  @{ ',' { return T(TT.Comma, null); } };
+    
+    private token Token Operator()
+    @{    '+' { return T(TT.Add, CodeSymbols.Add); }
+    |     '-' { return T(TT.Sub, CodeSymbols.Sub); }
+    };
 ~~~
 
 Recall that `T()` is a helper method, defined above, for creating a `Token`. You could define a separate rule for each operator, but the code is a bit shorter if you combine all operators into a single token rule.
@@ -383,8 +387,8 @@ partial class Parser
 
     rule LNode ExpressionAndEof @{
         // Usually you should define a rule that checks for EOF at the end,
-		// otherwise bad input like "5 x" can parse successfully (as a literal 5)
-		result:Expression EOF
+        // otherwise bad input like "5 x" can parse successfully (as a literal 5)
+        result:Expression EOF
     };
 
     rule LNode Expression @{
@@ -445,51 +449,55 @@ Rules with parameters and return values
 
 You can add parameters and a return value to any rule, and use parameters when calling any rule:
 
-	// Define a rule that takes an argument and returns a value.
-	// Matches a pattern like TT.Num TT.Comma TT.Num TT.Comma TT.Num...
-	// with a length that depends on the 'times' argument.
-	token double Mul(int times) @[
-		x:=TT.Num 
-		nongreedy(
-		   &{times>0} {times--;}
-			TT.Comma y:=Num
-			{x *= y;})*
-		{return x;}
-	];
-	// To call a rule with a parameter, add a parameter list after 
-	// the rule name.
-	rule double Mul3 @[ x:=Mul(3) {return x;} ];
+~~~csharp
+    // Define a rule that takes an argument and returns a value.
+    // Matches a pattern like TT.Num TT.Comma TT.Num TT.Comma TT.Num...
+    // with a length that depends on the 'times' argument.
+    token double Mul(int times) @[
+        x:=TT.Num 
+        nongreedy(
+           &{times>0} {times--;}
+            TT.Comma y:=Num
+            {x *= y;})*
+        {return x;}
+    ];
+    // To call a rule with a parameter, add a parameter list after 
+    // the rule name.
+    rule double Mul3 @[ x:=Mul(3) {return x;} ];
+~~~
 
 Here's the code generated for this parser:
 
-	double Mul(int times)
-	{
-	  int la0, la1;
-	  var x = Match(TT.Num);
-	  for (;;) {
-		 la0 = LA0;
-		 if (la0 == TT.Comma) {
-			if (times > 0) {
-			  la1 = LA(1);
-			  if (la1 == Num) {
-				 times--;
-				 Skip();
-				 var y = MatchAny();
-				 x *= y;
-			  } else
-				 break;
-			} else
-			  break;
-		 } else
-			break;
-	  }
-	  return x;
-	}
-	double Mul3()
-	{
-	  var x = Mul(3);
-	  return x;
-	}
+~~~csharp
+    double Mul(int times)
+    {
+      int la0, la1;
+      var x = Match(TT.Num);
+      for (;;) {
+         la0 = LA0;
+         if (la0 == TT.Comma) {
+            if (times > 0) {
+              la1 = LA(1);
+              if (la1 == Num) {
+                 times--;
+                 Skip();
+                 var y = MatchAny();
+                 x *= y;
+              } else
+                 break;
+            } else
+              break;
+         } else
+            break;
+      }
+      return x;
+    }
+    double Mul3()
+    {
+      var x = Mul(3);
+      return x;
+    }
+~~~
 
 There is a difference between `Foo(123)` and `Foo (123)` with a space. `Foo(123)` calls the `Foo` rule with a parameter of 123; `Foo (123)` is equivalent to `Foo 123` so the rule (or terminal) Foo is matched followed by the number 123 (which is "`{`" in ASCII).
 
@@ -499,99 +507,109 @@ As you learned in the last article, each rule can have a _recognizer form_ which
 
 You can cause parameters to be kept or discarded from a recognizer using a `recognizer` attribute on a rule. Observe how code is generated for the following rule:
 
-	LLLPG(parser) { 
-		[recognizer { void FooRecognizer(int x); }]
-		token double Foo(int x, int y) @[ match something ];
-		
-		token double FooCaller(int x, int y) @[
-			Foo(1) Foo(1, 2) &Foo(1) &Foo(1, 2)
-		];
-	}
+~~~csharp
+    LLLPG(parser) { 
+        [recognizer { void FooRecognizer(int x); }]
+        token double Foo(int x, int y) @[ match something ];
+        
+        token double FooCaller(int x, int y) @[
+            Foo(1) Foo(1, 2) &Foo(1) &Foo(1, 2)
+        ];
+    }
+~~~
 
 The recognizer version of Foo will accept only one argument because the `recognizer` attribute specifies only one argument. Although the `recognizer` attribute uses `void` as the return type of `FooRecognizer`, LLLPG ignores this and changes the return type to `bool`:
 
-	double Foo(int x, int y)
-	{
-	  Match(match);
-	  Match(something);
-	}
-	bool Try_FooRecognizer(int lookaheadAmt, int x)
-	{
-	  using (new SavePosition(this, lookaheadAmt))
-		 return FooRecognizer(x);
-	}
-	bool FooRecognizer(int x)
-	{
-	  if (!TryMatch(match))
-		 return false;
-	  if (!TryMatch(something))
-		 return false;
-	  return true;
-	}
-	double FooCaller(int x, int y)
-	{
-	  Foo(1);
-	  Foo(1, 2);
-	  Check(Try_FooRecognizer(0, 1), "Foo");
-	  Check(Try_FooRecognizer(0, 1, 2), "Foo");
-	}
+~~~csharp
+    double Foo(int x, int y)
+    {
+      Match(match);
+      Match(something);
+    }
+    bool Try_FooRecognizer(int lookaheadAmt, int x)
+    {
+      using (new SavePosition(this, lookaheadAmt))
+         return FooRecognizer(x);
+    }
+    bool FooRecognizer(int x)
+    {
+      if (!TryMatch(match))
+         return false;
+      if (!TryMatch(something))
+         return false;
+      return true;
+    }
+    double FooCaller(int x, int y)
+    {
+      Foo(1);
+      Foo(1, 2);
+      Check(Try_FooRecognizer(0, 1), "Foo");
+      Check(Try_FooRecognizer(0, 1, 2), "Foo");
+    }
+~~~
 
 Notice that LLLPG does not verify that `FooCaller` passes the correct number of arguments to `Foo` or `FooRecognizer`, not in this case anyway. So LLLPG does not complain or alter the incorrect call `Foo(1)` or `Try_FooRecognizer(0, 1, 2)`. Usually LLLPG will simply repeat the argument argument list you provide, whether it makes sense or not. However, as a normal rule is "converted" into a recognizer, LLLPG can automatically reduce the number of arguments to other rules called by that rule, as demonstrated here:
 
-	[recognizer {void BarRecognizer(int x);}]
-	token double Bar(int x, int y) @[ match something ];
-	
-	rule void BarCaller @[
-		Bar(1, 2)
-	];
-	
-	rule double Start(int x, int y) @[ &BarCaller BarCaller ];
+~~~csharp
+    [recognizer {void BarRecognizer(int x);}]
+    token double Bar(int x, int y) @[ match something ];
+    
+    rule void BarCaller @[
+        Bar(1, 2)
+    ];
+    
+    rule double Start(int x, int y) @[ &BarCaller BarCaller ];
+~~~
 
 Generated code:
 
-	double Bar(int x, int y)
-	{
-	  Match(match);
-	  Match(something);
-	}
-	bool Try_BarRecognizer(int lookaheadAmt, int x)
-	{
-	  using (new SavePosition(this, lookaheadAmt))
-		 return BarRecognizer(x);
-	}
-	bool BarRecognizer(int x)
-	{
-	  if (!TryMatch(match))
-		 return false;
-	  if (!TryMatch(something))
-		 return false;
-	  return true;
-	}
-	void BarCaller()
-	{
-	  Bar(1, 2);
-	}
-	bool Try_Scan_BarCaller(int lookaheadAmt)
-	{
-	  using (new SavePosition(this, lookaheadAmt))
-		 return Scan_BarCaller();
-	}
-	bool Scan_BarCaller()
-	{
-	  if (!BarRecognizer(1))
-		 return false;
-	  return true;
-	}
-	double Start(int x, int y)
-	{
-	  Check(Try_Scan_BarCaller(0), "BarCaller");
-	  BarCaller();
-	}
+~~~csharp
+    double Bar(int x, int y)
+    {
+      Match(match);
+      Match(something);
+    }
+    bool Try_BarRecognizer(int lookaheadAmt, int x)
+    {
+      using (new SavePosition(this, lookaheadAmt))
+         return BarRecognizer(x);
+    }
+    bool BarRecognizer(int x)
+    {
+      if (!TryMatch(match))
+         return false;
+      if (!TryMatch(something))
+         return false;
+      return true;
+    }
+    void BarCaller()
+    {
+      Bar(1, 2);
+    }
+    bool Try_Scan_BarCaller(int lookaheadAmt)
+    {
+      using (new SavePosition(this, lookaheadAmt))
+         return Scan_BarCaller();
+    }
+    bool Scan_BarCaller()
+    {
+      if (!BarRecognizer(1))
+         return false;
+      return true;
+    }
+    double Start(int x, int y)
+    {
+      Check(Try_Scan_BarCaller(0), "BarCaller");
+      BarCaller();
+    }
+~~~
 
 Notice that `BarCaller()` calls `Bar(1, 2)`, with two arguments. However, `Scan_BarCaller`, which is the auto-generated name of the recognizer for `BarCaller`, calls `BarRecognizer(1)` with only a single parameter. Sometimes a parameter that is needed by the main rule (`Bar`) is not needed by the recognizer form of the rule (`BarRecognizer`) so LLLPG lets you remove parameters in the `recognizer` attribute; LLLPG will automatically delete call-site parameters when generating the recognizer version of a rule. You must only remove parameters from the end of the argument list; for example, if you write
 
-	[recognizer { void XRecognizer(string second); }]
-	rule double X(int first, string second) @[ match something ];
+~~~csharp
+    [recognizer { void XRecognizer(string second); }]
+    rule double X(int first, string second) @[ match something ];
+~~~
 
 LLLPG will **not notice** that you removed the _first_ parameter rather than the _second_, it will only notice that the recognizer has a _shorter_ parameter list, so it will only remove the _second_ parameter. Also, LLLPG will only remove parameters from calls to the recognizer, not calls to the main rule, so the recognizer cannot accept more arguments than the main rule.
 
@@ -630,12 +648,16 @@ This table how code is generated for these operators:
 <tr>
 <td><code>:</code></td>
 <td><code>x:Foo</code></td>
-<td><code>// If you use the `terminalType: Token` option
-     <br/>Token x = default(Token); // at top of method
-     <br/>x = Match(Foo); // later</code></td>
-<td><code>// RetType refers to the return type of `Foo`
-     <br/>RetType x = default(RetType); // at top of method
-     <br/>x = Foo(); // later</code></td>
+<td><code>// Use with `terminalType: Token`
+     <br/>// Output at top of method:
+     <br/>Token x = default(Token);
+     <br/>// output in-place:
+     <br/>x = Match(Foo); </code></td>
+<td><code>// RetType refers to Foo's return type
+     <br/>// Output at top of method:
+     <br/>RetType x = default(RetType);
+     <br/>// Output in-place:
+     <br/>x = Foo();</code></td>
 </tr>
 <tr>
 <td><code>+=</code></td>
@@ -646,12 +668,16 @@ This table how code is generated for these operators:
 <tr>
 <td><code>+:</code></td>
 <td><code>lst+:Foo</code></td>
-<td><code>// If you use the `terminalType: Token` option
-     <br/>List&lt;Token> x = new List&lt;Token>; // at top of method
+<td><code>// Use with `terminalType: Token`
+     <br/>// Output at top of method:
+     <br/>List&lt;Token> x = new List&lt;Token>;
+     <br/>// output in-place:
      <br/>lst.Add(Match(Foo)); // later</code></td>
-<td><code>// RetType refers to the return type of `Foo`
-     <br/>List&lt;RetType> x = new List&lt;RetType>; // at top of method
-     <br/>lst.Add(Foo()); // later</code></td>
+<td><code>// RetType refers to Foo's return type
+     <br/>// Output at top of method:
+     <br/>List&lt;RetType> x = new List&lt;RetType>;
+     <br/>// Output in-place:
+     <br/>lst.Add(Foo());</code></td>
 </tr>
 </table>
 
@@ -659,22 +685,26 @@ You can match one of a set of terminals, for example `x:=('+'|'-'|'.')` generate
 
 In LLLPG 1.3.2 I added a feature where you would write simply `Foo` instead of `foo:=Foo` and then write `$Foo` in code later, which _retrospectively_ saves the value returned from `Foo` in an "anonymous" variable. For example, instead of writing code like this:
 
-	private rule LNode IfStmt() @{
-		{LNode els = null;}
-		t:=TT.If "(" cond:=Expr ")" then:=Stmt 
-		greedy[TT.Else els=Stmt]?
-		{return IfNode(t, cond, then, els);}
-	};
+~~~csharp
+    private rule LNode IfStmt() @{
+        {LNode els = null;}
+        t:=TT.If "(" cond:=Expr ")" then:=Stmt 
+        greedy[TT.Else els=Stmt]?
+        {return IfNode(t, cond, then, els);}
+    };
+~~~
 
 It would be written like this instead:
 
-	private rule LNode IfStmt() @{
-		TT.If "(" Expr ")" Stmt 
-		greedy[TT.Else els:Stmt]?
-		{return IfNode($(TT.If), $Expr, $Stmt, els);}
-	};
+~~~csharp
+    private rule LNode IfStmt() @{
+        TT.If "(" Expr ")" Stmt 
+        greedy[TT.Else els:Stmt]?
+        {return IfNode($(TT.If), $Expr, $Stmt, els);}
+    };
+~~~
 
-This makes the grammar look less cluttered.
+This makes the grammar look less cluttered. Note that if the optional branch is skipped, the variable `els` ends up with its default value (`null`); the same would happen with `$Expr`, if `Expr` were optional.
 
 Error handling mechanisms in LLLPG
 ----------------------------------
@@ -683,14 +713,18 @@ Admittedly, I'm not 100% sure what the right way to do error handling is, but LL
 
 First of all, when matching a single terminal, LLLPG puts your own code in charge of error handling. For example, if the rule says
 
-	rule PlusMinus @{ '+'|'-' };
+~~~csharp
+    rule PlusMinus @{ '+'|'-' };
+~~~
 
 the generated code is 
 
-	void PlusMinus()
-	{
-	  Match('-', '+');
-	}
+~~~csharp
+    void PlusMinus()
+    {
+      Match('-', '+');
+    }
+~~~
 
 So LLLPG is relying on the `Match()` method to decide how to handle errors. If the next input is neither `'-'` nor `'+'`, what should `Match()` do:
 
@@ -704,41 +738,47 @@ Currently, all the `Match` methods of `BaseLexer`/`BaseILexer` and `BaseParser`/
 
 For cases that require if/else chains or switch statements, LLLPG's default behavior is optimistic: Quite simply, it assumes there are no erroroneous inputs. When you write
 
-	rule Either @{ 'A' | B };
+~~~csharp
+    rule Either @{ 'A' | B };
+~~~
 
 the output is
   
-	void Either()
-	{
-	  int la0;
-	  la0 = LA0;
-	  if (la0 == 'A')
-	    Skip();
-	  else
-	    B();
-	}
+~~~csharp
+    void Either()
+    {
+      int la0;
+      la0 = LA0;
+      if (la0 == 'A')
+        Skip();
+      else
+        B();
+    }
+~~~
 
 Under the assumption that there are no errors, if the input is not `'A'` then it must be `B`. Therefore, when you are writing a list of alternatives and one of them makes sense as a catch-all or default, you should put it last in the list of alternatives, which will make it the default. You can also specify which branch is the default by writing the word `default` at the beginning of one alternative:
 
-	rule B @{ 'B' };
-	rule Either @{ default 'A' | B };
+~~~csharp
+    rule B @{ 'B' };
+    rule Either @{ default 'A' | B };
 
     // Output
-	void B()
-	{
-	  Match('B');
-	}
-	void Either()
-	{
-	  int la0;
-	  la0 = LA0;
-	  if (la0 == 'A')
-	    Match('A');
-	  else if (la0 == 'B')
-	    B();
-	  else
-	    Match('A');
-	}
+    void B()
+    {
+      Match('B');
+    }
+    void Either()
+    {
+      int la0;
+      la0 = LA0;
+      if (la0 == 'A')
+        Match('A');
+      else if (la0 == 'B')
+        B();
+      else
+        Match('A');
+    }
+~~~
 
 Remember that, if there is ambiguity between alternatives, the order of alternatives controls their priority. So you have at least two reasons to change the order of different alternatives:
 
@@ -747,71 +787,77 @@ Remember that, if there is ambiguity between alternatives, the order of alternat
 
 Occasionally these goals are in conflict: you may want a certain arm to have higher priority and _also_ be the default. That's where the `default` keyword comes in. In this example, the "Consonant" arm is the default:
 
-	LLLPG(lexer)
-	{
-		rule ConsonantOrNot @{ 
-			('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
-		};
-	}
-	
-	void ConsonantOrNot()
-	{
-	  switch (LA0) {
-	  // (Newlines between cases removed for brevity)
-	  case 'A': case 'E': case 'I': case 'O': case 'U':
-	    {
-	      Skip();
-	      Vowel();
-	    }
-	    break;
-	  default:
-	    {
-	      MatchRange('A', 'Z');
-	      Consonant();
-	    }
-	    break;
-	  }
-	}
+~~~csharp
+    LLLPG(lexer)
+    {
+        rule ConsonantOrNot @{ 
+            ('A'|'E'|'I'|'O'|'U') {Vowel();} / 'A'..'Z' {Consonant();}
+        };
+    }
+    
+    void ConsonantOrNot()
+    {
+      switch (LA0) {
+      // (Newlines between cases removed for brevity)
+      case 'A': case 'E': case 'I': case 'O': case 'U':
+        {
+          Skip();
+          Vowel();
+        }
+        break;
+      default:
+        {
+          MatchRange('A', 'Z');
+          Consonant();
+        }
+        break;
+      }
+    }
+~~~
 
 You can use the `default` keyword to mark the "vowel" arm as the default instead, in which case perhaps we should call it "non-consonant" rather than "vowel":
 
-	LLLPG(lexer) {
-		rule ConsonantOrNot @{ 
-			default ('A'|'E'|'I'|'O'|'U') {Other();} 
-			       / 'A'..'Z' {Consonant();}
-		};
-	}
-	
+~~~csharp
+    LLLPG(lexer) {
+        rule ConsonantOrNot @{ 
+            default ('A'|'E'|'I'|'O'|'U') {Other();} 
+                   / 'A'..'Z' {Consonant();}
+        };
+    }
+~~~
+    
 The generated code will be somewhat different:
 
-	static readonly HashSet<int> ConsonantOrNot_set0 = NewSet('A', 'E', 'I', 'O', 'U');
-	void ConsonantOrNot()
-	{
-		do {
-			switch (LA0) {
-			case 'A': case 'E': case 'I': case 'O': case 'U':
-				goto match1;
-			case 'B': case 'C': case 'D': case 'F': case 'G':
-			case 'H': case 'J': case 'K': case 'L': case 'M':
-			case 'N': case 'P': case 'Q': case 'R': case 'S':
-			case 'T': case 'V': case 'W': case 'X': case 'Y':
-			case 'Z':
-				{
-					Skip();
-					Consonant();
-				}
-				break;
-			default:
-				goto match1;
-			}
-			break;
-		match1:
-			{
-				Match(ConsonantOrNot_set0);
-				Other();
-			}
-		} while (false);
-	}");
+~~~csharp
+    static readonly HashSet<int> ConsonantOrNot_set0 = NewSet('A', 'E', 'I', 'O', 'U');
+    void ConsonantOrNot()
+    {
+        do {
+            switch (LA0) {
+            case 'A': case 'E': case 'I': case 'O': case 'U':
+                goto match1;
+            case 'B': case 'C': case 'D': case 'F': case 'G':
+            case 'H': case 'J': case 'K': case 'L': case 'M':
+            case 'N': case 'P': case 'Q': case 'R': case 'S':
+            case 'T': case 'V': case 'W': case 'X': case 'Y':
+            case 'Z':
+                {
+                    Skip();
+                    Consonant();
+                }
+                break;
+            default:
+                goto match1;
+            }
+            break;
+        match1:
+            {
+                Match(ConsonantOrNot_set0);
+                Other();
+            }
+        } while (false);
+    }
+~~~
 
 This code ensures that the first branch matches any character that is not in one of the ranges 'B'..'D', 'F'..'H', 'J'..'N', 'P'..'T', or 'V'..'Z', i.e. the non-consonants (_Note_: this behavior was added in LLLPG 1.0.1; LLLPG 1.0.0 treated `default` as merely reordering the alternatives.)
 
@@ -821,77 +867,86 @@ Specifying a `default` branch should never change the behavior of the generated 
 
 Another error-handling feature is that LLLPG can insert error handlers automatically, in all cases more complicated than a call to `Match`. This is accomplished with the `[NoDefaultArm(true)]` grammar option, which causes an `Error(int, string)` method to be called whenever the input is not in the expected set. Here is an example:
 
-	//[NoDefaultArm]
-	LLLPG(parser)
-	{
-		rule B @{ 'B' };
-		rule Either @{ ('A' | B)* };
-	}
+~~~csharp
+    //[NoDefaultArm]
+    LLLPG(parser)
+    {
+        rule B @{ 'B' };
+        rule Either @{ ('A' | B)* };
+    }
 
     // Output
-	void B()
-	{
-	  Match('B');
-	}
-	void Either()
-	{
-	  int la0;
-	  for (;;) {
-		 la0 = LA0;
-		 if (la0 == 'A')
-			Skip();
-		 else if (la0 == 'B')
-			B();
-		 else
-			break;
-	  }
-	}
+    void B()
+    {
+      Match('B');
+    }
+    void Either()
+    {
+      int la0;
+      for (;;) {
+         la0 = LA0;
+         if (la0 == 'A')
+            Skip();
+         else if (la0 == 'B')
+            B();
+         else
+            break;
+      }
+    }
+~~~
 
 When `[NoDefaultArm]` is added, the output changes to
 
-	void Either()
-	{
-	  int la0;
-	  for (;;) {
-		 la0 = LA0;
-		 if (la0 == 'A')
-			Skip();
-		 else if (la0 == 'B')
-			B();
-		 else if (la0 == EOF)
-			break;
-		 else
-			Error(0, "In rule 'Either', expected one of: (EOF|'A'|'B')");
-	  }
-	}
+~~~csharp
+    void Either()
+    {
+      int la0;
+      for (;;) {
+         la0 = LA0;
+         if (la0 == 'A')
+            Skip();
+         else if (la0 == 'B')
+            B();
+         else if (la0 == EOF)
+            break;
+         else
+            Error(0, "In rule 'Either', expected one of: (EOF|'A'|'B')");
+      }
+    }
+~~~
 
 The error message is predefined, and `[NoDefaultArm]` is not currently supported on individual rules.
 
 This mode probably isn't good enough for professional grammars so I'm taking suggestions for improvements. The other way to use this feature is to selectively enable it in individual loops using `default_error`. For example, this grammar produces the same output as the last one:
 
-	LLLPG(parser)
-	{
-		rule B @{ 'B' };
-		rule Either @{ ['A' | B | default_error]* };
-	}
+~~~csharp
+    LLLPG(parser)
+    {
+        rule B @{ 'B' };
+        rule Either @{ ['A' | B | default_error]* };
+    }
+~~~
 
 `default_error` must be used by itself; it does not support, for example, attaching custom actions.
 
 Finally, you can customize the error handling for a particular loop using an `error` branch:
 
-	LLLPG
-	{
-		rule B @[ 'B' ];
-		rule Either @{
+~~~csharp
+    LLLPG
+    {
+        rule B @[ 'B' ];
+        rule Either @{
             [  'A' 
             |   B
             |   error {Error(0, ""Anticipita 'A' aŭ B ĉi tie"");} _
             ]*
         };
-	}
+    }
+~~~
 
 In this example I've written a custom error message in [Esperanto](http://en.wikipedia.org/wiki/Esperanto); here's the output:
 
+~~~csharp
     void B()
     {
       Match('B');
@@ -913,19 +968,23 @@ In this example I've written a custom error message in [Esperanto](http://en.wik
         }
       }
     }
+~~~
 
 Notice that I used `_` inside the `error` branch to skip the invalid terminal. The `error` branch behaves very similarly to a `default` branch except that it does not participate in prediction decisions. A formal way to explain this would be to say that `(A | B | ... | error E)` is equivalent to `(A | B | ... | default ((~_) => E))`, although I didn't actually implement it that way, so maybe it's not perfectly equivalent.
 
 One more thing that I think I should mention about error handling is the `Check()` function, which is used to check that an `&and` predicate matches. Previously you've seen an and-predicate that makes a prediction decision, as in:
 
-	token Number @[
-		{dot::bool=false;}
-		('.' {dot=true;})?
-		'0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-	];
+~~~csharp
+    token Number @[
+        {dot::bool=false;}
+        ('.' {dot=true;})?
+        '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+    ];
+~~~
 
 In this case `'.' '0'..'9'+` will only be matched if `!dot`:
 
+~~~csharp
     ...
     la0 = LA0;
     if (la0 == '.') {
@@ -936,17 +995,21 @@ In this case `'.' '0'..'9'+` will only be matched if `!dot`:
                 Skip();
                 for (;;) {
                     ...
+~~~
 
 The code only turns out this way because the follow set of Number is `_*`, as explained in the next article where I talk about the difference between `token` and `rule`. Due to the follow set, LLLPG assumes `Number` might be followed by `'.'` so `!dot` must be included in the prediction decision. But if `Number` is a normal `rule` (and the follow set of `Number` does not include `'.'`):
 
-	rule Number @[
-		{dot::bool=false;}
-		('.' {dot=true;})?
-		'0'..'9'+ (&{!dot} '.' '0'..'9'+)?
-	];
+~~~csharp
+    rule Number @[
+        {dot::bool=false;}
+        ('.' {dot=true;})?
+        '0'..'9'+ (&{!dot} '.' '0'..'9'+)?
+    ];
+~~~
 
 Then the generated code is different:
 
+~~~csharp
     ...
     la0 = LA0;
     if (la0 == '.') {
@@ -955,6 +1018,7 @@ Then the generated code is different:
       MatchRange('0', '9');
       for (;;) {
         ...
+~~~
 
 In this case, when LLLPG sees `'.'` it decides to enter the optional item `(&{!dot} '.' '0'..'9'+)?`  without checking `&{!dot}` first, because `'.'` is not considered a valid input for _skipping_ the optional item. Basically LLLPG thinks "if there's a dot here, matching the optional item is the only reasonable thing to do". So, it assumes there is a `Check(bool, string)` method, which it calls to check `&{!dot}` _after_ prediction.
 
@@ -967,43 +1031,49 @@ A random fact
 
 _Did you know?_ Unlike ANTLR, LLLPG does not care much about parenthesis when interpreting loops and alternatives separated by `|` or `/`. For example, all of the following rules are interpreted the same way and produce the same code:
 
+~~~csharp
     rule Foo1 @{ ["AB" | "A" | "CD" | "C"]*     };
     rule Foo2 @{ [("AB" | "A" | "CD" | "C")]*   };
     rule Foo3 @{ [("AB" | "A") | ("CD" | "C")]* };
     rule Foo4 @{ ["AB" | ("A" | "CD") | "C"]*   };
     rule Foo5 @{ ["AB" | ("A" | ("CD" | "C"))]* };
+~~~
 
 The loop (`*`) and all the arms are integrated into a single prediction tree, regardless of how you might fiddle with parenthesis. Knowing this may help you understand error messages and generated code better.
 
 Another thing that is Good to Know™ is that `|` behaves differently when the left and right side are terminals. `('1'|'3'|'5'|'9' '9')` is treated not as _four_ alternatives, but only _two_: `('1'|'3'|'5') | '9' '9'`, as you can see from the generated code:
 
+~~~csharp
+  la0 = LA0;
+  if (la0 == '1' || la0 == '3' || la0 == '5')
+    Skip();
+  else {
+    Match('9');
+    Match('9');
+  }
+~~~
+
+This happens because a "terminal set" is always a single unit in LLLPG, i.e. multiple terminals like `('A'|'B')` are combined and treated the same as a single terminal `'X'`, whenever the left and right sides of `|` are both terminal sets. If you insert an empty code block into the first alternative, it is no longer treated as a simple terminal, LLLPG cannot join the terminals into a single set anymore. In that case LLLPG sees four alternatives instead, causing different output:
+
+~~~csharp
+    rule Foo@[ '1' {/*empty*/} | '3' | '5' | '9' '9' ];
+    
+    void Foo()
+    {
+      int la0;
       la0 = LA0;
-      if (la0 == '1' || la0 == '3' || la0 == '5')
+      if (la0 == '1')
+        Skip();
+      else if (la0 == '3')
+        Skip();
+      else if (la0 == '5')
         Skip();
       else {
         Match('9');
         Match('9');
       }
-
-This happens because a "terminal set" is always a single unit in LLLPG, i.e. multiple terminals like `('A'|'B')` are combined and treated the same as a single terminal `'X'`, whenever the left and right sides of `|` are both terminal sets. If you insert an empty code block into the first alternative, it is no longer treated as a simple terminal, LLLPG cannot join the terminals into a single set anymore. In that case LLLPG sees four alternatives instead, causing different output:
-
-	rule Foo@[ '1' {/*empty*/} | '3' | '5' | '9' '9' ];
-	
-	void Foo()
-	{
-	  int la0;
-	  la0 = LA0;
-	  if (la0 == '1')
-	    Skip();
-	  else if (la0 == '3')
-	    Skip();
-	  else if (la0 == '5')
-	    Skip();
-	  else {
-	    Match('9');
-	    Match('9');
-	  }
-	}
+    }
+~~~
 
 End of part 3
 -------------
@@ -1018,24 +1088,3 @@ The following topics still remain for future articles:
 - All about Loyc and its libraries. Things you can do with LeMP: other source code manipulators besides LLLPG.
 
 Are you using LLLPG to parse an interesting language? Please leave a comment!
-
-History
--------
-
-LLLPG v1.0.1:
-
-- bug fix (lexers): now we call `MatchExcept(set)` when inverted set contains EOF
-- bug fix (parsers): removed `EOF` from `MatchExcept(..., EOF)`
-- bug fix: `default` can no longer change parser behavior except for bad input
-- increased max params for `Match(...)` from 3 to 4
-- errors/warnings include string version of an alt if it is short
-- added "Line N: (...|...|...)" comment to output for every `Alts`, and `[AddComments(bool)]` option
-- added more useful follow set info at `[Verbosity(2)]` and `[Verbosity(3)]`
-- `Error(InputPosition + li, "...")` changed to `Error(li, "...")`
-
-LLLPG v1.1.0:
-
-- Implemented complex ambiguity suppression behavior for / operator (described in part 4)
-- Loyc: Removed dependency on nunit.framework.dll, replaced with `Loyc.MiniTest`
-- Loyc: Added enum `Severity`. Changed `IMessageSink.Write(Symbol,...)` to `IMessageSink.Write(Severity,...)`
-- Rebuilt LesSyntaxForVs2010 to match DLLs used by LLLPG 1.1.0 (for some reason the LLLPG SFG breaks if LES syntax highlighter uses different DLL versions, even though LLLPG has its own copy of all DLLs.)
