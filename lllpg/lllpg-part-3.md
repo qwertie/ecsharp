@@ -7,6 +7,10 @@ redirectDomain: ecsharp.net
 commentIssueId: 35
 ---
 
+# This page is obsolete # 
+
+The [LLLPG manual](/lllpg) has been reorganized. These old articles may be deleted in the future.
+
 Welcome to part 3
 -----------------
 

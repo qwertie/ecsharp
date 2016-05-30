@@ -60,8 +60,13 @@ Please see "Parsing terminology" in [article #2](lllpg-part-2.html) for a more i
 
 ### Q. LLLPG generates a *.cs file from my *.ecs file. Should I check it into source control (Git/SVN)?
 
-Yes. In fact, if you're using the LLLPG Custom Tool in Visual Studio, LLLPG is _not_ invoked when you build your project, so failing to check it in is a recipe for failing builds.
+Yes. In fact, if you're using the LLLPG Custom Tool in Visual Studio, LLLPG is _not_ invoked when you build your project, so failing to commit it is a recipe for failing builds.
+
+### Q. How does LLLPG distinguish terminals (tokens) from nonterminals (rules)?
+
+Some parser generators use uppercase and lowercase letters for this. Not LLLPG. Instead, LLLPG assumes that anything that is not a rule is a terminal. So if you refer to `Foo` in your grammar, it is a nonterminal if there is a rule called `Foo`, otherwise it is assumed to be a terminal.
 
 ### Q. My question isn't here!
 
 I'm gonna level with you. This is not a real FAQ. In fact I've never been asked any of these questions. I am a fraud, I made them up. But you can still ask - reach me by email at `gmail.com`, with account name `qwertie256`.
+

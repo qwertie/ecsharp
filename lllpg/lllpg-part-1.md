@@ -6,6 +6,10 @@ toc: true
 redirectDomain: ecsharp.net
 ---
 
+# This page is obsolete # 
+
+The [LLLPG manual](/lllpg) has been reorganized. These old articles may be deleted in the future.
+
 Introduction
 ------------
 
@@ -219,6 +223,10 @@ Also note:
 - Conventionally LLLPG uses round brackets for argument lists, e.g. you would write `R(777)` to pass `777` as the first argument of rule `R`. ANTLR requires `R[777]` instead. Because of this difference, ANTLR rule signatures use square brackets too (`R[int num] : ...`). In order to accommodate ANTLR, LLLPG now allows argument lists to use square brackets, but if you prefer round brackets, LLLPG allows them on the formal argument list in ANTLR mode (e.g. `R(int num) returns (int) : ...`).
 - In any case, the return type always needs to be in brackets (square or round).
 - The rest of these articles will use traditional LLLPG notation, which is designed to resemble method declarations.
+
+
+
+If you're only interested in the parser generator, please skip this section, because right now I'd like to discuss the fancy technology that LLLPG is built on. In fact, you can skip most of the rest of the article and go straight to [part 2][12].
 
 The LeMP processing model
 -------------------------
@@ -443,7 +451,7 @@ See [version history](version-history.html) for a more detailed history.
 [17]: https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Compiler.cs
 [18]: https://github.com/qwertie/Loyc/blob/master/Main/LeMP/Prelude.cs
 [19]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/ParsersAndMacros/Macros.cs
-[20]: https://github.com/qwertie/Loyc/blob/master/Core/Loyc.Syntax/LES/LesParserGrammar.les
+[20]: https://github.com/qwertie/ecsharp/blob/master/Core/Loyc.Syntax/LES/LesParserGrammar.les
 [21]: https://github.com/qwertie/Loyc/blob/master/Main/Ecs/Parser/EcsParserGrammar.les
 [22]: https://github.com/qwertie/Loyc/blob/master/Main/LLLPG/ParsersAndMacros/StageOneParserGrammar.ecs
 [23]: http://en.wikipedia.org/wiki/Lisp_(programming_language)

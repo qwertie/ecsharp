@@ -1,192 +1,14 @@
 ---
-title: "LLLPG Part 5: The Final Sales Pitch"
+title: "9. Advanced techniques"
 layout: article
-date: 19 Jun 2015 (updated 24 Aug 2015)
-tagline: "Concerned about regular expressions being unintelligible, repetitive, hard to get right and non-recursive? Read part 5, possibly the most useful part yet!"
+date: 30 May 2016
 toc: true
-redirectDomain: ecsharp.net
 ---
 
-This page is obsolete
-=====================
+If you read this entire article, I guess you'll become an LLLPG master, ready to parse any language your boss throws at you.
 
-The [LLLPG manual](/lllpg) has been reorganized. These old articles may be deleted in the future.
-
-Welcome to part 5
------------------
-
-_New to LLLPG? You could start at [part 1](http://www.codeproject.com/Articles/664785/A-New-Parser-Generator-for-Csharp), but if you've parsed things before, feel free to start here._
-
-I've finally decided to finish this article series, and to give LLLPG a few new features to make it more flexible and appealing, especially as a alternative to regexes. Half of this article is devoted just to the new features, and the other half is devoted to advanced parsing tips.
-
-To recap, LLLPG is a parser generator integrated into an "Enhanced" C# language. The tool accepts normal C# code interspersed with LLLPG grammars or grammar fragments, and it outputs plain C#. Advantages of LLLPG over other tools:
-
-- LLLPG generates simple, relatively concise, fast code.
-- As a Visual Studio Custom Tool, it is ideal for medium-size parsing tasks that are a bit too large for a regex. LLLPG is also sophisticated enough to parse complex languages like "enhanced C#", LLLPG's usual input language.
-- You can add a parser to an existing class--ideal for writing `static Parse` methods.
-- You can avoid memory allocation during parsing (ideal for parsing short strings!)
-- No runtime library is required (although I suggest using Loyc.Syntax.dll as your runtime library for maximum flexibility, along with its dependencies Loyc.Collections.dll and Loyc.Essentials.dll.) (TODO: update NuGet package AND standalone BaseLexer, rename it to LexerSource)
-- Short learning curve: LLLPG is intuitive to use because it augments an existing programming language and _doesn't_ attempt to do everything on your behalf. Also, the generated code follows the structure of the input code so you can easily see how the tool behaves.
-- Just one parsing model to learn: some other systems use one model (regex) for lexers and something else for parsers. Often lexers have a completely different syntax than parsers, and the lexer can't handle things like nested comments (lex and yacc are even separate programs!). LLLPG uses just a single model, LL(k); its lexers and parsers have nearly identical syntax and behavior.
-- For tricky situations, LLLPG offers zero-width asertions (a.k.a. semantic & syntactic predicates) and "gates".
-- Compared to regexes, LLLPG allows recursive grammars, often reduces repetitions of grammar fragments, and because LLLPG only supports LL(k), it mitigates the risk of [regex denial-of-service attacks](http://en.wikipedia.org/wiki/ReDoS). On the other hand, LLLPG is less convenient in that grammars tend to be longer than regexes, _changing_ the grammar requires the LLLPG tool to be installed, and writing an LL(k) grammar correctly may require more thought than writing a regex.
-- Compared to ANTLR, LLLPG is designed for C# rather than Java, so naturally there's a Visual Studio plugin, and I don't [sell half of the documentation as a book](http://www.amazon.ca/The-Definitive-ANTLR-4-Reference/dp/1934356999). Syntax is comparable to ANTLR, but superficially different because unlike ANTLR rules, LLLPG rules resemble function declarations. Also, I recently tried ANTLR 4 and I was shocked at how inefficient the output code appears to be.
-- Bonus features from LeMP (more on that later)
-
-New features of LLLPG 1.3.2
-===========================
-
-- "External API": in LLLPG 1.1 you had to write a class derived from `BaseLexer` or `BaseParser` which contained the LLLPG APIs such as `Match`, `LA0`, `Error`, etc. Now you can encapsulate that API in a field or a local variable. This means you can have a different base class, or you can put a lexer/parser inside a value type (`struct`) or a `static class`.
-- "Automatic Value Saver: in LLLPG 1.1, if you wanted to save the return value of a rule or token, you (sometimes) had to manually create an associated variable. In the new version, you can attach a "label" to any terminal or nonterminal, which will make LLLPG create a variable automatically at the beginning of the method. Even better, you can often get away with not attaching a label.
-- Automatic return value: when you use `$result` or the `result:` label in a rule, LLLPG automatically creates a variable called `result` to hold the return value of the current rule, and it adds a `return result` statement at the end of the method.
-- implicit LLLPG blocks: instead of writing `LLLPG(lexer) { /* rules */ }`, with braces around the rules, you are now allowed to write `LLLPG(lexer); /* rules */`, so  you won't be pressured to indent the rules so much.
-- `any` command and `inline` rules: Details below.
-- The new base class [`BaseParserForList<Token,int>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1BaseParserForList_3_01Token_00_01MatchType_01_4.html) is easier to use than the old base class `BaseParser<Token>`.
-- LLLPG will now insert `#line` directives in the code for grammar actions. While useful for compiler errors, this feature turned out to be disorienting when debugging; to convert the `#line` directives into comments, attach the following attribute before the `LLLPG` command: `[AddCsLineDirectives(false)]`.
-
-Using LLLPG with an "external" API
-----------------------------------
-
-You can use the `inputSource` and `inputClass` options to designate an object to which LLLPG should send all its API calls. `inputClass` should be the data type of the object that `inputSource` refers to. For example, if you specify `inputSource(src)`, LLLPG will translate a grammar fragment like `'+'|'-'` into code like `src.Match('+','-')`. Without the `inputSource` option, this would have just been `Match('+','-')`.
-
-Loyc.Syntax.dll (included with LLLPG 1.3) has [`LexerSource`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource.html) and [`LexerSource<C>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1LexerSource_3_01CharSrc_01_4.html) types, which are derived from [`BaseLexer`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1BaseLexer_3_01CharSrc_01_4.html) and provide the LLLPG Lexer API. When using these options, a lexer will look something like this:
-
-    using Loyc;
-    using Loyc.Syntax.Lexing;
-    
-    public class MyLexer {
-      public MyLexer(string input, string fileName = "") { 
-        src = new LexerSource((UString)input, fileName);
-      }
-      LexerSource src;
-      
-      LLLPG (lexer(inputSource(src), inputClass(LexerSource))) {
-        public rule Token()         @[ Id  | Spaces | Newline ];
-        private rule Id             @[ IdStartChar (IdStartChar|'0'..'9'|'\'')* ];
-        private rule IdStartChar    @[ 'a'..'z'|'A'..'Z'|'_' ];
-        private rule Spaces         @[ (' '|'\t')+ ];
-        private rule Newline        @[ ('\n' | '\r' '\n'?)
-          {src.AfterNewline();} // increments LineNumber
-        ];
-      }
-    }
-
-`LexerSource` accepts any implementation of (`ICharSource`](http://ecsharp.net/doc/code/interfaceLoyc_1_1Collections_1_1ICharSource.html); `ICharSource` represents a source of characters with a `Slice(...)` method, which is used to speed up access to individual characters. If your input is simply a string `S`, convert the string to `LexerSource` using `new LexerSource((UString)S)`; the shortcut `(LexerSource)S` is also provided. [`UString`](http://ecsharp.net/doc/code/structLoyc_1_1UString.html#a19b13b6171235bfa8b3d8ca12902eb89) is a wrapper around `string` that implements the `ICharSource` interface (the U in `UString` means "unicode"; see the (documentation of UString)[http://ecsharp.net/doc/code/structLoyc_1_1UString.html] for details.)
-
-Automatic Value Saver
----------------------
-
-Often you need to store stuff in variables, and in LLLPG 1.1 this was inconvenient because you had to manually create variables to hold stuff. Now LLLPG can create the variables for you. Consider this parser for integers:
-
-    /// Usage: int num = new Parser("1234").ParseInt();
-    public class Parser : BaseLexer {
-      /// Note: a string converts implicitly to UString
-      public Parser(UString s) : base(s) {}
-      
-      LLLPG (lexer(terminalType: int));
-      
-      public token int ParseInt() @[
-        ' '*
-        (neg:'-')?
-        ( digit:='0'..'9' {$result = 10*$result + (digit - '0');} )+ 
-        EOF
-        {if (neg != 0) $result = -$result;}
-      ];
-    }
-
-The label `neg:'-'` causes LLLPG to create a variable at the beginning of the method (`int neg = 0`), and to assign the result of matching to it (`digit = MatchAny()`). The type of the variable is controlled by the `terminalType(...)` option, but the default for a lexer is `int` so it wasn't needed in this example.
-
-That's different from the existing syntax `digit:='0'..'9'`, in that `:` creates a variable at the _beginning_ of the method, whereas `:=` creates a variable in the current scope (`var digit = MatchRange('0', '9');`). In either case, inside action blocks, LLLPG will recognize the named label `$neg` or `$digit` and replace it with the actual variable name, which is simply `neg` or `digit`.
-
-This example also uses `$result`, which causes LLLPG to create a variable called `result` with the same return type as the method (in this case `int`), returning it at the end. So the generated code looks like this:
-
-	public int ParseInt()
-	{
-		int la0;
-		int neg = 0;
-		int result = 0;
-		
-		... parsing code ...
-		
-		if (neg)
-			result = -result;
-		return result;
-	}
-
-You don't even have to explicitly apply labels. The above rule could be written like this instead: 
-
-    public token int ParseInt() @[
-        ' '*
-        ('-')?
-        ( '0'..'9' {$result = 10*$result + ($('0'..'9') - '0');} )+ 
-        EOF
-        {if ($'-' != 0) $result = -$result;}
-    ];
-
-In this version I removed the labels `neg` and `digit`, instead referring to `$'-'` and `$('0'..'9')` in my grammar actions. This makes LLLPG create two variables to represent the value of `'-'` and `'0'..'9'`:
-
-    int ch_dash = 0;
-    int ch_0_ch_9 = 0;
-    ...
-    if (la0 == '-')
-        ch_dash = MatchAny();
-    ch_0_ch_9 = MatchRange('0', '9');
-    ...
-
-It's as if I had used `ch_dash:'-'` and `ch_0_ch_9:'0'..'9'` in the grammar.
-
-Last but not least, you can use the (admittedly weird-looking) `+:` operator to add stuff to a list. For example:
-
-    /// Usage: int num = new IntParser("1234").Parse();
-    public class Parser : BaseLexer {
-      public Parser(UString s) : base(s) {}
-      
-      LLLPG (lexer(terminalType: int));
-      
-      public rule int ParseInt() @[
-        ' '* (digits+:'0'..'9')+
-        // Use LINQ to convert the list of digits to an integer
-        {return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));}
-      ];
-    }
-
-    /// Generated output for ParseInt()
-    public int ParseInt()
-    {
-        int la0;
-        List<int> digits = new List<int>();
-        for (;;) {
-            la0 = LA0;
-            if (la0 == ' ')
-                Skip();
-            else
-                break;
-        }
-        digits.Add(MatchRange('0', '9'));
-        for (;;) {
-            la0 = LA0;
-            if (la0 >= '0' && la0 <= '9')
-                digits.Add(MatchAny());
-            else
-                break;
-        }
-        return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));
-    }
-
-In ANTLR you use `+=` to accomplish the same thing. Obviously, `+:` is uglier; unfortunately I had already defined `+=` as "add something to a _user-defined_ list", whereas `+:` means "automatically _create_ a list at the beginning of the method, and add something to it here".
-
-In summary, if `Foo` represents a rule, token type, or a character, the following five operators are available:
-
-- `x=Foo`: set an existing variable `x` to the value of `Foo` 
-- `x+=Foo`: add the value of `Foo` to the existing list variable `x` (i.e. `x.Add(Foo())`, if `Foo` is a rule)
-- `x:=Foo`: create a variable `x` in the current scope with `Foo` as its value (i.e. `var x = Foo();` if `Foo` is a rule).
-- `x:Foo`: create a variable called `x` of the appropriate type at the beginning of the method and set `x` to it here. If `Foo` is a token or character, use the `terminalType` code-generation option to control the declared type of `x` (e.g. `LLLPG(parser(terminalType: Token))`) If you use the label `x` in more than once place, LLLPG will create only one (non-list) variable called `x`.
-- `x+:Foo`: create a _list_ variable called `x` of the appropriate type at the beginning of the method, and add the value of `Foo` to the list (i.e. `x.Add(Foo())`, if `Foo` is a rule). By default the list will have type `List<T>` (where `T` is the appropriate type), and you can use the `listInitializer` option to change the list type globally (e.g. `LLLPG(parser(listInitializer: IList<T> _ = new DList<T>()))`, if you prefer [DList](http://core.loyc.net/collections/dlist.html))
-
-You can only use these operators on "primitive" grammar elements: terminal sets and rule references. For example, `digits:(('0'..'9')*)` and `digits+:(('0'..'9')*)` are illegal; but `(digits+:('0'..'9'))*` is legal.
-
-`inline` rules
---------------
+`inline` and `extern` rules
+---------------------------
 
 LLLPG 1.3 supports "inline" rules, which are rules that are inserted verbatim at the location where they are used. Here is an example:
 
@@ -196,13 +18,15 @@ LLLPG 1.3 supports "inline" rules, which are rules that are inserted verbatim at
     inline extern rule IdContChar @[ IdStartChar|'0'..'9' ];
     rule Identifier @[ IdStartChar IdContChar* ];
 
-This produces only a single method as output (`Identifier`), the contents of `IdStartChar` and `IdContChar` having been inlined. I've also used the `extern` modifier to suppress code generation for `IdStartChar` and `IdContChar`; otherwise, those methods would exist but they wouldn't be called.
+This produces only a single method as output (`Identifier`), the contents of `IdStartChar` and `IdContChar` having been inlined. 
+
+Meanwhile, the `extern` modifier suppresses code generation for a rule (in this case `IdStartChar` and `IdContChar`). Otherwise, those methods would exist but they wouldn't be called.
 
 Currently, inlining is only allowed on rules that have no arguments and no return value. Inlining is "unsanitary", too; for example, the `inline rule` could contain code that refers to local variables that only exist in the location where inlining occurs. This is not recommended:
 
     /// Input
-    rule Foo @[ digit:'0'..'9' Unsanitary ];
-    inline rule Unsanitary @[ {Console.WriteLine(digit);} ];
+    rule Foo @{ digit:'0'..'9' Unsanitary };
+    inline rule Unsanitary @{ {Console.WriteLine(digit);} };
 
     /// Output
     void Foo()
@@ -215,49 +39,10 @@ Currently, inlining is only allowed on rules that have no arguments and no retur
         Console.WriteLine(digit);
     }
 
-`any` directive
----------------
-
-In a rare victory for feature creep, LLLPG 1.3 lets you mark a rule with an extra "word" attribute, which can be basically any word, and then refer to that word with the "any" directive. For example:
-
-    rule Words @[ (any fruit ' ')* ];
-    fruit rule Apple @[ "apple" ];
-    fruit rule Grape @[ "grape" ];
-    fruit rule Lemon @[ "lemon" ];
-
-Here, the `Words` rule uses `any fruit`, which is equivalent to
-
-    rule Words @[ ((Apple / Grape / Lemon) ' ')* ];
-
-The word `fruit` is stripped from the output. You could also write `[fruit]` as a normal attribute with square brackets around it, but in that case the attribute _remains_ in the output.
-
-The `any` directive also has an "`any..in`" version, in which you supply a grammar fragment that is repeated for each matching rule. This is best explained by example:
-
-    rule SumWords::int @[ (any word in (x+:word) ' ')* {return x.Sum();} ];
-    word rule One::int @[ ""one"" {return 1;}  ];
-    word rule Two::int @[ ""two"" {return 2;}  ];
-    word rule Ten::int @[ ""ten"" {return 10;} ];
-
-The `SumWords` rule could be written equivalently as
-
-    rule int SumWords @[ ((x+:One / x+:Two / x+:Ten) ' ')* {return x.Sum();} ];
-
-Advanced parsing topics
-=======================
-
-With all those new features finally out of the way, let's talk about 
-
-- How to parse without memory allocations
-- How to parse keywords
-- Collapsing precedence levels into a single rule
-- Parsing with token trees
-- How to parse indentation-sensitive languages, like Python
-- Shortening your code with LeMP
-
 How to avoid memory allocation in a lexer
 -----------------------------------------
 
-I mentioned that LLLPG lets you avoid memory allocation, and now I will demonstrate. Avoiding memory allocation in a full-blown parser is almost impossible, since you need to allocate memory to hold your syntax tree. But in simpler situations, you can optimize your scanner to avoid creating garbage objects.
+Now I will demonstrate how LLLPG can be used when you want to minimize memory allocations. Avoiding memory allocation in a full-blown parser is almost impossible, since you need to allocate memory to hold your syntax tree. But in simpler situations, you can optimize your scanner to avoid creating garbage objects.
 
 The following example parses email addresses without allocating _any_ memory, beyond a single `LexerSource`, which is allocated only once per thread:
 
@@ -346,21 +131,20 @@ You can solve the first problem by moving the `foreach` branch above the `for` b
 
 You can solve the second problem by using a gate (`=>`) or zero-width predicate (`&(...)`) to ensure that the keyword is _not_ followed by some other character, like a letter or digit, that would imply it is not a keyword. The generated code will be more efficient if you use a gate instead of a predicate, so my standard solution looks like this:
 
-    [k(/*k must be longer than the longest keyword*/)]
+    [k(/*k must be larger than the longest keyword*/)]
     private token IdOrKeyword @
-        [ "first_keyword"  (EndId => {/* custom action for this keyword */})
-        / "second_keyword" (EndId => {/* custom action for this keyword */})
-        / "third_keyword"  (EndId => {/* custom action for this keyword */})
-        / Identifier // normal identifier
+        [ "first_keyword"  EndId {/* custom action for this keyword */}
+        / "second_keyword" EndId {/* custom action for this keyword */}
+        / "third_keyword"  EndId {/* custom action for this keyword */}
+        / Identifier             {/* custom action for normal identifier */}
         ];
      
     // If a keyword is followed by a letter or number then it is NOT a keyword.
     // So this rule is used to cause LLLPG to verify that there is no letter or
-    // number after the keyword. 'extern' suppresses code generation because
-    // this rule is not actually called, it merely alters prediction in a gate.
-    extern token EndId @[
-        ~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | EOF
-    ];
+    // number after the keyword. 'inline' ensures that the effect of this rule 
+    // internalized to IdOrKeyword, and `extern` suppresses generating the empty 
+    // method that would be created for this rule.
+    extern inline token EndId @{ (~('a'..'z'|'A'..'Z'|'0'..'9'|'_') | EOF) => };
 
 Actually there is a third problem. Due to limitations of LLLPG, if you have a large number of keywords, LLLPG may take a long time to analyze your grammar. Part of the problem is that `IdOrKeyword` is analyzed more than once: it is analyzed in isolation, and then it is "comparatively analyzed" when generating the code for `ScanNextToken`, as LLLPG must figure out when to call `IdOrKeyword` and when to call some other rule. So you can get a speedup by using a gate to "hide" the `IdOrKeyword` during the anaylsis of `ScanNextToken`, like this:
 
@@ -539,6 +323,8 @@ To make this example compile, add the following code above `ExprParser` and ensu
 Tree parsing
 ------------
 
+TODO: review. I suspect some of this section is out of date.
+
 In virtually all programming languages, it is possible to insert an intermediate stage between the lexer and parser that groups parentheses, square brackets and curly braces together, to produce a "token tree". The way I've been doing it is to write a normal lexer that translates code like `{ w = (x + y) * z >> (-1); }` into a sequence of token objects
 
     {  w  =  (  x  +  y  )  *  z  >>  (  -  1  )  ;  }
@@ -673,18 +459,20 @@ By far the easiest way to handle this kind of language is to insert a preprocess
         List<Token> tokens = wrapr.Buffered().ToList();
         var parser = new YourParserClass(tokens);
     
-    See the [documentation of IndentTokenGenerator](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
+    See the [documentation of `IndentTokenGenerator`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator.html) for more information; it documents specifically how I'd handle Python, for example.
 
-    If you're not using the standard `Token` type, you can use [IndentTokenGenerator<Tok>](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
+    If you're not using the standard `Token` type, you can use [`IndentTokenGenerator<Tok>`](http://ecsharp.net/doc/code/classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html) instead, you just have to implement its abstract methods. If you need to customize the generator's behavior, you can derive from either of these classes and override their virtual methods.
 
 Shortening your code with LeMP
 ------------------------------
 
-In LLLPG 1.3 I've finally completed a bunch of basic macro functionality so you can do a bunch of stuff that has nothing to do with parsing. See my new article "[Avoid Tedious Coding With LeMP](http://www.codeproject.com/Articles/995264/Avoid-tedious-coding-with-LeMP-Part)" to learn more.
+In LLLPG 1.3 I've finally completed a bunch of basic macro functionality so you can do a bunch of stuff that has nothing to do with parsing. See my new article "[Avoid Tedious Coding With LeMP](http://ecsharp.net/lemp/avoid-tedium-with-LeMP.html)" to learn more.
 
-The new `unroll` and `replace` macros, in particular, are useful for eliminating some of the boilerplate from an LLLPG parser. You'll see these macros in action in the samples for LLLPG 1.3
+The new `unroll` and `replace` macros, in particular, are useful for eliminating some of the boilerplate from an LLLPG parser. You'll see these macros in action in some of the [LLLPG samples](http://github.com/qwertie/LLLPG-Samples).
 
 The End
 -------
 
-I hope you enjoyed this article and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback, and a job on the C# compiler team. As always, I'll be notified of, and will respond to, any comments posted on this article.
+I hope you enjoyed this article series and that you'll use LLLPG for your parsing needs. I haven't earned a penny working on this; all I want is your feedback, and a job on the C# compiler team (well, it's been 30 months... I'm still waiting for a call!)
+
+For the complete list of LLLPG articles & pages, visit the [home page](http://ecsharp.net/lllpg). To give feedback, post a comment [here](https://github.com/qwertie/ecsharp/issues/35) or an issue [here](https://github.com/qwertie/ecsharp/issues).

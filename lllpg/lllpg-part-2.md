@@ -6,6 +6,10 @@ toc: true
 redirectDomain: ecsharp.net
 ---
 
+# This page is obsolete # 
+
+The [LLLPG manual](/lllpg) has been reorganized. These old articles may be deleted in the future.
+
 ## Introduction
 
 _New to LLLPG? Start at [part 1][1]._
@@ -151,12 +155,12 @@ As I was saying, the main difference between LL(k) and its closest cousin, the P
 
 "Prediction" means figuring out which branch to take before it is taken. In a "plain" LL(k) parser (without and-predicates), the parser makes a decision and "never looks back". For example, when parsing the following LL(1) grammar:
 
-    public rule Tokens @[ Token* ];
-    public rule Token  @[ Float | Id | ' ' ];
-    token Float        @[ '0'..'9'* '.' '0'..'9'+ ];
-    token Id           @[ IdStart IdCont* ];
-    rule  IdStart      @[ 'a'..'z' | 'A'..'Z' | '_' ];
-    rule  IdCont       @[ IdStart | '0'..'9' ];
+    public rule Tokens @{ Token* };
+    public rule Token  @{ Float | Id | ' ' };
+    token Float        @{ '0'..'9'* '.' '0'..'9'+ };
+    token Id           @{ IdStart IdCont* };
+    rule  IdStart      @{ 'a'..'z' | 'A'..'Z' | '_' };
+    rule  IdCont       @{ IdStart | '0'..'9' };
 
 The `Token` method will get the next input character (known as `LA0` or lookahead zero), check if it is a digit or '.', and call `Float` if so or `Id` (or consume a space) otherwise. If the input is something like "42", which does not match the definition of `Float`, the problem will be detected by the `Float` method, not by `Token`, and the parser cannot back up and try something else. If you add a new `Int` rule:
 
@@ -237,16 +241,16 @@ Here are some key points about the three classes of parser generators.
 * Supports zero-width assertions as a standard feature
 * Grammars are _composable_. It is easier to merge different PEG parsers than different LL/LR parsers.
 * Performance characteristics are not well-documented (as far as I've seen), but my intuition tells me to expect a naive memoization-based PEG parser generator to produce generally slow parsers. That said, I think all three parser types offer roughly O(N) performance to parse a file of size N.
-* High memory requirements (due to memoization).
+* High memory requirements due to memoization (or, when not using memoization, the risk of exponential time complexity). Note: recently I saw a paper about a new feature to deal with this issue, called the "[cut operator](http://www.ialab.cs.tsukuba.ac.jp/~mizusima/publications/paste513-mizushima.pdf)", although it is not currently supported by most PEG parser generators.
 * It's non-obvious how to support "custom actions". Although a rule may parse successfully, its caller can fail (and often does), so I guess any work that a rule performs must be transactional, i.e. it must be possible to undo the action.
-* Supports unified grammars: a parser and lexer in a single grammar.
+* Supports unified grammars: a parser and lexer in a single grammar. However, I question the assumption that just because you _can_ combine the lexer and parser into a single grammar, you _should_. In typical PEG grammars the parser is "polluted" with lexical concerns, especially skipping whitespace. It's not bad once you get used to it, but I actually think a multi-stage PEG (with separate PEG lexer and PEG grammar) would be the best approach sometimes, except that most PEG parser generators do not support it.
 
 **Regexes**:
 
 * Very short, but often very cryptic, syntax.
 * Matches characters directly; not usable for token-based parsing.
 * Incapable of parsing languages of any significant size, because they do not support recursion or multiple "rules".
-* Most regex libraries have special shorthand directives like b that require significantly more code to express when using a parser generator.
+* Most regex libraries have special shorthand directives like `\b` that usually require more code to express when using a parser generator.
 * Regexes are traditionally interpreted, but may be compiled. Although regexes do a kind of parsing, regex engines are not called "parser generators" even if they generate code.
 * Regexes are closely related to [DFA][14]s and [NFA][15]s.
 
