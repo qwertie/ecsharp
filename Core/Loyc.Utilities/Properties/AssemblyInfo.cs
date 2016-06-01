@@ -6,9 +6,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Loyc.Utilities")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Additional functionality following the theme \"things that should be built into the .NET framework, but aren't\". "+
+	"Stuff here is either (A) not important enough to be placed in Loyc.Essentials or (B) takes Loyc.Collections as a dependency.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("David Piepgrass")]
 [assembly: AssemblyProduct("Loyc.Utilities")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

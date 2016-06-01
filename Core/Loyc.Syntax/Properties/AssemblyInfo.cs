@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Loyc.CompilerCore")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Loyc.Syntax")]
+[assembly: AssemblyDescription("Contains support classes for LLLPG, a parser for LES (Loyc Expression Syntax), the LNode (Loyc tree) class, and other code useful for parsers and lexers.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Loyc.CompilerCore")]
+[assembly: AssemblyCompany("David Piepgrass")]
+[assembly: AssemblyProduct("Loyc.Syntax")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

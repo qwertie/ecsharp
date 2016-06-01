@@ -49,7 +49,7 @@ namespace Loyc.Syntax.Les
 			( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
 		};
 		@[private] rule HexNumber() @{
-		   '0' ('x'|'X') {_numberBase=16;}
+			'0' ('x'|'X') {_numberBase=16;}
 			HexDigits?
 			// Avoid ambiguity with 0x5.Equals(): a dot is not enough
 			(	'.' &( '0'..'9' / HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ) 

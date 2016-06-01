@@ -4,17 +4,17 @@
 <package >
   <metadata>
     <id>LoycCore</id>
-    <version>$version$</version>
+    <version>1.8.0</version>
     <authors>David Piepgrass</authors>
     <owners>David Piepgrass</owners>
-    <projectUrl>http://core.ecsharp.net</projectUrl>
+    <projectUrl>http://core.loyc.net</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Core libraries to "fill in the gaps" in the .NET Base Class Library.</summary>
     <description>A set of useful libraries for many kinds of .NET developers, starting with Loyc.Essentials, a library that "fills in the gaps" in the core of the .NET Base Class Library. LoycCore is especially focused on collections: classes, interfaces, adapters, and extension methods. Plus, Loyc.Syntax.dll parses LES, a superset of JSON that resembles C/C#/Java/Ecmascript/D, and runtime helper classes for the Loyc LL(k) parser generator.
 
     Contributors are welcome: more unit tests, code reviews, and new features are desired, anything relatively small (under about 3000 lines of code) that fits the theme "things that should have been built into the .NET framework, but aren't".</description>
-    <releaseNotes>1.3.2: Various changes and bug fixes. This package has separate .NET3.5, .NET4 and .NET4.5 builds, and it will be replaced in the future by a PCL version.</releaseNotes>
+    <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>Loyc Core Collections Extension-Methods Dictionary Trees AList BList DList VList Cache Sparse-List Hash-Trees Geometry Math Utilities Adapters Interfaces</tags>
     <dependencies>

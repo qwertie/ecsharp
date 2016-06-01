@@ -6,9 +6,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Loyc.Collections")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A library of data structures including ALists, VLists, and my favorite, the hash tree types Set<T>, MSet<T>, Map<T> and MMap<T>. "+
+	"To learn more visit http://core.loyc.net/collections")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("David Piepgrass")]
 [assembly: AssemblyProduct("Loyc.Collections")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
