@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 1.7.6.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 1.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -168,7 +168,7 @@ namespace LeMP
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						cond = BubbleUpBlocks(cond);
 						if (cond.CallsMin(__numrunSequence, 1)) {
-							var continue_N = F.Id(NextTempName("continue_"));
+							var continue_N = F.Id(NextTempName(Context, "continue_"));
 							var bodyStmts = block.AsList(S.Braces);
 							bodyStmts.AddRange(cond.Args.WithoutLast(1));
 							bodyStmts.Add(LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, cond.Args.Last)).SetStyle(NodeStyle.Operator));
@@ -388,7 +388,7 @@ namespace LeMP
 									if (isAssignment || arg.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
 										argsW[i] = MaybeCreateTemporaryForLValue(arg, ref combinedSequence);
 									else {
-										LNode tmpVarName, tmpVarDecl = TempVarDecl(arg, out tmpVarName);
+										LNode tmpVarName, tmpVarDecl = TempVarDecl(Context, arg, out tmpVarName);
 										combinedSequence.Add(tmpVarDecl);
 										argsW[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 									}
@@ -417,7 +417,7 @@ namespace LeMP
 						for (; i < args.Count; i++) {
 							if (!args[i].IsLiteral && !args[i].Attrs.Contains(_trivia_isTmpVar)) {
 								LNode tmpVarName;
-								stmtSequence.Add(TempVarDecl(args[i], out tmpVarName));
+								stmtSequence.Add(TempVarDecl(Context, args[i], out tmpVarName));
 								args[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 							}
 						}

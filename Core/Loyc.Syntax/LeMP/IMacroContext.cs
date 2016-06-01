@@ -113,6 +113,11 @@ namespace LeMP
 		/// processor, including macros whose namespace has not been opened with
 		/// <c>#importMacros</c>.</summary>
 		IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get; }
+
+		/// <summary>Gets the next number to use as a suffix for temporary variables (without incrementing).</summary>
+		int NextTempCounter { get; }
+		/// <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
+		int IncrementTempCounter();
 	}
 
 	/// <summary>Standard extension methods for <see cref="IMacroContext"/>.</summary>

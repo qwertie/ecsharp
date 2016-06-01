@@ -60,7 +60,7 @@ namespace LeMP.Tests
 				}");
 
 			// Test with some args being sequences and others not
-			var n = StandardMacros.NextTempCounter;
+			var n = MacroProcessor.NextTempCounter;
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d) + 1, e);
@@ -127,7 +127,7 @@ namespace LeMP.Tests
 					var c = C;
 					Foo(A.B[c] = D);
 				}"
-				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
+				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			
 			// Tricky cases: must take into account that LHS is an lvalue
 			TestEcs(@"#useSequenceExpressions;
@@ -142,8 +142,8 @@ namespace LeMP.Tests
 					var C_2 = C;
 					var d2 = D;
 					Foo(A.B[C_2] = d2);
-				}".Replace("tmp_1", "tmp_"+(StandardMacros.NextTempCounter))
-				  .Replace("C_2", "C_"+(StandardMacros.NextTempCounter+1)));
+				}".Replace("tmp_1", "tmp_"+(MacroProcessor.NextTempCounter))
+				  .Replace("C_2", "C_"+(MacroProcessor.NextTempCounter+1)));
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
 					Foo(A.B[C::c] + D::d1);
@@ -161,8 +161,8 @@ namespace LeMP.Tests
 					var c = C;
 					var d2 = D;
 					Foo(A.B[c] = d2);
-				}".Replace("tmp_1", "tmp_"+(StandardMacros.NextTempCounter))
-				  .Replace("c_2", "c_"+(StandardMacros.NextTempCounter+1)));
+				}".Replace("tmp_1", "tmp_"+(MacroProcessor.NextTempCounter))
+				  .Replace("c_2", "c_"+(MacroProcessor.NextTempCounter+1)));
 
 			// ref and out expressions are also lvalues
 			TestEcs(@"#useSequenceExpressions;
@@ -176,8 +176,8 @@ namespace LeMP.Tests
 					var x_2 = x;
 					var e = E();
 					Foo(out A, ref B.C[D_1], out F(x_2).Y, 0, e);
-				}".Replace("D_1", "D_"+(StandardMacros.NextTempCounter))
-				  .Replace("x_2", "x_"+(StandardMacros.NextTempCounter+1)));
+				}".Replace("D_1", "D_"+(MacroProcessor.NextTempCounter))
+				  .Replace("x_2", "x_"+(MacroProcessor.NextTempCounter+1)));
 		}
 
 		[Test]
@@ -199,7 +199,7 @@ namespace LeMP.Tests
 							break;
 					}
 				}"
-				.Replace("_min_1", "_min_"+StandardMacros.NextTempCounter));
+				.Replace("_min_1", "_min_"+MacroProcessor.NextTempCounter));
 
 			TestEcs(@"#useSequenceExpressions;
 				void f() {
@@ -213,7 +213,7 @@ namespace LeMP.Tests
 					}
 					After();
 				}"
-				.Replace("_min_1", "_min_"+StandardMacros.NextTempCounter));
+				.Replace("_min_1", "_min_"+MacroProcessor.NextTempCounter));
 
 			// It's only a test. Don't actually write code this way
 			Test(@"#useSequenceExpressions;
@@ -246,7 +246,7 @@ namespace LeMP.Tests
 							break;
 					}
 					Console.WriteLine(""Okay bye!"");
-				}".Replace("_min_1", "_min_"+StandardMacros.NextTempCounter),
+				}".Replace("_min_1", "_min_"+MacroProcessor.NextTempCounter),
 				EcsLanguageService.WithPlainCSharpPrinter);
 		}
 
@@ -278,7 +278,7 @@ namespace LeMP.Tests
 						var b = Bool();
 						continue_1 = b;
 					}
-				}".Replace("continue_1", "continue_" + StandardMacros.NextTempCounter));
+				}".Replace("continue_1", "continue_" + MacroProcessor.NextTempCounter));
 		}
 
 		[Test]
@@ -313,7 +313,7 @@ namespace LeMP.Tests
 						else
 							break;
 					}
-				}".Replace("i_1", "i_"+StandardMacros.NextTempCounter));
+				}".Replace("i_1", "i_"+MacroProcessor.NextTempCounter));
 
 			// Sequence in increment expression
 			TestEcs(@"#useSequenceExpressions;
@@ -567,7 +567,7 @@ namespace LeMP.Tests
 							*x_1 = o.a + o.b;
 						}
 					}
-				}".Replace("x_1", "x_"+StandardMacros.NextTempCounter));
+				}".Replace("x_1", "x_"+MacroProcessor.NextTempCounter));
 		}
 
 		[Test]

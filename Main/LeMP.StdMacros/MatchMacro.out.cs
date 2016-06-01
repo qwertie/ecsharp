@@ -28,7 +28,7 @@ namespace LeMP
 				if (node.Args.Count == 2 && (input = node.Args[0]) != null && node.Args[1].Calls(CodeSymbols.Braces)) {
 					contents = node.Args[1].Args;
 					var outputs = new WList<LNode>();
-					input = MaybeAddTempVarDecl(input, outputs);
+					input = MaybeAddTempVarDecl(context, input, outputs);
 					int next_i = 0;
 					for (int case_i = 0; case_i < contents.Count; case_i = next_i) {
 						var @case = contents[case_i];
@@ -107,11 +107,11 @@ namespace LeMP
 				if (isType != null) {
 					if ((cmpExpr ?? inRange ?? varBinding) != null) {
 						if (!LooksLikeSimpleValue(input))
-							PutStmt(TempVarDecl(input, out input));
+							PutStmt(TempVarDecl(_context, input, out input));
 					}
 					PutCond(LNode.Call(CodeSymbols.Is, LNode.List(input, isType)).SetStyle(NodeStyle.Operator));
 					if (varBinding == null && ((cmpExpr ?? inRange) != null || subPatterns.Count > 0))
-						varBinding = LNode.Id(NextTempName(), isType);
+						varBinding = LNode.Id(NextTempName(_context), isType);
 				}
 				if (varBinding != null) {
 					if (isType != null) {

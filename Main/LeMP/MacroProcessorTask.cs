@@ -319,6 +319,9 @@ namespace LeMP
 
 			public IReadOnlyDictionary<Symbol, VList<MacroInfo>> AllKnownMacros { get { return _task._macros; } }
 
+			public int NextTempCounter { get { return MacroProcessor.NextTempCounter; } }
+			public int IncrementTempCounter() { return MacroProcessor.IncrementTempCounter(); }
+
 			#endregion
 		}
 

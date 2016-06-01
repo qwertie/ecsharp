@@ -238,5 +238,16 @@ namespace LeMP
 		#endif
 
 		#endregion
+
+		[ThreadStatic]
+		internal static int _nextTempCounter = 10;
+		
+		/// <summary>Gets the next number to use as a suffix for temporary variables (without incrementing).</summary>
+		public static int NextTempCounter { get { return _nextTempCounter; } }
+		/// <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
+		/// <remarks>MacroProcessor currently starts this counter at 10 to avoid 
+		/// collisions with names like tmp_2 and tmp_3 that might be names chosen 
+		/// by a developer; tmp_10 is much less likely to collide.</remarks>
+		public static int IncrementTempCounter() { return _nextTempCounter++; }
 	}
 }

@@ -37,7 +37,7 @@ namespace LeMP.Tests
 
 			// Test core features used separately: type testing (is X), literal testing (2), 
 			// field names and deconstruction (C: c), and a guard (c > 3)
-			int n = StandardMacros.NextTempCounter;
+			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 					match (obj) {
 						case is Thing(is A, 2, C: $c) && c > 3:
@@ -58,7 +58,7 @@ namespace LeMP.Tests
 					.Replace("tmp_1", "tmp_" + n));
 
 			// Use core features together, with nesting
-			n = StandardMacros.NextTempCounter;
+			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 					match (obj) {
 						case is Shape(ShapeType.Circle, $size, Location: $p is Point<int>($x, $y) && x > y):
@@ -91,7 +91,7 @@ namespace LeMP.Tests
 				.Replace("tmp_A", "tmp_" + n)
 				.Replace("tmp_B", "tmp_" + (n + 1)));
 
-			n = StandardMacros.NextTempCounter;
+			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 				match (Foo.Bar) {
 					case true || false: True();
@@ -116,7 +116,7 @@ namespace LeMP.Tests
 		public void TestMatch2()
 		{
 			// Test `ref` inside and outside `$`
-			int n = StandardMacros.NextTempCounter;
+			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 				int x, y;
 				SizeF size;
@@ -175,7 +175,7 @@ namespace LeMP.Tests
 		public void TestMatch3()
 		{
 			// Test ranges
-			int n = StandardMacros.NextTempCounter;
+			int n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 				match (obj) {
 					case $t is Thing(ref $r is double in x..y, c...d) in x..<y:
@@ -197,7 +197,7 @@ namespace LeMP.Tests
 				.Replace("tmp_1", "tmp_" + n));
 
 			// Bug fix: This combination didn't work
-			n = StandardMacros.NextTempCounter;
+			n = MacroProcessor.NextTempCounter;
 			TestEcs(@"
 				match (value) {
 					case is Point(X: $x, Y: $y) in polygon:

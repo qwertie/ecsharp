@@ -18,29 +18,23 @@ namespace LeMP
 	[ContainsMacros]
 	public partial class StandardMacros
 	{
-		// Start counting temporary vars at 10 to avoid name collisions with 
-		// things that were manually named, for example "tmp_2"
-		[ThreadStatic]
-		internal static int _nextTempCounter = 10;
-		public static int NextTempCounter { get { return _nextTempCounter; } }
-
-		public static Symbol NextTempName(string prefix = "tmp_")
+		public static Symbol NextTempName(IMacroContext ctx, string prefix = "tmp_")
 		{
-			return GSymbol.Get(prefix + _nextTempCounter++);
+			return GSymbol.Get(prefix + ctx.IncrementTempCounter());
 		}
-		static LNode TempVarDecl(LNode value, out LNode tmpId, string prefix)
+		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpId, string prefix)
 		{
-			tmpId = LNode.Id(NextTempName(prefix), value);
+			tmpId = LNode.Id(NextTempName(ctx, prefix), value);
 			return F.Var(F.Missing, tmpId, value);
 		}
-		static LNode TempVarDecl(LNode value, out LNode tmpId)
+		static LNode TempVarDecl(IMacroContext ctx, LNode value, out LNode tmpId)
 		{
 			string prefix = value.Name.Name;
 			if (!EcsValidators.IsPlainCsIdentifier(prefix))
 				prefix = "tmp_";
 			else
 				prefix += "_";
-			return TempVarDecl(value, out tmpId, prefix);
+			return TempVarDecl(ctx, value, out tmpId, prefix);
 		}
 
 		static LNodeFactory F = new LNodeFactory(new EmptySourceFile("StandardMacros.cs"));
@@ -55,11 +49,11 @@ namespace LeMP
 		// declaration in `output` of a temporary variable to hold the value. 
 		// If `value` looks simple (according to LooksLikeSimpleValue), this 
 		// fn returns value and leaves output unchanged.
-		protected static LNode MaybeAddTempVarDecl(LNode value, WList<LNode> output)
+		protected static LNode MaybeAddTempVarDecl(IMacroContext ctx, LNode value, WList<LNode> output)
 		{
 			if (!LooksLikeSimpleValue(value)) {
 				LNode tmpId;
-				output.Add(TempVarDecl(value, out tmpId));
+				output.Add(TempVarDecl(ctx, value, out tmpId));
 				return tmpId;
 			}
 			return value;

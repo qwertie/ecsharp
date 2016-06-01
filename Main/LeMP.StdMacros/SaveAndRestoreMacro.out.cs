@@ -30,7 +30,7 @@ namespace LeMP
 					if (tmp_1.Calls(CodeSymbols.Assign, 2) && (property = tmp_1.Args[0]) != null && (newValue = tmp_1.Args[1]) != null || (property = tmp_1) != null) {
 						string mainProp = KeyNameComponentOf(property).Name;
 						string varPrefix = "old" + mainProp + "_";
-						LNode varName, varDecl = TempVarDecl(property, out varName, varPrefix);
+						LNode varName, varDecl = TempVarDecl(context, property, out varName, varPrefix);
 						LNode tryFinally = LNode.Call(CodeSymbols.Try, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(body)).SetStyle(NodeStyle.Statement), LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(property, varName)).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Statement)))));
 						if (newValue != null) {
 							return LNode.Call(CodeSymbols.Splice, LNode.List(varDecl, LNode.Call(CodeSymbols.Assign, LNode.List(property, newValue)).SetStyle(NodeStyle.Operator), tryFinally));

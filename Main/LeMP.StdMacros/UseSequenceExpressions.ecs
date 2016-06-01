@@ -214,7 +214,7 @@ namespace LeMP
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						cond = BubbleUpBlocks(cond);
 						if (cond.CallsMin(_#runSequence, 1)) {
-							var continue_N = F.Id(NextTempName("continue_"));
+							var continue_N = F.Id(NextTempName(Context, "continue_"));
 							var bodyStmts = block.AsList(S.Braces);
 							bodyStmts.AddRange(cond.Args.WithoutLast(1));
 							bodyStmts.Add(quote { $continue_N = $(cond.Args.Last); });
@@ -519,7 +519,7 @@ namespace LeMP
 										argsW[i] = MaybeCreateTemporaryForLValue(arg, ref combinedSequence);
 									else {
 										// Create a temporary variable to hold this argument
-										LNode tmpVarName, tmpVarDecl = TempVarDecl(arg, out tmpVarName);
+										LNode tmpVarName, tmpVarDecl = TempVarDecl(Context, arg, out tmpVarName);
 										combinedSequence.Add(tmpVarDecl);
 										argsW[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 									}
@@ -555,7 +555,7 @@ namespace LeMP
 						for (; i < args.Count; i++) {
 							if (!args[i].IsLiteral && !args[i].Attrs.Contains(_trivia_isTmpVar)) {
 								LNode tmpVarName;
-								stmtSequence.Add(TempVarDecl(args[i], out tmpVarName));
+								stmtSequence.Add(TempVarDecl(Context, args[i], out tmpVarName));
 								args[i] = tmpVarName.PlusAttr(_trivia_isTmpVar);
 							}
 						}

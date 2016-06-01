@@ -85,7 +85,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="NullDotMacro.cs" />
-    <Compile Include="OnFinallyReturnCatch.cs" />
+    <Compile Include="OnFinallyThrowCatch.cs" />
     <Compile Include="OnReturn.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

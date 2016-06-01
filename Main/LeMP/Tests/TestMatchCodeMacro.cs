@@ -28,7 +28,7 @@ namespace LeMP.Tests
 						if (tmp_1.Calls((Symbol) ""Do"", 1) && (stuff = tmp_1.Args[0]) != null)
 							Do(stuff);
 					}"
-				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
+				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			TestEcs(@"matchCode(code) { 
 					$(lit && #.IsLiteral) => Literal(); 
 					$(id[#.IsId]) => Id(); 
@@ -116,7 +116,7 @@ namespace LeMP.Tests
 					} else
 						Other();
 				}"
-				.Replace("tmp_1", "tmp_"+StandardMacros.NextTempCounter));
+				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			// Ideally this generated code would use a tmp_n variable, but I'll accept the current output
 			TestEcs(@"
 				matchCode(classDecl) {

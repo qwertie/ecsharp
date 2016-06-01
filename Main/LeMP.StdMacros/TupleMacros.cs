@@ -109,7 +109,7 @@ namespace LeMP
 		// This macro targets plain C# where that is not possible.
 		[LexicalMacro("(a, b, etc) = expr;", "Assign a = expr.Item1, b = expr.Item2, etc.", 
 			"=", Mode = MacroMode.Normal | MacroMode.Passive)]
-		public static LNode UnpackTuple(LNode node, IMessageSink sink)
+		public static LNode UnpackTuple(LNode node, IMacroContext context)
 		{
 			var a = node.Args;
 			if (a.Count == 2 && a[0].CallsMin(S.Tuple, 1)) {
@@ -118,7 +118,7 @@ namespace LeMP
 				var rhs = a[1];
 				
 				// Avoid evaluating rhs more than once, if it doesn't look like a simple variable
-				rhs = MaybeAddTempVarDecl(rhs, output);
+				rhs = MaybeAddTempVarDecl(context, rhs, output);
 
 				for (int i = 0; i < tuple.Count; i++) {
 					var itemi = F.Dot(rhs, F.Id(GSymbol.Get("Item" + (i + 1))));

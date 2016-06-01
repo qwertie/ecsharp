@@ -36,10 +36,10 @@ namespace LeMP.Tests
 		{
 			TestEcs("saveAndRestore(Foo.Bar); F();",
 				"var oldBar_1 = Foo.Bar; try { F(); } finally { Foo.Bar = oldBar_1; }"
-				.Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
+				.Replace("oldBar_1", "oldBar_" + MacroProcessor.NextTempCounter));
 			TestEcs("saveAndRestore(Foo.Bar = 5); F();",
 				"var oldBar_1 = Foo.Bar; Foo.Bar = 5; try { F(); } finally { Foo.Bar = oldBar_1; }"
-				.Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
+				.Replace("oldBar_1", "oldBar_" + MacroProcessor.NextTempCounter));
 			TestEcs("void f() { saveAndRestore(Foo.Bar = 5); F(); }",
 				@"void f() {
 					var oldBar_1 = Foo.Bar; 
@@ -49,7 +49,7 @@ namespace LeMP.Tests
 					} finally {
 						Foo.Bar = oldBar_1;
 					}
-				}".Replace("oldBar_1", "oldBar_" + StandardMacros.NextTempCounter));
+				}".Replace("oldBar_1", "oldBar_" + MacroProcessor.NextTempCounter));
 		}
 
 		[Test]
@@ -167,10 +167,10 @@ namespace LeMP.Tests
 			        "a = foo.Item1; b = foo.Item2; c = foo.Item3;");
 			TestEcs("(var a, var b, c) = foo;",
 			        "var a = foo.Item1; var b = foo.Item2; c = foo.Item3;");
-			int n = StandardMacros.NextTempCounter;
+			int n = MacroProcessor.NextTempCounter;
 			TestEcs("(a, b.c.d) = Foo;",
 			        "var Foo_"+n+" = Foo; a = Foo_"+n+".Item1; b.c.d = Foo_"+n+".Item2;");
-			n = StandardMacros.NextTempCounter;
+			n = MacroProcessor.NextTempCounter;
 			TestEcs("(a, b, c, d) = X.Y();",
 			        "var tmp_1 = X.Y(); a = tmp_1.Item1; b = tmp_1.Item2; c = tmp_1.Item3; d = tmp_1.Item4;"
 					.Replace("tmp_1", "tmp_"+n));
@@ -179,13 +179,18 @@ namespace LeMP.Tests
 		[Test]
 		public void WithTest()
 		{
-			int n = StandardMacros.NextTempCounter;
+			int n = MacroProcessor.NextTempCounter;
 			TestEcs("with (foo) { .bar = .baz(#); }",
 			        "{ var tmp_1 = foo; tmp_1.bar = tmp_1.baz(tmp_1); }".Replace("tmp_1", "tmp_" + n));
 			
+			// This test ensures with() doesn't act like it is in an expression context
+			n = MacroProcessor.NextTempCounter;
+			TestEcs("if (c) with (foo) { .bar = .baz(#); }",
+			        "if (c) { var tmp_1 = foo; tmp_1.bar = tmp_1.baz(tmp_1); }".Replace("tmp_1", "tmp_" + n));
+			
 			// Ignore note about 'declined to process... with'
 			using (MessageSink.PushCurrent(_msgHolder)) {
-				n = StandardMacros.NextTempCounter;
+				n = MacroProcessor.NextTempCounter;
 				TestEcs(@"
 					with (jekyll) { 
 						.A = 1; 
@@ -201,14 +206,23 @@ namespace LeMP.Tests
 						with(tmp_{0}.B + tmp_{0}.C(tmp_{0}.D));
 					}".Replace("{0}", (n + 1).ToString()).Replace("{1}", (n).ToString()));
 			}
+		}
 
-			TestEcs(@"#useSequenceExpressions; {
-					Foo(with (new Person(""John Doe"")) { .Commit(dbConnection); });
+		[Test]
+		public void WithExpressionTest()
+		{
+			TestEcs(@"#useSequenceExpressions; 
+				void f() {
+					if (with (new Person(""John Doe"")) { .Commit(dbConnection); }.IsSaved) 
+						Yay();
 				}", @"
-				var tmp_{0} = new Person(""John Doe"");
-				tmp_{0}.Commit(dbConnection);
-				Foo(tmp_{0});
-				".Replace("{0}", StandardMacros.NextTempCounter.ToString()));
+				void f() {
+					{ var tmp_{0} = new Person(""John Doe"");
+					  tmp_{0}.Commit(dbConnection);
+					  if (tmp_{0}.IsSaved)
+						Yay();
+					}
+				}".Replace("{0}", MacroProcessor.NextTempCounter.ToString()));
 		}
 
 		[Test]

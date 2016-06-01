@@ -79,12 +79,63 @@ namespace LeMP.Tests
 						return __result__;
 					}
 				}", EcsLanguageService.Value);
+			TestEcs(@"{ on_return(R) { Log(R); } Foo(); return Bar(); AfterReturn(); }",
+			        @"{ Foo(); { var R = Bar(); Log(R); return R; } AfterReturn(); }");
 		}
 
 		[Test]
 		public void Test_on_return_InSwitch()
 		{
-			Assert.Inconclusive("Write this test: `on_return` prior to `case _:`");
+			TestEcs(@"
+				switch (x) {
+					on_return {Neat();}
+					case 1: return one;
+					case 2: Etc(); return two;
+					default: return els;
+				}", @"
+				switch (x) {
+					case 1: 
+						{ var __result__ = one;
+						  Neat();
+						  return __result__; }
+					case 2: 
+						Etc();
+						{ var __result__ = two;
+						  Neat();
+						  return __result__; }
+					default:
+						{ var __result__ = els;
+						  Neat();
+						  return __result__; }
+				}
+			");
+		}
+
+		[Test(Fails = "TODO - eventually")]
+		public void Test_on_return_InSwitch2()
+		{
+			TestEcs(@"
+				switch (x) {
+					case 1: on_return {One();} return one;
+					case 2: on_return(r) {Two();} Etc(); return two;
+					default: on_return(var e) {Bleh();} return els;
+				}", @"
+				switch (x) {
+					case 1: 
+						{ var __result__ = one;
+						  One();
+						  return __result__; }
+					case 2: 
+						Etc();
+						{ var r = two;
+						  Two();
+						  return r; }
+					default:
+						{ var e = els;
+						  Bleh();
+						  return e; }
+				}
+			");
 		}
 
 		[Test]

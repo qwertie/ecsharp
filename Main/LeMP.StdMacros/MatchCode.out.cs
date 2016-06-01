@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.7.6.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 1.8.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -28,7 +28,7 @@ namespace LeMP
 			if (cases.IsEmpty)
 				return null;
 			var output = new WList<LNode>();
-			var @var = MaybeAddTempVarDecl(args[0], output);
+			var @var = MaybeAddTempVarDecl(context, args[0], output);
 			var ifClauses = new List<Pair<LNode,LNode>>();
 			var cmc = new CodeMatchContext { 
 				Context = context
@@ -215,7 +215,7 @@ namespace LeMP
 			LNode MaybePutCandidateInTempVar(bool condition, LNode candidate)
 			{
 				if (condition) {
-					var targetTmp = NextTempName();
+					var targetTmp = NextTempName(Context);
 					var targetTmpId = F.Id(targetTmp);
 					AddVar(targetTmp, false, errAt: candidate);
 					Tests.Add(LNode.Call(CodeSymbols.Neq, LNode.List(LNode.Call(LNode.List(LNode.InParensTrivia), CodeSymbols.Assign, LNode.List(targetTmpId, candidate)).SetStyle(NodeStyle.Operator), LNode.Literal(null))).SetStyle(NodeStyle.Operator));
