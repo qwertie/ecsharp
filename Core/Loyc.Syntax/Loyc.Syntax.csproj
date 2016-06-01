@@ -145,6 +145,11 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="LES\LesIndentTokenGenerator.cs" />
+    <Compile Include="LES\LesLexerGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LesLexerGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
     <Compile Include="Lexing\WhitespaceFilter.cs" />
@@ -157,11 +162,6 @@
     <Compile Include="IParsingService.cs" />
     <Compile Include="LES\LesLanguageService.cs" />
     <Compile Include="LES\LesLexer.cs" />
-    <Compile Include="LES\LesLexerGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>LesLexerGrammar.les</DependentUpon>
-    </Compile>
     <Compile Include="LES\LesNodePrinter.cs" />
     <Compile Include="LES\INodePrinterWriter.cs" />
     <Compile Include="LES\LesNodePrinterWriter.cs" />
@@ -251,7 +251,7 @@
   <ItemGroup>
     <None Include="LES\LesLexerGrammar.les">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>LesLexerGrammar.cs</LastGenOutput>
+      <LastGenOutput>LesLexerGrammar.out.cs</LastGenOutput>
     </None>
     <None Include="LES\LesParserGrammar.les">
       <Generator>LLLPG</Generator>

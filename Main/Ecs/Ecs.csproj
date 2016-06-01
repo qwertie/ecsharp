@@ -200,7 +200,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parser\EcsParserGrammar.cs">
+    <Compile Include="Parser\EcsParserGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsParserGrammar.les</DependentUpon>
@@ -258,7 +258,7 @@
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=10</CustomToolNamespace>
-      <LastGenOutput>EcsParserGrammar.cs</LastGenOutput>
+      <LastGenOutput>EcsParserGrammar.out.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

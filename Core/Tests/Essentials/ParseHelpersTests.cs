@@ -18,9 +18,30 @@ namespace Loyc.Tests
 			Assert.AreEqual("foo\nbar", ParseHelpers.UnescapeCStyle(@"foo\nbar"));
 			Assert.AreEqual("\u2222\n\r\t", ParseHelpers.UnescapeCStyle(@"\u2222\n\r\t"));
 			Assert.AreEqual("\a\b\f\vA", ParseHelpers.UnescapeCStyle(@"\a\b\f\v\x41"));
-			Assert.AreEqual("ba\\z", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, false));
-			Assert.AreEqual("baz", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, true));
-			Assert.AreEqual("!!\n!!", ParseHelpers.UnescapeCStyle(@"<'!!\n!!'>", 2, 6, true));
+			Assert.AreEqual("ba\\z", ParseHelpers.UnescapeCStyle((UString)@"ba\z", false));
+			Assert.AreEqual("baz", ParseHelpers.UnescapeCStyle((UString)@"ba\z", true));
+			Assert.AreEqual("!!\n!!", ParseHelpers.UnescapeCStyle(@"<'!!\n!!'>".Slice(2, 6), true));
+		}
+
+		[Test] public void TestUnescape2()
+		{
+			EscapeC encountered;
+			Assert.AreEqual(@"abcd", ParseHelpers.UnescapeCStyle(@"abcd", 0, 4, out encountered, false));
+			Assert.AreEqual(encountered, default(EscapeC));
+			Assert.AreEqual("\0ab", ParseHelpers.UnescapeCStyle(@"\0abc", 0, 4, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes, encountered);
+			Assert.AreEqual("a\bc", ParseHelpers.UnescapeCStyle(@"a\bc", 0, 4, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.ABFV, encountered);
+			Assert.AreEqual("\n", ParseHelpers.UnescapeCStyle(@"\u000A", 0, 6, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Control, encountered);
+			Assert.AreEqual("xx\x88", ParseHelpers.UnescapeCStyle(@"xx\x88", 0, 6, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.NonAscii | EscapeC.BackslashX, encountered);
+			Assert.AreEqual("\u008888", ParseHelpers.UnescapeCStyle(@"\x8888", 0, 6, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.NonAscii | EscapeC.BackslashX, encountered);
+			Assert.AreEqual("ba\\z", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, out encountered, false));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Unrecognized, encountered);
+			Assert.AreEqual("baz", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, out encountered, true));
+			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Unrecognized, encountered);
 		}
 
 		[Test]

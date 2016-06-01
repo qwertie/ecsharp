@@ -850,7 +850,7 @@ namespace Benchmark
 				points2.Sort((a, b) => a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X < b.X ? -1 : 1));
 				Stopwatch timer2 = new Stopwatch(); timer2.Start();
 				int sortTime = timer.Restart();
-				var output = PointMath.ComputeConvexHull(points, true);
+				IListSource<Point<double>> output = PointMath.ComputeConvexHull(points, true);
 				int hullTime = timer.Millisec;
 				Console.WriteLine("{0:c}   (ticks:{1,10} freq:{2})", timer2.Elapsed, timer2.ElapsedTicks, Stopwatch.Frequency);
 

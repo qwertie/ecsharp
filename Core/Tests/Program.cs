@@ -139,14 +139,14 @@ namespace Loyc.Tests
 		{
 			return MiniTest.RunTests.RunMany(
 				new TokenTests(),
+				new IndentTokenGeneratorTests(),
 				new LesLexerTests(),
 				new LesParserTests(),
 				new LesPrinterTests(),
 				new TokensToTreeTests(),
 				new StreamCharSourceTests(),
 				new LexerSourceTests_Calculator(),
-				new ParserSourceTests_Calculator(),
-				new IndentTokenGeneratorTests());
+				new ParserSourceTests_Calculator());
 		}
 		public static int Loyc_Utilities()
 		{

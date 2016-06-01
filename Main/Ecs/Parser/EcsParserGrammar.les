@@ -1,15 +1,14 @@
 //
-// Enhanced C# parser: this is designed to accept a superset of C# (Enhanced C#).
+// Enhanced C# parser: this is designed to accept a superset of C# 6 (Enhanced C#).
 // If this spews an error when given a valid C# file, it's a bug. File a bug report.
 //
 // EC# is more permisive than plain C#; it not only adds new syntax, but it 
 // liberalizes the existing syntax rules (e.g. "try Foo(); catch Bar();" is 
 // accepted in EC#) and it also accepts a lot of code that is not directly valid in 
-// EC# (e.g. "fixed (7) {...}"). Such invalid code is allowed by the parser in 
+// C# (e.g. "struct X { Y(); }"). Such invalid code is allowed by the parser in 
 // case a macro might transform it later into something that makes more sense.
 //
-// NOTE: LINQ & await are not yet implemented, but "await x" can be accepted if 
-// you write "await(x)" instead.
+// NOTE: LINQ is not yet implemented.
 //
 #importMacros LeMP.Prelude.Les;
 import System;
@@ -29,7 +28,6 @@ namespace Loyc.Ecs.Parser
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using EP = EcsPrecedence;
-
 
 	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 	#rawText "\n\t#pragma warning disable 162, 642\n\t"; 

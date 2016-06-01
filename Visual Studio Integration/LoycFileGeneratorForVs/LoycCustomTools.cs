@@ -102,10 +102,6 @@ namespace Loyc.VisualStudio
 	//[ProvideObject(typeof(LLLPG))]
 	public class LLLPG : LeMP
 	{
-		protected override string DefaultExtension()
-		{
-			return ".cs";
-		}
 		public override void Configure(global::LeMP.Compiler c)
 		{
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
@@ -121,10 +117,6 @@ namespace Loyc.VisualStudio
 	//[ProvideObject(typeof(LLLPG_Les))]
 	public class LLLPG_les : LeMP_les
 	{
-		protected override string DefaultExtension()
-		{
-			return ".les";
-		}
 		public override void Configure(global::LeMP.Compiler c)
 		{
 			c.MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("Loyc.LLPG"));
