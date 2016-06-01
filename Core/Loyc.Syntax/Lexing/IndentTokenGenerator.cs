@@ -171,7 +171,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			_pending.Resize(0);
 			_curLine = -1; // detect false "newline" on first token
-			_curIndent = -1;
+			_curIndent = -1; // "beginning of file" marker
 			_curIndentString = "";
 			_curCat = TokenCategory.Other;
 			_bracketDepth = 0;
@@ -285,40 +285,40 @@ namespace Loyc.Syntax.Lexing
 					if (insert.HasValue)
 						_pending.PushLast(insert.Value);
 				}
-			}
-			
-			if (newline) {
-				// Add dedents
-				int outerIndent = _outerIndents.Last;
-				for (int oi = outerIndent; nextIndent <= oi; oi = _outerIndents.Last)
-				{
-					// Unindent detected
-					outerIndent = oi;
-					_outerIndents.Pop();
-					AddPendingLast(MakeDedentToken(_lastNonWS, ref next));
-					AutoNext(ref next, ref nextCat, atEof);
-					if (!next.HasValue && !atEof) return; // advance to next token
-				}
 
-				// Detect partial dedent
-				if (nextIndent < _curIndent && nextIndent > outerIndent)
-				{
-					int delta = nextIndent - _curIndent;
-					bool _ = IndentChangedUnexpectedly(_lastNonWS, ref next, ref delta);
-					AutoNext(ref next, ref nextCat, atEof);
-					nextIndent = _curIndent + delta;
-
-					if (_outerIndents.Count >= 2 && _outerIndents.Last == _outerIndents[_outerIndents.Count - 2])
+				if (newline) {
+					// Add dedents
+					int outerIndent = _outerIndents.Last;
+					for (int oi = outerIndent; nextIndent <= oi; oi = _outerIndents.Last)
 					{
-						// The situation is like this:
-						// if c1: if c2:
-						//         c1_and_c2();
-						//     c1_only();
-						// It's usually illegal, but it has a reasonable interpretation.
-						// (Note: in Python you can't even write "if c1: if c2:")
+						// Unindent detected
+						outerIndent = oi;
 						_outerIndents.Pop();
 						AddPendingLast(MakeDedentToken(_lastNonWS, ref next));
 						AutoNext(ref next, ref nextCat, atEof);
+						if (!next.HasValue && !atEof) return; // advance to next token
+					}
+
+					// Detect partial dedent
+					if (nextIndent < _curIndent && nextIndent > outerIndent)
+					{
+						int delta = nextIndent - _curIndent;
+						bool _ = IndentChangedUnexpectedly(_lastNonWS, ref next, ref delta);
+						AutoNext(ref next, ref nextCat, atEof);
+						nextIndent = _curIndent + delta;
+
+						if (_outerIndents.Count >= 2 && _outerIndents.Last == _outerIndents[_outerIndents.Count - 2])
+						{
+							// The situation is like this:
+							// if c1: if c2:
+							//         c1_and_c2();
+							//     c1_only();
+							// It's usually illegal, but it has a reasonable interpretation.
+							// (Note: in Python you can't even write "if c1: if c2:")
+							_outerIndents.Pop();
+							AddPendingLast(MakeDedentToken(_lastNonWS, ref next));
+							AutoNext(ref next, ref nextCat, atEof);
+						}
 					}
 				}
 			}
