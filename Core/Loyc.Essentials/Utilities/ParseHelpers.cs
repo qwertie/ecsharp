@@ -8,7 +8,7 @@ namespace Loyc.Syntax
 {
 	/// <summary>Static methods that help with common parsing jobs, such as 
 	/// parsing integers, floats, and strings with C escape sequences.</summary>
-	/// <remarks>This class also contains a few inverse methods, e.g. 
+	/// <remarks>This class also contains a few <i>inverse</i> methods, e.g. 
 	/// <see cref="EscapeCStyle(UString, EscapeC)"/> is the inverse of the
 	/// C-style string parser <see cref="UnescapeCStyle"/>.</remarks>
 	public static class ParseHelpers
@@ -82,82 +82,100 @@ namespace Loyc.Syntax
 			return s2.ToString();
 		}
 
+		static void EscapeU(char c, StringBuilder @out, EscapeC flags)
+		{
+			if (c <= 255 && (flags & EscapeC.BackslashX) != 0)
+				@out.Append(@"\x");
+			else {
+				@out.Append(@"\u");
+				@out.Append(HexDigitChar((c >> 12) & 0xF));
+				@out.Append(HexDigitChar((c >> 8) & 0xF));
+			}
+			@out.Append(HexDigitChar((c >> 4) & 0xF));
+			@out.Append(HexDigitChar(c & 0xF));
+		}
+
 		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
-			if (c > 255 && (flags & (EscapeC.Unicode | EscapeC.NonAscii)) != 0) {
-				@out.AppendFormat((IFormatProvider)null, @"\u{0:x0000}", (int)c);
-			} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
-				@out.Append("\\\"");
-			} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
-				@out.Append("\\'");
-			} else if (c == quoteType) {
+			do {
+				if (c >= 128) {
+					if ((flags & EscapeC.NonAscii) != 0) {
+						EscapeU(c, @out, flags);
+					} else
+						break;
+				} else if (c < 32) {
+					if (c == '\n')
+						@out.Append(@"\n");
+					else if (c == '\r')
+						@out.Append(@"\r");
+					else if (c == '\0')
+						@out.Append(@"\0");
+					else {
+						if ((flags & EscapeC.ABFV) != 0) {
+							if (c == '\a') { // 7 (alert)
+								@out.Append(@"\a");
+								return true;
+							}
+							if (c == '\b') { // 8 (backspace)
+								@out.Append(@"\b");
+								return true;
+							}
+							if (c == '\f') { // 12 (form feed)
+								@out.Append(@"\f");
+								return true;
+							}
+							if (c == '\v') { // 11 (vertical tab)
+								@out.Append(@"\v");
+								return true;
+							}
+						}
+						if ((flags & EscapeC.Control) != 0) {
+							if (c == '\t')
+								@out.Append(@"\t");
+							else
+								EscapeU(c, @out, flags);
+						} else
+							@out.Append(c);
+					}
+				} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
+					@out.Append("\\\"");
+				} else if (c == '\'' && (flags & EscapeC.SingleQuotes) != 0) {
+					@out.Append("\\'");
+				} else if (c == '\\')
+					@out.Append(@"\\");
+				else
+					break;
+				return true;
+			} while (false) ;
+
+			if (c == quoteType) {
 				@out.Append('\\');
 				@out.Append(c);
-			}
-			else if (c < 32)
-			{
-				if (c == '\n')
-					@out.Append(@"\n");
-				else if (c == '\r')
-					@out.Append(@"\r");
-				else if (c == '\0')
-					@out.Append(@"\0");
-				else {
-					if ((flags & EscapeC.ABFV) != 0)
-					{
-						if (c == '\a') { // 7 (alert)
-							@out.Append(@"\a");
-							return true;
-						}
-						if (c == '\b') { // 8 (backspace)
-							@out.Append(@"\b");
-							return true;
-						}
-						if (c == '\f') { // 12 (form feed)
-							@out.Append(@"\f");
-							return true; 
-						}
-						if (c == '\v') { // 11 (vertical tab)
-							@out.Append(@"\v");
-							return true;
-						}
-					}
-					if ((flags & EscapeC.Control) != 0)
-					{
-						if (c == '\t')
-							@out.Append(@"\t");
-						else
-							@out.AppendFormat(null, @"\x{0:X2}", (int)c);
-					}
-					else
-						@out.Append(c);
-				}
-			}
-			else if (c == '\\') {
-				@out.Append(@"\\");
-			} else if (c > 127 && (flags & EscapeC.NonAscii) != 0) {
-				@out.AppendFormat(null, @"\x{0:X2}", (int)c);
+				return true;
 			} else {
 				@out.Append(c);
 				return false;
 			}
-			return true;
 		}
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
-		public static string UnescapeCStyle(UString s)
+		public static string UnescapeCStyle(UString s, bool removeUnnecessaryBackslashes = false)
 		{
-			return UnescapeCStyle(s.InternalString, s.InternalStart, s.Length, false);
+			EscapeC _;
+			return UnescapeCStyle(s.InternalString, s.InternalStart, s.Length, out _, removeUnnecessaryBackslashes);
 		}
 
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+		/// <param name="encountered">Returns information about whether escape 
+		/// sequences were encountered, and which categories.</param>
 		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
 		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-		public static string UnescapeCStyle(string s, int index, int length, bool removeUnnecessaryBackslashes = false)
+		public static string UnescapeCStyle(string s, int index, int length, out EscapeC encountered, bool removeUnnecessaryBackslashes = false)
 		{
+			encountered = 0;
 			StringBuilder s2 = new StringBuilder(length);
 			for (int i = index; i < index + length; ) {
 				int oldi = i;
-				char c = UnescapeChar(s, ref i);
+				char c = UnescapeChar(s, ref i, ref encountered);
 				if (removeUnnecessaryBackslashes && c == '\\' && i == oldi + 1)
 					continue;
 				s2.Append(c);
@@ -173,58 +191,92 @@ namespace Loyc.Syntax
 			return c;
 		}
 
-		/// <summary>Unescapes a single character of a string, e.g. 
-		/// <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
-		/// character at 'index' if it is not a backslash, or if it is a 
-		/// backslash but no escape sequence could be discerned.</summary>
-		/// <exception cref="IndexOutOfRangeException">The index was invalid.</exception>
 		public static char UnescapeChar(string s, ref int i)
 		{
+			EscapeC _ = 0;
+			return UnescapeChar(s, ref i, ref _);
+		}
+
+		/// <summary>Unescapes a single character of a string. Returns the 
+		/// character at 'index' if it is not a backslash, or if it is a 
+		/// backslash but no escape sequence could be discerned.</summary>
+		/// <param name="i">Current index within the string, incremented 
+		/// by one normally and more than one in case of an escape sequence.</param>
+		/// <param name="encountered">Bits of this parameter are set according
+		/// to which escape sequence is encountered, if any.</param>
+		/// <exception cref="IndexOutOfRangeException">The index was invalid.</exception>
+		/// <example>
+		/// int i = 3; 
+		/// EscapeC e = 0; 
+		/// char c = UnescapeChar(@"foo\n", ref i, ref e);
+		/// Contract.Assert(c == '\n' && e == EscapeC.HasEscapes);
+		/// </example>
+		public static char UnescapeChar(string s, ref int i, ref EscapeC encountered)
+		{
 			char c = s[i++];
-			if (c == '\\' && i < s.Length) {
+			if (c != '\\')
+				return c;
+
+			encountered |= EscapeC.HasEscapes;
+			if (i < s.Length) {
 				int code;
 				UString slice;
 				switch (s[i++]) {
 				case 'u':
 					slice = s.Slice(i, 4);
 					if (TryParseHex(slice, out code)) {
+						encountered |= code < 32 ? EscapeC.Control 
+						                         : EscapeC.NonAscii;
 						i += slice.Length;
 						return (char)code;
 					} else
 						break;
 				case 'x':
-					slice = s.Slice(i, 4);
+					slice = s.Slice(i, 2);
 					if (TryParseHex(slice, out code)) {
+						encountered |= code < 32 ? EscapeC.BackslashX | EscapeC.Control 
+						                         : EscapeC.BackslashX | EscapeC.NonAscii;
 						i += slice.Length;
 						return (char)code;
 					} else
 						break;
 				case '\\':
 					return '\\';
-				case '\"':
-					return '\"';
-				case '\'':
-					return '\'';
-				case '`':
-					return '`';
-				case 't':
-					return '\t';
 				case 'n':
 					return '\n';
 				case 'r':
 					return '\r';
-				case 'a':
-					return '\a';
-				case 'b':
-					return '\b';
-				case 'f':
-					return '\f';
-				case 'v':
-					return '\v';
 				case '0':
 					return '\0';
+				case '\"':
+					encountered |= EscapeC.DoubleQuotes;
+					return '\"';
+				case '\'':
+					encountered |= EscapeC.SingleQuotes;
+					return '\'';
+				case '`':
+					encountered |= EscapeC.Quotes;
+					return '`';
+				case 't':
+					encountered |= EscapeC.Control;
+					return '\t';
+				case 'a':
+					encountered |= EscapeC.ABFV;
+					return '\a';
+				case 'b':
+					encountered |= EscapeC.ABFV;
+					return '\b';
+				case 'f':
+					encountered |= EscapeC.ABFV;
+					return '\f';
+				case 'v':
+					encountered |= EscapeC.ABFV;
+					return '\v';
+				default:
+					encountered |= EscapeC.Unrecognized;
+					i--;
+					break;
 				}
-				i--;
 			}
 			return c;
 		}
@@ -537,28 +589,13 @@ namespace Loyc.Syntax
 			}
 		}
 
-		/// <summary>Gets the index of the first non-space character after the specified index.</summary>
-		/// <remarks>Only ' ' and '\t' are treated as spaces. If the index is invalid, it is returned unchanged.</remarks>
-		public static int SkipSpaces(string s, int index)
-		{
-			for (;;) {
-				if ((uint)index >= (uint)s.Length)
-					break;
-				char c = s[index];
-				if (c == ' ' || c == '\t')
-					index++;
-				else
-					break;
-			}
-			return index;
-		}
-
 		/// <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
+		/// <remarks>Only ' ' and '\t' are treated as spaces.</remarks>
 		public static UString SkipSpaces(UString s)
 		{
 			char c;
 			while ((c = s[0, '\0']) == ' ' || c == '\t')
-				s = s.Slice(1);
+				s = s.Substring(1);
 			return s;
 		}
 	}
@@ -567,15 +604,28 @@ namespace Loyc.Syntax
 	[Flags()]
 	public enum EscapeC
 	{
-		Minimal = 0,  // Only \r, \n, \0 and backslash are escaped.
+		/// <summary>Only \r, \n, \0 and backslash are escaped.</summary>
+		Minimal = 0,  
+		/// <summary>Default option</summary>
 		Default = Control | Quotes,
-		Unicode = 2,  // Escape all characters with codes above 255 as \uNNNN
-		NonAscii = 1, // Escape all characters with codes above 127 as \xNN
-		Control = 4,  // Escape all characters with codes below 32  as \xNN, and also \t
-		ABFV = 8,     // Use \a \b \f and \v (overrides \xNN)
-		DoubleQuotes = 16, // Escape double quotes as \"
-		SingleQuotes = 32, // Escape single quotes as \'
+		/// <summary>Escape ALL characters with codes above 127 as \xNN or \uNNNN</summary>
+		NonAscii = 1,
+		/// <summary>Use \xNN instead of \u00NN for characters 1-31 and 127-255</summary>
+		BackslashX = 2,
+		/// <summary>Escape all characters with codes below 32, including \t</summary>
+		Control = 4, 
+		/// <summary>Use \a \b \f and \v (rather than \xNN or \xNN)</summary>
+		ABFV = 8,
+		/// <summary>Escape double quotes as \"</summary>
+		DoubleQuotes = 16, 
+		/// <summary>Escape single quotes as \'</summary>
+		SingleQuotes = 32, 
+		/// <summary>Escape single and double quotes</summary>
 		Quotes = 48,
+		/// <summary>While unescaping, a backslash was encountered.</summary>
+		HasEscapes = 256, 
+		/// <summary>While unescaping, an unrecognized escape was encountered .</summary>
+		Unrecognized = 512,
 	}
 
 	/// <summary>Flags that can be used with 

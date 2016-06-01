@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using Loyc;
 using Loyc.Utilities;
 using Loyc.Syntax;
@@ -776,8 +777,7 @@ namespace Loyc.LLParserGenerator
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
 		public Gate(LNode basis, Pred predictor, Pred match) : base(basis) {
-			G.Assert(!(predictor is Gate) && !(match is Gate),
-				"A gate '=>' cannot contain another gate");
+			Contract.Assert(!(predictor is Gate) && !(match is Gate), "A gate '=>' cannot contain another gate");
 			Predictor = predictor;
 			Match = match;
 		}

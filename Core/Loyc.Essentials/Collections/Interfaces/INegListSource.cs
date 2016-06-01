@@ -82,7 +82,7 @@ namespace Loyc.Collections
 		}
 		
 		/// <summary>Determines the index of a specific value.</summary>
-		/// <returns>The index of the value, if found, or -1 if it was not found.</returns>
+		/// <returns>The index of the value, if found, or null if it was not found.</returns>
 		/// <remarks>
 		/// At first, this method was a member of IListSource itself, just in 
 		/// case the source might have some kind of fast lookup logic (e.g. binary 
@@ -90,14 +90,14 @@ namespace Loyc.Collections
 		/// argument, it would prevent IListSource from being marked covariant when
 		/// I upgrade to C# 4.
 		/// </remarks>
-		public static int IndexOf<T>(this INegListSource<T> list, T item)
+		public static int? IndexOf<T>(this INegListSource<T> list, T item)
 		{
 			int max = list.Max;
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			for (int i = list.Min; i <= max; i++)
 				if (comparer.Equals(item, list[i]))
 					return i;
-			return -1;
+			return null;
 		}
 	}
 	

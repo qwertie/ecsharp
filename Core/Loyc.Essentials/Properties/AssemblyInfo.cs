@@ -11,9 +11,12 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Loyc.Essentials")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A library with the theme \"things that should be built into the .NET framework, but aren't\". "+
+	"Contains interfaces, extension methods, and small bits of functionality that are useful in virtually any software project. "+
+	"About half of Loyc.Essentials is devoted to collections: collection interfaces, collection adapters, collection extension methods and even a couple of collection implementations (most notably DList<T>). "+
+	"The other half includes a variety of things including math, geometry, Symbols, localization, \"message sinks\", a miniature NUnit and more.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("David Piepgrass")]
 [assembly: AssemblyProduct("Loyc.Essentials")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

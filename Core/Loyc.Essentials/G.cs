@@ -48,6 +48,13 @@ namespace Loyc
 			else
 				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3) || value.Equals(item4);
 		}
+		public static bool IsOneOf<T>(this T value, T item1, T item2, T item3, T item4, T item5) where T : IEquatable<T>
+		{
+			if (value == null)
+				return item1 == null || item2 == null || item3 == null || item4 == null || item5 == null;
+			else
+				return value.Equals(item1) || value.Equals(item2) || value.Equals(item3) || value.Equals(item4) || value.Equals(item5);
+		}
 		public static bool IsOneOf<T>(this T value, params T[] set) where T : IEquatable<T>
 		{
 			if (value == null) {
@@ -176,28 +183,6 @@ namespace Loyc
 			if (sb.Length == 0)
 				return "_";
 			return changed ? sb.ToString() : text;
-		}
-
-		/// <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
-		/// <param name="condition">A condition that must be true</param>
-		public static void Assert(bool condition)
-		{
-			#if DotNet3
-			if (!condition) throw new InvalidStateException("Assertion failed");
-			#else
-			System.Diagnostics.Contracts.Contract.Assert(condition);
-			#endif
-		}
-		
-		/// <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
-		/// <param name="condition">A condition that must be true</param>
-		public static void Assert(bool condition, string userMessage)
-		{
-			#if DotNet3
-			if (!condition) throw new InvalidStateException(userMessage);
-			#else
-			System.Diagnostics.Contracts.Contract.Assert(condition, userMessage);
-			#endif
 		}
 
 		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 

@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Loyc.Compatibility
 {
+	// NOTE: this is vestigial; Compact Framework is no longer supported
 #if CompactFramework
-	// TODO: define a minimal Serialization implementation for .NET Compact Framework
 
 	class SerializableAttribute : Attribute
 	{
