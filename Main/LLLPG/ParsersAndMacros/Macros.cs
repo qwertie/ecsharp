@@ -366,8 +366,8 @@ namespace Loyc.LLPG
 			var name = basis.Args[1];
 			if (name.CallsMin(S.Of, 1))
 				name = name.Args[0];
-			if (!name.IsId) {
-				sink.Write(Severity.Error, name, "Unacceptable rule name");
+			if (!name.IsId || name.Name.Name.IsOneOf("EOF", "any", "error", "default", "default_error", "greedy", "nongreedy")) {
+				sink.Write(Severity.Error, name, "'{0}' is not allowed as a rule name", name);
 				return null;
 			} else {
 				var rule = new Rule(basis, name.Name, null, true);

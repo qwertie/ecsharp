@@ -539,6 +539,7 @@ namespace Loyc.LLParserGenerator
 				DList<Prematched> _path;
 				int _index;
 				LLParserGenerator LLPG;
+				int _ruleDepth = 0; // Used to avoid stack overflow, which crashes VS in SFG
 				public ApplyPrematchVisitor(LLParserGenerator llpg) { LLPG = llpg; }
 
 				public void ApplyPrematchData(Pred pred, DList<Prematched> path)
@@ -615,8 +616,12 @@ namespace Loyc.LLParserGenerator
 				public override void Visit(RuleRef rref)
 				{
 					var rule = rref.Rule;
-					if (rule.IsPrivate)
-						rule.Pred.Call(this);
+					if (rule.IsPrivate) {
+						if (++_ruleDepth < 10) {
+							rule.Pred.Call(this);
+							--_ruleDepth;
+						}
+					}
 				}
 			}
 		}

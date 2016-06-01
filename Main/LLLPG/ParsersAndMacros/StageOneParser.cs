@@ -196,7 +196,7 @@ namespace Loyc.LLParserGenerator
 		static IList<Token> ReclassifyTokens(IList<Token> oldList)
 		{
 			// Only reclassifies tokens on the current level. Child tokens are untouched.
-			InternalList<Token> newList = new InternalList<Token>(oldList.Count);
+			List<Token> newList = new List<Token>(oldList.Count);
 			int c = oldList.Count;
 			for (int i = 0; i < c;)
 				newList.Add(Reclassify(oldList, ref i));
