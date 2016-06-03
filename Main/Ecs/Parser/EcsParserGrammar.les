@@ -196,6 +196,7 @@ namespace Loyc.Ecs.Parser
 			( "<" (list+=DataType ("," list+=DataType)*)? end=">"
 			| "." t:="[" end="]" {list = AppendExprsInside(t, list);}
 			| "!" t:="(" end=")" {list = AppendExprsInside(t, list);}
+			| "!" end=TT.Id      {list.Add(F.Id(end));}
 			)
 			{
 				start::int = r.Range.StartIndex;
@@ -1202,17 +1203,15 @@ namespace Loyc.Ecs.Parser
 			var cat = DetectStatementCategory(out wordAttrCount, mode);
 
 			// Add word attributes, if any
-			if (wordAttrCount != 0) {
-				for (; oldPosition < InputPosition; oldPosition++) {
-					word::Token = _tokens[oldPosition];
-					wordAttr::LNode;
-					if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.New) {
-						wordAttr = F.Id(word);
-					} else {
-						wordAttr = F.Attr(_triviaWordAttribute, F.Id("#" + word.Value.ToString(), word.StartIndex, word.EndIndex));
-					};
-					attrs.Add(wordAttr);
+			for (; oldPosition < InputPosition; oldPosition++) {
+				word::Token = _tokens[oldPosition];
+				wordAttr::LNode;
+				if (word.Kind == TokenKind.AttrKeyword || word.Type() == TT.New) {
+					wordAttr = F.Id(word);
+				} else {
+					wordAttr = F.Attr(_triviaWordAttribute, F.Id("#" + word.Value.ToString(), word.StartIndex, word.EndIndex));
 				};
+				attrs.Add(wordAttr);
 			};
 			return cat;
 		};
@@ -2010,10 +2009,13 @@ namespace Loyc.Ecs.Parser
 		@[private] rule ForStmt(startIndex::int)::LNode @{
 			TT.For "(" ")" block:=Stmt
 			(_* => {Down($"(");})
-				init:=ExprOpt(true) ";" cond:=ExprOpt(false) ";" inc:=ExprOpt(false)
+				{var init = VList!LNode.Empty; var inc = init;}
+				ExprList(ref init, false, true) ";" cond:=ExprOpt(false) ";" ExprList(ref inc, false, false)
 			(EOF => {Up();})
 			{
-				var parts = (new VList!LNode { init; cond; inc; block });
+				var initL = F.Call(S.AltList, init);
+				var incL = F.Call(S.AltList, inc);
+				var parts = (new VList!LNode { initL; cond; incL; block });
 				return F.Call(S.For, parts, startIndex, block.Range.EndIndex);
 			}
 		};
@@ -2136,7 +2138,8 @@ namespace Loyc.Ecs.Parser
 				/ "," list+=ExprOpt(allowUnassignedVarDecl)
 				| error {Error("'{0}': Syntax error in expression list", CurrentTokenText());} ~","*)*
 			)?
-			EOF
+			// semicolon may terminate in a for-loop; EOF represents ')' in other cases
+			((EOF|";") =>)
 		};
 		rule ArgList(ref list::VList!LNode) @{
 			nongreedy(

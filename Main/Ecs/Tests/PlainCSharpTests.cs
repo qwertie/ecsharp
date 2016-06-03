@@ -296,19 +296,6 @@ namespace Loyc.Ecs.Tests
 			var stmt = F.Call(S.Fixed, F.Vars(F.Of(_(S._Pointer), F.Int32), F.Assign(x, F.Call(S._AddressOf, Foo))), F.Call(a, x));
 			Stmt("fixed (int* x = &Foo)\n  a(x);", stmt);
 
-			var forArgs = new LNode[] {
-				F.Var(F.Int32, x.Name, F.Literal(0)),
-				F.Call(S.LT, x, F.Literal(10)),
-				F.Call(S.PostInc, x),
-				F.Braces()
-			};
-			Stmt("for (int x = 0; x < 10; x++) {\n}",   F.Call(S.For, forArgs));
-			// TODO
-			//forArgs[3] = F.List(F.Call(a), F.Call(b));
-			//Stmt("for (int x = 0; x < 10; x++) #{\n  a();\n  b();\n}", F.Call(S.For, forArgs));
-			//forArgs[3] = F.List(F.Result(a));
-			//Stmt("for (int x = 0; x < 10; x++) #{\n  a\n}", F.Call(S.For, forArgs));
-
 			stmt = F.Call(S.While, F.Call(S.GT, x, one), F.Call(S.PostDec, x));
 			Stmt("while (x > 1)\n  x--;", stmt);
 			stmt = F.Call(S.UsingStmt, F.Var(F.Missing, x.Name, F.Call(S.New, F.Call(Foo))), F.Call(F.Dot(x, a)));
@@ -332,6 +319,41 @@ namespace Loyc.Ecs.Tests
 			//Stmt("foreach (a + b in c) {\n}", stmt);
 			//stmt = F.Call(S.ForEach, F.Set(a, x), F.Set(b, x), F.List());
 			//Stmt("foreach (a `=` x in b = x) #{\n}", stmt);
+		}
+
+		[Test]
+		public void ForLoops()
+		{
+			var forArgs = new LNode[] {
+				F.List(), F.Missing, F.List(), F.Braces()
+			};
+			Stmt("for (;;) {\n}",   F.Call(S.For, forArgs));
+			forArgs = new LNode[] {
+				F.List(F.Var(F.Int32, x.Name, F.Literal(0))),
+				F.Call(S.LT, x, F.Literal(10)),
+				F.List(F.Call(S.PostInc, x)),
+				F.Braces()
+			};
+			Stmt("for (int x = 0; x < 10; x++) {\n}",   F.Call(S.For, forArgs));
+			forArgs = new LNode[] {
+				F.List(F.Assign(a, zero), F.Assign(b, one)),
+				F.Call(S.LT, a, F.Literal(10)),
+				F.List(F.Call(S.PostInc, a), F.Call(S.PreInc, b)),
+				F.Braces()
+			};
+			Stmt("for (a = 0, b = 1; a < 10; a++, ++b) {\n}",   F.Call(S.For, forArgs));
+			// TODO: The tree isn't quite right on this one. It still works 
+			// because the parser and printer treat it the same way. It seems 
+			// like we should fix this eventually, but when we do, we also have
+			// to decide how to print #(int x = 5, y = "Y") so that the second 
+			// part is not mistaken for part of the variable decl, see? But how?
+			forArgs = new LNode[] {
+				F.List(F.Var(F.Int32, a, zero), F.Assign(b, one), c),
+				F.Call(S.LT, a, F.Literal(10)),
+				F.List(F.Call(S.PostInc, a)),
+				F.Braces()
+			};
+			Stmt("for (int a = 0, b = 1, c; a < 10; a++) {\n}",   F.Call(S.For, forArgs));
 		}
 
 		[Test]
@@ -589,6 +611,36 @@ namespace Loyc.Ecs.Tests
 			Stmt("[assembly: Foo]", F.Call(S.Assembly, Foo));
 			Stmt("{\n  [assembly: CLSCompliant(false)]\n  Foo;\n}",
 				F.Braces(F.Call(S.Assembly, F.Call(_("CLSCompliant"), F.@false)), Foo));
+		}
+
+		[Test]
+		public void KeywordAttributes()
+		{
+			Stmt("public static void Main()\n{\n}", F.Fn(F.Void, _("Main"), F.List(), F.Braces()).PlusAttrs(@public, @static));
+			Stmt("public static Foo Main()\n{\n}",  F.Fn(Foo,    _("Main"), F.List(), F.Braces()).PlusAttrs(@public, @static));
+			Stmt("public static List<Foo> Main()\n{\n}",  F.Fn(F.Of(_("List"), Foo), _("Main"), F.List(), F.Braces()).PlusAttrs(@public, @static));
+			Stmt("new void Main();",                F.Fn(F.Void, _("Main"), F.List()).PlusAttrs(@new));
+			Stmt("new partial int Main()\n{\n}",    F.Fn(F.Int32, _("Main"), F.List(), F.Braces()).PlusAttrs(@new, partialWA));
+			Stmt("partial new int Main()\n{\n}",    F.Fn(F.Int32, _("Main"), F.List(), F.Braces()).PlusAttrs(partialWA, @new));
+			Stmt("new partial Foo Main()\n{\n}",    F.Fn(Foo, _("Main"), F.List(), F.Braces()).PlusAttrs(@new, partialWA));
+			Stmt("partial new Foo Main()\n{\n}",    F.Fn(Foo, _("Main"), F.List(), F.Braces()).PlusAttrs(partialWA, @new));
+			Stmt("public new int x;",               F.Vars(F.Int32, x).PlusAttrs(@public, @new));
+			Stmt("new public int x;",               F.Vars(F.Int32, x).PlusAttrs(@new, @public));
+			Stmt("public new Foo x;",               F.Vars(Foo, x).PlusAttrs(@public, @new));
+			Stmt("new public Foo x;",               F.Vars(Foo, x).PlusAttrs(@new, @public));
+			Stmt("protected override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
+			Stmt("protected override sealed int Foo { get; }",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
+			Stmt("new partial Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
+			Stmt("public new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
+			Stmt("partial public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
+			Stmt("public partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
+			Stmt("sealed override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
+			Stmt("Foo(out a, ref b);",              F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
+			Stmt("yield return x;",                 F.Call(S.Return, x).PlusAttrs(WordAttr("yield")));
 		}
 
 		[Test]

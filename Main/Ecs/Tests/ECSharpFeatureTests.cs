@@ -242,8 +242,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo(, b);", F.Call(Foo, F.Missing, b), oma);
 			Stmt("Foo(a,);", F.Call(Foo, a, F.Missing), oma);
 			Stmt("Foo(,);", F.Call(Foo, F.Missing, F.Missing), oma);
-			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F.Missing, F.Missing, F.Missing, F.Braces(F.Call(a))));
-			Stmt("for (;; @``())\n  ;", F.Call(S.For, F.Missing, F.Missing, F.Call(F.Missing), F.Missing));
+			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F.List(), F.Missing, F.List(), F.Braces(F.Call(a))));
+			Stmt("for (; @``();)\n  ;", F.Call(S.For, F.List(), F.Call(F.Missing), F.List(), F.Missing));
 		}
 
 		[Test]
@@ -277,7 +277,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("[Foo]\nfoo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
 			Stmt("[Foo, #foo]\npublic using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
-			args[3] = F.Call(S.For, a, b, c, x);
+			args[3] = F.Call(S.For, F.List(a), b, F.List(c), x);
 			Stmt("[Foo]\nfoo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
 			Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args), Mode.PrinterTest);
@@ -450,6 +450,7 @@ namespace Loyc.Ecs.Tests
 		public void EcsEasterEgg()
 		{
 			Expr("Foo!x.a", F.Dot(F.Of(Foo, x), a), Mode.ParserTest);
+			Expr("Foo!(a+b,c).x", F.Dot(F.Of(Foo, F.Call(S.Add, a, b), c), x), Mode.ParserTest);
 		}
 
 		[Test]
