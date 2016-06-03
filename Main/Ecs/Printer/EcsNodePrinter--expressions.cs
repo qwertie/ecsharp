@@ -178,16 +178,20 @@ namespace Loyc.Ecs
 			if (style == NodeStyle.PrefixNotation && !PreferPlainCSharp)
 				PrintPrefixNotation(context, true, flags, false);
 			else {
-				bool isVarDecl = IsVariableDecl(false, (flags & (Ambiguity.AllowUnassignedVarDecl|Ambiguity.ForEachInitializer)) != 0);
-				
+				bool startExpr = context.RangeEquals(StartExpr);
+				AttrStyle attrStyle = AttrStyle.AllowKeywordAttrs;
+				bool isVarDecl = IsVariableDecl(false, true);
+				if (isVarDecl) {
+					if (((flags & Ambiguity.AllowUnassignedVarDecl) == 0 && !IsVariableDecl(false, false)) ||
+						(!startExpr && !context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr()))
+						flags |= Ambiguity.ForceAttributeList;
+					attrStyle = AttrStyle.IsDefinition;
+				}
 				int inParens = 0;
 				if (_n.AttrCount != 0)
-					inParens = PrintAttrs(ref context, isVarDecl ? AttrStyle.IsDefinition : AttrStyle.AllowKeywordAttrs, flags);
-				
-				bool startStmt = context.RangeEquals(StartStmt);
-				bool startExpr = context.RangeEquals(StartExpr);
-				
-				if (isVarDecl && (startExpr || startStmt || (flags & Ambiguity.ForEachInitializer) != 0))
+					inParens = PrintAttrs(ref context, attrStyle, flags);
+
+				if (isVarDecl)
 					PrintVariableDecl(false, context, flags);
 				else if (startExpr && EcsValidators.IsNamedArgument(_n, Pedantics))
 					PrintNamedArg(context);
@@ -992,17 +996,21 @@ namespace Loyc.Ecs
 				PrintSimpleIdent(_n.Name, flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
 
-		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity allowPointer)
+		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity flags)
 		{
-			if (printAttrs)
-				G.Verify(0 == PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
-
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
+
+			if (printAttrs) {
+				if (a[1].IsId && (flags & Ambiguity.AllowUnassignedVarDecl) == 0)
+					flags |= Ambiguity.ForceAttributeList;
+				G.Verify(0 == PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
+			}
+
 			if (IsSimpleSymbolWPA(a[0], S.Missing))
 				_out.Write("var", true);
 			else
-				PrintType(a[0], EP.Primary.LeftContext(context), allowPointer & Ambiguity.AllowPointer);
+				PrintType(a[0], EP.Primary.LeftContext(context), flags & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				var @var = a[i];

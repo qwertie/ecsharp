@@ -459,6 +459,9 @@ namespace Loyc.Ecs
 			NoIfWithoutElse = 0x10000,
 			/// <summary>Avoids printing illegal opening paren at statement level</summary>
 			NoParenthesis = 0x20000,
+			/// <summary>Force PrintAttrs to print an empty attribute list `[]` which 
+			/// has the effect of allowing unassigned variable declarations anywhere.</summary>
+			ForceAttributeList = 0x40000,
 		}
 
 		// Creates an open delegate (technically it could create a closed delegate
@@ -632,122 +635,11 @@ namespace Loyc.Ecs
 		{
 			int haveParens = PrintPrefixTrivia(flags);
 
-			do {
-				Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
+			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
 
-				if ((flags & Ambiguity.DropAttributes) != 0)
-					break;
-
-				bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
-				                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
-				// 'div' will be used to divide normal attributes from keyword/word 
-				// attributes (the word attributes will be `_n.Attrs.Slice(div)`)
-				int div = _n.AttrCount, attrCount = div;
-				if (div == 0)
-					break;
-
-				bool beginningOfStmt = context.RangeEquals(StartStmt);
-				bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
-				if (isTypeParamDefinition) {
-					for (; div > 0; div--) {
-						var a = _n.Attrs[div - 1];
-						var n = a.Name;
-						if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
-							if (n != S.Where)
-								break;
-					}
-					needParens = div != 0;
-				} else if (needParens) {
-					if (!HasPAttrs(_n))
-						break;
-				} else {
-					if (style != AttrStyle.NoKeywordAttrs) {
-						// Choose how much of the attributes to treat as simple words, 
-						// e.g. we prefer to print [Flags, #public] as "[Flags] public"
-						bool isVarDecl = _n.Name == S.Var;
-						for (; div > 0; div--)
-							if (!IsWordAttribute(_n.Attrs[div - 1], style))
-								break;
-					}
-				}
-
-				// When an attribute appears mid-expression (which the printer 
-				// may try to avoid through the use of prefix notation), we need 
-				// to write "(" in order to group the attribute(s) with the
-				// expression to which they apply, e.g. while "[A] x + y" has an
-				// attribute attached to "+", the attribute in "([A] x) + y" is
-				// attached to x.
-				if (needParens && haveParens == 0) {
-					haveParens++;
-					context = StartExpr;
-					WriteOpenParen(ParenFor.Grouping);
-				}
-
-				bool any = false;
-				bool dropAttrs = false;
-				if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
-					// Careful: avoid dropping attributes from get; set; and things that look like macro calls
-					if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
-						dropAttrs = true;
-				}
-				if (!dropAttrs && div > 0) {
-					for (int i = 0; i < div; i++) {
-						var a = _n.Attrs[i];
-						if (a.IsTrivia || a == skipClause)
-							continue;
-						if (any)
-							WriteThenSpace(',', SpaceOpt.AfterComma);
-						else {
-							WriteThenSpace('[', SpaceOpt.InsideAttribute);
-							if (label != null) {
-								_out.Write(label, true);
-								_out.Write(':', true);
-								Space(SpaceOpt.AfterColon);
-							}
-						}
-						any = true;
-						PrintExpr(a, StartExpr);
-					}
-					if (any) {
-						Space(SpaceOpt.InsideAttribute);
-						_out.Write(']', true);
-						if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
-							Space(SpaceOpt.AfterAttribute);
-					}
-				}
-
-				// And now the word attributes...
-				for (int i = div; i < attrCount; i++) {
-					var a = _n.Attrs[i];
-					if (a == skipClause)
-						continue;
-					string text;
-					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
-						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
-							continue;
-						_out.Write(text, true);
-					} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
-						Debug.Assert(a.HasSpecialName);
-						if (a.IsTrivia)
-							continue;
-						if (isTypeParamDefinition) {
-							if (a.Name == S.In)
-								_out.Write("in", true); // "out" is listed in AttributeKeywords
-							else {
-								Debug.Assert(a.Name == S.Where);
-								continue;
-							}
-						} else {
-							if (a.Name == S.This) // special case: avoid printing "@this"
-								_out.Write("this", true);
-							else
-								PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
-						}
-					}
-					//any = true;
-					Space(SpaceOpt.Default);
-				}
-			} while(false);
+			if ((flags & (Ambiguity.DropAttributes | Ambiguity.ForceAttributeList)) != Ambiguity.DropAttributes)
+				if (_n.AttrCount > 0 || (flags & Ambiguity.ForceAttributeList) != 0)
+					PrintAttrsCore(ref context, style, flags, skipClause, label, ref haveParens);
 
 			if (haveParens != 0) {
 				context = StartExpr;
@@ -766,6 +658,129 @@ namespace Loyc.Ecs
 				}
 			}
 			return haveParens;
+		}
+
+		private void PrintAttrsCore(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause, string label, ref int haveParens)
+		{
+			// This is crazy complex and doesn't even work perfectly. Need to decide
+			// how to refactor (printing in exactly linear order is a big hassle btw)
+
+			// 'div' will be used to divide normal attributes from keyword/word 
+			// attributes (the word attributes will be `_n.Attrs.Slice(div)`)
+			int div = _n.AttrCount, attrCount = div;
+
+			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
+			                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
+			bool beginningOfStmt = context.RangeEquals(StartStmt);
+			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
+			if (isTypeParamDefinition) {
+				for (; div > 0; div--) {
+					var a = _n.Attrs[div - 1];
+					var n = a.Name;
+					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
+						if (n != S.Where)
+							break;
+				}
+				needParens = div != 0;
+			} else {
+				if (style != AttrStyle.NoKeywordAttrs) {
+					// Choose how much of the attributes to treat as simple words, 
+					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
+					bool isVarDecl = _n.Name == S.Var;
+					for (; div > 0; div--)
+						if (!IsWordAttribute(_n.Attrs[div - 1], style))
+							break;
+				}
+			}
+
+			// When an attribute appears mid-expression (which the printer 
+			// may try to avoid through the use of prefix notation), we need 
+			// to write "(" in order to group the attribute(s) with the
+			// expression to which they apply, e.g. while "[A] x + y" has an
+			// attribute attached to "+", the attribute in "([A] x) + y" is
+			// attached to x.
+			if (needParens && haveParens == 0) {
+				if (!HasPAttrs(_n) && (flags & Ambiguity.ForceAttributeList) == 0)
+					return;
+				haveParens++;
+				context = StartExpr;
+				WriteOpenParen(ParenFor.Grouping);
+			}
+
+			// Print normal attrs in [square brackets] unless we decide to drop them
+			bool any = false;
+			bool dropAttrs = false;
+			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
+				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
+				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
+					dropAttrs = true;
+			}
+			if (!dropAttrs) {
+				for (int i = 0; i < div; i++) {
+					var a = _n.Attrs[i];
+					if (a.IsTrivia || a == skipClause)
+						continue;
+					if (any)
+						WriteThenSpace(',', SpaceOpt.AfterComma);
+					else {
+						WriteThenSpace('[', SpaceOpt.InsideAttribute);
+						if (label != null) {
+							_out.Write(label, true);
+							_out.Write(':', true);
+							Space(SpaceOpt.AfterColon);
+						}
+					}
+					any = true;
+					PrintExpr(a, StartExpr);
+				}
+			}
+			if (any) {
+				Space(SpaceOpt.InsideAttribute);
+				_out.Write(']', true);
+				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
+					Space(SpaceOpt.AfterAttribute);
+			} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
+				for (int i = div; i < attrCount; i++)
+					if (_n.Attrs[i].Name.IsOneOf(S.Ref, S.Out))
+						any = true;
+				if (!any) {
+					_out.Write("[]", true);
+					Space(SpaceOpt.AfterAttribute);
+				}
+			}
+
+			// Then print the word attributes...
+			for (int i = div; i < attrCount; i++) {
+				var a = _n.Attrs[i];
+				if (a == skipClause)
+					continue;
+				string text;
+				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
+					if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
+						continue;
+					_out.Write(text, true);
+				} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
+					Debug.Assert(a.HasSpecialName);
+					if (a.IsTrivia)
+						continue;
+
+					if (isTypeParamDefinition) {
+						if (a.Name == S.In)
+							_out.Write("in", true); // "out" is listed in AttributeKeywords
+						else {
+							Debug.Assert(a.Name == S.Where);
+							continue;
+						}
+					} else {
+						if (a.Name == S.This) // special case: avoid printing "@this"
+							_out.Write("this", true);
+						else
+							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+					}
+				}
+				any = true;
+				Space(SpaceOpt.Default);
+			}
 		}
 
 		private int PrintPrefixTrivia(Ambiguity flags)
@@ -824,7 +839,7 @@ namespace Loyc.Ecs
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);
 						_out.Write("/*", false);
-						_out.Write((attr.Value ?? "").ToString(), false);
+						_out.Write(GetRawText(attr), false);
 						_out.Write("*/", false);
 						spaces = false;
 					}

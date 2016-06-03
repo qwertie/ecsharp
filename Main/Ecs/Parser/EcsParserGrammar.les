@@ -704,11 +704,11 @@ namespace Loyc.Ecs.Parser
 		};
 		@[public] rule ExprStart2(allowUnassignedVarDecl::bool)::LNode @{
 			{var attrs = VList!LNode.Empty;}
-			NormalAttributes(ref attrs)
+			hasList:=NormalAttributes(ref attrs)
 			AttributeKeywords(ref attrs)
 			(=>{
 				// Unassigned var decl is allowed when attributes are present (e.g. out)
-				if (!attrs.IsEmpty) { allowUnassignedVarDecl = true; };
+				if (!attrs.IsEmpty || hasList) { allowUnassignedVarDecl = true; };
 
 				// PEG-style parse: try one thing, then the other.
 				expr::LNode;
@@ -879,7 +879,7 @@ namespace Loyc.Ecs.Parser
 		// Called inside parens by ExprInParens
 		rule InParens_ExprOrTuple(allowUnassignedVarDecl::bool, startIndex::int, endIndex::int)::LNode @
 		{	// We're parsing a token tree so EOF could represent ")" or "]" or "}"
-			EOF
+			EOF =>
 			{return F.Tuple(VList!LNode.Empty, startIndex, endIndex);}
 		/	e:=ExprStart(allowUnassignedVarDecl)
 			{var list = (new VList!LNode() { e });}
@@ -912,10 +912,11 @@ namespace Loyc.Ecs.Parser
 		// ---------------------------------------------------------------------
 		
 		@[recognizer(fn Scan_NormalAttributes())]
-		token NormalAttributes(ref attrs::VList!LNode) @{
+		token NormalAttributes(ref attrs::VList!LNode)::bool @{
 			(	&!{Down($LI) && Up(Try_Scan_AsmOrModLabel(0))}
 				t:="[" "]" 
 				{
+					$result = true;
 					if (Down(t)) {
 						AttributeContents(ref attrs);
 						Up();

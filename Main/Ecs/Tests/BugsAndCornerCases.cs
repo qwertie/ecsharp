@@ -37,7 +37,8 @@ namespace Loyc.Ecs.Tests
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
 			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
-			Stmt("([#partial]\n#var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
+			//Stmt("([#partial]\n#var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
+			Stmt("([] partial Foo a);", F.InParens(Attr(@partialWA, F.Vars(Foo, a))));
 			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
 			Stmt("partial Foo.T x\n{\n  get;\n}",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));

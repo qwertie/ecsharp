@@ -186,7 +186,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("(#var(Foo, a, b, c));", F.InParens(F.Vars(Foo, a, b, c)));
 			Stmt("(Foo a) = x;",          F.Assign(F.InParens(F.Vars(Foo, a)), x));
 			Stmt("(Foo a) => a;",         F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
-			Stmt("(#var(Foo, a)) + x;",   F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
+			Stmt("([] Foo a) + x;",     F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
 			var x_1 = F.Tuple(x, one);
 			Stmt("(a, b) = (x, 1);",      F.Assign(F.Tuple(a, b), x_1));
 			Stmt("(a,) = (x,);",          F.Assign(F.Tuple(a), F.Tuple(x)));

@@ -628,17 +628,17 @@ namespace Loyc.Ecs.Tests
 			Stmt("new public int x;",               F.Vars(F.Int32, x).PlusAttrs(@new, @public));
 			Stmt("public new Foo x;",               F.Vars(Foo, x).PlusAttrs(@public, @new));
 			Stmt("new public Foo x;",               F.Vars(Foo, x).PlusAttrs(@new, @public));
-			Stmt("protected override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
-			Stmt("protected override sealed int Foo { get; }",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
-			Stmt("new partial Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
-			Stmt("public new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
-			Stmt("partial public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
-			Stmt("public partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
-			Stmt("sealed override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
+			Stmt("protected override Foo Foo\n{\n  get;\n}",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
+			Stmt("protected override sealed int Foo\n{\n  get;\n}",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
+			Stmt("new partial Foo Foo\n{\n  get;\n}",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new Foo Foo\n{\n  get;\n}",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new partial List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new public List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
+			Stmt("public new List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
+			Stmt("partial public List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
+			Stmt("public partial List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
+			Stmt("sealed override Foo Foo\n{\n  get;\n}",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
 			Stmt("Foo(out a, ref b);",              F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
 			Stmt("yield return x;",                 F.Call(S.Return, x).PlusAttrs(WordAttr("yield")));
 		}

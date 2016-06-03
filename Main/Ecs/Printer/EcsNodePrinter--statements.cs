@@ -633,7 +633,7 @@ namespace Loyc.Ecs
 
 			var ifClause = GetIfClause();
 			G.Verify(0 == PrintAttrs(StartStmt, AttrStyle.IsDefinition, flags, ifClause));
-			PrintVariableDecl(false, StartStmt, flags);
+			PrintVariableDecl(false, StartStmt, flags | Ambiguity.AllowUnassignedVarDecl);
 			AutoPrintIfClause(ifClause);
 			return SPResult.NeedSemicolon;
 		}
@@ -779,7 +779,21 @@ namespace Loyc.Ecs
 			if (type == S.For)
 			{
 				_out.Write("for", true);
-				PrintArgList(_n.Args.First(3), ParenFor.KeywordCall, flags, true, ';');
+				WriteOpenParen(ParenFor.KeywordCall);
+
+				PrintArgs(_n.Args[0].Args, Ambiguity.AllowUnassignedVarDecl, false, ',');
+				if (!IsSimpleSymbolWPA(_n.Args[1], S.Missing)) {
+					WriteThenSpace(';', SpaceOpt.AfterComma);
+					PrintExpr(_n.Args[1], StartExpr, 0);
+				} else
+					_out.Write(';', true);
+				if (_n.Args[2].ArgCount > 0) {
+					WriteThenSpace(';', SpaceOpt.AfterComma);
+					PrintArgs(_n.Args[2].Args, 0, false, ',');
+				} else
+					_out.Write(';', true);
+
+				WriteCloseParen(ParenFor.KeywordCall);
 				PrintBracedBlockOrStmt(_n.Args[3], flags);
 			}
 			else if (type == S.ForEach)
