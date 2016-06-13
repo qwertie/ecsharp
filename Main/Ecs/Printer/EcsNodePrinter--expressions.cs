@@ -135,8 +135,9 @@ namespace Loyc.Ecs
 			foreach (var op in CallOperators)
 				d.Add(op, Pair.Create(Precedence.MaxValue, call));
 
-			var rawText = OpenDelegate<OperatorPrinter>("PrintRawText");
-			d[S.RawText] = Pair.Create(EP.Substitute, rawText);
+			d[S.RawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>("PrintRawText"));
+			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintNamedArg"));
+			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintPropDeclExpr"));
 
 			return d;
 		}
@@ -178,39 +179,26 @@ namespace Loyc.Ecs
 			if (style == NodeStyle.PrefixNotation && !PreferPlainCSharp)
 				PrintPrefixNotation(context, true, flags, false);
 			else {
-				bool startExpr = context.RangeEquals(StartExpr);
 				AttrStyle attrStyle = AttrStyle.AllowKeywordAttrs;
 				bool isVarDecl = IsVariableDecl(false, true);
 				if (isVarDecl) {
-					if (((flags & Ambiguity.AllowUnassignedVarDecl) == 0 && !IsVariableDecl(false, false)) ||
-						(!startExpr && !context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr()))
+					if (((flags & Ambiguity.AllowUnassignedVarDecl) == 0 && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out))) ||
+						(!context.RangeEquals(StartExpr) && !context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (flags & Ambiguity.ForEachInitializer) == 0))
 						flags |= Ambiguity.ForceAttributeList;
 					attrStyle = AttrStyle.IsDefinition;
 				}
-				int inParens = 0;
-				if (_n.AttrCount != 0)
-					inParens = PrintAttrs(ref context, attrStyle, flags);
+				int inParens = PrintAttrs(ref context, attrStyle, flags);
 
 				if (isVarDecl)
 					PrintVariableDecl(false, context, flags);
-				else if (startExpr && EcsValidators.IsNamedArgument(_n, Pedantics))
-					PrintNamedArg(context);
-				else if (!AutoPrintOperator(context, flags))
-					PrintPrefixNotation(context, true, flags, true);
+				else 
+					if (!AutoPrintOperator(context, flags))
+						PrintPrefixNotation(context, true, flags, true);
 
 				WriteCloseParens(inParens);
 			}
 			if (context.Lo != StartStmt.Lo)
 				PrintSuffixTrivia(false);
-		}
-
-		private void PrintNamedArg(Precedence context)
-		{
-			using (With(_n.Args[0]))
-				PrintExpr(EP.Primary.LeftContext(context));
-			WriteThenSpace(':', SpaceOpt.AfterColon);
-			using (With(_n.Args[1]))
-				PrintExpr(StartExpr);
 		}
 
 		// Checks if an operator with precedence 'prec' can appear in this context.
@@ -341,7 +329,10 @@ namespace Loyc.Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				PrintExpr(left, prec.LeftContext(context), (name == S.Assign || name == S.Lambda ? Ambiguity.AllowUnassignedVarDecl : 0));
+				Ambiguity lFlags = 0;
+				if (name == S.Assign || name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
+				if (name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
+				PrintExpr(left, prec.LeftContext(context), lFlags);
 				if (backtick)
 					flags |= Ambiguity.UseBacktick;
 				PrintInfixWithSpace(_n.Name, prec, flags);
@@ -633,7 +624,7 @@ namespace Loyc.Ecs
 					return true;
 				}
 
-				PrintExpr(first, precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(context), flags & (Ambiguity.InDefinitionName | Ambiguity.NoParenthesis));
 
 				_out.Write(needSpecialOfNotation ? "!(" : "<", true);
 				for (int i = 1; i < argCount; i++) {
@@ -908,6 +899,29 @@ namespace Loyc.Ecs
 			WriteOperatorName(name);
 			PrintWithinParens(ParenFor.MethodCall, arg, type ? Ambiguity.TypeContext | Ambiguity.AllowPointer : 0);
 			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintNamedArg(Precedence precedence, Precedence context, Ambiguity flags)
+		{
+			if (!EcsValidators.IsNamedArgument(_n, Pedantics) || context.RangeEquals(StartStmt))
+				return false;
+			bool needParens;
+			if (!CanAppearIn(precedence, context, out needParens) || needParens)
+				return false;
+
+			using (With(_n.Args[0]))
+				PrintExpr(EP.Primary.LeftContext(context));
+			WriteThenSpace(':', SpaceOpt.AfterColon);
+			using (With(_n.Args[1]))
+				PrintExpr(StartExpr);
+			return true;
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool AutoPrintPropDeclExpr(Precedence precedence, Precedence context, Ambiguity flags)
+		{
+			return AutoPrintProperty(flags) != SPResult.Fail;
 		}
 
 		// Handles #rawText("custom string")

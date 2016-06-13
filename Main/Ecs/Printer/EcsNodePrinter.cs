@@ -421,6 +421,8 @@ namespace Loyc.Ecs
 			/// parenthesized target node, e.g. (target)(arg). The target node can avoid 
 			/// the syntax of a data type by adding "[ ]" (an empty set of 
 			/// attributes) at the beginning of the expression.</summary>
+			/// <remarks>This is also used in the case of @`~`((Foo), x) which must not 
+			/// be printed as `(Foo) ~ x`</remarks>
 			IsCallTarget = 0x0004,
 			/// <summary>No braced block permitted directly here (inside "if" clause)</summary>
 			NoBracedBlock = 0x0008,
@@ -468,7 +470,9 @@ namespace Loyc.Ecs
 		// too, but there's no need to use reflection for that)
 		static D OpenDelegate<D>(string name)
 		{
-			return (D)(object)Delegate.CreateDelegate(typeof(D), typeof(EcsNodePrinter).GetMethod(name));
+			D result = (D)(object)Delegate.CreateDelegate(typeof(D), typeof(EcsNodePrinter).GetMethod(name));
+			Debug.Assert(result != null);
+			return result;
 		}
 
 		#region Sets and dictionaries of keywords and tokens
@@ -637,11 +641,9 @@ namespace Loyc.Ecs
 
 			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
 
-			if ((flags & (Ambiguity.DropAttributes | Ambiguity.ForceAttributeList)) != Ambiguity.DropAttributes)
-				if (_n.AttrCount > 0 || (flags & Ambiguity.ForceAttributeList) != 0)
-					PrintAttrsCore(ref context, style, flags, skipClause, label, ref haveParens);
+			bool any = PrintAttrsCore(ref context, style, flags, skipClause, label, ref haveParens);
 
-			if (haveParens != 0) {
+			if (haveParens != 0 && !any) {
 				context = StartExpr;
 
 				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
@@ -654,57 +656,65 @@ namespace Loyc.Ecs
 						haveParens++;
 						_out.Write('(', true);
 					} else
-						_out.Write("[ ] ", true);
+						_out.Write("[] ", true);
 				}
 			}
 			return haveParens;
 		}
 
-		private void PrintAttrsCore(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause, string label, ref int haveParens)
+		private bool PrintAttrsCore(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause, string label, ref int haveParens)
 		{
-			// This is crazy complex and doesn't even work perfectly. Need to decide
-			// how to refactor (printing in exactly linear order is a big hassle btw)
-
-			// 'div' will be used to divide normal attributes from keyword/word 
-			// attributes (the word attributes will be `_n.Attrs.Slice(div)`)
-			int div = _n.AttrCount, attrCount = div;
-
+			// Printing attributes (and possibly an open paren) correctly is such a
+			// horrible minefield, it suggests we ought to redesign the printer someday.
+			var attrs = _n.Attrs;
+			int attrCount = attrs.Count;
 			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
 			                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
+
+			// 'in' (covariant parameter) and 'this' (extension method) attributes
+			// can only appear at the end:
+			bool hasIn = false, hasThis = false;
+			if (attrCount != 0) {
+				if (isTypeParamDefinition) {
+					if (attrs.Last.IsIdNamed(S.In)) {
+						hasIn = true;
+						attrCount--;
+					}
+				} else {
+					if (attrs.Last.IsIdNamed(S.This) && style >= AttrStyle.AllowWordAttrs) {
+						hasThis = true;
+						attrCount--;
+					}
+				}
+			}
+
+			// 'div' is the index where keyword/word attributes start
+			int div = attrCount;
+
 			bool beginningOfStmt = context.RangeEquals(StartStmt);
-			bool needParens = !beginningOfStmt && !context.RangeEquals(StartExpr);
 			if (isTypeParamDefinition) {
 				for (; div > 0; div--) {
-					var a = _n.Attrs[div - 1];
+					var a = attrs[div - 1];
 					var n = a.Name;
 					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
 						if (n != S.Where)
 							break;
 				}
-				needParens = div != 0;
-			} else {
-				if (style != AttrStyle.NoKeywordAttrs) {
-					// Choose how much of the attributes to treat as simple words, 
-					// e.g. we prefer to print [Flags, #public] as "[Flags] public"
-					bool isVarDecl = _n.Name == S.Var;
-					for (; div > 0; div--)
-						if (!IsWordAttribute(_n.Attrs[div - 1], style))
-							break;
-				}
+			} else if (style != AttrStyle.NoKeywordAttrs) {
+				// Choose how much of the attributes to treat as simple words, 
+				// e.g. we prefer to print [Flags, #public] as "[Flags] public"
+				for (; div > 0; div--)
+					if (!IsWordAttribute(attrs[div - 1], style))
+						break;
 			}
 
-			// When an attribute appears mid-expression (which the printer 
-			// may try to avoid through the use of prefix notation), we need 
-			// to write "(" in order to group the attribute(s) with the
-			// expression to which they apply, e.g. while "[A] x + y" has an
-			// attribute attached to "+", the attribute in "([A] x) + y" is
-			// attached to x.
-			if (needParens && haveParens == 0) {
-				if (!HasPAttrs(_n) && (flags & Ambiguity.ForceAttributeList) == 0)
-					return;
-				haveParens++;
-				context = StartExpr;
-				WriteOpenParen(ParenFor.Grouping);
+			bool needParens = false;
+			if (!beginningOfStmt && !context.RangeEquals(StartExpr)) {
+				if ((flags & Ambiguity.ForceAttributeList) != 0)
+					needParens = true;
+				else
+					for (int i = 0; i < div; i++)
+						needParens |= !attrs[i].IsTrivia;
 			}
 
 			// Print normal attrs in [square brackets] unless we decide to drop them
@@ -714,8 +724,29 @@ namespace Loyc.Ecs
 				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
 				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
 					dropAttrs = true;
+			} else if ((flags & Ambiguity.DropAttributes) != 0)
+				dropAttrs = true;
+
+			// When an attribute appears mid-expression (which the printer 
+			// may try to avoid through the use of prefix notation), we need 
+			// to write "(" in order to group the attribute(s) with the
+			// expression to which they apply, e.g. while "[A] x + y" has an
+			// attribute attached to "+", the attribute in "([A] x) + y" is
+			// attached to x.
+			if (needParens && haveParens == 0 && !dropAttrs && (flags & Ambiguity.NoParenthesis) == 0) {
+				haveParens++;
+				context = StartExpr;
+				WriteOpenParen(ParenFor.Grouping);
 			}
-			if (!dropAttrs) {
+
+			if (dropAttrs) {
+				if (_n.Calls(S.Return) && _n.AttrNamed(S.Yield) != null)
+					_out.Write("yield ", true);
+				if (_n.AttrNamed(S.Out) != null)
+					_out.Write("out ", true);
+				if (_n.AttrNamed(S.Ref) != null)
+					_out.Write("ref ", true);
+			} else {
 				for (int i = 0; i < div; i++) {
 					var a = _n.Attrs[i];
 					if (a.IsTrivia || a == skipClause)
@@ -733,54 +764,51 @@ namespace Loyc.Ecs
 					any = true;
 					PrintExpr(a, StartExpr);
 				}
-			}
-			if (any) {
-				Space(SpaceOpt.InsideAttribute);
-				_out.Write(']', true);
-				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
-					Space(SpaceOpt.AfterAttribute);
-			} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
-				for (int i = div; i < attrCount; i++)
-					if (_n.Attrs[i].Name.IsOneOf(S.Ref, S.Out))
-						any = true;
-				if (!any) {
+				if (any) {
+					Space(SpaceOpt.InsideAttribute);
+					_out.Write(']', true);
+					if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
+						Space(SpaceOpt.AfterAttribute);
+				} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
 					_out.Write("[]", true);
 					Space(SpaceOpt.AfterAttribute);
 				}
-			}
 
-			// Then print the word attributes...
-			for (int i = div; i < attrCount; i++) {
-				var a = _n.Attrs[i];
-				if (a == skipClause)
-					continue;
-				string text;
-				if (AttributeKeywords.TryGetValue(a.Name, out text)) {
-					if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
+				// Then print the word attributes...
+				for (int i = div; i < attrCount; i++) {
+					var a = attrs[i];
+					if (a == skipClause)
 						continue;
-					_out.Write(text, true);
-				} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
-					Debug.Assert(a.HasSpecialName);
-					if (a.IsTrivia)
-						continue;
+					string text;
+					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
+						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
+							continue;
+						_out.Write(text, true);
+					} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
+						Debug.Assert(a.HasSpecialName);
+						if (a.IsTrivia)
+							continue;
 
-					if (isTypeParamDefinition) {
-						if (a.Name == S.In)
-							_out.Write("in", true); // "out" is listed in AttributeKeywords
-						else {
+						if (isTypeParamDefinition) {
 							Debug.Assert(a.Name == S.Where);
 							continue;
-						}
-					} else {
-						if (a.Name == S.This) // special case: avoid printing "@this"
-							_out.Write("this", true);
-						else
+						} else {
 							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
+						}
 					}
+					any = true;
+					Space(SpaceOpt.Default);
 				}
-				any = true;
-				Space(SpaceOpt.Default);
 			}
+
+			if (hasThis) {
+				_out.Write("this ", true);
+				any = true;
+			} else if (hasIn) {
+				_out.Write("in ", true); // "out" is listed in AttributeKeywords
+				any = true;
+			}
+			return any;
 		}
 
 		private int PrintPrefixTrivia(Ambiguity flags)
@@ -824,7 +852,7 @@ namespace Loyc.Ecs
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
 					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
-						PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
+						PrintSpaces(GetRawText(attr));
 						spaces = true;
 					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
 						WriteRawText(GetRawText(attr));

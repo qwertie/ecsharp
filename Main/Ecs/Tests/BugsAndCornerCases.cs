@@ -37,16 +37,15 @@ namespace Loyc.Ecs.Tests
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
 			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
-			//Stmt("([#partial]\n#var(Foo, a));", F.InParens(Attr(@partial, F.Vars(Foo, a))));
 			Stmt("([] partial Foo a);", F.InParens(Attr(@partialWA, F.Vars(Foo, a))));
 			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
-			Stmt("partial Foo.T x\n{\n  get;\n}",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
+			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
 			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone()\n{\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
 			Stmt("Foo<a> IDictionary<a,b>.Keys\n{\n}",
 				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
-			Stmt("T IDictionary<Symbol,T>.this[Symbol x]\n{\n  get;\n  set;\n}",
+			Stmt("T IDictionary<Symbol,T>.this[Symbol x] { get; set; }",
 				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
 			Stmt("Func<T,T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
@@ -134,10 +133,18 @@ namespace Loyc.Ecs.Tests
 		{
 			Expr("Foo x = a",            F.Var(Foo, x.Name, a));
 			Expr("(Foo x = a) + 1",      F.Call(S.Add, F.InParens(F.Var(Foo, x.Name, a)), one));
-			Expr("#var(Foo, x = a) + 1", F.Call(S.Add, F.Var(Foo, x.Name, a), one));
-			Expr("#var(Foo, a) = x",     F.Assign(F.Vars(Foo, a), x));
-			Expr("#var(Foo, a) + x",     F.Call(S.Add, F.Vars(Foo, a), x));
-			Expr("x + #var(Foo, a)",     F.Call(S.Add, x, F.Vars(Foo, a)));
+			// Sadly, the way the printer uses parens in this situation does not 
+			// round-trip so we need separate printer and parser tests. Perhaps 
+			// ideally the parser would ignore parens when there's an attr list,
+			// but then the printer might have to print extra parens in some cases.
+			Expr("([] Foo x = a) + 1",   F.Call(S.Add, F.InParens(F.Var(Foo, x.Name, a)), one), Mode.ParserTest);
+			Expr("([] Foo x = a) + 1",   F.Call(S.Add, F.Var(Foo, x.Name, a), one), Mode.PrinterTest);
+			Expr("([] Foo a) = x",       F.Assign(F.InParens(F.Vars(Foo, a)), x), Mode.ParserTest);
+			Expr("([] Foo a) = x",       F.Assign(F.Vars(Foo, a), x), Mode.PrinterTest);
+			Expr("([] Foo a) + x",       F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x), Mode.ParserTest);
+			Expr("([] Foo a) + x",       F.Call(S.Add, F.Vars(Foo, a), x), Mode.PrinterTest);
+			Expr("x + ([] Foo a)",       F.Call(S.Add, x, F.InParens(F.Vars(Foo, a))), Mode.ParserTest);
+			Expr("x + ([] Foo a)",       F.Call(S.Add, x, F.Vars(Foo, a)), Mode.PrinterTest);
 			Expr("#label(Foo)",          F.Call(S.Label, Foo));
 			Stmt("Foo:",                 F.Call(S.Label, Foo));
 			LNode Foo_a = F.Call(S.NamedArg, Foo, a);

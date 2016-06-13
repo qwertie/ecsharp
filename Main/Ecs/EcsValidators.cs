@@ -465,7 +465,8 @@ namespace Loyc.Ecs
 			if (name == S.If)
 				return argCount == 2 || argCount == 3 ? name : null;
 			else if (name == S.For)
-				return argCount == 4 ? name : null;
+				return argCount == 4 && CallsWPAIH(_n.Args[0], S.AltList, p)
+				                     && CallsWPAIH(_n.Args[2], S.AltList, p) ? name : null;
 			else if (name == S.ForEach)
 				return argCount == 3 ? name : null;
 			else if (name == S.Checked || name == S.Unchecked)

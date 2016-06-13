@@ -472,65 +472,40 @@ namespace Loyc.Ecs.Tests
 			LNode stmt;
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, T), F.List(F.Vars(T, a), F.Vars(T, b)));
 			Stmt("delegate void Foo<T>(T a, T b);", stmt);
-			Expr("#delegate(void, Foo<T>, #(#var(T, a), #var(T, b)))", stmt);
+			Expr("#delegate(void, Foo<T>, #([] T a, [] T b))", stmt);
 			stmt = F.Call(S.Delegate, F.Void, F.Of(Foo, Attr(F.Call(S.Where, _(S.Class), x), T)), F.List(F.Vars(T, x)));
 			Stmt("delegate void Foo<T>(T x) where T: class, x;", stmt);
-			Expr("#delegate(void, Foo!([#where(#class, x)] T), #(#var(T, x)))", stmt);
+			Expr("#delegate(void, Foo!([#where(#class, x)] T), #([] T x))", stmt);
 			stmt = Attr(@public, @new, partialWA, F.Fn(F.String, Foo, list_int_x));
 			Stmt("public new partial string Foo(int x);", stmt);
 			// The printer does not print trivia attributes, but the parsing test will fail if the trivia is missing
-			Expr("[#public, #new, "         +            "#partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.PrinterTest);
-			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #fn(string, Foo, #(#var(int, x)))", stmt, Mode.ParserTest);
+			Expr("[#public, #new, "         +            "#partial] #fn(string, Foo, #([] int x))", stmt, Mode.PrinterTest);
+			Expr("[#public, #new, [#trivia_wordAttribute] #partial] #fn(string, Foo, #([] int x))", stmt, Mode.ParserTest);
 			stmt = F.Fn(F.Int32, Foo, list_int_x, F.Braces(F.Result(x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  x * x\n}", stmt);
-			Expr("#fn(int, Foo, #(#var(int, x)), {\n  x * x\n})", stmt);
+			Expr("#fn(int, Foo, #([] int x), {\n  x * x\n})", stmt);
 			stmt = F.Fn(F.Int32, Foo, list_int_x, F.Braces(F.Call(S.Return, x_mul_x)));
 			Stmt("int Foo(int x)\n{\n  return x * x;\n}", stmt);
-			Expr("#fn(int, Foo, #(#var(int, x)), {\n  return x * x;\n})", stmt);
+			Expr("#fn(int, Foo, #([] int x), {\n  return x * x;\n})", stmt);
 			stmt = F.Fn(F.Decimal, Foo, list_int_x, F.Call(S.Forward, F.Dot(a, b)));
 			Stmt("decimal Foo(int x) ==> a.b;", stmt);
-			Expr("#fn(decimal, Foo, #(#var(int, x)), ==> a.b)", stmt);
+			Expr("#fn(decimal, Foo, #([] int x), ==> a.b)", stmt);
 			stmt = F.Fn(_("IEnumerator"), F.Dot(_("IEnumerable"), _("GetEnumerator")), F.List(), F.Braces());
 			Stmt("IEnumerator IEnumerable.GetEnumerator()\n{\n}", stmt);
 			Expr("#fn(IEnumerator, IEnumerable.GetEnumerator, #(), {\n})", stmt);
-			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
-			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
-			Expr("#cons(@``, this, #(#var(int, x)), {\n  #this(x, 1);\n  a = x;\n})", stmt);
-			stmt = F.Call(S.Constructor, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
-			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
-			Expr("#cons(@``, Foo, #(#var(int, x)), {\n  base(x);\n  b = x;\n})", stmt);
-			var destructor = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
-			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(destructor));
-			Stmt("class Foo\n{\n  ~Foo()\n  {\n  }\n}", stmt);
-			Expr("#class(Foo, #(), {\n  ~Foo()\n  {\n  }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
-			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), {\n  });\n})", stmt, Mode.ParserTest);
-			// This should be parsed as a destructor despite the fact that
-			// #result(~(Foo {})) is a potential interpretation.
-			stmt = destructor;
-			Stmt("~Foo()\n{\n}", stmt, Mode.Both | Mode.ExpectAndDropParserError);
-			Expr("#fn(@``, ~Foo, #(), {\n})", destructor);
-			stmt = F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
-			Stmt("#fn(@``, -Foo, #(), {\n});", stmt);
-			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
-			Stmt("class Foo\n{\n  #fn(@``, -Foo, #(), {\n  });\n}", stmt);
+		}
+
+		[Test]
+		public void CsOperatorDefinitions()
+		{
 			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
-			stmt = Attr(@static, F.Fn(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
+			LNode stmt = Attr(@static, F.Fn(F.Bool, Attr(@operator, _(S.Eq)), F.List(F.Vars(T, a), F.Vars(T, b)), F.Braces()));
 			Stmt("static bool operator==(T a, T b)\n{\n}", stmt);
-			Expr("static #fn(bool, operator==, #(#var(T, a), #var(T, b)), {\n})", stmt);
+			Expr("static #fn(bool, operator==, #([] T a, [] T b), {\n})", stmt);
 			stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
 			Stmt("static implicit operator T(Foo a)\n{\n}", stmt);
-			Expr("static implicit #fn(T, operator`#cast`, #(#var(Foo, a)), {\n})", stmt);
-			stmt = Attr(@static, F.Fn(Foo, F.Of(Foo, F.Call(S.Substitute, T)), F.List()));
-			Stmt(@"static Foo Foo<$T>();", stmt);
-			stmt = Attr(@static, _(S.Explicit),
-			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
-			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
-			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
-			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #(#var(Bar<T>, b)))", stmt);
-			stmt = F.Fn(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
-			Stmt("bool operator`when`(Foo a, Foo b)\n{\n}", stmt);
-			Expr("#fn(bool, operator`when`, #(#var(Foo, a), #var(Foo, b)), {\n})", stmt);
+			Expr("static implicit #fn(T, operator`#cast`, #([] Foo a), {\n})", stmt);
 
 			stmt = Attr(F.Call(Foo), @static,
 			       F.Fn(Attr(Foo, F.Bool),
@@ -555,8 +530,10 @@ namespace Loyc.Ecs.Tests
 		public void PropertyStmts()
 		{
 			LNode stmt = F.Property(F.Int32, Foo, F.Braces(get, set));
-			Stmt("int Foo\n{\n  get;\n  set;\n}", stmt);
-			Expr("#property(int, Foo, @``, {\n  get;\n  set;\n})", stmt);
+			Stmt("int Foo { get; set; }", stmt);
+			// was: #property(int, Foo, @``, {\n  get;\n  set;\n})
+			// but now, property expressions are supported
+			Expr("int Foo { get; set; }", stmt);
 			stmt = Attr(@public, F.Property(F.Int32, Foo, F.Braces(
 			            AsStyle(NodeStyle.Special, F.Call(get, F.Braces(F.Call(S.Return, x)))),
 			            AsStyle(NodeStyle.Special, F.Call(set, F.Braces(F.Assign(x, value)))))));
@@ -578,14 +555,14 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Property(F.Int32, Foo, F.Braces(
 								Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
 			Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt, Mode.PrinterTest);
-			Stmt("int Foo\n{\n  protected get;\n  private set;\n}",
+			Stmt("int Foo { protected get; private set; }",
 				F.Property(F.Int32, Foo, F.Braces(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
 
 			stmt = F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Braces(get, set));
-			Stmt("Foo this[long x]\n{\n  get;\n  set;\n}", stmt);
+			Stmt("Foo this[long x] { get; set; }", stmt);
 			stmt = Attr(F.Private, F.Property(F.Of(Foo, T), F.Of(F.@this, T), F.List(F.Var(T, x)), F.Braces(get, set)));
-			Stmt("private Foo<T> this<T>[T x]\n{\n  get;\n  set;\n}", stmt);
+			Stmt("private Foo<T> this<T>[T x] { get; set; }", stmt);
 		}
 
 		[Test]
@@ -628,17 +605,17 @@ namespace Loyc.Ecs.Tests
 			Stmt("new public int x;",               F.Vars(F.Int32, x).PlusAttrs(@new, @public));
 			Stmt("public new Foo x;",               F.Vars(Foo, x).PlusAttrs(@public, @new));
 			Stmt("new public Foo x;",               F.Vars(Foo, x).PlusAttrs(@new, @public));
-			Stmt("protected override Foo Foo\n{\n  get;\n}",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
-			Stmt("protected override sealed int Foo\n{\n  get;\n}",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
-			Stmt("new partial Foo Foo\n{\n  get;\n}",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new Foo Foo\n{\n  get;\n}",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new partial List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
-			Stmt("partial new List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
-			Stmt("new public List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
-			Stmt("public new List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
-			Stmt("partial public List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
-			Stmt("public partial List<Foo> Foo\n{\n  get;\n}",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
-			Stmt("sealed override Foo Foo\n{\n  get;\n}",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
+			Stmt("protected override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override)));
+			Stmt("protected override sealed int Foo { get; }",F.Property(F.Int32, Foo, F.Braces(get)).PlusAttrs(F.Protected, _(S.Override), _(S.Sealed)));
+			Stmt("new partial Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new Foo Foo { get; }",    F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, partialWA));
+			Stmt("partial new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(partialWA, @new));
+			Stmt("new public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@new, F.Public));
+			Stmt("public new List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @new));
+			Stmt("partial public List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(@partialWA, F.Public));
+			Stmt("public partial List<Foo> Foo { get; }",F.Property(F.Of(_("List"), Foo), Foo, F.Braces(get)).PlusAttrs(F.Public, @partialWA));
+			Stmt("sealed override Foo Foo { get; }",F.Property(Foo, Foo, F.Braces(get)).PlusAttrs(_(S.Sealed), _(S.Override)));
 			Stmt("Foo(out a, ref b);",              F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
 			Stmt("yield return x;",                 F.Call(S.Return, x).PlusAttrs(WordAttr("yield")));
 		}
@@ -657,26 +634,30 @@ namespace Loyc.Ecs.Tests
 			// "async" is just an ordinary word attribute so it is already supported
 			Stmt("async Task Foo()\n{\n}", F.Attr(WordAttr("async"), F.Fn(_("Task"), Foo, F.List(), F.Braces())));
 
-			Expr("await x ** 2", F.Call(S.Exp, F.Call(_await, x), F.Literal(2)));
-			Expr("await Foo.x", F.Call(_await, F.Dot(Foo, x)));
-			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(_await, F.Dot(Foo, x))));
-
-			Expr("await ++x", F.Call(_await, F.Call(S.PreInc, x)));
+			// Eventually we should convince the printer to support `await`, but
+			// it's a low priority since await(x) works just as well as `await x`;
+			// so for now test the parser and printer separately.
+			Expr("await x ** 2", F.Call(S.Exp, F.Call(_await, x), F.Literal(2)), Mode.ParserTest);
+			Expr("await Foo.x", F.Call(_await, F.Dot(Foo, x)), Mode.ParserTest);
+			Expr("await(Foo.x)", F.Call(_await, F.Dot(Foo, x)), Mode.PrinterTest);
+			Expr("a * await Foo.x", F.Call(S.Mul, a, F.Call(_await, F.Dot(Foo, x))), Mode.ParserTest);
+			Expr("await ++x", F.Call(_await, F.Call(S.PreInc, x)), Mode.ParserTest);
 
 			// Parsing this successfully is not worth the hassle...
 			//Expr("await++ + x", F.Call(S.Add, F.Call(S.PostInc, await), x));
 			// ... but we do support this:
-			Expr("@await++ + x", F.Call(S.Add, F.Call(S.PostInc, _await), x));
+			Expr("@await++ + x", F.Call(S.Add, F.Call(S.PostInc, _await), x), Mode.ParserTest);
 
 			// Uh-oh, it looks like the parsing of this should depend on whether the
 			// enclosing function has the `async` keyword or not. If it does, it
 			// should parse as `await((a).b)`, otherwise it should be `(await(a)).b`.
 			// But EC# doesn't change modes in this way, so it's always parsed as
 			// `await((a).b)`
-			Expr("await(a).b", F.Call(_await, F.Dot(F.InParens(a), b)));
+			Expr("await(a).b", F.Call(_await, F.Dot(F.InParens(a), b)), Mode.ParserTest);
+			Expr("await((a).b)", F.Call(_await, F.Dot(F.InParens(a), b)), Mode.PrinterTest);
 			// @await is treated slightly differently, but currently the node Name is
 			// "await" either way. Should it be #await when the @ sign is absent?
-			Expr("@await(a).b", F.Dot(F.Call(_await, a), b));
+			Expr("@await(a).b", F.Dot(F.Call(_await, a), b), Mode.ParserTest);
 		}
 
 		[Test]
@@ -689,7 +670,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("a?.b?[x].Foo;",       F.Call(S.NullDot, a, F.Dot(F.Call(S.NullIndexBracks, b, F.List(x)), Foo)));
 			Stmt("int Foo(int x) => x * x;",           F.Fn(F.Int32, Foo, F.List(F.Var(F.Int32, x)), F.Call(S.Mul, x, x)));
 			Stmt("int Foo => 5;",                      F.Property(F.Int32, Foo, F.Literal(5)));
-			Stmt("int Foo\n{\n  get;\n} = x * 5;",     F.Property(F.Int32, Foo, F.Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
+			Stmt("int Foo { get; } = x * 5;",     F.Property(F.Int32, Foo, F.Missing, F.Braces(get), F.Call(S.Mul, x, F.Literal(5))));
 			Stmt("public Foo this[long x] => get(x);", Attr(F.Public, F.Property(Foo, F.@this, F.List(F.Var(F.Int64, x)), F.Call(get, x))));
 			Stmt("new Foo { [0] = a, [1] = b };",
 				F.Call(S.New, F.Call(Foo), F.Call(S.InitializerAssignment, zero, a), F.Call(S.InitializerAssignment, one, b)));

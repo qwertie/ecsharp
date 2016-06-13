@@ -529,7 +529,7 @@ namespace Loyc.Ecs
 				if (isConstructor && name.IsIdNamed(S.This))
 					_out.Write("this", true);
 				else
-					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName);
+					PrintExpr(name, ContinueExpr, Ambiguity.InDefinitionName | Ambiguity.NoParenthesis);
 			}
 			return ifClause;
 		}
@@ -572,7 +572,8 @@ namespace Loyc.Ecs
 				}
 				else if (body.Name == S.Braces && (PreferPlainCSharp || body.BaseStyle != NodeStyle.PrefixNotation))
 				{
-					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Fn);
+					if (skipFirstStmt || !AutoPrintBodyOfAutoProp(body))
+						PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Fn);
 					return SPResult.NeedSuffixTrivia;
 				}
 				else
@@ -584,6 +585,28 @@ namespace Loyc.Ecs
 					return SPResult.NeedSemicolon;
 				}
 			}
+		}
+
+		// e.g. prints { get; private set; }
+		private bool AutoPrintBodyOfAutoProp(LNode body)
+		{
+			if (body.ArgCount.IsInRange(1, 2) && body.Args.All(s => 
+				s.IsId && s.Name.IsOneOf(S.get, S.set, S.add, S.remove))) {
+				// This is very similar to PrintBracedBlock except that newlines are suppressed
+				Space(SpaceOpt.Default);
+				_out.Write('{', true);
+				Space(SpaceOpt.Default);
+				using (WithSpace(S.Fn))
+					using (Indented)
+						for (int i = 0, c = body.ArgCount; i < c; i++) {
+							PrintExpr(body[i], StartExpr);
+							WriteThenSpace(';', SpaceOpt.Default);
+						}
+				Space(SpaceOpt.Default);
+				_out.Write('}', true);
+				return true;
+			} else
+				return false;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

@@ -186,13 +186,14 @@ namespace Loyc.Ecs.Tests
 			Stmt("(#var(Foo, a, b, c));", F.InParens(F.Vars(Foo, a, b, c)));
 			Stmt("(Foo a) = x;",          F.Assign(F.InParens(F.Vars(Foo, a)), x));
 			Stmt("(Foo a) => a;",         F.Call(S.Lambda, F.InParens(F.Vars(Foo, a)), a));
-			Stmt("([] Foo a) + x;",     F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
+			Stmt("([] Foo a) + x;",       F.Call(S.Add, F.InParens(F.Vars(Foo, a)), x));
 			var x_1 = F.Tuple(x, one);
 			Stmt("(a, b) = (x, 1);",      F.Assign(F.Tuple(a, b), x_1));
 			Stmt("(a,) = (x,);",          F.Assign(F.Tuple(a), F.Tuple(x)));
 			Stmt("(a, Foo b) = (x, 1);",  F.Assign(F.Tuple(a, F.Vars(Foo, b)), x_1));
 			Stmt("(Foo a, b) = (x, 1);",  F.Assign(F.Tuple(F.Vars(Foo, a), b), x_1));
-			Stmt("(#var(Foo, a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1));
+			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.InParens(F.Vars(Foo, a)), one), b), x_1), Mode.ParserTest);
+			Stmt("(([] Foo a) + 1, b) = (x, 1);", F.Assign(F.Tuple(F.Call(S.Add, F.Vars(Foo, a), one), b), x_1), Mode.PrinterTest);
 			Stmt("(Foo a,) = (x,);",      F.Assign(F.Tuple(F.Vars(Foo, a)), F.Tuple(x)));
 			
 			// TODO: drop support for this syntax in the printer.
@@ -352,7 +353,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
 			Stmt("public new partial static Foo x;",              AddWords(F.Vars(Foo, x)));
 			Stmt("public new partial static Foo operator==;",     AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
-			Stmt("public new partial static int x\n{\n  get;\n}", AddWords(F.Property(F.Int32, x, F.Braces(get))));
+			Stmt("public new partial static int x { get; }", AddWords(F.Property(F.Int32, x, F.Braces(get))));
 			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
 			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
 			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Assign(a, Foo), F.List())));
@@ -384,6 +385,58 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void EcsConstructorsAndDestructors()
+		{
+			LNode int_x = F.Vars(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x);
+			LNode stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
+			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
+			Expr("#cons(@``, this, #([] int x), {\n  #this(x, 1);\n  a = x;\n})", stmt);
+			stmt = F.Call(S.Constructor, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
+			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
+			Expr("#cons(@``, Foo, #([] int x), {\n  base(x);\n  b = x;\n})", stmt);
+			var destructor = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
+			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(destructor));
+			Stmt("class Foo\n{\n  ~Foo()\n  {\n  }\n}", stmt);
+			Expr("#class(Foo, #(), {\n  ~Foo()\n  {\n  }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), {\n  });\n})", stmt, Mode.ParserTest);
+			// This should be parsed as a destructor despite the fact that
+			// #result(~(Foo {})) is a potential interpretation.
+			stmt = destructor;
+			Stmt("~Foo()\n{\n}", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#fn(@``, ~Foo, #(), {\n})", destructor);
+			stmt = F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
+			Stmt("#fn(@``, -Foo, #(), {\n});", stmt);
+			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
+			Stmt("class Foo\n{\n  #fn(@``, -Foo, #(), {\n  });\n}", stmt);
+		}
+
+		[Test]
+		public void EcsTemplateArgs()
+		{
+			var stmt = Attr(@static, F.Fn(Foo, F.Of(Foo, F.Call(S.Substitute, T)), F.List()));
+			Stmt(@"static Foo Foo<$T>();", stmt);
+			// TODO consider adding more tests here
+		}
+
+		[Test]
+		public void EcsOperatorDefinitions()
+		{
+			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
+			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
+			LNode stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
+			Stmt("static implicit operator T(Foo a)\n{\n}", stmt);
+
+			stmt = Attr(@static, _(S.Explicit),
+			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
+			                  F.List(F.Vars(F.Of(_("Bar"), T), b))));
+			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
+			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #([] Bar<T> b))", stmt);
+			stmt = F.Fn(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
+			Stmt("bool operator`when`(Foo a, Foo b)\n{\n}", stmt);
+			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), {\n})", stmt);
+		}
+
+		[Test]
 		public void EcsVarAnywhere()
 		{
 			// An unassigned variable is allowed when an expression has attributes, such as 'out'
@@ -403,13 +456,14 @@ namespace Loyc.Ecs.Tests
 			// normally allow it, they can support "var x" and "var Foo x" (and 
 			// manually remove the keyword attribute #var from the latter 
 			// declaration).
-			Stmt("Foo(var x);", F.Call(Foo, F.Var(F.Missing, x)));
+			Stmt("Foo(var x);", F.Call(Foo, F.Var(F.Missing, x)), Mode.ParserTest);
+			Stmt("Foo([] var x);", F.Call(Foo, F.Var(F.Missing, x)));
 		}
 
 		[Test]
 		public void EcsPropertyDefinitionExpr()
 		{
-			Stmt("this(int Foo { get; }) {}", F.Call(S.Constructor, F.Missing, F.@this, F.List(
+			Stmt("this(int Foo { get; })\n{\n}", F.Call(S.Constructor, F.Missing, F.@this, F.List(
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get))), F.Braces()));
 			Stmt("Foo(x, int Foo { get; } = 0);", F.Call(Foo, x,
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get), zero)));
@@ -440,10 +494,10 @@ namespace Loyc.Ecs.Tests
 		{
 			Token[] xToken = new[] { new Token((int)TokenType.Id, 0, 0, 0, x.Name) };
 			var xTreeNode = F.Literal(new TokenTree(F.File, xToken));
-			// Not yet supported by printer
-			Stmt("get @{ x };", F.Call(S.get, xTreeNode));
-			Stmt("Foo(x) @{ x };", F.Call(Foo, x, xTreeNode));
-			Stmt("Foo = get @{ x } + 1;", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(S.get, xTreeNode), one)));
+			// Not currently supported by printer, so test parser only
+			Stmt("get @{ x };", F.Call(S.get, xTreeNode), Mode.ParserTest);
+			Stmt("Foo(x) @{ x };", F.Call(Foo, x, xTreeNode), Mode.ParserTest);
+			Stmt("Foo = get @{ x } + 1;", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(S.get, xTreeNode), one)), Mode.ParserTest);
 		}
 
 		[Test]
