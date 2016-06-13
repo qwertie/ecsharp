@@ -8,8 +8,11 @@ script:
     - xbuild /p:Configuration=Release.NET45 Loyc-Slim.sln
     - xbuild /p:Configuration=Release.NET4 Loyc-Slim.sln
 
-    # Unfortunately, some tests are still broken.
+    # Unfortunately, test set 7 (LLLPG) sometimes fails due to nondeterminism.
     - mono Bin/Release.NET45/Tests.exe 1
     - mono Bin/Release.NET45/Tests.exe 2
+    - mono Bin/Release.NET45/Tests.exe 3
+    - mono Bin/Release.NET45/Tests.exe 4
+    - mono Bin/Release.NET45/Tests.exe 5
+    - mono Bin/Release.NET45/Tests.exe 6
     - mono Bin/Release.NET45/Tests.exe 7
-    - mono Bin/Release.NET45/Tests.exe 8
