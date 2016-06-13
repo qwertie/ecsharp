@@ -341,15 +341,15 @@ namespace LeMP.Prelude.Les
 
 				var nameAndInit = init == null ? part : F.Call(S.Assign, part, init);
 				if (varStmt != null && varStmt.Args[0].Equals(type)) {
-					// same type used again, e.g. (var x::int y::int) => (#var int x y)
+					// same type used again, e.g. var(x::int, y::int) => #var(int, x, y)
 					varStmt = varStmt.WithArgs(varStmt.Args.Add(nameAndInit));
 				} else {
-					// first item (var x::int => #var int x) or type changed (var a::A b::B => #var A a; #var B b)
+					// first item var(x::int) => #var(int, x) or type changed (var(a::A, b::B) => #var(A, a); #var(B, b))
 					if (varStmt != null) {
 						varStmts = varStmts ?? new WList<LNode>();
 						varStmts.Add(varStmt);
 					}
-					varStmt = node.With(S.Var, type, nameAndInit);
+					varStmt = node.With(S.Var, type, nameAndInit).SetBaseStyle(NodeStyle.Default);
 				}
 			}
 			
@@ -378,10 +378,22 @@ namespace LeMP.Prelude.Les
 		{
 			LNode tuple;
 			if (node.ArgCount == 2 && (tuple = node.Args[0]).Calls(S.Tuple, 3))
-				return node.With(S.For, tuple.Args[0], tuple.Args[1], tuple.Args[2], node.Args[1]);
+				return node.With(S.For, 
+					asAltList(tuple.Args[0]), 
+					tuple.Args[1], 
+					asAltList(tuple.Args[2]),
+					node.Args[1]);
 			else if (node.ArgCount == 4)
-				return node.WithTarget(S.For);
+				return node.With(S.For,
+					asAltList(node.Args[0]), 
+					node.Args[1], 
+					asAltList(node.Args[2]),
+					node.Args[3]);
 			return null;
+		}
+
+		static LNode asAltList(LNode node) {
+			return node.Calls(S.AltList) ? node : LNode.Call(S.AltList, LNode.List(node), node);
 		}
 
 		static readonly Symbol _in = GSymbol.Get("in");
@@ -474,10 +486,10 @@ namespace LeMP.Prelude.Les
 		[LexicalMacro("case ConstExpr; case ConstExpr { Code... }", "One label in a switch statement.")]
 		public static LNode @case(LNode node, IMessageSink sink)
 		{
-			if (node.ArgCount == 1)
+			if (node.ArgCount >= 2 && node.Args.Last.Calls(S.Braces))
+				return F.Call(S.Splice, new VList<LNode>(node.WithArgs(node.Args.WithoutLast(1)), node.Args.Last));
+			if (node.ArgCount >= 1)
 				return node.WithTarget(S.Case);
-			else if (node.ArgCount == 2 && node.Args[1].Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.WithArgs(node.Args.First(1)), node.Args[1]));
 			return null;
 		}
 		
@@ -485,9 +497,9 @@ namespace LeMP.Prelude.Les
 		public static LNode @default1(LNode node, IMessageSink sink)
 		{
 			if (node.IsId)
-				return node.With(S.Label, F.Id(S.Default));
+				return node.With(S.Label, F.Id(S.Default)).SetBaseStyle(NodeStyle.Default);
 			else if (node.ArgCount == 1 && node.Args[0].Calls(S.Braces))
-				return F.Call(S.Splice, new VList<LNode>(node.With(S.Label, new VList<LNode>(F.Id(S.Default))), node.Args[0]));
+				return F.Call(S.Splice, new VList<LNode>(node.With(S.Label, new VList<LNode>(F.Id(S.Default))).SetBaseStyle(NodeStyle.Default), node.Args[0]));
 			return null;
 		}
 
@@ -645,7 +657,7 @@ namespace LeMP.Prelude.Les
 		public static LNode @default2(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 1 && !node.Args[0].Calls(S.Braces))
-				return node.WithTarget(S.Default);
+				return node.WithTarget(S.Default).SetBaseStyle(NodeStyle.Default);
 			return null;
 		}
 

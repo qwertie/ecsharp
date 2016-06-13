@@ -13,18 +13,26 @@ namespace LeMP
 
 	partial class StandardMacros
 	{
-		[LexicalMacro("use_symbols; ... @@Foo ...", 
-			"Replaces each @@symbol in the code that follows with a static readonly variable named sy_X for each symbol @@X. "
-			+"The #useSymbols macro must be invoked inside a type definition where static variables are allowed.",
+		[LexicalMacro("#useSymbols; ... @@Foo ...", 
+			"Enables @@symbols to be used in the code that follows. A static readonly variable named sy_X will be created for each symbol @@X. "
+			+"The #useSymbols macro can be invoked at global scope, or inside a type definition where static variables are allowed. Cannot be used inside a method.",
 			"#useSymbols", "use_symbols" /*old name*/)]
 		public static LNode useSymbols(LNode input, IMacroContext context)
 		{
+			bool inType = context.Ancestors.Any(parent => {
+				var kind = EcsValidators.SpaceDefinitionKind(parent);
+				return kind != null && kind != S.Namespace;
+			});
 			var args_body = context.GetArgsAndBody(true);
+			return UseSymbolsCore(input.Attrs, args_body.A, args_body.B, context, inType);
+		}
 
+		public static LNode UseSymbolsCore(VList<LNode> symbolAttrs, VList<LNode> options, VList<LNode> body, IMacroContext context, bool inType)
+		{
 			// Decode options (TODO: invent a simpler approach)
 			string prefix = "sy_";
 			var inherited = new HashSet<Symbol>();
-			foreach (var pair in MacroContext.GetOptions(args_body.A))
+			foreach (var pair in MacroContext.GetOptions(options))
 			{
 				if (pair.Key.Name == "prefix" && pair.Value.IsId)
 					prefix = pair.Value.Name.Name;
@@ -39,7 +47,17 @@ namespace LeMP
 
 			// Replace all symbols while collecting a list of them
 			var symbols = new Dictionary<Symbol, LNode>();
-			VList<LNode> output = args_body.B.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
+			VList<LNode> output = body.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
+				if (!inType) {
+					// Since we're outside any type, we must avoid creating symbol 
+					// fields. When we cross into a type then we can start making
+					// Symbols by calling ourself recursively with inType=true
+					var kind = EcsValidators.SpaceDefinitionKind(n);
+					if (kind == S.Class || kind == S.Struct || kind == S.Interface || kind == S.Alias || kind == S.Trait) {
+						var body2 = n.Args[2];
+						return n.WithArgChanged(2, UseSymbolsCore(symbolAttrs, options, body2.Args, context, true).WithName(body2.Name));
+					}
+				}
 				var sym = n.Value as Symbol;
 				if (n.IsLiteral && sym != null)
 					return symbols[sym] = LNode.Id(prefix + sym.Name);
@@ -54,7 +72,7 @@ namespace LeMP
 			                   F.Call(S.Cast, F.Literal(sym.Key.Name), _Symbol))).ToList();
 			if (vars.Count > 0)
 				output.Insert(0, F.Call(S.Var, ListExt.Single(_Symbol).Concat(vars))
-					.WithAttrs(input.Attrs.Add(F.Id(S.Static)).Add(F.Id(S.Readonly))));
+					.WithAttrs(symbolAttrs.Add(F.Id(S.Static)).Add(F.Id(S.Readonly))));
 			return F.Call(S.Splice, output);
 		}
 	}

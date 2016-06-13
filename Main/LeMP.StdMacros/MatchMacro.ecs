@@ -48,7 +48,7 @@ namespace LeMP
 			matchCode (node) {
 			case $_($input, { $(..contents); }):
 				var outputs = new WList<LNode>();
-				input = MaybeAddTempVarDecl(input, outputs);
+				input = MaybeAddTempVarDecl(context, input, outputs);
 
 				int next_i = 0;
 				for (int case_i = 0; case_i < contents.Count; case_i = next_i) {
@@ -140,14 +140,14 @@ namespace LeMP
 					if ((cmpExpr ?? inRange ?? varBinding) != null) {
 						// input will be used multiple times, so consider making a tmp var.
 						if (!LooksLikeSimpleValue(input))
-							PutStmt(TempVarDecl(input, out input));
+							PutStmt(TempVarDecl(_context, input, out input));
 					}
 					
 					PutCond(quote( $input is $isType ));
 					
 					if (varBinding == null && ((cmpExpr ?? inRange) != null || subPatterns.Count > 0))
 						// we'll need another temp variable to hold the same value, casted.
-						varBinding = LNode.Id(NextTempName(), isType);
+						varBinding = LNode.Id(NextTempName(_context), isType);
 				}
 
 				if (varBinding != null) {

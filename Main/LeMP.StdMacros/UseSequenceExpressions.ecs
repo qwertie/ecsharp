@@ -131,6 +131,8 @@ namespace LeMP
 						}
 					}
 					return stmt;
+				} else if (stmt.Calls(CodeSymbols.Braces)) {
+					return stmt.WithArgs(EliminateSequenceExpressions(stmt.Args, isDeclContext));
 				} else if (!isDeclContext) {
 					return EliminateSequenceExpressionsInExecStmt(stmt);
 				} else if (stmt.CallsMin(S.Var, 2)) {
@@ -223,8 +225,8 @@ namespace LeMP
 							};
 						} else 
 							return stmt.WithArgChanged(0, block);
-					case { [$(...attrs)] for ($init; $cond; $inc) $block; }:
-						return ESEInForLoop(stmt, attrs, init, cond, inc, block);
+					case { [$(...attrs)] for ($(...inits); $cond; $(...incs)) $block; }:
+						return ESEInForLoop(stmt, attrs, inits, cond, incs, block);
 					case { [$(...attrs)] foreach ($type $loopVar in $collection) $block; }:
 						block = EliminateSequenceExpressionsInChildStmt(block);
 						collection = BubbleUpBlocks(collection);
@@ -262,23 +264,31 @@ namespace LeMP
 				return stmt;
 			}
 
-			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, LNode init, LNode cond, LNode inc, LNode block)
+			LNode ESEInForLoop(LNode stmt, VList<LNode> attrs, VList<LNode> init, LNode cond, VList<LNode> inc, LNode block)
 			{
 				// TODO: handle multi-int and multi-inc
-				var init' = EliminateSequenceExpressionsInExecStmt(init);
+				var preInit = VList<LNode>.Empty;
+				var init' = init.SmartSelect(init1 => {
+					init1 = EliminateSequenceExpressionsInExecStmt(init1);
+					if (init1.CallsMin(_#runSequence, 1)) {
+						preInit.AddRange(init1.Args.WithoutLast(1));
+						return init1.Args.Last;
+					}
+					return init1;
+				});
 				var cond' = BubbleUpBlocks(cond);
-				var inc'  = BubbleUpBlocks(inc);
+				var inc'  = inc.SmartSelectMany(inc1 => {
+					inc1 = BubbleUpBlocks(inc1);
+					return inc1.AsList(_#runSequence);
+				});
+
 				block = EliminateSequenceExpressionsInChildStmt(block);
 				if (init' != init || cond' != cond || inc' != inc) {
-					var preInit = VList<LNode>.Empty;
-					if (init'.CallsMin(_#runSequence, 1)) {
-						preInit.AddRange(init'.Args.WithoutLast(1));
-						init = init'.Args.Last;
-					}
-					if (inc'.CallsMin(_#runSequence, 1)) {
-						var blockStmts = block.AsList(S.Braces).AddRange(inc'.Args);
+					init = init';
+					if (inc' != inc) {
+						var blockStmts = block.AsList(S.Braces).AddRange(inc');
 						block = blockStmts.AsLNode(S.Braces);
-						inc = F.Missing;
+						inc = LNode.List();
 					}
 					if (cond'.CallsMin(_#runSequence, 1)) {
 						var preCond = cond'.Args.WithoutLast(1);

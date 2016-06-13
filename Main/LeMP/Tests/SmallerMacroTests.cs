@@ -232,6 +232,23 @@ namespace LeMP.Tests
 				@"@[Attr, #static, #readonly] #var(Symbol, sy_foo = #cast(""foo"", Symbol)); sy_foo;");
 			TestEcs("[Attr] #useSymbols; Symbol status = @@OK;",
 				@"[Attr] static readonly Symbol sy_OK = (Symbol) ""OK""; Symbol status = sy_OK;");
+			TestEcs(@"[Attr] #useSymbols; 
+					public class X { 
+						Symbol status = @@OK; 
+						interface Y { void Foo(Symbol arg = @@foo); }
+					}
+					public struct Z { public static Symbol z = @@Z; }
+				", @"
+					public class X { 
+						[Attr] static readonly Symbol sy_OK = (Symbol) ""OK"", sy_foo = (Symbol) ""foo""; 
+						Symbol status = sy_OK; 
+						interface Y { void Foo(Symbol arg = sy_foo); }
+					}
+					public struct Z { 
+						[Attr] static readonly Symbol sy_Z = (Symbol) ""Z"";
+						public static Symbol z = sy_Z;
+					}
+				");
 			TestEcs("[Attr] #useSymbols(prefix(_), inherit(@@OK)); Symbol status = @@OK;",
 				@"Symbol status = _OK;");
 			TestEcs(@"public #useSymbols(prefix: S_, inherit: (@@Good, @@Bad)); 
@@ -395,6 +412,24 @@ namespace LeMP.Tests
 				else
 					ThisIsNotFoo();
 				", "WeAreInFoo();");
+		}
+		[Test]
+		public void EcsMacro()
+		{
+			// #ecs = #splice(#useSymbols, #useSequenceExpressions)
+			TestEcs(@"#ecs;
+				public class Program {
+					public static void Main(string[] args) {
+						Commit(Lookup(@@foo)::x);
+					}
+				}", @"
+				public class Program {
+					static readonly Symbol sy_foo = (Symbol)""foo"";
+					public static void Main(string[] args) {
+						var x = Lookup(sy_foo);
+						Commit(x);
+					}
+				}");
 		}
 	}
 }

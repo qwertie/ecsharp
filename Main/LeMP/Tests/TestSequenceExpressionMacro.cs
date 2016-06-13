@@ -21,6 +21,23 @@ namespace LeMP.Tests
 				"void F() { { f(); } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
 				"int _x = externAlias::something;");
+
+			// Test that it works inside a namespace and a class
+			TestEcs(@"#useSequenceExpressions;
+				public namespace NS {
+					public class Program {
+						static void FooBar() {
+							#runSequence(Foo(), Bar());
+						}
+					}
+				}",
+				@"public namespace NS {
+					public class Program {
+						static void FooBar() {
+							Foo(); Bar();
+						}
+					}
+				}");
 			
 			// Check basic functionality, including if-statement and nesting
 			TestEcs(@"#useSequenceExpressions;
