@@ -1,8 +1,8 @@
 ---
-title: "Parse JSON in 111 lines of code, print it back in 233"
+title: "JSON as plain-old objects: 111-line parser and 217-line printer"
 layout: article
 date: 31 May 2016
-tagline: "Both sides of the coin: let's parse JSON as List&lt;object> or Dictionary&lt;string,object>, and print it compactly with smart line breaks"
+tagline: "LLLPG demo: let's parse JSON as List&lt;object> or Dictionary&lt;string,object>, and print it compactly with smart line breaks"
 toc: true
 ---
 

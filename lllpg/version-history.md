@@ -5,25 +5,36 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
 
-### LLLPG v1.7.5 (April, 2016) ### 
+### LLLPG v1.8.1: June 13, 2016 ###
+
+- To avoid weird problems, added a check to ensure LLLPG keywords are not used as rule names
+- Bug fix: When processing bad grammars, one source of stack overflow has been fixed. This is important since stack overflows crash Visual Studio as a whole.
+
+### LLLPG v1.8.0: May 21, 2016 ###
+
+LLLPG: make --help work again, and fix a bug where `token` could be treated like `rule`
+LLLPG: added support for `any token` (`token` is now treated like an attribute for this purpose)
+LLLPG: reduce precedence of RHS of `any-in` operator so that `any token in result:token` parses OK.
+
+### LLLPG v1.7.5: April, 2016 ### 
 
 - Added optional ANTLR-style rule syntax (usage: `LLLPG (/*options*/) @{ /*ANTLR-style rules*/ };`) (introduced in v1.7.3, completed in 1.7.5). LLLPG-style rules (`rule R(args) @{...}`) are supported in a limited way when using ANTLR-style syntax mode
 - `BaseParser`/`BaseLexer` now throw `LogException` instead of `FormatException` by default
 - Shift `FileName` property from `ISourceFile` to base interface `IIndexToLine`
 
-### LLLPG v1.5.1 (March 5, 2016) ### 
+### LLLPG v1.5.1: March 5, 2016 ### 
 
 - LLLPG home page officially opens!
 - LLLPG: Added `...` as synonym for `..`; `...` is preferred since character ranges are inclusive
 - Changes to LLLPG itself are minimal, but [LeMP](http://ecsharp.net/lemp) has been updated to v1.5.1, which includes a richer set of macros (not really related to parsing), such as macros for pattern matching and algebraic data types.
 
-### LLLPG v1.4.0 (Aug 25, 2015) ### 
+### LLLPG v1.4.0: Aug 25, 2015 ### 
 
 - LLLPG: Fixed to support for aliases in code blocks e.g. rule Foo @{ "alias" { Process($"alias"); } }; now works when "alias" is an alias
 - LLLPG: eliminated `lexer(option = value)` and `parser(option = value)` syntax; added support for `parser(option: value)` syntax in LES to match EC#. See `MacroContext.GetOptions()`
 - LLLPG custom tool: reduced default timeout to 10 seconds
 
-### LLLPG v1.3.2 (June 19, 2015) ### 
+### LLLPG v1.3.2: June 19, 2015 ### 
 
 Main new features:
 
@@ -66,7 +77,7 @@ Complete list:
 - LLLPG bug fix: `SavePosition` now prefixed by value of `inputClass` option.
 - LLLPG bug fix: `result:Terminal` did not automatically `return result`.
 
-### LLLPG v1.1.0 (Feb 23, 2014) ### 
+### LLLPG v1.1.0: Feb 23, 2014 ### 
 
 - Implemented complex ambiguity suppression behavior for `/` operator (described in part 4)
 - Loyc: Removed dependency on nunit.framework.dll, replaced with Loyc.MiniTest
@@ -84,18 +95,18 @@ Rebuilt LesSyntaxForVs2010 to match DLLs used by LLLPG 1.1.0 (for some reason th
 - Added more useful follow set info at `[Verbosity(2)]` and `[Verbosity(3)]`
 - `Error(InputPosition + li, "...")` changed to `Error(li, "...")`
 
-### LLLPG v1.0 (Feb 8, 2014) ###
+### LLLPG v1.0: Feb 8, 2014 ###
 
 - EC# support
 - Demo and article updated
 - Demo now uses EC# by default (LES version still included) and supports "mathy" expressions such as 2(2 + 5) => 14.
 
-### LLLPG v0.9.1 (Nov 19, 2013) ###
+### LLLPG v0.9.1: Nov 19, 2013 ###
 
 - Updated demo to be a bit cleaner and to eliminate dependencies on Loyc libraries.
 - Some bug fixes, a new alias(X = Y) command, and eliminated dependency on IntSet.
 
-### LLLPG v0.9 (Oct 7, 2013) ### 
+### LLLPG v0.9: Oct 7, 2013 ### 
 
 - Initial release with Part 1 article
 

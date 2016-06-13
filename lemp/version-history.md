@@ -7,6 +7,23 @@ redirectDomain: ecsharp.net
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v1.8.1: June 13, 2016 ###
+
+- Introduced `#ecs` as shorthand for `#useSymbols; #useSequenceExpressions;`
+- `with(...) {...}` can now be used as an expression in conjunction with `#useSequenceExpressions` (or `#ecs`).
+- Moved `NextTempCounter` from `StandardMacros` to `MacroProcessor` and `IMacroContext`.
+- `MacroProcessorTask` now expands `#splice` earlier, so that when a macro is used inside a splice, `RemainingNodes` shows later items from outside the `#splice`.
+- `#useSymbols` can now be used outside any class; it defers `Symbol` declarations until a type declaration starts
+- Bug fix in `#useSequenceExpressions`: it didn't work in a `class` or `struct` when `#useSequenceExpressions` was located outside the class.
+
+EC# parser & printer:
+- Parser now handles ([] L<T> x) as a var decl, and printer prefers this output format over `#var(...)`.
+- EC# printer: removed annoying newlines in autoproperties
+- Bug fix: parser ignored the `new` attribute in most cases.
+- Bug fix: `/*suffix comments*/` were printed incorrectly (with no content).
+- Bug fix: `for` loops now support multiple expressions in the "init" and "increment" parts.
+- Bug fix: fixed miscellaneous printing problems so that test suite passes.
+
 ### v1.7.6: May 17, 2016 ###
 
 - Completed `#useSequenceExpressions`, which enables 

@@ -12,6 +12,8 @@ LLLPG is a recursive-decent parser generator for C#, with Visual Studio integrat
 Learn it!
 ---------
 
+All the documentation is absolutely free!
+
 #### Tutorial series
 
    - [Part 1: Introduction](1-introduction.html)
@@ -26,7 +28,7 @@ Learn it!
 
 #### Bonus
 
-   - [Parse JSON in 111 lines of code, print it back in 233](parsing-json.html): "Both sides of the coin: let's parse JSON as `List<object>` or `Dictionary<string,object>`, and print it compactly with smart line breaks"
+   - [Parse JSON in 111 lines of code, print it back in 233](parsing-json.html)
 
 Reference material
 ------------------
