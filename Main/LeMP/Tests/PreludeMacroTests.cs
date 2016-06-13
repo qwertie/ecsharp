@@ -14,7 +14,7 @@ namespace LeMP.Tests
 
 		private void Test(string input, string output, int maxExpand = 0xFFFF)
 		{
-			TestCompiler.Test(input, output, _sink, maxExpand);
+			TestCompiler.Test(input, output, _sink, maxExpand, false);
 		}
 
 		[Test]
@@ -93,7 +93,7 @@ namespace LeMP.Tests
 			Test("x = c ? a : b;",
 			     "x = c ? a : b;");
 			Test("a : b;",
-			     "a`#namedArg`b;");
+			     "#namedArg(a, b);");
 		}
 
 		[Test]

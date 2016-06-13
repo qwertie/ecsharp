@@ -15,8 +15,8 @@ namespace LeMP.Test
 	[ContainsMacros]
 	public class TestMacros
 	{
-		[LexicalMacro("Identity(args...)", "Expanded args in-place (kinda pointless?) for testing")]
-		public static LNode Identity(LNode node, IMessageSink sink)
+		[LexicalMacro("splice(args...)", "Expanded args in-place (kinda pointless?) for testing")]
+		public static LNode splice(LNode node, IMessageSink sink)
 		{
 			return node.WithName(S.Splice);
 		}
@@ -41,6 +41,12 @@ namespace LeMP.Test
 			if (node.ArgCount == 2)
 				return node.WithArgs(node[1], node[0]);
 			return null;
+		}
+		[LexicalMacro("braceTheRest", "Put the rest of the statements in braces")]
+		public static LNode braceTheRest(LNode node, IMacroContext context)
+		{
+			context.DropRemainingNodes = true;
+			return LNode.Call(S.Braces, LNode.List(context.RemainingNodes));
 		}
 	}
 }
@@ -75,9 +81,9 @@ namespace LeMP
 
 		#region static Test(), StripExtraWhitespace() methods
 
-		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF)
+		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
 		{
-			using (LNode.PushPrinter(new EcsNodePrinter(null, null) { PreferPlainCSharp = true }.Print)) {
+			using (LNode.PushPrinter(new EcsNodePrinter(null, null) { PreferPlainCSharp = plainCS }.Print)) {
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
@@ -152,8 +158,12 @@ namespace LeMP
 		[Test]
 		public void JustSpliceTest()
 		{
-			Test("the #splice(macro, inserts, stuff, in-place) here;",
-				"the (macro, inserts, stuff, @in-place, here);");
+			Test("the(#splice(nonmacro, inserts, stuff, in-place), here);",
+				"the (nonmacro, inserts, stuff, @in-place, here);");
+			Test("A(#splice()); B(#splice(x), #splice()); C(#splice(), #splice(y))",
+				"A(); B(x); C(y);");
+			Test("A(#splice(x), #splice(y, z)); B(#splice(x, y), #splice(z))",
+				"A(x, y, z); B(x, y, z);");
 		}
 
 		[Test]
@@ -170,10 +180,12 @@ namespace LeMP
 				"x();");
 			Test("import x.y;",
 				"using x.y;");
-			Test("Identity(x); { import LeMP.Test; Identity(x); }; Identity(x);",
-				"Identity(x); { using LeMP.Test; x; } Identity(x);");
-			Test("{{ import LeMP.Test; Identity(x); }}; Identity(x);",
-				"{{ using LeMP.Test; x; }} Identity(x);");
+			Test("splice(x); { import LeMP.Test; splice(x); }; splice(x);",
+				"splice(x); { using LeMP.Test; x; } splice(x);");
+			Test("import_macros LeMP.Test; A(splice(x), splice(y, z)); B(splice(x, y), splice(z))",
+				"A(x, y, z); B(x, y, z);");
+			Test("{{ import LeMP.Test; splice(x); }}; splice(x);",
+				"{{ using LeMP.Test; x; }} splice(x);");
 		}
 
 		[Test]
@@ -187,6 +199,21 @@ namespace LeMP
 				 "{                          priorityTest(int x = 3, hi); foo(); }");
 			Test("{ import_macros LeMP.Test; priorityTestPCB(0, x::int = 4); foo2(); }",
 				 "{                          priorityTestPCB(int x = 4, hi); foo2(); }");
+		}
+
+		[Test]
+		public void SpliceTheBrace()
+		{
+			Test("import_macros LeMP.Test; f(x); braceTheRest; g(y); h(z);",
+			     "f(x); { g(y); h(z); }");
+			// Test that MacroProcessorTask properly includes stuff outside 
+			// the #splice in the RemainingNodes list.
+			Test("import_macros LeMP.Test; f(x); #splice(braceTheRest; g(y)); h(z);",
+			     "f(x); { g(y); h(z); }");
+			Test("import_macros LeMP.Test; f(x);  splice(braceTheRest; g(y)); h(z);",
+			     "f(x); { g(y); h(z); }");
+			Test("import_macros LeMP.Test; splice(f(x); braceTheRest); g(y); h(z);",
+			     "f(x); { g(y); h(z); }");
 		}
 
 		SeverityMessageFilter _sink = new SeverityMessageFilter(MessageSink.Console, Severity.Debug);
