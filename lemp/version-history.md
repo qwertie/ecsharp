@@ -17,7 +17,8 @@ See also: version history of [LoycCore](http://core.loyc.net/version-history.htm
 - Bug fix in `#useSequenceExpressions`: it didn't work in a `class` or `struct` when `#useSequenceExpressions` was located outside the class.
 
 EC# parser & printer:
-- Parser now handles ([] L<T> x) as a var decl, and printer prefers this output format over `#var(...)`.
+
+- Parser now handles `([] L<T> x)` as a var declaration, and printer prefers this output format over `#var(...)`.
 - EC# printer: removed annoying newlines in autoproperties
 - Bug fix: parser ignored the `new` attribute in most cases.
 - Bug fix: `/*suffix comments*/` were printed incorrectly (with no content).
