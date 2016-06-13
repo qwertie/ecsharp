@@ -12,9 +12,9 @@ _Note_: some version numbers are skipped because the LLLPG version number is syn
 
 ### LLLPG v1.8.0: May 21, 2016 ###
 
-LLLPG: make --help work again, and fix a bug where `token` could be treated like `rule`
-LLLPG: added support for `any token` (`token` is now treated like an attribute for this purpose)
-LLLPG: reduce precedence of RHS of `any-in` operator so that `any token in result:token` parses OK.
+- LLLPG: make `--help` work again, and fix a bug where `token` could be treated like `rule`
+- LLLPG: added support for `any token` (`token` is now treated like an attribute for this purpose)
+- LLLPG: reduce precedence of RHS of `any-in` operator so that `any token in result:token` parses OK.
 
 ### LLLPG v1.7.5: April, 2016 ### 
 
