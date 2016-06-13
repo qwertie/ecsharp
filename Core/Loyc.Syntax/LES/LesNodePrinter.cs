@@ -376,20 +376,20 @@ namespace Loyc.Syntax.Les
 						_out.Write(GetRawText(attr), true);
 					} else if (!PrintExplicitTrivia) {
 						if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
-							PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
+							PrintSpaces(GetRawText(attr));
 							spaces = true;
 						} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
 							if (!spaces)
 								_out.Space();
 							_out.Write("//", false);
-							_out.Write((attr.Value ?? "").ToString(), true);
+							_out.Write(GetRawText(attr), true);
 							_out.Newline(true);
 							spaces = true;
 						} else if (name == S.TriviaMLCommentAfter && !OmitComments) {
 							if (!spaces)
 								_out.Space();
 							_out.Write("/*", false);
-							_out.Write((attr.Value ?? "").ToString(), false);
+							_out.Write(GetRawText(attr), false);
 							_out.Write("*/", false);
 							spaces = false;
 						}

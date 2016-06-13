@@ -266,13 +266,14 @@ namespace Loyc.Syntax
 		public bool CanAppearIn(Precedence context) {
 			return context.Left < Left && Right >= context.Right;
 		}
-		/// <summary>For use in printers. Returns true if a prefix operator with 
-		/// this precedence can appear in the specified context's right-hand 
-		/// precedence floor (ignoring miscibility).</summary>
-		/// <remarks>It is assumed that the left side of a prefix operator has 
-		/// "infinite" precedence so only the right side is checked. This rule is 
-		/// used by the EC# printer but may not be needed or allowed in all 
-		/// languages (if in doubt, set prefix=false).</remarks>
+		/// <summary>For use in printers. Returns true if an operator with 
+		/// this precedence can appear in the specified context (ignoring 
+		/// miscibility).</summary>
+		/// <param name="prefix">It is assumed that the left side of a 
+		/// prefix operator has "infinite" precedence so when this flag is
+		/// true, only the right side is checked.</param>
+		/// <remarks>This prefix rule is used by the EC# printer but is not 
+		/// allowed by all languages (if in doubt, set prefix=false).</remarks>
 		public bool CanAppearIn(Precedence context, bool prefix) {
 			return (prefix || context.Left < Left) && Right >= context.Right;
 		}

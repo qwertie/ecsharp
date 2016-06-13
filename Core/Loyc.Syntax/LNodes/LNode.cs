@@ -1241,7 +1241,7 @@ namespace Loyc.Syntax
 
 		public int Count
 		{
-			get { throw new NotImplementedException(); }
+			get { return Max - Min + 1; }
 		}
 
 		public IEnumerator<LNode> GetEnumerator()
