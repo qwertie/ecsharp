@@ -76,11 +76,11 @@
             </remarks>
         </member>
         <member name="T:Loyc.Ecs.Tests.EcsPrinterAndParserTests">
-            <summary>Tests shared between the printer and the parser. Both tests 
+            <summary>Tests shared between the printer and the parser. Both tests
             together verify round-tripping from AST -> text -> AST.</summary>
-            <remarks>Note that the other kind of round-tripping, text -> AST -> text, 
-            is not fully verified (and is not designed to be supported, as the 
-            printer is not designed to preserve spacing and the parser is not 
+            <remarks>Note that the other kind of round-tripping, text -> AST -> text,
+            is not fully verified (and is not designed to be supported, as the
+            printer is not designed to preserve spacing and the parser is not
             designed to save spacing information.)
             <para/>
             NOTE: The reason why this is a partial class, rather than a base class
@@ -449,6 +449,8 @@
             parenthesized target node, e.g. (target)(arg). The target node can avoid 
             the syntax of a data type by adding "[ ]" (an empty set of 
             attributes) at the beginning of the expression.</summary>
+            <remarks>This is also used in the case of @`~`((Foo), x) which must not 
+            be printed as `(Foo) ~ x`</remarks>
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.NoBracedBlock">
             <summary>No braced block permitted directly here (inside "if" clause)</summary>
@@ -499,6 +501,10 @@
         </member>
         <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.NoParenthesis">
             <summary>Avoids printing illegal opening paren at statement level</summary>
+        </member>
+        <member name="F:Loyc.Ecs.EcsNodePrinter.Ambiguity.ForceAttributeList">
+            <summary>Force PrintAttrs to print an empty attribute list `[]` which 
+            has the effect of allowing unassigned variable declarations anywhere.</summary>
         </member>
         <member name="T:Loyc.Ecs.ICI">
             <summary>Flags for <see cref="M:Loyc.Ecs.EcsNodePrinter.IsComplexIdentifier(Loyc.Syntax.LNode,Loyc.Ecs.ICI)"/>.</summary>

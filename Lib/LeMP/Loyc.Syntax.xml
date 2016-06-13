@@ -85,13 +85,6 @@
             </code>
             </remarks>
         </member>
-        <member name="T:Loyc.Syntax.Les.LesLanguageService">
-            <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
-            parser and printer for Loyc Expression Syntax (LES).</summary>
-            <remarks>
-            LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
-            </remarks>
-        </member>
         <member name="T:Loyc.Syntax.Les.LesLexer">
             <summary>Lexer for EC# source code.</summary>
             <seealso cref="T:Loyc.Syntax.Lexing.ILexer`1"/>
@@ -170,6 +163,13 @@
             is not null in case of overflow), or <see cref="F:Loyc.Syntax.CodeSymbols.Sub"/> (-)
             if isNegative is true but the type suffix is unsigned or the number 
             is larger than long.MaxValue.</returns>
+        </member>
+        <member name="T:Loyc.Syntax.Les.LesLanguageService">
+            <summary>The <see cref="F:Loyc.Syntax.Les.LesLanguageService.Value"/> property provides easy access to the lexer, 
+            parser and printer for Loyc Expression Syntax (LES).</summary>
+            <remarks>
+            LES overview: http://sourceforge.net/apps/mediawiki/loyc/index.php?title=LES
+            </remarks>
         </member>
         <member name="T:Loyc.Syntax.Les.LesNodePrinter">
             <summary>Prints a Loyc tree in LES (Loyc Expression Syntax) format.</summary>
@@ -565,7 +565,8 @@
             <summary>A version of <see cref="T:Loyc.Syntax.Lexing.BaseLexer`1"/> that implements 
             <see cref="T:Loyc.Syntax.Lexing.ILexer`1"/>. You should use this base class if you want to 
             wrap your lexer in a postprocessor such as <see cref="T:Loyc.Syntax.Lexing.IndentTokenGenerator"/> 
-            or <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>.
+            or <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>. It can also be used with the <see 
+            cref="M:Loyc.Collections.LCExt.Buffered``1(System.Collections.Generic.IEnumerator{``0})"/> extension method to help feed data to your parser.
             </summary>
             <remarks>
             Important: the derived class must call <see cref="M:Loyc.Syntax.Lexing.BaseILexer`2.AfterNewline"/> after
@@ -1416,38 +1417,27 @@
         </member>
         <member name="F:Loyc.Syntax.Lexing.Token.Value">
             <summary>The parsed value of the token.</summary>
-            <remarks>The value is
+            <remarks>Recommended ways to use this field:
             <ul>
             <li>For strings: the parsed value of the string (no quotes, escape 
-            sequences removed), i.e. a boxed char or string. A backquoted string 
-            is converted to a Symbol because it is a kind of operator.</li>
+            sequences removed), i.e. a boxed char or a string. A backquoted 
+            string in EC#/LES is converted to a <see cref="T:Loyc.Symbol"/> because it 
+            is a kind of operator.</li>
             <li>For numbers: the parsed value of the number (e.g. 4 => int, 4L => long, 4.0f => float)</li>
             <li>For identifiers: the parsed name of the identifier, as a Symbol 
             (e.g. x => x, @for => for, @`1+1` => <c>1+1</c>)</li>
             <li>For any keyword including AttrKeyword and TypeKeyword tokens: a 
             Symbol containing the name of the keyword, with "#" prefix</li>
             <li>For punctuation and operators: the text of the punctuation as a 
-            symbol (with '#' in front, if the language conventionally uses this 
-            prefix)</li>
-            <li>For openers (open paren, open brace, etc.) after the tokens have
-            been processed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>: a TokenTree object.</li>
-            <li>For spaces and comments: <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/></li>
+            Symbol.</li>
+            <li>For openers (open paren, open brace, etc.): null for normal linear
+            parsers. If the tokens have been processed by <see cref="T:Loyc.Syntax.Lexing.TokensToTree"/>,
+            this will be a <see cref="T:Loyc.Syntax.Lexing.TokenTree"/>.</li>
+            <li>For spaces and comments: for performance reasons, it is not 
+            recommended to extract the text of whitespace from the source file; 
+            instead, use <see cref="F:Loyc.Syntax.Lexing.WhitespaceTag.Value"/></li>
             <li>When no value is needed (because the Type() is enough): null</li>
             </ul>
-            For performance reasons, the text of whitespace is not extracted from
-            the source file; <see cref="F:Loyc.Syntax.Lexing.Token.Value"/> is WhitespaceTag.Value for 
-            whitespace. Value must be assigned for other types such as 
-            identifiers and literals.
-            <para/>
-            Since the same identifiers and literals are often used more than once 
-            in a given source file, an optimized lexer could use a data structure 
-            such as a trie or hashtable to cache boxed literals and identifier 
-            symbols, and re-use the same values when the same identifiers and 
-            literals are encountered multiple times. Done carefully, this avoids 
-            the overhead of repeatedly extracting string objects from the source 
-            file. If strings must be extracted for some reason (e.g. <c>
-            double.TryParse</c> requires an extracted string), at least memory can 
-            be saved.
             </remarks>
         </member>
         <member name="P:Loyc.Syntax.Lexing.Token.Children">
@@ -1743,8 +1733,11 @@
             <typeparam name="MatchType">A data type, usually int, that represents a 
             token type (identifier, operator, etc.) and implements <see cref="T:System.IEquatable`1"/>
             so it can be compared for equality with other token types; this is also the 
-            type of the <see cref="P:Loyc.Syntax.Lexing.ISimpleToken`1.Type"/> property. <c>MatchType</c>
-            cannot be an enum because an enum does not implement <see cref="T:System.IEquatable`1"/>.</typeparam>
+            type of the <see cref="P:Loyc.Syntax.Lexing.ISimpleToken`1.Type"/> property. Unfortunately,
+            <c>MatchType</c> cannot be an enum because, strangely, an enum does not 
+            implement <see cref="T:System.IEquatable`1"/>. So if your token type is an enum, as
+            it usually is, set this to <c>int</c> and use <c>matchType: int</c> when you 
+            invoke LLLPG: <c>LLLPG(parser(matchType: int, laType: TokenEnum));</c>.</typeparam>
             <typeparam name="List">Data type of the list that contains the tokens (one 
             often uses IList{Token}, but one could use <see cref="T:Loyc.Collections.Impl.InternalList`1"/> 
             for potentially higher performance.)</typeparam>
@@ -1810,6 +1803,8 @@
             but you can also pass an <see cref="T:System.Collections.Generic.IEnumerable`1"/> or 
             <see cref="T:System.Collections.Generic.IEnumerator`1"/> to the constructor and it will 
             convert it to a list, lazily, using <see cref="T:Loyc.Collections.BufferedSequence`1"/>.
+            <para/>
+            Please see additional documentation in the base class.
             </remarks>
         </member>
         <member name="M:Loyc.Syntax.BaseParserForList`2.#ctor(System.Collections.Generic.IList{`0},`0,Loyc.Syntax.ISourceFile,System.Int32)">
@@ -3446,13 +3441,14 @@
             <remarks>Miscibility must be checked separately (<see cref="M:Loyc.Syntax.Precedence.CanMixWith(Loyc.Syntax.Precedence)"/>).</remarks>
         </member>
         <member name="M:Loyc.Syntax.Precedence.CanAppearIn(Loyc.Syntax.Precedence,System.Boolean)">
-            <summary>For use in printers. Returns true if a prefix operator with 
-            this precedence can appear in the specified context's right-hand 
-            precedence floor (ignoring miscibility).</summary>
-            <remarks>It is assumed that the left side of a prefix operator has 
-            "infinite" precedence so only the right side is checked. This rule is 
-            used by the EC# printer but may not be needed or allowed in all 
-            languages (if in doubt, set prefix=false).</remarks>
+            <summary>For use in printers. Returns true if an operator with 
+            this precedence can appear in the specified context (ignoring 
+            miscibility).</summary>
+            <param name="prefix">It is assumed that the left side of a 
+            prefix operator has "infinite" precedence so when this flag is
+            true, only the right side is checked.</param>
+            <remarks>This prefix rule is used by the EC# printer but is not 
+            allowed by all languages (if in doubt, set prefix=false).</remarks>
         </member>
         <member name="M:Loyc.Syntax.Precedence.CanMixWith(Loyc.Syntax.Precedence)">
             <summary>Returns true if an operator with this precedence is miscible
@@ -3776,6 +3772,12 @@
             <summary>Gets information about all macros registered with the macro 
             processor, including macros whose namespace has not been opened with
             <c>#importMacros</c>.</summary>
+        </member>
+        <member name="P:LeMP.IMacroContext.NextTempCounter">
+            <summary>Gets the next number to use as a suffix for temporary variables (without incrementing).</summary>
+        </member>
+        <member name="M:LeMP.IMacroContext.IncrementTempCounter">
+            <summary>Gets the next number to use as a suffix for temporary variables, then increments it.</summary>
         </member>
         <member name="T:LeMP.MacroContext">
             <summary>Standard extension methods for <see cref="T:LeMP.IMacroContext"/>.</summary>

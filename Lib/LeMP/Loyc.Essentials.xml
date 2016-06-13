@@ -4,6 +4,16 @@
         <name>Loyc.Essentials</name>
     </assembly>
     <members>
+        <member name="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)">
+            <summary>Gets the item at the specified index.</summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The index was not valid
+            in this list.</exception>
+            <param name="index">An index in the range 0 to Count-1.</param>
+            <returns>The element at the specified index.</returns>
+        </member>
+        <member name="T:System.Collections.Generic.IReadOnlyDictionary`2">
+            <summary>Read-only dictionary interface defined in .NET 4.5</summary>
+        </member>
         <member name="T:Loyc.Collections.Impl.BaseDictionary`2">
             <summary>A base class for user-defined dictionaries that want to implement 
             both <c>IDictionary(K,V)</c> and <c>IReadOnlyDictionary(K, V)</c>.</summary>
@@ -100,7 +110,7 @@
             "private" or "protected" members of low-level code.
             </summary>
             <remarks>
-            An <a href="http://core.ecsharp.net/collections/internal-list.html">article</a>
+            An <a href="http://core.loyc.net/collections/internal-list.html">article</a>
             about this class is available.
             <para/>
             InternalList is a struct, not a class, in order to save memory; and for 
@@ -1137,7 +1147,7 @@
             A compact auto-enlarging list that efficiently supports supports insertions 
             at the beginning or end of the list.
             </summary><remarks>
-            An <a href="http://core.ecsharp.net/collections/dlist.html">article</a>
+            An <a href="http://core.loyc.net/collections/dlist.html">article</a>
             about this class is available.
             </remarks>
             <seealso cref="T:Loyc.Collections.Impl.InternalDList`1"/>
@@ -1377,7 +1387,7 @@
         </member>
         <member name="M:Loyc.Collections.LCInterfaces.IndexOf``1(Loyc.Collections.INegListSource{``0},``0)">
             <summary>Determines the index of a specific value.</summary>
-            <returns>The index of the value, if found, or -1 if it was not found.</returns>
+            <returns>The index of the value, if found, or null if it was not found.</returns>
             <remarks>
             At first, this method was a member of IListSource itself, just in 
             case the source might have some kind of fast lookup logic (e.g. binary 
@@ -4349,24 +4359,34 @@
         </member>
         <member name="T:Loyc.MiniTest.RunTests">
             <summary>
-            Searches for test methods and runs them, printing the name of each test to 
+            Searches for test methods and runs them, printing the name of each test to
             the console followed by errors (if any) produced by the test.
             </summary>
             <remarks>
-            This class finds tests by looking for custom attributes by their string 
+            This class finds tests by looking for custom attributes by their string
             name (e.g. "TestAttribute"), so it is compatible with both NUnit.Framework
             and Loyc.MiniTest.
             <para/>
-            RunTests is a stripped-down subset of the functionality supported by 
+            RunTests is a stripped-down subset of the functionality supported by
             MiniTestRunner.
             </remarks>
+        </member>
+        <member name="M:Loyc.MiniTest.RunTests.Run(System.Object)">
+            <summary>Runs all test methods on the given object (public methods 
+            that have a TestAttribute).</summary>
+            <returns>The number of tests that failed unexpectedly (where the 
+            <see cref="P:Loyc.MiniTest.TestAttribute.Fails"/> property is unset).</returns>
+        </member>
+        <member name="M:Loyc.MiniTest.RunTests.RunMany(System.Object[])">
+            <summary>Runs all tests in an array of test objects.</summary>
+            <returns>The total number of tests that unexpectedly failed.</returns>
         </member>
         <member name="T:Loyc.Syntax.ParseHelpers">
             <summary>Static methods that help with common parsing jobs, such as 
             parsing integers, floats, and strings with C escape sequences.</summary>
-            <remarks>This class also contains a few inverse methods, e.g. 
+            <remarks>This class also contains a few <i>inverse</i> methods, e.g. 
             <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/> is the inverse of the
-            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString)"/>.</remarks>
+            C-style string parser <see cref="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,System.Boolean)"/>.</remarks>
         </member>
         <member name="M:Loyc.Syntax.ParseHelpers.HexDigitValue(System.Char)">
             <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
@@ -4374,21 +4394,17 @@
         <member name="M:Loyc.Syntax.ParseHelpers.HexDigitChar(System.Int32)">
             <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString)">
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(Loyc.UString,System.Boolean)">
             <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String,System.Int32,System.Int32,System.Boolean)">
+        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeCStyle(System.String,System.Int32,System.Int32,Loyc.Syntax.EscapeC@,System.Boolean)">
             <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+            <param name="encountered">Returns information about whether escape 
+            sequences were encountered, and which categories.</param>
             <param name="removeUnnecessaryBackslashes">Causes the backslash before 
             an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.UnescapeChar(System.String,System.Int32@)">
-            <summary>Unescapes a single character of a string, e.g. 
-            <c>int = 3; UnescapeChar("foo\\n", ref i) == '\n'</c>. Returns the 
-            character at 'index' if it is not a backslash, or if it is a 
-            backslash but no escape sequence could be discerned.</summary>
-            <exception cref="T:System.IndexOutOfRangeException">The index was invalid.</exception>
-        </member>
+        <!-- Badly formed XML comment ignored for member "M:Loyc.Syntax.ParseHelpers.UnescapeChar(System.String,System.Int32@,Loyc.Syntax.EscapeC@)" -->
         <member name="M:Loyc.Syntax.ParseHelpers.TryParseInt(System.String,System.Int32@,System.Int32@,System.Int32,System.Boolean)">
             <summary>Tries to parse a string to an integer. Unlike <see cref="M:System.Int32.TryParse(System.String,System.Int32@)"/>,
             this method allows parsing to start at any point in the string, it 
@@ -4496,15 +4512,45 @@
             4, 8 (octal), 10 (decimal), 16 (hexadecimal) or 32.</param>
             <param name="flags">Alters parsing behavior, see <see cref="T:System.ParseFlags"/>.</param>
         </member>
-        <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(System.String,System.Int32)">
-            <summary>Gets the index of the first non-space character after the specified index.</summary>
-            <remarks>Only ' ' and '\t' are treated as spaces. If the index is invalid, it is returned unchanged.</remarks>
-        </member>
         <member name="M:Loyc.Syntax.ParseHelpers.SkipSpaces(Loyc.UString)">
             <summary>Returns a string with any spaces and tabs removed from the beginning.</summary>
+            <remarks>Only ' ' and '\t' are treated as spaces.</remarks>
         </member>
         <member name="T:Loyc.Syntax.EscapeC">
             <summary>Flags to control <see cref="M:Loyc.Syntax.ParseHelpers.EscapeCStyle(Loyc.UString,Loyc.Syntax.EscapeC)"/>.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.Minimal">
+            <summary>Only \r, \n, \0 and backslash are escaped.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.Default">
+            <summary>Default option</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.NonAscii">
+            <summary>Escape ALL characters with codes above 127 as \xNN or \uNNNN</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.BackslashX">
+            <summary>Use \xNN instead of \u00NN for characters 1-31 and 127-255</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.Control">
+            <summary>Escape all characters with codes below 32, including \t</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.ABFV">
+            <summary>Use \a \b \f and \v (rather than \xNN or \xNN)</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.DoubleQuotes">
+            <summary>Escape double quotes as \"</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.SingleQuotes">
+            <summary>Escape single quotes as \'</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.Quotes">
+            <summary>Escape single and double quotes</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.HasEscapes">
+            <summary>While unescaping, a backslash was encountered.</summary>
+        </member>
+        <member name="F:Loyc.Syntax.EscapeC.Unrecognized">
+            <summary>While unescaping, an unrecognized escape was encountered .</summary>
         </member>
         <member name="T:Loyc.Syntax.ParseNumberFlag">
             <summary>Flags that can be used with 
@@ -4740,14 +4786,6 @@
             <param name="replacement">Replacement character, or null to simply remove bad characters.</param>
             <param name="fancy">Whether to replace quotes and slashes with the non-ASCII characters ” and ⁄.</param>
             <returns>A string that can be used as a filename. If the output string would otherwise be empty, returns "_".</returns>
-        </member>
-        <member name="M:Loyc.G.Assert(System.Boolean)">
-            <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
-            <param name="condition">A condition that must be true</param>
-        </member>
-        <member name="M:Loyc.G.Assert(System.Boolean,System.String)">
-            <summary>In .NET 4+, this is an alias for Contract.Assert().</summary>
-            <param name="condition">A condition that must be true</param>
         </member>
         <member name="M:Loyc.G.Verify(System.Boolean)">
             <summary>Same as <c>Debug.Assert</c> except that the argument is 
@@ -5815,23 +5853,6 @@
             <para/>
             Also, this value converts implicitly to <see cref="P:Loyc.Maybe`1.NoValue"/>.
             </remarks>
-        </member>
-        <member name="T:System.Collections.Generic.IReadOnlyCollection`1">
-            <summary>Read-only interface defined in .NET 4.5 (just IEnumerable and Count).</summary>
-        </member>
-        <member name="T:System.Collections.Generic.IReadOnlyList`1">
-            <summary>Read-only interface defined in .NET 4.5. See also Loyc's 
-            <see cref="T:Loyc.Collections.IListSource`1"/>.</summary>
-        </member>
-        <member name="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)">
-            <summary>Gets the item at the specified index.</summary>
-            <exception cref="T:System.ArgumentOutOfRangeException">The index was not valid
-            in this list.</exception>
-            <param name="index">An index in the range 0 to Count-1.</param>
-            <returns>The element at the specified index.</returns>
-        </member>
-        <member name="T:System.Collections.Generic.IReadOnlyDictionary`2">
-            <summary>Read-only dictionary interface defined in .NET 4.5</summary>
         </member>
     </members>
 </doc>

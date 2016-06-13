@@ -1144,7 +1144,7 @@
             parser. I assume they are filtered out of all Token Literals.</remarks>
         </member>
         <member name="T:Loyc.LLParserGenerator.TokenExt">
-            <summary>Provides the <c>Type()</c> extension method required by <see cref="T:Loyc.Syntax.Lexing.Token"/>.</summary>
+            <summary>Provides the <c>Type()</c> extension method for <see cref="T:Loyc.Syntax.Lexing.Token"/>.</summary>
         </member>
         <member name="M:Loyc.LLParserGenerator.TokenExt.Type(Loyc.Syntax.Lexing.Token)">
             <summary>Converts <c>t.TypeInt</c> to <see cref="T:Loyc.LLParserGenerator.TokenType"/>.</summary>
