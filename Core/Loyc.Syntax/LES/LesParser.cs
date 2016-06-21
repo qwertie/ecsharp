@@ -77,19 +77,19 @@ namespace Loyc.Syntax.Les
 		static readonly int MinPrec = Precedence.MinValue.Lo;
 		public static readonly Precedence StartStmt = Precedence.MinValue;
 
-		private Symbol ToSuffixOpName(object symbol)
+		protected Symbol ToSuffixOpName(object symbol)
 			{ return _prec.ToSuffixOpName(symbol); }
-		private Precedence PrefixPrecedenceOf(Token t)
+		protected Precedence PrefixPrecedenceOf(Token t)
 		{
 			if (t.TypeInt == (int)TT.BQString)
 				return LesPrecedence.Prefix;
 			return _prec.Find(OperatorShape.Prefix, t.Value);
 		}
-		private Precedence SuffixPrecedenceOf(Token t)
+		protected Precedence SuffixPrecedenceOf(Token t)
 		{ 
 			return _prec.Find(OperatorShape.Suffix, t.Value);
 		}
-		private Precedence InfixPrecedenceOf(Token t) 
+		protected Precedence InfixPrecedenceOf(Token t) 
 		{
 			if (t.TypeInt == (int)TT.BQString)
 				return LesPrecedence.Backtick;

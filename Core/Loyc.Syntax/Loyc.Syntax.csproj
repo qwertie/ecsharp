@@ -154,6 +154,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>LesParserGrammar.les</DependentUpon>
     </Compile>
+    <Compile Include="LES\LESv3.cs" />
+    <Compile Include="LES\LESv3.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LESv3.ecs</DependentUpon>
+    </Compile>
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
     <Compile Include="Lexing\WhitespaceFilter.cs" />
@@ -255,6 +261,10 @@
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
       <LastGenOutput>LesParserGrammar.out.cs</LastGenOutput>
+    </None>
+    <None Include="LES\LESv3.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>LESv3.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>

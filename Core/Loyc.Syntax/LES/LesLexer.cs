@@ -83,7 +83,7 @@ namespace Loyc.Syntax.Les
 
 		static readonly object BoxedZeroChar = '\0';
 
-		void ParseSQStringValue()
+		protected object ParseSQStringValue()
 		{
 			int c = -1;
 			if (SkipValueParsing)
@@ -110,6 +110,7 @@ namespace Loyc.Syntax.Les
 			}
 			if (c != -1)
 				_value = CG.Cache((char)c);
+			return _value;
 		}
 
 		protected Symbol ParseBQStringValue()
@@ -336,7 +337,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
-		Symbol IdToSymbol(UString ustr)
+		protected Symbol IdToSymbol(UString ustr)
 		{
 			Symbol sym;
 			if (!_idCache.TryGetValue(ustr, out sym)) {
@@ -393,13 +394,13 @@ namespace Loyc.Syntax.Les
 
 		#region Number parsing
 
-		static Symbol _sub = GSymbol.Get("-");
-		static Symbol _F = GSymbol.Get("F");
-		static Symbol _D = GSymbol.Get("D");
-		static Symbol _M = GSymbol.Get("M");
-		static Symbol _U = GSymbol.Get("U");
-		static Symbol _L = GSymbol.Get("L");
-		static Symbol _UL = GSymbol.Get("UL");
+		protected static Symbol _sub = GSymbol.Get("-");
+		protected static Symbol _F = GSymbol.Get("F");
+		protected static Symbol _D = GSymbol.Get("D");
+		protected static Symbol _M = GSymbol.Get("M");
+		protected static Symbol _U = GSymbol.Get("U");
+		protected static Symbol _L = GSymbol.Get("L");
+		protected static Symbol _UL = GSymbol.Get("UL");
 
 		protected object ParseNumberValue()
 		{
@@ -573,16 +574,16 @@ namespace Loyc.Syntax.Les
 
 		#region Operator parsing
 
-		void ParseNormalOp()
+		protected object ParseNormalOp()
 		{
 			_parseNeeded = false;
-			ParseOp();
+			return ParseOp();
 		}
 
 		static Symbol _Backslash = GSymbol.Get(@"\");
 
 		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
-		void ParseOp()
+		protected Symbol ParseOp()
 		{
 			UString opText = Text();
 
@@ -593,6 +594,7 @@ namespace Loyc.Syntax.Les
 			}
 			_value = sym.A;
 			_type = sym.B;
+			return sym.A;
 		}
 
 		private Pair<Symbol, TokenType> GetOpNameAndType(string op)
