@@ -144,11 +144,15 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="LES\LesIndentTokenGenerator.cs" />
     <Compile Include="LES\LesLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LesLexerGrammar.les</DependentUpon>
+    </Compile>
+    <Compile Include="LES\LesParserGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LesParserGrammar.les</DependentUpon>
     </Compile>
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
@@ -167,12 +171,6 @@
     <Compile Include="LES\LesNodePrinterWriter.cs" />
     <Compile Include="LES\LesParser.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LES\LesParserGrammar.cs">
-      <DependentUpon>LesParserGrammar.les</DependentUpon>
-      <SubType>Code</SubType>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="LES\LesPrecedence.cs" />
     <Compile Include="LES\LesPrecedenceMap.cs" />
@@ -255,8 +253,8 @@
     </None>
     <None Include="LES\LesParserGrammar.les">
       <Generator>LLLPG</Generator>
-      <LastGenOutput>LesParserGrammar.cs</LastGenOutput>
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
+      <LastGenOutput>LesParserGrammar.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>

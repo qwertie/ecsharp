@@ -31,15 +31,15 @@ namespace Loyc.Syntax.Les
 		/// This option causes the Token.Value to be set to a default, like '\0' for 
 		/// single-quoted strings and 0 for numbers. Operator names are still parsed.</summary>
 		public bool SkipValueParsing = false;
-		private bool _isFloat, _parseNeeded, _isNegative;
+		protected bool _isFloat, _parseNeeded, _isNegative;
 		// Alternate: hex numbers, verbatim strings
 		// UserFlag: bin numbers, double-verbatim
-		private NodeStyle _style;
-		private int _numberBase;
-		private Symbol _typeSuffix;
-		private TokenType _type; // predicted type of the current token
-		private object _value;
-		private int _startPosition;
+		protected NodeStyle _style;
+		protected int _numberBase;
+		protected Symbol _typeSuffix;
+		protected TokenType _type; // predicted type of the current token
+		protected object _value;
+		protected int _startPosition;
 
 		//now we use LexerSourceFile instead
 		//protected InternalList<int> _lineIndexes = InternalList<int>.Empty;
@@ -55,6 +55,13 @@ namespace Loyc.Syntax.Les
 			_parseNeeded = true; // don't use the "fast" code path
 			base.Error(lookaheadIndex, message, args);
 		}
+
+		// Gets the text of the current token that has been parsed so far
+		private UString Text()
+		{
+			return CharSource.Slice(_startPosition, InputPosition - _startPosition);
+		}
+
 		protected sealed override void AfterNewline()
 		{
 			base.AfterNewline();
@@ -105,17 +112,18 @@ namespace Loyc.Syntax.Les
 				_value = CG.Cache((char)c);
 		}
 
-		void ParseBQStringValue()
+		protected Symbol ParseBQStringValue()
 		{
-			var s = ParseStringCore(false);
-			_value = IdToSymbol(s);
+			UString s = ParseStringCore(false);
+			return IdToSymbol(s);
 		}
 
-		void ParseStringValue(bool isTripleQuoted)
+		protected object ParseStringValue(bool isTripleQuoted)
 		{
 			_value = ParseStringCore(isTripleQuoted);
 			if (_value.ToString().Length < 64)
 				_value = CG.Cache(_value);
+			return _value;
 		}
 
 		string ParseStringCore(bool isTripleQuoted)
@@ -285,14 +293,12 @@ namespace Loyc.Syntax.Les
 			{ "-inf_d", double.NegativeInfinity }
 		};
 
-		void ParseIdValue()
+		protected object ParseIdValue(bool isFancy)
 		{
-			if (SkipValueParsing) {
-				_value = GSymbol.Empty;
-				return;
-			}
+			if (SkipValueParsing)
+				return _value = GSymbol.Empty;
 			UString id;
-			if (_parseNeeded) {
+			if (isFancy) {
 				// includes @etc-etc and @`backquoted`
 				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 				bool checkForNamedLiteral;
@@ -301,34 +307,32 @@ namespace Loyc.Syntax.Les
 				if (checkForNamedLiteral) {
 					object namedValue;
 					if (NamedLiterals.TryGetValue(id, out namedValue)) {
-						_value = namedValue;
 						_type = TT.Literal;
-						return;
+						return _value = namedValue;
 					}
 				}
 			} else // normal identifier
 				id = CharSource.Slice(_startPosition, InputPosition - _startPosition);
 
-			_value = IdToSymbol(id);
+			return _value = IdToSymbol(id);
 		}
 
-		void ParseSymbolValue()
+		protected object ParseSymbolValue()
 		{
 			if (SkipValueParsing)
 			{
-				_value = GSymbol.Empty;
-				return;
+				return _value = GSymbol.Empty;
 			}
 			Debug.Assert(CharSource[_startPosition] == '@' && CharSource[_startPosition + 1] == '@');
 			UString original = CharSource.Slice(_startPosition + 2, InputPosition - _startPosition - 2);
 			if (_parseNeeded) {
 				string text = UnescapeQuotedString(ref original, Error);
 				Debug.Assert(original.IsEmpty);
-				_value = IdToSymbol(text);
+				return _value = IdToSymbol(text);
 			} else if (original[0, '\0'] == '`')
-				_value = IdToSymbol(original.Substring(1, original.Length - 2));
+				return _value = IdToSymbol(original.Substring(1, original.Length - 2));
 			else
-				_value = IdToSymbol(original);
+				return _value = IdToSymbol(original);
 		}
 
 		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
@@ -337,7 +341,7 @@ namespace Loyc.Syntax.Les
 			Symbol sym;
 			if (!_idCache.TryGetValue(ustr, out sym)) {
 				string str = ustr.ToString();
-				_idCache[str] = sym = GSymbol.Get(str);
+				_idCache[str] = sym = (Symbol) str;
 			}
 			return sym;
 		}
@@ -397,18 +401,16 @@ namespace Loyc.Syntax.Les
 		static Symbol _L = GSymbol.Get("L");
 		static Symbol _UL = GSymbol.Get("UL");
 
-		void ParseNumberValue()
+		protected object ParseNumberValue()
 		{
 			if (SkipValueParsing)
 			{
-				_value = CG.Cache(0);
-				return;
+				return _value = CG.Cache(0);
 			}
 			// Optimize the most common case: a one-digit integer
 			if (InputPosition == _startPosition + 1) {
 				Debug.Assert(char.IsDigit(CharSource[_startPosition]));
-				_value = CG.Cache((int)(CharSource[_startPosition] - '0'));
-				return;
+				return _value = CG.Cache((int)(CharSource[_startPosition] - '0'));
 			}
 
 			int start = _startPosition;
@@ -430,6 +432,7 @@ namespace Loyc.Syntax.Les
 			}
 			if (error != null)
 				Error(_startPosition, error);
+			return _value;
 		}
 
 		/// <summary>Parses the digits of a literal (integer or floating-point),
@@ -581,66 +584,54 @@ namespace Loyc.Syntax.Les
 		protected Dictionary<UString, Pair<Symbol, TokenType>> _opCache = new Dictionary<UString, Pair<Symbol, TokenType>>();
 		void ParseOp()
 		{
-			UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
+			UString opText = Text();
 
 			Pair<Symbol, TokenType> sym;
-			if (_opCache.TryGetValue(original, out sym)) {
-				_value = sym.A;
-				_type = sym.B;
-			} else {
-				//Debug.Assert(backslashOp == (original[0] == '\\'));
-				// op will be the operator text without the initial backslash, if any:
-				// && => &&, \foo => foo, \`foo` => foo, \`@`\ => @\
-				UString op = original;
-				//if (backslashOp)
-				//{
-				//	if (original.Length == 1)
-				//	{
-				//		// Just a single backslash is the "\" operator
-				//		_opCache[original.ToString()] = sym = Pair.Create(_Backslash, TT.NormalOp);
-				//		_value = sym.A;
-				//		_type = sym.B;
-				//		return;
-				//	}
-				//	op = original.Substring(1);
-				//	if (_parseNeeded)
-				//	{
-				//		var sb = TempSB();
-				//		bool _;
-				//		var quoted = original;
-				//		if (quoted[0] != '`')
-				//			sb.Append((char)quoted.PopFront(out _));
-				//		UnescapeQuotedString(ref quoted, Error, sb);
-				//		op = sb.ToString();
-				//	}
-				//}
-
-				string opStr = op.ToString();
-				_type = GetOpType(opStr);
-				_opCache[op] = sym = Pair.Create(GSymbol.Get(opStr), _type);
-				_value = sym.A;
+			if (!_opCache.TryGetValue(opText, out sym)) {
+				string opStr = opText.ToString();
+				_opCache[opText] = sym = GetOpNameAndType(opStr);
 			}
+			_value = sym.A;
+			_type = sym.B;
 		}
 
-		private TokenType GetOpType(string op)
+		private Pair<Symbol, TokenType> GetOpNameAndType(string op)
 		{
 			Debug.Assert(op.Length > 0);
-			if (op == ":")
-				return TT.Colon;
-			if (op == "!")
-				return TT.Not;
-			char last = op[op.Length - 1], first = op[0];
+			TT tt;
+			Symbol name;
+
+			// Get first and last of the operator's initial punctuation
+			char first = op[0], last = first;
+			if (first != '\'') {
+				name = (Symbol)op;
+				// TODO: turn on this new behavior:
+				//name = (Symbol)("'" + op);
+				last = op[op.Length - 1];
+				if (op == "!")
+					return Pair.Create((Symbol)"!", TT.Not);
+			} else {
+				name = (Symbol)op;
+				Debug.Assert(op.Length > 1);
+				first = op[1];
+				for (int i = 1; i < op.Length; i++) {
+					if (IsIdContChar(op[i]))
+						break;
+					last = op[i];
+				}
+			}
+
 			if (op.Length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
-				return TT.PreOrSufOp;
-			//if (last == '\\')
-			//	return TT.SuffixOp;
-			if (last == '$')
-				return TT.PrefixOp;
-			if (last == '.' && (op.Length == 1 || first != '.'))
-				return TT.Dot;
-			if (last == '=' && (op.Length == 1 || first != '!' && first != '='))
-				return TT.Assignment;
-			return TT.NormalOp;
+				tt = TT.PreOrSufOp;
+			else if (last == '$')
+				tt = TT.PrefixOp;
+			else if (last == '.' && (op.Length == 1 || first != '.'))
+				tt = TT.Dot;
+			else if (last == '=' && (op.Length == 1 || first != '!' && first != '='))
+				tt = TT.Assignment;
+			else
+				tt = TT.NormalOp;
+			return Pair.Create(name, tt);
 		}
 
 		#endregion

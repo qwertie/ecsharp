@@ -66,7 +66,6 @@ namespace Loyc.Syntax.Les
 				case TT.RBrack: return "']'";
 				case TT.LBrace: return "'{'";
 				case TT.RBrace: return "'}'";
-				case TT.Colon:  return "':'";
 				case TT.Comma:  return "','";
 				case TT.Semicolon: return "';'";
 			}
@@ -129,7 +128,7 @@ namespace Loyc.Syntax.Les
 			// If an ender or closer was expected...
 			if (expEnder || Token.IsCloser((TokenKind)expected)) {
 				// Skip forward until reaching the expected closer, or a closing brace
-				while ((TT)LA0 != TT.EOF && (TT)LA0 != expected && (TT)LA0 != TT.RBrace && (TT)LA0 != TT.Dedent) {
+				while ((TT)LA0 != TT.EOF && (TT)LA0 != expected && (TT)LA0 != TT.RBrace) {
 					if (Token.IsOpener((TokenKind)LA0)) {
 						int depth = 1;
 						do {

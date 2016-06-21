@@ -104,7 +104,7 @@ namespace Loyc.Syntax.Les
 			{_parseNeeded = false;}
 			'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`'
 		};
-		@[private] token BQString @{ BQString2 {ParseBQStringValue();} };
+		@[private] token BQString @{ BQString2 {_value = ParseBQStringValue();} };
 
 		// Identifiers and Symbols -----------------------------------------------
 
@@ -121,9 +121,8 @@ namespace Loyc.Syntax.Les
 			{ParseSymbolValue();}
 		};
 		@[private] token Id @{
-			{_parseNeeded = false;}
-			( NormalId | '@' FancyId {_parseNeeded=true;} )
-			{ParseIdValue();}
+			( NormalId    {ParseIdValue(false);}
+			| '@' FancyId {ParseIdValue(true);} )
 		};
 		@[private] token LettersOrPunc @{ '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'|'\''
 			|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' };
@@ -136,7 +135,6 @@ namespace Loyc.Syntax.Les
 		  ~( '~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ) };
 		@[private] token Comma     @{ ',' { _value = _Comma; } };
 		@[private] token Semicolon @{ ';' { _value = _Semicolon; } };
-		@[private] token Colon     @{ ':' { _value = _Colon; } };
 		@[private] token At        @{ '@' { _value = GSymbol.Empty; } };
 		@[private] token CommentStart @{ '/' ('/'|'*') };
 		@[private] token Operator  @{ OpChar+ {ParseNormalOp();} };
@@ -184,7 +182,6 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.LBrace;}    '{'
 			/ {_type = TT.RBrace;}    '}'
 			/ {_type = TT.At;}        At
-			/ {_type = TT.Colon;}     (Colon NotOpChar => Colon)
 			/                         Operator
 			/ error { _value = @null; }
 				( EOF {_type = TT.EOF;}
@@ -197,7 +194,6 @@ namespace Loyc.Syntax.Les
 
 		@[static, readonly] _Comma::Symbol = GSymbol.Get(",");
 		@[static, readonly] _Semicolon::Symbol = GSymbol.Get(";");
-		@[static, readonly] _Colon::Symbol = GSymbol.Get(":");
 
 		// Partial tokens used for syntax highlighting. An LES syntax highlighter
 		// can record the token continued in each line (''', """ or /*) call one

@@ -128,7 +128,7 @@ namespace Loyc.Syntax.Les {
 				{if (!prec.CanMixWith(context)) {
 					Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value); 
 				};}
-				(t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment) | &{@[Hoist] LA($LI+1) != TT.Indent->int} t:":")
+				t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment)
 				rhs:=Expr(prec)
 				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
@@ -192,9 +192,6 @@ namespace Loyc.Syntax.Les {
 				( "[" tree:TokenTree c:"]"
 				| "{" tree:TokenTree c:"}" )
 				{$result = F.Literal(tree, o.StartIndex, c.EndIndex);}
-			|	// colon indent (outside spec. LesIndentTokenGenerator inserts ";" after Dedent, unless user adds ":")
-				o:":" TT.Indent list:=StmtList c:TT.Dedent greedy[":"]? 
-				{$result = F.Braces(list, o.StartIndex, c.EndIndex);}
 			|	// {braces}
 				o:"{" list:=StmtList c:"}" 
 				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
@@ -228,10 +225,10 @@ namespace Loyc.Syntax.Les {
 		rule TokenTree::TokenTree @{
 			{$result = `new` TokenTree(SourceFile);}
 			nongreedy(
-				open:=("("|" ("|"["|"{"|TT.Indent)
+				open:=("("|" ("|"["|"{")
 				TokenTree
 				{$result.Add(open.WithValue($TokenTree));}
-				result+=(")"|"]"|"}"|TT.Dedent)
+				result+=(")"|"]"|"}")
 			/	result+=_
 			)*
 		};

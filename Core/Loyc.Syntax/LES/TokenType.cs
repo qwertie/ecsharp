@@ -25,7 +25,6 @@ namespace Loyc.Syntax.Les
 		PreOrSufOp = TokenKind.Operator + 1,  // ++, --
 		//SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
 		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
-		Colon      = TokenKind.Operator + 4,
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
 		BQString   = TokenKind.Operator + 7,
@@ -39,8 +38,6 @@ namespace Loyc.Syntax.Les
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
 		RBrace     = TokenKind.RBrace,
-		Indent     = TokenKind.LBrace + 1,
-		Dedent     = TokenKind.RBrace + 1,
 		Unknown    = TokenKind.Other,
 	}
 
@@ -89,17 +86,12 @@ namespace Loyc.Syntax.Les
 				case TT.PreOrSufOp:
 				case TT.PrefixOp:
 				//case TT.SuffixOp:
-				case TT.Colon:
 				case TT.At:
 				case TT.Comma:
 				case TT.Semicolon:
 				case TT.Not:
 					var name = (t.Value ?? "(punc missing value)").ToString();
 					return name;
-				case TT.Indent:
-					return "@indent";
-				case TT.Dedent:
-					return "@dedent";
 				default:
 					return "@unknown_token";
 			}

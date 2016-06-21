@@ -15,9 +15,9 @@ namespace Loyc.Syntax
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
 		/// with <c>block</c> as the only item.</summary>
-		public static VList<LNode> AsList(this LNode block, Symbol braces)
+		public static VList<LNode> AsList(this LNode block, Symbol listIdentifier)
 		{
-			return block.Calls(braces) ? block.Args : new VList<LNode>(block);
+			return block.Calls(listIdentifier) ? block.Args : new VList<LNode>(block);
 		}
 
 		/// <summary>Converts a list of LNodes to a single LNode by using the list 

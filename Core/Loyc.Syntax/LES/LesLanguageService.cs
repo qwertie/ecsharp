@@ -42,7 +42,7 @@ namespace Loyc.Syntax.Les
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
 			var lexer = new LesLexer(text, fileName, msgs);
-			return new LesIndentTokenGenerator(new WhitespaceFilter(lexer));
+			return new WhitespaceFilter(lexer);
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
 		{

@@ -30,7 +30,7 @@ namespace Loyc.Syntax.Les
 			Case(@"this is""just""1 lexer test '!'",
 				A(TT.Id, TT.Id, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
 				_("this"), _("is"), "just", 1, _("lexer"), _("test"), '!');
-			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, _(":"), 30);
+			Case(@"12:30", A(TT.Literal, TT.NormalOp, TT.Literal), 12, _(":"), 30);
 			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.Literal), _("c"), _("+="), '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
@@ -150,7 +150,7 @@ namespace Loyc.Syntax.Les
 			Case(@"~!%^&*-+=|<>/?:.$_", A(TT.PrefixOp, TT.Id), _("~!%^&*-+=|<>/?:.$"), _("_"));
 			Case(@"~!%^&*-+=|<>_/?:.$", A(TT.NormalOp, TT.Id, TT.PrefixOp), _("~!%^&*-+=|<>"), _("_"), _("/?:.$"));
 			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.Literal), _("~!%^&*-+=|<>"), _("/?:.$"));
-			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _(""), _(","), _("!"), _(";"), _(":"), _(@":^="));
+			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.NormalOp, TT.Assignment), _(""), _(","), _("!"), _(";"), _(":"), _(@":^="));
 		}
 
 		[Test]

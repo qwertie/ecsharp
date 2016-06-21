@@ -93,7 +93,7 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="tokenAfterNewline">The first non-whitespace un-indented 
 		/// token after the unindent, or NoValue at the end of the file. The 
 		/// derived class is allowed to change this token, or delete it by 
-		/// changing it to NoValue (<see cref="LesIndentTokenGenerator"/> does this).</param>
+		/// changing it to NoValue.</param>
 		/// <remarks>This class considers the indented block to be "over" even if 
 		/// this method returns no tokens.</remarks>
 		protected abstract IEnumerator<Token> MakeDedentToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline);
@@ -490,11 +490,6 @@ namespace Loyc.Syntax.Lexing
 	/// statement (i.e. illegal in a non-block statement context). Since a semicolon
 	/// is not treated the same way as a newline, the <see cref="EolToken"/> should 
 	/// be a special token, not a semicolon.
-	/// 
-	/// <h3>Configuration for LES</h3>
-	/// 
-	/// For more information about LES's indent processing, see
-	/// <see cref="LesIndentTokenGenerator"/> .
 	/// </remarks>
 	/// <seealso cref="IndentTokenGenerator{Token}"/>
 	public class IndentTokenGenerator : IndentTokenGenerator<Token>

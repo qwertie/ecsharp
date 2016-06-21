@@ -112,9 +112,7 @@ namespace Loyc.Syntax.Lexing
 		/// on a line. Each pair of dot+(tab/spaces) prior to the first non-space 
 		/// token is counted the same way as a tab character (\t). Dot indents are 
 		/// useful for posting source code on "bad" blog software or forums that 
-		/// do not preseve indentation. Since LES is a partially indent-sensitive 
-		/// language, preserving indentation may be important, and dot indents 
-		/// increase the likelihood of preserving indents correctly.</remarks>
+		/// do not preseve indentation.</remarks>
 		protected virtual bool SupportDotIndents() { return false; }
 		
 		/// <summary>The lexer must call this method exactly once after it advances 
