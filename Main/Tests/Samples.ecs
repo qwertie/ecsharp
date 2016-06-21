@@ -204,10 +204,10 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	alias("(" = TT.LParen);
 	alias(")" = TT.RParen);
 	alias("." = TT.Dot);
-		
+	
 	rule LNode Atom() @{
 		result:List
-	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Colon|TT.Not|TT.BQString) 
+	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Not|TT.BQString) 
 		         { $result=F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);}
 	|	t:TT.Literal { $result=F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 	};

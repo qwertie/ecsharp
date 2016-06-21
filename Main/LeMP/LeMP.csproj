@@ -266,6 +266,7 @@
     <Compile Include="Tests\TestMatchCodeMacro.cs" />
     <Compile Include="Tests\TestMatchMacro.cs" />
     <Compile Include="Tests\TestUnrollMacro.cs" />
+    <Compile Include="Tests\TestUseSymbolsMacro.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Loyc.Utilities\Loyc.Utilities.csproj">

@@ -16,7 +16,7 @@ namespace LeMP
 		[LexicalMacro("#useSymbols; ... @@Foo ...", 
 			"Enables @@symbols to be used in the code that follows. A static readonly variable named sy_X will be created for each symbol @@X. "
 			+"The #useSymbols macro can be invoked at global scope, or inside a type definition where static variables are allowed. Cannot be used inside a method.",
-			"#useSymbols", "use_symbols" /*old name*/)]
+			"#useSymbols", "use_symbols" /*old name*/, Mode = MacroMode.NoReprocessing)]
 		public static LNode useSymbols(LNode input, IMacroContext context)
 		{
 			bool inType = context.Ancestors.Any(parent => {
@@ -24,6 +24,7 @@ namespace LeMP
 				return kind != null && kind != S.Namespace;
 			});
 			var args_body = context.GetArgsAndBody(true);
+			args_body.B = context.PreProcess(args_body.B);
 			return UseSymbolsCore(input.Attrs, args_body.A, args_body.B, context, inType);
 		}
 
@@ -48,7 +49,7 @@ namespace LeMP
 			// Replace all symbols while collecting a list of them
 			var symbols = new Dictionary<Symbol, LNode>();
 			VList<LNode> output = body.SmartSelect(stmt => stmt.ReplaceRecursive(n => {
-				if (!inType) {
+				if (!inType && n.ArgCount == 3) {
 					// Since we're outside any type, we must avoid creating symbol 
 					// fields. When we cross into a type then we can start making
 					// Symbols by calling ourself recursively with inType=true

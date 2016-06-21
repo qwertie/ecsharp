@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.7.4.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.8.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -158,17 +158,13 @@ namespace Samples
 }
 namespace ADT
 {
-	public class BinaryTree< T> where T: IComparable<T>
+	public class BinaryTree<T> where T: IComparable<T>
 	{
 		public BinaryTree(T Value)
 		{
 			this.Value = Value;
 		}
-		public T Value
-		{
-			get;
-			private set;
-		}
+		public T Value { get; set; }
 		public virtual BinaryTree<T> WithValue(T newValue)
 		{
 			return new BinaryTree<T>(newValue);
@@ -196,12 +192,12 @@ namespace ADT
 	}
 	public static partial class BinaryTree
 	{
-		public static BinaryTree<T> New< T>(T Value) where T: IComparable<T>
+		public static BinaryTree<T> New<T>(T Value) where T: IComparable<T>
 		{
 			return new BinaryTree<T>(Value);
 		}
 	}
-	class Node< T> : BinaryTree<T> where T: IComparable<T>
+	class Node<T> : BinaryTree<T> where T: IComparable<T>
 	{
 		public Node(T Value, BinaryTree<T> Left, BinaryTree<T> Right) : base(Value)
 		{
@@ -210,16 +206,8 @@ namespace ADT
 			if (Left == null && Right == null)
 				throw new ArgumentNullException("Both children");
 		}
-		public BinaryTree<T> Left
-		{
-			get;
-			private set;
-		}
-		public BinaryTree<T> Right
-		{
-			get;
-			private set;
-		}
+		public BinaryTree<T> Left { get; set; }
+		public BinaryTree<T> Right { get; set; }
 		public override BinaryTree<T> WithValue(T newValue)
 		{
 			return new Node<T>(newValue, Left, Right);
@@ -259,14 +247,14 @@ namespace ADT
 	}
 	static partial class Node
 	{
-		public static Node<T> New< T>(T Value, BinaryTree<T> Left, BinaryTree<T> Right) where T: IComparable<T>
+		public static Node<T> New<T>(T Value, BinaryTree<T> Left, BinaryTree<T> Right) where T: IComparable<T>
 		{
 			return new Node<T>(Value, Left, Right);
 		}
 	}
 	public static class Leaf
 	{
-		public static BinaryTree<T> New< T>(T item) where T: IComparable<T>
+		public static BinaryTree<T> New<T>(T item) where T: IComparable<T>
 		{
 			return new BinaryTree<T>(item);
 		}
@@ -280,26 +268,10 @@ namespace ADT
 			this.Width = Width;
 			this.Height = Height;
 		}
-		public int X
-		{
-			get;
-			private set;
-		}
-		public int Y
-		{
-			get;
-			private set;
-		}
-		public int Width
-		{
-			get;
-			private set;
-		}
-		public int Height
-		{
-			get;
-			private set;
-		}
+		public int X { get; set; }
+		public int Y { get; set; }
+		public int Width { get; set; }
+		public int Height { get; set; }
 		public abstract Rectangle WithX(int newValue);
 		public abstract Rectangle WithY(int newValue);
 		public abstract Rectangle WithWidth(int newValue);
@@ -341,11 +313,7 @@ namespace ADT
 			if (Location == null)
 				throw new ArgumentNullException("Location");
 		}
-		public Rectangle Location
-		{
-			get;
-			private set;
-		}
+		public Rectangle Location { get; set; }
 		public abstract Widget WithLocation(Rectangle newValue);
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 		public Rectangle Item1
@@ -361,11 +329,7 @@ namespace ADT
 		{
 			this.Text = Text;
 		}
-		public string Text
-		{
-			get;
-			private set;
-		}
+		public string Text { get; set; }
 		public override Widget WithLocation(Rectangle newValue)
 		{
 			return new Button(newValue, Text);
@@ -388,11 +352,7 @@ namespace ADT
 		{
 			this.Text = Text;
 		}
-		public string Text
-		{
-			get;
-			private set;
-		}
+		public string Text { get; set; }
 		public override Widget WithLocation(Rectangle newValue)
 		{
 			return new TextBox(newValue, Text);
@@ -415,11 +375,7 @@ namespace ADT
 		{
 			this.subItems = subItems;
 		}
-		public string[] subItems
-		{
-			get;
-			private set;
-		}
+		public string[] subItems { get; set; }
 		public abstract override Widget WithLocation(Rectangle newValue);
 		public abstract StringListWidget WithsubItems(string[] newValue);
 		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -471,11 +427,7 @@ namespace ADT
 		{
 			this.Children = Children;
 		}
-		public TabPage[] Children
-		{
-			get;
-			private set;
-		}
+		public TabPage[] Children { get; set; }
 		public override Widget WithLocation(Rectangle newValue)
 		{
 			return new TabControl(newValue, Children);
@@ -498,11 +450,7 @@ namespace ADT
 		{
 			this.Children = Children;
 		}
-		public Widget[] Children
-		{
-			get;
-			private set;
-		}
+		public Widget[] Children { get; set; }
 		public override Widget WithLocation(Rectangle newValue)
 		{
 			return new Panel(newValue, Children);
@@ -525,11 +473,7 @@ namespace ADT
 		{
 			this.Title = Title;
 		}
-		public string Title
-		{
-			get;
-			private set;
-		}
+		public string Title { get; set; }
 		public override Widget WithLocation(Rectangle newValue)
 		{
 			return new TabPage(newValue, Children, Title);
@@ -663,7 +607,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 209: ( List | (TT.Assignment|TT.BQString|TT.Colon|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 209: ( List | (TT.Assignment|TT.BQString|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen:
 		case TT.SpaceLParen:
@@ -671,7 +615,6 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			break;
 		case TT.Assignment:
 		case TT.BQString:
-		case TT.Colon:
 		case TT.Dot:
 		case TT.Id:
 		case TT.NormalOp:
@@ -721,7 +664,6 @@ public partial class SExprParser : BaseParserForList<Token,int>
 				switch ((TT) LA0) {
 				case TT.Assignment:
 				case TT.BQString:
-				case TT.Colon:
 				case TT.Dot:
 				case TT.Id:
 				case TT.Literal:
