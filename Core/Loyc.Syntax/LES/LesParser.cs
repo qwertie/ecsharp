@@ -81,7 +81,7 @@ namespace Loyc.Syntax.Les
 			{ return _prec.ToSuffixOpName(symbol); }
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
-			if (t.TypeInt == (int)TT.BQString)
+			if (t.TypeInt == (int)TT.BQOperator)
 				return LesPrecedence.Prefix;
 			return _prec.Find(OperatorShape.Prefix, t.Value);
 		}
@@ -91,7 +91,7 @@ namespace Loyc.Syntax.Les
 		}
 		protected Precedence InfixPrecedenceOf(Token t) 
 		{
-			if (t.TypeInt == (int)TT.BQString)
+			if (t.TypeInt == (int)TT.BQOperator)
 				return LesPrecedence.Backtick;
 			return _prec.Find(OperatorShape.Infix, t.Value);
 		}

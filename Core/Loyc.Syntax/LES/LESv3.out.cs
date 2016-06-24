@@ -1307,7 +1307,7 @@ namespace Loyc.Syntax.Les
 				case '`':
 					{
 						// line 184
-						_type = TT.BQString;
+						_type = TT.BQOperator;
 						value = BQString();
 					}
 					break;
@@ -1800,7 +1800,7 @@ namespace Loyc.Syntax.Les
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
-				case TT.BQString:
+				case TT.BQOperator:
 				case TT.Dot:
 				case TT.NormalOp:
 					{
@@ -1909,7 +1909,7 @@ namespace Loyc.Syntax.Les
 			// Line 372: ((TT.Assignment|TT.BQString|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
 			switch ((TT) LA0) {
 			case TT.Assignment:
-			case TT.BQString:
+			case TT.BQOperator:
 			case TT.Dot:
 			case TT.NormalOp:
 			case TT.Not:

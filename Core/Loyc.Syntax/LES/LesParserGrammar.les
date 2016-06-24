@@ -128,7 +128,7 @@ namespace Loyc.Syntax.Les {
 				{if (!prec.CanMixWith(context)) {
 					Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value); 
 				};}
-				t:(TT.NormalOp|TT.BQString|TT.Dot|TT.Assignment)
+				t:(TT.NormalOp|TT.BQOperator|TT.Dot|TT.Assignment)
 				rhs:=Expr(prec)
 				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
@@ -168,7 +168,7 @@ namespace Loyc.Syntax.Les {
 
 		@[private] rule PrefixExpr(context::Precedence)::LNode @
 			{	// Prefix operator
-				t:(TT.NormalOp|"!"|TT.BQString|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
+				t:(TT.NormalOp|"!"|TT.BQOperator|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
 				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	result:Particle

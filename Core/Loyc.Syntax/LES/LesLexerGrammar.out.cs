@@ -617,12 +617,12 @@ namespace Loyc.Syntax.Les
 			// line 100
 			ParseStringValue(true);
 		}
-		void BQString2()
+		void BQString()
 		{
 			int la0;
 			// line 104
 			_parseNeeded = false;
-			Skip();
+			Match('`');
 			// Line 105: ([\\] [^\$] | [^\$\n\r\\`])*
 			for (;;) {
 				la0 = LA0;
@@ -638,9 +638,9 @@ namespace Loyc.Syntax.Les
 			}
 			Match('`');
 		}
-		void BQString()
+		void BQOperator()
 		{
-			BQString2();
+			Match();
 			// line 107
 			_value = ParseBQStringValue();
 		}
@@ -686,31 +686,26 @@ namespace Loyc.Syntax.Les
 		void FancyId()
 		{
 			int la0;
-			// Line 117: (BQString2 | (LettersOrPunc | IdExtLetter) (LettersOrPunc | IdExtLetter)*)
+			// Line 117: (LettersOrPunc | IdExtLetter)
+			// Line 117: (() | (LettersOrPunc | IdExtLetter) (LettersOrPunc | IdExtLetter)*)
 			la0 = LA0;
-			if (la0 == '`')
-				BQString2();
-			else {
-				// Line 117: (LettersOrPunc | IdExtLetter)
+			if (FancyId_set0.Contains(la0))
+				LettersOrPunc();
+			else
+				IdExtLetter();
+			// Line 117: (LettersOrPunc | IdExtLetter)*
+			for (;;) {
 				la0 = LA0;
 				if (FancyId_set0.Contains(la0))
 					LettersOrPunc();
-				else
-					IdExtLetter();
-				// Line 117: (LettersOrPunc | IdExtLetter)*
-				for (;;) {
+				else if (la0 >= 128 && la0 <= 65532) {
 					la0 = LA0;
-					if (FancyId_set0.Contains(la0))
-						LettersOrPunc();
-					else if (la0 >= 128 && la0 <= 65532) {
-						la0 = LA0;
-						if (char.IsLetter((char) la0))
-							IdExtLetter();
-						else
-							break;
-					} else
+					if (char.IsLetter((char) la0))
+						IdExtLetter();
+					else
 						break;
-				}
+				} else
+					break;
 			}
 		}
 		void Symbol()
@@ -828,8 +823,7 @@ namespace Loyc.Syntax.Les
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
 		}
-		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', 'z', '|', '|', '~', '~');
-		static readonly HashSet<int> NextToken_set1 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
+		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		public override Maybe<Token> NextToken()
 		{
 			int la0, la1, la2;
@@ -841,7 +835,7 @@ namespace Loyc.Syntax.Les
 				return NoValue.Value;
 			}
 			_startPosition = InputPosition;
-			// Line 164: ( &{InputPosition == 0} Shebang / Symbol / Id / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / BQString / Comma / Semicolon / LParen / [)] / [[] / [\]] / [{] / [}] / At / Operator )
+			// Line 164: ( &{InputPosition == 0} Shebang / Symbol / Id / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / BQOperator / Comma / Semicolon / LParen / [)] / [[] / [\]] / [{] / [}] / At / Operator )
 			do {
 				la0 = LA0;
 				switch (la0) {
@@ -864,7 +858,7 @@ namespace Loyc.Syntax.Les
 						la1 = LA(1);
 						if (la1 == '@') {
 							la2 = LA(2);
-							if (NextToken_set0.Contains(la2))
+							if (FancyId_set0.Contains(la2))
 								goto matchSymbol;
 							else if (la2 >= 128 && la2 <= 65532) {
 								la2 = LA(2);
@@ -873,12 +867,6 @@ namespace Loyc.Syntax.Les
 								else
 									goto matchAt;
 							} else
-								goto matchAt;
-						} else if (la1 == '`') {
-							la2 = LA(2);
-							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
-								goto matchId;
-							else
 								goto matchAt;
 						} else if (FancyId_set0.Contains(la1))
 							goto matchId;
@@ -980,13 +968,6 @@ namespace Loyc.Syntax.Les
 						} else
 							goto matchSQString;
 					}
-				case '`':
-					{
-						// line 175
-						_type = TT.BQString;
-						BQString();
-					}
-					break;
 				case ',':
 					{
 						// line 176
@@ -1060,7 +1041,7 @@ namespace Loyc.Syntax.Les
 					Operator();
 					break;
 				default:
-					if (NextToken_set1.Contains(la0))
+					if (NextToken_set0.Contains(la0))
 						goto matchId;
 					else {
 						// line 186

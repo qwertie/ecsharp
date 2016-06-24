@@ -614,7 +614,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			result = List();
 			break;
 		case TT.Assignment:
-		case TT.BQString:
+		case TT.BQOperator:
 		case TT.Dot:
 		case TT.Id:
 		case TT.NormalOp:
@@ -663,7 +663,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
-				case TT.BQString:
+				case TT.BQOperator:
 				case TT.Dot:
 				case TT.Id:
 				case TT.Literal:

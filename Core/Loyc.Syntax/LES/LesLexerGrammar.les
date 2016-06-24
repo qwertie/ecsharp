@@ -100,11 +100,11 @@ namespace Loyc.Syntax.Les
 			{ParseStringValue(true);}
 		};
 		
-		@[private] token BQString2 @{
+		@[private] token BQString @{
 			{_parseNeeded = false;}
 			'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`'
 		};
-		@[private] token BQString @{ BQString2 {_value = ParseBQStringValue();} };
+		@[private] token BQOperator @{ BQString2 {_value = ParseBQStringValue();} };
 
 		// Identifiers and Symbols -----------------------------------------------
 
@@ -172,7 +172,7 @@ namespace Loyc.Syntax.Les
 			/ {_type = TT.Literal;}   TQString
 			/ {_type = TT.Literal;}   DQString
 			/ {_type = TT.Literal;}   SQString
-			/ {_type = TT.BQString;}  BQString
+			/ {_type = TT.BQOperator;}BQOperator
 			/ {_type = TT.Comma;}     Comma
 			/ {_type = TT.Semicolon;} Semicolon
 			/ {_type = TT.LParen;}    LParen

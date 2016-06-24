@@ -160,7 +160,7 @@ namespace Loyc.Syntax.Les
 			// Line 95: (Expr / TT.Id Expr (Particle)*)
 			switch ((TT) LA0) {
 			case TT.Assignment:
-			case TT.BQString:
+			case TT.BQOperator:
 			case TT.Dot:
 			case TT.NormalOp:
 			case TT.Not:
@@ -173,7 +173,7 @@ namespace Loyc.Syntax.Les
 					switch ((TT) LA(1)) {
 					case EOF:
 					case TT.Assignment:
-					case TT.BQString:
+					case TT.BQOperator:
 					case TT.Comma:
 					case TT.Dot:
 					case TT.LBrack:
@@ -240,11 +240,11 @@ namespace Loyc.Syntax.Les
 			// line 123
 			Precedence prec;
 			e = PrefixExpr(context);
-			// Line 127: greedy( &{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQString|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp )*
+			// Line 127: greedy( &{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp )*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
-				case TT.BQString:
+				case TT.BQOperator:
 				case TT.Dot:
 				case TT.NormalOp:
 					{
@@ -348,10 +348,10 @@ namespace Loyc.Syntax.Les
 			LNode e = default(LNode);
 			LNode result = default(LNode);
 			Token t = default(Token);
-			// Line 171: ((TT.Assignment|TT.BQString|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
+			// Line 171: ((TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
 			switch ((TT) LA0) {
 			case TT.Assignment:
-			case TT.BQString:
+			case TT.BQOperator:
 			case TT.Dot:
 			case TT.NormalOp:
 			case TT.Not:

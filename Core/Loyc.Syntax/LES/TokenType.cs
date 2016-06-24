@@ -27,10 +27,10 @@ namespace Loyc.Syntax.Les
 		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
-		BQString   = TokenKind.Operator + 7,
-		Backslash  = TokenKind.Operator + 8,
+		BQOperator = TokenKind.Operator + 7,
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
+		//Keyword    = TokenKind.OtherKeyword,
 		LParen     = TokenKind.LParen,
 		SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,
@@ -68,7 +68,7 @@ namespace Loyc.Syntax.Les
 				case TT.MLComment: return "/**/";
 				case TT.Literal:
 					return LesNodePrinter.PrintLiteral(t.Value, t.Style);
-				case TT.BQString: 
+				case TT.BQOperator: 
 					return LesNodePrinter.PrintString((t.Value ?? "").ToString(), '`', false);
 				case TT.Id: 
 					return LesNodePrinter.PrintId(t.Value as Symbol ?? GSymbol.Empty);
