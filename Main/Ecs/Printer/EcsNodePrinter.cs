@@ -106,7 +106,7 @@ namespace Loyc.Ecs
 			var wr = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			return new EcsNodePrinter(node, wr);
 		}
-		
+
 		[ThreadStatic]
 		static EcsNodePrinter _printer;
 		public static readonly LNodePrinter Printer = PrintECSharp;
@@ -174,7 +174,7 @@ namespace Loyc.Ecs
 		/// will complain about because mixing those operators is deprecated.
 		/// </summary>
 		public bool MixImmiscibleOperators { get; set; }
-		
+
 		/// <summary>Permits extra parentheses to express precedence, instead of
 		/// resorting to prefix notation (defaults to true). Also permits removal
 		/// of parenthesis if necessary to print special constructs.</summary>
@@ -209,7 +209,7 @@ namespace Loyc.Ecs
 		/// attributes in locations where they don't belong instead of returning
 		/// false.</remarks>
 		public bool DropNonDeclarationAttributes { get; set; }
-		
+
 		/// <summary>When an argument to a method or macro has an empty name (@``),
 		/// it will be omitted completely if this flag is set.</summary>
 		public bool OmitMissingArguments { get; set; }
@@ -253,7 +253,7 @@ namespace Loyc.Ecs
 		public SpaceOpt SpaceOptions { get; set; }
 		/// <summary>Controls the locations where newlines should be emitted.</summary>
 		public NewlineOpt NewlineOptions { get; set; }
-		
+
 		public int SpaceAroundInfixStopPrecedence { get; set; }
 		public int SpaceAfterPrefixStopPrecedence { get; set; }
 
@@ -270,7 +270,7 @@ namespace Loyc.Ecs
 			PreferPlainCSharp = true;
 			return this;
 		}
-		
+
 		#endregion
 
 		#region Printing helpers: Indented, With(), WithType(), Space(), etc.
@@ -288,7 +288,7 @@ namespace Loyc.Ecs
 			public With_(EcsNodePrinter self, LNode inner)
 			{
 				_self = self;
-				self._out.Push(_old = self._n); 
+				self._out.Push(_old = self._n);
 				if (inner == null) {
 					self.Errors.Write(Severity.Error, self._n, "EcsNodePrinter: Encountered null LNode");
 					self._n = LNode.Id("(null)");
@@ -319,7 +319,7 @@ namespace Loyc.Ecs
 		Indented_ Indented { get { return new Indented_(this); } }
 		With_ With(LNode inner) { return new With_(this, inner); }
 		WithSpace_ WithSpace(Symbol spaceName) { return new WithSpace_(this, spaceName); }
-		
+
 		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
 		{
 			if (p.Lo < SpaceAroundInfixStopPrecedence && (name != S.DotDot || (SpaceOptions & SpaceOpt.SuppressAroundDotDot) == 0)) {
@@ -367,8 +367,7 @@ namespace Loyc.Ecs
 		}
 		void WriteCloseParen(ParenFor type, bool confirm = true)
 		{
-			if (confirm)
-			{
+			if (confirm) {
 				WriteInnerSpace(type);
 				_out.Write(')', true);
 				if (((int)SpaceOptions & (int)SpaceOpt.OutsideParens & (int)type) != 0)
@@ -482,14 +481,16 @@ namespace Loyc.Ecs
 			"#region", "#endregion", "#pragma", "#error", "#warning", "#note", "#line"
 		);
 
-		internal static readonly HashSet<Symbol> OperatorIdentifiers = SymbolSet(
+		internal static readonly HashSet<Symbol> OperatorIdentifiers = new HashSet<Symbol> {
 			// >>, << and ** are special: the lexer provides them as two separate tokens
-			"~", "!", "%", "^", "&", "&&", "*", "**", "+", "++", 
-			"-", "--", "==", "!=", /*"{}", "[]",*/ "|", "||", @"\", 
-			";", ":", ",", ".", "..", "<", "<<", ">", ">>", "/", 
-			"?", "??", "?.", "<=", ">=", "=>", "==>", "->", "$",
-			"=", "*=", "-=", "+=", "/=", "%=", ">>=", "<<=", "^=", "&=", "|=", "??=", ":="
-		);
+			S.NotBits, S.Not, S.Mod, S.XorBits, S.AndBits, S.And, S.Mul, S.Exp, S.Add, S.PreInc,
+			S.Sub, S.PreDec, S.Eq, S.Neq, S.Sub, S.PreDec, S.Eq, S.Neq, /*"{}", "[]",*/ S.OrBits, S.Or, S.Backslash,
+			S.Semicolon, S.Colon, S.Comma, S.Dot, S.DotDot, S.LT, S.Shl, S.GT, S.Shr, S.Div,
+			S.QuestionMark, S.NullCoalesce, S.NullDot, S.LE, S.GE, S.Lambda, S.Forward, S.PtrArrow, S.Substitute,
+			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, S.ShrAssign, S.ShlAssign,
+			S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
+			S.ConcatAssign, S.ExpAssign
+		};
 
 		internal static readonly HashSet<Symbol> CsKeywords = SymbolSet(
 			"abstract",  "event",     "new",        "struct", 
@@ -968,7 +969,8 @@ namespace Loyc.Ecs
 				_out.Write("operator", true);
 				Space(SpaceOpt.AfterOperatorKeyword);
 				if (OperatorIdentifiers.Contains(name)) {
-					_out.Write(name.Name, true);
+					Debug.Assert(name.Name.StartsWith("'"));
+					_out.Write(name.Name.Substring(1), true);
 				} else
 					PrintString(name.Name, '`', null, true);
 				return;

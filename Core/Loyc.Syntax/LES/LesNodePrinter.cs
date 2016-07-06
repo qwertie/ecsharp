@@ -84,9 +84,9 @@ namespace Loyc.Syntax.Les
 			p.Errors = errors;
 
 			if (object.Equals(mode, NodeStyle.Expression) || mode == ParsingMode.Expressions)
-				p.Print(node, 0, StartStmt, "");
+				p.Print(node, StartStmt, "");
 			else
-				p.Print(node, 0, StartStmt, ";");
+				p.Print(node, StartStmt, ";");
 
 			p.Writer = null;
 			p.Errors = null;
@@ -100,23 +100,11 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
-		/// <summary>TODO: these modes no longer apply, remove them</summary>
-		[Flags]
-		public enum Mode
-		{
-			/// <summary>Whitespace agnostic mode. ':' cannot be used to begin a 
-			/// python-style code block.</summary>
-			Wsa = 8,
-			/// <summary>Inside parenthesis (implies Wsa, and additionally allows 
-			/// ':' as an operator).</summary>
-			InParens = 24,
-		}
-
 		public void Print(LNode node)
 		{
-			Print(node, 0, StartStmt, ";");
+			Print(node, StartStmt, ";");
 		}
-		public void Print(LNode node, Mode mode, Precedence context, string terminator = null)
+		public void Print(LNode node, Precedence context, string terminator = null)
 		{
 			int parenCount = PrintPrefixTrivia(node);
 			if (parenCount != 0)
@@ -127,18 +115,18 @@ namespace Loyc.Syntax.Les
 			}
 
 			if (node.BaseStyle == NodeStyle.PrefixNotation)
-				PrintPrefixNotation(node, mode, context);
+				PrintPrefixNotation(node, context);
 			else do {
 				if (node.IsCall) {
-					if (AutoPrintBracesOrBracks(node, mode))
+					if (AutoPrintBracesOrBracks(node))
 						break;
 					int args = node.ArgCount;
-					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, mode, context))
+					if (args == 1 && AutoPrintPrefixOrSuffixOp(node, context))
 						break;
-					if (args == 2 && AutoPrintInfixOp(node, mode, context))
+					if (args == 2 && AutoPrintInfixOp(node, context))
 						break;
 				}
-				PrintPrefixNotation(node, mode, context);
+				PrintPrefixNotation(node, context);
 			} while (false);
 			
 			PrintSuffixTrivia(node, parenCount, terminator);
@@ -146,28 +134,28 @@ namespace Loyc.Syntax.Les
 
 		#region Infix, prefix and suffix operators
 
-		private bool AutoPrintInfixOp(LNode node, Mode mode, Precedence context)
+		private bool AutoPrintInfixOp(LNode node, Precedence context)
 		{
 			var prec = GetPrecedenceIfOperator(node, OperatorShape.Infix, context);
 			if (prec == null)
 				return false;
 			var a = node.Args;
-			Print(a[0], mode, prec.Value.LeftContext(context));
+			Print(a[0], prec.Value.LeftContext(context));
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
 			WriteOpName(node.Name, prec.Value);
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
-			Print(a[1], mode, prec.Value.RightContext(context));
+			Print(a[1], prec.Value.RightContext(context));
 			return true;
 		}
 
-		private bool AutoPrintPrefixOrSuffixOp(LNode node, Mode mode, Precedence context)
+		private bool AutoPrintPrefixOrSuffixOp(LNode node, Precedence context)
 		{
 			Symbol bareName;
 			if (LesPrecedenceMap.IsSuffixOperatorName(node.Name, out bareName, false)) {
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Suffix, context);
 				if (prec == null || prec.Value == LesPrecedence.Backtick)
 					return false;
-				Print(node.Args[0], mode, prec.Value.LeftContext(context));
+				Print(node.Args[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
 				WriteOpName(bareName, prec.Value);
 			} else {
@@ -176,7 +164,7 @@ namespace Loyc.Syntax.Les
 					return false;
 				WriteOpName(node.Name, prec.Value);
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
-				Print(node.Args[0], mode, prec.Value.RightContext(context));
+				Print(node.Args[0], prec.Value.RightContext(context));
 			}
 			return true;
 		}
@@ -185,8 +173,10 @@ namespace Loyc.Syntax.Les
 		{
 			if (prec == LesPrecedence.Backtick || !LesPrecedenceMap.IsNaturalOperator(op))
 				PrintStringCore('`', false, op.Name);
-			else
-				_out.Write(op.Name, true);
+			else {
+				Debug.Assert(op.Name.StartsWith("'"));
+				_out.Write(op.Name.Substring(1), true);
+			}
 			//else {
 			//	_out.Write('\\', false);
 			//	_out.Write(op.Name, true);
@@ -212,7 +202,8 @@ namespace Loyc.Syntax.Les
 				var bs = node.BaseStyle;
 				var op = node.Name;
 				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op);
-				if (bs == NodeStyle.Operator || (naturalOp && bs != NodeStyle.PrefixNotation))
+				if ((naturalOp && bs != NodeStyle.PrefixNotation) ||
+					(bs == NodeStyle.Operator && node.Name != null))
 				{
 					var result = _prec.Find(shape, op);
 					if (bs == NodeStyle.Operator && !naturalOp)
@@ -239,7 +230,7 @@ namespace Loyc.Syntax.Les
 
 		#region Other stuff: braces, TODO: superexpressions, indexing, generics, tuples
 
-		private bool AutoPrintBracesOrBracks(LNode node, Mode mode)
+		private bool AutoPrintBracesOrBracks(LNode node)
 		{
 			var name = node.Name;
 			if (name == S.Array && node.IsCall)
@@ -258,11 +249,11 @@ namespace Loyc.Syntax.Les
 				_out.Indent();
 				_out.Newline();
 				foreach (var stmt in args)
-					Print(stmt, Mode.Wsa, StartStmt, ";");
+					Print(stmt, StartStmt, ";");
 				_out.Dedent();
 			} else {
 				for (int i = 0; i < args.Count; )
-					Print(args[i], Mode.Wsa, StartStmt, ++i == args.Count ? "" : ", ");
+					Print(args[i], StartStmt, ++i == args.Count ? "" : ", ");
 			}
 			_out.Write(rightDelim, true);
 		}
@@ -272,7 +263,7 @@ namespace Loyc.Syntax.Les
 		/// <summary>Context: beginning of main expression (potential superexpression)</summary>
 		public static readonly Precedence StartStmt      = Precedence.MinValue;
 
-		void PrintPrefixNotation(LNode node, Mode mode, Precedence context)
+		void PrintPrefixNotation(LNode node, Precedence context)
 		{
 			switch(node.Kind) {
 				case LNodeKind.Id:
@@ -280,7 +271,7 @@ namespace Loyc.Syntax.Les
 				case LNodeKind.Literal:
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
-					Print(node.Target, mode, LesPrecedence.Primary.LeftContext(context), null);
+					Print(node.Target, LesPrecedence.Primary.LeftContext(context), null);
 					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '(', ')');
 					break;
 			}
@@ -319,7 +310,7 @@ namespace Loyc.Syntax.Les
 					_out.Write(',', true);
 					_out.Space();
 				}
-				Print(A[i], Mode.InParens, StartStmt);
+				Print(A[i], StartStmt);
 			}
 			if (wroteBrack)
 				_out.Write("] ", true);

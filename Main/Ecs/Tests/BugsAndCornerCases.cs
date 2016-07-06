@@ -35,7 +35,7 @@ namespace Loyc.Ecs.Tests
 		public void BugFixes()
 		{
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
-			Stmt("@`+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
+			Stmt("@`'+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("([] partial Foo a);", F.InParens(Attr(@partialWA, F.Vars(Foo, a))));
 			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
@@ -69,22 +69,22 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrecedenceChallenges()
 		{
-			Expr(@"@`.`(a, -b)",     F.Dot(a, F.Call(S._Negate, b)));
-			Expr(@"@`.`(a, -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
-			Expr(@"@`.`(a, -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
+			Expr(@"@`'.`(a, -b)",     F.Dot(a, F.Call(S._Negate, b)));
+			Expr(@"@`'.`(a, -b).c",   F.Dot(a, F.Call(S._Negate, b), c));
+			Expr(@"@`'.`(a, -b.c)",   F.Dot(a, F.Call(S._Negate, F.Dot(b, c))));
 			Expr(@"a.(-b)(c)",       F.Call(F.Dot(a, F.InParens(F.Call(S._Negate, b))), c));
 			// The printer should revert to prefix notation in certain cases in 
 			// order to faithfully represent the original tree.
 			Expr(@"a * b + c",       F.Call(S.Add, F.Call(S.Mul, a, b), c));
 			Expr(@"(a + b) * c",     F.Call(S.Mul, F.InParens(F.Call(S.Add, a, b)), c));
-			Expr(@"@`+`(a, b) * c",  F.Call(S.Mul, F.Call(S.Add, a, b), c));
+			Expr(@"@`'+`(a, b) * c",  F.Call(S.Mul, F.Call(S.Add, a, b), c));
 			Expr(@"--a++",           F.Call(S.PreDec, F.Call(S.PostInc, a)));
 			Expr(@"(--a)++",         F.Call(S.PostInc, F.InParens(F.Call(S.PreDec, a))));
-			Expr(@"@`--`(a)++",      F.Call(S.PostInc, F.Call(S.PreDec, a)));
+			Expr(@"@`'--`(a)++",      F.Call(S.PostInc, F.Call(S.PreDec, a)));
 			LNode a_b = F.Dot(a, b), a_b__c = F.Call(S.NullDot, F.Dot(a, b), c);
 			Expr(@"a.b?.c.x",        F.Call(S.NullDot, a_b, F.Dot(c, x)));
 			Expr(@"(a.b?.c).x",      F.Dot(F.InParens(a_b__c), x));
-			Expr(@"@`?.`(a.b, c).x", F.Dot(a_b__c, x));
+			Expr(@"@`'?.`(a.b, c).x", F.Dot(a_b__c, x));
 			Expr(@"++$x",            F.Call(S.PreInc, F.Call(S.Substitute, x)));
 			Expr(@"++$([Foo] x)",    F.Call(S.PreInc, F.Call(S.Substitute, Attr(Foo, x))));
 			Expr(@"a ? b : c",       F.Call(S.QuestionMark, a, b, c));
@@ -157,14 +157,14 @@ namespace Loyc.Ecs.Tests
 			// - multiplication at stmt level => prefix notation, except in #result or when lhs is not a complex identifier
 			// - pointer declaration inside expr => generic, not pointer, notation
 			Expr("a * b",                F.Call(S.Mul, a, b));
-			Stmt("a `*` b;",             F.Call(S.Mul, a, b));
+			Stmt("a `'*` b;",             F.Call(S.Mul, a, b));
 			Stmt("a() * b;",             F.Call(S.Mul, F.Call(a), b));
 			Expr("#result(a * b)",       F.Result(F.Call(S.Mul, a, b)));
 			Stmt("{\n  a * b\n}",        F.Braces(F.Result(F.Call(S.Mul, a, b))));
 			Stmt("Foo* a = x;",          F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
 			// Ambiguity between bitwise not and destructor declarations
 			Expr("~Foo()",               F.Call(S.NotBits, F.Call(Foo)));
-			Stmt("@`~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));
+			Stmt("@`'~`(Foo());",         F.Call(S.NotBits, F.Call(Foo)));
 			Stmt("~Foo;",                F.Call(S.NotBits, Foo));
 			Stmt("$Foo $x;",             F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x)));
 			Stmt("$Foo $x = 1;",         F.Var(F.Call(S.Substitute, Foo), F.Call(S.Substitute, x), one));
@@ -182,9 +182,9 @@ namespace Loyc.Ecs.Tests
 			var FooNullable = F.Of(_(S.QuestionMark), Foo);
 			var FooPointer = F.Of(_(S._Pointer), Foo);
 			Expr("Foo[]",             FooBracks);
-			Expr("@`[]`<Foo>",        FooArray);
-			Expr("@`?`<Foo>",         FooNullable);
-			Expr("@`*`<Foo>",         FooPointer);
+			Expr("@`#[]`<Foo>",        FooArray);
+			Expr("@`'?`<Foo>",         FooNullable);
+			Expr("@`'*`<Foo>",         FooPointer);
 			Stmt("#var(Foo[], a);",   F.Vars(FooBracks, a));
 			Stmt("Foo[] a;",          F.Vars(FooArray, a));
 			Stmt("typeof(Foo?);",     F.Call(S.Typeof, FooNullable));
@@ -193,7 +193,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("a(->Foo?);",        Alternate(F.Call(S.Cast, a, FooNullable)));
 			Stmt("a(as Foo*);",       Alternate(F.Call(S.As, a, FooPointer)));
 			Stmt("Foo!(#(Foo[]));",   F.Of(Foo, F.List(FooBracks)));
-			Stmt("Foo!(#(@`*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
+			Stmt("Foo!(#(@`'*`<Foo>));", F.Of(Foo, F.List(FooPointer)));
 			Expr("checked(Foo[])",    F.Call(S.Checked, FooBracks));
 			Stmt("Foo<a*> x;",        F.Vars(F.Of(Foo, F.Of(_(S._Pointer), a)), x));
 		}

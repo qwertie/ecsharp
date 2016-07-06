@@ -83,7 +83,7 @@ namespace LeMP
 			"([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ",
 			"Generates Contract checks in a lambda function. See the documentation of "+
 			"ContractsOnMethod for more information about the contract attributes.",
-			"=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+			"'=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
 		public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
 		{
 			// Performance note: one should keep in mind that this macro usually 

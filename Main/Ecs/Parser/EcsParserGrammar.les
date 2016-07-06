@@ -785,39 +785,6 @@ namespace Loyc.Ecs.Parser
 			};
 		};
 
-/*
-		// Only the recognizer is used. TODO: add LLLPG feature to suppress standard rule part
-		// We have to guard against the conditional operator ambiguity, for example:
-		//
-		//     Foo ? a = b ? c : null    , ...  // is a variable declaration
-		//     Foo ? a = b ? c : null : 0, ...  // is a conditional expression
-		//
-		// Strategy: scan for an unmatched colon.
-		//
-		// Note: this fails to handle the ultra-obscure case of "(Foo ? v = x as Foo? ?? y : b)"
-		// since "? :" are matched so this will be treated as a variable decl,
-		// which causes a syntax error. This also can't handle case statements
-		// like "case Foo? x = null:", about which I am less concerned since
-		// it is not a syntax supported by plain C# anyway.
-		//
-		// I think the right way to handle this involves a large refactor. What we
-		// need to do is to take the "PEG" approach: (1) try parsing an expression
-		// as an expression first (or if we're in a statement context, try parsing
-		// as a var/method/prop decl first) and suppress error messages; (2) if it 
-		// doesn't work, try parsing it as the other thing (e.g. var/prop in an
-		// expression context). (3) if that doesn't work either, parse it as the 
-		// first thing again, but this time show error message(s).
-		//
-		// This also fails to handle case statements like "case Foo? x = null:" (ugh).
-		@[private] rule NoUnmatchedColon @{
-			
-			(	SubConditional
-			|	~("?"|":"|","|";")
-			)*
-			(","|";"|EOF)
-		};
-		@[private] rule SubConditional @{ "?" _ nongreedy[SubConditional / ~(","|";")]* ":" };
-*/
 		fn Apply(result::TentativeResult)::LNode
 		{
 			InputPosition = result.InputPosition;
@@ -961,109 +928,7 @@ namespace Loyc.Ecs.Parser
 				{attrs.Add(F.Id(t));}
 			]*
 		};
-			
-		// "word attributes" are a messy feature of EC#. C# has a few non-
-		// keyword attributes that appear at the beginning of a statement, such
-		// as "partial", "yield" and "async". EC# generalizes this concept to 
-		// "word attributes", which can be any normal identifier.
-		//
-		// BTW: "word attributes" are not really "contextual keywords" in the C# 
-		// sense, because the identifiers are not recognized by the parser. The
-		// only true contextual keywords in EC# are "var", "module", "assembly",
-		// "from" (LINQ), "trait", "alias", and "when"; others like "partial" and "yield" are not
-		// and the  ("var" and "dynamic" are not contextual keywords in C# 
-		// in the same way; in EC#, "var" is identified as a keyword by the 
-		// parser, but in C# it is identified during semantic analysis.)
-		//
-		// Since they're not keywords, word attributes are difficult because:
-		// 1. Lots of statements start with words that are not word attributes, 
-		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
-		//    Somehow we have to figure out which words are attributes.
-		// 2. Not all statements accept word attributes. But the attributes 
-		//    appear before the statement, so how can we tell if we should
-		//    be expecting word attributes or not?
-		//
-		// Using an LL(k) parser generator is quite limiting in this situation;
-		// normal lookahead is strictly limited and we can't backtrack except 
-		// via "and" predicates or custom code. On the other hand, I still think 
-		// LL(k) is the best way to parse, precisely because it minimizes 
-		// backtracking.
-		// 
-		// There are lots of "keyword-based" statements that accept word
-		// attributes (think "partial class" and "yield return"), which are easy
-		// to handle. Our main difficulty is the non-keyword statements:
-		// 1. statements that can begin with an identifier, but also accept
-		//    word attributes:
-		//    - word type* name ... // field, property or method
-		//    - word type? name ... // field, property or method
-		//    - word type[,][] name ... // field, property or method
-		//    - word type<x> name ... // field, property or method
-		//    - word type name(); // method decl
-		//    - word type name<x>(); // method decl
-		//    - word type<x> name(); // method decl
-		//    - word type<x> name<x>(); // method decl
-		//    - word this();         // except inside methods
-		//    - word this<x>();      // except inside methods
-		//    - word label:
-		// 2. statements that can start with an identifier, and do not accept 
-		//    word attributes:
-		//    - foo();     // method call OR constructor
-		//    - foo<x>();
-		//    - foo = 0;
-		//    - foo - bar;
-		// Notice that if a word is followed by an operator of any kind, it 
-		// can't be an attribute; but if it is followed by another word, it's
-		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
-		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
-		// but in "A B<x>()" it is a return type. The same difficulty exists
-		// in case of alternate generics specifiers such as "A B!(x)" and types
-		// with suffixes, like "A int?*".
-		// 
-		// My strategy here is to use lookahead with &(...) to decide if a word 
-		// (or the "new" keyword) is an attribute or not.
 		
-/*
-		// TODO : This is obsolete, need to eliminate the last usage of it
-		token WordAttributes(ref attrs::WList!LNode)::int
-		@{
-			{	// Optimize the common case (non-exhaustive short circuit)
-				LA1::TokenType;
-				nonKeywords::int = 0;
-				if LA0 == TT.Id && ((LA1 = LA(1)) == TT.Set || LA1 == TT.LParen || LA1 == TT.Dot) 
-					(return 0);
-				t::Token;
-			}
-			[	t=TT.AttrKeyword {attrs.Add(F.Id(t));}
-			|	(t=(TT.Id|TT.This|TT.New) | t=IdNotLinqKeyword)
-				&(	// Detect a word attribute before a var decl, function decl, 
-					// property decls, alias decls, or trait decls.
-					DataType (TT.Id|TT.TypeKeyword|TT.AttrKeyword|IdNotLinqKeyword)
-				|	// t is a word attribute in `t this(...)` but not `t this[...]`
-					TT.This "("
-				|	// If the word is followed by an atribute keyword, it must be a word attribute
-					(TT.AttrKeyword | TT.New)
-				|	// Most statements that begin with a keyword allow word attributes
-					TT.Checked "{" "}" | TT.Unchecked "{" "}" | TT.Default ":" | TT.Using "("
-				|	( TT.Namespace | TT.Class | TT.Struct | TT.Interface | TT.Enum 
-					| TT.Delegate | TT.Event | TT.Case | TT.Break | TT.Continue | TT.Do 
-					| TT.Fixed | TT.For | TT.Foreach | TT.Goto | TT.Lock | TT.Return
-					| TT.Switch | TT.Throw | TT.Try | TT.While )
-				)
-				{
-					node::LNode;
-					if (t.Type() == TT.New || t.Type() == TT.This) {
-						node = F.Id(t)
-					} else {
-						node = F.Attr(_triviaWordAttribute, F.Id("#" + t.Value.ToString(), t.StartIndex, t.EndIndex));
-					};
-					attrs = attrs ?? `new` WList!LNode();
-					attrs.Add(node);
-					nonKeywords++; // yes, includes 'new'
-				}
-			]*
-			{return nonKeywords;}
-		};
-*/		
 		// =====================================================================
 		// == LINQ =============================================================
 		// =====================================================================
@@ -1169,7 +1034,7 @@ namespace Loyc.Ecs.Parser
 			TT.LambdaArrow; TT.Forward; TT.Semicolon; TT.Comma; TT.EOF;
 			TT.At; // @{...} token literal (property)
 		});
-		@[static, readonly] ExpectedAfterTypeAndName::array!(HashSet!TT) = (new @`[]`() {
+		@[static, readonly] ExpectedAfterTypeAndName::array!(HashSet!TT) = (new @`#[]`() {
 			ExpectedAfterTypeAndName_InExpr;
 			ExpectedAfterTypeAndName_InStmt;
 		});
@@ -1186,19 +1051,10 @@ namespace Loyc.Ecs.Parser
 
 		fn DetectStatementCategoryAndAddWordAttributes(out wordAttrCount::int, ref attrs::VList!LNode, mode::DetectionMode)::StmtCat
 		{
-			// This is also called if a variable declaration is suspected in an 
+			// (This is also called if a variable declaration is suspected in an 
 			// expression. In this case, detecting the statement category isnt
 			// the main goal; rather, the main goal is figuring out where the
-			// word attributes end.
-
-			/*this is no longer called _routinely_ for expressions
-			// This function is also called for expressions (because an expression
-			// can begin with a variable declaration), so it's important to return 
-			// quickly in most common cases.
-			if LA0 == TT.Literal || LA0 == TT.LParen { 
-				wordAttrCount = 0;
-				return StmtCat.OtherStmt;
-			};*/
+			// word attributes end.)
 
 			var oldPosition = InputPosition;
 			var cat = DetectStatementCategory(out wordAttrCount, mode);
@@ -1220,11 +1076,62 @@ namespace Loyc.Ecs.Parser
 		// Originally I let LLLPG distinguish the statement types, but when the 
 		// parser was mature, LLLPG's analysis took from 10 to 40 seconds and it 
 		// generated 5000 lines of code to distinguish the various cases.
-		// This custom code...
+		// This custom code, which was very tricky to get right,
 		// (1) detects method/property/variable (and lookalikes: trait, alias) and
-		//     distinguishes certain other cases out of convenience.
+		//     distinguishes certain other cases (StmtCat values) out of convenience.
 		// (2) detects and skips word attributes (not including `this` in `this int x`).
 		// (3) is fast if possible.
+		//
+		// "word attributes" are a messy feature of EC#. C# has a few non-keyword 
+		// attributes that appear at the beginning of a statement, such as "partial", 
+		// "yield" and "async". EC# generalizes this concept to "word attributes", which 
+		// can be ANY normal identifier.
+		//
+		// BTW: "word attributes" are not really "contextual keywords" in the C# 
+		// sense, because the identifiers are not recognized by the parser. The
+		// only true contextual keywords in EC# are "var", "module", "assembly",
+		// "from" (LINQ), "trait", "alias", and "when"; others like "partial" and 
+		// "yield" are merely "word attributes".
+		//
+		// Since they're not keywords, word attributes are difficult because:
+		// 1. Lots of statements start with words that are not word attributes, 
+		//    such as "foo=0", "foo* x = null", "foo x { ... }", and "foo x();"
+		//    Somehow we have to figure out which words are attributes.
+		// 2. Not all statements accept word attributes. But the attributes 
+		//    appear BEFORE the statement, so how can we tell if we should
+		//    be expecting word attributes or not?
+		//
+		// There are lots of "keyword-based" statements that accept word
+		// attributes (think "partial class" and "yield return"), which are the
+		// easiest to handle. Our main difficulty is the non-keyword statements:
+		// 1. statements that can begin with an identifier, but also accept
+		//    word attributes:
+		//    - word type* name ... // field, property or method
+		//    - word type? name ... // field, property or method
+		//    - word type[,][] name ... // field, property or method
+		//    - word type<x> name ... // field, property or method
+		//    - word type name(); // method decl
+		//    - word type name<x>(); // method decl
+		//    - word type<x> name(); // method decl
+		//    - word type<x> name<x>(); // method decl
+		//    - word this();         // except inside methods
+		//    - word this<x>();      // except inside methods
+		//    - word label:
+		// 2. statements that can start with an identifier, and do not accept 
+		//    word attributes:
+		//    - foo();     // method call OR constructor
+		//    - foo<x>();
+		//    - foo = 0;
+		//    - foo - bar;
+		//
+		// Notice that if a word is followed by an operator of any kind, it 
+		// can't be an attribute; but if it is followed by another word, it's
+		// unclear. In particular, notice that for "A B<x>...", "A" is sometimes
+		// an attribute and sometimes not. In "A B<x> C", A is an attribute,
+		// but in "A B<x>()" it is a return type. The same difficulty exists
+		// in case of alternate generics specifiers such as "A B!(x)" and types
+		// with suffixes, like "A int?*".
+
 		fn DetectStatementCategory(out wordAttrCount::int, mode::DetectionMode)::StmtCat
 		{
 			// If the statement starts with identifier(s), we have to figure out 

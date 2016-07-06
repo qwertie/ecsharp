@@ -425,7 +425,7 @@ namespace Loyc.MiniTest
 					dif_i = maxw / 2; // "...middle..."
 				}
 			}
-			return "\"" + ParseHelpers.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
+			return "\"" + ParseHelpers.EscapeCStyle(s, EscapeC.Control | EscapeC.DoubleQuotes, '"') + "\"";
 		}
 		static string StringifyObject(object obj)
 		{

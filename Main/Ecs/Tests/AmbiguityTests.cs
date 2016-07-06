@@ -26,11 +26,11 @@ namespace Loyc.Ecs.Tests
 			Stmt("(Foo) ~x;", F.Call(S.Cast, F.Call(S.NotBits, x), Foo));
 			Stmt("(Foo) x(a);", F.Call(S.Cast, F.Call(x, a).SetStyle(NodeStyle.Operator), Foo));
 			Stmt("(Foo) `x` a;", F.Call(x, F.InParens(Foo), a).SetStyle(NodeStyle.Operator));
-			Stmt("(Foo) @`.`(x);", F.Call(S.Cast, F.Call(S.Dot, x).SetStyle(NodeStyle.Operator), Foo));
-			Stmt("(Foo) a.b;",     F.Call(S.Cast, F.Dot(a, b).SetStyle(NodeStyle.Operator), Foo));
-			Stmt("(Foo) @`-`(x);", F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo));
-			Stmt("(Foo) (-x);",    F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
-			Stmt("(Foo) @`--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) @`'.`(x);", F.Call(S.Cast, F.Call(S.Dot, x).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) a.b;",      F.Call(S.Cast, F.Dot(a, b).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) @`'-`(x);", F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo));
+			Stmt("(Foo) (-x);",     F.Call(S.Cast, F.Call(S._Negate, x).SetStyle(NodeStyle.Operator), Foo), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
+			Stmt("(Foo) @`'--`(x);", F.Call(S.Cast, F.Call(S.PreDec, x).SetStyle(NodeStyle.Operator), Foo));
 		}
 
 		/// <summary>Tests handling of the constructor ambiguity</summary>
@@ -161,7 +161,7 @@ namespace Loyc.Ecs.Tests
 		public void ExprOrVarDeclAmbiguity()
 		{
 			Expr("Foo<x> a = b", F.Var(F.Of(Foo, x), a.Name, b));
-			Expr("@`*`<Foo> a = x", F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
+			Expr("@`'*`<Foo> a = x", F.Var(F.Of(_(S._Pointer), Foo), a.Name, x));
 			Expr("Foo? x = c ? a : b", F.Var(F.Of(_(S.QuestionMark), Foo), x.Name, F.Call(S.QuestionMark, c, a, b)));
 
 			Expr("Foo ? b = c as Foo? : 0",

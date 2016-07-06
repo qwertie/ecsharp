@@ -14,54 +14,54 @@ namespace Loyc.Syntax
 	public partial class CodeSymbols
 	{
 		// Plain C# operators (node names)
-		public static readonly Symbol Mul = GSymbol.Get("*");     //!< "*" Multiplication (or dereference)
-		public static readonly Symbol Div = GSymbol.Get("/");     //!< "/" Division
-		public static readonly Symbol Add = GSymbol.Get("+");     //!< "+" Addition or unary +
-		public static readonly Symbol Sub = GSymbol.Get("-");     //!< "-" Subtraction or unary -
-		public static readonly Symbol _Dereference = GSymbol.Get("*"); //!< Alias for Mul
-		public static readonly Symbol _Pointer = GSymbol.Get("*");     //!< Alias for Mul
-		public static readonly Symbol _UnaryPlus = GSymbol.Get("+");   //!< Alias for Add
-		public static readonly Symbol _Negate = GSymbol.Get("-"); //!< Alias for Sub. Infix and prefix operators use same symbol
-		public static readonly Symbol PreInc = GSymbol.Get("++"); //!< "++" Unary prefix increment
-		public static readonly Symbol PreDec = GSymbol.Get("--"); //!< "--" Unary prefix decrement
-		public static readonly Symbol PostInc = GSymbol.Get("suf++"); //!< "suf++" Unary suffix increment
-		public static readonly Symbol PostDec = GSymbol.Get("suf--"); //!< "suf--" Unary suffix decrement
-		public static readonly Symbol Mod = GSymbol.Get("%");    //!< "%"  Remainder operator
-		public static readonly Symbol And = GSymbol.Get("&&");   //!< "&&" Logical short-circuit 'and' operator
-		public static readonly Symbol Or = GSymbol.Get("||");    //!< "||" Logical short-circuit 'or' operator
-		public static readonly Symbol Xor = GSymbol.Get("^^");   //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
-		public static readonly Symbol Eq = GSymbol.Get("==");    //!< "==" Equality test operator
-		public static readonly Symbol Neq = GSymbol.Get("!=");   //!< "!=" Inequality test operator
-		public static readonly Symbol GT = GSymbol.Get(">");     //!< ">"  Greater-than operator
-		public static readonly Symbol GE = GSymbol.Get(">=");    //!< ">=" Greater-than-or-equal-to operator
-		public static readonly Symbol LT = GSymbol.Get("<");     //!< "<"  Less-than operator
-		public static readonly Symbol LE = GSymbol.Get("<=");    //!< "<=" Less-than-or-equal-to operator
-		public static readonly Symbol Shr = GSymbol.Get(">>");   //!< ">>" Right-shift operator
-		public static readonly Symbol Shl = GSymbol.Get("<<");   //!< "<<" Left-shift operator
-		public static readonly Symbol Not = GSymbol.Get("!");    //!< "!"  Logical 'not' operator
-		public static readonly Symbol Assign = GSymbol.Get("="); //!< "="  Assignment operator
-		public static readonly Symbol OrBits = GSymbol.Get("|");     //!< "|" Bitwise or operator
-		public static readonly Symbol AndBits = GSymbol.Get("&");    //!< "&" Bitwise and operator. Also, address-of (unary &)
-		public static readonly Symbol _AddressOf = GSymbol.Get("&"); //!< Alias for AndBits
-		public static readonly Symbol NotBits = GSymbol.Get("~");    //!< Unary bitwise inversion operator
-		public static readonly Symbol _Concat = GSymbol.Get("~");    //!< Alias for NotBits. Concat operator in D
-		public static readonly Symbol _Destruct = GSymbol.Get("~");  //!< Alias for NotBits.
-		public static readonly Symbol XorBits = GSymbol.Get("^");    //!< "^" Bitwise exclusive-or operator
+		public static readonly Symbol Mul = GSymbol.Get("'*");     //!< "*" Multiplication (or dereference)
+		public static readonly Symbol Div = GSymbol.Get("'/");     //!< "/" Division
+		public static readonly Symbol Add = GSymbol.Get("'+");     //!< "+" Addition or unary +
+		public static readonly Symbol Sub = GSymbol.Get("'-");     //!< "-" Subtraction or unary -
+		public static readonly Symbol _Dereference = GSymbol.Get("'*"); //!< Alias for Mul
+		public static readonly Symbol _Pointer = GSymbol.Get("'*");     //!< Alias for Mul
+		public static readonly Symbol _UnaryPlus = GSymbol.Get("'+");   //!< Alias for Add
+		public static readonly Symbol _Negate = GSymbol.Get("'-"); //!< Alias for Sub. Infix and prefix operators use same symbol
+		public static readonly Symbol PreInc = GSymbol.Get("'++"); //!< "++" Unary prefix increment
+		public static readonly Symbol PreDec = GSymbol.Get("'--"); //!< "--" Unary prefix decrement
+		public static readonly Symbol PostInc = GSymbol.Get("'++suf"); //!< "suf++" Unary suffix increment
+		public static readonly Symbol PostDec = GSymbol.Get("'--suf"); //!< "suf--" Unary suffix decrement
+		public static readonly Symbol Mod = GSymbol.Get("'%");    //!< "%"  Remainder operator
+		public static readonly Symbol And = GSymbol.Get("'&&");   //!< "&&" Logical short-circuit 'and' operator
+		public static readonly Symbol Or = GSymbol.Get("'||");    //!< "||" Logical short-circuit 'or' operator
+		public static readonly Symbol Xor = GSymbol.Get("'^^");   //!< "^^" Logical 'xor' operator (tentative--this operator is redundant, "!=" is equivalent)
+		public static readonly Symbol Eq = GSymbol.Get("'==");    //!< "==" Equality test operator
+		public static readonly Symbol Neq = GSymbol.Get("'!=");   //!< "!=" Inequality test operator
+		public static readonly Symbol GT = GSymbol.Get("'>");     //!< ">"  Greater-than operator
+		public static readonly Symbol GE = GSymbol.Get("'>=");    //!< ">=" Greater-than-or-equal-to operator
+		public static readonly Symbol LT = GSymbol.Get("'<");     //!< "<"  Less-than operator
+		public static readonly Symbol LE = GSymbol.Get("'<=");    //!< "<=" Less-than-or-equal-to operator
+		public static readonly Symbol Shr = GSymbol.Get("'>>");   //!< ">>" Right-shift operator
+		public static readonly Symbol Shl = GSymbol.Get("'<<");   //!< "<<" Left-shift operator
+		public static readonly Symbol Not = GSymbol.Get("'!");    //!< "!"  Logical 'not' operator
+		public static readonly Symbol Assign = GSymbol.Get("'="); //!< "="  Assignment operator
+		public static readonly Symbol OrBits = GSymbol.Get("'|");     //!< "|" Bitwise or operator
+		public static readonly Symbol AndBits = GSymbol.Get("'&");    //!< "&" Bitwise and operator. Also, address-of (unary &)
+		public static readonly Symbol _AddressOf = GSymbol.Get("'&"); //!< Alias for AndBits
+		public static readonly Symbol NotBits = GSymbol.Get("'~");    //!< Unary bitwise inversion operator
+		public static readonly Symbol _Concat = GSymbol.Get("'~");    //!< Alias for NotBits. Concat operator in D
+		public static readonly Symbol _Destruct = GSymbol.Get("'~");  //!< Alias for NotBits.
+		public static readonly Symbol XorBits = GSymbol.Get("'^");    //!< "^" Bitwise exclusive-or operator
 		
-		public static readonly Symbol Braces = GSymbol.Get("{}"); //!< "{}" Creates a scope.
-		public static readonly Symbol IndexBracks = GSymbol.Get("_[]"); //!< "_[]" indexing operator
+		public static readonly Symbol Braces = GSymbol.Get("'{}"); //!< "{}" Creates a scope.
+		public static readonly Symbol IndexBracks = GSymbol.Get("'_[]"); //!< "_[]" indexing operator
 		                                                          //!< foo[1, A] <=> @`_[]`(foo, 1, A), but in a type context, Foo[] <=> #of(@`[]`, Foo)
-		public static readonly Symbol Array = GSymbol.Get("[]");  //!< Used for list/array literals. Not used for attributes.
-		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`[]`)
-		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("[,]"); //!< "[,]" int[,] <=> #of(@`[,]`, int)
+		public static readonly Symbol Array = GSymbol.Get("#[]");  //!< Used for list/array literals. Not used for attributes.
+		public static readonly Symbol _Bracks = Array;            //!< Synonym for Array (@@`#[]`)
+		public static readonly Symbol TwoDimensionalArray = GSymbol.Get("#[,]"); //!< int[,] <=> #of(@`#[,]`, int)
 
 		// New Symbols for C# 5 and 6 (NullDot `?.` is defined elsewhere, since EC# already supported it)
 		public static readonly Symbol Async = GSymbol.Get("#async"); //!< [#async] Task Foo(); <=> async Task Foo();
 		                              // async is a normal contextual attribute so it needs no special parser support.
 		public static readonly Symbol Await = GSymbol.Get("await"); //!< await(x); <=> await x; (TENTATIVE: should this be changed to #await?)
-		public static readonly Symbol NullIndexBracks = GSymbol.Get("?[]"); //!< "?[]" indexing operator of C# 6
+		public static readonly Symbol NullIndexBracks = GSymbol.Get("'?[]"); //!< "?[]" indexing operator of C# 6
 		                              //!< @`?[]`(foo, #(1, A)) <=> foo?[1, A] (TENTATIVE, may be changed later)
-		public static readonly Symbol InitializerAssignment = GSymbol.Get("[]="); //!< @`[]=`(0, 1, x) <=> [0, 1]=x
+		public static readonly Symbol InitializerAssignment = GSymbol.Get("'[]="); //!< @`[]=`(0, 1, x) <=> [0, 1]=x
 		                              // (TENTATIVE, and only supported in 'new' initializer blocks)
 		
 		/// <summary># is used for lists of things in definition constructs, e.g. 
@@ -74,9 +74,9 @@ namespace Loyc.Syntax
 		public static readonly Symbol AltList = GSymbol.Get("#");
 		public static readonly Symbol _HashMark = GSymbol.Get("#");
 
-		public static readonly Symbol QuestionMark = GSymbol.Get("?");     //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
+		public static readonly Symbol QuestionMark = GSymbol.Get("'?");    //!< "?" Conditional operator. (a?b:c) <=> @`?`(a,b,c) and int? <=> #of(@`?`, int)
 		public static readonly Symbol Of = GSymbol.Get("#of");             //!< "#of" for giving generic arguments. #of(List,int) <=> List<int>
-		public static readonly Symbol Dot = GSymbol.Get(".");              //!< "." binary dot operator, e.g. string.Join
+		public static readonly Symbol Dot = GSymbol.Get("'.");             //!< "." binary dot operator, e.g. string.Join
 		public static readonly Symbol NamedArg = GSymbol.Get("#namedArg"); //!< "#namedArg" Named argument e.g. #namedarg(x, 0) <=> x: 0
 		public static readonly Symbol New = GSymbol.Get("#new");           //!< "#new": new Foo(x) { a } <=> #new(Foo(x), a);  new[] { ... } <=> #new(@`[]`(), ...)
 		public static readonly Symbol Out = GSymbol.Get("#out");           //!< "#out": out x <=> [#out] x
@@ -87,26 +87,26 @@ namespace Loyc.Syntax
 		public static readonly Symbol As = GSymbol.Get("#as");             //!< "#as":   #as(x,string) <=> x as string <=> x(as string)
 		public static readonly Symbol Is = GSymbol.Get("#is");             //!< "#is":   #is(x,string) <=> x is string
 		public static readonly Symbol Cast = GSymbol.Get("#cast");         //!< "#cast": #cast(x,int) <=> (int)x <=> x(-> int)
-		public static readonly Symbol NullCoalesce = GSymbol.Get("??");    //!< "??":    a ?? b <=> @`??`(a, b)
-		public static readonly Symbol PtrArrow = GSymbol.Get("->");        //!< "->":    a->b   <=> @`->`(a, b)
-		public static readonly Symbol ColonColon = GSymbol.Get("::");      //!< "::" Scope resolution operator in many languages
-		public static readonly Symbol Lambda = GSymbol.Get("=>");          //!< "=>" used to define an anonymous function
+		public static readonly Symbol NullCoalesce = GSymbol.Get("'??");   //!< "??":    a ?? b <=> @`??`(a, b)
+		public static readonly Symbol PtrArrow = GSymbol.Get("'->");       //!< "->":    a->b   <=> @`->`(a, b)
+		public static readonly Symbol ColonColon = GSymbol.Get("'::");     //!< "::" Scope resolution operator in many languages
+		public static readonly Symbol Lambda = GSymbol.Get("'=>");         //!< "=>" used to define an anonymous function
 		public static readonly Symbol Default = GSymbol.Get("#default");   //!< "#default" for the default(T) pseudofunction in C#
 
 		// Compound assignment
-		public static readonly Symbol NullCoalesceSet = GSymbol.Get("??="); //!< "??=": `a ??= b` means `a = a ?? b`
-		public static readonly Symbol MulSet = GSymbol.Get("*=");           //!< "*=" multiply-and-set operator
-		public static readonly Symbol DivSet = GSymbol.Get("/=");           //!< "/=" divide-and-set operator
-		public static readonly Symbol ModSet = GSymbol.Get("%=");           //!< "%=" set-to-remainder operator
-		public static readonly Symbol SubSet = GSymbol.Get("-=");           //!< "-=" subtract-and-set operator
-		public static readonly Symbol AddSet = GSymbol.Get("+=");           //!< "+=" add-and-set operator
-		public static readonly Symbol ConcatSet = GSymbol.Get("~=");        //!< "~=" concatenate-and-set operator
-		public static readonly Symbol ShrSet = GSymbol.Get(">>=");          //!< ">>=" shift-right-by operator
-		public static readonly Symbol ShlSet = GSymbol.Get("<<=");          //!< "<<=" shift-left-by operator
-		public static readonly Symbol ExpSet = GSymbol.Get("**=");          //!< "**=" raise-to-exponent-and-set operator
-		public static readonly Symbol XorBitsSet = GSymbol.Get("^=");       //!< "^=" bitwise-xor-by operator
-		public static readonly Symbol AndBitsSet = GSymbol.Get("&=");       //!< "&=" bitwise-and-with operator
-		public static readonly Symbol OrBitsSet = GSymbol.Get("|=");        //!< "|=" set-bits operator
+		public static readonly Symbol NullCoalesceAssign = GSymbol.Get("'??="); //!< "??=": `a ??= b` means `a = a ?? b`
+		public static readonly Symbol MulAssign = GSymbol.Get("'*=");           //!< "*=" multiply-and-set operator
+		public static readonly Symbol DivAssign = GSymbol.Get("'/=");           //!< "/=" divide-and-set operator
+		public static readonly Symbol ModAssign = GSymbol.Get("'%=");           //!< "%=" set-to-remainder operator
+		public static readonly Symbol SubAssign = GSymbol.Get("'-=");           //!< "-=" subtract-and-set operator
+		public static readonly Symbol AddAssign = GSymbol.Get("'+=");           //!< "+=" add-and-set operator
+		public static readonly Symbol ConcatAssign = GSymbol.Get("'~=");        //!< "~=" concatenate-and-set operator
+		public static readonly Symbol ShrAssign = GSymbol.Get("'>>=");          //!< ">>=" shift-right-by operator
+		public static readonly Symbol ShlAssign = GSymbol.Get("'<<=");          //!< "<<=" shift-left-by operator
+		public static readonly Symbol ExpAssign = GSymbol.Get("'**=");          //!< "**=" raise-to-exponent-and-set operator
+		public static readonly Symbol XorBitsAssign = GSymbol.Get("'^=");       //!< "^=" bitwise-xor-by operator
+		public static readonly Symbol AndBitsAssign = GSymbol.Get("'&=");       //!< "&=" bitwise-and-with operator
+		public static readonly Symbol OrBitsAssign = GSymbol.Get("'|=");        //!< "|=" set-bits operator
 
 		// Executable statements
 		public static readonly Symbol If = GSymbol.Get("#if");               //!< e.g. #if(c,x,y) and #if(c,x); I wanted it to be the conditional operator too, but the semantics are a bit different
@@ -166,10 +166,10 @@ namespace Loyc.Syntax
 		public static readonly Symbol ArrayInit = GSymbol.Get("#arrayInit"); //!< C# e.g. int[] x = {1,2} <=> int[] x = #arrayInit(1, 2)
 
 		public static readonly Symbol StackAlloc = GSymbol.Get("#stackalloc"); //!< #stackalloc for C# stackalloc (TODO)
-		public static readonly Symbol Backslash = GSymbol.Get(@"\");    //!< "\" operator
-		public static readonly Symbol DoubleBang = GSymbol.Get(@"!!");  //!< "!!" operator
-		public static readonly Symbol _RightArrow = GSymbol.Get(@"->"); //!< Alias for PtrArrow
-		public static readonly Symbol LeftArrow = GSymbol.Get(@"<-");   //!< "<-" operator
+		public static readonly Symbol Backslash = GSymbol.Get(@"'\");    //!< "\" operator
+		public static readonly Symbol DoubleBang = GSymbol.Get(@"'!!");  //!< "!!" operator
+		public static readonly Symbol _RightArrow = GSymbol.Get(@"'->"); //!< Alias for PtrArrow
+		public static readonly Symbol LeftArrow = GSymbol.Get(@"'<-");   //!< "<-" operator
 
 		public static readonly Symbol Readonly = GSymbol.Get("#readonly"); //!< "#readonly" e.g. readonly int X; <=> [#readonly] #var(#int, X);
 		public static readonly Symbol Const = GSymbol.Get("#const");       //!< "#const"    e.g. const int X = 1; <=> [#const] #var(#int, X = 1);
@@ -196,19 +196,19 @@ namespace Loyc.Syntax
 		public static readonly Symbol BadCode = GSymbol.Get("#badCode");
 
 		// Enhanced C# stuff (node names)
-		public static readonly Symbol NullDot = GSymbol.Get("?.");       //!< "?."  safe navigation ("null dot") operator
-		public static readonly Symbol Exp = GSymbol.Get("**");           //!< "**"  exponent operator
-		public static readonly Symbol In = GSymbol.Get("#in");           //!< "#in" membership test operator
-		public static readonly Symbol Substitute = GSymbol.Get(@"$");    //!< "$"   substitution operator
-		public static readonly Symbol _TemplateArg = GSymbol.Get(@"$");  //!< Alias for Substitude
-		public static readonly Symbol DotDot = GSymbol.Get("..");        //!< ".." Binary range operator (exclusive)
-		public static readonly Symbol DotDotDot = GSymbol.Get("...");    //!< "..." Binary range operator (inclusive)
-		public static readonly Symbol Tuple = GSymbol.Get("#tuple");     //!< "#tuple": (1, "a") <=> #tuple(1, "a")
-		public static readonly Symbol QuickBind = GSymbol.Get("=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
-		public static readonly Symbol QuickBindSet = GSymbol.Get(":=");  //!< ":=" Quick variable-creation operator (variable name on left)
-		public static readonly Symbol Fn = GSymbol.Get("#fn");           //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
-		public static readonly Symbol Constructor = GSymbol.Get("#cons");//!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
-		public static readonly Symbol Forward = GSymbol.Get("==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
+		public static readonly Symbol NullDot = GSymbol.Get("'?.");       //!< "?."  safe navigation ("null dot") operator
+		public static readonly Symbol Exp = GSymbol.Get("'**");           //!< "**"  exponent operator
+		public static readonly Symbol In = GSymbol.Get("#in");            //!< "#in" membership test operator
+		public static readonly Symbol Substitute = GSymbol.Get(@"'$");    //!< "$"   substitution operator
+		public static readonly Symbol _TemplateArg = GSymbol.Get(@"'$");  //!< Alias for Substitude
+		public static readonly Symbol DotDot = GSymbol.Get("'..");        //!< ".." Binary range operator (exclusive)
+		public static readonly Symbol DotDotDot = GSymbol.Get("'...");    //!< "..." Binary range operator (inclusive)
+		public static readonly Symbol Tuple = GSymbol.Get("#tuple");      //!< "#tuple": (1, "a") <=> #tuple(1, "a")
+		public static readonly Symbol QuickBind = GSymbol.Get("'=:");     //!< "=:" Quick variable-creation operator (variable name on right). In consideration: may be changed to ":::"
+		public static readonly Symbol QuickBindAssign = GSymbol.Get("':="); //!< ":=" Quick variable-creation operator (variable name on left)
+		public static readonly Symbol Fn = GSymbol.Get("#fn");            //!< e.g. #fn(#void, Foo, #(#var(List<int>, list)), {return;}) <=> void Foo(List<int> list) {return;}
+		public static readonly Symbol Constructor = GSymbol.Get("#cons"); //!< e.g. #cons(@``, Foo, #(), {return;}) <=> this() {return;)
+		public static readonly Symbol Forward = GSymbol.Get("'==>");      //!< "==>" forwarding operator e.g. int X ==> _x; <=> #property(#int32, X, @`==>`(_x));
 		public static readonly Symbol UsingCast = GSymbol.Get("#usingCast"); //!< #usingCast(x,int) <=> x using int <=> x(using int)
 		                                                                     //!< #using is reserved for the using statement: using(expr) {...}
 		public static readonly Symbol IsLegal = GSymbol.Get("#isLegal");     //!< "#isLegal" TODO
@@ -295,11 +295,12 @@ namespace Loyc.Syntax
 		public static readonly Symbol Dynamic = GSymbol.Get("#dynamic"); //!< "#dynamic" dynamically-typed variable type
 
 		// Tokens
-		public static readonly Symbol Colon = GSymbol.Get(":");          //!< ":" token value for colon
-		public static readonly Symbol Semicolon = GSymbol.Get(";");      //!< ";" token value for semicolon
+		public static readonly Symbol Colon = GSymbol.Get("':");         //!< ":" token value for colon
+		public static readonly Symbol Semicolon = GSymbol.Get("';");     //!< ";" token value for semicolon
+		public static readonly Symbol AtSign = GSymbol.Get("'@");        //!< "@" token value for at sign
 		public static readonly Symbol Do = GSymbol.Get("#do");           //!< "#do" token value for do keyword, not to be confused with #doWhile
 		public static readonly Symbol Else = GSymbol.Get("#else");       //!< "#else" token value for else keyword
-		public static readonly Symbol Comma = GSymbol.Get(",");          //!< "," token value for comma
+		public static readonly Symbol Comma = GSymbol.Get("',");         //!< "," token value for comma
 			// (C comma operator: all arguments are evaluated and the result of the expression is the value of the last argument. This is equivalent to the way we tentatively define #)
 
 		// Trivia
@@ -339,11 +340,11 @@ namespace Loyc.Syntax
 		/// is true, or 0 if the symbol does not represent an array type.</summary>
 		public static int CountArrayDimensions(Symbol s)
 		{
-			if (s.Name.Length >= 2 && s.Name.StartsWith("[") && s.Name[s.Name.Length-1] == ']') {
-				for (int i = 1; i < s.Name.Length-1; i++)
+			if (s.Name.Length >= 3 && s.Name.StartsWith("#[") && s.Name[s.Name.Length-1] == ']') {
+				for (int i = 2; i < s.Name.Length-1; i++)
 					if (s.Name[i] != ',')
 						return 0;
-				return s.Name.Length-1;
+				return s.Name.Length-2;
 			}
 			return 0;
 		}
@@ -354,7 +355,7 @@ namespace Loyc.Syntax
 			if (dims <= 0) throw new ArgumentException("GetArrayKeyword(dims <= 0)");
 			if (dims == 1) return Array;
 			if (dims == 2) return TwoDimensionalArray;
-			return GSymbol.Get("[" + new string(',', dims-1) + "]");
+			return GSymbol.Get("#[" + new string(',', dims-1) + "]");
 		}
 		public static bool IsTriviaSymbol(Symbol name) { return name.Name.StartsWith("#trivia_"); }
 	}

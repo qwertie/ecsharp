@@ -23,8 +23,11 @@ namespace Loyc.Ecs
 		static readonly HashSet<Symbol> SimpleStmts = EcsNodePrinter.SimpleStmts;
 		static readonly HashSet<Symbol> SpaceDefinitionStmts = EcsNodePrinter.SpaceDefinitionStmts;
 		static readonly HashSet<Symbol> OperatorIdentifiers = EcsNodePrinter.OperatorIdentifiers;
-		static readonly HashSet<Symbol> AssignmentOperators = EcsNodePrinter.SymbolSet(
-			"=", "*=", "-=", "+=", "/=", "%=", ">>=", "<<=", "^=", "&=", "|=", "??=", ":=");
+		static readonly HashSet<Symbol> AssignmentOperators = new HashSet<Symbol> {
+			S.Assign, S.MulAssign, S.SubAssign, S.AddAssign, S.DivAssign, S.ModAssign, S.ShrAssign,
+			S.ShlAssign, S.XorBitsAssign, S.AndBitsAssign, S.OrBitsAssign, S.NullCoalesceAssign, S.QuickBindAssign,
+			S.ExpAssign, S.ConcatAssign
+		};
 
 		/// <summary>This is needed by the EC# node printer, but perhaps no one else.</summary>
 		public enum Pedantics {

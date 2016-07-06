@@ -200,6 +200,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Parser\EcsLexerGrammar.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EcsLexerGrammar.les</DependentUpon>
+    </Compile>
     <Compile Include="Parser\EcsParserGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -213,11 +218,6 @@
     <Compile Include="EcsValidators.cs" />
     <Compile Include="Parser\EcsLanguageService.cs" />
     <Compile Include="Parser\EcsLexer.cs" />
-    <Compile Include="Parser\EcsLexerGrammar.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EcsLexerGrammar.les</DependentUpon>
-    </Compile>
     <Compile Include="Tests\EcsLexerTests.cs" />
     <Compile Include="Parser\EcsParser.cs" />
     <Compile Include="Parser\EcsPreprocessor.cs" />
@@ -253,7 +253,7 @@
     <None Include="Parser\EcsLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <CustomToolNamespace>--timeout=20</CustomToolNamespace>
-      <LastGenOutput>EcsLexerGrammar.cs</LastGenOutput>
+      <LastGenOutput>EcsLexerGrammar.out.cs</LastGenOutput>
     </None>
     <None Include="Parser\EcsParserGrammar.les">
       <Generator>LLLPG</Generator>

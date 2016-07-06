@@ -67,9 +67,9 @@ namespace Loyc.LLParserGenerator
 
 		internal static Func<LNode, LNode> GetStandardResultSaver(LNode lhs, Symbol @operator)
 		{
-			if (@operator == S.AddSet)
+			if (@operator == S.AddAssign)
 				return result => F.Call(F.Dot(lhs, _Add), result);
-			else if (@operator == S.QuickBindSet)
+			else if (@operator == S.QuickBindAssign)
 				return result => F.Call(S.Var, F.Missing, F.Call(S.Assign, lhs, result));
 			else if (@operator.Name.EndsWith(":"))
 				return null;

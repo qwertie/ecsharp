@@ -144,14 +144,14 @@ namespace Loyc.LLParserGenerator
 		
 		#region Token reclassification
 
-		static readonly Symbol _EqGate = GSymbol.Get("<=>");
-		static readonly Symbol _ColonSet = GSymbol.Get(":=");
-		static readonly Symbol _AddColon = GSymbol.Get("+:");
-		static readonly Symbol _AndNot = GSymbol.Get("&!");
-		static readonly Symbol _SufStar = GSymbol.Get("suf*");
-		static readonly Symbol _SufPlus = GSymbol.Get("suf+");
-		static readonly Symbol _SufOpt = GSymbol.Get("suf?");
-		static readonly Symbol _SufBang = GSymbol.Get("suf!");
+		static readonly Symbol _EqGate = GSymbol.Get("'<=>");
+		static readonly Symbol _ColonSet = GSymbol.Get("':=");
+		static readonly Symbol _AddColon = GSymbol.Get("'+:");
+		static readonly Symbol _AndNot = GSymbol.Get("'&!");
+		static readonly Symbol _SufStar = GSymbol.Get("'*suf");
+		static readonly Symbol _SufPlus = GSymbol.Get("'+suf");
+		static readonly Symbol _SufOpt = GSymbol.Get("'?suf");
+		static readonly Symbol _SufBang = GSymbol.Get("'!suf");
 		static readonly Symbol _Nongreedy = GSymbol.Get("nongreedy");
 		static readonly Symbol _Greedy = GSymbol.Get("greedy");
 		static readonly Symbol _Default = GSymbol.Get("default");
@@ -225,7 +225,7 @@ namespace Loyc.LLParserGenerator
 					}
 					if (token.Value == S.Colon && list[i].Value == S.Assign) { // :=
 						i++;
-						token = token.WithValue(S.QuickBindSet);
+						token = token.WithValue(S.QuickBindAssign);
 						newType = TT.Assignment;
 						break;
 					}

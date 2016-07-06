@@ -126,7 +126,7 @@ namespace Loyc.Syntax.Lexing
 			");
 			Expect(list, A(TT.Id, TT.LBrace, TT.RBrace, TT.Semicolon), _("a"));
 			Expect(list[1].Children, A(TT.Id, TT.LParen, TT.RParen, TT.Semicolon), _("b"));
-			Expect(list[1].Children[1].Children, A(TT.Id, TT.Not, TT.RBrace), _("frack"), _("!"));
+			Expect(list[1].Children[1].Children, A(TT.Id, TT.Not, TT.RBrace), _("frack"), _("'!"));
 		}
 
 		[DebuggerStepThrough] static TokenType[] A(params TokenType[] list) { return list; }

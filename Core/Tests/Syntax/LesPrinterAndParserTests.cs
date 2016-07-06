@@ -88,14 +88,13 @@ namespace Loyc.Syntax.Les
 			Exact("(a ? b : c);",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
 			Exact("a ?? b <= c;",  F.Call(S.LE, F.Call(S.NullCoalesce, a, b), c));
 			Exact("a - b / c**2;", F.Call(S.Sub, a, F.Call(S.Div, b, F.Call(S.Exp, c, two))));
-			Exact("a >>= 1;",      F.Call(S.ShrSet, a, one));
+			Exact("a >>= 1;",      F.Call(S.ShrAssign, a, one));
 			Exact("a.b?.c(x);",    F.Call(S.NullDot, F.Dot(a, b), F.Call(c, x)));
 			
 			// Custom ops
-			Exact("a |-| b + c;",     F.Call("|-|", a, F.Call(S.Add, b, c)));
-			Exact("a.b!!!c .?. 1;", F.Call(".?.", F.Call("!!!", F.Dot(a, b), c), one));
-			Exact("a /+ b +* c;",     F.Call("/+", a, F.Call("+*", b, c)));
-			//Expr(@"a \Foo b",     F.Call("Foo", a, b));
+			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
+			Exact("a.b!!!c .?. 1;", F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
+			Exact("a /+ b +* c;",   F.Call("'/+", a, F.Call("'+*", b, c)));
 		}
 
 		[Test]
@@ -126,8 +125,8 @@ namespace Loyc.Syntax.Les
 		public void SuffixOps()
 		{
 			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
-			Stmt(@"a.b --;", F.Call(@"suf--", F.Call(S.Dot, a, b)));
-			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"suf-<>-", b)));
+			Stmt(@"a.b --;", F.Call(@"'--suf", F.Call(S.Dot, a, b)));
+			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'-<>-suf", b)));
 		}
 
 		[Test]
@@ -136,7 +135,7 @@ namespace Loyc.Syntax.Les
 			Stmt(@"a `x` b `Foo` c", F.Call(Foo, F.Call(x, a, b), c));
 			//Stmt(@"a \x b \Foo c", F.Call(Foo, F.Call(x, a, b), c));
 			Stmt(@"(a `is` b) `is` bool", F.Call(_("is"), F.InParens(F.Call(_("is"), a, b)), _("bool")));
-			Stmt(@"a `=` b && c", F.Call(_("&&"), F.Call(_("="), a, b), c));
+			Stmt(@"a `=` b && c", F.Call(S.And, F.Call(_("="), a, b), c));
 			// Currently \* is equivalent to plain * (the backslash just indicates that the operator may contain letters)
 			//Stmt(@"a > b \and b > c", F.Call(_("and"), F.Call(S.GT, a, b), F.Call(S.GT, b, c)));
 		}

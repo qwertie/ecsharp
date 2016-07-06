@@ -377,11 +377,11 @@ namespace LeMP.Prelude.Les
 		public static LNode @for(LNode node, IMessageSink sink)
 		{
 			LNode tuple;
-			if (node.ArgCount == 2 && (tuple = node.Args[0]).Calls(S.Tuple, 3))
+			if (node.ArgCount == 2 && ((tuple = node.Args[0]).Calls(S.Tuple, 3) || tuple.Calls(S.Tuple, 2)))
 				return node.With(S.For, 
 					asAltList(tuple.Args[0]), 
 					tuple.Args[1], 
-					asAltList(tuple.Args[2]),
+					asAltList(tuple.Args[2, LNode.Missing]),
 					node.Args[1]);
 			else if (node.ArgCount == 4)
 				return node.With(S.For,
@@ -393,7 +393,9 @@ namespace LeMP.Prelude.Les
 		}
 
 		static LNode asAltList(LNode node) {
-			return node.Calls(S.AltList) ? node : LNode.Call(S.AltList, LNode.List(node), node);
+			return node.Calls(S.AltList) ? node
+			     : node.IsIdNamed(GSymbol.Empty) ? LNode.Call(S.AltList, node)
+			     : LNode.Call(S.AltList, LNode.List(node), node);
 		}
 
 		static readonly Symbol _in = GSymbol.Get("in");
@@ -661,7 +663,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "->")]
+		[LexicalMacro(@"cast(Expr, Type); Expr \cast Type", "Converts an expression to a new data type.", "cast", "'cast", "'->")]
 		public static LNode cast(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -669,7 +671,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.")]
+		[LexicalMacro(@"Expr `as` Type", "Attempts to cast a reference down to a derived class. The result is null if the cast fails.", "as", "'as")]
 		public static LNode @as(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -677,7 +679,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).")]
+		[LexicalMacro(@"Expr `is` Type", "Determines whether a value is an instance of a specified type (@false or @true).", "is", "'is")]
 		public static LNode @is(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2)
@@ -688,7 +690,7 @@ namespace LeMP.Prelude.Les
 		// only works as long as : is allowed
 		[LexicalMacro(@"condition ? (t : f)", 
 			"Attempts to cast a reference down to a derived class. The result is null if the cast fails.", 
-			"?", Mode = MacroMode.Normal | MacroMode.Passive)]
+			"'?", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode QuestionMark(LNode node, IMessageSink sink)
 		{
 			if (node.ArgCount == 2 && node.Args[1].Calls(S.Colon, 2))
@@ -696,8 +698,7 @@ namespace LeMP.Prelude.Les
 			return null;
 		}
 
-		// only works as long as : is allowed
-		[LexicalMacro(@"arg: value", "Represents a named argument.", ":")]
+		[LexicalMacro(@"arg: value", "Represents a named argument.", "':")]
 		public static LNode NamedArg(LNode node, IMessageSink sink)
 		{
 			if (node.Calls(S.Colon, 2) && node.Args[0].IsId)
@@ -794,7 +795,7 @@ namespace LeMP.Prelude.Les
 		[LexicalMacro("const Name::Type; const Name::Type = Value; const Name = Value", "Indicates a compile-time constant.")]
 		public static LNode @const(LNode node, IMacroContext context) { return TranslateVarAttr(node, context, S.Const); }
 
-		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "::", Mode = MacroMode.Normal | MacroMode.Passive)]
+		[LexicalMacro("Name::Type", "Defines a variable or field in the current scope.", "'::", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode ColonColon(LNode node, IMessageSink context)
 		{
 			var a = node.Args;
@@ -812,7 +813,7 @@ namespace LeMP.Prelude.Les
 			}
 			return null;
 		}
-		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "=", ":=", Mode = MacroMode.Normal | MacroMode.Passive)]
+		[LexicalMacro("Name::Type = Value; Name::Type := Value", "Defines a variable or field in the current scope.", "'=", "':=", Mode = MacroMode.Normal | MacroMode.Passive)]
 		public static LNode ColonColonInit(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
