@@ -22,39 +22,39 @@ namespace Loyc.Ecs.Tests
 			Option(Mode.Both,       @"yield return x;", @"yield return x;", Attr(WordAttr("yield"), F.Call(S.Return, x)), p => p.SetPlainCSharpMode());
 			
 			Action<EcsNodePrinter> parens = p => p.AllowChangeParentheses = true;
-			Option(Mode.PrintBothParseFirst, @"@`+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
-			Option(Mode.PrintBothParseFirst, @"@`-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
+			Option(Mode.PrintBothParseFirst, @"@`'+`(a, b) / c;", @"(a + b) / c;", F.Call(S.Div, F.Call(S.Add, a, b), c), parens);
+			Option(Mode.PrintBothParseFirst, @"@`'-`(a)++;",      @"(-a)++;",      F.Call(S.PostInc, F.Call(S._Negate, a)), parens);
 			
 			// Put attributes in various locations and watch them all disappear
 			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
-			Option(Mode.PrintBothParseFirst,  "[Foo]\na + b;",         @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"public a(x);",          @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",          @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",           @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`_[]`(static x, a);",  @"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`++`([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"@`suf++`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",      @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",  @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
-			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",  @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst,  "[Foo]\na + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'_[]`(static x, a);",  @"x[a];",      F.Call(S.IndexBracks, Attr(@static, x), a), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'+`([Foo] a, 1);",     @"a + 1;",     F.Call(S.Add, Attr(Foo, a), one), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'+`(a, [Foo] 1);",     @"a + 1;",     F.Call(S.Add, a, Attr(Foo, one)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'?`(a, [#foo] b, c);", @"a ? b : c;", F.Call(S.QuestionMark, a, Attr(fooKW, b), c), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'?`(a, b, public c);", @"a ? b : c;", F.Call(S.QuestionMark, a, b, Attr(@public, c)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'++`([Foo] x);",       @"++x;",       F.Call(S.PreInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"@`'++suf`([Foo] x);",    @"x++;",       F.Call(S.PostInc, Attr(Foo, x)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"x(->static Foo);",       @"(Foo) x;",   F.Call(S.Cast, x, Attr(@static, Foo)), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(static Foo, x);",   @"Foo x;",     F.Vars(Attr(@static, Foo), x), dropAttrs);
+			Option(Mode.PrintBothParseFirst, @"#var(Foo, static x);",   @"Foo x;",     F.Vars(Foo, Attr(@static, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo<a>, [#foo] b, c = 1);",@"Foo<a> b, c = 1;", F.Vars(F.Of(Foo, a), Attr(fooKW, b), F.Assign(c, one)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(Foo!(static a), b);",      @"Foo<a> b;",        F.Vars(F.Of(Foo, Attr(@static, a)), b), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"#var(#of(static Foo, a), b);",  @"Foo<a> b;",        F.Vars(F.Of(Attr(@static, Foo), a), b), dropAttrs);
-			Option(Mode.PrinterTest,         @"([Foo] a)(x);",        @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
+			Option(Mode.PrinterTest,         @"([Foo] a)(x);",          @"a(x);",      F.Call(Attr(Foo, a), x), dropAttrs);
 		}
 
 		[Test]
 		public void PrintWrongArityOperators()
 		{
-			Expr("@`_[]`()",         F.Call(S.IndexBracks));
-			Expr("@`suf++`(a, b)",  F.Call(S.PostInc, a, b));
-			Expr("@`suf--`()",      F.Call(S.PostDec));
-			Expr("@`.`()", F.Call(S.Dot));
-			Expr("@`*`()", F.Call(S.Mul));
+			Expr("@`'_[]`()",        F.Call(S.IndexBracks));
+			Expr("@`'++suf`(a, b)",  F.Call(S.PostInc, a, b));
+			Expr("@`'--suf`()",      F.Call(S.PostDec));
+			Expr("@`'.`()", F.Call(S.Dot));
+			Expr("@`'*`()", F.Call(S.Mul));
 			Stmt("#break;",            _(S.Break));
 			Stmt("#continue;",         _(S.Continue));
 			Stmt("#return;",           _(S.Return));
@@ -94,8 +94,8 @@ namespace Loyc.Ecs.Tests
 			var neg_a = F.Call(S._Negate, a);
 			Expr("(Foo) - a",         F.Call(S.Sub, F.InParens(Foo), a));
 			Expr("(Foo) (-a)",        F.Call(S.Cast, F.InParens(neg_a), Foo));
-			Expr("(Foo) @`-`(a)",    F.Call(S.Cast, neg_a, Foo));
-			Expr("(Foo) @`+`(a)",    F.Call(S.Cast, F.Call(S._UnaryPlus, a), Foo));
+			Expr("(Foo) @`'-`(a)",    F.Call(S.Cast, neg_a, Foo));
+			Expr("(Foo) @`'+`(a)",    F.Call(S.Cast, F.Call(S._UnaryPlus, a), Foo));
 			var Foo_a = F.Of(Foo, a); 
 			Expr("(Foo<a>) (-a)",     F.Call(S.Cast, F.InParens(neg_a), Foo_a));
 			Expr("([] Foo)(-a)",     F.Call(F.InParens(Foo), neg_a));
@@ -109,7 +109,7 @@ namespace Loyc.Ecs.Tests
 			// TODO
 			//Expr("x(->a * b)",        F.Call(S.Cast, x, F.Call(S.Mul, a, b)));
 			Stmt("Foo* a;",           F.Vars(F.Of(_(S._Pointer), Foo), a));
-			Stmt("Foo `*` a = b;",   F.Assign(F.Call(S.Mul, Foo, a), b)); // @*(Foo, a) = b; would also be acceptable
+			Stmt("Foo `'*` a = b;",   F.Assign(F.Call(S.Mul, Foo, a), b)); // @*(Foo, a) = b; would also be acceptable
 		}
 
 		[Test]
@@ -140,24 +140,24 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void PrinterBreakingAttributes()
 		{
-			Stmt("@`.`([Foo] a, b).c;",   F.Dot(Attr(Foo, a), b, c));
-			Stmt("@`.`(a, [Foo] b).c;",   F.Dot(a, Attr(Foo, b), c));
-			Stmt("@`.`(a.b, [Foo] c);",   F.Dot(a, b, Attr(Foo, c)));
-			Stmt("@`.`([Foo] a, b, c);",  F.Call(S.Dot, Attr(Foo, a), b, c));
-			Stmt("@`.`(a, b, [Foo] c);",  F.Call(S.Dot, a, b, Attr(Foo, c)));
-			Expr("@`+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
-			Expr("@`+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
-			Expr("@`_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
-			Expr("@`?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
-			Expr("@`?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
-			Expr("@`?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
+			Stmt("@`'.`([Foo] a, b).c;",   F.Dot(Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, [Foo] b).c;",   F.Dot(a, Attr(Foo, b), c));
+			Stmt("@`'.`(a.b, [Foo] c);",   F.Dot(a, b, Attr(Foo, c)));
+			Stmt("@`'.`([Foo] a, b, c);",  F.Call(S.Dot, Attr(Foo, a), b, c));
+			Stmt("@`'.`(a, b, [Foo] c);",  F.Call(S.Dot, a, b, Attr(Foo, c)));
+			Expr("@`'+`([Foo] a, b)",    F.Call(S.Add, Attr(Foo, a), b));
+			Expr("@`'+`(a, [Foo] b)",    F.Call(S.Add, a, Attr(Foo, b)));
+			Expr("@`'_[]`([Foo] a, b)",  F.Call(S.IndexBracks, Attr(Foo, a), b));
+			Expr("@`'?`([Foo] c, a, b)", F.Call(S.QuestionMark, Attr(Foo, c), a, b));
+			Expr("@`'?`(c, [Foo] a, b)", F.Call(S.QuestionMark, c, Attr(Foo, a), b));
+			Expr("@`'?`(c, a, [Foo] b)", F.Call(S.QuestionMark, c, a, Attr(Foo, b)));
 		}
 
 		[Test]
 		public void PrinterBreakingAttrInHead()
 		{
 			// Normally we can use prefix notation when children have attributes...
-			Stmt("@`+=`([a] b, c);",    F.Call(S.AddSet, Attr(a, b), c));
+			Stmt("@`'+=`([a] b, c);",    F.Call(S.AddAssign, Attr(a, b), c));
 			// But this is no solution if the head of a node has attributes. The only
 			// workaround is to add parenthesis.
 			Stmt("[a]\n([b] c)(x);", Attr(a, F.Call(Attr(b, c), x)), Mode.PrinterTest);
@@ -175,16 +175,16 @@ namespace Loyc.Ecs.Tests
 			Stmt("a + b + c;", F.Call(S.Add, F.Call(S.Add, a, b), c), parens);
 			Stmt("a = b = c;", F.Assign(a, F.Assign(b, c)), parens);
 			// But some cannot be mixed with each other, unless requested (with mixImm).
-			Option(Mode.PrintBothParseFirst, "@`<<`(a, b) + 1;",    "(a << b) + 1;",   F.Call(S.Add, F.Call(S.Shl, a, b), one), parens);
-			Option(Mode.PrintBothParseFirst, "@`+`(a, b) << 1;",    "(a + b) << 1;",   F.Call(S.Shl, F.Call(S.Add, a, b), one), parens);
-			Option(Mode.Both,                "@`+`(a, b) << 1;",    "a + b << 1;",     F.Call(S.Shl, F.Call(S.Add, a, b), one), mixImm);
+			Option(Mode.PrintBothParseFirst, "@`'<<`(a, b) + 1;",    "(a << b) + 1;",   F.Call(S.Add, F.Call(S.Shl, a, b), one), parens);
+			Option(Mode.PrintBothParseFirst, "@`'+`(a, b) << 1;",    "(a + b) << 1;",   F.Call(S.Shl, F.Call(S.Add, a, b), one), parens);
+			Option(Mode.Both,                "@`'+`(a, b) << 1;",    "a + b << 1;",     F.Call(S.Shl, F.Call(S.Add, a, b), one), mixImm);
 			// "@&(a, b) == 1;" would also be acceptable output on the left:
-			Option(Mode.PrintBothParseFirst, "a `&` b == 1;",    "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
-			Option(Mode.PrintBothParseFirst, "@`==`(a, b) & 1;",    "(a == b) & 1;",   F.Call(S.AndBits, F.Call(S.Eq, a, b), one), parens);
-			Option(Mode.Both,                "@`==`(a, b) & 1;",    "a == b & 1;",     F.Call(S.AndBits, F.Call(S.Eq, a, b), one), mixImm);
+			Option(Mode.PrintBothParseFirst, "a `'&` b == 1;",    "(a & b) == 1;",    F.Call(S.Eq, F.Call(S.AndBits, a, b), one), parens);
+			Option(Mode.PrintBothParseFirst, "@`'==`(a, b) & 1;",    "(a == b) & 1;",   F.Call(S.AndBits, F.Call(S.Eq, a, b), one), parens);
+			Option(Mode.Both,                "@`'==`(a, b) & 1;",    "a == b & 1;",     F.Call(S.AndBits, F.Call(S.Eq, a, b), one), mixImm);
 			Option(Mode.PrintBothParseFirst, "Foo(a, b) + 1;",    "(a `Foo` b) + 1;", F.Call(S.Add, Operator(F.Call(Foo, a, b)), one), parens);
 			// @+(a, b) `foo` 1; would also be acceptable output on the left:
-			Option(Mode.PrintBothParseFirst, "a `+` b `Foo` 1;", "(a + b) `Foo` 1;", Operator(F.Call(Foo, F.Call(S.Add, a, b), one)), parens);
+			Option(Mode.PrintBothParseFirst, "a `'+` b `Foo` 1;", "(a + b) `Foo` 1;", Operator(F.Call(Foo, F.Call(S.Add, a, b), one)), parens);
 		}
 
 		[Test]
@@ -195,7 +195,7 @@ namespace Loyc.Ecs.Tests
 			Expr("#new(([x] Foo)(), a)",  F.Call(S.New, F.Call(Attr(x, Foo)), a), Mode.PrinterTest);
 			Expr("#new(Foo, a)",          F.Call(S.New, Foo, a));
 			Expr("#new(Foo)",             F.Call(S.New, Foo));
-			Expr("new @`+`(a, b)",        F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
+			Expr("new @`'+`(a, b)",        F.Call(S.New, F.Call(S.Add, a, b))); // #new(@+(a, b)) would also be ok
 			Expr("#new(Foo()(), a)",      F.Call(S.New, F.Call(F.Call(Foo)), a));
 			Expr("#new",                  F.Id(S.New));
 			Expr("#new()",                F.Call(S.New));
@@ -207,8 +207,8 @@ namespace Loyc.Ecs.Tests
 		public void MiscPrinterFocusedTests()
 		{
 			// Not a type context
-			Expr("checked(@`[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
-			Expr("unchecked(@`[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("checked(@`#[]`<int>)",   F.Call(S.Checked,   F.Call(S.Of, _(S.Array), F.Int32)));
+			Expr("unchecked(@`#[]`<int>)", F.Call(S.Unchecked, F.Call(S.Of, _(S.Array), F.Int32)));
 		}
 	}
 }

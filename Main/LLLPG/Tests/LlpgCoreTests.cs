@@ -104,7 +104,7 @@ namespace Loyc.LLParserGenerator
 		bool _expectingOutput;
 		void OutputMessage(Severity type, object context, string msg, params object[] args)
 		{
-			_messageCounter++;
+			++_messageCounter;
 			var tmp = Console.ForegroundColor;
 			Console.ForegroundColor = _expectingOutput ? ConsoleColor.DarkGray : ConsoleColor.Yellow;
 			Console.WriteLine("--- at {0}:\n--- {1}: {2}", context, type, msg);
@@ -460,10 +460,10 @@ namespace Loyc.LLParserGenerator
 			// FullLL2 @{ ('a' 'b' | 'b' 'a') 'c' | ('a' 'a' | 'b' 'b') 'c' };
 			Rule Nope = Rule("FullLL2", (C('a') + 'b' | C('b') + 'a') + 'c' | (C('a') + 'a' | C('b') + 'b') + 'c');
 			_pg.AddRule(Nope);
-			
+
 			// Without Full LL(2), prediction always chooses the first alternative,
 			// so second branch completely disappears from the output.
-			_expectingOutput = true; // "Branch 2 is unreachable."
+			ExpectOutput(); // "Branch 2 is unreachable."
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"{
 				public void FullLL2()
@@ -532,6 +532,15 @@ namespace Loyc.LLParserGenerator
 					} while (false);
 				}
 			}");
+		}
+
+		private void ExpectOutput()
+		{
+			_expectingOutput = true;
+			var tmp = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.WriteLine("Note: errors or warnings are expected in this test");
+			Console.ForegroundColor = tmp;
 		}
 
 		public Pred Act(string pre, Pred pred, string post)
@@ -739,8 +748,8 @@ namespace Loyc.LLParserGenerator
 				(LNode)F.Call(S.Return, n));
 			var AddNumbers = Rule("AddNumbers", 
 				Pred.SetVar("total", Number) + 
-				Star( C('+') + Pred.Op("total", S.AddSet, Number) 
-				    | C('-') + Pred.Op("total", S.SubSet, Number)) +
+				Star( C('+') + Pred.Op("total", S.AddAssign, Number) 
+				    | C('-') + Pred.Op("total", S.SubAssign, Number)) +
 				F.Call(S.Return, F.Id("total")));
 			Number.Basis = (LNode)F.Attr(F.Public, F.Fn(F.Int32, F.Id("Number"), F.List()));
 			//Number.MethodCreator = (rule, body) => {
@@ -1038,7 +1047,7 @@ namespace Loyc.LLParserGenerator
 			var UnambigLL3 = Rule("UnambigLL3", Opt(Seq("ab")) + 'a' + Opt(C('b')), Token, 3);
 			_pg.AddRule(AmbigLL2);
 			_pg.AddRule(UnambigLL3);
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"
 				{
@@ -1086,7 +1095,7 @@ namespace Loyc.LLParserGenerator
 		{
 			// There are two ambiguities here, but thanks to the slash, only one will be reported.
 			_pg.AddRule(Rule("AmbigWithWarning", Plus(Set("[aeiou]")) / Plus(Set("[a-z]")) | Set("[aA]"), Start));
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			Assert.AreEqual(1, _messageCounter);
 		}
@@ -1135,7 +1144,7 @@ namespace Loyc.LLParserGenerator
 			// rule Bad @{ ('0'..'9'? '0'..'9'?)* };
 			// ERROR IS EXPECTED.
 			_pg.AddRule(Bad);
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
@@ -1151,7 +1160,7 @@ namespace Loyc.LLParserGenerator
 			Rule WS = Rule("WS", Plus(Set("[ \t]")), Token);
 			Rule Tokens = Rule("Tokens", Star(Number / WS), Start);
 			_pg.AddRules(Number, WS, Tokens);
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
@@ -1175,7 +1184,7 @@ namespace Loyc.LLParserGenerator
 			A.K = 3;
 			ARef.Rule = A;
 			_pg.AddRule(A);
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 //            CheckResult(result, @"
 //				{
@@ -1217,7 +1226,7 @@ namespace Loyc.LLParserGenerator
 			_pg.AddRule(Int);
 			_pg.AddRule(Expr);
 
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			Assert.GreaterOrEqual(_messageCounter, 1);
 		}
@@ -2037,7 +2046,7 @@ namespace Loyc.LLParserGenerator
 
 			_pg.CodeGenHelper = new GeneralCodeGenHelper(F.Id("TT"), false) { CastLA = false };
 			_pg.AddRules(IfStmt, Stmt, Expr);
-			_expectingOutput = true;
+			ExpectOutput();
 			LNode result = _pg.Run(_file);
 			CheckResult(result, @"{
 				public void IfStmt()

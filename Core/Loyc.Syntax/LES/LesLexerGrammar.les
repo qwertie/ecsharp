@@ -11,6 +11,7 @@ import Loyc.Syntax.Lexing;
 namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
+	using S = CodeSymbols;
 	
 	@[public, partial] class LesLexer
 	{
@@ -133,8 +134,8 @@ namespace Loyc.Syntax.Les
 			 '~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' };
 		@[extern] token NotOpChar @{
 		  ~( '~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ) };
-		@[private] token Comma     @{ ',' { _value = _Comma; } };
-		@[private] token Semicolon @{ ';' { _value = _Semicolon; } };
+		@[private] token Comma     @{ ',' { _value = S.Comma; } };
+		@[private] token Semicolon @{ ';' { _value = S.Semicolon; } };
 		@[private] token At        @{ '@' { _value = GSymbol.Empty; } };
 		@[private] token CommentStart @{ '/' ('/'|'*') };
 		@[private] token Operator  @{ OpChar+ {ParseNormalOp();} };
@@ -191,9 +192,6 @@ namespace Loyc.Syntax.Les
 				return _current = (new Token(_type -> int, _startPosition, InputPosition - _startPosition, _style, _value));
 			}
 		};
-
-		@[static, readonly] _Comma::Symbol = GSymbol.Get(",");
-		@[static, readonly] _Semicolon::Symbol = GSymbol.Get(";");
 
 		// Partial tokens used for syntax highlighting. An LES syntax highlighter
 		// can record the token continued in each line (''', """ or /*) call one

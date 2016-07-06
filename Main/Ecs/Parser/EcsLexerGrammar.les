@@ -190,117 +190,64 @@ namespace Loyc.Ecs.Parser
 			
 		// Punctuation & operators -----------------------------------------------
 
-		@[private] token Comma     @{ ',' { _type = TT.Comma; _value = _Comma; } };
-		@[private] token Semicolon @{ ';' { _type = TT.Semicolon; _value = _Semicolon; } };
-		@[private] token At        @{ '@' { _type = TT.At;    _value = _At; } };
+		@[private] token Comma     @{ ',' { _type = TT.Comma; _value = S.Comma; } };
+		@[private] token Semicolon @{ ';' { _type = TT.Semicolon; _value = S.Semicolon; } };
+		@[private] token At        @{ '@' { _type = TT.At;    _value = S.AtSign; } };
 
 		@[k(3), private] token Operator  @{
-		( "..."  { _type = TT.DotDot; _value = _DotDotDot; }
-		/ "..<"  { _type = TT.DotDot; _value = _DotDot; }
-		/ ".."  { _type = TT.DotDot; _value = _DotDot; }
-		/ "."   { _type = TT.Dot; _value = _Dot; }
-		| ">>=" { _type = TT.CompoundSet; _value = _ShrSet; }
-		/ ">="  { _type = TT.LEGE; _value = _GE; }
-		/ ">"   { _type = TT.GT; _value = _GT; }
-		/ "<<=" { _type = TT.CompoundSet; _value = _ShlSet; }
-		/ "<="  { _type = TT.LEGE; _value = _LE; }
-		/ "<"   { _type = TT.LT; _value = _LT; }
-		| "&&"  { _type = TT.And; _value = _And; }
-		/ "&="  { _type = TT.CompoundSet; _value = _AndBitsSet; }
-		/ "&"   { _type = TT.AndBits; _value = _AndBits; }
-		| "||"  { _type = TT.OrXor; _value = _Or; }
-		/ "|="  { _type = TT.CompoundSet; _value = _OrBitsSet; }
-		/ "|"   { _type = TT.OrBits; _value = _OrBits; }
-		| "^^"  { _type = TT.OrXor; _value = _Xor; }
-		/ "^="  { _type = TT.CompoundSet; _value = _XorBitsSet; }
-		/ "^"   { _type = TT.XorBits; _value = _XorBits; }
-		| ":="  { _type = TT.CompoundSet; _value = _QuickBindSet; }
-		/ "=:"  { _type = TT.QuickBind; _value = _QuickBind; }
-		/ "::"  { _type = TT.ColonColon; _value = _ColonColon; }
-		/ ":"   { _type = TT.Colon; _value = _Colon; }
-		/ "==>" { _type = TT.Forward; _value = _Forward; }
-		/ "=="  { _type = TT.EqNeq; _value = _Eq; }
-		/ "=>"  { _type = TT.LambdaArrow; _value = _LambdaArrow; }
-		/ "="   { _type = TT.Set; _value = _Set; }
-		| "!="  { _type = TT.EqNeq; _value = _Neq; }
-		/ "!"   { _type = TT.Not; _value = _Not; }
-		| "~"   { _type = TT.NotBits; _value = _NotBits; }
-		| "**=" { _type = TT.CompoundSet; _value = _ExpSet; }
-		/ "**"  { _type = TT.Power; _value = _Exp; }
-		/ "*="  { _type = TT.CompoundSet; _value = _MulSet; }
-		/ "*"   { _type = TT.Mul; _value = _Mul; }
-		| "/="  { _type = TT.CompoundSet; _value = _DivSet; }
-		/ "/"   { _type = TT.DivMod; _value = _Div; }
-		| "%="  { _type = TT.CompoundSet; _value = _ModSet; }
-		/ "%"   { _type = TT.DivMod; _value = _Mod; }
-		| "+="  { _type = TT.CompoundSet; _value = _AddSet; }
-		/ "++"  { _type = TT.IncDec; _value = _Inc; }
-		/ "+"   { _type = TT.Add; _value = _Add; }
-		| "->"  { _type = TT.PtrArrow; _value = _PtrArrow; } 
-		/ "-="  { _type = TT.CompoundSet; _value = _SubSet; }
-		/ "--"  { _type = TT.IncDec; _value = _Dec; }
-		/ "-"   { _type = TT.Sub; _value = _Sub; }
-		| "??=" { _type = TT.CompoundSet; _value = _NullCoalesceSet; }
-		/ "??"  { _type = TT.NullCoalesce; _value = _NullCoalesce; }
-		/ "?."  { _type = TT.NullDot; _value = _NullDot; }
-		/ "?"   { _type = TT.QuestionMark; _value = _QuestionMark; }
-		| "$"   { _type = TT.Substitute; _value = _Substitute; }
-		| "\\"  { _type = TT.Backslash; _value = _Backslash; }
+		( "..."  { _type = TT.DotDot; _value = S.DotDotDot; }
+		/ "..<"  { _type = TT.DotDot; _value = S.DotDot; }
+		/ ".."  { _type = TT.DotDot; _value = S.DotDot; }
+		/ "."   { _type = TT.Dot; _value = S.Dot; }
+		| ">>=" { _type = TT.CompoundSet; _value = S.ShrAssign; }
+		/ ">="  { _type = TT.LEGE; _value = S.GE; }
+		/ ">"   { _type = TT.GT; _value = S.GT; }
+		/ "<<=" { _type = TT.CompoundSet; _value = S.ShlAssign; }
+		/ "<="  { _type = TT.LEGE; _value = S.LE; }
+		/ "<"   { _type = TT.LT; _value = S.LT; }
+		| "&&"  { _type = TT.And; _value = S.And; }
+		/ "&="  { _type = TT.CompoundSet; _value = S.AndBitsAssign; }
+		/ "&"   { _type = TT.AndBits; _value = S.AndBits; }
+		| "||"  { _type = TT.OrXor; _value = S.Or; }
+		/ "|="  { _type = TT.CompoundSet; _value = S.OrBitsAssign; }
+		/ "|"   { _type = TT.OrBits; _value = S.OrBits; }
+		| "^^"  { _type = TT.OrXor; _value = S.Xor; }
+		/ "^="  { _type = TT.CompoundSet; _value = S.XorBitsAssign; }
+		/ "^"   { _type = TT.XorBits; _value = S.XorBits; }
+		| ":="  { _type = TT.CompoundSet; _value = S.QuickBindAssign; }
+		/ "=:"  { _type = TT.QuickBind; _value = S.QuickBind; }
+		/ "::"  { _type = TT.ColonColon; _value = S.ColonColon; }
+		/ ":"   { _type = TT.Colon; _value = S.Colon; }
+		/ "==>" { _type = TT.Forward; _value = S.Forward; }
+		/ "=="  { _type = TT.EqNeq; _value = S.Eq; }
+		/ "=>"  { _type = TT.LambdaArrow; _value = S.Lambda; }
+		/ "="   { _type = TT.Set; _value = S.Assign; }
+		| "!="  { _type = TT.EqNeq; _value = S.Neq; }
+		/ "!"   { _type = TT.Not; _value = S.Not; }
+		| "~"   { _type = TT.NotBits; _value = S.NotBits; }
+		/ "~="  { _type = TT.CompoundSet; _value = S.ConcatAssign; }
+		| "**=" { _type = TT.CompoundSet; _value = S.ExpAssign; }
+		/ "**"  { _type = TT.Power; _value = S.Exp; }
+		/ "*="  { _type = TT.CompoundSet; _value = S.MulAssign; }
+		/ "*"   { _type = TT.Mul; _value = S.Mul; }
+		| "/="  { _type = TT.CompoundSet; _value = S.DivAssign; }
+		/ "/"   { _type = TT.DivMod; _value = S.Div; }
+		| "%="  { _type = TT.CompoundSet; _value = S.ModAssign; }
+		/ "%"   { _type = TT.DivMod; _value = S.Mod; }
+		| "+="  { _type = TT.CompoundSet; _value = S.AddAssign; }
+		/ "++"  { _type = TT.IncDec; _value = S.PreInc; }
+		/ "+"   { _type = TT.Add; _value = S.Add; }
+		| "->"  { _type = TT.PtrArrow; _value = S.PtrArrow; } 
+		/ "-="  { _type = TT.CompoundSet; _value = S.SubAssign; }
+		/ "--"  { _type = TT.IncDec; _value = S.PreDec; }
+		/ "-"   { _type = TT.Sub; _value = S.Sub; }
+		| "??=" { _type = TT.CompoundSet; _value = S.NullCoalesceAssign; }
+		/ "??"  { _type = TT.NullCoalesce; _value = S.NullCoalesce; }
+		/ "?."  { _type = TT.NullDot; _value = S.NullDot; }
+		/ "?"   { _type = TT.QuestionMark; _value = S.QuestionMark; }
+		| "$"   { _type = TT.Substitute; _value = S.Substitute; }
+		| "\\"  { _type = TT.Backslash; _value = S.Backslash; }
 		)};
-
-		@[static, readonly] _Comma::Symbol = GSymbol.Get(",");
-		@[static, readonly] _Semicolon::Symbol = GSymbol.Get(";");
-		@[static, readonly] _At::Symbol = GSymbol.Get("@");
-		@[static, readonly] _DotDot::Symbol = GSymbol.Get("..");
-		@[static, readonly] _DotDotDot::Symbol = GSymbol.Get("...");
-		@[static, readonly] _Dot::Symbol = GSymbol.Get(".");
-		@[static, readonly] _ShrSet::Symbol = GSymbol.Get(">>=");
-		@[static, readonly] _GE::Symbol = GSymbol.Get(">=");
-		@[static, readonly] _GT::Symbol = GSymbol.Get(">");
-		@[static, readonly] _ShlSet::Symbol = GSymbol.Get("<<=");
-		@[static, readonly] _LE::Symbol = GSymbol.Get("<=");
-		@[static, readonly] _LT::Symbol = GSymbol.Get("<");
-		@[static, readonly] _And::Symbol = GSymbol.Get("&&");
-		@[static, readonly] _AndBitsSet::Symbol = GSymbol.Get("&=");
-		@[static, readonly] _AndBits::Symbol = GSymbol.Get("&");
-		@[static, readonly] _Or::Symbol = GSymbol.Get("||");
-		@[static, readonly] _OrBitsSet::Symbol = GSymbol.Get("|=");
-		@[static, readonly] _OrBits::Symbol = GSymbol.Get("|");
-		@[static, readonly] _Xor::Symbol = GSymbol.Get("^^");
-		@[static, readonly] _XorBitsSet::Symbol = GSymbol.Get("^=");
-		@[static, readonly] _XorBits::Symbol = GSymbol.Get("^");
-		@[static, readonly] _QuickBindSet::Symbol = GSymbol.Get(":=");
-		@[static, readonly] _QuickBind::Symbol = GSymbol.Get("=:");
-		@[static, readonly] _ColonColon::Symbol = GSymbol.Get("::");
-		@[static, readonly] _Forward::Symbol = GSymbol.Get("==>");
-		@[static, readonly] _Eq::Symbol = GSymbol.Get("==");
-		@[static, readonly] _LambdaArrow::Symbol = GSymbol.Get("=>");
-		@[static, readonly] _Set::Symbol = GSymbol.Get("=");
-		@[static, readonly] _Neq::Symbol = GSymbol.Get("!=");
-		@[static, readonly] _Not::Symbol = GSymbol.Get("!");
-		@[static, readonly] _NotBits::Symbol = GSymbol.Get("~");
-		@[static, readonly] _ExpSet::Symbol = GSymbol.Get("**=");
-		@[static, readonly] _Exp::Symbol = GSymbol.Get("**");
-		@[static, readonly] _MulSet::Symbol = GSymbol.Get("*=");
-		@[static, readonly] _Mul::Symbol = GSymbol.Get("*");
-		@[static, readonly] _DivSet::Symbol = GSymbol.Get("/=");
-		@[static, readonly] _Div::Symbol = GSymbol.Get("/");
-		@[static, readonly] _ModSet::Symbol = GSymbol.Get("%=");
-		@[static, readonly] _Mod::Symbol = GSymbol.Get("%");
-		@[static, readonly] _AddSet::Symbol = GSymbol.Get("+=");
-		@[static, readonly] _Inc::Symbol = GSymbol.Get("++");
-		@[static, readonly] _Add::Symbol = GSymbol.Get("+");
-		@[static, readonly] _SubSet::Symbol = GSymbol.Get("-=");
-		@[static, readonly] _Dec::Symbol = GSymbol.Get("--");
-		@[static, readonly] _Sub::Symbol = GSymbol.Get("-");
-		@[static, readonly] _NullCoalesceSet::Symbol = GSymbol.Get("??=");
-		@[static, readonly] _NullCoalesce::Symbol = GSymbol.Get("??");
-		@[static, readonly] _NullDot::Symbol = GSymbol.Get("?.");
-		@[static, readonly] _QuestionMark::Symbol = GSymbol.Get("?");
-		@[static, readonly] _Substitute::Symbol = GSymbol.Get("$");
-		@[static, readonly] _Backslash::Symbol = GSymbol.Get("\\");
-		@[static, readonly] _Colon::Symbol = GSymbol.Get(":");
-		@[static, readonly] _PtrArrow::Symbol = GSymbol.Get("->");
 
 		// Shebang ---------------------------------------------------------------
 

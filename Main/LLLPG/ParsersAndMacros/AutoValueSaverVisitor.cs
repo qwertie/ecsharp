@@ -150,7 +150,7 @@ namespace Loyc.LLParserGenerator
 					"Type mismatch: Variable '{0}' was generated earlier with type {1}, but this predicate expects {2}.",
 					varName, oldType, type));
 			pred.ResultSaver = Pred.GetStandardResultSaver(F.Id(varName),
-				pred.VarIsList ? S.AddSet : S.Assign);
+				pred.VarIsList ? S.AddAssign : S.Assign);
 		}
 
 		#endregion

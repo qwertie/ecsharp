@@ -18,16 +18,27 @@ namespace LeMP.Tests
 		}
 
 		[Test]
-		public void CorePreludeExecutableStatements()
+		public void PreludeLoopStatements()
 		{
 			Test("for (x = 0; x < 100; x++) { };",
 			     "for (x = 0; x < 100; x++) { }");
+			Test("for (; x < 100; x++) { };",
+			     "for (; x < 100; x++) { }");
+			Test("for (x = 0; ; ;) { };",
+			     "for (x = 0; ; ) { }");
+			Test("for (x = 0; ; ) { };",
+			     "for (x = 0; ; ) { }");
 			Test(@"foreach (item `in` list) { };",
 			     "foreach (var item in list) { }");
 			Test("while Foo { Bar(); };",
 			     "while (Foo) { Bar(); }");
 			Test("do x++ while (x < 100);",
 			     "do x++; while((x < 100));");
+		}
+
+		[Test]
+		public void OtherPreludeExecutableStatements()
+		{
 			Test("if x > 10 { WriteLine(\"Too many!!!\"); };",
 			     "if (x > 10) { WriteLine(\"Too many!!!\"); }");
 			Test("if  x < 0  { Negative(); } else { NonNeg(); };",

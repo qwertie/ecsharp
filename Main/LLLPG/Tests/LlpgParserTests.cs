@@ -18,8 +18,8 @@ namespace Loyc.LLParserGenerator
 	class LlpgParserTests : Assert
 	{
 		static LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
-		static Symbol AndNot = GSymbol.Get("&!"), AddColon = GSymbol.Get("+:");
-		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("suf+"), Star = GSymbol.Get("suf*"), Opt = GSymbol.Get("suf?"), Bang = GSymbol.Get("suf!");
+		static Symbol AndNot = GSymbol.Get("'&!"), AddColon = GSymbol.Get("'+:");
+		static Symbol Gate = S.Lambda, Plus = GSymbol.Get("'+suf"), Star = GSymbol.Get("'*suf"), Opt = GSymbol.Get("'?suf"), Bang = GSymbol.Get("'!suf");
 		static Symbol Greedy = GSymbol.Get("greedy"), Nongreedy = GSymbol.Get("nongreedy");
 		static Symbol Default = GSymbol.Get("default"), Error = GSymbol.Get("error");
 		static LNode a = F.Id("a"), b = F.Id("b"), c = F.Id("c");
@@ -53,8 +53,8 @@ namespace Loyc.LLParserGenerator
 			TestStage1("(a b)?", F.Call(Opt, F.Tuple(a, b)));
 			TestStage1("{ a(); b(); }", F.Braces(F.Call(a), F.Call(b)));
 			TestStage1("a = b...c", F.Call(S.Assign, a, F.Call(S.DotDotDot, b, c)));
-			TestStage1("a += _", F.Call(S.AddSet, a, F.Id("_")));
-			TestStage1("a := b", F.Call(S.QuickBindSet, a, b));
+			TestStage1("a += _", F.Call(S.AddAssign, a, F.Id("_")));
+			TestStage1("a := b", F.Call(S.QuickBindAssign, a, b));
 			TestStage1("a : b",  F.Call(S.Colon, a, b));
 			TestStage1("a +: b", F.Call(AddColon, a, b));
 			TestStage1("greedy a", F.Call(Greedy, a));
@@ -90,8 +90,8 @@ namespace Loyc.LLParserGenerator
 			TestStage1("error   a b | c", F.Call(S.OrBits, F.Call(Error,   F.Tuple(a, b)), c));
 			TestStage1("(a | b? 'c')*", F.Call(Star, F.Call(S.OrBits, a, F.Tuple(F.Call(Opt, b), F.Literal('c')))));
 			TestStage1("t:=id { x=t; } / '-' t:=num { } / '(' ')'", F.Call(S.Div, F.Call(S.Div, 
-				F.Tuple(F.Call(S.QuickBindSet, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Assign, F.Id("x"), F.Id("t")))),
-				F.Tuple(F.Literal('-'), F.Call(S.QuickBindSet, F.Id("t"), F.Id("num")), F.Braces())),
+				F.Tuple(F.Call(S.QuickBindAssign, F.Id("t"), F.Id("id")), F.Braces(F.Call(S.Assign, F.Id("x"), F.Id("t")))),
+				F.Tuple(F.Literal('-'), F.Call(S.QuickBindAssign, F.Id("t"), F.Id("num")), F.Braces())),
 				F.Tuple(F.Literal('('), F.Literal(')'))));
 		}
 
@@ -128,23 +128,23 @@ namespace Loyc.LLParserGenerator
 			TestStage2(true, "Hi0-9",  @"(""Hi""; '0'..'9')", "[H] [i] [0-9]");
 			TestStage2(true, "Or1",    @"""ETX"" | 3", "([E] [T] [X] | (3))");
 			TestStage2(true, "Or2",    @"(~10; {code;}) | '\n'", @"(~(-1, 10) | [\n])"); // code blocks not printed
-			TestStage2(true, "Star",   @"@`suf*`('0'..'9')", "([0-9])*");
-			TestStage2(true, "Plus",   @"@`suf+`('0'..'9')", "[0-9] ([0-9])*");
-			TestStage2(true, "Opt",    @"@`suf?`(('a';'b'))", "([a] [b])?");
-			TestStage2(true, "Greedy", @"@`suf*`(greedy(('a';'b')))", "greedy([a] [b])*");
-			TestStage2(true, "Nongreedy", @"@`suf*`(nongreedy(('a';'b')))", "nongreedy([a] [b])*");
+			TestStage2(true, "Star",   @"@`'*suf`('0'..'9')", "([0-9])*");
+			TestStage2(true, "Plus",   @"@`'+suf`('0'..'9')", "[0-9] ([0-9])*");
+			TestStage2(true, "Opt",    @"@`'?suf`(('a';'b'))", "([a] [b])?");
+			TestStage2(true, "Greedy", @"@`'*suf`(greedy(('a';'b')))", "greedy([a] [b])*");
+			TestStage2(true, "Nongreedy", @"@`'*suf`(nongreedy(('a';'b')))", "nongreedy([a] [b])*");
 			TestStage2(true, "Default1",  @"('a'|""bee""|default('b'))", "( [a] | [b] [e] [e] | default [b] )");
-			TestStage2(true, "Default2",  @"@`suf*`('a'|default('b')|'c')", "( [a] | default [b] | [c] )*");
+			TestStage2(true, "Default2",  @"@`'*suf`('a'|default('b')|'c')", "( [a] | default [b] | [c] )*");
 			TestStage2(true, Tuple.Create("RuleRef", @"'.' | Digit", "([.] | Digit)"),
 			                 Tuple.Create("Digit",    "'0'..'9'",    "[0-9]"));
 			TestStage2(true, "aeiou",     @"'a'|'e'|'i'|'o'|'u'", "[aeiou]");
 			TestStage2(true, "PrefixGate", "(=> ('a'; 'b')) / 'c'", "( => [a] [b] / [c])");
-			TestStage2(false, "AB+orCD",  @"@`suf+`(A.B) | C.D", "(A.B (A.B)* | C.D)");
+			TestStage2(false, "AB+orCD",  @"@`'+suf`(A.B) | C.D", "(A.B (A.B)* | C.D)");
 			TestStage2(true,  "EOF1",     "('a'; 'b'; 'c'; -1)", @"[a] [b] [c] (-1)");
 			TestStage2(false, "EOF2",     "('a'; 'b'; 'c'; EOF)", @"'a' 'b' 'c' EOF");
 			TestStage2(false, "Slashes1", "(a3;{}) | ((a4;{}) | a5) / a6", "( a3 | ((a4 | a5) / a6) )");
 			TestStage2(false, "Slashes2", "((a8;{}) | a9) / ((a10;{}) | (a11;{}) / a12)", "( (a8 | a9) / (a10 | (a11 / a12)) )");
-			TestStage2(false, "Slashes3", "@`suf*`( ((a0;{}) / a1 / a2) / " +
+			TestStage2(false, "Slashes3", "@`'*suf`( ((a0;{}) / a1 / a2) / " +
 				"((a3;{}) | ((a4;{}) | a5) / a6) | a7 / (((a8;{}) | a9) / ((a10;{}) | (a11;{}) / a12)) )",
 				"( ((a0 / a1 / a2) / (a3 | ((a4 | a5) / a6))) | (a7 / ((a8 | a9) / (a10 | (a11 / a12)))) )*");
 		}

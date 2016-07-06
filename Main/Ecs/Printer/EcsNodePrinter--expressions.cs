@@ -49,16 +49,16 @@ namespace Loyc.Ecs
 			P(S.XorBits, EP.XorBits),   P(S.Xor, EP.Or),        P(S.Mod, EP.Multiply),
 			P(S.AndBits, EP.AndBits),   P(S.And, EP.And),       P(S.Mul, EP.Multiply), 
 			P(S.Exp, EP.Power),         P(S.Add, EP.Add),       P(S.Sub, EP.Add),
-			P(S.Assign, EP.Assign),        P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
+			P(S.Assign, EP.Assign),     P(S.Eq, EP.Equals),     P(S.Neq, EP.Equals),
 			P(S.OrBits, EP.OrBits),     P(S.Or, EP.Or),
 			P(S.DotDot, EP.Range),      P(S.LT, EP.Compare),    P(S.Shl, EP.Shift),
 			P(S.DotDotDot, EP.Range),   P(S.GT, EP.Compare),    P(S.Shr, EP.Shift),     
-			P(S.Div, EP.Multiply),      P(S.MulSet, EP.Assign), P(S.DivSet, EP.Assign),
-			P(S.ModSet, EP.Assign),     P(S.SubSet, EP.Assign), P(S.AddSet, EP.Assign), 
-			P(S.ConcatSet, EP.Assign),  P(S.ShlSet, EP.Assign), P(S.ShrSet, EP.Assign), 
-			P(S.ExpSet, EP.Assign),     P(S.XorBitsSet, EP.Assign), 
-			P(S.AndBitsSet, EP.Assign), P(S.OrBitsSet, EP.Assign), P(S.NullDot, EP.NullDot), 
-			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceSet, EP.Assign),
+			P(S.Div, EP.Multiply),      P(S.MulAssign, EP.Assign),     P(S.DivAssign, EP.Assign),
+			P(S.ModAssign, EP.Assign),      P(S.SubAssign, EP.Assign), P(S.AddAssign, EP.Assign), 
+			P(S.ConcatAssign, EP.Assign),   P(S.ShlAssign, EP.Assign), P(S.ShrAssign, EP.Assign), 
+			P(S.ExpAssign, EP.Assign),      P(S.XorBitsAssign, EP.Assign),
+			P(S.AndBitsAssign, EP.Assign),  P(S.OrBitsAssign, EP.Assign), P(S.NullDot, EP.NullDot), 
+			P(S.NullCoalesce, EP.OrIfNull), P(S.NullCoalesceAssign, EP.Assign),
 			P(S.LE, EP.Compare),        P(S.GE, EP.Compare),    P(S.PtrArrow, EP.Primary),
 			P(S.Is, EP.IsAsUsing),      P(S.As, EP.IsAsUsing),  P(S.UsingCast, EP.IsAsUsing),
 			P(S.QuickBind, EP.Primary), P(S.In, EP.Equals),     P(S.ColonColon, EP.Primary),
@@ -167,7 +167,7 @@ namespace Loyc.Ecs
 				if (!HasPAttrs(_n))
 				{
 					if (!_n.IsCall) {
-						PrintSimpleSymbolOrLiteral(flags);
+						PrintSimpleIdentOrLiteral(flags);
 						return;
 					}
 				}
@@ -290,7 +290,7 @@ namespace Loyc.Ecs
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
 					context = StartExpr;
-				_out.Write(_n.Name.Name, true);
+				WriteOperatorName(_n.Name, 0);
 				PrefixSpace(precedence);
 				PrintExpr(arg, precedence.RightContext(context), name == S.Forward ? Ambiguity.TypeContext : 0);
 				//if (backtick) {
@@ -355,10 +355,10 @@ namespace Loyc.Ecs
 			string opName = name.Name;
 			if ((flags & Ambiguity.UseBacktick) != 0)
 				PrintString(opName, '`', null);
-			else if (opName.StartsWith("#"))
+			else {
+				Debug.Assert(opName.StartsWith("'") || opName.StartsWith("#"));
 				_out.Write(opName.Substring(1), true);
-			else
-				_out.Write(opName, true);
+			}
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -615,8 +615,10 @@ namespace Loyc.Ecs
 
 						PrintType(innerType, EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 
-						for (int i = 0; i < stack.Count; i++)
-							_out.Write(stack[i].Name, true); // e.g. [] or [,]
+						for (int i = 0; i < stack.Count; i++) {
+							Debug.Assert(stack[i].Name.StartsWith("#"));
+							_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
+						}
 					} else {
 						PrintType(_n.Args[1], EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
 						_out.Write(stk == S._Pointer ? '*' : '?', true);
@@ -679,7 +681,8 @@ namespace Loyc.Ecs
 				PrintBracedBlockInNewExpr(1);
 			} else if (type != null && type.IsId && S.CountArrayDimensions(type.Name) > 0) { // 2b
 				_out.Write("new", true);
-				_out.Write(type.Name.Name, true);
+				Debug.Assert(type.Name.Name.StartsWith("#"));
+				_out.Write(type.Name.Name.Substring(1), true);
 				Space(SpaceOpt.Default);
 				PrintBracedBlockInNewExpr(1);
 			} else {
@@ -764,8 +767,11 @@ namespace Loyc.Ecs
 			_out.Write(']', true);
 
 			// Write the brackets for the inner array types
-			for (int i = dimStack.Count - 1; i >= 0; i--)
-				_out.Write(S.GetArrayKeyword(dimStack[i]).Name, true);
+			for (int i = dimStack.Count - 1; i >= 0; i--) {
+				var arrayKW = S.GetArrayKeyword(dimStack[i]).Name;
+				Debug.Assert(arrayKW.StartsWith("#"));
+				_out.Write(arrayKW.Substring(1), true);
+			}
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -953,7 +959,7 @@ namespace Loyc.Ecs
 				inParens = PrintAttrs(ref context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
 
 			if (!_n.IsCall)
-				PrintSimpleSymbolOrLiteral(flags);
+				PrintSimpleIdentOrLiteral(flags);
 			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround))
 				PrintExpr(context);
 			else {
@@ -999,7 +1005,7 @@ namespace Loyc.Ecs
 			object tVal = rawTextNode.TriviaValue;
 			return tVal == NoValue.Value || tVal == null ? rawTextNode.Name.Name : tVal.ToString();
 		}
-		private void PrintSimpleSymbolOrLiteral(Ambiguity flags)
+		private void PrintSimpleIdentOrLiteral(Ambiguity flags)
 		{
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)

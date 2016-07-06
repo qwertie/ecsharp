@@ -1,4 +1,4 @@
-// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.8.1.0
+// Generated from InRange.ecs by LeMP custom tool. LeMP version: 1.9.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -59,7 +59,7 @@ namespace LeMP
 		static LNode Range_UntilInclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilInclusive")));
 		static LNode Range_UntilExclusive = LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "UntilExclusive")));
 		static LNode Range_Everything = LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) "Range"), LNode.Id((Symbol) "Everything"))));
-		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "..")]
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'..")]
 		public static LNode RangeExcl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;
@@ -78,7 +78,7 @@ namespace LeMP
 			}
 			return null;
 		}
-		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "...")]
+		[LexicalMacro("lo..hi; ..hi; lo.._", "Given `lo..hi, produces `Range.Excl(lo, hi)", "'...")]
 		public static LNode RangeIncl(LNode node, IMacroContext context)
 		{
 			LNode lo = null;

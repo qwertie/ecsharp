@@ -42,8 +42,8 @@ namespace Loyc.Ecs.Tests
 			Expr("a**b**c",      F.Call(S.Exp, F.Call(S.Exp, a, b), c));
 			Expr("a + b**c - 1", F.Call(S.Sub, F.Call(S.Add, a, F.Call(S.Exp, b, c)), one));
 			Expr("a..b",         F.Call(S.DotDot, a, b));
-			Expr("a += b ~ c",   F.Call(S.AddSet, a, F.Call(S.NotBits, b, c)));
-			Expr("a ??= b",      F.Call(S.NullCoalesceSet, a, b));
+			Expr("a += b ~ c",   F.Call(S.AddAssign, a, F.Call(S.NotBits, b, c)));
+			Expr("a ??= b",      F.Call(S.NullCoalesceAssign, a, b));
 			Expr("a..b",         F.Call(S.DotDot, a, b));
 			Expr("a..<b",        F.Call(S.DotDot, a, b));
 			Expr("a...b",        F.Call(S.DotDotDot, a, b));
@@ -54,7 +54,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a. 2",         F.Dot(a, two));
 			Expr("a::b.c. 2",    F.Dot(F.Call(S.ColonColon, a, b), c, two));
 			Expr("1 `Foo` 2",    F.Call(Foo, F.Literal(1), F.Literal(2)));
-			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceSet, a, F.Call(S.UsingCast, b, Foo)));
+			Stmt("a ??= b using Foo;", F.Call(S.NullCoalesceAssign, a, F.Call(S.UsingCast, b, Foo)));
 			Expr("(Foo) x",          F.Call(S.Cast, x, Foo));
 			Expr("x(->Foo)",     F.Call(S.Cast, x, Foo).SetStyle(NodeStyle.Alternate));
 			Expr("x(->a + b)",   F.Call(S.Cast, x, F.Call(S.Add, a, b)).SetStyle(NodeStyle.Alternate));
@@ -87,10 +87,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("a?.b(c);",   F.Call(S.NullDot, a, F.Call(b, c)));
 			Stmt("a + b + c;",           F.Call(S.Add, F.Call(S.Add, a, b), c));
 			// To be safe, the printer treats 'a * b' like a pointer decl so it won't print it
-			Stmt("@`*`(a, b) / c % 2;",  F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
+			Stmt("@`'*`(a, b) / c % 2;", F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two));
 			Stmt("a * b / c % 2;",       F.Call(S.Mod, F.Call(S.Div, F.Call(S.Mul, a, b), c), two), Mode.ParserTest);
 			Stmt("a / b * c % 2;",       F.Call(S.Mod, F.Call(S.Mul, F.Call(S.Div, a, b), c), two));
-			Expr("@`+`(a, b, c)", F.Call(S.Add, a, b, c));
+			Expr("@`'+`(a, b, c)",       F.Call(S.Add, a, b, c));
 			Stmt("a << 1 | b >> 1;",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
 			Stmt("a++ + a--;",           F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PostDec, a)));
 			Stmt("a ? b : c;",           F.Call(S.QuestionMark, a, b, c));
@@ -174,8 +174,8 @@ namespace Loyc.Ecs.Tests
 			var stmt2 = F.Call(S.Add, F.Call(S.Mul, a, a), a);
 			Expr("b + #(Foo.x=:a, a * a + a)",                F.Call(S.Add, b, F.List(stmt1, stmt2)));
 			//Expr("b + #@{\n  Foo.x=:a;\n @`*`(a, a) + a;\n}", F.Call(S.Add, b, F.List(stmt1, stmt2)), Mode.ParseOnly);
-			Expr("b + {\n  Foo.x=:a;\n  @`*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
-			Expr("b + @`{}`(Foo.x=:a, a * a + a)", F.Call(S.Add, b, AsStyle(NodeStyle.PrefixNotation, F.Braces(stmt1, stmt2))));
+			Expr("b + {\n  Foo.x=:a;\n  @`'*`(a, a) + a;\n}",  F.Call(S.Add, b, F.Braces(stmt1, stmt2)));
+			Expr("b + @`'{}`(Foo.x=:a, a * a + a)", F.Call(S.Add, b, AsStyle(NodeStyle.PrefixNotation, F.Braces(stmt1, stmt2))));
 		}
 
 		[Test]

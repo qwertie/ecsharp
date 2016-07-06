@@ -81,7 +81,7 @@ namespace Loyc.Syntax.Les
 			Test(Mode.Expr, 1, "x `Foo` a*b",    F.Call(Foo, x, F.Call(S.Mul, a, b)));
 			Test(Mode.Stmt, 0, "x `Foo` a**b;",  F.Call(Foo, x, F.Call(S.Exp, a, b)));
 			Test(Mode.Expr, 0, "x `Foo` 1 == a", F.Call(S.Eq, F.Call(Foo, x, one), a));
-			Test(Mode.Expr, 1, "Foo * a `*` b * c", F.Call(S.Mul, F.Call(S.Mul, Foo, a), F.Call(S.Mul, b, c)));
+			Test(Mode.Expr, 1, "Foo * a `'*` b * c", F.Call(S.Mul, F.Call(S.Mul, Foo, a), F.Call(S.Mul, b, c)));
 		}
 
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string str, params LNode[] expected)

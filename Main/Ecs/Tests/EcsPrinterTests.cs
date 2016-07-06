@@ -92,7 +92,7 @@ namespace Loyc.Ecs.Tests
 		{
 			AreEqual("@this",            EcsNodePrinter.PrintId(GSymbol.Get("this"), false));
 			AreEqual("normal_id",        EcsNodePrinter.PrintId(GSymbol.Get("normal_id"), false));
-			AreEqual("operator+",        EcsNodePrinter.PrintId(GSymbol.Get("+"), true));
+			AreEqual("operator+",        EcsNodePrinter.PrintId(S.Add, true));
 			AreEqual("operator`frack!`", EcsNodePrinter.PrintId(GSymbol.Get("frack!"), true));
 			AreEqual(@"@@`frack!`",      EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("frack!")));
 			AreEqual(@"@@this",          EcsNodePrinter.PrintSymbolLiteral(GSymbol.Get("this")));

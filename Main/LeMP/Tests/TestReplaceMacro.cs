@@ -85,7 +85,7 @@ namespace LeMP.Tests
 			TestEcs(@"replace(X => Y, X($(params p)) => X($p)) { X = X(X, Y); }",
 			        @"Y = X(Y, Y);");
 			// Note: $a * $b doesn't work because it is seen as a variable decl
-			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a`*`$b) => Mul($a, $b))
+			TestEcs(@"replace(($a + $b + $c) => Add($a, $b, $c), ($a`'*`$b) => Mul($a, $b))
 			          { var y = 2*x*2 + 3*x + 4; }", 
 			        @"var y = Add(Mul(Mul(2, x), 2), Mul(3, x), 4);");
 

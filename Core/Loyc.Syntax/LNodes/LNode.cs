@@ -742,10 +742,11 @@ namespace Loyc.Syntax
 		/// </remarks>
 		public abstract Symbol Name { get; }
 
-		/// <summary>Returns true if <see cref="Name"/> starts with '#'.</summary>
+		/// <summary>Returns true if <see cref="Name"/> is a "special" name 
+		/// (i.e. starts with '#' or '\'' or any character below 40 in ASCII).</summary>
 		/// <remarks>Note that this property returns false for the empty identifier <c>@``</c>.</remarks>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] == '#'; } }
+		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] <= '\''; } }
 
 		/// <summary>Creates a node with a new value for Name.</summary>
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 

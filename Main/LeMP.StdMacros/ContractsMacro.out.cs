@@ -1,4 +1,4 @@
-// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.8.1.0
+// Generated from ContractsMacro.ecs by LeMP custom tool. LeMP version: 1.9.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -56,7 +56,7 @@ namespace LeMP
 			return null;
 		}
 		static readonly LNode Id_lambda_function = LNode.Id((Symbol) "lambda_function");
-		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + "([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", "Generates Contract checks in a lambda function. See the documentation of " + "ContractsOnMethod for more information about the contract attributes.", "=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
+		[LexicalMacro("([notnull] (x => ...)); ([notnull] x) => ...; ([requires(expr)] x) => ...; " + "([ensures(expr)] (x => ...)); ([ensuresOnThrow(expr)] (x => ...)); ", "Generates Contract checks in a lambda function. See the documentation of " + "ContractsOnMethod for more information about the contract attributes.", "'=>", Mode = MacroMode.Passive | MacroMode.PriorityInternalFallback)]
 		public static LNode ContractsOnLambda(LNode fn, IMacroContext context)
 		{
 			LNode oldFn = fn;

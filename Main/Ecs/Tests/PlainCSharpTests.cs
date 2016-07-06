@@ -67,7 +67,7 @@ namespace Loyc.Ecs.Tests
 			Expr("a == b ^^ a != c", F.Call(S.Xor, F.Call(S.Eq, a, b), F.Call(S.Neq, a, c)));
 			Expr("a & b | c ^ 1",    F.Call(S.OrBits, F.Call(S.AndBits, a, b), F.Call(S.XorBits, c, one)));
 			Expr("a = b ?? c",       F.Call(S.Assign, a, F.Call(S.NullCoalesce, b, c)));
-			Expr("a >>= b <<= c",    F.Call(S.ShrSet, a, F.Call(S.ShlSet, b, c)));
+			Expr("a >>= b <<= c",    F.Call(S.ShrAssign, a, F.Call(S.ShlAssign, b, c)));
 			Expr("a.b - a::b",       F.Call(S.Sub, F.Call(S.Dot, a, b), F.Call(S.ColonColon, a, b)));
 			Expr("a << 1 | b >> 1",     F.Call(S.OrBits, F.Call(S.Shl, a, one), F.Call(S.Shr, b, one)));
 		}
@@ -206,7 +206,7 @@ namespace Loyc.Ecs.Tests
 			Expr("new int[10][,] { a }",  F.Call(S.New, F.Call(F.Of(_(S.Array), F.Of(S.TwoDimensionalArray, S.Int32)), F.Literal(10)), a));
 			Expr("new int[x, x][]",       F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), F.Of(S.Array, S.Int32)), x, x)));
 			Expr("new int[,]",            F.Call(S.New, F.Call(F.Of(S.TwoDimensionalArray, S.Int32))), Mode.Both | Mode.ExpectAndDropParserError);
-			Option(Mode.PrintBothParseFirst, "#new(@`[,]`!([Foo] int)());", "new int[,];",
+			Option(Mode.PrintBothParseFirst, "#new(@`#[,]`!([Foo] int)());", "new int[,];",
 				F.Call(S.New, F.Call(F.Of(_(S.TwoDimensionalArray), Attr(Foo, F.Int32)))), p => p.DropNonDeclarationAttributes = true);
 			Expr("new { a = 1, b = 2 }",  F.Call(S.New, F.Missing, F.Call(S.Assign, a, one), F.Call(S.Assign, b, two)));
 		}
@@ -551,10 +551,10 @@ namespace Loyc.Ecs.Tests
 			          Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, x)))));
 			Stmt("int Foo\n{\n  get ==> x;\n}", stmt);
 			stmt = F.Property(F.Int32, Foo, F.Braces(F.Call(get, F.Call(S.Forward, a, b))));
-			Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt);
+			Stmt("int Foo\n{\n  get(@`'==>`(a, b));\n}", stmt);
 			stmt = F.Property(F.Int32, Foo, F.Braces(
 								Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, a, b)))));
-			Stmt("int Foo\n{\n  get(@`==>`(a, b));\n}", stmt, Mode.PrinterTest);
+			Stmt("int Foo\n{\n  get(@`'==>`(a, b));\n}", stmt, Mode.PrinterTest);
 			Stmt("int Foo { protected get; private set; }",
 				F.Property(F.Int32, Foo, F.Braces(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));

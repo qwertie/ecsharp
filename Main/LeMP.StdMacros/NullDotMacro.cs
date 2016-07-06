@@ -12,7 +12,7 @@ namespace LeMP.CSharp6
 	[ContainsMacros]
 	public class NullDotMacro
 	{
-		[LexicalMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "?.", "??.")]
+		[LexicalMacro("a.b?.c.d", "a.b?.c.d means (a.b != null ? a.b.c.d : null)", "'?.", "'??.")]
 		public static LNode NullDot(LNode node, IMacroContext sink)
 		{
 			if (!node.Calls(S.NullDot, 2))

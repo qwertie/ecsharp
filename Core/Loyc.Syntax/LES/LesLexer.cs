@@ -604,12 +604,10 @@ namespace Loyc.Syntax.Les
 			// Get first and last of the operator's initial punctuation
 			char first = op[0], last = first;
 			if (first != '\'') {
-				name = (Symbol)op;
-				// TODO: turn on this new behavior:
-				//name = (Symbol)("'" + op);
+				name = (Symbol)("'" + op);
 				last = op[op.Length - 1];
 				if (op == "!")
-					return Pair.Create((Symbol)"!", TT.Not);
+					return Pair.Create(name, TT.Not);
 			} else {
 				name = (Symbol)op;
 				Debug.Assert(op.Length > 1);

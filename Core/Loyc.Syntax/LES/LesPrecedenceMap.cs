@@ -128,23 +128,25 @@ namespace Loyc.Syntax.Les
 			// Rule 1 (for >= <= != ==) is covered by the pre-populated contents 
 			// of the table, and the pre-populated table helps interpret rules 
 			// 3-4 also.
+			CheckParam.IsNotNull("symbol", symbol);
 			Precedence prec;
 			if (table.TryGetValue(symbol, out prec))
 				return prec;
 
-			string sym = (symbol ?? "").ToString();
-			if (sym == "") return @default; // empty operator!
+			string sym = symbol.ToString();
+			if (sym.Length < 2 || sym[0] != '\'')
+				return @default; // empty or non-operator
 			// Note: all one-character operators should have been found in the table
-			char first = sym[0], last = sym[sym.Length - 1];
+			char first = sym[1], last = sym[sym.Length - 1];
 
 			if (last == '=' && first != '=' && table == this[OperatorShape.Infix].A)
 				return table[symbol] = table[S.Assign];
 			
-			var twoCharOp = GSymbol.Get(first.ToString() + last);
+			var twoCharOp = GSymbol.Get("'" + first + last);
 			if (table.TryGetValue(twoCharOp, out prec))
 				return table[symbol] = prec;
 
-			var oneCharOp = GSymbol.Get(last.ToString());
+			var oneCharOp = GSymbol.Get("'" + last);
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
@@ -177,9 +179,9 @@ namespace Loyc.Syntax.Les
 		public static bool IsNaturalOperator(Symbol s)
 		{
 			string name = s.Name;
-			if (name.Length == 0)
+			if (!name.StartsWith("'"))
 				return false;
-			for (int i = 0; ;) {
+			for (int i = 1;;) {
 				char c = name[i];
 				if (!IsOpChar(c))
 					return false;
@@ -203,8 +205,8 @@ namespace Loyc.Syntax.Les
 		// 	return name.Length == 0;
 		// }
 
-		/// <summary>Given a normal operator symbol like <c>(Symbol)"++"</c>, gets
-		/// the suffix form of the name, such as <c>(Symbol)"suf++"</c>.</summary>
+		/// <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
+		/// the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
 		/// <remarks>op must be a Symbol, but the parameter has type object to avoid casting Token.Value in the parser.</remarks>
 		public Symbol ToSuffixOpName(object symbol)
 		{
@@ -217,26 +219,24 @@ namespace Loyc.Syntax.Les
 			//if (was.EndsWith("\\"))
 			//	return _suffixOpNames[symbol] = (Symbol)symbol;
 			//else
-				return _suffixOpNames[symbol] = GSymbol.Get(@"suf" + symbol.ToString());
+				return _suffixOpNames[symbol] = GSymbol.Get(symbol.ToString() + "suf");
 		}
 
 		/// <summary>Decides whether the name appears to represent a suffix operator 
 		/// of the form <c>sufOP</c> or <c>OP\</c>.</summary>
 		/// <param name="name">Potential operator name to evaluate.</param>
-		/// <param name="bareName">If the name starts with "suf", this is the same 
+		/// <param name="bareName">If the name ends with "suf", this is the same 
 		/// name without "suf", otherwise it is set to <c>name</c> itself. This
 		/// output is calculated even if the function returns false.</param>
 		/// <param name="checkNatural">If true, part of the requirement for 
 		/// returning true will be that IsNaturalOperator(bareName) == true.</param>
 		public static bool IsSuffixOperatorName(Symbol name, out Symbol bareName, bool checkNatural)
 		{
-			if (name.Name.StartsWith("suf"))
-				bareName = (Symbol)name.Name.Substring(3);
+			if (name.Name.EndsWith("suf"))
+				bareName = (Symbol)name.Name.Substring(0, name.Name.Length - 3);
 			else {
 				bareName = name;
 				return false;
-			//	if (!name.Name.EndsWith(@"\"))
-			//		return false;
 			}
 			return !checkNatural || IsNaturalOperator(bareName);
 		}

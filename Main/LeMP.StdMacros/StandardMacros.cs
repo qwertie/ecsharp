@@ -260,7 +260,7 @@ namespace LeMP
 
 		[LexicalMacro(@"x `tree==` y", 
 			"Returns the literal true if two or more syntax trees are equal, or false if not. The two arguments are preprocessed.", 
-			"tree==")]
+			"tree==", "'tree==")]
 		public static LNode TreeEqual(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount < 2) return null;
@@ -304,7 +304,7 @@ namespace LeMP
 				return Reject(context, @if.Args[0], "'static if' is incredibly limited right now. Currently it only supports a literal boolean or (x `tree==` y)");
 		}
 
-		[LexicalMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "??=")]
+		[LexicalMacro("A ??= B", "Assign A = B only when A is null. Caution: currently, A is evaluated twice.", "'??=")]
 		public static LNode NullCoalesceSet(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -317,7 +317,7 @@ namespace LeMP
 		}
 
 		[LexicalMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
-			"e.g. if (int.Parse(text):::num > 0) positives += num;", "=:", ":::")]
+			"e.g. if (int.Parse(text):::num > 0) positives += num;", "'=:", "':::")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -328,7 +328,7 @@ namespace LeMP
 			return null;
 		}
 		
-		[LexicalMacro("A := B", "Deprecated. Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", ":=")]
+		[LexicalMacro("A := B", "Deprecated. Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -374,7 +374,7 @@ namespace LeMP
 			+"to make it clear you want to run this macro and that some other meaning of `$` does not apply. Examples:\n\n"
 			+"    $(out Foo) number; // variable of type Foo\n"
 			+"    int $(out concatId(Sq, uare))(int x) => x*x;",
-			"$")]
+			"'$")]
 		public static LNode DollarSignIdentity(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount == 1)

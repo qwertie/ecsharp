@@ -88,6 +88,7 @@ namespace Loyc.LLParserGenerator
 			PrintAndParse(empty, "()");
 			empty.IsCharSet = true;
 			PrintAndParse(empty, "[]");
+			empty.IsCharSet = false; // design flaw here - mutable property on readonly static field 
 			PrintAndParse(all, "~()");
 			all.IsCharSet = true;
 			PrintAndParse(all, "[^]");
