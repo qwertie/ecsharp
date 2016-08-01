@@ -229,11 +229,11 @@ Finally, you can customize the error handling for a particular loop using an `er
 ~~~csharp
     LLLPG
     {
-        rule B @[ 'B' ];
+        rule B @{ 'B' };
         rule Either @{
             [  'A' 
             |   B
-            |   error {Error(0, ""Anticipita 'A' aŭ B ĉi tie"");} _
+            |   error {Error(0, "Anticipita 'A' aŭ B ĉi tie");} _
             ]*
         };
     }

@@ -26,6 +26,7 @@ You can find the complete parser in the [LLLPG-Samples repo](http://github.com/q
     using System(, .Collections.Generic, .Linq, .Text, .Diagnostics);
     using Loyc(, .Collections, .Syntax(, .Lexing));	
 
+~~~csharp
 namespace Json
 {	
 	public class JsonParser : BaseLexer<ICharSource>
@@ -135,3 +136,4 @@ namespace Json
 	}
 }
 
+~~~

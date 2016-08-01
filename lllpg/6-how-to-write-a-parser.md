@@ -182,6 +182,7 @@ partial class Parser : BaseParserForList<Token, int>
 
 Finally, you need some kind of grammar. The boilerplate code in Grammars.ecs simply puts numbers into a list:
 
+~~~csharp
 partial class Parser
 {
     LLLPG (parser(matchType: int, laType: TokenType, terminalType: Token));
@@ -192,6 +193,7 @@ partial class Parser
         (n:TT.Number {$result.Add((double)n.Value);})*
     };
 }
+~~~
 
 The `laType` option tells LLLPG that your actual token type is `TokenType`. The `matchType: int` option is required because the base class uses `int` instead. And the `terminalType: Token` indicates that when you write something like `n:TT.Number`, the data type of `n` should be `Token`.
 

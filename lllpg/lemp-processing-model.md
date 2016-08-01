@@ -18,11 +18,11 @@ So here's the deal. I designed a language called Enhanced C#. It's supposed to b
 
 Since EC# is a superset of C#, LLLPG is able to produce C# code by using the EC# printer, as long as it only uses the C# subset of the language.
 
-Originally, LLLPG grammars had to be written in _LES code_. LES is not a programming language, it is just a _syntax_ and nothing else.  One of the core ideas of the [Loyc project][9] is to "modularize" programming languages into a series of re-usable components.  So instead of writing one big compiler for a language, a compiler is built by mixing and matching components. One of those components is the Loyc tree (the `LNode` class in `Loyc.Syntax.dll`). Another component is the LES parser (which is a text representation for Loyc trees). A third component is the EC# parser, a fourth component is the EC# printer, and a fifth component is LeMP, the macro processor.
+Originally, LLLPG grammars had to be written in _LES code_. LES is not a programming language, it is just a _syntax_ and nothing else.  One of the core ideas of the [Loyc project](http://loyc.net) is to "modularize" programming languages into a series of re-usable components.  So instead of writing one big compiler for a language, a compiler is built by mixing and matching components. One of those components is the Loyc tree (the `LNode` class in `Loyc.Syntax.dll`). Another component is the LES parser (which is a text representation for Loyc trees). A third component is the EC# parser, a fourth component is the EC# printer, and a fifth component is LeMP, the macro processor.
 
 ### Macros ###
 
-Macros are a fundamental feature of [LISP][23] that I am porting over to the wider world of non-LISP languages.
+Macros are a fundamental feature of [LISP](https://en.wikipedia.org/wiki/Lisp_(programming_language)) that I am porting over to the wider world of non-LISP languages.
 
 A macro (in the LISP sense, not in the C/C++ sense) is simply a method that takes a syntax tree as input, and produces another syntax tree as output. Here's an example of a macro written in plain C#:
 
@@ -66,10 +66,10 @@ The point is, LLLPG is defined as a "macro" that takes your `LLLPG (lexer) { ...
 
 In order to allow LLLPG to support EC#, I needed a EC# parser. But how would I create a parser for EC#? Obviously, I wanted to use LLLPG to write the parser, but without any parser there was no easy way to submit a grammar to LLLPG! After writing the LLLPG core engine and the EC# printer, here's what I did to create the EC# parser:
 
-1. I used C# operator overloading and helper methods as a rudimentary way to write LLLPG parsers in plain C# ([example test suite][14]).
+1. I used C# operator overloading and helper methods as a rudimentary way to write LLLPG parsers in plain C# ([example test suite](https://github.com/qwertie/ecsharp/blob/master/Main/LLLPG/Tests/LlpgCoreTests.cs)).
 2. Writing parsers this way is very clumsy, so I decided that I couldn't write the entire EC# parser this way. Instead, I designed a new language that is syntactically much simpler than EC#, called [LES](http://loyc.net/les). This language would serve not only as the original input language for LLLPG, but as a general [syntax tree interchange format](http://lambda-the-ultimate.org/node/4836)—a way to represent syntax trees of any programming language: "xml for code".
 3. I wrote a lexer and parser for LES by calling LLLPG programmatically in plain C# (with operator overloading etc.)
-4. I wrote the [`MacroProcessor`][https://github.com/qwertie/ecsharp/blob/master/Main/LeMP/MacroProcessor.cs] (which I later named "LeMP", short for "Lexical Macro Processor") and a wrapper class called [`Compiler`][https://github.com/qwertie/ecsharp/blob/master/Main/LeMP/Compiler.cs] that provides the command-line interface. `MacroProcessor`'s job is to scan through a syntax tree looking for calls to "macros", which are source code transformers (more on that below). It calls those transformers recursively until there are no macro calls left in the code. Finally, ``Compiler`` prints the result as text.
+4. I wrote the [`MacroProcessor`](http://ecsharp.net/doc/code/classLeMP_1_1MacroProcessor.html) (which I later named "LeMP", short for "Lexical Macro Processor") and a wrapper class called [`Compiler`](http://ecsharp.net/doc/code/classLeMP_1_1Compiler.html) that provides the command-line interface. `MacroProcessor`'s job is to scan through a syntax tree looking for calls to "macros", which are source code transformers (more on that below). It calls those transformers recursively until there are no macro calls left in the code. Finally, ``Compiler`` prints the result as text.
 5. I built a small "macro language" on top of LES which combines LeMP (the macro processor) with a set of small macros that makes LES look a lot like C#. The [macros](https://github.com/qwertie/ecsharp/blob/master/Main/LeMP.StdMacros/Prelude.Les.cs) are designed to convert LES to C# (you can write C# syntax trees directly in LES, but they are a bit ugly.)
 6. I wrote some [additional macros](https://github.com/qwertie/ecsharp/blob/master/Main/LLLPG/ParsersAndMacros/Macros.cs) that allow you to invoke LLLPG from within LES.
 7. I hacked the LES parser to also be able to parse LLLPG code like `@{ a* | b }` in a derived class (a shameful abuse of "reusable code").

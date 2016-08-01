@@ -105,7 +105,7 @@ void Number()
 }
 ~~~
 
-`Check()`'s job is to print an error if the ZWA is not matched. If the `Number` rule is marked `private`, and the rule(s) that call `Number()` have already verified that `Try_Number_Test0` is true, then for efficiency, the call to `Check()` will be eliminated by prematch analysis (mentioned in [part 1][1]).
+`Check()`'s job is to print an error if the ZWA is not matched. If the `Number` rule is marked `private`, and the rule(s) that call `Number()` have already verified that `Try_Number_Test0` is true, then for efficiency, the call to `Check()` will be eliminated by prematch analysis (mentioned in [part 2](2-simple-examples.html)).
 
 ### Zero-width assertions: semantic predicates
 
