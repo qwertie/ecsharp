@@ -18,9 +18,9 @@ namespace Loyc.Syntax.Les
 		// When using the Loyc libraries, `BaseLexer` and `BaseILexer` read character 
 		// data from an `ICharSource`, which the string wrapper `UString` implements.
 		public Les3Lexer(string text, string fileName = "") 
-			: this((UString)text, fileName, BaseLexer.FormatExceptionErrorSink) { }
+			: this((UString)text, fileName, BaseLexer.LogExceptionErrorSink) { }
 		public Les3Lexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0) 
-			: base(text, fileName, null) { }
+			: base(text, fileName, sink, startPosition) { }
 	
 		// Creates a Token
 		private Token T(TokenType type, object value)
@@ -31,16 +31,6 @@ namespace Loyc.Syntax.Les
 	
 	partial class Les3Parser : LesParser
 	{
-		public static LNode Parse(string text, IMessageSink errorSink, string fileName = "")
-		{
-			var lexer = new Les3Lexer(text, fileName);
-			// Lexer is derived from BaseILexer, which implements IEnumerator<Token>.
-			// Buffered() is an extension method that gathers the output of the 
-			// enumerator into a list so that the parser can consume it.
-			var parser = new Les3Parser(lexer.Buffered(), lexer.SourceFile, errorSink);
-			return parser.ExpressionAndEof();
-		}
-
 		private LNode ExpressionAndEof()
 		{
 			throw new NotImplementedException();
@@ -48,12 +38,21 @@ namespace Loyc.Syntax.Les
 
 		//LNodeFactory F;
 
-		protected Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, int startIndex = 0)
+		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, int startIndex = 0)
 			: base(list, file, sink, startIndex) { }//{ F = new LNodeFactory(file); }
 		
 		// Used for error reporting
 		protected override string ToString(int tokenType) { 
 			return ((TokenType)tokenType).ToString();
+		}
+
+		protected new Precedence PrefixPrecedenceOf(Token t)
+		{
+			var prec = base.PrefixPrecedenceOf(t);
+			if (prec == LesPrecedence.Other)
+				ErrorSink.Write(Severity.Error, new SourceRange(SourceFile, t.StartIndex, t.Length), 
+					"Operator `{0}` cannot be used as a prefix operator", t.Value);
+			return prec;
 		}
 	}
 }

@@ -525,7 +525,6 @@ namespace Loyc.Syntax
 		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, LNode prototype) { return new  StdSimpleCallNodeWithAttrs(attrs, name, args, prototype); }
 		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, LNode prototype) { return new StdComplexCallNodeWithAttrs(attrs, target, args, prototype); }
 		public static CallNode Trivia(Symbol name, object value, LNode prototype) { return new StdTriviaNode(name, value, prototype); }
-		public static LNode InParens(LNode node) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, node.Range)); }
 
 		public static IdNode Id(Symbol name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(name, range, style); }
 		public static IdNode Id(string name, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdIdNode(GSymbol.Get(name), range, style); }
@@ -540,7 +539,6 @@ namespace Loyc.Syntax
 		public static CallNode Call(VList<LNode> attrs, Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, range, style); }
 		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
 		public static CallNode Trivia(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, range, style); }
-		public static LNode InParens(LNode node, SourceRange range) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, range)); }
 
 		public static IdNode Id(Symbol name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(name, new SourceRange(file, position, width)); }
 		public static IdNode Id(string name, ISourceFile file = null, int position = -1, int width = -1) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file, position, width)); }
@@ -556,7 +554,7 @@ namespace Loyc.Syntax
 		public static CallNode Call(VList<LNode> attrs, LNode target, VList<LNode> args, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file, position, width), style); }
 		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, int position = -1, int width = -1, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file, position, width), style); }
 		
-		public static LNode InParens(LNode node, ISourceFile file = null, int position = -1, int width = -1) { return node.PlusAttr(Id(CodeSymbols.TriviaInParens, file, position, width)); }
+		/// <summary>Used by the <c>quote {...}</c> macro.</summary>
 		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);
 
 		// List creation with null check (even in release builds)

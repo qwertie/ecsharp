@@ -35,7 +35,7 @@ namespace Loyc.Syntax.Les
 		public void MiscibilityErrors()
 		{
 			Exact("x & @'==(Foo, 0);", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
-			Exact("x `'&` Foo == 0;", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
+			Exact("@'&(x, Foo) == 0;", F.Call(S.Eq, F.Call(S.AndBits, x, Foo), zero));
 			Exact("x >> 1 == a;", F.Call(S.Eq, F.Call(S.Shr, x, one), a));
 			Exact("x >> @'+(a, 1);", F.Call(S.Shr, x, F.Call(S.Add, a, one)));
 			Exact("@'>>(x, a) + 1;", F.Call(S.Add, F.Call(S.Shr, x, a), one));
@@ -65,7 +65,7 @@ namespace Loyc.Syntax.Les
 				} else {
 					// Start by parsing. If parsing fails, just stop; such errors are 
 					// already reported by LesParserTests so we need not report them here.
-					var results = LesLanguageService.Value.Parse(str, messages);
+					var results = Les2LanguageService.Value.Parse(str, messages);
 					if (messages.List.Count == 0)
 					{
 						var sb = new StringBuilder();
@@ -86,7 +86,7 @@ namespace Loyc.Syntax.Les
 			var p = LesNodePrinter.New(sb, "\t", "\n", _messages);
 			p.Print(node);
 			Assert.AreEqual(0, _messages.List.Count);
-			var reparsed = LesLanguageService.Value.Parse(sb.ToString(), _messages);
+			var reparsed = Les2LanguageService.Value.Parse(sb.ToString(), _messages);
 			Assert.AreEqual(0, _messages.List.Count);
 			Assert.AreEqual(1, reparsed.Count);
 			Assert.AreEqual(node, reparsed[0]);

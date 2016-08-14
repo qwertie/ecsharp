@@ -41,7 +41,7 @@ namespace Loyc.Syntax.Tests
 					};
 				};";
 			MessageHolder msgs = new MessageHolder();
-			var lexer = LesLanguageService.Value.Tokenize(lesCode, msgs);
+			var lexer = Les2LanguageService.Value.Tokenize(lesCode, msgs);
 			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
 			Debug.Assert(msgs.List.Count == 0);
 
@@ -67,7 +67,7 @@ namespace Loyc.Syntax.Tests
 			var msgs = new MessageHolder();
 			var stream = new MemoryStream(Encoding.UTF8.GetBytes(lesCode));
 			var source = new StreamCharSource(stream, Encoding.UTF8.GetDecoder(), _bufSize);
-			var lexer = LesLanguageService.Value.Tokenize(source, "StreamCharSource.les", msgs);
+			var lexer = Les2LanguageService.Value.Tokenize(source, "StreamCharSource.les", msgs);
 			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
 			Assert.AreEqual(0, msgs.List.Count);
 			ExpectList(tokens, originalTokens);

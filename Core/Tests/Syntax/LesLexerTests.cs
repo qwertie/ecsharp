@@ -148,8 +148,8 @@ namespace Loyc.Syntax.Les
 			//Case(@"\solve-for-x x\squared\", A(TT.NormalOp, TT.Id, TT.SuffixOp), _("solve-for-x"), _("x"), _(@"squared\"));
 			Case(@"+++x---", A(TT.PreOrSufOp, TT.Id, TT.PreOrSufOp), _("'+++"), _("x"), _("'---"));
 			//Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("$"), _("x"), _(@"y\"), _("bq"), _(@"\"));
-			Case(@"~!%^&*-+=|<>/?:.$_", A(TT.PrefixOp, TT.Id), _("'~!%^&*-+=|<>/?:.$"), _("_"));
-			Case(@"~!%^&*-+=|<>_/?:.$", A(TT.NormalOp, TT.Id, TT.PrefixOp), _("'~!%^&*-+=|<>"), _("_"), _("'/?:.$"));
+			Case(@"$~!%^&*-+=|<>/?:._", A(TT.PrefixOp, TT.Id), _("'$~!%^&*-+=|<>/?:."), _("_"));
+			Case(@"$~!%^&*-+=|<>_/?:.", A(TT.PrefixOp, TT.Id, TT.NormalOp), _("'$~!%^&*-+=|<>"), _("_"), _("'/?:."));
 			Case(@"@~!%^&*-+=|<>@@/?:.$", A(TT.Id, TT.Literal), _("~!%^&*-+=|<>"), _("/?:.$"));
 			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.NormalOp, TT.Assignment), _(""), _("',"), _("'!"), _("';"), _("':"), _(@"':^="));
 		}

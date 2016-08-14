@@ -68,6 +68,7 @@ namespace Loyc.Syntax.Les
 		    { _isFloat = _isNegative = false; _typeSuffix = null; }
 		    ('-' {_isNegative = true;})?
 		    (HexNumber / BinNumber / DecNumber)
+		    {var numberEndPosition = InputPosition;}
 		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
 		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
 		      | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
@@ -75,7 +76,7 @@ namespace Loyc.Syntax.Les
 		    | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
 		    | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?
 		    )?
-		    {ParseNumberValue();}
+		    {ParseNumberValue(numberEndPosition);}
 		};
 		
 		// Strings ---------------------------------------------------------------
@@ -105,7 +106,7 @@ namespace Loyc.Syntax.Les
 			{_parseNeeded = false;}
 			'`' ('\\' _ {_parseNeeded = true;} | ~('`'|'\\'|'\r'|'\n'))* '`'
 		};
-		@[private] token BQOperator @{ BQString2 {_value = ParseBQStringValue();} };
+		@[private] token BQOperator @{ BQString {_value = ParseBQStringValue();} };
 
 		// Identifiers and Symbols -----------------------------------------------
 
@@ -115,7 +116,7 @@ namespace Loyc.Syntax.Les
 		@[private] token NormalId @{ 
 			(IdStartChar|IdExtLetter) (IdStartChar|'0'..'9'|'\''|IdExtLetter)*
 		};
-		@[private] token FancyId @{ BQString2 | (LettersOrPunc | IdExtLetter)+ };
+		@[private] token FancyId @{ BQString | (LettersOrPunc | IdExtLetter)+ };
 		@[private] token Symbol @{
 			{_parseNeeded = false;}
 			'@' '@' FancyId

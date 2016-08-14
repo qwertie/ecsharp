@@ -2,27 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Loyc.Utilities;
-using Loyc.Syntax.Lexing;
 using Loyc.Collections;
+using Loyc.Syntax.Lexing;
 
 namespace Loyc.Syntax.Les
 {
-	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
-	/// parser and printer for Loyc Expression Syntax (LES).</summary>
-	/// <remarks>
-	/// LES overview: http://loyc.net/les
-	/// </remarks>
-	public class Les2LanguageService : IParsingService
+	public class Les3LanguageService : IParsingService
 	{
-		public static readonly Les2LanguageService Value = new Les2LanguageService();
+		public static readonly Les3LanguageService Value = new Les3LanguageService();
 
 		public override string ToString()
 		{
-			return "Loyc Expression Syntax v2.0";
+			return "Loyc Expression Syntax v3.0";
 		}
 
-		static readonly string[] _fileExtensions = new[] { "les", "les2" };
+		static readonly string[] _fileExtensions = new[] { "les3", "was" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
 		public LNodePrinter Printer
@@ -41,7 +35,7 @@ namespace Loyc.Syntax.Les
 		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			var lexer = new LesLexer(text, fileName, msgs);
+			var lexer = new Les3Lexer(text, fileName, msgs);
 			return new WhitespaceFilter(lexer);
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
@@ -55,7 +49,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		[ThreadStatic]
-		static LesParser _parser;
+		static Les3Parser _parser;
 
 		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
 		{
@@ -70,9 +64,9 @@ namespace Loyc.Syntax.Les
 			bool exprMode = inputType == ParsingMode.Expressions;
 			char _ = '\0';
 			if (inputType == ParsingMode.Expressions || file.Text.TryGet(255, ref _)) {
-				LesParser parser = _parser;
+				Les3Parser parser = _parser;
 				if (parser == null)
-					_parser = parser = new LesParser(input, file, msgs);
+					_parser = parser = new Les3Parser(input.AsList(), file, msgs);
 				else {
 					parser.ErrorSink = msgs;
 					parser.Reset(input.AsList(), file);
@@ -82,12 +76,9 @@ namespace Loyc.Syntax.Les
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {
-				var parser = new LesParser(input, file, msgs);
+				var parser = new Les3Parser(input.AsList(), file, msgs);
 				return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			}
 		}
 	}
-
-	/// <summary>Alternate name for Les2LanguageService (will change to Les3LanguageService in the future)</summary>
-	public class LesLanguageService : Les2LanguageService { }
 }

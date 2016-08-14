@@ -24,7 +24,7 @@ namespace Loyc.Syntax
 		/// as the argument list in a call to the specified identifier, or, if the 
 		/// list contains a single item, by returning that single item.</summary>
 		/// <param name="listIdentifier">Target of the node that is created if <c>list</c>
-		/// does not contain exactly one item. Typical values include "{}" and "#splice".</param>
+		/// does not contain exactly one item. Typical values include "'{}" and "#splice".</param>
 		/// <remarks>This is the reverse of the operation performed by <see cref="AsList(LNode,Symbol)"/>.</remarks>
 		public static LNode AsLNode(this VList<LNode> list, Symbol listIdentifier)
 		{
@@ -118,10 +118,6 @@ namespace Loyc.Syntax
 				}
 			return list;
 		}
-		public static LNode WithoutOuterParens(this LNode self)
-		{
-			return WithoutAttrNamed(self, S.TriviaInParens);
-		}
 
 		public static LNode ArgNamed(this LNode self, Symbol name)
 		{
@@ -144,6 +140,35 @@ namespace Loyc.Syntax
 					return node;
 			return null;
 		}
+
+		#region Add/remove parentheses
+
+		/// <summary>Returns the same node with a parentheses attribute added.</summary>
+		public static LNode InParens(this LNode node)
+		{
+			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
+		}
+		/// <summary>Returns the same node with a parentheses attribute added.</summary>
+		/// <remarks>The <see cref="SourceRange"/> is applied to the parentheses 
+		/// attribute itself, not to the node to which the parens are added.</remarks>
+		public static LNode InParens(this LNode node, SourceRange range)
+		{
+			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, range));
+		}
+		/// <summary>Returns the same node with a parentheses attribute added.</summary>
+		public static LNode InParens(this LNode node, ISourceFile file, int position = -1, int width = -1)
+		{
+			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, file, position, width));
+		}
+		/// <summary>Removes a single pair of parentheses, if the node has a 
+		/// #trivia_inParens attribute. Returns the same node when no parens are 
+		/// present.</summary>
+		public static LNode WithoutOuterParens(this LNode self)
+		{
+			return WithoutAttrNamed(self, S.TriviaInParens);
+		}
+
+		#endregion
 
 		#region MatchesPattern() and helper methods // Used by replace() macro
 

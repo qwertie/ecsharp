@@ -149,8 +149,14 @@ namespace Loyc.Syntax
 		#region Management of registered languages
 
 		// Thread safe: since this is an immutable reference type, we can replace it atomically
-		static Map<string, IParsingService> _registeredLanguages = 
-			Map<string, IParsingService>.Empty.With("les", LesLanguageService.Value);
+		static Map<string, IParsingService> _registeredLanguages = InitRegisteredLanguages();
+		static Map<string, IParsingService> InitRegisteredLanguages()
+		{
+			_registeredLanguages = Map<string, IParsingService>.Empty;
+			Register(Les2LanguageService.Value);
+			Register(Les3LanguageService.Value);
+			return _registeredLanguages;
+		}
 
 		/// <summary>Dictionary of registered parsing services, keyed by file extension 
 		/// (without leading dots). The default dictionary contains one pair: 

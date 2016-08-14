@@ -19,24 +19,26 @@ namespace Loyc.Syntax.Les
 		Shebang    = TokenKind.Comment + 2,
 		Id         = TokenKind.Id,
 		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
+		NegativeLiteral = TokenKind.Literal + 1, // -12345
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
 		PreOrSufOp = TokenKind.Operator + 1,  // ++, --
-		//SuffixOp   = TokenKind.Operator + 2,  // \\... (suffix only)
+		//InfixOp    = TokenKind.Operator + 2,  // /, ?, =, >, <, 'single-quoted operators
 		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
-		BQOperator = TokenKind.Operator + 7,
+		BQOperator = TokenKind.Operator + 7, // No longer used in LESv3; `foo` is redefined as an identifier
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
-		//Keyword    = TokenKind.OtherKeyword,
+		Keyword    = TokenKind.OtherKeyword,
 		LParen     = TokenKind.LParen,
 		SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,
 		LBrack     = TokenKind.LBrack,
 		RBrack     = TokenKind.RBrack,
 		LBrace     = TokenKind.LBrace,
+		LTokenLiteral = TokenKind.LBrace + 1, // '{
 		RBrace     = TokenKind.RBrace,
 		Unknown    = TokenKind.Other,
 	}

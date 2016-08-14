@@ -153,7 +153,7 @@ namespace Loyc.Syntax.Les
 			Symbol bareName;
 			if (LesPrecedenceMap.IsSuffixOperatorName(node.Name, out bareName, false)) {
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Suffix, context);
-				if (prec == null || prec.Value == LesPrecedence.Backtick)
+				if (prec == null || prec.Value == LesPrecedence.Other)
 					return false;
 				Print(node.Args[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
@@ -171,7 +171,7 @@ namespace Loyc.Syntax.Les
 		
 		private void WriteOpName(Symbol op, Precedence prec)
 		{
-			if (prec == LesPrecedence.Backtick || !LesPrecedenceMap.IsNaturalOperator(op))
+			if (!LesPrecedenceMap.IsNaturalOperator(op))
 				PrintStringCore('`', false, op.Name);
 			else {
 				Debug.Assert(op.Name.StartsWith("'"));
@@ -206,10 +206,6 @@ namespace Loyc.Syntax.Les
 					(bs == NodeStyle.Operator && node.Name != null))
 				{
 					var result = _prec.Find(shape, op);
-					if (bs == NodeStyle.Operator && !naturalOp)
-						result = LesPrecedence.Backtick;
-					else if (!result.CanAppearIn(context))
-						result = LesPrecedence.Backtick;
 					if (!result.CanAppearIn(context) || !result.CanMixWith(context))
 						return null;
 					return result;
@@ -575,8 +571,11 @@ namespace Loyc.Syntax.Les
 			P<@void>  ((np, value, style) => np._out.Write("@void", true)),
 			P<char>   ((np, value, style) => np.PrintStringCore('\'', false, value.ToString())),
 			P<string> ((np, value, style) => {
-				bool tripleQuoted = (style & NodeStyle.Alternate) != 0;
-				np.PrintStringCore('"', tripleQuoted, value.ToString());
+				NodeStyle bs = (style & NodeStyle.BaseStyleMask);
+				if (bs == NodeStyle.TQStringLiteral)
+					np.PrintStringCore('\'', true, value.ToString());
+				else
+					np.PrintStringCore('"', bs == NodeStyle.TDQStringLiteral, value.ToString());
 			}),
 			P<Symbol> ((np, value, style) => np.PrintIdOrSymbol((Symbol)value, true)),
 			P<TokenTree> ((np, value, style) => {
@@ -598,7 +597,7 @@ namespace Loyc.Syntax.Les
 		void PrintIntegerToString(object value, NodeStyle style, string suffix)
 		{
 			string asStr;
-			if ((style & NodeStyle.Alternate) != 0) {
+			if ((style & NodeStyle.BaseStyleMask) == NodeStyle.HexLiteral) {
 				var valuef = (IFormattable)value;
 				_out.Write("0x", false);
 				asStr = valuef.ToString("x", null);

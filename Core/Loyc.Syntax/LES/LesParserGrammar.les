@@ -51,7 +51,7 @@ namespace Loyc.Syntax.Les {
 
 		// A sequence of expressions separated by commas OR semicolons.
 		// The `ref endMarker` parameter tells the caller if semicolons were used.
-		@[public] rule ExprList(ref endMarker::TokenType, list::VList!LNode = default(VList!LNode))::VList!LNode @{
+		@[public, virtual] rule ExprList(ref endMarker::TokenType, list::VList!LNode = default(VList!LNode))::VList!LNode @{
 			// `(/X)` is the same as `[X]?` except that in the first version, X is 
 			// the default branch, which simplifies the output code in this case.
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
@@ -64,7 +64,7 @@ namespace Loyc.Syntax.Les {
 			{if ($e != null || end.Type() == TT.Comma) { list.Add(e ?? MissingExpr()); };}
 			{return list;}
 		};
-		@[public] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
+		@[public, virtual] rule ExprListLazy(endMarker::Holder!TokenType)::IEnumerable!LNode @{
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")

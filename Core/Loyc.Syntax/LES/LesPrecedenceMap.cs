@@ -25,9 +25,9 @@ namespace Loyc.Syntax.Les
 
 		/// <summary>Forgets previously encountered operators to save memory.</summary>
 		public void Reset() {
-			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.Suffix2);
-			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Reserved);
-			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.Reserved);
+			this[OperatorShape.Suffix] = Pair.Create(PredefinedSuffixPrecedence.AsMutable(), P.Primary);
+			this[OperatorShape.Prefix] = Pair.Create(PredefinedPrefixPrecedence.AsMutable(), P.Other);
+			this[OperatorShape.Infix]  = Pair.Create(PredefinedInfixPrecedence .AsMutable(), P.Other);
 			_suffixOpNames = null;
 		}
 
@@ -69,11 +69,11 @@ namespace Loyc.Syntax.Les
 				{ S._Negate,     P.Prefix      }, // -
 				{ S.DotDot,      P.PrefixDots  }, // ..
 				{ S.OrBits,      P.PrefixOr    }, // |
-				{ S.Div,         P.Reserved    }, // /
-				{ S.LT,          P.Reserved    }, // <
-				{ S.GT,          P.Reserved    }, // >
-				{ S.QuestionMark,P.Reserved    }, // ?
-				{ S.Assign,      P.Reserved    }, // =
+				//{ S.Div,         P.Reserved    }, // /
+				//{ S.LT,          P.Reserved    }, // <
+				//{ S.GT,          P.Reserved    }, // >
+				//{ S.QuestionMark,P.Reserved    }, // ?
+				//{ S.Assign,      P.Reserved    }, // =
 			}.AsImmutable();
 
 		protected static readonly Map<object, Precedence> PredefinedSuffixPrecedence =
@@ -116,43 +116,53 @@ namespace Loyc.Syntax.Les
 				{ S.Or,          P.Or         }, // ||
 				{ S.Xor,         P.Or         }, // ^^
 				{ S.QuestionMark,P.IfElse     }, // ?
-				{ S.Colon,       P.Reserved   }, // :
+				{ S.Colon,       P.IfElse     }, // :
 				{ S.Assign,      P.Assign     }, // =
 				{ S.Lambda,      P.Lambda     }, // =>
-				{ S.NotBits,     P.Reserved   }, // ~
+				{ S.NotBits,     P.Other      }, // ~
 			}.AsImmutable();
 		
 		protected Precedence FindPrecedence(MMap<object,Precedence> table, object symbol, Precedence @default, bool cacheWordOp)
 		{
 			// You can see the official rules in the LesPrecedence documentation.
+			
 			// Rule 1 (for >= <= != ==) is covered by the pre-populated contents 
-			// of the table, and the pre-populated table helps interpret rules 
-			// 3-4 also.
+			// of the table, and the pre-populated table helps interpret other 
+			// rules too.
 			CheckParam.IsNotNull("symbol", symbol);
 			Precedence prec;
 			if (table.TryGetValue(symbol, out prec))
 				return prec;
 
 			string sym = symbol.ToString();
-			if (sym.Length < 2 || sym[0] != '\'')
+			if (sym.Length <= 1 || sym[0] != '\'')
 				return @default; // empty or non-operator
+
 			// Note: all one-character operators should have been found in the table
 			char first = sym[1], last = sym[sym.Length - 1];
+			bool isInfix = table == this[OperatorShape.Infix].A;
 
-			if (last == '=' && first != '=' && table == this[OperatorShape.Infix].A)
-				return table[symbol] = table[S.Assign];
-			
+			if (isInfix && last == '=') {
+				if (first == '=' || first == '!')
+					return table[symbol] = P.Compare;
+				else
+					return table[symbol] = P.Assign;
+			}
+
 			var twoCharOp = GSymbol.Get("'" + first + last);
 			if (table.TryGetValue(twoCharOp, out prec))
 				return table[symbol] = prec;
 
-			var oneCharOp = GSymbol.Get("'" + last);
+			var oneCharOp = GSymbol.Get("'" + first);
 			if (table.TryGetValue(oneCharOp, out prec))
 				return table[symbol] = prec;
 
-			// Default precedence is used for word operators
+			if (isInfix && char.IsLower(first))
+				return table[symbol] = P.LowerKeyword;
+
+			// Default precedence is used for anything else
 			if (cacheWordOp)
-				table[symbol] = @default;
+				return table[symbol] = @default;
 			return @default;
 		}
 

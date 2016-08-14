@@ -94,7 +94,7 @@ namespace Loyc.Syntax.Les
 			// Custom ops
 			Exact("a |-| b + c;",   F.Call("'|-|", a, F.Call(S.Add, b, c)));
 			Exact("a.b!!!c .?. 1;", F.Call("'.?.", F.Call("'!!!", F.Dot(a, b), c), one));
-			Exact("a /+ b +* c;",   F.Call("'/+", a, F.Call("'+*", b, c)));
+			Exact("a +/ b *+ c;",   F.Call("'+/", a, F.Call("'*+", b, c)));
 		}
 
 		[Test]
@@ -113,10 +113,11 @@ namespace Loyc.Syntax.Les
 		{
 			Stmt("/x;", F.Call(S.Div, x));
 			Stmt("-a * b;", F.Call(S.Mul, F.Call(S._Negate, a), b));
-			Stmt("-x ** +x / ~x + &x & *x && !x = ^x;",
-				F.Call(S.Assign, F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
+			Stmt("-x ** +x / ~x + &x & *x && !x == ^x;",
+				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
-					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)), F.Call(S.Not, x)), F.Call(S.XorBits, x)));
+					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
+					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
 			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Stmt(".. a + b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
 		}

@@ -43,7 +43,7 @@ namespace Loyc.Syntax.Les
 			result = ExprList(ref endMarker);
 			return result;
 		}
-		public VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
+		public virtual VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
 		{
 			TT la0;
 			LNode e = default(LNode);
@@ -97,7 +97,7 @@ namespace Loyc.Syntax.Les
 			}
 			return list;
 		}
-		public IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
+		public virtual IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
 		{
 			TT la0;
 			LNode e = default(LNode);

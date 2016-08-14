@@ -17,7 +17,7 @@ namespace Loyc.Syntax.Les
 	/// <summary>Parses LES (Loyc Expression Syntax) code into a sequence of Loyc 
 	/// trees (<see cref="LNode"/>), one per top-level statement.</summary>
 	/// <remarks>
-	/// You can use <see cref="LesLanguageService.Value"/> with <see cref="ParsingService.Parse"/>
+	/// You can use <see cref="Les2LanguageService.Value"/> with <see cref="ParsingService.Parse"/>
 	/// to easily parse a text string (holding zero or more LES statements) into a Loyc tree.
 	/// <para/>
 	/// This class expects to receive tokens from <see cref="LesLexer"/> that have been 
@@ -91,8 +91,6 @@ namespace Loyc.Syntax.Les
 		}
 		protected Precedence InfixPrecedenceOf(Token t) 
 		{
-			if (t.TypeInt == (int)TT.BQOperator)
-				return LesPrecedence.Backtick;
 			return _prec.Find(OperatorShape.Infix, t.Value);
 		}
 

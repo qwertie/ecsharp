@@ -29,22 +29,20 @@ namespace Loyc.Syntax
 		/// <summary>No style category is specified; the printer should choose a 
 		/// style automatically.</summary>
 		Default = 0,
-		/// <summary>The node should be printed with operator notation (infix, prefix, 
-		/// suffix) instead of prefix notation if applicable (can be used to request 
-		/// `backquote notation` in LES and EC#).</summary>
+		/// <summary>Indicates that a node was parsed as an operator (infix, prefix, 
+		/// suffix) or that it should be printed with operator notation if possible.</summary>
 		Operator = 1,
 		/// <summary>The node's immediate children (and/or the node itself) should be 
 		/// printed in statement notation, if possible in the context in which it is 
 		/// located.</summary>
 		Statement = 2,
 		/// <summary>A language-specific special notation should be used for this
-		/// node. In LES, this marker requests that the arguments to a call be
-		/// broken out into separate expressions, forming a "superexpression", e.g.
-		/// in "if c {a();} else {b();}", which actually means "if(c,{a();},else,{b();})",
-		/// the "if(...)" node will have this style.</summary>
+		/// node. In LESv3, the parser puts this style on block call nodes (e.g. 
+		/// <c>if (...) {...}</c>) and on keyword expressions (e.g. <c>#if x {...}</c>).</summary>
 		Special = 3,
-		/// <summary>The node should be printed in prefix notation, e.g. <c>@.(X, Y)</c>
-		/// instead of <c>X.Y</c>.</summary>
+		/// <summary>The node should be printed in prefix notation (even if it is 
+		/// not the natural notation to use). An example in EC# notation is 
+		/// <c>@`'+`(X, Y)</c> instead of <c>X + Y</c>.</summary>
 		PrefixNotation = 4,
 		/// <summary>The node(s) should be printed as a normal expression, rather
 		/// than using a special or statement notation.</summary>
@@ -59,16 +57,30 @@ namespace Loyc.Syntax
 		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
 		BaseStyleMask = 7,
 
-		/// <summary>If this node has two common styles in which it is printed, this
-		/// selects the second (either the less common style, or the EC# style for
-		/// features of C# with new syntax in EC#). In LES and EC#, alternate style
-		/// denotes hex numbers. In EC#, it denotes verbatim strings, x(->int) as 
-		/// opposed to (int)x, x (as Y) as opposed to (x as Y). delegate(X) {Y;} is 
-		/// considered to be the alternate style for X => Y, and it forces parens 
-		/// and braces as a side-effect.</summary>
+		/// <summary>Used for a binary (base-2) literal like 0b11111.</summary>
+		BinaryLiteral = 5,
+		/// <summary>Used for a hexadecimal (base-16) literal like 0x1F.</summary>
+		HexLiteral = 6,
+		/// <summary>Used for an octal (base-7) literal like 0o37.</summary>
+		OctalLiteral = 7,
+		/// <summary>Used for an EC# verbatim string literal like <c>@"foo"</c>.</summary>
+		VerbatimStringLiteral = 5,
+		/// <summary>Used for a triple-quoted string literal like <c>'''foo'''</c>.</summary>
+		TQStringLiteral = 6,
+		/// <summary>Used for a triple-double-quoted string literal like <c>"""foo"""</c>.</summary>
+		TDQStringLiteral = 7,
+
+		/// <summary>If this node has two styles in which it can be printed, this
+		/// selects the second (either the less common style, or in EC#, the EC# 
+		/// style for features of C# with new syntax in EC#). In EC#, it denotes 
+		/// x(->int) as opposed to (int)x, and x (as Y) as opposed to (x as Y). 
+		/// In C#, delegate(X) {Y;} is considered to be the alternate style for 
+		/// X => Y, and it forces parens and braces as a side-effect.</summary>
 		Alternate = 8,
+
 		/// <summary>Another alternate style flag. In LES and EC#, this is used for
-		/// binary-format numbers.</summary>
+		/// binary-format numbers. In LES, it is used for triple-quoted strings that 
+		/// use single quotes.</summary>
 		Alternate2 = 16,
 		
 		/// <summary>Indicates that some part of a compiler has seen the node and 

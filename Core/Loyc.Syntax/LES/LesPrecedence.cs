@@ -11,68 +11,76 @@ namespace Loyc.Syntax.Les
 	/// In LES, the precedence of an operator is decided based simply on the text 
 	/// of the operator. The precedence of each one-character operator is 
 	/// predefined; the precedence of any operator with two or more characters 
-	/// is decided based on the last character, or the first and last character;
-	/// the middle characters, if any, do not affect precedence.
+	/// is decided based on the first and last characters (according to
+	/// the rules below). Other characters, if any, do not affect precedence.
 	/// <para/>
-	/// The LES precedence table is designed to match most programming languages.
-	/// <para/>
-	/// As a nod to functional languages, the arrow operator "->" is right-
-	/// associative and has a precedence below '*' so that <c>int * int -> int</c>
-	/// parses as <c>(int * int) -> int</c> rather than <c>int * (int -> int)</c> 
-	/// as in the C family of languages.
+	/// The LES precedence table mostly matches popular programming languages,
+	/// i.e. those in the C family.
 	/// <para/>
 	/// An operator consists of a sequence of the following characters:
 	/// <pre>
-	///    ~ ! % ^ &amp; * \ - + = | &lt; > / ? : . $
+	///    ~ ! % ^ * - + = | &lt; > / ? : . $ &amp;
 	/// </pre>
-	/// Or a backslash (\) followed by a sequence of the above characters and/or 
-	/// letters, numbers, underscores or #s. Or a string with `backtick quotes`.
+	/// LESv3 also has operators that start with a single quotes, which can include
+	/// both letters and punctuation (e.g. <c>'|foo|</c>). The quote itself is 
+	/// ignored for the purpose of choosing precedence. LESv2 has <c>`backquoted`</c> 
+	/// operators, whereas in LESv3 backquoted strings are simply identifiers. 
 	/// <para/>
-	/// "@" is not considered an operator. It is used to mark a sequence of 
-	/// punctuation and/or non-punctuation characters as an identifier, a symbol,
-	/// or a special literal. "#" is not an operator; like an underscore, the 
-	/// hash sign is considered to be an identifier character, and while it is 
-	/// conventionally used to mark "keywords", the parser does not assign any 
-	/// special meaning to it.
-	/// <para/>
-	/// "," and ";" are not considered operators; rather they are separators, and
-	/// they cannot be combined with operators. For example, "?,!" is parsed as 
-	/// three separate tokens.
+	/// It is notable that the following punctuation cannot be used in operators:
+	/// <ul>
+	/// <li>"@" is used for multiple other purposes.</li>
+	/// <li>"#" is conventionally used to mark "keywords" (although in LESv2, the 
+	/// parser treats it like an underscore or a letter.)</li>
+	/// <li>"," and ";" are separators, so for example, "?,!" is parsed as three 
+	/// separate tokens.</li>
+	/// <li>The backslash "\" is reserved for future use.</li>
+	/// </ul>
 	/// <para/>
 	/// The following table shows all the precedence levels and associativities
-	/// of the "built-in" LES operators, except `backtick` and the "lambda" 
-	/// operator =>, which is special. Each precedence level has a name, which 
-	/// corresponds to a static field of this class. All binary operators are 
-	/// left-associative unless otherwise specified.
+	/// of the "built-in" LES operators, except a couple of special operators such
+	/// as the "lambda" operator =>, whose precedence is different on the left side 
+	/// than on the right side. Each precedence level has a name, which corresponds 
+	/// to a static field of this class. All binary operators are left-associative 
+	/// unless otherwise specified.
 	/// <ol>
 	/// <li>Substitute: prefix $ . :</li>
 	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
 	/// <li>NullDot: binary ?. ::</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
-	/// <li>Prefix: prefix ~ ! % ^ &amp; * - + `backtick`</li>
+	/// <li>Prefix: prefix ~ ! % ^ * - + &amp; `backtick` (LESv2 only)</li>
 	/// <li>Power: binary **</li>
-	/// <li>Suffix2: suffix \\</li>
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>
 	/// <li>Add: binary + -</li>
 	/// <li>Arrow: binary right-associative -> &lt;-</li>
 	/// <li>AndBits: binary &amp;</li>
 	/// <li>OrBits: binary | ^</li>
-	/// <li>OrIfNull: binary ??</li>
 	/// <li>PrefixDots: prefix ..</li>
 	/// <li>Range: binary right-associative ..</li>
 	/// <li>Compare: binary != == >= > &lt; &lt;=</li>
 	/// <li>And: binary &amp;&amp;</li>
 	/// <li>Or: binary || ^^</li>
 	/// <li>IfElse: binary right-associative ? :</li>
-	/// <li>Assign: binary right-associative =</li>
+	/// <li>LowerKeyword: a lowercase keyword</li>
 	/// <li>PrefixOr: |</li>
 	/// </ol>
-	/// Not listed in table: binary => ~ &lt;> `backtick`; prefix / \ &lt; > ? =
+	/// Not listed in table: binary <c>=> ~ = ?? >> &lt;&lt;</c>; prefix <c>/ ? = > &lt;</c>;
+	/// non-lowercase keywords.
 	/// <para/>
 	/// Notice that the precedence of an operator depends on how it is used. The 
-	/// prefix operator '-' has higher precedence than the binary operator '-', 
-	/// so for example <c>- y * z</c> is parsed as <c>(- y) * z</c>, while 
-	/// <c>x - y * z</c> is parsed as <c>x - (y * z)</c>.
+	/// prefix operator <c>-</c> has higher precedence than the binary operator 
+	/// <c>-</c>, so for example <c>- y * z</c> is parsed as <c>(- y) * z</c>, 
+	/// while <c>x - y * z</c> is parsed as <c>x - (y * z)</c>.
+	/// <para/>
+	/// Programmers often use the shift operators <c>>></c> and <c>&lt;&lt;</c> 
+	/// in place of multiplication or division, so their <i>natural</i> precedence
+	/// is the same as <c>*</c> and <c>/</c>. However, traditionally the C
+	/// family of languages confusingly give the shift operators a precedence 
+	/// below <c>+</c>. Therefore, LES does not allow mixing of shift operators
+	/// with <c>+ - * /</c>; <c>a >> b + c</c> should produce a parse error.
+	/// This is called immiscibility as explained in the documentation of 
+	/// <see cref="Precedence"/>. Parsing may still complete, but the exact 
+	/// output tree is unspecified (may be <c>(a >> b) + c</c> or 
+	/// <c>a >> (b + c)</c>).
 	/// <para/>
 	/// The Lambda operator =>, which is right-associative, has a precedence 
 	/// level above Multiply on the left side, but below Assign on the right 
@@ -83,19 +91,36 @@ namespace Loyc.Syntax.Les
 	/// two sides of an operator may seem strange; see the documentation of 
 	/// <see cref="Precedence"/> for more explanation.
 	/// <para/>
-	/// In addition to these, the binary `backtick` operators have a 
-	/// "precedence range" that is above Compare and below Power. This means that 
-	/// they are immiscible with the Multiply, Add, Arrow, AndBits, OrBits, 
-	/// OrIfNull, PrefixDots, and Range operators, as explained in the 
-	/// documentation of <see cref="Precedence"/>. 
+	/// Similarly, all assignment operators (including compound assignments like
+	/// +=) have a high precedence on the left side and low precedence on the 
+	/// right. This decision was made for WebAssembly, in which an expression like
+	/// <c>2 * i32_store[$f(),4] = 3 * $g()</c> is best parsed as 
+	/// <c>2 * (i32_store[$f(),4] = (3 * $g()))</c> (NOTE: this example will 
+	/// surely be wrong by the time Wasm is released).
+	/// <para/>
+	/// As a nod to functional languages, the arrow operator "->" is right-
+	/// associative and has a precedence below '*' so that <c>int * int -> int</c>
+	/// parses as <c>(int * int) -> int</c> rather than <c>int * (int -> int)</c> 
+	/// as in the C family of languages.
+	/// <para/>
+	/// Some operators like <c>'this-one</c> do not begin with punctuation. These
+	/// "keyword operators" must be used as binary operators. They either start
+	/// with a lowercase letter or they don't. If they do start with a lowercase
+	/// letter, their precedence is LowerKeyword, which is very low, below 
+	/// assignment, so that <c>a = b 'then x = y</c> parses like 
+	/// <c>(a = b) 'then (x = y)</c>.
+	/// <para/>
+	/// If they do not start with a lowercase letter (as in <c>'Foo</c> or 
+	/// <c>'123</c>) then they have an indeterminate precedence, below power
+	/// (**) but above comparison (==). This means that an operator like 'XOR
+	/// or 'Mod cannot be mixed with operators of precedence Multiply, Add, 
+	/// Arrow, AndBits, OrBits, OrIfNull, PrefixDots, and Range operators.
+	/// Mixing operators illegally (e.g. <c>x 'Mod y + z</c>) will produce a 
+	/// parse error.
 	/// <para/>
 	/// After constructing an initial table based on common operators from other
 	/// languages, I noticed that 
 	/// <ul>
-	/// <li>All the suffix operators (++ --) had the same precedence, so
-	/// I added \...\ as an extra suffix operator with a lower precedence
-	/// (but, not seeing a purpose for low-precedence suffixes, it's still
-	/// above * and /.)</li>
 	/// <li>None of the high-precedence operators were right-associative, so I 
 	/// added the !! operator to "fill in the gap".</li>
 	/// <li>There were no prefix operators with low precedence, so I added ".." 
@@ -105,14 +130,11 @@ namespace Loyc.Syntax.Les
 	/// </ul>
 	/// I also wanted to have a little "room to grow"--to defer the precedence 
 	/// decision to a future time for some operators. So the precedence of the 
-	/// binary operators ~ and &lt;> is constrained to be above Compare and below 
-	/// NullDot; mixing one of these operators with any operator in this range 
-	/// will produce a "soft" parse error (meaning that parsing still proceeds 
-	/// but the exact precedence is undefined.)
+	/// binary operator ~ has a range of operators with which it cannot be
+	/// mixed, the same range as for uppercase operators without punctuation;
+	/// for example, <c>x ~ y + z</c> is invalid but <c>x ~ y == z</c> is allowed.
 	/// <para/>
-	/// The operators / \ &lt; > ? = can be used as prefix operators, but their
-	/// precedence is is similarly undefined (but definitely above Compare and
-	/// below NullDot).
+	/// The operators <c>/ \ ? = > &lt;</c> cannot be used as prefix operators.
 	/// <para/>
 	/// The way that low-precedence prefix operators are parsed deserves some 
 	/// discussion... TODO.
@@ -128,10 +150,9 @@ namespace Loyc.Syntax.Les
 	/// ambiguous (it could be parsed as either of two superexpressions, 
 	/// <c>(x -*-) (y)</c> or <c>(x) (-*- y)</c>) and it is illegal.
 	/// <para/>
-	/// Operators that end with $ can only be prefix operators (not binary or 
-	/// suffix). Operators that start and end with \ can only be suffix (not 
-	/// binary or prefix) operators. Having only a single role makes these 
-	/// operators unambiguous inside superexpressions.
+	/// Operators that start with $ can only be prefix operators (not binary or 
+	/// suffix). Having only a single role makes these operators unambiguous 
+	/// inside superexpressions (LESv2) or with juxtaposition (LESv3).
 	/// <para/>
 	/// An operator cannot have all three roles (suffix, prefix and binary); that 
 	/// would be overly ambiguous. For example, if "-" could also be a suffix 
@@ -152,48 +173,38 @@ namespace Loyc.Syntax.Les
 	/// To determine the precedence of any given operator, first you must
 	/// decide, mainly based on the context in which the operator appears and the
 	/// text of the operator, whether it is a prefix, binary, or suffix operator. 
-	/// Suffix operators can only be derived from the operators <c>++, --, \\</c>
+	/// Suffix operators can only be derived from the operators <c>++, --</c>
 	/// ("derived" means that you can add additional operator characters in the 
 	/// middle, e.g. <c>+++</c> and <c>-%-</c> are can be prefix or suffix 
 	/// operators.)
 	/// <para/>
-	/// If an operator starts with a backslash (\), the backslash is not considered 
-	/// part of the operator name and it not used for the purpose of choosing 
-	/// precedence either (rather, it is used to allow letters and digits in the 
-	/// operator name). A `backquoted` operator always has precedence of 
-	/// <see cref="Backtick"/> and again, the backticks are not considered part
-	/// of the operator name.
+	/// If an operator starts with a single quote in LESv3 ('), the quote is not
+	/// considered for the purpose of choosing precedence (rather, it is used to 
+	/// allow letters and digits in the operator name).
 	/// <para/>
-	/// Next, if the operator is only one character, simply find it 
-	/// in the above table. If the operator is two or more characters, take the 
-	/// first character A and the last character Z, and apply the following rules 
-	/// in order:
+	/// Next, if the operator is only one character, simply find it in the list
+	/// of operators in the previous section to learn its precedence. If the 
+	/// operator is two or more characters, take the first character A and the 
+	/// and the last character Z, and of the following rules, use the <b>first</b>
+	/// rule that applies:
 	/// <ol>
-	/// <li>If the operator is binary and it is exactly equal to ">=" or "&lt;=" 
-	/// or "!=", the precedence is Compare.</li>
-	/// <li>If the operator is binary, A is NOT '=', and Z is '=', then the 
-	/// precedence is Assign.</li>
-	/// <li>Look for an operator named AZ. If it is defined, the operator 
-	/// will have the same precedence. For example, binary "=|>" has the same 
-	/// precedence as binary "=>".</li>
-	/// <li>Otherwise, look for an entry in the table for Z. For example,
-	/// binary "%+" has the same precedence as binary "+" and unary "%+" has
-	/// the same precedence as unary "+".</li>
-	/// <li>If no other rule applies (e.g. \word-operator), use Reserved for
-	/// punctuation-based operators with undefined precedence and BackslashWord
-	/// for all other operators (which will have started with a backslash).</li>
+	/// <li>If AZ is "!=" or "==", or if the operator is exactly two characters 
+	/// long (ignoring the initial single quote) and equal to ">=", or "&lt;=",
+	/// its precedence is Compare. This rule separates comparison operators from 
+	/// assignment operators, so that ">>=" is different from ">=", and "===" 
+	/// counts as a comparison operator.</li>
+	/// <li>If it's an infix operator and Z is '=', the precedence is Assign.</li>
+	/// <li>Look for an operator named AZ from the section above. If it is defined,
+	/// the operator will have the same precedence. For example, binary <c>=|></c>
+	/// has the same precedence as binary "=>".</li>
+	/// <li>Otherwise, look for an entry in the table for A. For example,
+	/// binary "%+" has the same precedence as binary "%" and unary "-*" has
+	/// the same precedence as unary "-".</li>
+	/// <li>If the operator is not an infix operator, it is illegal
+	/// (e.g. prefix ?? doesn't exist).</li>
+	/// <li>If A is a lowercase letter, the precedence is LowerKeyword.</li>
+	/// <li>Otherwise, the operator's precedence is Other.</li>
 	/// </ol>
-	/// The first two rules are special cases that exist for the sake of the 
-	/// shift operators, so that ">>=" has the same precedence as "=" instead 
-	/// of ">=".
-	/// <para/>
-	/// Please note that the plain colon ':' is not treated as an operator at
-	/// statement level; it is assumed to introduce a nested block, as in the 
-	/// languages Python and boo (e.g. in "if x: y();" is interpreted as 
-	/// "if x { y(); }"). However, ':' is allowed as an operator inside a 
-	/// parenthesized expression. ([June 2014] Python-style blocks are not
-	/// yet implemented.)
-	/// <para/>
 	/// The double-colon :: has the "wrong" precedence according to C# and C++
 	/// rules; <c>a.b::c.d</c> is parsed <c>(a.b)::(c.d)</c> although it would 
 	/// be parsed <c>((a.b)::c).d</c> in C# and C++. The change in precedence 
@@ -204,28 +215,19 @@ namespace Loyc.Syntax.Les
 	/// There are no ternary operators in LES. '?' and ':' are right-associative 
 	/// binary operators, so <c>c ? a : b</c> is parsed as <c>c ? (a : b)</c>.
 	/// The lack of an official ternary operator reduces the complexity of the
-	/// parser; C-style conditional expressions could still be parsed in LEL 
-	/// with the help of a macro, but they are generally not necessary since the 
-	/// if-else superexpression is preferred: <c>if c a else b</c>.
+	/// parser.
 	/// <para/>
-	/// I suppose I should also mention the way operators map to function names.
-	/// In LES, there is no semantic distinction between operators and functions;
-	/// <c>x += y</c> is equivalent to the function call <c>@+=(x, y)</c>, and 
-	/// the actual name of the function is "+=" (the @ character informs the 
-	/// lexer that a special identifier name follows.) Thus, the name of most 
-	/// operators exactly matches the operator; the + operator is named "+",
-	/// the |*| operator is named "|*|", and so forth. There are a couple of 
-	/// exceptions:
-	/// <ul>
-	/// <li>While prefix ++ and -- are named "++" and "--", the suffix versions
-	/// are named "suf++" and "suf--" to distinguish them.</li>
-	/// <li>The backslash is stripped from operators that start with a backslash.
-	/// So \+ is named "+" and \foo\ is named "foo\". \+ means the same thing as 
-	/// the normal + operator, it just has a different precedence. However, a 
-	/// single backslash (\) followed by whitespace is named "\".</li>
-	/// <li>For operators surrounded by `backquotes`, the backquotes are not 
-	/// part of the name either; \> and `>` and > differ only in precedence.</li>
-	/// </ul>
+	/// LES represents Loyc trees, which do not distinguish operators and 
+	/// functions except by name; <c>x += y</c> is equivalent to the function 
+	/// call <c>`'+=`(x, y)</c> in LESv3 (<c>@'+=(x, y)</c> in LESv2), and 
+	/// the actual name of the function is <c>'+=</c>. Operators that do not
+	/// start with a single quote in LES <b>do</b> start with a single quote
+	/// in the final output (e.g. <c>2 + 2</c> is equivalent to <c>2 '+ 2</c>).
+	/// There is an exception: While prefix ++ and -- are named <c>'++</c> and 
+	/// <c>'--</c>, the suffix versions are named <c>'++suf</c> and 
+	/// <c>'--suf</c> in the output tree. For LESv2 operators surrounded by 
+	/// `backquotes`, the backquotes are not included in the output tree (e.g.
+	/// <c>`sqrt` x</c> is equivalent to <c>sqrt(x)</c>).
 	/// </remarks>
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
@@ -236,25 +238,25 @@ namespace Loyc.Syntax.Les
 		public static readonly Precedence DoubleBang  = new Precedence(91, 90);
 		public static readonly Precedence Prefix      = new Precedence(85);      // most prefix/suffix ops
 		public static readonly Precedence Power       = new Precedence(80);
-		public static readonly Precedence Suffix2     = new Precedence(75);      // no longer used
+		public static readonly Precedence Juxtaposition = new Precedence(76, 75); // x y
 		public static readonly Precedence Multiply    = new Precedence(70);
-		public static readonly Precedence Arrow       = new Precedence(65);
 		public static readonly Precedence Add         = new Precedence(60);
-		public static readonly Precedence Shift       = new Precedence(55, 55, 55, 70);
+		public static readonly Precedence Shift       = new Precedence(65, 65, 60, 70);
+		public static readonly Precedence Arrow       = new Precedence(55);
 		public static readonly Precedence PrefixDots  = new Precedence(50);      // prefix ..
 		public static readonly Precedence Range       = new Precedence(45);
 		public static readonly Precedence OrIfNull    = new Precedence(40, 40, 40, 76);
-		public static readonly Precedence Backtick    = new Precedence(40, 40, 40, 75);
-		public static readonly Precedence Reserved    = new Precedence(40, 40, 40, 90);
+		public static readonly Precedence Other       = new Precedence(40, 40, 40, 75);
 		public static readonly Precedence Compare     = new Precedence(35);
 		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 50);
 		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50);
 		public static readonly Precedence And         = new Precedence(20);
 		public static readonly Precedence Or          = new Precedence(15);
 		public static readonly Precedence IfElse      = new Precedence(11, 10);
-		public static readonly Precedence Assign      = new Precedence(6, 5);
-		public static readonly Precedence Lambda      = new Precedence(77, 0, -1, -1);
-		public static readonly Precedence PrefixOr    = new Precedence(0);       // prefix
-		public static readonly Precedence SuperExpr   = new Precedence(-5);
+		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);
+		public static readonly Precedence LowerKeyword = new Precedence(0, 0);
+		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5);
+		public static readonly Precedence PrefixOr    = new Precedence(-10);       // prefix
+		public static readonly Precedence SuperExpr   = new Precedence(-15);
 	}
 }

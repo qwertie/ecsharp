@@ -186,6 +186,8 @@
     <Compile Include="Collections\SetTests.cs" />
     <Compile Include="Collections\SparseAListTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
+    <Compile Include="Syntax\Les3LexerTests.cs" />
+    <Compile Include="Syntax\Les3PrinterAndParserTests.cs" />
     <Compile Include="Syntax\LesLexerTests.cs" />
     <Compile Include="Syntax\LesParserTests.cs" />
     <Compile Include="Syntax\LesPrinterAndParserTests.cs" />

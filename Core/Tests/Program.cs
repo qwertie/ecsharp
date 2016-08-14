@@ -143,6 +143,8 @@ namespace Loyc.Tests
 				new LesLexerTests(),
 				new LesParserTests(),
 				new LesPrinterTests(),
+				new Les3LexerTests(),
+				new Les3ParserTests(),
 				new TokensToTreeTests(),
 				new StreamCharSourceTests(),
 				new LexerSourceTests_Calculator(),

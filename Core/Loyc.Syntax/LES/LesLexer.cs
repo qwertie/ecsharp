@@ -57,7 +57,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		// Gets the text of the current token that has been parsed so far
-		private UString Text()
+		protected UString Text()
 		{
 			return CharSource.Slice(_startPosition, InputPosition - _startPosition);
 		}
@@ -119,22 +119,22 @@ namespace Loyc.Syntax.Les
 			return IdToSymbol(s);
 		}
 
-		protected object ParseStringValue(bool isTripleQuoted)
+		protected object ParseStringValue(bool isTripleQuoted, bool les3TQIndents = false)
 		{
-			_value = ParseStringCore(isTripleQuoted);
+			_value = ParseStringCore(isTripleQuoted, les3TQIndents);
 			if (_value.ToString().Length < 64)
 				_value = CG.Cache(_value);
 			return _value;
 		}
 
-		string ParseStringCore(bool isTripleQuoted)
+		string ParseStringCore(bool isTripleQuoted, bool les3TQindents = false)
 		{
 			if (SkipValueParsing)
 				return "";
 			string value;
 			if (_parseNeeded) {
 				UString original = CharSource.Slice(_startPosition, InputPosition - _startPosition);
-				value = UnescapeQuotedString(ref original, Error, IndentString);
+				value = UnescapeQuotedString(ref original, Error, IndentString, les3TQindents);
 				Debug.Assert(original.IsEmpty);
 			} else {
 				Debug.Assert(CharSource.TryGet(InputPosition - 1, '?') == CharSource.TryGet(_startPosition, '!'));
@@ -154,9 +154,9 @@ namespace Loyc.Syntax.Les
 		/// following a newline is ignored as long as it matches this string. 
 		/// For example, if the text following a newline is "\t\t Foo" and this
 		/// string is "\t\t\t", the tabs are ignored and " Foo" is kept.</param>
-		/// <param name="ecsTQIndents">Enable EC# triple-quoted string indent
+		/// <param name="les3TQIndents">Enable EC# triple-quoted string indent
 		/// rules, which allow an additional one tab or three spaces of indent.
-		/// (It hasn't been decided whether to support this in LES.)</param>
+		/// (I'm leaning toward also supporting this in LES; switched on in v3)</param>
 		/// <returns>The decoded string</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.
 		/// Firstly, it recognizes triple-quoted strings (''' """ ```). These 
@@ -172,17 +172,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool ecsTQIndents = false)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool les3TQIndents = false)
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation, ecsTQIndents);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, les3TQIndents);
 			return sb.ToString();
 		}
 		
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool ecsTQIndents = false)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFront(out fail);
@@ -191,7 +191,7 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, ecsTQIndents))
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents))
 				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 		
@@ -203,7 +203,7 @@ namespace Loyc.Syntax.Les
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool ecsTQIndents = false)
+		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
@@ -256,8 +256,8 @@ namespace Loyc.Syntax.Les
 							int sp;
 							while ((sp = src.PopFront(out fail)) == ind.PopFront(out fail) && !fail)
 								sourceText = src;
-							if (ecsTQIndents) {
-								// Allow an additional one tab or three spaces
+							if (les3TQIndents && fail) {
+								// Allow an additional one tab or three spaces when initial indent matches
 								if (sp == '\t')
 									sourceText = src;
 								else if (sp == ' ') { 
@@ -280,7 +280,7 @@ namespace Loyc.Syntax.Les
 
 		#region Identifier & Symbol parsing (includes @true, @false, @null, named floats) (including public ParseIdentifier())
 
-		Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+		protected Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
 		{
 			{ "true", true },
 			{ "false", false },
@@ -313,12 +313,12 @@ namespace Loyc.Syntax.Les
 					}
 				}
 			} else // normal identifier
-				id = CharSource.Slice(_startPosition, InputPosition - _startPosition);
+				id = Text();
 
 			return _value = IdToSymbol(id);
 		}
 
-		protected object ParseSymbolValue()
+		protected object ParseSymbolValue(bool lesv3 = false)
 		{
 			if (SkipValueParsing)
 			{
@@ -332,8 +332,11 @@ namespace Loyc.Syntax.Les
 				return _value = IdToSymbol(text);
 			} else if (original[0, '\0'] == '`')
 				return _value = IdToSymbol(original.Substring(1, original.Length - 2));
-			else
+			else {
+				if (lesv3 && NamedLiterals.TryGetValue(original, out _value))
+					return _value;
 				return _value = IdToSymbol(original);
+			}
 		}
 
 		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
@@ -402,7 +405,7 @@ namespace Loyc.Syntax.Les
 		protected static Symbol _L = GSymbol.Get("L");
 		protected static Symbol _UL = GSymbol.Get("UL");
 
-		protected object ParseNumberValue()
+		protected object ParseNumberValue(int numberEndPosition)
 		{
 			if (SkipValueParsing)
 			{
@@ -419,11 +422,8 @@ namespace Loyc.Syntax.Les
 				start++;
 			if (_numberBase != 10)
 				start += 2;
-			int stop = InputPosition;
-			if (_typeSuffix != null)
-				stop -= _typeSuffix.Name.Length;
 
-			UString digits = CharSource.Slice(start, stop - start);
+			UString digits = CharSource.Slice(start, numberEndPosition - start);
 			string error;
 			if ((_value = ParseNumberCore(digits, _isNegative, _numberBase, _isFloat, _typeSuffix, out error)) == null)
 				_value = 0;
@@ -460,7 +460,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol suffix, ref string error)
+		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol typeSuffix, ref string error)
 		{
 			if (source.IsEmpty) {
 				error = Localize.Localized("Syntax error in integer literal");
@@ -475,16 +475,16 @@ namespace Loyc.Syntax.Les
 			}
 
 			// If no suffix, automatically choose int, uint, long or ulong
-			if (suffix == null) {
+			if (typeSuffix == null) {
 				if (unsigned > long.MaxValue)
-					suffix = _UL;
+					typeSuffix = _UL;
 				else if (unsigned > uint.MaxValue)
-					suffix = _L;
+					typeSuffix = _L;
 				else if (unsigned > int.MaxValue)
-					suffix = isNegative ? _L : _U;
+					typeSuffix = isNegative ? _L : _U;
 			}
 
-			if (isNegative && (suffix == _U || suffix == _UL)) {
+			if (isNegative && (typeSuffix == _U || typeSuffix == _UL)) {
 				// Oops, an unsigned number can't be negative, so treat 
 				// '-' as a separate token and let the number be reparsed.
 				return CodeSymbols.Sub;
@@ -492,12 +492,14 @@ namespace Loyc.Syntax.Les
 
 			// Create boxed integer of the appropriate type 
 			object value;
-			if (suffix == _UL)
+			if (typeSuffix == _UL) {
 				value = unsigned;
-			else if (suffix == _U) {
+				typeSuffix = null;
+			} else if (typeSuffix == _U) {
 				overflow = overflow || (uint)unsigned != unsigned;
 				value = (uint)unsigned;
-			} else if (suffix == _L) {
+				typeSuffix = null;
+			} else if (typeSuffix == _L) {
 				if (isNegative) {
 					overflow = overflow || -(long)unsigned > 0;
 					value = -(long)unsigned;
@@ -505,13 +507,17 @@ namespace Loyc.Syntax.Les
 					overflow = overflow || (long)unsigned < 0;
 					value = (long)unsigned;
 				}
+				typeSuffix = null;
 			} else {
 				value = isNegative ? -(int)unsigned : (int)unsigned;
 			}
 
 			if (overflow)
 				error = Localize.Localized("Overflow in integer literal (the number is 0x{0:X} after binary truncation).", value);
-			return value;
+			if (typeSuffix == null)
+				return value;
+			else
+				return new SpecialLiteral(value, typeSuffix);
 		}
 
 		static object ParseNormalFloat(UString source, bool isNegative, Symbol typeSuffix, ref string error)
@@ -528,8 +534,14 @@ namespace Loyc.Syntax.Les
 					return isNegative ? -m : m;
 			} else {
 				double d;
-				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
-					return isNegative ? -d : d;
+				if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out d)) {
+					if (isNegative)
+						d = -d;
+					if (typeSuffix == null || typeSuffix == _D)
+						return d;
+					else
+						return new SpecialLiteral(d, typeSuffix);
+				}
 			}
 			error = Localize.Localized("Syntax error in float literal");
 			return null;
@@ -565,8 +577,10 @@ namespace Loyc.Syntax.Les
 					result = -result;
 				if (typeSuffix == _M)
 					return (decimal)result;
-				else
+				if (typeSuffix == null || typeSuffix == _D)
 					return result;
+				else
+					return new SpecialLiteral(result, typeSuffix);
 			}
 		}
 
@@ -603,34 +617,32 @@ namespace Loyc.Syntax.Les
 			TT tt;
 			Symbol name;
 
-			// Get first and last of the operator's initial punctuation
-			char first = op[0], last = first;
-			if (first != '\'') {
-				name = (Symbol)("'" + op);
-				last = op[op.Length - 1];
-				if (op == "!")
-					return Pair.Create(name, TT.Not);
-			} else {
-				name = (Symbol)op;
-				Debug.Assert(op.Length > 1);
-				first = op[1];
-				for (int i = 1; i < op.Length; i++) {
-					if (IsIdContChar(op[i]))
-						break;
-					last = op[i];
-				}
-			}
+			if (op == "!")
+				return Pair.Create(CodeSymbols.Not, TT.Not);
 
-			if (op.Length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
+			// Get first and last of the operator's initial punctuation
+			int length = op.Length;
+			char first = op[0], last = op[length - 1];
+			if (first == '\'') {
+				Debug.Assert(length > 1);
+				length--;
+				first = op[1];
+				name = (Symbol)op;
+			} else {
+				name = (Symbol)("'" + op);
+			}
+			
+			if (length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
 				tt = TT.PreOrSufOp;
-			else if (last == '$')
+			else if (first == '$')
 				tt = TT.PrefixOp;
-			else if (last == '.' && (op.Length == 1 || first != '.'))
+			else if (first == '.' && (length == 1 || first != '.'))
 				tt = TT.Dot;
-			else if (last == '=' && (op.Length == 1 || first != '!' && first != '='))
+			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
 				tt = TT.Assignment;
 			else
 				tt = TT.NormalOp;
+
 			return Pair.Create(name, tt);
 		}
 

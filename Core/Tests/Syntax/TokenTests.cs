@@ -69,7 +69,7 @@ namespace Loyc.Syntax.Lexing
 		private void TestToLNode(Token t, ISourceFile file, string lesString)
 		{
 			LNode n = t.ToLNode(file);
-			AreEqual(lesString, LesLanguageService.Value.Print(n, MessageSink.Current, ParsingMode.Expressions, "", ""));
+			AreEqual(lesString, Les2LanguageService.Value.Print(n, MessageSink.Current, ParsingMode.Expressions, "", ""));
 			AreEqual(file, n.Source);
 			AreEqual(t.StartIndex, n.Range.StartIndex);
 			AreEqual((t.Children != null && t.Children.Count > 0 ? t.Children.Last : t).EndIndex, n.Range.EndIndex);

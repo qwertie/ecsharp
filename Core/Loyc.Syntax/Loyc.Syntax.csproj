@@ -144,6 +144,17 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="LES\Les3LanguageService.cs" />
+    <Compile Include="LES\Les3Lexer.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Les3Lexer.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="LES\Les3Parser.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Les3Parser.ecs</DependentUpon>
+    </Compile>
     <Compile Include="LES\LesLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -154,12 +165,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>LesParserGrammar.les</DependentUpon>
     </Compile>
-    <Compile Include="LES\LESv3.cs" />
-    <Compile Include="LES\LESv3.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>LESv3.ecs</DependentUpon>
-    </Compile>
+    <Compile Include="LES\Les3.cs" />
+    <Compile Include="LES\SpecialLiteral.cs" />
     <Compile Include="Lexing\BaseILexer.cs" />
     <Compile Include="Lexing\IndentTokenGenerator.cs" />
     <Compile Include="Lexing\WhitespaceFilter.cs" />
@@ -253,6 +260,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="LES\Les3Lexer.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>Les3Lexer.out.cs</LastGenOutput>
+    </None>
     <None Include="LES\LesLexerGrammar.les">
       <Generator>LLLPG</Generator>
       <LastGenOutput>LesLexerGrammar.out.cs</LastGenOutput>
@@ -262,9 +273,9 @@
       <CustomToolNamespace>--timeout=0</CustomToolNamespace>
       <LastGenOutput>LesParserGrammar.out.cs</LastGenOutput>
     </None>
-    <None Include="LES\LESv3.ecs">
+    <None Include="LES\Les3Parser.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>LESv3.out.cs</LastGenOutput>
+      <LastGenOutput>Les3Parser.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
   </ItemGroup>
