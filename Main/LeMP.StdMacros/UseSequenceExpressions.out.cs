@@ -319,7 +319,7 @@ namespace LeMP
 						LNode tmp_4, value, varName, varType;
 						VList<LNode> attrs;
 						if (expr.Calls(CodeSymbols.Braces)) {
-							Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+							Context.Write(Severity.Warning, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 							result = expr;
 						} else if ((attrs = expr.Attrs).IsEmpty | true && attrs.NodeNamed(S.Out) != null && expr.Calls(CodeSymbols.Var, 2) && (varType = expr.Args[0]) != null && (varName = expr.Args[1]) != null && varName.IsId) {
 							if (varType.IsIdNamed(S.Missing))

@@ -1070,9 +1070,10 @@ namespace Loyc.Ecs
 			P<@void>  (np => np._out.Write("default(void)", true)),
 			P<char>   (np => np.PrintString(np._n.Value.ToString(), '\'', null)),
 			P<string> (np => {
-				var v1 = np._n.AttrNamed(_DoubleVerbatim);
-				var v2 = v1 != null ? v1.Name : ((np._n.Style & NodeStyle.Alternate) != 0 ? _Verbatim : null);
-				np.PrintString(np._n.Value.ToString(), '"', v2, true);
+				var n = np._n;
+				// TODO: add ability to print triple-quoted strings when !PreferPlainCSharp
+				var v = n.BaseStyle == NodeStyle.VerbatimStringLiteral || n.BaseStyle == NodeStyle.TQStringLiteral || n.BaseStyle == NodeStyle.TDQStringLiteral ? _Verbatim : null;
+				np.PrintString(n.Value.ToString(), '"', v, true);
 			}),
 			P<Symbol> (np => {
 				np._out.Write("@@", false);
@@ -1092,7 +1093,7 @@ namespace Loyc.Ecs
 		void PrintIntegerToString(string suffix)
 		{
 			string asStr;
-			if ((_n.Style & NodeStyle.Alternate) != 0) {
+			if (_n.BaseStyle == NodeStyle.HexLiteral) {
 				var value = (IFormattable)_n.Value;
 				_out.Write("0x", false);
 				asStr = value.ToString("x", null);

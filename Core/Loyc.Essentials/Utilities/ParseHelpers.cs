@@ -97,7 +97,7 @@ namespace Loyc.Syntax
 
 		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
-			do {
+			for(;;) {
 				if (c >= 128) {
 					if ((flags & EscapeC.NonAscii) != 0) {
 						EscapeU(c, @out, flags);
@@ -146,7 +146,7 @@ namespace Loyc.Syntax
 				else
 					break;
 				return true;
-			} while (false) ;
+			}
 
 			if (c == quoteType) {
 				@out.Append('\\');

@@ -194,8 +194,8 @@ namespace Loyc.Collections
 		/// <returns>The first item of the range, or default(T) if IsEmpty.</returns>
 		/// <remarks>This method is a little unweildy in plain C#, but in EC# it 
 		/// will be a bit more convenient to use via extension methods like 
-		/// <c>PopFirst(ref this Range range, T defaultValue)</c> and
-		/// <c>PopFirst(ref this Range range)</c>, which are illegal in plain C#.
+		/// <c>T PopFirst(ref this Range range, T defaultValue)</c> and
+		/// <c>T? PopFirst(ref this Range range)</c>, which are illegal in plain C#.
 		/// <para/>
 		/// I wanted to give this method the signature "bool PopFirst(out T first)"
 		/// but the generic parameter "T" is covariant, i.e. it is marked "out T" 

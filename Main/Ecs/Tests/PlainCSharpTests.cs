@@ -38,17 +38,17 @@ namespace Loyc.Ecs.Tests
 			Expr("0uL",      F.Literal(0uL));
 			Expr("-1",       F.Call(S._Negate, F.Literal(1)));
 			Expr("-1",       F.Literal(-1), Mode.PrinterTest);
-			Expr("0xff",     Alternate(F.Literal(0xFF)));
+			Expr("0xff",     F.Literal(0xFF).SetBaseStyle(NodeStyle.HexLiteral));
 			Expr("null",     F.Literal(null));
 			Expr("false",    F.Literal(false));
 			Expr("true",     F.Literal(true));
 			Expr("'$'",      F.Literal('$'));
 			Expr(@"'\0'",    F.Literal('\0'));
 			Expr(@"""hi""",  F.Literal("hi"));
-			Expr(@"@""hi""", Alternate(F.Literal("hi")));
-			Expr("@\"\n\"",  Alternate(F.Literal("\n")));
+			Expr(@"@""hi""", F.Literal("hi").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
+			Expr("@\"\n\"",  F.Literal("\n").SetBaseStyle(NodeStyle.VerbatimStringLiteral));
 			Expr("123456789123456789uL", F.Literal(123456789123456789uL));
-			Expr("0xffffffffffffffffuL", Alternate(F.Literal(0xFFFFFFFFFFFFFFFFuL)));
+			Expr("0xffffffffffffffffuL", F.Literal(0xFFFFFFFFFFFFFFFFuL).SetBaseStyle(NodeStyle.HexLiteral));
 			Expr("1.234568E+08f",F.Literal(1.234568E+08f));
 			Expr("12345678.9", F.Literal(12345678.9));
 			Expr("1.23456789012346E+17d",F.Literal(1.23456789012346E+17d));
@@ -281,7 +281,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("checked {\n  x = a();\n  x * x\n}",   F.Call(S.Checked, F.Braces(F.Assign(x, F.Call(a)),
 			                                                                 F.Result(F.Call(S.Mul, x, x)))));
 			Stmt("unchecked {\n  0xbaad * 0xf00d\n}",   F.Call(S.Unchecked, F.Braces(F.Result(
-			                                                   F.Call(S.Mul, Alternate(F.Literal(0xBAAD)), Alternate(F.Literal(0xF00D)))))));
+			                                                F.Call(S.Mul, F.Literal(0xBAAD).SetBaseStyle(NodeStyle.HexLiteral), 
+			                                                              F.Literal(0xF00D).SetBaseStyle(NodeStyle.HexLiteral))))));
 
 			Stmt("do\n  a();\nwhile (c);",              F.Call(S.DoWhile, F.Call(a), c));
 			Stmt("do {\n  a();\n} while (c);",          F.Call(S.DoWhile, F.Braces(F.Call(a)), c));

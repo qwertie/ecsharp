@@ -14,7 +14,7 @@ namespace Loyc.Ecs
 	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
 	/// parser and printer for Enhanced C#.</summary>
 	/// <remarks>
-	/// EC# overview: https://sourceforge.net/apps/mediawiki/loyc/index.php?title=Ecs
+	/// EC# overview: https://ecsharp.net
 	/// </remarks>
 	public class EcsLanguageService : IParsingService
 	{

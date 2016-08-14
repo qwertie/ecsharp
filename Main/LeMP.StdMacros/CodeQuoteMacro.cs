@@ -100,7 +100,7 @@ namespace LeMP
 					result = node.Args[0];
 					if (attrList != null) {
 						if (result.IsCall)
-							result = LNode.InParens(result);
+							result = result.InParens();
 						result = F.Call(F.Dot(result, Id_PlusAttrs), attrList);
 					}
 				} /*else if (node.Calls(S.Braces)) // F.Braces(...)

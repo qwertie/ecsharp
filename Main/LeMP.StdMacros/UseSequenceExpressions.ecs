@@ -417,7 +417,7 @@ namespace LeMP
 				if (!stmtContext) {
 				 	matchCode (expr) {
 					case { { $(..._); } }: // braced block
-						Context.Write(Severity.Error, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
+						Context.Write(Severity.Warning, expr, "A braced block is not supported directly within an expression. Did you mean to use `#runSequence {...}`?");
 						result = expr;
 
 					// A variable declaration with no initializer and an `out` attribute attached
