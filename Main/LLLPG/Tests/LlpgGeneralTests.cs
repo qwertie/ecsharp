@@ -271,8 +271,8 @@ namespace Loyc.LLParserGenerator
 			// inserts a variable that holds the actual lookahead symbol. Test this 
 			// feature with two different lookahead amounts for the same predicate.
 			Test(@"LLLPG lexer {
-				@[pub] rule Id() @{ &{char.IsLetter($LA)} _ (&{char.IsLetter($LA) || char.IsDigit($LA)} _)* };
-				@[pub] rule Twin() @{ 'T' &{$LA == LA($LI+1)} '0'..'9' '0'..'9' };
+				@[pub] rule Id() @{ &{@[Hoist] char.IsLetter($LA)} _ (&{@[Hoist] char.IsLetter($LA) || char.IsDigit($LA)} _)* };
+				@[pub] rule Twin() @{ 'T' &{@[Hoist] $LA == LA($LI+1)} '0'..'9' '0'..'9' };
 				@[pub] token Token() @{ Twin / Id };
 			}", @"
 				public void Id()
@@ -2035,6 +2035,89 @@ namespace Loyc.LLParserGenerator
 						}
 						return digits.Aggregate(0, (n, d) => n * 10 + (d - '0'));
 					}", null, EcsLanguageService.Value);
+		}
+
+		[Test]
+		public void TestDefaultOnOnlyArmOfLoop()
+		{
+			Test(@"
+				LLLPG (parser(laType: TT, terminalType: Token));
+				public rule LNode Expr() @{ Id { return F.Id($Id); } };
+				public rule void ExprList() @{
+					[default e:Expr]?
+					[	default 
+						(	end:(Comma|Semicolon)
+						/	error {MissingEndMarker(e);}
+						)
+						({$e = null;} / e:Expr)
+					]*
+				};
+				public rule void Tuple() @{
+					LParen ExprList RParen
+				}",
+			@"
+				public LNode Expr()
+				{
+					Token tok_Id = default(Token);
+					tok_Id = Match(Id);
+					return F.Id(tok_Id);
+				}
+				public void ExprList()
+				{
+					TT la0;
+					LNode e = default(LNode);
+					Token end = default(Token);
+					// FIXME: default causes some redundant code to be generated (case Id).
+					do {
+						switch ((TT) LA0) {
+						case Id:
+							e = Expr();
+							break;
+						case Comma: case EOF: case RParen: case Semicolon:
+							; break;
+						default:
+							e = Expr();
+							break;
+						}
+					} while (false);
+					// FIXME: default causes some redundant code to be generated (case Comma/Semicolon).
+					for (;;) {
+						switch ((TT) LA0) {
+						case Comma: case Semicolon:
+							goto match1;
+						case EOF: case RParen:
+							goto stop;
+						default:
+							goto match1;
+						}
+					match1:
+						{
+							// Line 7: ((Comma|Semicolon))
+							la0 = (TT) LA0;
+							if (la0 == Comma || la0 == Semicolon)
+								end = MatchAny();
+							else {
+								MissingEndMarker(e);
+							}
+							switch ((TT) LA0) {
+							case Comma: case EOF: case RParen: case Semicolon:
+								{e = null;}
+								break;
+							default:
+								e = Expr();
+								break;
+							}
+						}
+					}
+				stop:;
+				}
+				public void Tuple()
+				{
+					Match(LParen);
+					ExprList();
+					Match(RParen);
+				}
+				", null, EcsLanguageService.Value);
 		}
 	}
 }

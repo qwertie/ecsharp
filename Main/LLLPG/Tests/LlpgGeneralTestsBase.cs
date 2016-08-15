@@ -41,7 +41,7 @@ namespace Loyc.LLParserGenerator
 		}
 		protected void Test(string input, string expected, IMessageSink sink = null, IParsingService parser = null)
 		{
-			using (ParsingService.PushCurrent(parser ?? LesLanguageService.Value))
+			using (ParsingService.PushCurrent(parser ?? Les2LanguageService.Value))
 			using (LNode.PushPrinter(Ecs.EcsNodePrinter.PrintPlainCSharp)) {
 				var c = new TestCompiler(sink ?? _sink, new UString(input));
 				c.Run();

@@ -27,7 +27,7 @@ namespace Loyc.LLParserGenerator
 		[SetUp]
 		void SetUp()
 		{
-			ParsingService.Current = LesLanguageService.Value;
+			ParsingService.Current = Les2LanguageService.Value;
 			MessageSink.Current = MessageSink.Console;
 		}
 
@@ -94,11 +94,6 @@ namespace Loyc.LLParserGenerator
 				F.Tuple(F.Literal('-'), F.Call(S.QuickBindAssign, F.Id("t"), F.Id("num")), F.Braces())),
 				F.Tuple(F.Literal('('), F.Literal(')'))));
 		}
-
-		static IParsingService[] _languages = new IParsingService[] {
-			Ecs.EcsLanguageService.Value,
-			Loyc.Syntax.Les.LesLanguageService.Value
-		};
 
 		void TestStage1(string text, LNode expected, bool tryECSharp = true)
 		{

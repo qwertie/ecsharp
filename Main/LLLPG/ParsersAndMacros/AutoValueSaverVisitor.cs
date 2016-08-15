@@ -234,13 +234,13 @@ namespace Loyc.LLParserGenerator
 					if (label.IsId)
 					{
 						if (_data.ProperLabels.ContainsKey(label.Name))
-							return label;
+							return label.PlusAttrs(node.Attrs);
 						else if (_rules.ContainsKey(label.Name))
-							return F.Id(PickVarNameForRuleName(label.Name));
+							return F.Id(PickVarNameForRuleName(label.Name)).PlusAttrs(node.Attrs);
 					}
 					if (_data.OtherReferences.TryGetValue(label, -1) > 0)
 					{
-						return F.Id(PickVarNameForLNode(label));
+						return F.Id(PickVarNameForLNode(label)).PlusAttrs(node.Attrs);
 					}
 					// Do not change the code in other cases (e.g. the code 
 					// block might contain $LI/$LA, handled in a later stage)

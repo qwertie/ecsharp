@@ -315,9 +315,9 @@ namespace Loyc.LLParserGenerator
 			Test(@"@[DefaultK(2), FullLLk(false)]
 			LLLPG lexer {
 				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
-				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
-				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' };
+				rule WeirdDigit    @{ '0' | &{@[Hoist] a} '1' | &{@[Hoist] b} '2' | &{@[Hoist] c} '3' 
+				      | &{@[Hoist] d} '4' | &{@[Hoist] e} '5' | &{@[Hoist] f} '6' | &{@[Hoist] g} '7'
+				      | &{@[Hoist] h} '8' | &{@[Hoist] i} '9' };
 				rule Start @{ (WeirdDigit / PositiveDigit)* };
 			}",
 				@"void PositiveDigit()
@@ -374,9 +374,9 @@ namespace Loyc.LLParserGenerator
 			Test(@"@[DefaultK(2), FullLLk(false)] //@[Verbosity(3)]
 			LLLPG lexer {
 				rule PositiveDigit @{ '1'..'9' {""Think positive!""} };
-				rule WeirdDigit @{ '0' | &{a} '1' | &{b} '2' | &{c} '3' 
-				       | &{d} '4' | &{e} '5' | &{f} '6' | &{g} '7'
-				       | &{h} '8' | &{i} '9' };
+				rule WeirdDigit    @{ '0' | &{@[Hoist] a} '1' | &{@[Hoist] b} '2' | &{@[Hoist] c} '3' 
+				      | &{@[Hoist] d} '4' | &{@[Hoist] e} '5' | &{@[Hoist] f} '6' | &{@[Hoist] g} '7'
+				      | &{@[Hoist] h} '8' | &{@[Hoist] i} '9' };
 				rule Start @{ WeirdDigit+ / PositiveDigit+ };
 			};",
 				@"void PositiveDigit()

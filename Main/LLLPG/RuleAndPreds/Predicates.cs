@@ -139,8 +139,8 @@ namespace Loyc.LLParserGenerator
 		{
 			return LNode.MergeLists(action, action2, S.Splice);
 		}
-		public static AndPred And(object test) { return new AndPred(null, test, false); }
-		public static AndPred AndNot(object test) { return new AndPred(null, test, true); }
+		public static AndPred And   (object test) { return new AndPred(null, test, not: false, local: false); }
+		public static AndPred AndNot(object test) { return new AndPred(null, test, not: true, local: false); }
 
 		static LNodeFactory F = new LNodeFactory(LNode.SyntheticSource);
 		public static Pred Set(string varName, Pred pred) {
@@ -868,7 +868,7 @@ namespace Loyc.LLParserGenerator
 	public class AndPred : Pred, IEquatable<AndPred>
 	{
 		public override void Call(PredVisitor visitor) { visitor.Visit(this); }
-		public AndPred(LNode basis, object pred, bool not, bool local = false)
+		public AndPred(LNode basis, object pred, bool not, bool local)
 			: base(basis) { Pred = pred; Not = not; Local = local; }
 
 		static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Default);
@@ -881,7 +881,7 @@ namespace Loyc.LLParserGenerator
 		public new bool Not = false;
 
 		/// <summary>A local and-predicate cannot be hoisted into calling rules.</summary>
-		public bool Local = false;
+		public bool Local;
 
 		bool? _usesLA;
 		/// <summary>Returns true if <see cref="Pred"/> contains <c>$LA</c>.</summary>

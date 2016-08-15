@@ -132,12 +132,12 @@ namespace Loyc.LLParserGenerator
 					expr = expr.Args[0];
 					var subpred = AutoNodeToPred(expr, Context.And);
 					LNode subexpr = subpred as LNode, subexpr0 = subexpr;
-					bool local = false;
+					bool local = true;
 					if (subexpr != null) {
-						if ((subexpr = subexpr.WithoutAttrNamed(_Local)) != subexpr0)
-							local = true;
-						// we should default to [Local] eventually, so recognize [Hoist] too
-						subexpr = subexpr.WithoutAttrNamed(_Hoist);
+						if ((subexpr = subexpr.WithoutAttrNamed(_Hoist)) != subexpr0)
+							local = false;
+						// also recognize [Local], which was not the default until v1.9.0
+						subexpr = subexpr.WithoutAttrNamed(_Local);
 					}
 					return new AndPred(expr, subexpr ?? subpred, not, local);
 				}
@@ -198,15 +198,17 @@ namespace Loyc.LLParserGenerator
 			BranchMode branchMode;
 			Pred subpred = BranchToPred(expr, out branchMode, ctx);
 
-			if (branchMode != BranchMode.None)
-				_sink.Write(Severity.Warning, expr, "'default' and 'error' only apply when there are multiple arms (a|b, a/b)");
+			if (branchMode == BranchMode.ErrorContinue || branchMode == BranchMode.ErrorExit)
+				_sink.Write(Severity.Error, expr, "'error' only applies when there are multiple arms (a|b, a/b)");
 
-			if (type == _Star)
-				return new Alts(expr, LoopMode.Star, subpred, greedy);
-			else if (type == _Plus) {
-				return new Seq(subpred, new Alts(expr, LoopMode.Star, subpred.Clone(), greedy), expr);
-			} else // type == _Opt
-				return new Alts(expr, LoopMode.Opt, subpred, greedy);
+			Pred clone = type == _Plus ? subpred.Clone() : null;
+			Alts alts = new Alts(expr, type == _Opt ? LoopMode.Opt : LoopMode.Star, clone ?? subpred, greedy);
+			if (branchMode == BranchMode.Default)
+				alts.DefaultArm = 0;
+			if (clone != null)
+				return new Seq(subpred, alts, expr);
+			else
+				return alts;
 		}
 
 		private Pred TranslateLabeledExpr(LNode expr, Context ctx)

@@ -149,7 +149,8 @@ namespace LeMP
 			MacroProcessor = new MacroProcessor(prelude, sink);
 
 			if (registerEcsAndLes) {
-				ParsingService.Register(Loyc.Syntax.Les.LesLanguageService.Value);
+				ParsingService.Register(Loyc.Syntax.Les.Les2LanguageService.Value);
+				ParsingService.Register(Loyc.Syntax.Les.Les3LanguageService.Value);
 				ParsingService.Register(Loyc.Ecs.EcsLanguageService.WithPlainCSharpPrinter, new[] { "cs" });
 				ParsingService.Register(Loyc.Ecs.EcsLanguageService.Value);
 			}

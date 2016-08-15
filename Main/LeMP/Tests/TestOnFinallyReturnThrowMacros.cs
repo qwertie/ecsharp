@@ -66,7 +66,7 @@ namespace LeMP.Tests
 						if ResetIgnoredErrors() { return @null; };
 					};
 					return Expr(ContinueExpr);
-				};", LesLanguageService.Value,
+				};", Les2LanguageService.Value,
 				@"
 				LNode TentativeExpr() {
 					_deferErrors = true;
