@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Loyc.Math;
+using Loyc.Threading;
 
 namespace Loyc.Syntax
 {
@@ -368,6 +369,8 @@ namespace Loyc.Syntax
 						continue;
 					else if (c == '_' && (flags & ParseNumberFlag.SkipUnderscores) != 0)
 						continue;
+					else if (c == '\'' && (flags & ParseNumberFlag.SkipSingleQuotes) != 0)
+						continue;
 					else
 						break;
 				}
@@ -417,8 +420,8 @@ namespace Loyc.Syntax
 		///   ( ('p'|'P') ('-'|'+')? DecimalDigits+ )?
 		///   ( ('e'|'E') ('-'|'+')? DecimalDigits+ )?
 		/// </code>
-		/// where Digits refers to one digits in the requested base, possibly 
-		/// including underscores or spaces if the flags allow it; similarly, 
+		/// where Digits refers to one or more digits in the requested base, 
+		/// possibly including underscores or spaces if the flags allow it; similarly, 
 		/// DecimalDigits refers to base-10 digits and is also affected by the
 		/// flags.
 		/// <para/>
@@ -496,6 +499,8 @@ namespace Loyc.Syntax
 					if ((c == ' ' || c == '\t') && (flags & ParseNumberFlag.SkipSpacesInsideNumber) != 0)
 						continue;
 					else if (c == '_' && (flags & ParseNumberFlag.SkipUnderscores) != 0)
+						continue;
+					else if (c == '\'' && (flags & ParseNumberFlag.SkipSingleQuotes) != 0)
 						continue;
 					else
 						return skipped;
@@ -598,6 +603,79 @@ namespace Loyc.Syntax
 				s = s.Substring(1);
 			return s;
 		}
+
+		/// <summary>Converts an integer to a string, optionally with separator characters for readability.</summary>
+		/// <param name="value">Integer to be converted</param>
+		/// <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
+		/// <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
+		/// <param name="separatorInterval">Number of digits in a group</param>
+		/// <param name="separatorChar">Digit group separator</param>
+		/// <returns>The number as a string.</returns>
+		/// <remarks>Example: <c>IntegerToString(-1234567, "0", 10, 3, '\'') == "-01'234'567"</c></remarks>
+		public static string IntegerToString(long value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
+		{
+			return AppendIntegerTo(new StringBuilder(), value, prefix, @base, separatorInterval, separatorChar).ToString();
+		}
+		public static string IntegerToString(ulong value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
+		{
+			return AppendIntegerTo(new StringBuilder(), value, prefix, @base, separatorInterval, separatorChar).ToString();
+		}
+
+		/// <summary>Same as <see cref="IntegerToString(long, string, int, int, char)"/> 
+		/// except that the target StringBuilder must be provided as a parameter.</summary>
+		/// <param name="value">Integer to be converted</param>
+		/// <param name="prefix">A prefix to insert before the number, but after the '-' sign, if any (e.g. "0x" for hex). Use "" for no prefix.</param>
+		/// <param name="base">Number base (e.g. 10 for decimal, 2 for binary, 16 for hex). Must be in the range 2 to 36.</param>
+		/// <param name="separatorInterval">Number of digits in a group</param>
+		/// <param name="separatorChar">Digit group separator</param>
+		/// <returns>The target StringBuilder.</returns>
+		public static StringBuilder AppendIntegerTo(StringBuilder target, long value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
+		{
+			if (value < 0) {
+				CheckParam.IsInRange("base", @base, 2, 36);
+				target.Append('-');
+				target.Append(prefix);
+				return AppendIntegerTo(target, (ulong)-value, "", @base, separatorInterval, separatorChar);
+			} else 
+				return AppendIntegerTo(target, (ulong)value, prefix, @base, separatorInterval, separatorChar);
+		}
+		
+		public static StringBuilder AppendIntegerTo(StringBuilder target, ulong value, string prefix = "", int @base = 10, int separatorInterval = 3, char separatorChar = '_')
+		{
+			CheckParam.IsInRange("base", @base, 2, 36);
+			target.Append(prefix);
+			int iStart = target.Length;
+			int counter = 0;
+			int shift = MathEx.Log2Floor(@base);
+			int mask = (1 << shift == @base ? (1 << shift) - 1 : 0);
+			for (;;) {
+				uint digit;
+				if (mask != 0) {
+					digit = (uint)value & (uint)mask;
+					value >>= shift;
+				} else {
+					digit = (uint)value % (uint)@base;
+					value /= (uint)@base;
+				}
+				target.Append(HexDigitChar((int)digit));
+				if (value == 0)
+					break;
+				if (++counter == separatorInterval) {
+					counter = 0;
+					target.Append(separatorChar);
+				}
+			}
+
+			// Reverse the appended characters
+			for (int i = ((target.Length - iStart) >> 1) - 1; i >= 0; i--)
+			{
+				int i1 = iStart + i, i2 = target.Length - 1 - i;
+				char temp = target[i1];
+				target[i1] = target[i2];
+				target[i2] = temp;
+			}
+			return target;
+		}
 	}
 
 	/// <summary>Flags to control <see cref="ParseHelpers.EscapeCStyle(UString, EscapeC)"/>.</summary>
@@ -633,7 +711,7 @@ namespace Loyc.Syntax
 	/// </summary>
 	public enum ParseNumberFlag
 	{
-		/// <summary>Skip spaces before the number. Without this flag, spaces make parsing fail.</summary>
+		/// <summary>Skip spaces before the number. Without this flag, initial spaces make parsing fail.</summary>
 		SkipSpacesInFront = 1,
 		/// <summary>Skip spaces inside the number. Without this flag, spaces make parsing stop.</summary>
 		SkipSpacesInsideNumber = 2,
@@ -644,8 +722,10 @@ namespace Loyc.Syntax
 		StopBeforeOverflow = 4,
 		/// <summary>Skip underscores inside number. Without this flag, underscores make parsing stop.</summary>
 		SkipUnderscores = 8,
+		/// <summary>Skip single quotes inside number. Without this flag, single quotes make parsing stop.</summary>
+		SkipSingleQuotes = 16,
 		/// <summary>Whether to treat comma as a decimal point when parsing a float. 
 		/// The dot '.' is always treated as a decimal point.</summary>
-		AllowCommaDecimalPoint = 8,
+		AllowCommaDecimalPoint = 32,
 	}
 }
