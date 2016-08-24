@@ -193,6 +193,7 @@ namespace Loyc.Syntax.Les
 			Case("-9111222Z", A(TT.NegativeLiteral), new BigInteger(-9111222L));
 			Case("-9999111222333444555000Z", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
 			Case("-9999111222333444555000", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
+			Case("-18446744069414584320", A(TT.NegativeLiteral), BigInteger.Parse("-18446744069414584320"));
 		}
 
 		[Test]

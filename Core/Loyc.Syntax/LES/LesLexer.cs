@@ -516,6 +516,12 @@ namespace Loyc.Syntax.Les
 					// it as a BigInteger instead.
 					return ParseBigIntegerValue(srcCopy, isNegative, numberBase, ref error);
 				}
+				else if (isNegative && -(long)unsigned > 0) {
+					// We parsed a literal whose absolute value fits in a ulong,
+					// but which cannot be represented as a long. Return a
+					// BigInteger literal instead.
+					return -new BigInteger(unsigned);
+				}
 				else if (unsigned > long.MaxValue)
 					typeSuffix = _UL;
 				else if (unsigned > uint.MaxValue)
