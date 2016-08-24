@@ -462,66 +462,66 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-        static object ParseBigIntegerValue(UString source, bool isNegative, int numberBase, ref string error)
-        {
-            BigInteger bigIntResult;
-            bool overflow = !ParseHelpers.TryParseUInt(ref source, out bigIntResult, numberBase, ParseNumberFlag.SkipUnderscores);
-            if (!source.IsEmpty) {
-                // I'm not sure if this can ever happen
-                error = Localize.Localized("Syntax error in integer literal");
-            }
+		static object ParseBigIntegerValue(UString source, bool isNegative, int numberBase, ref string error)
+		{
+			BigInteger bigIntResult;
+			bool overflow = !ParseHelpers.TryParseUInt(ref source, out bigIntResult, numberBase, ParseNumberFlag.SkipUnderscores);
+			if (!source.IsEmpty) {
+				// I'm not sure if this can ever happen
+				error = Localize.Localized("Syntax error in integer literal");
+			}
 
-            // Overflow means that an out-of-memory exception has occurred.
-            // This should be a rare sight indeed, though it's not impossible.
-            if (overflow)
-                error = Localize.Localized("Overflow in big integer literal (could not parse beyond {0}).", bigIntResult);
+			// Overflow means that an out-of-memory exception has occurred.
+			// This should be a rare sight indeed, though it's not impossible.
+			if (overflow)
+				error = Localize.Localized("Overflow in big integer literal (could not parse beyond {0}).", bigIntResult);
 
-            // Optionally negate the result.
-            if (isNegative)
-                bigIntResult = -bigIntResult;
+			// Optionally negate the result.
+			if (isNegative)
+				bigIntResult = -bigIntResult;
 
-            return bigIntResult;
-        }
+			return bigIntResult;
+		}
 
-        static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol typeSuffix, ref string error)
-        {
-            if (source.IsEmpty) {
-                error = Localize.Localized("Syntax error in integer literal");
-                return CG.Cache(0);
-            }
+		static object ParseIntegerValue(UString source, bool isNegative, int numberBase, Symbol typeSuffix, ref string error)
+		{
+			if (source.IsEmpty) {
+				error = Localize.Localized("Syntax error in integer literal");
+				return CG.Cache(0);
+			}
 
-            bool overflow;
-            if (typeSuffix == _Z) {
-                // Fast path for BigInteger values.
-                return ParseBigIntegerValue(source, isNegative, numberBase, ref error);
-            }
+			bool overflow;
+			if (typeSuffix == _Z) {
+				// Fast path for BigInteger values.
+				return ParseBigIntegerValue(source, isNegative, numberBase, ref error);
+			}
 
-            // Create a copy of the input, in case we need to re-parse it as
-            // a BigInteger.
-            var srcCopy = source;
+			// Create a copy of the input, in case we need to re-parse it as
+			// a BigInteger.
+			var srcCopy = source;
 
-            // Parse the integer
-            ulong unsigned;
-            overflow = !ParseHelpers.TryParseUInt(ref source, out unsigned, numberBase, ParseNumberFlag.SkipUnderscores);
-            if (!source.IsEmpty) {
-                // I'm not sure if this can ever happen
-                error = Localize.Localized("Syntax error in integer literal");
-            }
+			// Parse the integer
+			ulong unsigned;
+			overflow = !ParseHelpers.TryParseUInt(ref source, out unsigned, numberBase, ParseNumberFlag.SkipUnderscores);
+			if (!source.IsEmpty) {
+				// I'm not sure if this can ever happen
+				error = Localize.Localized("Syntax error in integer literal");
+			}
 
-            // If no suffix, automatically choose int, uint, long, ulong or BigInteger.
-            if (typeSuffix == null) {
-                if (overflow) {
-                    // If we tried to parse a plain integer literal (no suffix)
-                    // as a ulong, but failed due to overflow, then we'll parse
-                    // it as a BigInteger instead.
-                    return ParseBigIntegerValue(srcCopy, isNegative, numberBase, ref error);
-                }
-                else if (unsigned > long.MaxValue)
-                    typeSuffix = _UL;
-                else if (unsigned > uint.MaxValue)
-                    typeSuffix = _L;
-                else if (unsigned > int.MaxValue)
-                    typeSuffix = isNegative ? _L : _U;
+			// If no suffix, automatically choose int, uint, long, ulong or BigInteger.
+			if (typeSuffix == null) {
+				if (overflow) {
+					// If we tried to parse a plain integer literal (no suffix)
+					// as a ulong, but failed due to overflow, then we'll parse
+					// it as a BigInteger instead.
+					return ParseBigIntegerValue(srcCopy, isNegative, numberBase, ref error);
+				}
+				else if (unsigned > long.MaxValue)
+					typeSuffix = _UL;
+				else if (unsigned > uint.MaxValue)
+					typeSuffix = _L;
+				else if (unsigned > int.MaxValue)
+	 				typeSuffix = isNegative ? _L : _U;
 			}
 
 			if (isNegative && (typeSuffix == _U || typeSuffix == _UL)) {
