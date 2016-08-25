@@ -79,7 +79,6 @@ public partial class Les3Lexer
 		  ( ('f'|'F') {$result = _F; isFloat=true;}
 		  | ('d'|'D') {$result = _D; isFloat=true;}
 		  | ('m'|'M') {$result = _M; isFloat=true;}
-		  | ('z'|'Z') {$result = _Z;}
 		  | ('l'|'L') {$result = _L;} (('u'|'U') {$result = _UL;})?
 		  | ('u'|'U') {$result = _U;} (('l'|'L') {$result = _UL;})?
 		  | "u32" {$result = _U;}

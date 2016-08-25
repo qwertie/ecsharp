@@ -1,4 +1,11 @@
-﻿using System;
+// Generated from Les3Lexer.ecs by LeMP custom tool. LeMP version: 1.9.0.0
+// Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
+// --no-out-header       Suppress this message
+// --verbose             Allow verbose messages (shown by VS as 'warnings')
+// --timeout=X           Abort processing thread after X seconds (default: 10)
+// --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
+// Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
+using System;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
@@ -120,7 +127,6 @@ namespace Loyc.Syntax.Les
 			// line 35
 			return WhitespaceTag.Value;
 		}
-		static readonly HashSet<int> Number_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
 		object Number()
 		{
 			int la0;
@@ -156,8 +162,13 @@ namespace Loyc.Syntax.Les
 			int numberEndPosition = InputPosition;
 			// Line 44: (NumberSuffix)?
 			la0 = LA0;
-			if (Number_set0.Contains(la0))
+			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
 				_typeSuffix = NumberSuffix(ref _isFloat);
+			else if (la0 >= 128 && la0 <= 65532) {
+				la0 = LA0;
+				if (char.IsLetter((char) la0))
+					_typeSuffix = NumberSuffix(ref _isFloat);
+			}
 			// line 46
 			_type = _isNegative ? TT.NegativeLiteral : TT.Literal;
 			return ParseNumberValue(numberEndPosition);
@@ -434,14 +445,14 @@ namespace Loyc.Syntax.Les
 			int la0, la1, la2, la3;
 			Symbol result = default(Symbol);
 			var here = InputPosition;
-			// Line 79: (( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] ) [^#0-9A-Z_a-z] =>  / NormalId)
+			// Line 79: (( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] ) [^#0-9A-Z_a-z] =>  / NormalId)
 			do {
 				switch (LA0) {
 				case 'f':
 					{
 						la1 = LA(1);
 						if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 							do {
 								switch (LA0) {
 								case 'f':
@@ -453,13 +464,13 @@ namespace Loyc.Syntax.Les
 											Skip();
 											Skip();
 											Match('2');
-											// line 89
+											// line 88
 											result = _F;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 90
+											// line 89
 											result = _D;
 										}
 									}
@@ -484,25 +495,17 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								case 'Z':
-								case 'z':
-									{
-										Skip();
-										// line 82
-										result = _Z;
-									}
-									break;
 								case 'L':
 								case 'l':
 									{
 										Skip();
-										// line 83
+										// line 82
 										result = _L;
-										// Line 83: ([Uu])?
+										// Line 82: ([Uu])?
 										la0 = LA0;
 										if (la0 == 'U' || la0 == 'u') {
 											Skip();
-											// line 83
+											// line 82
 											result = _UL;
 										}
 									}
@@ -511,24 +514,24 @@ namespace Loyc.Syntax.Les
 									{
 										la1 = LA(1);
 										if (!NumberSuffix_set1.Contains(la1))
-											goto match6;
+											goto match5;
 										else if (la1 == '3') {
 											Skip();
 											Skip();
 											Match('2');
-											// line 85
+											// line 84
 											result = _U;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 86
+											// line 85
 											result = _UL;
 										}
 									}
 									break;
 								case 'U':
-									goto match6;
+									goto match5;
 								default:
 									{
 										la1 = LA(1);
@@ -536,13 +539,13 @@ namespace Loyc.Syntax.Les
 											Match('i');
 											Skip();
 											Match('2');
-											// line 87
+											// line 86
 											result = null;
 										} else {
 											Match('i');
 											Match('6');
 											Match('4');
-											// line 88
+											// line 87
 											result = _L;
 										}
 									}
@@ -557,16 +560,16 @@ namespace Loyc.Syntax.Les
 									isFloat = true;
 								}
 								break;
-							match6:
+							match5:
 								{
 									Skip();
-									// line 84
+									// line 83
 									result = _U;
-									// Line 84: ([Ll])?
+									// Line 83: ([Ll])?
 									la0 = LA0;
 									if (la0 == 'L' || la0 == 'l') {
 										Skip();
-										// line 84
+										// line 83
 										result = _UL;
 									}
 								}
@@ -576,7 +579,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '2') {
 								la3 = LA(3);
 								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 									do {
 										switch (LA0) {
 										case 'f':
@@ -588,13 +591,13 @@ namespace Loyc.Syntax.Les
 													Skip();
 													Skip();
 													Match('2');
-													// line 89
+													// line 88
 													result = _F;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 90
+													// line 89
 													result = _D;
 												}
 											}
@@ -619,25 +622,17 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										case 'Z':
-										case 'z':
-											{
-												Skip();
-												// line 82
-												result = _Z;
-											}
-											break;
 										case 'L':
 										case 'l':
 											{
 												Skip();
-												// line 83
+												// line 82
 												result = _L;
-												// Line 83: ([Uu])?
+												// Line 82: ([Uu])?
 												la0 = LA0;
 												if (la0 == 'U' || la0 == 'u') {
 													Skip();
-													// line 83
+													// line 82
 													result = _UL;
 												}
 											}
@@ -646,24 +641,24 @@ namespace Loyc.Syntax.Les
 											{
 												la1 = LA(1);
 												if (!NumberSuffix_set1.Contains(la1))
-													goto match6;
+													goto match5;
 												else if (la1 == '3') {
 													Skip();
 													Skip();
 													Match('2');
-													// line 85
+													// line 84
 													result = _U;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 86
+													// line 85
 													result = _UL;
 												}
 											}
 											break;
 										case 'U':
-											goto match6;
+											goto match5;
 										default:
 											{
 												la1 = LA(1);
@@ -671,13 +666,13 @@ namespace Loyc.Syntax.Les
 													Match('i');
 													Skip();
 													Match('2');
-													// line 87
+													// line 86
 													result = null;
 												} else {
 													Match('i');
 													Match('6');
 													Match('4');
-													// line 88
+													// line 87
 													result = _L;
 												}
 											}
@@ -692,16 +687,16 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									match6:
+									match5:
 										{
 											Skip();
-											// line 84
+											// line 83
 											result = _U;
-											// Line 84: ([Ll])?
+											// Line 83: ([Ll])?
 											la0 = LA0;
 											if (la0 == 'L' || la0 == 'l') {
 												Skip();
-												// line 84
+												// line 83
 												result = _UL;
 											}
 										}
@@ -715,7 +710,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '4') {
 								la3 = LA(3);
 								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 									do {
 										switch (LA0) {
 										case 'f':
@@ -727,13 +722,13 @@ namespace Loyc.Syntax.Les
 													Skip();
 													Skip();
 													Match('2');
-													// line 89
+													// line 88
 													result = _F;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 90
+													// line 89
 													result = _D;
 												}
 											}
@@ -758,25 +753,17 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										case 'Z':
-										case 'z':
-											{
-												Skip();
-												// line 82
-												result = _Z;
-											}
-											break;
 										case 'L':
 										case 'l':
 											{
 												Skip();
-												// line 83
+												// line 82
 												result = _L;
-												// Line 83: ([Uu])?
+												// Line 82: ([Uu])?
 												la0 = LA0;
 												if (la0 == 'U' || la0 == 'u') {
 													Skip();
-													// line 83
+													// line 82
 													result = _UL;
 												}
 											}
@@ -785,24 +772,24 @@ namespace Loyc.Syntax.Les
 											{
 												la1 = LA(1);
 												if (!NumberSuffix_set1.Contains(la1))
-													goto match6;
+													goto match5;
 												else if (la1 == '3') {
 													Skip();
 													Skip();
 													Match('2');
-													// line 85
+													// line 84
 													result = _U;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 86
+													// line 85
 													result = _UL;
 												}
 											}
 											break;
 										case 'U':
-											goto match6;
+											goto match5;
 										default:
 											{
 												la1 = LA(1);
@@ -810,13 +797,13 @@ namespace Loyc.Syntax.Les
 													Match('i');
 													Skip();
 													Match('2');
-													// line 87
+													// line 86
 													result = null;
 												} else {
 													Match('i');
 													Match('6');
 													Match('4');
-													// line 88
+													// line 87
 													result = _L;
 												}
 											}
@@ -831,16 +818,16 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									match6:
+									match5:
 										{
 											Skip();
-											// line 84
+											// line 83
 											result = _U;
-											// Line 84: ([Ll])?
+											// Line 83: ([Ll])?
 											la0 = LA0;
 											if (la0 == 'L' || la0 == 'l') {
 												Skip();
-												// line 84
+												// line 83
 												result = _UL;
 											}
 										}
@@ -856,14 +843,12 @@ namespace Loyc.Syntax.Les
 				case 'D':
 				case 'F':
 				case 'M':
-				case 'Z':
 				case 'd':
 				case 'm':
-				case 'z':
 					{
 						la1 = LA(1);
 						if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 							do {
 								switch (LA0) {
 								case 'f':
@@ -875,13 +860,13 @@ namespace Loyc.Syntax.Les
 											Skip();
 											Skip();
 											Match('2');
-											// line 89
+											// line 88
 											result = _F;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 90
+											// line 89
 											result = _D;
 										}
 									}
@@ -906,25 +891,17 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								case 'Z':
-								case 'z':
-									{
-										Skip();
-										// line 82
-										result = _Z;
-									}
-									break;
 								case 'L':
 								case 'l':
 									{
 										Skip();
-										// line 83
+										// line 82
 										result = _L;
-										// Line 83: ([Uu])?
+										// Line 82: ([Uu])?
 										la0 = LA0;
 										if (la0 == 'U' || la0 == 'u') {
 											Skip();
-											// line 83
+											// line 82
 											result = _UL;
 										}
 									}
@@ -933,24 +910,24 @@ namespace Loyc.Syntax.Les
 									{
 										la1 = LA(1);
 										if (!NumberSuffix_set1.Contains(la1))
-											goto match6;
+											goto match5;
 										else if (la1 == '3') {
 											Skip();
 											Skip();
 											Match('2');
-											// line 85
+											// line 84
 											result = _U;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 86
+											// line 85
 											result = _UL;
 										}
 									}
 									break;
 								case 'U':
-									goto match6;
+									goto match5;
 								default:
 									{
 										la1 = LA(1);
@@ -958,13 +935,13 @@ namespace Loyc.Syntax.Les
 											Match('i');
 											Skip();
 											Match('2');
-											// line 87
+											// line 86
 											result = null;
 										} else {
 											Match('i');
 											Match('6');
 											Match('4');
-											// line 88
+											// line 87
 											result = _L;
 										}
 									}
@@ -979,16 +956,16 @@ namespace Loyc.Syntax.Les
 									isFloat = true;
 								}
 								break;
-							match6:
+							match5:
 								{
 									Skip();
-									// line 84
+									// line 83
 									result = _U;
-									// Line 84: ([Ll])?
+									// Line 83: ([Ll])?
 									la0 = LA0;
 									if (la0 == 'L' || la0 == 'l') {
 										Skip();
-										// line 84
+										// line 83
 										result = _UL;
 									}
 								}
@@ -1004,7 +981,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == 'U' || la1 == 'u') {
 							la2 = LA(2);
 							if (!NumberSuffix_set0.Contains(la2))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 								do {
 									switch (LA0) {
 									case 'f':
@@ -1016,13 +993,13 @@ namespace Loyc.Syntax.Les
 												Skip();
 												Skip();
 												Match('2');
-												// line 89
+												// line 88
 												result = _F;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 90
+												// line 89
 												result = _D;
 											}
 										}
@@ -1047,25 +1024,17 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									case 'Z':
-									case 'z':
-										{
-											Skip();
-											// line 82
-											result = _Z;
-										}
-										break;
 									case 'L':
 									case 'l':
 										{
 											Skip();
-											// line 83
+											// line 82
 											result = _L;
-											// Line 83: ([Uu])?
+											// Line 82: ([Uu])?
 											la0 = LA0;
 											if (la0 == 'U' || la0 == 'u') {
 												Skip();
-												// line 83
+												// line 82
 												result = _UL;
 											}
 										}
@@ -1074,24 +1043,24 @@ namespace Loyc.Syntax.Les
 										{
 											la1 = LA(1);
 											if (!NumberSuffix_set1.Contains(la1))
-												goto match6;
+												goto match5;
 											else if (la1 == '3') {
 												Skip();
 												Skip();
 												Match('2');
-												// line 85
+												// line 84
 												result = _U;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 86
+												// line 85
 												result = _UL;
 											}
 										}
 										break;
 									case 'U':
-										goto match6;
+										goto match5;
 									default:
 										{
 											la1 = LA(1);
@@ -1099,13 +1068,13 @@ namespace Loyc.Syntax.Les
 												Match('i');
 												Skip();
 												Match('2');
-												// line 87
+												// line 86
 												result = null;
 											} else {
 												Match('i');
 												Match('6');
 												Match('4');
-												// line 88
+												// line 87
 												result = _L;
 											}
 										}
@@ -1120,16 +1089,16 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								match6:
+								match5:
 									{
 										Skip();
-										// line 84
+										// line 83
 										result = _U;
-										// Line 84: ([Ll])?
+										// Line 83: ([Ll])?
 										la0 = LA0;
 										if (la0 == 'L' || la0 == 'l') {
 											Skip();
-											// line 84
+											// line 83
 											result = _UL;
 										}
 									}
@@ -1137,7 +1106,7 @@ namespace Loyc.Syntax.Les
 							else
 								goto matchNormalId;
 						} else if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 							do {
 								switch (LA0) {
 								case 'f':
@@ -1149,13 +1118,13 @@ namespace Loyc.Syntax.Les
 											Skip();
 											Skip();
 											Match('2');
-											// line 89
+											// line 88
 											result = _F;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 90
+											// line 89
 											result = _D;
 										}
 									}
@@ -1180,25 +1149,17 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								case 'Z':
-								case 'z':
-									{
-										Skip();
-										// line 82
-										result = _Z;
-									}
-									break;
 								case 'L':
 								case 'l':
 									{
 										Skip();
-										// line 83
+										// line 82
 										result = _L;
-										// Line 83: ([Uu])?
+										// Line 82: ([Uu])?
 										la0 = LA0;
 										if (la0 == 'U' || la0 == 'u') {
 											Skip();
-											// line 83
+											// line 82
 											result = _UL;
 										}
 									}
@@ -1207,24 +1168,24 @@ namespace Loyc.Syntax.Les
 									{
 										la1 = LA(1);
 										if (!NumberSuffix_set1.Contains(la1))
-											goto match6;
+											goto match5;
 										else if (la1 == '3') {
 											Skip();
 											Skip();
 											Match('2');
-											// line 85
+											// line 84
 											result = _U;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 86
+											// line 85
 											result = _UL;
 										}
 									}
 									break;
 								case 'U':
-									goto match6;
+									goto match5;
 								default:
 									{
 										la1 = LA(1);
@@ -1232,13 +1193,13 @@ namespace Loyc.Syntax.Les
 											Match('i');
 											Skip();
 											Match('2');
-											// line 87
+											// line 86
 											result = null;
 										} else {
 											Match('i');
 											Match('6');
 											Match('4');
-											// line 88
+											// line 87
 											result = _L;
 										}
 									}
@@ -1253,16 +1214,16 @@ namespace Loyc.Syntax.Les
 									isFloat = true;
 								}
 								break;
-							match6:
+							match5:
 								{
 									Skip();
-									// line 84
+									// line 83
 									result = _U;
-									// Line 84: ([Ll])?
+									// Line 83: ([Ll])?
 									la0 = LA0;
 									if (la0 == 'L' || la0 == 'l') {
 										Skip();
-										// line 84
+										// line 83
 										result = _UL;
 									}
 								}
@@ -1280,7 +1241,7 @@ namespace Loyc.Syntax.Les
 							{
 								la2 = LA(2);
 								if (!NumberSuffix_set0.Contains(la2))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 									do {
 										switch (LA0) {
 										case 'f':
@@ -1292,13 +1253,13 @@ namespace Loyc.Syntax.Les
 													Skip();
 													Skip();
 													Match('2');
-													// line 89
+													// line 88
 													result = _F;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 90
+													// line 89
 													result = _D;
 												}
 											}
@@ -1323,25 +1284,17 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										case 'Z':
-										case 'z':
-											{
-												Skip();
-												// line 82
-												result = _Z;
-											}
-											break;
 										case 'L':
 										case 'l':
 											{
 												Skip();
-												// line 83
+												// line 82
 												result = _L;
-												// Line 83: ([Uu])?
+												// Line 82: ([Uu])?
 												la0 = LA0;
 												if (la0 == 'U' || la0 == 'u') {
 													Skip();
-													// line 83
+													// line 82
 													result = _UL;
 												}
 											}
@@ -1350,24 +1303,24 @@ namespace Loyc.Syntax.Les
 											{
 												la1 = LA(1);
 												if (!NumberSuffix_set1.Contains(la1))
-													goto match6;
+													goto match5;
 												else if (la1 == '3') {
 													Skip();
 													Skip();
 													Match('2');
-													// line 85
+													// line 84
 													result = _U;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 86
+													// line 85
 													result = _UL;
 												}
 											}
 											break;
 										case 'U':
-											goto match6;
+											goto match5;
 										default:
 											{
 												la1 = LA(1);
@@ -1375,13 +1328,13 @@ namespace Loyc.Syntax.Les
 													Match('i');
 													Skip();
 													Match('2');
-													// line 87
+													// line 86
 													result = null;
 												} else {
 													Match('i');
 													Match('6');
 													Match('4');
-													// line 88
+													// line 87
 													result = _L;
 												}
 											}
@@ -1396,16 +1349,16 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									match6:
+									match5:
 										{
 											Skip();
-											// line 84
+											// line 83
 											result = _U;
-											// Line 84: ([Ll])?
+											// Line 83: ([Ll])?
 											la0 = LA0;
 											if (la0 == 'L' || la0 == 'l') {
 												Skip();
-												// line 84
+												// line 83
 												result = _UL;
 											}
 										}
@@ -1420,7 +1373,7 @@ namespace Loyc.Syntax.Les
 								if (la2 == '2') {
 									la3 = LA(3);
 									if (!NumberSuffix_set0.Contains(la3))
-										// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+										// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 										do {
 											switch (LA0) {
 											case 'f':
@@ -1432,13 +1385,13 @@ namespace Loyc.Syntax.Les
 														Skip();
 														Skip();
 														Match('2');
-														// line 89
+														// line 88
 														result = _F;
 													} else {
 														Skip();
 														Match('6');
 														Match('4');
-														// line 90
+														// line 89
 														result = _D;
 													}
 												}
@@ -1463,25 +1416,17 @@ namespace Loyc.Syntax.Les
 													isFloat = true;
 												}
 												break;
-											case 'Z':
-											case 'z':
-												{
-													Skip();
-													// line 82
-													result = _Z;
-												}
-												break;
 											case 'L':
 											case 'l':
 												{
 													Skip();
-													// line 83
+													// line 82
 													result = _L;
-													// Line 83: ([Uu])?
+													// Line 82: ([Uu])?
 													la0 = LA0;
 													if (la0 == 'U' || la0 == 'u') {
 														Skip();
-														// line 83
+														// line 82
 														result = _UL;
 													}
 												}
@@ -1490,24 +1435,24 @@ namespace Loyc.Syntax.Les
 												{
 													la1 = LA(1);
 													if (!NumberSuffix_set1.Contains(la1))
-														goto match6;
+														goto match5;
 													else if (la1 == '3') {
 														Skip();
 														Skip();
 														Match('2');
-														// line 85
+														// line 84
 														result = _U;
 													} else {
 														Skip();
 														Match('6');
 														Match('4');
-														// line 86
+														// line 85
 														result = _UL;
 													}
 												}
 												break;
 											case 'U':
-												goto match6;
+												goto match5;
 											default:
 												{
 													la1 = LA(1);
@@ -1515,13 +1460,13 @@ namespace Loyc.Syntax.Les
 														Match('i');
 														Skip();
 														Match('2');
-														// line 87
+														// line 86
 														result = null;
 													} else {
 														Match('i');
 														Match('6');
 														Match('4');
-														// line 88
+														// line 87
 														result = _L;
 													}
 												}
@@ -1536,16 +1481,16 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										match6:
+										match5:
 											{
 												Skip();
-												// line 84
+												// line 83
 												result = _U;
-												// Line 84: ([Ll])?
+												// Line 83: ([Ll])?
 												la0 = LA0;
 												if (la0 == 'L' || la0 == 'l') {
 													Skip();
-													// line 84
+													// line 83
 													result = _UL;
 												}
 											}
@@ -1562,7 +1507,7 @@ namespace Loyc.Syntax.Les
 								if (la2 == '4') {
 									la3 = LA(3);
 									if (!NumberSuffix_set0.Contains(la3))
-										// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+										// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 										do {
 											switch (LA0) {
 											case 'f':
@@ -1574,13 +1519,13 @@ namespace Loyc.Syntax.Les
 														Skip();
 														Skip();
 														Match('2');
-														// line 89
+														// line 88
 														result = _F;
 													} else {
 														Skip();
 														Match('6');
 														Match('4');
-														// line 90
+														// line 89
 														result = _D;
 													}
 												}
@@ -1605,25 +1550,17 @@ namespace Loyc.Syntax.Les
 													isFloat = true;
 												}
 												break;
-											case 'Z':
-											case 'z':
-												{
-													Skip();
-													// line 82
-													result = _Z;
-												}
-												break;
 											case 'L':
 											case 'l':
 												{
 													Skip();
-													// line 83
+													// line 82
 													result = _L;
-													// Line 83: ([Uu])?
+													// Line 82: ([Uu])?
 													la0 = LA0;
 													if (la0 == 'U' || la0 == 'u') {
 														Skip();
-														// line 83
+														// line 82
 														result = _UL;
 													}
 												}
@@ -1632,24 +1569,24 @@ namespace Loyc.Syntax.Les
 												{
 													la1 = LA(1);
 													if (!NumberSuffix_set1.Contains(la1))
-														goto match6;
+														goto match5;
 													else if (la1 == '3') {
 														Skip();
 														Skip();
 														Match('2');
-														// line 85
+														// line 84
 														result = _U;
 													} else {
 														Skip();
 														Match('6');
 														Match('4');
-														// line 86
+														// line 85
 														result = _UL;
 													}
 												}
 												break;
 											case 'U':
-												goto match6;
+												goto match5;
 											default:
 												{
 													la1 = LA(1);
@@ -1657,13 +1594,13 @@ namespace Loyc.Syntax.Les
 														Match('i');
 														Skip();
 														Match('2');
-														// line 87
+														// line 86
 														result = null;
 													} else {
 														Match('i');
 														Match('6');
 														Match('4');
-														// line 88
+														// line 87
 														result = _L;
 													}
 												}
@@ -1678,16 +1615,16 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										match6:
+										match5:
 											{
 												Skip();
-												// line 84
+												// line 83
 												result = _U;
-												// Line 84: ([Ll])?
+												// Line 83: ([Ll])?
 												la0 = LA0;
 												if (la0 == 'L' || la0 == 'l') {
 													Skip();
-													// line 84
+													// line 83
 													result = _UL;
 												}
 											}
@@ -1700,7 +1637,7 @@ namespace Loyc.Syntax.Les
 							break;
 						default:
 							if (!NumberSuffix_set0.Contains(la1))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 								do {
 									switch (LA0) {
 									case 'f':
@@ -1712,13 +1649,13 @@ namespace Loyc.Syntax.Les
 												Skip();
 												Skip();
 												Match('2');
-												// line 89
+												// line 88
 												result = _F;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 90
+												// line 89
 												result = _D;
 											}
 										}
@@ -1743,25 +1680,17 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									case 'Z':
-									case 'z':
-										{
-											Skip();
-											// line 82
-											result = _Z;
-										}
-										break;
 									case 'L':
 									case 'l':
 										{
 											Skip();
-											// line 83
+											// line 82
 											result = _L;
-											// Line 83: ([Uu])?
+											// Line 82: ([Uu])?
 											la0 = LA0;
 											if (la0 == 'U' || la0 == 'u') {
 												Skip();
-												// line 83
+												// line 82
 												result = _UL;
 											}
 										}
@@ -1770,24 +1699,24 @@ namespace Loyc.Syntax.Les
 										{
 											la1 = LA(1);
 											if (!NumberSuffix_set1.Contains(la1))
-												goto match6;
+												goto match5;
 											else if (la1 == '3') {
 												Skip();
 												Skip();
 												Match('2');
-												// line 85
+												// line 84
 												result = _U;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 86
+												// line 85
 												result = _UL;
 											}
 										}
 										break;
 									case 'U':
-										goto match6;
+										goto match5;
 									default:
 										{
 											la1 = LA(1);
@@ -1795,13 +1724,13 @@ namespace Loyc.Syntax.Les
 												Match('i');
 												Skip();
 												Match('2');
-												// line 87
+												// line 86
 												result = null;
 											} else {
 												Match('i');
 												Match('6');
 												Match('4');
-												// line 88
+												// line 87
 												result = _L;
 											}
 										}
@@ -1816,16 +1745,16 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								match6:
+								match5:
 									{
 										Skip();
-										// line 84
+										// line 83
 										result = _U;
-										// Line 84: ([Ll])?
+										// Line 83: ([Ll])?
 										la0 = LA0;
 										if (la0 == 'L' || la0 == 'l') {
 											Skip();
-											// line 84
+											// line 83
 											result = _UL;
 										}
 									}
@@ -1842,7 +1771,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == 'L' || la1 == 'l') {
 							la2 = LA(2);
 							if (!NumberSuffix_set0.Contains(la2))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 								do {
 									switch (LA0) {
 									case 'f':
@@ -1854,13 +1783,13 @@ namespace Loyc.Syntax.Les
 												Skip();
 												Skip();
 												Match('2');
-												// line 89
+												// line 88
 												result = _F;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 90
+												// line 89
 												result = _D;
 											}
 										}
@@ -1885,25 +1814,17 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									case 'Z':
-									case 'z':
-										{
-											Skip();
-											// line 82
-											result = _Z;
-										}
-										break;
 									case 'L':
 									case 'l':
 										{
 											Skip();
-											// line 83
+											// line 82
 											result = _L;
-											// Line 83: ([Uu])?
+											// Line 82: ([Uu])?
 											la0 = LA0;
 											if (la0 == 'U' || la0 == 'u') {
 												Skip();
-												// line 83
+												// line 82
 												result = _UL;
 											}
 										}
@@ -1912,24 +1833,24 @@ namespace Loyc.Syntax.Les
 										{
 											la1 = LA(1);
 											if (!NumberSuffix_set1.Contains(la1))
-												goto match6;
+												goto match5;
 											else if (la1 == '3') {
 												Skip();
 												Skip();
 												Match('2');
-												// line 85
+												// line 84
 												result = _U;
 											} else {
 												Skip();
 												Match('6');
 												Match('4');
-												// line 86
+												// line 85
 												result = _UL;
 											}
 										}
 										break;
 									case 'U':
-										goto match6;
+										goto match5;
 									default:
 										{
 											la1 = LA(1);
@@ -1937,13 +1858,13 @@ namespace Loyc.Syntax.Les
 												Match('i');
 												Skip();
 												Match('2');
-												// line 87
+												// line 86
 												result = null;
 											} else {
 												Match('i');
 												Match('6');
 												Match('4');
-												// line 88
+												// line 87
 												result = _L;
 											}
 										}
@@ -1958,16 +1879,16 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								match6:
+								match5:
 									{
 										Skip();
-										// line 84
+										// line 83
 										result = _U;
-										// Line 84: ([Ll])?
+										// Line 83: ([Ll])?
 										la0 = LA0;
 										if (la0 == 'L' || la0 == 'l') {
 											Skip();
-											// line 84
+											// line 83
 											result = _UL;
 										}
 									}
@@ -1975,7 +1896,7 @@ namespace Loyc.Syntax.Les
 							else
 								goto matchNormalId;
 						} else if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 							do {
 								switch (LA0) {
 								case 'f':
@@ -1987,13 +1908,13 @@ namespace Loyc.Syntax.Les
 											Skip();
 											Skip();
 											Match('2');
-											// line 89
+											// line 88
 											result = _F;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 90
+											// line 89
 											result = _D;
 										}
 									}
@@ -2018,25 +1939,17 @@ namespace Loyc.Syntax.Les
 										isFloat = true;
 									}
 									break;
-								case 'Z':
-								case 'z':
-									{
-										Skip();
-										// line 82
-										result = _Z;
-									}
-									break;
 								case 'L':
 								case 'l':
 									{
 										Skip();
-										// line 83
+										// line 82
 										result = _L;
-										// Line 83: ([Uu])?
+										// Line 82: ([Uu])?
 										la0 = LA0;
 										if (la0 == 'U' || la0 == 'u') {
 											Skip();
-											// line 83
+											// line 82
 											result = _UL;
 										}
 									}
@@ -2045,24 +1958,24 @@ namespace Loyc.Syntax.Les
 									{
 										la1 = LA(1);
 										if (!NumberSuffix_set1.Contains(la1))
-											goto match6;
+											goto match5;
 										else if (la1 == '3') {
 											Skip();
 											Skip();
 											Match('2');
-											// line 85
+											// line 84
 											result = _U;
 										} else {
 											Skip();
 											Match('6');
 											Match('4');
-											// line 86
+											// line 85
 											result = _UL;
 										}
 									}
 									break;
 								case 'U':
-									goto match6;
+									goto match5;
 								default:
 									{
 										la1 = LA(1);
@@ -2070,13 +1983,13 @@ namespace Loyc.Syntax.Les
 											Match('i');
 											Skip();
 											Match('2');
-											// line 87
+											// line 86
 											result = null;
 										} else {
 											Match('i');
 											Match('6');
 											Match('4');
-											// line 88
+											// line 87
 											result = _L;
 										}
 									}
@@ -2091,16 +2004,16 @@ namespace Loyc.Syntax.Les
 									isFloat = true;
 								}
 								break;
-							match6:
+							match5:
 								{
 									Skip();
-									// line 84
+									// line 83
 									result = _U;
-									// Line 84: ([Ll])?
+									// Line 83: ([Ll])?
 									la0 = LA0;
 									if (la0 == 'L' || la0 == 'l') {
 										Skip();
-										// line 84
+										// line 83
 										result = _UL;
 									}
 								}
@@ -2117,7 +2030,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '2') {
 								la3 = LA(3);
 								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 									do {
 										switch (LA0) {
 										case 'f':
@@ -2129,13 +2042,13 @@ namespace Loyc.Syntax.Les
 													Skip();
 													Skip();
 													Match('2');
-													// line 89
+													// line 88
 													result = _F;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 90
+													// line 89
 													result = _D;
 												}
 											}
@@ -2160,25 +2073,17 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										case 'Z':
-										case 'z':
-											{
-												Skip();
-												// line 82
-												result = _Z;
-											}
-											break;
 										case 'L':
 										case 'l':
 											{
 												Skip();
-												// line 83
+												// line 82
 												result = _L;
-												// Line 83: ([Uu])?
+												// Line 82: ([Uu])?
 												la0 = LA0;
 												if (la0 == 'U' || la0 == 'u') {
 													Skip();
-													// line 83
+													// line 82
 													result = _UL;
 												}
 											}
@@ -2187,24 +2092,24 @@ namespace Loyc.Syntax.Les
 											{
 												la1 = LA(1);
 												if (!NumberSuffix_set1.Contains(la1))
-													goto match6;
+													goto match5;
 												else if (la1 == '3') {
 													Skip();
 													Skip();
 													Match('2');
-													// line 85
+													// line 84
 													result = _U;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 86
+													// line 85
 													result = _UL;
 												}
 											}
 											break;
 										case 'U':
-											goto match6;
+											goto match5;
 										default:
 											{
 												la1 = LA(1);
@@ -2212,13 +2117,13 @@ namespace Loyc.Syntax.Les
 													Match('i');
 													Skip();
 													Match('2');
-													// line 87
+													// line 86
 													result = null;
 												} else {
 													Match('i');
 													Match('6');
 													Match('4');
-													// line 88
+													// line 87
 													result = _L;
 												}
 											}
@@ -2233,16 +2138,16 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									match6:
+									match5:
 										{
 											Skip();
-											// line 84
+											// line 83
 											result = _U;
-											// Line 84: ([Ll])?
+											// Line 83: ([Ll])?
 											la0 = LA0;
 											if (la0 == 'L' || la0 == 'l') {
 												Skip();
-												// line 84
+												// line 83
 												result = _UL;
 											}
 										}
@@ -2256,7 +2161,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '4') {
 								la3 = LA(3);
 								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Zz] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
+									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
 									do {
 										switch (LA0) {
 										case 'f':
@@ -2268,13 +2173,13 @@ namespace Loyc.Syntax.Les
 													Skip();
 													Skip();
 													Match('2');
-													// line 89
+													// line 88
 													result = _F;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 90
+													// line 89
 													result = _D;
 												}
 											}
@@ -2299,25 +2204,17 @@ namespace Loyc.Syntax.Les
 												isFloat = true;
 											}
 											break;
-										case 'Z':
-										case 'z':
-											{
-												Skip();
-												// line 82
-												result = _Z;
-											}
-											break;
 										case 'L':
 										case 'l':
 											{
 												Skip();
-												// line 83
+												// line 82
 												result = _L;
-												// Line 83: ([Uu])?
+												// Line 82: ([Uu])?
 												la0 = LA0;
 												if (la0 == 'U' || la0 == 'u') {
 													Skip();
-													// line 83
+													// line 82
 													result = _UL;
 												}
 											}
@@ -2326,24 +2223,24 @@ namespace Loyc.Syntax.Les
 											{
 												la1 = LA(1);
 												if (!NumberSuffix_set1.Contains(la1))
-													goto match6;
+													goto match5;
 												else if (la1 == '3') {
 													Skip();
 													Skip();
 													Match('2');
-													// line 85
+													// line 84
 													result = _U;
 												} else {
 													Skip();
 													Match('6');
 													Match('4');
-													// line 86
+													// line 85
 													result = _UL;
 												}
 											}
 											break;
 										case 'U':
-											goto match6;
+											goto match5;
 										default:
 											{
 												la1 = LA(1);
@@ -2351,13 +2248,13 @@ namespace Loyc.Syntax.Les
 													Match('i');
 													Skip();
 													Match('2');
-													// line 87
+													// line 86
 													result = null;
 												} else {
 													Match('i');
 													Match('6');
 													Match('4');
-													// line 88
+													// line 87
 													result = _L;
 												}
 											}
@@ -2372,16 +2269,16 @@ namespace Loyc.Syntax.Les
 											isFloat = true;
 										}
 										break;
-									match6:
+									match5:
 										{
 											Skip();
-											// line 84
+											// line 83
 											result = _U;
-											// Line 84: ([Ll])?
+											// Line 83: ([Ll])?
 											la0 = LA0;
 											if (la0 == 'L' || la0 == 'l') {
 												Skip();
-												// line 84
+												// line 83
 												result = _UL;
 											}
 										}
@@ -2401,7 +2298,7 @@ namespace Loyc.Syntax.Les
 			matchNormalId:
 				{
 					NormalId();
-					// line 93
+					// line 92
 					result = IdToSymbol(CharSource.Slice(here, InputPosition - here));
 				}
 			} while (false);
@@ -2410,29 +2307,29 @@ namespace Loyc.Syntax.Les
 		object SQString()
 		{
 			int la0;
-			// line 101
+			// line 100
 			_parseNeeded = false;
 			Skip();
-			// Line 102: ([\\] [^\$] | [^\$\n\r'\\])
+			// Line 101: ([\\] [^\$] | [^\$\n\r'\\])
 			la0 = LA0;
 			if (la0 == '\\') {
 				Skip();
 				MatchExcept();
-				// line 102
+				// line 101
 				_parseNeeded = true;
 			} else
 				MatchExcept('\n', '\r', '\'', '\\');
 			Match('\'');
-			// line 103
+			// line 102
 			return ParseSQStringValue();
 		}
 		object DQString()
 		{
 			int la0, la1;
-			// line 106
+			// line 105
 			_parseNeeded = false;
 			Skip();
-			// Line 107: ([\\] [^\$] | [^\$\n\r"\\])*
+			// Line 106: ([\\] [^\$] | [^\$\n\r"\\])*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
@@ -2440,7 +2337,7 @@ namespace Loyc.Syntax.Les
 					if (la1 != -1) {
 						Skip();
 						Skip();
-						// line 107
+						// line 106
 						_parseNeeded = true;
 					} else
 						break;
@@ -2449,14 +2346,14 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 108: (["] / )
+			// Line 107: (["] / )
 			la0 = LA0;
 			if (la0 == '"')
 				Skip();
 			else
-				// line 108
+				// line 107
 				_parseNeeded = true;
-			// line 109
+			// line 108
 			return ParseStringValue(false);
 		}
 		object TQString()
@@ -2464,13 +2361,13 @@ namespace Loyc.Syntax.Les
 			int la0, la1, la2;
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate;
-			// Line 114: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
+			// Line 113: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
 				Skip();
 				Match('"');
 				Match('"');
-				// Line 114: nongreedy(Newline / [^\$])*
+				// Line 113: nongreedy(Newline / [^\$])*
 				for (;;) {
 					switch (LA0) {
 					case '"':
@@ -2504,12 +2401,12 @@ namespace Loyc.Syntax.Les
 				Match('"');
 				Match('"');
 			} else {
-				// line 115
+				// line 114
 				_style |= NodeStyle.Alternate2;
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// Line 116: nongreedy(Newline / [^\$])*
+				// Line 115: nongreedy(Newline / [^\$])*
 				for (;;) {
 					switch (LA0) {
 					case '\'':
@@ -2543,22 +2440,22 @@ namespace Loyc.Syntax.Les
 				Match('\'');
 				Match('\'');
 			}
-			// line 117
+			// line 116
 			return ParseStringValue(true, true);
 		}
 		void BQString()
 		{
 			int la0;
-			// line 120
+			// line 119
 			_parseNeeded = false;
 			Skip();
-			// Line 121: ([\\] [^\$] | [^\$\n\r\\`])*
+			// Line 120: ([\\] [^\$] | [^\$\n\r\\`])*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					Skip();
 					MatchExcept();
-					// line 121
+					// line 120
 					_parseNeeded = true;
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '`'))
 					Skip();
@@ -2574,7 +2471,7 @@ namespace Loyc.Syntax.Les
 		object Operator()
 		{
 			OpChar();
-			// Line 128: (OpChar)*
+			// Line 127: (OpChar)*
 			for (;;) {
 				switch (LA0) {
 				case '!':
@@ -2601,7 +2498,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// line 128
+			// line 127
 			return ParseNormalOp();
 		}
 		static readonly HashSet<int> SQOperator_set0 = NewSetOfRanges('!', '!', '#', '&', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
@@ -2610,7 +2507,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			LettersOrPunc();
-			// Line 130: (LettersOrPunc)*
+			// Line 129: (LettersOrPunc)*
 			for (;;) {
 				la0 = LA0;
 				if (SQOperator_set0.Contains(la0))
@@ -2618,24 +2515,24 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// line 132
+			// line 131
 			return ParseNormalOp();
 		}
 		void IdExtLetter()
 		{
-			Check(char.IsLetter((char) LA0), "#char.IsLetter($LA `#cast` #char)");
+			Check(char.IsLetter((char) LA0), "char.IsLetter((char) $LA)");
 			MatchRange(128, 65532);
 		}
 		void NormalId()
 		{
 			int la0;
-			// Line 142: ([A-Z_a-z] | IdExtLetter)
+			// Line 141: ([A-Z_a-z] | IdExtLetter)
 			la0 = LA0;
 			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
 				Skip();
 			else
 				IdExtLetter();
-			// Line 143: greedy( [A-Z_a-z] | [#] | [0-9] | ['] &!(['] [']) | IdExtLetter )*
+			// Line 142: greedy( [A-Z_a-z] | [#] | [0-9] | ['] &!(['] [']) | IdExtLetter )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
@@ -2649,9 +2546,13 @@ namespace Loyc.Syntax.Les
 						Skip();
 					else
 						break;
-				} else if (la0 >= 128 && la0 <= 65532)
-					IdExtLetter();
-				else
+				} else if (la0 >= 128 && la0 <= 65532) {
+					la0 = LA0;
+					if (char.IsLetter((char) la0))
+						IdExtLetter();
+					else
+						break;
+				} else
 					break;
 			}
 		}
@@ -2660,15 +2561,15 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			object result = default(object);
 			object value = default(object);
-			// Line 146: (BQString | NormalId)
+			// Line 145: (BQString | NormalId)
 			la0 = LA0;
 			if (la0 == '`') {
 				BQString();
-				// line 146
+				// line 145
 				result = ParseBQStringValue();
 			} else {
 				NormalId();
-				// line 148
+				// line 147
 				result = IdToSymbol(Text());
 				if (result == sy_true) {
 					_type = TT.Literal;
@@ -2683,7 +2584,7 @@ namespace Loyc.Syntax.Les
 					return null;
 				}
 			}
-			// Line 154: ((TQString / DQString))?
+			// Line 153: ((TQString / DQString))?
 			do {
 				la0 = LA0;
 				if (la0 == '"')
@@ -2699,7 +2600,7 @@ namespace Loyc.Syntax.Les
 					var old_startPosition_0 = _startPosition;
 					try {
 						_startPosition = InputPosition;
-						// Line 155: (TQString / DQString)
+						// Line 154: (TQString / DQString)
 						la0 = LA0;
 						if (la0 == '"') {
 							la1 = LA(1);
@@ -2709,7 +2610,7 @@ namespace Loyc.Syntax.Les
 								value = DQString();
 						} else
 							value = TQString();
-						// line 157
+						// line 156
 						_type = TT.Literal;
 						if (result == sy_s)
 							return (Symbol) value.ToString();
@@ -2724,7 +2625,7 @@ namespace Loyc.Syntax.Les
 		}
 		void LettersOrPunc()
 		{
-			Skip();
+			Match(SQOperator_set0);
 		}
 		object SpecialLiteral()
 		{
@@ -2734,10 +2635,10 @@ namespace Loyc.Syntax.Les
 			try {
 				Skip();
 				Skip();
-				// line 170
+				// line 169
 				int here = InputPosition;
 				LettersOrPunc();
-				// Line 171: (LettersOrPunc)*
+				// Line 170: (LettersOrPunc)*
 				for (;;) {
 					la0 = LA0;
 					if (SQOperator_set0.Contains(la0))
@@ -2745,7 +2646,7 @@ namespace Loyc.Syntax.Les
 					else
 						break;
 				}
-				// line 172
+				// line 171
 				var sym = CharSource.Slice(here, InputPosition - here);
 				if (!NamedLiterals.TryGetValue(sym, out result))
 					result = IdToSymbol(sym);
@@ -2759,7 +2660,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			LettersOrPunc();
-			// Line 178: (LettersOrPunc)*
+			// Line 177: (LettersOrPunc)*
 			for (;;) {
 				la0 = LA0;
 				if (SQOperator_set0.Contains(la0))
@@ -2767,16 +2668,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// line 178
+			// line 177
 			return IdToSymbol(Text());
 		}
 		object Shebang()
 		{
 			int la0;
-			Check(InputPosition == 0, "InputPosition == 0");
 			Skip();
 			Skip();
-			// Line 183: ([^\$\n\r])*
+			// Line 182: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -2784,11 +2684,11 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 183: (Newline)?
+			// Line 182: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
-			// line 184
+			// line 183
 			return WhitespaceTag.Value;
 		}
 		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('#', '&', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
@@ -2797,7 +2697,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1, la2, la3;
 			object value = default(object);
-			// Line 189: (Spaces / &{InputPosition == _lineStartAt} [.] [\t ] => DotIndent)?
+			// Line 188: (Spaces / &{InputPosition == _lineStartAt} [.] [\t ] => DotIndent)?
 			la0 = LA0;
 			if (la0 == '\t' || la0 == ' ')
 				Spaces();
@@ -2808,29 +2708,30 @@ namespace Loyc.Syntax.Les
 						DotIndent();
 				}
 			}
-			// line 191
+			// line 190
 			_startPosition = InputPosition;
 			_style = 0;
 			if (LA0 == -1) {
 				return NoValue.Value;
 			}
-			// Line 197: ( Shebang / SpecialLiteral / Id / Keyword / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / SQOperator / ['] ['] / [,] / [;] / [(] / [)] / [[] / [\]] / [{] / [}] / ['] [{] / [@] [@] [{] / [@] / Operator )
+			// Line 196: ( Shebang / SpecialLiteral / Id / Keyword / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / SQOperator / ['] ['] / [,] / [;] / [(] / [)] / [[] / [\]] / [{] / [}] / ['] [{] / [@] [@] [{] / [@] / Operator )
 			do {
 				la0 = LA0;
 				switch (la0) {
 				case '#':
 					{
-						la1 = LA(1);
-						if (la1 == '!') {
-							// line 197
-							_type = TT.Shebang;
-							value = Shebang();
-						} else if (NextToken_set0.Contains(la1)) {
-							// line 200
-							_type = TT.Keyword;
-							value = Keyword();
+						if (InputPosition == 0) {
+							la1 = LA(1);
+							if (la1 == '!') {
+								// line 196
+								_type = TT.Shebang;
+								value = Shebang();
+							} else if (NextToken_set0.Contains(la1))
+								goto matchKeyword;
+							else
+								goto error;
 						} else
-							goto error;
+							goto matchKeyword;
 					}
 					break;
 				case '@':
@@ -2839,11 +2740,11 @@ namespace Loyc.Syntax.Les
 						if (la1 == '@') {
 							la2 = LA(2);
 							if (SQOperator_set0.Contains(la2)) {
-								// line 198
+								// line 197
 								_type = TT.Literal;
 								value = SpecialLiteral();
 							} else if (la2 == '{') {
-								// line 219
+								// line 218
 								_type = TT.LTokenLiteral;
 								Skip();
 								Skip();
@@ -2857,7 +2758,7 @@ namespace Loyc.Syntax.Les
 				case '\n':
 				case '\r':
 					{
-						// line 201
+						// line 200
 						_type = TT.Newline;
 						value = Newline();
 					}
@@ -2866,7 +2767,7 @@ namespace Loyc.Syntax.Les
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
-							// line 202
+							// line 201
 							_type = TT.SLComment;
 							value = SLComment();
 						} else if (la1 == '*') {
@@ -2874,7 +2775,7 @@ namespace Loyc.Syntax.Les
 							if (la2 != -1) {
 								la3 = LA(3);
 								if (la3 != -1) {
-									// line 203
+									// line 202
 									_type = TT.MLComment;
 									value = MLComment();
 								} else
@@ -2959,7 +2860,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '\'')
 								goto matchSQString;
 							else {
-								// line 208
+								// line 207
 								_type = TT.NormalOp;
 								value = SQOperator();
 							}
@@ -2968,7 +2869,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '\'')
 								goto matchSQString;
 							else {
-								// line 218
+								// line 217
 								_type = TT.LTokenLiteral;
 								Skip();
 								Skip();
@@ -2981,60 +2882,60 @@ namespace Loyc.Syntax.Les
 					break;
 				case ',':
 					{
-						// line 210
+						// line 209
 						_type = TT.Comma;
 						Skip();
-						// line 210
+						// line 209
 						value = GSymbol.Empty;
 					}
 					break;
 				case ';':
 					{
-						// line 211
+						// line 210
 						_type = TT.Semicolon;
 						Skip();
-						// line 211
+						// line 210
 						value = GSymbol.Empty;
 					}
 					break;
 				case '(':
 					{
-						// line 212
+						// line 211
 						_type = TT.LParen;
 						Skip();
 					}
 					break;
 				case ')':
 					{
-						// line 213
+						// line 212
 						_type = TT.RParen;
 						Skip();
 					}
 					break;
 				case '[':
 					{
-						// line 214
+						// line 213
 						_type = TT.LBrack;
 						Skip();
 					}
 					break;
 				case ']':
 					{
-						// line 215
+						// line 214
 						_type = TT.RBrack;
 						Skip();
 					}
 					break;
 				case '{':
 					{
-						// line 216
+						// line 215
 						_type = TT.LBrace;
 						Skip();
 					}
 					break;
 				case '}':
 					{
-						// line 217
+						// line 216
 						_type = TT.RBrace;
 						Skip();
 					}
@@ -3057,7 +2958,7 @@ namespace Loyc.Syntax.Les
 					break;
 				default:
 					if (NextToken_set1.Contains(la0)) {
-						// line 199
+						// line 198
 						_type = TT.Id;
 						value = Id();
 					} else
@@ -3065,37 +2966,44 @@ namespace Loyc.Syntax.Les
 					break;
 				}
 				break;
+			matchKeyword:
+				{
+					// line 199
+					_type = TT.Keyword;
+					value = Keyword();
+				}
+				break;
 			matchNumber:
 				{
-					// line 204
+					// line 203
 					_type = TT.Literal;
 					value = Number();
 				}
 				break;
 			matchTQString:
 				{
-					// line 205
+					// line 204
 					_type = TT.Literal;
 					value = TQString();
 				}
 				break;
 			matchDQString:
 				{
-					// line 206
+					// line 205
 					_type = TT.Literal;
 					value = DQString();
 				}
 				break;
 			matchSQString:
 				{
-					// line 207
+					// line 206
 					_type = TT.Literal;
 					value = SQString();
 				}
 				break;
 			match13:
 				{
-					// line 209
+					// line 208
 					_type = TT.Unknown;
 					Skip();
 					Skip();
@@ -3103,28 +3011,28 @@ namespace Loyc.Syntax.Les
 				break;
 			match24:
 				{
-					// line 220
+					// line 219
 					_type = TT.At;
 					Skip();
-					// line 220
+					// line 219
 					value = GSymbol.Empty;
 				}
 				break;
 			error:
 				{
 					Skip();
-					// line 222
+					// line 221
 					_type = TT.Unknown;
 				}
 			} while (false);
-			// line 224
+			// line 223
 			Debug.Assert(InputPosition > _startPosition);
 			return new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, value);
 		}
 		new public bool TDQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 234: nongreedy([^\$])*
+			// Line 233: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -3153,24 +3061,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 234: (Newline | ["] ["] ["])
+			// Line 233: (Newline | ["] ["] ["])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 234
+				// line 233
 				return false;
 			} else {
 				Match('"');
 				Match('"');
 				Match('"');
-				// line 234
+				// line 233
 				return true;
 			}
 		}
 		new public bool TSQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 237: nongreedy([^\$])*
+			// Line 236: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -3199,24 +3107,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 237: (Newline | ['] ['] ['])
+			// Line 236: (Newline | ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 237
+				// line 236
 				return false;
 			} else {
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// line 237
+				// line 236
 				return true;
 			}
 		}
 		new public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
-			// Line 240: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
+			// Line 239: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '*') {
@@ -3225,7 +3133,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == '/') {
 							Skip();
 							Skip();
-							// line 240
+							// line 239
 							nested--;
 						} else if (la1 != -1)
 							goto match4;
@@ -3250,7 +3158,7 @@ namespace Loyc.Syntax.Les
 					if (la1 == '*') {
 						Skip();
 						Skip();
-						// line 241
+						// line 240
 						nested++;
 					} else
 						Skip();
@@ -3265,16 +3173,16 @@ namespace Loyc.Syntax.Les
 					Check(!Try_MLCommentLine_Test0(0), "!([/])");
 				}
 			}
-			// Line 245: (Newline | [*] [/])
+			// Line 244: (Newline | [*] [/])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 245
+				// line 244
 				return false;
 			} else {
 				Match('*');
 				Match('/');
-				// line 245
+				// line 244
 				return true;
 			}
 		}
