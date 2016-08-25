@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.Numerics;
 using Loyc.MiniTest;
 using Loyc.Ecs.Parser;
 using Loyc.Syntax.Lexing;
@@ -225,7 +226,7 @@ namespace Loyc.Ecs.Tests
 			Case("`weird\nnewline", A(TT.BQString, TT.Newline, TT.Id), ERROR, WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Literal), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), ERROR);
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), ERROR);
+			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), BigInteger.Parse("1FFFFFFFF00000000", System.Globalization.NumberStyles.HexNumber));
 		}
 
 		[Test]
