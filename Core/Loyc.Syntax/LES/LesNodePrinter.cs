@@ -561,7 +561,7 @@ namespace Loyc.Syntax.Les
 			P<long>      ((np, value, style) => np.PrintIntegerToString(value, style, "L")),
 			P<uint>      ((np, value, style) => np.PrintIntegerToString(value, style, "u")),
 			P<ulong>     ((np, value, style) => np.PrintIntegerToString(value, style, "uL")),
-            P<BigInteger>((np, value, style) => np.PrintIntegerToString(value, style, "z")),
+			P<BigInteger>((np, value, style) => np.PrintIntegerToString(value, style, "z")),
 			P<short>     ((np, value, style) => np.PrintShortInteger(value, style, "Int16")), // Unnatural. Not produced by parser.
 			P<ushort>    ((np, value, style) => np.PrintShortInteger(value, style, "UInt16")), // Unnatural. Not produced by parser.
 			P<sbyte>     ((np, value, style) => np.PrintShortInteger(value, style, "Int8")), // Unnatural. Not produced by parser.
