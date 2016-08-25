@@ -420,15 +420,8 @@ namespace Loyc.Syntax
 						break;
 				}
 
-				BigInteger next;
-				try {
-					next = result * (uint)radix + digit;
-				} catch (OutOfMemoryException) {
-					// We can't recover from this. Just report overflow.
-					return false;
-				}
+				result = result * (uint)radix + digit;
 				numDigits++;
-				result = next;
 			}
 			return numDigits > 0;
 		}
