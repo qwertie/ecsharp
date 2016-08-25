@@ -34,7 +34,7 @@ namespace Loyc.Syntax.Les
 		public void NumericLiterals()
 		{
 			Exact(@"123", F.Literal(123));
-			Exact(@"123z", F.Literal(new BigInteger(123)));
+			// Exact(@"123z", F.Literal(new BigInteger(123)));
 			Exact(@"(123)", F.InParens(F.Literal(123)));
 			Exact(@"123uL", F.Literal(123uL));
 			Exact(@"123.25", F.Literal(123.25));
@@ -66,7 +66,7 @@ namespace Loyc.Syntax.Les
 			Stmt("-2uL;", F.Call(S.Sub, F.Literal(2uL)));
 			Exact("- 2;", F.Call(S.Sub, two));
 			Exact("-2;", F.Literal(-2));
-			Exact("-2z;", F.Literal(new BigInteger(-2)));
+			// Exact("-2z;", F.Literal(new BigInteger(-2)));
 			Stmt("-111222333444;", F.Literal(-111222333444));
 			Exact("-2L;", F.Literal(-2L));
 			Stmt("-2.0;", F.Literal(-2.0));
