@@ -359,8 +359,7 @@ namespace Loyc.Syntax
 				s = SkipSpaces(s);
 			
 			bool overflow = false;
-			int oldStart = s.InternalStart;
-			
+
 			for (;; s = s.Slice(1))
 			{
 				char c = s[0, '\0'];
@@ -402,8 +401,6 @@ namespace Loyc.Syntax
 			numDigits = 0;
 			if ((flags & ParseNumberFlag.SkipSpacesInFront) != 0)
 				s = SkipSpaces(s);
-
-			int oldStart = s.InternalStart;
 
 			for (;; s = s.Slice(1))
 			{
