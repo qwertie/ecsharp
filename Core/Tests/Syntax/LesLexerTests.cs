@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Numerics;
 using Loyc.MiniTest;
 using Loyc.Syntax.Lexing;
 using Loyc.Utilities;
@@ -175,6 +176,15 @@ namespace Loyc.Syntax.Les
 			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.NormalOp, TT.Literal), 0x8081FF, _("'=="), 0x8081FF);
 			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
 			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Literal), 0x0F808192FF);
+			Case("11Z", A(TT.Literal), new BigInteger(11));
+			Case("9_111_222_333_444_555Z", A(TT.Literal), new BigInteger(9111222333444555UL));
+			Case("9999111222333444555000Z", A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
+			Case("9999111222333444555000", A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
+			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), BigInteger.Parse("1FFFFFFFF00000000", System.Globalization.NumberStyles.HexNumber));
+			Case("-9111222Z", A(TT.Literal), new BigInteger(-9111222L));
+			Case("-9999111222333444555000Z", A(TT.Literal), -1000 * new BigInteger(9999111222333444555UL));
+			Case("-9999111222333444555000", A(TT.Literal), -1000 * new BigInteger(9999111222333444555UL));
+			Case("-18446744069414584320", A(TT.Literal), BigInteger.Parse("-18446744069414584320"));
 		}
 
 		[Test]
@@ -253,7 +263,6 @@ namespace Loyc.Syntax.Les
 			Case("`weird\nnewline", A(TT.BQOperator, TT.Newline, TT.Id), ERROR, WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Literal), ERROR);
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), ERROR);
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), ERROR);
 		}
 
 		[Test]

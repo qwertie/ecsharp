@@ -199,6 +199,12 @@
       <HintPath>..\..\Core\Lib\DotNet35\Theraot.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v4.0'">
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkVersion)'=='v4.5'">
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Parser\EcsLexerGrammar.out.cs">
       <AutoGen>True</AutoGen>
