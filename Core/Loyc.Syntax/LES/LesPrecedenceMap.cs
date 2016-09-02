@@ -31,9 +31,10 @@ namespace Loyc.Syntax.Les
 			_suffixOpNames = null;
 		}
 
-		/// <summary>Gets the precedence of a prefix, suffix, or infix operator in 
-		/// LES, under the assumption that the operator isn't surrounded in 
-		/// backticks (in which case its precedence is always Backtick).</summary>
+		/// <summary>Gets the precedence in LES of a prefix, suffix, or infix operator.</summary>
+		/// <param name="shape">Specifies which precedence table and rules to use 
+		/// (Prefix, Suffix or Infix). Note: when this is Suffix, "suf" must not be 
+		/// part of the name in <c>op</c> (see <see cref="IsSuffixOperatorName"/>)</param>
 		/// <param name="op">Parsed form of the operator. op must be a Symbol, but 
 		/// the parameter has type object to avoid casting Token.Value in the parser.</param>
 		public Precedence Find(OperatorShape shape, object op, bool cacheWordOp = true)
@@ -69,7 +70,7 @@ namespace Loyc.Syntax.Les
 				{ S._Negate,     P.Prefix      }, // -
 				{ S.DotDot,      P.PrefixDots  }, // ..
 				{ S.OrBits,      P.PrefixOr    }, // |
-				//{ S.Div,         P.Reserved    }, // /
+				{ S.Div,         P.Prefix      }, // /
 				//{ S.LT,          P.Reserved    }, // <
 				//{ S.GT,          P.Reserved    }, // >
 				//{ S.QuestionMark,P.Reserved    }, // ?
@@ -167,12 +168,25 @@ namespace Loyc.Syntax.Les
 		}
 
 		static readonly BitArray OpChars = GetOpChars();
+		static readonly BitArray OpCharsEx = GetOpCharsEx();
 		private static BitArray GetOpChars()
 		{
 			var map = new BitArray(128);
 			map['~']  = map['!'] = map['%'] = map['^'] = map['&'] = map['*'] = true;
 			map['-'] = map['+'] = map['='] = map['|'] = map['<'] = map['>'] = true;
-			map['/'] = map['?'] = map[':'] = map['.'] = map['$'] = true;
+			map['/'] = map['?'] = map[':'] = map['.'] = true;
+			return map;
+		}
+		private static BitArray GetOpCharsEx()
+		{
+			var map = GetOpChars();
+			map['$'] = true;
+			for (char c = 'a'; c <= 'z'; c++)
+				map[c] = true;
+			for (char c = 'A'; c <= 'Z'; c++)
+				map[c] = true;
+			for (char c = '0'; c <= '9'; c++)
+				map[c] = true;
 			return map;
 		}
 		/// <summary>Returns true if this character is one of those that operators are normally made out of in LES.</summary>
@@ -180,40 +194,54 @@ namespace Loyc.Syntax.Les
 		{
 			return (uint)c < (uint)OpChars.Count ? OpChars[c] : false;
 		}
+		/// <summary>Returns true if this character is one of those that can appear 
+		/// in "extended" LESv3 operators that start with an apostrophe.</summary>
+		public static bool IsOpCharEx(char c)
+		{
+			return (uint)c < (uint)OpCharsEx.Count ? OpCharsEx[c] : false;
+		}
+		
 		/// <summary>Returns true if the given Symbol can be printed as an operator 
-		/// without escaping it.</summary>
+		/// without escaping it (LESv2) or adding an apostrophe on the front (LESv3).</summary>
 		/// <remarks>The parser should read something like <c>+/*</c> as an operator
 		/// with three characters, rather than "+" and a comment, but the printer 
-		/// should be conservative, so this function returns false in such a case:
-		/// "Be liberal in what you accept, and conservative in what you produce."</remarks>
-		public static bool IsNaturalOperator(Symbol s)
+		/// is more conservative, so this function returns false in such a case.</remarks>
+		public static bool IsNaturalOperator(string name)
 		{
-			string name = s.Name;
-			if (!name.StartsWith("'"))
+			if (name.Length <= 1 || name[0] != '\'')
+				return false; // optimized path
+			return IsOperator(name, OpChars, true, "'") || IsOperator(name, OpChars, true, "'$");
+		}
+
+		/// <summary>Returns true if the given Symbol can ever be used as an "extended" 
+		/// binary operator in LESv3.</summary>
+		/// <remarks>A binary operator's length must be between 2 and 255, its name must
+		/// start with an apostrophe, and each remaining character must be punctuation marks 
+		/// from natural operators and/or characters from the set 
+		/// {'#', '_', 'a'..'z', 'A'..'Z', '0'..'9', '$'}.</remarks>
+		public static bool IsExtendedOperator(string name, string expectPrefix = "'")
+		{
+			return IsOperator(name, OpCharsEx, false, expectPrefix);
+		}
+
+		static bool IsOperator(string name, BitArray opChars, bool rejectComment, string expectPrefix)
+		{
+			int i = expectPrefix.Length;
+			if (!name.StartsWith(expectPrefix))
 				return false;
-			for (int i = 1;;) {
+			if (i >= name.Length || name.Length > 255)
+				return false;
+			for (;;) {
 				char c = name[i];
-				if (!IsOpChar(c))
+				if ((uint)c > (uint)opChars.Count || !opChars[c])
 					return false;
 				if (++i == name.Length)
 					break;
-				if (c == '/' && (name[i] == '/' || name[i] == '*'))
+				if (c == '/' && rejectComment && (name[i] == '/' || name[i] == '*'))
 					return false; // oops, looks like a comment
 			}
 			return true;
 		}
-
-		// /// <summary>Returns true if a given Les operator can only be printed with 
-		// /// backticks, because a leading backslash is insufficient.</summary>
-		// public static bool RequiresBackticks(Symbol s)
-		// {
-		// 	string name = s.Name;
-		// 	for (int i = 0; i < name.Length; i++)
-		// 		if (!IsOpChar(name[i]) && !char.IsLetter(name[i]) && !char.IsDigit(name[i]) 
-		// 			&& name[i] != '_' && name[i] != '\'')
-		// 			return true;
-		// 	return name.Length == 0;
-		// }
 
 		/// <summary>Given a normal operator symbol like <c>(Symbol)"'++"</c>, gets
 		/// the suffix form of the name, such as <c>(Symbol)"'++suf"</c>.</summary>
@@ -248,7 +276,7 @@ namespace Loyc.Syntax.Les
 				bareName = name;
 				return false;
 			}
-			return !checkNatural || IsNaturalOperator(bareName);
+			return !checkNatural || IsNaturalOperator(bareName.Name);
 		}
 	}
 }

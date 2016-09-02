@@ -121,13 +121,11 @@ namespace Loyc.Syntax.Les
 
 		protected object ParseStringValue(bool isTripleQuoted, bool les3TQIndents = false)
 		{
-			_value = ParseStringCore(isTripleQuoted, les3TQIndents);
-			if (_value.ToString().Length < 64)
-				_value = CG.Cache(_value);
-			return _value;
+			var s = ParseStringCore(isTripleQuoted, les3TQIndents);
+			return _value = s.Length < 16 ? CG.Cache(s) : s;
 		}
 
-		string ParseStringCore(bool isTripleQuoted, bool les3TQindents = false)
+		protected string ParseStringCore(bool isTripleQuoted, bool les3TQindents = false)
 		{
 			if (SkipValueParsing)
 				return "";
@@ -212,15 +210,21 @@ namespace Loyc.Syntax.Les
 					return false;
 				int i0 = sourceText.InternalStart;
 				if (!isTripleQuoted) {
-					char c = ParseHelpers.UnescapeChar(ref sourceText);
+					EscapeC category = 0;
+					int c = ParseHelpers.UnescapeChar(ref sourceText, ref category);
 					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1) {
 						return c == quoteType; // end of string
 					}
-					if (c == '\\' && sourceText.InternalStart == i0 + 1) {
+					if ((category & EscapeC.Unrecognized) != 0) {
 						// This backslash was ignored by UnescapeChar
-						onError(i0, Localize.Localized(@"Unrecognized escape sequence '\{0}' in string", ParseHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
-					}
-					sb.Append(c);
+						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(ParseHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
+					} else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
+						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
+					sb.AppendCodePoint(c);
+					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
+						DetectUtf8(sb);
+					else if (c.IsInRange(0xDC00, 0xDFFF))
+						RecodeSurrogate(sb);
 				} else {
 					// Inside triple-quoted string
 					int c;
@@ -271,27 +275,114 @@ namespace Loyc.Syntax.Les
 						}
 					}
 					
-					sb.Append((char)c);
+					sb.AppendCodePoint(c);
 				}
 			}
+		}
+
+		// This function is called after every "\xNN" escape where 0xNN > 0x80.
+		// Now, in LESv3, the input must be valid UTF-8, but strings can contain
+		// raw bytes as \x escape sequences. We must evaluate sequences of such
+		// characters as UTF-8 and figure out if they're valid or invalid.
+		// They can write "\xE2\x82\xAC" = "\u20AC" = "€", and also invalid 
+		// bytes or byte sequences. An invalid byte like "\xFF" is recoded as an
+		// invalid single surrogate like 0xDCFF. 
+		//   This function is in charge of performing that translation. See also:
+		// https://github.com/sunfishcode/design/pull/3#issuecomment-236777361
+		// Note: this function is shared by LESv2 too, because, who cares, why not.
+		static void DetectUtf8(StringBuilder sb)
+		{
+			int minus1 = sb[sb.Length - 1];
+			Debug.Assert(minus1.IsInRange((char)128, (char)255));
+			minus1 = sb[sb.Length - 1] = (char)(minus1 | 0xDC00);
+			if (sb.Length > 1 && minus1.IsInRange(0xDC80, 0xDCBF)) {
+				int minus2 = sb[sb.Length - 2];
+				if (minus2.IsInRange(0xDCC0, 0xDCDF)) {
+					// 2-byte UTF8 character detected; decode into UTF16
+					int c = ((minus2 & 0x1F) << 6) | (minus1 & 0x3F);
+					if (c > 0x7F) { // ignore overlong characters
+						sb.Remove(sb.Length - 1, 1);
+						sb[sb.Length - 1] = (char)c;
+					}
+				}
+				else if (sb.Length > 2 && minus2.IsInRange(0xDC80, 0xDCBF)) {
+					int minus3 = sb[sb.Length - 3];
+					if (minus3.IsInRange(0xDCE0, 0xDCEF)) {
+						// 3-byte UTF8 character detected; decode into UTF16 unless
+						// the character is in the low surrogate range 0xDC00..0xDFFF.
+						// This avoids collisions with the 0xDCxx space reserved for 
+						// encodings of arbitrary bytes, and and also avoids 
+						// translating UTF-8 encodings of UTF-16 surrogate pairs, 
+						// which wouldn't round trip, e.g. \xED\xA0\xBD\xED\xB2\xA9
+						// !=> \uD83D\uDCA9 (UTF16) => \u1F4A9 => \xF0\x9F\x92\xA9 (UTF8).
+						int c = ((minus3 & 0xF) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
+						if (c > 0x7FF && !c.IsInRange(0xDC00, 0xDFFF)) { // ignore overlong characters
+							sb.Remove(sb.Length - 2, 2);
+							sb[sb.Length - 1] = (char)c;
+						}
+					}
+					else if (sb.Length > 3 && minus3.IsInRange(0xDC80, 0xDCBF)) {
+						int minus4 = sb[sb.Length - 4];
+						if (minus4.IsInRange(0xDCF0, 0xDCF7)) {
+							// 4-byte UTF8 character detected; decode into UTF16 surrogate pair
+							int c = ((minus4 & 0x7) << 18) | ((minus3 & 0x3F) << 12) | ((minus2 & 0x3F) << 6) | (minus1 & 0x3F);
+							if (c > 0xFFFF) { // ignore overlong characters
+								sb.Remove(sb.Length - 4, 4);
+								sb.AppendCodePoint(c);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// To prevent collisions between the single invalid UTF-8 byte 0xFF,
+		// which is coded as 0xDCFF and the three-byte sequence represented
+		// by \uDCFF, and also to allow round-tripping of UTF8 encodings of 
+		// UTF16 surrogates, this function's job is to treat "low" surrogates 
+		// in range 0xDC00 to 0xDFFF as if they were three UTF-8 bytes 
+		// recoded individually:
+		//     \uDCFF => 0xED 0xB3 0xBF => 0xDCED 0xDCB3 0xDCBF
+		// by avoiding collisions, the UTF-16 output from this lexer can be 
+		// used to reconstruct the byte stream it represents in all cases.
+		// If the final LESv3 spec disallows individual surrogate characters
+		// then we can just print an error instead of doing this trick.
+		static void RecodeSurrogate(StringBuilder sb)
+		{
+			int c = sb[sb.Length - 1];
+			Debug.Assert(c.IsInRange(0xDC00, 0xDFFF));
+			int b1 = 0xE0 | (c >> 12);
+			int b2 = 0x80 | ((c >> 6) & 0x3F);
+			int b3 = 0x80 | (c & 0x3F);
+			sb[sb.Length - 1] = (char)(b1 | 0xDC00);
+			sb.Append((char)(b2 | 0xDC00));
+			sb.Append((char)(b3 | 0xDC00));
 		}
 
 		#endregion
 
 		#region Identifier & Symbol parsing (includes @true, @false, @null, named floats) (including public ParseIdentifier())
 
-		protected Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+		internal static Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
 		{
 			{ "true", true },
 			{ "false", false },
 			{ "null", null },
 			{ "void", new @void() },
+			// LESv2 names
 			{ "nan_f", float.NaN },
 			{ "nan_d", double.NaN },
 			{ "inf_f", float.PositiveInfinity },
 			{ "inf_d", double.PositiveInfinity },
 			{ "-inf_f", float.NegativeInfinity },
-			{ "-inf_d", double.NegativeInfinity }
+			{ "-inf_d", double.NegativeInfinity },
+			// New names in LESv3 
+			{ "nan.f", float.NaN },
+			{ "nan.d", double.NaN },
+			{ "inf.f", float.PositiveInfinity },
+			{ "inf.d", double.PositiveInfinity },
+			{ "-inf.f", float.NegativeInfinity },
+			{ "-inf.d", double.NegativeInfinity }
 		};
 
 		protected object ParseIdValue(bool isFancy)
@@ -398,12 +489,12 @@ namespace Loyc.Syntax.Les
 		#region Number parsing
 
 		protected static Symbol _sub = GSymbol.Get("-");
-		protected static Symbol _F = GSymbol.Get("F");
-		protected static Symbol _D = GSymbol.Get("D");
-		protected static Symbol _M = GSymbol.Get("M");
 		protected static Symbol _U = GSymbol.Get("U");
 		protected static Symbol _L = GSymbol.Get("L");
 		protected static Symbol _UL = GSymbol.Get("UL");
+		protected static Symbol _F = GSymbol.Get("F");
+		protected static Symbol _D = GSymbol.Get("D");
+		protected static Symbol _M = GSymbol.Get("M");
 
 		protected object ParseNumberValue(int numberEndPosition)
 		{
@@ -517,7 +608,7 @@ namespace Loyc.Syntax.Les
 			if (typeSuffix == null)
 				return value;
 			else
-				return new SpecialLiteral(value, typeSuffix);
+				return new CustomLiteral(value, typeSuffix);
 		}
 
 		static object ParseNormalFloat(UString source, bool isNegative, Symbol typeSuffix, ref string error)
@@ -540,7 +631,7 @@ namespace Loyc.Syntax.Les
 					if (typeSuffix == null || typeSuffix == _D)
 						return d;
 					else
-						return new SpecialLiteral(d, typeSuffix);
+						return new CustomLiteral(d, typeSuffix);
 				}
 			}
 			error = Localize.Localized("Syntax error in float literal");
@@ -580,7 +671,7 @@ namespace Loyc.Syntax.Les
 				if (typeSuffix == null || typeSuffix == _D)
 					return result;
 				else
-					return new SpecialLiteral(result, typeSuffix);
+					return new CustomLiteral(result, typeSuffix);
 			}
 		}
 
@@ -630,13 +721,15 @@ namespace Loyc.Syntax.Les
 				name = (Symbol)op;
 			} else {
 				name = (Symbol)("'" + op);
+				if (name == CodeSymbols.Dot)
+					return Pair.Create(name, TT.Dot);
 			}
 			
 			if (length >= 2 && ((first == '+' && last == '+') || (first == '-' && last == '-')))
 				tt = TT.PreOrSufOp;
 			else if (first == '$')
 				tt = TT.PrefixOp;
-			else if (first == '.' && (length == 1 || first != '.'))
+			else if (first == '.' && (length == 1 || last != '.'))
 				tt = TT.Dot;
 			else if (last == '=' && (length == 1 || (first != '=' && first != '!' && !(length == 2 && (first == '<' || first == '>')))))
 				tt = TT.Assignment;

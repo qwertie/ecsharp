@@ -52,8 +52,12 @@ partial class Les3Parser
 		}
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
-			if (previousExpr == null || previousExpr.BaseStyle != NodeStyle.Special || (TT)LA(-1) != TT.RBrace)
+			if (previousExpr != null && (TT)LA(-1) == TT.RBrace &&
+				(previousExpr.BaseStyle == NodeStyle.Special || previousExpr.BaseStyle == NodeStyle.Statement)) {
+				// Fine: missing semicolon is allowed on outer expression thats end in {...}
+			} else {
 				Error(0, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
+			}
 		}
 		public new VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
 		{
@@ -112,7 +116,7 @@ partial class Les3Parser
 			(e:TopExpr | (")"|"}"|"]"|EOF) {e = MissingExpr();})
 		)
 		{if ($"@".TypeInt != 0) { e = e.WithRange($"@".StartIndex, e.Range.EndIndex); };}
-		{return e.PlusAttrs(attrs);};
+		{return e.PlusAttrsBefore(attrs);};
 
 	////////////////////////////////////////////////////////////////////////////
 	// Keyword Statement and related (continuators, braced blocks, paren blocks)
@@ -128,7 +132,7 @@ partial class Les3Parser
 	private BracesWithContinuators[ref VList<LNode> args] returns [int result] @init {int endIndex;} :
 		bb:BracedBlock {args.Add(bb); endIndex = bb.Range.EndIndex;}
 		greedy
-		(	kw:ContinuatorKeyword {var opName = _continuators[kw.Value];}
+		(	kw:ContinuatorKeyword {var opName = Continuators[kw.Value];}
 			(	bb:BracedBlock   {args.Add(F.Call(opName, bb));}
 			|	"(" ExprList ")" 
 				(	bb:BracedBlock
@@ -145,18 +149,7 @@ partial class Les3Parser
 		{return exprs.Count == 1 && endMarker != TT.Semicolon ? exprs[0] : F.Tuple(exprs, $"(".StartIndex, $")".EndIndex);};
 
 	private ContinuatorKeyword returns [Token result] :
-		&{_continuators.ContainsKey(LT($LI).Value)} result:TT.Id;
-	members { 
-		static readonly Dictionary<object, Symbol> _continuators = new Dictionary<object, Symbol> {
-			{ @@else, @@'else },   { @@elseif, @@'elseif }, { @@elsif, @@'elsif }, 
-			{ @@catch, @@'catch }, { @@except, @@'except }, { @@finally, @@'finally },
-			{ @@where, @@'where }, { @@from, @@'from },     { @@into, @@'into }, 
-			{ @@in, @@'in }, { @@to, @@'to }, { @@and, @@'and }, { @@or, @@'or }, 
-			{ @@so, @@'so }, { @@on, @@'on }, { @@off, @@'off }, { @@onto, @@'onto }, 
-			{ @@at, @@'at }, { @@by, @@'by }, { @@via, @@'via }, { @@of, @@'of },   
-			{ @@over, @@'over }, 
-		};
-	}
+		&{Continuators.ContainsKey(LT($LI).Value)} result:TT.Id;
 
 	////////////////////////////////////////////////////////////////////////////
 	// Normal Expressions
@@ -173,7 +166,7 @@ partial class Les3Parser
 	token Expr[Precedence context] returns[LNode result]
 		:	// Juxtaposition operator
 			&{[Local] context.CanParse(P.Juxtaposition)}
-			&{[Local] LA($LI+1).IsOneOf((int)TT.Id, (int)TT.Literal, (int)TT.PrefixOp)}
+			&{[Local] LA($LI+1).IsOneOf((int)TT.Id, (int)TT.PrefixOp, (int)TT.Literal)}
 			kw:=TT.Id
 			rhs:=Expr[P.Juxtaposition]
 			{ $result = F.Call((Symbol)kw.Value, rhs); }
@@ -191,7 +184,7 @@ partial class Les3Parser
 				{e = F.Call((Symbol) op.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	&{[Local] context.CanParse(P.Add)}
 				rhs:=TT.NegativeLiteral
-				{e = F.Call(S.Add, e, F.Literal(rhs), e.Range.StartIndex, rhs.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	// Suffix operator
 				&{[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
@@ -227,8 +220,8 @@ partial class Les3Parser
 			(&{[Local] _allowBlockCalls} endIndex:BracesWithContinuators[ref args] {hasBraces = true;})?
 		|	 &{[Hoist] _allowBlockCalls} endIndex:BracesWithContinuators[ref args] {hasBraces = true;}
 		) {
-			$result = F.Call(target, args, target.Range.StartIndex, endIndex);
-			$result.SetBaseStyle(hasBraces ? NodeStyle.Special : NodeStyle.PrefixNotation);
+			$result = F.Call(target, args, target.Range.StartIndex, endIndex).SetBaseStyle(NodeStyle.PrefixNotation);
+			if (hasBraces) MarkSpecial($result);
 			if (endMarker == TT.Semicolon) { $result.Style |= NodeStyle.Alternate; };
 		};
 
@@ -264,7 +257,7 @@ partial class Les3Parser
 			{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex).SetStyle(NodeStyle.Expression);}
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
-			"(" {var storeParens = isAttribute || (TT)LA0 == TT.At;}
+			"(" {var saveParens = !isAttribute && (TT)LA0 != TT.At;}
 			list:=ExprList[ref endMarker]
 			")" {
 				if (endMarker == TT.Semicolon || list.Count != 1) {
@@ -274,7 +267,7 @@ partial class Les3Parser
 						ErrorSink.Write(Severity.Error, list[0].Range.End, msg);
 					};
 				} else {
-					$result = storeParens ? list[0] : F.InParens(list[0], $"(".StartIndex, $")".EndIndex);
+					$result = saveParens ? F.InParens(list[0], $"(".StartIndex, $")".EndIndex) : list[0];
 				};
 			}
 		|	error {

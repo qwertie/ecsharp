@@ -37,60 +37,45 @@ public partial class Les3Lexer
 	// Numbers ---------------------------------------------------------------
 	
 	private token Number returns [object result] :
-		{ _isFloat = _isNegative = false; _typeSuffix = null; }
-		('-' {_isNegative = true;})?
+		('-' {_isNegative = true;} / {_isNegative = false;})
 		(HexNumber / BinNumber / DecNumber)
-		{int numberEndPosition = InputPosition;}
-		(_typeSuffix=NumberSuffix(ref _isFloat))?
+		{UString numberText = Text();}
+		(	{_startPosition = InputPosition;} // as expected by IdCore
+			{object boolOrNull = NoValue.Value;}
+			suffix:IdCore[ref boolOrNull]
+			{PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);}
+		)?
 		{
 			_type = _isNegative ? TT.NegativeLiteral : TT.Literal;
-			return ParseNumberValue(numberEndPosition);
+			return ParseLiteral2(suffix, numberText, true);
 		};
 
-	private DecDigits : '0'..'9'+ greedy('_' '0'..'9'+)* greedy('_')? ;
+	private DecDigits : '0'..'9'+ greedy(('_'|'\'') '0'..'9'+)* greedy('_')? ;
 	[inline] HexDigit  : '0'..'9' | 'a'..'f' | 'A'..'F' ;
-	private HexDigits : greedy(HexDigit)+ greedy('_' greedy(HexDigit)+)* greedy('_')? ;
+	private HexDigits : greedy(HexDigit)+ greedy(('_'|'\'') greedy(HexDigit)+)* greedy('_')? ;
+	
+	// _isFloat, _numberBase are no longer used
 	private DecNumber :
 		{_numberBase=10;}
-		( '.' DecDigits   {_isFloat=true;}
-		| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
-		)
+		(DecDigits | '.' DecDigits =>)
+		( {_isFloat=true;} '.' DecDigits )?
 		greedy( {_isFloat=true;} ('e'|'E') ('+'|'-')? DecDigits )?
 		;
 	private HexNumber() :
 		'0' ('x'|'X') {_numberBase=16;}
-		greedy(HexDigits)?
+		(HexDigits | '.' HexDigits =>)
 		// Avoid ambiguity with 0x5.Equals(): a dot is not enough
 		(	'.' ('0'..'9' => () / &( HexDigits ('p'|'P') ('+'|'-'|'0'..'9') ))
 			{_isFloat=true;} HexDigits )?
 		greedy( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		;
 	private BinNumber :
-		'0' ('b'|'B')     {_numberBase=2;}
-		( '.' DecDigits   {_isFloat=true;}
-		| DecDigits     ( {_isFloat=true;} '.' DecDigits )?
-		)
+		'0' ('b'|'B') {_numberBase=2;}
+		(DecDigits | '.' DecDigits =>)
+		( {_isFloat=true;} '.' DecDigits )?
 		greedy( {_isFloat=true;} ('p'|'P') ('+'|'-')? DecDigits )?
 		;
 	
-	[LL(4)] private NumberSuffix[ref bool isFloat] returns [Symbol result] 
-		@init {var here = InputPosition;}
-		: // known suffixes
-		  ( ('f'|'F') {$result = _F; isFloat=true;}
-		  | ('d'|'D') {$result = _D; isFloat=true;}
-		  | ('m'|'M') {$result = _M; isFloat=true;}
-		  | ('l'|'L') {$result = _L;} (('u'|'U') {$result = _UL;})?
-		  | ('u'|'U') {$result = _U;} (('l'|'L') {$result = _UL;})?
-		  | "u32" {$result = _U;}
-		  | "u64" {$result = _UL;}
-		  | "i32" {$result = null;}
-		  | "i64" {$result = _L;}
-		  | "f32" {$result = _F;}
-		  | "f64" {$result = _D;}
-		  ) EndId
-		/ NormalId // unknown suffixes
-		  { $result = IdToSymbol(CharSource.Slice(here, InputPosition - here)); };
-
 	// Used by NumberSuffix to detect end-of-suffix
 	[inline] extern token EndId : (~('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'#') | EOF) =>;
 
@@ -105,7 +90,7 @@ public partial class Les3Lexer
 		{_parseNeeded = false;}
 		(	'"' [ '\\' _ {_parseNeeded = true;} | ~('"'|'\\'|'\r'|'\n') ]* 
 			('"' / {_parseNeeded = true;}) )
-		{return ParseStringValue(false);};
+		{return ParseStringValue(isTripleQuoted: false);};
 	
 	[LL(4)] private token TQString returns [object result] :
 		{_parseNeeded = true;}
@@ -113,7 +98,7 @@ public partial class Les3Lexer
 		(	'"' '"' '"' nongreedy(Newline(true) / _)* '"' '"' '"' 
 			| {_style |= NodeStyle.Alternate2;}
 				"'''"   nongreedy(Newline(true) / _)* "'''" )
-		{return ParseStringValue(true, true);};
+		{return ParseStringValue(isTripleQuoted: true, les3TQIndents: true);};
 
 	private BQString :
 		{_parseNeeded = false;}
@@ -122,9 +107,9 @@ public partial class Les3Lexer
 	// Nontrivial punctuation & operators -----------------------------------
 		
 	private token OpChar :
-		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$';
+		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.';
 	private token Operator returns [object result] : 
-		OpChar+ {return ParseNormalOp();} ;
+		(OpChar|'$') OpChar* {return ParseNormalOp();} ;
 	private token SQOperator returns [object result] : 
 		"'" LettersOrPunc+ // at least one letter/punc required so that 
 		                   // sequences like '(...) are reserved for future use
@@ -133,45 +118,39 @@ public partial class Les3Lexer
 	// Identifiers, keywords and named literals --------------------------------
 
 	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z' ;
-	// FIXME: 0x80..0xFFFC makes LLLPG make a HashSet<int> of unreasonable size.
-	//        To fix, I plan to make a special struct type wrapping HashSet<int>
-	private token IdExtLetter : &{char.IsLetter((char) $LA)} 0x80..0xFFFC ;
 
 	private NormalId : 
-		(IdStartChar | IdExtLetter) 
-		greedy(IdStartChar | '#' | '0'..'9' | '\'' &!("''") | IdExtLetter)*;
-	
+		IdStartChar 
+		greedy(IdStartChar | '#' | '0'..'9' | '\'' &!("''"))*;
+
 	private token Id returns [object result] :
-		( BQString {$result = ParseBQStringValue();}
-		| NormalId {
-			$result = IdToSymbol(Text());
-			if ($result == @@true)  { _type = TT.Literal; return G.BoxedTrue; }
-			if ($result == @@false) { _type = TT.Literal; return G.BoxedFalse; }
-			if ($result == @@null)  { _type = TT.Literal; return null; }
-		  }
-		)
+		{object boolOrNull = NoValue.Value;}
+		idtext:IdCore[ref boolOrNull]
 		(	{saveAndRestore(_startPosition); _startPosition = InputPosition;}
 			(value:TQString / value:DQString)
 			{
 				_type = TT.Literal;
-				if ($result == @@s)
-					return (Symbol)value.ToString();
-				else
-					return new SpecialLiteral(value, (Symbol)result);
+				PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
+				return _value = ParseLiteral2(idtext, value.ToString(), false);
 			}
-		)?;
+		)?
+		{return boolOrNull != NoValue.Value ? boolOrNull : IdToSymbol(idtext);};
+
+	private token IdCore[ref object boolOrNull] returns [UString result] :
+		( BQString {$result = ParseStringCore(false);}
+		| NormalId {
+			$result = Text();
+			if ($result == "true")  { _type = TT.Literal; boolOrNull = G.BoxedTrue; }
+			if ($result == "false") { _type = TT.Literal; boolOrNull = G.BoxedFalse; }
+			if ($result == "null")  { _type = TT.Literal; boolOrNull = null; }
+		  }
+		);
 
 	private token LettersOrPunc : '0'..'9'|'a'..'z'|'A'..'Z'|'_'|'#'
 		|'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.'|'$' ;
 
 	private token SpecialLiteral returns [object result] :
-		{saveAndRestore(_startPosition);}
-		"@@" {int here = InputPosition;} 
-		LettersOrPunc+ {
-			var sym = CharSource.Slice(here, InputPosition - here);
-			if (!NamedLiterals.TryGetValue(sym, $(out result)))
-				$result = IdToSymbol(sym); 
-		};
+		"@@" LettersOrPunc+ {return ParseAtAtLiteral(Text());};
 
 	private token Keyword returns [object result] :
 		'#' LettersOrPunc+ {return IdToSymbol(Text());};

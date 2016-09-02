@@ -19,12 +19,16 @@ namespace Loyc.Syntax.Les
 	/// <para/>
 	/// An operator consists of a sequence of the following characters:
 	/// <pre>
-	///    ~ ! % ^ * - + = | &lt; > / ? : . $ &amp;
+	///    ~ ! % ^ * - + = | &lt; > / ? : . &amp;
 	/// </pre>
-	/// LESv3 also has operators that start with a single quotes, which can include
+	/// In addition, the $ character is allowed as the first character and, if
+	/// present, it forces the operator to be interpreted as a prefix operator.
+	/// <para/>
+	/// LESv3 also has operators that start with a single quote, which can include
 	/// both letters and punctuation (e.g. <c>'|foo|</c>). The quote itself is 
 	/// ignored for the purpose of choosing precedence. LESv2 has <c>`backquoted`</c> 
-	/// operators, whereas in LESv3 backquoted strings are simply identifiers. 
+	/// operators instead, whereas in LESv3 backquoted strings are simply 
+	/// identifiers. 
 	/// <para/>
 	/// It is notable that the following punctuation cannot be used in operators:
 	/// <ul>
@@ -47,13 +51,11 @@ namespace Loyc.Syntax.Les
 	/// <li>Primary: binary . =:, generic arguments List!(int), suffix ++ --, method calls f(x), indexers a[i]</li>
 	/// <li>NullDot: binary ?. ::</li>
 	/// <li>DoubleBang: binary right-associative !!</li>
-	/// <li>Prefix: prefix ~ ! % ^ * - + &amp; `backtick` (LESv2 only)</li>
+	/// <li>Prefix: prefix ~ ! % ^ * / - + &amp; `backtick` (LESv2 only)</li>
 	/// <li>Power: binary **</li>
 	/// <li>Multiply: binary * / % \ >> &lt;&lt;</li>
 	/// <li>Add: binary + -</li>
 	/// <li>Arrow: binary right-associative -> &lt;-</li>
-	/// <li>AndBits: binary &amp;</li>
-	/// <li>OrBits: binary | ^</li>
 	/// <li>PrefixDots: prefix ..</li>
 	/// <li>Range: binary right-associative ..</li>
 	/// <li>Compare: binary != == >= > &lt; &lt;=</li>
@@ -63,7 +65,7 @@ namespace Loyc.Syntax.Les
 	/// <li>LowerKeyword: a lowercase keyword</li>
 	/// <li>PrefixOr: |</li>
 	/// </ol>
-	/// Not listed in table: binary <c>=> ~ = ?? >> &lt;&lt;</c>; prefix <c>/ ? = > &lt;</c>;
+	/// Not listed in table: binary <c>=> ~ = ?? >> ^ | &amp; &lt;&lt; </c>; prefix <c>? = > &lt;</c>;
 	/// non-lowercase keywords.
 	/// <para/>
 	/// Notice that the precedence of an operator depends on how it is used. The 
@@ -81,6 +83,9 @@ namespace Loyc.Syntax.Les
 	/// <see cref="Precedence"/>. Parsing may still complete, but the exact 
 	/// output tree is unspecified (may be <c>(a >> b) + c</c> or 
 	/// <c>a >> (b + c)</c>).
+	/// <para/>
+	/// Likewise, the bitwise <c>^ | &amp;</c> operators cannot be mixed with
+	/// comparison operators as in <c>a | 1 == 3</c>.
 	/// <para/>
 	/// The Lambda operator =>, which is right-associative, has a precedence 
 	/// level above Multiply on the left side, but below Assign on the right 
@@ -134,7 +139,7 @@ namespace Loyc.Syntax.Les
 	/// mixed, the same range as for uppercase operators without punctuation;
 	/// for example, <c>x ~ y + z</c> is invalid but <c>x ~ y == z</c> is allowed.
 	/// <para/>
-	/// The operators <c>/ \ ? = > &lt;</c> cannot be used as prefix operators.
+	/// The operators <c>\ ? = > &lt;</c> cannot be used as prefix operators.
 	/// <para/>
 	/// The way that low-precedence prefix operators are parsed deserves some 
 	/// discussion... TODO.
@@ -232,31 +237,31 @@ namespace Loyc.Syntax.Les
 	/// <seealso cref="Precedence"/>
 	public static class LesPrecedence
 	{
-		public static readonly Precedence Substitute = new Precedence(106, 105); // special prefix ops $ . :
-		public static readonly Precedence Primary     = new Precedence(100);
-		public static readonly Precedence NullDot     = new Precedence(95);
-		public static readonly Precedence DoubleBang  = new Precedence(91, 90);
-		public static readonly Precedence Prefix      = new Precedence(85);      // most prefix/suffix ops
-		public static readonly Precedence Power       = new Precedence(80);
-		public static readonly Precedence Juxtaposition = new Precedence(76, 75); // x y
-		public static readonly Precedence Multiply    = new Precedence(70);
-		public static readonly Precedence Add         = new Precedence(60);
-		public static readonly Precedence Shift       = new Precedence(65, 65, 60, 70);
-		public static readonly Precedence Arrow       = new Precedence(55);
-		public static readonly Precedence PrefixDots  = new Precedence(50);      // prefix ..
-		public static readonly Precedence Range       = new Precedence(45);
-		public static readonly Precedence OrIfNull    = new Precedence(40, 40, 40, 76);
-		public static readonly Precedence Other       = new Precedence(40, 40, 40, 75);
-		public static readonly Precedence Compare     = new Precedence(35);
-		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 50);
-		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50);
-		public static readonly Precedence And         = new Precedence(20);
-		public static readonly Precedence Or          = new Precedence(15);
-		public static readonly Precedence IfElse      = new Precedence(11, 10);
-		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);
-		public static readonly Precedence LowerKeyword = new Precedence(0, 0);
-		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5);
-		public static readonly Precedence PrefixOr    = new Precedence(-10);       // prefix
+		public static readonly Precedence Substitute = new Precedence(106, 105);        // special prefix ops $ . :
+		public static readonly Precedence Primary     = new Precedence(100);            // . x() x[] x++ x-- List!T
+		public static readonly Precedence NullDot     = new Precedence(95);             // ?.
+		public static readonly Precedence DoubleBang  = new Precedence(91, 90);         // !!
+		public static readonly Precedence Prefix      = new Precedence(85);             // most prefix operators, e.g. - ~ *
+		public static readonly Precedence Power       = new Precedence(80);             // **
+		public static readonly Precedence Juxtaposition = new Precedence(76, 75);       // x y
+		public static readonly Precedence Multiply    = new Precedence(70);             // * /
+		public static readonly Precedence Add         = new Precedence(60);             // + -
+		public static readonly Precedence Shift       = new Precedence(65, 65, 60, 70); // >> <<
+		public static readonly Precedence Arrow       = new Precedence(55);             // -> <-
+		public static readonly Precedence PrefixDots  = new Precedence(50);             // prefix ..
+		public static readonly Precedence Range       = new Precedence(45);             // infix ..
+		public static readonly Precedence OrIfNull    = new Precedence(40);             // ??
+		public static readonly Precedence Other       = new Precedence(40, 40, 40, 75); // unrecognized op
+		public static readonly Precedence Compare     = new Precedence(35);             // == != > < >= <=
+		public static readonly Precedence AndBits     = new Precedence(30, 30, 25, 50); // &
+		public static readonly Precedence OrBits      = new Precedence(25, 25, 25, 50); // | ^
+		public static readonly Precedence And         = new Precedence(20);             // &&
+		public static readonly Precedence Or          = new Precedence(15);             // ||
+		public static readonly Precedence IfElse      = new Precedence(10, 0, 0, 0);    // a 'is (b ? (c 'is d)), a ? (b 'is (c : d))
+		public static readonly Precedence Assign      = new Precedence(72, 5, 5, 5);    // label : (b = (c ? (d : e)))
+		public static readonly Precedence LowerKeyword = new Precedence(1, 0, 0, 0);    // (a = b) 'implies (a 'knows ('b = 'c)); a = (b ? (c 'else d))
+		public static readonly Precedence Lambda      = new Precedence(77, -5, -5, -5); // =>
+		public static readonly Precedence PrefixOr    = new Precedence(-10);            // prefix |
 		public static readonly Precedence SuperExpr   = new Precedence(-15);
 	}
 }

@@ -83,7 +83,7 @@ namespace Loyc.Syntax.Les
 			p.Writer = w;
 			p.Errors = errors;
 
-			if (object.Equals(mode, NodeStyle.Expression) || mode == ParsingMode.Expressions)
+			if (mode == ParsingMode.Expressions || object.Equals(mode, NodeStyle.Expression))
 				p.Print(node, StartStmt, "");
 			else
 				p.Print(node, StartStmt, ";");
@@ -171,7 +171,7 @@ namespace Loyc.Syntax.Les
 		
 		private void WriteOpName(Symbol op, Precedence prec)
 		{
-			if (!LesPrecedenceMap.IsNaturalOperator(op))
+			if (!LesPrecedenceMap.IsNaturalOperator(op.Name))
 				PrintStringCore('`', false, op.Name);
 			else {
 				Debug.Assert(op.Name.StartsWith("'"));
@@ -201,7 +201,7 @@ namespace Loyc.Syntax.Les
 			{
 				var bs = node.BaseStyle;
 				var op = node.Name;
-				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op);
+				bool naturalOp = LesPrecedenceMap.IsNaturalOperator(op.Name);
 				if ((naturalOp && bs != NodeStyle.PrefixNotation) ||
 					(bs == NodeStyle.Operator && node.Name != null))
 				{

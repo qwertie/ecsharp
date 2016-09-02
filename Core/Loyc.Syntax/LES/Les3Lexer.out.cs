@@ -20,7 +20,6 @@ namespace Loyc.Syntax.Les
 	using S = CodeSymbols;
 	public partial class Les3Lexer
 	{
-		static readonly Symbol sy_true = (Symbol) "true", sy_false = (Symbol) "false", sy_null = (Symbol) "null", sy_s = (Symbol) "s";
 		void DotIndent()
 		{
 			int la0, la1;
@@ -129,18 +128,18 @@ namespace Loyc.Syntax.Les
 		}
 		object Number()
 		{
-			int la0;
-			// line 40
-			_isFloat = _isNegative = false;
-			_typeSuffix = null;
-			// Line 41: ([\-])?
+			int la0, la1;
+			UString suffix = default(UString);
+			// Line 40: ([\-] / )
 			la0 = LA0;
 			if (la0 == '-') {
 				Skip();
-				// line 41
+				// line 40
 				_isNegative = true;
-			}
-			// Line 42: ( HexNumber / BinNumber / DecNumber )
+			} else
+				// line 40
+				_isNegative = false;
+			// Line 41: ( HexNumber / BinNumber / DecNumber )
 			la0 = LA0;
 			if (la0 == '0') {
 				switch (LA(1)) {
@@ -158,26 +157,36 @@ namespace Loyc.Syntax.Les
 				}
 			} else
 				DecNumber();
-			// line 43
-			int numberEndPosition = InputPosition;
-			// Line 44: (NumberSuffix)?
-			la0 = LA0;
-			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
-				_typeSuffix = NumberSuffix(ref _isFloat);
-			else if (la0 >= 128 && la0 <= 65532) {
+			// line 42
+			UString numberText = Text();
+			// Line 43: (IdCore)?
+			do {
 				la0 = LA0;
-				if (char.IsLetter((char) la0))
-					_typeSuffix = NumberSuffix(ref _isFloat);
-			}
-			// line 46
+				if (la0 == '`') {
+					la1 = LA(1);
+					if (!(la1 == -1 || la1 == '\n' || la1 == '\r'))
+						goto matchIdCore;
+				} else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
+					goto matchIdCore;
+				break;
+			matchIdCore:
+				{
+					_startPosition = InputPosition;
+					object boolOrNull = NoValue.Value;
+					suffix = IdCore(ref boolOrNull);
+					// line 46
+					PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
+				}
+			} while (false);
+			// line 49
 			_type = _isNegative ? TT.NegativeLiteral : TT.Literal;
-			return ParseNumberValue(numberEndPosition);
+			return ParseLiteral2(suffix, numberText, true);
 		}
 		void DecDigits()
 		{
 			int la0, la1;
 			MatchRange('0', '9');
-			// Line 50: ([0-9])*
+			// Line 53: ([0-9])*
 			for (;;) {
 				la0 = LA0;
 				if (la0 >= '0' && la0 <= '9')
@@ -185,15 +194,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 50: greedy([_] [0-9] ([0-9])*)*
+			// Line 53: greedy(['_] [0-9] ([0-9])*)*
 			for (;;) {
 				la0 = LA0;
-				if (la0 == '_') {
+				if (la0 == '\'' || la0 == '_') {
 					la1 = LA(1);
 					if (la1 >= '0' && la1 <= '9') {
 						Skip();
 						Skip();
-						// Line 50: ([0-9])*
+						// Line 53: ([0-9])*
 						for (;;) {
 							la0 = LA0;
 							if (la0 >= '0' && la0 <= '9')
@@ -206,7 +215,7 @@ namespace Loyc.Syntax.Les
 				} else
 					break;
 			}
-			// Line 50: greedy([_])?
+			// Line 53: greedy([_])?
 			la0 = LA0;
 			if (la0 == '_')
 				Skip();
@@ -220,7 +229,7 @@ namespace Loyc.Syntax.Les
 		{
 			int la0, la1;
 			Skip();
-			// Line 52: greedy([0-9A-Fa-f])*
+			// Line 55: greedy([0-9A-Fa-f])*
 			for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
@@ -228,15 +237,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 52: greedy([_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
+			// Line 55: greedy(['_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
 			for (;;) {
 				la0 = LA0;
-				if (la0 == '_') {
+				if (la0 == '\'' || la0 == '_') {
 					la1 = LA(1);
 					if (HexDigit_set0.Contains(la1)) {
 						Skip();
 						Skip();
-						// Line 52: greedy([0-9A-Fa-f])*
+						// Line 55: greedy([0-9A-Fa-f])*
 						for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
@@ -249,7 +258,7 @@ namespace Loyc.Syntax.Les
 				} else
 					break;
 			}
-			// Line 52: greedy([_])?
+			// Line 55: greedy([_])?
 			la0 = LA0;
 			if (la0 == '_')
 				Skip();
@@ -259,7 +268,7 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			if (!TryMatch(HexDigit_set0))
 				return false;
-			// Line 52: greedy([0-9A-Fa-f])*
+			// Line 55: greedy([0-9A-Fa-f])*
 			for (;;) {
 				la0 = LA0;
 				if (HexDigit_set0.Contains(la0))
@@ -268,17 +277,17 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 52: greedy([_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
+			// Line 55: greedy(['_] [0-9A-Fa-f] greedy([0-9A-Fa-f])*)*
 			for (;;) {
 				la0 = LA0;
-				if (la0 == '_') {
+				if (la0 == '\'' || la0 == '_') {
 					la1 = LA(1);
 					if (HexDigit_set0.Contains(la1)) {
-						if (!TryMatch('_'))
+						if (!TryMatch('\'', '_'))
 							return false;
 						if (!TryMatch(HexDigit_set0))
 							return false;
-						// Line 52: greedy([0-9A-Fa-f])*
+						// Line 55: greedy([0-9A-Fa-f])*
 						for (;;) {
 							la0 = LA0;
 							if (HexDigit_set0.Contains(la0))
@@ -292,7 +301,7 @@ namespace Loyc.Syntax.Les
 				} else
 					break;
 			}
-			// Line 52: greedy([_])?
+			// Line 55: greedy([_])?
 			la0 = LA0;
 			if (la0 == '_')
 				if (!TryMatch('_'))
@@ -302,38 +311,34 @@ namespace Loyc.Syntax.Les
 		void DecNumber()
 		{
 			int la0, la1;
-			// line 54
+			// line 59
 			_numberBase = 10;
-			// Line 55: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			// Line 60: (DecDigits | [.] DecDigits => )
+			la0 = LA0;
+			if (la0 >= '0' && la0 <= '9')
+				DecDigits();
+			else {
+			}
+			// Line 61: ([.] DecDigits)?
 			la0 = LA0;
 			if (la0 == '.') {
-				Skip();
-				DecDigits();
-				// line 55
-				_isFloat = true;
-			} else {
-				DecDigits();
-				// Line 56: ([.] DecDigits)?
-				la0 = LA0;
-				if (la0 == '.') {
-					la1 = LA(1);
-					if (la1 >= '0' && la1 <= '9') {
-						// line 56
-						_isFloat = true;
-						Skip();
-						DecDigits();
-					}
+				la1 = LA(1);
+				if (la1 >= '0' && la1 <= '9') {
+					// line 61
+					_isFloat = true;
+					Skip();
+					DecDigits();
 				}
 			}
-			// Line 58: greedy([Ee] ([+\-])? DecDigits)?
+			// Line 62: greedy([Ee] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'E' || la0 == 'e') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
-					// line 58
+					// line 62
 					_isFloat = true;
 					Skip();
-					// Line 58: ([+\-])?
+					// Line 62: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -346,13 +351,15 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			Skip();
 			Skip();
-			// line 61
+			// line 65
 			_numberBase = 16;
-			// Line 62: greedy(HexDigits)?
+			// Line 66: (HexDigits | [.] HexDigits => )
 			la0 = LA0;
 			if (HexDigit_set0.Contains(la0))
 				HexDigits();
-			// Line 64: ([.] ([0-9] =>  / &(HexDigits [Pp] [+\-0-9])) HexDigits)?
+			else {
+			}
+			// Line 68: ([.] ([0-9] =>  / &(HexDigits [Pp] [+\-0-9])) HexDigits)?
 			do {
 				la0 = LA0;
 				if (la0 == '.') {
@@ -368,25 +375,25 @@ namespace Loyc.Syntax.Les
 			match1:
 				{
 					Skip();
-					// Line 64: ([0-9] =>  / &(HexDigits [Pp] [+\-0-9]))
+					// Line 68: ([0-9] =>  / &(HexDigits [Pp] [+\-0-9]))
 					la0 = LA0;
 					if (la0 >= '0' && la0 <= '9') {
 					} else
 						Check(Try_HexNumber_Test0(0), "HexDigits [Pp] [+\\-0-9]");
-					// line 65
+					// line 69
 					_isFloat = true;
 					HexDigits();
 				}
 			} while (false);
-			// Line 66: greedy([Pp] ([+\-])? DecDigits)?
+			// Line 70: greedy([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
-					// line 66
+					// line 70
 					_isFloat = true;
 					Skip();
-					// Line 66: ([+\-])?
+					// Line 70: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -399,38 +406,34 @@ namespace Loyc.Syntax.Les
 			int la0, la1;
 			Skip();
 			Skip();
-			// line 69
+			// line 73
 			_numberBase = 2;
-			// Line 70: ([.] DecDigits | DecDigits ([.] DecDigits)?)
+			// Line 74: (DecDigits | [.] DecDigits => )
+			la0 = LA0;
+			if (la0 >= '0' && la0 <= '9')
+				DecDigits();
+			else {
+			}
+			// Line 75: ([.] DecDigits)?
 			la0 = LA0;
 			if (la0 == '.') {
-				Skip();
-				DecDigits();
-				// line 70
-				_isFloat = true;
-			} else {
-				DecDigits();
-				// Line 71: ([.] DecDigits)?
-				la0 = LA0;
-				if (la0 == '.') {
-					la1 = LA(1);
-					if (la1 >= '0' && la1 <= '9') {
-						// line 71
-						_isFloat = true;
-						Skip();
-						DecDigits();
-					}
+				la1 = LA(1);
+				if (la1 >= '0' && la1 <= '9') {
+					// line 75
+					_isFloat = true;
+					Skip();
+					DecDigits();
 				}
 			}
-			// Line 73: greedy([Pp] ([+\-])? DecDigits)?
+			// Line 76: greedy([Pp] ([+\-])? DecDigits)?
 			la0 = LA0;
 			if (la0 == 'P' || la0 == 'p') {
 				la1 = LA(1);
 				if (la1 == '+' || la1 == '-' || la1 >= '0' && la1 <= '9') {
-					// line 73
+					// line 76
 					_isFloat = true;
 					Skip();
-					// Line 73: ([+\-])?
+					// Line 76: ([+\-])?
 					la0 = LA0;
 					if (la0 == '+' || la0 == '-')
 						Skip();
@@ -438,1898 +441,32 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		static readonly HashSet<int> NumberSuffix_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
-		static readonly HashSet<int> NumberSuffix_set1 = NewSetOfRanges('#', '#', '0', '9', 'A', 'K', 'M', 'Z', '_', '_', 'a', 'k', 'm', 'z');
-		Symbol NumberSuffix(ref bool isFloat)
-		{
-			int la0, la1, la2, la3;
-			Symbol result = default(Symbol);
-			var here = InputPosition;
-			// Line 79: (( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] ) [^#0-9A-Z_a-z] =>  / NormalId)
-			do {
-				switch (LA0) {
-				case 'f':
-					{
-						la1 = LA(1);
-						if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-							do {
-								switch (LA0) {
-								case 'f':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set0.Contains(la1))
-											goto match1;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 88
-											result = _F;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 89
-											result = _D;
-										}
-									}
-									break;
-								case 'F':
-									goto match1;
-								case 'D':
-								case 'd':
-									{
-										Skip();
-										// line 80
-										result = _D;
-										isFloat = true;
-									}
-									break;
-								case 'M':
-								case 'm':
-									{
-										Skip();
-										// line 81
-										result = _M;
-										isFloat = true;
-									}
-									break;
-								case 'L':
-								case 'l':
-									{
-										Skip();
-										// line 82
-										result = _L;
-										// Line 82: ([Uu])?
-										la0 = LA0;
-										if (la0 == 'U' || la0 == 'u') {
-											Skip();
-											// line 82
-											result = _UL;
-										}
-									}
-									break;
-								case 'u':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set1.Contains(la1))
-											goto match5;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 84
-											result = _U;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 85
-											result = _UL;
-										}
-									}
-									break;
-								case 'U':
-									goto match5;
-								default:
-									{
-										la1 = LA(1);
-										if (la1 == '3') {
-											Match('i');
-											Skip();
-											Match('2');
-											// line 86
-											result = null;
-										} else {
-											Match('i');
-											Match('6');
-											Match('4');
-											// line 87
-											result = _L;
-										}
-									}
-									break;
-								}
-								break;
-							match1:
-								{
-									Skip();
-									// line 79
-									result = _F;
-									isFloat = true;
-								}
-								break;
-							match5:
-								{
-									Skip();
-									// line 83
-									result = _U;
-									// Line 83: ([Ll])?
-									la0 = LA0;
-									if (la0 == 'L' || la0 == 'l') {
-										Skip();
-										// line 83
-										result = _UL;
-									}
-								}
-							} while (false);
-						else if (la1 == '3') {
-							la2 = LA(2);
-							if (la2 == '2') {
-								la3 = LA(3);
-								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-									do {
-										switch (LA0) {
-										case 'f':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set0.Contains(la1))
-													goto match1;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 88
-													result = _F;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 89
-													result = _D;
-												}
-											}
-											break;
-										case 'F':
-											goto match1;
-										case 'D':
-										case 'd':
-											{
-												Skip();
-												// line 80
-												result = _D;
-												isFloat = true;
-											}
-											break;
-										case 'M':
-										case 'm':
-											{
-												Skip();
-												// line 81
-												result = _M;
-												isFloat = true;
-											}
-											break;
-										case 'L':
-										case 'l':
-											{
-												Skip();
-												// line 82
-												result = _L;
-												// Line 82: ([Uu])?
-												la0 = LA0;
-												if (la0 == 'U' || la0 == 'u') {
-													Skip();
-													// line 82
-													result = _UL;
-												}
-											}
-											break;
-										case 'u':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set1.Contains(la1))
-													goto match5;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 84
-													result = _U;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 85
-													result = _UL;
-												}
-											}
-											break;
-										case 'U':
-											goto match5;
-										default:
-											{
-												la1 = LA(1);
-												if (la1 == '3') {
-													Match('i');
-													Skip();
-													Match('2');
-													// line 86
-													result = null;
-												} else {
-													Match('i');
-													Match('6');
-													Match('4');
-													// line 87
-													result = _L;
-												}
-											}
-											break;
-										}
-										break;
-									match1:
-										{
-											Skip();
-											// line 79
-											result = _F;
-											isFloat = true;
-										}
-										break;
-									match5:
-										{
-											Skip();
-											// line 83
-											result = _U;
-											// Line 83: ([Ll])?
-											la0 = LA0;
-											if (la0 == 'L' || la0 == 'l') {
-												Skip();
-												// line 83
-												result = _UL;
-											}
-										}
-									} while (false);
-								else
-									goto matchNormalId;
-							} else
-								goto matchNormalId;
-						} else if (la1 == '6') {
-							la2 = LA(2);
-							if (la2 == '4') {
-								la3 = LA(3);
-								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-									do {
-										switch (LA0) {
-										case 'f':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set0.Contains(la1))
-													goto match1;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 88
-													result = _F;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 89
-													result = _D;
-												}
-											}
-											break;
-										case 'F':
-											goto match1;
-										case 'D':
-										case 'd':
-											{
-												Skip();
-												// line 80
-												result = _D;
-												isFloat = true;
-											}
-											break;
-										case 'M':
-										case 'm':
-											{
-												Skip();
-												// line 81
-												result = _M;
-												isFloat = true;
-											}
-											break;
-										case 'L':
-										case 'l':
-											{
-												Skip();
-												// line 82
-												result = _L;
-												// Line 82: ([Uu])?
-												la0 = LA0;
-												if (la0 == 'U' || la0 == 'u') {
-													Skip();
-													// line 82
-													result = _UL;
-												}
-											}
-											break;
-										case 'u':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set1.Contains(la1))
-													goto match5;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 84
-													result = _U;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 85
-													result = _UL;
-												}
-											}
-											break;
-										case 'U':
-											goto match5;
-										default:
-											{
-												la1 = LA(1);
-												if (la1 == '3') {
-													Match('i');
-													Skip();
-													Match('2');
-													// line 86
-													result = null;
-												} else {
-													Match('i');
-													Match('6');
-													Match('4');
-													// line 87
-													result = _L;
-												}
-											}
-											break;
-										}
-										break;
-									match1:
-										{
-											Skip();
-											// line 79
-											result = _F;
-											isFloat = true;
-										}
-										break;
-									match5:
-										{
-											Skip();
-											// line 83
-											result = _U;
-											// Line 83: ([Ll])?
-											la0 = LA0;
-											if (la0 == 'L' || la0 == 'l') {
-												Skip();
-												// line 83
-												result = _UL;
-											}
-										}
-									} while (false);
-								else
-									goto matchNormalId;
-							} else
-								goto matchNormalId;
-						} else
-							goto matchNormalId;
-					}
-					break;
-				case 'D':
-				case 'F':
-				case 'M':
-				case 'd':
-				case 'm':
-					{
-						la1 = LA(1);
-						if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-							do {
-								switch (LA0) {
-								case 'f':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set0.Contains(la1))
-											goto match1;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 88
-											result = _F;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 89
-											result = _D;
-										}
-									}
-									break;
-								case 'F':
-									goto match1;
-								case 'D':
-								case 'd':
-									{
-										Skip();
-										// line 80
-										result = _D;
-										isFloat = true;
-									}
-									break;
-								case 'M':
-								case 'm':
-									{
-										Skip();
-										// line 81
-										result = _M;
-										isFloat = true;
-									}
-									break;
-								case 'L':
-								case 'l':
-									{
-										Skip();
-										// line 82
-										result = _L;
-										// Line 82: ([Uu])?
-										la0 = LA0;
-										if (la0 == 'U' || la0 == 'u') {
-											Skip();
-											// line 82
-											result = _UL;
-										}
-									}
-									break;
-								case 'u':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set1.Contains(la1))
-											goto match5;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 84
-											result = _U;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 85
-											result = _UL;
-										}
-									}
-									break;
-								case 'U':
-									goto match5;
-								default:
-									{
-										la1 = LA(1);
-										if (la1 == '3') {
-											Match('i');
-											Skip();
-											Match('2');
-											// line 86
-											result = null;
-										} else {
-											Match('i');
-											Match('6');
-											Match('4');
-											// line 87
-											result = _L;
-										}
-									}
-									break;
-								}
-								break;
-							match1:
-								{
-									Skip();
-									// line 79
-									result = _F;
-									isFloat = true;
-								}
-								break;
-							match5:
-								{
-									Skip();
-									// line 83
-									result = _U;
-									// Line 83: ([Ll])?
-									la0 = LA0;
-									if (la0 == 'L' || la0 == 'l') {
-										Skip();
-										// line 83
-										result = _UL;
-									}
-								}
-							} while (false);
-						else
-							goto matchNormalId;
-					}
-					break;
-				case 'L':
-				case 'l':
-					{
-						la1 = LA(1);
-						if (la1 == 'U' || la1 == 'u') {
-							la2 = LA(2);
-							if (!NumberSuffix_set0.Contains(la2))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-								do {
-									switch (LA0) {
-									case 'f':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set0.Contains(la1))
-												goto match1;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 88
-												result = _F;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 89
-												result = _D;
-											}
-										}
-										break;
-									case 'F':
-										goto match1;
-									case 'D':
-									case 'd':
-										{
-											Skip();
-											// line 80
-											result = _D;
-											isFloat = true;
-										}
-										break;
-									case 'M':
-									case 'm':
-										{
-											Skip();
-											// line 81
-											result = _M;
-											isFloat = true;
-										}
-										break;
-									case 'L':
-									case 'l':
-										{
-											Skip();
-											// line 82
-											result = _L;
-											// Line 82: ([Uu])?
-											la0 = LA0;
-											if (la0 == 'U' || la0 == 'u') {
-												Skip();
-												// line 82
-												result = _UL;
-											}
-										}
-										break;
-									case 'u':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set1.Contains(la1))
-												goto match5;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 84
-												result = _U;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 85
-												result = _UL;
-											}
-										}
-										break;
-									case 'U':
-										goto match5;
-									default:
-										{
-											la1 = LA(1);
-											if (la1 == '3') {
-												Match('i');
-												Skip();
-												Match('2');
-												// line 86
-												result = null;
-											} else {
-												Match('i');
-												Match('6');
-												Match('4');
-												// line 87
-												result = _L;
-											}
-										}
-										break;
-									}
-									break;
-								match1:
-									{
-										Skip();
-										// line 79
-										result = _F;
-										isFloat = true;
-									}
-									break;
-								match5:
-									{
-										Skip();
-										// line 83
-										result = _U;
-										// Line 83: ([Ll])?
-										la0 = LA0;
-										if (la0 == 'L' || la0 == 'l') {
-											Skip();
-											// line 83
-											result = _UL;
-										}
-									}
-								} while (false);
-							else
-								goto matchNormalId;
-						} else if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-							do {
-								switch (LA0) {
-								case 'f':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set0.Contains(la1))
-											goto match1;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 88
-											result = _F;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 89
-											result = _D;
-										}
-									}
-									break;
-								case 'F':
-									goto match1;
-								case 'D':
-								case 'd':
-									{
-										Skip();
-										// line 80
-										result = _D;
-										isFloat = true;
-									}
-									break;
-								case 'M':
-								case 'm':
-									{
-										Skip();
-										// line 81
-										result = _M;
-										isFloat = true;
-									}
-									break;
-								case 'L':
-								case 'l':
-									{
-										Skip();
-										// line 82
-										result = _L;
-										// Line 82: ([Uu])?
-										la0 = LA0;
-										if (la0 == 'U' || la0 == 'u') {
-											Skip();
-											// line 82
-											result = _UL;
-										}
-									}
-									break;
-								case 'u':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set1.Contains(la1))
-											goto match5;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 84
-											result = _U;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 85
-											result = _UL;
-										}
-									}
-									break;
-								case 'U':
-									goto match5;
-								default:
-									{
-										la1 = LA(1);
-										if (la1 == '3') {
-											Match('i');
-											Skip();
-											Match('2');
-											// line 86
-											result = null;
-										} else {
-											Match('i');
-											Match('6');
-											Match('4');
-											// line 87
-											result = _L;
-										}
-									}
-									break;
-								}
-								break;
-							match1:
-								{
-									Skip();
-									// line 79
-									result = _F;
-									isFloat = true;
-								}
-								break;
-							match5:
-								{
-									Skip();
-									// line 83
-									result = _U;
-									// Line 83: ([Ll])?
-									la0 = LA0;
-									if (la0 == 'L' || la0 == 'l') {
-										Skip();
-										// line 83
-										result = _UL;
-									}
-								}
-							} while (false);
-						else
-							goto matchNormalId;
-					}
-					break;
-				case 'u':
-					{
-						la1 = LA(1);
-						switch (la1) {
-						case 'L':
-						case 'l':
-							{
-								la2 = LA(2);
-								if (!NumberSuffix_set0.Contains(la2))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-									do {
-										switch (LA0) {
-										case 'f':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set0.Contains(la1))
-													goto match1;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 88
-													result = _F;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 89
-													result = _D;
-												}
-											}
-											break;
-										case 'F':
-											goto match1;
-										case 'D':
-										case 'd':
-											{
-												Skip();
-												// line 80
-												result = _D;
-												isFloat = true;
-											}
-											break;
-										case 'M':
-										case 'm':
-											{
-												Skip();
-												// line 81
-												result = _M;
-												isFloat = true;
-											}
-											break;
-										case 'L':
-										case 'l':
-											{
-												Skip();
-												// line 82
-												result = _L;
-												// Line 82: ([Uu])?
-												la0 = LA0;
-												if (la0 == 'U' || la0 == 'u') {
-													Skip();
-													// line 82
-													result = _UL;
-												}
-											}
-											break;
-										case 'u':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set1.Contains(la1))
-													goto match5;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 84
-													result = _U;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 85
-													result = _UL;
-												}
-											}
-											break;
-										case 'U':
-											goto match5;
-										default:
-											{
-												la1 = LA(1);
-												if (la1 == '3') {
-													Match('i');
-													Skip();
-													Match('2');
-													// line 86
-													result = null;
-												} else {
-													Match('i');
-													Match('6');
-													Match('4');
-													// line 87
-													result = _L;
-												}
-											}
-											break;
-										}
-										break;
-									match1:
-										{
-											Skip();
-											// line 79
-											result = _F;
-											isFloat = true;
-										}
-										break;
-									match5:
-										{
-											Skip();
-											// line 83
-											result = _U;
-											// Line 83: ([Ll])?
-											la0 = LA0;
-											if (la0 == 'L' || la0 == 'l') {
-												Skip();
-												// line 83
-												result = _UL;
-											}
-										}
-									} while (false);
-								else
-									goto matchNormalId;
-							}
-							break;
-						case '3':
-							{
-								la2 = LA(2);
-								if (la2 == '2') {
-									la3 = LA(3);
-									if (!NumberSuffix_set0.Contains(la3))
-										// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-										do {
-											switch (LA0) {
-											case 'f':
-												{
-													la1 = LA(1);
-													if (!NumberSuffix_set0.Contains(la1))
-														goto match1;
-													else if (la1 == '3') {
-														Skip();
-														Skip();
-														Match('2');
-														// line 88
-														result = _F;
-													} else {
-														Skip();
-														Match('6');
-														Match('4');
-														// line 89
-														result = _D;
-													}
-												}
-												break;
-											case 'F':
-												goto match1;
-											case 'D':
-											case 'd':
-												{
-													Skip();
-													// line 80
-													result = _D;
-													isFloat = true;
-												}
-												break;
-											case 'M':
-											case 'm':
-												{
-													Skip();
-													// line 81
-													result = _M;
-													isFloat = true;
-												}
-												break;
-											case 'L':
-											case 'l':
-												{
-													Skip();
-													// line 82
-													result = _L;
-													// Line 82: ([Uu])?
-													la0 = LA0;
-													if (la0 == 'U' || la0 == 'u') {
-														Skip();
-														// line 82
-														result = _UL;
-													}
-												}
-												break;
-											case 'u':
-												{
-													la1 = LA(1);
-													if (!NumberSuffix_set1.Contains(la1))
-														goto match5;
-													else if (la1 == '3') {
-														Skip();
-														Skip();
-														Match('2');
-														// line 84
-														result = _U;
-													} else {
-														Skip();
-														Match('6');
-														Match('4');
-														// line 85
-														result = _UL;
-													}
-												}
-												break;
-											case 'U':
-												goto match5;
-											default:
-												{
-													la1 = LA(1);
-													if (la1 == '3') {
-														Match('i');
-														Skip();
-														Match('2');
-														// line 86
-														result = null;
-													} else {
-														Match('i');
-														Match('6');
-														Match('4');
-														// line 87
-														result = _L;
-													}
-												}
-												break;
-											}
-											break;
-										match1:
-											{
-												Skip();
-												// line 79
-												result = _F;
-												isFloat = true;
-											}
-											break;
-										match5:
-											{
-												Skip();
-												// line 83
-												result = _U;
-												// Line 83: ([Ll])?
-												la0 = LA0;
-												if (la0 == 'L' || la0 == 'l') {
-													Skip();
-													// line 83
-													result = _UL;
-												}
-											}
-										} while (false);
-									else
-										goto matchNormalId;
-								} else
-									goto matchNormalId;
-							}
-							break;
-						case '6':
-							{
-								la2 = LA(2);
-								if (la2 == '4') {
-									la3 = LA(3);
-									if (!NumberSuffix_set0.Contains(la3))
-										// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-										do {
-											switch (LA0) {
-											case 'f':
-												{
-													la1 = LA(1);
-													if (!NumberSuffix_set0.Contains(la1))
-														goto match1;
-													else if (la1 == '3') {
-														Skip();
-														Skip();
-														Match('2');
-														// line 88
-														result = _F;
-													} else {
-														Skip();
-														Match('6');
-														Match('4');
-														// line 89
-														result = _D;
-													}
-												}
-												break;
-											case 'F':
-												goto match1;
-											case 'D':
-											case 'd':
-												{
-													Skip();
-													// line 80
-													result = _D;
-													isFloat = true;
-												}
-												break;
-											case 'M':
-											case 'm':
-												{
-													Skip();
-													// line 81
-													result = _M;
-													isFloat = true;
-												}
-												break;
-											case 'L':
-											case 'l':
-												{
-													Skip();
-													// line 82
-													result = _L;
-													// Line 82: ([Uu])?
-													la0 = LA0;
-													if (la0 == 'U' || la0 == 'u') {
-														Skip();
-														// line 82
-														result = _UL;
-													}
-												}
-												break;
-											case 'u':
-												{
-													la1 = LA(1);
-													if (!NumberSuffix_set1.Contains(la1))
-														goto match5;
-													else if (la1 == '3') {
-														Skip();
-														Skip();
-														Match('2');
-														// line 84
-														result = _U;
-													} else {
-														Skip();
-														Match('6');
-														Match('4');
-														// line 85
-														result = _UL;
-													}
-												}
-												break;
-											case 'U':
-												goto match5;
-											default:
-												{
-													la1 = LA(1);
-													if (la1 == '3') {
-														Match('i');
-														Skip();
-														Match('2');
-														// line 86
-														result = null;
-													} else {
-														Match('i');
-														Match('6');
-														Match('4');
-														// line 87
-														result = _L;
-													}
-												}
-												break;
-											}
-											break;
-										match1:
-											{
-												Skip();
-												// line 79
-												result = _F;
-												isFloat = true;
-											}
-											break;
-										match5:
-											{
-												Skip();
-												// line 83
-												result = _U;
-												// Line 83: ([Ll])?
-												la0 = LA0;
-												if (la0 == 'L' || la0 == 'l') {
-													Skip();
-													// line 83
-													result = _UL;
-												}
-											}
-										} while (false);
-									else
-										goto matchNormalId;
-								} else
-									goto matchNormalId;
-							}
-							break;
-						default:
-							if (!NumberSuffix_set0.Contains(la1))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-								do {
-									switch (LA0) {
-									case 'f':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set0.Contains(la1))
-												goto match1;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 88
-												result = _F;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 89
-												result = _D;
-											}
-										}
-										break;
-									case 'F':
-										goto match1;
-									case 'D':
-									case 'd':
-										{
-											Skip();
-											// line 80
-											result = _D;
-											isFloat = true;
-										}
-										break;
-									case 'M':
-									case 'm':
-										{
-											Skip();
-											// line 81
-											result = _M;
-											isFloat = true;
-										}
-										break;
-									case 'L':
-									case 'l':
-										{
-											Skip();
-											// line 82
-											result = _L;
-											// Line 82: ([Uu])?
-											la0 = LA0;
-											if (la0 == 'U' || la0 == 'u') {
-												Skip();
-												// line 82
-												result = _UL;
-											}
-										}
-										break;
-									case 'u':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set1.Contains(la1))
-												goto match5;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 84
-												result = _U;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 85
-												result = _UL;
-											}
-										}
-										break;
-									case 'U':
-										goto match5;
-									default:
-										{
-											la1 = LA(1);
-											if (la1 == '3') {
-												Match('i');
-												Skip();
-												Match('2');
-												// line 86
-												result = null;
-											} else {
-												Match('i');
-												Match('6');
-												Match('4');
-												// line 87
-												result = _L;
-											}
-										}
-										break;
-									}
-									break;
-								match1:
-									{
-										Skip();
-										// line 79
-										result = _F;
-										isFloat = true;
-									}
-									break;
-								match5:
-									{
-										Skip();
-										// line 83
-										result = _U;
-										// Line 83: ([Ll])?
-										la0 = LA0;
-										if (la0 == 'L' || la0 == 'l') {
-											Skip();
-											// line 83
-											result = _UL;
-										}
-									}
-								} while (false);
-							else
-								goto matchNormalId;
-							break;
-						}
-					}
-					break;
-				case 'U':
-					{
-						la1 = LA(1);
-						if (la1 == 'L' || la1 == 'l') {
-							la2 = LA(2);
-							if (!NumberSuffix_set0.Contains(la2))
-								// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-								do {
-									switch (LA0) {
-									case 'f':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set0.Contains(la1))
-												goto match1;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 88
-												result = _F;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 89
-												result = _D;
-											}
-										}
-										break;
-									case 'F':
-										goto match1;
-									case 'D':
-									case 'd':
-										{
-											Skip();
-											// line 80
-											result = _D;
-											isFloat = true;
-										}
-										break;
-									case 'M':
-									case 'm':
-										{
-											Skip();
-											// line 81
-											result = _M;
-											isFloat = true;
-										}
-										break;
-									case 'L':
-									case 'l':
-										{
-											Skip();
-											// line 82
-											result = _L;
-											// Line 82: ([Uu])?
-											la0 = LA0;
-											if (la0 == 'U' || la0 == 'u') {
-												Skip();
-												// line 82
-												result = _UL;
-											}
-										}
-										break;
-									case 'u':
-										{
-											la1 = LA(1);
-											if (!NumberSuffix_set1.Contains(la1))
-												goto match5;
-											else if (la1 == '3') {
-												Skip();
-												Skip();
-												Match('2');
-												// line 84
-												result = _U;
-											} else {
-												Skip();
-												Match('6');
-												Match('4');
-												// line 85
-												result = _UL;
-											}
-										}
-										break;
-									case 'U':
-										goto match5;
-									default:
-										{
-											la1 = LA(1);
-											if (la1 == '3') {
-												Match('i');
-												Skip();
-												Match('2');
-												// line 86
-												result = null;
-											} else {
-												Match('i');
-												Match('6');
-												Match('4');
-												// line 87
-												result = _L;
-											}
-										}
-										break;
-									}
-									break;
-								match1:
-									{
-										Skip();
-										// line 79
-										result = _F;
-										isFloat = true;
-									}
-									break;
-								match5:
-									{
-										Skip();
-										// line 83
-										result = _U;
-										// Line 83: ([Ll])?
-										la0 = LA0;
-										if (la0 == 'L' || la0 == 'l') {
-											Skip();
-											// line 83
-											result = _UL;
-										}
-									}
-								} while (false);
-							else
-								goto matchNormalId;
-						} else if (!NumberSuffix_set0.Contains(la1))
-							// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-							do {
-								switch (LA0) {
-								case 'f':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set0.Contains(la1))
-											goto match1;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 88
-											result = _F;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 89
-											result = _D;
-										}
-									}
-									break;
-								case 'F':
-									goto match1;
-								case 'D':
-								case 'd':
-									{
-										Skip();
-										// line 80
-										result = _D;
-										isFloat = true;
-									}
-									break;
-								case 'M':
-								case 'm':
-									{
-										Skip();
-										// line 81
-										result = _M;
-										isFloat = true;
-									}
-									break;
-								case 'L':
-								case 'l':
-									{
-										Skip();
-										// line 82
-										result = _L;
-										// Line 82: ([Uu])?
-										la0 = LA0;
-										if (la0 == 'U' || la0 == 'u') {
-											Skip();
-											// line 82
-											result = _UL;
-										}
-									}
-									break;
-								case 'u':
-									{
-										la1 = LA(1);
-										if (!NumberSuffix_set1.Contains(la1))
-											goto match5;
-										else if (la1 == '3') {
-											Skip();
-											Skip();
-											Match('2');
-											// line 84
-											result = _U;
-										} else {
-											Skip();
-											Match('6');
-											Match('4');
-											// line 85
-											result = _UL;
-										}
-									}
-									break;
-								case 'U':
-									goto match5;
-								default:
-									{
-										la1 = LA(1);
-										if (la1 == '3') {
-											Match('i');
-											Skip();
-											Match('2');
-											// line 86
-											result = null;
-										} else {
-											Match('i');
-											Match('6');
-											Match('4');
-											// line 87
-											result = _L;
-										}
-									}
-									break;
-								}
-								break;
-							match1:
-								{
-									Skip();
-									// line 79
-									result = _F;
-									isFloat = true;
-								}
-								break;
-							match5:
-								{
-									Skip();
-									// line 83
-									result = _U;
-									// Line 83: ([Ll])?
-									la0 = LA0;
-									if (la0 == 'L' || la0 == 'l') {
-										Skip();
-										// line 83
-										result = _UL;
-									}
-								}
-							} while (false);
-						else
-							goto matchNormalId;
-					}
-					break;
-				case 'i':
-					{
-						la1 = LA(1);
-						if (la1 == '3') {
-							la2 = LA(2);
-							if (la2 == '2') {
-								la3 = LA(3);
-								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-									do {
-										switch (LA0) {
-										case 'f':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set0.Contains(la1))
-													goto match1;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 88
-													result = _F;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 89
-													result = _D;
-												}
-											}
-											break;
-										case 'F':
-											goto match1;
-										case 'D':
-										case 'd':
-											{
-												Skip();
-												// line 80
-												result = _D;
-												isFloat = true;
-											}
-											break;
-										case 'M':
-										case 'm':
-											{
-												Skip();
-												// line 81
-												result = _M;
-												isFloat = true;
-											}
-											break;
-										case 'L':
-										case 'l':
-											{
-												Skip();
-												// line 82
-												result = _L;
-												// Line 82: ([Uu])?
-												la0 = LA0;
-												if (la0 == 'U' || la0 == 'u') {
-													Skip();
-													// line 82
-													result = _UL;
-												}
-											}
-											break;
-										case 'u':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set1.Contains(la1))
-													goto match5;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 84
-													result = _U;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 85
-													result = _UL;
-												}
-											}
-											break;
-										case 'U':
-											goto match5;
-										default:
-											{
-												la1 = LA(1);
-												if (la1 == '3') {
-													Match('i');
-													Skip();
-													Match('2');
-													// line 86
-													result = null;
-												} else {
-													Match('i');
-													Match('6');
-													Match('4');
-													// line 87
-													result = _L;
-												}
-											}
-											break;
-										}
-										break;
-									match1:
-										{
-											Skip();
-											// line 79
-											result = _F;
-											isFloat = true;
-										}
-										break;
-									match5:
-										{
-											Skip();
-											// line 83
-											result = _U;
-											// Line 83: ([Ll])?
-											la0 = LA0;
-											if (la0 == 'L' || la0 == 'l') {
-												Skip();
-												// line 83
-												result = _UL;
-											}
-										}
-									} while (false);
-								else
-									goto matchNormalId;
-							} else
-								goto matchNormalId;
-						} else if (la1 == '6') {
-							la2 = LA(2);
-							if (la2 == '4') {
-								la3 = LA(3);
-								if (!NumberSuffix_set0.Contains(la3))
-									// Line 79: ( [Ff] | [Dd] | [Mm] | [Ll] ([Uu])? | [Uu] ([Ll])? | [u] [3] [2] | [u] [6] [4] | [i] [3] [2] | [i] [6] [4] | [f] [3] [2] | [f] [6] [4] )
-									do {
-										switch (LA0) {
-										case 'f':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set0.Contains(la1))
-													goto match1;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 88
-													result = _F;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 89
-													result = _D;
-												}
-											}
-											break;
-										case 'F':
-											goto match1;
-										case 'D':
-										case 'd':
-											{
-												Skip();
-												// line 80
-												result = _D;
-												isFloat = true;
-											}
-											break;
-										case 'M':
-										case 'm':
-											{
-												Skip();
-												// line 81
-												result = _M;
-												isFloat = true;
-											}
-											break;
-										case 'L':
-										case 'l':
-											{
-												Skip();
-												// line 82
-												result = _L;
-												// Line 82: ([Uu])?
-												la0 = LA0;
-												if (la0 == 'U' || la0 == 'u') {
-													Skip();
-													// line 82
-													result = _UL;
-												}
-											}
-											break;
-										case 'u':
-											{
-												la1 = LA(1);
-												if (!NumberSuffix_set1.Contains(la1))
-													goto match5;
-												else if (la1 == '3') {
-													Skip();
-													Skip();
-													Match('2');
-													// line 84
-													result = _U;
-												} else {
-													Skip();
-													Match('6');
-													Match('4');
-													// line 85
-													result = _UL;
-												}
-											}
-											break;
-										case 'U':
-											goto match5;
-										default:
-											{
-												la1 = LA(1);
-												if (la1 == '3') {
-													Match('i');
-													Skip();
-													Match('2');
-													// line 86
-													result = null;
-												} else {
-													Match('i');
-													Match('6');
-													Match('4');
-													// line 87
-													result = _L;
-												}
-											}
-											break;
-										}
-										break;
-									match1:
-										{
-											Skip();
-											// line 79
-											result = _F;
-											isFloat = true;
-										}
-										break;
-									match5:
-										{
-											Skip();
-											// line 83
-											result = _U;
-											// Line 83: ([Ll])?
-											la0 = LA0;
-											if (la0 == 'L' || la0 == 'l') {
-												Skip();
-												// line 83
-												result = _UL;
-											}
-										}
-									} while (false);
-								else
-									goto matchNormalId;
-							} else
-								goto matchNormalId;
-						} else
-							goto matchNormalId;
-					}
-					break;
-				default:
-					goto matchNormalId;
-				}
-				break;
-			matchNormalId:
-				{
-					NormalId();
-					// line 92
-					result = IdToSymbol(CharSource.Slice(here, InputPosition - here));
-				}
-			} while (false);
-			return result;
-		}
 		object SQString()
 		{
 			int la0;
-			// line 100
+			// line 85
 			_parseNeeded = false;
 			Skip();
-			// Line 101: ([\\] [^\$] | [^\$\n\r'\\])
+			// Line 86: ([\\] [^\$] | [^\$\n\r'\\])
 			la0 = LA0;
 			if (la0 == '\\') {
 				Skip();
 				MatchExcept();
-				// line 101
+				// line 86
 				_parseNeeded = true;
 			} else
 				MatchExcept('\n', '\r', '\'', '\\');
 			Match('\'');
-			// line 102
+			// line 87
 			return ParseSQStringValue();
 		}
 		object DQString()
 		{
 			int la0, la1;
-			// line 105
+			// line 90
 			_parseNeeded = false;
 			Skip();
-			// Line 106: ([\\] [^\$] | [^\$\n\r"\\])*
+			// Line 91: ([\\] [^\$] | [^\$\n\r"\\])*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
@@ -2337,7 +474,7 @@ namespace Loyc.Syntax.Les
 					if (la1 != -1) {
 						Skip();
 						Skip();
-						// line 106
+						// line 91
 						_parseNeeded = true;
 					} else
 						break;
@@ -2346,28 +483,28 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 107: (["] / )
+			// Line 92: (["] / )
 			la0 = LA0;
 			if (la0 == '"')
 				Skip();
 			else
-				// line 107
+				// line 92
 				_parseNeeded = true;
-			// line 108
-			return ParseStringValue(false);
+			// line 93
+			return ParseStringValue(isTripleQuoted: false);
 		}
 		object TQString()
 		{
 			int la0, la1, la2;
 			_parseNeeded = true;
 			_style = NodeStyle.Alternate;
-			// Line 113: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
+			// Line 98: (["] ["] ["] nongreedy(Newline / [^\$])* ["] ["] ["] | ['] ['] ['] nongreedy(Newline / [^\$])* ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '"') {
 				Skip();
 				Match('"');
 				Match('"');
-				// Line 113: nongreedy(Newline / [^\$])*
+				// Line 98: nongreedy(Newline / [^\$])*
 				for (;;) {
 					switch (LA0) {
 					case '"':
@@ -2401,12 +538,12 @@ namespace Loyc.Syntax.Les
 				Match('"');
 				Match('"');
 			} else {
-				// line 114
+				// line 99
 				_style |= NodeStyle.Alternate2;
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// Line 115: nongreedy(Newline / [^\$])*
+				// Line 100: nongreedy(Newline / [^\$])*
 				for (;;) {
 					switch (LA0) {
 					case '\'':
@@ -2440,22 +577,22 @@ namespace Loyc.Syntax.Les
 				Match('\'');
 				Match('\'');
 			}
-			// line 116
-			return ParseStringValue(true, true);
+			// line 101
+			return ParseStringValue(isTripleQuoted: true, les3TQIndents: true);
 		}
 		void BQString()
 		{
 			int la0;
-			// line 119
+			// line 104
 			_parseNeeded = false;
 			Skip();
-			// Line 120: ([\\] [^\$] | [^\$\n\r\\`])*
+			// Line 105: ([\\] [^\$] | [^\$\n\r\\`])*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '\\') {
 					Skip();
 					MatchExcept();
-					// line 120
+					// line 105
 					_parseNeeded = true;
 				} else if (!(la0 == -1 || la0 == '\n' || la0 == '\r' || la0 == '`'))
 					Skip();
@@ -2470,12 +607,34 @@ namespace Loyc.Syntax.Les
 		}
 		object Operator()
 		{
-			OpChar();
-			// Line 127: (OpChar)*
+			// Line 112: (OpChar | [$])
+			switch (LA0) {
+			case '!':
+			case '%':
+			case '&':
+			case '*':
+			case '+':
+			case '-':
+			case '.':
+			case '/':
+			case ':':
+			case '<':
+			case '=':
+			case '>':
+			case '?':
+			case '^':
+			case '|':
+			case '~':
+				OpChar();
+				break;
+			default:
+				Match('$');
+				break;
+			}
+			// Line 112: (OpChar)*
 			for (;;) {
 				switch (LA0) {
 				case '!':
-				case '$':
 				case '%':
 				case '&':
 				case '*':
@@ -2498,7 +657,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// line 127
+			// line 112
 			return ParseNormalOp();
 		}
 		static readonly HashSet<int> SQOperator_set0 = NewSetOfRanges('!', '!', '#', '&', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
@@ -2507,7 +666,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			LettersOrPunc();
-			// Line 129: (LettersOrPunc)*
+			// Line 114: (LettersOrPunc)*
 			for (;;) {
 				la0 = LA0;
 				if (SQOperator_set0.Contains(la0))
@@ -2515,24 +674,15 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// line 131
+			// line 116
 			return ParseNormalOp();
 		}
-		void IdExtLetter()
-		{
-			Check(char.IsLetter((char) LA0), "char.IsLetter((char) $LA)");
-			MatchRange(128, 65532);
-		}
+		static readonly HashSet<int> NormalId_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z');
 		void NormalId()
 		{
 			int la0;
-			// Line 141: ([A-Z_a-z] | IdExtLetter)
-			la0 = LA0;
-			if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
-				Skip();
-			else
-				IdExtLetter();
-			// Line 142: greedy( [A-Z_a-z] | [#] | [0-9] | ['] &!(['] [']) | IdExtLetter )*
+			Match(NormalId_set0);
+			// Line 124: greedy( [A-Z_a-z] | [#] | [0-9] | ['] &!(['] [']) )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
@@ -2546,12 +696,6 @@ namespace Loyc.Syntax.Les
 						Skip();
 					else
 						break;
-				} else if (la0 >= 128 && la0 <= 65532) {
-					la0 = LA0;
-					if (char.IsLetter((char) la0))
-						IdExtLetter();
-					else
-						break;
 				} else
 					break;
 			}
@@ -2559,32 +703,12 @@ namespace Loyc.Syntax.Les
 		object Id()
 		{
 			int la0, la1;
-			object result = default(object);
+			UString idtext = default(UString);
 			object value = default(object);
-			// Line 145: (BQString | NormalId)
-			la0 = LA0;
-			if (la0 == '`') {
-				BQString();
-				// line 145
-				result = ParseBQStringValue();
-			} else {
-				NormalId();
-				// line 147
-				result = IdToSymbol(Text());
-				if (result == sy_true) {
-					_type = TT.Literal;
-					return G.BoxedTrue;
-				}
-				if (result == sy_false) {
-					_type = TT.Literal;
-					return G.BoxedFalse;
-				}
-				if (result == sy_null) {
-					_type = TT.Literal;
-					return null;
-				}
-			}
-			// Line 153: ((TQString / DQString))?
+			// line 127
+			object boolOrNull = NoValue.Value;
+			idtext = IdCore(ref boolOrNull);
+			// Line 129: ((TQString / DQString))?
 			do {
 				la0 = LA0;
 				if (la0 == '"')
@@ -2600,7 +724,7 @@ namespace Loyc.Syntax.Les
 					var old_startPosition_0 = _startPosition;
 					try {
 						_startPosition = InputPosition;
-						// Line 154: (TQString / DQString)
+						// Line 130: (TQString / DQString)
 						la0 = LA0;
 						if (la0 == '"') {
 							la1 = LA(1);
@@ -2610,17 +734,45 @@ namespace Loyc.Syntax.Les
 								value = DQString();
 						} else
 							value = TQString();
-						// line 156
+						// line 132
 						_type = TT.Literal;
-						if (result == sy_s)
-							return (Symbol) value.ToString();
-						else
-							return new SpecialLiteral(value, (Symbol) result);
+						PrintErrorIfTypeMarkerIsKeywordLiteral(boolOrNull);
+						return _value = ParseLiteral2(idtext, value.ToString(), false);
 					} finally {
 						_startPosition = old_startPosition_0;
 					}
 				}
 			} while (false);
+			// line 137
+			return boolOrNull != NoValue.Value ? boolOrNull : IdToSymbol(idtext);
+		}
+		UString IdCore(ref object boolOrNull)
+		{
+			int la0;
+			UString result = default(UString);
+			// Line 140: (BQString | NormalId)
+			la0 = LA0;
+			if (la0 == '`') {
+				BQString();
+				// line 140
+				result = ParseStringCore(false);
+			} else {
+				NormalId();
+				// line 142
+				result = Text();
+				if (result == "true") {
+					_type = TT.Literal;
+					boolOrNull = G.BoxedTrue;
+				}
+				if (result == "false") {
+					_type = TT.Literal;
+					boolOrNull = G.BoxedFalse;
+				}
+				if (result == "null") {
+					_type = TT.Literal;
+					boolOrNull = null;
+				}
+			}
 			return result;
 		}
 		void LettersOrPunc()
@@ -2630,37 +782,10 @@ namespace Loyc.Syntax.Les
 		object SpecialLiteral()
 		{
 			int la0;
-			object result = default(object);
-			var old_startPosition_1 = _startPosition;
-			try {
-				Skip();
-				Skip();
-				// line 169
-				int here = InputPosition;
-				LettersOrPunc();
-				// Line 170: (LettersOrPunc)*
-				for (;;) {
-					la0 = LA0;
-					if (SQOperator_set0.Contains(la0))
-						LettersOrPunc();
-					else
-						break;
-				}
-				// line 171
-				var sym = CharSource.Slice(here, InputPosition - here);
-				if (!NamedLiterals.TryGetValue(sym, out result))
-					result = IdToSymbol(sym);
-				return result;
-			} finally {
-				_startPosition = old_startPosition_1;
-			}
-		}
-		object Keyword()
-		{
-			int la0;
+			Skip();
 			Skip();
 			LettersOrPunc();
-			// Line 177: (LettersOrPunc)*
+			// Line 153: (LettersOrPunc)*
 			for (;;) {
 				la0 = LA0;
 				if (SQOperator_set0.Contains(la0))
@@ -2668,7 +793,23 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// line 177
+			// line 153
+			return ParseAtAtLiteral(Text());
+		}
+		object Keyword()
+		{
+			int la0;
+			Skip();
+			LettersOrPunc();
+			// Line 156: (LettersOrPunc)*
+			for (;;) {
+				la0 = LA0;
+				if (SQOperator_set0.Contains(la0))
+					LettersOrPunc();
+				else
+					break;
+			}
+			// line 156
 			return IdToSymbol(Text());
 		}
 		object Shebang()
@@ -2676,7 +817,7 @@ namespace Loyc.Syntax.Les
 			int la0;
 			Skip();
 			Skip();
-			// Line 182: ([^\$\n\r])*
+			// Line 161: ([^\$\n\r])*
 			for (;;) {
 				la0 = LA0;
 				if (!(la0 == -1 || la0 == '\n' || la0 == '\r'))
@@ -2684,20 +825,19 @@ namespace Loyc.Syntax.Les
 				else
 					break;
 			}
-			// Line 182: (Newline)?
+			// Line 161: (Newline)?
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r')
 				Newline();
-			// line 183
+			// line 162
 			return WhitespaceTag.Value;
 		}
 		static readonly HashSet<int> NextToken_set0 = NewSetOfRanges('#', '&', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
-		static readonly HashSet<int> NextToken_set1 = NewSetOfRanges('A', 'Z', '_', 'z', 128, 65532);
 		public override Maybe<Token> NextToken()
 		{
 			int la0, la1, la2, la3;
 			object value = default(object);
-			// Line 188: (Spaces / &{InputPosition == _lineStartAt} [.] [\t ] => DotIndent)?
+			// Line 167: (Spaces / &{InputPosition == _lineStartAt} [.] [\t ] => DotIndent)?
 			la0 = LA0;
 			if (la0 == '\t' || la0 == ' ')
 				Spaces();
@@ -2708,22 +848,21 @@ namespace Loyc.Syntax.Les
 						DotIndent();
 				}
 			}
-			// line 190
+			// line 169
 			_startPosition = InputPosition;
 			_style = 0;
 			if (LA0 == -1) {
 				return NoValue.Value;
 			}
-			// Line 196: ( Shebang / SpecialLiteral / Id / Keyword / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / SQOperator / ['] ['] / [,] / [;] / [(] / [)] / [[] / [\]] / [{] / [}] / ['] [{] / [@] [@] [{] / [@] / Operator )
+			// Line 175: ( Shebang / SpecialLiteral / Id / Keyword / Newline / SLComment / MLComment / Number / TQString / DQString / SQString / SQOperator / ['] ['] / [,] / [;] / [(] / [)] / [[] / [\]] / [{] / [}] / ['] [{] / [@] [@] [{] / [@] / Operator )
 			do {
-				la0 = LA0;
-				switch (la0) {
+				switch (LA0) {
 				case '#':
 					{
 						if (InputPosition == 0) {
 							la1 = LA(1);
 							if (la1 == '!') {
-								// line 196
+								// line 175
 								_type = TT.Shebang;
 								value = Shebang();
 							} else if (NextToken_set0.Contains(la1))
@@ -2740,11 +879,11 @@ namespace Loyc.Syntax.Les
 						if (la1 == '@') {
 							la2 = LA(2);
 							if (SQOperator_set0.Contains(la2)) {
-								// line 197
+								// line 176
 								_type = TT.Literal;
 								value = SpecialLiteral();
 							} else if (la2 == '{') {
-								// line 218
+								// line 197
 								_type = TT.LTokenLiteral;
 								Skip();
 								Skip();
@@ -2755,10 +894,70 @@ namespace Loyc.Syntax.Les
 							goto match24;
 					}
 					break;
+				case 'A':
+				case 'B':
+				case 'C':
+				case 'D':
+				case 'E':
+				case 'F':
+				case 'G':
+				case 'H':
+				case 'I':
+				case 'J':
+				case 'K':
+				case 'L':
+				case 'M':
+				case 'N':
+				case 'O':
+				case 'P':
+				case 'Q':
+				case 'R':
+				case 'S':
+				case 'T':
+				case 'U':
+				case 'V':
+				case 'W':
+				case 'X':
+				case 'Y':
+				case 'Z':
+				case '_':
+				case '`':
+				case 'a':
+				case 'b':
+				case 'c':
+				case 'd':
+				case 'e':
+				case 'f':
+				case 'g':
+				case 'h':
+				case 'i':
+				case 'j':
+				case 'k':
+				case 'l':
+				case 'm':
+				case 'n':
+				case 'o':
+				case 'p':
+				case 'q':
+				case 'r':
+				case 's':
+				case 't':
+				case 'u':
+				case 'v':
+				case 'w':
+				case 'x':
+				case 'y':
+				case 'z':
+					{
+						// line 177
+						_type = TT.Id;
+						value = Id();
+					}
+					break;
 				case '\n':
 				case '\r':
 					{
-						// line 200
+						// line 179
 						_type = TT.Newline;
 						value = Newline();
 					}
@@ -2767,7 +966,7 @@ namespace Loyc.Syntax.Les
 					{
 						la1 = LA(1);
 						if (la1 == '/') {
-							// line 201
+							// line 180
 							_type = TT.SLComment;
 							value = SLComment();
 						} else if (la1 == '*') {
@@ -2775,7 +974,7 @@ namespace Loyc.Syntax.Les
 							if (la2 != -1) {
 								la3 = LA(3);
 								if (la3 != -1) {
-									// line 202
+									// line 181
 									_type = TT.MLComment;
 									value = MLComment();
 								} else
@@ -2789,7 +988,7 @@ namespace Loyc.Syntax.Les
 				case '-':
 					{
 						la1 = LA(1);
-						if (la1 == '0')
+						if (la1 >= '0' && la1 <= '9')
 							goto matchNumber;
 						else if (la1 == '.') {
 							la2 = LA(2);
@@ -2797,23 +996,11 @@ namespace Loyc.Syntax.Les
 								goto matchNumber;
 							else
 								value = Operator();
-						} else if (la1 >= '1' && la1 <= '9')
-							goto matchNumber;
-						else
+						} else
 							value = Operator();
 					}
 					break;
 				case '0':
-					goto matchNumber;
-				case '.':
-					{
-						la1 = LA(1);
-						if (la1 >= '0' && la1 <= '9')
-							goto matchNumber;
-						else
-							value = Operator();
-					}
-					break;
 				case '1':
 				case '2':
 				case '3':
@@ -2824,6 +1011,15 @@ namespace Loyc.Syntax.Les
 				case '8':
 				case '9':
 					goto matchNumber;
+				case '.':
+					{
+						la1 = LA(1);
+						if (la1 >= '0' && la1 <= '9')
+							goto matchNumber;
+						else
+							value = Operator();
+					}
+					break;
 				case '"':
 					{
 						la1 = LA(1);
@@ -2860,7 +1056,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '\'')
 								goto matchSQString;
 							else {
-								// line 207
+								// line 186
 								_type = TT.NormalOp;
 								value = SQOperator();
 							}
@@ -2869,7 +1065,7 @@ namespace Loyc.Syntax.Les
 							if (la2 == '\'')
 								goto matchSQString;
 							else {
-								// line 217
+								// line 196
 								_type = TT.LTokenLiteral;
 								Skip();
 								Skip();
@@ -2882,60 +1078,60 @@ namespace Loyc.Syntax.Les
 					break;
 				case ',':
 					{
-						// line 209
+						// line 188
 						_type = TT.Comma;
 						Skip();
-						// line 209
+						// line 188
 						value = GSymbol.Empty;
 					}
 					break;
 				case ';':
 					{
-						// line 210
+						// line 189
 						_type = TT.Semicolon;
 						Skip();
-						// line 210
+						// line 189
 						value = GSymbol.Empty;
 					}
 					break;
 				case '(':
 					{
-						// line 211
+						// line 190
 						_type = TT.LParen;
 						Skip();
 					}
 					break;
 				case ')':
 					{
-						// line 212
+						// line 191
 						_type = TT.RParen;
 						Skip();
 					}
 					break;
 				case '[':
 					{
-						// line 213
+						// line 192
 						_type = TT.LBrack;
 						Skip();
 					}
 					break;
 				case ']':
 					{
-						// line 214
+						// line 193
 						_type = TT.RBrack;
 						Skip();
 					}
 					break;
 				case '{':
 					{
-						// line 215
+						// line 194
 						_type = TT.LBrace;
 						Skip();
 					}
 					break;
 				case '}':
 					{
-						// line 216
+						// line 195
 						_type = TT.RBrace;
 						Skip();
 					}
@@ -2957,53 +1153,47 @@ namespace Loyc.Syntax.Les
 					value = Operator();
 					break;
 				default:
-					if (NextToken_set1.Contains(la0)) {
-						// line 198
-						_type = TT.Id;
-						value = Id();
-					} else
-						goto error;
-					break;
+					goto error;
 				}
 				break;
 			matchKeyword:
 				{
-					// line 199
+					// line 178
 					_type = TT.Keyword;
 					value = Keyword();
 				}
 				break;
 			matchNumber:
 				{
-					// line 203
+					// line 182
 					_type = TT.Literal;
 					value = Number();
 				}
 				break;
 			matchTQString:
 				{
-					// line 204
+					// line 183
 					_type = TT.Literal;
 					value = TQString();
 				}
 				break;
 			matchDQString:
 				{
-					// line 205
+					// line 184
 					_type = TT.Literal;
 					value = DQString();
 				}
 				break;
 			matchSQString:
 				{
-					// line 206
+					// line 185
 					_type = TT.Literal;
 					value = SQString();
 				}
 				break;
 			match13:
 				{
-					// line 208
+					// line 187
 					_type = TT.Unknown;
 					Skip();
 					Skip();
@@ -3011,28 +1201,28 @@ namespace Loyc.Syntax.Les
 				break;
 			match24:
 				{
-					// line 219
+					// line 198
 					_type = TT.At;
 					Skip();
-					// line 219
+					// line 198
 					value = GSymbol.Empty;
 				}
 				break;
 			error:
 				{
 					Skip();
-					// line 221
+					// line 200
 					_type = TT.Unknown;
 				}
 			} while (false);
-			// line 223
+			// line 202
 			Debug.Assert(InputPosition > _startPosition);
 			return new Token((int) _type, _startPosition, InputPosition - _startPosition, _style, value);
 		}
 		new public bool TDQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 233: nongreedy([^\$])*
+			// Line 212: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -3061,24 +1251,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 233: (Newline | ["] ["] ["])
+			// Line 212: (Newline | ["] ["] ["])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 233
+				// line 212
 				return false;
 			} else {
 				Match('"');
 				Match('"');
 				Match('"');
-				// line 233
+				// line 212
 				return true;
 			}
 		}
 		new public bool TSQStringLine()
 		{
 			int la0, la1, la2;
-			// Line 236: nongreedy([^\$])*
+			// Line 215: nongreedy([^\$])*
 			for (;;) {
 				switch (LA0) {
 				case '\n':
@@ -3107,24 +1297,24 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		stop:;
-			// Line 236: (Newline | ['] ['] ['])
+			// Line 215: (Newline | ['] ['] ['])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 236
+				// line 215
 				return false;
 			} else {
 				Match('\'');
 				Match('\'');
 				Match('\'');
-				// line 236
+				// line 215
 				return true;
 			}
 		}
 		new public bool MLCommentLine(ref int nested)
 		{
 			int la0, la1;
-			// Line 239: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
+			// Line 218: greedy( &{nested > 0} [*] [/] / [/] [*] / [^\$\n\r*] / [*] &!([/]) )*
 			for (;;) {
 				la0 = LA0;
 				if (la0 == '*') {
@@ -3133,7 +1323,7 @@ namespace Loyc.Syntax.Les
 						if (la1 == '/') {
 							Skip();
 							Skip();
-							// line 239
+							// line 218
 							nested--;
 						} else if (la1 != -1)
 							goto match4;
@@ -3158,7 +1348,7 @@ namespace Loyc.Syntax.Les
 					if (la1 == '*') {
 						Skip();
 						Skip();
-						// line 240
+						// line 219
 						nested++;
 					} else
 						Skip();
@@ -3173,16 +1363,16 @@ namespace Loyc.Syntax.Les
 					Check(!Try_MLCommentLine_Test0(0), "!([/])");
 				}
 			}
-			// Line 244: (Newline | [*] [/])
+			// Line 223: (Newline | [*] [/])
 			la0 = LA0;
 			if (la0 == '\n' || la0 == '\r') {
 				Newline(true);
-				// line 244
+				// line 223
 				return false;
 			} else {
 				Match('*');
 				Match('/');
-				// line 244
+				// line 223
 				return true;
 			}
 		}
