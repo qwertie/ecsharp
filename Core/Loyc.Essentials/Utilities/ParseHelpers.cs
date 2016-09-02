@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Numerics;
 using Loyc.Math;
 using Loyc.Threading;
 
@@ -403,8 +404,7 @@ namespace Loyc.Syntax
 				s = SkipSpaces(s);
 			
 			bool overflow = false;
-			int oldStart = s.InternalStart;
-			
+
 			for (;; s = s.Slice(1))
 			{
 				char c = s[0, '\0'];
@@ -433,6 +433,39 @@ namespace Loyc.Syntax
 				result = next;
 			}
 			return !overflow && numDigits > 0;
+		}
+
+		public static bool TryParseUInt(ref UString s, out BigInteger result, int radix = 10, ParseNumberFlag flags = 0)
+		{
+			result = 0;
+			int _;
+			return TryParseUInt(ref s, ref result, radix, flags, out _);
+		}
+		static bool TryParseUInt(ref UString s, ref BigInteger result, int radix, ParseNumberFlag flags, out int numDigits)
+		{
+			numDigits = 0;
+			if ((flags & ParseNumberFlag.SkipSpacesInFront) != 0)
+				s = SkipSpaces(s);
+
+			for (;; s = s.Slice(1))
+			{
+				char c = s[0, '\0'];
+				uint digit = (uint)Base36DigitValue(c);
+				if (digit >= radix) {
+					if ((c == ' ' || c == '\t') && (flags & ParseNumberFlag.SkipSpacesInsideNumber) != 0)
+						continue;
+					else if (c == '_' && (flags & ParseNumberFlag.SkipUnderscores) != 0)
+						continue;
+					else if (c == '\'' && (flags & ParseNumberFlag.SkipSingleQuotes) != 0)
+						continue;
+					else
+						break;
+				}
+
+				result = result * (uint)radix + digit;
+				numDigits++;
+			}
+			return numDigits > 0;
 		}
 
 		/// <summary>Low-level method that identifies the parts of a float literal

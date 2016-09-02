@@ -72,6 +72,7 @@ namespace Loyc.Syntax.Les
 		    ( ( ('f'|'F') {_typeSuffix=_F; _isFloat=true;}
 		      | ('d'|'D') {_typeSuffix=_D; _isFloat=true;}
 		      | ('m'|'M') {_typeSuffix=_M; _isFloat=true;}
+		      | ('z'|'Z') {_typeSuffix=_Z;}
 		      )
 		    | ('l'|'L') {_typeSuffix=_L;} (('u'|'U') {_typeSuffix=_UL;})?
 		    | ('u'|'U') {_typeSuffix=_U;} (('l'|'L') {_typeSuffix=_UL;})?

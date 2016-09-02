@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Numerics;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using System.Diagnostics;
@@ -556,21 +557,22 @@ namespace Loyc.Syntax.Les
 			return d;
 		}
 		static Dictionary<RuntimeTypeHandle,Action<LesNodePrinter, object, NodeStyle>> LiteralPrinters = Dictionary(
-			P<int>    ((np, value, style) => np.PrintIntegerToString(value, style, "")),
-			P<long>   ((np, value, style) => np.PrintIntegerToString(value, style, "L")),
-			P<uint>   ((np, value, style) => np.PrintIntegerToString(value, style, "u")),
-			P<ulong>  ((np, value, style) => np.PrintIntegerToString(value, style, "uL")),
-			P<short>  ((np, value, style) => np.PrintShortInteger(value, style, "Int16")), // Unnatural. Not produced by parser.
-			P<ushort> ((np, value, style) => np.PrintShortInteger(value, style, "UInt16")), // Unnatural. Not produced by parser.
-			P<sbyte>  ((np, value, style) => np.PrintShortInteger(value, style, "Int8")), // Unnatural. Not produced by parser.
-			P<byte>   ((np, value, style) => np.PrintShortInteger(value, style, "UInt8")), // Unnatural. Not produced by parser.
-			P<double> ((np, value, style) => np.PrintDoubleToString((double)value)),
-			P<float>  ((np, value, style) => np.PrintFloatToString((float)value)),
-			P<decimal>((np, value, style) => np.PrintValueToString(value, "m")),
-			P<bool>   ((np, value, style) => np._out.Write((bool)value? "@true" : "@false", true)),
-			P<@void>  ((np, value, style) => np._out.Write("@void", true)),
-			P<char>   ((np, value, style) => np.PrintStringCore('\'', false, value.ToString())),
-			P<string> ((np, value, style) => {
+			P<int>       ((np, value, style) => np.PrintIntegerToString(value, style, "")),
+			P<long>      ((np, value, style) => np.PrintIntegerToString(value, style, "L")),
+			P<uint>      ((np, value, style) => np.PrintIntegerToString(value, style, "u")),
+			P<ulong>     ((np, value, style) => np.PrintIntegerToString(value, style, "uL")),
+			P<BigInteger>((np, value, style) => np.PrintIntegerToString(value, style, "z")),
+			P<short>     ((np, value, style) => np.PrintShortInteger(value, style, "Int16")), // Unnatural. Not produced by parser.
+			P<ushort>    ((np, value, style) => np.PrintShortInteger(value, style, "UInt16")), // Unnatural. Not produced by parser.
+			P<sbyte>     ((np, value, style) => np.PrintShortInteger(value, style, "Int8")), // Unnatural. Not produced by parser.
+			P<byte>      ((np, value, style) => np.PrintShortInteger(value, style, "UInt8")), // Unnatural. Not produced by parser.
+			P<double>    ((np, value, style) => np.PrintDoubleToString((double)value)),
+			P<float>     ((np, value, style) => np.PrintFloatToString((float)value)),
+			P<decimal>   ((np, value, style) => np.PrintValueToString(value, "m")),
+			P<bool>      ((np, value, style) => np._out.Write((bool)value? "@true" : "@false", true)),
+			P<@void>     ((np, value, style) => np._out.Write("@void", true)),
+			P<char>      ((np, value, style) => np.PrintStringCore('\'', false, value.ToString())),
+			P<string>    ((np, value, style) => {
 				NodeStyle bs = (style & NodeStyle.BaseStyleMask);
 				if (bs == NodeStyle.TQStringLiteral)
 					np.PrintStringCore('\'', true, value.ToString());

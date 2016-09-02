@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Numerics;
 using Loyc.Collections;
 using Loyc.MiniTest;
 using Loyc.Syntax;
@@ -36,6 +37,7 @@ namespace Loyc.Syntax.Les
 		{
 			Exact(@"123;", F.Literal(123));
 			Exact(@"(123);", F.InParens(F.Literal(123)));
+			// Exact(@"123z", F.Literal(new BigInteger(123)));
 			Exact(@"123uL;", F.Literal(123uL));
 			Exact(@"123.25;", F.Literal(123.25));
 			Exact(@"123.25f;", F.Literal(123.25f));
@@ -124,6 +126,7 @@ namespace Loyc.Syntax.Les
 			Exact("-x;", F.Call(S.Sub, x));
 			Exact("- 2;", F.Call(S.Sub, two));
 			Exact("-2;", F.Literal(-2));
+			// Exact("-2z;", F.Literal(new BigInteger(-2)));
 			Stmt("-111222333444;", F.Literal(-111222333444));
 			Exact("-2L;", F.Literal(-2L));
 			Stmt("-2.0;", F.Literal(-2.0));
