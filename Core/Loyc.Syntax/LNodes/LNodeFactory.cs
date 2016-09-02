@@ -472,13 +472,7 @@ namespace Loyc.Syntax
 
 		public LNode InParens(LNode inner, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			_inParens = _inParens ?? Id(S.TriviaInParens);
-			inner = inner.PlusAttr(_inParens);
-			if (startIndex != -1 && endIndex != -1)
-				return inner.WithRange(startIndex, endIndex);
-			else
-				return inner;
+			return LNodeExt.InParens(inner, File, startIndex, endIndex);
 		}
 
 		public LNode Result(LNode expr)
@@ -488,15 +482,13 @@ namespace Loyc.Syntax
 
 		public LNode Attr(LNode attr, LNode node)
 		{
-			return node.PlusAttr(attr);
+			return node.PlusAttrBefore(attr);
 		}
 		public LNode Attr(params LNode[] attrsAndNode)
 		{
 			var node = attrsAndNode[attrsAndNode.Length - 1];
-			var attrs = node.Attrs;
-			for (int i = 0; i < attrsAndNode.Length - 1; i++)
-				attrs.Add(attrsAndNode[i]);
-			return node.WithAttrs(attrs);
+			var newAttrs = node.Attrs.InsertRange(0, attrsAndNode.Slice(0, attrsAndNode.Length-1).AsList());
+			return node.WithAttrs(newAttrs);
 		}
 	}
 }

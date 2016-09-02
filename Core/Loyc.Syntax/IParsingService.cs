@@ -102,6 +102,8 @@ namespace Loyc.Syntax
 		string Print(LNode node, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n");
 	}
 	
+	/// <summary>Standard parsing modes used with <see cref="IParsingService"/>.
+	/// These modes should also be understood by printers (text serializers).</summary>
 	public class ParsingMode : Symbol
 	{
 		private ParsingMode(Symbol prototype) : base(prototype) { }

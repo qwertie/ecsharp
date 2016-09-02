@@ -30,11 +30,14 @@ namespace Loyc.Syntax
 		/// style automatically.</summary>
 		Default = 0,
 		/// <summary>Indicates that a node was parsed as an operator (infix, prefix, 
-		/// suffix) or that it should be printed with operator notation if possible.</summary>
+		/// suffix, or other operator), or that it should be printed with operator 
+		/// notation if possible.</summary>
 		Operator = 1,
 		/// <summary>The node's immediate children (and/or the node itself) should be 
 		/// printed in statement notation, if possible in the context in which it is 
 		/// located.</summary>
+		/// <remarks>Used to mark braced blocks. In LES, marks a call in which ';'
+		/// is used as the argument separator.</remarks>
 		Statement = 2,
 		/// <summary>A language-specific special notation should be used for this
 		/// node. In LESv3, the parser puts this style on block call nodes (e.g. 
@@ -46,15 +49,16 @@ namespace Loyc.Syntax
 		PrefixNotation = 4,
 		/// <summary>The node(s) should be printed as a normal expression, rather
 		/// than using a special or statement notation.</summary>
+		/// <remarks>In EC#, braced initializer blocks have this style. The EC# 
+		/// node printer will refuse to print a node with this style as a statement.</remarks>
 		Expression = 5,
-		/// <summary>The node should be printed like a data type, if the type 
-		/// notation is somehow different from expression notation. (Note: in 
-		/// general, one cannot expect data types to have this style).</summary>
-		DataType = 6,
+		/// <summary>Unassigned.</summary>
+		Reserved = 6,
 		/// <summary>Use an older or backward-compatible notation.</summary>
+		/// <remarks>In EC#: prints lambda as delegate; forces old cast notation in EC#.</remarks>
 		OldStyle = 7,
 		/// <summary>If s is a NodeStyle, (s &amp; NodeStyle.BaseStyleMask) is the 
-		/// base style (Default, Expression, Statement, PrefixNotation, or PurePrefixNotation).</summary>
+		/// base style (Default, Operator, Statement, Special, PrefixNotation, Expression or OldStyle).</summary>
 		BaseStyleMask = 7,
 
 		/// <summary>Used for a binary (base-2) literal like 0b11111.</summary>

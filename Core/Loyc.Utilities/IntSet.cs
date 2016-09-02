@@ -137,7 +137,7 @@ namespace Loyc.LLParserGenerator
 		private static int ParseChar(string s, ref int i) // used by TryParse
 		{
 			int oldi = i;
-			char c = ParseHelpers.UnescapeChar(s, ref i);
+			int c = ParseHelpers.UnescapeChar(s, ref i);
 			if (c == '\\' && i == oldi+1) {
 				c = s[i++];
 				if (c == '$')

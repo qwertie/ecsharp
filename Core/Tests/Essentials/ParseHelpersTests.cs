@@ -26,21 +26,21 @@ namespace Loyc.Tests
 		[Test] public void TestUnescape2()
 		{
 			EscapeC encountered;
-			Assert.AreEqual(@"abcd", ParseHelpers.UnescapeCStyle(@"abcd", 0, 4, out encountered, false));
+			Assert.AreEqual(@"abcd", ParseHelpers.UnescapeCStyle(@"abcd", out encountered, false).ToString());
 			Assert.AreEqual(encountered, default(EscapeC));
-			Assert.AreEqual("\0ab", ParseHelpers.UnescapeCStyle(@"\0abc", 0, 4, out encountered, false));
+			Assert.AreEqual("\0ab", ParseHelpers.UnescapeCStyle(@"\0abc".Slice(0, 4), out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes, encountered);
-			Assert.AreEqual("a\bc", ParseHelpers.UnescapeCStyle(@"a\bc", 0, 4, out encountered, false));
+			Assert.AreEqual("a\bc", ParseHelpers.UnescapeCStyle(@"a\bc", out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.ABFV, encountered);
-			Assert.AreEqual("\n", ParseHelpers.UnescapeCStyle(@"\u000A", 0, 6, out encountered, false));
+			Assert.AreEqual("\n", ParseHelpers.UnescapeCStyle(@"\u000A", out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Control, encountered);
-			Assert.AreEqual("xx\x88", ParseHelpers.UnescapeCStyle(@"xx\x88", 0, 6, out encountered, false));
+			Assert.AreEqual("xx\x88", ParseHelpers.UnescapeCStyle(@"xx\x88", out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.NonAscii | EscapeC.BackslashX, encountered);
-			Assert.AreEqual("\u008888", ParseHelpers.UnescapeCStyle(@"\x8888", 0, 6, out encountered, false));
+			Assert.AreEqual("\u0088"+"99", ParseHelpers.UnescapeCStyle(@"\x8899", out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.NonAscii | EscapeC.BackslashX, encountered);
-			Assert.AreEqual("ba\\z", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, out encountered, false));
+			Assert.AreEqual("ba\\z", ParseHelpers.UnescapeCStyle(@"ba\z", out encountered, false).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Unrecognized, encountered);
-			Assert.AreEqual("baz", ParseHelpers.UnescapeCStyle(@"ba\z", 0, 4, out encountered, true));
+			Assert.AreEqual("baz", ParseHelpers.UnescapeCStyle(@"ba\z", out encountered, true).ToString());
 			Assert.AreEqual(EscapeC.HasEscapes | EscapeC.Unrecognized, encountered);
 		}
 
@@ -198,6 +198,20 @@ namespace Loyc.Tests
 			    || expected == MathEx.NextLower(result)
 			    || expected == MathEx.NextHigher(result)
 				|| float.IsNaN(expected) && float.IsNaN(result));
+		}
+
+		[Test]
+		public void IntegerToStringTests()
+		{
+			AreEqual(ParseHelpers.IntegerToString(0, "", 10, 3, '_'), "0");
+			AreEqual(ParseHelpers.IntegerToString(123, "0d", 10, 3, '_'), "0d123");
+			AreEqual(ParseHelpers.IntegerToString(0x123, "0x", 16, 3, '_'), "0x123");
+			AreEqual(ParseHelpers.IntegerToString(126uL, "0b", 2, 4, '_'), "0b111_1110");
+			AreEqual(ParseHelpers.IntegerToString(9876, "", 10, 3, ','), "9,876");
+			AreEqual(ParseHelpers.IntegerToString(-1234567, "0d", 10, 3, '\''), "-0d1'234'567");
+			AreEqual(ParseHelpers.IntegerToString(-1234567, "0d", 10, 0, '\''), "-0d1234567");
+			AreEqual(ParseHelpers.IntegerToString(-0x1234567890ABCD, "0x", 16, 4, '_'), "-0x12_3456_7890_ABCD");
+			AreEqual(ParseHelpers.IntegerToString(0xFEEDFEEDFEEDFEEDuL, "0x", 16, 4, '_'), "0xFEED_FEED_FEED_FEED");
 		}
 	}
 }

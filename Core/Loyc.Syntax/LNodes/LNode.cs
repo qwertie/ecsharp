@@ -741,10 +741,24 @@ namespace Loyc.Syntax
 		public abstract Symbol Name { get; }
 
 		/// <summary>Returns true if <see cref="Name"/> is a "special" name 
-		/// (i.e. starts with '#' or '\'' or any character below 40 in ASCII).</summary>
+		/// (i.e. starts with '#' or '\'' or '.' or any character below 48 in ASCII).</summary>
 		/// <remarks>Note that this property returns false for the empty identifier <c>@``</c>.</remarks>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		public bool HasSpecialName { get { string n = Name.Name; return n.Length > 0 && n[0] <= '\''; } }
+		public bool HasSpecialName { get { return IsSpecialName(Name.Name); } }
+
+		/// <summary>Returns true if <c>name</c> is considered a "special" name that
+		/// starts with any character below 48 in ASCII, such as '#', '\'', and '.'.</summary>
+		/// <remarks>
+		/// This returns false for the empty string. 
+		/// <para/>
+		/// In order to keep the check trivially simple, this returns true for '$'
+		/// even though it is <i>not</i> special in some languages (e.g. JavaScript).
+		/// <para/>
+		/// Letters, underscores, digits, and some punctuation do not count as special.
+		/// The full list of specials is <c>! " # $ % &amp; ' ( ) * + , - . /</c> plus
+		/// the space character and the control characters.
+		/// </remarks>
+		public static bool IsSpecialName(string name) { return name.Length > 0 && name[0] < '0'; }
 
 		/// <summary>Creates a node with a new value for Name.</summary>
 		/// <remarks>If IsId, the Name is simply changed. If <see cref="IsCall"/>, 
@@ -867,9 +881,12 @@ namespace Loyc.Syntax
 		public LNode WithAttrs(params LNode[] attrs) { return WithAttrs(new VList<LNode>(attrs)); }
 		public CallNode WithArgs(params LNode[] args) { return WithArgs(new VList<LNode>(args)); }
 		public LNode PlusAttr(LNode attr) { return WithAttrs(Attrs.Add(attr)); }
-		public LNode PlusAttrs(VList<LNode> attrs) { return attrs.IsEmpty ? this : WithAttrs(Attrs.AddRange(attrs)); }
-		public LNode PlusAttrs(IEnumerable<LNode> attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
-		public LNode PlusAttrs(params LNode[] attrs) { return WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrs(IEnumerable<LNode> attrs)       { return WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrs(params LNode[] attrs)           { return WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrs(VList<LNode> attrs)             { return attrs.IsEmpty ? this : WithAttrs(Attrs.AddRange(attrs)); }
+		public LNode PlusAttrsBefore(VList<LNode> attrs)       { return attrs.IsEmpty ? this : WithAttrs(attrs.AddRange(Attrs)); }
+		public LNode PlusAttrsBefore(params LNode[] attrs)     { return WithAttrs(Attrs.InsertRange(0, attrs)); }
+		public LNode PlusAttrBefore(LNode attr) { return WithAttrs(Attrs.Insert(0, attr)); }
 		public LNode PlusArg(LNode arg) { return WithArgs(Args.Add(arg)); }
 		public LNode PlusArgs(VList<LNode> args) { return args.IsEmpty ? this : WithArgs(Args.AddRange(args)); }
 		public LNode PlusArgs(IEnumerable<LNode> args) { return WithArgs(Args.AddRange(args)); }

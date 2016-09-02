@@ -631,11 +631,11 @@ namespace Loyc.Syntax.Lexing
 			array.Sort();
 			var list = new List<int>();
 			int i, j;
-			for (i = 0; i < array.Count; i++)
+			for (i = 0; i < array.Count; i = j)
 			{
-				for (j = i + 1; j < array.Count && array[j] == array[i] + 1; j++) { }
-				list.Add(i);
-				list.Add(j - 1);
+				for (j = i + 1; j < array.Count && array[j] == array[j-1] + 1; j++) { }
+				list.Add(array[i]);
+				list.Add(array[j - 1]);
 			}
 			Error(inverted, list);
 		}

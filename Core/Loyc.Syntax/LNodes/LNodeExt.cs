@@ -146,19 +146,19 @@ namespace Loyc.Syntax
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		public static LNode InParens(this LNode node)
 		{
-			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
+			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		/// <remarks>The <see cref="SourceRange"/> is applied to the parentheses 
 		/// attribute itself, not to the node to which the parens are added.</remarks>
 		public static LNode InParens(this LNode node, SourceRange range)
 		{
-			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, range));
+			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, range));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
 		public static LNode InParens(this LNode node, ISourceFile file, int position = -1, int width = -1)
 		{
-			return node.PlusAttr(LNode.Id(CodeSymbols.TriviaInParens, file, position, width));
+			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, file, position, width));
 		}
 		/// <summary>Removes a single pair of parentheses, if the node has a 
 		/// #trivia_inParens attribute. Returns the same node when no parens are 
