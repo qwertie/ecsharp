@@ -362,6 +362,7 @@ namespace Loyc.MiniTest
 					} catch {
 						ex.Data["Failed Assertion"] = stdMsg;
 					}
+					throw;
 				}
 			} else
 				Fail(stdMsg, stdArgs);
