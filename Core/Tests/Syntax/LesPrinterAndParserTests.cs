@@ -83,6 +83,7 @@ namespace Loyc.Syntax.Les
 			Exact("x + 1;",        F.Call(S.Add, x, one));
 			Exact("a + b + 1;",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("x * 2 + 1;",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
+			Exact("a = b = 0;",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
 			Exact("a >= b .. c;",  F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Exact("a == b && c != 0;", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
 			Exact("(a ? b : c);",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));

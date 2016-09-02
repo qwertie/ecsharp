@@ -148,6 +148,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
@@ -187,7 +188,9 @@
     <Compile Include="Collections\SparseAListTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
     <Compile Include="Syntax\Les3LexerTests.cs" />
+    <Compile Include="Syntax\Les3ParserTests.cs" />
     <Compile Include="Syntax\Les3PrinterAndParserTests.cs" />
+    <Compile Include="Syntax\Les3PrinterTests.cs" />
     <Compile Include="Syntax\LesLexerTests.cs" />
     <Compile Include="Syntax\LesParserTests.cs" />
     <Compile Include="Syntax\LesPrinterAndParserTests.cs" />

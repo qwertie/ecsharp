@@ -28,40 +28,100 @@ namespace Loyc.Syntax.Les
 		}
 
 		#region Literals
+		// Note: The most rigorous testing may be done in the Lexer tests,
+		//       but these tests have the advantage of also testing the printer.
 
 		[Test]
 		public void NumericLiterals()
 		{
-			Exact(@"123", F.Literal(123));
-			Exact(@"(123)", F.InParens(F.Literal(123)));
-			Exact(@"123uL", F.Literal(123uL));
-			Exact(@"123.25", F.Literal(123.25));
-			Exact(@"123.25f", F.Literal(123.25f));
+			Exact(@"123;", F.Literal(123));
+			Exact(@"(123);", F.InParens(F.Literal(123)));
+			Exact(@"123uL;", F.Literal(123uL));
+			Exact(@"123.25;", F.Literal(123.25));
+			Exact(@"123.25f;", F.Literal(123.25f));
 		}
 
 		[Test]
 		public void StringLiterals()
 		{
-			Exact(@"'!'", F.Literal('!'));
-			Exact(@"""!""", F.Literal("!"));
-			Exact(@"'''!'''", F.Literal("!").SetBaseStyle(NodeStyle.TQStringLiteral));
-			Exact(@"""""""!""""""", F.Literal("!").SetBaseStyle(NodeStyle.TDQStringLiteral));
+			// General parser and printer tests
+			Exact(@"'!';", F.Literal('!'));
+			Exact(@"""!"";", F.Literal("!"));
+			Exact(@"'''!''';", F.Literal("!").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact(@"""""""!"""""";", F.Literal("!").SetBaseStyle(NodeStyle.TDQStringLiteral));
+			Exact(@"""\\\r\n\t\0\x12"";", F.Literal("\\\r\n\t\0\x12").SetBaseStyle(NodeStyle.Default));
+			Exact(@"""•téŝt•"";", F.Literal("•téŝt•").SetBaseStyle(NodeStyle.Default));
+			Exact(@"'''''\'/ \'/''';", F.Literal("''' '").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact(@"'''\x/\z/ ""\'/''';", F.Literal(@"\x/\z/ ""'").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact(@"'''\r/\0/ '\'/''';", F.Literal("\r\0 ''").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact("{\n  ''' Line 1\n      Line 2\n     ''';\n};", F.Braces(F.Literal(" Line 1\n Line 2\n").SetBaseStyle(NodeStyle.TQStringLiteral)));
+			// Parser-focused tests
+			Stmt ("{\n  ''' Line 1\n      Line 2\n ''';\n}",     F.Braces(F.Literal(" Line 1\n Line 2\n").SetBaseStyle(NodeStyle.TQStringLiteral)));
+			Stmt ("{\n\t''' Line 1\n\t    Line 2\n\t\t ''';\n}", F.Braces(F.Literal(" Line 1\n Line 2\n ").SetBaseStyle(NodeStyle.TQStringLiteral)));
+			Stmt ("{\n  '''\tLine 1\n \tLine 2\n  \tLine 3''';\n}", F.Braces(F.Literal("\tLine 1\n\tLine 2\nLine 3").SetBaseStyle(NodeStyle.TQStringLiteral)));
+			// Parser tests. Printer will print \u1234\uABCD and \n and \t as characters, so don't use exact matching
+			Stmt (@"""\u1234\uABCD\x12"";", F.Literal("\u1234\uABCD\x12").SetBaseStyle(NodeStyle.Default));
+			Stmt (@"'''\\r/\n/\t/\0/ '\'/''';", F.Literal("\\\r\n\t\0 ''").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Stmt (@"""""""\\/\r/\n/\t/\0/ \""/"""""";", F.Literal("\\\r\n\t\0 \"").SetBaseStyle(NodeStyle.TDQStringLiteral));
+			// Ensure that the printer doesn't print false escape sequences
+			Exact(@"'''\\/r/\\/0/\\/n/\\/t/\\/\/''';", F.Literal(@"\r/\0/\n/\t/\\/").SetBaseStyle(NodeStyle.TQStringLiteral));
 		}
 
 		[Test]
-		public void SpecialLiterals()
+		public void Utf8BasedEscapeSequences()
 		{
-			Exact(@"special""!""", F.Literal(new SpecialLiteral("!", (Symbol)"special")));
-			Exact(@"special'''!'''", F.Literal(new SpecialLiteral("!", (Symbol)"special")).SetBaseStyle(NodeStyle.TQStringLiteral));
-			Exact(@"0x123special", F.Literal(new SpecialLiteral(0x123, (Symbol)"special")).SetBaseStyle(NodeStyle.HexLiteral));
+			// Astral characters are stored as surrogate pairs in C#
+			// and are printed as 6-digit escapes by the printer.
+			Exact(@"""\u01F4A9.\u10FFFF"";", F.Literal("\uD83D\uDCA9.\uDBFF\uDFFF").SetBaseStyle(NodeStyle.Default));
+			// Invalid UTF-8 bytes are transliterated to 0xDCxx bytes.
+			// High surrogates (0xD800..0xDBFF) are left alone.
+			Exact(@"""\xFF.\uD800"";", F.Literal("\uDCFF.\uD800").SetBaseStyle(NodeStyle.Default));
+		}
+
+		[Test]
+		public void StringLiteralsWithArbitraryBytes()
+		{
+			Exact(@"""é"";",        F.Literal("é"));
+			Exact(@"""\u01F4A9"";", F.Literal("\uD83D\uDCA9")); // 💩 pile of poo U+1F4A9
+			Stmt (@" ""\u1F4A9"";", F.Literal("\uD83D\uDCA9")); // Printer uses 6 digits, only 5 needed
+			Exact(@"""\x1B\xFF"";", F.Literal("\x1B\uDCFF"));
+			// Triple-quote request is ignored if the string contains invalid UTF-8,
+			// since triple-quoted strings do not support \xNN or \uNNNN escapes.
+			Exact(@"""\x1B\xFF"";", F.Literal("\x1B\uDCFF").SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact("'''<\uD83D\uDCA9>''';", F.Literal("<\uD83D\uDCA9>").SetBaseStyle(NodeStyle.TQStringLiteral));
+		}
+
+		[Test]
+		public void NamedFloatLiteral()
+		{
+			Exact("@@-inf.f;", F.Literal(float.NegativeInfinity));
+			Exact("@@inf.f;", F.Literal(float.PositiveInfinity));
+			Exact("@@nan.f;", F.Literal(float.NaN));
+			Exact("@@-inf.d;", F.Literal(double.NegativeInfinity));
+			Exact("@@inf.d;", F.Literal(double.PositiveInfinity));
+			Exact("@@nan.d;", F.Literal(double.NaN));
+		}
+
+		[Test]
+		public void CustomLiterals()
+		{
+			Exact(@"special""!"";",      F.Literal(new CustomLiteral("!", (Symbol)"special")));
+			Exact(@"special'''!''';",    F.Literal(new CustomLiteral("!", (Symbol)"special")).SetBaseStyle(NodeStyle.TQStringLiteral));
+			Exact(@"@@unknown-literal;", F.Literal(new CustomLiteral("unknown-literal", (Symbol)"@@")));
+			Exact(@"123.5f00bar;",       F.Literal(new CustomLiteral("123.5", (Symbol)"f00bar")));
+			Exact(@"f00bar""0x1234"";",  F.Literal(new CustomLiteral("0x1234", (Symbol)"f00bar")));
+			Exact(@"`WTF!\n`""0x1234"";",F.Literal(new CustomLiteral("0x1234", (Symbol)"WTF!\n")));
+			// Backquotes added due to 'e' in error which resembles an exponent
+			Exact(@"123.5`error`;",      F.Literal(new CustomLiteral("123.5", (Symbol)"error")));
+			// Parses OK but printer currently prints as in string form
+			Stmt (@"0x123special;",      F.Literal(new CustomLiteral("0x123", (Symbol)"special")).SetBaseStyle(NodeStyle.HexLiteral));
+			Stmt (@"0x1234`f00bar`;",    F.Literal(new CustomLiteral("0x1234", (Symbol)"f00bar")).SetBaseStyle(NodeStyle.HexLiteral));
 		}
 
 		[Test]
 		public void NegativeLiteral()
 		{
 			Exact("-x;", F.Call(S.Sub, x));
-			Stmt("-2u;", F.Call(S.Sub, F.Literal(2u)));
-			Stmt("-2uL;", F.Call(S.Sub, F.Literal(2uL)));
 			Exact("- 2;", F.Call(S.Sub, two));
 			Exact("-2;", F.Literal(-2));
 			Stmt("-111222333444;", F.Literal(-111222333444));
@@ -72,22 +132,6 @@ namespace Loyc.Syntax.Les
 			Stmt("-2.0f;", F.Literal(-2.0f));
 		}
 		
-		[Test]
-		public void NamedFloatLiteral()
-		{
-			Exact("@@-inf_f;", F.Literal(float.NegativeInfinity));
-			Exact("@@inf_f;", F.Literal(float.PositiveInfinity));
-			Exact("@@nan_f;", F.Literal(float.NaN));
-			Exact("@@-inf_d;", F.Literal(double.NegativeInfinity));
-			Exact("@@inf_d;", F.Literal(double.PositiveInfinity));
-			Exact("@@nan_d;", F.Literal(double.NaN));
-
-			// Ensure identifiers with the same name don't count as literals
-			Exact("inf_f(nan_f);", F.Call(_("inf_f"), F.Id("nan_f")));
-			Exact("inf_d(nan_d);", F.Call(_("inf_d"), F.Id("nan_d")));
-		}
-
-
 		#endregion
 
 		#region Basic expressions: calls, unary & binary operators
@@ -95,25 +139,26 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void SimpleCalls()
 		{
-			Exact("x", x);
-			Exact("x()", F.Call(x));
-			Exact("Foo(a, b, c)", F.Call(Foo, a, b, c));
-			Exact("Foo(a(b, c), b(c))", F.Call(Foo, F.Call(a, b, c), F.Call(b, c)));
+			Exact("x;", x);
+			Exact("x();", F.Call(x));
+			Exact("Foo(a, b, c);", F.Call(Foo, a, b, c));
+			Exact("Foo(a(b, c), b(c));", F.Call(Foo, F.Call(a, b, c), F.Call(b, c)));
 		}
 
 		[Test]
 		public void LiteralKeywords()
 		{
-			Exact(@"x(`true`,`false`,`null`)", F.Call(x, F.Id("true"), F.Id("false"), F.Id("null")));
-			Expr(@"x( true,  false,  null)", F.Call(x, F.Literal(true), F.Literal(false), F.Literal(null)));
+			Exact(@"x(`true`, `false`, `null`);", F.Call(x, F.Id("true"), F.Id("false"), F.Id("null")));
+			Expr (@"x( true,   false,   null);", F.Call(x, F.Literal(true), F.Literal(false), F.Literal(null)));
 		}
 
 		[Test]
 		public void BinaryOps()
 		{
 			Exact("x + 1;",        F.Call(S.Add, x, one));
-			Exact("a + b + 1;",    F.Call(S.Add, F.Call(S.Add, a, b), one));
 			Exact("x * 2 + 1;",    F.Call(S.Add, F.Call(S.Mul, x, two), one));
+			Exact("a + b + 1;",    F.Call(S.Add, F.Call(S.Add, a, b), one));
+			Exact("a = b = 0;",    F.Call(S.Assign, a, F.Call(S.Assign, b, zero)));
 			Exact("a >= b .. c;",  F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
 			Exact("a == b && c != 0;", F.Call(S.And, F.Call(S.Eq, a, b), F.Call(S.Neq, c, zero)));
 			Exact("(a ? b : c);",  F.InParens(F.Call(S.QuestionMark, a, F.Call(S.Colon, b, c))));
@@ -131,32 +176,33 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void SingleQuotedBinaryOps()
 		{
-			Exact("x '* 2 '+ 1;", F.Call(S.Add, F.Call(S.Mul, x, two), one));
+			Stmt ("x '* 2 '+ 1;", F.Call(S.Add, F.Call(S.Mul, x, two), one));
+			Stmt ("a '>= 0 '&& b '> 1;", F.Call(S.And, F.Call(S.GE, a, zero), F.Call(S.GT, b, one)));
 			Exact("a '*s b '>u c;", F.Call("'>u", F.Call("'*s", a, b), c));
-			Exact("a '>= 0 '&& b '> 1;", F.Call(S.And, F.Call(S.GE, a, zero), F.Call(S.GT, b, one)));
 		}
 
 		[Test]
 		public void SingleQuotedNamedOps()
 		{
-			Stmt(@"a 'x b 'y c", F.Call(_("'y"), F.Call(_("'x"), a, b), c));
-			Stmt(@"a 'X b 'Y c", F.Call(_("'Y"), F.Call(_("'X"), a, b), c));
-			Stmt(@"a 'implies b 'Likes c", F.Call(_("'implies"), a, F.Call(_("'Likes"), b, c)));
-			Stmt(@"a 'implies b == c", F.Call(_("'implies"), a, F.Call(S.Eq, b, c)));
-			Stmt(@"a 'Likes b && b 'Likes c", F.Call(S.And, F.Call(_("'Likes"), a, b), F.Call(_("'Likes"), b, c)));
+			Exact(@"a 'x b 'y c;", F.Call(_("'x"), a, F.Call(_("'y"), b, c)));
+			Exact(@"a 'X b 'Y c;", F.Call(_("'Y"), F.Call(_("'X"), a, b), c));
+			Exact(@"a 'implies b 'Likes c;", F.Call(_("'implies"), a, F.Call(_("'Likes"), b, c)));
+			Exact(@"a 'implies b == c;", F.Call(_("'implies"), a, F.Call(S.Eq, b, c)));
+			Exact(@"a 'Likes b && b 'Likes c;", F.Call(S.And, F.Call(_("'Likes"), a, b), F.Call(_("'Likes"), b, c)));
 		}
 
 		[Test]
 		public void PrefixOps()
 		{
-			Stmt("-a * b;", F.Call(S.Mul, F.Call(S._Negate, a), b));
-			Stmt("-x ** +x / ~x + &x & *x && !x == ^x;",
+			Exact("-a * b;", F.Call(S.Mul, F.Call(S._Negate, a), b));
+			Stmt ("-x ** +x / ~x + &x & *x && !x == ^x;",
 				F.Call(S.And, F.Call(S.AndBits, F.Call(S.Add, F.Call(S.Div, F.Call(S.Exp,
 					F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)), F.Call(S.NotBits, x)),
 					F.Call(S._AddressOf, x)), F.Call(S._Dereference, x)),
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
-			Stmt("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
-			Stmt(".. a + b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
+			Exact(".. a + b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("/x;", F.Call(S.Div, x));
 		}
 
 		[Test]
@@ -165,14 +211,43 @@ namespace Loyc.Syntax.Les
 			Stmt("a++ + ++a;", F.Call(S.Add, F.Call(S.PostInc, a), F.Call(S.PreInc, a)));
 			Stmt(@"a.b --;", F.Call(@"'--suf", F.Call(S.Dot, a, b)));
 			Stmt(@"a + b -<>-;", F.Call(S.Add, a, F.Call(@"'-<>-suf", b)));
+			// Ensure printer isn't confused by "suf" suffix which also appears on suffix operators
+			Exact(@"do_suf(x);", F.Call(@"do_suf", x).SetBaseStyle(NodeStyle.Operator));
+			Exact(@"`'do_suf`(x);", F.Call(@"'do_suf", x).SetBaseStyle(NodeStyle.Operator));
 		}
 
 		[Test]
 		public void SubtractNegativeLiteral()
 		{
 			Expr("a-b", F.Call(S.Sub, a, b));
-			// TEMP: this should be a subtraction instead
-			Expr("x-2", F.Call(S.Add, x, F.Literal(-2)));
+			Expr("x-2", F.Call(S.Sub, x, F.Literal(2)));
+		}
+
+		[Test]
+		public void TrickyPrinterCases()
+		{
+			// Gotta be careful how we print operators that appear to start comments,
+			// and suffix operators used as prefix/infix.
+			Exact(@"a '+/* b;", AsOperator(F.Call(_("'+/*"), a, b)));
+			Exact(@"a '>s b;",  AsOperator(F.Call(_("'>s"), a, b)));
+			Exact(@"a '/* b;",  AsOperator(F.Call(_("'/*"), a, b)));
+			Exact(@"a '// b;",  AsOperator(F.Call(_("'//"), a, b)));
+			Exact(@"a '++suf b;", AsOperator(F.Call(_("'++suf"), a, b)));
+			Stmt (@"`'/\\` b;", AsOperator(F.Call(_(@"'/\"), b)));
+		}
+
+		[Test]
+		public void DollarSignOnlyAtStartOfOperator()
+		{
+			Stmt (@"a-$b;",     F.Call(S.Sub, a, F.Call(S.Substitute, b)));
+			Stmt (@"-$b;",      F.Call(S.Sub, F.Call(S.Substitute, b)));
+			Exact(@"`'-$`(b);", F.Call("'-$", b));
+			Exact(@"$-b;",      F.Call("'$-", b));
+			Stmt (@"a-$-b;",    F.Call(S.Sub, a, F.Call("'$-", b)));
+			Exact(@"a - $-b;",  F.Call(S.Sub, a, F.Call("'$-", b)));
+			// TODO: need resolution in specification: $ is only for prefix ops,
+			// but ' is only for infix ops, so how do we treat '$-?
+			//Exact(@"a '$- b;",  F.Call("'$-", a, b));
 		}
 
 		#endregion
@@ -246,18 +321,65 @@ namespace Loyc.Syntax.Les
 
 		#endregion
 
+		#region Attributes
+
+		[Test]
+		public void SimpleAttributes()
+		{
+			Exact("@Foo a = b(c);",     F.Attr(Foo, F.Call(S.Assign, a, F.Call(b, c))));
+			Exact("@Foo (a)(b);",       F.Attr(Foo, F.Call(F.InParens(a), b)));
+			Exact("@123 Foo(x);",       F.Attr(F.Literal(123), F.Call(Foo, x)));
+			Exact("@'!' Foo(x);",       F.Attr(F.Literal('!'), F.Call(Foo, x)));
+			Exact("@-12 Foo(x);",       F.Attr(F.Literal(-12), F.Call(Foo, x)));
+		}
+
+		[Test]
+		public void BraceAndBrackAttributes()
+		{
+			Exact("@[1, 2] Foo(x);",     F.Attr(F.Call(S.Array, one, two), F.Call(Foo, x)));
+			Exact("@{\n  a;\n} Foo(x);", F.Attr(F.Braces(a), F.Call(Foo, x)));
+		}
+
+		[Test]
+		public void ParenAttributes()
+		{
+			Stmt("@(Foo) a = b(c);",    F.Attr(Foo, F.Call(S.Assign, a, F.Call(b, c))));
+			Exact("@((Foo)) b(c);",     F.Attr(F.InParens(Foo), F.Call(b, c)));
+			Stmt("@(Foo(x)) a = b(c);", F.Attr(F.Call(Foo, x), F.Call(S.Assign, a, F.Call(b, c))));
+			Exact("@(@0 Foo(x)) b(c);", F.Attr(F.Attr(zero, F.Call(Foo, x)), F.Call(b, c)));
+			Exact("@(a == c) b(c);",    F.Attr(F.Call(S.Eq, a, c), F.Call(b, c)));
+			Exact("(@Foo a) = b(c);",   F.Call(S.Assign, F.Attr(Foo, a), F.Call(b, c)));
+			Exact("((@Foo a)) = b(c);", F.Call(S.Assign, F.InParens(F.Attr(Foo, a)), F.Call(b, c)));
+			Exact("(@Foo (a)) = b(c);", F.Call(S.Assign, F.Attr(Foo, F.InParens(a)), F.Call(b, c)));
+		}
+
+		#endregion
+
 		#region Block expressions, juxtaposition, and keyword statements
 
 		[Test]
 		public void BlockExpressions()
 		{
-			Exact("a (b) { c; };", F.Call(a, b, F.Braces(c)));
-			Exact("a (b, c) {};", F.Call(a, b, c, F.Braces()));
-			Exact("Foo = a (b) { c; };", F.Call(S.Assign, Foo, F.Call(a, b, F.Braces(c))));
-			Exact("Foo = a (b) { c; } + x;", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(a, b, F.Braces(c)), x)));
-			Exact("Foo = if (c) { a; } else { b; };", F.Call(S.Assign, Foo, F.Call(_("if"), c, F.Braces(a), F.Call(_("'else"), F.Braces(b)))));
-			Exact("Foo = quote { a; };", F.Call(S.Assign, Foo, F.Call(_("quote"), F.Braces(a))));
-			Exact("Foo = do { a; } where (b);", F.Call(S.Assign, Foo, F.Call(_("do"), F.Braces(a), F.Call(_("'where"), b))));
+			Exact("a (b) {\n  c;\n};", F.Call(a, b, F.Braces(c)));
+			Exact("a (b, c) {\n};", F.Call(a, b, c, F.Braces()));
+			Exact("Foo = a (b) {\n  c;\n};", F.Call(S.Assign, Foo, F.Call(a, b, F.Braces(c))));
+			Exact("Foo = a (b) {\n  c;\n} + x;", F.Call(S.Assign, Foo, F.Call(S.Add, F.Call(a, b, F.Braces(c)), x)));
+			Exact("Foo = if (c) {\n  a;\n} else {\n  b;\n};", F.Call(S.Assign, Foo, F.Call(_("if"), c, F.Braces(a), F.Call(_("'else"), F.Braces(b)))));
+			Exact("Foo = quote {\n  a;\n};", F.Call(S.Assign, Foo, F.Call(_("quote"), F.Braces(a))));
+			Exact("Foo = do {\n  a;\n} where(b);", F.Call(S.Assign, Foo, F.Call(_("do"), F.Braces(a), F.Call(_("'where"), b))));
+		}
+
+		[Test]
+		public void LookMaNoSemicolons()
+		{
+			Test (Mode.Stmt, 0, "{ a; } Foo();", F.Braces(a), F.Call(Foo));
+			Test (Mode.Stmt, 0, "if (c) { a; } or { b; };", F.Call(_("if"), c, F.Braces(a), F.Call(_("'or"), F.Braces(b))));
+			Test (Mode.Stmt, 0, "if (c) { a; } do { b; };", F.Call(_("if"), c, F.Braces(a)), F.Call(_("do"), F.Braces(b)));
+			Test (Mode.Stmt, 1, "x = with (c) { a; } Foo { b; };", F.Call(S.Assign, x, F.Call(_("with"), c, F.Braces(a))), F.Call(Foo, F.Braces(b)));
+			// ouch. In fact this parses as a single expression and it's hard to avoid that.
+			//Test (Mode.Stmt, 0, "Foo { a; } (Foo);", F.Call(Foo, F.Braces(a)), F.InParens(Foo));
+			// This parses as two, but if we add attribute-suffix support, you'd get a syntax error.
+			Test (Mode.Stmt, 0, "Foo { a; } @x b;", F.Call(Foo, F.Braces(a)), F.Attr(x, b));
 		}
 
 		[Test]
@@ -270,11 +392,14 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void KeywordStatements()
 		{
-			Stmt("#return x + 1;", F.Call(S.Return, F.Call(S.Add, x, one)));
-			Stmt("#if Foo { a; }", F.Call(S.If, Foo, F.Braces(a)));
-			Stmt("#if Foo { a; } else { b; }", F.Call(S.If, Foo, F.Braces(a), F.Call("'else", F.Braces(b))));
-			Stmt("#class Foo!T 'where T:IFoo { a; }", F.Call(S.Class, 
-				F.Call("'where", F.Of(Foo, T), F.Call(S.Colon, T, F.Id("IFoo"))), F.Braces(a)));
+			Exact("`#return`(x + 1);",  F.Call(S.Return, F.Call(S.Add, x, one)));
+			Exact("#return x + 1;",     F.Call(S.Return, F.Call(S.Add, x, one)).SetBaseStyle(NodeStyle.Special));
+			Exact("#if Foo {\n  a;\n};", F.Call(S.If, Foo, F.Braces(a)).SetBaseStyle(NodeStyle.Special));
+			Exact("#if Foo {\n  a;\n} else {\n  b;\n};", F.Call(S.If, Foo, F.Braces(a), 
+				F.Call("'else", F.Braces(b))).SetBaseStyle(NodeStyle.Special));
+			Exact("#class Foo!T 'where T : IFoo {\n  a;\n};", F.Call(S.Class, 
+				F.Call("'where", F.Of(Foo, T), F.Call(S.Colon, T, F.Id("IFoo"))), 
+				F.Braces(a)).SetBaseStyle(NodeStyle.Special));
 		}
 
 		[Test]
@@ -302,19 +427,23 @@ namespace Loyc.Syntax.Les
 		#endregion
 
 		[Test]
-		public void PrefixAttributes()
+		public void PrinterSpacingMinefield()
 		{
-			Exact("@Foo a = b(c);",     F.Attr(Foo, F.Call(S.Assign, a, F.Call(b, c))));
-			Exact("@Foo (a)(b);",       F.Attr(Foo, F.Call(F.InParens(a), b)));
-			Stmt("@(Foo) a = b(c);",    F.Attr(Foo, F.Call(S.Assign, a, F.Call(b, c))));
-			Exact("@((Foo)) b(c);",     F.Attr(F.InParens(Foo), F.Call(b, c)));
-			Stmt("@(Foo(x)) a = b(c);", F.Attr(F.Call(Foo, x), F.Call(S.Assign, a, F.Call(b, c))));
-			Exact("@(@0 Foo(x)) b(c);", F.Attr(F.Attr(zero, F.Call(Foo, x)), F.Call(b, c)));
-			Exact("@(a == c) b(c);",    F.Attr(F.Call(S.Eq, a, c), F.Call(b, c)));
-			Exact("(@Foo a) = b(c);",   F.Call(S.Assign, F.Attr(Foo, a), F.Call(b, c)));
-			Exact("((@Foo a)) = b(c);", F.Call(S.Assign, F.InParens(F.Attr(Foo, a)), F.Call(b, c)));
+			// Challenges involving `-`
+			Exact("- 2;", F.Call(S.Sub, two));
+			Exact("- 2.5;", F.Call(S.Sub, F.Literal(2.5)));
+			Exact("+ -2;", F.Call(S.Add, F.Literal(-2)));
+			Exact("+- 2;", F.Call("'+-", F.Literal(2)));
+			Exact("-(2.5);", F.Call(S.Sub, F.InParens(F.Literal(2.5))));
+			Exact("-x** +x;", F.Call(S.Exp, F.Call(S._Negate, x), F.Call(S._UnaryPlus, x)));
+			// Challenges involving `.`
+			Exact("x.x;", F.Dot(x, x));
+			Exact("2 .x;", F.Dot(two, x));
+			Exact("x. 2;", F.Dot(x, two));
+			Exact("1 . 2;", F.Dot(one, two));
+			Exact("1 'x. 2;", F.Call("'x.", one, two));
+			Exact("@@inf.d .Foo;", F.Dot(F.Literal(double.PositiveInfinity), Foo));
 		}
-
 
 		protected virtual void Expr(string text, LNode expr, int errorsExpected = 0)
 		{
@@ -349,36 +478,6 @@ namespace Loyc.Syntax.Les
 					if (msg.Formatted.IndexOf(substrings[i], StringComparison.InvariantCultureIgnoreCase) > -1)
 						substrings[i] = null;
 			Assert.AreEqual(null, substrings.WhereNotNull().FirstOrDefault());
-		}
-	}
-
-	[TestFixture]
-	public class Les3ParserTests : Les3PrinterAndParserTests
-	{
-		[Test]
-		public void PrefixOpParseErrors()
-		{
-			Test(Mode.Stmt, 1, "?x;", F.Call(S.QuestionMark, x));
-			Test(Mode.Stmt, 1, "/x;", F.Call(S.Div, x));
-			Test(Mode.Stmt, 1, "=x;", F.Call(S.Assign, x));
-			Test(Mode.Stmt, 1, ">x;", F.Call(S.GT, x));
-			Test(Mode.Stmt, 1, "1 + <x;", F.Call(S.Add, one, F.Call(S.LT, x)));
-			Test(Mode.Stmt, 1, "'sqrt x;", F.Call("'sqrt", x));
-		}
-
-		protected override MessageHolder Test(Mode mode, int errorsExpected, string text, params LNode[] expected)
-		{
-			var messages = new MessageHolder();
-			var results = Les3LanguageService.Value.Parse(text, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements).ToList();
-			for (int i = 0; i < expected.Length; i++)
-				AreEqual(expected[i], results[i]);
-			AreEqual(expected.Length, results.Count);
-			if (messages.List.Count != System.Math.Max(errorsExpected, 0))
-			{
-				messages.WriteListTo(MessageSink.Console);
-				AreEqual(errorsExpected, messages.List.Count); // fail
-			}
-			return messages;
 		}
 	}
 }
