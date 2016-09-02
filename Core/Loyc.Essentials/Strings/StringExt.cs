@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Loyc
 {
@@ -152,10 +153,22 @@ namespace Loyc
 		/// string msg = "You need to run {dist,6:###.00} km to reach {0}".Localized(
 		///		cityName, "dist", 2.9);
 		/// </code>
-		/// This method will ignore the first N+1 arguments in args, where {N}
-		/// is the largest numeric placeholder. It is assumed that the placeholder 
-		/// name ends at the first comma or colon; hence the placeholder in this 
-		/// example is called "dist", not "dist,6:###.00".
+		/// It is assumed that the placeholder name ends at the first comma or colon; 
+		/// hence the placeholder in this example is called "dist", not "dist,6:###.00".
+		/// <para/>
+		/// Typically, the named arguments are expected to start at index N+1 in the 
+		/// variable argument array, where {N} is the largest numeric placeholder, and 
+		/// if there are no numeric placeholders then the named arguments should begin 
+		/// at index 0. In this example there is a {0}, so the named arguments should
+		/// start at index 1. However, since named arguments always come in pairs, an 
+		/// extra rule increments the N if the number of remaining arguments starting
+		/// at N is not an even number. For example, in
+		/// <code>
+		/// string msg = "Hello {0}, you'll go to {school name} next year.".Localized(
+		///		firstName, lastName, "school name", schoolName);
+		/// </code>
+		/// There are three args left after the numeric ones, so the first remaining
+		/// argument is ignored to make it an even number.
 		/// <para/>
 		/// If a placeholder name is not found in the argument list then it is not
 		/// replaced with a number before the call to string.Format, so a 
@@ -191,36 +204,58 @@ namespace Loyc
 			if (!containsNames)
 				return format;
 
+			if (((args.Length - highestIndex) & 1) == 0)
+				highestIndex++; // so that the number of args left is even
+
 			StringBuilder sb = new StringBuilder(format);
 			int correction = 0;
 			for (int i = 0; i < sb.Length - 1; i++)
 			{
 				if (sb[i] == '{' && sb[i + 1] != '{')
 				{
-					int j = ++i; // Placeholder name starts here.
-					for (; (c = format[i]) != '}' && c != ':' && c != ','; i++) { }
+					int placeholderStart = ++i; // Placeholder name starts here.
+					for (; (c = sb[i]) != '}' && c != ':' && c != ','; i++) { }
+					int placeholderLen = i - placeholderStart;
 
 					// StringBuilder lacks Substring()! Instead, get the name 
 					// from the original string and keep track of a correction 
 					// factor so that in subsequent iterations, we get the 
 					// substring from the right position in the original string.
-					string name = format.Substring(j - correction, i - j);
+					UString name = format.Slice(placeholderStart + correction, placeholderLen);
 
 					for (int arg = highestIndex + 1; arg < args.Length; arg += 2)
-						if (args[arg] != null && string.Compare(name, args[arg].ToString(), true) == 0)
+						if (args[arg] != null && name.Equals(args[arg] as string, ignoreCase: true))
 						{
 							// Matching argument found. Replace name with index:
 							string idxStr = (arg + 1).ToString();
-							sb.Remove(j, i - j);
-							sb.Insert(j, idxStr);
-							int dif = i - j - idxStr.Length;
+							sb.Remove(placeholderStart, placeholderLen);
+							sb.Insert(placeholderStart, idxStr);
+							int dif = placeholderLen - idxStr.Length;
 							correction += dif;
 							i -= dif;
 							break;
 						}
 				}
+				Debug.Assert(sb[i] == format[i + correction]);
 			}
 			return sb.ToString();
 		}
+
+		/// <summary>Appends a unicode code point in the range 0 to 0x10FFFF to StringBuilder in UTF-16.</summary>
+		/// <exception cref="ArgumentOutOfRangeException">Invalid character c</exception>
+		/// <exception cref="NullReferenceException">null StringBuildre</exception>
+		public static StringBuilder AppendCodePoint(this StringBuilder s, int c)
+		{
+			if ((uint)c <= 0xFFFF)
+				s.Append((char)c);
+			else if ((uint)c <= 0x10FFFF) {
+				c -= 0x10000;
+				s.Append((char)((c >> 10)   | 0xD800));
+				s.Append((char)((c & 0x3FF) | 0xDC00));
+			} else
+				throw new ArgumentOutOfRangeException("Invalid unicode character: {0}".Localized(c));
+			return s;
+		}
+
 	}
 }

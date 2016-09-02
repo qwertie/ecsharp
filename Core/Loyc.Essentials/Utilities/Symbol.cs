@@ -124,6 +124,9 @@ namespace Loyc
 
 		public static explicit operator Symbol(string s) { return GSymbol.Get(s); }
 		public static explicit operator string(Symbol s) { return s.Name; }
+		// TODO: switch to UString dictionary to avoid the need to call ToString().
+		public static explicit operator Symbol(UString s) { return GSymbol.Get(s.ToString()); }
+		public static explicit operator UString(Symbol s) { return s.Name; }
 		
 		/// <summary>Alias for <see cref="GSymbol.Get(string)"/>. This function was 
 		/// introduced to match the equivalent ES6 API <c>Symbol.for("string")</c></summary>

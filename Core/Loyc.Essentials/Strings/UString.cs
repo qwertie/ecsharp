@@ -98,7 +98,7 @@ namespace Loyc
 		{
 			_str = str;
 			_start = 0;
-			_count = str.Length;
+			_count = str == null ? 0 : str.Length;
 		}
 		private UString(int start, int count, string str)
 		{
@@ -197,28 +197,19 @@ namespace Loyc
 		{
 			if ((uint)index < (uint)_count) {
 				int c = _str[_start + index];
-				if (c < 0xD800 || c >= 0xE000)
+				if (c < 0xD800 || c > 0xDBFF || (uint)(index + 1) >= (uint)_count)
 					return c;
-				if (c < 0xDC00 && (uint)(index + 1) < (uint)_count) {
-					int c1 = _str[_start + index + 1];
-					if (c1 >= 0xDC00 && c1 < 0xE000)
-						return 0x10000 + (c << 10) + c1;
-				}
-				return ~(int)c;
+				int c1 = _str[_start + index + 1];
+				if (c1 >= 0xDC00 && c1 <= 0xDFFF)
+					return 0x10000 + ((c & 0x3FF) << 10) + (c1 & 0x3FF);
 			}
 			return -1;
 		}
 
 		/// <summary>Returns the UCS code point that starts at the specified index.</summary>
 		/// <param name="index">Code unit index at which to decode.</param>
-		/// <returns>The code point starting at this index, or a negative number.</returns>
-		/// <exception cref="IndexOutOfRangeException">Oops.</exception>
-		/// <remarks>
-		/// If decoding fails, either because the index points to the "middle" of a
-		/// multi-code-unit sequence or because the string contains an invalid
-		/// UTF sequence, this method returns a negative value (the bitwise 'not' of 
-		/// the invalid char). If the index is invalid, this method returns -1.
-		/// </remarks>
+		/// <returns>The code point starting at this index.</returns>
+		/// <exception cref="IndexOutOfRangeException">invalid <c>index</c>.</exception>
 		public uchar DecodeAt(int index)
 		{
 			uchar r = TryDecodeAt(index);
@@ -333,6 +324,9 @@ namespace Loyc
 				count = _count - start;
 			return new UString(_start + start, count, _str);
 		}
+		/// <summary>Returns the sequence of code units from this UString starting
+		/// at the index <c>start</c>, e.g. Substring(1) returns all code units 
+		/// except the first.</summary>
 		public UString Substring(int start)
 		{
 			if (start < 0)
@@ -340,6 +334,22 @@ namespace Loyc
 			if (start > _count)
 				start = _count;
 			return new UString(_start + start, _count - start, _str);
+		}
+		/// <summary>Returns the leftmost <c>length</c> code units of the string, 
+		/// or fewer if the string length is less than <c>length</c>.</summary>
+		public UString Left(int length)
+		{
+			CheckParam.IsNotNegative("length", length);
+			length = System.Math.Min(_count, length);
+			return new UString(_start, length, _str);
+		}
+		/// <summary>Returns the rightmost <c>length</c> code units of the string,
+		/// or fewer if the string length is less than <c>length</c>.</summary>
+		public UString Right(int length)
+		{
+			CheckParam.IsNotNegative("length", length);
+			length = System.Math.Min(_count, length);
+			return new UString(_start + _count - length, length, _str);
 		}
 
 		//
