@@ -383,15 +383,15 @@ namespace Loyc.Ecs.Tests
 		{
 			Stmt("int[,] Foo = new[,] { { 0 }, { 1, 2 } };", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.New, F.Call(S.TwoDimensionalArray),
-					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
-					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
+					AsStyle(NodeStyle.Expression, F.Braces(zero)),
+					AsStyle(NodeStyle.Expression, F.Braces(one, two))))));
 			Stmt("int[] Foo = { 0, 1, 2\n};", F.Call(S.Var, F.Of(S.Array, S.Int32),
-				F.Call(S.Assign, Foo, AsStyle(NodeStyle.OldStyle, F.Call(S.ArrayInit, zero, one, two)))));
+				F.Call(S.Assign, Foo, F.Call(S.ArrayInit, zero, one, two))));
 			// TODO: The printer's newline choices are odd. See if we can improve them.
 			Stmt("int[,] Foo = { { 0\n}, { 1, 2\n}\n};", F.Call(S.Var, F.Of(S.TwoDimensionalArray, S.Int32),
 				F.Call(S.Assign, Foo, F.Call(S.ArrayInit,
-					AsStyle(NodeStyle.OldStyle, F.Braces(zero)),
-					AsStyle(NodeStyle.OldStyle, F.Braces(one, two))))));
+					AsStyle(NodeStyle.Expression, F.Braces(zero)),
+					AsStyle(NodeStyle.Expression, F.Braces(one, two))))));
 		}
 
 		[Test]

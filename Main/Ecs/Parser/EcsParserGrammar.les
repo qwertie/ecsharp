@@ -1624,7 +1624,7 @@ namespace Loyc.Ecs.Parser
 				{
 					var initializers = InitializerListInside(lb);
 					$result = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex)
-					           .SetBaseStyle(NodeStyle.OldStyle);
+					           .SetBaseStyle(NodeStyle.Expression);
 				}
 			/	result:ExprStart(false)
 			)
@@ -2063,7 +2063,7 @@ namespace Loyc.Ecs.Parser
 			( lb:="{" rb:="}"
 			  {
 				var exprs = InitializerListInside(lb);
-				$result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.OldStyle);
+				$result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.Expression);
 			  }
 			/ lb:="[" rb:="]" "=" e:=ExprStart(false)
 			  { $result = F.Call(S.InitializerAssignment, ExprListInside(lb).Add(e), lb.StartIndex, e.Range.EndIndex); }

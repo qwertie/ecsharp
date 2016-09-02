@@ -619,7 +619,7 @@ namespace LeMP
 		Symbol NamespaceToSymbol(LNode node)
 		{
 			// quick & dirty, probably not cheap
-			return GSymbol.Get(node.Print(NodeStyle.Expression));
+			return GSymbol.Get(node.Print(ParsingMode.Expressions));
 		}
 
 		/// <summary>Recursively applies macros in scope to <c>input</c>.</summary>

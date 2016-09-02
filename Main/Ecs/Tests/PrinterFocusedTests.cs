@@ -116,8 +116,8 @@ namespace Loyc.Ecs.Tests
 		public void PreprocessorConflicts()
 		{
 			Stmt("@#error(\"FAIL!\");", F.Call(S.Error, F.Literal("FAIL!")));
-			Stmt("@#if(c, Foo());",     ExprStyle(F.Call(S.If, c, F.Call(Foo))));
-			Stmt("@#region(57);",       ExprStyle(F.Call(GSymbol.Get("#region"), F.Literal(57))));
+			Stmt("@#if(c, Foo());",     AsStyle(NodeStyle.Expression, F.Call(S.If, c, F.Call(Foo))));
+			Stmt("@#region(57);",       AsStyle(NodeStyle.Expression, F.Call(GSymbol.Get("#region"), F.Literal(57))));
 		}
 
 		[Test]

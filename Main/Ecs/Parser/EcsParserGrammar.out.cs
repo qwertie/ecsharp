@@ -2363,8 +2363,8 @@ namespace Loyc.Ecs.Parser
 					{
 						la0 = LA0;
 						if (context.CanParse(prec = InfixPrecedenceOf(la0))) {
-							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-								if (context.CanParse(EP.Shift)) {
+							if (context.CanParse(EP.Shift)) {
+								if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 									la1 = LA(1);
 									if (PrefixExpr_set0.Contains((int) la1))
 										goto match1;
@@ -2379,6 +2379,12 @@ namespace Loyc.Ecs.Parser
 									else
 										goto stop;
 								}
+							} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
+								la1 = LA(1);
+								if (PrefixExpr_set0.Contains((int) la1))
+									goto match1;
+								else
+									goto stop;
 							} else {
 								la1 = LA(1);
 								if (PrefixExpr_set0.Contains((int) la1))
@@ -2386,8 +2392,8 @@ namespace Loyc.Ecs.Parser
 								else
 									goto stop;
 							}
-						} else if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
-							if (context.CanParse(EP.Shift)) {
+						} else if (context.CanParse(EP.Shift)) {
+							if (LT(0).EndIndex == LT(0 + 1).StartIndex) {
 								la1 = LA(1);
 								if (la1 == TT.GT || la1 == TT.LT)
 									goto match3;
@@ -3995,7 +4001,7 @@ namespace Loyc.Ecs.Parser
 							var rb = MatchAny();
 							// line 1625
 							var initializers = InitializerListInside(lb);
-							result = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.OldStyle);
+							result = F.Call(S.ArrayInit, initializers, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.Expression);
 						} else
 							result = ExprStart(false);
 					} else
@@ -4798,7 +4804,7 @@ namespace Loyc.Ecs.Parser
 						var rb = MatchAny();
 						// line 2065
 						var exprs = InitializerListInside(lb);
-						result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.OldStyle);
+						result = F.Call(S.Braces, exprs, lb.StartIndex, rb.EndIndex).SetBaseStyle(NodeStyle.Expression);
 					} else
 						result = ExprOpt(false);
 				} else

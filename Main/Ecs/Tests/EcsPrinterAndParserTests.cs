@@ -95,13 +95,7 @@ namespace Loyc.Ecs.Tests
 			node.Style |= NodeStyle.Alternate;
 			return node;
 		}
-		static LNode AsStyle(NodeStyle s, LNode node)
-		{
-			node.BaseStyle = s;
-			return node;
-		}
-		LNode Operator(LNode node) { return AsStyle(NodeStyle.Operator, node); }
-		LNode StmtStyle(LNode node) { return AsStyle(NodeStyle.Statement, node); }
-		LNode ExprStyle(LNode node) { return AsStyle(NodeStyle.Expression, node); }
+		static LNode AsStyle(NodeStyle s, LNode node) { return node.SetBaseStyle(s); }
+		static LNode Operator(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
 	}
 }

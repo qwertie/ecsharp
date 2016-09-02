@@ -463,7 +463,7 @@ namespace Loyc.Ecs
 				if (context.Left == StartStmt.Left || (flags & Ambiguity.NoBracedBlock) != 0)
 					return false;
 				braceMode = true;
-				if (context.Left <= ContinueExpr.Left && _n.BaseStyle == NodeStyle.OldStyle)
+				if (context.Left <= ContinueExpr.Left && _n.BaseStyle == NodeStyle.Expression)
 					braceMode = null; // initializer mode
 			} else if (name == S.ArrayInit) {
 				braceMode = null; // initializer mode
