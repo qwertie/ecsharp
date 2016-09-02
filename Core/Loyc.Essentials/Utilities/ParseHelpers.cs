@@ -73,22 +73,28 @@ namespace Loyc.Syntax
 		public static string EscapeCStyle(UString s, EscapeC flags, char quoteType)
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
-			bool any = false;
-			for (int i = 0; i < s.Length; i++) {
-				char c = s[i];
-				any |= EscapeCStyle(c, s2, flags, quoteType);
+			bool usedEscapes = false, fail;
+			for (;;) {
+				int c = s.PopFront(out fail);
+				if (fail) break;
+				usedEscapes |= EscapeCStyle(c, s2, flags, quoteType);
 			}
-			if (!any && s.InternalString.Length == s.Length)
+			if (!usedEscapes && s.InternalString.Length == s.Length)
 				return s.InternalString;
 			return s2.ToString();
 		}
 
-		static void EscapeU(char c, StringBuilder @out, EscapeC flags)
+		static void EscapeU(int c, StringBuilder @out, EscapeC flags)
 		{
 			if (c <= 255 && (flags & EscapeC.BackslashX) != 0)
 				@out.Append(@"\x");
 			else {
 				@out.Append(@"\u");
+				if (c > 0xFFFF || (flags & EscapeC.HasLongEscape) != 0) {
+					Debug.Assert(c <= 0x10FFFF);
+					@out.Append(HexDigitChar((c >> 20) & 0xF));
+					@out.Append(HexDigitChar((c >> 16) & 0xF));
+				}
 				@out.Append(HexDigitChar((c >> 12) & 0xF));
 				@out.Append(HexDigitChar((c >> 8) & 0xF));
 			}
@@ -96,7 +102,16 @@ namespace Loyc.Syntax
 			@out.Append(HexDigitChar(c & 0xF));
 		}
 
-		public static bool EscapeCStyle(char c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
+		/// <summary>Writes a character <c>c</c> to a StringBuilder, either as a normal 
+		/// character or as a C-style escape sequence.</summary>
+		/// <param name="c"></param>
+		/// <param name="out"></param>
+		/// <param name="flags"></param>
+		/// <param name="quoteType"></param>
+		/// <returns>true if an escape sequence was emitted, false if not.</returns>
+		/// <remarks>EscapeC.HasLongEscape can be used to force a 6-digit unicode escape;
+		/// this may be needed if the next character after this one is a digit.</remarks>
+		public static bool EscapeCStyle(int c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			for(;;) {
 				if (c >= 128) {
@@ -151,18 +166,17 @@ namespace Loyc.Syntax
 
 			if (c == quoteType) {
 				@out.Append('\\');
-				@out.Append(c);
+				@out.Append((char)c);
 				return true;
-			} else {
-				@out.Append(c);
-				return false;
-			}
+			} else 
+				@out.AppendCodePoint(c);
+			return false;
 		}
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
 		public static string UnescapeCStyle(UString s, bool removeUnnecessaryBackslashes = false)
 		{
 			EscapeC _;
-			return UnescapeCStyle(s.InternalString, s.InternalStart, s.Length, out _, removeUnnecessaryBackslashes);
+			return UnescapeCStyle(s, out _, removeUnnecessaryBackslashes).ToString();
 		}
 
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
@@ -170,75 +184,109 @@ namespace Loyc.Syntax
 		/// sequences were encountered, and which categories.</param>
 		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
 		/// an unrecognized escape sequence to be removed, e.g. "\z" => "z".</param>
-		public static string UnescapeCStyle(string s, int index, int length, out EscapeC encountered, bool removeUnnecessaryBackslashes = false)
+		/// <remarks>See <see cref="UnescapeChar(string, ref int, ref EscapeC)"/> for details.</remarks>
+		public static StringBuilder UnescapeCStyle(UString s, out EscapeC encountered, bool removeUnnecessaryBackslashes = false)
 		{
 			encountered = 0;
-			StringBuilder s2 = new StringBuilder(length);
-			for (int i = index; i < index + length; ) {
-				int oldi = i;
-				char c = UnescapeChar(s, ref i, ref encountered);
-				if (removeUnnecessaryBackslashes && c == '\\' && i == oldi + 1)
+			StringBuilder @out = new StringBuilder(s.Length);
+			while (s.Length > 0) {
+				EscapeC encounteredHere = 0;
+				int c = UnescapeChar(ref s, ref encounteredHere);
+				encountered |= encounteredHere;
+				if (removeUnnecessaryBackslashes && (encounteredHere & EscapeC.Unrecognized) != 0) {
+					Debug.Assert(c == '\\');
 					continue;
-				s2.Append(c);
+				}
+				@out.AppendCodePoint(c);
 			}
-			return s2.ToString();
+			return @out;
 		}
 
-		public static char UnescapeChar(ref UString s)
+		public static int UnescapeChar(string s, ref int i)
 		{
-			int i = s.InternalStart, i0 = i;
-			char c = UnescapeChar(s.InternalString, ref i);
-			s = new UString(s.InternalString, i, s.Length - (i - i0));
-			return c;
+			UString s2 = new UString(s, i);
+			EscapeC _ = 0;
+			int result = UnescapeChar(ref s2, ref _);
+			i = s2.InternalStart;
+			return result;
 		}
 
-		public static char UnescapeChar(string s, ref int i)
+		public static int UnescapeChar(ref UString s)
 		{
 			EscapeC _ = 0;
-			return UnescapeChar(s, ref i, ref _);
+			return UnescapeChar(ref s, ref _);
 		}
 
 		/// <summary>Unescapes a single character of a string. Returns the 
-		/// character at 'index' if it is not a backslash, or if it is a 
+		/// first character if it is not a backslash, or <c>\</c> if it is a 
 		/// backslash but no escape sequence could be discerned.</summary>
-		/// <param name="i">Current index within the string, incremented 
-		/// by one normally and more than one in case of an escape sequence.</param>
+		/// <param name="s">Slice of a string to be unescaped. Upon returning,
+		/// s will be shorter as the parsed character(s) are clipped from the
+		/// beginning (<c>s.InternalStart</c> is incremented by one normally 
+		/// and more than one in case of an escape sequence.)</param>
 		/// <param name="encountered">Bits of this parameter are set according
 		/// to which escape sequence is encountered, if any.</param>
-		/// <exception cref="IndexOutOfRangeException">The index was invalid.</exception>
+		/// <remarks>
+		/// This function also decodes (non-escaped) surrogate pairs.
+		/// <para/>
+		/// Code points with 5 or 6 digits such as \u1F4A9 are supported.
+		/// \x escapes must be two digits and set the EscapeC.BackslashX flag.
+		/// \u escapes must be 4 to 6 digits. If a \u escape has more than 4 
+		/// digits, the EscapeC.HasLongEscapes flag is set. Invalid 6-digit 
+		/// escapes like \u123456 are "made valid" by being treated as 5 digits
+		/// (the largest valid escape is <c>\u10FFFF</c>.)
+		/// <para/>
+		/// Supported escapes: <c>\u \x \\ \n \r \0 \' \" \` \t \a \b \f \v</c>
+		/// </remarks>
 		/// <example>
 		/// int i = 3; 
 		/// EscapeC e = 0; 
 		/// char c = UnescapeChar(@"foo\n", ref i, ref e);
 		/// Contract.Assert(c == '\n' && e == EscapeC.HasEscapes);
 		/// </example>
-		public static char UnescapeChar(string s, ref int i, ref EscapeC encountered)
+		public static int UnescapeChar(ref UString s, ref EscapeC encountered)
 		{
-			char c = s[i++];
-			if (c != '\\')
+			bool fail;
+			int c = s.PopFront(out fail);
+			if (c != '\\' || s.Length <= 0)
 				return c;
 
 			encountered |= EscapeC.HasEscapes;
-			if (i < s.Length) {
-				int code;
-				UString slice;
-				switch (s[i++]) {
+			int code; // hex code after \u or \x
+			UString slice, original = s;
+			switch (s.PopFront(out fail)) {
 				case 'u':
-					slice = s.Slice(i, 4);
-					if (TryParseHex(slice, out code)) {
-						encountered |= code < 32 ? EscapeC.Control 
-						                         : EscapeC.NonAscii;
-						i += slice.Length;
-						return (char)code;
+					slice = s.Left(6);
+					if (TryParseHex(ref slice, out code) >= 4) {
+						if (code <= 0x10FFFF) {
+							s = s.Substring(slice.InternalStart - s.InternalStart);
+						} else {
+							Debug.Assert(slice.Length == 0);
+							// It appears to be 6 digits but only the first 5 can 
+							// be treated as part of the escape sequence.
+							s = s.Substring(5);
+							code >>= 4;
+							encountered |= EscapeC.HasInvalid6DigitEscape;
+						}
+						if (slice.InternalStart > s.InternalStart + 4)
+							encountered |= EscapeC.HasLongEscape;
+						if (code < 32)
+							encountered |= EscapeC.Control;
+						else if (code > 127)
+							encountered |= EscapeC.NonAscii;
+						return code;
 					} else
 						break;
 				case 'x':
-					slice = s.Slice(i, 2);
+					slice = s.Left(2);
 					if (TryParseHex(slice, out code)) {
-						encountered |= code < 32 ? EscapeC.BackslashX | EscapeC.Control 
-						                         : EscapeC.BackslashX | EscapeC.NonAscii;
-						i += slice.Length;
-						return (char)code;
+						encountered |= EscapeC.BackslashX;
+						if (code < 32)
+							encountered |= EscapeC.Control;
+						else if (code > 127)
+							encountered |= EscapeC.NonAscii;
+						s = s.Substring(2);
+						return code;
 					} else
 						break;
 				case '\\':
@@ -273,12 +321,9 @@ namespace Loyc.Syntax
 				case 'v':
 					encountered |= EscapeC.ABFV;
 					return '\v';
-				default:
-					encountered |= EscapeC.Unrecognized;
-					i--;
-					break;
-				}
 			}
+			encountered |= EscapeC.Unrecognized;
+			s = original;
 			return c;
 		}
 
@@ -654,7 +699,7 @@ namespace Loyc.Syntax
 					digit = (uint)value & (uint)mask;
 					value >>= shift;
 				} else {
-					digit = (uint)value % (uint)@base;
+					digit = (uint)(value % (uint)@base);
 					value /= (uint)@base;
 				}
 				target.Append(HexDigitChar((int)digit));
@@ -684,7 +729,7 @@ namespace Loyc.Syntax
 	{
 		/// <summary>Only \r, \n, \0 and backslash are escaped.</summary>
 		Minimal = 0,  
-		/// <summary>Default option</summary>
+		/// <summary>Default option for escaping</summary>
 		Default = Control | Quotes,
 		/// <summary>Escape ALL characters with codes above 127 as \xNN or \uNNNN</summary>
 		NonAscii = 1,
@@ -701,9 +746,16 @@ namespace Loyc.Syntax
 		/// <summary>Escape single and double quotes</summary>
 		Quotes = 48,
 		/// <summary>While unescaping, a backslash was encountered.</summary>
-		HasEscapes = 256, 
+		HasEscapes = 0x100, 
 		/// <summary>While unescaping, an unrecognized escape was encountered .</summary>
-		Unrecognized = 512,
+		Unrecognized = 0x200,
+		/// <summary>While unescaping, a valid \u escape was encountered with more than 4 digits.
+		/// To detect whether the value was above 0xFFFF, however, one must check the output.</summary>
+		HasLongEscape = 0x400,
+		/// <summary>While unescaping, a valid \u escape was encountered with 6 digits, but the
+		/// number was more than 0x10FFFF and had to be treated as 5 digits to make it valid.</summary>
+		/// <remarks>Always appears with HasLongEscape | HasEscapes</remarks>
+		HasInvalid6DigitEscape = 0x800,
 	}
 
 	/// <summary>Flags that can be used with 
