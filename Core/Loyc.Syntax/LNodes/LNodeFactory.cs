@@ -18,7 +18,7 @@ namespace Loyc.Syntax
 	{
 		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(null));
 		
-		private LNode _emptyList, _emptyTuple, _inParens;
+		private LNode _emptyList, _emptyTuple;
 		public LNode Missing { get { return Missing_; } } // allow access through class reference
 
 		// Common literals

@@ -59,10 +59,14 @@ partial class Les3Parser
 				Error(0, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 			}
 		}
-		public new VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
+		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true)
 		{
 			var endMarker = default(TT);
-			return ExprList(ref endMarker, list);
+			return ExprList(ref endMarker, list, allowBlockCalls);
+		}
+		public override VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
+		{
+			return ExprList(ref endMarker, list, true);
 		}
 
 		// When false, Expr ignores braces so that they can be consumed by an outer keyword expr
@@ -71,7 +75,8 @@ partial class Les3Parser
 
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
-	public override ExprList[ref TokenType endMarker, VList<LNode> list = default(VList<LNode>)] returns [VList<LNode> result] :
+	public ExprList[ref TokenType endMarker, VList<LNode> list, bool allowBlockCalls] returns [VList<LNode> result] :
+		{saveAndRestore(_allowBlockCalls = allowBlockCalls);}
 		{if (LT0.Value is string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 		// `(/X)` is the same as `[X]?` except that in the first version, X is 
 		// the default branch, which simplifies the output code in this case.
@@ -164,14 +169,7 @@ partial class Les3Parser
 
 	[LL(1)]
 	token Expr[Precedence context] returns[LNode result]
-		:	// Juxtaposition operator
-			&{[Local] context.CanParse(P.Juxtaposition)}
-			&{[Local] LA($LI+1).IsOneOf((int)TT.Id, (int)TT.PrefixOp, (int)TT.Literal)}
-			kw:=TT.Id
-			rhs:=Expr[P.Juxtaposition]
-			{ $result = F.Call((Symbol)kw.Value, rhs); }
-		/	// Usual case
-			{Precedence prec;}
+		:	{Precedence prec;}
 			e:PrefixExpr[context]
 			greedy(
 				// Infix operator
@@ -230,7 +228,13 @@ partial class Les3Parser
 			t:(TT.NormalOp|"!"|TT.BQOperator|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 			e:Expr[PrefixPrecedenceOf(t)]
 			{$result = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
-		|	result:Particle
+		|	// Juxtaposition operator
+			&{[Local] context.CanParse(P.Juxtaposition)}
+			&{[Local] LA($LI+1).IsOneOf((int)TT.Id, (int)TT.PrefixOp, (int)TT.Literal)}
+			kw:=TT.Id
+			rhs:=Expr[P.Juxtaposition]
+			{ $result = F.Call((Symbol)kw.Value, rhs).SetBaseStyle(NodeStyle.Operator); }
+		/	result:Particle
 		;
 
 	// An Particle is:
@@ -258,6 +262,7 @@ partial class Les3Parser
 		|	// (parens) - possibly a tuple
 			{var endMarker = default(TT);}
 			"(" {var saveParens = !isAttribute && (TT)LA0 != TT.At;}
+			{saveAndRestore(_allowBlockCalls = true);}
 			list:=ExprList[ref endMarker]
 			")" {
 				if (endMarker == TT.Semicolon || list.Count != 1) {

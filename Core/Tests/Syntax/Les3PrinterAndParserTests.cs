@@ -202,6 +202,7 @@ namespace Loyc.Syntax.Les
 					F.Call(S.Eq, F.Call(S.Not, x), F.Call(S.XorBits, x))));
 			Exact("| a = %b;", F.Call(S.OrBits, F.Call(S.Assign, a, F.Call(S.Mod, b))));
 			Exact(".. a + b && c;", F.Call(S.And, F.Call(S.DotDot, F.Call(S.Add, a, b)), c));
+			Exact("$a / $*b;", F.Call(S.Div, F.Call(S.Substitute, a), F.Call("'$*", b)));
 			Exact("/x;", F.Call(S.Div, x));
 		}
 
@@ -358,7 +359,7 @@ namespace Loyc.Syntax.Les
 		#region Block expressions, juxtaposition, and keyword statements
 
 		[Test]
-		public void BlockExpressions()
+		public void BlockCallExpressions()
 		{
 			Exact("a (b) {\n  c;\n};", F.Call(a, b, F.Braces(c)));
 			Exact("a (b, c) {\n};", F.Call(a, b, c, F.Braces()));
@@ -403,25 +404,61 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void KeywordStatementsWithNestedBlockCalls()
+		{
+			// Check that block-calls ARE allowed inside parens and bracks, even 
+			// though they are not allowed at the top level.
+			Exact("#return (Foo {\n}) {\n};", F.Call(S.Return, 
+				F.InParens(F.Call(Foo, F.Braces())), F.Braces()).SetBaseStyle(NodeStyle.Special));
+			Exact("#return a(Foo {\n}) {\n};", F.Call(S.Return, 
+				F.Call(a, F.Call(Foo, F.Braces())), F.Braces()).SetBaseStyle(NodeStyle.Special));
+			Exact("#return [Foo {\n}] + x[Foo {\n}] {\n};", F.Call(S.Return, F.Call(S.Add, 
+				F.Call(S.Array, F.Call(Foo, F.Braces())), F.Call(S.IndexBracks, x, F.Call(Foo, F.Braces()))),
+				F.Braces()).SetBaseStyle(NodeStyle.Special));
+			// A block can also appear as a particle
+			Exact("#return a + {\n  b;\n} {\n};", F.Call(S.Return, F.Call(S.Add, a, F.Braces(b)), F.Braces()).SetBaseStyle(NodeStyle.Special));
+			Exact("#return {\n  b;\n} {\n};",     F.Call(S.Return,                  F.Braces(b), F.Braces()).SetBaseStyle(NodeStyle.Special));
+		}
+
+		[Test]
+		public void KeywordStatementPrinterCheck()
+		{
+			// Make sure the printer doesn't allow a block call directly inside a keyword statement
+			Exact("#return Foo({\n}) {\n};", F.Call(S.Return, 
+				F.Call(Foo, F.Braces()), F.Braces()).SetBaseStyle(NodeStyle.Special));
+			Exact("#return (Foo {\n};) + x({\n}) {\n};", F.Call(S.Return, F.Call(S.Add,
+				F.Tuple(F.Call(Foo, F.Braces())), F.Call(x, F.Braces())),
+				F.Braces()).SetBaseStyle(NodeStyle.Special));
+		}
+
+		[Test]
 		public void BasicJuxtaposition()
 		{
-			Expr("not x", F.Call("not", x));
-			Expr("not a.b", F.Call("not", F.Dot(a, b)));
-			Expr("not $x", F.Call("not", F.Call(S.Substitute, x)));
-			Expr("neg 1234", F.Call("neg", F.Literal(1234)));
-			Expr("sin sqrt x", F.Call("sin", F.Call("sqrt", x)));
-			Expr("`i32.eqz` x", F.Call("i32.eqz", x));
+			Expr("not x", F.Call("not", x)                       .SetBaseStyle(NodeStyle.Operator));
+			Expr("not x + 1", F.Call(S.Add, F.Call("not", x)     .SetBaseStyle(NodeStyle.Operator), one));
+			Expr("not a.b", F.Call("not", F.Dot(a, b))           .SetBaseStyle(NodeStyle.Operator));
+			Expr("not(a).b", F.Dot(F.Call("not", a)              .SetBaseStyle(NodeStyle.Operator), b));
+			Expr("not $x", F.Call("not", F.Call(S.Substitute, x)).SetBaseStyle(NodeStyle.Operator));
+			Expr("neg 1234", F.Call("neg", F.Literal(1234))      .SetBaseStyle(NodeStyle.Operator));
+			Expr("sin sqrt x",  F.Call("sin", F.Call("sqrt", x)) .SetBaseStyle(NodeStyle.Operator));
+			Expr("sin(sqrt x)", F.Call("sin", F.Call("sqrt", x)) .SetBaseStyle(NodeStyle.Operator));
+			Expr("`i32.eqz` x", F.Call("i32.eqz", x)             .SetBaseStyle(NodeStyle.Operator));
 		}
 
 		[Test]
 		public void JuxtapositionDisambiguation()
 		{
-			// Only the first of these counts as a juxtaposition
-			Expr("not a.b.c", F.Call("not", F.Dot(a, b, c)));
-			Expr("not (a).b.c", F.Dot(F.Call("not", a), b, c));
+			// Tests for the parser: only the first of these counts as a juxtaposition
+			Expr("not a.b.c", F.Call("not", F.Dot(a, b, c)).SetBaseStyle(NodeStyle.Operator));
+			Expr("not (a).b.c", F.Dot(F.Call("not", a).SetBaseStyle(NodeStyle.Operator), b, c));
 			Expr("not [a].b.c", F.Dot(F.Call(S.IndexBracks, F.Id("not"), a), b, c));
-			Expr("not {a}.b.c", F.Dot(F.Call("not", F.Braces(a)), b, c));
-			Expr("not -x", F.Call(S.Sub, F.Id("not"), x));
+			Expr("not {a}.b.c", F.Dot(F.Call("not", F.Braces(a)).SetBaseStyle(NodeStyle.Operator), b, c));
+			Expr ("not -x", F.Call(S.Sub, F.Id("not"), x));
+			// Tests for the printer
+			//Exact("not([a].b.c)",       F.Call("not", F.Dot(F.Call(S.Array, a), b, c)).SetBaseStyle(NodeStyle.Operator));
+			//Exact("not((a).b.c)",       F.Call("not", F.Dot(F.InParens(a), b, c).SetBaseStyle(NodeStyle.Operator)));
+			//Exact("not({\n  a\n}.b.c)", F.Call("not", F.Dot(F.Braces(a), b, c).SetBaseStyle(NodeStyle.Operator)));
+			//Exact("not(-x)",            F.Call("not", F.Call(S.Sub, x)).SetBaseStyle(NodeStyle.Operator));
 		}
 
 		#endregion

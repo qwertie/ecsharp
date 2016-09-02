@@ -210,7 +210,7 @@ namespace Loyc.Syntax.Les
 		{
 			if (name.Length <= 1 || name[0] != '\'')
 				return false; // optimized path
-			return IsOperator(name, OpChars, true, "'") || IsOperator(name, OpChars, true, "'$");
+			return IsOperator(name, OpChars, true, "'") || name == "'$" || IsOperator(name, OpChars, true, "'$");
 		}
 
 		/// <summary>Returns true if the given Symbol can ever be used as an "extended" 

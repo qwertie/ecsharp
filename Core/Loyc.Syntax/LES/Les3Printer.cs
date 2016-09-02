@@ -125,6 +125,7 @@ namespace Loyc.Syntax.Les
 		protected LNode _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected Chars _curSet = 0;
+		protected bool _allowBlockCalls = true;
 
 		public static readonly LNodePrinter Printer = Print;
 
@@ -574,11 +575,13 @@ namespace Loyc.Syntax.Les
 
 		public void Visit(CallNode node)
 		{
+			bool allowBlockCalls = _allowBlockCalls;
 			// Note: Attributes, if any, have already been printed by this point
 			bool parens = false;
 			switch (PrefixNotationOnly ? NodeStyle.PrefixNotation : node.BaseStyle)
 			{
 				case NodeStyle.Operator:
+				case NodeStyle.Statement:
 				case NodeStyle.Default:
 					// Figure out if this node can be treated as an operator and if 
 					// so, whether it's a suffix operator.
@@ -591,7 +594,7 @@ namespace Loyc.Syntax.Les
 						if (!node.ArgCount.IsInRange(1, 2) || !LesPrecedenceMap.IsExtendedOperator(opName.Name))
 							goto default;
 						var shape = (OperatorShape)node.ArgCount;
-						if (node.ArgCount == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName))
+						if (node.ArgCount == 1 && LesPrecedenceMap.IsSuffixOperatorName(opName, out opName, true))
 							shape = OperatorShape.Suffix;
 
 						parens = PrintCallAsNormalOpOrPrefixNotation(shape, opName, node);
@@ -602,13 +605,14 @@ namespace Loyc.Syntax.Les
 						goto default;
 					break;
 				case NodeStyle.PrefixNotation:
-					parens = PrintPrefixNotation(node, purePrefix: true);
+					parens = PrintPrefixNotation(node, allowBlockCalls: false);
 					break;
 				default:
-					parens = PrintPrefixNotation(node, purePrefix: false);
+					parens = PrintPrefixNotation(node, true);
 					break;
 			}
 			if (parens) WriteToken(')', LesColorCode.Closer, Chars.Delimiter);
+			_allowBlockCalls = allowBlockCalls;
 		}
 
 		private bool TryToPrintCallAsKeywordExpression(CallNode node)
@@ -622,7 +626,12 @@ namespace Loyc.Syntax.Les
 				return true;
 
 			Space();
-			Print(args[0], LesPrecedence.SuperExpr);
+			try {
+				_allowBlockCalls = false;
+				Print(args[0], LesPrecedence.SuperExpr);
+			} finally {
+				_allowBlockCalls = true;
+			}
 			if (args.Count <= 1)
 				return true;
 
@@ -657,12 +666,12 @@ namespace Loyc.Syntax.Les
 
 		#region Printing calls: in prefix notation or as a block call
 
-		bool PrintPrefixNotation(CallNode node, bool purePrefix)
+		bool PrintPrefixNotation(CallNode node, bool allowBlockCalls)
 		{
 			bool parens = AddParenIf(!IsAllowedHere(LesPrecedence.Primary));
 
 			Print(node.Target, LesPrecedence.Primary.LeftContext(_context));
-			PrintArgList(node, purePrefix);
+			PrintArgList(node, allowBlockCalls);
 
 			return parens;
 		}
@@ -677,13 +686,13 @@ namespace Loyc.Syntax.Les
 			return false;
 		}
 
-		void PrintArgList(LNode node, bool purePrefix, bool ignoreContinuators = false)
+		void PrintArgList(LNode node, bool allowBlockCalls, bool ignoreContinuators = false)
 		{
 			var args = node.Args;
 			int numContinuators = 0;
 			LNode braces = null;
 
-			if (!purePrefix && args.Count > 0) {
+			if (allowBlockCalls && _allowBlockCalls && args.Count > 0) {
 				// Detect a block call, which should have something in 
 				// braces, followed by continuators.
 				if (!ignoreContinuators)
@@ -723,7 +732,7 @@ namespace Loyc.Syntax.Les
 		{
 			Debug.Assert(continuator.Name.Name.StartsWith("'"));
 			WriteToken(continuator.Name.Name.Substring(1), LesColorCode.Keyword, Chars.Id);
-			PrintArgList(continuator, false, ignoreContinuators: true);
+			PrintArgList(continuator, allowBlockCalls: true, ignoreContinuators: true);
 		}
 
 		enum ArgListStyle
@@ -734,6 +743,9 @@ namespace Loyc.Syntax.Les
 		}
 		void PrintArgListCore(VList<LNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside, int startIndex = 0)
 		{
+			var outerAllowBlockCalls = _allowBlockCalls;
+			_allowBlockCalls = true;
+
 			WriteToken(leftDelim, LesColorCode.Opener, Chars.Delimiter);
 			Space(spacesInside);
 			if (style == ArgListStyle.BracedBlock)
@@ -753,6 +765,8 @@ namespace Loyc.Syntax.Les
 				PS.Newline(-1);
 			Space(spacesInside);
 			WriteToken(rightDelim, LesColorCode.Closer, Chars.Delimiter);
+
+			_allowBlockCalls = outerAllowBlockCalls;
 		}
 
 		#endregion
@@ -769,10 +783,10 @@ namespace Loyc.Syntax.Les
 			// are not supported.
 			Precedence prec = LesPrecedenceMap.Default.Find(shape, opName);
 			if (shape != OperatorShape.Infix && (prec == LesPrecedence.Other || !LesPrecedenceMap.IsNaturalOperator(opName.Name)))
-				return PrintPrefixNotation(node, false);
+				return PrintPrefixNotation(node, true);
 			bool allowed = IsAllowedHere(prec);
 			if (!allowed && !AllowExtraParenthesis && IsAllowedHere(LesPrecedence.Primary))
-				return PrintPrefixNotation(node, false);
+				return PrintPrefixNotation(node, true);
 
 			bool parens = AddParenIf(!allowed);
 
@@ -825,6 +839,7 @@ namespace Loyc.Syntax.Les
 				WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
 				Space(SpaceInsideGroupingParens);
 				_context = Precedence.MinValue;
+				_allowBlockCalls = true;
 			}
 			return cond;
 		}
@@ -944,6 +959,7 @@ namespace Loyc.Syntax.Les
 					WriteToken('(', LesColorCode.Opener, Chars.Delimiter);
 					parenCount++;
 					Space(SpaceInsideGroupingParens);
+					_allowBlockCalls = true;
 				}
 				return true;
 			} else if (!PrintTriviaExplicitly) {

@@ -65,11 +65,12 @@ namespace Loyc.Syntax.Les
 					case (char)LesColorCode.None:      Console.ForegroundColor = ConsoleColor.Gray; break;
 					case (char)LesColorCode.Comment:   Console.ForegroundColor = ConsoleColor.Green; break;
 					case (char)LesColorCode.Id:        Console.ForegroundColor = ConsoleColor.Gray; break;
+					case (char)LesColorCode.SpecialId: Console.ForegroundColor = ConsoleColor.Green; break;
 					case (char)LesColorCode.Number:    Console.ForegroundColor = ConsoleColor.Magenta; break;
 					case (char)LesColorCode.String:    Console.ForegroundColor = ConsoleColor.Yellow; break;
-					case (char)LesColorCode.CustomLiteral: Console.ForegroundColor = ConsoleColor.White; break;
+					case (char)LesColorCode.CustomLiteral: Console.ForegroundColor = ConsoleColor.Magenta; break;
 					case (char)LesColorCode.KeywordLiteral: Console.ForegroundColor = ConsoleColor.Red; break;
-					case (char)LesColorCode.Operator:  Console.ForegroundColor = ConsoleColor.DarkCyan; break;
+					case (char)LesColorCode.Operator:  Console.ForegroundColor = ConsoleColor.White; break;
 					case (char)LesColorCode.Separator: Console.ForegroundColor = ConsoleColor.Gray; break;
 					case (char)LesColorCode.Attribute: Console.ForegroundColor = ConsoleColor.Blue; break;
 					case (char)LesColorCode.Keyword:   Console.ForegroundColor = ConsoleColor.Cyan; break;
@@ -165,7 +166,7 @@ namespace Loyc.Syntax.Les
 			return names;
 		}
 
-		protected internal static readonly string[] DefaultCssClassTable = GetDefaultCssClassTable();
+		internal static readonly string[] DefaultCssClassTable = GetDefaultCssClassTable();
 
 		/// <summary>Prints an LNode as LESv3 with HTML syntax highlighting elements.</summary>
 		/// <param name="node">A syntax tree to print.</param>
