@@ -209,7 +209,8 @@ namespace Loyc.Syntax.Les
 			Case("1337", A(TT.Literal), 1337);
 			Case("-1", A(TT.NegativeLiteral), -1);
 			Case("9111222U", A(TT.Literal), 9111222U);
-			Case("0L", A(TT.Literal), 0L);
+			Case("0x8000_0000", A(TT.Literal), 0x80000000);
+			Case("0L e 0x8000000000000000", A(TT.Literal, TT.Id, TT.Literal), 0L, _("e"), 0x8000000000000000);
 			Case("-9111222L", A(TT.NegativeLiteral), -9111222L);
 			Case("-1U", A(TT.NegativeLiteral), new Error(CL("-1", "U")));
 			Case("9_111_222", A(TT.Literal), 9111222);
@@ -223,15 +224,22 @@ namespace Loyc.Syntax.Les
 			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.NormalOp, TT.Literal), 0x8081FF, _("'=="), 0x8081FF);
 			Case("0b11L 0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
 			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Literal), 0x0F808192FF);
-			// Case("11Z", A(TT.Literal), new BigInteger(11));
-			// Case("9_111_222_333_444_555Z", A(TT.Literal), new BigInteger(9111222333444555UL));
-			// Case("9999111222333444555000Z", A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
-			Case("9999111222333444555000", A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), BigInteger.Parse("1FFFFFFFF00000000", System.Globalization.NumberStyles.HexNumber));
-			// Case("-9111222Z", A(TT.NegativeLiteral), new BigInteger(-9111222L));
-			// Case("-9999111222333444555000Z", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
-			Case("-9999111222333444555000", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
-			Case("-18446744069414584320", A(TT.NegativeLiteral), BigInteger.Parse("-18446744069414584320"));
+		}
+
+		[Test]
+		public void TestBigInts()
+		{
+			Case("11z\n                  ",  A(TT.Literal, TT.Newline), new BigInteger(11), WS);
+			Case("9_111_222_333_444_555z ",  A(TT.Literal), new BigInteger(9111222333444555UL));
+			Case("9999111222333444555000z",  A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
+			Case("9999111222333444555000",   A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
+			Case("0x1_FFFF_FFFF_0000_0000",  A(TT.Literal), (BigInteger)0x1FFFFFFFF0000000 << 4);
+			Case("-1z",                      A(TT.NegativeLiteral), new BigInteger(-1));
+			Case("-9999111222333444555000",  A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
+			Case("-18446744069414584320",    A(TT.NegativeLiteral), BigInteger.Parse("-18446744069414584320"));
+			Case("-9111222z             \n", A(TT.NegativeLiteral, TT.Newline), new BigInteger(-9111222L), WS);
+			Case("-9999111222333444555000z", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
+			Case("123456789012345678901234567890", A(TT.Literal), BigInteger.Parse("123456789012345678901234567890"));
 		}
 
 		[Test]
@@ -307,16 +315,6 @@ namespace Loyc.Syntax.Les
 			Case("123``",       A(TT.Literal), 123);
 			// PURE EVIL. "MOST NEFARIOUS" AWARD.
 			Case(@"number""\x31\x32\x33""", A(TT.Literal), 123);
-		}
-
-		[Test]
-		public void TestBigIntegers()
-		{
-			// TODO
-			//Case("-1z", A(TT.Literal), new BigInteger(-1));
-			Case("0x1_FFFF_FFFF_0000_0000", A(TT.Literal), (double)0x1FFFFFFFF0000000 * 16);
-			//Case("123456789012345678901234567890", A(TT.Literal),
-			//      123456789012345678901234567890d);
 		}
 
 		[Test]
@@ -465,17 +463,17 @@ namespace Loyc.Syntax.Les
 				Assert.AreEqual(tokenTypes[i], token.Type());
 				if (i < expected.Length) {
 					if (expected[i] is Error) {
-						Assert.IsTrue(error);
+						Assert.IsTrue(error, "Expected error didn't occur in «{0}»", input);
 						Assert.AreEqual(((Error)expected[i]).Value, token.Value);
 					} else {
 						Assert.AreEqual(expected[i], token.Value);
-						Assert.IsFalse(error);
+						Assert.IsFalse(error, "Unexpected error in token [{0}] of «{1}»", i, input);
 					}
 				}
 				index = token.EndIndex;
 			}
 			var nothing = lexer.NextToken();
-			Assert.That(!nothing.HasValue);
+			Assert.That(!nothing.HasValue, "Extra token after the expected ones");
 		}
 	}
 }

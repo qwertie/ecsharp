@@ -37,7 +37,6 @@ namespace Loyc.Syntax.Les
 		{
 			Exact(@"123;", F.Literal(123));
 			Exact(@"(123);", F.InParens(F.Literal(123)));
-			// Exact(@"123z", F.Literal(new BigInteger(123)));
 			Exact(@"123uL;", F.Literal(123uL));
 			Exact(@"123.25;", F.Literal(123.25));
 			Exact(@"123.25f;", F.Literal(123.25f));
@@ -126,13 +125,22 @@ namespace Loyc.Syntax.Les
 			Exact("-x;", F.Call(S.Sub, x));
 			Exact("- 2;", F.Call(S.Sub, two));
 			Exact("-2;", F.Literal(-2));
-			// Exact("-2z;", F.Literal(new BigInteger(-2)));
 			Stmt("-111222333444;", F.Literal(-111222333444));
 			Exact("-2L;", F.Literal(-2L));
 			Stmt("-2.0;", F.Literal(-2.0));
 			Stmt("-2d;", F.Literal(-2.0));
 			Exact("-2f;", F.Literal(-2.0f));
 			Stmt("-2.0f;", F.Literal(-2.0f));
+		}
+
+		[Test]
+		public void BigIntLiterals()
+		{
+			Exact(@"123z;", F.Literal(new BigInteger(123)));
+			// TODO: add underscores in printer
+			Stmt (@"9_876_543_210z;", F.Literal(new BigInteger(9876543210)));
+			// TODO: don't print this as a string in printer
+			Stmt ("-2z;", F.Literal(new BigInteger(-2)));
 		}
 		
 		#endregion

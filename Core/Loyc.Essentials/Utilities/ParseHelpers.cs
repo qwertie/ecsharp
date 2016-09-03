@@ -15,11 +15,19 @@ namespace Loyc.Syntax
 	/// C-style string parser <see cref="UnescapeCStyle"/>.</remarks>
 	public static class ParseHelpers
 	{
+		/// <summary>A simple method to parse a sequence of hex digits, without
+		/// overflow checks or other features supported by methods like 
+		/// <see cref="TryParseInt(string, ref int, out int, int, bool)"/>.</summary>
+		/// <returns><c>true</c> iff the entire string was consumed and the string was nonempty.</returns>
 		public static bool TryParseHex(UString s, out int value)
 		{
 			int count = TryParseHex(ref s, out value);
 			return count > 0 && s.IsEmpty;
 		}
+		/// <summary>A simple method to parse a sequence of hex digits, without
+		/// overflow checks or other features supported by methods like 
+		/// <see cref="TryParseInt(string, ref int, out int, int, bool)"/>.</summary>
+		/// <returns>The number of digits parsed</returns>
 		public static int TryParseHex(ref UString s, out int value)
 		{
 			value = 0;
@@ -30,10 +38,12 @@ namespace Loyc.Syntax
 				if (digit == -1)
 					return len;
 				else
-					value = value * 16 + digit;
+					value = (value << 4) + digit;
 			}
 		}
-		/// <summary>Gets the integer value for the specified hex digit, or -1 if the character is not a hex digit.</summary>
+
+		/// <summary>Gets the integer value for the specified hex digit, or -1 if 
+		/// the character is not a hex digit.</summary>
 		public static int HexDigitValue(char c)
 		{
 			if (c >= '0' && c <= '9')
@@ -45,6 +55,9 @@ namespace Loyc.Syntax
 			else
 				return -1;
 		}
+		/// <summary>Gets the integer value for the specified digit, where 'A' maps 
+		/// to 10 and 'Z' maps to 35, or -1 if the character is not a digit or
+		/// letter.</summary>
 		public static int Base36DigitValue(char c)
 		{
 			if (c >= '0' && c <= '9')
@@ -56,7 +69,9 @@ namespace Loyc.Syntax
 			else
 				return -1;
 		}
-		/// <summary>Gets the hex digit character for the specified value, or '?' if the value is not in the range 0...15.</summary>
+
+		/// <summary>Gets the hex digit character for the specified value, 
+		/// or '?' if the value is not in the range 0...15. Uses uppercase.</summary>
 		public static char HexDigitChar(int value)
 		{
 			if ((uint)value < 10)
@@ -67,10 +82,16 @@ namespace Loyc.Syntax
 				return '?';
 		}
 
+		/// <summary>Escapes characters in a string using C style, e.g. the string 
+		/// <c>"Foo\"\n"</c> maps to <c>"Foo\\\"\\\n"</c> by default.</summary>
 		public static string EscapeCStyle(UString s, EscapeC flags = EscapeC.Default)
 		{
 			return EscapeCStyle(s, flags, '\0');
 		}
+		/// <summary>Escapes characters in a string using C style.</summary>
+		/// <param name="flags">Specifies which characters should be escaped.</param>
+		/// <param name="quoteType">Specifies a character that should always be 
+		/// escaped (typically one of <c>' " `</c>)</param>
 		public static string EscapeCStyle(UString s, EscapeC flags, char quoteType)
 		{
 			StringBuilder s2 = new StringBuilder(s.Length+1);
@@ -105,13 +126,13 @@ namespace Loyc.Syntax
 
 		/// <summary>Writes a character <c>c</c> to a StringBuilder, either as a normal 
 		/// character or as a C-style escape sequence.</summary>
-		/// <param name="c"></param>
-		/// <param name="out"></param>
-		/// <param name="flags"></param>
-		/// <param name="quoteType"></param>
+		/// <param name="flags">Specifies which characters should be escaped.</param>
+		/// <param name="quoteType">Specifies a character that should always be 
+		/// escaped (typically one of <c>' " `</c>)</param>
 		/// <returns>true if an escape sequence was emitted, false if not.</returns>
-		/// <remarks>EscapeC.HasLongEscape can be used to force a 6-digit unicode escape;
-		/// this may be needed if the next character after this one is a digit.</remarks>
+		/// <remarks><see cref="EscapeC.HasLongEscape"/> can be used to force a 6-digit 
+		/// unicode escape; this may be needed if the next character after this one 
+		/// is a digit.</remarks>
 		public static bool EscapeCStyle(int c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			for(;;) {
@@ -173,14 +194,17 @@ namespace Loyc.Syntax
 				@out.AppendCodePoint(c);
 			return false;
 		}
-		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+
+		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. 
+		/// "\\\n\\\r" becomes "\n\r".</summary>
 		public static string UnescapeCStyle(UString s, bool removeUnnecessaryBackslashes = false)
 		{
 			EscapeC _;
 			return UnescapeCStyle(s, out _, removeUnnecessaryBackslashes).ToString();
 		}
 
-		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. "\n\r" becomes @"\n\r".</summary>
+		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. 
+		/// "\\\n\\\r" becomes "\n\r".</summary>
 		/// <param name="encountered">Returns information about whether escape 
 		/// sequences were encountered, and which categories.</param>
 		/// <param name="removeUnnecessaryBackslashes">Causes the backslash before 
@@ -221,10 +245,11 @@ namespace Loyc.Syntax
 		/// <summary>Unescapes a single character of a string. Returns the 
 		/// first character if it is not a backslash, or <c>\</c> if it is a 
 		/// backslash but no escape sequence could be discerned.</summary>
-		/// <param name="s">Slice of a string to be unescaped. Upon returning,
-		/// s will be shorter as the parsed character(s) are clipped from the
-		/// beginning (<c>s.InternalStart</c> is incremented by one normally 
-		/// and more than one in case of an escape sequence.)</param>
+		/// <param name="s">Slice of a string to be unescaped. When using a
+		/// <c>ref UString</c> overload of this method, <c>s</c> will be shorter upon
+		/// returning from this method, as the parsed character(s) are clipped 
+		/// from the beginning (<c>s.InternalStart</c> is incremented by one 
+		/// normally and more than one in case of an escape sequence.)</param>
 		/// <param name="encountered">Bits of this parameter are set according
 		/// to which escape sequence is encountered, if any.</param>
 		/// <remarks>
@@ -240,10 +265,10 @@ namespace Loyc.Syntax
 		/// Supported escapes: <c>\u \x \\ \n \r \0 \' \" \` \t \a \b \f \v</c>
 		/// </remarks>
 		/// <example>
-		/// int i = 3; 
 		/// EscapeC e = 0; 
-		/// char c = UnescapeChar(@"foo\n", ref i, ref e);
-		/// Contract.Assert(c == '\n' && e == EscapeC.HasEscapes);
+		/// UString str = @"\nfoo";
+		/// char c = UnescapeChar(ref str, ref e);
+		/// Contract.Assert(str == "foo" && e == EscapeC.HasEscapes);
 		/// </example>
 		public static int UnescapeChar(ref UString s, ref EscapeC encountered)
 		{
@@ -332,7 +357,8 @@ namespace Loyc.Syntax
 		/// this method allows parsing to start at any point in the string, it 
 		/// allows non-numeric data after the number, and it can parse numbers that
 		/// are not in base 10.</summary>
-		/// <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.</param>
+		/// <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.
+		/// Must be in the range 2 to 36.</param>
 		/// <param name="index">Location at which to start parsing</param>
 		/// <param name="flags"><see cref="ParseNumberFlag"/>s that affect parsing behavior.</param>
 		/// <param name="skipSpaces">Whether to skip spaces before parsing. Only 
@@ -391,6 +417,24 @@ namespace Loyc.Syntax
 			return ok && ((result < 0) == negative || result == 0);
 		}
 
+		/// <summary>Tries to parse a string to an unsigned integer.</summary>
+		/// <param name="s">A slice of a string to be parsed.</param>
+		/// <param name="radix">Number base, e.g. 10 for decimal and 2 for binary.
+		/// Normally in the range 2 to 36.</param>
+		/// <param name="flags"><see cref="ParseNumberFlag"/>s that affect parsing behavior.</param>
+		/// <returns>True if a number was found starting at the specified index
+		/// and it was successfully converted to a number, or false if not.</returns>
+		/// <remarks>
+		/// This method never throws. It shrinks the slice <c>s</c> as it parses,
+		/// so if parsing fails, <c>s[0]</c> will be the character at which parsing 
+		/// fails. If base>36, parsing can succeed but digits above 35 (Z) cannot 
+		/// be represented in the input string. If the number cannot fit in 
+		/// <c>result</c>, the return value is false and the method's exact behavior
+		/// depends on whether you used <see cref="ParseNumberFlag.StopBeforeOverflow"/>.
+		/// <para/>
+		/// When parsing input such as "12.34", the parser stops and returns true
+		/// at the dot (with a result of 12 in this case).
+		/// </remarks>
 		public static bool TryParseUInt(ref UString s, out ulong result, int radix = 10, ParseNumberFlag flags = 0)
 		{
 			result = 0;
@@ -435,6 +479,7 @@ namespace Loyc.Syntax
 			return !overflow && numDigits > 0;
 		}
 
+		/// <inheritdoc cref="TryParseUInt(ref UString, out ulong, int, ParseNumberFlag)"/>
 		public static bool TryParseUInt(ref UString s, out BigInteger result, int radix = 10, ParseNumberFlag flags = 0)
 		{
 			result = 0;
@@ -443,6 +488,7 @@ namespace Loyc.Syntax
 		}
 		static bool TryParseUInt(ref UString s, ref BigInteger result, int radix, ParseNumberFlag flags, out int numDigits)
 		{
+			// TODO: OPTIMIZE THIS ALGORITHM: it is currently O(n^2) in the number of digits
 			numDigits = 0;
 			if ((flags & ParseNumberFlag.SkipSpacesInFront) != 0)
 				s = SkipSpaces(s);

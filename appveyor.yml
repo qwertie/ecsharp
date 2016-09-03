@@ -1,4 +1,4 @@
-version: 1.8.1.{build}
+version: 1.9.2.{build}
 
 before_build:
     - nuget restore Loyc-Slim.sln
@@ -6,7 +6,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=1.8.0
+    - set SEMVER=1.9.2
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
@@ -29,7 +29,7 @@ test_script:
 
 assembly_info:
     patch: true
-    file: AssemblyVersion.*
+    file: '**\AssemblyInfo.cs'
     assembly_version: "{version}"
     assembly_file_version: "{version}"
     assembly_informational_version: "{version}"

@@ -176,6 +176,10 @@ namespace Loyc.Syntax.Les
 			Case("0b1000_0000_1000_0001_1111_1111==0x8081FF", A(TT.Literal, TT.NormalOp, TT.Literal), 0x8081FF, _("'=="), 0x8081FF);
 			Case("0b11L0b10000000_10000001_10010010_11111111U", A(TT.Literal, TT.Literal), 3L, 0x808192FFU);
 			Case("0b1111_10000000_10000001_10010010_11111111", A(TT.Literal), 0x0F808192FF);
+		}
+		[Test]
+		public void TestBigIntegers()
+		{
 			Case("11Z", A(TT.Literal), new BigInteger(11));
 			Case("9_111_222_333_444_555Z", A(TT.Literal), new BigInteger(9111222333444555UL));
 			Case("9999111222333444555000Z", A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));

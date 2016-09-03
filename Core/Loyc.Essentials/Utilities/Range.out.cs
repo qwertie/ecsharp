@@ -111,15 +111,15 @@ namespace Loyc
 				return max;
 			return n;
 		}
-		public static bool IsInRangeExcludeHi< T>(this T num, T lo, T hi) where T: IComparable<T>
+		public static bool IsInRangeExcludeHi<T>(this T num, T lo, T hi) where T: IComparable<T>
 		{
 			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) < 0;
 		}
-		public static bool IsInRange< T>(this T num, T lo, T hi) where T: IComparable<T>
+		public static bool IsInRange<T>(this T num, T lo, T hi) where T: IComparable<T>
 		{
 			return num.CompareTo(lo) >= 0 && num.CompareTo(hi) <= 0;
 		}
-		public static T PutInRange< T>(this T n, T min, T max) where T: IComparable<T>
+		public static T PutInRange<T>(this T n, T min, T max) where T: IComparable<T>
 		{
 			if (n.CompareTo(min) <= 0)
 				return min;

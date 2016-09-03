@@ -76,17 +76,18 @@ namespace Loyc.Syntax.Les
 		protected static Dictionary<UString, Func<UString, object>> InitLiteralParsers()
 		{
 			var dict = new Dictionary<UString, Func<UString, object>>();
-			Func<UString, object> i32 = s => { long n; return ParseLong(s, out n) && (int)n == n ? (object)(int)n : null; };
-			Func<UString, object> u32 = s => { long n; return ParseLong(s, out n) && (uint)n == n ? (object)(uint)n : null; };
-			Func<UString, object> i64 = s => { long n; return ParseLong(s, out n) ? (object)(long)n : null; };
+			Func<UString, object> i32 = s => { long n; return ParseSigned(s, out n) && (int)n == n ? (object)(int)n : null; };
+			Func<UString, object> u32 = s => { long n; return ParseSigned(s, out n) && (uint)n == n ? (object)(uint)n : null; };
+			Func<UString, object> i64 = s => { long n; return ParseSigned(s, out n) ? (object)(long)n : null; };
 			Func<UString, object> u64 = s => { ulong n; return ParseULong(s, out n) ? (object)(ulong)n : null; };
+			Func<UString, object> big = s => { BigInteger n; return ParseSigned(s, out n) ? (object)n : null; };
 			Func<UString, object> f32 = s => { double n; return ParseDouble(s, out n) && n >= float.MinValue && n <= float.MaxValue ? (object)(float)n : null; };
 			Func<UString, object> f64 = s => { double n; return ParseDouble(s, out n) ? (object)n : null; };
 			Func<UString, object> dec = s => {
 				// TODO: support decimal properly
 				long n;
 				double d;
-				if (ParseLong(s, out n))
+				if (ParseSigned(s, out n))
 					return (decimal)n;
 				if (ParseDouble(s, out d))
 					return (decimal)d;
@@ -100,6 +101,7 @@ namespace Loyc.Syntax.Les
 			dict["f32"] = dict["f"] = dict["F"] = f32;
 			dict["f64"] = dict["d"] = dict["D"] = f64;
 			dict["m"] = dec;
+			dict["z"] = big;
 			dict["s"] = s => (Symbol)s;
 			dict["re"] = s => {
 				try { return new System.Text.RegularExpressions.Regex((string)s); }
@@ -113,24 +115,28 @@ namespace Loyc.Syntax.Les
 		static object GeneralNumberParser(UString s)
 		{
 			long n;
-			ulong u;
+			BigInteger z;
 			double d;
-			if (ParseLong(s, out n)) {
+			if (ParseSigned(s, out n)) {
 				if ((int)n == n)
 					return (int)n;
 				else if ((uint)n == n)
 					return (uint)n;
 				else
 					return n;
-			} else if (ParseULong(s, out u)) {
-				return u;
+			} else if (s.Length >= 18 && ParseSigned(s, out z)) {
+				// (The length check is an optimization: the shortest number that 
+				// does not fit in a long is 0x8000000000000000.)
+				if (z >= 0 && z <= UInt64.MaxValue)
+					return (ulong)z;
+				return z;
 			} else if (ParseDouble(s, out d)) {
 				return d;
 			} else
 				return null;
 		}
 
-		static bool ParseLong(UString s, out long n)
+		static bool ParseSigned(UString s, out long n)
 		{
 			n = 0;
 			bool negative;
@@ -142,6 +148,20 @@ namespace Loyc.Syntax.Les
 			if (ParseHelpers.TryParseUInt(ref s, out u, radix, flags) && s.Length == 0) {
 				n = negative ? -(long)u : (long)u;
 				return (long)u >= 0;
+			}
+			return false;
+		}
+		static bool ParseSigned(UString s, out BigInteger n)
+		{
+			n = 0;
+			bool negative;
+			int radix = GetSignAndRadix(ref s, out negative);
+			if (radix == 0)
+				return false;
+			var flags = ParseNumberFlag.SkipSingleQuotes | ParseNumberFlag.SkipUnderscores | ParseNumberFlag.StopBeforeOverflow;
+			if (ParseHelpers.TryParseUInt(ref s, out n, radix, flags) && s.Length == 0) {
+				if (negative) n = -n;
+				return true;
 			}
 			return false;
 		}
