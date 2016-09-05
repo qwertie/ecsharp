@@ -50,8 +50,9 @@ a[href*="//localhost"]:after {
   margin: 0;
 }
 
-.site-title {
+h1.site-title {
    color: white;
+   font-size: 2.3rem;
    text-shadow:
        3px 3px 0 #000,
      -1px -1px 0 #000,  
