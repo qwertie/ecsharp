@@ -31,7 +31,7 @@ namespace Loyc.Syntax.Les
 			Case("/* hello *//* I mean, \r\n hello world! */",
 				A(TT.MLComment, TT.MLComment), WS, WS);
 			Case("// hello\n\r\n\r/* world */",
-				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment), WS, WS, WS, WS, WS);
+				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment), WS, null, null, null, WS);
 			Case("/* hello */**/",
 				A(TT.MLComment, TT.NormalOp), WS, _("'**/"));
 		}
@@ -40,29 +40,40 @@ namespace Loyc.Syntax.Les
 		public void TestIdentifiers()
 		{
 			Case("abc_123/_0", A(TT.Id, TT.NormalOp, TT.Id), _("abc_123"), _("'/"), _("_0"));
-			Case("is`is`", A(TT.Id, TT.Id), _("is"), _("is"));
-			Case("`backquoted`x", A(TT.Id, TT.Id), _("backquoted"), _("x"));
+			Case("is`is`", A(TT.Id, TT.BQId), _("is"), _("is"));
+			Case("`backquoted`x", A(TT.BQId, TT.Id), _("backquoted"), _("x"));
 			Case("No#error", A(TT.Id), _("No#error"));
-			Case("`#food:``yum`", A(TT.Id, TT.Id), _("#food:"), _("yum"));
-			Case(@"`/*``$``==>``??.`", A(TT.Id, TT.Id, TT.Id, TT.Id), _(@"/*"), _("$"), _("==>"), _("??."));
-			Case(@"`0``\`\n`", A(TT.Id, TT.Id), _("0"), _("`\n"));
+			Case("`#food:``yum`", A(TT.BQId, TT.BQId), _("#food:"), _("yum"));
+			Case(@"`/*``$``==>``??.`", A(TT.BQId, TT.BQId, TT.BQId, TT.BQId), _(@"/*"), _("$"), _("==>"), _("??."));
+			Case(@"`0``\`\n`", A(TT.BQId, TT.BQId), _("0"), _("`\n"));
 			Case("isn't prime'", A(TT.Id, TT.Id), _("isn't"), _("prime'"));
-			Case(@" `\a\b\f\v\`\'\""`", A(TT.Id), _("\a\b\f\v`\'\""));
+			Case(@" `\a\b\f\v\`\'\""`", A(TT.BQId), _("\a\b\f\v`\'\""));
+		}
+
+		[Test]
+		public void TestNewlines()
+		{
+			// Newline counts as whitespace only inside parens and square brackets
+			Case("\nfoo\n", A(TT.Newline, TT.Id, TT.Newline), null, _("foo"), null);
+			Case("{\nfoo\n}", A(TT.LBrace, TT.Newline, TT.Id, TT.Newline, TT.RBrace), null, null, _("foo"), null, null);
+			Case("(\nfoo\n)", A(TT.LParen, TT.Newline, TT.Id, TT.Newline, TT.RParen), null, WS, _("foo"), WS, null);
+			Case("[\nfoo\n]", A(TT.LBrack, TT.Newline, TT.Id, TT.Newline, TT.RBrack), null, WS, _("foo"), WS, null);
+			Case("(\n{\n}\n)", A(TT.LParen, TT.Newline, TT.LBrace, TT.Newline, TT.RBrace, TT.Newline, TT.RParen), null, WS,  null, null, null, WS, null);
 		}
 
 		[Test]
 		public void TrueFalseNullAndSimilarIds()
 		{
 			// true, false and null: the only keywords so far
-			Case("`foo`", A(TT.Id), _("foo"));
+			Case("`foo`", A(TT.BQId), _("foo"));
 			Case("null", A(TT.Literal), new object[] { null });
-			Case("`null`", A(TT.Id), _("null"));
+			Case("`null`", A(TT.BQId), _("null"));
 			Case("true false", A(TT.Literal, TT.Literal), true, false);
-			Case("`true``false`", A(TT.Id, TT.Id), _("true"), _("false"));
+			Case("`true``false`", A(TT.BQId, TT.BQId), _("true"), _("false"));
 		}
 
 		[Test]
-		public void TestSQKeywords()
+		public void TestSQOperators()
 		{
 			var sqOperator = TT.NormalOp;
 			Case("x'y", A(TT.Id), _("x'y"));
@@ -72,11 +83,11 @@ namespace Loyc.Syntax.Les
 			Case("'~!#$%^&*-_=+|'<>./?abc123ABC", A(sqOperator, sqOperator), _("'~!#$%^&*-_=+|"), _("'<>./?abc123ABC"));
 		}
 
-		public void TestKeywords()
-		{
-			Case("#error", A(TT.Id, TT.Dot), _("#error"));
-			Case("etc #key-word etc", A(TT.Id, TT.Keyword, TT.Id), _("etc"), _("#key-word"), _("etc"));
-		}
+		//public void TestKeywords()
+		//{
+		//	Case("#error", A(TT.Id, TT.Dot), _("#error"));
+		//	Case("etc #key-word etc", A(TT.Id, TT.Keyword, TT.Id), _("etc"), _("#key-word"), _("etc"));
+		//}
 
 		[Test]
 		public void TestNormalStrings()
@@ -102,7 +113,7 @@ namespace Loyc.Syntax.Les
 			Case("\t\t'''One\n\t\tTwo'''", A(TT.Literal), "One\nTwo");
 			Case("\t\t'''One\n\t\t\tTwo'''", A(TT.Literal), "One\nTwo");
 			Case("\t\t'''One\n\t\t\t\tTwo'''", A(TT.Literal), "One\n\tTwo");
-			Case("\n\t\t'''One\n\t\t\t\tTwo'''", A(TT.Newline, TT.Literal), WS, "One\n\tTwo");
+			Case("\n\t\t'''One\n\t\t\t\tTwo'''", A(TT.Newline, TT.Literal), null, "One\n\tTwo");
 			Case(" '''One\r     Two'''", A(TT.Literal), "One\n Two");
 			Case("\t '''One\r\tTwo'''", A(TT.Literal), "One\nTwo");
 			Case("  '''One\r\tTwo'''", A(TT.Literal), "One\n\tTwo");
@@ -184,9 +195,9 @@ namespace Loyc.Syntax.Les
 		{
 			Case("#!/bin/sh\r\n// that's called a shebang!",
 				A(TT.Shebang, TT.SLComment));
-			Case(".#!/bin/sh",
-				A(TT.Dot, TT.Keyword),
-				_("'."), _("#!/bin/sh"));
+			//Case("+#!/bin",
+			//	A(TT.NormalOp, TT.Unknown, TT.NormalOp, TT.Id),
+			//	_("'+"), null, _("'!/"), _("bin"));
 		}
 
 		[Test]
@@ -199,7 +210,7 @@ namespace Loyc.Syntax.Les
 			//Case(@"$x\y\`bq`\", A(TT.PrefixOp, TT.Id, TT.SuffixOp, TT.BQString, TT.NormalOp), _("$"), _("x"), _(@"y\"), _("bq"), _(@"\"));
 			Case(@"$~!%^&*-+=|<>/?:._", A(TT.PrefixOp, TT.Id), _("'$~!%^&*-+=|<>/?:."), _("_"));
 			Case(@"$~!%^&*-+=|<>_/?:.", A(TT.PrefixOp, TT.Id, TT.NormalOp), _("'$~!%^&*-+=|<>"), _("_"), _("'/?:."));
-			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.NormalOp, TT.Assignment), _(""), _(""), _("'!"), _(""), _("':"), _(@"':^="));
+			Case(@"@,!;: :^=", A(TT.At, TT.Comma, TT.Not, TT.Semicolon, TT.Colon, TT.Assignment), _(""), _(""), _("'!"), _(""), _("':"), _(@"':^="));
 		}
 
 		[Test]
@@ -229,7 +240,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestBigInts()
 		{
-			Case("11z\n                  ",  A(TT.Literal, TT.Newline), new BigInteger(11), WS);
+			Case("11z\n                  ",  A(TT.Literal, TT.Newline), new BigInteger(11), null);
 			Case("9_111_222_333_444_555z ",  A(TT.Literal), new BigInteger(9111222333444555UL));
 			Case("9999111222333444555000z",  A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
 			Case("9999111222333444555000",   A(TT.Literal), 1000 * new BigInteger(9999111222333444555UL));
@@ -237,7 +248,7 @@ namespace Loyc.Syntax.Les
 			Case("-1z",                      A(TT.NegativeLiteral), new BigInteger(-1));
 			Case("-9999111222333444555000",  A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
 			Case("-18446744069414584320",    A(TT.NegativeLiteral), BigInteger.Parse("-18446744069414584320"));
-			Case("-9111222z             \n", A(TT.NegativeLiteral, TT.Newline), new BigInteger(-9111222L), WS);
+			Case("-9111222z             \n", A(TT.NegativeLiteral, TT.Newline), new BigInteger(-9111222L), null);
 			Case("-9999111222333444555000z", A(TT.NegativeLiteral), -1000 * new BigInteger(9999111222333444555UL));
 			Case("123456789012345678901234567890", A(TT.Literal), BigInteger.Parse("123456789012345678901234567890"));
 		}
@@ -350,10 +361,10 @@ namespace Loyc.Syntax.Les
 			// @@ means "special literal"; if the text after @@ is not recognized
 			// as a special literal, then it is treated as a symbol.
 			Case("@@true @@false @@null", A(TT.Literal, TT.Literal, TT.Literal), true, false, null);
-			Case("`inf.d`@@inf.d", A(TT.Id, TT.Literal), _("inf.d"), double.PositiveInfinity);
-			Case("`inf.f`@@inf.f", A(TT.Id, TT.Literal), _("inf.f"), float.PositiveInfinity);
-			Case("`nan.d`@@nan.d", A(TT.Id, TT.Literal), _("nan.d"), double.NaN);
-			Case("`nan.f`@@nan.f", A(TT.Id, TT.Literal), _("nan.f"), float.NaN);
+			Case("`inf.d`@@inf.d", A(TT.BQId, TT.Literal), _("inf.d"), double.PositiveInfinity);
+			Case("`inf.f`@@inf.f", A(TT.BQId, TT.Literal), _("inf.f"), float.PositiveInfinity);
+			Case("`nan.d`@@nan.d", A(TT.BQId, TT.Literal), _("nan.d"), double.NaN);
+			Case("`nan.f`@@nan.f", A(TT.BQId, TT.Literal), _("nan.f"), float.NaN);
 			Case("@@-inf.d @@-inf.f", A(TT.Literal, TT.Literal), double.NegativeInfinity, float.NegativeInfinity);
 		}
 
@@ -374,12 +385,12 @@ namespace Loyc.Syntax.Les
 			Case(@"this is ""just""1 lexer test '!'",
 				A(TT.Id, TT.Id, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
 				_("this"), _("is"), "just", 1, _("lexer"), _("test"), '!');
-			Case(@"12:30", A(TT.Literal, TT.NormalOp, TT.Literal), 12, _("':"), 30);
+			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, _("':"), 30);
 			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.Literal), _("c"), _("'+="), '0');
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen), null, null, null, null, null, null);
 			Case(@"a ""b""", A(TT.Id, TT.Literal), _("a"), "b");
 
-			Case(@"'{@@{ `boom!`; }}", A(TT.LTokenLiteral, TT.LTokenLiteral, TT.Id, TT.Semicolon, TT.RBrace, TT.RBrace),
+			Case(@"'{@@{ `boom!`; }}", A(TT.LTokenLiteral, TT.LTokenLiteral, TT.BQId, TT.Semicolon, TT.RBrace, TT.RBrace),
 				null, null, _("boom!"), _(""), null, null);
 
 			Case(@"'\'''!'", A(TT.Literal, TT.Literal), '\'', '!');
@@ -393,7 +404,7 @@ namespace Loyc.Syntax.Les
 		public void EofInToken()
 		{
 			Case(@"""", A(TT.Literal), new Error(""));
-			Case(@"`", A(TT.Id), new Error(_("")));
+			Case(@"`", A(TT.BQId), new Error(_("")));
 			//Case(@"\\", A(TT.SuffixOp), _(@"\"));
 			Case(@"@", A(TT.At), _(@""));
 			Case(@"@@", A(TT.At, TT.At));
@@ -406,15 +417,15 @@ namespace Loyc.Syntax.Les
 		public void TestErrors()
 		{
 			Case("\0", A(TT.Unknown), (object)null);
-			Case("x=\"Hello\n", A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("'="), new Error("Hello"), WS);
+			Case("x=\"Hello\n", A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("'="), new Error("Hello"), null);
 			Case("'\n'o'\"pq\n?", A(TT.Unknown, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
-			                      null, WS, 'o', new Error("pq"), WS, _("'?"));
+			                      null, null, 'o', new Error("pq"), null, _("'?"));
 			Case("'' ''", A(TT.Unknown, TT.Unknown), null, null);
 			Case("0x!0b", A(TT.Literal, TT.Not, TT.Literal), new Error(CL("0x", "number")), _("'!"), new Error(CL("0b", "number")));
-			Case("`weird\nnewline", A(TT.Id, TT.Newline, TT.Id), new Error(_("weird")), WS, _("newline"));
+			Case("(`weird\nnewline", A(TT.LParen, TT.BQId, TT.Newline, TT.Id), null, new Error(_("weird")), WS, _("newline"));
 			Case("0xFF_0000_0000U", A(TT.Literal), new Error(CL("0xFF_0000_0000", "U")));
 			Case("0xFFFF_FFFF_0000_0000L", A(TT.Literal), new Error(CL("0xFFFF_FFFF_0000_0000", "L")));
-			Case(@"#()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
+			Case(@"\()\", A(TT.Unknown, TT.LParen, TT.RParen, TT.Unknown), null, null, null, null);
 			Case("'abc'", A(TT.NormalOp, TT.Unknown), _("'abc"), null);
 			Case(@"`true`""bool?"" `null`""null?""", A(TT.Literal, TT.Literal), CL("bool?", "true"), CL("null?", "null"));
 			Case(@"true""nonbool"" null""nonnull""", A(TT.Literal, TT.Literal), new Error(CL("nonbool", "true")), new Error(CL("nonnull", "null")));
@@ -425,9 +436,9 @@ namespace Loyc.Syntax.Les
 		{
 			// A dot-indented line must start with a dot and each dot must be followed by a space.
 			Case(". Hello", A(TT.Id), _("Hello"));
-			Case(" .\n. ", A(TT.Dot, TT.Newline), _("'."), WS);
+			Case(" .\n. ", A(TT.Dot, TT.Newline), _("'."), null);
 			Case(".   .  . Hello", A(TT.Id), _("Hello"));
-			Case(".\t.\t.\tHello\n.. Goodbye", A(TT.Id, TT.Newline, TT.NormalOp, TT.Id), _("Hello"), WS, _("'.."), _("Goodbye"));
+			Case(".\t.\t.\tHello\n.. Goodbye", A(TT.Id, TT.Newline, TT.NormalOp, TT.Id), _("Hello"), null, _("'.."), _("Goodbye"));
 			Case(". .Hello",  A(TT.Dot, TT.Id), _("'."), _("Hello"));
 			Case(". ..Hello", A(TT.NormalOp, TT.Id), _("'.."), _("Hello"));
 		}

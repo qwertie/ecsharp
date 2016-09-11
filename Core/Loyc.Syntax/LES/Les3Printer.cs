@@ -615,53 +615,6 @@ namespace Loyc.Syntax.Les
 			_allowBlockCalls = allowBlockCalls;
 		}
 
-		private bool TryToPrintCallAsKeywordExpression(CallNode node)
-		{
-			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
-				return false;
-
-			var args = node.Args;
-			WriteToken(node.Name.Name, LesColorCode.Keyword, Chars.IdAndPunc);
-			if (args.Count == 0)
-				return true;
-
-			Space();
-			try {
-				_allowBlockCalls = false;
-				Print(args[0], LesPrecedence.SuperExpr);
-			} finally {
-				_allowBlockCalls = true;
-			}
-			if (args.Count <= 1)
-				return true;
-
-			Space();
-			PrintBracedBlock(args[1]);
-			for (int i = 2; i < args.Count; i++) {
-				Space();
-				PrintContinuator(args[i]);
-			}
-			return true;
-		}
-
-		private bool IsKeywordExpression(CallNode node)
-		{
-			if (!HasSimpleTarget(node) || !LesPrecedenceMap.IsExtendedOperator(node.Name.Name, "#"))
-				return false;
-			var args = node.Args;
-			if (args.Count <= 1)
-				return true;
-			var block = args[1];
-			if (!block.Calls(S.Braces) || !HasSimpleTarget(block))
-				return false;
-			for (int i = 2; i < args.Count; i++)
-				if (!IsContinuator(args[i]))
-					return false;
-
-			Debug.Assert(node.Target.IsId);
-			return true;
-		}
-
 		#endregion
 
 		#region Printing calls: in prefix notation or as a block call
@@ -883,6 +836,57 @@ namespace Loyc.Syntax.Les
 		{
 			Debug.Assert(braces.Calls(CodeSymbols.Braces));
 			PrintArgListCore(braces.Args, '{', '}', ArgListStyle.BracedBlock, false);
+		}
+
+		#endregion
+
+		#region Printing .keyword expressions
+
+		private bool TryToPrintCallAsKeywordExpression(CallNode node)
+		{
+			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) || !IsKeywordExpression(node))
+				return false;
+
+			var args = node.Args;
+			WriteToken(node.Name.Name, LesColorCode.Keyword, Chars.IdAndPunc);
+			if (args.Count == 0)
+				return true;
+
+			Space();
+			try {
+				_allowBlockCalls = false;
+				Print(args[0], LesPrecedence.SuperExpr);
+			} finally {
+				_allowBlockCalls = true;
+			}
+			if (args.Count <= 1)
+				return true;
+
+			Space();
+			PrintBracedBlock(args[1]);
+			for (int i = 2; i < args.Count; i++) {
+				Space();
+				PrintContinuator(args[i]);
+			}
+			return true;
+		}
+
+		private bool IsKeywordExpression(CallNode node)
+		{
+			if (!HasSimpleTarget(node) || !LesPrecedenceMap.IsExtendedOperator(node.Name.Name, "."))
+				return false;
+			var args = node.Args;
+			if (args.Count <= 1)
+				return true;
+			var block = args[1];
+			if (!block.Calls(S.Braces) || !HasSimpleTarget(block))
+				return false;
+			for (int i = 2; i < args.Count; i++)
+				if (!IsContinuator(args[i]))
+					return false;
+
+			Debug.Assert(node.Target.IsId);
+			return true;
 		}
 
 		#endregion

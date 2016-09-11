@@ -18,10 +18,12 @@ partial class Les3Parser
 
 	protected new const TT EOF = TT.EOF;
 
-	[FullLLk, LL(2), AddCsLineDirectives(false)]
+	// Note: verbose messages are only printed when custom tool is given --verbose flag
+	[FullLLk, LL(2), AddCsLineDirectives(false), Verbosity(1)]
 	LLLPG (parser(laType: TT, matchType: int, terminalType: Token, allowSwitch: true)) @{
 
 	alias("@" = TT.At);
+	alias("." = TT.Dot);
 	alias(":" = TT.Colon);
 	alias(";" = TT.Semicolon);
 	alias("," = TT.Comma);
@@ -33,6 +35,7 @@ partial class Les3Parser
 	alias("{" = TT.LBrace);
 	alias("}" = TT.RBrace);
 	alias("'{" = TT.LTokenLiteral);
+	alias("\n" = TT.Newline);
 
 	[#new] public StmtList returns [VList<LNode> result] :
 		{endMarker := TT.Semicolon;}
@@ -41,9 +44,12 @@ partial class Les3Parser
 	members {
 		void CheckEndMarker(ref TokenType endMarker, ref Token end)
 		{
-			if (endMarker != end.Type()) {
+			var endType = end.Type();
+			if (endType == TokenType.Newline)
+				endType = TokenType.Semicolon;
+			if (endMarker != endType) {
 				if (endMarker == default(TT)) {
-					endMarker = end.Type();
+					endMarker = endType;
 				} else {
 					Error(-1, "Unexpected separator: {0} should be {1}",
 						ToString(end.TypeInt), ToString((int) endMarker));
@@ -52,12 +58,7 @@ partial class Les3Parser
 		}
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
-			if (previousExpr != null && (TT)LA(-1) == TT.RBrace &&
-				(previousExpr.BaseStyle == NodeStyle.Special || previousExpr.BaseStyle == NodeStyle.Statement)) {
-				// Fine: missing semicolon is allowed on outer expression thats end in {...}
-			} else {
-				Error(0, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
-			}
+			Error(0, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true)
 		{
@@ -83,7 +84,7 @@ partial class Les3Parser
 		// Theoretically [default X]? should work equally well, but for some
 		// reason LLLPG 1.9.1 produces suboptimal code for that.
 		(/ e:TopExpr)
-		[	end:(","|";")
+		[	(end:(","|"\n") | end:";" greedy("\n")?)
 			{CheckEndMarker(ref endMarker, ref end);}
 			{list.Add(e ?? MissingExpr());}
 			{$e = null;} (/ e:TopExpr)
@@ -98,7 +99,7 @@ partial class Les3Parser
 	public override ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
 		{if (LT0.Value is string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 		(/ e:TopExpr)
-		[	end:(","|";")
+		[	(end:(","|"\n") | end:";" greedy("\n")*)
 			{CheckEndMarker(ref endMarker.Value, ref end);}
 			{yield return e ?? MissingExpr();}
 			{$e = null;} (/ e:TopExpr)
@@ -115,7 +116,10 @@ partial class Les3Parser
 			"@" attrs+=Particle[isAttribute: true]
 		)*
 		(	e:Expr[StartStmt]
-		/	e:KeywordExpression
+			(
+				":" ("\n" =>)
+				{e = F.Call(@@`:suf`, e, e.Range.StartIndex, $":".EndIndex);}
+			)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
 			(e:TopExpr | (")"|"}"|"]"|EOF) {e = MissingExpr();})
@@ -129,10 +133,12 @@ partial class Les3Parser
 
 	private KeywordExpression returns [LNode result] :
 		{saveAndRestore(_allowBlockCalls = false);}
-		kw:TT.Keyword Expr[StartStmt]
+		"." &{LT0.StartIndex == $".".EndIndex} id:TT.Id 
+		Expr[StartStmt]
+		{var keyword = GSymbol.Get("." + id.Value.ToString());}
 		{var args = new VList<LNode>($Expr);}
 		(BracesWithContinuators[ref args])?
-		{$result = MarkSpecial(F.Call((Symbol) $kw.Value, args, kw.StartIndex, args.Last.Range.EndIndex));};
+		{$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, args.Last.Range.EndIndex));};
 	
 	private BracesWithContinuators[ref VList<LNode> args] returns [int result] @init {int endIndex;} :
 		bb:BracedBlock {args.Add(bb); endIndex = bb.Range.EndIndex;}
@@ -148,7 +154,8 @@ partial class Les3Parser
 		{return endIndex;};
 	
 	private BracedBlock returns [LNode result] : 
-		"{" stmts:StmtList "}" {return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex);};
+		"{" greedy("\n")* stmts:=StmtList "}" 
+		{return F.Call(S.Braces, stmts, $"{".StartIndex, $"}".EndIndex).SetStyle(NodeStyle.Statement);};
 	private Parentheses returns [LNode result] @init {var endMarker = default(TokenType);} :
 		"(" exprs:ExprList[ref endMarker] ")" 
 		{return exprs.Count == 1 && endMarker != TT.Semicolon ? exprs[0] : F.Tuple(exprs, $"(".StartIndex, $")".EndIndex);};
@@ -167,19 +174,26 @@ partial class Les3Parser
 	// - Special primary expressions:
 	//   method_call(with arguments), block{call;}, indexer[with, indexes], generic!arguments,
 
-	[LL(1)]
-	token Expr[Precedence context] returns[LNode result]
-		:	{Precedence prec;}
+	[LL(1)] // simplifies output a lot
+	rule Expr[Precedence context] returns[LNode result] :
+		(	// Dot-expression
+			e:KeywordExpression
+		|	{Precedence prec;}
 			e:PrefixExpr[context]
-			greedy(
-				// Infix operator
-				&{[Local] context.CanParse(prec=InfixPrecedenceOf(LT($LI)))}
-				{if (!prec.CanMixWith(context)) {
-					Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value); 
-				};}
-				op:(TT.NormalOp|TT.BQOperator|TT.Dot|TT.Assignment)
+			greedy
+			(	// Infix operator
+				&{[Local] CanParse(context, $LI, out prec)}
+				{Symbol opName;}
+				(	op:=(TT.NormalOp|TT.Assignment|".") "\n"*	{opName = (Symbol) op.Value;}
+				|	&{(TT)LA($LI+1) != TT.Newline} op:=":"	{opName = (Symbol) op.Value;}
+				|	op:=TT.Id 
+					(	// optional punctuation part
+						&{op.EndIndex == LT0.StartIndex} op2:(TT.NormalOp|TT.Assignment|".")
+						{opName = GSymbol.Get("'"+op.Value.ToString()+op2.Value.ToString().Substring(1));}
+					/	{opName = GSymbol.Get("'"+op.Value.ToString());})
+				)
 				rhs:=Expr(prec)
-				{e = F.Call((Symbol) op.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(opName, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
 			|	&{[Local] context.CanParse(P.Add)}
 				rhs:=TT.NegativeLiteral
 				{e = F.Call(S.Sub, e, ToPositiveLiteral(rhs), e.Range.StartIndex, rhs.EndIndex).SetStyle(NodeStyle.Operator);}
@@ -191,7 +205,7 @@ partial class Les3Parser
 				&{[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
 			)*
-			{return e;};
+		)	{return e;};
 
 	// Helper rule that parses one of the syntactically special primary expressions
 	private FinishPrimaryExpr[LNode e] returns [LNode result]
@@ -225,15 +239,9 @@ partial class Les3Parser
 
 	private PrefixExpr[Precedence context] returns [LNode result] 
 		:	// Prefix operator
-			t:(TT.NormalOp|"!"|TT.BQOperator|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
+			t:(TT.NormalOp|"!"|TT.BQOperator|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 			e:Expr[PrefixPrecedenceOf(t)]
 			{$result = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
-		|	// Juxtaposition operator
-			&{[Local] context.CanParse(P.Juxtaposition)}
-			&{[Local] LA($LI+1).IsOneOf((int)TT.Id, (int)TT.PrefixOp, (int)TT.Literal)}
-			kw:=TT.Id
-			rhs:=Expr[P.Juxtaposition]
-			{ $result = F.Call((Symbol)kw.Value, rhs).SetBaseStyle(NodeStyle.Operator); }
 		/	result:Particle
 		;
 
@@ -246,7 +254,7 @@ partial class Les3Parser
 	// - a { block } in braces
 	// - a [ list  ] in square brackets
 	private Particle[bool isAttribute = false] returns [LNode result]
-		:	id:=TT.Id // identifier
+		:	id:=(TT.Id|TT.BQId) // identifier
 			{$result = F.Id(id).SetStyle(id.Style);}
 		|	lit:=(TT.Literal|TT.NegativeLiteral) // literal
 			{$result = F.Literal(lit);}
@@ -254,8 +262,7 @@ partial class Les3Parser
 			"'{" tree:TokenTree c:"}"
 			{$result = F.Literal(tree, $"'{".StartIndex, c.EndIndex);}
 		|	// {statements; in; braces}
-			"{" list:=StmtList "}" 
-			{$result = F.Braces(list, $"{".StartIndex, $"}".EndIndex).SetStyle(NodeStyle.Statement);}
+			result:BracedBlock
 			// [list]
 		|	"[" list:=ExprList "]"
 			{$result = F.Call(S.Array, list, $"[".StartIndex, $"]".EndIndex).SetStyle(NodeStyle.Expression);}

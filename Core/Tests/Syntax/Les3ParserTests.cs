@@ -21,6 +21,27 @@ namespace Loyc.Syntax.Les
 		}
 
 		[Test]
+		public void MiscibilityErrors()
+		{
+			Test(Mode.Expr, 1, "x & Foo == 0;", F.Call(S.AndBits, x, F.Call(S.Eq, Foo, zero)));
+			Test(Mode.Expr, 1, "0 == x & Foo;", F.Call(S.AndBits, F.Call(S.Eq, zero, x), Foo));
+			Test(Mode.Expr, 1, "x >> a + 1;", F.Call(S.Add, F.Call(S.Shr, x, a), one));
+			Test(Mode.Expr, 1, "1 + x << a;", F.Call(S.Add, one, F.Call(S.Shl, x, a)));
+			Test(Mode.Expr, 1, "x 'Foo a + b;", F.Call("'Foo", x, F.Call(S.Add, a, b)));
+		}
+
+		[Test]
+		public void WordOperators()
+		{
+			// TODO: move this test to base class when the printer supports these new word operators
+			Exact("a b c;", F.Call("'b", a, c));
+			Exact("a is b as c;", F.Call("'is", a, F.Call("'as", b, c)));
+			Exact("a + 1 s> b && c;", F.Call(S.And, F.Call("'s>", F.Call(S.Add, a, one), b), c));
+			Exact("(a) tree== [b];", F.Call("'tree==", F.InParens(a), F.Call(S.Array, b)));
+			Exact("{ a; } Foo (b);", F.Call("'Foo", F.Braces(a), F.InParens(b)));
+		}
+
+		[Test]
 		public void OtherParseErrors()
 		{
 			Test(Mode.Stmt, 1, "-2u;", F.Literal(new CustomLiteral("-2", (Symbol)"u")));

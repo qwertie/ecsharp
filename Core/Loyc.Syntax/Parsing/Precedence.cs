@@ -283,12 +283,13 @@ namespace Loyc.Syntax
 		/// <remarks><see cref="CanAppearIn(Precedence)"/> is for parsability, 
 		/// this method is to detect a deprecated or undefined mixing of operators.
 		/// </remarks>
-		public bool CanMixWith(Precedence context) { 
-			if (RangeEquals(context))
-				return Lo <= Hi;
+		public bool CanMixWith(Precedence context) {
 			int c_lo = context.Lo, c_hi = context.Hi;
-			MathEx.SortPair(ref c_lo, ref c_hi);
-			return (Lo > c_hi && Hi > c_hi) || (Hi < c_lo && Lo < c_lo);
+			int min = System.Math.Min(c_lo, c_hi);
+			if (Hi < min) return Lo < min;
+			int max = System.Math.Max(c_lo, c_hi);
+			if (Lo > max) return Hi > max;
+			return Lo == c_lo && Hi == c_hi && Lo <= Hi;
 		}
 
 		/// <summary>For use in parsers. Returns true if 'rightOp', an operator

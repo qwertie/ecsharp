@@ -18,20 +18,20 @@ namespace Loyc.Syntax.Les
 		MLComment  = TokenKind.Comment + 1,
 		Shebang    = TokenKind.Comment + 2,
 		Id         = TokenKind.Id,
+		BQId         = TokenKind.Id + 1, // LESv3 only
 		Literal    = TokenKind.Literal, // true, false, null, @@sym, "string", 12345
 		NegativeLiteral = TokenKind.Literal + 1, // -12345
 		Dot        = TokenKind.Dot,
 		Assignment = TokenKind.Assignment,
 		NormalOp   = TokenKind.Operator,
 		PreOrSufOp = TokenKind.Operator + 1,  // ++, --
-		//InfixOp    = TokenKind.Operator + 2,  // /, ?, =, >, <, 'single-quoted operators
-		PrefixOp   = TokenKind.Operator + 3,  // $ (prefix only)
+		PrefixOp   = TokenKind.Operator + 2,  // $ (prefix only)
 		At         = TokenKind.Operator + 5,
 		Not        = TokenKind.Operator + 6, // !, special because it's used for #of: A!(B,C) => #of(A, B, C)
 		BQOperator = TokenKind.Operator + 7, // No longer used in LESv3; `foo` is redefined as an identifier
+		Colon      = TokenKind.Operator + 8, // LESv3 only, where : is a special line suffix
 		Comma      = TokenKind.Separator,
 		Semicolon  = TokenKind.Separator + 1,
-		Keyword    = TokenKind.OtherKeyword,
 		LParen     = TokenKind.LParen,
 		SpaceLParen= TokenKind.LParen + 1,
 		RParen     = TokenKind.RParen,

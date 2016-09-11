@@ -26,7 +26,9 @@ public partial class Les3Lexer
 	token Newline[bool ignoreIndent = false] returns [object result] :
 		( '\r' '\n'? | '\n' )
 		{AfterNewline(ignoreIndent, skipIndent: false);}
-		{return WhitespaceTag.Value;};
+		// Tokens with WhitespaceTag are filtered out by WhitepaceFilter.
+		// We want to filter out newlines inside parentheses and square brackets.
+		{return _brackStack.Last == TokenType.LBrace ? null : WhitespaceTag.Value;};
 	private token SLComment returns [object result] :
 		"//" (~('\r'|'\n'))* 
 		{return WhitespaceTag.Value;};
@@ -106,16 +108,18 @@ public partial class Les3Lexer
 
 	// Nontrivial punctuation & operators -----------------------------------
 		
-	private token OpChar :
+	[inline] extern token OpChar :
 		'~'|'!'|'%'|'^'|'&'|'*'|'-'|'+'|'='|'|'|'<'|'>'|'/'|'?'|':'|'.';
 	private token Operator returns [object result] : 
-		(OpChar|'$') OpChar* {return ParseNormalOp();} ;
+		('$'|OpChar) OpChar* 
+		{$result = ParseNormalOp();}
+		{if ($result == @@`':`) _type = TT.Colon;};
 	private token SQOperator returns [object result] : 
 		"'" LettersOrPunc+ // at least one letter/punc required so that 
 		                   // sequences like '(...) are reserved for future use
 		{return ParseNormalOp();};
 
-	// Identifiers, keywords and named literals --------------------------------
+	// Identifiers and named literals ------------------------------------------
 
 	[inline] extern token IdStartChar : '_'|'a'..'z'|'A'..'Z' ;
 
@@ -152,9 +156,6 @@ public partial class Les3Lexer
 	private token SpecialLiteral returns [object result] :
 		"@@" LettersOrPunc+ {return ParseAtAtLiteral(Text());};
 
-	private token Keyword returns [object result] :
-		'#' LettersOrPunc+ {return IdToSymbol(Text());};
-
 	// Shebang (optional feature) --------------------------------------------
 
 	private token Shebang returns [object result] : 
@@ -174,8 +175,8 @@ public partial class Les3Lexer
 		}
 		( {_type = TT.Shebang;}    value:Shebang
 		/ {_type = TT.Literal;}    value:SpecialLiteral
+		/ {_type = TT.BQId;}       ('`' => value:Id)
 		/ {_type = TT.Id;}         value:Id
-		/ {_type = TT.Keyword;}    value:Keyword
 		/ {_type = TT.Newline;}    value:Newline
 		/ {_type = TT.SLComment;}  value:SLComment
 		/ {_type = TT.MLComment;}  value:MLComment
@@ -187,12 +188,12 @@ public partial class Les3Lexer
 		/ {_type = TT.Unknown;}    "''" // avoid invoking TQString when there are only two ticks
 		/ {_type = TT.Comma;}      ',' { value = GSymbol.Empty; }
 		/ {_type = TT.Semicolon;}  ';' { value = GSymbol.Empty; }
-		/ {_type = TT.LParen;}     '('
-		/ {_type = TT.RParen;}     ')'
-		/ {_type = TT.LBrack;}     '['
-		/ {_type = TT.RBrack;}     ']'
-		/ {_type = TT.LBrace;}     '{'
-		/ {_type = TT.RBrace;}     '}'
+		/ {_type = TT.LParen;}     '(' {_brackStack.Add(_type);}
+		/ {_type = TT.RParen;}     ')' {if (_brackStack.Count > 1) _brackStack.Pop();}
+		/ {_type = TT.LBrack;}     '[' {_brackStack.Add(_type);}
+		/ {_type = TT.RBrack;}     ']' {if (_brackStack.Count > 1) _brackStack.Pop();}
+		/ {_type = TT.LBrace;}     '{' {_brackStack.Add(_type);}
+		/ {_type = TT.RBrace;}     '}' {if (_brackStack.Count > 1) _brackStack.Pop();}
 		/ {_type = TT.LTokenLiteral;} "'{"  // possibility #1: less consistent: normally ' is for operators
 		/ {_type = TT.LTokenLiteral;} "@@{" // possibility #2: heavy, but more consistent (@@ is for literals)
 		/ {_type = TT.At;}         '@' { value = GSymbol.Empty; }

@@ -12,6 +12,7 @@ using Loyc.Syntax.Lexing; // For BaseLexer
 using Loyc.Syntax;        // For BaseParser<Token> and LNode
 using System.Diagnostics;
 using System.Numerics;
+using Loyc.Collections.Impl;
 
 namespace Loyc.Syntax.Les
 {
@@ -24,17 +25,15 @@ namespace Loyc.Syntax.Les
 		public Les3Lexer(ICharSource text, string fileName, IMessageSink sink, int startPosition = 0)
 			: base(text, fileName, sink, startPosition) { }
 
-		// Creates a Token
-		private Token T(TokenType type, object value)
-		{
-			return new Token((int)type, _startPosition, InputPosition - _startPosition, value);
-		}
-
 		/// <summary>If this flag is true, all literals except plain strings and
 		/// true/false/null are stored as CustomLiteral, bypassing number parsing 
 		/// so that all original characters are preserved if the output is written 
 		/// back to text.</summary>
 		public bool PreferCustomLiterals { get; set; }
+
+		// Helps filter out newlines that are not directly inside braces or at the top level.
+		InternalList<TokenType> _brackStack = new InternalList<TokenType>(
+			new TokenType[8] { TokenType.LBrace, 0,0,0,0,0,0,0 }, 1);
 
 		object ParseLiteral2(UString typeMarker, UString parsedText, bool isNumericLiteral)
 		{
@@ -323,6 +322,27 @@ namespace Loyc.Syntax.Les
 				return value.ToString().Substring(1);
 			}
 			throw new InvalidOperationException("Invalid negative literal: {0}".Localized(value));
+		}
+
+		bool CanParse(Precedence context, int li, out Precedence prec)
+		{
+			var opTok = LT(li);
+			if (opTok.Type() == TokenType.Id) {
+				var opTok2 = LT(li + 1);
+				if (opTok2.Type() == TokenType.NormalOp && opTok.EndIndex == opTok2.StartIndex)
+					prec = _prec.Find(OperatorShape.Infix, opTok2.Value);
+				else {
+					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
+					// (bacause it's shared with LESv2 which doesn't have them)
+					// TODO: improve performance by avoiding this concat
+					prec = _prec.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
+				}
+			} else
+				prec = _prec.Find(OperatorShape.Infix, opTok.Value);
+			bool result = context.CanParse(prec);
+			if (!context.CanMixWith(prec))
+				Error(li, "Operator \"{0}\" cannot be mixed with the infix operator to its left. Add parentheses to clarify the code's meaning.", LT(li).Value);
+			return result;
 		}
 	}
 }

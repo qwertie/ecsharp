@@ -83,5 +83,9 @@ namespace Loyc.Syntax.Lexing
 		LOther       = 0x1800, // other opener(s)
 		ROther       = 0x1900, // other closer(s)
 		KindMask     = 0x1F00,
+		/// <summary>Openers and closers all have this bit set.</summary>
+		BracketFlag = 0x1000,
+		/// <summary>Closers all have this bit set.</summary>
+		CloserFlag = 0x0100,
 	}
 }
