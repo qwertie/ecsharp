@@ -268,6 +268,12 @@ namespace Loyc
 		{
 			if ((sym = GetIfExists(name)) == null && name != null)
 				lock (_map) {
+					if ((sym = GetIfExists(name)) != null)
+						// It is possible for another thread to have added 'name' to
+						// '_map' while we were waiting to acquire the lock.
+						// If that has happened, then we want to return now.
+						return;
+
 					if (_idMap != null)
 						while (_idMap.ContainsKey(_nextId))
 							_nextId++;
