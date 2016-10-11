@@ -108,6 +108,7 @@ namespace Loyc
 			Assert.AreEqual(GSymbol.GetById(-876543210), null);
 		}
 
+#if !DotNet35
 		private static void RunParallel(int parallelCount, Action action)
 		{
 			System.Threading.Tasks.Parallel.Invoke(
@@ -115,19 +116,18 @@ namespace Loyc
 		}
 
 		[Test]
-		public void SymbolGetRaceCondition()
+		public void BugFixOct2016_SymbolGetRaceCondition()
 		{
+			// Bug: SymbolPool.Get used to check the symbol table contained the symbol's 
+			// name, and then acquire a lock if it didn't. Inside the lock it assumed that _map 
+			// would still not contain the symbol and called Add(), which threw 
+			// KeyAlreadyExistsException when the assumption was false.
 			RunParallel(8, () =>
 			{
-				// This test runs eight actions in parallel,
-				// to uncover a possible race condition
-				// in GSymbol.Get
-				const int maxCount = 1000;
-				for (int i = 0; i < maxCount; i++)
-				{
+				for (int i = 0; i < 1000; i++)
 					GSymbol.Get(i.ToString());
-				}
 			});
 		}
+#endif
 	}
 }
