@@ -411,5 +411,13 @@ namespace Loyc.Collections
 				yield return new Pair<T,T>(prev, first);
 			}
 		}
+
+		public static List<T> ToList<T>(this IEnumerator<T> e)
+		{
+			var list = new List<T>();
+			while (e.MoveNext())
+				list.Add(e.Current);
+			return list;
+		}
 	}
 }

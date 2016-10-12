@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.8.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.9.2.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -585,7 +585,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null)
 	{
 		var lexer = LesLanguageService.Value.Tokenize(sexpr, filename, msgs);
-		var withoutComments = new WhitespaceFilter(lexer).Buffered();
+		var withoutComments = new WhitespaceFilter(lexer).ToList();
 		var parser = new SExprParser(withoutComments, lexer.SourceFile, msgs);
 		return parser.Atom();
 	}
@@ -607,13 +607,14 @@ public partial class SExprParser : BaseParserForList<Token,int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 209: ( List | (TT.Assignment|TT.BQString|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 209: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen:
 		case TT.SpaceLParen:
 			result = List();
 			break;
 		case TT.Assignment:
+		case TT.BQId:
 		case TT.BQOperator:
 		case TT.Dot:
 		case TT.Id:
@@ -663,6 +664,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
+				case TT.BQId:
 				case TT.BQOperator:
 				case TT.Dot:
 				case TT.Id:

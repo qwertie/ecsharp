@@ -179,7 +179,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	public static LNode Parse(UString sexpr, string filename = "", IMessageSink msgs = null) 
 	{ 
 		var lexer = LesLanguageService.Value.Tokenize(sexpr, filename, msgs);
-		var withoutComments = new WhitespaceFilter(lexer).Buffered();
+		var withoutComments = new WhitespaceFilter(lexer).ToList();
 		var parser = new SExprParser(withoutComments, lexer.SourceFile, msgs);
 		return parser.Atom();
 	}
@@ -207,7 +207,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	
 	rule LNode Atom() @{
 		result:List
-	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Not|TT.BQString) 
+	|	t:(TT.Id|"."|TT.Assignment|TT.NormalOp|TT.PreOrSufOp|TT.PrefixOp|TT.Not|TT.BQOperator|TT.BQId) 
 		         { $result=F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);}
 	|	t:TT.Literal { $result=F.Literal(t.Value, t.StartIndex, t.EndIndex);}
 	};

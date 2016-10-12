@@ -42,7 +42,7 @@ namespace Loyc.Syntax.Tests
 				};";
 			MessageHolder msgs = new MessageHolder();
 			var lexer = Les2LanguageService.Value.Tokenize(lesCode, msgs);
-			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			var tokens = lexer.ToList().Where(tok => !tok.IsWhitespace).ToList();
 			Debug.Assert(msgs.List.Count == 0);
 
 			LexWithSCSAndCompare(tokens, lesCode);
@@ -68,14 +68,14 @@ namespace Loyc.Syntax.Tests
 			var stream = new MemoryStream(Encoding.UTF8.GetBytes(lesCode));
 			var source = new StreamCharSource(stream, Encoding.UTF8.GetDecoder(), _bufSize);
 			var lexer = Les2LanguageService.Value.Tokenize(source, "StreamCharSource.les", msgs);
-			var tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			var tokens = lexer.ToList().Where(tok => !tok.IsWhitespace).ToList();
 			Assert.AreEqual(0, msgs.List.Count);
 			ExpectList(tokens, originalTokens);
 
 			// Now reset the lexer and read the same StreamCharSource again 
 			// (different code paths are used the second time)
 			lexer.Reset();
-			tokens = lexer.Buffered().Where(tok => !tok.IsWhitespace).ToList();
+			tokens = lexer.ToList().Where(tok => !tok.IsWhitespace).ToList();
 			Assert.AreEqual(0, msgs.List.Count);
 			ExpectList(tokens, originalTokens);
 		}

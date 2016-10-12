@@ -469,6 +469,13 @@ namespace Loyc
 				return false;
 			return SubstringEqualHelper(_str, _start, what, ignoreCase);
 		}
+
+		public bool EndsWith(UString what, bool ignoreCase = false)
+		{
+			if (what.Length > Length)
+				return false;
+			return SubstringEqualHelper(_str, _start + Length - what.Length, what, ignoreCase);
+		}
 		
 		#if DotNet45
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

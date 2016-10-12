@@ -195,7 +195,7 @@ namespace Loyc.Syntax.Lexing
 				var output = new DList<Token>();
 				for (var t = wrapr.NextToken(); t.HasValue; t = wrapr.NextToken())
 					output.Add(t.Value);
-				var expectTokens = new CalculatorLexer(expectOutput).Buffered().ToList();
+				var expectTokens = new CalculatorLexer(expectOutput).ToList();
 				
 				AreEqual(expectMessages, errorList.List.Count);
 				if (expectMessages > 0)
