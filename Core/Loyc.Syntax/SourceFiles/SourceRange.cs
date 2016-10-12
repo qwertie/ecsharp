@@ -92,5 +92,9 @@ namespace Loyc.Syntax
 		{
 			return string.Format("{0}[{1}+{2}]", _source.FileName, _startIndex, _length);
 		}
+        public bool Contains(SourceRange inner)
+        {
+            return Source == inner.Source && StartIndex <= inner.StartIndex && EndIndex >= inner.EndIndex;
+        }
 	}
 }

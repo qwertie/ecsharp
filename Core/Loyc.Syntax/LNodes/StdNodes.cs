@@ -65,8 +65,9 @@ namespace Loyc.Syntax
 		}
 	}
 
-	/// <summary>A node that has both a Name and a Value. </summary>
+	/// <summary>A simple call node with a single literal argument. </summary>
 	/// <remarks>
+	/// Essentially, this is a special kind of node with both a name and a value.
 	/// Since there is no syntax (or <see cref="LNodeKind"/>) for a node that has
 	/// both a Name and a Value, the node pretends that it is has a single argument,
 	/// Args[0], which allows this node to be printed as if it were a normal call
@@ -196,6 +197,13 @@ namespace Loyc.Syntax
 			: base(args, ras) { _name = name ?? GSymbol.Empty; _targetOffs = ras._targetOffs; _targetLen = ras._targetLen; }
 		public StdSimpleCallNode(Symbol name, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default) 
 			: base(args, range, style) { _name = name ?? GSymbol.Empty; DetectTargetRange(); }
+		public StdSimpleCallNode(Symbol name, VList<LNode> args, SourceRange range, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default) 
+			: base(args, range, style)
+		{
+			_name = name ?? GSymbol.Empty;
+			_targetOffs = ClipUShort(targetStart - RAS.StartIndex);
+			_targetLen = ClipUShort(targetEnd - targetStart);
+		}
 		public StdSimpleCallNode(Loyc.Syntax.Lexing.Token targetToken, VList<LNode> args, SourceRange range, NodeStyle style = NodeStyle.Default)
 			: base(args, range, style)
 		{

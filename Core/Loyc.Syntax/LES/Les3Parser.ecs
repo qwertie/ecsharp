@@ -58,7 +58,8 @@ partial class Les3Parser
 		}
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
-			Error(0, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
+			SourcePos location = SourceFile.IndexToLine(LT(-1).EndIndex + 1);
+			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
 		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true)
 		{
@@ -84,7 +85,7 @@ partial class Les3Parser
 		// Theoretically [default X]? should work equally well, but for some
 		// reason LLLPG 1.9.1 produces suboptimal code for that.
 		(/ e:TopExpr)
-		[	(end:(","|"\n") | end:";" greedy("\n")?)
+		[	end:(","|"\n"|";") greedy("\n")*
 			{CheckEndMarker(ref endMarker, ref end);}
 			{list.Add(e ?? MissingExpr());}
 			{$e = null;} (/ e:TopExpr)
@@ -99,7 +100,7 @@ partial class Les3Parser
 	public override ExprListLazy[Holder<TokenType> endMarker] returns [IEnumerable<LNode> result] :
 		{if (LT0.Value is string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 		(/ e:TopExpr)
-		[	(end:(","|"\n") | end:";" greedy("\n")*)
+		[	end:(","|"\n"|";") greedy("\n")*
 			{CheckEndMarker(ref endMarker.Value, ref end);}
 			{yield return e ?? MissingExpr();}
 			{$e = null;} (/ e:TopExpr)
@@ -117,12 +118,12 @@ partial class Les3Parser
 		)*
 		(	e:Expr[StartStmt]
 			(
-				":" ("\n" =>)
-				{e = F.Call(@@`:suf`, e, e.Range.StartIndex, $":".EndIndex);}
+				":" (("\n"|")"|"]"|"}"|EOF) =>)
+				{e = F.Call(@@`':suf`, e, e.Range.StartIndex, $":".EndIndex);}
 			)?
 		/	error {Error(0, "Expected an expression here");} 
 			nongreedy(_)+ 
-			(e:TopExpr | (")"|"}"|"]"|EOF) {e = MissingExpr();})
+			(e:TopExpr | ("\n"|";"|","|")"|"]"|"}"|EOF) => {e = MissingExpr();})
 		)
 		{if ($"@".TypeInt != 0) { e = e.WithRange($"@".StartIndex, e.Range.EndIndex); };}
 		{return e.PlusAttrsBefore(attrs);};
@@ -137,7 +138,7 @@ partial class Les3Parser
 		Expr[StartStmt]
 		{var keyword = GSymbol.Get("." + id.Value.ToString());}
 		{var args = new VList<LNode>($Expr);}
-		(BracesWithContinuators[ref args])?
+		greedy(BracesWithContinuators[ref args])?
 		{$result = MarkSpecial(F.Call(keyword, args, $".".StartIndex, args.Last.Range.EndIndex));};
 	
 	private BracesWithContinuators[ref VList<LNode> args] returns [int result] @init {int endIndex;} :

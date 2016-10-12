@@ -42,16 +42,18 @@ namespace Loyc.Syntax
 		/// the returned lexer should NOT include the grouping process, and it 
 		/// should not remove comments, although it may skip spaces and perhaps
 		/// newlines. If there is a preprocessor, it should not run.
+		/// <para/>
+		/// Whether comments and other whitespaces are filtered out is implementation-defined.
 		/// </remarks>
 		ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs);
 
 		/// <summary>Parses a source file into one or more Loyc trees.</summary>
 		/// <param name="text">input file or string.</param>
+		/// <param name="fileName">A file name to associate with output nodes and errors.</param>
 		/// <param name="msgs">output sink for error and warning messages.</param>
-		/// <param name="inputType">Indicates the kind of input: <c>Exprs</c> (one 
-		/// or more expressions, typically seprated by commas but this is language-
-		/// defined), <c>Stmts</c> (a series of statements), or <c>File</c> (an 
-		/// entire source file). <c>null</c> is a synonym for <c>File</c>.</param>
+		/// <param name="inputType">Indicates the kind of input, e.g. <c>File</c> 
+		/// (an entire source file), <c>FormalArguments</c> (function parameter list), etc. 
+		/// <c>null</c> is a synonym for <c>File</c>.</param>
 		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 

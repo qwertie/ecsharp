@@ -315,6 +315,9 @@ namespace Loyc.Syntax
 		/// structured as a call: `[#trivia_rawText("eat my shorts!")] x;`
 		public static readonly Symbol TriviaRawTextBefore = GSymbol.Get("#trivia_rawTextBefore");     //!< "#trivia_rawTextBefore"
 		public static readonly Symbol TriviaRawTextAfter = GSymbol.Get("#trivia_rawTextAfter");       //!< "#trivia_rawTextAfter"
+		// The following 6 kinds of trivia, which specify "Before" or "After" in their name,
+		// are deprecated in favor of trivia that is determined to be before or after
+		// based on whether it is before or after the #trivia_beginTrailingTrivia attribute.
 		public static readonly Symbol TriviaSLCommentBefore = GSymbol.Get("#trivia_SLCommentBefore"); //!< "#trivia_SLCommentBefore"
 		public static readonly Symbol TriviaMLCommentBefore = GSymbol.Get("#trivia_MLCommentBefore"); //!< "#trivia_MLCommentBefore"
 		public static readonly Symbol TriviaSLCommentAfter = GSymbol.Get("#trivia_SLCommentAfter");   //!< "#trivia_SLCommentAfter"
@@ -323,9 +326,16 @@ namespace Loyc.Syntax
 		public static readonly Symbol TriviaSpaceAfter = GSymbol.Get("#trivia_spaceAfter");           //!< "#trivia_spaceAfter"
 		/// "#trivia_wordAttribute": in EC#, this trivia is placed on an identifier treated as an attribute (e.g. partial, async).
 		public static readonly Symbol TriviaWordAttribute = GSymbol.Get("#trivia_wordAttribute");
+		public static readonly Symbol TriviaDummyNode = GSymbol.Get("#trivia_dummyNode"); //!< Attribute attached to a dummy node that was created so that trivia could be attached to it
+		public static readonly Symbol TriviaBeginTrailingTrivia = GSymbol.Get("#trivia_beginTrailingTrivia"); //!< "#trivia_SLCommentBefore"
+		public static readonly Symbol TriviaSLComment = GSymbol.Get("#trivia_SLComment"); //!< "#trivia_SLCommentBefore"
+		public static readonly Symbol TriviaMLComment = GSymbol.Get("#trivia_MLComment"); //!< "#trivia_MLCommentBefore"
+		public static readonly Symbol TriviaNewline = GSymbol.Get("#trivia_newline");
+		public static readonly Symbol TriviaAppendStatement = GSymbol.Get("#trivia_appendStatement"); //!< Suppresses the newline that ordinarily appears between statements in a braced block
+		public static readonly Symbol TriviaSpaces = GSymbol.Get("#trivia_spaces");
 
-		/// #rawText must have a Value, or be a call with a single literal argument.
-		/// The Value is converted to a string and printed out by EcsNodePrinter 
+		/// #rawText must be a call with a single literal argument. The Value of
+		/// the argument is converted to a string and printed out by EcsNodePrinter 
 		/// without any filtering, e.g. `#rawText("Hello")` is printed `Hello`.
 		public static readonly Symbol RawText = GSymbol.Get("#rawText");
 

@@ -149,23 +149,28 @@ namespace Loyc.Syntax
 			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
-		/// <remarks>The <see cref="SourceRange"/> is applied to the parentheses 
-		/// attribute itself, not to the node to which the parens are added.</remarks>
+		/// <remarks>The node's range is changed to the provided <see cref="SourceRange"/>
+        /// and the original range of the node is assigned to the parentheses attribute.</remarks>
 		public static LNode InParens(this LNode node, SourceRange range)
 		{
-			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, range));
+			return node.WithRange(range).PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, node.Range));
 		}
 		/// <summary>Returns the same node with a parentheses attribute added.</summary>
-		public static LNode InParens(this LNode node, ISourceFile file, int position = -1, int width = -1)
+		public static LNode InParens(this LNode node, ISourceFile file, int startIndex, int endIndex)
 		{
-			return node.PlusAttrBefore(LNode.Id(CodeSymbols.TriviaInParens, file, position, width));
+            return InParens(node, new SourceRange(file, startIndex, endIndex - startIndex));
 		}
 		/// <summary>Removes a single pair of parentheses, if the node has a 
 		/// #trivia_inParens attribute. Returns the same node when no parens are 
 		/// present.</summary>
 		public static LNode WithoutOuterParens(this LNode self)
 		{
-			return WithoutAttrNamed(self, S.TriviaInParens);
+			LNode parens;
+			self = WithoutAttrNamed(self, S.TriviaInParens, out parens);
+			// Restore original node range
+			if (parens != null && self.Range.Contains(parens.Range))
+				return self.WithRange(parens.Range);
+			return self;
 		}
 
 		#endregion

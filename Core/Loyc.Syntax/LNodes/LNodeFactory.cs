@@ -159,13 +159,17 @@ namespace Loyc.Syntax
 
 		public LNode Call(Symbol target, IEnumerable<LNode> args, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(target, new VList<LNode>(args), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return Call(target, new VList<LNode>(args), startIndex, endIndex);
 		}
 		public LNode Call(Symbol target, VList<LNode> args, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return new StdSimpleCallNode(target, args, new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Call(Symbol target, VList<LNode> args, int startIndex, int endIndex, int targetStart, int targetEnd, NodeStyle style = NodeStyle.Default)
+		{
+			if (endIndex < startIndex) endIndex = startIndex;
+			return new StdSimpleCallNode(target, args, new SourceRange(_file, startIndex, endIndex - startIndex), targetStart, targetEnd, style);
 		}
 		public LNode Call(Symbol target, int startIndex = -1, int endIndex = -1)
 		{
@@ -328,22 +332,26 @@ namespace Loyc.Syntax
 
 		public LNode Braces(params LNode[] contents)
 		{
-			return Braces(contents, -1);
-		}
-		public LNode Braces(LNode[] contents, int startIndex = -1, int endIndex = -1)
-		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.Braces, new VList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return Braces(new VList<LNode>(contents));
 		}
 		public LNode Braces(VList<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.Braces, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
+			if (endIndex > startIndex)
+				return new StdSimpleCallNode(S.Braces, contents, 
+					new SourceRange(_file, startIndex, endIndex - startIndex), 
+					startIndex, startIndex + (endIndex > startIndex + 1 ? 1 : 0));
+			else
+				return new StdSimpleCallNode(S.Braces, contents, 
+					new SourceRange(_file, startIndex, endIndex - startIndex));
+		}
+		public LNode Braces(LNode[] contents, int startIndex = -1, int endIndex = -1)
+		{
+			return Braces(new VList<LNode>(contents), startIndex, endIndex);
 		}
 		public LNode Braces(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return Call(S.Braces, contents, startIndex, endIndex);
+			return Braces(new VList<LNode>(contents), startIndex, endIndex);
 		}
 
 		public LNode Assign(LNode lhs, LNode rhs, int startIndex = -1, int endIndex = -1)
@@ -472,7 +480,7 @@ namespace Loyc.Syntax
 
 		public LNode InParens(LNode inner, int startIndex = -1, int endIndex = -1)
 		{
-			return LNodeExt.InParens(inner, File, startIndex, endIndex);
+			return LNodeExt.InParens(inner, File, startIndex, endIndex - startIndex);
 		}
 
 		public LNode Result(LNode expr)
