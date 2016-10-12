@@ -5,6 +5,12 @@ layout: article
 
 _Note_: some version numbers are skipped because the LLLPG version number is synchronized with LeMP/EC#, which iterate more frequently.
 
+### LLLPG v1.9.2: September 3, 2016 ###
+
+- &{[Local]} is now the default, rather than &{[Hoist]}. Semantic (`&{...}`) predicates are no longer hoisted into other rules by default, but syntactic predicates (`&(...)`) still are.
+- Bug fix in `BaseLexer` : error messages were broken when the expected set was a `HashSet`.
+- Bug fix: `out` is no longer stripped out of `out $grammarLabel`
+
 ### LLLPG v1.8.1: June 13, 2016 ###
 
 - To avoid weird problems, added a check to ensure LLLPG keywords are not used as rule names

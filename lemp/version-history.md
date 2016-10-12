@@ -7,6 +7,16 @@ redirectDomain: ecsharp.net
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v1.9.2: September 3, 2016 ###
+
+- Only [core libraries](http://core.loyc.net/version-history) changed
+
+### v1.9.0: July 26, 2016 ###
+
+- Names of operators in LES and EC# now start with an apostrophe (`'`)
+- Bux fix in LES->EC# conversion of `for` loop with empty clauses.
+- Bug fix: `#useSymbols` crashed if it encountered `using X = Y`, and didn't work with LLLPG
+
 ### v1.8.1: June 13, 2016 ###
 
 - Introduced `#ecs` as shorthand for `#useSymbols; #useSequenceExpressions;`
