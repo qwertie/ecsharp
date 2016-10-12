@@ -140,6 +140,7 @@ namespace Loyc.Tests
 			return MiniTest.RunTests.RunMany(
 				new TokenTests(),
 				new IndentTokenGeneratorTests(),
+				new StandardTriviaInjectorTests(),
 				new LesLexerTests(),
 				new LesParserTests(),
 				new LesPrinterTests(),
