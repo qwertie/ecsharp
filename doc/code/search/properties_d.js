@@ -2,15 +2,19 @@ var searchData=
 [
   ['parent',['Parent',['../interfaceLeMP_1_1IMacroContext.html#a681a62874a05eee15058bd1723403ce4',1,'LeMP::IMacroContext']]],
   ['pool',['Pool',['../classLoyc_1_1Symbol.html#aacafe7216546adb5d192889e542b16a5',1,'Loyc::Symbol']]],
-  ['positiveinfinity',['PositiveInfinity',['../interfaceLoyc_1_1Math_1_1INumTraits_3_01T_01_4.html#a458752990986401856690d09a834b326',1,'Loyc::Math::INumTraits&lt; T &gt;']]],
+  ['positiveinfinity',['PositiveInfinity',['../interfaceLoyc_1_1Math_1_1INumTraits.html#a458752990986401856690d09a834b326',1,'Loyc::Math::INumTraits']]],
   ['predusesla',['PredUsesLA',['../classLoyc_1_1LLParserGenerator_1_1AndPred.html#aedb279eff153f7afcecab906ed30e5db',1,'Loyc::LLParserGenerator::AndPred']]],
+  ['prefercustomliterals',['PreferCustomLiterals',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Lexer.html#ae7981dc3d82b96c262a7ec9d1266e025',1,'Loyc::Syntax::Les::Les3Lexer']]],
   ['preferplaincsharp',['PreferPlainCSharp',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#aa14f90a1768baad85a17ce8f5ffe0e4d',1,'Loyc::Ecs::EcsNodePrinter']]],
+  ['preferredlinewidth',['PreferredLineWidth',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a93fc49fc57db65180baa97df8c406558',1,'Loyc::Syntax::Les::Les3Printer']]],
+  ['prefixnotationonly',['PrefixNotationOnly',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a06de30478b647c764ff21223233a07c3',1,'Loyc::Syntax::Les::Les3Printer']]],
   ['preopenednamespaces',['PreOpenedNamespaces',['../classLeMP_1_1MacroProcessor.html#ac7d649b15f5b12c664854825151a5fc1',1,'LeMP::MacroProcessor']]],
   ['printer',['Printer',['../interfaceLoyc_1_1Syntax_1_1IParsingService.html#ada112e6a76fa724000c69447c3bfaa12',1,'Loyc.Syntax.IParsingService.Printer()'],['../classLoyc_1_1Syntax_1_1LNode.html#a130548f4529a1da652da4e9cbd851ca8',1,'Loyc.Syntax.LNode.Printer()']]],
   ['printexplicittrivia',['PrintExplicitTrivia',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a832454e19ff751e338d94365376bb20e',1,'Loyc::Syntax::Les::LesNodePrinter']]],
   ['printseverityat',['PrintSeverityAt',['../classLoyc_1_1ConsoleMessageSink.html#a49dee4bb03921423d485c6b782b0270c',1,'Loyc::ConsoleMessageSink']]],
-  ['prior',['Prior',['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a2d182adfa580c9bad2a83ff7f283f638',1,'Loyc::Collections::VListBlock&lt; T &gt;']]],
-  ['priorcount',['PriorCount',['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a8fb4d8a9e1a8956c2a7e2787c2c9d51b',1,'Loyc::Collections::VListBlock&lt; T &gt;']]],
-  ['priorisowned',['PriorIsOwned',['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#af463776794eda5255e20c7c2fafe1d1b',1,'Loyc::Collections::VListBlock&lt; T &gt;']]],
+  ['printtriviaexplicitly',['PrintTriviaExplicitly',['../classLoyc_1_1Syntax_1_1Les_1_1Les3Printer.html#a534bb0eccedc9209824017dad4b4bd4f',1,'Loyc::Syntax::Les::Les3Printer']]],
+  ['prior',['Prior',['../classLoyc_1_1Collections_1_1VListBlock.html#a2d182adfa580c9bad2a83ff7f283f638',1,'Loyc::Collections::VListBlock']]],
+  ['priorcount',['PriorCount',['../classLoyc_1_1Collections_1_1VListBlock.html#a8fb4d8a9e1a8956c2a7e2787c2c9d51b',1,'Loyc::Collections::VListBlock']]],
+  ['priorisowned',['PriorIsOwned',['../classLoyc_1_1Collections_1_1VListBlock.html#af463776794eda5255e20c7c2fafe1d1b',1,'Loyc::Collections::VListBlock']]],
   ['priority',['Priority',['../classLoyc_1_1Threading_1_1ThreadEx.html#ab7710ceca0ca124b0264f3e1c6b64aad',1,'Loyc::Threading::ThreadEx']]]
 ];

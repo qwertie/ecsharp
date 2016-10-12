@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['whitespace',['Whitespace',['../classLoyc_1_1Syntax_1_1Lexing_1_1IndentTokenGenerator_3_01Token_01_4.html#a804a504dd17627158424c2c243b31685ace9a733c2ae3f8b704aec91f551b2bcc',1,'Loyc::Syntax::Lexing::IndentTokenGenerator&lt; Token &gt;']]],
-  ['wsa',['Wsa',['../classLoyc_1_1Syntax_1_1Les_1_1LesNodePrinter.html#a66a7ae48a90617f822292e4fd957d794a7d997cddc5be3c1cd6f0a47182d47e14',1,'Loyc::Syntax::Les::LesNodePrinter']]]
+  ['tdqstringliteral',['TDQStringLiteral',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a4e961fc5a16c1a0aca144906957d7a2d',1,'Loyc::Syntax']]],
+  ['tqstringliteral',['TQStringLiteral',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a3cc0bc90d0030465139158b9c11f479f',1,'Loyc::Syntax']]],
+  ['typecontext',['TypeContext',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a6200563ef865f533e8447a842e2f29ff',1,'Loyc::Ecs::EcsNodePrinter']]],
+  ['typekeyword',['TypeKeyword',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a7967f5b83e9c6ef96c23be72c4407903ab785d149fb8a5d4053303ff33131b2f3',1,'Loyc::Syntax::Lexing']]]
 ];

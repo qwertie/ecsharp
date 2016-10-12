@@ -1,8 +1,16 @@
 var searchData=
 [
-  ['remove',['Remove',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea1063e38cb53d94d386f21227fcd84717',1,'Loyc::Collections']]],
-  ['repeat',['Repeat',['../namespaceLoyc_1_1Collections.html#af0ffc4d7615f186f5aa815a344723f35a7020426cfb0a204051be4b3053d2acc8',1,'Loyc::Collections']]],
-  ['replaceifpresent',['ReplaceIfPresent',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea22f12efabdd21ae885a5fa4cc04c9cdc',1,'Loyc::Collections']]],
-  ['replaceroot',['ReplaceRoot',['../classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a93d8912e6db9b22e29f5ed5022fbc990',1,'Loyc::Syntax::LNode']]],
-  ['retrieve',['Retrieve',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea2d67a16bc732d3b6a4a245d1a866996c',1,'Loyc::Collections']]]
+  ['passive',['Passive',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721af80bc338b6146b566004a046f8137c85',1,'LeMP']]],
+  ['prefixnotation',['PrefixNotation',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a531100057c5cfdf34cfc72170c4bb7ba',1,'Loyc::Syntax']]],
+  ['priorityfallback',['PriorityFallback',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a138988fcf70e07affa310f6a6a69ff8d',1,'LeMP']]],
+  ['priorityfallbackmin',['PriorityFallbackMin',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a03517381d93013b68e8706d60f65cf0c',1,'LeMP']]],
+  ['priorityinternalfallback',['PriorityInternalFallback',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ab78ffa29cc2191841095b8993455c05f',1,'LeMP']]],
+  ['priorityinternaloverride',['PriorityInternalOverride',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ad54535d98b6d1aadcd1aa7f2ae52c3f0',1,'LeMP']]],
+  ['prioritymask',['PriorityMask',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721aa7221f0f443b61211b70737f7f27156f',1,'LeMP']]],
+  ['prioritynormal',['PriorityNormal',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a79891fe0c283fa33f64539263c152d1f',1,'LeMP']]],
+  ['priorityoverride',['PriorityOverride',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a66057e7fb1b999cf202660a21fee7471',1,'LeMP']]],
+  ['priorityoverridemax',['PriorityOverrideMax',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a2f29ce8de24666f3fd15df6aa3218ccb',1,'LeMP']]],
+  ['processattrs',['ProcessAttrs',['../classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5a4b861eb315e6ceef712815a76d7c2904',1,'Loyc::Syntax::LNode']]],
+  ['processchildrenafter',['ProcessChildrenAfter',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721a1bcbc125ed642e60d0185e465fc4ae92',1,'LeMP']]],
+  ['processchildrenbefore',['ProcessChildrenBefore',['../namespaceLeMP.html#ab267185fdc116f4e8f06125be9858721ace3df61e28924101a935cfab90e9ccf1',1,'LeMP']]]
 ];

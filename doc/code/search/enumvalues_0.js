@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['abfv',['ABFV',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afa39c141070cc3fca19ae6ef739bf50d64',1,'Loyc::Syntax']]],
   ['add',['Add',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeaec211f7c20af43e742bf2570c3cb84f9',1,'Loyc::Collections']]],
   ['addifnotpresent',['AddIfNotPresent',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eea9ed5e57327e6a026f97d80a241955516',1,'Loyc::Collections']]],
   ['addorreplace',['AddOrReplace',['../namespaceLoyc_1_1Collections.html#ab3f241a3b553681db7ce9ce14147e4eeabbbe4763739c476985364059d62b8153',1,'Loyc::Collections']]],

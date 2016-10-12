@@ -5,8 +5,8 @@ var searchData=
   ['maxdepthnodes',['MaxDepthNodes',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSetStats.html#a17b159658ded678758107f69b224d8b2',1,'Loyc::Collections::Impl::InternalSetStats']]],
   ['missing',['Missing',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338',1,'Loyc.Syntax.CodeSymbols.Missing()'],['../classLoyc_1_1Syntax_1_1LNode.html#aa4b2c33e3c0b733dc9664093608338e9',1,'Loyc.Syntax.LNode.Missing()']]],
   ['mod',['Mod',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a6789dccc54facf2cafd3b5b853bf5cda',1,'Loyc::Syntax::CodeSymbols']]],
-  ['modset',['ModSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#acdc15a8504bf7a730bc4b87a459af711',1,'Loyc::Syntax::CodeSymbols']]],
+  ['modassign',['ModAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a360e63e2bca0ac5ebe3c56dad2624d1c',1,'Loyc::Syntax::CodeSymbols']]],
   ['module',['Module',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a50c17a6d3f8934ad67e518c82b255471',1,'Loyc::Syntax::CodeSymbols']]],
   ['mul',['Mul',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aa50b559e1ac53c801516180289ad5206',1,'Loyc::Syntax::CodeSymbols']]],
-  ['mulset',['MulSet',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a7cf577fe14d05a24c237d3a1dbf926a2',1,'Loyc::Syntax::CodeSymbols']]]
+  ['mulassign',['MulAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a248b59984cee390c8080b86ed617edfa',1,'Loyc::Syntax::CodeSymbols']]]
 ];
