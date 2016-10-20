@@ -223,8 +223,6 @@ namespace Loyc.MiniTest
 	/// the most common assertions used in NUnit.
 	/// </summary>
 	/// <remarks>
-	/// WORK IN PROGRESS. TEST RUNNER IS NOT FINISHED YET.
-	/// <para/>
 	/// This class is mostly a drop-in replacement for "old-style" NUnit tests, 
 	/// i.e. those that do not use constraint classes or the "Is" class.
 	/// <para/>

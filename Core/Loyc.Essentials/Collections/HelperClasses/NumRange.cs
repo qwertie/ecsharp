@@ -9,14 +9,14 @@ namespace Loyc.Collections
 	/// <summary>Represents a range of integers of a specified data type.</summary>
 	/// <typeparam name="Num">Any numeric type</typeparam>
 	/// <typeparam name="Math">Trait type that implements math operations for the 
-	/// type, e.g. for in, use Loyc.Math.MathI.</typeparam>
+	/// type, e.g. for Int32, use Loyc.Math.MathI.</typeparam>
 	/// <remarks>
 	/// TODO: unit tests.
 	/// <para/>
 	/// Note: if the low value is the minimum value of an integer type (e.g. 
-	/// int.MinValue of int) then the Enumerator will not work. Also, if the difference
-	/// between the min and max value is int.MaxValue or more, the Count property will
-	/// overflow and return an incorrect value.
+	/// int.MinValue of int) then the Enumerator will not work (MoveNext() will return
+	/// false). Also, if the difference between the min and max value is int.MaxValue 
+	/// or more, the Count property will overflow and return an incorrect value.
 	/// </remarks>
 	public struct NumRange<Num, Math> : ICollection<Num>, IReadOnlyList<Num>, IIsEmpty
 		where Num : IConvertible

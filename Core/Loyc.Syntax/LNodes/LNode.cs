@@ -858,7 +858,7 @@ namespace Loyc.Syntax
 		public abstract LNode Clone();
 		
 		public LNode WithRange(SourceRange range) { return With(range, Style); }
-		public LNode WithRange(int startIndex, int endIndex)
+		public virtual LNode WithRange(int startIndex, int endIndex)
 		{
 			var copy = Clone();
 			copy.RAS = new RangeAndStyle(RAS.Source, startIndex, endIndex-startIndex, RAS.Style);
@@ -1283,9 +1283,11 @@ namespace Loyc.Syntax
 		/// the attributes of an LNode, returning another LNode of the same Kind. If 
 		/// the selector makes no changes, Select() returns <c>this</c>.</summary>
 		/// <remarks>The selector is not allowed to return null, but it can return
-		/// <c>NoValue.Value</c> to delete a parameter or target. If you're wondering 
-		/// why we don't use <c>null</c> for this purpose, it is because the 
-		/// functionality of this method is actually implemented by 
+		/// <c>NoValue.Value</c> to delete a parameter or target. If the current 
+		/// node is a target, it cannot be deleted, so it is replaced with 
+		/// <c>#splice()</c> which, by convention, represents an empty list.
+		/// If you're wondering why we don't use <c>null</c> for deletions, it is 
+		/// because the functionality of this method is actually implemented by 
 		/// <see cref="VList{T}.WhereSelect(Func{T, Maybe{T}})"/>; since T could be a 
 		/// value type, that method cannot use null as a signal to delete items from 
 		/// the collection.
@@ -1322,8 +1324,12 @@ namespace Loyc.Syntax
 		/// optionally the root node. If the selector returns a node, the new node 
 		/// replaces the node that was passed to <c>selector</c> and the children of 
 		/// the new node are ignored. If the selector returns null, children of the 
-		/// child are scanned recursively.</param>
-		/// <param name="options">Options.</param>
+		/// child are scanned recursively. If the selector returns Maybe{LNode}.NoValue
+		/// then the current node is deleted if it is an argument or attribute. If 
+		/// the current node is a target, it cannot be deleted, so it is replaced 
+		/// with <c>#splice()</c> which, by convention, represents an empty list.
+		/// If you delete the root node then this method returns Maybe{LNode}.NoValue.</param>
+		/// <param name="options">Options, see <see cref="ReplaceOpt"/>.</param>
 		/// <returns>The new node produced after all replacements have occurred.</returns>
 		/// <remarks>If <c>replaceFunc</c> always returns null (or if <c>replaceRoot</c>
 		/// is false and the root has no children), <c>ReplaceRecursive</c> returns 

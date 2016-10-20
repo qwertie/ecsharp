@@ -20,9 +20,8 @@ namespace Loyc
 	/// Since .NET does not allow static members in an interface, the static
 	/// members can be found in <see cref="MessageSink"/>.
 	/// <para/>
-	/// Each message has a "type" <see cref="Symbol"/> which indicates the 
-	/// type of message being printed. For message sinks that are used as 
-	/// loggers, this should be one of the following logging levels, listed
+	/// Each message has a <see cref="Severity"/>. For message sinks that are used 
+	/// as loggers, this should be one of the following logging levels, listed
 	/// in order of importance: Fatal, Error, Warning, Note, Debug, Verbose.
 	/// <para/>
 	/// For message sinks that are used for compiler messages, the standard
@@ -31,7 +30,7 @@ namespace Loyc
 	/// for independent messages that are less severe than warnings (e.g. lints).
 	/// Some compilers may distiguish "soft" errors (which do not prevent the
 	/// program from starting) from "critical" errors (which do). In that case, 
-	/// Error may represents such a "soft" error and Critical may represent a
+	/// Error may represent such a "soft" error and Critical may represent a
 	/// "hard" error. Fatal, in contrast, represents an error that causes the
 	/// compiler to halt immediately.
 	/// <para/>

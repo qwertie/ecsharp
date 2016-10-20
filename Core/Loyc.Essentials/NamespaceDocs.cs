@@ -17,8 +17,7 @@
  *
  * __Caution__: this documentation is updated less often than the source code and Doxygen 
  * sometimes trips over the syntax of the XML doc comments in the source code, 
- * causing incorrect output (for instance, it misplaces the entire detailed description
- * of Loyc.Syntax.LNode). I am thinking about whether to switch to a different
+ * causing incorrect output. I am thinking about whether to switch to a different
  * documentation generator, athough Doxygen's search feature is pretty neat, and I
  * was able to use `sed` to insert links to the source code on GitHub.
  * 
