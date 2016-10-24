@@ -39,17 +39,20 @@ namespace Loyc.Syntax.Les
 		{
 			get { return true; }
 		}
+		public bool CanPreserveComments
+		{
+			get { return false; }
+		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
-			var lexer = new LesLexer(text, fileName, msgs);
-			return new WhitespaceFilter(lexer);
+			return new LesLexer(text, fileName, msgs);
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var lexer = Tokenize(text, fileName, msgs);
-			return Parse(lexer, msgs, inputType);
+			var lexer = new WhitespaceFilter(Tokenize(text, fileName, msgs));
+			return Parse(lexer, msgs, inputType, preserveComments);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
 			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
 		}

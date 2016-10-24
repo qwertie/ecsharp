@@ -9,6 +9,7 @@ using Loyc.Collections;
 using Loyc.Syntax.Lexing;
 using Loyc.Ecs.Parser;
 
+/// <summary>Classes related to Enhanced C# (mostly found in Loyc.Ecs.dll).</summary>
 namespace Loyc.Ecs
 {
 	/// <summary>The <see cref="Value"/> property provides easy access to the lexer, 
@@ -58,16 +59,20 @@ namespace Loyc.Ecs
 		{
 			get { return true; }
 		}
+		public bool CanPreserveComments
+		{
+			get { return true; }
+		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
 			return new EcsLexer(text, fileName, msgs);
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
 			var lexer = Tokenize(text, fileName, msgs);
-			return Parse(lexer, msgs, inputType);
+			return Parse(lexer, msgs, inputType, preserveComments);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
 			var preprocessed = new EcsPreprocessor(input);
 			var treeified = new TokensToTree(preprocessed, false);

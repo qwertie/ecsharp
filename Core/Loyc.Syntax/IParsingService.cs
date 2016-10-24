@@ -29,8 +29,11 @@ namespace Loyc.Syntax
 		/// dots, with the first one being the most common.</summary>
 		IEnumerable<string> FileExtensions { get; }
 
-		/// <summary>Returns true if the Tokenize() method is available.</summary>
+		/// <summary>Returns true if the <see cref="Tokenize"/> method is available.</summary>
 		bool HasTokenizer { get; }
+
+		/// <summary>Returns true if the parser supports preserving comments.</summary>
+		bool CanPreserveComments { get; }
 
 		/// <summary>Returns a lexer that is configured to begin reading the specified file.</summary>
 		/// <param name="text">Text to be tokenized (e.g. <see cref="UString"/>)</param>
@@ -39,40 +42,48 @@ namespace Loyc.Syntax
 		/// <remarks>
 		/// The returned lexer should be a "simple" tokenizer. If the language uses 
 		/// tree lexing (in which tokens are grouped by parentheses and braces),
-		/// the returned lexer should NOT include the grouping process, and it 
-		/// should not remove comments, although it may skip spaces and perhaps
-		/// newlines. If there is a preprocessor, it should not run.
+		/// the returned lexer should NOT include the grouping process.
 		/// <para/>
-		/// Whether comments and other whitespaces are filtered out is implementation-defined.
+		/// It is recommended that the implementation of this method filter out 
+		/// spaces (for best performance) but not comments or newlines. 
+		/// If there is a preprocessor, it should not run.
 		/// </remarks>
 		ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs);
 
 		/// <summary>Parses a source file into one or more Loyc trees.</summary>
 		/// <param name="text">input file or string.</param>
-		/// <param name="fileName">A file name to associate with output nodes and errors.</param>
-		/// <param name="msgs">output sink for error and warning messages.</param>
+		/// <param name="fileName">A file name to associate with errors, warnings, and output nodes.</param>
+		/// <param name="msgs">Error and warning messages are sent to this object.</param>
 		/// <param name="inputType">Indicates the kind of input, e.g. <c>File</c> 
 		/// (an entire source file), <c>FormalArguments</c> (function parameter list), etc. 
 		/// <c>null</c> is a synonym for <c>File</c>.</param>
-		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null);
+		/// <param name="preserveComments">Whether to preserve comments and newlines 
+		/// by attaching trivia attributes to the output. If the property
+		/// <see cref="CanPreserveComments"/> is false, this parameter will not work.</param>
+		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
-		/// <param name="msgs">output sink for error and warning messages.</param>
-		/// <param name="inputType">Indicates how the input should be interpreted,
-		/// e.g. <see cref="ParsingMode.File"/>, <see cref="ParsingMode.Expressions"/> or
-		/// <see cref="ParsingMode.Statements"/>. The default input type should be
-		/// File.</param>
-		/// <exception cref="NotSupportedException">HasTokenizer is false.</exception>
+		/// <param name="input">A source of tokens.</param>
+		/// <param name="msgs">Error and warning messages are sent to this object.</param>
+		/// <param name="inputType">Indicates how the input should be parsed.</param>
+		/// <param name="preserveComments">Whether to preserve comments and newlines 
+		/// by attaching trivia attributes to the output. If the property
+		/// <see cref="CanPreserveComments"/> is false, this parameter will not work.</param>
+		/// <exception cref="NotSupportedException"><see cref="HasTokenizer"/> is false.</exception>
 		/// <remarks>
 		/// This method adds any preprocessing steps to the lexer (tree-ification 
 		/// or token preprocessing) that are required by this language before it 
 		/// sends the results to the parser. If possible, the output is computed 
 		/// lazily.
 		/// </remarks>
-		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null);
+		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false);
 
 		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
+		/// <param name="tokens">List of tokens</param>
+		/// <param name="file">A source file to associate with errors, warnings, and output nodes.</param>
+		/// <param name="msgs">Error and warning messages are sent to this object.</param>
+		/// <param name="inputType">Indicates how the input should be parsed.</param>
 		/// <remarks>
 		/// Some languages may offer token literals, which are stored as token trees
 		/// that can be processed by "macros" or compiler plugins. A macro may wish 
@@ -242,26 +253,28 @@ namespace Loyc.Syntax
 
 		#endregion
 
-		public static string Print(this IParsingService self, LNode node)
-		{
-			return self.Print(node, MessageSink.Current);
-		}
+		/// <summary>Parses a string by invoking <see cref="IParsingService.Tokenize(ICharSource, string, IMessageSink)"/> using an empty string as the file name.</summary>
 		public static ILexer<Token> Tokenize(this IParsingService parser, UString input, IMessageSink msgs = null)
 		{
 			return parser.Tokenize(input, "", msgs ?? MessageSink.Current);
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null)
+		/// <summary>Parses a string by invoking <see cref="IParsingService.Parse(ICharSource, string, IMessageSink, ParsingMode, bool)"/> using an empty string as the file name.</summary>
+		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			return parser.Parse(input, "", msgs ?? MessageSink.Current, inputType);
+			return parser.Parse(input, "", msgs ?? MessageSink.Current, inputType, preserveComments);
 		}
-		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null)
+		/// <summary>Parses a string and expects exactly one output.</summary>
+		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
+		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var e = parser.Parse(expr, msgs, inputType);
+			var e = parser.Parse(expr, msgs, inputType, preserveComments);
 			return Single(e);
 		}
-		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
+		/// <summary>Parses a string and expects exactly one output.</summary>
+		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
+		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var e = parser.Parse(text, fileName, msgs, inputType);
+			var e = parser.Parse(text, fileName, msgs, inputType, preserveComments);
 			return Single(e);
 		}
 		static LNode Single(IListSource<LNode> e)
@@ -273,19 +286,23 @@ namespace Loyc.Syntax
 				throw new InvalidOperationException(Localize.Localized("ParseSingle: multiple parse results."));
 			return node;
 		}
+		/// <summary>Parses a Stream.</summary>
 		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType);
 		}
+		/// <summary>Parses a Stream.</summary>
 		public static ILexer<Token> Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
 		{
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
+		/// <summary>Opens the specified file and parses it.</summary>
 		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingMode.File);
 		}
+		/// <summary>Opens the specified file and tokenizes it.</summary>
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
