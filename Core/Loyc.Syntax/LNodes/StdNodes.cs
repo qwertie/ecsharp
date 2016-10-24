@@ -175,7 +175,6 @@ namespace Loyc.Syntax
 		}
 	}
 
-
 	internal abstract class StdCallNode : CallNode
 	{
 		public StdCallNode(VList<LNode> args, LNode ras)
@@ -219,7 +218,7 @@ namespace Loyc.Syntax
 		// Offset and range of Target within its parent (yes, I'm a little obsessed 
 		// with saving memory on rarely-used members, so they are ushort)
 		public ushort _targetOffs, _targetLen;
-		// TODO: the parser should be allowed to choose this range manually
+		// Guess range of Target if range was not provided to the constructor
 		private void DetectTargetRange()
 		{
 			if (RAS.Length > 0) {
@@ -237,7 +236,10 @@ namespace Loyc.Syntax
 					} else {
 						// assume this is an operator, e.g. for x + y, use _targetOffs=1, _targetLen=3
 						_targetOffs = ClipUShort(r0.EndIndex);
-						_targetLen = ClipUShort(endIndex - r0.EndIndex);
+						int endTarget = endIndex;
+						if (c > 1 && (r1 = _args[1].Range).StartIndex > r0.EndIndex)
+							endTarget = r1.StartIndex;
+						_targetLen = ClipUShort(endTarget - r0.EndIndex);
 					}
 				} else
 					_targetLen = 0;
@@ -260,6 +262,22 @@ namespace Loyc.Syntax
 
 		public override LNode Clone() { return cov_Clone(); }
 		public virtual StdSimpleCallNode cov_Clone() { return new StdSimpleCallNode(_name, _args, this); }
+		public override LNode WithRange(int startIndex, int endIndex)
+		{
+			// Bug fix 2016-10: changing the Range affected Target.Range because
+			// _targetOffs is relative to RAS. Avoid that. TODO: unit tests for this.
+			int targetStart = RAS.StartIndex + _targetOffs;
+			int newTargetStart = targetStart - startIndex;
+			if (newTargetStart != (ushort)newTargetStart) {
+				// Switch to StdComplexCallNode because new value of _targetOffs won't fit in ushort
+				return new StdComplexCallNode(Target, Args, new SourceRange(RAS.Source, startIndex, endIndex - startIndex), RAS.Style);
+			} else {
+				var copy = cov_Clone();
+				copy.RAS = new RangeAndStyle(RAS.Source, startIndex, endIndex - startIndex, RAS.Style);
+				copy._targetOffs = (ushort)newTargetStart;
+				return copy;
+			}
+		}
 
 		public override LNode WithAttrs(VList<LNode> attrs)
 		{

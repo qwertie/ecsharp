@@ -87,6 +87,11 @@ namespace Loyc.Syntax
 		/// use single quotes.</summary>
 		Alternate2 = 16,
 		
+		/// <summary>Indicates that the there is no comment or newline trivia associated
+		/// with the children of this node, and therefore when printing this node,
+		/// automatic newlines can be suppressed.</summary>
+		OneLiner = 64,
+
 		/// <summary>Indicates that some part of a compiler has seen the node and 
 		/// done something with it.</summary>
 		/// <remarks>The idea behind this flag relates to compilers that allow 

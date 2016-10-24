@@ -11,8 +11,8 @@ namespace Loyc.Syntax
 	/// <summary>Encapsulates an algorithm that consumes trivia (comments and 
 	/// newlines) from a list and adds it as trivia attributes into LNodes.</summary>
 	/// <remarks>
-	/// Usage: Call the constructor, then call <see cref="Run"/>. See 
-	/// <see cref="AbstractTriviaInjector{T}"/> for more information.
+	/// Usage: Call the constructor, then call <see cref="AbstractTriviaInjector{T}.Run"/>.
+	/// See <see cref="AbstractTriviaInjector{T}"/> for more information.
 	/// <para/>
 	/// In brief, given input code with C-style comments like
 	/// <pre>
@@ -73,7 +73,7 @@ namespace Loyc.Syntax
 
 		/// <summary>Initializes <see cref="StandardTriviaInjector"/>.</summary>
 		/// <param name="sortedTrivia">A list of trivia that will be injected into the 
-		/// nodes passed to <see cref="AbstractTriviaInjector{T}.Apply"/>. Normally,
+		/// nodes passed to <see cref="AbstractTriviaInjector{T}.Run"/>. Normally,
 		/// text of comments is extracted from the provided <see cref="ISourceFile"/>,
 		/// but comment tokens could instead store their text as a string in their
 		/// <see cref="Token.Value"/>.</param>
@@ -91,22 +91,13 @@ namespace Loyc.Syntax
 			SLCommentPrefix = slCommentPrefix;
 		}
 
-		// This pair of variables is used to suppress a newline attribute after a single-
-		// line comment (trivia can be added with multiple calls to AttachTriviaTo)
-		bool _justAddedSLComment;
-		LNode _lastAttachedToNode;
-
 		protected override LNode AttachTriviaTo(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			if (_lastAttachedToNode != node) {
-				_lastAttachedToNode = null;
-				_justAddedSLComment = false;
-			}
 			VList<LNode> attrs = node.Attrs;
 			int i = 0;
 			if (loc == TriviaLocation.Leading) {
 				// leading trivia
-				if (parent == null ? indexInParent > 0 : parent.Calls(S.Braces) && indexInParent >= 0) {
+				if (parent == null ? indexInParent > 0 : HasImplicitLeadingNewline(node, parent, indexInParent)) {
 					// ignore expected leading newline
 					if (trivia.Count > 0 && trivia[0].TypeInt == NewlineTypeInt)
 						i++;
@@ -116,21 +107,20 @@ namespace Loyc.Syntax
 			} else {
 				if (trivia.Count == 0)
 					goto stop;
-				else if (node.AttrNamed(S.TriviaBeginTrailingTrivia) == null) {
+				else if (node.AttrNamed(S.TriviaBeginTrailingTrivia) == null)
 					attrs.Add(_trivia_beginTrailingTrivia);
-					_justAddedSLComment = false;
-				}
 			}
+			bool justAddedSLComment = false;
 			LNode attr = null;
 			for (; i < trivia.Count; i++) {
 				var t = trivia[i];
 				// ignore first newline after single-line comment
-				if (t.TypeInt == NewlineTypeInt && _justAddedSLComment) {
-					_justAddedSLComment = false;
+				if (t.TypeInt == NewlineTypeInt && justAddedSLComment) {
+					justAddedSLComment = false;
 					continue;
 				}
 				if ((attr = MakeTriviaAttribute(t)) != null) {
-					_justAddedSLComment = attr.Calls(S.TriviaSLComment);
+					justAddedSLComment = attr.Calls(S.TriviaSLComment);
 					attrs.Add(attr);
 				}
 			}
@@ -138,11 +128,19 @@ namespace Loyc.Syntax
 			if (loc == TriviaLocation.TrailingExtra && attrs.Count > 0 && attrs.Last == _trivia_newline)
 				if (parent == null || parent.Calls(S.Braces)) {
 					attrs.Pop(); // Printers add a newline here anyway
-					if (attrs.Count > 0 && attrs.Last == _trivia_beginTrailingTrivia)
-						attrs.Pop();
 				}
 		stop:
-			return _lastAttachedToNode = node.WithAttrs(attrs);
+			if (!attrs.IsEmpty && attrs.Last == _trivia_beginTrailingTrivia)
+				attrs.Pop();
+			return node.WithAttrs(attrs);
+		}
+
+		/// <summary>Called to find out if a newline is to be added implicitly 
+        /// before the current child of the specified node.</summary>
+        /// <returns>By default, returns true if the node is a braced block.</returns>
+		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode parent, int childIndex)
+		{
+			return parent.Calls(S.Braces) && childIndex >= 0;
 		}
 
 		/// <summary>Called to transform a trivia token into a trivia attribute.</summary>

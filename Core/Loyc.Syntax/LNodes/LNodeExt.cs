@@ -123,7 +123,7 @@ namespace Loyc.Syntax
 		{
 			return self.Args.NodeNamed(name);
 		}
-		public static int IndexWithName(this VList<LNode> self, Symbol name)
+		public static int IndexWithName(this VList<LNode> self, Symbol name, int resultIfNotFound = -1)
 		{
 			int i = 0;
 			foreach (LNode node in self)
@@ -131,7 +131,7 @@ namespace Loyc.Syntax
 					return i;
 				else
 					i++;
-			return -1;
+			return resultIfNotFound;
 		}
 		public static LNode NodeNamed(this VList<LNode> self, Symbol name)
 		{
@@ -139,6 +139,16 @@ namespace Loyc.Syntax
 				if (node.Name == name)
 					return node;
 			return null;
+		}
+
+		/// <summary>Gets a new list with #trivia_beginTrailingTrivia and any attributes 
+		/// afterward removed, if any.</summary>
+		public static VList<LNode> WithoutSuffixTrivia(this VList<LNode> attrs)
+		{
+			int i = IndexWithName(attrs, S.TriviaBeginTrailingTrivia);
+			if (i == -1)
+				return attrs;
+			return attrs.First(i);
 		}
 
 		#region Add/remove parentheses
