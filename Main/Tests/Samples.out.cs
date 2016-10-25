@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.9.2.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 1.8.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -48,13 +48,6 @@ namespace Samples
 			AreEqual(15, Range.Inclusive(1, 5).Sum());
 			AreEqual(0, Range.ExcludeHi(1, 1).Sum());
 			AreEqual(0, Range.Inclusive(1, 0).Sum());
-		}
-		public void PrintAllTheNames()
-		{
-			try {
-				PlayPen.PrintAllTheNames("..\\..\\Main\\LeMP.StdMacros");
-			} catch {
-			}
 		}
 		[Test]
 		public void SExprTest()
@@ -515,7 +508,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 145: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 139: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -530,11 +523,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 150: (([\-])? [0-9A-Za-z])*
+		// Line 144: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 150: ([\-])?
+				// Line 144: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -546,14 +539,14 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		#line 158 "Samples.ecs"
+		#line 152 "Samples.ecs"
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);
 		#line default
 		UsernameChars(src);
-		// Line 163: ([.] UsernameChars)*
+		// Line 157: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -566,7 +559,7 @@ struct EmailAddress
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 167: ([.] DomainCharSeq)*
+		// Line 161: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -607,7 +600,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 209: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 203: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen:
 		case TT.SpaceLParen:
@@ -624,7 +617,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 		case TT.PreOrSufOp:
 			{
 				t = MatchAny();
-				#line 211 "Samples.ecs"
+				#line 205 "Samples.ecs"
 				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
 				#line default
 			}
@@ -632,7 +625,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 		default:
 			{
 				t = Match((int) TT.Literal);
-				#line 212 "Samples.ecs"
+				#line 206 "Samples.ecs"
 				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
 				#line default
 			}
@@ -646,21 +639,21 @@ public partial class SExprParser : BaseParserForList<Token,int>
 		Token lit_lpar = default(Token);
 		Token lit_rpar = default(Token);
 		LNode target = default(LNode);
-		// Line 215: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
+		// Line 209: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
 		la1 = (TT) LA(1);
 		if (la1 == TT.RParen) {
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
-			#line 216 "Samples.ecs"
+			#line 210 "Samples.ecs"
 			return F.List(VList<LNode>.Empty, lit_lpar.StartIndex, lit_rpar.EndIndex);
 			#line default
 		} else {
-			#line 217 "Samples.ecs"
+			#line 211 "Samples.ecs"
 			var parts = VList<LNode>.Empty;
 			#line default
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
-			// Line 218: (Atom)*
+			// Line 212: (Atom)*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
@@ -683,7 +676,7 @@ public partial class SExprParser : BaseParserForList<Token,int>
 			}
 		stop:;
 			lit_rpar = Match((int) TT.RParen);
-			#line 219 "Samples.ecs"
+			#line 213 "Samples.ecs"
 			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
 			#line default
 		}

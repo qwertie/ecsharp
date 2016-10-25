@@ -12,6 +12,9 @@ using Loyc.Syntax.Les;
 using LeMP;
 using S = Loyc.Syntax.CodeSymbols;
 
+/// <summary>
+/// Contains macros for using LLLPG in LeMP.
+/// </summary>
 namespace Loyc.LLPG
 {
 	using Loyc.LLParserGenerator;

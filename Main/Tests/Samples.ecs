@@ -32,12 +32,6 @@ namespace Samples {
 			AreEqual(0, (1..1).Sum());
 			AreEqual(0, (1...0).Sum());
 		}
-		/*[Test]*/ public void PrintAllTheNames()
-		{
-			try {
-				PlayPen.PrintAllTheNames(@"..\..\Main\LeMP.StdMacros");
-			} catch {}
-		}
 		[Test] public void SExprTest()
 		{
 			LNode @using = SExprParser.Parse("(#import (. System Collections))");
@@ -220,3 +214,4 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	};
 }
 
+ 

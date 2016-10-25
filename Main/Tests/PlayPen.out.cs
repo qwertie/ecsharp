@@ -21,7 +21,7 @@ namespace Samples
 {
 	partial class PlayPen
 	{
-		static LNode GetName(LNode type)
+		internal static LNode GetName(LNode type)
 		{
 			{
 				LNode name;

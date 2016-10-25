@@ -69,5 +69,13 @@ namespace Loyc.Collections
 		{
 			return list.Slice(0, count);
 		}
+		public static IListSource<T> Skip<T>(this IListAndListSource<T> list, int start)
+		{
+			return list.Slice(start);
+		}
+		public static IListSource<T> Take<T>(this IListAndListSource<T> list, int count)
+		{
+			return list.Slice(0, count);
+		}
 	}
 }

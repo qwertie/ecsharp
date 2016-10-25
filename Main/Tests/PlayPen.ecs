@@ -9,7 +9,7 @@ namespace Samples
 {
 	partial class PlayPen
 	{
-		static LNode GetName(LNode type)
+		internal static LNode GetName(LNode type)
 		{
 			matchCode(type) {
 			  case { class  $name : $(.._) { $(.._); }  },
@@ -20,6 +20,5 @@ namespace Samples
 				return null;
 			}
 		}
-
 	}
 }
