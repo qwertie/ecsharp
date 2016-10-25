@@ -419,5 +419,30 @@ namespace Loyc.Collections
 				list.Add(e.Current);
 			return list;
 		}
+
+		public static DList<T> ToDList<T>(this IReadOnlyCollection<T> c)
+		{
+			return ToDList(c.GetEnumerator(), c.Count);
+		}
+		public static DList<T> ToDList<T>(this IList<T> c)
+		{
+			return ToDList(c.GetEnumerator(), c.Count);
+		}
+		public static DList<T> ToDList<T>(this IListAndListSource<T> c) // disambiguator
+		{
+			return ToDList((IReadOnlyCollection<T>)c);
+		}
+		public static DList<T> ToDList<T>(this IEnumerable<T> c)
+		{
+			return ToDList(c.GetEnumerator());
+		}
+		public static DList<T> ToDList<T>(this IEnumerator<T> e, int initialCapacity = 4)
+		{
+			var list = new DList<T>(initialCapacity);
+			while (e.MoveNext())
+				list.Add(e.Current);
+			return list;
+		}
+
 	}
 }

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
+#if false
 namespace Loyc.Collections.Impl.Old
 {
 // Replaced with second version (in InternalSet.cs), which is faster, and uses more 
 // memory for reference types but less memory for value types.
-#if false
 	/// <summary>A hash-trie data structure for use inside other data structures.</summary>
 	/// <remarks>
 	/// InternalSet&lt;T> is not designed to be used by itself, but as a building
@@ -1342,5 +1342,5 @@ namespace Loyc.Collections.Impl.Old
 		public static readonly object Value = new DeletedFlag();
 	}
 
-#endif
 }
+#endif

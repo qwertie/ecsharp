@@ -21,6 +21,26 @@ namespace Loyc
 		{
 			return MemoizedTypeName.Get(type);
 		}
+
+		static HashSet<RuntimeTypeHandle> IntegerTypes = new HashSet<RuntimeTypeHandle>
+		{
+			typeof(byte).TypeHandle, typeof(sbyte).TypeHandle,
+			typeof(short).TypeHandle, typeof(ushort).TypeHandle,
+			typeof(int).TypeHandle, typeof(uint).TypeHandle,
+			typeof(long).TypeHandle, typeof(ulong).TypeHandle,
+		};
+		public static bool IsPrimitiveInteger(this RuntimeTypeHandle h)
+		{
+			return IntegerTypes.Contains(h);
+		}
+		public static bool IsPrimitiveFloat(this RuntimeTypeHandle h)
+		{
+			return h.Equals(typeof(float).TypeHandle) || h.Equals(typeof(double).TypeHandle);
+		}
+		public static bool IsPrimitiveNumeric(this RuntimeTypeHandle h)
+		{
+			return IsPrimitiveFloat(h) || IsPrimitiveInteger(h) || h.Equals(typeof(decimal).TypeHandle);
+		}
 	}
 
 	/// <summary>Extension methods for exceptions.</summary>
