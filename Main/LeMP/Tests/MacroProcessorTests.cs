@@ -10,7 +10,8 @@ using Loyc;
 using S = Loyc.Syntax.CodeSymbols;
 using Loyc.Ecs;
 
-namespace LeMP.Test
+/// <summary>Contains tests for the <see cref="LeMP.MacroProcessor"/> and for standard LeMP macros.</summary>
+namespace LeMP.Tests
 {
 	[ContainsMacros]
 	public class TestMacros
@@ -61,7 +62,7 @@ namespace LeMP
 		{
 			Parallel = false;
 			MacroProcessor.AddMacros(typeof(LeMP.Prelude.Les.Macros));
-			MacroProcessor.AddMacros(typeof(LeMP.Test.TestMacros));
+			MacroProcessor.AddMacros(typeof(LeMP.Tests.TestMacros));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude"));
 			MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get("LeMP.Prelude.Les"));
 		}
@@ -83,7 +84,7 @@ namespace LeMP
 
 		public static void Test(string input, string output, IMessageSink sink, int maxExpand = 0xFFFF, bool plainCS = true)
 		{
-			using (LNode.PushPrinter(new EcsNodePrinter(null, null) { PreferPlainCSharp = plainCS }.Print)) {
+			using (LNode.PushPrinter(new EcsNodePrinter(null) { PreferPlainCSharp = plainCS }.Print)) {
 				var c = new TestCompiler(sink, new UString(input), "");
 				c.MaxExpansions = maxExpand;
 				c.MacroProcessor.AbortTimeout = TimeSpan.Zero; // never timeout (avoids spawning a new thread)
@@ -176,43 +177,43 @@ namespace LeMP
 		[Test]
 		public void ImportsTest()
 		{
-			Test("import_macros LeMP.Test; x();",
+			Test("import_macros LeMP.Tests; x();",
 				"x();");
 			Test("import x.y;",
 				"using x.y;");
-			Test("splice(x); { import LeMP.Test; splice(x); }; splice(x);",
-				"splice(x); { using LeMP.Test; x; } splice(x);");
-			Test("import_macros LeMP.Test; A(splice(x), splice(y, z)); B(splice(x, y), splice(z))",
+			Test("splice(x); { import LeMP.Tests; splice(x); }; splice(x);",
+				"splice(x); { using LeMP.Tests; x; } splice(x);");
+			Test("import_macros LeMP.Tests; A(splice(x), splice(y, z)); B(splice(x, y), splice(z))",
 				"A(x, y, z); B(x, y, z);");
-			Test("{{ import LeMP.Test; splice(x); }}; splice(x);",
-				"{{ using LeMP.Test; x; }} splice(x);");
+			Test("{{ import LeMP.Tests; splice(x); }}; splice(x);",
+			     "{{ using LeMP.Tests; x; }} splice(x);");
 		}
 
 		[Test]
 		public void PriorityTest()
 		{
-			Test("import_macros LeMP.Test; priorityTest(0, 1);",
-			                              "priorityTest(1, hi);");
-			Test("{ import_macros LeMP.Test; foo0(); priorityTest(0, 2); foo(); }",
-				 "{                          foo0(); priorityTest(2, hi); foo(); }");
-			Test("{ import_macros LeMP.Test; priorityTest(0, x::int = 3); foo(); }",
-				 "{                          priorityTest(int x = 3, hi); foo(); }");
-			Test("{ import_macros LeMP.Test; priorityTestPCB(0, x::int = 4); foo2(); }",
-				 "{                          priorityTestPCB(int x = 4, hi); foo2(); }");
+			Test("import_macros LeMP.Tests; priorityTest(0, 1);",
+			                               "priorityTest(1, hi);");
+			Test("{ import_macros LeMP.Tests; foo0(); priorityTest(0, 2); foo(); }",
+				 "{                           foo0(); priorityTest(2, hi); foo(); }");
+			Test("{ import_macros LeMP.Tests; priorityTest(0, x::int = 3); foo(); }",
+				 "{                           priorityTest(int x = 3, hi); foo(); }");
+			Test("{ import_macros LeMP.Tests; priorityTestPCB(0, x::int = 4); foo2(); }",
+				 "{                           priorityTestPCB(int x = 4, hi); foo2(); }");
 		}
 
 		[Test]
 		public void SpliceTheBrace()
 		{
-			Test("import_macros LeMP.Test; f(x); braceTheRest; g(y); h(z);",
+			Test("import_macros LeMP.Tests; f(x); braceTheRest; g(y); h(z);",
 			     "f(x); { g(y); h(z); }");
 			// Test that MacroProcessorTask properly includes stuff outside 
 			// the #splice in the RemainingNodes list.
-			Test("import_macros LeMP.Test; f(x); #splice(braceTheRest; g(y)); h(z);",
+			Test("import_macros LeMP.Tests; f(x); #splice(braceTheRest; g(y)); h(z);",
 			     "f(x); { g(y); h(z); }");
-			Test("import_macros LeMP.Test; f(x);  splice(braceTheRest; g(y)); h(z);",
+			Test("import_macros LeMP.Tests; f(x);  splice(braceTheRest; g(y)); h(z);",
 			     "f(x); { g(y); h(z); }");
-			Test("import_macros LeMP.Test; splice(f(x); braceTheRest); g(y); h(z);",
+			Test("import_macros LeMP.Tests; splice(f(x); braceTheRest); g(y); h(z);",
 			     "f(x); { g(y); h(z); }");
 		}
 

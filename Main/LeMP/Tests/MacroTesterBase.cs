@@ -25,9 +25,14 @@ namespace LeMP.Tests
 		{
 			Test(input, Les2LanguageService.Value, outputLes, Les2LanguageService.Value, maxExpand);
 		}
-		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF)
+		protected void TestEcs(string input, string outputEcs, int maxExpand = 0xFFFF, bool plainCsOut = false)
 		{
 			Test(input, EcsLanguageService.Value, outputEcs, EcsLanguageService.Value, maxExpand);
+		}
+		protected void TestCs(string input, string outputCs, int maxExpand = 0xFFFF)
+		{
+			// This is used mainly to avoid printing [#trivia_isTmpVar] when testing sequence expressions
+			Test(input, EcsLanguageService.Value, outputCs, EcsLanguageService.WithPlainCSharpPrinter, maxExpand);
 		}
 		protected void TestBoth(string inputLes, string inputEcs, string outputEcs, int maxExpand = 0xFFFF)
 		{

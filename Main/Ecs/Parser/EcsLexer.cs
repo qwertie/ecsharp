@@ -53,9 +53,15 @@ namespace Loyc.Ecs.Parser
 
 		public Maybe<Token> NextToken()
 		{
+			int la1;
+			if (LA0 == '\t' || LA0 == ' ')
+				Spaces();
+			else if (LA0 == '.' && InputPosition == _lineStartAt && ((la1 = LA(1)) == '\t' || la1 == ' '))
+				DotIndent();
 			_startPosition = InputPosition;
 			_value = null;
 			_style = 0;
+
 			if (InputPosition >= CharSource.Count)
 				return Maybe<Token>.NoValue;
 			else {

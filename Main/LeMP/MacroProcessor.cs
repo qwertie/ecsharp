@@ -25,6 +25,8 @@ namespace LeMP
 		public readonly ICharSource Text;
 		public readonly string FileName;
 		public IParsingService InputLang;
+		public bool? PreserveComments; // null means unassigned (to use the Compiler default)
+		public ParsingMode ParsingMode; // inputType argument when parsing with IParsingService.Parse
 		public LNodePrinter OutPrinter;
 		public string OutFileName;
 		public VList<LNode> Output;

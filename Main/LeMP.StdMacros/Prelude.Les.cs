@@ -76,14 +76,16 @@ namespace LeMP.Prelude.Les
 		[LexicalMacro("using NewName = OldName", "Defines an alias that applies inside the current module only.", "using")]
 		public static LNode @using1(LNode node, IMacroContext sink)
 		{
-			if (node.ArgCount == 1 && IsComplexId(node.Args[0])) {
-				// Looks like an import statement
-				sink.Write(Severity.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP.");
-				return node.WithTarget(S.Import);
+			if (node.ArgCount == 1) {
+				if (IsComplexId(node.Args[0])) {
+					// Looks like an import statement
+					sink.Write(Severity.Warning, node.Target, "The 'import' statement replaces the 'using' statement in LeMP for LES.");
+					return node.WithTarget(S.Import);
+				}
+				var result = TranslateSpaceDefinition(node, sink, S.Alias);
+				if (result != null)
+					return result.PlusAttr(F.Id(S.FilePrivate));
 			}
-			var result = TranslateSpaceDefinition(node, sink, S.Alias);
-			if (result != null)
-				return result.PlusAttr(F.Id(S.FilePrivate));
 			return null;
 		}
 		[LexicalMacro("namespace Name { Members... }",

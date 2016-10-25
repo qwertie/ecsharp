@@ -18,7 +18,7 @@ namespace Loyc.Syntax
 	{
 		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(null));
 		
-		private LNode _emptyList, _emptyTuple;
+		private LNode _emptyList, _emptySplice, _emptyTuple;
 		public LNode Missing { get { return Missing_; } } // allow access through class reference
 
 		ISourceFile _file;
@@ -400,7 +400,7 @@ namespace Loyc.Syntax
 					startIndex, startIndex + (endIndex > startIndex + 1 ? 1 : 0));
 			else
 				return new StdSimpleCallNode(S.Braces, contents, 
-					new SourceRange(_file, startIndex, endIndex - startIndex));
+					new SourceRange(_file, startIndex, 0));
 		}
 		public LNode Braces(LNode[] contents, int startIndex = -1, int endIndex = -1)
 		{
@@ -413,7 +413,7 @@ namespace Loyc.Syntax
 
 		#endregion
 
-		#region List() (which creates an S.AltList node) and Tuple()
+		#region List() (which creates an S.AltList node), Splice() and Tuple()
 
 		public LNode List()
 		{
@@ -423,22 +423,43 @@ namespace Loyc.Syntax
 		}
 		public LNode List(params LNode[] contents)
 		{
-			return List(contents, -1);
+			return Call(S.AltList, contents, -1, -1);
 		}
 		public LNode List(LNode[] contents, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.AltList, new VList<LNode>(contents), new SourceRange(_file, startIndex, endIndex - startIndex));
+			return Call(S.AltList, contents, startIndex, endIndex);
 		}
 		public LNode List(VList<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
-			if (endIndex < startIndex) endIndex = startIndex;
-			return new StdSimpleCallNode(S.AltList, contents, new SourceRange(_file, startIndex, endIndex - startIndex));
+			return Call(S.AltList, contents, startIndex, endIndex);
 		}
 		public LNode List(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return Call(S.AltList, contents, startIndex, endIndex);
+		}
+
+		public LNode Splice()
+		{
+			if (_emptySplice == null) 
+				_emptySplice = Call(S.Splice);
+			return _emptySplice;
+		}
+		public LNode Splice(params LNode[] contents)
+		{
+			return Call(S.Splice, contents, -1, -1);
+		}
+		public LNode Splice(LNode[] contents, int startIndex = -1, int endIndex = -1)
+		{
+			return Call(S.Splice, contents, startIndex, endIndex);
+		}
+		public LNode Splice(VList<LNode> contents, int startIndex = -1, int endIndex = -1)
+		{
+			return Call(S.Splice, contents, startIndex, endIndex);
+		}
+		public LNode Splice(IEnumerable<LNode> contents, int startIndex = -1, int endIndex = -1)
+		{
+			return Call(S.Splice, contents, startIndex, endIndex);
 		}
 
 		public LNode Tuple()

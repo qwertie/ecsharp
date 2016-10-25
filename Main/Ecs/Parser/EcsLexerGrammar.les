@@ -27,23 +27,24 @@ namespace Loyc.Ecs.Parser
 		};
 		@[private] token DotIndent @{
 			&{_startPosition == _lineStartAt}
+			{startPosition::int = InputPosition;}
 			('.' (' '|'\t')+)+
-			{	// CHANGE
-				_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
-				_value = WhitespaceTag.Value;
+			{
+				_indentLevel = MeasureIndent(_indent = CharSource.Slice(startPosition, InputPosition - startPosition));
+				//_value = WhitespaceTag.Value;
 			}
 		};
 		@[#new, private] token Spaces @{
+			{startPosition::int = InputPosition;}
 			(' '|'\t')+
 			{
-				if (_allowPPAt == _startPosition) {
+				if (_allowPPAt == startPosition) {
 					_allowPPAt = InputPosition;
 				};
-				if (_lineStartAt == _startPosition) {
-					// CHANGE
-					_indentLevel = MeasureIndent(_indent = CharSource.Slice(_startPosition, InputPosition - _startPosition));
+				if (_lineStartAt == startPosition) {
+					_indentLevel = MeasureIndent(_indent = CharSource.Slice(startPosition, InputPosition - startPosition));
 				};
-				_value = WhitespaceTag.Value;
+				//_value = WhitespaceTag.Value; we no longer produce space tokens
 			}
 		};
 		@[private] token UTF_BOM @{
@@ -415,8 +416,8 @@ namespace Loyc.Ecs.Parser
 		@[k(3), private]
 		token Token @{
 			( {_type = TT.Newline;}    Newline
-			| {_type = TT.Spaces;}     Spaces
-			/ {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
+			// | {_type = TT.Spaces;}     Spaces // Spaces are now skipped in NextToken()
+			// / {_type = TT.Spaces;}     DotIndent // length-ambiguous with Operator .
 			/ {_type = TT.Literal;}    Number    // length-ambiguous with Operator .
 			/ {_type = TT.SLComment;}  SLComment // length-ambiguous with Operator /
 			/ {_type = TT.MLComment;}  MLComment // length-ambiguous with Operator /

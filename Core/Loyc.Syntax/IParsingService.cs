@@ -287,9 +287,9 @@ namespace Loyc.Syntax
 			return node;
 		}
 		/// <summary>Parses a Stream.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType);
+			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType, preserveComments);
 		}
 		/// <summary>Parses a Stream.</summary>
 		public static ILexer<Token> Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
@@ -297,10 +297,10 @@ namespace Loyc.Syntax
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
 		/// <summary>Opens the specified file and parses it.</summary>
-		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null)
+		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = false)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
-				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingMode.File);
+				return Parse(parser, stream, fileName, msgs, inputType ?? ParsingMode.File, preserveComments);
 		}
 		/// <summary>Opens the specified file and tokenizes it.</summary>
 		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
@@ -315,12 +315,15 @@ namespace Loyc.Syntax
 		/// <param name="indentString">A string to print for each level of indentation, such as a tab or four spaces.</param>
 		/// <param name="lineSeparator">Line separator, typically "\n" or "\r\n".</param>
 		/// <returns>A string form of the nodes.</returns>
-		public static string PrintMultiple(this LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n")
+		public static string PrintMultiple(this LNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink msgs = null, object mode = null, string indentString = "\t", string lineSeparator = "\n", StringBuilder sb = null)
 		{
-			var sb = new StringBuilder();
+			bool first = true;
+			sb = sb ?? new StringBuilder();
 			foreach (LNode node in nodes) {
+				if (!first && node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null)
+					sb.Append(lineSeparator);
 				printer(node, sb, msgs ?? MessageSink.Current, mode, indentString, lineSeparator);
-				sb.Append(lineSeparator);
+				first = false;
 			}
 			return sb.ToString();
 		}

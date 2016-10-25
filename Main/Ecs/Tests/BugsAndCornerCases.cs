@@ -19,7 +19,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("new Foo().x;", F.Dot(F.Call(S.New, F.Call(Foo)), x));            // this worked
 			Stmt("new Foo().x();", F.Call(F.Dot(F.Call(S.New, F.Call(Foo)), x)));  // but this used to Assert
 			// bug: 'public' attribute was suppressed by DropNonDeclarationAttributes
-			Stmt("class Foo\n{\n  public Foo()\n  {\n  }\n}",
+			Stmt("class Foo {\n  public Foo() { }\n}",
 				F.Call(S.Class, Foo, F.List(), F.Braces(
 					Attr(@public, F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))), 
 				p => p.DropNonDeclarationAttributes = true);
@@ -34,22 +34,23 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void BugFixes()
 		{
+			LNode stmt;
 			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
 			Stmt("@`'+`(a, b)(c, 1);", F.Call(F.Call(S.Add, a, b), c, one)); // was: "c+1"
 			// was "partial #var(Foo, a);" which would be parsed as a method declaration
 			Stmt("([] partial Foo a);", F.InParens(Attr(@partialWA, F.Vars(Foo, a))));
-			Stmt("public partial alt class BinaryTree<T>\n{\n}", F.Attr(F.Public, partialWA, WordAttr("#alt"),
+			Stmt("public partial alt class BinaryTree<T> { }", F.Attr(F.Public, partialWA, WordAttr("#alt"),
 				F.Call(S.Class, F.Of(F.Id("BinaryTree"), T), F.List(), F.Braces())));
 			Stmt("partial Foo.T x { get; }",  Attr(partialWA, F.Property(F.Dot(Foo, T), x, F.Braces(get))));
-			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone()\n{\n  return Clone();\n}",
+			Stmt("IFRange<char> ICloneable<IFRange<char>>.Clone() {\n  return Clone();\n}",
 				F.Fn(F.Of(_("IFRange"), F.Char), F.Dot(F.Of(_("ICloneable"), F.Of(_("IFRange"), F.Char)), _("Clone")), F.List(), F.Braces(F.Call(S.Return, F.Call("Clone")))));
-			Stmt("Foo<a> IDictionary<a,b>.Keys\n{\n}",
+			Stmt("Foo<a> IDictionary<a,b>.Keys { }",
 				F.Property(F.Of(Foo, a), F.Dot(F.Of(_("IDictionary"), a, b), _("Keys")), F.Braces()));
 			Stmt("T IDictionary<Symbol,T>.this[Symbol x] { get; set; }",
 				F.Property(T, F.Dot(F.Of(_("IDictionary"), _("Symbol"), T), F.@this), F.List(F.Var(_("Symbol"), x)), F.Braces(get, set)));
 			Stmt("Func<T,T> x = delegate(T a) {\n  return a;\n};", F.Var(F.Of(_("Func"), T, T), x, 
 				F.Call(S.Lambda, F.List(F.Var(T, a)), F.Braces(F.Call(S.Return, a))).SetBaseStyle(NodeStyle.OldStyle)));
-			Stmt("public static rule EmailAddress Parse(T x)\n{\n}",
+			Stmt("public static rule EmailAddress Parse(T x) { }",
 				F.Attr(F.Public, _(S.Static), WordAttr("rule"), F.Fn(_("EmailAddress"), _("Parse"), F.List(F.Var(T, x)), F.Braces())));
 			// Currently we're not trying to treat this as a keyword
 			Stmt("dynamic Foo();", F.Fn(_("dynamic"), Foo, F.List()));
@@ -62,8 +63,12 @@ namespace Loyc.Ecs.Tests
 			Stmt("LLLPG (lexer) {\n  public rule a @{ 'a' };\n}", lexer, Mode.ParserTest);
 			Stmt("LLLPG (lexer) {\n  public rule a => @{ 'a' };\n}", lexer);
 			// 2016-04 bug: ForEachStmt failed to call Up() before returning
-			Stmt("{\n  foreach (var x in Foo) {\n  }\n  Foo();\n}", 
+			Stmt("{\n  foreach (var x in Foo) { }\n  Foo();\n}", 
 				F.Braces(F.Call(S.ForEach, F.Vars(F.Missing, x), Foo, F.Braces()), F.Call(Foo)));
+			// 2016-10 bug: `property:` was applied to both attributes
+			stmt = F.Attr(a, F.Call(S.NamedArg, F.Id("property"), b), F.Private, F.Property(F.String, Foo, F.Braces(get, set)));
+			Stmt("[a, property: b] private string Foo { get; set; }", stmt);
+			Stmt("[a] [property: b] public string Foo { get; set; }", stmt.WithAttrChanged(2, @public), Mode.ParserTest);
 		}
 
 		[Test]

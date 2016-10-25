@@ -102,12 +102,17 @@ namespace LeMP
 			return null;
 		}
 
-		private static bool DetectSetOrCreateMember(LNode arg, out Symbol relevantAttribute, out Symbol fieldName, out Symbol paramName, out LNode plainArg, out LNode propOrFieldDecl)
+		static readonly HashSet<Symbol> FieldCreationAttributes = new HashSet<Symbol>() {
+			S.Public, S.Internal, S.Protected, S.Private, S.ProtectedIn,
+			S.Static, S.Partial,
+		};
+
+		private static bool DetectSetOrCreateMember(LNode arg, out Symbol relevantAttribute, out Symbol fieldName, out Symbol paramName, out LNode newArg, out LNode propOrFieldDecl)
 		{
 			relevantAttribute = null;
 			fieldName = null;
 			paramName = null;
-			plainArg = null;
+			newArg = null;
 			propOrFieldDecl = null;
 			LNode _, type, name, defaultValue, propArgs;
 			if (EcsValidators.IsPropertyDefinition(arg, out type, out name, out propArgs, out _, out defaultValue) && propArgs.ArgCount == 0) {
@@ -116,50 +121,64 @@ namespace LeMP
 				fieldName = EcsNodePrinter.KeyNameComponentOf(name);
 				paramName = ChooseArgName(fieldName);
 				if (defaultValue != null) { // initializer is Args[4]
-					plainArg = F.Var(type, paramName, defaultValue);
+					newArg = LNode.Call(S.Var, LNode.List(type, F.Assign(paramName, defaultValue)), arg);
 					propOrFieldDecl = arg.WithArgs(arg.Args.First(4));
 				} else {
-					plainArg = F.Var(type, paramName);
+					newArg = LNode.Call(S.Var, LNode.List(type, F.Id(paramName)), arg);
 					propOrFieldDecl = arg;
 				}
+				DSOCM_DistributeAttributes(arg.Attrs, ref newArg, ref propOrFieldDecl);
 				return true;
 			} else if (IsVar(arg, out type, out paramName, out defaultValue)) {
 				int a_i = 0;
 				foreach (var attr in arg.Attrs) {
 					if (attr.IsId) {
 						var a = attr.Name;
-						if (a == _set
-							|| a == S.Public || a == S.Internal || a == S.Protected || a == S.Private
-							|| a == S.ProtectedIn || a == S.Static || a == S.Partial) {
+						if (a == _set || FieldCreationAttributes.Contains(a))
+						{
 							relevantAttribute = a;
 							fieldName = paramName;
 							paramName = ChooseArgName(fieldName);
 							if (a == _set) {
-								plainArg = F.Var(type, paramName, defaultValue).WithAttrs(arg.Attrs.Without(attr));
+								newArg = F.Var(type, paramName, defaultValue).WithAttrs(arg.Attrs.Without(attr));
 							} else {
 								// in case of something like "[A] public params T arg = value", 
 								// assume that "= value" represents a default value, not a field 
-								// initializer, that [A] belongs on the field, except `params` 
-								// which stays on the argument.
-								plainArg = F.Var(type, paramName, defaultValue);
-								propOrFieldDecl = arg;
-								if (arg.Args[1].Calls(S.Assign, 2))
-									propOrFieldDecl = arg.WithArgChanged(1,
-										arg.Args[1].Args[0]);
-								int i_params = arg.Attrs.IndexWithName(S.Params);
-								if (i_params > -1) {
-									plainArg = plainArg.PlusAttr(arg.Attrs[i_params]);
-									propOrFieldDecl = propOrFieldDecl.WithAttrs(propOrFieldDecl.Attrs.RemoveAt(i_params));
-								}
+								// initializer. Most attributes stay on the argument.
+								newArg = arg.WithArgChanged(1, 
+									defaultValue != null ? F.Assign(paramName, defaultValue) : F.Id(paramName));
+								propOrFieldDecl = LNode.Call(S.Var, LNode.List(type, F.Id(fieldName)), arg);
+								DSOCM_DistributeAttributes(arg.Attrs, ref newArg, ref propOrFieldDecl);
 							}
 							break;
 						}
 					}
 					a_i++;
 				}
-				return plainArg != null;
+				return newArg != null;
 			}
 			return false;
+		}
+
+		private static void DSOCM_DistributeAttributes(VList<LNode> attrs, ref LNode newArg, ref LNode propOrFieldDecl)
+		{
+			// Some word attributes like `public` and `static` move to the field
+			// or property, as well as named parameters representing an attribute 
+			// target `field:` or `property:`; all others belong on the argument. 
+			// Example: given `[A] [field: B] public params T _arg = value`, we want 
+			// a field `[B] public T arg` and a parameter `[A] params T arg = value`.
+			VList<LNode> argAttrs = VList<LNode>.Empty, fieldAttrs = VList<LNode>.Empty;
+			foreach (var attr in attrs) {
+				var name = attr.Name;
+				if (attr.IsId && (FieldCreationAttributes.Contains(name) || name == S.Readonly))
+					fieldAttrs.Add(attr);
+				else if (attr.Calls(S.NamedArg, 2) && (attr.Args[0].IsIdNamed("field") || attr.Args[0].IsIdNamed("property")))
+					fieldAttrs.Add(attr.Args[1]);
+				else
+					argAttrs.Add(attr);
+			}
+			propOrFieldDecl = propOrFieldDecl.WithAttrs(fieldAttrs);
+			newArg = newArg.WithAttrs(argAttrs);
 		}
 
 		private static bool IsVar(LNode arg,out LNode type, out Symbol name, out LNode defaultValue)

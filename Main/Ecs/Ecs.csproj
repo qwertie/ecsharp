@@ -216,6 +216,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EcsParserGrammar.les</DependentUpon>
     </Compile>
+    <Compile Include="Parser\EcsTriviaInjector.cs" />
     <Compile Include="Tests\ECSharpFeatureTests.cs" />
     <Compile Include="Tests\BugsAndCornerCases.cs" />
     <Compile Include="Tests\EcsParserTests.cs" />
@@ -239,6 +240,7 @@
     <Compile Include="Tests\AmbiguityTests.cs" />
     <Compile Include="Tests\PrinterFocusedTests.cs" />
     <Compile Include="Tests\ToDoTests.cs" />
+    <Compile Include="Tests\TriviaTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Loyc.Collections\Loyc.Collections.csproj">

@@ -74,9 +74,15 @@ namespace Loyc.Ecs
 		}
 		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var preprocessed = new EcsPreprocessor(input);
+			var preprocessed = new EcsPreprocessor(input, preserveComments);
 			var treeified = new TokensToTree(preprocessed, false);
-			return Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);
+			var results = Parse(treeified.Buffered(), input.SourceFile, msgs, inputType);
+			if (preserveComments) {
+				var injector = new EcsTriviaInjector(preprocessed.TriviaList, input.SourceFile, 
+					(int)TokenType.Newline, "/*", "*/", "//");
+				return injector.Run(results.GetEnumerator()).Buffered();
+			} else
+				return results;
 		}
 
 		[ThreadStatic]

@@ -380,7 +380,7 @@ namespace LeMP.Tests
 		public void EcsMacro()
 		{
 			// #ecs = #splice(#useSymbols, #useSequenceExpressions)
-			TestEcs(@"#ecs;
+			TestCs(@"#ecs;
 				public class Program {
 					public static void Main(string[] args) {
 						Commit(Lookup(@@foo)::x);

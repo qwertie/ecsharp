@@ -27,7 +27,7 @@ namespace Loyc.Ecs.Tests
 			
 			// Put attributes in various locations and watch them all disappear
 			Action<EcsNodePrinter> dropAttrs = p => p.DropNonDeclarationAttributes = true;
-			Option(Mode.PrintBothParseFirst,  "[Foo]\na + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
+			Option(Mode.PrintBothParseFirst,  "[Foo] a + b;",          @"a + b;",     Attr(Foo, F.Call(S.Add, a, b)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"public a(x);",           @"a(x);",      Attr(@public, F.Call(a, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"a([#foo] x);",           @"a(x);",      F.Call(a, Attr(fooKW, x)), dropAttrs);
 			Option(Mode.PrintBothParseFirst, @"x[[Foo] a];",            @"x[a];",      F.Call(S.IndexBracks, x, Attr(Foo, a)), dropAttrs);
@@ -70,9 +70,24 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Call(S.Event, EventHandler, F.Call(S.Add, a, b));
 			Expr("#event(EventHandler, a + b)", stmt);
 			stmt = F.Call(S.Event, EventHandler, F.Call(S.Add, a, b), F.Braces());
-			Expr("#event(EventHandler, a + b, {\n})", stmt);
+			Expr("#event(EventHandler, a + b, { })", stmt);
 			stmt = F.Call(S.Event, EventHandler, F.List(a, b), F.Braces());
-			Stmt("event EventHandler a, b\n{\n}", stmt, Mode.ExpectAndDropParserError);
+			Stmt("event EventHandler a, b { }", stmt, Mode.ExpectAndDropParserError);
+		}
+
+		public void PrinterNewlineTests()
+		{
+			LNode code;
+			Stmt("struct Foo { }", F.Call(S.Struct, Foo, F.List(), F.Braces()), 
+				p => p.NewlineOptions |= NewlineOpt.BeforeSpaceDefBrace, Mode.PrinterTest);
+			Stmt("void Foo()\n{ }", F.Fn(F.Void, Foo, F.List(), F.Braces()), 
+				p => p.NewlineOptions |= NewlineOpt.BeforeMethodBrace, Mode.PrinterTest);
+			Stmt("int Foo\n{\n  get;\n}", F.Fn(F.Void, Foo, F.List(), F.Braces(get)), 
+				p => p.NewlineOptions |= NewlineOpt.BeforePropBrace, Mode.PrinterTest);
+			code = F.Fn(F.Void, Foo, F.List(), F.Braces(F.Call(set, F.Braces())));
+			Stmt("int Foo {\n  set\n  { }\n}", code, p => p.NewlineOptions |= NewlineOpt.BeforeGetSetBrace, Mode.PrinterTest);
+			code = F.Call(S.Event, F.Id("EventHandler"), F.List(a, b), F.Braces());
+			Stmt("event EventHandler a, b\n{\n}", code, p => p.NewlineOptions |= NewlineOpt.BeforePropBrace, Mode.PrinterTest);
 		}
 
 		[Test]
@@ -160,8 +175,8 @@ namespace Loyc.Ecs.Tests
 			Stmt("@`'+=`([a] b, c);",    F.Call(S.AddAssign, Attr(a, b), c));
 			// But this is no solution if the head of a node has attributes. The only
 			// workaround is to add parenthesis.
-			Stmt("[a]\n([b] c)(x);", Attr(a, F.Call(Attr(b, c), x)), Mode.PrinterTest);
-			Stmt("[a]\n([b] c())(x);", Attr(a, F.Call(Attr(b, F.Call(c)), x)), Mode.PrinterTest);
+			Stmt("[a] ([b] c)(x);", Attr(a, F.Call(Attr(b, c), x)), Mode.PrinterTest);
+			Stmt("[a] ([b] c())(x);", Attr(a, F.Call(Attr(b, F.Call(c)), x)), Mode.PrinterTest);
 		}
 
 		[Test]

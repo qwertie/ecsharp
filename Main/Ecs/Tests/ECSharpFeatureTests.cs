@@ -123,27 +123,27 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsSimpleCallsAndAttributes()
 		{
-			Stmt("[Foo]\na;",             Attr(Foo, a));
-			Stmt("[Foo]\na.b.c;",         Attr(Foo, F.Dot(a, b, c)));
-			Stmt("[Foo]\na<b,c>;",        Attr(Foo, F.Of(a, b, c)));
-			Stmt("[Foo]\na = b;",         Attr(Foo, F.Assign(a, b)));
+			Stmt("[Foo] a;",             Attr(Foo, a));
+			Stmt("[Foo] a.b.c;",         Attr(Foo, F.Dot(a, b, c)));
+			Stmt("[Foo] a<b,c>;",        Attr(Foo, F.Of(a, b, c)));
+			Stmt("[Foo] a = b;",         Attr(Foo, F.Assign(a, b)));
 			Stmt("#of([Foo] a, b, c);",   F.Of(Attr(Foo, a), b, c));
 			Stmt("a!(b,[Foo] c);",        F.Of(a, b, Attr(Foo, c)));
 			Stmt("a!(b,Foo + c);",        F.Of(a, b, F.Call(S.Add, Foo, c)));
 			Stmt("#of(Foo<a>, b);",       F.Of(F.Of(Foo, a), b));
 			Stmt("public a;",             F.Attr(@public, a));
-			Stmt("[Foo]\npublic a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
+			Stmt("[Foo] public a(b);",    F.Attr(Foo, @public, F.Call(a, b)));
 			Stmt("public #foo;",          F.Attr(@public, fooKW));
 		}
 
 		[Test]
 		public void EcsVariablesWithAttributes()
 		{
-			Stmt("[Foo]\nstatic int a;",   F.Attr(Foo, @static, F.Vars(F.Int32, a)));
+			Stmt("[Foo] static int a;",   F.Attr(Foo, @static, F.Vars(F.Int32, a)));
 			Stmt("partial public int a;", F.Attr(partialWA, @public, F.Vars(F.Int32, a)));
 			Stmt("public partial int a;", F.Attr(@public, partialWA, F.Vars(F.Int32, a)));
-			Stmt("[#lock]\nstatic int a;", F.Attr(@lock, @static, F.Vars(F.Int32, a)));
-			Stmt("[#public, Foo]\nint a;", F.Attr(@public, Foo, F.Vars(F.Int32, a)));
+			Stmt("[#lock] static int a;", F.Attr(@lock, @static, F.Vars(F.Int32, a)));
+			Stmt("[#public, Foo] int a;", F.Attr(@public, Foo, F.Vars(F.Int32, a)));
 		}
 
 		[Test]
@@ -151,7 +151,7 @@ namespace Loyc.Ecs.Tests
 		{
 			// The printer must use prefix notation if the arguments passed to an 
 			// operator have attributes.
-			Stmt("[Foo]\nget;",          Attr(Foo, get));
+			Stmt("[Foo] get;",          Attr(Foo, get));
 			Expr("a[[Foo] b]",          F.Call(S.IndexBracks, a, Attr(Foo, b)));
 		}
 
@@ -224,7 +224,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("alias Map<a,b> = Dictionary<a,b>;", stmt);
 			Expr("#alias(Map<a,b> = Dictionary<a,b>, #())", stmt);
 			stmt = F.Call(S.Alias, F.Assign(Foo, fooKW), F.List(IFoo), F.Braces(public_x));
-			Stmt("alias Foo = #foo : IFoo\n{\n  public int x;\n}", stmt);
+			Stmt("alias Foo = #foo : IFoo {\n  public int x;\n}", stmt);
 			Expr("#alias(Foo = #foo, #(IFoo), {\n  public int x;\n})", stmt);
 
 			// An alias must have an "=" node as its first argument; other spaces
@@ -244,7 +244,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("Foo(a,);", F.Call(Foo, a, F.Missing), oma);
 			Stmt("Foo(,);", F.Call(Foo, F.Missing, F.Missing), oma);
 			Stmt("for (;;) {\n  a();\n}", F.Call(S.For, F.List(), F.Missing, F.List(), F.Braces(F.Call(a))));
-			Stmt("for (; @``();)\n  ;", F.Call(S.For, F.List(), F.Call(F.Missing), F.List(), F.Missing));
+			Stmt("for (; @``();)\n  ;", F.Call(S.For, F.List(), F.Call(F.Missing), F.List(), ChildStmt(F.Missing)));
 		}
 
 		[Test]
@@ -260,33 +260,33 @@ namespace Loyc.Ecs.Tests
 		{
 			LNode[] args = new LNode[4] { Foo, fooWA, @public, null };
 			args[3] = F.Call(S.Struct, Foo, F.List(), F.Braces(F.Vars(F.String, x)));
-			Stmt("[Foo]\nfoo public struct Foo\n{\n  string x;\n}", Attr(args));
+			Stmt("[Foo] foo public struct Foo {\n  string x;\n}", Attr(args));
 			args[3] = F.Fn(F.String, Foo, F.List(), F.Braces(F.Result(x)));
-			Stmt("[Foo]\nfoo public string Foo()\n{\n  x\n}", Attr(args));
+			Stmt("[Foo] foo public string Foo() {\n  x\n}", Attr(args));
 			args[3] = F.Call(S.Break);
-			Stmt("[Foo]\nfoo public break;", Attr(args));
+			Stmt("[Foo] foo public break;", Attr(args));
 			args[3] = F.Call(S.GotoCase, x);
-			Stmt("[Foo]\nfoo public goto case x;", Attr(args));
+			Stmt("[Foo] foo public goto case x;", Attr(args));
 			args[3] = F.Call(S.Return, one);
-			Stmt("[Foo]\nfoo public return 1;", Attr(args));
+			Stmt("[Foo] foo public return 1;", Attr(args));
 			args[3] = F.Call(S.Unchecked, F.Braces(F.Assign(a, F.Call(S.Shl, b, c))));
-			Stmt("[Foo]\nfoo public unchecked {\n  a = b << c;\n}", Attr(args));
+			Stmt("[Foo] foo public unchecked {\n  a = b << c;\n}", Attr(args));
 			// TODO reconsider
 			//args[3] = F.Call(S.If, F.Call(S.Eq, a, b), F.Call(c));
 			//Stmt("[Foo, #foo] public if (a == b)\n  c();", Attr(args));
-			args[3] = F.Call(S.DoWhile, F.Call(a), c);
-			Stmt("[Foo]\nfoo public do\n  a();\nwhile (c);", Attr(args));
+			args[3] = F.Call(S.DoWhile, ChildStmt(F.Call(a)), OnNewLine(c));
+			Stmt("[Foo] foo public do\n  a();\nwhile (c);", Attr(args));
 			args[3] = F.Call(S.UsingStmt, Foo, F.Braces(F.Call(a, Foo)));
-			Stmt("[Foo, #foo]\npublic using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
-			args[3] = F.Call(S.For, F.List(a), b, F.List(c), x);
-			Stmt("[Foo]\nfoo public for (a; b; c)\n  x;", Attr(args));
+			Stmt("[Foo, [#trivia_wordAttribute] #foo] public using (Foo) {\n  a(Foo);\n}", Attr(args), Mode.PrinterTest);
+			args[3] = F.Call(S.For, F.List(a), b, F.List(c), ChildStmt(x));
+			Stmt("[Foo] foo public for (a; b; c)\n  x;", Attr(args));
 			args[3] = F.Braces(F.Call(a));
-			Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args), Mode.PrinterTest);
+			Stmt("[Foo, [#trivia_wordAttribute] #foo] public {\n  a();\n}", Attr(args), Mode.PrinterTest);
 			args[1] = fooKW;
 			args[3] = F.Braces(F.Call(a));
-			Stmt("[Foo, #foo]\npublic {\n  a();\n}", Attr(args));
+			Stmt("[Foo, #foo] public {\n  a();\n}", Attr(args));
 			args[3] = F.Call(a);
-			Stmt("[Foo, #foo]\npublic a();", Attr(args));
+			Stmt("[Foo, #foo] public a();", Attr(args));
 		}
 
 		[Test]
@@ -348,66 +348,81 @@ namespace Loyc.Ecs.Tests
 		public void EcsWordAttributes()
 		{
 			Stmt("Foo(out a, ref b);",                            F.Call(Foo, F.Attr(@out, a), F.Attr(@ref, b)));
-			Stmt("public new partial static void Main()\n{\n}",   AddWords(F.Fn(F.Void, F.Id("Main"), F.List(), F.Braces())));
+			Stmt("public new partial static void Main() { }",     AddWords(F.Fn(F.Void, F.Id("Main"), F.List(), F.Braces())));
 			Stmt("public new partial static void Main();",        AddWords(F.Fn(F.Void, F.Id("Main"), F.List())));
 			Stmt("public new partial static int x;",              AddWords(F.Vars(F.Int32, x)));
 			Stmt("public new partial static Foo x;",              AddWords(F.Vars(Foo, x)));
 			Stmt("public new partial static Foo operator==;",     AddWords(F.Vars(Foo, Attr(_(S.TriviaUseOperatorKeyword), _(S.Eq)))));
-			Stmt("public new partial static int x { get; }", AddWords(F.Property(F.Int32, x, F.Braces(get))));
-			Stmt("public new partial static interface Foo\n{\n}", AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
+			Stmt("public new partial static int x { get; }",      AddWords(F.Property(F.Int32, x, F.Braces(get))));
+			Stmt("public new partial static interface Foo { }",   AddWords(F.Call(S.Interface, Foo, F.List(), F.Braces())));
 			Stmt("public new partial static delegate void x();",  AddWords(F.Call(S.Delegate, F.Void, x, F.List())));
 			Stmt("public new partial static alias a = Foo;",      AddWords(F.Call(S.Alias, F.Assign(a, Foo), F.List())));
 			Stmt("public new partial static event Foo x;",        AddWords(F.Call(S.Event, Foo, x)));
 			Stmt("public new partial static Foo a ==> b;",        AddWords(F.Property(Foo, a, F.Call(S.Forward, b))));
 			Stmt("Foo(public new partial static int x = 0);",     F.Call(Foo, AddWords(F.Var(F.Int32, x.Name, zero))));
 			Stmt("Foo([#public, #new, #partial] static x);",      F.Call(Foo, AddWords(x, false)));
-			Stmt("class Foo\n{\n  [#partial]\n  Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
+			Stmt("class Foo {\n  [#partial] Foo();\n}",          F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                                          Attr(partial, F.Call(S.Constructor, F.Missing, Foo, F.List())))));
-			Stmt("class Foo\n{\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
+			Stmt("class Foo {\n  partial this();\n}",            F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                                          Attr(partialWA, F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())))));
 			Stmt("public new partial static this();",             AddWords(F.Call(S.Constructor, F.Missing, F.Id(S.This), F.List())));
-			Stmt("[#public, #new]\npartial static break;",         AddWords(F.Call(S.Break)));
-			Stmt("[#public, #new]\npartial static return x;",      AddWords(F.Call(S.Return, x)));
-			Stmt("[#public, #new]\npartial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
-			Stmt("[#public, #new, #partial]\nstatic if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, F.Call(Foo)), false));
-			Stmt("[#public, #new]\npartial static try {\n} catch {\n}",  AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Missing, F.Missing, F.Braces()))));
-			Stmt("[#public, #new]\npartial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, F.Call(Foo))));
-			Stmt("[#public, #new]\npartial static Foo:",           AddWords(F.Call(S.Label, Foo)));
-			Stmt("[#public, #new, #partial]\nstatic new Foo();",   AddWords(F.Call(S.New, F.Call(Foo)), false));
-			Stmt("[#public, #new, #partial]\nstatic x = 0;",       AddWords(F.Assign(x, zero), false));
-			Stmt("[#public, #new, #partial]\nstatic Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
-			Stmt("[#public, #new, #partial]\nstatic Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
-			Stmt("[#public, #new, #partial]\nstatic get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
-			Stmt("[#public, #new, #partial]\nstatic ;",            AddWords(F.Missing, false));
+			Stmt("[#public, #new] partial static break;",         AddWords(F.Call(S.Break)));
+			Stmt("[#public, #new] partial static return x;",      AddWords(F.Call(S.Return, x)));
+			Stmt("[#public, #new] partial static goto case x;",   AddWords(F.Call(S.GotoCase, x)));
+			Stmt("[#public, #new, #partial] static if (Foo)\n  Foo();", AddWords(F.Call(S.If, Foo, ChildStmt(F.Call(Foo))), false));
+			Stmt("[#public, #new] partial static try { } catch { }", AddWords(F.Call(S.Try, F.Braces(), F.Call(S.Catch, F.Missing, F.Missing, F.Braces()))));
+			Stmt("[#public, #new] partial static while (x)\n  Foo();",  AddWords(F.Call(S.While, x, ChildStmt(F.Call(Foo)))));
+			Stmt("[#public, #new] partial static Foo:",           AddWords(F.Call(S.Label, Foo)));
+			Stmt("[#public, #new, #partial] static new Foo();",   AddWords(F.Call(S.New, F.Call(Foo)), false));
+			Stmt("[#public, #new, #partial] static x = 0;",       AddWords(F.Assign(x, zero), false));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
+			Stmt("[#public, #new, #partial] static Foo(x = 0);",  AddWords(F.Call(Foo, F.Assign(x, zero)), false));
+			Stmt("[#public, #new, #partial] static get ==> b;",   AddWords(Attr(trivia_forwardedProperty, F.Call(get, F.Call(S.Forward, b))), false));
+			Stmt("[#public, #new, #partial] static ;",            AddWords(F.Missing, false));
 			Stmt("this int x;",                                   F.Vars(F.Int32, x).PlusAttr(F.@this));
 			Stmt("this Foo x;",                                   F.Vars(Foo, x).PlusAttr(F.@this));
-			Stmt("[this]\na(b);",                                  F.Call(a, b).PlusAttr(F.@this));
+			Stmt("[this] a(b);",                                  F.Call(a, b).PlusAttr(F.@this));
 		}
 
 		[Test]
 		public void EcsConstructorsAndDestructors()
 		{
-			LNode int_x = F.Vars(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x);
-			LNode stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
-			Stmt("this(int x) : this(x, 1)\n{\n  a = x;\n}", stmt);
+			LNode int_x = F.Vars(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x), stmt;
+			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x)));
+			Stmt("this(int x)\n   : this(x, 1) {\n  a = x;\n}", stmt);
 			Expr("#cons(@``, this, #([] int x), {\n  #this(x, 1);\n  a = x;\n})", stmt);
 			stmt = F.Call(S.Constructor, F.Missing, Foo, list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(b, x)));
-			Stmt("Foo(int x) : base(x)\n{\n  b = x;\n}", stmt);
+			Stmt("Foo(int x)\n   : base(x) {\n  b = x;\n}", stmt);
 			Expr("#cons(@``, Foo, #([] int x), {\n  base(x);\n  b = x;\n})", stmt);
 			var destructor = F.Fn(F.Missing, F.Call(S._Destruct, Foo), F.List(), F.Braces());
 			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(destructor));
-			Stmt("class Foo\n{\n  ~Foo()\n  {\n  }\n}", stmt);
-			Expr("#class(Foo, #(), {\n  ~Foo()\n  {\n  }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
-			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), {\n  });\n})", stmt, Mode.ParserTest);
+			Stmt("class Foo {\n  ~Foo() { }\n}", stmt);
+			Expr("#class(Foo, #(), {\n  ~Foo() { }\n})", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#class(Foo, #(), {\n  #fn(@``, ~Foo, #(), { });\n})", stmt, Mode.ParserTest);
 			// This should be parsed as a destructor despite the fact that
 			// #result(~(Foo {})) is a potential interpretation.
 			stmt = destructor;
-			Stmt("~Foo()\n{\n}", stmt, Mode.Both | Mode.ExpectAndDropParserError);
-			Expr("#fn(@``, ~Foo, #(), {\n})", destructor);
+			Stmt("~Foo() { }", stmt, Mode.Both | Mode.ExpectAndDropParserError);
+			Expr("#fn(@``, ~Foo, #(), { })", destructor);
 			stmt = F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces());
-			Stmt("#fn(@``, -Foo, #(), {\n});", stmt);
+			Stmt("#fn(@``, -Foo, #(), { });", stmt);
 			stmt = F.Call(S.Class, Foo, F.List(), F.Braces(F.Fn(F.Missing, F.Call(S._Negate, Foo), F.List(), F.Braces())));
-			Stmt("class Foo\n{\n  #fn(@``, -Foo, #(), {\n  });\n}", stmt);
+			Stmt("class Foo {\n  #fn(@``, -Foo, #(), { });\n}", stmt);
+			// You can use this syntax, but the parser has to encode it as a braced 
+			// block in the syntax tree, because there is no other way to encode 
+			// both statements in the method body.
+			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(F.Call(_(S.Base), x), F.Assign(a, x)));
+			Stmt("this(int x)\n   : base(x) =>\n  a = x;", stmt, Mode.ParserTest);
+		}
+
+		[Test]
+		public void EcsConstructorTrivia()
+		{
+			LNode int_x = F.Vars(F.Int32, x), list_int_x = F.List(int_x), x_mul_x = F.Call(S.Mul, x, x), stmt;
+			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, OnNewLine(F.Braces(F.Call(_(S.This), x, one), F.Assign(a, x))));
+			Stmt("this(int x)\n   : this(x, 1)\n{\n  a = x;\n}", stmt);
+			stmt = F.Call(S.Constructor, F.Missing, _(S.This), list_int_x, F.Braces(AppendStmt(F.Call(_(S.This), x, one)), F.Assign(a, x)));
+			Stmt("this(int x) : this(x, 1) {\n  a = x;\n}", stmt);
 		}
 
 		[Test]
@@ -424,7 +439,7 @@ namespace Loyc.Ecs.Tests
 			LNode @operator = _(S.TriviaUseOperatorKeyword), cast = _(S.Cast), operator_cast = Attr(@operator, cast);
 			LNode Foo_a = F.Vars(Foo, a), Foo_b = F.Vars(Foo, b);
 			LNode stmt = Attr(@static, _(S.Implicit), F.Fn(T, operator_cast, F.List(Foo_a), F.Braces()));
-			Stmt("static implicit operator T(Foo a)\n{\n}", stmt);
+			Stmt("static implicit operator T(Foo a) { }", stmt);
 
 			stmt = Attr(@static, _(S.Explicit),
 			            F.Fn(F.Of(Foo, T), F.Of(operator_cast, F.Call(S.Substitute, T)),
@@ -432,8 +447,8 @@ namespace Loyc.Ecs.Tests
 			Stmt(@"static explicit Foo<T> operator`#cast`<$T>(Bar<T> b);", stmt);
 			Expr(@"static explicit #fn(Foo<T>, operator`#cast`<$T>, #([] Bar<T> b))", stmt);
 			stmt = F.Fn(F.Bool, Attr(@operator, _("when")), F.List(Foo_a, Foo_b), F.Braces());
-			Stmt("bool operator`when`(Foo a, Foo b)\n{\n}", stmt);
-			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), {\n})", stmt);
+			Stmt("bool operator`when`(Foo a, Foo b) { }", stmt);
+			Expr("#fn(bool, operator`when`, #([] Foo a, [] Foo b), { })", stmt);
 		}
 
 		[Test]
@@ -463,7 +478,7 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void EcsPropertyDefinitionExpr()
 		{
-			Stmt("this(int Foo { get; })\n{\n}", F.Call(S.Constructor, F.Missing, F.@this, F.List(
+			Stmt("this(int Foo { get; }) { }", F.Call(S.Constructor, F.Missing, F.@this, F.List(
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get))), F.Braces()));
 			Stmt("Foo(x, int Foo { get; } = 0);", F.Call(Foo, x,
 				F.Property(F.Int32, Foo, F.Missing, F.Braces(get), zero)));

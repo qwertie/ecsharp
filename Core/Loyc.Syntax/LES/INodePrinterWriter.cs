@@ -28,6 +28,8 @@ namespace Loyc.Syntax.Les
 		void BeginLabel();
 		void Push(LNode newNode);
 		void Pop(LNode oldNode);
+		char LastCharWritten { get; }
+		int LineNumber { get; }
 	}
 
 	/// <summary>Abstract base class for <see cref="INodePrinterWriter"/>. Has an
@@ -54,5 +56,7 @@ namespace Loyc.Syntax.Les
 		}
 		public virtual void Push(LNode n) { }
 		public virtual void Pop(LNode n) { }
+		public abstract char LastCharWritten { get; }
+		public abstract int LineNumber { get; }
 	}
 }

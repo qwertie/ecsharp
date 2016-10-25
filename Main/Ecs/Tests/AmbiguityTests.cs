@@ -85,58 +85,58 @@ namespace Loyc.Ecs.Tests
 			var fooConstructor   = F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces(F.Call(x)));
 			var fooConsNoBody    = F.Call(S.Constructor, F.Missing, Foo, F.List());
 			Action<EcsNodePrinter> allowAmbig = p => p.AllowConstructorAmbiguity = true;
-			Stmt("this()\n{\n}",                        emptyConstructor);
+			Stmt("this() { }",                          emptyConstructor);
 			Stmt("#cons(@``, Foo, #());",               fooConsNoBody);
 			Stmt("#cons(@``, Foo, #(), {\n  x();\n});", fooConstructor);
 			Stmt("#this(x);",                           F.Call(S.This, x));
 			Stmt("base(x);",                            F.Call(S.Base, x));
-			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), {\n});", "Foo()\n{\n}",
-				F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
-			Stmt("this() : base()\n{\n}",       thisColonBase, allowAmbig);
-			Stmt("this() : this(x)\n{\n  x;\n}",
+			Stmt("this()\n   : this(x) {\n  x;\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x), x)), allowAmbig);
-			Stmt("this()\n{\n  x;\n  this(x);\n}",
+			Option(Mode.PrintBothParseFirst, "#cons(@``, Foo, #(), { });", "Foo() { }",
+				F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces()), allowAmbig);
+			Stmt("this()\n   : base() { }",       thisColonBase, allowAmbig);
+			Stmt("this() {\n  x;\n  this(x);\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This, x))), allowAmbig);
-			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}",
+			Stmt("this() {\n  this()\n     : base() { }\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)));
-			Stmt("this()\n{\n  this();\n}",
+			Stmt("this() {\n  this();\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)), allowAmbig, Mode.PrinterTest);
-			Stmt("this()\n{\n  x;\n  this();\n}",
+			Stmt("this() {\n  x;\n  this();\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x, F.Call(S.This))), allowAmbig);
-			Stmt("this()\n{\n  #cons(@``, this, #());\n}",
+			Stmt("this() {\n  #cons(@``, this, #());\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisConsNoBody)));
-			//Stmt("this()\n{\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
-			Stmt("this()\n{\n  this() : base()\n  {\n  }\n}", 
+			//Stmt("this() {\n  #cons(@``, this, #(), {\n  base();\n});\n}", 
+			Stmt("this() {\n  this()\n     : base() { }\n}", 
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(thisColonBase)), allowAmbig);
-			Stmt("this()\n{\n  #cons(@``, this, #(), {\n  });\n}",
+			Stmt("this() {\n  #cons(@``, this, #(), { });\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(emptyConstructor)));
-			Stmt("class Foo\n{\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
+			Stmt("class Foo {\n  Foo().x;\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(
 			                                          F.Dot(F.Call(Foo), x))));
-			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
-			Stmt("class Foo\n{\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
-			Stmt("class Foo\n{\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
-			Stmt("class Foo\n{\n  Foo()\n  {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
-			Stmt("class Foo\n{\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List()))));
-			Stmt("class Foo\n{\n  IFoo() : base()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                          F.Call(S.Constructor, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
+			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.InParens(F.Call(Foo)))));
+			Stmt("class Foo {\n  (Foo());\n}",   F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), Mode.PrinterTest);
+			Stmt("class Foo {\n  Foo();\n}",                    F.Call(S.Class, Foo, F.List(), F.Braces(fooConsNoBody)));
+			Stmt("class Foo {\n  Foo() {\n    x();\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(fooConstructor)));
+			Stmt("class Foo {\n  #cons(@``, IFoo, #());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                     F.Call(S.Constructor, F.Missing, IFoo, F.List()))));
+			Stmt("class Foo {\n  IFoo()\n     : base() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                     F.Call(S.Constructor, F.Missing, IFoo, F.List(), F.Braces(F.Call(S.Base))))));
 
-			Stmt("class Foo\n{\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
+			Stmt("class Foo {\n  x(Foo());\n}",  F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(x, F.Call(Foo)))));
 
 			// Printer test only
-			Stmt("class Foo\n{\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig, Mode.PrinterTest);
-			Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false, Mode.PrinterTest);
-			Stmt("class Foo\n{\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
+			Stmt("class Foo {\n  Foo();\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), allowAmbig, Mode.PrinterTest);
+			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = false, Mode.PrinterTest);
+			Stmt("class Foo {\n  (Foo());\n}", F.Call(S.Class, Foo, F.List(), F.Braces(F.Call(Foo))), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
 
 			// Non-keyword attributes allowed on this() but not Foo() constructor
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
-			Stmt("class Foo\n{\n  partial this()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())))));
-			Stmt("class Foo\n{\n  [#partial]\n  Foo()\n  {\n  }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
-			                                      Attr(@partial,  F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))));
-			Stmt("this() : this(x)\n{\n}",        F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
-			Stmt("partial this()\n{\n}",          Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
-			Stmt("this()\n{\n  x;\n  partial this(x)\n  {\n  }\n}",
+			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("class Foo {\n  partial this() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                   Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())))));
+			Stmt("class Foo {\n  [#partial] Foo() { }\n}", F.Call(S.Class, Foo, F.List(), F.Braces(
+			                                   Attr(@partial,  F.Call(S.Constructor, F.Missing, Foo, F.List(), F.Braces())))));
+			Stmt("this()\n   : this(x) { }",    F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(F.Call(S.This, x))), allowAmbig);
+			Stmt("partial this() { }",         Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces())));
+			Stmt("this() {\n  x;\n  partial this(x) { }\n}",
 				F.Call(S.Constructor, F.Missing, _(S.This), F.List(), F.Braces(x,
 					Attr(partialWA, F.Call(S.Constructor, F.Missing, _(S.This), F.List(x), F.Braces())))), allowAmbig);
 		}
@@ -150,10 +150,10 @@ namespace Loyc.Ecs.Tests
 			// else
 			//    x();
 			var stmt = F.Call(S.If, a, F.Call(S.If, b, F.Call(c)), F.Call(x));
-			Option(Mode.PrintBothParseFirst,
+			Option(Mode.PrintBothParseFirst | Mode.IgnoreTrivia,
 				"if (a)\n  @#if(b, c());\nelse\n  x();", 
-			    "if (a)\n  {if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraBraceForIfElseAmbig = true);
-			stmt = F.Call(S.If, a, F.Call(S.While, Foo, F.Call(S.If, b, F.Call(c))), F.Call(x));
+			    "if (a){\n  if (b)\n    c();}\nelse\n  x();", stmt, p => p.AllowExtraBraceForIfElseAmbig = true);
+			stmt = F.Call(S.If, a, ChildStmt(F.Call(S.While, Foo, ChildStmt(F.Call(S.If, b, F.Call(c))))), ChildStmt(F.Call(x)));
 			Stmt("if (a)\n  while (Foo)\n    @#if(b, c());\nelse\n  x();", stmt);
 		}
 

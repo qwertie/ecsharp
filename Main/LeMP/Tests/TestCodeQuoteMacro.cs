@@ -19,7 +19,7 @@ namespace LeMP.Tests
 			TestEcs("quote { x = x + 1; }",
 				   @"LNode.Call(CodeSymbols.Assign, LNode.List(LNode.Id((Symbol) ""x""), LNode.Call(CodeSymbols.Add, LNode.List(LNode.Id((Symbol) ""x""), LNode.Literal(1))).SetStyle(NodeStyle.Operator))).SetStyle(NodeStyle.Operator);");
 			TestEcs("quote { Console.WriteLine(\"Hello\"); }",
-				   @"LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) ""Console""), LNode.Id((Symbol) ""WriteLine""))), LNode.List(LNode.Literal(""Hello"")));");
+				   @"LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol) ""Console""), LNode.Id((Symbol) ""WriteLine""))).SetStyle(NodeStyle.Operator), LNode.List(LNode.Literal(""Hello"")));");
 			TestEcs("q = quote({ while (Foo<T>) Yay(); });",
 				   @"q = LNode.Call(CodeSymbols.While, LNode.List(LNode.Call(CodeSymbols.Of, LNode.List(LNode.Id((Symbol) ""Foo""), LNode.Id((Symbol) ""T""))), LNode.Call((Symbol) ""Yay"")));");
 			TestEcs("q = quote({ if (true) { Yay(); } });",

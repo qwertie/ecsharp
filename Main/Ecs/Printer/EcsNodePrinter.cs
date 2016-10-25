@@ -14,6 +14,8 @@ using EP = Loyc.Ecs.EcsPrecedence;
 using System.IO;
 using Loyc.Syntax.Les;
 using Loyc.Syntax.Lexing;
+using System.Collections;
+using Loyc.Collections;
 
 namespace Loyc.Ecs
 {
@@ -21,25 +23,51 @@ namespace Loyc.Ecs
 	// code of EcsNodePrinter:
 	// - User-configurable options
 	// - Sets and dictionaries of keywords and tokens
-	// - Syntax validators to check for valid structure from the perspective of EC#
-	//   (when a construct has invalid structure, the statement or expression 
-	//   printers fall back on prefix notation.)
-	// - Code for printing attributes
+	// - Code for printing attributes and trivia
 	// - Code for printing simple identifiers
+	// - Code for printing literals
 	// The code for printing expressions and statements is in separate source files
 	// (EcsNodePrinter--expressions.cs and EcsNodePrinter--statements.cs).
 
 	/// <summary>Prints a Loyc tree to EC# source code.</summary>
 	/// <remarks>
-	/// This class is designed to faithfully represent Loyc trees by default; any
+	/// The typical way to print EC# code is to call <see cref="EcsLanguageService.Print"/>,
+	/// via <see cref="EcsLanguageService.WithPlainCSharpPrinter"/> or via
+	/// <see cref="EcsLanguageService.Value"/>, but this class, which contains the 
+	/// implementation, is sometimes useful as it provides various options to tweak 
+	/// the output.
+	/// <para/>
+	/// To avoid printing EC# syntax that does not exist in C#, you can call
+	/// <see cref="SetPlainCSharpMode"/> or the static method 
+	/// <see cref="PrintPlainCSharp"/>, but this only works if the syntax tree
+	/// does not contain invalid structure or EC#-specific code such as "==>", 
+	/// "alias", and template arguments ($T).
+	/// <para/>
+	/// This class is designed to faithfully preserve most Loyc trees; almost any 
 	/// Loyc tree that can be represented as EC# source code will be represented 
 	/// properly by this class, so that it is possible to parse the output text 
-	/// back into a Loyc tree equivalent to the one that was printed. In other 
-	/// words, EcsNodePrinter is designed to support round-tripping. For round-
-	/// tripping to work, there are a couple of restrictions on the input tree:
+	/// back into a Loyc tree equivalent to the one that was printed. Originally 
+	/// this class was meant to provide round-tripping from Loyc trees to text and 
+	/// back, but Enhanced C# is syntactically very complicated and as a result 
+	/// this printer may contain bugs or (for the sake of practicality) minor 
+	/// intentional limitations that cause round-tripping not to work in rare 
+	/// cases. If you need perfect round-tripping, use LES instead.
+	/// <para/>
+	/// Only the attributes, head (<see cref="LiteralNode.Value"/>, 
+	/// <see cref="IdNode.Name"/> or <see cref="CallNode.Target"/>), and arguments 
+	/// of nodes are round-trippable. Superficial properties such as original 
+	/// source code locations and the <see cref="LNode.Style"/> are, in 
+	/// general, lost, although the printer can faithfully reproduce some (not 
+	/// all) <see cref="NodeStyle"/>s (this caveat applies equally to LES). Also, 
+	/// any attribute whose Name starts with "#trivia_" may be dropped, because 
+	/// these attributes are considered extensions of the NodeStyle. However, the 
+	/// style indicated by the #trivia_* attribute will be used if the printer 
+	/// recognizes it.
+	/// <para/>
+	/// For round-tripping to work, there are a couple of restrictions on the 
+	/// input tree:
 	/// <ol>
-	/// <li>The Value property must only be used in <see cref="LiteralNode"/>s,
-	///     and only literals that can exist in C# source code are allowed. For 
+	/// <li>Only literals that can exist in C# source code are allowed. For 
 	///     example, Values of type int, string, and double are acceptable, but
 	///     Values of type Regex or int[] are not, because single tokens cannot
 	///     represent these types in C# source code. The printer ignores Values of 
@@ -52,44 +80,22 @@ namespace Loyc.Ecs
 	///     after semantic analysis, so there is no way to faithfully represent
 	///     the results of semantic analysis.</li>
 	/// </ol>
-	/// Only the attributes, head (<see cref="LiteralNode.Value"/>, 
-	/// <see cref="IdNode.Name"/> or <see cref="CallNode.Target"/>), and arguments 
-	/// of nodes are round-trippable. Superficial properties such as original 
-	/// source code locations and the <see cref="LNode.Style"/> are, in 
-	/// general, lost, although the printer can faithfully reproduce some (not 
-	/// all) <see cref="NodeStyle"/>s. Also, any attribute whose Name starts with 
-	/// "#trivia_" will be dropped, because these attributes are considered 
-	/// extensions of the NodeStyle. However, the style indicated by the 
-	/// #trivia_* attribute will be used if the printer recognizes it.
-	/// <para/>
-	/// Because EC# is based on C# which has some tricky ambiguities, there is a
-	/// lot of code in this class dedicated to special cases and ambiguities. Even 
-	/// so, it is likely that some cases have been missed--that some unusual trees 
-	/// will not round-trip properly. Any failure to round-trip is a bug, and your 
-	/// bug reports are welcome. If this class uses prefix notation (with 
-	/// #specialNames) unnecessarily, that's also a bug, but it has low priority 
-	/// unless it affects plain C# output (where #specialNames are illegal.)
-	/// <para/>
 	/// This class contains some configuration options that will defeat round-
 	/// tripping but will make the output look better. For example,
 	/// <see cref="AllowExtraBraceForIfElseAmbig"/> will print a tree such as 
 	/// <c>#if(a, #if(b, f()), g())</c> as <c>if (a) { if (b) f(); } else g();</c>,
 	/// by adding braces to eliminate prefix notation, even though braces make the 
 	/// Loyc tree different.
-	/// <para/>
-	/// To avoid printing EC# syntax that does not exist in C#, you can call
-	/// <see cref="SetPlainCSharpMode"/>, but this only works if the syntax tree
-	/// does not contain invalid structure or EC#-specific code such as "==>", 
-	/// "alias", and template arguments ($T).
 	/// </remarks>
 	public partial class EcsNodePrinter
 	{
 		LNode _n;
+		Precedence _context;
+		Ambiguity _flags;
 		INodePrinterWriter _out;
 		Symbol _spaceName; // for detecting constructor ambiguity
 		IMessageSink _errors;
 
-		public LNode Node { get { return _n; } set { _n = value ?? LNode.Missing; } }
 		public INodePrinterWriter Writer { get { return _out; } set { _out = value; } }
 
 		/// <summary>Any error that occurs during printing is printed to this object.</summary>
@@ -97,14 +103,14 @@ namespace Loyc.Ecs
 
 		#region Constructors, New(), and default Printer
 
-		public static EcsNodePrinter New(LNode node, StringBuilder target, string indentString = "\t", string lineSeparator = "\n")
+		public static EcsNodePrinter New(StringBuilder target, string indentString = "\t", string lineSeparator = "\n")
 		{
-			return New(node, new StringWriter(target), indentString, lineSeparator);
+			return New(new StringWriter(target), indentString, lineSeparator);
 		}
-		public static EcsNodePrinter New(LNode node, TextWriter target, string indentString = "\t", string lineSeparator = "\n")
+		public static EcsNodePrinter New(TextWriter target, string indentString = "\t", string lineSeparator = "\n")
 		{
 			var wr = new EcsNodePrinterWriter(target, indentString, lineSeparator);
-			return new EcsNodePrinter(node, wr);
+			return new EcsNodePrinter(wr);
 		}
 
 		[ThreadStatic]
@@ -112,56 +118,80 @@ namespace Loyc.Ecs
 		public static readonly LNodePrinter Printer = PrintECSharp;
 		static bool _isDebugging = System.Diagnostics.Debugger.IsAttached;
 
+		/// <summary>Prints a node while avoiding syntax specific to Enhanced C#.</summary>
+		/// <remarks>This does not perform a conversion from EC# to C#. If the 
+		/// syntax tree contains code that has no direct C# representation, the EC# 
+		/// representation will be printed.</remarks>
 		public static void PrintPlainCSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
-			var p = new EcsNodePrinter(node, new EcsNodePrinterWriter(target, indentString, lineSeparator));
+			var p = new EcsNodePrinter(new EcsNodePrinterWriter(target, indentString, lineSeparator));
 			p.Errors = errors;
 			p.SetPlainCSharpMode();
-			p.PrintWithMode(node, mode);
+			p.Print(node, mode);
 		}
-		static void PrintECSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
+		
+		/// <summary>Prints a node as EC# code.</summary>
+		public static void PrintECSharp(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var p = _printer;
 			// When debugging the node printer itself, calling LNode.ToString() 
 			// inside the debugger will trash our current state, unless we 
 			// create a new printer for each printing operation.
 			if (p == null || _isDebugging)
-				_printer = p = new EcsNodePrinter(null, null);
+				_printer = p = new EcsNodePrinter(null);
 
 			p.Print(node, target, errors, mode, indentString, lineSeparator);
+			// ensure stuff is GC'd
 			p._n = null;
 			p._out = null;
 			p.Errors = null;
 		}
+
+		/// <summary>Attaches a new <see cref="StringBuilder"/> and sets the indent string and line separator,
+		/// then prints a node by calling <see cref="Print(LNode, object)"/>.</summary>
 		public void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			Writer = new EcsNodePrinterWriter(target, indentString, lineSeparator);
 			Errors = errors;
-			PrintWithMode(node, mode);
+			Print(node, mode);
 		}
-		void PrintWithMode(LNode node, object mode)
+
+		/// <summary>Print a node to the writer attached to this printer.</summary>
+		/// <param name="mode">A value of <see cref="ParsingMode"/> or <see cref="NodeStyle"/>.
+		/// Only three modes are recognized: <see cref="NodeStyle.Expression"/>,
+		/// <see cref="NodeStyle.Expression"/>, and <see cref="NodeStyle.Default"/> 
+		/// which prints the node as a statement and is the default (i.e. null and
+		/// most other values have the same effect)</param>
+		public void Print(LNode node, object mode = null)
 		{
-			this.Node = node;
-			var style = (mode is NodeStyle ? (NodeStyle)mode : NodeStyle.Default);
+			NodeStyle style = NodeStyle.Default;
 			if (mode == ParsingMode.Expressions)
 				style = NodeStyle.Expression;
+			else if (mode is NodeStyle)
+				style = (NodeStyle)mode;
 
 			switch (style & NodeStyle.BaseStyleMask) {
-				case NodeStyle.Expression: this.PrintExpr(); break;
-				case NodeStyle.PrefixNotation: this.PrintPrefixNotation(StartExpr, true, 0); break;
-				default: this.PrintStmt(); break;
+				case NodeStyle.Expression:
+					this.PrintExpr(node, StartExpr, 0);
+					break;
+				case NodeStyle.PrefixNotation:
+					using (With(node, StartExpr, 0))
+						this.PrintPurePrefixNotation();
+					break;
+				default:
+					this.PrintStmt(node, 0); break;
 			}
 		}
 
-		public EcsNodePrinter(LNode node, INodePrinterWriter target)
+		public EcsNodePrinter(INodePrinterWriter target)
 		{
-			_n = node;
 			_out = target;
 			SpaceOptions = SpaceOpt.Default;
 			NewlineOptions = NewlineOpt.Default;
 			SpaceAroundInfixStopPrecedence = EP.Power.Lo;
 			SpaceAfterPrefixStopPrecedence = EP.Prefix.Lo;
 			AllowChangeParentheses = true;
+			ObeyRawText = true;
 		}
 
 		#endregion
@@ -225,9 +255,16 @@ namespace Loyc.Ecs
 		/// (e.g. <see cref="CodeSymbols.TriviaSLCommentAfter"/>).</summary>
 		public bool OmitComments { get; set; }
 
-		/// <summary>When this flag is set, raw text trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaRawTextBefore"/>).</summary>
-		public bool OmitRawText { get; set; }
+		/// <summary>When this flag is set, raw text trivia attributes (e.g. <see 
+		/// cref="CodeSymbols.TriviaRawTextBefore"/>) are obeyed (cause raw text 
+		/// output); otherwise such attributes are treated as unknown trivia and, 
+		/// if <see cref="OmitUnknownTrivia"/> is false, printed as attributes.</summary>
+		/// <remarks>Initial value: true</remarks>
+		public bool ObeyRawText { get; set; }
+
+		/// <summary>Causes unknown trivia (other than comments, spaces and raw 
+		/// text) to be dropped from the output.</summary>
+		public bool OmitUnknownTrivia { get; set; }
 
 		/// <summary>When the printer encounters an unprintable literal, it calls
 		/// Value.ToString(). When this flag is set, the string is placed in double
@@ -268,6 +305,7 @@ namespace Loyc.Ecs
 			AllowConstructorAmbiguity = true;
 			AvoidMacroSyntax = true;
 			PreferPlainCSharp = true;
+			OmitUnknownTrivia = true;
 			return this;
 		}
 
@@ -284,20 +322,45 @@ namespace Loyc.Ecs
 		struct With_ : IDisposable
 		{
 			internal EcsNodePrinter _self;
-			LNode _old;
-			public With_(EcsNodePrinter self, LNode inner)
+			LNode _old_n;
+			Precedence _old_context;
+			Ambiguity _old_flags;
+
+			public With_(EcsNodePrinter self, LNode inner, Precedence context, Ambiguity flags)
 			{
 				_self = self;
-				self._out.Push(_old = self._n);
+				self._out.Push(_old_n = self._n);
+				_old_context = self._context;
+				_old_flags = self._flags;
+				self._n = inner;
+				self._context = context;
+				self._flags = flags;
 				if (inner == null) {
 					self.Errors.Write(Severity.Error, self._n, "EcsNodePrinter: Encountered null LNode");
 					self._n = LNode.Id("(null)");
-				} else
-					self._n = inner;
+				}
 			}
 			public void Dispose()
 			{
-				_self._out.Pop(_self._n = _old);
+				_self._out.Pop(_self._n = _old_n);
+				_self._context = _old_context;
+				_self._flags = _old_flags;
+			}
+		}
+		struct WithFlags_ : IDisposable
+		{
+			internal EcsNodePrinter _self;
+			Ambiguity _old_flags;
+
+			public WithFlags_(EcsNodePrinter self, Ambiguity flags)
+			{
+				_self = self;
+				_old_flags = self._flags;
+				self._flags = flags;
+			}
+			public void Dispose()
+			{
+				_self._flags = _old_flags;
 			}
 		}
 		struct WithSpace_ : IDisposable
@@ -317,18 +380,37 @@ namespace Loyc.Ecs
 		}
 
 		Indented_ Indented { get { return new Indented_(this); } }
-		With_ With(LNode inner) { return new With_(this, inner); }
+		With_ With(LNode inner, Precedence context, Ambiguity flags) { return new With_(this, inner, context, flags); }
+		With_ With(LNode inner, Precedence context) {
+			var oneliner = CheckOneLiner(_flags & Ambiguity.OneLiner, inner);
+			return new With_(this, inner, context, oneliner);
+		}
+		WithFlags_ WithFlags(Ambiguity flags) { return new WithFlags_(this, flags); }
 		WithSpace_ WithSpace(Symbol spaceName) { return new WithSpace_(this, spaceName); }
+		Ambiguity CheckOneLiner(Ambiguity flags, LNode n) {
+			if ((n.Style & NodeStyle.OneLiner) != 0)
+				flags |= Ambiguity.OneLiner;
+			return flags;
+		}
 
-		void PrintInfixWithSpace(Symbol name, Precedence p, Ambiguity flags)
+		void PrintInfixWithSpace(Symbol name, LNode target, Precedence p, bool useBacktick = false)
 		{
 			if (p.Lo < SpaceAroundInfixStopPrecedence && (name != S.DotDot || (SpaceOptions & SpaceOpt.SuppressAroundDotDot) == 0)) {
 				_out.Space();
-				WriteOperatorName(name, flags);
+				WriteOperatorNameWithTrivia(name, target, useBacktick);
 				_out.Space();
 			} else {
-				WriteOperatorName(name, flags);
+				WriteOperatorNameWithTrivia(name, target, useBacktick);
 			}
+		}
+
+		private void WriteOperatorNameWithTrivia(Symbol name, LNode target, bool useBacktick = false)
+		{
+			if (target != null)
+				PrintTrivia(target, suffixTrivia: false);
+			WriteOperatorName(name, useBacktick);
+			if (target != null)
+				PrintTrivia(target, suffixTrivia: true);
 		}
 
 		void PrefixSpace(Precedence p)
@@ -396,6 +478,14 @@ namespace Loyc.Ecs
 			}
 			return false;
 		}
+		private bool NewlineOrSpace(NewlineOpt context, bool forceSpace = false, SpaceOpt spaceOpt = SpaceOpt.Default)
+		{
+			if (forceSpace || !Newline(context)) {
+				Space(spaceOpt);
+				return false;
+			} else
+				return true;
+		}
 
 		#endregion
 
@@ -458,11 +548,20 @@ namespace Loyc.Ecs
 			/// At this location, no 'if' without 'else' is allowed because the
 			/// outer else would, upon parsing, be associated with the inner 'if'.</summary>
 			NoIfWithoutElse = 0x10000,
-			/// <summary>Avoids printing illegal opening paren at statement level</summary>
-			NoParenthesis = 0x20000,
 			/// <summary>Force PrintAttrs to print an empty attribute list `[]` which 
 			/// has the effect of allowing unassigned variable declarations anywhere.</summary>
 			ForceAttributeList = 0x40000,
+			/// <summary>A signal that IF there is no trivia indicating whether or not 
+			/// to print a newline before the current statement, one should be printed.</summary>
+			NewlineBeforeChildStmt = 0x80000,
+			/// <summary>Indicates that this node, or one of its parents, has the style
+			/// <see cref="NodeStyle.OneLiner"/> which suppresses newlines.</summary>
+			OneLiner = 0x100000,
+		}
+
+		bool Flagged(Ambiguity flag)
+		{
+			return (_flags & flag) != 0;
 		}
 
 		// Creates an open delegate (technically it could create a closed delegate
@@ -532,6 +631,15 @@ namespace Loyc.Ecs
 			"unchecked", "using", "while", "enum", "struct", "class", "interface", 
 			"namespace", "trait", "alias", "event", "delegate", "goto case");
 
+		static readonly HashSet<Symbol> KnownTrivia = new HashSet<Symbol> {
+			S.TriviaInParens, S.TriviaBeginTrailingTrivia,
+			S.TriviaNewline, S.TriviaAppendStatement, S.TriviaSpaces,
+			S.TriviaSLComment, S.TriviaSLCommentBefore, S.TriviaSLCommentAfter,
+			S.TriviaMLComment, S.TriviaMLCommentBefore, S.TriviaMLCommentAfter,
+			S.TriviaRawTextBefore, S.TriviaRawTextAfter,
+			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
+		};
+
 		internal static HashSet<Symbol> SymbolSet(params string[] input)
 		{
 			return new HashSet<Symbol>(input.Select(s => GSymbol.Get(s)));
@@ -574,7 +682,7 @@ namespace Loyc.Ecs
 		}
 		bool HasSimpleHeadWPA(LNode self)
 		{
-			return DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
+			return self.HasSimpleHeadWithoutPAttrs();
 		}
 		bool CallsWPAIH(LNode self, Symbol name)
 		{
@@ -632,129 +740,73 @@ namespace Loyc.Ecs
 			IsDefinition,      // allows word attributes plus "new" (only on definitions: methods, var decls, events...)
 		};
 		// Returns the number of opening "("s printed that require a corresponding ")".
-		private int PrintAttrs(Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
+		private int PrintAttrs(AttrStyle style, LNode skipClause = null, string label = null)
 		{
-			return PrintAttrs(ref context, style, flags, skipClause, label);
+			return PrintAttrs(ref _context, style, _flags, skipClause, label);
 		}
+
 		private int PrintAttrs(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
 		{
-			int haveParens = PrintPrefixTrivia(flags);
-
-			Debug.Assert(label == null || style == AttrStyle.NoKeywordAttrs);
-
-			bool any = PrintAttrsCore(ref context, style, flags, skipClause, label, ref haveParens);
-
-			if (haveParens != 0 && !any) {
-				context = StartExpr;
-
-				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
-				// (x)(y) where x is in parenthesis, must not be printed like that 
-				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
-				// instead.
-				if (haveParens == 1 && (flags & Ambiguity.IsCallTarget) != 0
-					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
-					if (AllowChangeParentheses) {
-						haveParens++;
-						_out.Write('(', true);
-					} else
-						_out.Write("[] ", true);
-				}
-			}
-			return haveParens;
-		}
-
-		private bool PrintAttrsCore(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause, string label, ref int haveParens)
-		{
-			// Printing attributes (and possibly an open paren) correctly is such a
-			// horrible minefield, it suggests we ought to redesign the printer someday.
 			var attrs = _n.Attrs;
-			int attrCount = attrs.Count;
+			if ((flags & Ambiguity.NewlineBeforeChildStmt) != 0) {
+				if (attrs.Count == 0 || !attrs.Any(a => a.Name.IsOneOf(S.TriviaNewline, S.TriviaAppendStatement)))
+					_out.Newline();
+				else if (attrs.NodeNamed(S.TriviaAppendStatement) != null)
+					Space(SpaceOpt.Default);
+			}
+			if (attrs.Count == 0 && (_flags & Ambiguity.ForceAttributeList) == 0)
+				return 0; // optimize common case
+
+			// To identify "word attributes", scan attributes in reverse until 
+			// seeing an attribute that is not a word attribute nor a trivia attr.
+			// Special cases:
+			// - `in` and `this` only allowed sometimes and must be last non-trivia attribute
+			// - `out`, `ref`, `yield`, and `in` are not dropped by DropNonDeclarationAttributes
+			// - #where(...) inside a type parameter definition is ignored (printed elsewhere)
 			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
 			                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
-
-			// 'in' (covariant parameter) and 'this' (extension method) attributes
-			// can only appear at the end:
-			bool hasIn = false, hasThis = false;
-			if (attrCount != 0) {
-				if (isTypeParamDefinition) {
-					if (attrs.Last.IsIdNamed(S.In)) {
-						hasIn = true;
-						attrCount--;
-					}
-				} else {
-					if (attrs.Last.IsIdNamed(S.This) && style >= AttrStyle.AllowWordAttrs) {
-						hasThis = true;
-						attrCount--;
-					}
-				}
-			}
-
-			// 'div' is the index where keyword/word attributes start
-			int div = attrCount;
-
-			bool beginningOfStmt = context.RangeEquals(StartStmt);
-			if (isTypeParamDefinition) {
-				for (; div > 0; div--) {
-					var a = attrs[div - 1];
-					var n = a.Name;
-					if (!IsSimpleSymbolWPA(a) || (n != S.In && n != S.Out))
-						if (n != S.Where)
-							break;
-				}
-			} else if (style != AttrStyle.NoKeywordAttrs) {
-				// Choose how much of the attributes to treat as simple words, 
-				// e.g. we prefer to print [Flags, #public] as "[Flags] public"
-				for (; div > 0; div--)
-					if (!IsWordAttribute(attrs[div - 1], style))
+			if (isTypeParamDefinition)
+				attrs = attrs.SmartWhere(n => !n.Calls(S.Where));
+			int attrCount = attrs.Count;
+			int div = attrCount; // index of first word attribute
+			int i = attrCount;
+			foreach (LNode attr in attrs.ToFVList()) {
+				i--;
+				if (!S.IsTriviaSymbol(attr.Name)) {
+					if (!IsWordAttribute(attr, style) && !(isTypeParamDefinition && attr.IsIdNamed(S.In)))
 						break;
+					else
+						div = i;
+				}
 			}
 
-			bool needParens = false;
-			if (!beginningOfStmt && !context.RangeEquals(StartExpr)) {
-				if ((flags & Ambiguity.ForceAttributeList) != 0)
-					needParens = true;
-				else
-					for (int i = 0; i < div; i++)
-						needParens |= !attrs[i].IsTrivia;
-			}
-
-			// Print normal attrs in [square brackets] unless we decide to drop them
-			bool any = false;
-			bool dropAttrs = false;
+			// Check if we should ignore most attributes
+			bool beginningOfStmt = context.RangeEquals(StartStmt);
+			bool mayNeedParens  = !context.RangeEquals(StartExpr) && !beginningOfStmt;
+			bool dropMostAttrs = false;
 			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
 				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
 				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
-					dropAttrs = true;
+					dropMostAttrs = true;
 			} else if ((flags & Ambiguity.DropAttributes) != 0)
-				dropAttrs = true;
+				dropMostAttrs = true;
 
-			// When an attribute appears mid-expression (which the printer 
-			// may try to avoid through the use of prefix notation), we need 
-			// to write "(" in order to group the attribute(s) with the
-			// expression to which they apply, e.g. while "[A] x + y" has an
-			// attribute attached to "+", the attribute in "([A] x) + y" is
-			// attached to x.
-			if (needParens && haveParens == 0 && !dropAttrs && (flags & Ambiguity.NoParenthesis) == 0) {
-				haveParens++;
-				context = StartExpr;
-				WriteOpenParen(ParenFor.Grouping);
-			}
+			int parenCount = 0;
+			//if (mayNeedParens && (flags & Ambiguity.ForceAttributeList) != 0)
+			//	OpenParenIf(true, ref parenCount, ref context);
 
-			if (dropAttrs) {
-				if (_n.Calls(S.Return) && _n.AttrNamed(S.Yield) != null)
-					_out.Write("yield ", true);
-				if (_n.AttrNamed(S.Out) != null)
-					_out.Write("out ", true);
-				if (_n.AttrNamed(S.Ref) != null)
-					_out.Write("ref ", true);
-			} else {
-				for (int i = 0; i < div; i++) {
-					var a = _n.Attrs[i];
-					if (a.IsTrivia || a == skipClause)
-						continue;
+			// Scanning forward, print normal attributes and trivia
+			bool any = false, reachedTrailingTrivia = false;
+			for (i = 0; i < div; i++) {
+				var attr = attrs[i];
+				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref reachedTrailingTrivia, ref parenCount))
+					continue;
+
+				if (!dropMostAttrs) {
 					if (any)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
 					else {
+						OpenParenIf(mayNeedParens, ref parenCount, ref context);
 						WriteThenSpace('[', SpaceOpt.InsideAttribute);
 						if (label != null) {
 							_out.Write(label, true);
@@ -763,62 +815,161 @@ namespace Loyc.Ecs
 						}
 					}
 					any = true;
-					PrintExpr(a, StartExpr);
+					PrintExpr(attr, StartExpr);
 				}
-				if (any) {
-					Space(SpaceOpt.InsideAttribute);
-					_out.Write(']', true);
-					if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
-						Space(SpaceOpt.AfterAttribute);
-				} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
-					_out.Write("[]", true);
+			}
+
+			if (any) {
+				Space(SpaceOpt.InsideAttribute);
+				_out.Write(']', true);
+				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
 					Space(SpaceOpt.AfterAttribute);
-				}
+			} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
+				OpenParenIf(mayNeedParens, ref parenCount, ref context);
+				_out.Write("[]", true);
+				Space(SpaceOpt.AfterAttribute);
+			}
 
-				// Then print the word attributes...
-				for (int i = div; i < attrCount; i++) {
-					var a = attrs[i];
-					if (a == skipClause)
-						continue;
-					string text;
-					if (AttributeKeywords.TryGetValue(a.Name, out text)) {
-						if (dropAttrs && a.Name != S.Out && a.Name != S.Ref)
-							continue;
-						_out.Write(text, true);
-					} else if (!dropAttrs || a.Name == S.Yield || a.Name == S.In) {
-						Debug.Assert(a.HasSpecialName);
-						if (a.IsTrivia)
-							continue;
+			if (parenCount != 0 && !any) {
+				context = StartExpr;
 
-						if (isTypeParamDefinition) {
-							Debug.Assert(a.Name == S.Where);
-							continue;
-						} else {
-							PrintSimpleIdent(GSymbol.Get(a.Name.Name.Substring(1)), 0, false);
-						}
+				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
+				// (x)(y) where x is in parenthesis, must not be printed like that 
+				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
+				// instead.
+				if (parenCount == 1 && (flags & Ambiguity.IsCallTarget) != 0
+					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
+					if (AllowChangeParentheses) {
+						parenCount++;
+						_out.Write('(', true);
+					} else {
+						_out.Write("[]", true);
+						Space(SpaceOpt.AfterAttribute);
 					}
-					any = true;
-					Space(SpaceOpt.Default);
 				}
 			}
-
-			if (hasThis) {
-				_out.Write("this ", true);
-				any = true;
-			} else if (hasIn) {
-				_out.Write("in ", true); // "out" is listed in AttributeKeywords
-				any = true;
+			
+			// Now print word attributes and trivia
+			for (i = div; i < attrCount; i++) {
+				var attr = attrs[i];
+				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref reachedTrailingTrivia, ref parenCount) || attr.IsTrivia)
+					continue;
+				string text;
+				var name = attr.Name;
+				if (AttributeKeywords.TryGetValue(name, out text)) {
+					if (dropMostAttrs && name != S.Out && name != S.Ref)
+						continue;
+					OpenParenIf(mayNeedParens, ref parenCount, ref context);
+					_out.Write(text, true);
+				} else if (name == S.This) {
+					Debug.Assert(!mayNeedParens);
+					_out.Write("this", true);
+				} else if (name == S.In) {
+					Debug.Assert(!mayNeedParens);
+					_out.Write("in", true);
+				} else if (!dropMostAttrs || name == S.Yield) {
+					OpenParenIf(mayNeedParens, ref parenCount, ref context);
+					Debug.Assert(attr.HasSpecialName);
+					PrintSimpleIdent(GSymbol.Get(name.Name.Substring(1)), 0, false);
+				}
+				Space(SpaceOpt.Default);
 			}
-			return any;
+
+			return parenCount;
 		}
 
+		private void OpenParenIf(bool flag, ref int parenCount, ref Precedence context)
+		{
+			if (flag && parenCount == 0) {
+				parenCount++;
+				context = StartExpr;
+				WriteOpenParen(ParenFor.Grouping);
+			}
+		}
+
+		// Checks if the specified attribute is trivia and, if so, prints it if we're
+		// at the matching location (e.g. suffixMode=true means we're after the node 
+		// right now and want to print only suffix trivia). Returns true if the 
+		// attribute is trivia and should NOT printed as a normal attribute.
+		bool DetectAndMaybePrintTrivia(LNode attr, bool suffixMode, ref bool reachedTrailingTrivia, ref int parenCount)
+		{
+			var name = attr.Name;
+			if (!KnownTrivia.Contains(name))
+				return OmitUnknownTrivia && S.IsTriviaSymbol(name);
+
+			if (name == S.TriviaBeginTrailingTrivia) {
+				reachedTrailingTrivia = true;
+			} else if (name == S.TriviaRawTextAfter || name == S.TriviaRawTextBefore) {
+				if (!ObeyRawText)
+					return OmitUnknownTrivia;
+				if (name == (suffixMode ? S.TriviaRawTextAfter : S.TriviaRawTextBefore))
+					_out.Write(GetRawText(attr), true);
+			} else if (name == S.TriviaInParens) {
+				if (!suffixMode && !Flagged(Ambiguity.InDefinitionName)) {
+					if (!_context.CanParse(LesPrecedence.Substitute)) {
+						// Inside $: outer parens are expected. Add a second pair of parens 
+						// so that reparsing preserves the in-parens trivia.
+						_out.Write('(', true);
+						parenCount++;
+					}
+					_out.Write('(', true);
+					parenCount++;
+					Space(SpaceOpt.InsideParens);
+				}
+			} else if (name == S.TriviaNewline && suffixMode == reachedTrailingTrivia) {
+				_out.Newline();
+			} else if (name == S.TriviaSpaces && suffixMode == reachedTrailingTrivia ||
+					   name == (suffixMode ? S.TriviaSpaceAfter : S.TriviaSpaceBefore)) {
+				if (!OmitSpaceTrivia)
+					PrintSpaces(GetRawText(attr));
+			} else if (name == S.TriviaSLComment && suffixMode == reachedTrailingTrivia ||
+					   name == (suffixMode ? S.TriviaSLCommentAfter : S.TriviaSLCommentBefore)) {
+				if (!OmitComments) {
+					if (suffixMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
+						_out.Write('\t', true);
+					_out.Write("//", false);
+					_out.Write(GetRawText(attr), false);
+					_out.Newline(true);
+				}
+			} else if (name == S.TriviaMLComment && suffixMode == reachedTrailingTrivia ||
+					   name == (suffixMode ? S.TriviaMLCommentAfter : S.TriviaMLCommentBefore)) {
+				if (!OmitComments) {
+					if (suffixMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
+						Space(SpaceOpt.BeforeCommentOnSameLine);
+					_out.Write("/*", false);
+					_out.Write(GetRawText(attr), false);
+					_out.Write("*/", true);
+				}
+			}
+			return true;
+		}
+
+		private void PrintTrivia(bool suffixTrivia, bool needSemicolon = false)
+		{
+			PrintTrivia(_n, suffixTrivia, needSemicolon);
+		}
+		private void PrintTrivia(LNode node, bool suffixTrivia, bool needSemicolon = false)
+		{
+			if (needSemicolon)
+				_out.Write(';', true);
+			bool reachedTrailingTrivia = false;
+			foreach (var attr in node.Attrs) {
+				int _ = 0;
+				DetectAndMaybePrintTrivia(attr, suffixTrivia, ref reachedTrailingTrivia, ref _);
+			}
+		}
+
+#if false
 		private int PrintPrefixTrivia(Ambiguity flags)
 		{
 			int haveParens = 0;
+			bool reachedTrailingTrivia = false;
 			foreach (var attr in _n.Attrs) {
+				if (attr.Name == S.TriviaBeginTrailingTrivia)
+					reachedTrailingTrivia = true;
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
-					if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
+					if ((name == S.TriviaSpaceBefore || name == S.TriviaSpaces && !reachedTrailingTrivia) && !OmitSpaceTrivia) {
 						var tValue = attr.TriviaValue;
 						PrintSpaces(GetRawText(attr));
 					} else if (name == S.TriviaInParens) {
@@ -826,13 +977,13 @@ namespace Loyc.Ecs
 							WriteOpenParen(ParenFor.Grouping);
 							haveParens++;
 						}
-					} else if (name == S.TriviaRawTextBefore && !OmitRawText) {
+					} else if (name == S.TriviaRawTextBefore && ObeyRawText) {
 						WriteRawText(GetRawText(attr));
-					} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
+					} else if ((name == S.TriviaSLCommentBefore || name == S.TriviaSLComment && !reachedTrailingTrivia) && !OmitComments) {
 						_out.Write("//", false);
 						_out.Write(GetRawText(attr), true);
 						_out.Newline(true);
-					} else if (name == S.TriviaMLCommentBefore && !OmitComments) {
+					} else if ((name == S.TriviaMLCommentBefore || name == S.TriviaMLComment && !reachedTrailingTrivia) && !OmitComments) {
 						_out.Write("/*", false);
 						_out.Write(GetRawText(attr), false);
 						_out.Write("*/", false);
@@ -848,23 +999,26 @@ namespace Loyc.Ecs
 			if (needSemicolon)
 				_out.Write(';', true);
 
+			bool reachedTrailingTrivia = false;
 			bool spaces = false;
 			foreach (var attr in _n.Attrs) {
+				if (attr.Name == S.TriviaBeginTrailingTrivia)
+					reachedTrailingTrivia = true;
 				var name = attr.Name;
 				if (name.Name.TryGet(0, '\0') == '#') {
-					if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
+					if ((name == S.TriviaSpaceBefore || name == S.TriviaSpaces && reachedTrailingTrivia) && !OmitSpaceTrivia) {
 						PrintSpaces(GetRawText(attr));
 						spaces = true;
-					} else if (name == S.TriviaRawTextAfter && !OmitRawText) {
+					} else if (name == S.TriviaRawTextAfter && ObeyRawText) {
 						WriteRawText(GetRawText(attr));
-					} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
+					} else if ((name == S.TriviaSLCommentAfter || name == S.TriviaSLComment && reachedTrailingTrivia) && !OmitComments) {
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);
 						_out.Write("//", false);
 						_out.Write(GetRawText(attr), true);
 						_out.Newline(true);
 						spaces = true;
-					} else if (name == S.TriviaMLCommentAfter && !OmitComments) {
+					} else if ((name == S.TriviaMLCommentAfter || name == S.TriviaMLComment && reachedTrailingTrivia) && !OmitComments) {
 						if (!spaces)
 							Space(SpaceOpt.BeforeCommentOnSameLine);
 						_out.Write("/*", false);
@@ -875,6 +1029,7 @@ namespace Loyc.Ecs
 				}
 			}
 		}
+#endif
 
 		private void WriteRawText(string text)
 		{
@@ -926,7 +1081,7 @@ namespace Loyc.Ecs
 			if (_staticPrinter == null) {
 				var sb = _staticStringBuilder = new StringBuilder();
 				var wr = _staticWriter = new EcsNodePrinterWriter(sb);
-				_staticPrinter = new EcsNodePrinter(null, wr);
+				_staticPrinter = new EcsNodePrinter(wr);
 			} else {
 				_staticWriter.Reset();
 				_staticStringBuilder.Length = 0; // Clear() is new in .NET 4
@@ -1027,7 +1182,7 @@ namespace Loyc.Ecs
 		}
 
 		static readonly Symbol _Verbatim = GSymbol.Get("#trivia_verbatim");
-		static readonly Symbol _DoubleVerbatim = S.TriviaDoubleVerbatim;
+
 		private void PrintString(string text, char quoteType, Symbol verbatim, bool includeAtSign = false)
 		{
 			if (includeAtSign && verbatim != null)
@@ -1136,7 +1291,7 @@ namespace Loyc.Ecs
 			}
 		}
 
-		#endregion
+#endregion
 	}
 
 	/// <summary>Flags for <see cref="EcsNodePrinter.IsComplexIdentifier"/>.</summary>
@@ -1202,11 +1357,17 @@ namespace Loyc.Ecs
 		BetweenCommentAndNode   = 0x08000000, // Space between a multiline comment and the node it's attached to
 		SuppressAroundDotDot    = 0x10000000, // Override SpaceAroundInfixStopPrecedence and suppress spaces around ..
 	}
+	/// <summary>Flags to control situations in which newlines should be added automatically by the EC# printer.</summary>
 	[Flags]
 	public enum NewlineOpt
 	{
-		Default = BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes
-			| AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr,
+		/// <summary>Default value of EcsNodePrinter.NewlineOptions</summary>
+		/// <remarks>Oct 2016: Some defaults have been turned off because newlines can 
+		/// now be added with #trivia_newline, and turning on some NewlineOpts currently
+		/// causes double newlines (i.e. a blank line) when the LNode uses #trivia_newline
+		/// at the same time.</remarks>
+		Default = //BeforeSpaceDefBrace | BeforeMethodBrace | BeforePropBrace | AfterAttributes |
+			AfterOpenBraceInNewExpr | BeforeCloseBraceInNewExpr | BeforeCloseBraceInExpr | BeforeConstructorColon,
 		BeforeSpaceDefBrace       = 0x000001, // Newline before opening brace of type definition
 		BeforeMethodBrace         = 0x000002, // Newline before opening brace of method body
 		BeforePropBrace           = 0x000004, // Newline before opening brace of property definition

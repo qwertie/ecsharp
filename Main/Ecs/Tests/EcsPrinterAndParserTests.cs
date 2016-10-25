@@ -8,6 +8,7 @@ using Loyc.Ecs.Parser;
 using Loyc.Syntax.Lexing;
 using S = Loyc.Syntax.CodeSymbols;
 
+/// <summary>Unit tests for the Enhanced C# lexer, parser and printer.</summary>
 namespace Loyc.Ecs.Tests
 {
 	/// <summary>Tests shared between the printer and the parser. Both tests
@@ -36,6 +37,7 @@ namespace Loyc.Ecs.Tests
 		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), _await = F.Id("await");
+		protected LNode trivia_newline = F.Id(S.TriviaNewline), trivia_appendStatement = F.Id(S.TriviaAppendStatement), beginTrailingTrivia = F.Id(S.TriviaBeginTrailingTrivia);
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 		protected LNode WordAttr(string name)
@@ -43,6 +45,23 @@ namespace Loyc.Ecs.Tests
 			if (!name.StartsWith("#"))
 				name = "#" + name;
 			return F.Attr(F.Id(S.TriviaWordAttribute), _(name));
+		}
+		// Add trivia with special methods in case we ever change how trivia works
+		protected LNode ChildStmt(LNode node)
+		{
+			return F.Attr(trivia_newline, node);
+		}
+		protected LNode OnNewLine(LNode node)
+		{
+			return F.Attr(trivia_newline, node);
+		}
+		protected LNode NewlineAfter(LNode node)
+		{
+			return node.PlusAttrs(F.Id(S.TriviaBeginTrailingTrivia), trivia_newline);
+		}
+		protected LNode AppendStmt(LNode node)
+		{
+			return F.Attr(trivia_appendStatement, node);
 		}
 
 		// Allows a particular test to exclude the printer or the parser
@@ -52,6 +71,7 @@ namespace Loyc.Ecs.Tests
 			Expression = 4,
 			PrintBothParseFirst = 8, // for Option()
 			ExpectAndDropParserError = 16,
+			IgnoreTrivia = 32, // Remove trivia when parsing
 		};
 
 		// The tests were originally designed for printer tests, so they take

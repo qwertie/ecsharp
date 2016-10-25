@@ -95,7 +95,7 @@ namespace Loyc.Ecs
 		});
 
 
-		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec, Precedence context, Ambiguity flags);
+		delegate bool OperatorPrinter(EcsNodePrinter @this, Precedence mainPrec);
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters = OperatorPrinters_();
 		static Dictionary<Symbol, Pair<Precedence, OperatorPrinter>> OperatorPrinters_()
 		{
@@ -152,22 +152,18 @@ namespace Loyc.Ecs
 		/// <summary>Context: middle of expression, top level (#var and #namedArg not supported)</summary>
 		internal static readonly Precedence ContinueExpr   = new Precedence(MinPrec+2);
 
-		public void PrintExpr()
+		protected internal void PrintCurrentExpr()
 		{
-			PrintExpr(StartExpr, Ambiguity.AllowUnassignedVarDecl);
-		}
-		protected internal void PrintExpr(Precedence context, Ambiguity flags = 0)
-		{
-			if (!EP.Primary.CanAppearIn(context) && !_n.IsParenthesizedExpr())
+			if (!EP.Primary.CanAppearIn(_context) && !_n.IsParenthesizedExpr())
 			{
-				Debug.Assert((flags & Ambiguity.AllowUnassignedVarDecl) == 0);
+				Debug.Assert((_flags & Ambiguity.AllowUnassignedVarDecl) == 0);
 				// Above EP.Primary (inside '$' or unary '.'), we can't use prefix 
 				// notation or most other operators so we're very limited in what
 				// we can print.
 				if (!HasPAttrs(_n))
 				{
 					if (!_n.IsCall) {
-						PrintSimpleIdentOrLiteral(flags);
+						PrintSimpleIdentOrLiteral();
 						return;
 					}
 				}
@@ -177,39 +173,36 @@ namespace Loyc.Ecs
 
 			NodeStyle style = _n.BaseStyle;
 			if (style == NodeStyle.PrefixNotation && !PreferPlainCSharp)
-				PrintPrefixNotation(context, true, flags, false);
+				PrintPurePrefixNotation(skipAttrs: false);
 			else {
-				AttrStyle attrStyle = AttrStyle.AllowKeywordAttrs;
-				bool isVarDecl = IsVariableDecl(false, true);
-				if (isVarDecl) {
-					if (((flags & Ambiguity.AllowUnassignedVarDecl) == 0 && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out))) ||
-						(!context.RangeEquals(StartExpr) && !context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (flags & Ambiguity.ForEachInitializer) == 0))
-						flags |= Ambiguity.ForceAttributeList;
-					attrStyle = AttrStyle.IsDefinition;
+				int inParens;
+				if (IsVariableDecl(false, true)) {
+					if (!Flagged(Ambiguity.AllowUnassignedVarDecl) && !IsVariableDecl(false, false) && !_n.Attrs.Any(a => a.IsIdNamed(S.Ref) || a.IsIdNamed(S.Out)))
+						_flags |= Ambiguity.ForceAttributeList;
+					else if (!_context.RangeEquals(StartExpr) && !_context.RangeEquals(StartStmt) && !_n.IsParenthesizedExpr() && (_flags & Ambiguity.ForEachInitializer) == 0)
+						_flags |= Ambiguity.ForceAttributeList;
+					inParens = PrintAttrs(AttrStyle.IsDefinition);
+					PrintVariableDecl(false);
+				} else {
+					inParens = PrintAttrs(AttrStyle.AllowKeywordAttrs);
+					if (!AutoPrintOperator())
+						PrintPurePrefixNotation(skipAttrs: true);
 				}
-				int inParens = PrintAttrs(ref context, attrStyle, flags);
-
-				if (isVarDecl)
-					PrintVariableDecl(false, context, flags);
-				else 
-					if (!AutoPrintOperator(context, flags))
-						PrintPrefixNotation(context, true, flags, true);
-
 				WriteCloseParens(inParens);
 			}
-			if (context.Lo != StartStmt.Lo)
-				PrintSuffixTrivia(false);
+			if (_context.Lo != StartStmt.Lo)
+				PrintTrivia(suffixTrivia: true);
 		}
 
 		// Checks if an operator with precedence 'prec' can appear in this context.
-		bool CanAppearIn(Precedence prec, Precedence context, out bool extraParens, bool prefix = false)
+		bool CanAppearHere(Precedence prec, out bool extraParens, bool prefix = false)
 		{
 			extraParens = false;
-			if (prec.CanAppearIn(context, prefix) && (prefix || MixImmiscibleOperators || prec.CanMixWith(context)))
+			if (prec.CanAppearIn(_context, prefix) && (prefix || MixImmiscibleOperators || prec.CanMixWith(_context)))
 				return true;
 			if (_n.IsParenthesizedExpr())
 				return true;
-			if (AllowChangeParentheses || !EP.Primary.CanAppearIn(context)) {
+			if (AllowChangeParentheses || !EP.Primary.CanAppearIn(_context)) {
 				Trace.WriteLineIf(!AllowChangeParentheses, "Forced to write node in parens");
 				return extraParens = true;
 			}
@@ -218,29 +211,30 @@ namespace Loyc.Ecs
 		// Checks if an operator that may or may not be configured to output in 
 		// `backtick notation` can appear in this context; this method may toggle
 		// backtick notation to make it acceptable (in terms of precedence).
-		bool CanAppearIn(ref Precedence prec, Precedence context, out bool extraParens, ref bool backtick, bool prefix = false)
+		bool CanAppearHere(ref Precedence prec, out bool extraParens, ref bool backtick, bool prefix = false)
 		{
 			var altPrec = EP.Backtick;
 			if (backtick) MathEx.Swap(ref prec, ref altPrec);
-			if (CanAppearIn(prec, context, out extraParens, prefix && !backtick))
+			if (CanAppearHere(prec, out extraParens, prefix && !backtick))
 				return true;
 
 			backtick = !backtick;
 			MathEx.Swap(ref prec, ref altPrec);
-			return CanAppearIn(prec, context, out extraParens, prefix && !backtick);
+			return CanAppearHere(prec, out extraParens, prefix && !backtick);
 		}
 
-		private bool AutoPrintOperator(Precedence context, Ambiguity flags)
+		private bool AutoPrintOperator()
 		{
-			if (!_n.IsCall || !_n.HasSimpleHead())
+			if (!_n.IsCall || !HasSimpleHeadWPA(_n))
 				return false;
 			Pair<Precedence, OperatorPrinter> info;
 			if (OperatorPrinters.TryGetValue(_n.Name, out info))
-				return info.Item2(this, info.Item1, context, flags);
+				return info.Item2(this, info.Item1);
 			else if (_n.BaseStyle == NodeStyle.Operator)
 			{
 				if (_n.ArgCount == 2)
-					return AutoPrintInfixBinaryOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
+					using (WithFlags(_flags | Ambiguity.UseBacktick))
+						return AutoPrintInfixBinaryOperator(EP.Backtick);
 				//if (_n.ArgCount == 1)
 				//	return AutoPrintPrefixUnaryOperator(EP.Backtick, context, flags | Ambiguity.UseBacktick);
 			}
@@ -264,18 +258,18 @@ namespace Loyc.Ecs
 		// reflection and must be public for compatibility with partial-trust 
 		// environments; therefore we hide them from IntelliSense instead.
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixUnaryOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintPrefixUnaryOperator(Precedence precedence)
 		{
-			if (!IsPrefixOperator(_n, (flags & Ambiguity.CastRhs) != 0))
+			if (!IsPrefixOperator(_n, (_flags & Ambiguity.CastRhs) != 0))
 				return false;
 			var name = _n.Name;
 			var arg = _n.Args[0];
 
 			bool needParens;
-			if (CanAppearIn(precedence, context, out needParens, true))
+			if (CanAppearHere(precedence, out needParens, true))
 			{
 				// Check for the ambiguous case of (Foo)-x, (Foo)+x, (Foo) .x; (Foo)*x and (Foo)&x are OK
-				if ((flags & Ambiguity.CastRhs) != 0 && !needParens && (
+				if ((_flags & Ambiguity.CastRhs) != 0 && !needParens && (
 					name == S.Dot || name == S.PreInc || name == S.PreDec || 
 					name == S._UnaryPlus || name == S._Negate) && !_n.IsParenthesizedExpr())
 				{
@@ -285,14 +279,14 @@ namespace Loyc.Ecs
 						return false; // Fallback to prefix notation
 				}
 				// Check for the ambiguous case of "~Foo(...);"
-				if (name == S.NotBits && context.Lo == StartStmt.Lo && arg.IsCall)
+				if (name == S.NotBits && _context.Lo == StartStmt.Lo && arg.IsCall)
 					return false;
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
-					context = StartExpr;
-				WriteOperatorName(_n.Name, 0);
+					_context = StartExpr;
+				WriteOperatorName(_n.Name);
 				PrefixSpace(precedence);
-				PrintExpr(arg, precedence.RightContext(context), name == S.Forward ? Ambiguity.TypeContext : 0);
+				PrintExpr(arg, precedence.RightContext(_context), name == S.Forward ? Ambiguity.TypeContext : 0);
 				//if (backtick) {
 				//    Debug.Assert(precedence == EP.Backtick);
 				//    if ((SpacingOptions & SpaceOpt.AroundInfix) != 0 && precedence.Lo < SpaceAroundInfixStopPrecedence)
@@ -305,7 +299,7 @@ namespace Loyc.Ecs
 			return false;
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintInfixBinaryOperator(Precedence prec, Precedence context, Ambiguity flags)
+		public bool AutoPrintInfixBinaryOperator(Precedence prec)
 		{
 			var name = _n.Name;
 			Debug.Assert(!CastOperators.ContainsKey(name)); // not called for cast operators
@@ -316,44 +310,42 @@ namespace Loyc.Ecs
 			if (HasPAttrs(left) || HasPAttrs(right))
 				return false;
 
-			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0;
-			if (CanAppearIn(ref prec, context, out needParens, ref backtick))
+			bool needParens, backtick = (_n.Style & NodeStyle.Alternate) != 0 || (_flags & Ambiguity.UseBacktick) != 0;
+			if (CanAppearHere(ref prec, out needParens, ref backtick))
 			{
 				// Check for the ambiguous case of "A * b;" and consider using `*` instead
-				if (name == S.Mul && context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
+				if (name == S.Mul && _context.Left == StartStmt.Left && IsComplexIdentifier(left)) {
 					backtick = true;
 					prec = EP.Backtick;
-					if (!CanAppearIn(prec, context, out needParens, false))
+					if (!CanAppearHere(prec, out needParens, false))
 						return false;
 				}
 
 				if (WriteOpenParen(ParenFor.Grouping, needParens))
-					context = StartExpr;
+					_context = StartExpr;
 				Ambiguity lFlags = 0;
 				if (name == S.Assign || name == S.Lambda) lFlags |= Ambiguity.AllowUnassignedVarDecl;
 				if (name == S.NotBits) lFlags |= Ambiguity.IsCallTarget;
-				PrintExpr(left, prec.LeftContext(context), lFlags);
-				if (backtick)
-					flags |= Ambiguity.UseBacktick;
-				PrintInfixWithSpace(_n.Name, prec, flags);
-				PrintExpr(right, prec.RightContext(context));
+				PrintExpr(left, prec.LeftContext(_context), lFlags);
+				PrintInfixWithSpace(name, _n.Target, prec, backtick);
+				PrintExpr(right, prec.RightContext(_context));
 				WriteCloseParen(ParenFor.Grouping, needParens);
 				return true;
 			}
 			return false;
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec, Precedence context, Ambiguity flags)
+		public bool AutoPrintPrefixOrInfixOperator(Precedence infixPrec)
 		{
 			if (_n.ArgCount == 2)
-				return AutoPrintInfixBinaryOperator(infixPrec, context, flags);
+				return AutoPrintInfixBinaryOperator(infixPrec);
 			else
-				return AutoPrintPrefixUnaryOperator(PrefixOperators[_n.Name], context, flags);
+				return AutoPrintPrefixUnaryOperator(PrefixOperators[_n.Name]);
 		}
-		private void WriteOperatorName(Symbol name, Ambiguity flags = 0)
+		private void WriteOperatorName(Symbol name, bool useBacktick = false)
 		{
 			string opName = name.Name;
-			if ((flags & Ambiguity.UseBacktick) != 0)
+			if (useBacktick)
 				PrintString(opName, '`', null);
 			else {
 				Debug.Assert(opName.StartsWith("'") || opName.StartsWith("#"));
@@ -362,7 +354,7 @@ namespace Loyc.Ecs
 		}
 		
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintCastOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintCastOperator(Precedence precedence)
 		{
 			if (_n.ArgCount != 2)
 				return false;
@@ -393,14 +385,14 @@ namespace Loyc.Ecs
 			bool needParens;
 			if (alternate)
 				precedence = EP.Primary;
-			if (!CanAppearIn(precedence, context, out needParens) && name != S.Is) {
+			if (!CanAppearHere(precedence, out needParens) && name != S.Is) {
 				// There are two different precedences for cast operators; we prefer 
 				// the traditional forms (T)x, x as T, x using T which have lower 
 				// precedence, but they don't work in this context so consider using 
 				// x(->T), x(as T) or x(using T) instead.
 				alternate = true;
 				precedence = EP.Primary;
-				if (!CanAppearIn(precedence, context, out needParens))
+				if (!CanAppearHere(precedence, out needParens))
 					return false;
 			}
 
@@ -408,10 +400,10 @@ namespace Loyc.Ecs
 				return false; // old-style cast is impossible here
 
 			if (WriteOpenParen(ParenFor.Grouping, needParens))
-				context = StartExpr;
+				_context = StartExpr;
 
 			if (alternate) {
-				PrintExpr(subject, precedence.LeftContext(context));
+				PrintExpr(subject, precedence.LeftContext(_context));
 				WriteOpenParen(ParenFor.NewCast);
 				_out.Write(GetCastText(_n.Name), true);
 				Space(SpaceOpt.AfterCastArrow);
@@ -423,12 +415,12 @@ namespace Loyc.Ecs
 					PrintType(target, ContinueExpr, Ambiguity.AllowPointer);
 					WriteCloseParen(ParenFor.Grouping);
 					Space(SpaceOpt.AfterCast);
-					PrintExpr(subject, precedence.RightContext(context), Ambiguity.CastRhs);
+					PrintExpr(subject, precedence.RightContext(_context), Ambiguity.CastRhs);
 				} else {
 					// "x as y" or "x using y"
-					PrintExpr(subject, precedence.LeftContext(context));
+					PrintExpr(subject, precedence.LeftContext(_context));
 					_out.Write(GetCastText(_n.Name), true);
-					PrintType(target, precedence.RightContext(context));
+					PrintType(target, precedence.RightContext(_context));
 				}
 			}
 
@@ -444,7 +436,7 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintListOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintListOperator(Precedence precedence)
 		{
 			// Handles #tuple and {} braces.
 			int argCount = _n.ArgCount;
@@ -454,16 +446,16 @@ namespace Loyc.Ecs
 			bool? braceMode;
 			if (name == S.Tuple) {
 				braceMode = false;
-				flags &= Ambiguity.AllowUnassignedVarDecl;
+				_flags &= Ambiguity.AllowUnassignedVarDecl;
 			} else if (name == S.Braces) {
 				// A braced block is not allowed at start of an expression 
 				// statement; the parser would mistake it for a standalone 
 				// braced block (the difference is that a standalone braced 
 				// block ends automatically after '}', with no semicolon.)
-				if (context.Left == StartStmt.Left || (flags & Ambiguity.NoBracedBlock) != 0)
+				if (_context.Left == StartStmt.Left || (_flags & Ambiguity.NoBracedBlock) != 0)
 					return false;
 				braceMode = true;
-				if (context.Left <= ContinueExpr.Left && _n.BaseStyle == NodeStyle.Expression)
+				if (_context.Left <= ContinueExpr.Left && _n.BaseStyle == NodeStyle.Expression)
 					braceMode = null; // initializer mode
 			} else if (name == S.ArrayInit) {
 				braceMode = null; // initializer mode
@@ -472,33 +464,15 @@ namespace Loyc.Ecs
 				// Code quote operator has been REMOVED from EC#, in favor of #quote(...), at least for now.
 				//Debug.Assert(name == S.CodeQuote || name == S.CodeQuoteSubstituting || name == S.List);
 				//_out.Write(name == S.CodeQuote ? "@" : "@@", false);
-				braceMode = _n.BaseStyle == NodeStyle.Statement && (flags & Ambiguity.NoBracedBlock) == 0;
-				flags = 0;
+				braceMode = _n.BaseStyle == NodeStyle.Statement && (_flags & Ambiguity.NoBracedBlock) == 0;
+				_flags = 0;
 			}
 
 			int c = _n.ArgCount;
 			if (braceMode ?? true)
 			{
-				if (!Newline(NewlineOpt.BeforeOpenBraceInExpr))
-					Space(SpaceOpt.OutsideParens);
-				_out.Write('{', true);
-				if (braceMode == true) {
-					using (Indented) {
-						for (int i = 0; i < c; i++)
-							PrintStmt(_n.Args[i], i + 1 == c ? Ambiguity.FinalStmt : 0);
-					}
-				} else {
-					_out.Space();
-					for (int i = 0; i < c; i++) {
-						if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
-						PrintExpr(_n.Args[i], StartExpr, flags);
-					}
-				}
-				if (!Newline(NewlineOpt.BeforeCloseBraceInExpr))
-					_out.Space();
-				_out.Write('}', true);
-				if (!Newline(NewlineOpt.AfterCloseBraceInExpr))
-					Space(SpaceOpt.OutsideParens);
+				PrintBracedBlock(_n, NewlineOpt.BeforeOpenBraceInExpr, 
+					mode: braceMode == null ? BraceMode.Initializer : BraceMode.Normal);
 			}
 			else
 			{
@@ -506,7 +480,7 @@ namespace Loyc.Ecs
 				for (int i = 0; i < c; i++)
 				{
 					if (i != 0) WriteThenSpace(',', SpaceOpt.AfterComma);
-					PrintExpr(_n.Args[i], StartExpr, flags);
+					PrintExpr(_n.Args[i], StartExpr, _flags);
 				}
 				if (name == S.Tuple && c == 1)
 					_out.Write(',', true);
@@ -515,7 +489,7 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		static Symbol SpecialTypeKind(LNode n, Ambiguity flags, Precedence context)
+		static Symbol SpecialTypeKind(LNode n, Precedence context, Ambiguity flags)
 		{
 			// detects when notation for special types applies: Foo[], Foo*, Foo?
 			// assumes IsComplexIdentifier() is already known to be true
@@ -531,7 +505,7 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintComplexIdentOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintComplexIdentOperator(Precedence precedence)
 		{
 			// Handles #of and @`.`, including array types
 			int argCount = _n.ArgCount;
@@ -543,7 +517,7 @@ namespace Loyc.Ecs
 				return false; // no args
 
 			bool needParens, needSpecialOfNotation = false;
-			if (!CanAppearIn(precedence, context, out needParens) || needParens)
+			if (!CanAppearHere(precedence, out needParens) || needParens)
 				return false; // this only happens inside $ operator, e.g. $(a.b)
 
 			if (name == S.Dot) {
@@ -569,11 +543,11 @@ namespace Loyc.Ecs
 						return false;
 					if (afterDot.IsCall && afterDot.Name != S.Substitute)
 						return false;
-				} else if ((flags & Ambiguity.CastRhs) != 0)
+				} else if ((_flags & Ambiguity.CastRhs) != 0)
 					return false; // cannot print (Foo) @`.`(x) as (Foo) .x
 			} else if (name == S.Of) {
 				var ici = ICI.Default | ICI.AllowAttrs;
-				if ((flags & Ambiguity.InDefinitionName) != 0)
+				if ((_flags & Ambiguity.InDefinitionName) != 0)
 					ici |= ICI.NameDefinition;
 				if (!IsComplexIdentifier(_n, ici)) {
 					if (IsComplexIdentifier(_n, ici | ICI.AllowAnyExprInOf))
@@ -589,15 +563,15 @@ namespace Loyc.Ecs
 					_out.Write('.', true);
 					PrintExpr(first, EP.Substitute);
 				} else {
-					PrintExpr(first, precedence.LeftContext(context), flags & Ambiguity.TypeContext);
+					PrintExpr(first, precedence.LeftContext(_context), _flags & Ambiguity.TypeContext);
 					_out.Write('.', true);
-					PrintExpr(_n.Args[1], precedence.RightContext(context));
+					PrintExpr(_n.Args[1], precedence.RightContext(_context));
 				}
 			}
 			else if (_n.Name == S.Of)
 			{
 				// Check for special type names such as Foo? or Foo[]
-				Symbol stk = SpecialTypeKind(_n, flags, context);
+				Symbol stk = SpecialTypeKind(_n, _context, _flags);
 				if (stk != null)
 				{
 					if (S.IsArrayKeyword(stk)) {
@@ -611,41 +585,41 @@ namespace Loyc.Ecs
 						do {
 							stack.Add(stk);
 							innerType = innerType.Args[1];
-						} while (S.IsArrayKeyword(stk = SpecialTypeKind(innerType, flags, context) ?? GSymbol.Empty));
+						} while (S.IsArrayKeyword(stk = SpecialTypeKind(innerType, _context, _flags) ?? GSymbol.Empty));
 
-						PrintType(innerType, EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
+						PrintType(innerType, EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
 
 						for (int i = 0; i < stack.Count; i++) {
 							Debug.Assert(stack[i].Name.StartsWith("#"));
 							_out.Write(stack[i].Name.Substring(1), true); // e.g. [] or [,]
 						}
 					} else {
-						PrintType(_n.Args[1], EP.Primary.LeftContext(context), (flags & Ambiguity.AllowPointer));
+						PrintType(_n.Args[1], EP.Primary.LeftContext(_context), (_flags & Ambiguity.AllowPointer));
 						_out.Write(stk == S._Pointer ? '*' : '?', true);
 					}
 					return true;
 				}
 
-				PrintExpr(first, precedence.LeftContext(context), flags & (Ambiguity.InDefinitionName | Ambiguity.NoParenthesis));
+				PrintExpr(first, precedence.LeftContext(_context), _flags & Ambiguity.InDefinitionName);
 
 				_out.Write(needSpecialOfNotation ? "!(" : "<", true);
 				for (int i = 1; i < argCount; i++) {
 					if (i > 1)
 						WriteThenSpace(',', SpaceOpt.AfterCommaInOf);
-					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (flags & Ambiguity.InDefinitionName));
+					PrintType(_n.Args[i], StartExpr, Ambiguity.InOf | Ambiguity.AllowPointer | (_flags & Ambiguity.InDefinitionName));
 				}
 				_out.Write(needSpecialOfNotation ? ')' : '>', true);
 			}
 			else 
 			{
 				Debug.Assert(_n.Name == S.Substitute);
-				G.Verify(AutoPrintOperator(ContinueExpr, 0));
+				G.Verify(AutoPrintOperator());
 			}
 			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintNewOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintNewOperator(Precedence precedence)
 		{
 			// Prints the new Xyz(...) {...} operator
 			Debug.Assert (_n.Name == S.New);
@@ -653,7 +627,7 @@ namespace Loyc.Ecs
 			if (argCount == 0)
 				return false;
 			bool needParens;
-			Debug.Assert(CanAppearIn(precedence, context, out needParens) && !needParens);
+			Debug.Assert(CanAppearHere(precedence, out needParens) && !needParens);
 
 			LNode cons = _n.Args[0];
 			LNode type = cons.Target;
@@ -692,9 +666,9 @@ namespace Loyc.Ecs
 					PrintTypeWithArraySizes(cons);
 				} else {
 					// Otherwise we can print the type name without caring if it's an array or not.
-					PrintType(type, EP.Primary.LeftContext(context));
+					PrintType(type, EP.Primary.LeftContext(_context));
 					if (cons.ArgCount != 0 || (argCount == 1 && dims == 0))
-						PrintArgList(cons.Args, ParenFor.MethodCall, 0, OmitMissingArguments);
+						PrintArgList(cons.Args, ParenFor.MethodCall, false, OmitMissingArguments);
 				}
 				if (_n.Args.Count > 1)
 					PrintBracedBlockInNewExpr(1);
@@ -722,13 +696,13 @@ namespace Loyc.Ecs
 					}
 					var expr = _n.Args[i];
 					if (expr.Calls(S.Braces))
-						using (With(expr))
+						using (With(expr, StartExpr))
 							PrintBracedBlockInNewExpr(0);
 					else if (expr.CallsMin(S.InitializerAssignment, 1)) {
 						_out.Write('[', true);
 						PrintArgs(expr.Args.WithoutLast(1), 0, false);
 						_out.Write(']', true);
-						PrintInfixWithSpace(S.Assign, EcsPrecedence.Assign, 0);
+						PrintInfixWithSpace(S.Assign, expr.Target, EcsPrecedence.Assign);
 						PrintExpr(expr.Args.Last, StartExpr);
 					} else 
 						PrintExpr(expr, StartExpr);
@@ -775,7 +749,7 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintAnonymousFunction(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintAnonymousFunction(Precedence precedence)
 		{
 			Symbol name = _n.Name;
 			Debug.Assert(name == S.Lambda);
@@ -786,7 +760,7 @@ namespace Loyc.Ecs
 			bool needParens = false;
 			bool canUseOldStyle = body.Calls(S.Braces) && args.Calls(S.AltList);
 			bool oldStyle = _n.BaseStyle == NodeStyle.OldStyle && canUseOldStyle;
-			if (!oldStyle && !CanAppearIn(EP.Lambda, context, out needParens)) {
+			if (!oldStyle && !CanAppearHere(EP.Lambda, out needParens)) {
 				if (canUseOldStyle)
 					oldStyle = true;
 				else
@@ -797,12 +771,12 @@ namespace Loyc.Ecs
 
 			if (oldStyle) {
 				_out.Write("delegate", true);
-				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, Ambiguity.AllowUnassignedVarDecl, OmitMissingArguments);
-				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, false, S.Fn);
+				PrintArgList(_n.Args[0].Args, ParenFor.MethodDecl, true, OmitMissingArguments);
+				PrintBracedBlock(body, NewlineOpt.BeforeOpenBraceInExpr, spaceName: S.Fn);
 			} else { 
-				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(context), Ambiguity.AllowUnassignedVarDecl);
-				PrintInfixWithSpace(S.Lambda, EP.IfElse, 0);
-				PrintExpr(_n.Args[1], EP.Lambda.RightContext(context));
+				PrintExpr(_n.Args[0], EP.Lambda.LeftContext(_context), Ambiguity.AllowUnassignedVarDecl | (_flags & Ambiguity.OneLiner));
+				PrintInfixWithSpace(S.Lambda, _n.Target, EP.IfElse);
+				PrintExpr(_n.Args[1], EP.Lambda.RightContext(_context));
 			}
 
 			WriteCloseParen(ParenFor.Grouping, needParens);
@@ -810,7 +784,7 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintOtherSpecialOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintOtherSpecialOperator(Precedence precedence)
 		{
 			// Handles one of:  ?  _[]  ?[]  suf++  suf--
 			int argCount = _n.ArgCount;
@@ -818,7 +792,7 @@ namespace Loyc.Ecs
 			if (argCount < 1)
 				return false; // no args
 			bool needParens;
-			if (!CanAppearIn(precedence, context, out needParens))
+			if (!CanAppearHere(precedence, out needParens))
 				return false; // precedence fail
 
 			// Verify that the special operator can appear at this precedence 
@@ -826,7 +800,7 @@ namespace Loyc.Ecs
 			var first = _n.Args[0];
 			if (name == S.IndexBracks) {
 				// Careful: a[] means #of(@`[]`, a) in a type context, @`_[]`(a) otherwise
-				int minArgs = (flags&Ambiguity.TypeContext)!=0 ? 2 : 1;
+				int minArgs = (_flags & Ambiguity.TypeContext) != 0 ? 2 : 1;
 				if (argCount < minArgs || HasPAttrs(first))
 					return false;
 			} else if (name == S.NullIndexBracks) {
@@ -846,7 +820,7 @@ namespace Loyc.Ecs
 
 			if (name == S.IndexBracks)
 			{
-				PrintExpr(first, precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(_context));
 				Space(SpaceOpt.BeforeMethodCall);
 				_out.Write('[', true);
 				Space(SpaceOpt.InsideCallParens);
@@ -860,26 +834,26 @@ namespace Loyc.Ecs
 			}
 			else if (name == S.NullIndexBracks)
 			{
-				PrintExpr(first, precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(_context));
 				Space(SpaceOpt.BeforeMethodCall);
 				_out.Write("?[", true);
 				Space(SpaceOpt.InsideCallParens);
-				PrintArgs(_n.Args[1], flags, false);
+				PrintArgs(_n.Args[1], false);
 				Space(SpaceOpt.InsideCallParens);
 				_out.Write(']', true);
 			}
 			else if (name == S.QuestionMark)
 			{
-				PrintExpr(_n.Args[0], precedence.LeftContext(context));
-				PrintInfixWithSpace(S.QuestionMark, EP.IfElse, 0);
+				PrintExpr(_n.Args[0], precedence.LeftContext(_context));
+				PrintInfixWithSpace(S.QuestionMark, _n.Target, EP.IfElse);
 				PrintExpr(_n.Args[1], ContinueExpr);
-				PrintInfixWithSpace(S.Colon, EP.IfElse, 0);
-				PrintExpr(_n.Args[2], precedence.RightContext(context));
+				PrintInfixWithSpace(S.Colon, null, EP.IfElse);
+				PrintExpr(_n.Args[2], precedence.RightContext(_context));
 			}
 			else
 			{
 				Debug.Assert(name == S.PostInc || name == S.PostDec || name == S.IsLegal);
-				PrintExpr(first, precedence.LeftContext(context));
+				PrintExpr(first, precedence.LeftContext(_context));
 				_out.Write(name == S.PostInc ? "++" : name == S.PostDec ? "--" : "is legal", true);
 			}
 
@@ -888,11 +862,11 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintCallOperator(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintCallOperator(Precedence precedence)
 		{
 			// Handles "call operators" such as default(...) and checked(...)
 			bool needParens;
-			Debug.Assert(CanAppearIn(precedence, context, out needParens));
+			Debug.Assert(CanAppearHere(precedence, out needParens));
 			Debug.Assert(_n.HasSpecialName);
 			if (_n.ArgCount != 1)
 				return false;
@@ -908,62 +882,65 @@ namespace Loyc.Ecs
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintNamedArg(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintNamedArg(Precedence precedence)
 		{
-			if (!EcsValidators.IsNamedArgument(_n, Pedantics) || context.RangeEquals(StartStmt))
+			if (!EcsValidators.IsNamedArgument(_n, Pedantics) || _context.RangeEquals(StartStmt))
 				return false;
 			bool needParens;
-			if (!CanAppearIn(precedence, context, out needParens) || needParens)
+			if (!CanAppearHere(precedence, out needParens) || needParens)
 				return false;
 
-			using (With(_n.Args[0]))
-				PrintExpr(EP.Primary.LeftContext(context));
+			PrintExpr(_n.Args[0], EP.Primary.LeftContext(_context));
 			WriteThenSpace(':', SpaceOpt.AfterColon);
-			using (With(_n.Args[1]))
-				PrintExpr(StartExpr);
+			PrintExpr(_n.Args[1], StartExpr);
 			return true;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool AutoPrintPropDeclExpr(Precedence precedence, Precedence context, Ambiguity flags)
+		public bool AutoPrintPropDeclExpr(Precedence precedence)
 		{
-			return AutoPrintProperty(flags) != SPResult.Fail;
+			return AutoPrintProperty() != SPResult.Fail;
 		}
 
 		// Handles #rawText("custom string")
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool PrintRawText(Precedence mainPrec, Precedence context, Ambiguity flags)
+		public bool PrintRawText(Precedence mainPrec)
 		{
-			if (OmitRawText)
+			if (!ObeyRawText)
 				return false;
 			_out.Write(GetRawText(_n), true);
 			return true;
 		}
 
-		void PrintExpr(LNode n, Precedence context, Ambiguity flags = 0)
+		void PrintExpr(LNode n)
 		{
-			using (With(n))
-				PrintExpr(context, flags);
+			PrintExpr(n, _context);
+		}
+		void PrintExpr(LNode n, Precedence context)
+		{
+			PrintExpr(n, context, _flags & Ambiguity.OneLiner);
+		}
+		void PrintExpr(LNode n, Precedence context, Ambiguity flags)
+		{
+			using (With(n, context, CheckOneLiner(flags, n)))
+				PrintCurrentExpr();
 		}
 		void PrintType(LNode n, Precedence context, Ambiguity flags = 0)
 		{
-			using (With(n))
-				PrintExpr(context, flags | Ambiguity.TypeContext);
+			PrintExpr(n, context, flags | Ambiguity.TypeContext);
 		}
 
-		internal void PrintPrefixNotation(Precedence context, bool purePrefixNotation, Ambiguity flags = 0, bool skipAttrs = false)
+		internal void PrintPurePrefixNotation(bool skipAttrs = false)
 		{
-			Debug.Assert(EP.Primary.CanAppearIn(context) || _n.IsParenthesizedExpr());
+			Debug.Assert(EP.Primary.CanAppearIn(_context) || _n.IsParenthesizedExpr());
 			int inParens = 0;
 			if (!skipAttrs)
-				inParens = PrintAttrs(ref context, purePrefixNotation ? AttrStyle.NoKeywordAttrs : AttrStyle.AllowKeywordAttrs, flags);
+				inParens = PrintAttrs(AttrStyle.NoKeywordAttrs);
 
 			if (!_n.IsCall)
-				PrintSimpleIdentOrLiteral(flags);
-			else if (!purePrefixNotation && IsComplexIdentifier(_n, ICI.Default | ICI.AllowAttrs | ICI.AllowParensAround))
-				PrintExpr(context);
+				PrintSimpleIdentOrLiteral();
 			else {
-				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && context == StartStmt && inParens == 0)
+				if (!AllowConstructorAmbiguity && _n.Calls(_spaceName) && _context == StartStmt && inParens == 0)
 				{
 					inParens++;
 					WriteOpenParen(ParenFor.Grouping);
@@ -972,9 +949,9 @@ namespace Loyc.Ecs
 				// Print Target
 				var target = _n.Target;
 				var f = Ambiguity.IsCallTarget;
-				if (_spaceName == S.Fn || context != StartStmt)
+				if (_spaceName == S.Fn || _context != StartStmt)
 					f |= Ambiguity.AllowThisAsCallTarget;
-				PrintExpr(target, EP.Primary.LeftContext(context), f);
+				PrintExpr(target, EP.Primary.LeftContext(_context), f);
 
 				// Print argument list
 				WriteOpenParen(ParenFor.MethodCall);
@@ -1005,39 +982,41 @@ namespace Loyc.Ecs
 			object tVal = rawTextNode.TriviaValue;
 			return tVal == NoValue.Value || tVal == null ? rawTextNode.Name.Name : tVal.ToString();
 		}
-		private void PrintSimpleIdentOrLiteral(Ambiguity flags)
+		private void PrintSimpleIdentOrLiteral()
 		{
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else if (_n.Name == S.RawText && !OmitRawText)
+			else if (_n.Name == S.RawText && ObeyRawText)
 				_out.Write(GetRawText(_n), true);
 			else
-				PrintSimpleIdent(_n.Name, flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
+				PrintSimpleIdent(_n.Name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);
 		}
 
-		private void PrintVariableDecl(bool printAttrs, Precedence context, Ambiguity flags)
+		private void PrintVariableDecl(bool printAttrs, LNode skipClause = null)
 		{
+			var flags = _flags;
 			Debug.Assert(_n.Name == S.Var);
 			var a = _n.Args;
 
 			if (printAttrs) {
 				if (a[1].IsId && (flags & Ambiguity.AllowUnassignedVarDecl) == 0)
 					flags |= Ambiguity.ForceAttributeList;
-				G.Verify(0 == PrintAttrs(StartExpr, AttrStyle.IsDefinition, 0));
+				G.Verify(0 == PrintAttrs(AttrStyle.IsDefinition, skipClause));
 			}
 
+			Debug.Assert(_context == StartStmt || _context == StartExpr || Flagged(Ambiguity.ForEachInitializer));
 			if (IsSimpleSymbolWPA(a[0], S.Missing))
 				_out.Write("var", true);
 			else
-				PrintType(a[0], EP.Primary.LeftContext(context), flags & Ambiguity.AllowPointer);
+				PrintType(a[0], EP.Primary.LeftContext(_context), flags & Ambiguity.AllowPointer);
 			_out.Space();
 			for (int i = 1; i < a.Count; i++) {
 				var @var = a[i];
 				if (i > 1)
 					WriteThenSpace(',', SpaceOpt.AfterComma);
 
-				PrintExpr(@var, EP.Assign.RightContext(context), Ambiguity.NoParenthesis);
+				PrintExpr(@var, EP.Assign.RightContext(_context), Ambiguity.InDefinitionName);
 			}
 		}
 	}

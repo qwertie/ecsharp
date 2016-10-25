@@ -160,7 +160,7 @@ namespace LeMP
 				} catch (ArgumentException) { }    // Path.* may throw
 				  catch (PathTooLongException) { } // Path.* may throw
 
-				var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink);
+				var input = ParsingService.Current.Parse(io.Text, io.FileName, _sink, io.ParsingMode, io.PreserveComments ?? true);
 				var inputRV = new VList<LNode>(input);
 
 				io.Output = ProcessRoot(inputRV);

@@ -14,7 +14,7 @@ namespace LeMP.Tests
 		public void TestBasics()
 		{
 			// Check that it doesn't do anything when there's nothing to do.
-			TestEcs("#useSequenceExpressions; " +
+			TestCs("#useSequenceExpressions; " +
 				"void F() { { f(); } } " +
 				"int P { get { return _p; } set { _p = value; } } " +
 				"int _x = externAlias::something;",
@@ -23,7 +23,7 @@ namespace LeMP.Tests
 				"int _x = externAlias::something;");
 
 			// Test that it works inside a namespace and a class
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				public namespace NS {
 					public class Program {
 						static void FooBar() {
@@ -40,7 +40,7 @@ namespace LeMP.Tests
 				}");
 			
 			// Check basic functionality, including if-statement and nesting
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(new List<int>()::list);
 					if (DBConnection.Tables.Get(""Person"")::table != null) {
@@ -66,7 +66,7 @@ namespace LeMP.Tests
 				}");
 
 			// Test a nested run sequence
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(#runSequence(Debug.Assert(X()::x > 0), x));
 				}",
@@ -78,7 +78,7 @@ namespace LeMP.Tests
 
 			// Test with some args being sequences and others not
 			var n = MacroProcessor.NextTempCounter;
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(a, #runSequence(PrepareB(), GetB()), c, #runSequence(var d = D(), d) + 1, e);
 				}", @"
@@ -95,7 +95,7 @@ namespace LeMP.Tests
 				.Replace("c_3", "c_" + (n+2)));
 
 			// Test #if with #runSequence as body
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					if (c) #runSequence(A(), B());
 					if (c) #runSequence(A(), B()); else #runSequence(X(), Y());
@@ -116,12 +116,12 @@ namespace LeMP.Tests
 				static double nine = nine_initializer();
 				static double nine_initializer() {
 					var three = Math.Sqrt(9);
-					return three * three;
+					return ([#trivia_isTmpVar] three) * three;
 				}
 				Pair<Symbol,Symbol> p = p_initializer();
 				static Pair<Symbol,Symbol> p_initializer() {
 					var str = ""foo""(->Symbol);
-					return Pair.Create(str, str);
+					return Pair.Create([#trivia_isTmpVar] str, str);
 				}
 				");
 		}
@@ -130,7 +130,7 @@ namespace LeMP.Tests
 		public void TestAssignmentsAndLValues()
 		{
 			// Straightforward cases
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(A::a.B[C] = D);
 					Foo(A.B::b[C] = D);
@@ -147,7 +147,7 @@ namespace LeMP.Tests
 				.Replace("tmp_1", "tmp_"+MacroProcessor.NextTempCounter));
 			
 			// Tricky cases: must take into account that LHS is an lvalue
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(A.B[C] + D::d1);
 					Foo(A.B[C] = D::d2);
@@ -161,7 +161,7 @@ namespace LeMP.Tests
 					Foo(A.B[C_2] = d2);
 				}".Replace("tmp_1", "tmp_"+(MacroProcessor.NextTempCounter))
 				  .Replace("C_2", "C_"+(MacroProcessor.NextTempCounter+1)));
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(A.B[C::c] + D::d1);
 					Foo(A.B[C::c] = D::d2);
@@ -182,7 +182,7 @@ namespace LeMP.Tests
 				  .Replace("c_2", "c_"+(MacroProcessor.NextTempCounter+1)));
 
 			// ref and out expressions are also lvalues
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Foo(out A, ref B.C[D], out F(x).Y);
 					Foo(out A, ref B.C[D], out F(x).Y, 0, E()::e);
@@ -200,7 +200,7 @@ namespace LeMP.Tests
 		[Test]
 		public void TestInWhileLoop()
 		{
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Before();
 					while (_min > Foo()::foo.Bar + foo.Baz)
@@ -218,7 +218,7 @@ namespace LeMP.Tests
 				}"
 				.Replace("_min_1", "_min_"+MacroProcessor.NextTempCounter));
 
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					while (_min > Foo().Bar)
 						Console.WriteLine(""({0}, {1})"", foo.Property::p.Item1, p.Item2);
@@ -270,7 +270,7 @@ namespace LeMP.Tests
 		[Test]
 		public void TestInDoWhileLoop()
 		{
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f(IEnumerator<Point> e) {
 					do 
 						dict[e.Current::c.X] = c.Y;
@@ -283,7 +283,7 @@ namespace LeMP.Tests
 					} while(e.MoveNext() > 0);
 				}");
 
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				static void f() {
 					do #runSequence(F(), x) = 0;
 					while(Bool()::b);
@@ -302,7 +302,7 @@ namespace LeMP.Tests
 		public void TestInForLoop()
 		{
 			// Sequence in initializer
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					for (int i = Foo()::foo.Count - 1; i >= 0; i--)
 						foo[i]++;
@@ -316,7 +316,7 @@ namespace LeMP.Tests
 				}");
 
 			// Sequence in condition
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					for (int i = 0; i < List.Count::c; i++)
 						foo[c - i]++;
@@ -333,7 +333,7 @@ namespace LeMP.Tests
 				}".Replace("i_1", "i_"+MacroProcessor.NextTempCounter));
 
 			// Sequence in increment expression
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					for (int i = 0; i < list.Count; i += Foo()::f.x + f.y)
 						Body();
@@ -347,7 +347,7 @@ namespace LeMP.Tests
 				}");
 
 			// Sequences everywhere
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					for (Init(I()::i, i); C(i)::c; #runSequence(inc1(), inc2()))
 						A(B()::b, c);
@@ -373,7 +373,7 @@ namespace LeMP.Tests
 		public void TestLambdaMethod()
 		{
 			// Test lambda-style method
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				int fSquare(int x) => f(x)::fx * fx;
 				", @"
 				int fSquare(int x) {
@@ -382,7 +382,7 @@ namespace LeMP.Tests
 				}");
 
 			// Test lambda function
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					Func<int,int> fSquare = (int x) => f(x)::fx * fx;
 				}
@@ -399,7 +399,7 @@ namespace LeMP.Tests
 		public void TestInForeachLoop()
 		{
 			// foreach
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				int f() {
 					Before();
 					foreach (var x in GetList()::list)
@@ -421,7 +421,7 @@ namespace LeMP.Tests
 		public void TestInSimpleKeywordStatements()
 		{
 			// return
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				int f() {
 					return GetList()::L.Capacity - L.Count;
 				}", @"
@@ -431,7 +431,7 @@ namespace LeMP.Tests
 				}");
 
 			// using
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					using (Foo()::f.PushState())
 						f.SetState(GetState()::s, s.Bar);
@@ -447,7 +447,7 @@ namespace LeMP.Tests
 				}");
 
 			// lock
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					lock (Foo()::f)
 						f.Bar::b.Baz(b);
@@ -463,7 +463,7 @@ namespace LeMP.Tests
 				}");
 
 			// switch
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					switch (Foo()::f) {
 					case 777:
@@ -486,7 +486,7 @@ namespace LeMP.Tests
 		public void TestInTryCatchFinally()
 		{
 			// try-finally
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					try
 						#runSequence(F(), G());
@@ -506,7 +506,7 @@ namespace LeMP.Tests
 				}");
 
 			// try-catch
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					try {
 						#runSequence(F(), G());
@@ -526,7 +526,7 @@ namespace LeMP.Tests
 
 			// try/catch/finally/throw
 			// Note: `::` is not currently supported in the `when` clause
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					try
 						#runSequence(F(), G());
@@ -559,7 +559,7 @@ namespace LeMP.Tests
 		[Test]
 		public void TestInFixed()
 		{
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					fixed (_)
 						Foo::o.a = o.b;
@@ -570,7 +570,7 @@ namespace LeMP.Tests
 						o.a = o.b;
 					}
 				}");
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() {
 					fixed (int* x = &list[CurrentIndex::i])
 						*x = Foo::o.a + o.b;
@@ -590,7 +590,7 @@ namespace LeMP.Tests
 		[Test]
 		public void TestRefVarDecl()
 		{
-			TestEcs(@"#useSequenceExpressions;
+			TestCs(@"#useSequenceExpressions;
 				void f() { Foo(ref int x = 5); }", @"
 				void f() {
 					int x = 5;

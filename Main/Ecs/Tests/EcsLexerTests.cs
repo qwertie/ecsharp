@@ -24,18 +24,18 @@ namespace Loyc.Ecs.Tests
 		public void Basics()
 		{
 			Case(@"hello, world!",
-				A(TT.Id, TT.Comma, TT.Spaces, TT.Id, TT.Not), 
-				_("hello"), S.Comma, WS, _("world"), S.Not);
+				A(TT.Id, TT.Comma, TT.Id, TT.Not), 
+				_("hello"), S.Comma, _("world"), S.Not);
 			Case(@"this is""just""1 lexer test '!'",
-				A(TT.This, TT.Spaces, TT.Is, TT.Literal, TT.Literal, TT.Spaces, TT.Id, TT.Spaces, TT.Id, TT.Spaces, TT.Literal),
-				S.This, WS, S.Is, "just", 1, WS, _("lexer"), WS, _("test"), WS, '!');
+				A(TT.This, TT.Is, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
+				S.This, S.Is, "just", 1, _("lexer"), _("test"), '!');
 			Case(@"12:30", A(TT.Literal, TT.Colon, TT.Literal), 12, S.Colon, 30);
 			Case(@"c+='0'", A(TT.Id, TT.CompoundSet, TT.Literal), _("c"), S.AddAssign, '0');
 			Case("// hello\n\r\n\r/* world */",
 				A(TT.SLComment, TT.Newline, TT.Newline, TT.Newline, TT.MLComment));
 			Case(@"{}[]()", A(TT.LBrace, TT.RBrace, TT.LBrack, TT.RBrack, TT.LParen, TT.RParen));
-			Case(@"finally@@{`boom!` @@bam;}", A(TT.Finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Spaces, TT.Literal, TT.Semicolon, TT.RBrace),
-				S.Finally, _("'@"), _("'@"), null, _("boom!"), WS, _("bam"), S.Semicolon, null);
+			Case(@"finally@@{`boom!` @@bam;}", A(TT.Finally, TT.At, TT.At, TT.LBrace, TT.BQString, TT.Literal, TT.Semicolon, TT.RBrace),
+				S.Finally, _("'@"), _("'@"), null, _("boom!"), _("bam"), S.Semicolon, null);
 		}
 
 		[Test]
@@ -52,7 +52,7 @@ namespace Loyc.Ecs.Tests
 			Case(@"@#\@$_$@==>", A(TT.Id, TT.Id, TT.Id),             _(@"#\"), _("$_$"), _("==>"));
 			Case("@`{}`[@>>=]",  A(TT.Id, TT.LBrack, TT.Id, TT.RBrack), _("{}"), null, _(">>="), null);
 			Case(@"@0@`@\n`",    A(TT.Id, TT.Id),                    _("0"), _("@\n"));
-			Case("won't prime'", A(TT.Id, TT.Spaces, TT.Id),         _("won't"), WS, _("prime'"));
+			Case("won't prime'", A(TT.Id, TT.Id),                    _("won't"), _("prime'"));
 			Case(@"@`\``@#`hi!`",A(TT.Id, TT.Id, TT.BQString),       _("`"), _("#"), _("hi!"));
 			Case(@"@'()",        A(TT.Id, TT.LParen, TT.RParen),     _("'"),  null, null);
 			Case(@"@''@{}",      A(TT.Id, TT.At, TT.LBrace, TT.RBrace), _("''"), _("'@"), null, null);
@@ -61,13 +61,13 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void TestOperators()
 		{
-			Case("3 - 2",     A(TT.Literal, TT.Spaces, TT.Sub, TT.Spaces, TT.Literal), 3, WS, _("'-"), WS, 2);
+			Case("3 - 2",     A(TT.Literal, TT.Sub, TT.Literal), 3, _("'-"), 2);
 			Case("a-b",       A(TT.Id, TT.Sub, TT.Id),            _("a"), _("'-"), _("b"));
 			Case("a`blah`b",  A(TT.Id, TT.BQString, TT.Id),   _("a"), _("blah"), _("b"));
 			Case(@"a`_\`_`b", A(TT.Id, TT.BQString, TT.Id),   _("a"), _("_`_"), _("b"));
 			Case(@">><<",     A(TT.GT, TT.GT, TT.LT, TT.LT),  _("'>"), _("'>"), _("'<"), _("'<"));
 			Case(@">>===>",   A(TT.CompoundSet, TT.Forward),  _("'>>="), _("'==>"));
-			Case("3**2 % 10", A(TT.Literal, TT.Power, TT.Literal, TT.Spaces, TT.DivMod, TT.Spaces, TT.Literal), 3, _("'**"), 2, WS, _("'%"), WS, 10);
+			Case("3**2 % 10", A(TT.Literal, TT.Power, TT.Literal, TT.DivMod, TT.Literal), 3, _("'**"), 2, _("'%"), 10);
 		}
 
 		[Test]
@@ -80,13 +80,13 @@ namespace Loyc.Ecs.Tests
 			Case(@"'''Triple-quoted!'''", A(TT.Literal), "Triple-quoted!");
 			Case(@"""""""Triple\n/-quoted!""""""", A(TT.Literal), "Triple\n-quoted!");
 			Case("    \"\"\"Triple\n"+
-			     "    -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			     "    -quoted!\"\"\"", A(TT.Literal), "Triple\n-quoted!");
 			Case("    \"\"\"Triple\n"+
-			     "      -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			     "      -quoted!\"\"\"", A(TT.Literal), "Triple\n-quoted!");
 			Case("\t\"\"\"Triple\n"+
-			     "\t\t-quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n-quoted!");
+			     "\t\t-quoted!\"\"\"", A(TT.Literal), "Triple\n-quoted!");
 			Case("    \"\"\"Triple\n"+
-			     "        -quoted!\"\"\"", A(TT.Spaces, TT.Literal), WS, "Triple\n -quoted!");
+			     "        -quoted!\"\"\"", A(TT.Literal), "Triple\n -quoted!");
 		}
 
 		[Test]
@@ -178,14 +178,14 @@ namespace Loyc.Ecs.Tests
 			// Note: the standard C# parser accepts input like "# if" (with spaces) 
 			// for preprocessor directives; the EC# lexer currently does not.
 			Case("#if",       A(TT.PPif), _("##if"));
-			Case("/**/#if  ", A(TT.MLComment, TT.Id, TT.Spaces), WS, _("#if"), WS);
-			Case("\t\t#if  ", A(TT.Spaces, TT.PPif, TT.Spaces), WS, _("##if"), WS);
+			Case("/**/#if  ", A(TT.MLComment, TT.Id), WS, _("#if"));
+			Case("\t\t#if  ", A(TT.PPif), _("##if"));
 			Case("#if Foo\n#elif Bar\n#else//otherwise\n#endif//Foo", 
-				A(TT.PPif, TT.Spaces, TT.Id, TT.Newline, TT.PPelif, TT.Spaces, TT.Id, TT.Newline, TT.PPelse, TT.SLComment, TT.Newline, TT.PPendif, TT.SLComment),
-				_("##if"), WS, _("Foo"), WS, _("##elif"), WS, _("Bar"), WS, _("##else"), WS, WS, _("##endif"), WS);
+				A(TT.PPif, TT.Id, TT.Newline, TT.PPelif, TT.Id, TT.Newline, TT.PPelse, TT.SLComment, TT.Newline, TT.PPendif, TT.SLComment),
+				_("##if"), _("Foo"), WS, _("##elif"), _("Bar"), WS, _("##else"), WS, WS, _("##endif"), WS);
 			Case("#define Foo\n#undef Foo",
-				A(TT.PPdefine, TT.Spaces, TT.Id, TT.Newline, TT.PPundef, TT.Spaces, TT.Id),
-				_("##define"), WS, _("Foo"), WS, _("##undef"), WS, _("Foo"));
+				A(TT.PPdefine, TT.Id, TT.Newline, TT.PPundef, TT.Id),
+				_("##define"), _("Foo"), WS, _("##undef"), _("Foo"));
 			Case("#warning Your life is going nowhere.\n#error--sorry.\n#note EC# only.",
 				A(TT.PPwarning, TT.Newline, TT.PPerror, TT.Newline, TT.PPnote),
 				" Your life is going nowhere.", WS, "--sorry.", WS, " EC# only.");
@@ -233,8 +233,8 @@ namespace Loyc.Ecs.Tests
 		public void TestKeywords()
 		{
 			Case("public static int @default=default(stackalloc)as this",
-				A(TT.AttrKeyword, TT.Spaces, TT.AttrKeyword, TT.Spaces, TT.TypeKeyword, TT.Spaces, TT.Id, TT.Set, TT.Default, TT.LParen, TT.Stackalloc, TT.RParen, TT.As, TT.Spaces, TT.This),
-				S.Public, WS, S.Static, WS, S.Int32, WS, _("default"), _("'="), S.Default, null, S.StackAlloc, null, S.As, WS, S.This);
+				A(TT.AttrKeyword, TT.AttrKeyword, TT.TypeKeyword, TT.Id, TT.Set, TT.Default, TT.LParen, TT.Stackalloc, TT.RParen, TT.As, TT.This),
+				S.Public, S.Static, S.Int32, _("default"), _("'="), S.Default, null, S.StackAlloc, null, S.As, S.This);
 			Case("case'\0':return'x';",
 				A(TT.Case, TT.Literal, TT.Colon, TT.Return, TT.Literal, TT.Semicolon),
 				S.Case, '\0', _("':"), S.Return, 'x', _("';"));
@@ -254,14 +254,14 @@ namespace Loyc.Ecs.Tests
 			{
 				error = false;
 				Token token = lexer.NextToken().Value;
-				Assert.AreEqual(index, token.StartIndex);
+				Assert.LessOrEqual(index, token.StartIndex);
 				Assert.AreEqual(tokenTypes[i], token.Type());
 				if (i < values.Length) {
 					Assert.AreEqual(values[i] == (object)ERROR, error);
 					if (!error)
 						Assert.AreEqual(values[i], token.Value);
 				}
-				index += token.Length;
+				index = token.EndIndex;
 			}
 			Assert.IsFalse(lexer.NextToken().HasValue);
 		}

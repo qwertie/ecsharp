@@ -49,15 +49,18 @@ namespace Loyc.Ecs.Parser
 	/// </remarks>
 	public class EcsPreprocessor : LexerWrapper<Token>
 	{
-		public EcsPreprocessor(ILexer<Token> source, Action<Token> onComment = null)
-			: base(source) { _onComment = onComment; }
+		public EcsPreprocessor(ILexer<Token> source, bool saveComments)
+			: base(source) { SaveComments = saveComments; }
 
 		// Can't use ISet<T>: it is new in .NET 4, but HashSet is new in .NET 3.5
 		public HashSet<Symbol> DefinedSymbols = new HashSet<Symbol>();
 
-		Action<Token> _onComment;
-		List<Token> _commentList = new List<Token>();
-		public IList<Token> CommentList { get { return _commentList; } }
+		/// <summary>Controls whether comments and newlines are saved into <see cref="TriviaList"/>.</summary>
+		public bool SaveComments { get; set; }
+		
+		/// <summary>A list of saved trivia: comments, newlines, preprocessor directives and ignored regions.</summary>
+		public DList<Token> TriviaList { get { return _triviaList; } }
+		DList<Token> _triviaList = new DList<Token>();
 
 		EcsParser _parser = null;
 
@@ -65,15 +68,24 @@ namespace Loyc.Ecs.Parser
 		// #region, #error, #warning and #note, as the lexer reads the rest of
 		// of these lines as text and stores that text as the PP token's Value.
 		List<Token> _rest = new List<Token>();
-		private void ReadRest()
+		private void ReadRest(List<Token> rest)
 		{
-			_rest.Clear();
+			rest.Clear();
 			for (;;) {
 				Maybe<Token> t = Lexer.NextToken();
 				if (!t.HasValue || t.Value.Type() == TokenType.Newline)
 					break;
 				else if (!t.Value.IsWhitespace)
-					_rest.Add(t.Value);
+					rest.Add(t.Value);
+			}
+		}
+
+		void AddWSToken(Token t)
+		{
+			if (SaveComments) {
+				if (t.Type() == TokenType.Newline && _triviaList[_triviaList.Count - 1, default(Token)].Kind == TokenKind.Other)
+					return; // Ignore newline at end of PP token
+				_triviaList.Add(t);
 			}
 		}
 
@@ -89,14 +101,13 @@ namespace Loyc.Ecs.Parser
 					break;
 			    var t = t_.Value;
 			    if (t.IsWhitespace) {
-					if (t.Kind == TokenKind.Comment)
-						AddComment(t);
+					AddWSToken(t);
 					continue;
 				} else if (t.Kind == TokenKind.Other) {
 					switch (t.Type()) {
 					case TokenType.PPdefine:
 					case TokenType.PPundef:
-						ReadRest();
+						ReadRest(_rest);
 						bool undef = t.Type() == TokenType.PPundef;
 						if (_rest.Count == 1 && _rest[0].Type() == TokenType.Id) {
 							if (undef)
@@ -146,35 +157,35 @@ namespace Loyc.Ecs.Parser
 							if (tree__.Count > 0)
 								Error(t, "Unexpected tokens after #endif");
 						}
-						_commentList.Add(t);
+						_triviaList.Add(t);
 						continue;
 					case TokenType.PPerror:
-						_commentList.Add(t);
+						_triviaList.Add(t);
 						Error(t, t.Value.ToString());
 						continue;
 					case TokenType.PPwarning:
-						_commentList.Add(t);
+						_triviaList.Add(t);
 						ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), t.Value.ToString());
 						continue;
 					case TokenType.PPregion:
-						_commentList.Add(t);
+						_triviaList.Add(t);
 						_regions.Push(t);
 						continue;
 					case TokenType.PPendregion:
-						_commentList.Add(t);
+						_triviaList.Add(t);
 						if (_regions.Count == 0)
 							ErrorSink.Write(Severity.Warning, t.ToSourceRange(SourceFile), "#endregion without matching #region");
 						else
 							_regions.Pop();
 						continue;
 					case TokenType.PPline:
-						_commentList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
+						_triviaList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest = ReadRestAsTokenTree();
-						// TODO
+						// TODO: use LineRemapper
 						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #line is not implemented");
 						continue;
 					case TokenType.PPpragma:
-						_commentList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
+						_triviaList.Add(new Token(t.TypeInt, t.StartIndex, Lexer.InputPosition));
 						var rest_ = ReadRestAsTokenTree();
 						// TODO
 						ErrorSink.Write(Severity.Note, t.ToSourceRange(SourceFile), "Support for #pragma is not implemented");
@@ -191,14 +202,6 @@ namespace Loyc.Ecs.Parser
 			return Maybe<Token>.NoValue;
 		}
 
-		private void AddComment(Token t)
-		{
-			if (_commentList != null)
-				_commentList.Add(t);
-			if (_onComment != null)
-				_onComment(t);
-		}
-
 		private void Error(Token pptoken, string message)
 		{
 			ErrorSink.Write(Severity.Error, pptoken.ToSourceRange(SourceFile), message);
@@ -206,7 +209,7 @@ namespace Loyc.Ecs.Parser
 
 		private Maybe<Token> SaveDirectiveAndAutoSkip(Token pptoken, bool cond)
 		{
-			_commentList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, Lexer.InputPosition));
+			_triviaList.Add(new Token(pptoken.TypeInt, pptoken.StartIndex, Lexer.InputPosition));
 			if (!cond)
 				return SkipIgnoredRegion();
 			else
@@ -239,7 +242,7 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 			int stopIndex = t_.HasValue ? t_.Value.StartIndex : Lexer.InputPosition;
-			_commentList.Add(new Token((int)TokenType.PPignored, startIndex, stopIndex - startIndex));
+			_triviaList.Add(new Token((int)TokenType.PPignored, startIndex, stopIndex - startIndex));
 			return t_;
 		}
 
@@ -267,38 +270,10 @@ namespace Loyc.Ecs.Parser
 
 		private IListSource<Token> ReadRestAsTokenTree()
 		{
-			ReadRest();
+			ReadRest(_rest);
 			var restAsLexer = new TokenListAsLexer(_rest, Lexer.SourceFile);
 			var treeLexer = new TokensToTree(restAsLexer, false);
 			return treeLexer.Buffered();
-		}
-	}
-
-	/// <summary>A helper class that removes comments from a token stream, saving 
-	/// them into a list. This class deletes whitespace, but adds tokens to a list.</summary>
-	public class CommentSaver : LexerWrapper<Token>
-	{
-		public CommentSaver(ILexer<Token> source, IList<Token> commentList = null)
-			: base(source) { _commentList = commentList ?? new List<Token>(); }
-
-		IList<Token> _commentList;
-		public IList<Token> CommentList { get { return _commentList; } }
-	
-		public sealed override Maybe<Token> NextToken()
-		{
-			Maybe<Token> t = Lexer.NextToken();
-			for (;;) {
-				t = Lexer.NextToken();
-				if (!t.HasValue)
-					break;
-				else if (t.Value.IsWhitespace) {
-					if (t.Value.Kind == TokenKind.Comment) {
-						_commentList.Add(t.Value);
-					}
-				} else
-					break;
-			}
-			return t;
 		}
 	}
 }

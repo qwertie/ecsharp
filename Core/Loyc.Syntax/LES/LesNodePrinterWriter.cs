@@ -17,11 +17,14 @@ namespace Loyc.Syntax.Les
 		protected char _lastCh = '\n';
 		protected bool _startingToken = true;
 		protected bool _newlinePending = false;
-		protected bool _labelPending = false;
+		// the final indent of a line is not written at first, in case 
+		// BeginLabel() is called to suppress it. Instead, it's stored here.
+		protected string _indentPending;
+		protected int _lineNumber = 1;
 		protected TextWriter _out;
 
-		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "") : this(new StringWriter(sb), indentString, lineSeparator, labelIndent) { }
-		public DefaultNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "")
+		public DefaultNodePrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null) : this(new StringWriter(sb), indentString, lineSeparator, labelIndent) { }
+		public DefaultNodePrinterWriter(TextWriter @out, string indentString = "\t", string lineSeparator = "\n", string labelIndent = null)
 		{
 			_indentString = indentString;
 			_lineSeparator = lineSeparator;
@@ -36,8 +39,11 @@ namespace Loyc.Syntax.Les
 		{
 			if (_startingToken)
 				StartToken(c);
+			FinishIndent();
 			_out.Write(c);
-			if (finishToken) FinishToken(_lastCh = c);
+			_lastCh = c;
+			if (finishToken)
+				FinishToken(c);
 			_startingToken = finishToken;
 		}
 
@@ -46,11 +52,20 @@ namespace Loyc.Syntax.Les
 			if (s != "") {
 				if (_startingToken)
 					StartToken(s[0]);
+				FinishIndent();
 				_out.Write(s);
-				if (finishToken) FinishToken(_lastCh = s[s.Length-1]);
+				if (finishToken) FinishToken(_lastCh = s[s.Length - 1]);
 			} else if (finishToken)
 				FinishToken(_lastCh);
 			_startingToken = finishToken;
+		}
+
+		private void FinishIndent()
+		{
+			if (_indentPending != null) {
+				_out.Write(_indentPending);
+				_indentPending = null;
+			}
 		}
 
 		protected virtual void FinishToken(char lastCh)
@@ -67,7 +82,9 @@ namespace Loyc.Syntax.Les
 		public override void BeginLabel()
 		{
 			if (_newlinePending)
-				_labelPending = true;
+				Newline();
+			if (_indentPending != null)
+				_indentPending = _labelIndent;
 		}
 		public override void BeginStatement()
 		{
@@ -77,23 +94,27 @@ namespace Loyc.Syntax.Les
 		}
 		public override void Newline(bool pending = false)
 		{
-			_newlinePending = pending;
-			if (!pending) {
-				_lastCh = '\n';
-
+			_lastCh = '\n';
+			if (_newlinePending = pending)
+				_startingToken = true;
+			else {
+				_lineNumber++;
 				_out.Write(_lineSeparator);
 				int level = _indentLevel;
-				if (_labelPending) level--;
-				for (int i = 0; i < level; i++)
-					_out.Write(_indentString);
-				if (_labelPending) {
-					_labelPending = false;
-					_out.Write(_labelIndent);
-				}
+				if (level > 0) {
+					for (int i = 0; i < level - 1; i++)
+						_out.Write(_indentString);
+					_indentPending = _indentString;
+				} else
+					_indentPending = null;
 			}
 		}
 
 		public virtual void Reset() { _lastCh = '\0'; }
+
+		public override char LastCharWritten { get { return _lastCh; } }
+
+		public override int LineNumber { get { return _lineNumber; } }
 	}
 
 	/// <summary>Helper class of <see cref="LesNodePrinter"/> that ensures there is 

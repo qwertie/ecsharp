@@ -105,7 +105,12 @@ namespace Loyc.Syntax
 		/// </param>
 		/// <param name="parent">(Original version of) parent of <c>node</c>.</param>
 		/// <param name="indexInParent">Index of <c>node</c> within <c>parent</c>.</param>
-		/// <returns>The same node with trivia attributes added.</returns>
+		/// <returns>The same node with trivia attributes added. If loc indicates trailing
+		/// trivia, the derived class can say "I don't want trivia to be associated with 
+		/// this node" by returning null; the base class will, if possible, associate it 
+		/// with the next node instead, but this doesn't work for the last child in a 
+		/// sequence; in that case this method is called again with the same trivia and
+		/// loc is set to TriviaLocation.TrailingExtra.</returns>
 		/// <remarks>This method is STILL called for a given node when there is no trivia 
 		/// associated with that node.</remarks>
 		protected abstract LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
@@ -133,7 +138,7 @@ namespace Loyc.Syntax
 			if (SortedTrivia.Count == 0)
 				return null;
 			var dummy = LNode.Id(LNode.List(LNode.Id(CodeSymbols.TriviaDummyNode)), GSymbol.Empty, GetRange(SortedTrivia[0]));
-			return AttachTriviaTo(dummy, SortedTrivia, TriviaLocation.TrailingExtra, null, -1);
+			return AttachTriviaTo(dummy, SortedTrivia, TriviaLocation.TrailingExtra, null, -1) ?? dummy;
 		}
 
 		/// <summary>This method is called after a node has been processed and any 
@@ -167,7 +172,7 @@ namespace Loyc.Syntax
 				}
 				// Associate remaining trivia with final node
 				if (NextIndex < SortedTrivia.Count)
-					next = AttachTriviaTo(next, SortedTrivia.Slice(NextIndex), TriviaLocation.TrailingExtra, null, int.MaxValue);
+					next = AttachTriviaTo(next, SortedTrivia.Slice(NextIndex), TriviaLocation.TrailingExtra, null, int.MaxValue) ?? next;
 				yield return next;
 			} else {
 				// No nodes exist
@@ -186,13 +191,23 @@ namespace Loyc.Syntax
 			}
 		}
 
+		/// <summary>Core trivia associaton algorithm.</summary>
 		protected IEnumerator<Pair<LNode, int>> RunCore(IEnumerator<Pair<LNode, int>> nodes, LNode parent)
 		{
+			// NOTE: the enumerator may DRIVE lexing and actually cause the trivia list
+			// (SortedTrivia) to increase in size. For this reason, this algorithm is careful
+			// to call nodes.MoveNext() BEFORE calling CurrentTrivia(). I'm not sure if this
+			// precaution is sufficient to preserve trivia in all "streaming" cases, but it
+			// seems to work in at least most cases.
 			SourceRange triviaRange;
-			Maybe<Trivia> trivia = CurrentTrivia(out triviaRange);
+			Maybe<Trivia> trivia = NoValue.Value;
+			InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
 			int prevIndexInParent = 0, indexInParent;
 			LNode node, prev;
-			for (prev = null; trivia.HasValue && nodes.MoveNext(); prev = node, prevIndexInParent = indexInParent) {
+			bool hasNext;
+			for (prev = null; hasNext = nodes.MoveNext(); prev = node, prevIndexInParent = indexInParent) {
+				if (!(trivia = CurrentTrivia(out triviaRange)).HasValue)
+					break;
 				var current = nodes.Current;
 				node = current.Item1;
 				indexInParent = current.Item2;
@@ -204,7 +219,6 @@ namespace Loyc.Syntax
 				//     current node is on a different line, e.g. Kill(p); /* end process */
 				// (2) a comment appears on the next line after the previous node AND
 				//     there is a blank line between that comment and the current node
-				InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
 				int firstNewlineAt = -1;
 				while (triviaRange.StartIndex < node.Range.StartIndex) {
 					if (prev != null && IsNewline(trivia.Value)) {
@@ -212,8 +226,7 @@ namespace Loyc.Syntax
 							firstNewlineAt = triviaList.Count;
 						} else if (!triviaList.IsEmpty && IsNewline(triviaList.Last)) {
 							// case (2)
-							prev = AttachTriviaTo(prev, triviaList, TriviaLocation.Trailing, parent, prevIndexInParent);
-							triviaList.Clear();
+							TryAttachTriviaTo(ref prev, ref triviaList, TriviaLocation.Trailing, parent, prevIndexInParent);
 							yield return YieldPrev(ref prev, parent, prevIndexInParent);
 						}
 					}
@@ -223,14 +236,14 @@ namespace Loyc.Syntax
 				}
 				if (firstNewlineAt > 0 && prev != null) {
 					// case (1)
-					prev = AttachTriviaTo(prev, triviaList.Slice(0, firstNewlineAt), TriviaLocation.Trailing, parent, prevIndexInParent);
-					triviaList.RemoveRange(0, firstNewlineAt);
+					var triviaList2 = new InternalList<Trivia>(triviaList.Take(firstNewlineAt));
+					if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent));
+						triviaList.RemoveRange(0, firstNewlineAt);
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
 				}
 
 				// Attach leading trivia to current node
-				node = AttachTriviaTo(node, triviaList, TriviaLocation.Leading, parent, indexInParent);
-				triviaList.Clear();
+				TryAttachTriviaTo(ref node, ref triviaList, TriviaLocation.Leading, parent, indexInParent);
 
 				// Attach trivia within this node's range to this node's children, if applicable
 				if (trivia.HasValue && triviaRange.EndIndex <= node.Range.EndIndex && node.Range.EndIndex >= 0) {
@@ -242,15 +255,29 @@ namespace Loyc.Syntax
 				if (prev != null)
 					yield return YieldPrev(ref prev, parent, prevIndexInParent);
 			}
-			if (prev != null)
+			if (prev != null) {
 				yield return YieldPrev(ref prev, parent, prevIndexInParent);
+			}
 			if (!trivia.HasValue) {
-				while (nodes.MoveNext()) {
+				while (hasNext) {
 					nodes.Current.A.Style |= NodeStyle.OneLiner;
 					yield return nodes.Current;
+					hasNext = nodes.MoveNext();
 				}
 			}
 		}
+
+		private bool TryAttachTriviaTo(ref LNode prev, ref InternalList<Trivia> triviaList, TriviaLocation loc, LNode parent, int prevIndexInParent)
+		{
+			var prev2 = AttachTriviaTo(prev, triviaList, loc, parent, prevIndexInParent);
+			if (prev2 != null) {
+				prev = prev2;
+				triviaList.Clear();
+				return true;
+			}
+			return false;
+		}
+
 		private Pair<LNode, int> YieldPrev(ref LNode prev, LNode parent, int prevIndexInParent)
 		{
 			var node = DoneAttaching(prev, parent, prevIndexInParent) ?? prev;
@@ -302,7 +329,7 @@ namespace Loyc.Syntax
 				if (node.IsCall) {
 					int i = children.Count - 1;
 					var last = children.InternalArray[i];
-					children.InternalArray[i].A = AttachTriviaTo(last.A, triviaList, TriviaLocation.TrailingExtra, node, last.B);
+					children.InternalArray[i].A = AttachTriviaTo(last.A, triviaList, TriviaLocation.TrailingExtra, node, last.B) ?? last.A;
 				}
 
 				// Put the children back in their "conceptual" order

@@ -78,7 +78,7 @@ namespace LeMP.Tests
 				");
 		}
 
-		[Test(Fails = "Haven't figured out how to support this")] 
+		[Test] 
 		public void MixingFeatures2()
 		{
 			// requires + set member + create member

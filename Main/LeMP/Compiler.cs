@@ -31,7 +31,7 @@ namespace LeMP
 	{
 		public static InvertibleSet<string> TwoArgOptions = new InvertibleSet<string>(new[] { "macros" });
 		public static Dictionary<char, string> ShortOptions = new Dictionary<char,string>()
-			{ {'o',"out"}, {'m',"macros"} };
+			{ {'o',"out"}, {'m',"macros"}, {'p',"preserve-comments"}, {'e',"editor"} };
 
 		public static MMap<string, Pair<string, string>> KnownOptions = new MMap<string, Pair<string, string>>()
 		{
@@ -52,6 +52,7 @@ namespace LeMP
 			{ "nostdmacros", Pair.Create("", "Don't scan LeMP.StdMacros.dll or pre-import LeMP and LeMP.Prelude") },
 			{ "set",       Pair.Create("key=literal", "Associate a value with a key (use #get(key) to read it back)") },
 			{ "snippet",   Pair.Create("key=code", "Associate code with a key (use #get(key) to read it back)") },
+			{ "preserve-comments", Pair.Create("bool", "Preserve comments and newlines (where supported)\n  Default value: true") },
 		};
 
 		#region Main()
@@ -288,8 +289,11 @@ namespace LeMP
 			foreach (string exprStr in options["snippet"])
 				SetPropertyHelper(exprStr, quote: true);
 
-			if (!options.TryGetValue("nostdmacros", out value))
+			if (!options.TryGetValue("nostdmacros", out value) && !options.TryGetValue("no-std-macros", out value))
 				AddStdMacros();
+
+			if (options.TryGetValue("preserve-comments", out value))
+				PreserveComments = value == null || !value.ToString().ToLowerInvariant().IsOneOf("false", "0");
 
 			if (inputFiles != null) {
 				this.Files = new List<InputOutput>(OpenSourceFiles(Sink, inputFiles));
@@ -370,6 +374,8 @@ namespace LeMP
 		public string NewlineString = "\n";
 		public MacroProcessor MacroProcessor; // the core LeMP engine
 		public IParsingService InLang;  // null to choose by extension or use ParsingService.Current
+		public bool PreserveComments = true; // whether to preserve comments by default, if supported by input and output lang
+		public ParsingMode ParsingMode = ParsingMode.File;
 		public LNodePrinter OutLang;    // null to use LNode.Printer
 		public string OutExt;           // output extension and optional suffix (includes leading '.'); null for same ext
 		public bool ForceInLang;        // InLang overrides input file extension
@@ -413,6 +419,10 @@ namespace LeMP
 				}
 				file.OutPrinter = outLang ?? LNode.Printer;
 			}
+			if (file.PreserveComments == null)
+				file.PreserveComments = PreserveComments;
+			if (file.ParsingMode == null)
+				file.ParsingMode = ParsingMode;
 		}
 
 		private int IndexOfExtension(string fn)

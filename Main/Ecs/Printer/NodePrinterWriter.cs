@@ -26,5 +26,9 @@ namespace Loyc.Ecs
 			      || (_lastCh == '/' && nextCh == '*'))
 				_out.Write(' ');
 		}
+
+		public override void BeginStatement()
+		{
+		}
 	}
 }

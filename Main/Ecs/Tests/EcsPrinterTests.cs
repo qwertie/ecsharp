@@ -20,16 +20,48 @@ namespace Loyc.Ecs.Tests
 				return;
 
 			var sb = new StringBuilder();
-			var printer = EcsNodePrinter.New(input, sb, "  ");
+			var printer = EcsNodePrinter.New(sb, "  ");
 			printer.AllowChangeParentheses = false;
+			// TODO: make round tripping work without this
 			printer.NewlineOptions &= ~(NewlineOpt.AfterOpenBraceInNewExpr | NewlineOpt.BeforeCloseBraceInNewExpr);
 			if (configure != null)
 				configure(printer);
 			if (exprMode)
-				printer.PrintExpr();
+				printer.Print(input, ParsingMode.Expressions);
+			else if (input.Calls(S.Splice))
+				((LNodePrinter)printer.Print).PrintMultiple(input.Args, printer.Errors, ParsingMode.Statements, sb: sb);
 			else
-				printer.PrintStmt();
+				printer.Print(input, ParsingMode.Statements);
 			AreEqual(result, sb.ToString());
+		}
+
+		[Test]
+		public void CommentTriviaPrinterTest()
+		{
+			// Test #trivia_spaces, which the parser/injector never produces:
+			var stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaSpaces, "\t\t"), F.Trivia(S.TriviaSLComment, "ax"), x);
+			Stmt("//bx\nx;\t\t//ax", stmt);
+			Expr("//bx\nx\t//ax",     stmt, p => p.OmitSpaceTrivia = true);
+			Expr("//bx\nx\t\t//ax",  stmt);
+			Stmt("//bx\nx;\t//ax",    stmt, p => p.OmitSpaceTrivia = true);
+			Stmt("x;\t\t",           stmt, p => p.OmitComments = true);
+
+			// Attach /*the variable*/ to child node `x` 
+			// (this doesn't currently round-trip, but maybe it should)
+			stmt = 
+				Attr(F.Trivia(S.TriviaSLComment, " a block"), 
+					F.Id(S.TriviaBeginTrailingTrivia),
+					F.Trivia(S.TriviaSLComment, " end of block"), F.Braces(
+					Attr(F.Trivia(S.TriviaSLComment, " set x to zero"),
+						F.Id(S.TriviaBeginTrailingTrivia),
+						F.Trivia(S.TriviaSpaces, "  "),
+						F.Trivia(S.TriviaSLComment, " x was set to zero"),
+						F.Call(Attr(F.Trivia(S.TriviaMLComment, "is set to"), F.Id(S.Assign)), x,
+									  Attr(F.Trivia(S.TriviaMLComment, "its new value"), zero))
+					)));
+			Stmt("// a block\n{\n"+
+				"  // set x to zero\n  x /*is set to*/= /*its new value*/0;  // x was set to zero\n"+
+				"}\t// end of block", stmt);
 		}
 
 		[Test]
@@ -40,7 +72,7 @@ namespace Loyc.Ecs.Tests
 			Stmt("Eat my shorts!;...then do it again!", stmt);
 			stmt = Attr(F.Trivia(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
 			Stmt("if (a)\n  x(); // end if", stmt);
-			Stmt("if (a)\n  x();", stmt, p => p.OmitRawText = true);
+			Stmt("if (a)\n  x();", stmt, p => { p.ObeyRawText = false; p.OmitUnknownTrivia = true; });
 			
 			var raw = F.Trivia(S.RawText, "hello!");
 			Stmt("x(hello!);", F.Call(x, raw));
@@ -53,7 +85,6 @@ namespace Loyc.Ecs.Tests
 		int _testNum;
 		void CheckIsComplexIdentifier(bool? result, LNode expr)
 		{
-			var np = new EcsNodePrinter(expr, null);
 			_testNum++;
 			var isCI = EcsValidators.IsComplexIdentifier(expr);
 			if (result == null && !isCI)

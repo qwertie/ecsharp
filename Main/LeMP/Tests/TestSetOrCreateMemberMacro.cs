@@ -73,22 +73,22 @@ namespace LeMP.Tests
 			TestEcs(
 				@"void Set(
 					[Spanish] set int _hola, 
-					[English] static int _hello, 
-					[Alzheimer's] partial long goodbye = 8, 
+					[field: English] static int _hello, 
+					[field: Alzheimer's] partial long goodbye = 8, 
 					[Hawaii] protected internal string Aloha = 5,
 					[French] internal string _Bonjour = 7,
 					[Other] readonly int _ciao = 4) { Foo(_ciao); }",
 				@"
 				[English] static int _hello;
 				[Alzheimer's] partial long goodbye;
-				[Hawaii] protected internal string Aloha;
-				[French] internal string _Bonjour;
+				protected internal string Aloha;
+				internal string _Bonjour;
 				void Set(
 					[Spanish] int hola, 
 					int hello, 
 					long goodbye = 8, 
-					string aloha = 5,
-					string Bonjour = 7,
+					[Hawaii] string aloha = 5,
+					[French] string Bonjour = 7,
 					[Other] readonly int _ciao = 4)
 				{
 					_hola = hola;
@@ -100,6 +100,9 @@ namespace LeMP.Tests
 				}");
 			TestEcs("void Set(public params string[] Strs) {}",
 				"public string[] Strs; void Set(params string[] strs) { Strs = strs; }");
+			TestEcs("void Set([A] [property: B] static string[] Strs { get; private set; }) {}",
+				@"	[B] static string[] Strs { get; private set; }
+					void Set([A] string[] strs) { Strs = strs; }");
 		}
 	}
 }
