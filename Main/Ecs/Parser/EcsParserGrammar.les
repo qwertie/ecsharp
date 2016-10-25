@@ -912,7 +912,7 @@ namespace Loyc.Ecs.Parser
 					};
 				}
 			/	ExprList(ref attrs,    allowTrailingComma: true, allowUnassignedVarDecl: true)
-			)?
+			)
 		};
 
 		fn IsNamedArg(node::LNode)::bool { return node.Calls(S.NamedArg, 2) && node.BaseStyle == NodeStyle.Operator; };

@@ -682,7 +682,7 @@ namespace Loyc.Ecs
 		}
 		bool HasSimpleHeadWPA(LNode self)
 		{
-			return self.HasSimpleHeadWithoutPAttrs();
+			return DropNonDeclarationAttributes ? self.HasSimpleHead() : self.HasSimpleHeadWithoutPAttrs();
 		}
 		bool CallsWPAIH(LNode self, Symbol name)
 		{
@@ -854,6 +854,9 @@ namespace Loyc.Ecs
 				var attr = attrs[i];
 				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref reachedTrailingTrivia, ref parenCount) || attr.IsTrivia)
 					continue;
+
+				PrintTrivia(attr, suffixTrivia: false);
+
 				string text;
 				var name = attr.Name;
 				if (AttributeKeywords.TryGetValue(name, out text)) {
@@ -872,7 +875,9 @@ namespace Loyc.Ecs
 					Debug.Assert(attr.HasSpecialName);
 					PrintSimpleIdent(GSymbol.Get(name.Name.Substring(1)), 0, false);
 				}
+
 				Space(SpaceOpt.Default);
+				PrintTrivia(attr, suffixTrivia: true);
 			}
 
 			return parenCount;

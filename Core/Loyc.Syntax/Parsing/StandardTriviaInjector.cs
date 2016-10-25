@@ -93,10 +93,11 @@ namespace Loyc.Syntax
 
 		protected override LNode AttachTriviaTo(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			VList<LNode> attrs = node.Attrs;
+			VList<LNode> attrs;
 			int i = 0;
 			if (loc == TriviaLocation.Leading) {
 				// leading trivia
+				attrs = VList<LNode>.Empty;
 				if (parent == null ? indexInParent > 0 : HasImplicitLeadingNewline(node, parent, indexInParent)) {
 					// ignore expected leading newline
 					if (trivia.Count > 0 && trivia[0].TypeInt == NewlineTypeInt)
@@ -105,6 +106,7 @@ namespace Loyc.Syntax
 						attrs.Add(_trivia_appendStatement);
 				}
 			} else {
+				attrs = node.Attrs;
 				if (trivia.Count == 0)
 					goto stop;
 				else if (node.AttrNamed(S.TriviaBeginTrailingTrivia) == null)
@@ -130,7 +132,9 @@ namespace Loyc.Syntax
 					attrs.Pop(); // Printers add a newline here anyway
 				}
 		stop:
-			if (!attrs.IsEmpty && attrs.Last == _trivia_beginTrailingTrivia)
+			if (loc == TriviaLocation.Leading)
+				attrs.AddRange(node.Attrs);
+			else if (!attrs.IsEmpty && attrs.Last == _trivia_beginTrailingTrivia)
 				attrs.Pop();
 			return node.WithAttrs(attrs);
 		}

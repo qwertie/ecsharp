@@ -405,9 +405,10 @@ namespace Loyc.LLPG
 						ReadOption<bool>(sink, attr, v => lllpg.AddCsLineDirectives = v, true);
 						break;
 					default:
-						sink.Write(Severity.Error, attr,
-							"Unrecognized attribute. LLLPG supports the following options: " +
-							"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), and AddCsLineDirectives(bool)");
+						if (!attr.IsTrivia)
+							sink.Write(Severity.Error, attr,
+								"Unrecognized attribute. LLLPG supports the following options: " +
+								"FullLLk(bool), Verbosity(0..3), NoDefaultArm(bool), DefaultK(1..9), AddComments(bool), and AddCsLineDirectives(bool)");
 						break;
 				}
 			}

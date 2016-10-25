@@ -181,7 +181,7 @@ namespace Loyc.Syntax
 		public override bool Calls(string name)                  { return Name.Name == name; }
 		public override bool CallsMin(Symbol name, int argCount) { return Name == name && ArgCount >= argCount; }
 		public override bool CallsMin(string name, int argCount) { return Name.Name == name && ArgCount >= argCount; }
-		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall && !t.HasAttrs; }
+		public override bool HasSimpleHead()                     { var t = Target; return !t.IsCall; }
 		public override bool HasSimpleHeadWithoutPAttrs()        { var t = Target; return !t.IsCall && !t.HasPAttrs(); }
 
 		public sealed override LNode WithArgs(Func<LNode, Maybe<LNode>> selector)
