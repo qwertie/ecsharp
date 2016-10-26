@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.2.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 1.9.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -10,22 +10,22 @@ using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Loyc;
-using Loyc.Collections;
-using Loyc.Syntax.Lexing;
-using Loyc.Syntax;
-namespace Loyc.Syntax.Les
-{
-	using TT = TokenType;
+using Loyc;	// optional (for IMessageSink, Symbol, etc.)
+using Loyc.Collections;	// optional (many handy interfaces & classes)
+using Loyc.Syntax.Lexing;	// For BaseLexer
+using Loyc.Syntax;	// For BaseParser<Token> and LNode
+namespace Loyc.Syntax.Les {
+	using TT = TokenType;	// Abbreviate TokenType as TT
 	using P = LesPrecedence;
 	using S = CodeSymbols;
-	partial class Les3Parser
-	{
+
+	partial class Les3Parser {
 		static readonly Symbol sy__apos_colonsuf = (Symbol) "':suf";
 		#pragma warning disable 162, 642
+	
 		protected new const TT EOF = TT.EOF;
-		void CheckEndMarker(ref TokenType endMarker, ref Token end)
-		{
+	
+		void CheckEndMarker(ref TokenType endMarker, ref Token end) {
 			var endType = end.Type();
 			if (endType == TokenType.Newline)
 				endType = TokenType.Semicolon;
@@ -37,21 +37,19 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
-		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
-		{
+		void MissingEndMarker(LNode previousExpr, TokenType endMarker) {
 			SourcePos location = SourceFile.IndexToLine(LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true)
-		{
+		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>), bool allowBlockCalls = true) {
 			var endMarker = default(TT);
 			return ExprList(ref endMarker, list, allowBlockCalls);
 		}
-		public override VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
-		{
+		public override VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>)) {
 			return ExprList(ref endMarker, list, true);
 		}
 		protected bool _allowBlockCalls = true;
+	
 		new public VList<LNode> StmtList()
 		{
 			VList<LNode> result = default(VList<LNode>);
@@ -59,6 +57,7 @@ namespace Loyc.Syntax.Les
 			result = ExprList(ref endMarker);
 			return result;
 		}
+	
 		public VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list, bool allowBlockCalls)
 		{
 			TT la0;
@@ -80,8 +79,7 @@ namespace Loyc.Syntax.Les
 				case TT.RBrack:
 				case TT.RParen:
 				case TT.Semicolon:
-					{
-					}
+					{ }
 					break;
 				default:
 					e = TopExpr();
@@ -115,8 +113,7 @@ namespace Loyc.Syntax.Les
 							case TT.RBrack:
 							case TT.RParen:
 							case TT.Semicolon:
-								{
-								}
+								{ }
 								break;
 							default:
 								e = TopExpr();
@@ -143,8 +140,7 @@ namespace Loyc.Syntax.Les
 							case TT.RBrack:
 							case TT.RParen:
 							case TT.Semicolon:
-								{
-								}
+								{ }
 								break;
 							default:
 								e = TopExpr();
@@ -163,6 +159,7 @@ namespace Loyc.Syntax.Les
 				_allowBlockCalls = old_allowBlockCalls_0;
 			}
 		}
+	
 		public override IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
 		{
 			TT la0;
@@ -179,8 +176,7 @@ namespace Loyc.Syntax.Les
 			case TT.Comma:
 			case TT.Newline:
 			case TT.Semicolon:
-				{
-				}
+				{ }
 				break;
 			default:
 				e = TopExpr();
@@ -211,8 +207,7 @@ namespace Loyc.Syntax.Les
 						case TT.Comma:
 						case TT.Newline:
 						case TT.Semicolon:
-							{
-							}
+							{ }
 							break;
 						default:
 							e = TopExpr();
@@ -233,8 +228,7 @@ namespace Loyc.Syntax.Les
 						case TT.Comma:
 						case TT.Newline:
 						case TT.Semicolon:
-							{
-							}
+							{ }
 							break;
 						default:
 							e = TopExpr();
@@ -250,6 +244,7 @@ namespace Loyc.Syntax.Les
 				yield return e ?? MissingExpr();
 			}
 		}
+	
 		new protected LNode TopExpr()
 		{
 			TT la0, la1;
@@ -545,6 +540,7 @@ namespace Loyc.Syntax.Les
 			;
 			return e.PlusAttrsBefore(attrs);
 		}
+	
 		LNode KeywordExpression()
 		{
 			TT la0;
@@ -595,6 +591,7 @@ namespace Loyc.Syntax.Les
 				_allowBlockCalls = old_allowBlockCalls_1;
 			}
 		}
+	
 		int BracesWithContinuators(ref VList<LNode> args)
 		{
 			TT la0, la1;
@@ -644,6 +641,7 @@ namespace Loyc.Syntax.Les
 			// line 155
 			return endIndex;
 		}
+	
 		LNode BracedBlock()
 		{
 			TT la0;
@@ -689,6 +687,7 @@ namespace Loyc.Syntax.Les
 			// line 159
 			return F.Call(S.Braces, stmts, lit_lcub.StartIndex, lit_rcub.EndIndex).SetStyle(NodeStyle.Statement);
 		}
+	
 		LNode Parentheses()
 		{
 			VList<LNode> exprs = default(VList<LNode>);
@@ -701,6 +700,7 @@ namespace Loyc.Syntax.Les
 			// line 162
 			return exprs.Count == 1 && endMarker != TT.Semicolon ? exprs[0] : F.Tuple(exprs, lit_lpar.StartIndex, lit_rpar.EndIndex);
 		}
+	
 		Token ContinuatorKeyword()
 		{
 			Token result = default(Token);
@@ -708,6 +708,7 @@ namespace Loyc.Syntax.Les
 			result = MatchAny();
 			return result;
 		}
+	
 		LNode Expr(Precedence context)
 		{
 			TT la0;
@@ -736,8 +737,8 @@ namespace Loyc.Syntax.Les
 						}
 					case TT.Colon:
 						{
-							if (CanParse(context, 0, out prec)) {
-								if ((TT) LA(0 + 1) != TT.Newline)
+							if ((TT) LA(0 + 1) != TT.Newline) {
+								if (CanParse(context, 0, out prec))
 									goto matchExpr;
 								else
 									goto stop;
@@ -863,6 +864,7 @@ namespace Loyc.Syntax.Les
 			// line 209
 			return e;
 		}
+	
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
@@ -907,6 +909,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
+	
 		LNode CallArgs(LNode target)
 		{
 			TT la0;
@@ -974,6 +977,7 @@ namespace Loyc.Syntax.Les
 			;
 			return result;
 		}
+	
 		LNode PrefixExpr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -1000,6 +1004,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
+	
 		LNode Particle(bool isAttribute = false)
 		{
 			Token c = default(Token);
@@ -1087,6 +1092,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
+	
 		TokenTree TokenTree()
 		{
 			TT la1;
@@ -1125,4 +1131,4 @@ namespace Loyc.Syntax.Les
 			return result;
 		}
 	}
-}
+}	// braces around the rest of the file are optional

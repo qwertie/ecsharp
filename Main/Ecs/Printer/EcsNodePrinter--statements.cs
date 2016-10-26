@@ -124,10 +124,12 @@ namespace Loyc.Ecs
 					if (PreferPlainCSharp || name == S.RawText ||
 						(style != NodeStyle.Expression && style != NodeStyle.PrefixNotation))
 					{
-						var result = printer(this);
-						if (result != SPResult.Fail) {
-							PrintTrivia(suffixTrivia: true, needSemicolon: result == SPResult.NeedSemicolon);
-							return;
+						using (WithFlags(_flags | Ambiguity.NoParentheses)) {
+							var result = printer(this);
+							if (result != SPResult.Fail) {
+								PrintTrivia(suffixTrivia: true, needSemicolon: result == SPResult.NeedSemicolon);
+								return;
+							}
 						}
 					}
 				}

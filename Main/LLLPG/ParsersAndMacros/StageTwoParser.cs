@@ -132,11 +132,12 @@ namespace Loyc.LLParserGenerator
 					expr = expr.Args[0];
 					var subpred = AutoNodeToPred(expr, Context.And);
 					LNode subexpr = subpred as LNode, subexpr0 = subexpr;
-					bool local = true;
+					bool local = false;
 					if (subexpr != null) {
+						local = true;
 						if ((subexpr = subexpr.WithoutAttrNamed(_Hoist)) != subexpr0)
 							local = false;
-						// also recognize [Local], which was not the default until v1.9.0
+						// also recognize [Local], which was not the default until v1.9.1
 						subexpr = subexpr.WithoutAttrNamed(_Local);
 					}
 					return new AndPred(expr, subexpr ?? subpred, not, local);

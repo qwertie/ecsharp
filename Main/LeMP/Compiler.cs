@@ -470,18 +470,6 @@ namespace LeMP
 
 		protected virtual void WriteOutput(InputOutput io)
 		{
-			#if !DotNet2 && !DotNet3
-			if (Parallel) {
-				// attach to parent so that ProcessParallel does not exit before the file is written
-				Task.Factory.StartNew(() => WriteOutput2(io), TaskCreationOptions.AttachedToParent);
-				return;
-			}
-			#endif
-			WriteOutput2(io);
-		}
-		
-		private void WriteOutput2(InputOutput io)
-		{
 			Debug.Assert(io.FileName != io.OutFileName);
 
 			Sink.Write(Severity.Verbose, io, "Writing output file: {0}", io.OutFileName);

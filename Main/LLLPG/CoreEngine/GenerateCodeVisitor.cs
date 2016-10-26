@@ -69,11 +69,13 @@ namespace Loyc.LLParserGenerator
 				LNode method;
 				if (rule.TryWrapperName != null) {
 					Debug.Assert(rule.IsRecognizer);
-					method = CGH.CreateTryWrapperForRecognizer(rule);
+					method = F.OnNewLine(CGH.CreateTryWrapperForRecognizer(rule));
 					_classBody.SpliceAdd(method, S.Splice);
 				}
 
 				method = CGH.CreateRuleMethod(rule, _target.ToVList());
+				if (!rule.IsRecognizer)
+					method = F.OnNewLine(method);
 				_classBody.SpliceAdd(method, S.Splice);
 			}
 
@@ -100,17 +102,21 @@ namespace Loyc.LLParserGenerator
 						// no access to the output file name, but as of 2015-05 it's
 						// always true that the output file will be in the same folder.
 						string filename = System.IO.Path.GetFileName(_target[i].Range.Source.FileName);
+						var newline = F.Id(S.TriviaNewline);
 						int line = 0;
 						for (; i < _target.Count; i++, line++)
 						{
 							var r = _target[i].Range;
 							if (line != r.Start.Line) {
 								line = r.Start.Line;
-								_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaRawTextBefore,
-									string.Format("#line {0} {1}\n", line, Ecs.EcsNodePrinter.PrintString(filename, '"'))));
+								if (line <= 0) // sometimes occurs for generated `return result` statement
+									_target.Insert(i++, F.Trivia(S.RawText, "#line default")); 
+								else
+									_target.Insert(i++, F.Trivia(S.RawText, "#line "+line+" "+Ecs.EcsNodePrinter.PrintString(filename, '"')));
 							}
 						}
-						_target.Add(F.Trivia(S.RawText, "#line default"));
+						if (line > 1)
+							_target.Add(F.Trivia(S.RawText, "#line default"));
 					} else {
 						_target[i] = _target[i].PlusAttr(F.Trivia(S.TriviaSLCommentBefore,
 							string.Format(" line {0}", _target[i].Range.Start.Line)));

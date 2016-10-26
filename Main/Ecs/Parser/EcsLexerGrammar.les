@@ -14,7 +14,7 @@ namespace Loyc.Ecs.Parser
 
 	@[#public, #partial] class EcsLexer
 	{
-		@[FullLLk]
+		@[FullLLk, AddCsLineDirectives(true)]
 		LLLPG lexer();
 		
 		// Whitespace & comments -------------------------------------------------

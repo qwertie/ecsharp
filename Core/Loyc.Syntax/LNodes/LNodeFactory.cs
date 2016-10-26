@@ -71,6 +71,21 @@ namespace Loyc.Syntax
 		public LNode False { get { return Literal(false); } }
 		public LNode Null { get { return Literal(null); } }
 
+		LNode _newline = null;
+		public LNode TriviaNewline { get { return _newline = _newline ?? Id(S.TriviaNewline); } }
+		
+		/// <summary>Adds a leading newline to the node if the first attribute isn't a newline.</summary>
+		/// <remarks>By convention, in Loyc languages, top-level nodes and nodes within 
+		/// braces have an implicit newline, such that a leading blank line appears
+		/// if you add <see cref="CodeSymbols.TriviaNewline"/>. For all other nodes,
+		/// this method just ensures there is a line break.</remarks>
+		public LNode OnNewLine(LNode node)
+		{
+			if (node.Attrs[0, Missing_].IsIdNamed(S.TriviaNewline))
+				return node;
+			return node.PlusAttrBefore(TriviaNewline);
+		}
+
 		#endregion
 
 		#region Id(), Literal() and Triva()

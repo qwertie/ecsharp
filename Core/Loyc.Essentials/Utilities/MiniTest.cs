@@ -403,7 +403,7 @@ namespace Loyc.MiniTest
 				
 				int TailLength = "-----------".Length;
 				var prefix = b.Left(b_i);
-				int i_adjusted = ParseHelpers.EscapeCStyle(prefix, EscapeC.Control | EscapeC.DoubleQuotes, '"').Length;
+				int i_adjusted = ParseHelpers.EscapeCStyle(prefix, EscapeC.Default, '"').Length;
 				msg.Append(' ', 2);
 				msg.Append('-', TailLength + i_adjusted);
 				msg.Append("^\n");
@@ -424,7 +424,7 @@ namespace Loyc.MiniTest
 					dif_i = maxw / 2; // "...middle..."
 				}
 			}
-			return "\"" + ParseHelpers.EscapeCStyle(s, EscapeC.Control | EscapeC.DoubleQuotes, '"') + "\"";
+			return "\"" + ParseHelpers.EscapeCStyle(s, EscapeC.Default, '"') + "\"";
 		}
 		static string StringifyObject(object obj)
 		{

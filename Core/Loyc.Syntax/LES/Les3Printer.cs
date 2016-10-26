@@ -334,7 +334,7 @@ namespace Loyc.Syntax.Les
 					int c = s.PopFront(out fail);
 					if (fail) break;
 
-					EscapeC flags = EscapeC.Control;
+					EscapeC flags = EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse;
 					// Enable \x selectively because \x represents bytes, not characters
 					if (c <= 31)
 						flags |= EscapeC.BackslashX;

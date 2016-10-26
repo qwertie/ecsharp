@@ -669,7 +669,7 @@ namespace Loyc.LLParserGenerator
 				if (c <= -1)
 					sb.Append(@"\$");
 				else
-					sb.Append(ParseHelpers.EscapeCStyle(((char)c).ToString(), EscapeC.Control | EscapeC.ABFV, ']'));
+					sb.Append(ParseHelpers.EscapeCStyle(((char)c).ToString(), EscapeC.Default, ']'));
 			} else if (c == '-' || c == '^' && sb.Length == 1) {
 				sb.Append('\\');
 				sb.Append((char)c);

@@ -12,6 +12,16 @@ namespace Loyc.Syntax
 	/// <summary>Standard extension methods for <see cref="LNode"/>.</summary>
 	public static class LNodeExt
 	{
+		public static VList<LNode> GetTrivia(this LNode node) { return GetTrivia(node.Attrs); }
+		public static VList<LNode> GetTrivia(this VList<LNode> attrs)
+		{
+			var trivia = VList<LNode>.Empty;
+			foreach (var a in attrs)
+				if (a.IsTrivia)
+					trivia.Add(a);
+			return trivia;
+		}
+
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
 		/// with <c>block</c> as the only item.</summary>

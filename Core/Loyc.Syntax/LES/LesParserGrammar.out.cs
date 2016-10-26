@@ -1,4 +1,4 @@
-// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.0.0
+// Generated from LesParserGrammar.les by LeMP custom tool. LeMP version: 1.9.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -13,21 +13,17 @@ using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-namespace Loyc.Syntax.Les
-{
+namespace Loyc.Syntax.Les {
 	using TT = TokenType;
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 	#pragma warning disable 162, 642
-	public partial class LesParser
-	{
-		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>))
-		{
+	public partial class LesParser {
+		public VList<LNode> ExprList(VList<LNode> list = default(VList<LNode>)) {
 			var endMarker = default(TT);
 			return (ExprList(ref endMarker, list));
 		}
-		void CheckEndMarker(ref TokenType endMarker, ref Token end)
-		{
+		void CheckEndMarker(ref TokenType endMarker, ref Token end) {
 			if ((endMarker != end.Type())) {
 				if ((endMarker == default(TT))) {
 					endMarker = end.Type();
@@ -36,6 +32,7 @@ namespace Loyc.Syntax.Les
 				}
 			}
 		}
+	
 		public VList<LNode> StmtList()
 		{
 			VList<LNode> result = default(VList<LNode>);
@@ -43,6 +40,7 @@ namespace Loyc.Syntax.Les
 			result = ExprList(ref endMarker);
 			return result;
 		}
+	
 		public virtual VList<LNode> ExprList(ref TokenType endMarker, VList<LNode> list = default(VList<LNode>))
 		{
 			TT la0;
@@ -60,8 +58,7 @@ namespace Loyc.Syntax.Les
 			case TT.RBrack:
 			case TT.RParen:
 			case TT.Semicolon:
-				{
-				}
+				{ }
 				break;
 			default:
 				e = TopExpr();
@@ -97,6 +94,7 @@ namespace Loyc.Syntax.Les
 			}
 			return list;
 		}
+	
 		public virtual IEnumerable<LNode> ExprListLazy(Holder<TokenType> endMarker)
 		{
 			TT la0;
@@ -108,8 +106,7 @@ namespace Loyc.Syntax.Les
 			}
 			// Line 1: ( / TopExpr)
 			la0 = (TT) LA0;
-			if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon) {
-			} else
+			if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon) { } else
 				e = TopExpr();
 			// Line 70: ((TT.Comma|TT.Semicolon) ( / TopExpr))*
 			for (;;) {
@@ -135,6 +132,7 @@ namespace Loyc.Syntax.Les
 				yield return e ?? MissingExpr();
 			}
 		}
+	
 		protected LNode TopExpr()
 		{
 			TT la0, la1;
@@ -233,6 +231,7 @@ namespace Loyc.Syntax.Les
 			}
 			return e.PlusAttrs(attrs);
 		}
+	
 		LNode Expr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -289,6 +288,7 @@ namespace Loyc.Syntax.Les
 			// line 142
 			return e;
 		}
+	
 		LNode FinishPrimaryExpr(LNode e)
 		{
 			TT la0;
@@ -343,6 +343,7 @@ namespace Loyc.Syntax.Les
 			// line 166
 			return e;
 		}
+	
 		LNode PrefixExpr(Precedence context)
 		{
 			LNode e = default(LNode);
@@ -370,6 +371,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
+	
 		LNode Particle()
 		{
 			TT la0;
@@ -464,6 +466,7 @@ namespace Loyc.Syntax.Les
 			}
 			return result;
 		}
+	
 		TokenTree TokenTree()
 		{
 			TT la1;

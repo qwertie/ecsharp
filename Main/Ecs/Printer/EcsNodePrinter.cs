@@ -542,6 +542,8 @@ namespace Loyc.Ecs
 			ForEachInitializer = 0x1000,
 			/// <summary>After 'else', valid 'if' statements are not indented.</summary>
 			ElseClause = 0x2000,
+			/// <summary>A statement is being printed, so it can't be surrounded by parens.</summary>
+			NoParentheses = 0x4000,
 			/// <summary>Print #this(...) as this(...) inside a method</summary>
 			AllowThisAsCallTarget = 0x8000,
 			/// <summary>This location is the 'true' side of an if-else statement.
@@ -742,19 +744,14 @@ namespace Loyc.Ecs
 		// Returns the number of opening "("s printed that require a corresponding ")".
 		private int PrintAttrs(AttrStyle style, LNode skipClause = null, string label = null)
 		{
-			return PrintAttrs(ref _context, style, _flags, skipClause, label);
-		}
-
-		private int PrintAttrs(ref Precedence context, AttrStyle style, Ambiguity flags, LNode skipClause = null, string label = null)
-		{
 			var attrs = _n.Attrs;
-			if ((flags & Ambiguity.NewlineBeforeChildStmt) != 0) {
+			if ((_flags & Ambiguity.NewlineBeforeChildStmt) != 0) {
 				if (attrs.Count == 0 || !attrs.Any(a => a.Name.IsOneOf(S.TriviaNewline, S.TriviaAppendStatement)))
 					_out.Newline();
 				else if (attrs.NodeNamed(S.TriviaAppendStatement) != null)
 					Space(SpaceOpt.Default);
 			}
-			if (attrs.Count == 0 && (_flags & Ambiguity.ForceAttributeList) == 0)
+			if (attrs.Count == 0 && (this._flags & Ambiguity.ForceAttributeList) == 0)
 				return 0; // optimize common case
 
 			// To identify "word attributes", scan attributes in reverse until 
@@ -763,7 +760,7 @@ namespace Loyc.Ecs
 			// - `in` and `this` only allowed sometimes and must be last non-trivia attribute
 			// - `out`, `ref`, `yield`, and `in` are not dropped by DropNonDeclarationAttributes
 			// - #where(...) inside a type parameter definition is ignored (printed elsewhere)
-			bool isTypeParamDefinition = (flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
+			bool isTypeParamDefinition = (_flags & (Ambiguity.InDefinitionName | Ambiguity.InOf))
 			                                   == (Ambiguity.InDefinitionName | Ambiguity.InOf);
 			if (isTypeParamDefinition)
 				attrs = attrs.SmartWhere(n => !n.Calls(S.Where));
@@ -781,14 +778,14 @@ namespace Loyc.Ecs
 			}
 
 			// Check if we should ignore most attributes
-			bool beginningOfStmt = context.RangeEquals(StartStmt);
-			bool mayNeedParens  = !context.RangeEquals(StartExpr) && !beginningOfStmt;
+			bool beginningOfStmt = _context.RangeEquals(StartStmt);
+			bool mayNeedParens  = !_context.RangeEquals(StartExpr) && !beginningOfStmt;
 			bool dropMostAttrs = false;
 			if (DropNonDeclarationAttributes && style < AttrStyle.IsDefinition && style != AttrStyle.IsConstructor) {
 				// Careful: avoid dropping attributes from get; set; and things that look like macro calls
 				if (!beginningOfStmt || _n.IsCall && (_n.ArgCount == 0 || !_n.Args.Last.Calls(S.Braces)))
 					dropMostAttrs = true;
-			} else if ((flags & Ambiguity.DropAttributes) != 0)
+			} else if ((_flags & Ambiguity.DropAttributes) != 0)
 				dropMostAttrs = true;
 
 			int parenCount = 0;
@@ -806,7 +803,7 @@ namespace Loyc.Ecs
 					if (any)
 						WriteThenSpace(',', SpaceOpt.AfterComma);
 					else {
-						OpenParenIf(mayNeedParens, ref parenCount, ref context);
+						OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 						WriteThenSpace('[', SpaceOpt.InsideAttribute);
 						if (label != null) {
 							_out.Write(label, true);
@@ -824,20 +821,20 @@ namespace Loyc.Ecs
 				_out.Write(']', true);
 				if (!beginningOfStmt || !Newline(NewlineOpt.AfterAttributes))
 					Space(SpaceOpt.AfterAttribute);
-			} else if ((flags & Ambiguity.ForceAttributeList) != 0) {
-				OpenParenIf(mayNeedParens, ref parenCount, ref context);
+			} else if ((_flags & Ambiguity.ForceAttributeList) != 0) {
+				OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 				_out.Write("[]", true);
 				Space(SpaceOpt.AfterAttribute);
 			}
 
 			if (parenCount != 0 && !any) {
-				context = StartExpr;
+				_context = StartExpr;
 
 				// Avoid cast ambiguity, e.g. for the method call x(y), represented 
 				// (x)(y) where x is in parenthesis, must not be printed like that 
 				// because it would be parsed as a cast. Use ([] x)(y) or ((x))(y) 
 				// instead.
-				if (parenCount == 1 && (flags & Ambiguity.IsCallTarget) != 0
+				if (parenCount == 1 && (_flags & Ambiguity.IsCallTarget) != 0
 					&& IsComplexIdentifier(_n, ICI.Default | ICI.AllowAnyExprInOf | ICI.AllowParensAround)) {
 					if (AllowChangeParentheses) {
 						parenCount++;
@@ -862,7 +859,7 @@ namespace Loyc.Ecs
 				if (AttributeKeywords.TryGetValue(name, out text)) {
 					if (dropMostAttrs && name != S.Out && name != S.Ref)
 						continue;
-					OpenParenIf(mayNeedParens, ref parenCount, ref context);
+					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 					_out.Write(text, true);
 				} else if (name == S.This) {
 					Debug.Assert(!mayNeedParens);
@@ -871,7 +868,7 @@ namespace Loyc.Ecs
 					Debug.Assert(!mayNeedParens);
 					_out.Write("in", true);
 				} else if (!dropMostAttrs || name == S.Yield) {
-					OpenParenIf(mayNeedParens, ref parenCount, ref context);
+					OpenParenIf(mayNeedParens, ref parenCount, ref _context);
 					Debug.Assert(attr.HasSpecialName);
 					PrintSimpleIdent(GSymbol.Get(name.Name.Substring(1)), 0, false);
 				}
@@ -910,7 +907,7 @@ namespace Loyc.Ecs
 				if (name == (suffixMode ? S.TriviaRawTextAfter : S.TriviaRawTextBefore))
 					_out.Write(GetRawText(attr), true);
 			} else if (name == S.TriviaInParens) {
-				if (!suffixMode && !Flagged(Ambiguity.InDefinitionName)) {
+				if (!suffixMode && !Flagged(Ambiguity.InDefinitionName | Ambiguity.NoParentheses)) {
 					if (!_context.CanParse(LesPrecedence.Substitute)) {
 						// Inside $: outer parens are expected. Add a second pair of parens 
 						// so that reparsing preserves the in-parens trivia.
@@ -1204,7 +1201,7 @@ namespace Loyc.Ecs
 						_out.Write(text[i], false);
 				}
 			} else {
-				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control, quoteType), false);
+				_out.Write(ParseHelpers.EscapeCStyle(text, EscapeC.Control | EscapeC.UnicodeNonCharacters | EscapeC.UnicodePrivateUse, quoteType), false);
 			}
 			_out.Write(quoteType, true);
 		}

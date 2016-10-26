@@ -69,6 +69,7 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Attr(a, F.Call(S.NamedArg, F.Id("property"), b), F.Private, F.Property(F.String, Foo, F.Braces(get, set)));
 			Stmt("[a, property: b] private string Foo { get; set; }", stmt);
 			Stmt("[a] [property: b] public string Foo { get; set; }", stmt.WithAttrChanged(2, @public), Mode.ParserTest);
+			Expr("(a + b).b<c>()", F.Call(F.Of(F.Dot(F.InParens(F.Call(S.Add, a, b)), b), c)));
 		}
 
 		[Test]

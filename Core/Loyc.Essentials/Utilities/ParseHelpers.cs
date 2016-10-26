@@ -139,6 +139,19 @@ namespace Loyc.Syntax
 				if (c >= 128) {
 					if ((flags & EscapeC.NonAscii) != 0) {
 						EscapeU(c, @out, flags);
+					} else if (c >= 0xDC00) {
+						if ((flags & EscapeC.UnicodeNonCharacters) != 0 && (
+							c >= 0xFDD0 && c <= 0xFDEF || // 0xFDD0...0xFDEF 
+							(c & 0xFFFE) == 0xFFFE) || // 0xFFFE, 0xFFFF, 0x1FFFE, 0x1FFFF, etc.
+							(c & 0xFC00) == 0xDC00) { // 0xDC00...0xDCFF 
+							EscapeU(c, @out, flags);
+						} else if ((flags & EscapeC.UnicodePrivateUse) != 0 && (
+							c >= 0xE000 && c <= 0xF8FF ||
+							c >= 0xF0000 && c <= 0xFFFFD ||
+							c >= 0x100000 && c <= 0x10FFFD)) {
+							EscapeU(c, @out, flags);
+						} else
+							break;
 					} else
 						break;
 				} else if (c < 32) {
@@ -809,7 +822,7 @@ namespace Loyc.Syntax
 		/// <summary>Only \r, \n, \0 and backslash are escaped.</summary>
 		Minimal = 0,  
 		/// <summary>Default option for escaping</summary>
-		Default = Control | Quotes,
+		Default = Control | DoubleQuotes | UnicodeNonCharacters | UnicodePrivateUse,
 		/// <summary>Escape ALL characters with codes above 127 as \xNN or \uNNNN</summary>
 		NonAscii = 1,
 		/// <summary>Use \xNN instead of \u00NN for characters 1-31 and 127-255</summary>
@@ -824,6 +837,11 @@ namespace Loyc.Syntax
 		SingleQuotes = 32, 
 		/// <summary>Escape single and double quotes</summary>
 		Quotes = 48,
+		/// <summary>Escape non-character unicode code points such as the Byte Order Mark 
+		/// and unpaired surrogate pair characters.</summary>
+		UnicodeNonCharacters = 64,
+		/// <summary>Escape unicode private-use code points.</summary>
+		UnicodePrivateUse = 128,
 		/// <summary>While unescaping, a backslash was encountered.</summary>
 		HasEscapes = 0x100, 
 		/// <summary>While unescaping, an unrecognized escape was encountered .</summary>

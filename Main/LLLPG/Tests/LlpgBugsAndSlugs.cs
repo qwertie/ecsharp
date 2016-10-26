@@ -10,6 +10,71 @@ namespace Loyc.LLParserGenerator
 	class LlpgBugsAndSlugs : LlpgGeneralTestsBase
 	{
 		[Test]
+		public void Regression_2016_10()
+		{
+			// Regression: while turning off hoisting by default for semantic &{...} 
+			// predicates, hoisting was accidentally turned off for syntactic &(...)
+			// predicates too (even though the latter doesn't currently expose any way 
+			// to do that in code)
+			Test(@"
+				@[AddCsLineDirectives(false)] LLLPG(lexer);
+				@[private] rule Letter @{ 'a'..'z' };
+				@[private] rule Word @{ Letter+ };
+				@[private] rule XCode @{ &('x' Letter Letter) Letter+ };
+				@[LL(1)]
+				rule Choice @{ XCode / Word };",
+			@"
+				void Letter() {
+					MatchRange('a', 'z');
+				}
+				bool Scan_Letter() {
+					if (!TryMatchRange('a', 'z'))
+						return false;
+					return true;
+				}
+				void Word() {
+					int la0;
+					Letter();
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= 'a' && la0 <= 'z')
+							Letter();
+						else
+							break;
+					}
+				}
+				void XCode() {
+					int la0;
+					Letter();
+					for (;;) {
+						la0 = LA0;
+						if (la0 >= 'a' && la0 <= 'z')
+							Letter();
+						else
+							break;
+					}
+				}
+				void Choice() {
+					if (Try_XCode_Test0(0))
+						XCode();
+					else
+						Word();
+				}
+				private bool Try_XCode_Test0(int lookaheadAmt) {
+					using (new SavePosition(this, lookaheadAmt))
+						return XCode_Test0();
+				}
+				private bool XCode_Test0() {
+					if (!TryMatch('x'))
+						return false;
+					if (!Scan_Letter())
+						return false;
+					if (!Scan_Letter())
+						return false;
+					return true;
+				}");
+		}
+		[Test]
 		public void Regression_2016_05()
 		{
 			// The bug here was thought to relate to `error`, but it turned out

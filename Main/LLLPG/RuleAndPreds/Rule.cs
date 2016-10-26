@@ -137,7 +137,7 @@ namespace Loyc.LLParserGenerator
 			Debug.Assert(parts.Count == 3);
 			if (IsRecognizer)
 				methodBody.Add(F.Call(S.Return, F.True));
-			parts.Add(F.Braces(methodBody));
+			parts.Add(F.OnNewLine(F.Braces(methodBody)));
 			return method.WithArgs(parts.ToVList());
 		}
 

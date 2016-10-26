@@ -34,7 +34,7 @@ namespace Loyc.Ecs.Parser
 
 	@[partial] class EcsParser
 	{
-		@[LL(2), Verbosity(1), AddCsLineDirectives(false)]
+		@[LL(2), Verbosity(1), AddCsLineDirectives(@false)]
 		LLLPG parser(laType(TokenType), terminalType(Token), matchType(int), 
 		             allowSwitch(@true), setType(HashSet!int), castLA(@false));
 
@@ -1753,10 +1753,10 @@ namespace Loyc.Ecs.Parser
 
 		@[private] rule Constructor(startIndex::int, attrs::VList!LNode)::LNode @{
 			{r::LNode; n::Token;}
-			(	&{_spaceName == LT($LI).Value}
+			(	&{@[Hoist] _spaceName == LT($LI).Value}
 				n=(TT.Id|TT.ContextualKeyword)
 				&("(" ")" ("{" | ";"))
-			/	&{_spaceName != S.Fn || LA($LI+3) == TT.LBrace}
+			/	&{@[Hoist] _spaceName != S.Fn || LA($LI+3) == TT.LBrace}
 				n=TT.This
 				&("(" ")" ("{" | ";"))
 			/	n=(TT.Id|TT.ContextualKeyword|TT.This)

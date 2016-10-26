@@ -1,4 +1,4 @@
-// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 1.8.1.0
+// Generated from EcsLexerGrammar.les by LeMP custom tool. LeMP version: 1.9.4.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -12,26 +12,21 @@ using System.Text;
 using Loyc;
 using Loyc.Syntax;
 using Loyc.Syntax.Lexing;
-namespace Loyc.Ecs.Parser
-{
+namespace Loyc.Ecs.Parser {
 	using TT = TokenType;
 	using S = CodeSymbols;
-	public partial class EcsLexer
-	{
-		new void Newline()
-		{
+	public partial class EcsLexer {
+		new void Newline() {
 			base.Newline();
 			_allowPPAt = InputPosition;
 			_value = WhitespaceTag.Value;
 		}
-		void OtherContextualKeyword()
-		{
+		void OtherContextualKeyword() {
 			_parseNeeded = _verbatim = false;
 			_type = TT.ContextualKeyword;
 			ParseIdValue(0, false);
 		}
-		bool AllowPP
-		{
+		bool AllowPP {
 			get {
 				return _startPosition == _allowPPAt;
 			}
@@ -60,6 +55,7 @@ namespace Loyc.Ecs.Parser
 		internal static readonly HashSet<object> LinqKeywords = new HashSet<object> { 
 			_where, _select, _from, _join, _on, _equals, _into, _let, _orderby, _ascending, _descending, _group, _by
 		};
+	
 		void DotIndent()
 		{
 			int la0, la1;
@@ -102,6 +98,7 @@ namespace Loyc.Ecs.Parser
 			_indentLevel = MeasureIndent(_indent = CharSource.Slice(startPosition, InputPosition - startPosition));
 			#line default
 		}
+	
 		new void Spaces()
 		{
 			int la0;
@@ -127,9 +124,10 @@ namespace Loyc.Ecs.Parser
 			}
 			#line default
 		}
+	
 		void UTF_BOM()
 		{
-			Skip();
+			Match('\uFEFF');
 			#line 52 "EcsLexerGrammar.les"
 			if ((_lineStartAt == _startPosition)) {
 				_lineStartAt = InputPosition;
@@ -138,6 +136,7 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
+	
 		void SLComment()
 		{
 			int la0;
@@ -155,6 +154,7 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
+	
 		void MLComment()
 		{
 			int la1;
@@ -202,6 +202,7 @@ namespace Loyc.Ecs.Parser
 			_value = WhitespaceTag.Value;
 			#line default
 		}
+	
 		void DecDigits()
 		{
 			int la0, la1;
@@ -237,6 +238,7 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 		static readonly HashSet<int> HexDigit_set0 = NewSetOfRanges('0', '9', 'A', 'F', 'a', 'f');
+	
 		void HexDigit()
 		{
 			Match(HexDigit_set0);
@@ -247,6 +249,7 @@ namespace Loyc.Ecs.Parser
 				return false;
 			return true;
 		}
+	
 		void HexDigits()
 		{
 			int la0, la1;
@@ -289,8 +292,8 @@ namespace Loyc.Ecs.Parser
 			// Line 72: greedy(HexDigit)*
 			for (;;) {
 				la0 = LA0;
-				if (HexDigit_set0.Contains(la0))
-					{if (!Scan_HexDigit())
+				if (HexDigit_set0.Contains(la0)){
+					if (!Scan_HexDigit())
 						return false;}
 				else
 					break;
@@ -308,8 +311,8 @@ namespace Loyc.Ecs.Parser
 						// Line 72: (HexDigit)*
 						for (;;) {
 							la0 = LA0;
-							if (HexDigit_set0.Contains(la0))
-								{if (!Scan_HexDigit())
+							if (HexDigit_set0.Contains(la0)){
+								if (!Scan_HexDigit())
 									return false;}
 							else
 								break;
@@ -321,6 +324,7 @@ namespace Loyc.Ecs.Parser
 			}
 			return true;
 		}
+	
 		void BinDigits()
 		{
 			int la0;
@@ -351,6 +355,7 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 		}
+	
 		void DecNumber()
 		{
 			int la0, la1;
@@ -397,6 +402,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
+	
 		void HexNumber()
 		{
 			int la0, la1;
@@ -440,6 +446,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
+	
 		void BinNumber()
 		{
 			int la0, la1;
@@ -488,6 +495,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
+	
 		void Number()
 		{
 			int la0;
@@ -588,6 +596,7 @@ namespace Loyc.Ecs.Parser
 			ParseNumberValue();
 			#line default
 		}
+	
 		void SQString()
 		{
 			int la0;
@@ -613,6 +622,7 @@ namespace Loyc.Ecs.Parser
 			ParseSQStringValue();
 			#line default
 		}
+	
 		void DQString()
 		{
 			int la0, la1;
@@ -669,6 +679,7 @@ namespace Loyc.Ecs.Parser
 			ParseStringValue();
 			#line default
 		}
+	
 		void TQString()
 		{
 			int la0, la1, la2;
@@ -742,6 +753,7 @@ namespace Loyc.Ecs.Parser
 			ParseStringValue();
 			#line default
 		}
+	
 		void BQStringN()
 		{
 			int la0;
@@ -765,6 +777,7 @@ namespace Loyc.Ecs.Parser
 			}
 			Match('`');
 		}
+	
 		void BQString()
 		{
 			#line 140 "EcsLexerGrammar.les"
@@ -775,10 +788,12 @@ namespace Loyc.Ecs.Parser
 			ParseBQStringValue();
 			#line default
 		}
+	
 		void IdStartChar()
 		{
 			Skip();
 		}
+	
 		void IdUniLetter()
 		{
 			int la0, la1;
@@ -816,6 +831,7 @@ namespace Loyc.Ecs.Parser
 				}
 			}
 		}
+	
 		void IdContChars()
 		{
 			int la0, la1, la2, la3, la4, la5, la6, la7, la8;
@@ -826,12 +842,9 @@ namespace Loyc.Ecs.Parser
 					Skip();
 				else if (la0 >= 'A' && la0 <= 'Z' || la0 == '_' || la0 >= 'a' && la0 <= 'z')
 					IdStartChar();
-				else if (la0 >= 128 && la0 <= 65532) {
-					if (char.IsLetter((char) LA0))
-						IdUniLetter();
-					else
-						break;
-				} else if (la0 == '\\') {
+				else if (la0 >= 128 && la0 <= 65532)
+					IdUniLetter();
+				else if (la0 == '\\') {
 					la1 = LA(1);
 					if (la1 == 'u') {
 						la2 = LA(2);
@@ -887,6 +900,7 @@ namespace Loyc.Ecs.Parser
 					break;
 			}
 		}
+	
 		void NormalId()
 		{
 			int la0;
@@ -898,17 +912,20 @@ namespace Loyc.Ecs.Parser
 				IdUniLetter();
 			IdContChars();
 		}
+	
 		void HashId()
 		{
 			Skip();
 			IdContChars();
 		}
+	
 		void CommentStart()
 		{
 			Match('/');
 			Match('*', '/');
 		}
 		static readonly HashSet<int> FancyId_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '^', '_', 'a', 'z', '|', '|', '~', '~');
+	
 		bool FancyId()
 		{
 			int la0, la1, la2, la3, la4, la5, la6, la7, la8;
@@ -926,7 +943,7 @@ namespace Loyc.Ecs.Parser
 					IdUniLetter();
 				else if (la0 == '\\') {
 					la1 = LA(1);
-					if (la1 == 'u') {
+					if (la1 == 117) {
 						la2 = LA(2);
 						if (HexDigit_set0.Contains(la2)) {
 							la3 = LA(3);
@@ -944,7 +961,7 @@ namespace Loyc.Ecs.Parser
 								LettersOrPunc();
 						} else
 							LettersOrPunc();
-					} else if (la1 == 'U') {
+					} else if (la1 == 85) {
 						la2 = LA(2);
 						if (HexDigit_set0.Contains(la2)) {
 							la3 = LA(3);
@@ -981,14 +998,11 @@ namespace Loyc.Ecs.Parser
 				// Line 163: (IdUniLetter / LettersOrPunc)*
 				for (;;) {
 					la0 = LA0;
-					if (la0 >= 128 && la0 <= 65532) {
-						if (char.IsLetter((char) LA0))
-							IdUniLetter();
-						else
-							break;
-					} else if (la0 == '\\') {
+					if (la0 >= 128 && la0 <= 65532)
+						IdUniLetter();
+					else if (la0 == '\\') {
 						la1 = LA(1);
-						if (la1 == 'u') {
+						if (la1 == 117) {
 							la2 = LA(2);
 							if (HexDigit_set0.Contains(la2)) {
 								la3 = LA(3);
@@ -1006,7 +1020,7 @@ namespace Loyc.Ecs.Parser
 									LettersOrPunc();
 							} else
 								LettersOrPunc();
-						} else if (la1 == 'U') {
+						} else if (la1 == 85) {
 							la2 = LA(2);
 							if (HexDigit_set0.Contains(la2)) {
 								la3 = LA(3);
@@ -1049,6 +1063,7 @@ namespace Loyc.Ecs.Parser
 			}
 		}
 		static readonly HashSet<int> Symbol_set0 = NewSetOfRanges('A', 'Z', '_', '_', 'a', 'z', 128, 65532);
+	
 		void Symbol()
 		{
 			int la0, la1;
@@ -1060,9 +1075,9 @@ namespace Loyc.Ecs.Parser
 			la0 = LA0;
 			if (Symbol_set0.Contains(la0))
 				NormalId();
-			else if (la0 == '\\') {
+			else if (la0 == 92) {
 				la1 = LA(1);
-				if (la1 == 'U' || la1 == 'u')
+				if (la1 == 85 || la1 == 117)
 					NormalId();
 				else
 					isBQ = FancyId();
@@ -1073,6 +1088,7 @@ namespace Loyc.Ecs.Parser
 			#line default
 		}
 		static readonly HashSet<int> Id_set0 = NewSetOfRanges('A', 'Z', '\\', '\\', '_', '_', 'a', 'z', 128, 65532);
+	
 		void Id()
 		{
 			int la0, la1, la2, la3, la4, la5, la6;
@@ -1091,9 +1107,9 @@ namespace Loyc.Ecs.Parser
 				la0 = LA0;
 				if (Symbol_set0.Contains(la0))
 					NormalId();
-				else if (la0 == '\\') {
+				else if (la0 == 92) {
 					la1 = LA(1);
-					if (la1 == 'u') {
+					if (la1 == 117) {
 						la2 = LA(2);
 						if (HexDigit_set0.Contains(la2)) {
 							la3 = LA(3);
@@ -1111,7 +1127,7 @@ namespace Loyc.Ecs.Parser
 								isBQ = FancyId();
 						} else
 							isBQ = FancyId();
-					} else if (la1 == 'U') {
+					} else if (la1 == 85) {
 						la2 = LA(2);
 						if (HexDigit_set0.Contains(la2)) {
 							la3 = LA(3);
@@ -1147,10 +1163,12 @@ namespace Loyc.Ecs.Parser
 			#line default
 		}
 		static readonly HashSet<int> LettersOrPunc_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', '_', 'a', 'z', '|', '|', '~', '~');
+	
 		void LettersOrPunc()
 		{
 			Match(LettersOrPunc_set0);
 		}
+	
 		void Comma()
 		{
 			Skip();
@@ -1160,6 +1178,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.Comma;
 			#line default
 		}
+	
 		void Semicolon()
 		{
 			Skip();
@@ -1169,6 +1188,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.Semicolon;
 			#line default
 		}
+	
 		void At()
 		{
 			Skip();
@@ -1178,6 +1198,7 @@ namespace Loyc.Ecs.Parser
 			_value = S.AtSign;
 			#line default
 		}
+	
 		void Operator()
 		{
 			int la1, la2;
@@ -1722,6 +1743,7 @@ namespace Loyc.Ecs.Parser
 				}
 			} while (false);
 		}
+	
 		void Shebang()
 		{
 			int la0;
@@ -1741,6 +1763,7 @@ namespace Loyc.Ecs.Parser
 				Newline();
 		}
 		static readonly HashSet<int> IdOrKeyword_set0 = NewSetOfRanges('#', '#', '0', '9', 'A', 'Z', '_', '_', 'a', 'z');
+	
 		void IdOrKeyword()
 		{
 			int la1, la2, la3, la4, la5, la6, la7, la8, la9, la10;
@@ -5067,6 +5090,7 @@ namespace Loyc.Ecs.Parser
 				break;
 			}
 		}
+	
 		string RestOfPPLine()
 		{
 			int la0;
@@ -5085,7 +5109,9 @@ namespace Loyc.Ecs.Parser
 			return CharSource.Slice(start, InputPosition - start).ToString();
 			#line default
 		}
-		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '\\', '\\', '^', '^', '`', '`', '|', '|', '~', '~');
+		static readonly HashSet<int> Token_set0 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', 'A', 'Z', '\\', '\\', '^', 'z', '|', '|', '~', '~', 128, 65532);
+		static readonly HashSet<int> Token_set1 = NewSetOfRanges('!', '!', '#', '\'', '*', '+', '-', ':', '<', '?', '^', '^', '|', '|', '~', '~');
+	
 		void Token()
 		{
 			int la0, la1, la2;
@@ -5159,72 +5185,6 @@ namespace Loyc.Ecs.Parser
 							goto match6;
 					}
 					break;
-				case 'A':
-				case 'B':
-				case 'C':
-				case 'D':
-				case 'E':
-				case 'F':
-				case 'G':
-				case 'H':
-				case 'I':
-				case 'J':
-				case 'K':
-				case 'L':
-				case 'M':
-				case 'N':
-				case 'O':
-				case 'P':
-				case 'Q':
-				case 'R':
-				case 'S':
-				case 'T':
-				case 'U':
-				case 'V':
-				case 'W':
-				case 'X':
-				case 'Y':
-				case 'Z':
-				case '_':
-				case 'a':
-				case 'b':
-				case 'c':
-				case 'd':
-				case 'e':
-				case 'f':
-				case 'g':
-				case 'h':
-				case 'i':
-				case 'j':
-				case 'k':
-				case 'l':
-				case 'm':
-				case 'n':
-				case 'o':
-				case 'p':
-				case 'q':
-				case 'r':
-				case 's':
-				case 't':
-				case 'u':
-				case 'v':
-				case 'w':
-				case 'x':
-				case 'y':
-				case 'z':
-					goto match6;
-				case 65279:
-					{
-						if (char.IsLetter((char) LA0))
-							goto match6;
-						else {
-							#line 434 "EcsLexerGrammar.les"
-							_type = TT.Spaces;
-							#line default
-							UTF_BOM();
-						}
-					}
-					break;
 				case '\\':
 					{
 						la1 = LA(1);
@@ -5241,82 +5201,35 @@ namespace Loyc.Ecs.Parser
 				case '@':
 					{
 						la1 = LA(1);
-						switch (la1) {
-						case '\\':
+						if (Id_set0.Contains(la1))
 							goto match6;
-						case '`':
-							{
-								la2 = LA(2);
-								if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
-									goto match6;
-								else
-									goto matchAt;
-							}
-						case '!':
-						case '#':
-						case '$':
-						case '%':
-						case '&':
-						case '\'':
-						case '*':
-						case '+':
-						case '-':
-						case '.':
-						case '/':
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9':
-						case ':':
-						case '<':
-						case '=':
-						case '>':
-						case '?':
-						case '^':
-						case '|':
-						case '~':
-							goto match6;
-						case '"':
-							{
-								la2 = LA(2);
-								if (la2 != -1)
-									goto matchDQString;
-								else
-									goto matchAt;
-							}
-						case '@':
-							{
-								la2 = LA(2);
-								if (la2 >= 'A' && la2 <= 'Z' || la2 == '_' || la2 >= 'a' && la2 <= 'z')
-									goto matchSymbol;
-								else if (la2 >= 128 && la2 <= 65532) {
-									if (char.IsLetter((char) LA0))
-										goto matchSymbol;
-									else
-										goto matchAt;
-								} else if (Token_set0.Contains(la2))
-									goto matchSymbol;
-								else
-									goto matchAt;
-							}
-						default:
-							if (la1 >= 'A' && la1 <= 'Z' || la1 == '_' || la1 >= 'a' && la1 <= 'z')
+						else if (la1 == '`') {
+							la2 = LA(2);
+							if (!(la2 == -1 || la2 == '\n' || la2 == '\r'))
 								goto match6;
-							else if (la1 >= 128 && la1 <= 65532) {
-								if (char.IsLetter((char) LA0))
-									goto match6;
-								else
-									goto matchAt;
+							else
+								goto matchAt;
+						} else if (Token_set1.Contains(la1))
+							goto match6;
+						else if (la1 == '"') {
+							la2 = LA(2);
+							if (la2 != -1)
+								goto matchDQString;
+							else
+								goto matchAt;
+						} else if (la1 == '@') {
+							la2 = LA(2);
+							if (Token_set0.Contains(la2)) {
+								#line 431 "EcsLexerGrammar.les"
+								_type = TT.Literal;
+								#line default
+								Symbol();
 							} else
 								goto matchAt;
-						}
+						} else
+							goto matchAt;
 					}
+					break;
 				case '"':
 					{
 						la1 = LA(1);
@@ -5435,7 +5348,7 @@ namespace Loyc.Ecs.Parser
 					}
 					break;
 				default:
-					if (la0 >= 128 && la0 <= 65278 || la0 >= 65280 && la0 <= 65532)
+					if (Symbol_set0.Contains(la0))
 						goto match6;
 					else
 						goto error;
@@ -5481,14 +5394,6 @@ namespace Loyc.Ecs.Parser
 					DQString();
 				}
 				break;
-			matchSymbol:
-				{
-					#line 431 "EcsLexerGrammar.les"
-					_type = TT.Literal;
-					#line default
-					Symbol();
-				}
-				break;
 			matchAt:
 				{
 					#line 432 "EcsLexerGrammar.les"
@@ -5509,8 +5414,8 @@ namespace Loyc.Ecs.Parser
 			} while (false);
 		}
 		static readonly HashSet<int> HexNumber_Test0_set0 = NewSetOfRanges('+', '+', '-', '-', '0', '9');
-		private bool Try_HexNumber_Test0(int lookaheadAmt)
-		{
+	
+		private bool Try_HexNumber_Test0(int lookaheadAmt) {
 			using (new SavePosition(this, lookaheadAmt))
 				return HexNumber_Test0();
 		}
@@ -5519,8 +5424,8 @@ namespace Loyc.Ecs.Parser
 			int la0;
 			// Line 85: ([0-9] / HexDigits [Pp] [+\-0-9])
 			la0 = LA0;
-			if (la0 >= '0' && la0 <= '9')
-				{if (!TryMatchRange('0', '9'))
+			if (la0 >= '0' && la0 <= '9'){
+				if (!TryMatchRange('0', '9'))
 					return false;}
 			else {
 				if (!Scan_HexDigits())

@@ -147,6 +147,8 @@ namespace Loyc.Ecs.Tests
 				F.Call(S.Var, F.Int32, F.InParens(F.Call(S.Assign, x, one))), p => p.AllowChangeParentheses = true);
 			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParentheses = false);
 			Stmt("#var((int), x);",    F.Call(S.Var, F.InParens(F.Int32), x), p => p.AllowChangeParentheses = true);
+			Stmt("(#return(x));",      F.InParens(F.Call(S.Return, x)));
+			Stmt("return x;",          F.InParens(F.Call(S.Return, x)), p => p.AllowChangeParentheses = true, Mode.PrinterTest);
 			// TODO
 			//Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = false);
 			//Expr("x(->(int))",         F.Call(S.Cast, x, F.InParens(F.Int32)), p => p.AllowChangeParenthesis = true);
