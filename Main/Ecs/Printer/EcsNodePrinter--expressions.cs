@@ -136,6 +136,7 @@ namespace Loyc.Ecs
 				d.Add(op, Pair.Create(Precedence.MaxValue, call));
 
 			d[S.RawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>("PrintRawText"));
+			d[S.CsRawText] = Pair.Create(EP.Substitute, OpenDelegate<OperatorPrinter>("PrintRawText"));
 			d[S.NamedArg] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintNamedArg"));
 			d[S.Property] = Pair.Create(StartExpr, OpenDelegate<OperatorPrinter>("AutoPrintPropDeclExpr"));
 
@@ -902,7 +903,7 @@ namespace Loyc.Ecs
 			return AutoPrintProperty() != SPResult.Fail;
 		}
 
-		// Handles #rawText("custom string")
+		// Handles #rawText("custom string") and #C#RawText("custom string") in expression context
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool PrintRawText(Precedence mainPrec)
 		{
@@ -987,7 +988,7 @@ namespace Loyc.Ecs
 			Debug.Assert(_n.HasSimpleHead());
 			if (_n.IsLiteral)
 				PrintLiteral();
-			else if (_n.Name == S.RawText && ObeyRawText)
+			else if ((_n.Name == S.RawText || _n.Name == S.CsRawText) && ObeyRawText)
 				_out.Write(GetRawText(_n), true);
 			else
 				PrintSimpleIdent(_n.Name, _flags, false, _n.AttrNamed(S.TriviaUseOperatorKeyword) != null);

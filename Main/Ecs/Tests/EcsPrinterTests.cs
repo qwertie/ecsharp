@@ -39,26 +39,25 @@ namespace Loyc.Ecs.Tests
 		public void CommentTriviaPrinterTest()
 		{
 			// Test #trivia_spaces, which the parser/injector never produces:
-			var stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaSpaces, "\t\t"), F.Trivia(S.TriviaSLComment, "ax"), x);
+			var stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSpaces, "\t\t"), F.Trivia(S.TriviaSLComment, "ax")), x);
 			Stmt("//bx\nx;\t\t//ax", stmt);
-			Expr("//bx\nx\t//ax",     stmt, p => p.OmitSpaceTrivia = true);
+			Expr("//bx\nx\t//ax",    stmt, p => p.OmitSpaceTrivia = true);
 			Expr("//bx\nx\t\t//ax",  stmt);
-			Stmt("//bx\nx;\t//ax",    stmt, p => p.OmitSpaceTrivia = true);
+			Stmt("//bx\nx;\t//ax",   stmt, p => p.OmitSpaceTrivia = true);
 			Stmt("x;\t\t",           stmt, p => p.OmitComments = true);
 
 			// Attach /*the variable*/ to child node `x` 
 			// (this doesn't currently round-trip, but maybe it should)
 			stmt = 
 				Attr(F.Trivia(S.TriviaSLComment, " a block"), 
-					F.Id(S.TriviaBeginTrailingTrivia),
-					F.Trivia(S.TriviaSLComment, " end of block"), F.Braces(
-					Attr(F.Trivia(S.TriviaSLComment, " set x to zero"),
-						F.Id(S.TriviaBeginTrailingTrivia),
-						F.Trivia(S.TriviaSpaces, "  "),
-						F.Trivia(S.TriviaSLComment, " x was set to zero"),
-						F.Call(Attr(F.Trivia(S.TriviaMLComment, "is set to"), F.Id(S.Assign)), x,
-									  Attr(F.Trivia(S.TriviaMLComment, "its new value"), zero))
-					)));
+					F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSLComment, " end of block")), 
+					F.Braces(
+						Attr(F.Trivia(S.TriviaSLComment, " set x to zero"),
+							F.Call(S.TriviaTrailing,
+								F.Trivia(S.TriviaSpaces, "  "),
+								F.Trivia(S.TriviaSLComment, " x was set to zero")),
+							F.Call(Attr(F.Trivia(S.TriviaMLComment, "is set to"), F.Id(S.Assign)), 
+							    x, Attr(F.Trivia(S.TriviaMLComment, "its new value"), zero)))));
 			Stmt("// a block\n{\n"+
 				"  // set x to zero\n  x /*is set to*/= /*its new value*/0;  // x was set to zero\n"+
 				"}\t// end of block", stmt);
@@ -67,19 +66,20 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void RawText()
 		{
-			var stmt = Attr(F.Trivia(S.TriviaRawTextBefore, "Eat my shorts!"), 
-				F.Trivia(S.TriviaRawTextAfter, "...then do it again!"), F.Missing);
+			var stmt = F.Missing.PlusAttr(F.Trivia(S.TriviaRawText, "Eat my shorts!"))
+				.PlusTrailingTrivia(F.Trivia(S.TriviaRawText, "...then do it again!"));
 			Stmt("Eat my shorts!;...then do it again!", stmt);
-			stmt = Attr(F.Trivia(S.TriviaRawTextAfter, " // end if"), F.Call(S.If, a, F.Call(x)));
+			stmt = F.Call(S.If, a, F.Call(x)).PlusTrailingTrivia(F.Trivia(S.TriviaCsRawText, " // end if"));
 			Stmt("if (a)\n  x(); // end if", stmt);
 			Stmt("if (a)\n  x();", stmt, p => { p.ObeyRawText = false; p.OmitUnknownTrivia = true; });
 			
 			var raw = F.Trivia(S.RawText, "hello!");
 			Stmt("x(hello!);", F.Call(x, raw));
-			raw = F.Call(S.RawText, F.Literal("hello!"));
+			Stmt("hello!();", F.Call(raw));
+			Stmt("hello!();", F.Call(F.Trivia(S.CsRawText, "hello!")));
 			Stmt("hello!", raw);
-			raw = F.Call(raw);
-			Stmt("hello!();", raw);
+			Stmt("hello!", F.Call(S.RawText, F.Literal("hello!")));
+			Stmt("hello!", F.Call(S.CsRawText, F.Literal("hello!")));
 		}
 
 		int _testNum;

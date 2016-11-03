@@ -58,10 +58,10 @@ namespace Loyc.Syntax
 				  #trivia_MLComment("" Leading Comment 2 ""),
 				  #trivia_newline,
 				  #trivia_MLComment("" Leading Comment 3 ""),
-				  #trivia_beginTrailingTrivia,
-				  #trivia_SLComment("" Trailing Comment 1""),
-				  #trivia_MLComment("" Trailing Comment 2 ""),
-				  #trivia_newline] 
+				  #trivia_trailing(
+				    #trivia_SLComment("" Trailing Comment 1""),
+				    #trivia_MLComment("" Trailing Comment 2 ""),
+				    #trivia_newline)] 
 				x = y;
 				y = z;
 				@[#trivia_appendStatement] TheEnd();");

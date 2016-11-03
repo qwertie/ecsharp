@@ -86,6 +86,7 @@ namespace Loyc.Ecs
 			d[S.Result] = OpenDelegate<StatementPrinter>("AutoPrintResult");
 			d[S.Missing] = OpenDelegate<StatementPrinter>("AutoPrintMissingStmt");
 			d[S.RawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
+			d[S.CsRawText] = OpenDelegate<StatementPrinter>("AutoPrintRawText");
 			d[S.Assembly] = OpenDelegate<StatementPrinter>("AutoPrintAssemblyAttribute");
 			return d;
 		}
@@ -121,7 +122,7 @@ namespace Loyc.Ecs
 				var name = _n.Name;
 				if (StatementPrinters.TryGetValue(name, out printer) && HasSimpleHeadWPA(_n))
 				{
-					if (PreferPlainCSharp || name == S.RawText ||
+					if (PreferPlainCSharp || name == S.RawText || name == S.CsRawText ||
 						(style != NodeStyle.Expression && style != NodeStyle.PrefixNotation))
 					{
 						using (WithFlags(_flags | Ambiguity.NoParentheses)) {
@@ -406,14 +407,14 @@ namespace Loyc.Ecs
 		{
 			int oldLineNum = _out.LineNumber;
 			if (mode != BraceMode.BlockStmt)
-				PrintTrivia(body, suffixTrivia: false);
+				PrintTrivia(body, trailingTrivia: false);
 			else
 				G.Verify(PrintAttrs(AttrStyle.AllowKeywordAttrs) == 0);
 			if (oldLineNum == _out.LineNumber && beforeBrace != 0)
 				NewlineOrSpace(beforeBrace, IsDefaultNewlineSuppressed(body));
 			_out.Write('{', true);
 			// body.Target represents the opening brace. Injector adds trailing trivia only, not leading
-			PrintTrivia(body.Target, suffixTrivia: true);
+			PrintTrivia(body.Target, trailingTrivia: true);
 
 			using (WithSpace(spaceName)) {
 				if (mode == BraceMode.Initializer || mode == BraceMode.Enum) {
@@ -425,7 +426,7 @@ namespace Loyc.Ecs
 
 			_out.Write('}', true);
 			if (mode != BraceMode.BlockStmt)
-				PrintTrivia(body, suffixTrivia: true);
+				PrintTrivia(body, trailingTrivia: true);
 		}
 
 		private void PrintStatementsInBraces(LNode braces, bool skipFirstStmt = false, bool newlinesByDefault = true)
@@ -774,7 +775,7 @@ namespace Loyc.Ecs
 				// "while (\ncondition)" when condition has an explicit newline; use
 				// "\nwhile (condition)" instead.
 				LNode cond = _n.Args[1];
-				LNode condWithoutNewline = RemoveFirstNewlineTrivia(cond);
+				LNode condWithoutNewline = cond.WithoutAttrNamed(S.TriviaNewline);
 				if (cond != condWithoutNewline)
 					_out.Newline();
 				else if (!Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
@@ -794,18 +795,6 @@ namespace Loyc.Ecs
 				PrintBracedBlockOrStmt(_n.Args[1]);
 				return SPResult.NeedSuffixTrivia;
 			}
-		}
-
-		private LNode RemoveFirstNewlineTrivia(LNode node)
-		{
-			var attrs = node.Attrs;
-			if (attrs.Count > 0) {
-				int btti = attrs.IndexWithName(S.TriviaBeginTrailingTrivia, attrs.Count);
-				int nli = attrs.IndexWithName(S.TriviaNewline, attrs.Count);
-				if (nli < btti)
-					return node.WithAttrs(attrs.RemoveAt(nli));
-			}
-			return node;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -843,7 +832,7 @@ namespace Loyc.Ecs
 				
 				if (@else != null) {
 					if (Newline(braces ? NewlineOpt.BeforeExecutableBrace : NewlineOpt.Default))
-						@else = RemoveFirstNewlineTrivia(@else);
+						@else = @else.WithoutAttrNamed(S.TriviaNewline);
 					else
 						Space(SpaceOpt.Default);
 					_out.Write("else", true);

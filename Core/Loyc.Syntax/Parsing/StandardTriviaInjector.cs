@@ -53,7 +53,7 @@ namespace Loyc.Syntax
 	/// </remarks>
 	public class StandardTriviaInjector : AbstractTriviaInjector<Token>
 	{
-		LNode _trivia_newline, _trivia_beginTrailingTrivia, _trivia_appendStatement;
+		LNode _trivia_newline, _trivia_appendStatement;
 		ISourceFile _sourceFile;
 		public ISourceFile SourceFile
 		{
@@ -61,7 +61,6 @@ namespace Loyc.Syntax
 			set {
 				_sourceFile = value;
 				_trivia_newline = LNode.Id(S.TriviaNewline, SourceFile);
-				_trivia_beginTrailingTrivia = LNode.Id(S.TriviaBeginTrailingTrivia, SourceFile);
 				_trivia_appendStatement = LNode.Id(S.TriviaAppendStatement, SourceFile);
 			}
 		}
@@ -93,24 +92,17 @@ namespace Loyc.Syntax
 
 		protected override LNode AttachTriviaTo(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
-			VList<LNode> attrs;
+			VList<LNode> newAttrs = VList<LNode>.Empty;
 			int i = 0;
 			if (loc == TriviaLocation.Leading) {
 				// leading trivia
-				attrs = VList<LNode>.Empty;
 				if (parent == null ? indexInParent > 0 : HasImplicitLeadingNewline(node, parent, indexInParent)) {
 					// ignore expected leading newline
 					if (trivia.Count > 0 && trivia[0].TypeInt == NewlineTypeInt)
 						i++;
 					else
-						attrs.Add(_trivia_appendStatement);
+						newAttrs.Add(_trivia_appendStatement);
 				}
-			} else {
-				attrs = node.Attrs;
-				if (trivia.Count == 0)
-					goto stop;
-				else if (node.AttrNamed(S.TriviaBeginTrailingTrivia) == null)
-					attrs.Add(_trivia_beginTrailingTrivia);
 			}
 			bool justAddedSLComment = false;
 			LNode attr = null;
@@ -123,20 +115,19 @@ namespace Loyc.Syntax
 				}
 				if ((attr = MakeTriviaAttribute(t)) != null) {
 					justAddedSLComment = attr.Calls(S.TriviaSLComment);
-					attrs.Add(attr);
+					newAttrs.Add(attr);
 				}
 			}
-			// Suppress newline before closing brace or at EOF
-			if (loc == TriviaLocation.TrailingExtra && attrs.Count > 0 && attrs.Last == _trivia_newline)
-				if (parent == null || parent.Calls(S.Braces)) {
-					attrs.Pop(); // Printers add a newline here anyway
-				}
-		stop:
 			if (loc == TriviaLocation.Leading)
-				attrs.AddRange(node.Attrs);
-			else if (!attrs.IsEmpty && attrs.Last == _trivia_beginTrailingTrivia)
-				attrs.Pop();
-			return node.WithAttrs(attrs);
+				return node.PlusAttrsBefore(newAttrs);
+			else {
+				// Suppress newline before closing brace or at EOF
+				if (loc == TriviaLocation.TrailingExtra && newAttrs.Count > 0 && newAttrs.Last == _trivia_newline) {
+					if (parent == null || parent.Calls(S.Braces))
+						newAttrs.Pop(); // Printers add a newline here anyway
+				}
+				return node.PlusTrailingTrivia(newAttrs);
+			}
 		}
 
 		/// <summary>Called to find out if a newline is to be added implicitly 

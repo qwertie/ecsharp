@@ -155,7 +155,12 @@ namespace Loyc.Collections
 
 		#region AddRange, InsertRange, RemoveRange
 
-		public FVList<T> AddRange(FVList<T> list) { return AddRange(list, new FVList<T>()); }
+		public FVList<T> AddRange(FVList<T> list)
+		{
+			if (IsEmpty)
+				return this = list;
+			return AddRange(list, new FVList<T>());
+		}
 		public FVList<T> AddRange(FVList<T> list, FVList<T> excludeSubList)
 		{
 			this = VListBlock<T>.AddRange(_block, _localCount, list, excludeSubList);

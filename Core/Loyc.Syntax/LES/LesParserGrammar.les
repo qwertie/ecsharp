@@ -108,7 +108,7 @@ namespace Loyc.Syntax.Les {
 				{e = MarkSpecial(F.Call(id, args, id.StartIndex, args.Last.Range.EndIndex));}
 			)
 			{if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };}
-			{return e.PlusAttrs(attrs);}
+			{return e.PlusAttrsBefore(attrs);}
 		};
 
 		// Types of (normal) expressions:

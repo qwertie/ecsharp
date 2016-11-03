@@ -229,7 +229,7 @@ namespace Loyc.Syntax.Les {
 			if ((t.TypeInt != 0)) {
 				e = e.WithRange(t.StartIndex, e.Range.EndIndex);
 			}
-			return e.PlusAttrs(attrs);
+			return e.PlusAttrsBefore(attrs);
 		}
 	
 		LNode Expr(Precedence context)

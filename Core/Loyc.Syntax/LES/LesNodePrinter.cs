@@ -35,7 +35,7 @@ namespace Loyc.Syntax.Les
 		public bool OmitMissingArguments { get; set; }
 
 		/// <summary>When this flag is set, space trivia attributes are ignored
-		/// (e.g. <see cref="CodeSymbols.TriviaSpaceAfter"/>).</summary>
+		/// (e.g. <see cref="CodeSymbols.TriviaNewline"/>).</summary>
 		public bool OmitSpaceTrivia { get; set; }
 
 		/// <summary>When this flag is set, comment trivia attributes are ignored
@@ -54,7 +54,8 @@ namespace Loyc.Syntax.Les
 		/// <summary>Causes comments and spaces to be printed as attributes in order 
 		/// to ensure faithful round-trip parsing. By default, only "raw text" and
 		/// unrecognized trivia is printed this way. Note: #trivia_inParens is 
-		/// always printed as parentheses.</summary>
+		/// always printed as parentheses, and <see cref="OmitUnknownTrivia"/> has
+		/// no effect when this flag is true.</summary>
 		public bool PrintExplicitTrivia { get; set; }
 
 		/// <summary>Causes raw text to be printed verbatim, as the EC# printer does.
@@ -80,7 +81,9 @@ namespace Loyc.Syntax.Les
 		public static void Print(LNode node, StringBuilder target, IMessageSink errors, object mode, string indentString, string lineSeparator)
 		{
 			var w = new LesNodePrinterWriter(target, indentString, lineSeparator);
-			var p = _printer = _printer ?? new LesNodePrinter(w);
+			var p = _printer = _printer ?? new LesNodePrinter(null, null);
+			var oldWriter = p.Writer;
+			var oldErrors = p.Errors;
 			p.Writer = w;
 			p.Errors = errors;
 
@@ -89,8 +92,8 @@ namespace Loyc.Syntax.Les
 			else
 				p.Print(node, StartStmt, ";");
 
-			p.Writer = null;
-			p.Errors = null;
+			p.Writer = oldWriter;
+			p.Errors = oldErrors;
 		}
 
 		public LesNodePrinter(INodePrinterWriter target, IMessageSink errors = null)
@@ -107,13 +110,7 @@ namespace Loyc.Syntax.Les
 		}
 		public void Print(LNode node, Precedence context, string terminator = null)
 		{
-			int parenCount = PrintPrefixTrivia(node);
-			if (parenCount != 0)
-				context = StartStmt;
-			if (WriteAttrs(node, context)) {
-				Debug.Assert(parenCount == 0);
-				parenCount++;
-			}
+			int parenCount = WriteAttrs(node, ref context);
 
 			if (node.BaseStyle == NodeStyle.PrefixNotation)
 				PrintPrefixNotation(node, context);
@@ -143,7 +140,7 @@ namespace Loyc.Syntax.Les
 			var a = node.Args;
 			Print(a[0], prec.Value.LeftContext(context));
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
-			WriteOpName(node.Name, prec.Value);
+			WriteOpName(node.Name, node.Target, prec.Value);
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
 			Print(a[1], prec.Value.RightContext(context));
 			return true;
@@ -158,31 +155,32 @@ namespace Loyc.Syntax.Les
 					return false;
 				Print(node.Args[0], prec.Value.LeftContext(context));
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
-				WriteOpName(bareName, prec.Value);
+				WriteOpName(bareName, node.Target, prec.Value);
 			} else {
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Prefix, context);
 				if (prec == null)
 					return false;
-				WriteOpName(node.Name, prec.Value);
+				WriteOpName(node.Name, node.Target, prec.Value);
 				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
 				Print(node.Args[0], prec.Value.RightContext(context));
 			}
 			return true;
 		}
 		
-		private void WriteOpName(Symbol op, Precedence prec)
+		private void WriteOpName(Symbol op, LNode target, Precedence prec)
 		{
+			if (target.AttrCount == 0)
+				target = null; // optimize the usual case
+			if (target != null)
+				PrintPrefixTrivia(target);
 			if (!LesPrecedenceMap.IsNaturalOperator(op.Name))
 				PrintStringCore('`', false, op.Name);
 			else {
 				Debug.Assert(op.Name.StartsWith("'"));
 				_out.Write(op.Name.Substring(1), true);
 			}
-			//else {
-			//	_out.Write('\\', false);
-			//	_out.Write(op.Name, true);
-			//	_out.Space(); // lest the next char to be printed be treated as part of the operator name
-			//}
+			if (target != null)
+				PrintSuffixTrivia(target, 0, null);
 		}
 
 		public int SpaceAroundInfixStopPrecedence = LesPrecedence.Power.Lo;
@@ -230,24 +228,38 @@ namespace Loyc.Syntax.Les
 		private bool AutoPrintBracesOrBracks(LNode node)
 		{
 			var name = node.Name;
-			if (name == S.Array && node.IsCall)
-				PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '[', ']');
-			else if (name == S.Braces && node.IsCall)
-				PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '{', '}');
-			else
-				return false;
-			return true;
+			if ((name == S.Array || name == S.Braces) && node.IsCall && !HasPAttrs(node.Target)) {
+				if (name == S.Array) {
+					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, "[", ']', node.Target);
+					return true;
+				} else if (name == S.Braces) {
+					PrintArgList(node.Args, node.BaseStyle != NodeStyle.Expression, "{", '}', node.Target);
+					return true;
+				}
+			}
+			return false;
 		}
 
-		private void PrintArgList(VList<LNode> args, bool stmtMode, char leftDelim, char rightDelim)
+		private void PrintArgList(VList<LNode> args, bool stmtMode, string leftDelim, char rightDelim, LNode target = null)
 		{
+			if (target != null)
+				PrintPrefixTrivia(target);
 			_out.Write(leftDelim, true);
+			if (target != null)
+				PrintSuffixTrivia(target, 0, "");
 			if (stmtMode) {
 				_out.Indent();
-				_out.Newline();
-				foreach (var stmt in args)
+				bool anyNewlines = false;
+				foreach (var stmt in args) {
+					if (stmt.AttrNamed(S.TriviaAppendStatement) == null) {
+						_out.Newline();
+						anyNewlines = true;
+					}
 					Print(stmt, StartStmt, ";");
+				}
 				_out.Dedent();
+				if (anyNewlines)
+					_out.Newline();
 			} else {
 				for (int i = 0; i < args.Count; )
 					Print(args[i], StartStmt, ++i == args.Count ? "" : ", ");
@@ -268,38 +280,45 @@ namespace Loyc.Syntax.Les
 				case LNodeKind.Literal:
 					PrintLiteral(node); break;
 				case LNodeKind.Call: default:
-					Print(node.Target, LesPrecedence.Primary.LeftContext(context), null);
-					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, '(', ')');
+					Print(node.Target, LesPrecedence.Primary.LeftContext(context), "(");
+					PrintArgList(node.Args, node.BaseStyle == NodeStyle.Statement, "", ')', null);
 					break;
 			}
 		}
 
 		bool HasPAttrs(LNode node)
 		{
-			var A = node.Attrs;
-			for (int i = 0; i < A.Count; i++) {
-				var a = A[i];
-				if (!a.IsId || ShouldPrintAttribute(a.Name))
+			foreach (var attr in node.Attrs.ToFVList())
+				if (!IsConsumedTrivia(attr))
 					return true;
-			}
 			return false;
 		}
 
-		private bool WriteAttrs(LNode node, Precedence context)
+		private int WriteAttrs(LNode node, ref Precedence context)
 		{
-			var A = node.Attrs;
-			if (A.Count == 0)
-				return false;
-
-			bool wroteBrack = false, extraParen = false;
-			for (int i = 0; i < A.Count; i++) {
-				var a = A[i];
-				if (a.ArgCount <= 1 && !ShouldPrintAttribute(a.Name))
+			bool wroteBrack = false, needParen = (context != StartStmt);
+			int parenCount = 0;
+			foreach (var attr in node.Attrs) {
+				if (attr.IsIdNamed(S.TriviaInParens)) {
+					MaybeCloseBrack(ref wroteBrack);
+					parenCount++;
+					_out.Write('(', true);
+					// need extra paren when writing @[..] because (@[..] ...) doesn't count as #trivia_inParens
+					needParen = true;
 					continue;
+				}
+				if (MaybePrintTrivia(attr, needSpace: false, testOnly: wroteBrack)) {
+					if (wroteBrack) {
+						MaybeCloseBrack(ref wroteBrack);
+						MaybePrintTrivia(attr, needSpace: false);
+					}
+					continue;
+				}
 				if (!wroteBrack) {
 					wroteBrack = true;
-					if (context != StartStmt) {
-						extraParen = true;
+					if (needParen) {
+						needParen = false;
+						parenCount++;
 						_out.Write('(', true);
 					}
 					_out.Write("@[", true);
@@ -307,112 +326,91 @@ namespace Loyc.Syntax.Les
 					_out.Write(',', true);
 					_out.Space();
 				}
-				Print(A[i], StartStmt);
+				Print(attr, StartStmt);
 			}
-			if (wroteBrack)
-				_out.Write("] ", true);
-			return extraParen;
-		}
-
-		#region Trivia printing
-		
-		private int PrintPrefixTrivia(LNode _n)
-		{
-			int parenCount = 0;
-			foreach (var attr in _n.Attrs) {
-				var name = attr.Name;
-				if (name.Name.TryGet(0, '\0') == '#') {
-					if (name == S.TriviaInParens) {
-						_out.Write('(', true);
-						parenCount++;
-					} else if (name == S.TriviaRawTextBefore && ObeyRawText) {
-						_out.Write(GetRawText(attr), true);
-					} else if (!PrintExplicitTrivia) {
-						if (name == S.TriviaSpaceBefore && !OmitSpaceTrivia) {
-							PrintSpaces((attr.HasValue ? attr.Value ?? "" : "").ToString());
-						} else if (name == S.TriviaSLCommentBefore && !OmitComments) {
-							_out.Write("//", false);
-							_out.Write(GetRawText(attr), true);
-							_out.Newline(true);
-						} else if (name == S.TriviaMLCommentBefore && !OmitComments) {
-							_out.Write("/*", false);
-							_out.Write(GetRawText(attr), false);
-							_out.Write("*/", false);
-							_out.Space();
-						}
-					}
-				}
-			}
+			MaybeCloseBrack(ref wroteBrack);
+			if (parenCount != 0)
+				context = StartStmt;
 			return parenCount;
 		}
 
+		private void MaybeCloseBrack(ref bool wroteBrack)
+		{
+			if (wroteBrack) {
+				_out.Write("] ", true);
+				wroteBrack = false;
+			}
+		}
+
+		#region Trivia printing
+
+		private void PrintPrefixTrivia(LNode _n)
+		{
+			foreach (var attr in _n.Attrs)
+				MaybePrintTrivia(attr, needSpace: false);
+		}
 		private void PrintSuffixTrivia(LNode _n, int parenCount, string terminator)
 		{
-			while (parenCount-- > 0)
+			while (--parenCount >= 0)
 				_out.Write(')', true);
-			if (terminator != null) {
+			if (terminator != null)
 				_out.Write(terminator, true);
-				if (terminator == ";")
-					_out.Newline(true);
-			}
+			foreach (var attr in _n.GetTrailingTrivia())
+				MaybePrintTrivia(attr, needSpace: true);
+		}
 
-			bool spaces = false;
-			foreach (var attr in _n.Attrs) {
-				var name = attr.Name;
-				if (name.Name.TryGet(0, '\0') == '#') {
-					if (name == S.TriviaRawTextAfter && ObeyRawText) {
+		private bool IsConsumedTrivia(LNode attr)
+		{
+			return MaybePrintTrivia(attr, false, testOnly: true);
+		}
+		private bool MaybePrintTrivia(LNode attr, bool needSpace, bool testOnly = false)
+		{
+			Debug.Assert(!PrintExplicitTrivia);
+			var name = attr.Name;
+			if (S.IsTriviaSymbol(name)) {
+				if ((name == S.TriviaRawText || name == S.TriviaRawTextBefore) && ObeyRawText) {
+					if (!testOnly)
 						_out.Write(GetRawText(attr), true);
-					} else if (!PrintExplicitTrivia) {
-						if (name == S.TriviaSpaceAfter && !OmitSpaceTrivia) {
+					return true;
+				} else if (PrintExplicitTrivia) {
+					return false;
+				} else {
+					if (name == S.TriviaNewline) {
+						if (!testOnly && !OmitSpaceTrivia)
+							_out.Newline();
+						return true;
+					} else if ((name == S.TriviaSpaces || name == S.TriviaSpaceBefore)) {
+						if (!testOnly && !OmitSpaceTrivia)
 							PrintSpaces(GetRawText(attr));
-							spaces = true;
-						} else if (name == S.TriviaSLCommentAfter && !OmitComments) {
-							if (!spaces)
-								_out.Space();
+						return true;
+					} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
+						if (!testOnly && !OmitComments) {
+							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t'))
+								_out.Write('\t', true);
 							_out.Write("//", false);
 							_out.Write(GetRawText(attr), true);
 							_out.Newline(true);
-							spaces = true;
-						} else if (name == S.TriviaMLCommentAfter && !OmitComments) {
-							if (!spaces)
+						}
+						return true;
+					} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
+						if (!testOnly && !OmitComments) {
+							if (needSpace && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 								_out.Space();
 							_out.Write("/*", false);
 							_out.Write(GetRawText(attr), false);
 							_out.Write("*/", false);
-							spaces = false;
 						}
+						return true;
 					}
+					if (OmitUnknownTrivia)
+						return true;
+					if (!needSpace && name == S.TriviaTrailing)
+						return true;
 				}
 			}
+			return false;
 		}
 
-		private bool ShouldPrintAttribute(Symbol name)
-		{
-			if (!S.IsTriviaSymbol(name))
-				return true;
-
-			if (name == S.TriviaRawTextBefore || name == S.TriviaRawTextAfter)
-				return !ObeyRawText && (!OmitUnknownTrivia || PrintExplicitTrivia);
-			else if (name == S.TriviaInParens)
-				return false;
-			else {
-				bool known = name == S.TriviaSpaceBefore || name == S.TriviaSpaceAfter ||
-					   name == S.TriviaSLCommentBefore || name == S.TriviaSLCommentAfter ||
-					   name == S.TriviaMLCommentBefore || name == S.TriviaMLCommentAfter;
-				if (known)
-					return PrintExplicitTrivia;
-				else
-					return !OmitUnknownTrivia;
-			}
-		}
-		static bool IsKnownTrivia(Symbol name)
-		{
-			return name == S.TriviaRawTextBefore || name == S.TriviaRawTextAfter ||
-				   name == S.TriviaSLCommentBefore || name == S.TriviaSLCommentAfter ||
-				   name == S.TriviaMLCommentBefore || name == S.TriviaMLCommentAfter ||
-				   name == S.TriviaSpaceBefore || name == S.TriviaSpaceAfter;
-		}
-		
 		static string GetRawText(LNode rawTextNode)
 		{
 			object value = rawTextNode.Value;

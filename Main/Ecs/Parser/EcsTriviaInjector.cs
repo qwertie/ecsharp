@@ -105,17 +105,9 @@ namespace Loyc.Ecs.Parser
 
 		LNode RemoveLeadingNewline(ref LNode node)
 		{
-			var attrs = node.Attrs;
-			int newlineAt = attrs.IndexWhere(n => n.Name == S.TriviaNewline);
-			if (newlineAt > -1) {
-				int trailingAt = attrs.IndexWhere(n => n.Name == S.TriviaBeginTrailingTrivia);
-				if (trailingAt == -1 || newlineAt < trailingAt) {
-					var newline_trivia = attrs[newlineAt];
-					node = node.WithAttrs(attrs.RemoveAt(newlineAt));
-					return newline_trivia;
-				}
-			}
-			return null;
+			LNode newline;
+			node = node.WithoutAttrNamed(S.TriviaNewline, out newline);
+			return newline;
 		}
 	}
 }

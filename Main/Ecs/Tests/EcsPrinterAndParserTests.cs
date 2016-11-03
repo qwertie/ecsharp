@@ -37,7 +37,7 @@ namespace Loyc.Ecs.Tests
 		protected LNode @out = F.Id(S.Out), @ref = F.Id(S.Ref), @new = F.Id(S.New);
 		protected LNode trivia_forwardedProperty = F.Id(S.TriviaForwardedProperty);
 		protected LNode get = F.Id("get"), set = F.Id("set"), value = F.Id("value"), _await = F.Id("await");
-		protected LNode trivia_newline = F.Id(S.TriviaNewline), trivia_appendStatement = F.Id(S.TriviaAppendStatement), beginTrailingTrivia = F.Id(S.TriviaBeginTrailingTrivia);
+		protected LNode trivia_appendStatement = F.Id(S.TriviaAppendStatement);
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 		protected LNode WordAttr(string name)
@@ -49,15 +49,15 @@ namespace Loyc.Ecs.Tests
 		// Add trivia with special methods in case we ever change how trivia works
 		protected LNode ChildStmt(LNode node)
 		{
-			return F.Attr(trivia_newline, node);
+			return F.Attr(F.TriviaNewline, node);
 		}
 		protected LNode OnNewLine(LNode node)
 		{
-			return F.Attr(trivia_newline, node);
+			return F.Attr(F.TriviaNewline, node);
 		}
 		protected LNode NewlineAfter(LNode node)
 		{
-			return node.PlusAttrs(F.Id(S.TriviaBeginTrailingTrivia), trivia_newline);
+			return node.PlusTrailingTrivia(F.TriviaNewline);
 		}
 		protected LNode AppendStmt(LNode node)
 		{

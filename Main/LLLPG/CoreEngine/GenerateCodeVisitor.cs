@@ -283,7 +283,7 @@ namespace Loyc.LLParserGenerator
 					// Add "stop:" label (plus extra ";" for C# compatibility, in 
 					// case the label ends the block in which it is located.)
 					var stopLabel = F.Call(S.Label, F.Id(breakMode))
-									 .PlusAttr(F.Trivia(S.TriviaRawTextAfter, ";"));
+									 .PlusTrailingTrivia(F.Trivia(S.TriviaRawText, ";"));
 					code = LNode.MergeLists(code, stopLabel, S.Braces);
 				}
 

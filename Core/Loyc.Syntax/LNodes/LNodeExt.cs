@@ -12,6 +12,8 @@ namespace Loyc.Syntax
 	/// <summary>Standard extension methods for <see cref="LNode"/>.</summary>
 	public static class LNodeExt
 	{
+		#region Trivia management
+
 		public static VList<LNode> GetTrivia(this LNode node) { return GetTrivia(node.Attrs); }
 		public static VList<LNode> GetTrivia(this VList<LNode> attrs)
 		{
@@ -21,6 +23,93 @@ namespace Loyc.Syntax
 					trivia.Add(a);
 			return trivia;
 		}
+		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
+		public static VList<LNode> GetTrailingTrivia(this LNode node) { return GetTrailingTrivia(node.Attrs); }
+		/// <summary>Gets all trailing trivia attached to the specified node.</summary>
+		/// <remarks>Trailing trivia is represented by a call to #trivia_trailing in
+		/// a node's attribute list; each argument to #trivia_trailing represents one
+		/// piece of trivia. If the attribute list has multiple calls to 
+		/// #trivia_trailing, this method combines those lists into a single list.</remarks>
+		public static VList<LNode> GetTrailingTrivia(this VList<LNode> attrs)
+		{
+			var trivia = VList<LNode>.Empty;
+			foreach (var a in attrs)
+				if (a.Calls(S.TriviaTrailing))
+					trivia.AddRange(a.Args);
+			return trivia;
+		}
+		/// <summary>Removes a node's trailing trivia and adds a new list of trailing trivia.</summary>
+		public static LNode WithTrailingTrivia(this LNode node, VList<LNode> trivia)
+		{
+			return node.WithAttrs(WithTrailingTrivia(node.Attrs, trivia));
+		}
+		/// <summary>Removes all existing trailing trivia from an attribute list and adds a new list of trailing trivia.</summary>
+		/// <remarks>This method has a side-effect of recreating the #trivia_trailing
+		/// node, if there is one, at the end of the attribute list. If <c>trivia</c>
+		/// is empty then all calls to #trivia_trailing are removed.</remarks>
+		public static VList<LNode> WithTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
+		{
+			var attrs2 = WithoutTrailingTrivia(attrs);
+			if (trivia.IsEmpty)
+				return attrs2;
+			return attrs2.Add(LNode.Call(S.TriviaTrailing, trivia));
+		}
+		/// <summary>Gets a new list with any #trivia_trailing attributes removed.</summary>
+		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs)
+		{
+			return attrs.Transform((int i, ref LNode attr) => attr.Calls(S.TriviaTrailing) ? XfAction.Drop : XfAction.Keep);
+		}
+		/// <summary>Gets a new list with any #trivia_trailing attributes removed. Those trivia are returned in an `out` parameter.</summary>
+		public static VList<LNode> WithoutTrailingTrivia(this VList<LNode> attrs, out VList<LNode> trailingTrivia)
+		{
+			var trailingTrivia2 = VList<LNode>.Empty;
+			attrs = attrs.Transform((int i, ref LNode attr) => {
+				if (attr.Calls(S.TriviaTrailing)) {
+					trailingTrivia2.AddRange(attr.Args);
+					return XfAction.Drop;
+				}
+				return XfAction.Keep;
+			});
+			trailingTrivia = trailingTrivia2; // cannot use `out` parameter within lambda method
+			return attrs;
+		}
+		/// <summary>Adds additional trailing trivia to a node.</summary>
+		public static LNode PlusTrailingTrivia(this LNode node, VList<LNode> trivia)
+		{
+			return node.WithAttrs(PlusTrailingTrivia(node.Attrs, trivia));
+		}
+		/// <summary>Adds additional trailing trivia to a node.</summary>
+		public static LNode PlusTrailingTrivia(this LNode node, LNode trivia)
+		{
+			return node.WithAttrs(PlusTrailingTrivia(node.Attrs, trivia));
+		}
+		/// <summary>Adds additional trailing trivia to an attribute list. Has no effect if <c>trivia</c> is empty.</summary>
+		/// <remarks>
+		/// Trailing trivia is represented by a call to #trivia_trailing in a node's 
+		/// attribute list; each argument to #trivia_trailing represents one piece of 
+		/// trivia.
+		/// <para/>
+		/// In the current design, this method has a side-effect of recreating the #trivia_trailing
+		/// node at the end of the attribute list, and if there are multiple #trivia_trailing
+		/// lists, consolidating them into a single list, but only if the specified <c>trivia</c> 
+		/// list is not empty.</remarks>
+		public static VList<LNode> PlusTrailingTrivia(this VList<LNode> attrs, VList<LNode> trivia)
+		{
+			if (trivia.IsEmpty)
+				return attrs;
+			VList<LNode> oldTrivia;
+			attrs = WithoutTrailingTrivia(attrs, out oldTrivia);
+			return attrs.Add(LNode.Call(S.TriviaTrailing, oldTrivia.AddRange(trivia)));
+		}
+		/// <summary>Adds additional trailing trivia to an attribute list.</summary>
+		public static VList<LNode> PlusTrailingTrivia(this VList<LNode> attrs, LNode trivia)
+		{
+			VList<LNode> oldTrivia;
+			attrs = WithoutTrailingTrivia(attrs, out oldTrivia);
+			return attrs.Add(LNode.Call(S.TriviaTrailing, oldTrivia.Add(trivia)));
+		}
+
+		#endregion
 
 		/// <summary>Interprets a node as a list by returning <c>block.Args</c> if 
 		/// <c>block.Calls(braces)</c>, otherwise returning a one-item list of nodes 
@@ -149,16 +238,6 @@ namespace Loyc.Syntax
 				if (node.Name == name)
 					return node;
 			return null;
-		}
-
-		/// <summary>Gets a new list with #trivia_beginTrailingTrivia and any attributes 
-		/// afterward removed, if any.</summary>
-		public static VList<LNode> WithoutSuffixTrivia(this VList<LNode> attrs)
-		{
-			int i = IndexWithName(attrs, S.TriviaBeginTrailingTrivia);
-			if (i == -1)
-				return attrs;
-			return attrs.First(i);
 		}
 
 		#region Add/remove parentheses

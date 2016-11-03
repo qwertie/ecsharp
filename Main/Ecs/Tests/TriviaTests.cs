@@ -40,28 +40,27 @@ namespace Loyc.Ecs.Tests
 		[Test]
 		public void TriviaTest_Comments()
 		{
-			var stmt = Attr(F.Trivia(S.TriviaMLComment, "bx"), F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaMLComment, "ax"), x);
+			var stmt = Attr(F.Trivia(S.TriviaMLComment, "bx"), F.Call(S.TriviaTrailing, F.Trivia(S.TriviaMLComment, "ax")), x);
 			Stmt("/*bx*/x; /*ax*/",   stmt);
 			Expr("/*bx*/x /*ax*/",    stmt);
 			Stmt("x;",               stmt, p => p.OmitComments = true, Mode.PrinterTest);
 
-			stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaSLComment, "ax"), x);
+			stmt = Attr(F.Trivia(S.TriviaSLComment, "bx"), F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSLComment, "ax")), x);
 			Expr("//bx\nx\t//ax",     stmt, p => p.OmitSpaceTrivia = true);
 			Stmt("//bx\nx;\t//ax",    stmt, p => p.OmitSpaceTrivia = true);
 			Stmt("x;",           stmt, p => p.OmitComments = true, Mode.PrinterTest);
 
-			stmt = Attr(F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaSLComment, " leave loop"), F.Call(S.Break));
+			stmt = Attr(F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSLComment, " leave loop")), F.Call(S.Break));
 			Stmt("break;\t// leave loop", stmt);
 
 			stmt = 
 				Attr(F.Trivia(S.TriviaSLComment, " a block"), 
-					F.Id(S.TriviaBeginTrailingTrivia),
-					F.Trivia(S.TriviaSLComment, " end of block"), F.Braces(
-					Attr(F.Trivia(S.TriviaSLComment, " set x to zero"),
-						F.Id(S.TriviaBeginTrailingTrivia),
-						F.Trivia(S.TriviaSLComment, " x was set to zero"),
-						F.Assign(x, Attr(F.Id(S.TriviaBeginTrailingTrivia), F.Trivia(S.TriviaMLComment, "new value"), zero)
-					))));
+					F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSLComment, " end of block")), 
+					F.Braces(
+						Attr(F.Trivia(S.TriviaSLComment, " set x to zero"),
+							F.Call(S.TriviaTrailing, F.Trivia(S.TriviaSLComment, " x was set to zero")),
+							F.Assign(x, Attr(F.Call(S.TriviaTrailing, F.Trivia(S.TriviaMLComment, "new value")), zero)
+						))));
 			Stmt("// a block\n{\n"+
 				"  // set x to zero\n  x = 0 /*new value*/;\t// x was set to zero\n"+
 				"}\t// end of block", stmt);

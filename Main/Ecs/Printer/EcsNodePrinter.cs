@@ -407,10 +407,10 @@ namespace Loyc.Ecs
 		private void WriteOperatorNameWithTrivia(Symbol name, LNode target, bool useBacktick = false)
 		{
 			if (target != null)
-				PrintTrivia(target, suffixTrivia: false);
+				PrintTrivia(target, trailingTrivia: false);
 			WriteOperatorName(name, useBacktick);
 			if (target != null)
-				PrintTrivia(target, suffixTrivia: true);
+				PrintTrivia(target, trailingTrivia: true);
 		}
 
 		void PrefixSpace(Precedence p)
@@ -634,11 +634,11 @@ namespace Loyc.Ecs
 			"namespace", "trait", "alias", "event", "delegate", "goto case");
 
 		static readonly HashSet<Symbol> KnownTrivia = new HashSet<Symbol> {
-			S.TriviaInParens, S.TriviaBeginTrailingTrivia,
+			S.TriviaInParens, S.TriviaTrailing,
 			S.TriviaNewline, S.TriviaAppendStatement, S.TriviaSpaces,
-			S.TriviaSLComment, S.TriviaSLCommentBefore, S.TriviaSLCommentAfter,
-			S.TriviaMLComment, S.TriviaMLCommentBefore, S.TriviaMLCommentAfter,
-			S.TriviaRawTextBefore, S.TriviaRawTextAfter,
+			S.TriviaSLComment, S.TriviaSLCommentBefore, 
+			S.TriviaMLComment, S.TriviaMLCommentBefore, 
+			S.TriviaRawText, S.TriviaCsRawText, S.TriviaRawTextBefore,
 			S.TriviaUseOperatorKeyword, S.TriviaForwardedProperty,
 		};
 
@@ -793,10 +793,10 @@ namespace Loyc.Ecs
 			//	OpenParenIf(true, ref parenCount, ref context);
 
 			// Scanning forward, print normal attributes and trivia
-			bool any = false, reachedTrailingTrivia = false;
+			bool any = false;
 			for (i = 0; i < div; i++) {
 				var attr = attrs[i];
-				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref reachedTrailingTrivia, ref parenCount))
+				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref parenCount))
 					continue;
 
 				if (!dropMostAttrs) {
@@ -849,10 +849,10 @@ namespace Loyc.Ecs
 			// Now print word attributes and trivia
 			for (i = div; i < attrCount; i++) {
 				var attr = attrs[i];
-				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref reachedTrailingTrivia, ref parenCount) || attr.IsTrivia)
+				if (attr == skipClause || DetectAndMaybePrintTrivia(attr, false, ref parenCount) || attr.IsTrivia)
 					continue;
 
-				PrintTrivia(attr, suffixTrivia: false);
+				PrintTrivia(attr, trailingTrivia: false);
 
 				string text;
 				var name = attr.Name;
@@ -874,7 +874,7 @@ namespace Loyc.Ecs
 				}
 
 				Space(SpaceOpt.Default);
-				PrintTrivia(attr, suffixTrivia: true);
+				PrintTrivia(attr, trailingTrivia: true);
 			}
 
 			return parenCount;
@@ -893,21 +893,18 @@ namespace Loyc.Ecs
 		// at the matching location (e.g. suffixMode=true means we're after the node 
 		// right now and want to print only suffix trivia). Returns true if the 
 		// attribute is trivia and should NOT printed as a normal attribute.
-		bool DetectAndMaybePrintTrivia(LNode attr, bool suffixMode, ref bool reachedTrailingTrivia, ref int parenCount)
+		bool DetectAndMaybePrintTrivia(LNode attr, bool trailingMode, ref int parenCount)
 		{
 			var name = attr.Name;
 			if (!KnownTrivia.Contains(name))
 				return OmitUnknownTrivia && S.IsTriviaSymbol(name);
 
-			if (name == S.TriviaBeginTrailingTrivia) {
-				reachedTrailingTrivia = true;
-			} else if (name == S.TriviaRawTextAfter || name == S.TriviaRawTextBefore) {
+			if (name == S.TriviaRawText || name == S.TriviaCsRawText || name == S.TriviaRawTextBefore) {
 				if (!ObeyRawText)
 					return OmitUnknownTrivia;
-				if (name == (suffixMode ? S.TriviaRawTextAfter : S.TriviaRawTextBefore))
-					_out.Write(GetRawText(attr), true);
+				_out.Write(GetRawText(attr), true);
 			} else if (name == S.TriviaInParens) {
-				if (!suffixMode && !Flagged(Ambiguity.InDefinitionName | Ambiguity.NoParentheses)) {
+				if (!trailingMode && !Flagged(Ambiguity.InDefinitionName | Ambiguity.NoParentheses)) {
 					if (!_context.CanParse(LesPrecedence.Substitute)) {
 						// Inside $: outer parens are expected. Add a second pair of parens 
 						// so that reparsing preserves the in-parens trivia.
@@ -918,25 +915,22 @@ namespace Loyc.Ecs
 					parenCount++;
 					Space(SpaceOpt.InsideParens);
 				}
-			} else if (name == S.TriviaNewline && suffixMode == reachedTrailingTrivia) {
+			} else if (name == S.TriviaNewline) {
 				_out.Newline();
-			} else if (name == S.TriviaSpaces && suffixMode == reachedTrailingTrivia ||
-					   name == (suffixMode ? S.TriviaSpaceAfter : S.TriviaSpaceBefore)) {
+			} else if (name == S.TriviaSpaces || name == S.TriviaSpaceBefore) {
 				if (!OmitSpaceTrivia)
 					PrintSpaces(GetRawText(attr));
-			} else if (name == S.TriviaSLComment && suffixMode == reachedTrailingTrivia ||
-					   name == (suffixMode ? S.TriviaSLCommentAfter : S.TriviaSLCommentBefore)) {
+			} else if (name == S.TriviaSLComment || name == S.TriviaSLCommentBefore) {
 				if (!OmitComments) {
-					if (suffixMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
+					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t') && (SpaceOptions & SpaceOpt.BeforeCommentOnSameLine) != 0)
 						_out.Write('\t', true);
 					_out.Write("//", false);
 					_out.Write(GetRawText(attr), false);
 					_out.Newline(true);
 				}
-			} else if (name == S.TriviaMLComment && suffixMode == reachedTrailingTrivia ||
-					   name == (suffixMode ? S.TriviaMLCommentAfter : S.TriviaMLCommentBefore)) {
+			} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {
 				if (!OmitComments) {
-					if (suffixMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
+					if (trailingMode && !_out.LastCharWritten.IsOneOf(' ', '\t', '\n'))
 						Space(SpaceOpt.BeforeCommentOnSameLine);
 					_out.Write("/*", false);
 					_out.Write(GetRawText(attr), false);
@@ -950,88 +944,16 @@ namespace Loyc.Ecs
 		{
 			PrintTrivia(_n, suffixTrivia, needSemicolon);
 		}
-		private void PrintTrivia(LNode node, bool suffixTrivia, bool needSemicolon = false)
+		private void PrintTrivia(LNode node, bool trailingTrivia, bool needSemicolon = false)
 		{
 			if (needSemicolon)
 				_out.Write(';', true);
-			bool reachedTrailingTrivia = false;
-			foreach (var attr in node.Attrs) {
+			var attrs = trailingTrivia ? node.GetTrailingTrivia() : node.Attrs;
+			foreach (var attr in attrs) {
 				int _ = 0;
-				DetectAndMaybePrintTrivia(attr, suffixTrivia, ref reachedTrailingTrivia, ref _);
+				DetectAndMaybePrintTrivia(attr, trailingTrivia, ref _);
 			}
 		}
-
-#if false
-		private int PrintPrefixTrivia(Ambiguity flags)
-		{
-			int haveParens = 0;
-			bool reachedTrailingTrivia = false;
-			foreach (var attr in _n.Attrs) {
-				if (attr.Name == S.TriviaBeginTrailingTrivia)
-					reachedTrailingTrivia = true;
-				var name = attr.Name;
-				if (name.Name.TryGet(0, '\0') == '#') {
-					if ((name == S.TriviaSpaceBefore || name == S.TriviaSpaces && !reachedTrailingTrivia) && !OmitSpaceTrivia) {
-						var tValue = attr.TriviaValue;
-						PrintSpaces(GetRawText(attr));
-					} else if (name == S.TriviaInParens) {
-						if ((flags & Ambiguity.NoParenthesis) == 0) {
-							WriteOpenParen(ParenFor.Grouping);
-							haveParens++;
-						}
-					} else if (name == S.TriviaRawTextBefore && ObeyRawText) {
-						WriteRawText(GetRawText(attr));
-					} else if ((name == S.TriviaSLCommentBefore || name == S.TriviaSLComment && !reachedTrailingTrivia) && !OmitComments) {
-						_out.Write("//", false);
-						_out.Write(GetRawText(attr), true);
-						_out.Newline(true);
-					} else if ((name == S.TriviaMLCommentBefore || name == S.TriviaMLComment && !reachedTrailingTrivia) && !OmitComments) {
-						_out.Write("/*", false);
-						_out.Write(GetRawText(attr), false);
-						_out.Write("*/", false);
-						Space(SpaceOpt.BetweenCommentAndNode);
-					}
-				}
-			}
-			return haveParens;
-		}
-
-		private void PrintSuffixTrivia(bool needSemicolon)
-		{
-			if (needSemicolon)
-				_out.Write(';', true);
-
-			bool reachedTrailingTrivia = false;
-			bool spaces = false;
-			foreach (var attr in _n.Attrs) {
-				if (attr.Name == S.TriviaBeginTrailingTrivia)
-					reachedTrailingTrivia = true;
-				var name = attr.Name;
-				if (name.Name.TryGet(0, '\0') == '#') {
-					if ((name == S.TriviaSpaceBefore || name == S.TriviaSpaces && reachedTrailingTrivia) && !OmitSpaceTrivia) {
-						PrintSpaces(GetRawText(attr));
-						spaces = true;
-					} else if (name == S.TriviaRawTextAfter && ObeyRawText) {
-						WriteRawText(GetRawText(attr));
-					} else if ((name == S.TriviaSLCommentAfter || name == S.TriviaSLComment && reachedTrailingTrivia) && !OmitComments) {
-						if (!spaces)
-							Space(SpaceOpt.BeforeCommentOnSameLine);
-						_out.Write("//", false);
-						_out.Write(GetRawText(attr), true);
-						_out.Newline(true);
-						spaces = true;
-					} else if ((name == S.TriviaMLCommentAfter || name == S.TriviaMLComment && reachedTrailingTrivia) && !OmitComments) {
-						if (!spaces)
-							Space(SpaceOpt.BeforeCommentOnSameLine);
-						_out.Write("/*", false);
-						_out.Write(GetRawText(attr), false);
-						_out.Write("*/", false);
-						spaces = false;
-					}
-				}
-			}
-		}
-#endif
 
 		private void WriteRawText(string text)
 		{

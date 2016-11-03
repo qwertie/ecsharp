@@ -27,6 +27,15 @@ namespace Loyc.Syntax.Les
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 
+		protected LNode OnNewLine(LNode node)
+		{
+			return node.PlusAttrBefore(F.TriviaNewline);
+		}
+		protected LNode NewlineAfter(LNode node)
+		{
+			return node.PlusTrailingTrivia(F.TriviaNewline);
+		}
+
 		[Test]
 		public void SimpleCalls()
 		{
@@ -194,9 +203,14 @@ namespace Loyc.Syntax.Les
 			Exact("@[Foo] a();", F.Attr(Foo, F.Call(a)));
 			Exact("@[Foo] a = b;", F.Attr(Foo, F.Call(S.Assign, a, b)));
 			Exact("@[a, b] Foo();", F.Attr(a, b, F.Call(Foo)));
-			Stmt("a = (       b + c);", F.Call(S.Assign, a,  F.InParens(F.Call(S.Add, b, c))));
-			Stmt("a = (@[]    b + c);", F.Call(S.Assign, a,             F.Call(S.Add, b, c)));
-			Stmt("a = (@[Foo] b + c);", F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Stmt("a = (       b + c);",  F.Call(S.Assign, a,  F.InParens(F.Call(S.Add, b, c))));
+			Stmt("a = (@[]    b + c);",  F.Call(S.Assign, a,             F.Call(S.Add, b, c)));
+			Stmt("a = (@[Foo] b + c);",  F.Call(S.Assign, a, F.Attr(Foo, F.Call(S.Add, b, c))));
+			Exact("@[a] (x = 1);",        F.Call(S.Assign, x, one).PlusAttrs(a, F.Id(S.TriviaInParens)));
+			Exact("((@[a] x = 1));",      F.Call(S.Assign, x, one).PlusAttrs(F.Id(S.TriviaInParens), a));
+			Exact("@[a] ((@[b] x = 1));", F.Call(S.Assign, x, one).PlusAttrs(a, F.Id(S.TriviaInParens), b));
+			Exact("x = (@[a] ((@[b] x + 1)));", 
+			           F.Call(S.Assign, x, F.Call(S.Add, x, one).PlusAttrs(a, F.Id(S.TriviaInParens), b)));
 		}
 
 		[Test]
