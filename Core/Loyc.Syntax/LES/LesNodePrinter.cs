@@ -140,8 +140,8 @@ namespace Loyc.Syntax.Les
 			var a = node.Args;
 			Print(a[0], prec.Value.LeftContext(context));
 			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
-			WriteOpName(node.Name, node.Target, prec.Value);
-			SpaceIf(prec.Value.Lo < SpaceAroundInfixStopPrecedence);
+			bool sa = prec.Value.Lo < SpaceAroundInfixStopPrecedence;
+			WriteOpName(node.Name, node.Target, prec.Value, spaceAfter: sa);
 			Print(a[1], prec.Value.RightContext(context));
 			return true;
 		}
@@ -160,15 +160,26 @@ namespace Loyc.Syntax.Les
 				var prec = GetPrecedenceIfOperator(node, OperatorShape.Prefix, context);
 				if (prec == null)
 					return false;
-				WriteOpName(node.Name, node.Target, prec.Value);
-				SpaceIf(prec.Value.Lo < SpaceAfterPrefixStopPrecedence);
+				var spaceAfter = prec.Value.Lo < SpaceAfterPrefixStopPrecedence;
+				WriteOpName(node.Name, node.Target, prec.Value, spaceAfter);
 				Print(node.Args[0], prec.Value.RightContext(context));
 			}
 			return true;
 		}
 		
-		private void WriteOpName(Symbol op, LNode target, Precedence prec)
+		private void WriteOpName(Symbol op, LNode target, Precedence prec, bool spaceAfter = false)
 		{
+			// Note: if the operator has a space after it, there's a subtle reason why 
+			// we want to print that space before the trivia and not after. Consider
+			// the input "a == //comment\n    b". After trivia injection this becomes
+			// (@[#trivia_trailing(#trivia_SLComment("comment"))] @==)(a, @[#trivia_newline] b).
+			// Because the injector associates the newline with a different node than the
+			// single-line comment, there's no easy way to strip out the newline during
+			// the parsing process. So, to make the trivia round-trip, we use 
+			// _out.Newline(pending: true) when printing a single-line comment, which 
+			// suppresses the newline if it is followed immediately by another newline.
+			// But if we print a space after the trivia, then this suppression does not
+			// occur and we end up with two newlines. Therefore, we must print the space first.
 			if (target.AttrCount == 0)
 				target = null; // optimize the usual case
 			if (target != null)
@@ -179,6 +190,7 @@ namespace Loyc.Syntax.Les
 				Debug.Assert(op.Name.StartsWith("'"));
 				_out.Write(op.Name.Substring(1), true);
 			}
+			SpaceIf(spaceAfter);
 			if (target != null)
 				PrintSuffixTrivia(target, 0, null);
 		}
@@ -389,7 +401,7 @@ namespace Loyc.Syntax.Les
 								_out.Write('\t', true);
 							_out.Write("//", false);
 							_out.Write(GetRawText(attr), true);
-							_out.Newline(true);
+							_out.Newline(pending: true);
 						}
 						return true;
 					} else if (name == S.TriviaMLComment || name == S.TriviaMLCommentBefore) {

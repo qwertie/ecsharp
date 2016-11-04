@@ -113,7 +113,16 @@ namespace Loyc.Syntax
 		/// loc is set to TriviaLocation.TrailingExtra.</returns>
 		/// <remarks>This method is STILL called for a given node when there is no trivia 
 		/// associated with that node.</remarks>
-		protected abstract LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		protected abstract VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+
+		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		{
+			var newAttrs = AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);
+			if (loc == TriviaLocation.Leading)
+				return node.PlusAttrsBefore(newAttrs);
+			else
+				return node.PlusTrailingTrivia(newAttrs);
+		}
 
 		protected enum TriviaLocation {
 			/// <summary>Trivia that appeared before a node</summary>
@@ -121,7 +130,14 @@ namespace Loyc.Syntax
 			/// <summary>Trivia associated with a node that came before it</summary>
 			Trailing = 1,
 			/// <summary>Trivia attached to the last node in an argument list or last statement in a block</summary>
-			TrailingExtra = 2
+			TrailingExtra = 2,
+			/// <summary>The trivia begins within the range of an identifier or literal. 
+			/// This occurs, for example, if a list of arguments or attributes includes a
+			/// comma in the range of each argument, and there is trivia before the comma,
+			/// e.g. in <c>Foo(x/* trivia */, y);</c>, this occurs if the range of <c>x</c> 
+			/// includes the comma token. The trivia injector is not aware of <c>x</c> or
+			/// the comma; all it knows is that the trivia is "inside" the range of <c>x</c>.</summary>
+			Ambiguous = 3,
 		}
 
 		/// <summary>Gets the <see cref="SourceRange"/> for an element of trivia.</summary>
@@ -192,13 +208,15 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Core trivia associaton algorithm.</summary>
+		/// <remarks>
+		/// NOTE: the enumerator may DRIVE lexing and actually cause the trivia list
+		/// (SortedTrivia) to increase in size. For this reason, this algorithm is careful
+		/// to call nodes.MoveNext() BEFORE getting the current trivia. I'm not sure if this
+		/// precaution is sufficient to preserve trivia in all "streaming" cases, but it
+		/// seems to work in at least most cases.
+		/// </remarks>
 		protected IEnumerator<Pair<LNode, int>> RunCore(IEnumerator<Pair<LNode, int>> nodes, LNode parent)
 		{
-			// NOTE: the enumerator may DRIVE lexing and actually cause the trivia list
-			// (SortedTrivia) to increase in size. For this reason, this algorithm is careful
-			// to call nodes.MoveNext() BEFORE calling CurrentTrivia(). I'm not sure if this
-			// precaution is sufficient to preserve trivia in all "streaming" cases, but it
-			// seems to work in at least most cases.
 			SourceRange triviaRange;
 			Maybe<Trivia> trivia = NoValue.Value;
 			InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
@@ -349,7 +367,7 @@ namespace Loyc.Syntax
 					node = node.With(children[numAttrs].A, LNode.List(newChildren));
 				} else if (!triviaList.IsEmpty) {
 					// If current node is not a call, attach any remaining trivia to it.
-					node = AttachTriviaTo(node, triviaList, TriviaLocation.Leading, parent, indexInParent);
+					node = AttachTriviaTo(node, triviaList, TriviaLocation.Ambiguous, parent, indexInParent);
 				}
 			}
 		}

@@ -90,7 +90,7 @@ namespace Loyc.Syntax
 			SLCommentPrefix = slCommentPrefix;
 		}
 
-		protected override LNode AttachTriviaTo(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			VList<LNode> newAttrs = VList<LNode>.Empty;
 			int i = 0;
@@ -118,16 +118,12 @@ namespace Loyc.Syntax
 					newAttrs.Add(attr);
 				}
 			}
-			if (loc == TriviaLocation.Leading)
-				return node.PlusAttrsBefore(newAttrs);
-			else {
-				// Suppress newline before closing brace or at EOF
-				if (loc == TriviaLocation.TrailingExtra && newAttrs.Count > 0 && newAttrs.Last == _trivia_newline) {
-					if (parent == null || parent.Calls(S.Braces))
-						newAttrs.Pop(); // Printers add a newline here anyway
-				}
-				return node.PlusTrailingTrivia(newAttrs);
+			// Suppress newline before closing brace or at EOF
+			if (loc == TriviaLocation.TrailingExtra && newAttrs.Count > 0 && newAttrs.Last == _trivia_newline) {
+				if (parent == null || parent.Calls(S.Braces))
+					newAttrs.Pop(); // Printers add a newline here anyway
 			}
+			return newAttrs;
 		}
 
 		/// <summary>Called to find out if a newline is to be added implicitly 

@@ -69,9 +69,10 @@ namespace Loyc.Syntax.Les {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
-					list.Add(e ?? MissingExpr());
+					e = e ?? MissingExpr();
+					list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));
 					CheckEndMarker(ref endMarker, ref end);
-					// Line 62: ( / TopExpr)
+					// Line 63: ( / TopExpr)
 					switch ((TT) LA0) {
 					case EOF:
 					case TT.Comma:
@@ -79,7 +80,7 @@ namespace Loyc.Syntax.Les {
 					case TT.RBrack:
 					case TT.RParen:
 					case TT.Semicolon:
-						// line 62
+						// line 63
 						e = null;
 						break;
 					default:
@@ -100,7 +101,7 @@ namespace Loyc.Syntax.Les {
 			TT la0;
 			LNode e = default(LNode);
 			Token end = default(Token);
-			// line 68
+			// line 69
 			if ((LT0.Value is string)) {
 				endMarker = TT.EOF;
 			}
@@ -108,26 +109,26 @@ namespace Loyc.Syntax.Les {
 			la0 = (TT) LA0;
 			if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon) { } else
 				e = TopExpr();
-			// Line 70: ((TT.Comma|TT.Semicolon) ( / TopExpr))*
+			// Line 71: ((TT.Comma|TT.Semicolon) ( / TopExpr))*
 			for (;;) {
 				la0 = (TT) LA0;
 				if (la0 == TT.Comma || la0 == TT.Semicolon) {
 					end = MatchAny();
-					// line 71
+					e = e ?? MissingExpr();
 					yield
-					return e ?? MissingExpr();
+					return e.WithRange(e.Range.StartIndex, end.EndIndex);
 					CheckEndMarker(ref endMarker.Value, ref end);
-					// Line 73: ( / TopExpr)
+					// Line 75: ( / TopExpr)
 					la0 = (TT) LA0;
 					if (la0 == (TT) EOF || la0 == TT.Comma || la0 == TT.Semicolon)
-						// line 73
+						// line 75
 						e = null;
 					else
 						e = TopExpr();
 				} else
 					break;
 			}
-			// line 75
+			// line 77
 			if ((e != null || end.Type() == TT.Comma)) {
 				yield return e ?? MissingExpr();
 			}
@@ -140,22 +141,30 @@ namespace Loyc.Syntax.Les {
 			VList<LNode> attrs = default(VList<LNode>);
 			LNode e = default(LNode);
 			Token t = default(Token);
-			// Line 91: (TT.At TT.LBrack ExprList TT.RBrack)?
-			la0 = (TT) LA0;
-			if (la0 == TT.At) {
-				la1 = (TT) LA(1);
-				if (la1 == TT.LBrack) {
-					at = MatchAny();
-					// line 92
-					if (at.Type() == default(TT)) {
-						ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['");
-					}
-					t = MatchAny();
-					attrs = ExprList();
-					Match((int) TT.RBrack);
-				}
+			// line 92
+			var attrStart = int.MaxValue;
+			// Line 94: (TT.At TT.LBrack ExprList TT.RBrack)*
+			for (;;) {
+				la0 = (TT) LA0;
+				if (la0 == TT.At) {
+					la1 = (TT) LA(1);
+					if (la1 == TT.LBrack) {
+						at = MatchAny();
+						// line 95
+						if (at.Type() == default(TT)) {
+							ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['");
+						} else {
+							attrStart = System.Math.Min(attrStart, at.StartIndex);
+						}
+						t = MatchAny();
+						attrs = ExprList(attrs);
+						Match((int) TT.RBrack);
+					} else
+						break;
+				} else
+					break;
 			}
-			// Line 95: (Expr / TT.Id Expr (Particle)*)
+			// Line 99: (Expr / TT.Id Expr (Particle)*)
 			switch ((TT) LA0) {
 			case TT.Assignment:
 			case TT.BQOperator:
@@ -188,10 +197,10 @@ namespace Loyc.Syntax.Les {
 					default:
 						{
 							var id = MatchAny();
-							// line 98
+							// line 102
 							var args = VList<LNode>.Empty;
 							args.Add(Expr(P.SuperExpr));
-							// Line 100: (Particle)*
+							// Line 104: (Particle)*
 							for (;;) {
 								switch ((TT) LA0) {
 								case TT.At:
@@ -202,7 +211,7 @@ namespace Loyc.Syntax.Les {
 								case TT.LParen:
 								case TT.SpaceLParen:
 									{
-										// line 101
+										// line 105
 										if (((TT) LA0 == TT.LParen)) {
 											var loc = args[args.Count - 2, args.Last].Range.End;
 											Error(0, "Expected a space before '(' (possibly missing ';' or ',' at {0})", loc);
@@ -215,7 +224,7 @@ namespace Loyc.Syntax.Les {
 								}
 							}
 						stop:;
-							// line 108
+							// line 112
 							e = MarkSpecial(F.Call(id, args, id.StartIndex, args.Last.Range.EndIndex));
 						}
 						break;
@@ -226,8 +235,8 @@ namespace Loyc.Syntax.Les {
 				e = Expr(StartStmt);
 				break;
 			}
-			if ((t.TypeInt != 0)) {
-				e = e.WithRange(t.StartIndex, e.Range.EndIndex);
+			if ((attrStart < e.Range.StartIndex)) {
+				e = e.WithRange(attrStart, e.Range.EndIndex);
 			}
 			return e.PlusAttrsBefore(attrs);
 		}
@@ -236,10 +245,10 @@ namespace Loyc.Syntax.Les {
 		{
 			LNode e = default(LNode);
 			Token t = default(Token);
-			// line 123
+			// line 127
 			Precedence prec;
 			e = PrefixExpr(context);
-			// Line 127: greedy( &{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp )*
+			// Line 131: greedy( &{context.CanParse(prec = InfixPrecedenceOf(LT($LI)))} (TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp) Expr | &{context.CanParse(P.Primary)} FinishPrimaryExpr | &{context.CanParse(SuffixPrecedenceOf(LT($LI)))} TT.PreOrSufOp )*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment:
@@ -248,14 +257,14 @@ namespace Loyc.Syntax.Les {
 				case TT.NormalOp:
 					{
 						if (context.CanParse(prec = InfixPrecedenceOf(LT(0)))) {
-							// line 128
+							// line 132
 							if ((!prec.CanMixWith(context))) {
 								Error(0, "Operator '{0}' is not allowed in this context. Add parentheses to clarify the code's meaning.", LT0.Value);
 							}
 							t = MatchAny();
 							var rhs = Expr(prec);
-							// line 133
-							e = F.Call((Symbol) t.Value, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);
+							// line 137
+							e = F.Call(t, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, NodeStyle.Operator);
 						} else
 							goto stop;
 					}
@@ -274,8 +283,8 @@ namespace Loyc.Syntax.Les {
 					{
 						if (context.CanParse(SuffixPrecedenceOf(LT(0)))) {
 							t = MatchAny();
-							// line 140
-							e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex).SetStyle(NodeStyle.Operator);
+							// line 144
+							e = F.Call(ToSuffixOpName((Symbol) t.Value), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);
 						} else
 							goto stop;
 					}
@@ -285,7 +294,7 @@ namespace Loyc.Syntax.Les {
 				}
 			}
 		stop:;
-			// line 142
+			// line 146
 			return e;
 		}
 	
@@ -293,54 +302,56 @@ namespace Loyc.Syntax.Les {
 		{
 			TT la0;
 			VList<LNode> list = default(VList<LNode>);
-			// Line 148: ( TT.LParen ExprList TT.RParen | TT.Not (TT.LParen ExprList TT.RParen / Expr) | TT.LBrack ExprList TT.RBrack )
+			Token lit_excl = default(Token);
+			Token lit_lsqb = default(Token);
+			// Line 152: ( TT.LParen ExprList TT.RParen | TT.Not (TT.LParen ExprList TT.RParen / Expr) | TT.LBrack ExprList TT.RBrack )
 			la0 = (TT) LA0;
 			if (la0 == TT.LParen) {
-				// line 148
+				// line 152
 				var endMarker = default(TokenType);
 				Skip();
 				list = ExprList(ref endMarker);
 				var c = Match((int) TT.RParen);
-				// line 151
+				// line 155
 				e = MarkCall(F.Call(e, list, e.Range.StartIndex, c.EndIndex));
 				if ((endMarker == TT.Semicolon)) {
 					e.Style = NodeStyle.Statement | NodeStyle.Alternate;
 				}
 			} else if (la0 == TT.Not) {
-				Skip();
-				// line 156
+				lit_excl = MatchAny();
+				// line 160
 				var args = new VList<LNode> { 
 					e
 				};
 				int endIndex;
-				// Line 157: (TT.LParen ExprList TT.RParen / Expr)
+				// Line 161: (TT.LParen ExprList TT.RParen / Expr)
 				la0 = (TT) LA0;
 				if (la0 == TT.LParen) {
 					Skip();
 					args = ExprList(args);
 					var c = Match((int) TT.RParen);
-					// line 157
+					// line 161
 					endIndex = c.EndIndex;
 				} else {
 					var T = Expr(P.Primary);
-					// line 158
+					// line 162
 					args.Add(T);
 					endIndex = T.Range.EndIndex;
 				}
-				// line 160
-				e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);
+				// line 164
+				e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, lit_excl.StartIndex, lit_excl.EndIndex, NodeStyle.Operator);
 			} else {
-				// line 162
+				// line 166
 				var args = new VList<LNode> { 
 					e
 				};
-				Match((int) TT.LBrack);
+				lit_lsqb = Match((int) TT.LBrack);
 				args = ExprList(args);
 				var c = Match((int) TT.RBrack);
-				// line 164
-				e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);
+				// line 168
+				e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex, lit_lsqb.StartIndex, lit_lsqb.EndIndex, NodeStyle.Operator);
 			}
-			// line 166
+			// line 170
 			return e;
 		}
 	
@@ -349,7 +360,7 @@ namespace Loyc.Syntax.Les {
 			LNode e = default(LNode);
 			LNode result = default(LNode);
 			Token t = default(Token);
-			// Line 171: ((TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
+			// Line 175: ((TT.Assignment|TT.BQOperator|TT.Dot|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) Expr | Particle)
 			switch ((TT) LA0) {
 			case TT.Assignment:
 			case TT.BQOperator:
@@ -361,8 +372,8 @@ namespace Loyc.Syntax.Les {
 				{
 					t = MatchAny();
 					e = Expr(PrefixPrecedenceOf(t));
-					// line 173
-					result = F.Call((Symbol) t.Value, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);
+					// line 177
+					result = F.Call(t, e, t.StartIndex, e.Range.EndIndex, NodeStyle.Operator);
 				}
 				break;
 			default:
@@ -379,26 +390,26 @@ namespace Loyc.Syntax.Les {
 			Token o = default(Token);
 			LNode result = default(LNode);
 			TokenTree tree = default(TokenTree);
-			// Line 186: ( TT.Id | TT.Literal | TT.At (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace) | TT.LBrace StmtList TT.RBrace | TT.LBrack ExprList TT.RBrack | (TT.LParen|TT.SpaceLParen) ExprList TT.RParen )
+			// Line 190: ( TT.Id | TT.Literal | TT.At (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace) | TT.LBrace StmtList TT.RBrace | TT.LBrack ExprList TT.RBrack | (TT.LParen|TT.SpaceLParen) ExprList TT.RParen )
 			switch ((TT) LA0) {
 			case TT.Id:
 				{
 					var id = MatchAny();
-					// line 187
+					// line 191
 					result = F.Id(id).SetStyle(id.Style);
 				}
 				break;
 			case TT.Literal:
 				{
 					var lit = MatchAny();
-					// line 189
+					// line 193
 					result = F.Literal(lit).SetStyle(lit.Style);
 				}
 				break;
 			case TT.At:
 				{
 					o = MatchAny();
-					// Line 192: (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace)
+					// Line 196: (TT.LBrack TokenTree TT.RBrack | TT.LBrace TokenTree TT.RBrace)
 					la0 = (TT) LA0;
 					if (la0 == TT.LBrack) {
 						Skip();
@@ -409,7 +420,7 @@ namespace Loyc.Syntax.Les {
 						tree = TokenTree();
 						c = Match((int) TT.RBrace);
 					}
-					// line 194
+					// line 198
 					result = F.Literal(tree, o.StartIndex, c.EndIndex);
 				}
 				break;
@@ -418,7 +429,7 @@ namespace Loyc.Syntax.Les {
 					o = MatchAny();
 					var list = StmtList();
 					c = Match((int) TT.RBrace);
-					// line 197
+					// line 201
 					result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);
 				}
 				break;
@@ -427,23 +438,23 @@ namespace Loyc.Syntax.Les {
 					o = MatchAny();
 					var list = ExprList();
 					c = Match((int) TT.RBrack);
-					// line 199
-					result = F.Call(S.Array, list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Expression);
+					// line 203
+					result = F.Call(S.Array, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);
 				}
 				break;
 			case TT.LParen:
 			case TT.SpaceLParen:
 				{
-					// line 201
+					// line 205
 					var endMarker = default(TT);
 					o = MatchAny();
-					// line 202
+					// line 206
 					var hasAttrList = (TT) LA0 == TT.LBrack || (TT) LA0 == TT.At;
 					var list = ExprList(ref endMarker);
 					c = Match((int) TT.RParen);
-					// line 205
+					// line 209
 					if ((endMarker == TT.Semicolon || list.Count != 1)) {
-						result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
+						result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);
 						if ((endMarker == TT.Comma)) {
 							var msg = "Tuples require ';' as a separator.";
 							if ((o.Type() == TT.SpaceLParen)) {
@@ -458,7 +469,7 @@ namespace Loyc.Syntax.Les {
 				break;
 			default:
 				{
-					// line 219
+					// line 223
 					Error(0, "Expected a particle (id, literal, {braces} or (parens)).");
 					result = MissingExpr();
 				}
@@ -473,7 +484,7 @@ namespace Loyc.Syntax.Les {
 			TokenTree got_TokenTree = default(TokenTree);
 			TokenTree result = default(TokenTree);
 			result = new TokenTree(SourceFile);
-			// Line 228: nongreedy((TT.LBrace|TT.LBrack|TT.LParen|TT.SpaceLParen) TokenTree (TT.RBrace|TT.RBrack|TT.RParen) / ~(EOF))*
+			// Line 232: nongreedy((TT.LBrace|TT.LBrack|TT.LParen|TT.SpaceLParen) TokenTree (TT.RBrace|TT.RBrack|TT.RParen) / ~(EOF))*
 			for (;;) {
 				switch ((TT) LA0) {
 				case EOF:
@@ -490,7 +501,7 @@ namespace Loyc.Syntax.Les {
 						if (la1 != (TT) EOF) {
 							var open = MatchAny();
 							got_TokenTree = TokenTree();
-							// line 230
+							// line 234
 							result.Add(open.WithValue(got_TokenTree));
 							result.Add(Match((int) TT.RBrace, (int) TT.RBrack, (int) TT.RParen));
 						} else

@@ -57,7 +57,8 @@ namespace Loyc.Syntax.Les {
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
-				{list.Add(e ?? MissingExpr());}
+				{e ??= MissingExpr();}
+				{list.Add(e.WithRange(e.Range.StartIndex, end.EndIndex));}
 				{CheckEndMarker(ref endMarker, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
@@ -68,7 +69,8 @@ namespace Loyc.Syntax.Les {
 			{if (LT0.Value `#is` string) { endMarker = TT.EOF; };} // possible JSON (allow comma as separator)
 			(/ e:TopExpr)
 			[	end:(","|";")
-				{#rawText("yield"); return e ?? MissingExpr();}
+				{e ??= MissingExpr();}
+				{#rawText("yield"); return e.WithRange(e.Range.StartIndex, end.EndIndex);}
 				{CheckEndMarker(ref endMarker.Value, ref end);}
 				({$e = null;} / e:TopExpr)
 			]*
@@ -87,11 +89,13 @@ namespace Loyc.Syntax.Les {
 		};
 
 		@[protected] rule TopExpr()::LNode @{
+			{var attrStart = int.MaxValue;}
 			[	// @[Attributes]
 				at:"@"
-				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")};} 
-				t:"[" attrs:ExprList "]"
-			]?
+				{if $at.Type() == default(TT) {ErrorSink.Write(Severity.Warning, LaIndexToSourcePos(0), "Attribute: expected '@['")}
+				 else {attrStart = System.Math.Min(attrStart, at.StartIndex);};} 
+				t:"[" attrs:ExprList(attrs) "]"
+			]*
 			(	e:Expr(StartStmt)
 			/	// Superexpression
 				id:=TT.Id // identifier
@@ -107,7 +111,7 @@ namespace Loyc.Syntax.Les {
 				]*
 				{e = MarkSpecial(F.Call(id, args, id.StartIndex, args.Last.Range.EndIndex));}
 			)
-			{if (t.TypeInt != 0) { e = e.WithRange(t.StartIndex, e.Range.EndIndex); };}
+			{if (attrStart < e.Range.StartIndex) { e = e.WithRange(attrStart, e.Range.EndIndex); };}
 			{return e.PlusAttrsBefore(attrs);}
 		};
 
@@ -130,14 +134,14 @@ namespace Loyc.Syntax.Les {
 				};}
 				t:(TT.NormalOp|TT.BQOperator|TT.Dot|TT.Assignment)
 				rhs:=Expr(prec)
-				{e = F.Call(t.Value -> Symbol, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(t, e, rhs, e.Range.StartIndex, rhs.Range.EndIndex, NodeStyle.Operator);}
 			|	// Method_calls(with arguments), indexers[with indexes], generic!arguments
 				&{@[Local] context.CanParse(P.Primary)}
 				e=FinishPrimaryExpr(e)
 			|	// Suffix operator
 				&{@[Local] context.CanParse(SuffixPrecedenceOf(LT($LI)))}
 				t:TT.PreOrSufOp
-				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(ToSuffixOpName(t.Value -> Symbol), e, e.Range.StartIndex, t.EndIndex, t.StartIndex, t.EndIndex, NodeStyle.Operator);}
 			]*
 			{return e;}
 		};
@@ -157,11 +161,11 @@ namespace Loyc.Syntax.Les {
 				(	"(" args=ExprList(args) c:=")"  {endIndex = c.EndIndex;}
 				/	T:=Expr(P.Primary)              {args.Add(T); endIndex = T.Range.EndIndex;}
 				)
-				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(S.Of, args, e.Range.StartIndex, endIndex, $"!".StartIndex, $"!".EndIndex, NodeStyle.Operator);}
 			|	// Indexer / square brackets
 				{var args = (new VList!LNode { e });}
 				"[" args=ExprList(args) c:="]"
-				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex).SetStyle(NodeStyle.Operator);}
+				{e = F.Call(S.IndexBracks, args, e.Range.StartIndex, c.EndIndex, $"[".StartIndex, $"[".EndIndex, NodeStyle.Operator);}
 			)
 			{return e;}
 		};
@@ -170,7 +174,7 @@ namespace Loyc.Syntax.Les {
 			{	// Prefix operator
 				t:(TT.NormalOp|"!"|TT.BQOperator|TT.Dot|TT.Assignment|TT.PrefixOp|TT.PreOrSufOp) 
 				e:Expr(PrefixPrecedenceOf(t))
-				{$result = F.Call(t.Value -> Symbol, e, t.StartIndex, e.Range.EndIndex).SetStyle(NodeStyle.Operator);}
+				{$result = F.Call(t, e, t.StartIndex, e.Range.EndIndex, NodeStyle.Operator);}
 			|	result:Particle
 			};
 
@@ -196,14 +200,14 @@ namespace Loyc.Syntax.Les {
 				o:"{" list:=StmtList c:"}" 
 				{$result = F.Braces(list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Statement);}
 			|	o:"[" list:=ExprList c:"]"
-				{$result = F.Call(S.Array, list, o.StartIndex, c.EndIndex).SetStyle(NodeStyle.Expression);}
+				{$result = F.Call(S.Array, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);}
 			|	// (parens) - possibly a tuple
 				{var endMarker = default(TT);}
 				o:("("|" (") {var hasAttrList = LA0->TT == TT.LBrack || LA0->TT == TT.At;}
 				list:=ExprList(ref endMarker)
 				c:")" {
 					if (endMarker == TT.Semicolon || list.Count != 1) {
-						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex);
+						$result = F.Call(S.Tuple, list, o.StartIndex, c.EndIndex, o.StartIndex, o.EndIndex, NodeStyle.Expression);
 						if (endMarker == TT.Comma) {
 							var msg = "Tuples require ';' as a separator.";
 							if (o.Type() == TT.SpaceLParen) {

@@ -49,7 +49,7 @@ namespace Loyc.Ecs.Parser
 		{
 		}
 
-		protected override LNode AttachTriviaTo(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override VList<LNode> AttachTriviaTo(ref LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
 		{
 			int nli;
 			if (loc == TriviaLocation.Trailing && indexInParent == 1 && parent != null && parent.Calls(CodeSymbols.If, 3) && 
@@ -60,7 +60,7 @@ namespace Loyc.Ecs.Parser
 				triviaSans.RemoveAt(nli);
 				trivia = triviaSans;
 			}
-			return base.AttachTriviaTo(node, trivia, loc, parent, indexInParent);
+			return base.AttachTriviaTo(ref node, trivia, loc, parent, indexInParent);
 		}
 
 		protected override LNode DoneAttaching(LNode node, LNode parent, int indexInParent)

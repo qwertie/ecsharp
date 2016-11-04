@@ -41,7 +41,7 @@ namespace Loyc.Syntax.Les
 		}
 		public bool CanPreserveComments
 		{
-			get { return false; }
+			get { return true; }
 		}
 		public ILexer<Token> Tokenize(ICharSource text, string fileName, IMessageSink msgs)
 		{
@@ -49,12 +49,20 @@ namespace Loyc.Syntax.Les
 		}
 		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			var lexer = new WhitespaceFilter(Tokenize(text, fileName, msgs));
+			var lexer = Tokenize(text, fileName, msgs);
 			return Parse(lexer, msgs, inputType, preserveComments);
 		}
 		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, ParsingMode inputType = null, bool preserveComments = false)
 		{
-			return Parse(input.Buffered(), input.SourceFile, msgs, inputType);
+			if (preserveComments) {
+				var saver = new TriviaSaver(input, (int)TokenType.Newline);
+				var results = Parse(saver.Buffered(), input.SourceFile, msgs, inputType);
+				var injector = new StandardTriviaInjector(saver.TriviaList, saver.SourceFile, (int)TokenType.Newline, "/*", "*/", "//");
+				return injector.Run(results.GetEnumerator()).Buffered();
+			} else {
+				var lexer = new WhitespaceFilter(input);
+				return Parse(lexer.Buffered(), input.SourceFile, msgs, inputType);
+			}
 		}
 
 		[ThreadStatic]

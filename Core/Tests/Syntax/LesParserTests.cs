@@ -46,8 +46,8 @@ namespace Loyc.Syntax.Les
 			msgs = Test(Mode.Stmt, 1, "a + b.c {} Foo", F.Call(S.Add, a, F.Dot(b, c)));
 			msgs = Test(Mode.Stmt, 1, "a(b) c", F.Call(a, b));
 			msgs = Test(Mode.Stmt, 1, "a.Foo(b) c", F.Call(F.Dot(a, Foo), b));
-			msgs = Test(Mode.Stmt, 1, @"a(); if c (b)
-				Foo()", F.Call(a), F.Call("if", c, F.InParens(b), Foo, F.Tuple()));
+			msgs = Test(Mode.Stmt, 1, "a();\n"+"if c (b) Foo()", 
+				F.Call(a), F.Call("if", c, F.InParens(b), Foo, F.Tuple()));
 			ExpectMessageContains(msgs, "expected a space before '('");
 		}
 
@@ -88,7 +88,7 @@ namespace Loyc.Syntax.Les
 		protected override MessageHolder Test(Mode mode, int errorsExpected, string str, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
-			var results = Les2LanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements).ToList();
+			var results = Les2LanguageService.Value.Parse(str, messages, mode == Mode.Expr ? ParsingMode.Expressions : ParsingMode.Statements, true).ToList();
 			for (int i = 0; i < expected.Length; i++)
 				AreEqual(expected[i], results[i]);
 			AreEqual(expected.Length, results.Count);
